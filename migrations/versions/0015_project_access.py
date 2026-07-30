@@ -35,11 +35,12 @@ _DIRECT_PROJECT_TABLES: dict[str, str] = {
     "url_fetch_tasks": "project_id",
 }
 
-_INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str]] = {
+_INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str, str]] = {
     "blocks": (
         "documents scope_document",
         'scope_document.tenant_id = "blocks".tenant_id '
         'AND scope_document.id = "blocks".document_id',
+        "scope_document.project_id",
     ),
     "document_semantic_classifications": (
         "documents scope_document",
@@ -47,16 +48,19 @@ _INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str]] = {
         '"document_semantic_classifications".tenant_id '
         "AND scope_document.id = "
         '"document_semantic_classifications".document_id',
+        "scope_document.project_id",
     ),
     "document_versions": (
         "documents scope_document",
         'scope_document.tenant_id = "document_versions".tenant_id '
         'AND scope_document.id = "document_versions".document_id',
+        "scope_document.project_id",
     ),
     "pages": (
         "documents scope_document",
         'scope_document.tenant_id = "pages".tenant_id '
         'AND scope_document.id = "pages".document_id',
+        "scope_document.project_id",
     ),
     "block_revisions": (
         "blocks scope_block "
@@ -65,6 +69,7 @@ _INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str]] = {
         "AND scope_document.id = scope_block.document_id",
         'scope_block.tenant_id = "block_revisions".tenant_id '
         'AND scope_block.id = "block_revisions".block_id',
+        "scope_document.project_id",
     ),
     "page_assets": (
         "pages scope_page "
@@ -73,6 +78,7 @@ _INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str]] = {
         "AND scope_document.id = scope_page.document_id",
         'scope_page.tenant_id = "page_assets".tenant_id '
         'AND scope_page.id = "page_assets".page_id',
+        "scope_document.project_id",
     ),
     "page_attempts": (
         "pages scope_page "
@@ -81,6 +87,7 @@ _INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str]] = {
         "AND scope_document.id = scope_page.document_id",
         'scope_page.tenant_id = "page_attempts".tenant_id '
         'AND scope_page.id = "page_attempts".page_id',
+        "scope_document.project_id",
     ),
     "page_attempt_transition_events": (
         "page_attempts scope_attempt "
@@ -92,21 +99,25 @@ _INDIRECT_PROJECT_SCOPES: dict[str, tuple[str, str]] = {
         "AND scope_document.id = scope_page.document_id",
         'scope_attempt.tenant_id = "page_attempt_transition_events".tenant_id '
         'AND scope_attempt.id = "page_attempt_transition_events".attempt_id',
+        "scope_document.project_id",
     ),
     "job_events": (
         "processing_jobs scope_job",
         'scope_job.tenant_id = "job_events".tenant_id '
         'AND scope_job.id = "job_events".job_id',
+        "scope_job.project_id",
     ),
     "gpu_provider_attempts": (
         "gpu_provider_invocations scope_invocation",
         'scope_invocation.tenant_id = "gpu_provider_attempts".tenant_id '
         'AND scope_invocation.id = "gpu_provider_attempts".invocation_id',
+        "scope_invocation.project_id",
     ),
     "gpu_invocation_events": (
         "gpu_provider_invocations scope_invocation",
         'scope_invocation.tenant_id = "gpu_invocation_events".tenant_id '
         'AND scope_invocation.id = "gpu_invocation_events".invocation_id',
+        "scope_invocation.project_id",
     ),
 }
 
@@ -214,13 +225,14 @@ def _creator_current_transaction(project_expression: str) -> str:
 def _scope_access(
     from_clause: str,
     correlation: str,
+    project_expression: str,
     access_builder: str,
 ) -> str:
     access = {
         "read": _read_access,
         "review": _review_access,
         "write": _write_access,
-    }[access_builder]("scope_document.project_id")
+    }[access_builder](project_expression)
     return (
         "EXISTS ("  # noqa: S608
         f"SELECT 1 FROM {from_clause} "
@@ -410,16 +422,35 @@ def upgrade() -> None:
             ),
             write_access=_write_access(project_expression),
         )
-    for table, (from_clause, correlation) in _INDIRECT_PROJECT_SCOPES.items():
+    for table, (
+        from_clause,
+        correlation,
+        project_expression,
+    ) in _INDIRECT_PROJECT_SCOPES.items():
         if table not in tables:
             continue
         review_builder = "review" if table == "blocks" else "write"
         write_builder = "review" if table == "block_revisions" else "write"
         _create_project_policies(
             table,
-            read_access=_scope_access(from_clause, correlation, "read"),
-            review_access=_scope_access(from_clause, correlation, review_builder),
-            write_access=_scope_access(from_clause, correlation, write_builder),
+            read_access=_scope_access(
+                from_clause,
+                correlation,
+                project_expression,
+                "read",
+            ),
+            review_access=_scope_access(
+                from_clause,
+                correlation,
+                project_expression,
+                review_builder,
+            ),
+            write_access=_scope_access(
+                from_clause,
+                correlation,
+                project_expression,
+                write_builder,
+            ),
         )
 
 

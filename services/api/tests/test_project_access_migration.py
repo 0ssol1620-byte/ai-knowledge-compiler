@@ -117,6 +117,20 @@ def test_postgresql_policies_are_restrictive_intersections_and_reversible(
         'CREATE POLICY "project_memberships_project_select" '
         'ON "project_memberships" AS RESTRICTIVE'
     ) not in sql
+    job_event_policy = next(
+        statement
+        for statement in recorder.statements
+        if 'CREATE POLICY "job_events_project_select"' in statement
+    )
+    assert "scope_job.project_id" in job_event_policy
+    assert "scope_document.project_id" not in job_event_policy
+    gpu_attempt_policy = next(
+        statement
+        for statement in recorder.statements
+        if 'CREATE POLICY "gpu_provider_attempts_project_select"' in statement
+    )
+    assert "scope_invocation.project_id" in gpu_attempt_policy
+    assert "scope_document.project_id" not in gpu_attempt_policy
 
     recorder.statements.clear()
     monkeypatch.setattr(
