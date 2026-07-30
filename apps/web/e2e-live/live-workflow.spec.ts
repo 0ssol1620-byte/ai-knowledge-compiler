@@ -10,23 +10,23 @@ test("real API journey preserves provenance through export", async ({
   const filename = "e2e-source.txt";
 
   await page.goto("/login?mode=register");
-  await page.getByLabel("워크스페이스 이름").fill(`E2E Workspace ${unique}`);
-  await page.getByLabel("표시 이름").fill("Live E2E Owner");
-  await page.getByLabel("이메일").fill(email);
-  await page.getByLabel("비밀번호").fill("Correct-Horse-Battery-Staple-2026!");
+  await page.getByLabel("Workspace name").fill(`E2E Workspace ${unique}`);
+  await page.getByLabel("Display name").fill("Live E2E Owner");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("Correct-Horse-Battery-Staple-2026!");
 
   const registerResponsePromise = page.waitForResponse(
     (response) =>
       response.request().method() === "POST" &&
       new URL(response.url()).pathname === "/v1/auth/register",
   );
-  await page.getByRole("button", { name: "워크스페이스 만들기" }).click();
+  await page.getByRole("button", { name: "Create workspace" }).click();
   const registerResponse = await registerResponsePromise;
   expect(registerResponse.ok()).toBe(true);
   expect((await registerResponse.json()).email_verified).toBe(false);
 
   await expect(
-    page.getByRole("heading", { name: "확인 메일을 요청했습니다" }),
+    page.getByRole("heading", { name: "Verification email requested" }),
   ).toBeVisible();
   const captureResponse = await page.request.post(
     "http://127.0.0.1:8100/__test__/verification-token",
@@ -41,17 +41,17 @@ test("real API journey preserves provenance through export", async ({
     `/verify-email?verification=1#token=${encodeURIComponent(capture.token)}`,
   );
   await expect(
-    page.getByRole("heading", { name: "이메일 확인 완료" }),
+    page.getByRole("heading", { name: "Email verified" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "워크스페이스 열기" }).click();
+  await page.getByRole("link", { name: "Open workspace" }).click();
   await page.waitForURL("http://127.0.0.1:3100/home");
   await expect(
-    page.getByRole("heading", { name: "워크스페이스" }),
+    page.getByRole("heading", { name: "Workspace overview" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "새 업로드" }).click();
+  await page.getByRole("link", { name: "Upload document" }).click();
   await page.waitForURL("http://127.0.0.1:3100/quick-convert");
   await expect(
-    page.getByRole("heading", { name: "새 변환 시작" }),
+    page.getByRole("heading", { name: "Start a new conversion" }),
   ).toBeVisible();
 
   await page.locator('input[type="file"]').setInputFiles({
@@ -70,17 +70,21 @@ test("real API journey preserves provenance through export", async ({
       response.request().method() === "POST" &&
       /\/v1\/documents\/[^/]+\/analyze$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole("button", { name: "1개 문서 사전 분석" }).click();
+  await page
+    .getByRole("button", { name: "Run preflight on 1 document" })
+    .click();
   const analyzeResponse = await analyzeResponsePromise;
   expect(analyzeResponse.ok()).toBe(true);
   const documentId = new URL(analyzeResponse.url()).pathname.split("/")[3]!;
 
   await page.waitForURL(/\/workspace\?document=[0-9a-f-]+&estimate=1$/);
   await expect(
-    page.getByRole("heading", { name: "처리 전 견적을 확인하세요" }),
+    page.getByRole("heading", {
+      name: "Review the estimate before processing",
+    }),
   ).toBeVisible();
   await expect(page.getByText("Native text")).toBeVisible();
-  await expect(page.getByText("사용 안 함")).toBeVisible();
+  await expect(page.getByText("Not used")).toBeVisible();
 
   await page.getByRole("checkbox").check();
   const compileResponsePromise = page.waitForResponse(
@@ -98,7 +102,7 @@ test("real API journey preserves provenance through export", async ({
       response.request().method() === "GET" &&
       /\/v1\/jobs\/[^/]+\/events$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole("button", { name: "처리 시작" }).click();
+  await page.getByRole("button", { name: "Start processing" }).click();
 
   const [compileResponse, snapshotResponse, eventStreamResponse] =
     await Promise.all([
@@ -127,12 +131,14 @@ test("real API journey preserves provenance through export", async ({
   await page.waitForURL(/\/workspace\?job=[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: filename })).toBeVisible();
   await expect(page.getByLabel("Document version 1")).toBeVisible();
-  await expect(page.getByText("처리 완료", { exact: true })).toBeVisible({
+  await expect(
+    page.getByText("Processing complete", { exact: true }),
+  ).toBeVisible({
     timeout: 60_000,
   });
 
-  const sourcePanel = page.getByLabel("원본 문서");
-  const markdownPanel = page.getByLabel("Markdown 결과");
+  const sourcePanel = page.getByLabel("Source document");
+  const markdownPanel = page.getByLabel("Markdown output");
   await expect(sourcePanel).toBeVisible();
   await expect(markdownPanel).toBeVisible();
   await expect(
@@ -140,7 +146,7 @@ test("real API journey preserves provenance through export", async ({
   ).toBeVisible();
 
   const provenanceLink = markdownPanel
-    .getByRole("button", { name: /블록과 원본 연결/ })
+    .getByRole("button", { name: /Link .* block .* to source/ })
     .first();
   await provenanceLink.click();
   await expect(sourcePanel.locator(".bbox-rect.active")).toBeVisible();
@@ -162,10 +168,12 @@ test("real API journey preserves provenance through export", async ({
   );
 
   await page.reload();
-  await expect(page.getByText("처리 완료", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Processing complete", { exact: true }),
+  ).toBeVisible();
   await expect(
     page
-      .getByLabel("Markdown 결과")
+      .getByLabel("Markdown output")
       .getByRole("button", { name: /p\.1/ })
       .first(),
   ).toBeVisible();
@@ -206,7 +214,7 @@ test("real API journey preserves provenance through export", async ({
   await expect(exportButton).toBeEnabled();
   await exportButton.click();
   const exportDialog = page.getByRole("dialog", {
-    name: "지식 패키지 만들기",
+    name: "Create knowledge package",
   });
   await expect(exportDialog).toBeVisible();
 
