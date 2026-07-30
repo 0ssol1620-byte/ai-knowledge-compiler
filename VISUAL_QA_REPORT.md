@@ -38,9 +38,9 @@ None.
   - Accessibility 100
   - Best Practices 96
   - SEO 100
-  - First Contentful Paint 1.3 s
-  - Largest Contentful Paint 2.8 s
-  - Total Blocking Time 30 ms
+  - First Contentful Paint 1.2 s
+  - Largest Contentful Paint 2.7 s
+  - Total Blocking Time 50 ms
   - Cumulative Layout Shift 0
 - Python:
   - repository tests: 217 passed
@@ -53,14 +53,12 @@ None.
 - Ruff: pass
 
 The machine-readable Lighthouse report is
-`artifacts/lighthouse/home-production-assets.json`.
+`artifacts/lighthouse/home-production.json`.
 
 ## Manual browser findings
 
 - The homepage renders the server poster before WebGL hydration; no blank hero
   frame remains.
-- Original Source Atlas and Evidence Field material studies add a recognizable
-  editorial image layer without replacing the inspectable product proof.
 - The 11-section homepage reads as one editorial narrative rather than stacked
   template cards.
 - Public and product shells share the same brand and provide explicit
