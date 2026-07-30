@@ -16,24 +16,10 @@ secret references, resource IDs, and approved public URLs.
 - Local application review: the site, API, deterministic workers, browser
   flow, local operational matrix, and synthetic benchmark contracts run
   without paid services.
-
-## Immediate action needed to publish the completed branch
-
-The local branch `agent/complete-masterplan-local-implementation` is committed
-and ready to push. The refreshed token authenticates as
-`0ssol1620-byte`, but that account cannot currently resolve or push to the
-configured remote `phillipsoul/ai-knowledge-compiler`.
-
-Choose one:
-
-1. grant `0ssol1620-byte` write access to
-   `phillipsoul/ai-knowledge-compiler`; or
-2. provide the exact GitHub repository URL that should replace the current
-   origin.
-
-No new token is required if the existing account receives repository access.
-After either action, the prepared branch can be pushed and opened as a draft
-pull request without further code changes.
+- GitHub publication: the private repository, `main`, completed branch, and
+  draft pull request are available under
+  `0ssol1620-byte/ai-knowledge-compiler`; CI, Model CI, and Security checks
+  passed on the published branch.
 
 ## Actions needed for native design and UX-research evidence
 
