@@ -8862,6 +8862,76 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 },
             )
 
+        @app.post("/__test__/seed-review", include_in_schema=False)
+        async def seed_test_review(
+            request: Request,
+            x_akc_test_support_key: Annotated[
+                str | None,
+                Header(alias="X-AKC-Test-Support-Key"),
+            ] = None,
+        ) -> JSONResponse:
+            configured_key = runtime_settings.test_support_key or ""
+            if x_akc_test_support_key is None or not secrets.compare_digest(
+                x_akc_test_support_key,
+                configured_key,
+            ):
+                raise HTTPException(status_code=404, detail={"code": "NOT_FOUND"})
+            try:
+                body = await request.json()
+                document_id = uuid.UUID(str(body["document_id"]))
+            except (KeyError, TypeError, ValueError):
+                raise HTTPException(
+                    status_code=404,
+                    detail={"code": "NOT_FOUND"},
+                ) from None
+            async with database.sessions() as session:
+                document = await session.get(Document, document_id)
+                if document is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail={"code": "NOT_FOUND"},
+                    )
+                page = await session.scalar(
+                    select(Page)
+                    .where(
+                        Page.tenant_id == document.tenant_id,
+                        Page.document_id == document.id,
+                    )
+                    .order_by(Page.page_number)
+                )
+                block = await session.scalar(
+                    select(Block)
+                    .where(
+                        Block.tenant_id == document.tenant_id,
+                        Block.document_id == document.id,
+                    )
+                    .order_by(Block.block_order)
+                )
+                review = ReviewItem(
+                    tenant_id=document.tenant_id,
+                    project_id=document.project_id,
+                    document_id=document.id,
+                    page_id=page.id if page else None,
+                    block_id=block.id if block else None,
+                    severity="high",
+                    category="number_mismatch",
+                    status="open",
+                    evidence={
+                        "message": "E2E review decision must persist after refresh.",
+                        "candidates": [
+                            {"engine": "native", "value": "1,234"},
+                            {"engine": "ocr", "value": "1,284"},
+                        ],
+                    },
+                    resolution=None,
+                )
+                session.add(review)
+                await session.commit()
+                return JSONResponse(
+                    content={"review_id": str(review.id)},
+                    headers={"Cache-Control": "no-store"},
+                )
+
     app.include_router(router)
     app.include_router(advanced_auth_router)
     app.include_router(payment_router)

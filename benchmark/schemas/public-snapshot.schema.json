@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.ai-knowledge-compiler.local/benchmark/public-snapshot.schema.json",
+  "title": "AKC public benchmark snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "generated_at",
+    "evaluator_version",
+    "evidence_bundle_sha256",
+    "corpus_revision",
+    "model_revision",
+    "hardware_profile",
+    "datasets"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "status": { "enum": ["available", "unavailable"] },
+    "generated_at": { "type": ["string", "null"], "format": "date-time" },
+    "evaluator_version": { "type": "string", "minLength": 1 },
+    "evidence_bundle_sha256": { "$ref": "#/$defs/nullableDigest" },
+    "corpus_revision": { "$ref": "#/$defs/nullableDigest" },
+    "model_revision": { "type": ["string", "null"] },
+    "hardware_profile": { "type": ["string", "null"] },
+    "datasets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/dataset" }
+    }
+  },
+  "$defs": {
+    "nullableDigest": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "metric": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "source",
+        "status",
+        "document_count",
+        "page_count",
+        "metrics"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "status": {
+          "enum": ["available", "source_adapter_ready", "evidence_required"]
+        },
+        "document_count": { "type": ["integer", "null"], "minimum": 1 },
+        "page_count": { "type": ["integer", "null"], "minimum": 1 },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "numbers",
+            "tables",
+            "provenance",
+            "p95_latency_ms",
+            "cost_per_page_usd"
+          ],
+          "properties": {
+            "text": { "$ref": "#/$defs/metric" },
+            "numbers": { "$ref": "#/$defs/metric" },
+            "tables": { "$ref": "#/$defs/metric" },
+            "provenance": { "$ref": "#/$defs/metric" },
+            "p95_latency_ms": { "$ref": "#/$defs/metric" },
+            "cost_per_page_usd": { "$ref": "#/$defs/metric" }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "case_count",
+            "hard_failure_count",
+            "score_records_sha256",
+            "corpus_manifest_sha256"
+          ],
+          "properties": {
+            "case_count": { "type": "integer", "minimum": 1 },
+            "hard_failure_count": { "type": "integer", "minimum": 0 },
+            "score_records_sha256": { "$ref": "#/$defs/nullableDigest" },
+            "corpus_manifest_sha256": { "$ref": "#/$defs/nullableDigest" }
+          }
+        }
+      }
+    }
+  }
+}

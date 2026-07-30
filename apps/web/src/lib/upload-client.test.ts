@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiRequest } from "@/lib/api-client";
+import { analyzeDocument, ApiError, apiRequest } from "@/lib/api-client";
 import {
   browserSha256,
   mapWithConcurrency,
   MultipartTransferError,
   normalizeEtag,
+  uploadAndAnalyze,
   uploadMultipartFile,
 } from "@/lib/upload-client";
 
@@ -26,6 +27,7 @@ const etagC = "c".repeat(32);
 describe("browser-direct multipart uploads", () => {
   beforeEach(() => {
     vi.mocked(apiRequest).mockReset();
+    vi.mocked(analyzeDocument).mockReset();
   });
 
   it("hashes a blob incrementally without loading it as one array buffer", async () => {
@@ -212,6 +214,45 @@ describe("browser-direct multipart uploads", () => {
 
     expect(completed).toEqual([]);
     expect(directFetch).not.toHaveBeenCalled();
+  });
+
+  it("preserves an encrypted document and exposes the password-resume boundary", async () => {
+    vi.mocked(apiRequest)
+      .mockResolvedValueOnce({
+        upload_id: "upload-encrypted",
+        document_id: "document-encrypted",
+        method: "PUT",
+        upload_url: "/v1/uploads/upload-encrypted/content",
+        headers: { "Content-Type": "application/pdf" },
+        expires_at: "2099-01-01T00:00:00Z",
+      } as never)
+      .mockResolvedValueOnce({} as never);
+    vi.mocked(analyzeDocument).mockRejectedValueOnce(
+      new ApiError("Password required", 422, "PDF_PASSWORD_REQUIRED", false),
+    );
+    const directFetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    await expect(
+      uploadAndAnalyze(
+        new File(["encrypted"], "locked.pdf", {
+          type: "application/pdf",
+        }),
+      ),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        name: "PdfPasswordRequiredError",
+        code: "PDF_PASSWORD_REQUIRED",
+        documentId: "document-encrypted",
+      }),
+    );
+    expect(
+      vi
+        .mocked(apiRequest)
+        .mock.calls.some(([path]) => String(path).endsWith("/abort")),
+    ).toBe(false);
+    directFetch.mockRestore();
   });
 
   it("returns a resumable error after transient retries are exhausted", async () => {

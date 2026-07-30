@@ -9,14 +9,28 @@ const journeyDuration = new Trend("akc_journey_duration", true);
 function boundedInteger(name, fallback, minimum, maximum) {
   const value = Number.parseInt(__ENV[name] || String(fallback), 10);
   if (!Number.isInteger(value) || value < minimum || value > maximum) {
-    throw new Error(`${name} must be an integer between ${minimum} and ${maximum}`);
+    throw new Error(
+      `${name} must be an integer between ${minimum} and ${maximum}`,
+    );
   }
   return value;
 }
 
-const baseUrl = (__ENV.AKC_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const baseUrl = (__ENV.AKC_BASE_URL || "http://127.0.0.1:8000").replace(
+  /\/$/,
+  "",
+);
 const parsed = new URL(baseUrl);
 const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+const configuredVus = boundedInteger("AKC_VUS", 1, 1, 100);
+if (
+  configuredVus > 10 &&
+  __ENV.AKC_LOAD_CONFIRM !== "NONPRODUCTION_LOAD_ONLY"
+) {
+  throw new Error(
+    "more than 10 VUs requires AKC_LOAD_CONFIRM=NONPRODUCTION_LOAD_ONLY",
+  );
+}
 if (!localHosts.has(parsed.hostname)) {
   const allowedRemoteOrigins = new Set(
     (__ENV.AKC_ALLOWED_REMOTE_ORIGINS || "")
@@ -38,7 +52,11 @@ if (!localHosts.has(parsed.hostname)) {
   }
 }
 
-for (const name of ["AKC_TEST_EMAIL", "AKC_TEST_PASSWORD", "AKC_TEST_PROJECT_ID"]) {
+for (const name of [
+  "AKC_TEST_EMAIL",
+  "AKC_TEST_PASSWORD",
+  "AKC_TEST_PROJECT_ID",
+]) {
   if (!__ENV[name]) throw new Error(`${name} is required`);
 }
 
@@ -46,7 +64,7 @@ export const options = {
   scenarios: {
     synthetic_journey: {
       executor: "shared-iterations",
-      vus: boundedInteger("AKC_VUS", 1, 1, 10),
+      vus: configuredVus,
       iterations: boundedInteger("AKC_ITERATIONS", 1, 1, 100),
       maxDuration: "15m",
       gracefulStop: "30s",
@@ -60,12 +78,17 @@ export const options = {
 };
 
 function jsonHeaders(extra = {}) {
-  return { "Content-Type": "application/json", Accept: "application/json", ...extra };
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...extra,
+  };
 }
 
 function assertJson(response, expectedStatus, label) {
   const passed = check(response, {
-    [`${label} status ${expectedStatus}`]: (value) => value.status === expectedStatus,
+    [`${label} status ${expectedStatus}`]: (value) =>
+      value.status === expectedStatus,
     [`${label} is JSON`]: (value) =>
       String(value.headers["Content-Type"] || "").includes("application/json"),
   });
@@ -108,7 +131,9 @@ export default function () {
         sha256: digest,
       }),
       {
-        headers: jsonHeaders({ "Idempotency-Key": crypto.sha256(source, "hex") }),
+        headers: jsonHeaders({
+          "Idempotency-Key": crypto.sha256(source, "hex"),
+        }),
         tags: { endpoint: "upload_initiate" },
       },
     );
@@ -121,7 +146,8 @@ export default function () {
       tags: { endpoint: "upload_transfer" },
     });
     check(upload, {
-      "upload transfer succeeds": (response) => [200, 204].includes(response.status),
+      "upload transfer succeeds": (response) =>
+        [200, 204].includes(response.status),
     });
     if (![200, 204].includes(upload.status)) {
       fail(`upload transfer failed with HTTP ${upload.status}`);
@@ -137,33 +163,47 @@ export default function () {
     );
     assertJson(complete, 200, "upload complete");
 
-    const analyze = http.post(`${baseUrl}/v1/documents/${documentId}/analyze`, null, {
-      headers: jsonHeaders({ "Idempotency-Key": `analyze-${digest}` }),
-      timeout: "60s",
-      tags: { endpoint: "analyze" },
-    });
+    const analyze = http.post(
+      `${baseUrl}/v1/documents/${documentId}/analyze`,
+      null,
+      {
+        headers: jsonHeaders({ "Idempotency-Key": `analyze-${digest}` }),
+        timeout: "60s",
+        tags: { endpoint: "analyze" },
+      },
+    );
     assertJson(analyze, 202, "analyze");
 
     let analysis = null;
     for (let attempt = 0; attempt < 120; attempt += 1) {
-      const response = http.get(`${baseUrl}/v1/documents/${documentId}/analysis`, {
-        tags: { endpoint: "analysis_poll" },
-      });
+      const response = http.get(
+        `${baseUrl}/v1/documents/${documentId}/analysis`,
+        {
+          tags: { endpoint: "analysis_poll" },
+        },
+      );
       analysis = assertJson(response, 200, "analysis poll");
-      if (["completed", "failed", "dead_letter"].includes(analysis.status)) break;
+      if (["completed", "failed", "dead_letter"].includes(analysis.status))
+        break;
       sleep(0.5);
     }
     if (!analysis || analysis.status !== "completed") {
-      fail(`analysis did not complete: ${analysis ? analysis.status : "unknown"}`);
+      fail(
+        `analysis did not complete: ${analysis ? analysis.status : "unknown"}`,
+      );
     }
 
-    const estimate = http.get(`${baseUrl}/v1/documents/${documentId}/estimate`, {
-      tags: { endpoint: "estimate" },
-    });
+    const estimate = http.get(
+      `${baseUrl}/v1/documents/${documentId}/estimate`,
+      {
+        tags: { endpoint: "estimate" },
+      },
+    );
     const estimated = assertJson(estimate, 200, "estimate");
     check(estimated, {
       "estimate is bounded": (value) =>
-        Number(value.expected) >= 0 && Number(value.upper_bound) >= Number(value.expected),
+        Number(value.expected) >= 0 &&
+        Number(value.upper_bound) >= Number(value.expected),
     });
 
     const compile = http.post(
@@ -209,7 +249,11 @@ export default function () {
 
     const exportResponse = http.post(
       `${baseUrl}/v1/projects/${__ENV.AKC_TEST_PROJECT_ID}/exports`,
-      JSON.stringify({ document_id: documentId, export_type: "portable", options: {} }),
+      JSON.stringify({
+        document_id: documentId,
+        export_type: "portable",
+        options: {},
+      }),
       {
         headers: jsonHeaders(),
         timeout: "60s",
@@ -219,7 +263,8 @@ export default function () {
     const exported = assertJson(exportResponse, 201, "export");
     check(exported, {
       "export has checksum": (value) =>
-        value.status === "completed" && /^[0-9a-f]{64}$/.test(value.sha256 || ""),
+        value.status === "completed" &&
+        /^[0-9a-f]{64}$/.test(value.sha256 || ""),
     });
   } finally {
     if (documentId) {
@@ -235,9 +280,12 @@ export default function () {
       let deletionState = deletion;
       for (let attempt = 0; attempt < 120; attempt += 1) {
         if (["purged", "dead_letter"].includes(deletionState.state)) break;
-        const response = http.get(relativeOrAbsolute(deletionState.status_url), {
-          tags: { endpoint: "deletion_poll" },
-        });
+        const response = http.get(
+          relativeOrAbsolute(deletionState.status_url),
+          {
+            tags: { endpoint: "deletion_poll" },
+          },
+        );
         deletionState = assertJson(response, 200, "deletion poll");
         sleep(0.5);
       }

@@ -93,6 +93,30 @@ python benchmark/run_benchmark.py \
 Network runners are opt-in and accept only synthetic or approved benchmark
 objects. Customer production documents are never benchmark inputs.
 
+## OpenDART public source acquisition
+
+`acquire_dart.py` creates a hash-bound private acquisition manifest from
+OpenDART business-report source packages. It uses the official disclosure
+search (`list.json`, detail `A001`) and original-document (`document.xml`)
+contracts. The key is read from `AKC_DART_API_KEY` or one explicitly supplied
+local credential file and is never written to a URL log, receipt, source
+manifest, browser bundle, or exception.
+
+```powershell
+py -3 benchmark/acquire_dart.py `
+  --begin-date 20260101 `
+  --end-date 20260430 `
+  --maximum-filings 10 `
+  --credential-file D:\Github_API.txt `
+  --confirm PUBLIC_DART_BENCHMARK_ONLY
+```
+
+The default target, `benchmark/datasets/private/dart`, is gitignored. Downloaded
+source packages are public inputs, not labels. Every receipt therefore records
+`labels_present=false` and `eligible_for_quality_claims=false`. A rights review,
+frozen split, independent annotations, and the Gate 2 evidence bundle remain
+mandatory before any score is published.
+
 ## Structured evaluator contract
 
 Quality evaluators consume the structured fields in

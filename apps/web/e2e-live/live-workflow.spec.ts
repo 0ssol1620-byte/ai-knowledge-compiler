@@ -65,9 +65,10 @@ test("real API journey preserves provenance through export", async ({
       response.request().method() === "POST" &&
       /\/v1\/documents\/[^/]+\/analyze$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole("button", { name: "1개 파일 분석하기" }).click();
+  await page.getByRole("button", { name: "1개 문서 사전 분석" }).click();
   const analyzeResponse = await analyzeResponsePromise;
   expect(analyzeResponse.ok()).toBe(true);
+  const documentId = new URL(analyzeResponse.url()).pathname.split("/")[3]!;
 
   await page.waitForURL(/\/workspace\?document=[0-9a-f-]+&estimate=1$/);
   await expect(
@@ -106,6 +107,17 @@ test("real API journey preserves provenance through export", async ({
   expect(eventStreamResponse.headers()["content-type"]).toContain(
     "text/event-stream",
   );
+  const compileBody = (await compileResponse.json()) as { job_id: string };
+  const compileRequest = compileResponse.request();
+  const duplicateCompile = await page.request.post(compileResponse.url(), {
+    headers: {
+      "Idempotency-Key": compileRequest.headers()["idempotency-key"]!,
+      "Content-Type": "application/json",
+    },
+    data: compileRequest.postDataJSON(),
+  });
+  expect(duplicateCompile.status()).toBe(202);
+  expect(await duplicateCompile.json()).toEqual(compileBody);
 
   await page.waitForURL(/\/workspace\?job=[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: filename })).toBeVisible();
@@ -127,6 +139,63 @@ test("real API journey preserves provenance through export", async ({
     .first();
   await provenanceLink.click();
   await expect(sourcePanel.locator(".bbox-rect.active")).toBeVisible();
+
+  const replayResponse = await page.request.get(
+    `http://127.0.0.1:8100/v1/jobs/${compileBody.job_id}/events/replay`,
+  );
+  expect(replayResponse.ok()).toBe(true);
+  const replayEvents = (await replayResponse.json()) as Array<{
+    event_id: string;
+    sequence: number;
+  }>;
+  expect(replayEvents.length).toBeGreaterThan(0);
+  expect(new Set(replayEvents.map((event) => event.event_id)).size).toBe(
+    replayEvents.length,
+  );
+  expect(replayEvents.map((event) => event.sequence)).toEqual(
+    [...replayEvents].map((event) => event.sequence).sort((a, b) => a - b),
+  );
+
+  await page.reload();
+  await expect(page.getByText("처리 완료", { exact: true })).toBeVisible();
+  await expect(
+    page
+      .getByLabel("Markdown 결과")
+      .getByRole("button", { name: /p\.1/ })
+      .first(),
+  ).toBeVisible();
+
+  const seedReview = await page.request.post(
+    "http://127.0.0.1:8100/__test__/seed-review",
+    {
+      headers: { "X-AKC-Test-Support-Key": testSupportKey },
+      data: { document_id: documentId },
+    },
+  );
+  expect(seedReview.ok()).toBe(true);
+  await page.reload();
+  await page.getByRole("button", { name: /Review\s+1/ }).click();
+  const reviewDialog = page.getByRole("dialog", { name: "Review queue" });
+  await expect(reviewDialog).toBeVisible();
+  await reviewDialog
+    .getByRole("textbox", { name: "Direct replacement" })
+    .fill("1,234 — verified against the immutable source.");
+  const resolveResponsePromise = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      /\/v1\/review-items\/[^/]+\/resolve$/.test(
+        new URL(response.url()).pathname,
+      ),
+  );
+  await reviewDialog.getByRole("button", { name: "Apply edit" }).click();
+  expect((await resolveResponsePromise).ok()).toBe(true);
+  await expect(
+    reviewDialog.getByRole("button", { name: "Resolved" }),
+  ).toBeVisible();
+  await reviewDialog
+    .getByRole("button", { name: "Close review queue" })
+    .click();
+  await expect(reviewDialog).toBeHidden();
 
   const exportButton = page.getByRole("button", { name: "Export" });
   await expect(exportButton).toBeEnabled();
@@ -150,4 +219,34 @@ test("real API journey preserves provenance through export", async ({
   expect(exportResponse.ok()).toBe(true);
   expect(download.suggestedFilename()).toMatch(/^akc-export-[0-9a-f-]+\.zip$/);
   expect(await download.failure()).toBeNull();
+
+  const deletionResponse = await page.request.delete(
+    `http://127.0.0.1:8100/v1/documents/${documentId}`,
+    {
+      headers: { "Idempotency-Key": `e2e-delete-${unique}` },
+    },
+  );
+  expect(deletionResponse.status()).toBe(202);
+  const deletion = (await deletionResponse.json()) as {
+    id: string;
+    status_url: string;
+  };
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `http://127.0.0.1:8100${deletion.status_url}`,
+        );
+        return response.ok() ? (await response.json()).state : "unavailable";
+      },
+      { timeout: 30_000 },
+    )
+    .toBe("purged");
+  expect(
+    (
+      await page.request.get(
+        `http://127.0.0.1:8100/v1/documents/${documentId}/analysis`,
+      )
+    ).status(),
+  ).toBe(404);
 });

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "matrix_id", "scenarios"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "matrix_id": { "const": "akc-operational-evidence-v1" },
+    "scenarios": {
+      "type": "array",
+      "minItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "class", "requirement", "acceptance"],
+        "properties": {
+          "id": { "pattern": "^OP-[A-Z]+-[0-9]{3}$" },
+          "name": { "type": "string", "minLength": 3 },
+          "class": {
+            "enum": [
+              "local_deterministic",
+              "guarded_local_chaos",
+              "external_scale"
+            ]
+          },
+          "requirement": { "type": "string", "minLength": 10 },
+          "acceptance": { "type": "string", "minLength": 10 },
+          "command": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "profile": { "type": "string", "minLength": 3 },
+          "manual_opt_in": { "type": "boolean" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "class": { "const": "external_scale" } } },
+            "then": {
+              "required": ["profile"],
+              "not": { "required": ["command"] }
+            },
+            "else": { "required": ["command"] }
+          },
+          {
+            "if": {
+              "properties": { "class": { "const": "guarded_local_chaos" } }
+            },
+            "then": {
+              "required": ["manual_opt_in"],
+              "properties": { "manual_opt_in": { "const": true } }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -69,6 +69,18 @@ export class MultipartTransferError extends Error {
   }
 }
 
+export class PdfPasswordRequiredError extends ApiError {
+  constructor(readonly documentId: string) {
+    super(
+      "암호화된 PDF입니다. 암호를 입력하면 격리된 분석을 이어갑니다.",
+      422,
+      "PDF_PASSWORD_REQUIRED",
+      false,
+    );
+    this.name = "PdfPasswordRequiredError";
+  }
+}
+
 export async function uploadAndAnalyze(
   file: File,
   projectId?: string,
@@ -119,9 +131,23 @@ export async function uploadAndAnalyze(
       body: JSON.stringify({ sha256, parts: completedParts }),
     });
     removeResumeRecord(cacheKey);
-    const estimate = await analyzeDocument(initiated.document_id);
-    return { documentId: initiated.document_id, estimate };
+    try {
+      const estimate = await analyzeDocument(initiated.document_id);
+      return { documentId: initiated.document_id, estimate };
+    } catch (error) {
+      if (
+        error instanceof ApiError &&
+        ["PDF_PASSWORD_REQUIRED", "PDF_PASSWORD_EXPIRED"].includes(error.code)
+      ) {
+        throw new PdfPasswordRequiredError(initiated.document_id);
+      }
+      throw error;
+    }
   } catch (error) {
+    if (error instanceof PdfPasswordRequiredError) {
+      removeResumeRecord(cacheKey);
+      throw error;
+    }
     if (
       initiated.method === "MULTIPART" &&
       error instanceof ApiError &&

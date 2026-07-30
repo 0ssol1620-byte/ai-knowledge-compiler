@@ -27,3 +27,19 @@ Start with one VU and one iteration. Increase only after validating credits,
 cleanup receipts, observability, and staging capacity. Archive the k6 summary
 with the application/configuration/model revisions; a local run is not release
 or SLO evidence.
+
+## Release-scale profiles
+
+`profiles.json` is the canonical, machine-checked catalog for the five named
+scale exercises: 1,000 SSE clients, 100 uploads, a preapproved synthetic
+10,000-page enqueue, mixed-tenant fairness, and a 100-export burst. Every
+profile is destructive or capacity-significant and therefore requires:
+
+```text
+AKC_LOAD_CONFIRM=NONPRODUCTION_LOAD_ONLY
+```
+
+Remote runs also require HTTPS, `AKC_ALLOW_REMOTE_SYNTHETIC=true`, and an exact
+`AKC_ALLOWED_REMOTE_ORIGINS` match. The scripts accept only generated fixtures
+and disposable tenant credentials. They deliberately do not provision cloud
+capacity, create paid provider resources, or claim production SLO evidence.

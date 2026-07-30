@@ -97,4 +97,32 @@ describe("ReviewDrawer", () => {
       ),
     );
   });
+
+  it("persists a direct edit without retaining the React event object", async () => {
+    const onResolve = vi.fn().mockResolvedValue(undefined);
+    render(
+      <ReviewDrawer
+        items={[item]}
+        open
+        onClose={vi.fn()}
+        onSelectEvidence={vi.fn()}
+        onResolve={onResolve}
+      />,
+    );
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "Direct replacement" }),
+      { target: { value: "1,234 — verified against source." } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Apply edit" }));
+    await waitFor(() =>
+      expect(onResolve).toHaveBeenCalledWith(
+        item,
+        expect.objectContaining({
+          action: "replace",
+          value: "1,234 — verified against source.",
+        }),
+      ),
+    );
+  });
 });

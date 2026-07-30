@@ -11,7 +11,11 @@ import {
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { uploadAndAnalyze } from "@/lib/upload-client";
+import { apiRequest, waitForAnalysis } from "@/lib/api-client";
+import {
+  PdfPasswordRequiredError,
+  uploadAndAnalyze,
+} from "@/lib/upload-client";
 
 const acceptedExtensions =
   ".pdf,.png,.jpg,.jpeg,.webp,.tif,.tiff,.docx,.pptx,.xlsx,.csv,.html,.htm,.txt,.md,.vtt,.srt";
@@ -33,6 +37,12 @@ export function UploadPanel({
   const [uploading, setUploading] = useState(false);
   const [completed, setCompleted] = useState(0);
   const [error, setError] = useState<string>();
+  const [passwordRequest, setPasswordRequest] = useState<{
+    documentId: string;
+    filename: string;
+  }>();
+  const [password, setPassword] = useState("");
+  const [submittingPassword, setSubmittingPassword] = useState(false);
 
   function addFiles(next: FileList | null) {
     if (!next) return;
@@ -144,6 +154,90 @@ export function UploadPanel({
           {error}
         </p>
       )}
+      {passwordRequest && (
+        <form
+          className="pdf-password-resume"
+          aria-labelledby="pdf-password-title"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!password || submittingPassword) return;
+            setSubmittingPassword(true);
+            setError(undefined);
+            const submittedPassword = password;
+            setPassword("");
+            void apiRequest(
+              `/v1/documents/${passwordRequest.documentId}/password`,
+              {
+                method: "POST",
+                idempotencyKey: crypto.randomUUID(),
+                body: JSON.stringify({ password: submittedPassword }),
+              },
+            )
+              .then(() => waitForAnalysis(passwordRequest.documentId))
+              .then(() => {
+                router.push(
+                  `/workspace?document=${passwordRequest.documentId}&estimate=1`,
+                );
+                setPasswordRequest(undefined);
+              })
+              .catch((reason: unknown) => {
+                setError(
+                  reason instanceof Error
+                    ? reason.message
+                    : "PDF 암호를 확인하지 못했습니다.",
+                );
+              })
+              .finally(() => setSubmittingPassword(false));
+          }}
+        >
+          <div className="pdf-password-copy">
+            <span className="pdf-password-icon" aria-hidden="true">
+              <LockKey size={18} weight="bold" />
+            </span>
+            <div>
+              <h3 id="pdf-password-title">암호화된 PDF 열기</h3>
+              <p>
+                <strong>{passwordRequest.filename}</strong>의 암호는 분석 중
+                메모리에만 보관되며 만료 후 즉시 폐기됩니다.
+              </p>
+            </div>
+          </div>
+          <label className="field" htmlFor="pdf-password">
+            <span>문서 암호</span>
+            <input
+              id="pdf-password"
+              type="password"
+              autoComplete="off"
+              value={password}
+              disabled={submittingPassword}
+              required
+              maxLength={1024}
+              onChange={(event) => setPassword(event.currentTarget.value)}
+            />
+          </label>
+          <div className="pdf-password-actions">
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={submittingPassword}
+              onClick={() => {
+                setPassword("");
+                setPasswordRequest(undefined);
+              }}
+            >
+              취소
+            </button>
+            <button
+              className="primary-button"
+              type="submit"
+              disabled={!password || submittingPassword}
+            >
+              {submittingPassword ? "암호 확인 중" : "안전하게 분석 재개"}
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          </div>
+        </form>
+      )}
       <button
         className="primary-button full-width"
         type="button"
@@ -159,9 +253,20 @@ export function UploadPanel({
           void (async () => {
             let lastDocumentId: string | undefined;
             for (const file of files) {
-              const result = await uploadAndAnalyze(file, projectId);
-              lastDocumentId = result.documentId;
-              setCompleted((value) => value + 1);
+              try {
+                const result = await uploadAndAnalyze(file, projectId);
+                lastDocumentId = result.documentId;
+                setCompleted((value) => value + 1);
+              } catch (reason) {
+                if (reason instanceof PdfPasswordRequiredError) {
+                  setPasswordRequest({
+                    documentId: reason.documentId,
+                    filename: file.name,
+                  });
+                  continue;
+                }
+                throw reason;
+              }
             }
             if (lastDocumentId) {
               router.push(`/workspace?document=${lastDocumentId}&estimate=1`);

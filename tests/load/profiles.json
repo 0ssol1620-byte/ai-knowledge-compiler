@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0.0",
+  "safety": {
+    "required_confirmation": "NONPRODUCTION_LOAD_ONLY",
+    "remote_https_required": true,
+    "exact_origin_allowlist_required": true,
+    "customer_data_permitted": false,
+    "automatic_production_execution": false
+  },
+  "profiles": {
+    "sse_1000": {
+      "runner": "k6",
+      "script": "tests/load/k6-sse.js",
+      "virtual_users": 1000,
+      "duration_seconds": 300,
+      "required_fixture_env": ["AKC_TEST_JOB_ID"],
+      "thresholds": {
+        "connection_success_rate": 0.995,
+        "reconnect_p95_ms": 5000
+      }
+    },
+    "upload_100": {
+      "runner": "k6",
+      "script": "tests/load/k6-journey.js",
+      "virtual_users": 100,
+      "iterations": 100,
+      "required_fixture_env": [
+        "AKC_TEST_EMAIL",
+        "AKC_TEST_PASSWORD",
+        "AKC_TEST_PROJECT_ID"
+      ],
+      "thresholds": {
+        "http_failure_rate": 0.01
+      }
+    },
+    "enqueue_10000_pages": {
+      "runner": "k6",
+      "script": "tests/load/k6-enqueue.js",
+      "virtual_users": 1,
+      "iterations": 1,
+      "fixture_pages": 10000,
+      "required_fixture_env": [
+        "AKC_TEST_EMAIL",
+        "AKC_TEST_PASSWORD",
+        "AKC_TEST_PROJECT_ID",
+        "AKC_SYNTHETIC_10000_PAGE_PDF"
+      ],
+      "thresholds": {
+        "enqueue_p95_ms": 2000
+      }
+    },
+    "mixed_tenant_fairness": {
+      "runner": "k6",
+      "script": "tests/load/k6-fairness.js",
+      "virtual_users": 20,
+      "duration_seconds": 900,
+      "required_fixture_env": [
+        "AKC_SMALL_TENANT_TOKEN",
+        "AKC_LARGE_TENANT_TOKEN",
+        "AKC_SMALL_DOCUMENT_ID",
+        "AKC_LARGE_DOCUMENT_ID"
+      ],
+      "thresholds": {
+        "small_job_wait_p95_ms": 30000
+      }
+    },
+    "export_burst_100": {
+      "runner": "k6",
+      "script": "tests/load/k6-export.js",
+      "virtual_users": 100,
+      "iterations": 100,
+      "required_fixture_env": ["AKC_TEST_TOKEN", "AKC_TEST_JOB_ID"],
+      "thresholds": {
+        "http_failure_rate": 0.01
+      }
+    }
+  }
+}

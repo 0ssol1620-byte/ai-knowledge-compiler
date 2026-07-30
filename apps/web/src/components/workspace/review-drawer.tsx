@@ -222,12 +222,13 @@ export function ReviewDrawer({
                     rows={4}
                     value={directEdit}
                     disabled={isResolved || isPending}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const value = event.currentTarget.value;
                       setDirectEdits((current) => ({
                         ...current,
-                        [item.id]: event.currentTarget.value,
-                      }))
-                    }
+                        [item.id]: value,
+                      }));
+                    }}
                   />
                   <button
                     type="button"

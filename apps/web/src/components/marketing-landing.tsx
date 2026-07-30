@@ -9,42 +9,41 @@ import {
   Graph,
   LockKey,
   ShieldCheck,
-  Sparkle,
   Stack,
   Table,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { BrandMark } from "@/components/brand-mark";
+import {
+  formatBenchmarkPercent,
+  publicBenchmarkSnapshot,
+} from "@/lib/benchmark-public";
 
 const proofSteps = [
   {
-    number: "01",
     title: "페이지를 구조로 읽습니다",
     copy: "텍스트만 추출하지 않고 제목, 표, 그림, 수식과 읽기 순서를 원본 좌표와 함께 복원합니다.",
     icon: FileText,
-    signal: "42 typed blocks",
+    signal: "문단 · 표 · 수식 · 이미지",
   },
   {
-    number: "02",
     title: "결과를 원문과 검증합니다",
     copy: "숫자와 표 구조, 출처 범위를 확인하고 불확실한 항목만 위험도 순으로 검토합니다.",
     icon: ShieldCheck,
-    signal: "3 checks resolved",
+    signal: "숫자 · 구조 · 출처 검사",
   },
   {
-    number: "03",
     title: "재사용 가능한 지식으로 컴파일합니다",
     copy: "검증된 블록에서 노트, 엔터티, 관계를 만들고 모든 주장에 근거 체인을 남깁니다.",
     icon: Graph,
-    signal: "18 notes · 31 relations",
+    signal: "노트 · 엔터티 · 관계",
   },
   {
-    number: "04",
     title: "어디서나 쓰는 패키지로 내보냅니다",
     copy: "Portable Markdown, Obsidian Vault, RAG JSONL과 JSON-LD를 같은 원본에서 생성합니다.",
     icon: FileArrowDown,
-    signal: "4 output profiles",
+    signal: "Markdown · Vault · RAG · JSON-LD",
   },
 ] as const;
 
@@ -76,10 +75,6 @@ export function MarketingLanding() {
       <main id="main-content">
         <section className="marketing-hero">
           <div className="hero-copy">
-            <span className="hero-kicker">
-              <span aria-hidden="true" />
-              Verifiable knowledge infrastructure
-            </span>
             <h1>
               모든 문서를,
               <br />
@@ -145,7 +140,7 @@ export function MarketingLanding() {
               <Table size={13} aria-hidden="true" />
               Table
             </div>
-            <div className="typed-block block-metric">12,345,678</div>
+            <div className="typed-block block-metric">샘플 값</div>
             <div className="markdown-plane">
               <div className="markdown-title">
                 <BracketsCurly size={15} aria-hidden="true" />
@@ -203,7 +198,6 @@ export function MarketingLanding() {
 
         <section className="transformation-story" id="product">
           <header>
-            <span className="section-kicker">From document to evidence</span>
             <h2>파일을 변환하는 것이 아니라, 지식의 근거를 컴파일합니다.</h2>
             <p>
               각 단계는 실제 처리 객체와 이벤트에 연결됩니다. 결과를 클릭하면
@@ -214,9 +208,8 @@ export function MarketingLanding() {
             {proofSteps.map((step) => {
               const Icon = step.icon;
               return (
-                <article key={step.number}>
+                <article key={step.title}>
                   <div>
-                    <span>{step.number}</span>
                     <Icon size={21} weight="duotone" aria-hidden="true" />
                   </div>
                   <h3>{step.title}</h3>
@@ -230,7 +223,6 @@ export function MarketingLanding() {
 
         <section className="interactive-proof" id="demo">
           <div className="proof-copy">
-            <span className="section-kicker">Actual product proof</span>
             <h2>원본에서 결과까지, 한 번의 클릭으로 검증합니다.</h2>
             <p>
               샘플 재생은 production event contract를 사용합니다. 실제 작업처럼
@@ -260,7 +252,7 @@ export function MarketingLanding() {
             <div className="proof-frame-topbar">
               <span />
               <strong>evidence-grounded-report.pdf</strong>
-              <small>42 / 120 pages</small>
+              <small>샘플 문서 · 14쪽</small>
             </div>
             <div className="proof-stage-rail">
               {["Upload", "Preflight", "Parse", "Normalize", "Knowledge"].map(
@@ -292,10 +284,10 @@ export function MarketingLanding() {
                   period.
                 </p>
                 <div className="proof-source-table">
-                  <span>FY 2025</span>
-                  <strong>12,345,678</strong>
-                  <span>FY 2024</span>
-                  <strong>11,904,201</strong>
+                  <span>당기 샘플</span>
+                  <strong>1,234</strong>
+                  <span>전기 샘플</span>
+                  <strong>1,102</strong>
                 </div>
                 <i className="proof-bbox">table · source verified</i>
               </div>
@@ -306,10 +298,10 @@ export function MarketingLanding() {
                   The reported consolidated revenue increased during the fiscal
                   period.
                 </p>
-                <code>| FY 2025 | 12,345,678 |</code>
+                <code>| 당기 샘플 | 1,234 |</code>
                 <small>
                   <ShieldCheck size={12} weight="fill" aria-hidden="true" />
-                  숫자 일치 · 출처 1개
+                  데모 값 일치 · 실제 성능 측정 아님
                 </small>
               </div>
             </div>
@@ -318,7 +310,6 @@ export function MarketingLanding() {
 
         <section className="benchmark-section" id="benchmark">
           <header>
-            <span className="section-kicker">Transparent benchmark</span>
             <h2>평균 하나로 품질을 숨기지 않습니다.</h2>
             <p>문서 유형과 평가 방법, 비용·지연·출처 범위를 함께 공개합니다.</p>
           </header>
@@ -331,43 +322,36 @@ export function MarketingLanding() {
                 <span>Tables</span>
                 <span>Source</span>
               </div>
-              {[
-                ["Korean DART", "98.2", "99.4", "93.1", "100"],
-                ["US SEC", "98.8", "99.7", "94.6", "100"],
-                ["Scanned report", "95.1", "97.2", "89.3", "99.1"],
-                ["Lecture deck", "96.7", "98.0", "91.8", "100"],
-              ].map((row) => (
-                <div key={row[0]}>
-                  {row.map((cell, index) => (
-                    <span
-                      data-value={index === 0 ? undefined : cell}
-                      key={cell}
-                    >
-                      {cell}
-                    </span>
-                  ))}
+              {publicBenchmarkSnapshot.datasets.map((dataset) => (
+                <div key={dataset.id}>
+                  <span>{dataset.label}</span>
+                  <span>{formatBenchmarkPercent(dataset.metrics.text)}</span>
+                  <span>{formatBenchmarkPercent(dataset.metrics.numbers)}</span>
+                  <span>{formatBenchmarkPercent(dataset.metrics.tables)}</span>
+                  <span>
+                    {formatBenchmarkPercent(dataset.metrics.provenance)}
+                  </span>
                 </div>
               ))}
             </div>
             <article className="benchmark-method">
               <ChartScatter size={24} weight="duotone" aria-hidden="true" />
-              <h3>Evidence-bound methodology</h3>
+              <h3>증거가 없으면 수치도 없습니다.</h3>
               <p>
                 점수는 dataset revision, evaluator version과 route profile에
                 고정됩니다. 측정하지 못한 값은 0이 아니라 unavailable로
                 표시합니다.
               </p>
-              <a href="#security" className="text-link">
-                평가 원칙 보기
+              <Link href="/benchmarks" className="text-link">
+                Benchmark Lab 열기
                 <ArrowRight size={14} aria-hidden="true" />
-              </a>
+              </Link>
             </article>
           </div>
         </section>
 
         <section className="security-product-section" id="security">
           <div>
-            <span className="section-kicker">Enterprise control plane</span>
             <h2>보안 문구가 아니라, 실제 통제 화면으로 증명합니다.</h2>
             <p>
               보존 기간, 처리 리전, 외부 provider, 감사 이벤트를 워크스페이스
@@ -412,7 +396,6 @@ export function MarketingLanding() {
 
         <section className="pricing-section" id="pricing">
           <header>
-            <span className="section-kicker">Outcome-based plans</span>
             <h2>필요한 처리 깊이에 맞춰 시작하세요.</h2>
           </header>
           <div className="pricing-grid">
@@ -472,10 +455,6 @@ export function MarketingLanding() {
         </section>
 
         <section className="closing-cta">
-          <div>
-            <Sparkle size={20} weight="duotone" aria-hidden="true" />
-            <span>Documents in. Verifiable knowledge out.</span>
-          </div>
           <h2>첫 문서부터 근거가 남는 지식으로 만드세요.</h2>
           <Link href="/home" className="primary-button hero-primary">
             무료로 시작
@@ -497,8 +476,8 @@ export function MarketingLanding() {
           <Link href="/login">Sign in</Link>
         </nav>
         <small>
-          © 2026 AI Knowledge Compiler. Demo metrics are clearly labeled and
-          never presented as production evidence.
+          © 2026 AI Knowledge Compiler. 측정되지 않은 성능은 수치로 표시하지
+          않습니다.
         </small>
       </footer>
     </div>

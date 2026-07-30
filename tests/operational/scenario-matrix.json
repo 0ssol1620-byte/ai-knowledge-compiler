@@ -1,0 +1,264 @@
+{
+  "schema_version": "1.0.0",
+  "matrix_id": "akc-operational-evidence-v1",
+  "scenarios": [
+    {
+      "id": "OP-FAIR-001",
+      "name": "mixed-size tenant fairness",
+      "class": "local_deterministic",
+      "requirement": "One hot tenant cannot consume every scheduler candidate slot.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/scheduler/tests/test_scheduler.py::test_fair_candidate_scan_returns_at_most_one_event_per_tenant",
+        "-q"
+      ],
+      "acceptance": "The fair scan returns at most one candidate per tenant."
+    },
+    {
+      "id": "OP-DUP-001",
+      "name": "concurrent duplicate dispatch",
+      "class": "local_deterministic",
+      "requirement": "Concurrent dispatchers cannot execute the same event twice.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/scheduler/tests/test_scheduler.py::test_concurrent_dispatch_does_not_duplicate_execution",
+        "-q"
+      ],
+      "acceptance": "Only one execution is admitted."
+    },
+    {
+      "id": "OP-CALLBACK-001",
+      "name": "duplicate provider completion",
+      "class": "local_deterministic",
+      "requirement": "An identical callback replay is idempotent and a conflicting replay fails closed.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/scheduler/tests/test_gpu_jobs.py::test_callback_replay_is_idempotent_and_conflict_detected",
+        "-q"
+      ],
+      "acceptance": "The replay does not duplicate credit or output state."
+    },
+    {
+      "id": "OP-CALLBACK-002",
+      "name": "provider callback loss and bounded retry",
+      "class": "local_deterministic",
+      "requirement": "Missing callbacks consume a bounded retry budget and terminate in a dead letter.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/scheduler/tests/test_gpu_jobs.py::test_retry_budget_dead_letters_without_unbounded_submission",
+        "-q"
+      ],
+      "acceptance": "No unbounded provider submissions occur."
+    },
+    {
+      "id": "OP-PROVIDER-001",
+      "name": "provider 429 retry classification",
+      "class": "local_deterministic",
+      "requirement": "Provider throttling is retryable without leaking the response body.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_gpu_provider.py::test_provider_429_is_retryable_without_leaking_response",
+        "-q"
+      ],
+      "acceptance": "The error is sanitized and classified as retryable."
+    },
+    {
+      "id": "OP-PROVIDER-002",
+      "name": "provider 5xx retry classification",
+      "class": "local_deterministic",
+      "requirement": "Provider server failures use their bounded retry policy.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_gpu_provider.py::test_provider_5xx_has_a_distinct_retry_policy_code",
+        "-q"
+      ],
+      "acceptance": "The error maps to the distinct provider 5xx policy."
+    },
+    {
+      "id": "OP-OOM-001",
+      "name": "GPU out-of-memory fallback",
+      "class": "local_deterministic",
+      "requirement": "OOM creates one immutable reduced child without double charging.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/scheduler/tests/test_gpu_jobs.py::test_oom_creates_one_immutable_reduced_child_and_preserves_credit",
+        "-q"
+      ],
+      "acceptance": "One reduced child is created and the credit invariant holds."
+    },
+    {
+      "id": "OP-UPLOAD-001",
+      "name": "multipart provider acknowledgement loss",
+      "class": "local_deterministic",
+      "requirement": "Multipart completion recovers from acknowledgement loss and abort remains idempotent.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_multipart_upload.py::test_multipart_recovers_provider_ack_loss_and_abort_is_idempotent",
+        "-q"
+      ],
+      "acceptance": "Recovery creates no duplicate document and abort is safe to replay."
+    },
+    {
+      "id": "OP-UPLOAD-002",
+      "name": "expired multipart ownership and URL",
+      "class": "local_deterministic",
+      "requirement": "Expired upload ownership and stale signed URLs fail closed.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_multipart_upload.py::test_multipart_ownership_expiry_and_abort_are_fail_closed",
+        "-q"
+      ],
+      "acceptance": "Expired ownership cannot finalize or disclose an upload."
+    },
+    {
+      "id": "OP-DELETE-001",
+      "name": "partial deletion retry",
+      "class": "local_deterministic",
+      "requirement": "Partial deletion preserves the manifest, cancels work, and releases credit once.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/scheduler/tests/test_deletions.py::test_partial_failure_retries_preserve_manifest_cancel_work_and_release_once",
+        "-q"
+      ],
+      "acceptance": "Retry finishes the same receipt without duplicate release."
+    },
+    {
+      "id": "OP-REDIS-001",
+      "name": "Redis limiter outage",
+      "class": "local_deterministic",
+      "requirement": "The distributed abuse limiter fails closed when Redis is unavailable.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_abuse_controls.py::test_redis_limiter_uses_atomic_result_and_fails_closed_on_outage",
+        "-q"
+      ],
+      "acceptance": "The protected operation is not admitted during limiter uncertainty."
+    },
+    {
+      "id": "OP-MODEL-001",
+      "name": "model endpoint rollback",
+      "class": "local_deterministic",
+      "requirement": "Promotion, rollback, and retirement are atomic and audited.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_api_integration.py::test_model_promotion_rollback_and_retirement_are_atomic_and_audited",
+        "-q"
+      ],
+      "acceptance": "Rollback restores the prior binding and every transition is audited."
+    },
+    {
+      "id": "OP-CLOCK-001",
+      "name": "signed payment webhook clock skew",
+      "class": "local_deterministic",
+      "requirement": "Webhook timestamps outside the five-minute replay window are rejected.",
+      "command": [
+        "{python}",
+        "-m",
+        "pytest",
+        "services/api/tests/test_payment_credit_purchase_api.py::test_signature_timestamp_and_event_id_collision_are_rejected",
+        "-q"
+      ],
+      "acceptance": "Expired and replayed signatures are rejected."
+    },
+    {
+      "id": "OP-CHAOS-001",
+      "name": "local API restart",
+      "class": "guarded_local_chaos",
+      "requirement": "The local API can be paused and resumed with bounded health recovery.",
+      "command": [
+        "{python}",
+        "tests/chaos/compose_drill.py",
+        "--target",
+        "api",
+        "--environment",
+        "development",
+        "--confirmation",
+        "LOCAL_DEVELOPMENT_CHAOS_ONLY"
+      ],
+      "acceptance": "Health returns within the configured recovery window.",
+      "manual_opt_in": true
+    },
+    {
+      "id": "OP-CHAOS-002",
+      "name": "local PostgreSQL restart",
+      "class": "guarded_local_chaos",
+      "requirement": "The local database can be paused and resumed without an unsafe target.",
+      "command": [
+        "{python}",
+        "tests/chaos/compose_drill.py",
+        "--target",
+        "postgres",
+        "--environment",
+        "development",
+        "--confirmation",
+        "LOCAL_DEVELOPMENT_CHAOS_ONLY"
+      ],
+      "acceptance": "Readiness recovers and the drill emits a non-deployment evidence receipt.",
+      "manual_opt_in": true
+    },
+    {
+      "id": "OP-LOAD-001",
+      "name": "one thousand concurrent SSE clients",
+      "class": "external_scale",
+      "requirement": "A nonproduction deployment sustains 1,000 reconnecting SSE clients.",
+      "profile": "sse_1000",
+      "acceptance": "Connection success >= 99.5%, duplicate reduction remains exact, p95 reconnect <= 5 s."
+    },
+    {
+      "id": "OP-LOAD-002",
+      "name": "one hundred concurrent uploads",
+      "class": "external_scale",
+      "requirement": "A disposable nonproduction tenant sustains 100 concurrent direct uploads.",
+      "profile": "upload_100",
+      "acceptance": "HTTP failure < 1%, no orphaned multipart uploads, no duplicate documents."
+    },
+    {
+      "id": "OP-LOAD-003",
+      "name": "ten-thousand-page enqueue",
+      "class": "external_scale",
+      "requirement": "A preapproved synthetic 10,000-page fixture is admitted without request-thread processing.",
+      "profile": "enqueue_10000_pages",
+      "acceptance": "Enqueue returns within 2 s, processing is asynchronous, memory stays within deployment limits."
+    },
+    {
+      "id": "OP-LOAD-004",
+      "name": "mixed-size fairness soak",
+      "class": "external_scale",
+      "requirement": "Small jobs from another tenant are not starved by large jobs.",
+      "profile": "mixed_tenant_fairness",
+      "acceptance": "No tenant exceeds configured scheduler share and small-job p95 wait stays within the release budget."
+    },
+    {
+      "id": "OP-LOAD-005",
+      "name": "export burst",
+      "class": "external_scale",
+      "requirement": "Concurrent exports remain isolated and bounded.",
+      "profile": "export_burst_100",
+      "acceptance": "No cross-tenant object access, duplicate charge, or orphaned export."
+    }
+  ]
+}

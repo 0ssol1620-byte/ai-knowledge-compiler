@@ -135,6 +135,28 @@ test("mobile workspace uses tabs without horizontal overflow", async ({
   expect(overflow).toBe(false);
 });
 
+test("reduced motion removes nonessential transitions and animations", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/workspace");
+  const motion = await page.evaluate(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>("*"));
+    return elements
+      .map((element) => {
+        const style = getComputedStyle(element);
+        return {
+          animation: parseFloat(style.animationDuration || "0"),
+          transition: style.transitionDuration
+            .split(",")
+            .some((value) => parseFloat(value) > 0.01),
+        };
+      })
+      .filter((value) => value.animation > 0.01 || value.transition);
+  });
+  expect(motion).toEqual([]);
+});
+
 test("page rail and source viewer support keyboard-first inspection", async ({
   page,
   isMobile,

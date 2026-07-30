@@ -34,11 +34,14 @@ test-results/
 # Local data and generated artifacts
 .akc-data/
 data/
+!apps/web/src/data/
+!apps/web/src/data/benchmark-public-snapshot.json
 tmp/
 work/
 artifacts/
 benchmark/reports/generated/
 benchmark/datasets/private/
+benchmark/datasets/acquired/
 *.db
 *.sqlite
 *.sqlite3
