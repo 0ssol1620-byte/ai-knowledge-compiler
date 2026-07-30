@@ -1,0 +1,39 @@
+{
+  "project": "Public Filing Knowledge Demo",
+  "label": "Synthetic Demo",
+  "viewport": "390x844",
+  "locale": "en-US",
+  "capturedAt": "2026-07-30T14:06:19.563Z",
+  "captures": [
+    {
+      "name": "home",
+      "route": "/app/home",
+      "file": "STR-PRODUCT-T0-HOME-EN-390x844-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "projects",
+      "route": "/app/projects",
+      "file": "STR-PRODUCT-T0-PROJECTS-EN-390x844-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "project-graph",
+      "route": "/app/projects/public-filing/graph",
+      "file": "STR-PRODUCT-T0-PROJECT-GRAPH-EN-390x844-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "processing",
+      "route": "/documents/annual-report-2025/processing",
+      "file": "STR-PRODUCT-T0-PROCESSING-EN-390x844-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "review",
+      "route": "/documents/annual-report-2025/review",
+      "file": "STR-PRODUCT-T0-REVIEW-EN-390x844-v01.webp",
+      "truthClass": "T0"
+    }
+  ]
+}

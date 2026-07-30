@@ -24,9 +24,18 @@ Status: Approved
 
 ## D-004 — Visual system
 
-Warm paper, ink, computational grids, evidence lines, and five structural
+Warm paper, ink, computational grids, evidence lines, and eighteen structural
 glyphs are the system. Brand blue marks transformation; evidence cyan is
 reserved for provenance.
+
+Status: Approved
+
+## D-007 — Asset authority
+
+Production asset order is actual product/public proof, deterministic code/SVG,
+first-party procedural 3D, approved AI editorial, then licensed external media.
+Generated imagery never represents product, benchmark, customer, logo,
+certification, security, or public-document evidence.
 
 Status: Approved
 

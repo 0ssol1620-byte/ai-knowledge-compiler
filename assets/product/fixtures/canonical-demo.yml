@@ -1,0 +1,15 @@
+project: Public Filing Knowledge Demo
+label: Synthetic Demo
+locale: en-US
+time: 2026-07-30T12:00:00Z
+documents:
+  - id: annual-report-2025
+    title: Annual Report 2025
+    pages: 421
+    tables: 38
+review_items: 3
+knowledge_notes: 852
+entities: 64
+relations: 91
+source_coverage_percent: 99.6
+external_processing: false

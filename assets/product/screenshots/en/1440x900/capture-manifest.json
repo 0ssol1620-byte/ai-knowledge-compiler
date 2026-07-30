@@ -1,0 +1,117 @@
+{
+  "project": "Public Filing Knowledge Demo",
+  "label": "Synthetic Demo",
+  "viewport": "1440x900",
+  "locale": "en-US",
+  "capturedAt": "2026-07-30T14:06:15.229Z",
+  "captures": [
+    {
+      "name": "home",
+      "route": "/app/home",
+      "file": "STR-PRODUCT-T0-HOME-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "projects",
+      "route": "/app/projects",
+      "file": "STR-PRODUCT-T0-PROJECTS-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "project-overview",
+      "route": "/app/projects/public-filing/overview",
+      "file": "STR-PRODUCT-T0-PROJECT-OVERVIEW-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "project-documents",
+      "route": "/app/projects/public-filing/documents",
+      "file": "STR-PRODUCT-T0-PROJECT-DOCUMENTS-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "project-knowledge",
+      "route": "/app/projects/public-filing/knowledge",
+      "file": "STR-PRODUCT-T0-PROJECT-KNOWLEDGE-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "project-graph",
+      "route": "/app/projects/public-filing/graph",
+      "file": "STR-PRODUCT-T0-PROJECT-GRAPH-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "project-exports",
+      "route": "/app/projects/public-filing/exports",
+      "file": "STR-PRODUCT-T0-PROJECT-EXPORTS-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "processing",
+      "route": "/documents/annual-report-2025/processing",
+      "file": "STR-PRODUCT-T0-PROCESSING-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "review",
+      "route": "/documents/annual-report-2025/review",
+      "file": "STR-PRODUCT-T0-REVIEW-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "markdown",
+      "route": "/documents/annual-report-2025/markdown",
+      "file": "STR-PRODUCT-T0-MARKDOWN-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "sources",
+      "route": "/documents/annual-report-2025/sources",
+      "file": "STR-PRODUCT-T0-SOURCES-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "versions",
+      "route": "/documents/annual-report-2025/versions",
+      "file": "STR-PRODUCT-T0-VERSIONS-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "jobs",
+      "route": "/app/jobs",
+      "file": "STR-PRODUCT-T0-JOBS-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "knowledge-bases",
+      "route": "/app/knowledge-bases",
+      "file": "STR-PRODUCT-T0-KNOWLEDGE-BASES-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "benchmark-lab",
+      "route": "/app/benchmarks",
+      "file": "STR-PRODUCT-T0-BENCHMARK-LAB-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "export-center",
+      "route": "/app/exports",
+      "file": "STR-PRODUCT-T0-EXPORT-CENTER-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "security-center",
+      "route": "/app/settings/security",
+      "file": "STR-PRODUCT-T0-SECURITY-CENTER-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    },
+    {
+      "name": "admin-jobs",
+      "route": "/app/admin/jobs",
+      "file": "STR-PRODUCT-T0-ADMIN-JOBS-EN-1440x900-v01.webp",
+      "truthClass": "T0"
+    }
+  ]
+}

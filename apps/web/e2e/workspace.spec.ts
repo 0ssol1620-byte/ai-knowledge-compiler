@@ -115,6 +115,35 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
   await expect(
     page.getByText("Structara is a working name pending brand clearance."),
   ).toBeVisible();
+  await expect(
+    page.getByText("Illustrative model · synthetic sample"),
+  ).toBeVisible();
+});
+
+test("product marketing uses real product evidence and deterministic diagrams", async ({
+  page,
+}) => {
+  await page.goto("/product");
+  const evidence = page.locator(".st-page-product-evidence");
+  await expect(evidence).toBeVisible();
+  await expect(evidence.getByText("Actual product")).toBeVisible();
+  await expect(evidence.locator("img")).toHaveJSProperty("complete", true);
+  expect(
+    await evidence.locator("img").evaluate((image: HTMLImageElement) => {
+      return image.naturalWidth;
+    }),
+  ).toBeGreaterThan(0);
+  await expect(
+    page.getByRole("heading", { name: "Source-to-Knowledge Compiler" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".st-diagram-equivalent").getByRole("listitem"),
+  ).toHaveCount(4);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
 });
 
 test("marketing and product retain a clear round trip", async ({

@@ -6,3 +6,7 @@ apps/web/.next/
 apps/web/playwright-report/
 apps/web/test-results/
 packages/contracts/src/generated-contracts.ts
+**/*.svg
+**/*.webp
+**/*.webm
+**/*.sha256

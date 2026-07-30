@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const WebglScene = dynamic(() => import("./structara-webgl-scene"), {
   ssr: false,
@@ -10,6 +10,9 @@ const WebglScene = dynamic(() => import("./structara-webgl-scene"), {
 
 export function StructaraHeroScene() {
   const [enhance, setEnhance] = useState(false);
+  const [inView, setInView] = useState(true);
+  const [documentVisible, setDocumentVisible] = useState(true);
+  const sceneRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia(
@@ -29,8 +32,24 @@ export function StructaraHeroScene() {
     };
   }, []);
 
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
+      { rootMargin: "120px" },
+    );
+    const handleVisibility = () => setDocumentVisible(!document.hidden);
+    observer.observe(scene);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
   return (
-    <div className="st-hero-scene" data-enhanced={enhance}>
+    <div ref={sceneRef} className="st-hero-scene" data-enhanced={enhance}>
       <div className="st-hero-poster" aria-hidden="true">
         <div className="st-poster-pages">
           <i />
@@ -57,14 +76,14 @@ export function StructaraHeroScene() {
       </div>
       {enhance && (
         <div className="st-webgl-layer" aria-hidden="true">
-          <WebglScene />
+          <WebglScene active={inView && documentVisible} />
         </div>
       )}
       <span className="st-scene-label st-scene-source">Source pages</span>
       <span className="st-scene-label st-scene-output">
         Connected knowledge
       </span>
-      <small>Public sample · source structure preserved</small>
+      <small>Illustrative model · synthetic sample</small>
     </div>
   );
 }

@@ -1,0 +1,3 @@
+version: 1
+prompts: []
+policy: "No generated asset is approved for production without a reviewed contact sheet and manifest entry."

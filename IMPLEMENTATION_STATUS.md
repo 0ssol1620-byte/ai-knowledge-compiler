@@ -22,6 +22,13 @@ and awaiting the final GitHub CI release gate.
 - Full frontend lint, type, unit, build, and E2E suites passed
 - Safe Windows backend suites and repository validators passed
 - Production Lighthouse release thresholds passed
+- Asset System v2.1 implemented with truth classification, registry, hashes,
+  source evidence, 18 glyphs, 6 patterns, 8 textures, 12 diagrams, 23 real
+  product captures, and 8 real product motion loops
+- Product marketing upgraded from illustrative UI to optimized T0 browser
+  captures from the actual deterministic demo workspace
+- Rejected AI-generated editorial stills removed; no generated or external
+  raster asset remains in production
 
 # Blockers
 
@@ -36,6 +43,8 @@ and awaiting the final GitHub CI release gate.
 Evidence is recorded in `VISUAL_QA_REPORT.md` and the Pull Request. The complete
 Python suite is delegated to Linux GitHub CI because Windows `spawn` recursively
 re-enters the parent pytest command in multiprocessing isolation tests.
+Asset-specific evidence is recorded in `ASSET_QA_REPORT.md` and
+`assets/registry/asset-manifest.yml`.
 
 # Next action
 

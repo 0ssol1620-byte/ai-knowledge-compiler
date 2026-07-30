@@ -18,3 +18,9 @@ versions. No external skill database is redistributed with the product.
 Spline is not included in the production dependency graph. The masterplan's
 Spline references informed camera prototyping only; the shipped scene uses
 Three.js and React Three Fiber with a code-owned poster fallback.
+
+The Asset System v2.1 production set is entirely first-party: actual browser
+captures, deterministic fixtures, code/SVG diagrams, procedural R3F geometry,
+glyphs, patterns, and CSS textures. No stock, CC0, downloaded, or AI-generated
+raster asset is shipped. Asset truth, source, usage, and SHA-256 records live in
+`assets/registry/asset-manifest.yml`.

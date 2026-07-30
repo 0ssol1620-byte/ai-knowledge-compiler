@@ -11,6 +11,8 @@ accessibility, and measured performance rather than feature count.
 Before UI, UX, copy, motion, or 3D work, read:
 
 - `.agents/skills/structara-brand-experience/SKILL.md`
+- `.agents/skills/structara-asset-director/SKILL.md` for every image, 3D,
+  screenshot, diagram, texture, video, glyph, or sourced asset task
 - `STRUCTARA_BRAND_DECISIONS.md`
 - the active route in `PAGE_MANIFEST.yml`
 - the relevant masterplan section
@@ -42,6 +44,18 @@ Before UI, UX, copy, motion, or 3D work, read:
 - React Three Fiber for production 3D with a static fallback
 - PDF.js and virtualized document surfaces where applicable
 - Source-linked fixtures; no fabricated proof
+
+## Asset routing
+
+- Classify every asset T0–T4 before production.
+- Source order is actual product/public proof, code/SVG, custom 3D, image
+  generation, then licensed external media.
+- Never use image generation for product evidence, benchmarks, customers,
+  security claims, certifications, or logos.
+- Search/downloaded assets require source, creator, license, commercial-use
+  evidence, SHA-256, and an allowed-use scope before repository intake.
+- Store generated masters and provenance; web exports are derivatives.
+- Validate assets in the actual route at 1920, 1440, 1024, and 390 widths.
 
 ## Required evidence
 

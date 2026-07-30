@@ -1,0 +1,64 @@
+{
+  "project": "Public Filing Knowledge Demo",
+  "label": "Synthetic Demo",
+  "viewport": "1280x720",
+  "disclosure": "Sequence condensed for demonstration",
+  "loops": [
+    {
+      "id": "M01-upload-preflight",
+      "route": "/onboarding",
+      "file": "STR-PRODUCT-T0-M01-UPLOAD-PREFLIGHT-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M02-semantic-block-detection",
+      "route": "/documents/annual-report-2025/processing",
+      "file": "STR-PRODUCT-T0-M02-SEMANTIC-BLOCK-DETECTION-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M03-table-reconstruction",
+      "route": "/documents/annual-report-2025/review",
+      "file": "STR-PRODUCT-T0-M03-TABLE-RECONSTRUCTION-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M04-markdown-source-proof",
+      "route": "/documents/annual-report-2025/markdown",
+      "file": "STR-PRODUCT-T0-M04-MARKDOWN-SOURCE-PROOF-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M05-numeric-review",
+      "route": "/documents/annual-report-2025/review",
+      "file": "STR-PRODUCT-T0-M05-NUMERIC-REVIEW-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M06-notes-local-graph",
+      "route": "/app/projects/public-filing/knowledge",
+      "file": "STR-PRODUCT-T0-M06-NOTES-LOCAL-GRAPH-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M07-relation-evidence",
+      "route": "/app/projects/public-filing/graph",
+      "file": "STR-PRODUCT-T0-M07-RELATION-EVIDENCE-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "M08-export-package",
+      "route": "/app/exports",
+      "file": "STR-PRODUCT-T0-M08-EXPORT-PACKAGE-EN-1280x720-v01.webm",
+      "truthClass": "T0",
+      "disclosure": "Sequence condensed for demonstration"
+    }
+  ]
+}

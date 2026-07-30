@@ -43,3 +43,13 @@ measured embed performance earns an exception.
 Result: no Spline runtime or asset is shipped. The production hero is a
 first-party React Three Fiber scene with server-rendered poster continuity,
 reduced-motion handling, and WebGL failure recovery.
+
+## Asset System v2.1
+
+Take: actual product/public proof first, deterministic SVG/HTML second,
+first-party 3D third, generated editorial only as a controlled optional layer.
+Do not take: stock imagery, generated dashboards, decorative paper stills, or
+external assets without a concrete missing page question.
+
+Applied to: T0 Product route captures, T1 architecture diagrams, T2 hero,
+18-glyph family, six patterns, eight textures, and the asset registry.

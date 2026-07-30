@@ -1,0 +1,36 @@
+id: STR-HOME-T2-HERO-001
+title: Source to Knowledge
+source_master: apps/web/src/components/structara-webgl-scene.tsx
+runtime: react-three-fiber
+truth_class: T2
+camera:
+  equivalent_mm: 58
+  field_of_view: 37
+  perspective_degrees: 9
+lighting:
+  key: large_soft_neutral
+  rim: subtle_cool_evidence
+materials:
+  paper: warm_matte
+  ink: near_black
+  structure: neutral_grid
+  evidence: controlled_cyan
+states:
+  - quiet_source
+  - semantic_detection
+  - block_separation
+  - proof_link
+  - knowledge_formation
+  - resolved_intelligence
+objects:
+  source_pages: 3
+  semantic_blocks: 4
+  evidence_frames: 1
+  knowledge_nodes: 12
+  relation_edges: 16
+fallbacks:
+  javascript_disabled: server_css_poster
+  webgl_unavailable: server_css_poster
+  save_data: server_css_poster
+  reduced_motion: server_css_poster
+  mobile: server_css_poster

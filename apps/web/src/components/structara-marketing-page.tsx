@@ -1,18 +1,57 @@
-import {
-  ArrowRight,
-  CheckCircle,
-  FileText,
-  Graph,
-  LinkSimple,
-  SquaresFour,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CheckCircle } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
+import {
+  StructaraGlyph,
+  type StructaraGlyphName,
+} from "@/components/structara-glyph";
+import { StructaraDiagram } from "@/components/structara-diagram";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
 import type { StructaraPage } from "@/lib/structara-content";
+import {
+  ROUTE_DIAGRAMS,
+  type StructaraDiagramId,
+} from "@/lib/structara-diagrams";
 
-const glyphs = [FileText, SquaresFour, LinkSimple, Graph] as const;
+const glyphs: StructaraGlyphName[] = ["page", "block", "evidence", "node"];
+
+const productEvidence: Record<
+  string,
+  { src: string; label: string; alt: string }
+> = {
+  "/product": {
+    src: "/product/workspace-home.webp",
+    label: "Actual product · deterministic demo workspace",
+    alt: "Structara workspace with active jobs, review items, knowledge notes, and source coverage.",
+  },
+  "/product/convert": {
+    src: "/product/processing.webp",
+    label: "Actual product · processing workspace",
+    alt: "Structara processing workspace linking source pages to structured output.",
+  },
+  "/product/verify": {
+    src: "/product/review.webp",
+    label: "Actual product · review workspace",
+    alt: "Structara review workspace showing source-linked numeric and table review.",
+  },
+  "/product/knowledge": {
+    src: "/product/knowledge.webp",
+    label: "Actual product · knowledge workspace",
+    alt: "Structara knowledge workspace with notes, entities, and source coverage.",
+  },
+  "/product/graph": {
+    src: "/product/graph.webp",
+    label: "Actual product · local graph workspace",
+    alt: "Structara local knowledge graph with a restrained evidence-focused layout.",
+  },
+  "/product/connect": {
+    src: "/product/exports.webp",
+    label: "Actual product · export center",
+    alt: "Structara export center with portable knowledge packages and verified status.",
+  },
+};
 
 export function StructaraMarketingPage({
   definition,
@@ -45,7 +84,14 @@ export function StructaraMarketingPage({
               )}
             </div>
           </div>
-          <PageThesis definition={definition} />
+          {productEvidence[definition.path] ? (
+            <ProductEvidence
+              evidence={productEvidence[definition.path]!}
+              path={definition.path}
+            />
+          ) : (
+            <PageThesis definition={definition} />
+          )}
         </section>
 
         <section className="st-thesis">
@@ -53,13 +99,19 @@ export function StructaraMarketingPage({
           <span>Source-linked by design</span>
         </section>
 
+        {ROUTE_DIAGRAMS[definition.path] && (
+          <StructaraDiagram
+            id={ROUTE_DIAGRAMS[definition.path] as StructaraDiagramId}
+          />
+        )}
+
         <section className="st-page-sections">
           {definition.sections.map((section, index) => {
-            const Icon = glyphs[index % glyphs.length]!;
+            const glyph = glyphs[index % glyphs.length]!;
             return (
               <article key={section.title}>
                 <div className="st-section-index">
-                  <Icon size={18} aria-hidden="true" />
+                  <StructaraGlyph name={glyph} size={18} />
                   <span>{String(index + 1).padStart(2, "0")}</span>
                 </div>
                 <div>
@@ -95,6 +147,33 @@ export function StructaraMarketingPage({
   );
 }
 
+function ProductEvidence({
+  evidence,
+  path,
+}: {
+  evidence: (typeof productEvidence)[string];
+  path: string;
+}) {
+  return (
+    <figure className="st-page-product-evidence">
+      <div>
+        <Image
+          src={evidence.src}
+          alt={evidence.alt}
+          width={1440}
+          height={900}
+          sizes="(max-width: 960px) 92vw, 52vw"
+          priority={path === "/product"}
+        />
+      </div>
+      <figcaption>
+        <span>{evidence.label}</span>
+        <strong>Public Filing Knowledge Demo</strong>
+      </figcaption>
+    </figure>
+  );
+}
+
 function PageThesis({ definition }: { definition: StructaraPage }) {
   const labels =
     definition.family === "demo"
@@ -121,7 +200,11 @@ function PageThesis({ definition }: { definition: StructaraPage }) {
           <i />
         </div>
       </div>
-      <small>Public sample · evidence preserved</small>
+      <small>
+        {definition.family === "demo"
+          ? "Public sample · evidence preserved"
+          : "Illustrative workflow · deterministic model"}
+      </small>
     </div>
   );
 }

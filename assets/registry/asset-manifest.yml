@@ -1,0 +1,205 @@
+version: 1
+reviewed_at: 2026-07-30
+assets:
+  - id: STR-HOME-T2-HERO-001
+    title: Source to Knowledge Hero
+    truth_class: T2
+    status: implemented
+    owner: creative_direction
+    source_type: code-r3f
+    master_path: apps/web/src/components/structara-webgl-scene.tsx
+    derivatives:
+      - path: apps/web/src/components/structara-hero.tsx
+        sha256: "b182192f50247c83d5891d9e47a9f6a4239e1e289a7db94a493331a0c91b07d2"
+    license:
+      name: first-party
+      evidence_path: assets/registry/source-evidence/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [homepage]
+      prohibited: [benchmark-proof, product-evidence]
+    alt_text_en: "Illustrative document pages become structured blocks and a small connected knowledge graph."
+    alt_text_ko: "문서 페이지가 구조 블록과 작은 연결 지식 그래프로 변하는 상징적 장면"
+
+  - id: STR-HOME-T1-PROOF-001
+    title: DART Source Link Proof
+    truth_class: T1
+    status: implemented
+    owner: product_truth
+    source_type: deterministic-fixture
+    master_path: apps/web/src/components/structara-proof-demo.tsx
+    derivatives:
+      - path: apps/web/src/lib/demo-data.ts
+        sha256: "7f80784d00f1cb2067530e96e1df166d1f35e9f6e1d439bf2ec2551464494b5d"
+    license:
+      name: first-party-fixture
+      evidence_path: assets/registry/source-evidence/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [homepage, demo-dart]
+      prohibited: [unlabeled-real-world-claim]
+    alt_text_en: "A labeled sample table cell links to the exact source page, block, and cell."
+    alt_text_ko: "샘플 표 셀이 정확한 원문 페이지·블록·셀로 연결되는 화면"
+
+  - id: STR-PRODUCT-T0-SCREEN-001
+    title: Canonical Product Workspace
+    truth_class: T0
+    status: implemented
+    owner: product_truth
+    source_type: actual-product
+    master_path: apps/web/src/components/structara-app-page.tsx
+    derivatives:
+      - path: apps/web/e2e/workspace.spec.ts
+        sha256: "83e732d73cf1f3782e9a3c9131a893ea9afbb872d9a67dfbefbf3084f8c351a5"
+    license:
+      name: first-party
+      evidence_path: assets/registry/source-evidence/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [product-marketing, documentation, sales]
+      prohibited: [customer-claim]
+    alt_text_en: "The Structara sample workspace showing active processing, review, knowledge, and source coverage."
+    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 Structara 샘플 워크스페이스"
+
+  - id: STR-BRAND-T2-GLYPHS-001
+    title: Structural Glyph Family
+    truth_class: T2
+    status: implemented
+    owner: creative_direction
+    source_type: first-party-svg
+    master_path: apps/web/public/brand/structara-glyphs.svg
+    derivatives:
+      - path: apps/web/src/components/structara-glyph.tsx
+        sha256: "f483488b419d75c12a00d19ac86768e493fa176e97b43148ca155b7f6ca778ba"
+    license:
+      name: first-party
+      evidence_path: assets/brand/glyphs/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [marketing, product-education, diagrams]
+      prohibited: [functional-navigation-replacement]
+    alt_text_en: ""
+    alt_text_ko: ""
+
+  - id: STR-BRAND-T2-PATTERNS-001
+    title: Structural Pattern Family
+    truth_class: T2
+    status: implemented
+    owner: creative_direction
+    source_type: first-party-svg
+    master_path: apps/web/src/components/structara-pattern.tsx
+    derivatives:
+      - path: assets/brand/patterns/README.md
+        sha256: "e1a6e3fe30536db2720fc48500a75088d01a60c0bc3f88167e0f8360ce50359e"
+    license:
+      name: first-party
+      evidence_path: assets/brand/patterns/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [marketing-background, editorial-layout]
+      prohibited: [product-evidence]
+    alt_text_en: ""
+    alt_text_ko: ""
+
+  - id: STR-BRAND-T2-TEXTURES-001
+    title: Material Texture Family
+    truth_class: T2
+    status: implemented
+    owner: creative_direction
+    source_type: first-party-css
+    master_path: apps/web/src/app/structara.css
+    derivatives:
+      - path: assets/brand/textures/README.md
+        sha256: "95504651553b3b2581bd436809f8c3d02a16a9244c399554fe631c6a37c930b3"
+    license:
+      name: first-party
+      evidence_path: assets/brand/textures/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [marketing-background, dark-chapter]
+      prohibited: [data-encoding]
+    alt_text_en: ""
+    alt_text_ko: ""
+
+  - id: STR-SYSTEM-T1-DIAGRAMS-001
+    title: Architecture Diagram System
+    truth_class: T1
+    status: implemented
+    owner: product_truth
+    source_type: deterministic-svg-html
+    master_path: apps/web/src/lib/structara-diagrams.ts
+    derivatives:
+      - path: apps/web/src/components/structara-diagram.tsx
+        sha256: "3a036578fdd56547ac693b87c243dbfe5ec7b525e4c75853e6ba150f4f824b36"
+    license:
+      name: first-party
+      evidence_path: assets/registry/source-evidence/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [product-marketing, security, demo, documentation]
+      prohibited: [measured-benchmark-claim]
+    alt_text_en: "A four-step system diagram with an ordered text equivalent."
+    alt_text_ko: "순서화된 텍스트 대안이 있는 4단계 시스템 다이어그램"
+
+  - id: STR-PRODUCT-T0-CAPTURE-PACK-001
+    title: Canonical Product Capture Pack
+    truth_class: T0
+    status: implemented
+    owner: product_truth
+    source_type: actual-browser-capture
+    master_path: assets/product/screenshots/en/1440x900/capture-manifest.json
+    derivatives:
+      - path: assets/product/screenshots/en/1440x900/hashes.sha256
+        sha256: "069e07f5fc4071763f57305ee19a8c43b868ccb9c5b06cb383cb97351b717ba5"
+      - path: assets/product/screenshots/en/390x844/hashes.sha256
+        sha256: "af8a141551d2281fa059bdfe67ba41f31057ac842251741566d75d47399de5e5"
+      - path: apps/web/public/product/workspace-home.webp
+        sha256: "518b07d1cf3954db3f041aaf4fc61e6c96ccb5c0b0490f35bd67451de49311aa"
+      - path: apps/web/public/product/processing.webp
+        sha256: "6883d244ed93fac34462da952f5eb4b0f6954ad612ac7f871c4cfb744369e29e"
+      - path: apps/web/public/product/review.webp
+        sha256: "370f1dead2377d99416d8e363a8fc77f5fa35d261c3005369b1fa92c7d4806e2"
+      - path: apps/web/public/product/knowledge.webp
+        sha256: "5152a5d59f4ed0d28e8bc9f0f3a17f0f79ec220724ac1ded4407c68a7973fb1f"
+      - path: apps/web/public/product/graph.webp
+        sha256: "09111d6b3186c48796755528158633fd7c87c0bd2e87d6534276254e080a5773"
+      - path: apps/web/public/product/exports.webp
+        sha256: "5f7abde9c944a541b4e46f76a8cb94642ad9e3bf92c43bd7915e0129f1c02650"
+    license:
+      name: first-party
+      evidence_path: assets/product/screenshots/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [product-marketing, documentation, owner-approved-sales]
+      prohibited: [customer-claim, fabricated-live-state]
+    alt_text_en: "Canonical Structara product views captured from the deterministic public demo workspace."
+    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 Structara 제품 화면"
+
+  - id: STR-PRODUCT-T0-MOTION-PACK-001
+    title: Canonical Product Motion Pack
+    truth_class: T0
+    status: implemented
+    owner: product_truth
+    source_type: actual-browser-recording
+    master_path: assets/product/recordings/capture-manifest.json
+    derivatives:
+      - path: assets/product/recordings/hashes.sha256
+        sha256: "65d5a3ca1b9daaa10842afb7bbce901d6ee5d7d45f9ba92b6884d81f7442d347"
+    license:
+      name: first-party
+      evidence_path: assets/product/recordings/README.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [product-marketing, documentation, owner-approved-sales]
+      prohibited: [latency-claim, customer-claim]
+    alt_text_en: "Eight condensed product demonstrations recorded from the deterministic Structara demo workspace."
+    alt_text_ko: "결정론적 Structara 데모 워크스페이스에서 녹화한 8개 압축 제품 시연"

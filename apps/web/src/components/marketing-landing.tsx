@@ -5,13 +5,14 @@ import {
   Graph,
   LinkSimple,
   LockKey,
-  ShieldCheck,
   SquaresFour,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
+import { StructaraGlyph } from "@/components/structara-glyph";
 import { StructaraHeroScene } from "@/components/structara-hero";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
+import { StructaraPattern } from "@/components/structara-pattern";
 import { StructaraProofDemo } from "@/components/structara-proof-demo";
 
 const chapters = [
@@ -83,6 +84,10 @@ export function MarketingLanding() {
         </section>
 
         <section className="st-problem">
+          <StructaraPattern
+            name="coordinate-field"
+            className="st-section-pattern st-problem-pattern"
+          />
           <div>
             <h2>
               Powerful models.
@@ -310,7 +315,7 @@ export function MarketingLanding() {
         </section>
 
         <section className="st-manifesto">
-          <ShieldCheck size={24} aria-hidden="true" />
+          <StructaraGlyph name="verified" size={24} />
           <p>AI does not need more information. It needs better knowledge.</p>
           <div>
             <span>Knowledge has structure.</span>
@@ -343,8 +348,18 @@ export function MarketingLanding() {
 }
 
 function ChapterVisual({ index }: { index: string }) {
+  const glyph =
+    index === "01"
+      ? "block"
+      : index === "02"
+        ? "evidence"
+        : index === "03"
+          ? "node"
+          : "package";
+
   return (
     <div className={`st-chapter-visual st-chapter-${index}`} aria-hidden="true">
+      <StructaraGlyph name={glyph} size={26} />
       <div className="st-visual-page">
         <i />
         <i />

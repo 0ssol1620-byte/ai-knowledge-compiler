@@ -59,6 +59,14 @@ The machine-readable Lighthouse report is
 
 - The homepage renders the server poster before WebGL hydration; no blank hero
   frame remains.
+- The T2 hero resolves from source pages through semantic blocks and evidence
+  links into 12 restrained knowledge nodes, then stops in a stable composition.
+- Product Overview and five product detail routes use T0 browser captures from
+  the actual deterministic workspace rather than generated UI.
+- Twelve deterministic architecture diagrams use the same first-party glyph,
+  coordinate grid, and evidence-line language with ordered text equivalents.
+- Eighteen desktop and five mobile product captures plus eight condensed product
+  loops are registered and hashed.
 - The 11-section homepage reads as one editorial narrative rather than stacked
   template cards.
 - Public and product shells share the same brand and provide explicit
@@ -71,6 +79,7 @@ The machine-readable Lighthouse report is
   information hierarchy without nested application shells.
 - No `transition: all`, layout-property animation, scale-from-zero interaction,
   or unbounded decorative motion is present in the Structara system.
+- No external or AI-generated production raster asset remains.
 
 ## Accepted release notes
 
