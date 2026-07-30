@@ -10,7 +10,6 @@ test("real API journey preserves provenance through export", async ({
   const filename = "e2e-source.txt";
 
   await page.goto("/login?mode=register");
-  await page.getByLabel("Workspace name").fill(`E2E Workspace ${unique}`);
   await page.getByLabel("Display name").fill("Live E2E Owner");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("Correct-Horse-Battery-Staple-2026!");
