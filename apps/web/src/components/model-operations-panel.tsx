@@ -70,10 +70,10 @@ export function ModelOperationsPanel() {
     <section className="panel model-operations-panel">
       <div className="panel-heading">
         <div>
-          <h2>모델 수명주기</h2>
+          <h2>Model lifecycle</h2>
           <p>
-            승인 증거와 세대 잠금을 확인한 뒤 Champion, 즉시 롤백 대상, 폐기
-            상태를 원자적으로 변경합니다.
+            Verify approval evidence and generation locks before atomically
+            changing Champion, rollback fallback, or deprecated status.
           </p>
         </div>
         <span className="governance-seal">
@@ -85,24 +85,24 @@ export function ModelOperationsPanel() {
       {models.isPending ? (
         <div className="honest-state compact" aria-busy="true">
           <span className="spinner" aria-hidden="true" />
-          <p>레지스트리 상태를 확인하고 있습니다.</p>
+          <p>Loading registry status.</p>
         </div>
       ) : models.isError ? (
         <div className="honest-state compact" role="alert">
           <Warning size={20} aria-hidden="true" />
-          <p>모델 레지스트리를 불러오지 못했습니다.</p>
+          <p>The model registry could not be loaded.</p>
           <button
             className="secondary-button compact"
             type="button"
             onClick={() => void models.refetch()}
           >
-            다시 시도
+            Try again
           </button>
         </div>
       ) : models.data.length === 0 ? (
         <div className="honest-state compact">
           <Cube size={20} aria-hidden="true" />
-          <p>등록된 모델 레시피가 없습니다.</p>
+          <p>No model recipes are registered.</p>
         </div>
       ) : (
         <div className="model-registry-list">
@@ -241,21 +241,21 @@ function ModelActionDialog({
   const [recipeSha, setRecipeSha] = useState(value.model.recipe_sha256 ?? "");
   const copy = {
     promote: {
-      title: "모델을 승격하시겠습니까?",
+      title: "Promote this model?",
       description:
-        "현재 Champion은 즉시 롤백 가능한 Fallback으로 보존되며, 변경은 감사 로그에 남습니다.",
+        "The current Champion will be retained as an immediate rollback fallback, and the change will be recorded in the audit log.",
       submit: "Promote model",
     },
     rollback: {
-      title: "직전 Champion으로 롤백하시겠습니까?",
+      title: "Roll back to the previous Champion?",
       description:
-        "현재 Champion과 검증된 직전 Fallback을 한 트랜잭션에서 교체합니다.",
+        "The current Champion and verified previous fallback will be exchanged in a single transaction.",
       submit: "Roll back model",
     },
     retire: {
-      title: "모델을 폐기 상태로 전환하시겠습니까?",
+      title: "Deprecate this model?",
       description:
-        "활성 Champion 또는 Champion의 유일한 롤백 대상은 폐기할 수 없습니다.",
+        "An active Champion or its only rollback target cannot be deprecated.",
       submit: "Retire model",
     },
   }[value.action];
@@ -289,7 +289,7 @@ function ModelActionDialog({
             type="button"
             disabled={pending}
             onClick={onClose}
-            aria-label="모델 작업 닫기"
+            aria-label="Close model action"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -338,7 +338,7 @@ function ModelActionDialog({
             rows={4}
             value={reason}
             onChange={(event) => setReason(event.currentTarget.value)}
-            placeholder="승인 근거와 변경 이유를 기록하세요."
+            placeholder="Record the approval evidence and reason for this change."
             disabled={pending}
           />
         </label>

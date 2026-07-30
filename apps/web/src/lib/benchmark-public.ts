@@ -43,20 +43,20 @@ export interface PublicBenchmarkSnapshot {
 export const publicBenchmarkSnapshot = snapshot as PublicBenchmarkSnapshot;
 
 export function formatBenchmarkPercent(value: number | null): string {
-  if (value === null) return "측정 전";
-  return new Intl.NumberFormat("ko-KR", {
+  if (value === null) return "Not measured";
+  return new Intl.NumberFormat("en-US", {
     style: "percent",
     maximumFractionDigits: 1,
   }).format(value);
 }
 
 export function formatBenchmarkLatency(value: number | null): string {
-  if (value === null) return "측정 전";
-  return `${new Intl.NumberFormat("ko-KR").format(Math.round(value))} ms`;
+  if (value === null) return "Not measured";
+  return `${new Intl.NumberFormat("en-US").format(Math.round(value))} ms`;
 }
 
 export function formatBenchmarkCost(value: number | null): string {
-  if (value === null) return "측정 전";
+  if (value === null) return "Not measured";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

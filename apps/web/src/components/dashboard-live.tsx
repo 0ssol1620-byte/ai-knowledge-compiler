@@ -22,10 +22,7 @@ export function DashboardLive() {
           <span className="dashboard-loading-line wide" />
           <span className="dashboard-loading-line" />
         </div>
-        <div
-          className="dashboard-loading-grid"
-          aria-label="대시보드 불러오는 중"
-        >
+        <div className="dashboard-loading-grid" aria-label="Loading dashboard">
           <span />
           <span />
           <span />
@@ -41,10 +38,10 @@ export function DashboardLive() {
         <section className="dashboard-error" role="alert">
           <WarningCircle size={22} weight="fill" aria-hidden="true" />
           <div>
-            <h1>워크스페이스를 불러오지 못했습니다.</h1>
+            <h1>The workspace could not be loaded.</h1>
             <p>
-              표시할 수 없는 수치를 추정하지 않습니다. 연결을 확인한 뒤 다시
-              시도하세요.
+              We do not estimate unavailable metrics. Check the connection and
+              try again.
             </p>
             <small>{dashboard.error.message}</small>
           </div>
@@ -55,7 +52,7 @@ export function DashboardLive() {
               void dashboard.refetch();
             }}
           >
-            다시 시도
+            Try again
           </button>
         </section>
       </div>

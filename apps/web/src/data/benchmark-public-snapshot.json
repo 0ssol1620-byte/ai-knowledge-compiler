@@ -10,7 +10,7 @@
   "datasets": [
     {
       "id": "ko-dart",
-      "label": "한국어 DART 사업보고서",
+      "label": "Korean DART annual report",
       "source": "OpenDART",
       "status": "source_adapter_ready",
       "document_count": null,
@@ -26,7 +26,7 @@
     },
     {
       "id": "en-sec",
-      "label": "영문 SEC 보고서",
+      "label": "English SEC filing",
       "source": "SEC EDGAR",
       "status": "evidence_required",
       "document_count": null,
@@ -42,8 +42,8 @@
     },
     {
       "id": "ko-scan",
-      "label": "한국어 스캔 문서",
-      "source": "권리 확인 코퍼스",
+      "label": "Korean scanned document",
+      "source": "Rights-cleared corpus",
       "status": "evidence_required",
       "document_count": null,
       "page_count": null,
@@ -58,8 +58,8 @@
     },
     {
       "id": "lecture-deck",
-      "label": "강의 슬라이드",
-      "source": "권리 확인 코퍼스",
+      "label": "Course slides",
+      "source": "Rights-cleared corpus",
       "status": "evidence_required",
       "document_count": null,
       "page_count": null,

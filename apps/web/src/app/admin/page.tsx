@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import { AdminLive } from "@/components/admin-live";
 
 export const metadata: Metadata = {
-  title: "운영 콘솔",
+  title: "Operations console",
 };
 
 export default function AdminPage() {
@@ -23,10 +23,10 @@ export default function AdminPage() {
 function DemoAdminPage() {
   return (
     <div className="simple-page admin-page">
-      <h1>운영 콘솔</h1>
+      <h1>Operations console</h1>
       <p>
-        재시도, DLQ, 삭제 실패와 provider 상태를 content 없이 안전한 ID로
-        관리합니다.
+        Manage retries, DLQ entries, deletion failures, and provider status with
+        safe identifiers—never document content.
       </p>
       <section className="admin-health-grid">
         <article>
@@ -53,9 +53,10 @@ function DemoAdminPage() {
       <section className="panel admin-table-panel">
         <div className="panel-heading">
           <div>
-            <h2>작업 개입 필요</h2>
+            <h2>Jobs requiring intervention</h2>
             <p>
-              content, filename, email은 이 화면과 로그에 표시하지 않습니다.
+              Content, filenames, and email addresses never appear in this view
+              or its logs.
             </p>
           </div>
         </div>

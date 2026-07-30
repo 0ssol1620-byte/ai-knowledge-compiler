@@ -11,7 +11,7 @@ export async function generateMetadata({
 }: LoginPageProps): Promise<Metadata> {
   const params = await searchParams;
   return {
-    title: first(params.mode) === "register" ? "워크스페이스 만들기" : "로그인",
+    title: first(params.mode) === "register" ? "Create a workspace" : "Sign in",
   };
 }
 

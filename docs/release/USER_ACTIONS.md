@@ -23,10 +23,15 @@ secret references, resource IDs, and approved public URLs.
 
 ## Actions needed for native design and UX-research evidence
 
-1. Finish connecting the Figma plugin and select the destination team/project
+1. Create or remix the product-owned landing hero in Spline, export its public
+   `scene.splinecode` URL, and set `NEXT_PUBLIC_AKC_SPLINE_SCENE_URL`. The
+   official runtime, loading behavior, reduced-motion fallback, CSP, and
+   responsive container are already implemented; see
+   `docs/SPLINE_SCENE_HANDOFF.md`.
+2. Finish connecting the Figma plugin and select the destination team/project
    if a native Figma file is required. The repository already freezes the
    variable, component-variant, naming, and handoff contract.
-2. Recruit and consent the participants defined in UI masterplan chapter 32,
+3. Recruit and consent the participants defined in UI masterplan chapter 32,
    then provide the research workspace or approved findings IDs. Local
    prototypes and test scripts cannot substitute for participant evidence.
 

@@ -143,10 +143,10 @@ export function ProcessingWorkspaceLive() {
   return (
     <div className="processing-empty">
       <FileText size={30} weight="duotone" aria-hidden="true" />
-      <h1>선택한 처리 작업이 없습니다.</h1>
-      <p>프로젝트에서 문서를 선택하거나 새 자료를 업로드하세요.</p>
+      <h1>No processing job selected</h1>
+      <p>Select a document from a project or upload new material.</p>
       <Link href="/" className="primary-button">
-        프로젝트로 돌아가기
+        Return to projects
       </Link>
     </div>
   );
@@ -179,14 +179,14 @@ function EstimateView({ documentId }: { documentId: string }) {
     return (
       <WorkspaceState
         busy
-        message="보안 검사와 preflight 견적을 확인하고 있습니다."
+        message="Checking security results and the preflight estimate."
       />
     );
   }
   if (estimate.isError) {
     return (
       <WorkspaceState
-        message={`견적을 불러오지 못했습니다: ${estimate.error.message}`}
+        message={`The estimate could not be loaded: ${estimate.error.message}`}
         retry={() => {
           void estimate.refetch();
         }}
@@ -206,10 +206,12 @@ function EstimateView({ documentId }: { documentId: string }) {
             <Gauge size={22} weight="duotone" aria-hidden="true" />
           </span>
           <div>
-            <h1 id="estimate-live-title">처리 전 견적을 확인하세요</h1>
+            <h1 id="estimate-live-title">
+              Review the estimate before processing
+            </h1>
             <p>
-              실제 보안 검사와 preflight 결과이며 승인 전에는 크레딧을 사용하지
-              않습니다.
+              These are live security and preflight results. No credits are used
+              before approval.
             </p>
           </div>
         </div>
@@ -221,8 +223,8 @@ function EstimateView({ documentId }: { documentId: string }) {
             onChange={(event) => setConsented(event.currentTarget.checked)}
           />
           <span>
-            최대 {value.credit_max} credits 예약과 실패 페이지 자동 반환 정책을
-            확인했습니다.
+            I reviewed the {value.credit_max}-credit maximum reservation and the
+            automatic return policy for failed pages.
           </span>
         </label>
         {startError && (
@@ -232,7 +234,7 @@ function EstimateView({ documentId }: { documentId: string }) {
         )}
         <div className="modal-actions">
           <Link href="/" className="secondary-button">
-            취소
+            Cancel
           </Link>
           <button
             type="button"
@@ -260,14 +262,14 @@ function EstimateView({ documentId }: { documentId: string }) {
                   setStartError(
                     reason instanceof Error
                       ? reason.message
-                      : "처리 작업을 시작하지 못했습니다.",
+                      : "The processing job could not be started.",
                   );
                 })
                 .finally(() => setStarting(false));
             }}
           >
             <Check size={16} weight="bold" aria-hidden="true" />
-            {starting ? "예약·시작 중" : "처리 시작"}
+            {starting ? "Reserving and starting…" : "Start processing"}
           </button>
         </div>
       </section>
@@ -280,14 +282,14 @@ function EstimateFacts({ estimate }: { estimate: PreflightEstimate }) {
     <>
       <div className="estimate-page-grid">
         <EstimateFact
-          label="전체"
+          label="Total"
           value={estimate.total_pages}
           detail="pages"
         />
         <EstimateFact
           label="Native text"
           value={estimate.native_pages}
-          detail="낮은 비용 경로"
+          detail="Lower-cost route"
         />
         <EstimateFact
           label="Visual parsing"
@@ -295,44 +297,45 @@ function EstimateFacts({ estimate }: { estimate: PreflightEstimate }) {
           detail="OCR·layout"
         />
         <EstimateFact
-          label="Precision 후보"
+          label="Precision candidates"
           value={estimate.precision_candidate_pages}
-          detail="선택적 교차 검증"
+          detail="Selective cross-checking"
         />
       </div>
       <div className="estimate-details">
         <div>
-          <span>검출된 구조</span>
+          <span>Detected structure</span>
           <strong>
-            표 {estimate.tables} · 수식 {estimate.formulas} · 그림{" "}
+            Tables {estimate.tables} · formulas {estimate.formulas} · figures{" "}
             {estimate.figures}
           </strong>
         </div>
         <div>
-          <span>예상 시간</span>
+          <span>Estimated time</span>
           <strong>
-            {estimate.expected_duration_min}–{estimate.expected_duration_max}분
+            {estimate.expected_duration_min}–{estimate.expected_duration_max}{" "}
+            min
           </strong>
         </div>
         <div>
-          <span>외부 모델 API</span>
+          <span>External model APIs</span>
           <strong
             className={
               estimate.third_party_model_api ? "warning-value" : "safe-value"
             }
           >
-            {estimate.third_party_model_api ? "동의 필요" : "사용 안 함"}
+            {estimate.third_party_model_api ? "Consent required" : "Not used"}
           </strong>
         </div>
       </div>
       <div className="estimate-credit">
         <div>
-          <span>예상 크레딧</span>
+          <span>Estimated credits</span>
           <strong>
             {estimate.credit_min}–{estimate.credit_max}
           </strong>
         </div>
-        <p>사용하지 않은 예약분은 원장 트랜잭션으로 반환됩니다.</p>
+        <p>Unused reservations are returned through a ledger transaction.</p>
       </div>
     </>
   );
@@ -498,17 +501,12 @@ function LiveJobView({ jobId }: { jobId: string }) {
   ]);
 
   if (snapshot.isPending) {
-    return (
-      <WorkspaceState
-        busy
-        message="저장된 작업 snapshot을 불러오고 있습니다."
-      />
-    );
+    return <WorkspaceState busy message="Loading the stored job snapshot." />;
   }
   if (snapshot.isError) {
     return (
       <WorkspaceState
-        message={`처리 작업을 불러오지 못했습니다: ${snapshot.error.message}`}
+        message={`The processing job could not be loaded: ${snapshot.error.message}`}
         retry={() => {
           void snapshot.refetch();
         }}
@@ -609,7 +607,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
           <Link
             href="/"
             className="icon-button back-button"
-            aria-label="프로젝트로 돌아가기"
+            aria-label="Return to projects"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -659,7 +657,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
               "live-badge",
               connection !== "live" && "reconnecting",
             )}
-            aria-label={`실시간 연결: ${connection}`}
+            aria-label={`Live connection: ${connection}`}
           >
             {connection === "live" ? (
               <WifiHigh size={14} weight="fill" aria-hidden="true" />
@@ -693,7 +691,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
         </div>
       </header>
 
-      <section className="pipeline-bar" aria-label="처리 진행 상황">
+      <section className="pipeline-bar" aria-label="Processing progress">
         <div className="pipeline-summary">
           <div
             className="overall-progress-ring"
@@ -748,7 +746,10 @@ function LiveJobView({ jobId }: { jobId: string }) {
         </div>
       </section>
 
-      <nav className="mobile-workspace-tabs" aria-label="모바일 처리 작업 보기">
+      <nav
+        className="mobile-workspace-tabs"
+        aria-label="Mobile processing views"
+      >
         {(
           [
             ["progress", "Progress"],
@@ -843,7 +844,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
         </div>
       ) : (
         <div className="honest-state">
-          <p>페이지 snapshot이 아직 생성되지 않았습니다.</p>
+          <p>A page snapshot has not been generated yet.</p>
         </div>
       )}
 
@@ -928,7 +929,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
         onReprocess={(item) => {
           if (!item.page_id) {
             return Promise.reject(
-              new Error("재처리할 페이지 근거가 없습니다."),
+              new Error("No page evidence is available for reprocessing."),
             );
           }
           return apiRequest(`/v1/pages/${item.page_id}/reprocess`, {
@@ -998,7 +999,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
       {reviewOpen && (
         <button
           className="drawer-scrim"
-          aria-label="검토 창 닫기"
+          aria-label="Close review pane"
           onClick={() => setReviewOpen(false)}
         />
       )}
@@ -1113,15 +1114,17 @@ function WorkspaceState({
       ) : (
         <Warning size={24} />
       )}
-      <h1>{busy ? "처리 증거 확인 중" : "작업을 표시할 수 없습니다."}</h1>
+      <h1>
+        {busy ? "Checking processing evidence" : "The job cannot be displayed"}
+      </h1>
       <p>{message}</p>
       {retry && (
         <button type="button" className="secondary-button" onClick={retry}>
-          다시 시도
+          Try again
         </button>
       )}
       <Link href="/" className="text-link">
-        프로젝트로 돌아가기
+        Return to projects
       </Link>
     </div>
   );
@@ -1129,12 +1132,12 @@ function WorkspaceState({
 
 function jobStatusLabel(status: JobSnapshot["job"]["status"]): string {
   return {
-    created: "처리 준비 중",
-    queued: "처리 대기 중",
-    running: "지식 컴파일 진행 중",
-    completed: "처리 완료",
-    failed: "처리 실패",
-    cancelled: "처리 취소됨",
+    created: "Preparing",
+    queued: "Queued",
+    running: "Compiling knowledge",
+    completed: "Processing complete",
+    failed: "Processing failed",
+    cancelled: "Processing cancelled",
   }[status];
 }
 

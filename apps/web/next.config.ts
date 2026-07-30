@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
@@ -13,6 +14,18 @@ const nextConfig: NextConfig = {
   },
   webpack(config, { dev }) {
     if (!dev) config.cache = false;
+    // react-spline 4.1 publishes ESM-only `import` conditions. Next's
+    // webpack resolver on Windows does not currently select that condition
+    // for a client-only dynamic import, so point the exact public subpath at
+    // the package's published Next.js entry.
+    config.resolve.alias["@splinetool/react-spline/next$"] = path.join(
+      process.cwd(),
+      "node_modules",
+      "@splinetool",
+      "react-spline",
+      "dist",
+      "react-spline-next.js",
+    );
     return config;
   },
   // CI runs `tsc --noEmit` as a separate strict gate. The Next.js Windows

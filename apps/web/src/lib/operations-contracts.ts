@@ -52,7 +52,7 @@ export interface SettingsSnapshot {
 
 export function normalizeSettingsResponse(payload: unknown): SettingsSnapshot {
   if (!isRecord(payload)) {
-    throw new Error("설정 응답 형식이 올바르지 않습니다.");
+    throw new Error("The settings response has an invalid format.");
   }
   const tenant = recordAt(payload, "tenant");
   const privacy = recordAt(payload, "privacy");
@@ -181,7 +181,7 @@ export function normalizeAdminHealthResponse(
   payload: unknown,
 ): AdminHealthSnapshot {
   if (!isRecord(payload)) {
-    throw new Error("운영 상태 응답 형식이 올바르지 않습니다.");
+    throw new Error("The operations response has an invalid format.");
   }
   const metrics = recordAt(payload, "metrics");
   const queue = isRecord(payload.queue)

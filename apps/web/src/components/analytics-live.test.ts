@@ -35,7 +35,7 @@ describe("analytics metric formatting", () => {
   });
 
   it("distinguishes an empty denominator from a measured zero", () => {
-    expect(formatMetric(metric())).toBe("분모 없음");
+    expect(formatMetric(metric())).toBe("No denominator");
     expect(
       formatMetric(
         metric({
@@ -58,7 +58,7 @@ describe("analytics metric formatting", () => {
         status: "available",
       }),
     );
-    expect(rendered).toBe("1.25 cr/페이지");
+    expect(rendered).toBe("1.25 cr/page");
     expect(rendered).not.toContain("₩");
   });
 });

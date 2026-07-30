@@ -72,7 +72,7 @@ export class MultipartTransferError extends Error {
 export class PdfPasswordRequiredError extends ApiError {
   constructor(readonly documentId: string) {
     super(
-      "암호화된 PDF입니다. 암호를 입력하면 격리된 분석을 이어갑니다.",
+      "This PDF is encrypted. Enter its password to continue isolated analysis.",
       422,
       "PDF_PASSWORD_REQUIRED",
       false,
@@ -103,7 +103,7 @@ export async function uploadAndAnalyze(
       const plan = initiated.multipart;
       if (!plan) {
         throw new ApiError(
-          "멀티파트 업로드 계획이 누락되었습니다.",
+          "The multipart upload plan is missing.",
           409,
           "UPLOAD_STATE_CORRUPT",
           false,
@@ -172,7 +172,7 @@ async function uploadSingleFile(
 ): Promise<void> {
   if (!initiated.upload_url) {
     throw new ApiError(
-      "단일 업로드 대상이 누락되었습니다.",
+      "The single-upload target is missing.",
       409,
       "UPLOAD_STATE_CORRUPT",
       false,
@@ -188,7 +188,7 @@ async function uploadSingleFile(
   });
   if (!uploadResponse.ok) {
     throw new ApiError(
-      `원본 업로드에 실패했습니다 (${uploadResponse.status}).`,
+      `The source upload failed (${uploadResponse.status}).`,
       uploadResponse.status,
       "UPLOAD_TRANSFER_FAILED",
       uploadResponse.status >= 500,
@@ -250,7 +250,7 @@ export async function uploadMultipartFile(input: {
         const target = targetByPart.get(partNumber);
         if (!target) {
           throw new ApiError(
-            "서명된 part 대상이 누락되었습니다.",
+            "A signed part target is missing.",
             502,
             "PART_TARGET_MISSING",
             true,
@@ -282,7 +282,7 @@ export async function uploadMultipartFile(input: {
     ordered.some((part, index) => part.part_number !== index + 1)
   ) {
     throw new MultipartTransferError(
-      "업로드된 part 목록이 완전하지 않습니다. 다시 시도하면 이어서 업로드합니다.",
+      "The uploaded part list is incomplete. Retry to resume from the last completed part.",
     );
   }
   return ordered;
@@ -311,7 +311,7 @@ async function uploadPartWithRetry(input: {
         const etag = response.headers.get("ETag");
         if (!etag) {
           throw new MultipartTransferError(
-            "스토리지 응답에서 ETag를 확인할 수 없습니다. 버킷 CORS 설정을 확인하세요.",
+            "The storage response does not include a valid ETag. Check the bucket CORS configuration.",
           );
         }
         return {
@@ -321,7 +321,7 @@ async function uploadPartWithRetry(input: {
       }
       if (!isRetryableUploadStatus(response.status)) {
         throw new ApiError(
-          `업로드 part 전송이 거부되었습니다 (${response.status}).`,
+          `The upload part was rejected (${response.status}).`,
           response.status,
           "UPLOAD_PART_REJECTED",
           false,
@@ -333,7 +333,7 @@ async function uploadPartWithRetry(input: {
         ]);
         if (!refreshedTarget) {
           throw new MultipartTransferError(
-            "part 재서명 응답이 비어 있습니다. 다시 시도하면 이어서 업로드합니다.",
+            "The part re-signing response is empty. Retry to resume the upload.",
           );
         }
         target = refreshedTarget;
@@ -343,7 +343,7 @@ async function uploadPartWithRetry(input: {
       if (error instanceof MultipartTransferError) throw error;
       if (attempt >= input.maxRetries) {
         throw new MultipartTransferError(
-          "네트워크 오류로 part 업로드가 중단되었습니다. 다시 시도하면 완료된 part 다음부터 재개합니다.",
+          "A network error interrupted the part upload. Retry to resume after the last completed part.",
         );
       }
     }
@@ -352,7 +352,7 @@ async function uploadPartWithRetry(input: {
     }
   }
   throw new MultipartTransferError(
-    "part 업로드 재시도 한도를 초과했습니다. 다시 시도하면 이어서 업로드합니다.",
+    "The part upload retry limit was exceeded. Retry to resume the upload.",
   );
 }
 
@@ -411,9 +411,7 @@ export async function browserSha256(
 export function normalizeEtag(value: string): string {
   const normalized = value.trim().replace(/^"|"$/g, "").toLowerCase();
   if (!/^[a-f0-9]{32,128}$/.test(normalized)) {
-    throw new MultipartTransferError(
-      "스토리지에서 유효하지 않은 ETag를 반환했습니다.",
-    );
+    throw new MultipartTransferError("Storage returned an invalid ETag.");
   }
   return normalized;
 }
@@ -433,7 +431,7 @@ function validateMultipartPlan(
     Math.ceil(fileSize / plan.part_size) !== plan.part_count
   ) {
     throw new ApiError(
-      "서버의 멀티파트 업로드 계획이 유효하지 않습니다.",
+      "The server returned an invalid multipart upload plan.",
       409,
       "UPLOAD_PLAN_INVALID",
       false,

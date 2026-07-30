@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 
 import { BillingManagement } from "@/components/billing-management";
 
-export const metadata: Metadata = { title: "사용량 및 결제" };
+export const metadata: Metadata = { title: "Usage & billing" };
 
 export default function UsagePage() {
   return (
     <div className="simple-page usage-page">
-      <h1>사용량과 크레딧</h1>
+      <h1>Usage and credits</h1>
       <p>
-        처리 방식별 크레딧, 저장 공간과 구매 내역을 실제 원장 기준으로
-        확인합니다.
+        Review credits by processing method, storage, and purchases against the
+        verified ledger.
       </p>
       <BillingManagement />
     </div>

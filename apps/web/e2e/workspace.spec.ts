@@ -32,12 +32,12 @@ test("HTML uses a per-request script nonce and hardened response headers", async
 test("dashboard exposes evidence-first project workflow", async ({ page }) => {
   await page.goto("/home");
   await expect(
-    page.getByRole("heading", { name: "워크스페이스" }),
+    page.getByRole("heading", { name: "Workspace overview" }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "처리 중" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "검토 필요" })).toBeVisible();
+  await expect(page.getByText("Priority queue", { exact: true })).toBeVisible();
+  await expect(page.getByText("Processing now", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("table").getByRole("columnheader", { name: "담당자" }),
+    page.getByRole("table").getByRole("columnheader", { name: "Owner" }),
   ).toBeVisible();
 });
 
@@ -49,17 +49,17 @@ test("marketing and dashboard preserve a visible round-trip", async ({
   if (isMobile) {
     await page
       .getByRole("banner")
-      .getByRole("link", { name: "무료로 시작", exact: true })
+      .getByRole("link", { name: "Start compiling", exact: true })
       .click();
   } else {
     await page
-      .getByRole("navigation", { name: "마케팅 메뉴" })
-      .getByRole("link", { name: "대시보드", exact: true })
+      .getByRole("navigation", { name: "Primary navigation" })
+      .getByRole("link", { name: "Dashboard", exact: true })
       .click();
   }
   await expect(page).toHaveURL(/\/home$/);
   await page
-    .getByRole("link", { name: "제품 사이트", exact: true })
+    .getByRole("link", { name: "Product site", exact: true })
     .first()
     .click();
   await expect(page).toHaveURL(/\/$/);
@@ -71,16 +71,16 @@ test("marketing page leads with the enterprise knowledge compiler promise", asyn
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
-      name: "모든 문서를, 검증 가능한 AI 지식으로.",
+      name: "Compile the evidence. Keep the source.",
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "내 문서로 시작하기" }),
+    page.getByRole("link", { name: "Start with a document" }),
   ).toBeVisible();
   await expect(
-    page.getByLabel("문서가 지식으로 변환되는 정적 시각화"),
+    page.getByLabel("Document pages becoming source-grounded knowledge"),
   ).toBeVisible();
-  await expect(page.getByLabel("주 메뉴")).toHaveCount(0);
+  await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
 });
 
 test("processing workspace keeps source and result linked", async ({
@@ -95,26 +95,26 @@ test("processing workspace keeps source and result linked", async ({
   await expect(page.getByText("Live", { exact: true })).toHaveCount(0);
   if (isMobile) {
     await page
-      .getByRole("navigation", { name: "모바일 처리 작업 보기" })
+      .getByRole("navigation", { name: "Mobile processing views" })
       .getByRole("button", { name: "Source" })
       .click();
   }
-  await expect(page.getByLabel("원본 문서")).toBeVisible();
+  await expect(page.getByLabel("Source document")).toBeVisible();
   await page
     .getByRole("button", {
       name: "paragraph block 3, evidence 1 on page 8",
     })
     .click();
   if (isMobile) {
-    await expect(page.getByLabel("Markdown 결과")).toBeVisible();
+    await expect(page.getByLabel("Markdown output")).toBeVisible();
   }
   await page
-    .getByLabel("Markdown 결과")
-    .getByRole("button", { name: "paragraph 3번 블록과 원본 연결" })
+    .getByLabel("Markdown output")
+    .getByRole("button", { name: "Link paragraph block 3 to source" })
     .click();
   if (isMobile) {
     await page
-      .getByRole("navigation", { name: "모바일 처리 작업 보기" })
+      .getByRole("navigation", { name: "Mobile processing views" })
       .getByRole("button", { name: "Source" })
       .click();
   }
@@ -128,13 +128,17 @@ test("processing workspace keeps source and result linked", async ({
 test("estimate shows a maximum before processing", async ({ page }) => {
   await page.goto("/workspace?estimate=1");
   await expect(
-    page.getByRole("heading", { name: "처리 전 견적을 확인하세요" }),
+    page.getByRole("heading", {
+      name: "Review the estimate before processing",
+    }),
   ).toBeVisible();
   await expect(page.getByText("263–318")).toBeVisible();
-  await expect(page.getByText("사용 안 함")).toBeVisible();
-  await page.getByRole("button", { name: "처리 시작" }).click();
+  await expect(page.getByText("Not used")).toBeVisible();
+  await page.getByRole("button", { name: "Start processing" }).click();
   await expect(
-    page.getByRole("heading", { name: "처리 전 견적을 확인하세요" }),
+    page.getByRole("heading", {
+      name: "Review the estimate before processing",
+    }),
   ).not.toBeVisible();
 });
 
@@ -145,13 +149,13 @@ test("mobile workspace uses tabs without horizontal overflow", async ({
   test.skip(!isMobile, "mobile-only assertion");
   await page.goto("/workspace");
   await expect(
-    page.getByRole("navigation", { name: "모바일 처리 작업 보기" }),
+    page.getByRole("navigation", { name: "Mobile processing views" }),
   ).toBeVisible();
   await page
-    .getByRole("navigation", { name: "모바일 처리 작업 보기" })
+    .getByRole("navigation", { name: "Mobile processing views" })
     .getByRole("button", { name: "Source" })
     .click();
-  await expect(page.getByLabel("원본 문서")).toBeVisible();
+  await expect(page.getByLabel("Source document")).toBeVisible();
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );
@@ -187,20 +191,20 @@ test("page rail and source viewer support keyboard-first inspection", async ({
   test.skip(isMobile, "desktop workspace exposes all three inspection panes");
   await page.goto("/workspace");
 
-  const pageSearch = page.getByRole("searchbox", { name: "페이지 검색" });
+  const pageSearch = page.getByRole("searchbox", { name: "Search pages" });
   await pageSearch.fill("Page 14");
   await expect(page.getByRole("button", { name: /^Page 14,/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Page 8,/ })).toHaveCount(0);
   await pageSearch.fill("");
 
-  await page.getByRole("button", { name: /^페이지 필터/ }).click();
+  await page.getByRole("button", { name: /^Page filters/ }).click();
   await page
-    .getByRole("combobox", { name: "품질 필터" })
+    .getByRole("combobox", { name: "Quality filter" })
     .selectOption("review");
   await expect(page.getByText("2 / 18 pages")).toBeVisible();
   await expect(page.getByRole("button", { name: /^Page 8,/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Page 14,/ })).toBeVisible();
-  await page.getByRole("button", { name: "필터 초기화" }).click();
+  await page.getByRole("button", { name: "Reset filters" }).click();
 
   const pageEight = page.getByRole("button", { name: /^Page 8,/ });
   const pageNine = page.getByRole("button", { name: /^Page 9,/ });
@@ -211,7 +215,7 @@ test("page rail and source viewer support keyboard-first inspection", async ({
   await expect(pageNine).toHaveAttribute("aria-current", "page");
 
   const rotate = page.getByRole("button", {
-    name: "페이지 회전, 현재 0도",
+    name: "Rotate page, currently 0 degrees",
   });
   await rotate.click();
   await expect(page.locator(".paper-wrap")).toHaveCSS(
@@ -219,7 +223,7 @@ test("page rail and source viewer support keyboard-first inspection", async ({
     /matrix\(0, 1, -1, 0,/,
   );
 
-  const rawText = page.getByRole("button", { name: "원문 텍스트 레이어" });
+  const rawText = page.getByRole("button", { name: "Source text layer" });
   await rawText.click();
   await expect(rawText).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".source-text-layer")).toBeVisible();
@@ -231,7 +235,7 @@ test("page rail and source viewer support keyboard-first inspection", async ({
       value: undefined,
     });
   });
-  await page.getByRole("button", { name: "전체 화면", exact: true }).click();
+  await page.getByRole("button", { name: "Full screen", exact: true }).click();
   await expect(sourcePanel).toHaveClass(/source-panel-fullscreen/);
   await page.keyboard.press("Escape");
   await expect(sourcePanel).not.toHaveClass(/source-panel-fullscreen/);
@@ -244,18 +248,20 @@ test("dialogs trap focus, close with Escape, and restore the trigger", async ({
   test.skip(isMobile, "one browser profile is enough for focus semantics");
   await page.goto("/home");
   const trigger = page
-    .getByRole("button", { name: "새 프로젝트", exact: true })
+    .getByRole("button", { name: "New project", exact: true })
     .first();
-  await trigger.click();
-
-  const dialog = page.getByRole("dialog", { name: "프로젝트 만들기" });
-  const nameInput = dialog.getByRole("textbox", { name: "프로젝트 이름" });
+  const dialog = page.getByRole("dialog", { name: "Create project" });
+  await expect(async () => {
+    await trigger.click();
+    await expect(dialog).toBeVisible({ timeout: 1_500 });
+  }).toPass();
+  const nameInput = dialog.getByRole("textbox", { name: "Project name" });
   await expect(nameInput).toBeFocused();
 
   const submit = dialog.getByRole("button", {
-    name: "프로젝트 만들기",
+    name: "Create project",
   });
-  const close = dialog.getByRole("button", { name: "대화상자 닫기" });
+  const close = dialog.getByRole("button", { name: "Close dialog" });
   await submit.focus();
   await submit.press("Tab");
   await expect(close).toBeFocused();
@@ -274,13 +280,13 @@ test("product shell exposes keyboard command navigation", async ({
   test.skip(isMobile, "desktop shell owns the global command palette");
   await page.goto("/home");
   await page.keyboard.press("Control+K");
-  const palette = page.getByRole("dialog", { name: "명령 팔레트" });
+  const palette = page.getByRole("dialog", { name: "Command menu" });
   await expect(palette).toBeVisible();
   await expect(
-    palette.getByRole("searchbox", { name: "명령 검색" }),
+    palette.getByRole("searchbox", { name: "Search commands" }),
   ).toBeFocused();
   await expect(
-    palette.getByRole("link", { name: /검토 스튜디오/ }),
+    palette.getByRole("link", { name: /Open Review Studio/ }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(palette).toHaveCount(0);
@@ -300,7 +306,7 @@ test("masterplan product routes remain honest and overflow-free", async ({
   ]) {
     await page.goto(path);
     await expect(
-      page.getByText("샘플 화면", { exact: false }).first(),
+      page.getByText("Demo workspace", { exact: false }).first(),
     ).toBeVisible();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
@@ -332,4 +338,37 @@ test("primary demo surfaces have no automated WCAG A or AA violations", async ({
         .join(", ")}`,
     ).toEqual([]);
   }
+});
+
+test("dark product mode preserves contrast and calm workspace surfaces", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(
+    isMobile,
+    "desktop scan covers the complete dark workspace surface",
+  );
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/home");
+  await expect(
+    page.getByRole("heading", { name: "Workspace overview" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => window.matchMedia("(prefers-color-scheme: dark)").matches,
+    ),
+  ).toBe(true);
+  await expect(page.locator(".operations-board")).toHaveCSS(
+    "background-color",
+    "rgb(20, 25, 32)",
+  );
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(
+    results.violations,
+    results.violations
+      .map((violation) => `${violation.id} (${violation.nodes.length})`)
+      .join(", "),
+  ).toEqual([]);
 });

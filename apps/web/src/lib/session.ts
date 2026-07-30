@@ -47,7 +47,7 @@ function stringList(value: unknown): string[] {
  */
 export function normalizeSessionResponse(payload: unknown): SessionProfile {
   if (!isRecord(payload)) {
-    throw new Error("세션 응답 형식이 올바르지 않습니다.");
+    throw new Error("The session response has an invalid format.");
   }
 
   const nestedUser = isRecord(payload.user) ? payload.user : undefined;
@@ -57,7 +57,9 @@ export function normalizeSessionResponse(payload: unknown): SessionProfile {
     optionalString(payload.display_name);
 
   if (!tenantId || !displayName) {
-    throw new Error("세션 응답에 필수 사용자 정보가 없습니다.");
+    throw new Error(
+      "The session response is missing required user information.",
+    );
   }
 
   const nestedRoles = stringList(nestedUser?.roles);

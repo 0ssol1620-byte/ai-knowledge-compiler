@@ -104,15 +104,13 @@ export function SettingsLive() {
   });
 
   if (settings.isPending) {
-    return (
-      <SettingsState message="워크스페이스 정책을 불러오고 있습니다." busy />
-    );
+    return <SettingsState message="Loading workspace policy." busy />;
   }
 
   if (settings.isError) {
     return (
       <SettingsState
-        message={`설정을 불러오지 못했습니다: ${settings.error.message}`}
+        message={`Settings could not be loaded: ${settings.error.message}`}
         retry={() => {
           void settings.refetch();
         }}
@@ -146,35 +144,35 @@ export function SettingsLive() {
 
   return (
     <div className="simple-page settings-page">
-      <h1>설정</h1>
+      <h1>Settings</h1>
       <p>
-        데이터 보존과 외부 처리 정책을 서버에 저장된 워크스페이스 단위로
-        관리합니다.
+        Manage server-backed retention and external processing policy for this
+        workspace.
         {data.updatedAt && (
           <small className="evidence-timestamp">
-            마지막 갱신 · {new Date(data.updatedAt).toLocaleString("ko-KR")}
+            Last updated · {new Date(data.updatedAt).toLocaleString("en-US")}
           </small>
         )}
       </p>
 
       <div className="settings-layout">
-        <nav className="settings-nav" aria-label="설정 섹션">
+        <nav className="settings-nav" aria-label="Settings sections">
           <a href="#privacy" className="active">
             <ShieldCheck size={16} weight="fill" aria-hidden="true" />
-            개인정보·처리
+            Privacy & processing
           </a>
           <a href="#retention">
             <Database size={16} aria-hidden="true" />
-            보존·삭제
+            Retention & deletion
           </a>
           <a href="#members">
             <UsersThree size={16} aria-hidden="true" />
-            멤버·역할
+            Members & roles
           </a>
           {canManageBilling && (
             <a href="#billing">
               <CreditCard size={16} aria-hidden="true" />
-              크레딧·결제
+              Credits & billing
             </a>
           )}
           {canManage && (
@@ -189,8 +187,10 @@ export function SettingsLive() {
           <section className="settings-section" id="privacy">
             <header>
               <div>
-                <h2>처리 경계</h2>
-                <p>응답에 존재하는 실제 정책만 표시하고 수정합니다.</p>
+                <h2>Processing boundary</h2>
+                <p>
+                  Only policies present in the server response can be changed.
+                </p>
               </div>
               <span
                 className={`policy-state ${policy.private_mode ? "safe" : ""}`}
@@ -200,20 +200,20 @@ export function SettingsLive() {
                   ? "Private mode"
                   : policy.private_mode === false
                     ? "Managed mode"
-                    : "정책 미확인"}
+                    : "Policy unknown"}
               </span>
             </header>
 
             {!policyEvidencePresent ? (
               <div className="honest-state compact">
                 <Warning size={20} aria-hidden="true" />
-                <p>서버 응답에 표시할 처리 정책이 없습니다.</p>
+                <p>No processing policy is present in the server response.</p>
               </div>
             ) : (
               <>
                 <PolicyToggle
-                  label="프라이빗 모드"
-                  description="활성화하면 외부 전송을 허용하지 않는 경계로 전환합니다."
+                  label="Private mode"
+                  description="Prevents all external transfer when enabled."
                   value={policy.private_mode}
                   disabled={!canManage || updateSettings.isPending}
                   onChange={(value) => {
@@ -224,8 +224,8 @@ export function SettingsLive() {
                   }}
                 />
                 <PolicyToggle
-                  label="외부 모델 전송 허용"
-                  description="프로젝트별 명시적 동의가 있어도 이 정책이 꺼져 있으면 외부 전송하지 않습니다."
+                  label="Allow external model transfer"
+                  description="No external transfer occurs while this is off, even with project-level consent."
                   value={policy.external_transfer_allowed}
                   disabled={
                     !canManage ||
@@ -237,16 +237,16 @@ export function SettingsLive() {
                   }
                 />
                 <PolicyToggle
-                  label="제품 개선 데이터 제공"
-                  description="명시적으로 켠 경우에만 학습·개선 목적의 사용을 허용합니다."
+                  label="Product improvement data"
+                  description="Allows training or improvement use only when explicitly enabled."
                   value={policy.training_opt_in}
                   disabled={!canManage || updateSettings.isPending}
                   onChange={(value) => update("training_opt_in", value)}
                 />
                 {policy.preview_pii_masking !== undefined && (
                   <PolicyToggle
-                    label="미리보기 민감정보 마스킹"
-                    description="원본은 변경하지 않고 사용자 미리보기에서만 감지된 민감정보를 가립니다."
+                    label="Mask sensitive data in previews"
+                    description="Masks detected sensitive data in user previews without changing the source."
                     value={policy.preview_pii_masking}
                     disabled={!canManage || updateSettings.isPending}
                     onChange={(value) => update("preview_pii_masking", value)}
@@ -254,8 +254,8 @@ export function SettingsLive() {
                 )}
                 {policy.product_analytics_enabled !== undefined && (
                   <PolicyToggle
-                    label="최소 제품 분석"
-                    description="문서 본문이나 민감정보 없이 최소 사용 이벤트와 집계 지표만 기록합니다. 끄면 이후 이벤트 수집을 중단합니다."
+                    label="Minimal product analytics"
+                    description="Records only minimal usage events and aggregate metrics without document content or sensitive data. Turning this off stops future collection."
                     value={policy.product_analytics_enabled}
                     disabled={!canManage || updateSettings.isPending}
                     onChange={(value) =>
@@ -270,18 +270,20 @@ export function SettingsLive() {
           <section className="settings-section" id="retention">
             <header>
               <div>
-                <h2>보존·삭제</h2>
-                <p>서버가 제공한 워크스페이스 보존 기간을 변경합니다.</p>
+                <h2>Retention & deletion</h2>
+                <p>
+                  Change the workspace retention period provided by the server.
+                </p>
               </div>
             </header>
             {policy.data_retention_days === undefined ? (
               <div className="honest-state compact">
-                <p>보존 기간 정보가 API 응답에 없습니다.</p>
+                <p>No retention period is present in the API response.</p>
               </div>
             ) : (
               <div className="retention-grid retention-grid-live">
                 <label>
-                  <span>데이터 보존 기간</span>
+                  <span>Data retention period</span>
                   <select
                     value={policy.data_retention_days}
                     disabled={!canManage || updateSettings.isPending}
@@ -303,7 +305,9 @@ export function SettingsLive() {
                       .sort((left, right) => left - right)
                       .map((days) => (
                         <option key={days} value={days}>
-                          {days === 0 ? "처리 후 즉시 삭제" : `${days}일`}
+                          {days === 0
+                            ? "Delete after processing"
+                            : `${days} days`}
                         </option>
                       ))}
                   </select>
@@ -312,16 +316,16 @@ export function SettingsLive() {
             )}
             <div className="deletion-assurance">
               <Check size={15} weight="bold" aria-hidden="true" />
-              삭제 작업의 완료 여부는 서버가 발급한 deletion receipt로
-              검증합니다.
+              Completion of deletion is verified with a server-issued deletion
+              receipt.
             </div>
           </section>
 
           <section className="settings-section" id="members">
             <header>
               <div>
-                <h2>{data.workspaceName ?? "워크스페이스"} 멤버</h2>
-                <p>멤버 정보가 응답에 포함된 경우에만 표시합니다.</p>
+                <h2>{data.workspaceName ?? "Workspace"} members</h2>
+                <p>Members are shown only when included in the response.</p>
               </div>
             </header>
             {canManage ? (
@@ -329,7 +333,7 @@ export function SettingsLive() {
             ) : data.members.length === 0 ? (
               <div className="honest-state compact">
                 <UsersThree size={20} aria-hidden="true" />
-                <p>멤버 목록이 API 응답에 없습니다.</p>
+                <p>No member list is present in the API response.</p>
               </div>
             ) : (
               <div className="member-list">
@@ -348,11 +352,13 @@ export function SettingsLive() {
                         .toUpperCase()}
                     </span>
                     <span>
-                      <strong>{member.displayName ?? "이름 미제공"}</strong>
-                      <small>{member.email ?? "이메일 미제공"}</small>
+                      <strong>
+                        {member.displayName ?? "Name unavailable"}
+                      </strong>
+                      <small>{member.email ?? "Email unavailable"}</small>
                     </span>
                     <span className="status-badge neutral">
-                      {member.role ?? member.status ?? "역할 미제공"}
+                      {member.role ?? member.status ?? "Role unavailable"}
                     </span>
                   </div>
                 ))}
@@ -366,8 +372,8 @@ export function SettingsLive() {
                 <div>
                   <h2>Webhook delivery</h2>
                   <p>
-                    HMAC 서명 endpoint와 재시도·dead-letter 전달 이력을
-                    관리합니다.
+                    Manage HMAC-signed endpoints and retry or dead-letter
+                    delivery history.
                   </p>
                 </div>
               </header>
@@ -379,10 +385,10 @@ export function SettingsLive() {
             <section className="settings-section" id="billing">
               <header>
                 <div>
-                  <h2>크레딧·결제</h2>
+                  <h2>Credits & billing</h2>
                   <p>
-                    사업자 checkout과 서명된 webhook으로 확정된 결제 원장만
-                    표시합니다.
+                    Only payment ledger entries confirmed by business checkout
+                    and signed webhooks are shown.
                   </p>
                 </div>
               </header>
@@ -393,14 +399,14 @@ export function SettingsLive() {
           <div className="settings-save" role="status" aria-live="polite">
             <span>
               {!canManage
-                ? "Owner 또는 Admin 역할만 정책을 변경할 수 있습니다."
+                ? "Only Owner or Admin roles can change policy."
                 : updateSettings.isError
                   ? settingsErrorMessage(updateSettings.error)
                   : saved
-                    ? "변경 사항이 서버에 저장되었습니다."
+                    ? "Changes were saved to the server."
                     : isDirty
-                      ? "저장하지 않은 변경 사항이 있습니다."
-                      : "현재 서버 설정과 일치합니다."}
+                      ? "There are unsaved changes."
+                      : "Settings match the server."}
             </span>
             <button
               className="primary-button"
@@ -408,7 +414,7 @@ export function SettingsLive() {
               disabled={!canManage || !isDirty || updateSettings.isPending}
               onClick={() => updateSettings.mutate(changes)}
             >
-              {updateSettings.isPending ? "저장 중…" : "설정 저장"}
+              {updateSettings.isPending ? "Saving…" : "Save settings"}
             </button>
           </div>
         </div>
@@ -459,7 +465,7 @@ function SettingsState({
 }) {
   return (
     <div className="simple-page settings-page">
-      <h1>설정</h1>
+      <h1>Settings</h1>
       <div className="panel honest-state" aria-busy={busy}>
         {busy ? (
           <span className="spinner" aria-hidden="true" />
@@ -469,7 +475,7 @@ function SettingsState({
         <p>{message}</p>
         {retry && (
           <button type="button" className="secondary-button" onClick={retry}>
-            다시 시도
+            Try again
           </button>
         )}
       </div>
@@ -479,7 +485,7 @@ function SettingsState({
 
 function settingsErrorMessage(error: Error): string {
   if (error instanceof ApiError && error.status === 403) {
-    return "이 정책을 변경할 권한이 없습니다.";
+    return "You do not have permission to change this policy.";
   }
-  return `저장하지 못했습니다: ${error.message}`;
+  return `Settings could not be saved: ${error.message}`;
 }

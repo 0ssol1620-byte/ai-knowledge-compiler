@@ -15,10 +15,10 @@ export function ApiWorkflowStudio() {
     <div className="simple-page api-workflow-page">
       <div className="developer-title">
         <div>
-          <h1>API & 워크플로</h1>
+          <h1>API & workflows</h1>
           <p>
-            업로드, 처리 profile, 지식 출력과 webhook을 하나의 검증 가능한
-            파이프라인으로 구성합니다.
+            Compose uploads, processing profiles, knowledge outputs, and
+            webhooks into one auditable pipeline.
           </p>
         </div>
         <span className="demo-sample-chip">
@@ -31,21 +31,21 @@ export function ApiWorkflowStudio() {
           <span>01</span>
           <Key size={20} weight="duotone" aria-hidden="true" />
           <strong>API key</strong>
-          <small>권한 범위와 만료를 지정</small>
+          <small>Set scopes and expiration</small>
         </div>
         <ArrowRight size={16} aria-hidden="true" />
         <div>
           <span>02</span>
           <BracketsCurly size={20} weight="duotone" aria-hidden="true" />
           <strong>Upload & compile</strong>
-          <small>idempotency key로 안전하게 요청</small>
+          <small>Submit safely with an idempotency key</small>
         </div>
         <ArrowRight size={16} aria-hidden="true" />
         <div>
           <span>03</span>
           <WebhooksLogo size={20} weight="duotone" aria-hidden="true" />
           <strong>Webhook</strong>
-          <small>서명된 완료 이벤트 수신</small>
+          <small>Receive signed completion events</small>
         </div>
       </section>
 
@@ -54,7 +54,10 @@ export function ApiWorkflowStudio() {
           <div className="panel-heading">
             <div>
               <h2>Workflow</h2>
-              <p>복잡한 DAG 대신 운영에 필요한 네 단계만 구성합니다.</p>
+              <p>
+                Configure the four operational steps you need—without a complex
+                DAG.
+              </p>
             </div>
           </div>
           <div className="workflow-lane">
@@ -86,12 +89,12 @@ export function ApiWorkflowStudio() {
           <div className="panel-heading">
             <div>
               <h2>Quickstart</h2>
-              <p>민감 데이터가 없는 요청 예시</p>
+              <p>Example request with no sensitive data</p>
             </div>
             <button
               className="icon-button compact"
               type="button"
-              aria-label="코드 복사"
+              aria-label="Copy code"
             >
               <Copy size={15} />
             </button>
@@ -113,8 +116,8 @@ export function ApiWorkflowStudio() {
             <h2>Recent jobs</h2>
             <p>
               {demoMode
-                ? "아래 행은 인터페이스 예시이며 실제 작업이 아닙니다."
-                : "현재 권한 범위의 라이브 작업만 표시합니다."}
+                ? "The rows below illustrate the interface and are not live jobs."
+                : "Only live jobs within the current permission scope are shown."}
             </p>
           </div>
         </div>
@@ -150,7 +153,7 @@ export function ApiWorkflowStudio() {
           </div>
         ) : (
           <div className="honest-state compact">
-            <p>작업 API 연결 후 라이브 행이 표시됩니다.</p>
+            <p>Live rows appear after the Jobs API is connected.</p>
           </div>
         )}
       </section>

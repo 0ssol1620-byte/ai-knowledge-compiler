@@ -50,7 +50,8 @@ export function CreateProjectButton({
       >
         {label ?? (
           <>
-            <Plus size={17} weight="bold" aria-hidden="true" />새 프로젝트
+            <Plus size={17} weight="bold" aria-hidden="true" />
+            New project
           </>
         )}
       </button>
@@ -72,14 +73,14 @@ export function CreateProjectButton({
           >
             <div className="modal-heading">
               <div>
-                <h2 id={titleId}>프로젝트 만들기</h2>
+                <h2 id={titleId}>Create project</h2>
               </div>
               <button
                 type="button"
                 className="icon-button"
                 disabled={submitting}
                 onClick={closeDialog}
-                aria-label="대화상자 닫기"
+                aria-label="Close dialog"
               >
                 <X size={18} aria-hidden="true" />
               </button>
@@ -88,7 +89,7 @@ export function CreateProjectButton({
               onSubmit={(event) => {
                 event.preventDefault();
                 if (DEMO_MODE) {
-                  setError("Demo mode에서는 프로젝트를 저장하지 않습니다.");
+                  setError("Projects are not saved in demo mode.");
                   return;
                 }
                 const form = new FormData(event.currentTarget);
@@ -110,39 +111,44 @@ export function CreateProjectButton({
                     setError(
                       reason instanceof Error
                         ? reason.message
-                        : "프로젝트를 만들지 못했습니다.",
+                        : "The project could not be created.",
                     );
                   })
                   .finally(() => setSubmitting(false));
               }}
             >
               <label className="field">
-                <span>프로젝트 이름</span>
+                <span>Project name</span>
                 <input
                   ref={nameInputRef}
                   required
                   name="name"
                   maxLength={120}
-                  placeholder="예: 제품 매뉴얼 지식베이스"
+                  placeholder="Example: Product manual knowledge base"
                 />
               </label>
               <label className="field">
                 <span>
-                  설명 <small>선택</small>
+                  Description <small>Optional</small>
                 </span>
                 <textarea
                   name="description"
                   rows={3}
                   maxLength={500}
-                  placeholder="컴파일할 자료와 활용 목적"
+                  placeholder="What will be compiled and how it will be used"
                 />
               </label>
               <fieldset className="mode-fieldset">
-                <legend>기본 처리 모드</legend>
+                <legend>Default processing mode</legend>
                 {[
-                  ["balanced", "Balanced", "품질과 비용의 균형", true],
-                  ["precision", "Precision", "중요 문서 교차 검증", false],
-                  ["private", "Private", "외부 모델 API 금지", false],
+                  ["balanced", "Balanced", "Balance quality and cost", true],
+                  [
+                    "precision",
+                    "Precision",
+                    "Cross-check critical documents",
+                    false,
+                  ],
+                  ["private", "Private", "No external model APIs", false],
                 ].map(([value, name, description, checked]) => (
                   <label className="mode-option" key={String(value)}>
                     <input
@@ -170,14 +176,14 @@ export function CreateProjectButton({
                   disabled={submitting}
                   onClick={closeDialog}
                 >
-                  취소
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="primary-button"
                   disabled={submitting}
                 >
-                  {submitting ? "저장 중" : "프로젝트 만들기"}
+                  {submitting ? "Creating…" : "Create project"}
                 </button>
               </div>
             </form>

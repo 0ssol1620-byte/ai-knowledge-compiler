@@ -81,7 +81,7 @@ export function TeamManagement() {
       }),
     onSuccess: () => {
       setInviteEmail("");
-      setMessage("초대 메일 전송이 예약되었습니다.");
+      setMessage("The invitation email has been queued.");
       refreshTeam();
     },
   });
@@ -92,7 +92,7 @@ export function TeamManagement() {
         idempotencyKey: crypto.randomUUID(),
       }),
     onSuccess: () => {
-      setMessage("대기 중인 초대를 취소했습니다.");
+      setMessage("The pending invitation has been canceled.");
       refreshTeam();
     },
   });
@@ -104,7 +104,7 @@ export function TeamManagement() {
         body: JSON.stringify({ role }),
       }),
     onSuccess: () => {
-      setMessage("멤버 역할을 변경했습니다.");
+      setMessage("The member role has been updated.");
       refreshTeam();
     },
   });
@@ -116,7 +116,9 @@ export function TeamManagement() {
       }),
     onSuccess: () => {
       setRemoveCandidate(undefined);
-      setMessage("멤버와 해당 워크스페이스의 API 키 접근을 제거했습니다.");
+      setMessage(
+        "The member and their workspace API key access have been removed.",
+      );
       refreshTeam();
     },
   });
@@ -140,7 +142,7 @@ export function TeamManagement() {
     return (
       <div className="team-management honest-state compact" aria-busy="true">
         <span className="spinner" aria-hidden="true" />
-        <p>팀 권한과 초대를 불러오고 있습니다.</p>
+        <p>Loading team permissions and invitations.</p>
       </div>
     );
   }
@@ -158,7 +160,7 @@ export function TeamManagement() {
             void invitations.refetch();
           }}
         >
-          다시 시도
+          Try again
         </button>
       </div>
     );
@@ -168,7 +170,7 @@ export function TeamManagement() {
     <div className="team-management">
       <form className="team-invite-form" onSubmit={submitInvitation}>
         <label>
-          <span>초대할 이메일</span>
+          <span>Email address</span>
           <input
             type="email"
             autoComplete="email"
@@ -180,7 +182,7 @@ export function TeamManagement() {
           />
         </label>
         <label>
-          <span>역할</span>
+          <span>Role</span>
           <select
             value={inviteRole}
             disabled={invite.isPending}
@@ -199,12 +201,12 @@ export function TeamManagement() {
           disabled={invite.isPending || !inviteEmail.trim()}
         >
           <UserPlus size={15} aria-hidden="true" />
-          {invite.isPending ? "초대 중…" : "멤버 초대"}
+          {invite.isPending ? "Sending invitation…" : "Invite member"}
         </button>
       </form>
 
       <div className="team-subsection">
-        <h3>멤버</h3>
+        <h3>Members</h3>
         <div className="member-list">
           {members.data.map((member) => {
             const isCurrentUser =
@@ -221,15 +223,15 @@ export function TeamManagement() {
                 <span>
                   <strong>
                     {member.display_name}
-                    {isCurrentUser ? " (나)" : ""}
+                    {isCurrentUser ? " (you)" : ""}
                   </strong>
                   <small>
                     {member.email} ·{" "}
-                    {member.email_verified ? "이메일 확인됨" : "확인되지 않음"}
+                    {member.email_verified ? "Email verified" : "Not verified"}
                   </small>
                 </span>
                 <select
-                  aria-label={`${member.display_name} 역할`}
+                  aria-label={`${member.display_name} role`}
                   value={member.role}
                   disabled={
                     isCurrentUser ||
@@ -259,7 +261,7 @@ export function TeamManagement() {
                 <button
                   type="button"
                   className="icon-button compact"
-                  aria-label={`${member.display_name} 제거`}
+                  aria-label={`Remove ${member.display_name}`}
                   disabled={
                     isCurrentUser || !actorCanManage || removeMember.isPending
                   }
@@ -275,7 +277,7 @@ export function TeamManagement() {
 
       {invitations.data.some((item) => item.status === "pending") && (
         <div className="team-subsection">
-          <h3>대기 중인 초대</h3>
+          <h3>Pending invitations</h3>
           <div className="member-list">
             {invitations.data
               .filter((item) => item.status === "pending")
@@ -285,17 +287,19 @@ export function TeamManagement() {
                     @
                   </span>
                   <span>
-                    <strong>{item.email ?? "수신자 정보 복호화 불가"}</strong>
+                    <strong>
+                      {item.email ?? "Recipient details unavailable"}
+                    </strong>
                     <small>
-                      {item.role} ·{" "}
-                      {new Date(item.expires_at).toLocaleString("ko-KR")} 만료
+                      {item.role} · Expires{" "}
+                      {new Date(item.expires_at).toLocaleString("en-US")}
                     </small>
                   </span>
                   <span className="status-badge neutral">pending</span>
                   <button
                     type="button"
                     className="icon-button compact"
-                    aria-label={`${item.email ?? "초대"} 취소`}
+                    aria-label={`Cancel invitation for ${item.email ?? "recipient"}`}
                     disabled={cancelInvitation.isPending}
                     onClick={() => cancelInvitation.mutate(item.id)}
                   >
@@ -310,8 +314,8 @@ export function TeamManagement() {
       {removeCandidate && (
         <div className="team-confirm" role="alert">
           <p>
-            <strong>{removeCandidate.display_name}</strong>의 워크스페이스
-            접근과 API 키를 제거할까요?
+            Remove workspace access and API keys for{" "}
+            <strong>{removeCandidate.display_name}</strong>?
           </p>
           <div>
             <button
@@ -319,7 +323,7 @@ export function TeamManagement() {
               className="secondary-button compact"
               onClick={() => setRemoveCandidate(undefined)}
             >
-              취소
+              Cancel
             </button>
             <button
               type="button"
@@ -327,7 +331,7 @@ export function TeamManagement() {
               disabled={removeMember.isPending}
               onClick={() => removeMember.mutate(removeCandidate.user_id)}
             >
-              {removeMember.isPending ? "제거 중…" : "제거 확인"}
+              {removeMember.isPending ? "Removing…" : "Remove member"}
             </button>
           </div>
         </div>
@@ -341,19 +345,20 @@ export function TeamManagement() {
 }
 
 function teamErrorMessage(error: Error | null | undefined): string {
-  if (!error) return "팀 정보를 불러오지 못했습니다.";
+  if (!error) return "Team information could not be loaded.";
   if (error instanceof ApiError) {
     const known: Record<string, string> = {
-      LAST_OWNER_REQUIRED: "마지막 Owner는 역할을 바꾸거나 제거할 수 없습니다.",
+      LAST_OWNER_REQUIRED: "The last Owner cannot be reassigned or removed.",
       ROLE_ESCALATION_DENIED:
-        "현재 역할로는 해당 역할을 부여하거나 제거할 수 없습니다.",
-      SELF_ROLE_CHANGE_DENIED: "자신의 역할은 직접 변경할 수 없습니다.",
-      SELF_REMOVAL_DENIED: "자신의 멤버십은 직접 제거할 수 없습니다.",
-      INVITATION_ALREADY_ACCEPTED: "이미 수락된 초대입니다.",
+        "Your current role cannot grant or remove that role.",
+      SELF_ROLE_CHANGE_DENIED: "You cannot change your own role.",
+      SELF_REMOVAL_DENIED: "You cannot remove your own membership.",
+      INVITATION_ALREADY_ACCEPTED: "This invitation has already been accepted.",
     };
     return (
-      known[error.code] ?? `팀 작업을 완료하지 못했습니다: ${error.message}`
+      known[error.code] ??
+      `The team action could not be completed: ${error.message}`
     );
   }
-  return `팀 작업을 완료하지 못했습니다: ${error.message}`;
+  return `The team action could not be completed: ${error.message}`;
 }

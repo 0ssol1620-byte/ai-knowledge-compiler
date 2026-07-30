@@ -143,7 +143,7 @@ export function WebhookManagement() {
           <div>
             <strong>Signing secret — shown once</strong>
             <code>{secret}</code>
-            <span>안전한 비밀 저장소에 지금 보관하세요.</span>
+            <span>Store this in a secure secrets manager now.</span>
           </div>
           <button
             className="secondary-button compact"
@@ -172,17 +172,17 @@ export function WebhookManagement() {
       {endpoints.isPending ? (
         <div className="honest-state compact" aria-busy="true">
           <span className="spinner" aria-hidden="true" />
-          <p>Webhook endpoints를 확인하고 있습니다.</p>
+          <p>Loading webhook endpoints.</p>
         </div>
       ) : endpoints.isError ? (
         <div className="honest-state compact" role="alert">
           <Warning size={20} aria-hidden="true" />
-          <p>Webhook 목록을 불러오지 못했습니다.</p>
+          <p>The webhook list could not be loaded.</p>
         </div>
       ) : endpoints.data.length === 0 ? (
         <div className="honest-state compact">
           <LinkSimple size={20} aria-hidden="true" />
-          <p>등록된 Webhook endpoint가 없습니다.</p>
+          <p>No webhook endpoints are registered.</p>
         </div>
       ) : (
         <div className="webhook-endpoint-list">
@@ -227,7 +227,8 @@ export function WebhookManagement() {
                 <div className="webhook-delete-confirm" role="alert">
                   <Warning size={16} weight="fill" aria-hidden="true" />
                   <span>
-                    이 endpoint와 전달 로그를 삭제합니다. 되돌릴 수 없습니다.
+                    Delete this endpoint and its delivery logs. This cannot be
+                    undone.
                   </span>
                   <button
                     className="danger-button compact"
@@ -283,13 +284,13 @@ function DeliveryLog({ endpointId }: { endpointId: string }) {
       </button>
       {expanded &&
         (deliveries.isPending ? (
-          <p className="muted-copy">전달 로그를 불러오는 중입니다.</p>
+          <p className="muted-copy">Loading delivery logs.</p>
         ) : deliveries.isError ? (
           <p className="form-error" role="alert">
             {deliveries.error.message}
           </p>
         ) : deliveries.data.length === 0 ? (
-          <p className="muted-copy">아직 전달 기록이 없습니다.</p>
+          <p className="muted-copy">No delivery history yet.</p>
         ) : (
           <div className="webhook-delivery-table-wrap">
             <table className="webhook-delivery-table">

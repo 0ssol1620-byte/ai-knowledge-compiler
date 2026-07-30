@@ -28,8 +28,10 @@ export const demoBlocks: CanonicalBlock[] = [
     id: "blk_title",
     order: 1,
     type: "title",
-    source_text: "검색 증강 생성 시스템의 근거 충실도 평가",
-    markdown: "# 검색 증강 생성 시스템의 근거 충실도 평가",
+    source_text:
+      "Evaluating Evidence Fidelity in Retrieval-Augmented Generation",
+    markdown:
+      "# Evaluating Evidence Fidelity in Retrieval-Augmented Generation",
     origin: "native_extracted",
     content_layer: "structured",
     source_refs: source(7, [112, 94, 882, 158]),
@@ -41,8 +43,8 @@ export const demoBlocks: CanonicalBlock[] = [
     id: "blk_heading",
     order: 2,
     type: "heading",
-    source_text: "4.2 실험 결과",
-    markdown: "## 4.2 실험 결과",
+    source_text: "4.2 Experimental Results",
+    markdown: "## 4.2 Experimental Results",
     origin: "rule_reconstructed",
     content_layer: "structured",
     source_refs: source(7, [106, 194, 452, 240]),
@@ -55,9 +57,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 3,
     type: "paragraph",
     source_text:
-      "근거 검증 단계를 적용한 구성은 기준 구성보다 unsupported claim 비율을 3.8%에서 1.1%로 감소시켰다. 모든 수치는 세 번의 독립 실행 평균이다.",
+      "The evidence-verification configuration reduced unsupported claims from 3.8% to 1.1% versus baseline. All figures are averages across three independent runs.",
     markdown:
-      "근거 검증 단계를 적용한 구성은 기준 구성보다 unsupported claim 비율을 **3.8%에서 1.1%로 감소**시켰다. 모든 수치는 세 번의 독립 실행 평균이다.",
+      "The evidence-verification configuration **reduced unsupported claims from 3.8% to 1.1%** versus baseline. All figures are averages across three independent runs.",
     origin: "ocr_extracted",
     content_layer: "structured",
     source_refs: source(7, [108, 258, 892, 364]),
@@ -70,9 +72,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 4,
     type: "table",
     source_text:
-      "구성 근거 충실도 Unsupported claim 기준 0.86 3.8% 검증 적용 0.94 1.1%",
+      "Configuration Evidence fidelity Unsupported claims Baseline 0.86 3.8% Verified 0.94 1.1%",
     markdown:
-      "| 구성 | 근거 충실도 | Unsupported claim |\n|---|---:|---:|\n| 기준 | 0.86 | 3.8% |\n| 검증 적용 | 0.94 | 1.1% |",
+      "| Configuration | Evidence fidelity | Unsupported claims |\n|---|---:|---:|\n| Baseline | 0.86 | 3.8% |\n| Verification enabled | 0.94 | 1.1% |",
     origin: "ocr_extracted",
     content_layer: "structured",
     source_refs: source(7, [112, 402, 888, 644]),
@@ -85,9 +87,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 5,
     type: "paragraph",
     source_text:
-      "결과 기반 검증은 unsupported claim을 줄였으며, 개선 폭은 세 번의 실행 평균으로 교차 검증됐다.",
+      "Evidence-based verification reduced unsupported claims, with the improvement cross-checked across three-run averages.",
     markdown:
-      "> [!summary] 검증 가능한 요약\n> 결과 기반 검증은 unsupported claim을 줄였으며, 개선 폭은 표 3의 세 번 실행 평균으로 뒷받침된다.",
+      "> [!summary] Verifiable summary\n> Evidence-based verification reduced unsupported claims, supported by the three-run averages in Table 3.",
     origin: "ai_summarized",
     content_layer: "knowledge",
     source_refs: source(7, [108, 258, 892, 644]),
@@ -134,7 +136,7 @@ export const demoReviews: ReviewItem[] = [
     severity: "high",
     category: "number_mismatch",
     message:
-      "두 후보 결과에서 비율이 일치하지 않습니다. 원본 표를 확인해 주세요.",
+      "The two candidate outputs disagree on the ratio. Review the source table.",
     page_id: "page_8",
     block_id: "blk_table",
     status: "open",
@@ -147,7 +149,8 @@ export const demoReviews: ReviewItem[] = [
     id: "rev_table_14",
     severity: "medium",
     category: "merged_cell",
-    message: "병합 셀이 감지되어 HTML/CSV sidecar가 함께 생성됩니다.",
+    message:
+      "Merged cells were detected; HTML and CSV sidecars will be generated.",
     page_id: "page_14",
     status: "open",
   },
@@ -171,8 +174,8 @@ export const demoEstimate: PreflightEstimate = {
 export const demoProjects: ProjectSummary[] = [
   {
     id: "project_research",
-    name: "RAG 근거 충실도 연구",
-    description: "논문 12개를 출처 추적이 가능한 Literature Vault로 컴파일",
+    name: "RAG evidence fidelity study",
+    description: "Compile 12 papers into a source-traceable literature vault",
     document_count: 12,
     review_count: 2,
     status: "processing",
@@ -180,8 +183,8 @@ export const demoProjects: ProjectSummary[] = [
   },
   {
     id: "project_manual",
-    name: "운영 매뉴얼 지식베이스",
-    description: "제품 매뉴얼과 장애 대응 절차의 RAG 패키지",
+    name: "Operations manual knowledge base",
+    description: "RAG package for product manuals and incident procedures",
     document_count: 38,
     review_count: 0,
     status: "ready",
@@ -189,8 +192,9 @@ export const demoProjects: ProjectSummary[] = [
   },
   {
     id: "project_study",
-    name: "통계학 학습 Vault",
-    description: "강의자료와 교재를 개념·공식·예제로 재구성",
+    name: "Statistics learning vault",
+    description:
+      "Restructure lectures and textbooks into concepts, formulas, and examples",
     document_count: 7,
     review_count: 5,
     status: "attention",

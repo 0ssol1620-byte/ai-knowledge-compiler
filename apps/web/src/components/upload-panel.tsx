@@ -51,7 +51,7 @@ export function UploadPanel({
       (file) => file.size <= ANALYSIS_MAX_SOURCE_BYTES,
     );
     if (accepted.length !== candidates.length) {
-      setError("파일별 네이티브 분석 한도는 256MB입니다.");
+      setError("The native analysis limit is 256 MB per file.");
     }
     setFiles((current) => [...current, ...accepted].slice(0, 30));
   }
@@ -60,20 +60,20 @@ export function UploadPanel({
     <section className={`${showPolicy ? "panel " : ""}upload-panel`}>
       <header className="upload-panel-heading">
         <div>
-          <h2>변환할 문서</h2>
-          <p>한 번에 30개까지 추가할 수 있습니다.</p>
+          <h2>Documents to compile</h2>
+          <p>Add up to 30 files at a time.</p>
         </div>
         {showPolicy && (
           <span className="upload-policy-inline">
             <LockKey size={15} aria-hidden="true" />
-            외부 API 꺼짐
+            External APIs off
           </span>
         )}
       </header>
       <button
         type="button"
         className={`dropzone ${dragging ? "dragging" : ""}`}
-        aria-label="파일을 끌어놓거나 선택하세요"
+        aria-label="Drop files here or choose files"
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
         onDragEnter={(event) => {
@@ -91,15 +91,15 @@ export function UploadPanel({
         <span className="dropzone-icon">
           <FileArrowUp size={30} aria-hidden="true" />
         </span>
-        <strong>문서 또는 폴더를 여기에 놓으세요</strong>
-        <span>PDF, DOCX, PPTX, XLSX, 이미지, HTML</span>
-        <small>클릭해서 직접 선택할 수도 있습니다 · 파일당 최대 50MB</small>
+        <strong>Drop documents or a folder here</strong>
+        <span>PDF, DOCX, PPTX, XLSX, images, and HTML</span>
+        <small>Or choose files manually · up to 50 MB each</small>
       </button>
       <input
         ref={inputRef}
         className="visually-hidden"
         type="file"
-        aria-label="업로드할 파일 선택"
+        aria-label="Choose files to upload"
         multiple
         disabled={uploading}
         accept={acceptedExtensions}
@@ -121,7 +121,7 @@ export function UploadPanel({
               <button
                 type="button"
                 className="icon-button compact"
-                aria-label={`${file.name} 제거`}
+                aria-label={`Remove ${file.name}`}
                 disabled={uploading}
                 onClick={() =>
                   setFiles((items) =>
@@ -139,14 +139,15 @@ export function UploadPanel({
       <div className="upload-assurance">
         <ShieldCheck size={18} aria-hidden="true" />
         <span>
-          원본은 격리 영역에 저장되며, 변환 전에 파일 형식·무결성·악성 파일
-          여부를 검사합니다.
+          Sources are stored in an isolated area and checked for format,
+          integrity, and malicious content before processing.
         </span>
       </div>
 
       {uploading && (
         <p className="upload-progress" role="status">
-          {completed}/{files.length}개 파일의 보안 검사·분석을 요청했습니다.
+          Security checks and analysis requested for {completed}/{files.length}{" "}
+          files.
         </p>
       )}
       {error && (
@@ -184,7 +185,7 @@ export function UploadPanel({
                 setError(
                   reason instanceof Error
                     ? reason.message
-                    : "PDF 암호를 확인하지 못했습니다.",
+                    : "The PDF password could not be verified.",
                 );
               })
               .finally(() => setSubmittingPassword(false));
@@ -195,15 +196,16 @@ export function UploadPanel({
               <LockKey size={18} weight="bold" />
             </span>
             <div>
-              <h3 id="pdf-password-title">암호화된 PDF 열기</h3>
+              <h3 id="pdf-password-title">Open encrypted PDF</h3>
               <p>
-                <strong>{passwordRequest.filename}</strong>의 암호는 분석 중
-                메모리에만 보관되며 만료 후 즉시 폐기됩니다.
+                The password for <strong>{passwordRequest.filename}</strong>{" "}
+                remains in memory only during analysis and is discarded
+                immediately after it expires.
               </p>
             </div>
           </div>
           <label className="field" htmlFor="pdf-password">
-            <span>문서 암호</span>
+            <span>Document password</span>
             <input
               id="pdf-password"
               type="password"
@@ -225,14 +227,16 @@ export function UploadPanel({
                 setPasswordRequest(undefined);
               }}
             >
-              취소
+              Cancel
             </button>
             <button
               className="primary-button"
               type="submit"
               disabled={!password || submittingPassword}
             >
-              {submittingPassword ? "암호 확인 중" : "안전하게 분석 재개"}
+              {submittingPassword
+                ? "Checking password…"
+                : "Resume secure analysis"}
               <ArrowRight size={16} aria-hidden="true" />
             </button>
           </div>
@@ -244,7 +248,7 @@ export function UploadPanel({
         disabled={files.length === 0 || uploading}
         onClick={() => {
           if (DEMO_MODE) {
-            setError("Demo mode에서는 원본을 업로드하거나 과금하지 않습니다.");
+            setError("Demo mode does not upload sources or use credits.");
             return;
           }
           setUploading(true);
@@ -276,17 +280,17 @@ export function UploadPanel({
               setError(
                 reason instanceof Error
                   ? reason.message
-                  : "파일 분석을 시작하지 못했습니다.",
+                  : "File analysis could not be started.",
               );
             })
             .finally(() => setUploading(false));
         }}
       >
         {uploading
-          ? "업로드·분석 중"
+          ? "Uploading and analyzing…"
           : files.length > 0
-            ? `${files.length}개 문서 사전 분석`
-            : "문서를 선택하면 계속할 수 있습니다"}
+            ? `Run preflight on ${files.length} document${files.length === 1 ? "" : "s"}`
+            : "Select a document to continue"}
         <ArrowRight size={16} aria-hidden="true" />
       </button>
     </section>

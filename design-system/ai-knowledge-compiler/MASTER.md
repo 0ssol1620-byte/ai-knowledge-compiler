@@ -32,8 +32,11 @@ threads, structured output, and evidence are the product imagery.
 - Color marks actions, evidence, and exceptional states. It is not decoration.
 - Monospace is reserved for code, hashes, identifiers, and measured technical
   values.
-- Korean product copy is primary. English is retained only for established
-  formats, code, API concepts, and product names.
+- English is the default product language across marketing and authenticated
+  surfaces. Korean is a first-class selectable locale, not a separate product.
+- Dates, numbers, keyboard shortcuts, labels, and live-region messages follow
+  the active locale. A route may never mix languages except for source
+  documents, code, established formats, and product names.
 
 ## Color tokens
 
@@ -61,8 +64,8 @@ Raw colors belong in the token layer, not individual components.
 
 ```css
 --font-ui:
-  "Pretendard Variable", "Inter", "Noto Sans KR", "Segoe UI Variable Text",
-  "Apple SD Gothic Neo", system-ui, sans-serif;
+  "Aptos", "Segoe UI Variable Text", "Segoe UI", "Pretendard Variable",
+  "Noto Sans KR", system-ui, sans-serif;
 --font-mono:
   "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 ```
@@ -73,6 +76,10 @@ Raw colors belong in the token layer, not individual components.
 - Page title: `28–36px / 34–44px`, weight 600–650
 - Korean heading tracking must not be tighter than `-0.02em`.
 - Use tabular numerals for comparable values.
+- Aptos/Segoe UI was chosen over the common Inter/Geist startup stack because
+  this product is an operational enterprise console; the native Windows-first
+  metrics remain compact and scan cleanly, while Pretendard/Noto Sans KR
+  preserve Korean readability.
 
 ## Spacing and density
 

@@ -147,7 +147,7 @@ export function ExportDialog({
       setError(
         reason instanceof Error
           ? reason.message
-          : "내보내기 패키지를 만들지 못했습니다.",
+          : "The export package could not be created.",
       );
     } finally {
       setStarted(false);
@@ -173,8 +173,8 @@ export function ExportDialog({
       >
         <div className="modal-heading">
           <div>
-            <h2 id={titleId}>지식 패키지 만들기</h2>
-            <p>동일한 CIR snapshot과 옵션은 동일한 checksum으로 생성됩니다.</p>
+            <h2 id={titleId}>Create knowledge package</h2>
+            <p>The same CIR snapshot and options produce the same checksum.</p>
           </div>
           <button
             ref={closeButtonRef}
@@ -182,7 +182,7 @@ export function ExportDialog({
             className="icon-button"
             onClick={onClose}
             disabled={started}
-            aria-label="내보내기 닫기"
+            aria-label="Close export"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -191,7 +191,7 @@ export function ExportDialog({
         {!preview ? (
           <>
             <fieldset className="export-options">
-              <legend>포함할 프로필</legend>
+              <legend>Profiles to include</legend>
               {profiles.map(({ id, name, description, icon: Icon }) => (
                 <label key={id}>
                   <input
@@ -231,16 +231,19 @@ export function ExportDialog({
               >
                 <div>
                   <div>
-                    <h3 id="vault-merge-title">기존 Obsidian Vault 비교</h3>
+                    <h3 id="vault-merge-title">
+                      Compare with an existing Obsidian Vault
+                    </h3>
                   </div>
                   <span>
                     <ShieldCheck size={14} weight="fill" aria-hidden="true" />
-                    원본 Vault는 변경하지 않음
+                    The source Vault is never modified
                   </span>
                 </div>
                 <p>
-                  기존 Vault ZIP을 선택하면 경로 충돌과 깨진 링크를 다운로드
-                  전에 미리 계산합니다. ZIP은 비교에만 사용됩니다.
+                  Select an existing Vault ZIP to calculate path collisions and
+                  broken links before download. The ZIP is used only for
+                  comparison.
                 </p>
                 <div className="vault-merge-inputs">
                   <label className="field">
@@ -285,7 +288,7 @@ export function ExportDialog({
                   <span>{summary.reviewWarnings} review warnings included</span>
                 </>
               ) : (
-                <span>저장된 CIR snapshot을 기준으로 생성합니다.</span>
+                <span>Generated from the stored CIR snapshot.</span>
               )}
             </div>
           </>
@@ -305,7 +308,7 @@ export function ExportDialog({
             disabled={started}
             onClick={onClose}
           >
-            {preview ? "닫기" : "취소"}
+            {preview ? "Close" : "Cancel"}
           </button>
           {preview && created ? (
             <button
@@ -316,7 +319,7 @@ export function ExportDialog({
               }
             >
               <DownloadSimple size={16} aria-hidden="true" />
-              검토 후 패키지 다운로드
+              Download package after review
             </button>
           ) : (
             <button
@@ -328,12 +331,12 @@ export function ExportDialog({
               {started ? (
                 <>
                   <span className="spinner" aria-hidden="true" />
-                  {vault ? "Vault 비교 중" : "패키지 생성 중"}
+                  {vault ? "Comparing Vault…" : "Creating package…"}
                 </>
               ) : (
                 <>
                   <DownloadSimple size={16} aria-hidden="true" />
-                  {vault ? "생성하고 충돌 미리보기" : "Export package"}
+                  {vault ? "Create and preview conflicts" : "Export package"}
                 </>
               )}
             </button>
@@ -357,16 +360,16 @@ function VaultPreviewResult({ preview }: { preview: VaultMergePreview }) {
         </span>
         <div>
           <p className="metadata-label">
-            계획 식별자 {preview.plan_sha256.slice(0, 12)}
+            Plan ID {preview.plan_sha256.slice(0, 12)}
           </p>
           <h3>
             {preview.safe_to_apply
-              ? "선택한 정책으로 안전하게 병합 가능"
-              : "해결되지 않은 충돌 확인 필요"}
+              ? "Safe to merge with the selected policy"
+              : "Unresolved conflicts require review"}
           </h3>
           <p>
-            이 결과는 읽기 전용 계획입니다. 기존 Vault에는 아무 변경도 적용되지
-            않았습니다.
+            This is a read-only plan. No changes have been applied to the
+            existing Vault.
           </p>
         </div>
       </header>

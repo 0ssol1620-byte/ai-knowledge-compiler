@@ -40,10 +40,10 @@ export function AuthPage({
       <section className="login-story">
         <BrandMark />
         <div className="login-story-copy">
-          <h1>AI 결과를 믿으라고 요구하지 않습니다.</h1>
+          <h1>AI output should never require blind trust.</h1>
           <p>
-            원본 페이지와 좌표, 처리 경로, 수정 이력까지 직접 확인할 수
-            있습니다.
+            Inspect the source page and coordinates, processing route, and
+            complete edit history yourself.
           </p>
           <ul>
             <li>
@@ -56,14 +56,14 @@ export function AuthPage({
             </li>
             <li>
               <Check size={15} weight="bold" aria-hidden="true" />
-              외부 모델 API 기본 비활성화
+              External model APIs off by default
             </li>
           </ul>
         </div>
         <div className="login-security">
           <ShieldCheck size={17} weight="fill" aria-hidden="true" />
-          인증 정보는 브라우저 저장소가 아닌 보안 쿠키로 전달합니다. 문서 학습
-          사용은 명시적으로 동의한 경우에만 허용됩니다.
+          Credentials are carried in secure cookies, not browser storage.
+          Documents are used for training only with explicit consent.
         </div>
       </section>
       <main className="login-form-wrap">
@@ -117,20 +117,18 @@ export function AuthPage({
           }}
         >
           <div>
-            <h2>
-              {registering ? "워크스페이스 만들기" : "워크스페이스 로그인"}
-            </h2>
+            <h2>{registering ? "Create workspace" : "Sign in to workspace"}</h2>
             <p>
               {registering
-                ? "소유자 계정과 첫 워크스페이스를 안전하게 생성합니다."
-                : "처리 중인 프로젝트와 검토 대기열을 이어서 확인하세요."}
+                ? "Create the owner account and first workspace securely."
+                : "Continue with active projects and the review queue."}
             </p>
           </div>
 
           {registering && (
             <>
               <label className="field">
-                <span>워크스페이스 이름</span>
+                <span>Workspace name</span>
                 <input
                   type="text"
                   name="tenant_name"
@@ -141,7 +139,7 @@ export function AuthPage({
                 />
               </label>
               <label className="field">
-                <span>표시 이름</span>
+                <span>Display name</span>
                 <input
                   type="text"
                   name="display_name"
@@ -155,7 +153,7 @@ export function AuthPage({
           )}
 
           <label className="field">
-            <span>이메일</span>
+            <span>Email</span>
             <input
               type="email"
               name="email"
@@ -165,7 +163,7 @@ export function AuthPage({
             />
           </label>
           <label className="field">
-            <span>비밀번호</span>
+            <span>Password</span>
             <input
               type="password"
               name="password"
@@ -173,11 +171,11 @@ export function AuthPage({
               minLength={12}
               required
               aria-describedby="password-help"
-              placeholder="12자 이상"
+              placeholder="At least 12 characters"
             />
             <small id="password-help" className="field-help">
-              최소 12자를 입력하세요. 비밀번호는 화면이나 브라우저 저장소에
-              보관하지 않습니다.
+              Use at least 12 characters. Passwords are not stored in the page
+              or browser storage.
             </small>
           </label>
 
@@ -198,17 +196,17 @@ export function AuthPage({
             )}
             {loading
               ? registering
-                ? "생성 중…"
-                : "안전하게 확인 중…"
+                ? "Creating…"
+                : "Checking securely…"
               : registering
-                ? "워크스페이스 만들기"
-                : "로그인"}
+                ? "Create workspace"
+                : "Sign in"}
             {!loading && <ArrowRight size={15} aria-hidden="true" />}
           </button>
           <p className="login-register">
-            {registering ? "이미 계정이 있나요? " : "아직 계정이 없나요? "}
+            {registering ? "Already have an account? " : "Need an account? "}
             <Link href={(registering ? loginHref : registerHref) as Route}>
-              {registering ? "로그인" : "워크스페이스 만들기"}
+              {registering ? "Sign in" : "Create workspace"}
             </Link>
           </p>
         </form>
@@ -225,18 +223,19 @@ function textValue(form: FormData, key: string): string {
 function authErrorMessage(error: unknown, registering: boolean): string {
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
-      INVALID_CREDENTIALS: "이메일 또는 비밀번호가 올바르지 않습니다.",
+      INVALID_CREDENTIALS: "The email or password is incorrect.",
       EMAIL_EXISTS:
-        "이미 등록된 이메일입니다. 로그인하거나 다른 이메일을 사용하세요.",
-      REGISTER_CONFLICT: "같은 정보의 워크스페이스가 이미 존재합니다.",
-      NO_TENANT_MEMBERSHIP: "이 계정에 연결된 워크스페이스가 없습니다.",
+        "This email is already registered. Sign in or use another email.",
+      REGISTER_CONFLICT:
+        "A workspace with the same information already exists.",
+      NO_TENANT_MEMBERSHIP: "No workspace is connected to this account.",
       CSRF_ORIGIN_DENIED:
-        "허용되지 않은 출처의 요청입니다. 공식 서비스 주소에서 다시 시도하세요.",
+        "This request came from an unapproved origin. Try again from the official service URL.",
     };
     return messages[error.code] ?? error.message;
   }
   if (error instanceof Error) return error.message;
   return registering
-    ? "워크스페이스를 만들지 못했습니다."
-    : "로그인에 실패했습니다.";
+    ? "The workspace could not be created."
+    : "Sign-in failed.";
 }

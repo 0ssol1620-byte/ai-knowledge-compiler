@@ -52,8 +52,8 @@ export function AdminLive() {
   if (!isAdmin) {
     return (
       <AdminState
-        title="운영 콘솔 접근 제한"
-        message="Owner 또는 Admin 역할이 확인된 세션만 운영 상태를 조회할 수 있습니다."
+        title="Operations console access restricted"
+        message="Only verified Owner or Admin sessions can view operational status."
         denied
       />
     );
@@ -62,8 +62,8 @@ export function AdminLive() {
   if (health.isPending) {
     return (
       <AdminState
-        title="운영 콘솔"
-        message="실제 서비스 상태와 개입 대상을 불러오고 있습니다."
+        title="Operations console"
+        message="Loading live service status and intervention targets."
         busy
       />
     );
@@ -74,11 +74,13 @@ export function AdminLive() {
       health.error instanceof ApiError && health.error.status === 403;
     return (
       <AdminState
-        title={denied ? "운영 콘솔 접근 제한" : "운영 콘솔"}
+        title={
+          denied ? "Operations console access restricted" : "Operations console"
+        }
         message={
           denied
-            ? "현재 세션에는 운영 상태를 조회할 권한이 없습니다."
-            : `운영 상태를 불러오지 못했습니다: ${health.error.message}`
+            ? "This session is not authorized to view operational status."
+            : `Operational status could not be loaded: ${health.error.message}`
         }
         denied={denied}
         retry={
@@ -98,13 +100,13 @@ export function AdminLive() {
     <div className="simple-page admin-page">
       <div className="admin-title-row">
         <div>
-          <h1>운영 콘솔</h1>
+          <h1>Operations console</h1>
           <p>
-            서버가 반환한 상태와 식별자만 표시하며 문서 내용이나 사용자
-            개인정보는 노출하지 않습니다.
+            This console displays only server-reported status and identifiers.
+            Document content and personal data never appear here.
             {data.generatedAt && (
               <small className="evidence-timestamp">
-                스냅샷 · {new Date(data.generatedAt).toLocaleString("ko-KR")}
+                Snapshot · {new Date(data.generatedAt).toLocaleString("en-US")}
               </small>
             )}
           </p>
@@ -118,17 +120,17 @@ export function AdminLive() {
           }}
         >
           <ArrowClockwise size={14} aria-hidden="true" />
-          {health.isFetching ? "새로고침 중…" : "새로고침"}
+          {health.isFetching ? "Refreshing…" : "Refresh"}
         </button>
       </div>
 
       {cards.length === 0 ? (
         <section className="panel honest-state compact">
           <Warning size={21} aria-hidden="true" />
-          <p>API 응답에 표시할 운영 지표가 없습니다.</p>
+          <p>The API returned no operational metrics to display.</p>
         </section>
       ) : (
-        <section className="admin-health-grid" aria-label="운영 상태">
+        <section className="admin-health-grid" aria-label="Operational status">
           {cards.map((card) => {
             const Icon = card.icon;
             return (
@@ -150,8 +152,8 @@ export function AdminLive() {
         <section className="panel admin-dependencies-panel">
           <div className="panel-heading">
             <div>
-              <h2>서비스 의존성</h2>
-              <p>상태 API가 보고한 구성요소만 표시합니다.</p>
+              <h2>Service dependencies</h2>
+              <p>Only components reported by the status API are shown.</p>
             </div>
           </div>
           <div className="admin-dependency-list">
@@ -169,14 +171,14 @@ export function AdminLive() {
       <section className="panel admin-table-panel">
         <div className="panel-heading">
           <div>
-            <h2>작업 개입 필요</h2>
-            <p>재시도 가능 상태와 서버가 허용한 작업만 실행할 수 있습니다.</p>
+            <h2>Jobs requiring intervention</h2>
+            <p>Only retryable states and server-authorized actions can run.</p>
           </div>
         </div>
         {data.interventions.length === 0 ? (
           <div className="honest-state compact">
             <CheckCircle size={21} weight="fill" aria-hidden="true" />
-            <p>현재 API가 보고한 개입 대상 작업이 없습니다.</p>
+            <p>The API reports no jobs requiring intervention.</p>
           </div>
         ) : (
           <div className="admin-table-scroll">
@@ -213,7 +215,7 @@ export function AdminLive() {
         )}
         {retry.isError && (
           <p className="admin-action-error" role="alert">
-            작업을 실행하지 못했습니다: {retry.error.message}
+            The action could not be completed: {retry.error.message}
           </p>
         )}
       </section>
@@ -283,12 +285,12 @@ function DependencyRow({ dependency }: { dependency: AdminDependency }) {
       <span
         className={`dependency-status health-${healthTone(dependency.status)}`}
       >
-        {dependency.status ?? "상태 미제공"}
+        {dependency.status ?? "Status unavailable"}
       </span>
       <small>
         {dependency.detail ??
           (dependency.latencyMs === undefined
-            ? "세부 정보 미제공"
+            ? "Details unavailable"
             : `${formatNumber(dependency.latencyMs)}ms`)}
       </small>
     </div>
@@ -327,11 +329,13 @@ function InterventionRow({
             onClick={onRetry}
           >
             <ArrowClockwise size={13} aria-hidden="true" />
-            {pending ? "실행 중…" : (job.actionLabel ?? "Retry job")}
+            {pending ? "Running…" : (job.actionLabel ?? "Retry job")}
           </button>
         ) : (
           <span className="muted-copy">
-            {job.retryable ? "작업 URL 미제공" : "자동 재시도 불가"}
+            {job.retryable
+              ? "Action URL unavailable"
+              : "Automatic retry unavailable"}
           </span>
         )}
       </td>
@@ -370,7 +374,7 @@ function AdminState({
         <p>{message}</p>
         {retry && (
           <button className="secondary-button" type="button" onClick={retry}>
-            다시 시도
+            Try again
           </button>
         )}
       </div>

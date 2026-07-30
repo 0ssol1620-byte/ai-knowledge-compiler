@@ -39,7 +39,7 @@ export function KnowledgeStudio() {
           Perspective
         </button>
       </header>
-      <nav className="knowledge-tabs" aria-label="지식베이스 보기">
+      <nav className="knowledge-tabs" aria-label="Knowledge base views">
         {tabs.map((tab) => (
           <button
             type="button"
@@ -57,10 +57,10 @@ export function KnowledgeStudio() {
         <div className="honest-state knowledge-empty">
           <Graph size={28} weight="duotone" aria-hidden="true" />
           <div>
-            <h2>표시할 지식베이스를 선택하세요.</h2>
+            <h2>Select a knowledge base to explore</h2>
             <p>
-              라이브 데이터가 선택되기 전에는 샘플 엔터티나 관계 수를 표시하지
-              않습니다.
+              Sample entity and relationship counts are not shown before live
+              data is selected.
             </p>
           </div>
         </div>
@@ -69,7 +69,7 @@ export function KnowledgeStudio() {
           <aside className="knowledge-explorer">
             <label>
               <MagnifyingGlass size={14} aria-hidden="true" />
-              <input type="search" placeholder="노트 또는 엔터티 검색" />
+              <input type="search" placeholder="Search notes or entities" />
             </label>
             <span>NOTES · SAMPLE</span>
             {[
@@ -106,7 +106,10 @@ export function KnowledgeStudio() {
                 </button>
               </div>
             </header>
-            <div className="graph-sample" aria-label="샘플 로컬 지식 그래프">
+            <div
+              className="graph-sample"
+              aria-label="Sample local knowledge graph"
+            >
               <svg viewBox="0 0 800 480" aria-hidden="true">
                 <path d="M400 240 L210 120 M400 240 L594 112 M400 240 L650 300 M400 240 L230 345 M400 240 L405 60" />
                 <path d="M210 120 L405 60 M594 112 L650 300 M230 345 L650 300" />
@@ -175,7 +178,7 @@ export function KnowledgeStudio() {
               </li>
             </ol>
             <button className="secondary-button" type="button">
-              원본 근거 열기
+              Open source evidence
               <ArrowRight size={14} aria-hidden="true" />
             </button>
           </aside>

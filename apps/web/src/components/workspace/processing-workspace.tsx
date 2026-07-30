@@ -87,7 +87,7 @@ function DemoProcessingWorkspace() {
           <Link
             href="/"
             className="icon-button back-button"
-            aria-label="프로젝트로 돌아가기"
+            aria-label="Return to projects"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -96,7 +96,7 @@ function DemoProcessingWorkspace() {
               <FileText size={20} weight="duotone" />
             </span>
             <div>
-              <p>RAG 근거 충실도 연구</p>
+              <p>RAG evidence fidelity study</p>
               <h1>evidence-grounded-rag-evaluation.pdf</h1>
             </div>
           </div>
@@ -134,7 +134,7 @@ function DemoProcessingWorkspace() {
         </div>
       </header>
 
-      <section className="pipeline-bar" aria-label="처리 진행 상황">
+      <section className="pipeline-bar" aria-label="Processing progress">
         <div className="pipeline-summary">
           <div
             className="overall-progress-ring"
@@ -144,12 +144,14 @@ function DemoProcessingWorkspace() {
           </div>
           <div>
             <strong>
-              {processingStarted ? "지식 컴파일 진행 중" : "처리 전 견적 확인"}
+              {processingStarted
+                ? "Compiling knowledge"
+                : "Review preflight estimate"}
             </strong>
             <span>
               {processingStarted
                 ? "16 / 18 pages usable"
-                : "승인 전에는 크레딧을 사용하지 않습니다."}
+                : "No credits are used before approval."}
             </span>
           </div>
         </div>
@@ -205,7 +207,10 @@ function DemoProcessingWorkspace() {
         </div>
       </section>
 
-      <nav className="mobile-workspace-tabs" aria-label="모바일 처리 작업 보기">
+      <nav
+        className="mobile-workspace-tabs"
+        aria-label="Mobile processing views"
+      >
         {(
           [
             ["progress", "Progress"],
@@ -236,20 +241,20 @@ function DemoProcessingWorkspace() {
             "mobile-progress-panel mobile-panel",
             mobileTab !== "progress" && "mobile-hidden",
           )}
-          aria-label="처리 진행 상세"
+          aria-label="Processing details"
         >
           <div className="mobile-progress-overview">
             <div
               className="overall-progress-ring"
               style={{ "--progress": "68%" } as CSSProperties}
-              aria-label="전체 진행률 68%"
+              aria-label="Overall progress 68%"
             >
               <strong>68%</strong>
             </div>
             <div>
-              <span className="mobile-progress-label">현재 단계</span>
-              <strong>지식 구조 생성</strong>
-              <span>18페이지 중 16페이지 사용 가능</span>
+              <span className="mobile-progress-label">Current stage</span>
+              <strong>Building knowledge structure</strong>
+              <span>16 of 18 pages available</span>
             </div>
           </div>
           <ol className="mobile-stage-list">
@@ -276,14 +281,19 @@ function DemoProcessingWorkspace() {
                 </span>
                 <b
                   className="mobile-stage-value"
-                  aria-label={stage.done ? "완료" : `진행률 ${stage.progress}%`}
+                  aria-label={
+                    stage.done ? "Complete" : `Progress ${stage.progress}%`
+                  }
                 >
                   {stage.done ? "Done" : `${stage.progress}%`}
                 </b>
               </li>
             ))}
           </ol>
-          <div className="mobile-credit-summary" aria-label="크레딧 사용 요약">
+          <div
+            className="mobile-credit-summary"
+            aria-label="Credit usage summary"
+          >
             <span>
               <small>Estimated</small>
               <strong>42</strong>
@@ -381,7 +391,7 @@ function DemoProcessingWorkspace() {
       {reviewOpen && (
         <button
           className="drawer-scrim"
-          aria-label="검토 창 닫기"
+          aria-label="Close review pane"
           onClick={() => setReviewOpen(false)}
         />
       )}
@@ -437,23 +447,23 @@ function EstimateDialog({
             <Gauge size={22} weight="duotone" aria-hidden="true" />
           </span>
           <div>
-            <h2 id="estimate-title">처리 전 견적을 확인하세요</h2>
+            <h2 id="estimate-title">Review the estimate before processing</h2>
             <p>
-              문서 구조를 빠르게 분석한 범위이며 실제 경로에 따라 차액을
-              반환합니다.
+              This estimate comes from a fast structural analysis. Any
+              difference is returned after the actual route completes.
             </p>
           </div>
         </div>
         <div className="estimate-page-grid">
           <article>
-            <small>전체</small>
+            <small>Total</small>
             <strong>{demoEstimate.total_pages}</strong>
             <span>pages</span>
           </article>
           <article>
             <small>Native text</small>
             <strong>{demoEstimate.native_pages}</strong>
-            <span>낮은 비용 경로</span>
+            <span>Lower-cost route</span>
           </article>
           <article>
             <small>Visual parsing</small>
@@ -461,60 +471,60 @@ function EstimateDialog({
             <span>OCR·layout</span>
           </article>
           <article>
-            <small>Precision 후보</small>
+            <small>Precision candidates</small>
             <strong>{demoEstimate.precision_candidate_pages}</strong>
-            <span>선택적 교차 검증</span>
+            <span>Selective cross-checking</span>
           </article>
         </div>
         <div className="estimate-details">
           <div>
-            <span>검출된 구조</span>
+            <span>Detected structure</span>
             <strong>
-              표 {demoEstimate.tables} · 수식 {demoEstimate.formulas} · 그림{" "}
-              {demoEstimate.figures}
+              Tables {demoEstimate.tables} · formulas {demoEstimate.formulas} ·
+              figures {demoEstimate.figures}
             </strong>
           </div>
           <div>
-            <span>예상 시간</span>
+            <span>Estimated time</span>
             <strong>
               {demoEstimate.expected_duration_min}–
-              {demoEstimate.expected_duration_max}분
+              {demoEstimate.expected_duration_max} min
             </strong>
           </div>
           <div>
-            <span>외부 모델 API</span>
+            <span>External model APIs</span>
             <strong className="safe-value">
               <LockKey size={14} weight="fill" aria-hidden="true" />
-              사용 안 함
+              Not used
             </strong>
           </div>
         </div>
         <div className="estimate-credit">
           <div>
-            <span>예상 크레딧</span>
+            <span>Estimated credits</span>
             <strong>
               {demoEstimate.credit_min}–{demoEstimate.credit_max}
             </strong>
           </div>
           <p>
-            최대 <strong>{demoEstimate.credit_max} credits</strong>를 예약하고,
-            사용하지 않은 금액은 자동으로 즉시 반환합니다.
+            Reserve up to <strong>{demoEstimate.credit_max} credits</strong>.
+            Unused credits are returned immediately.
           </p>
         </div>
         <label className="consent-check">
           <input ref={consentRef} type="checkbox" defaultChecked />
           <span>
-            최대 {demoEstimate.credit_max} credits 예약과 실패 페이지 자동 환불
-            정책을 확인했습니다.
+            I reviewed the {demoEstimate.credit_max}-credit maximum reservation
+            and automatic return policy for failed pages.
           </span>
         </label>
         <div className="modal-actions">
           <button type="button" className="secondary-button" onClick={onCancel}>
-            옵션 수정
+            Change options
           </button>
           <button type="button" className="primary-button" onClick={onConfirm}>
             <Check size={16} weight="bold" aria-hidden="true" />
-            처리 시작
+            Start processing
           </button>
         </div>
       </section>

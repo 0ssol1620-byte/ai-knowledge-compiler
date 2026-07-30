@@ -118,7 +118,7 @@ export function SourceViewer({
         "workspace-panel source-panel",
         fullscreenMode === "fallback" && "source-panel-fullscreen",
       )}
-      aria-label="원본 문서"
+      aria-label="Source document"
     >
       <header className="workspace-panel-header">
         <div>
@@ -128,7 +128,7 @@ export function SourceViewer({
         <div
           className="viewer-tools"
           role="toolbar"
-          aria-label="원본 보기 도구"
+          aria-label="Source viewer tools"
         >
           <button
             className="tool-button"
@@ -148,7 +148,7 @@ export function SourceViewer({
             type="button"
             onClick={() => setRawTextVisible((visible) => !visible)}
             aria-pressed={rawTextVisible}
-            aria-label="원문 텍스트 레이어"
+            aria-label="Source text layer"
           >
             <FileText size={15} aria-hidden="true" />
             Raw text
@@ -157,7 +157,7 @@ export function SourceViewer({
           <button
             className="icon-button compact"
             type="button"
-            aria-label="축소"
+            aria-label="Zoom out"
             onClick={() => setZoom((value) => Math.max(60, value - 10))}
           >
             <MagnifyingGlassMinus size={16} aria-hidden="true" />
@@ -166,7 +166,7 @@ export function SourceViewer({
           <button
             className="icon-button compact"
             type="button"
-            aria-label="확대"
+            aria-label="Zoom in"
             onClick={() => setZoom((value) => Math.min(180, value + 10))}
           >
             <MagnifyingGlassPlus size={16} aria-hidden="true" />
@@ -174,7 +174,7 @@ export function SourceViewer({
           <button
             className="icon-button compact"
             type="button"
-            aria-label={`페이지 회전, 현재 ${rotation}도`}
+            aria-label={`Rotate page, currently ${rotation} degrees`}
             onClick={() => setRotation((value) => (value + 90) % 360)}
           >
             <ArrowClockwise size={16} aria-hidden="true" />
@@ -182,7 +182,7 @@ export function SourceViewer({
           <button
             className="icon-button compact"
             type="button"
-            aria-label={fullscreen ? "전체 화면 종료" : "전체 화면"}
+            aria-label={fullscreen ? "Exit full screen" : "Full screen"}
             aria-pressed={fullscreen}
             onClick={() => void toggleFullscreen()}
           >
@@ -200,7 +200,7 @@ export function SourceViewer({
           style={{
             transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
           }}
-          aria-label={`원본 ${page.page_number}페이지`}
+          aria-label={`Source page ${page.page_number}`}
         >
           {sample ? (
             <SamplePaper pageNumber={page.page_number} />
@@ -212,18 +212,20 @@ export function SourceViewer({
                 <img
                   className="source-preview-image"
                   src={apiAbsoluteUrl(page.thumbnail_url)}
-                  alt={`원본 ${page.page_number}페이지 미리보기`}
+                  alt={`Preview of source page ${page.page_number}`}
                 />
               ) : (
                 <div className="honest-state compact">
-                  <p>이 페이지의 안전한 미리보기가 아직 생성되지 않았습니다.</p>
+                  <p>
+                    A safe preview has not been generated for this page yet.
+                  </p>
                 </div>
               )}
               <span className="paper-page-number">{page.page_number}</span>
             </div>
           )}
           {overlayVisible && (
-            <div className="bbox-layer" aria-label="검출된 문서 블록">
+            <div className="bbox-layer" aria-label="Detected document blocks">
               {blocks.flatMap((block) =>
                 block.source_refs.flatMap((source, sourceIndex) => {
                   const bbox = source.bbox1000;
@@ -273,7 +275,10 @@ export function SourceViewer({
             </div>
           )}
           {rawTextVisible && (
-            <div className="source-text-layer" aria-label="추출된 원문 텍스트">
+            <div
+              className="source-text-layer"
+              aria-label="Extracted source text"
+            >
               {rawBlocks.length > 0 ? (
                 rawBlocks.map((block) => (
                   <button
@@ -285,14 +290,14 @@ export function SourceViewer({
                     )}
                     style={bboxStyle(block.source_refs[0]!.bbox1000!)}
                     onClick={() => onSelectBlock(block.id)}
-                    aria-label={`${block.type} ${block.order}번 원문: ${block.source_text}`}
+                    aria-label={`${block.type} source block ${block.order}: ${block.source_text}`}
                   >
                     {block.source_text}
                   </button>
                 ))
               ) : (
                 <p className="source-text-empty">
-                  이 페이지에는 표시할 원문 텍스트가 없습니다.
+                  There is no source text to display on this page.
                 </p>
               )}
             </div>
@@ -320,31 +325,31 @@ function SamplePaper({ pageNumber }: { pageNumber: number }) {
       <div className="paper-journal">
         SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
       </div>
-      <h2>검색 증강 생성 시스템의 근거 충실도 평가</h2>
-      <p className="paper-authors">Demo document · 실제 원본이 아닙니다</p>
+      <h2>Evaluating evidence fidelity in retrieval-augmented generation</h2>
+      <p className="paper-authors">Demo document · not an actual source</p>
       <hr />
-      <h3>4.2 실험 결과</h3>
+      <h3>4.2 Experimental results</h3>
       <p>
-        이 내용은 UI 검증용 샘플입니다. 운영 모드에서는 API가 발급한 원본 페이지
-        미리보기와 저장된 bbox만 표시합니다.
+        This content is a UI validation sample. Production mode displays only
+        the API-issued source preview and stored bounding boxes.
       </p>
       <table>
-        <caption>표 3. 샘플 비교</caption>
+        <caption>Table 3. Sample comparison</caption>
         <thead>
           <tr>
-            <th>구성</th>
-            <th>근거 충실도</th>
+            <th>Configuration</th>
+            <th>Evidence fidelity</th>
             <th>Unsupported claim</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>기준</td>
+            <td>Baseline</td>
             <td>0.86</td>
             <td>3.8%</td>
           </tr>
           <tr>
-            <td>검증 적용</td>
+            <td>Verification enabled</td>
             <td>0.94</td>
             <td>1.1%</td>
           </tr>
@@ -386,7 +391,8 @@ function fallbackBlocks(pageNumber: number): CanonicalBlock[] {
       order: 1,
       type: "title",
       markdown: "",
-      source_text: "검색 증강 생성 시스템의 근거 충실도 평가",
+      source_text:
+        "Evaluating evidence fidelity in retrieval-augmented generation",
       source_refs: ref([112, 94, 882, 158]),
     },
     {
@@ -395,7 +401,7 @@ function fallbackBlocks(pageNumber: number): CanonicalBlock[] {
       order: 2,
       type: "heading",
       markdown: "",
-      source_text: "4.2 실험 결과",
+      source_text: "4.2 Experimental results",
       source_refs: ref([106, 194, 452, 240]),
     },
     {
@@ -405,7 +411,7 @@ function fallbackBlocks(pageNumber: number): CanonicalBlock[] {
       type: "paragraph",
       markdown: "",
       source_text:
-        "이 내용은 UI 검증용 샘플입니다. 운영 모드에서는 원본 텍스트를 표시합니다.",
+        "This content is a UI validation sample. Production mode displays source text.",
       source_refs: ref([108, 258, 892, 364]),
     },
     {
@@ -415,7 +421,7 @@ function fallbackBlocks(pageNumber: number): CanonicalBlock[] {
       type: "table",
       markdown: "",
       source_text:
-        "구성 근거 충실도 Unsupported claim 기준 0.86 3.8% 검증 적용 0.94 1.1%",
+        "Configuration Evidence fidelity Unsupported claim Baseline 0.86 3.8% Verification enabled 0.94 1.1%",
       source_refs: ref([112, 402, 888, 644]),
     },
   ];

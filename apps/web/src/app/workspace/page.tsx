@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ProcessingWorkspace } from "@/components/workspace/processing-workspace";
 
 export const metadata: Metadata = {
-  title: "처리 작업",
+  title: "Processing workspace",
 };
 
 export default function WorkspacePage() {
@@ -19,7 +19,7 @@ function WorkspaceSkeleton() {
   return (
     <div
       className="workspace-skeleton"
-      aria-label="처리 작업 불러오는 중"
+      aria-label="Loading processing workspace"
       aria-busy="true"
     >
       <div className="skeleton-bar" />

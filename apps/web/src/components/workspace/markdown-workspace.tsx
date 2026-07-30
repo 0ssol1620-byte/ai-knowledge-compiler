@@ -109,7 +109,7 @@ export function MarkdownWorkspace({
   return (
     <section
       className="workspace-panel markdown-panel"
-      aria-label="Markdown 결과"
+      aria-label="Markdown output"
     >
       <header className="workspace-panel-header">
         <div>
@@ -225,7 +225,7 @@ export function MarkdownWorkspace({
               <button
                 type="button"
                 className="result-block-select"
-                aria-label={`${block.type} ${block.order}번 블록과 원본 연결`}
+                aria-label={`Link ${block.type} block ${block.order} to source`}
                 onClick={() => onSelectBlock(block.id)}
               >
                 <span className="block-type">{block.type}</span>

@@ -14,9 +14,9 @@ import {
 } from "@/lib/benchmark-public";
 
 const statusLabel = {
-  available: "검증 완료",
-  source_adapter_ready: "수집기 검증 완료",
-  evidence_required: "코퍼스 필요",
+  available: "Verified",
+  source_adapter_ready: "Source adapter verified",
+  evidence_required: "Corpus required",
 } as const;
 
 export function BenchmarkLab() {
@@ -29,8 +29,8 @@ export function BenchmarkLab() {
         <div>
           <h1>Benchmark Lab</h1>
           <p>
-            문서 유형별 텍스트·숫자·표·출처 정확도와 처리 지연, 페이지당 비용을
-            같은 코퍼스와 평가기로 비교합니다.
+            Compare text, number, table, and provenance accuracy alongside
+            latency and per-page cost using the same corpus and evaluator.
           </p>
         </div>
         <span className="benchmark-release-state" data-ready={isAvailable}>
@@ -39,7 +39,9 @@ export function BenchmarkLab() {
           ) : (
             <LockKey size={17} aria-hidden="true" />
           )}
-          {isAvailable ? "공개 가능한 증거 번들" : "공개 성능 수치 잠금"}
+          {isAvailable
+            ? "Publishable evidence bundle"
+            : "Public metrics locked"}
         </span>
       </header>
 
@@ -51,12 +53,13 @@ export function BenchmarkLab() {
           <MagnifyingGlass size={22} aria-hidden="true" />
           <div>
             <h2 id="benchmark-evidence-title">
-              아직 공개할 수 있는 성능 수치가 없습니다.
+              No performance metrics are ready for publication.
             </h2>
             <p>
-              DART 수집기와 평가 계약은 준비됐습니다. 권리가 확인된 골든 코퍼스,
-              독립 라벨 검수, 실제 모델·하드웨어 실행과 승인된 증거 번들이
-              갖춰질 때까지 숫자를 만들거나 0으로 대체하지 않습니다.
+              The DART adapter and evaluation contract are ready. Metrics remain
+              unavailable until a rights-cleared golden corpus, independent
+              label review, real model and hardware runs, and an approved
+              evidence bundle exist.
             </p>
           </div>
         </section>
@@ -68,26 +71,26 @@ export function BenchmarkLab() {
       >
         <div className="benchmark-results-heading">
           <div>
-            <h2 id="benchmark-results-title">문서 유형별 결과</h2>
-            <p>측정되지 않은 셀은 ‘측정 전’으로 유지됩니다.</p>
+            <h2 id="benchmark-results-title">Results by document type</h2>
+            <p>Unmeasured cells remain “Not measured.”</p>
           </div>
           <span>Evaluator {snapshot.evaluator_version}</span>
         </div>
         <div className="benchmark-table-frame">
           <table>
             <caption className="sr-only">
-              공개 가능한 문서 유형별 벤치마크 결과
+              Publishable benchmark results by document type
             </caption>
             <thead>
               <tr>
-                <th scope="col">문서 유형</th>
-                <th scope="col">상태</th>
-                <th scope="col">텍스트</th>
-                <th scope="col">숫자</th>
-                <th scope="col">표</th>
-                <th scope="col">출처</th>
-                <th scope="col">p95 지연</th>
-                <th scope="col">페이지 비용</th>
+                <th scope="col">Document type</th>
+                <th scope="col">Status</th>
+                <th scope="col">Text</th>
+                <th scope="col">Numbers</th>
+                <th scope="col">Tables</th>
+                <th scope="col">Provenance</th>
+                <th scope="col">p95 latency</th>
+                <th scope="col">Cost per page</th>
               </tr>
             </thead>
             <tbody>
@@ -126,39 +129,52 @@ export function BenchmarkLab() {
         <div className="benchmark-method-intro">
           <Gauge size={22} aria-hidden="true" />
           <div>
-            <h2 id="benchmark-method-title">점수보다 먼저 고정하는 것</h2>
+            <h2 id="benchmark-method-title">What is fixed before the score</h2>
             <p>
-              평균값 하나로 실패 사례를 숨기지 않습니다. 결과에는 코퍼스,
-              평가기, 모델, 실행 환경과 원시 실패가 함께 묶입니다.
+              A single average never hides failure cases. Each result bundles
+              the corpus, evaluator, model, runtime environment, and raw
+              failures.
             </p>
           </div>
         </div>
         <dl>
           <div>
-            <dt>코퍼스</dt>
-            <dd>권리 확인, 분할 해시, 홀드아웃 격리, 라벨 검수</dd>
+            <dt>Corpus</dt>
+            <dd>
+              Rights clearance, split hashes, holdout isolation, label review
+            </dd>
           </div>
           <div>
-            <dt>평가</dt>
-            <dd>문자·숫자·표·수식·읽기 순서·출처를 별도 측정</dd>
+            <dt>Evaluation</dt>
+            <dd>
+              Text, numbers, tables, formulas, reading order, and provenance
+            </dd>
           </div>
           <div>
-            <dt>실행</dt>
-            <dd>모델 리비전, 이미지 다이제스트, GPU와 cold/warm 반복</dd>
+            <dt>Execution</dt>
+            <dd>
+              Model revision, image digest, GPU, and cold/warm repetitions
+            </dd>
           </div>
           <div>
-            <dt>공개</dt>
-            <dd>원시 실패 포함, 증거 번들 SHA-256과 승인 기록 필요</dd>
+            <dt>Publication</dt>
+            <dd>
+              Raw failures, evidence bundle SHA-256, and approval record
+              required
+            </dd>
           </div>
         </dl>
       </section>
 
-      <section className="benchmark-source-note" aria-label="DART 데이터 경계">
+      <section
+        className="benchmark-source-note"
+        aria-label="DART data boundary"
+      >
         <Database size={20} aria-hidden="true" />
         <p>
-          OpenDART는 공개 원문 수집에만 사용합니다. 수집된 사업보고서는 자동으로
-          정답 데이터가 되지 않으며, 사용자 문서나 고객 데이터는 벤치마크에
-          사용하지 않습니다.
+          OpenDART is used only to collect public source documents. A filing
+          does not automatically become ground truth, and user or customer
+          documents are never used for benchmarks.
         </p>
       </section>
     </main>

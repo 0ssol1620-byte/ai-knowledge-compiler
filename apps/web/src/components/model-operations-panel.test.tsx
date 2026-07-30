@@ -71,7 +71,7 @@ describe("ModelOperationsPanel", () => {
       target: { value: "CAB-2026-0730" },
     });
     fireEvent.change(screen.getByLabelText("Operator reason"), {
-      target: { value: "검증된 후보를 승격합니다." },
+      target: { value: "Promote the verified candidate." },
     });
     fireEvent.click(screen.getByRole("button", { name: "Promote model" }));
 
@@ -90,7 +90,7 @@ describe("ModelOperationsPanel", () => {
     expect(JSON.parse(String(promotionCall?.[1]?.body))).toEqual({
       expected_generation: 7,
       approval_ref: "CAB-2026-0730",
-      reason: "검증된 후보를 승격합니다.",
+      reason: "Promote the verified candidate.",
       benchmark_sha256: digest,
       recipe_sha256: digest,
     });

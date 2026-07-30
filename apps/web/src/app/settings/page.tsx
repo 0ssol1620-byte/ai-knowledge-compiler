@@ -13,7 +13,7 @@ import type { Metadata } from "next";
 import { SettingsLive } from "@/components/settings-live";
 
 export const metadata: Metadata = {
-  title: "설정",
+  title: "Settings",
 };
 
 export default function SettingsPage() {
@@ -26,25 +26,25 @@ export default function SettingsPage() {
 function DemoSettingsPage() {
   return (
     <div className="simple-page settings-page">
-      <h1>설정</h1>
+      <h1>Settings</h1>
       <p>
-        데이터 보존, 외부 처리, 역할과 크레딧 정책을 워크스페이스 단위로
-        관리합니다.
+        Manage retention, external processing, roles, and credit policy for this
+        workspace.
       </p>
 
       <div className="settings-layout">
-        <nav className="settings-nav" aria-label="설정 섹션">
+        <nav className="settings-nav" aria-label="Settings sections">
           <a href="#privacy" className="active">
             <ShieldCheck size={16} weight="fill" />
-            개인정보·처리
+            Privacy & processing
           </a>
           <a href="#retention">
             <Database size={16} />
-            보존·삭제
+            Retention & deletion
           </a>
           <a href="#members">
             <UsersThree size={16} />
-            멤버·역할
+            Members & roles
           </a>
           <a href="#api">
             <Key size={16} />
@@ -52,7 +52,7 @@ function DemoSettingsPage() {
           </a>
           <a href="#billing">
             <CreditCard size={16} />
-            플랜·크레딧
+            Plan & credits
           </a>
         </nav>
 
@@ -60,11 +60,8 @@ function DemoSettingsPage() {
           <section className="settings-section" id="privacy">
             <header>
               <div>
-                <h2>외부 처리 정책</h2>
-                <p>
-                  모델 제공자에게 페이지를 전송하는 기능은 기본적으로 꺼져
-                  있습니다.
-                </p>
+                <h2>External processing policy</h2>
+                <p>Sending pages to model providers is off by default.</p>
               </div>
               <span className="policy-state safe">
                 <LockKey size={13} weight="fill" />
@@ -73,29 +70,30 @@ function DemoSettingsPage() {
             </header>
             <label className="setting-row">
               <span>
-                <strong>외부 모델 API fallback</strong>
+                <strong>External model API fallback</strong>
                 <small>
-                  내부 parser가 실패한 최소 페이지에만 사용하며 매번 사전
-                  고지합니다.
+                  Used only for the minimum set of pages that internal parsers
+                  cannot process, with notice before every use.
                 </small>
               </span>
               <input type="checkbox" className="switch" />
             </label>
             <label className="setting-row">
               <span>
-                <strong>제품 개선 데이터 제공</strong>
+                <strong>Product improvement data</strong>
                 <small>
-                  명시적 opt-in 전에는 어떤 문서나 수정 내용도 학습 pool에
-                  들어가지 않습니다.
+                  No document or correction enters a training pool before
+                  explicit opt-in.
                 </small>
               </span>
               <input type="checkbox" className="switch" />
             </label>
             <label className="setting-row">
               <span>
-                <strong>미리보기에서 감지된 비밀정보 마스킹</strong>
+                <strong>Mask detected secrets in previews</strong>
                 <small>
-                  원본은 보존하고 화면과 외부 전송 후보에서만 가립니다.
+                  Preserve the source and mask only the UI and external transfer
+                  candidates.
                 </small>
               </span>
               <input type="checkbox" className="switch" defaultChecked />
@@ -105,53 +103,55 @@ function DemoSettingsPage() {
           <section className="settings-section" id="retention">
             <header>
               <div>
-                <h2>보존·삭제</h2>
-                <p>원본과 파생 데이터의 생명주기를 분리합니다.</p>
+                <h2>Retention & deletion</h2>
+                <p>Manage source and derived-data lifecycles separately.</p>
               </div>
             </header>
             <div className="retention-grid">
               <label>
-                <span>검증된 원본</span>
+                <span>Verified sources</span>
                 <select defaultValue="7">
-                  <option value="1">24시간</option>
-                  <option value="7">7일</option>
-                  <option value="30">30일</option>
-                  <option value="project">프로젝트 기간</option>
+                  <option value="1">24 hours</option>
+                  <option value="7">7 days</option>
+                  <option value="30">30 days</option>
+                  <option value="project">Project lifetime</option>
                 </select>
               </label>
               <label>
                 <span>Raw model response</span>
                 <select defaultValue="7">
-                  <option value="1">24시간</option>
-                  <option value="7">7일</option>
-                  <option value="30">30일</option>
+                  <option value="1">24 hours</option>
+                  <option value="7">7 days</option>
+                  <option value="30">30 days</option>
                 </select>
               </label>
               <label>
-                <span>최종 export</span>
+                <span>Final exports</span>
                 <select defaultValue="30">
-                  <option value="7">7일</option>
-                  <option value="30">30일</option>
-                  <option value="project">프로젝트 기간</option>
+                  <option value="7">7 days</option>
+                  <option value="30">30 days</option>
+                  <option value="project">Project lifetime</option>
                 </select>
               </label>
             </div>
             <div className="deletion-assurance">
               <Check size={15} weight="bold" />
-              삭제 시 source, render, crop, raw response, export, vector index와
-              cache를 모두 확인한 뒤 content 없는 deletion receipt를 발급합니다.
+              Deletion checks source, render, crop, raw response, export, vector
+              index, and cache before issuing a content-free deletion receipt.
             </div>
           </section>
 
           <section className="settings-section" id="members">
             <header>
               <div>
-                <h2>워크스페이스</h2>
-                <p>역할별로 프로젝트·검토·billing 권한을 분리합니다.</p>
+                <h2>Workspace</h2>
+                <p>
+                  Separate project, review, and billing permissions by role.
+                </p>
               </div>
               <button type="button" className="secondary-button compact">
                 <Buildings size={14} />
-                멤버 초대
+                Invite member
               </button>
             </header>
             <div className="member-row">
@@ -165,9 +165,9 @@ function DemoSettingsPage() {
           </section>
 
           <div className="settings-save">
-            <span>변경 내용은 감사 로그에 기록됩니다.</span>
+            <span>Changes are recorded in the audit log.</span>
             <button className="primary-button" type="button">
-              설정 저장
+              Save settings
             </button>
           </div>
         </div>

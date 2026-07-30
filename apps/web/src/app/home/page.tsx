@@ -8,7 +8,7 @@ import {
 import { demoProjects } from "@/lib/demo-data";
 
 export const metadata: Metadata = {
-  title: "대시보드",
+  title: "Workspace overview",
 };
 
 const demoSnapshot: WorkspaceDashboardSnapshot = {
@@ -24,7 +24,7 @@ const demoSnapshot: WorkspaceDashboardSnapshot = {
   external_pages: 0,
   projects: demoProjects.map((project, index) => ({
     ...project,
-    owner_name: index === 0 ? "김데모" : "샘플 팀",
+    owner_name: index === 0 ? "Demo Kim" : "Sample team",
   })),
 };
 

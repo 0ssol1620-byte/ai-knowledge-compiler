@@ -31,8 +31,8 @@ export function VerifyEmailPage({
   );
   const [message, setMessage] = useState(
     expectToken
-      ? "일회용 확인 링크를 검사하고 있습니다…"
-      : "확인 링크가 올바르지 않거나 만료되었습니다.",
+      ? "Checking your one-time verification link…"
+      : "The verification link is invalid or has expired.",
   );
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function VerifyEmailPage({
     if (!verificationToken) {
       queueMicrotask(() => {
         setState("invalid");
-        setMessage("확인 링크가 올바르지 않거나 만료되었습니다.");
+        setMessage("The verification link is invalid or has expired.");
       });
       return;
     }
@@ -65,7 +65,9 @@ export function VerifyEmailPage({
           roles: session.roles,
         });
         setState("verified");
-        setMessage("이메일 확인을 마쳤으며 무료 크레딧을 사용할 수 있습니다.");
+        setMessage(
+          "Your email is verified and free credits are now available.",
+        );
       })
       .catch((reason: unknown) => {
         setState("invalid");
@@ -78,10 +80,10 @@ export function VerifyEmailPage({
       <section className="login-story">
         <BrandMark />
         <div className="login-story-copy">
-          <h1>소유권을 확인한 계정만 문서를 처리할 수 있습니다.</h1>
+          <h1>Only verified account owners can process documents.</h1>
           <p>
-            확인 링크는 한 번만 검사합니다. 토큰 원문은 서버에 저장하지 않으며
-            확인을 마친 링크는 다시 사용할 수 없습니다.
+            Verification links are checked once. Raw tokens are never stored,
+            and a verified link cannot be used again.
           </p>
         </div>
       </section>
@@ -103,10 +105,10 @@ export function VerifyEmailPage({
           <div>
             <h2 ref={heading} tabIndex={-1}>
               {state === "verifying"
-                ? "이메일 확인 중"
+                ? "Verifying email"
                 : state === "verified"
-                  ? "이메일 확인 완료"
-                  : "새 링크를 요청해 주세요"}
+                  ? "Email verified"
+                  : "Request a new link"}
             </h2>
             <p>{message}</p>
           </div>
@@ -120,7 +122,7 @@ export function VerifyEmailPage({
               className="primary-button login-submit"
               href={"/home" as Route}
             >
-              워크스페이스 열기
+              Open workspace
             </Link>
           )}
           {state === "invalid" && (
@@ -128,7 +130,7 @@ export function VerifyEmailPage({
               className="primary-button login-submit"
               href={"/login" as Route}
             >
-              로그인 후 새 링크 요청하기
+              Sign in to request a new link
             </Link>
           )}
         </section>
@@ -139,7 +141,7 @@ export function VerifyEmailPage({
 
 function verificationError(error: unknown): string {
   if (error instanceof ApiError && error.status === 429) {
-    return "확인 시도가 너무 많습니다. 잠시 후 새 링크를 요청해 주세요.";
+    return "Too many verification attempts. Request a new link shortly.";
   }
-  return "확인 링크가 올바르지 않거나, 만료되었거나, 이미 사용되었습니다.";
+  return "The verification link is invalid, expired, or already used.";
 }

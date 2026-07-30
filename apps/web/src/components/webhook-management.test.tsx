@@ -51,7 +51,7 @@ describe("WebhookManagement", () => {
     });
 
     renderPanel();
-    await screen.findByText("등록된 Webhook endpoint가 없습니다.");
+    await screen.findByText("No webhook endpoints are registered.");
     fireEvent.change(screen.getByLabelText("HTTPS endpoint"), {
       target: { value: "https://hooks.example.com/akc" },
     });

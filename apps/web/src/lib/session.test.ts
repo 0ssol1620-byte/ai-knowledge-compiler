@@ -67,7 +67,7 @@ describe("normalizeSessionResponse", () => {
 
   it("rejects a response without identity fields", () => {
     expect(() => normalizeSessionResponse({ tenant_id: "tenant-1" })).toThrow(
-      "필수 사용자 정보",
+      "required user information",
     );
   });
 });

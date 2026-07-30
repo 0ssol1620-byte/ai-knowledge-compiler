@@ -161,7 +161,7 @@ export function PageRail({
     <section
       ref={railRef}
       className="workspace-panel page-rail"
-      aria-label="페이지 탐색"
+      aria-label="Page navigation"
     >
       <header className="workspace-panel-header compact">
         <div>
@@ -175,8 +175,8 @@ export function PageRail({
             activeFilterCount > 0 && "filter-active",
           )}
           type="button"
-          aria-label={`페이지 필터${
-            activeFilterCount ? `, ${activeFilterCount}개 적용됨` : ""
+          aria-label={`Page filters${
+            activeFilterCount ? `, ${activeFilterCount} applied` : ""
           }`}
           aria-expanded={filterOpen}
           aria-controls={filterPanelId}
@@ -189,9 +189,9 @@ export function PageRail({
         <MagnifyingGlass size={14} aria-hidden="true" />
         <input
           type="search"
-          aria-label="페이지 검색"
+          aria-label="Search pages"
           aria-describedby={resultCountId}
-          placeholder="페이지, 상태 또는 경로 검색"
+          placeholder="Search page, status, or route"
           value={query}
           onChange={(event) => setQuery(event.currentTarget.value)}
         />
@@ -208,31 +208,31 @@ export function PageRail({
           }}
         >
           <label>
-            <span>품질</span>
+            <span>Quality</span>
             <select
-              aria-label="품질 필터"
+              aria-label="Quality filter"
               value={qualityFilter}
               onChange={(event) =>
                 setQualityFilter(event.currentTarget.value as QualityFilter)
               }
             >
-              <option value="all">전체 품질</option>
-              <option value="verified">검증됨</option>
-              <option value="warning">경고</option>
-              <option value="review">검토 필요</option>
-              <option value="failed">실패</option>
+              <option value="all">All quality states</option>
+              <option value="verified">Verified</option>
+              <option value="warning">Warning</option>
+              <option value="review">Review required</option>
+              <option value="failed">Failed</option>
             </select>
           </label>
           <label>
-            <span>상태</span>
+            <span>Status</span>
             <select
-              aria-label="처리 상태 필터"
+              aria-label="Processing status filter"
               value={statusFilter}
               onChange={(event) =>
                 setStatusFilter(event.currentTarget.value as StatusFilter)
               }
             >
-              <option value="all">전체 상태</option>
+              <option value="all">All statuses</option>
               {pageStatuses.map((status) => (
                 <option key={status} value={status}>
                   {statusLabel(status)}
@@ -249,7 +249,7 @@ export function PageRail({
               setStatusFilter("all");
             }}
           >
-            필터 초기화
+            Reset filters
           </button>
         </div>
       )}
@@ -259,7 +259,7 @@ export function PageRail({
       <div
         className="page-virtual-list"
         role="navigation"
-        aria-label="검색된 페이지"
+        aria-label="Filtered pages"
       >
         {filteredPages.length > 0 ? (
           <Virtuoso
@@ -336,7 +336,7 @@ export function PageRail({
           />
         ) : (
           <div className="page-filter-empty">
-            <p>조건에 맞는 페이지가 없습니다.</p>
+            <p>No pages match these conditions.</p>
             <button
               type="button"
               className="secondary-button compact"
@@ -346,7 +346,7 @@ export function PageRail({
                 setStatusFilter("all");
               }}
             >
-              검색 및 필터 초기화
+              Clear search and filters
             </button>
           </div>
         )}
@@ -357,29 +357,29 @@ export function PageRail({
 
 function statusLabel(status: PageSummary["status"]): string {
   const labels: Record<PageSummary["status"], string> = {
-    uploaded: "업로드됨",
-    security_scanning: "보안 검사 중",
-    security_verified: "보안 검사 완료",
-    preflighting: "사전 분석 중",
-    preflighted: "사전 분석 완료",
-    native_extracting: "Native 추출 중",
-    ocr_queued: "OCR 대기",
-    ocr_running: "시각 인식 중",
-    normalizing: "구조 복원 중",
-    validating: "결과 검증 중",
-    completed: "검증 완료",
-    needs_review: "검토 필요",
-    retry_scheduled: "재처리 예약",
-    failed: "처리 실패",
+    uploaded: "Uploaded",
+    security_scanning: "Security scan",
+    security_verified: "Security verified",
+    preflighting: "Preflight analysis",
+    preflighted: "Preflight complete",
+    native_extracting: "Native extraction",
+    ocr_queued: "OCR queued",
+    ocr_running: "Visual recognition",
+    normalizing: "Restoring structure",
+    validating: "Validating result",
+    completed: "Verified",
+    needs_review: "Review required",
+    retry_scheduled: "Retry scheduled",
+    failed: "Processing failed",
   };
   return labels[status];
 }
 
 function qualityLabel(state: PageSummary["quality_state"]): string {
   return {
-    verified: "검증됨",
-    warning: "경고 있음",
-    review: "검토 필요",
-    failed: "실패",
+    verified: "Verified",
+    warning: "Warning",
+    review: "Review required",
+    failed: "Failed",
   }[state];
 }

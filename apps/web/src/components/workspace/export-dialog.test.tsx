@@ -58,7 +58,9 @@ describe("ExportDialog Vault merge preview", () => {
       />,
     );
 
-    expect(screen.getByText("원본 Vault는 변경하지 않음")).toBeVisible();
+    expect(
+      screen.getByText("The source Vault is never modified"),
+    ).toBeVisible();
     const vault = new File(["PK\u0003\u0004fixture"], "vault.zip", {
       type: "application/zip",
     });
@@ -69,7 +71,7 @@ describe("ExportDialog Vault merge preview", () => {
       target: { value: "rename_incoming" },
     });
     fireEvent.click(
-      screen.getByRole("button", { name: "생성하고 충돌 미리보기" }),
+      screen.getByRole("button", { name: "Create and preview conflicts" }),
     );
 
     await waitFor(() =>
@@ -80,11 +82,11 @@ describe("ExportDialog Vault merge preview", () => {
       ),
     );
     expect(
-      await screen.findByText("선택한 정책으로 안전하게 병합 가능"),
+      await screen.findByText("Safe to merge with the selected policy"),
     ).toBeVisible();
     expect(screen.getByText("Notes/Overview.md")).toBeVisible();
     expect(
-      screen.getByRole("button", { name: "검토 후 패키지 다운로드" }),
+      screen.getByRole("button", { name: "Download package after review" }),
     ).toBeVisible();
   });
 });

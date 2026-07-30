@@ -78,25 +78,25 @@ export function BillingManagement() {
         <div className="honest-state compact">
           <Warning size={20} aria-hidden="true" />
           <p>
-            이 환경에는 검증된 결제 사업자가 연결되지 않았습니다. 크레딧 구매를
-            가장하지 않습니다.
+            No verified payment provider is connected to this environment.
+            Credit purchases remain unavailable rather than simulated.
           </p>
         </div>
       ) : packs.isPending ? (
         <div className="honest-state compact" aria-busy="true">
           <span className="spinner" aria-hidden="true" />
-          <p>구매 가능한 크레딧 팩을 확인하고 있습니다.</p>
+          <p>Loading available credit packs.</p>
         </div>
       ) : packs.isError ? (
         <div className="honest-state compact">
           <Warning size={20} aria-hidden="true" />
-          <p>크레딧 팩을 불러오지 못했습니다: {packs.error.message}</p>
+          <p>Credit packs could not be loaded: {packs.error.message}</p>
           <button
             type="button"
             className="secondary-button compact"
             onClick={() => void packs.refetch()}
           >
-            다시 시도
+            Try again
           </button>
         </div>
       ) : (
@@ -115,7 +115,9 @@ export function BillingManagement() {
                   createCheckout.mutate(pack.code);
                 }}
               >
-                {createCheckout.isPending ? "결제 준비 중…" : "결제 시작"}
+                {createCheckout.isPending
+                  ? "Preparing checkout…"
+                  : "Continue to checkout"}
               </button>
             </article>
           ))}
@@ -124,7 +126,7 @@ export function BillingManagement() {
 
       {createCheckout.isError && (
         <p className="form-error" role="alert">
-          결제를 준비하지 못했습니다: {createCheckout.error.message}
+          Checkout could not be prepared: {createCheckout.error.message}
         </p>
       )}
       {checkout && (
@@ -132,8 +134,8 @@ export function BillingManagement() {
           <div>
             <strong>Checkout {checkout.status}</strong>
             <small>
-              {checkout.provider} ·{" "}
-              {new Date(checkout.expires_at).toLocaleString("ko-KR")} 만료
+              {checkout.provider} · Expires{" "}
+              {new Date(checkout.expires_at).toLocaleString("en-US")}
             </small>
           </div>
           {safeCheckoutUrl(checkout.checkout_url) ? (
@@ -143,28 +145,30 @@ export function BillingManagement() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              결제 사업자 페이지 열기
+              Open payment provider
             </a>
           ) : (
-            <span className="status-badge neutral">결제 URL 없음</span>
+            <span className="status-badge neutral">
+              Checkout URL unavailable
+            </span>
           )}
         </div>
       )}
 
       <div className="team-subsection">
-        <h3>확정된 결제 기록</h3>
+        <h3>Confirmed payment history</h3>
         {payments.isPending ? (
           <div className="honest-state compact" aria-busy="true">
             <span className="spinner" aria-hidden="true" />
-            <p>결제 원장을 확인하고 있습니다.</p>
+            <p>Loading the payment ledger.</p>
           </div>
         ) : payments.isError ? (
           <div className="honest-state compact">
-            <p>결제 원장을 불러오지 못했습니다.</p>
+            <p>The payment ledger could not be loaded.</p>
           </div>
         ) : payments.data.length === 0 ? (
           <div className="honest-state compact">
-            <p>서버가 확인한 결제 기록이 없습니다.</p>
+            <p>No server-confirmed payments are available.</p>
           </div>
         ) : (
           <div className="payment-list">

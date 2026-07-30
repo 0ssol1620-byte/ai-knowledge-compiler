@@ -59,7 +59,7 @@ export async function apiRequest<T>(
     };
     throw new ApiError(
       payload.error?.message ??
-        `요청을 완료하지 못했습니다 (${response.status}).`,
+        `The request could not be completed (${response.status}).`,
       response.status,
       payload.error?.code ?? "HTTP_ERROR",
       payload.error?.retryable ?? response.status >= 500,
@@ -184,7 +184,7 @@ export async function waitForAnalysis(
   while (task.status === "queued" || task.status === "running") {
     if (Date.now() - startedAt >= maxElapsedMs) {
       throw new ApiError(
-        "문서 사전 분석이 제한 시간 안에 완료되지 않았습니다.",
+        "Document preflight did not complete within the time limit.",
         504,
         "ANALYSIS_POLL_TIMEOUT",
         true,
@@ -198,7 +198,7 @@ export async function waitForAnalysis(
   }
   if (task.status !== "completed") {
     throw new ApiError(
-      "문서 사전 분석에 실패했습니다.",
+      "Document preflight failed.",
       422,
       task.error_code ?? "ANALYSIS_FAILED",
       false,
@@ -286,7 +286,7 @@ export async function streamJob(
           response.status === 429 ||
           response.status >= 500;
         throw new ApiError(
-          "실시간 연결에 실패했습니다.",
+          "The real-time connection failed.",
           response.status,
           "SSE_OPEN",
           retryable,

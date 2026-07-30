@@ -30,18 +30,18 @@ import { useAuthStore } from "@/lib/auth-store";
 import { normalizeSessionResponse, type SessionProfile } from "@/lib/session";
 
 const navigation = [
-  { href: "/home", label: "대시보드", icon: House },
-  { href: "/projects", label: "프로젝트", icon: FolderOpen },
-  { href: "/quick-convert", label: "빠른 변환", icon: Lightning },
-  { href: "/knowledge-bases", label: "지식베이스", icon: TreeStructure },
-  { href: "/benchmarks", label: "벤치마크", icon: Flask },
-  { href: "/api-workflows", label: "API & 워크플로", icon: BracketsCurly },
+  { href: "/home", label: "Overview", icon: House },
+  { href: "/projects", label: "Projects", icon: FolderOpen },
+  { href: "/quick-convert", label: "Quick convert", icon: Lightning },
+  { href: "/knowledge-bases", label: "Knowledge", icon: TreeStructure },
+  { href: "/benchmarks", label: "Benchmarks", icon: Flask },
+  { href: "/api-workflows", label: "API & workflows", icon: BracketsCurly },
 ] as const;
 
 const secondaryNavigation = [
-  { href: "/activity", label: "활동", icon: Pulse },
-  { href: "/usage", label: "사용량", icon: CreditCard },
-  { href: "/settings", label: "설정", icon: GearSix },
+  { href: "/activity", label: "Activity", icon: Pulse },
+  { href: "/usage", label: "Usage", icon: CreditCard },
+  { href: "/settings", label: "Settings", icon: GearSix },
 ] as const;
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         setSessionError(
           reason instanceof Error
             ? reason.message
-            : "세션 확인 중 알 수 없는 오류가 발생했습니다.",
+            : "An unknown error occurred while checking your session.",
         );
         setSessionState("error");
       });
@@ -138,10 +138,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <p>
           {sessionState === "denied"
-            ? "로그인으로 이동 중입니다."
+            ? "Redirecting to sign in."
             : sessionState === "error"
-              ? `세션을 확인하지 못했습니다: ${sessionError ?? "연결을 확인하세요."}`
-              : "세션을 확인하고 있습니다."}
+              ? `We could not verify your session: ${sessionError ?? "Check your connection."}`
+              : "Checking your session."}
         </p>
         {sessionState === "error" && (
           <button
@@ -153,16 +153,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               setSessionAttempt((attempt) => attempt + 1);
             }}
           >
-            다시 시도
+            Try again
           </button>
         )}
       </main>
     );
   }
 
-  const workspaceName = DEMO_MODE
-    ? "샘플 워크스페이스"
-    : profile?.workspaceName;
+  const workspaceName = DEMO_MODE ? "Sample workspace" : profile?.workspaceName;
   const userRole = DEMO_MODE ? "Demo" : profile?.roles[0];
   const userInitials = (DEMO_MODE ? "DE" : (profile?.displayName ?? "—"))
     .slice(0, 2)
@@ -172,22 +170,22 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className={clsx("app-frame", collapsed && "sidebar-collapsed")}>
       {DEMO_MODE && (
         <div className="demo-mode-banner" role="status">
-          샘플 화면 · 실제 문서 처리와 크레딧 사용은 발생하지 않습니다.
+          Demo workspace · No documents are processed and no credits are used.
         </div>
       )}
-      <aside className="sidebar" aria-label="주 메뉴">
+      <aside className="sidebar" aria-label="Primary navigation">
         <div className="sidebar-brand-row">
           <Link
             href="/"
             className="brand-link"
-            aria-label="제품 사이트로 돌아가기"
+            aria-label="Return to product site"
           >
             <BrandMark compact={collapsed} />
           </Link>
           <button
             className="icon-button sidebar-toggle"
             type="button"
-            aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={() => setCollapsed((value) => !value)}
           >
             <SidebarSimple size={18} weight="regular" />
@@ -217,20 +215,23 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="privacy-card">
           <ShieldCheck size={18} aria-hidden="true" />
           <div>
-            <strong>외부 처리 보호</strong>
+            <strong>External processing</strong>
             <span>
               {DEMO_MODE
-                ? "외부 API 꺼짐"
+                ? "External APIs off"
                 : profile?.externalProcessingEnabled === true
-                  ? "외부 처리 동의 활성"
+                  ? "Consent enabled"
                   : profile?.externalProcessingEnabled === false
-                    ? "외부 API 꺼짐"
-                    : "정책 확인 필요"}
+                    ? "External APIs off"
+                    : "Policy review required"}
             </span>
           </div>
         </div>
 
-        <nav className="sidebar-secondary" aria-label="워크스페이스 관리">
+        <nav
+          className="sidebar-secondary"
+          aria-label="Workspace administration"
+        >
           {secondaryNavigation.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href);
             return (
@@ -249,18 +250,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link
             href="/notices"
             className="nav-item"
-            title={collapsed ? "오픈소스 고지" : undefined}
+            title={collapsed ? "Help and notices" : undefined}
           >
             <Lifebuoy size={19} aria-hidden="true" />
-            <span>도움말·고지</span>
+            <span>Help & notices</span>
           </Link>
           <Link
             href="/"
             className="nav-item product-site-nav"
-            title={collapsed ? "제품 사이트" : undefined}
+            title={collapsed ? "Product site" : undefined}
           >
             <ArrowLeft size={19} aria-hidden="true" />
-            <span>제품 사이트</span>
+            <span>Product site</span>
           </Link>
         </nav>
       </aside>
@@ -270,7 +271,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="topbar-leading">
             <Link href="/" className="product-back-link">
               <ArrowLeft size={15} aria-hidden="true" />
-              <span>제품 사이트</span>
+              <span>Product site</span>
             </Link>
             <button
               type="button"
@@ -279,38 +280,38 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-haspopup="dialog"
             >
               <MagnifyingGlass size={17} aria-hidden="true" />
-              <span>프로젝트, 문서, 근거 검색</span>
+              <span>Search projects, documents, or evidence</span>
               <kbd>Ctrl K</kbd>
             </button>
           </div>
           <div className="topbar-actions">
-            <div className="credit-chip" title="사용 가능한 크레딧">
+            <div className="credit-chip" title="Available credits">
               <span>
                 {DEMO_MODE
-                  ? "샘플"
+                  ? "Demo"
                   : profile
                     ? (profile.creditBalance?.toLocaleString() ?? "—")
                     : "—"}
               </span>
-              <small>크레딧</small>
+              <small>credits</small>
             </div>
             <button
               className="icon-button"
               type="button"
-              aria-label="알림 열기"
+              aria-label="Open notifications"
             >
               <Bell size={19} />
             </button>
             <button
               className="account-button"
               type="button"
-              aria-label="계정 메뉴 열기"
+              aria-label="Open account menu"
             >
               <span className="avatar" aria-hidden="true">
                 {userInitials}
               </span>
               <span className="account-copy">
-                <strong>{workspaceName ?? "워크스페이스"}</strong>
+                <strong>{workspaceName ?? "Workspace"}</strong>
                 <small>{userRole ?? "Member"}</small>
               </span>
               <CaretDown size={14} aria-hidden="true" />
@@ -320,13 +321,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main id="main-content" className="main-content" tabIndex={-1}>
           {children}
         </main>
-        <nav className="mobile-app-nav" aria-label="모바일 주 메뉴">
+        <nav className="mobile-app-nav" aria-label="Mobile navigation">
           {(
             [
-              { href: "/home", label: "대시보드", icon: House },
-              { href: "/projects", label: "프로젝트", icon: FolderOpen },
-              { href: "/activity", label: "활동", icon: Pulse },
-              { href: "/settings", label: "내 정보", icon: GearSix },
+              { href: "/home", label: "Overview", icon: House },
+              { href: "/projects", label: "Projects", icon: FolderOpen },
+              { href: "/activity", label: "Activity", icon: Pulse },
+              { href: "/settings", label: "Account", icon: GearSix },
             ] as const
           ).map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href);
@@ -356,36 +357,36 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="command-palette"
             role="dialog"
             aria-modal="true"
-            aria-label="명령 팔레트"
+            aria-label="Command menu"
           >
             <header>
               <MagnifyingGlass size={18} aria-hidden="true" />
               <input
                 type="search"
                 autoFocus
-                aria-label="명령 검색"
-                placeholder="프로젝트, 엔터티 또는 명령 검색"
+                aria-label="Search commands"
+                placeholder="Search projects, entities, or commands"
               />
               <button
                 type="button"
                 className="icon-button compact"
-                aria-label="명령 팔레트 닫기"
+                aria-label="Close command menu"
                 onClick={() => setCommandOpen(false)}
               >
                 <X size={16} />
               </button>
             </header>
             <div>
-              <span>빠른 이동</span>
+              <span>Quick navigation</span>
               {(
                 [
-                  ["/quick-convert", "파일 업로드", "U"],
-                  ["/projects", "프로젝트 열기", "P"],
-                  ["/knowledge-bases", "엔터티 검색", "E"],
-                  ["/review", "검토 스튜디오", "R"],
-                  ["/benchmarks", "벤치마크 실행", "B"],
-                  ["/settings", "워크스페이스 설정", "S"],
-                  ["/", "제품 사이트", "H"],
+                  ["/quick-convert", "Upload documents", "U"],
+                  ["/projects", "Open projects", "P"],
+                  ["/knowledge-bases", "Search entities", "E"],
+                  ["/review", "Open Review Studio", "R"],
+                  ["/benchmarks", "Run benchmark", "B"],
+                  ["/settings", "Workspace settings", "S"],
+                  ["/", "Product site", "H"],
                 ] as const
               ).map(([href, label, key]) => (
                 <Link

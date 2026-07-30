@@ -41,12 +41,12 @@ export function ReviewStudio() {
   if (!demoMode) {
     return (
       <div className="simple-page">
-        <h1>검토 스튜디오</h1>
+        <h1>Review Studio</h1>
         <div className="honest-state panel">
           <FileMagnifyingGlass size={26} aria-hidden="true" />
           <p>
-            Processing Studio에서 라이브 작업의 검토 항목을 선택하면 이 화면에
-            문서 범위와 감사 컨텍스트가 열립니다.
+            Select a finding in Processing Studio to open its document range and
+            audit context here.
           </p>
         </div>
       </div>
@@ -58,18 +58,18 @@ export function ReviewStudio() {
       <header className="review-studio-header">
         <div>
           <p>Projects / Financial report / Review</p>
-          <h1>검토 스튜디오</h1>
+          <h1>Review Studio</h1>
         </div>
         <span className="demo-sample-chip">Sample review · 3 open</span>
         <button type="button" className="secondary-button compact">
-          완료 요약
+          Completion summary
         </button>
       </header>
       <div className="review-studio-layout">
         <aside className="issue-queue">
           <header>
             <strong>Issue queue</strong>
-            <small>위험도 × 영향도 순</small>
+            <small>Ordered by risk × impact</small>
           </header>
           {issues.map((issue, index) => (
             <button
@@ -93,7 +93,7 @@ export function ReviewStudio() {
             <button
               className="icon-button compact"
               type="button"
-              aria-label="원본 전체 화면"
+              aria-label="View source full screen"
             >
               <FileMagnifyingGlass size={16} />
             </button>

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AnalyticsLive } from "@/components/analytics-live";
 
 export const metadata: Metadata = {
-  title: "제품 분석",
+  title: "Product analytics",
 };
 
 export default function AnalyticsPage() {

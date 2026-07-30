@@ -115,7 +115,7 @@ export function AnalyticsLive() {
   if (analytics.isPending) {
     return (
       <AnalyticsState
-        message="기간과 분모가 검증된 제품 지표를 계산하고 있습니다."
+        message="Calculating product metrics with verified windows and denominators."
         busy
       />
     );
@@ -124,7 +124,7 @@ export function AnalyticsLive() {
   if (analytics.isError) {
     return (
       <AnalyticsState
-        message={`제품 지표를 불러오지 못했습니다: ${analytics.error.message}`}
+        message={`Product metrics could not be loaded: ${analytics.error.message}`}
         retry={() => {
           void analytics.refetch();
         }}
@@ -164,16 +164,17 @@ export function AnalyticsLive() {
     <main className={`simple-page analytics-page ${styles.root}`}>
       <div className="analytics-title-row">
         <div>
-          <h1>제품 분석</h1>
+          <h1>Product analytics</h1>
           <p>
-            추정값이나 데모 숫자가 아니라 현재 워크스페이스의 운영 기록만
-            집계합니다. 모든 비율에는 분자와 분모가 함께 표시됩니다.
+            Metrics come only from this workspace&apos;s operational
+            records—never estimates or demo values. Every rate includes its
+            numerator and denominator.
           </p>
         </div>
         <div
           className="analytics-window-switcher"
           role="group"
-          aria-label="분석 기간"
+          aria-label="Analytics period"
         >
           {windows.map((candidate) => (
             <button
@@ -191,7 +192,7 @@ export function AnalyticsLive() {
 
       <PrivacyNotice snapshot={data} />
 
-      <section className="analytics-metrics" aria-label="핵심 제품 지표">
+      <section className="analytics-metrics" aria-label="Core product metrics">
         {overview.map(({ icon, metric }) => (
           <MetricCard key={metric.key} icon={icon} metric={metric} />
         ))}
@@ -201,10 +202,10 @@ export function AnalyticsLive() {
         <div className="panel honest-state analytics-disabled" role="status">
           <LockKey size={22} weight="duotone" aria-hidden="true" />
           <div>
-            <strong>제품 분석이 꺼져 있습니다.</strong>
+            <strong>Product analytics is disabled.</strong>
             <p>
-              개인정보 설정에서 다시 켤 때까지 행동 이벤트를 저장하지 않고
-              집계도 계산하지 않습니다.
+              Behavioral events are neither stored nor aggregated until you
+              enable analytics in privacy settings.
             </p>
           </div>
         </div>
@@ -213,8 +214,11 @@ export function AnalyticsLive() {
           <section className="panel analytics-panel analytics-wide-panel">
             <div className="panel-heading">
               <div>
-                <h2>7일 활성화 퍼널</h2>
-                <p>완전한 관찰 기간을 확보한 가입 코호트만 포함합니다.</p>
+                <h2>Seven-day activation funnel</h2>
+                <p>
+                  Includes only signup cohorts with a complete observation
+                  window.
+                </p>
               </div>
             </div>
             <ActivationFunnel stages={data.activation} />
@@ -222,18 +226,18 @@ export function AnalyticsLive() {
 
           <div className="analytics-section-grid">
             <MetricPanel
-              title="제품 사용"
-              description="속도, 완료, 내보내기와 재사용"
+              title="Product usage"
+              description="Speed, completion, export, and reuse"
               metrics={Object.values(data.product)}
             />
             <MetricPanel
-              title="품질"
-              description="검토, 근거 연결과 사용자 오류"
+              title="Quality"
+              description="Review, evidence linking, and user-reported errors"
               metrics={Object.values(data.quality)}
             />
             <MetricPanel
-              title="단위 경제성"
-              description="크레딧과 통화 비용을 구분한 지표"
+              title="Unit economics"
+              description="Metrics that separate credits from currency costs"
               metrics={Object.values(data.economics)}
             />
             <ExportEvidence snapshot={data} />
@@ -242,11 +246,11 @@ export function AnalyticsLive() {
       )}
 
       <details className="panel analytics-methodology">
-        <summary>코호트와 측정 한계</summary>
+        <summary>Cohorts and measurement limits</summary>
         <div>
           <p>
-            {formatDate(data.window.start_at)} 이상,{" "}
-            {formatDate(data.window.end_at)} 미만 · UTC
+            From {formatDate(data.window.start_at)} through{" "}
+            {formatDate(data.window.end_at)} · UTC
           </p>
           <ul>
             {data.limitations.map((limitation) => (
@@ -259,8 +263,9 @@ export function AnalyticsLive() {
                 <div key={cohort.key}>
                   <dt>{cohort.key}</dt>
                   <dd>
-                    {cohort.population.toLocaleString("ko-KR")}개 ·{" "}
-                    {cohort.observation_days}일 관찰 — {cohort.definition}
+                    {cohort.population.toLocaleString("en-US")} users ·{" "}
+                    {cohort.observation_days}-day observation —{" "}
+                    {cohort.definition}
                   </dd>
                 </div>
               ))}
@@ -270,7 +275,7 @@ export function AnalyticsLive() {
       </details>
 
       <p className="analytics-generated-at">
-        계약 {data.schema_version} · 생성{" "}
+        Contract {data.schema_version} · generated{" "}
         {new Date(data.generated_at).toLocaleString("ko-KR")}
       </p>
     </main>
@@ -290,12 +295,14 @@ function PrivacyNotice({ snapshot }: { snapshot: AnalyticsSnapshot }) {
       <div>
         <strong>
           {disabled
-            ? "분석 수집 안 함"
+            ? "Analytics not collected"
             : privateOnly
-              ? "비공개 모드 · 운영 기록만"
-              : "테넌트 내부 1차 데이터"}
+              ? "Private mode · operational records only"
+              : "First-party tenant data"}
         </strong>
-        <span>{snapshot.privacy.payload_policy} 외부 분석 전송: 없음.</span>
+        <span>
+          {snapshot.privacy.payload_policy} No external analytics transfer.
+        </span>
       </div>
     </div>
   );
@@ -331,7 +338,7 @@ function ActivationFunnel({ stages }: { stages: ActivationStage[] }) {
   if (stages.length === 0) {
     return (
       <div className="honest-state compact">
-        <p>분석이 꺼져 있어 퍼널을 계산하지 않았습니다.</p>
+        <p>The funnel was not calculated because analytics is disabled.</p>
       </div>
     );
   }
@@ -349,11 +356,11 @@ function ActivationFunnel({ stages }: { stages: ActivationStage[] }) {
           <span className="activation-users">
             {stage.users === null
               ? statusLabel(stage.status)
-              : `${stage.users.toLocaleString("ko-KR")}명`}
+              : `${stage.users.toLocaleString("en-US")} users`}
           </span>
           <span className="activation-rate">
-            코호트 {formatRatio(stage.cohort_rate)}
-            <small>이전 단계 {formatRatio(stage.step_rate)}</small>
+            Cohort {formatRatio(stage.cohort_rate)}
+            <small>Previous stage {formatRatio(stage.step_rate)}</small>
           </span>
         </li>
       ))}
@@ -389,7 +396,7 @@ function MetricPanel({
               <strong>{formatMetric(metric)}</strong>
               <span>{metricEvidence(metric)}</span>
               <details>
-                <summary>정의</summary>
+                <summary>Definition</summary>
                 <p>{metric.definition}</p>
               </details>
             </dd>
@@ -405,14 +412,14 @@ function ExportEvidence({ snapshot }: { snapshot: AnalyticsSnapshot }) {
     <section className="panel analytics-panel analytics-definition-panel">
       <div className="panel-heading">
         <div>
-          <h2>내보내기·환불 근거</h2>
-          <p>프로필과 통화를 섞지 않은 원자료 집계</p>
+          <h2>Export and refund evidence</h2>
+          <p>Raw aggregates that keep profiles and currencies separate</p>
         </div>
       </div>
       {snapshot.export_profiles.length === 0 &&
       snapshot.refunds_by_currency.length === 0 ? (
         <div className="honest-state compact">
-          <p>선택 기간에 표시할 내보내기 또는 결제 코호트가 없습니다.</p>
+          <p>No export or payment cohorts are available for this period.</p>
         </div>
       ) : (
         <div className="analytics-evidence-groups">
@@ -440,8 +447,9 @@ function ExportEvidence({ snapshot }: { snapshot: AnalyticsSnapshot }) {
                   <li key={currency.currency}>
                     <span>{currency.currency}</span>
                     <strong>
-                      결제 {currency.paid_payments.toLocaleString("ko-KR")} ·
-                      환불 {currency.refunded_payments.toLocaleString("ko-KR")}
+                      Paid {currency.paid_payments.toLocaleString("en-US")} ·
+                      refunded{" "}
+                      {currency.refunded_payments.toLocaleString("en-US")}
                     </strong>
                     <small>
                       minor units{" "}
@@ -470,7 +478,7 @@ function AnalyticsState({
 }) {
   return (
     <main className={`simple-page analytics-page ${styles.root}`}>
-      <h1>제품 분석</h1>
+      <h1>Product analytics</h1>
       <div
         className="panel honest-state"
         aria-busy={busy}
@@ -486,7 +494,7 @@ function AnalyticsState({
         {retry && (
           <button type="button" className="secondary-button" onClick={retry}>
             <ArrowClockwise size={15} aria-hidden="true" />
-            다시 시도
+            Try again
           </button>
         )}
       </div>
@@ -531,24 +539,24 @@ function unavailableOverview(key: string, label: string): AnalyticsMetric {
 export function formatMetric(metric: AnalyticsMetric): string {
   if (metric.value === null) return statusLabel(metric.status);
   if (metric.unit === "ratio") return formatRatio(metric.value);
-  if (metric.unit === "seconds") return `${formatNumber(metric.value)}초`;
+  if (metric.unit === "seconds") return `${formatNumber(metric.value)} sec`;
   if (metric.unit === "minutes_per_job")
-    return `${formatNumber(metric.value)}분/작업`;
+    return `${formatNumber(metric.value)} min/job`;
   if (metric.unit === "credits_per_page")
-    return `${formatNumber(metric.value)} cr/페이지`;
+    return `${formatNumber(metric.value)} cr/page`;
   if (metric.unit === "credits_per_project")
-    return `${formatNumber(metric.value)} cr/프로젝트`;
+    return `${formatNumber(metric.value)} cr/project`;
   return formatNumber(metric.value);
 }
 
 function metricEvidence(metric: AnalyticsMetric): string {
   if (metric.denominator !== null) {
-    return `분자 ${formatNumber(metric.numerator ?? 0)} / 분모 ${formatNumber(
+    return `Numerator ${formatNumber(metric.numerator ?? 0)} / denominator ${formatNumber(
       metric.denominator,
     )}`;
   }
   if (metric.numerator !== null) {
-    return `관측 ${formatNumber(metric.numerator)}`;
+    return `Observed ${formatNumber(metric.numerator)}`;
   }
   return statusLabel(metric.status);
 }
@@ -569,11 +577,11 @@ function formatDate(value: string): string {
 
 function statusLabel(status: MetricStatus): string {
   const labels: Record<MetricStatus, string> = {
-    available: "측정됨",
-    empty_denominator: "분모 없음",
-    insufficient_evidence: "근거 부족",
-    disabled: "분석 꺼짐",
-    not_instrumented: "수집 안 함",
+    available: "Measured",
+    empty_denominator: "No denominator",
+    insufficient_evidence: "Insufficient evidence",
+    disabled: "Analytics disabled",
+    not_instrumented: "Not collected",
   };
   return labels[status];
 }
