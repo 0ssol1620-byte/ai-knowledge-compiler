@@ -110,6 +110,27 @@ body {
 }
 
 .marketing-site {
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-subtle: #f7f8fa;
+  --surface-muted: #eceff3;
+  --text: #11151d;
+  --text-secondary: #4b5565;
+  --text-tertiary: #6d7786;
+  --border: #dfe3e8;
+  --border-strong: #c6ccd4;
+  --primary: #264fd4;
+  --primary-hover: #1e3fae;
+  --accent: #264fd4;
+  --accent-hover: #1e3fae;
+  --accent-soft: #eef2ff;
+  --accent-border: #bdc9f7;
+  --success: #08785b;
+  --success-soft: #edf8f4;
+  --warning: #8b5417;
+  --warning-soft: #fbf4e9;
+  --danger: #b42318;
+  --danger-soft: #fff2f1;
   background: #fbfbfc;
   color: #11151d;
   color-scheme: light;
