@@ -17,7 +17,7 @@ branch_labels = None
 depends_on = None
 
 ANALYSIS_ROLE = "akc_analysis_worker"
-DISPATCH_ROLE = "akc_dispatch"
+DISPATCH_ROLE = "akc_dispatch_worker"
 DELETION_ROLE = "akc_deletion_worker"
 
 _TENANT_TABLES = (

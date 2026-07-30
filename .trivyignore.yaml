@@ -1,0 +1,10 @@
+misconfigurations:
+  - id: KSV-0109
+    paths:
+      - infra/kubernetes/base/configmap.yaml
+      - infra/kubernetes/base/url-fetcher-configmap.yaml
+    statement: >-
+      Bounded false positive: the findings are non-secret TTL values and the
+      literal fail-closed boolean false. All credentials are supplied through
+      required Kubernetes Secret references.
+    expired_at: 2026-12-31

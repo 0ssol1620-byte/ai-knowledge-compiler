@@ -1,4 +1,4 @@
-FROM node:22.14.0-bookworm-slim@sha256:1c18d9ab3af4585870b92e4dbc5cac5a0dc77dd13df1a5905cea89fc720eb05b AS base
+FROM node:24.18.0-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
@@ -24,15 +24,14 @@ COPY --from=dependencies /app/packages/contracts/node_modules ./packages/contrac
 COPY . .
 RUN pnpm --filter @akc/web build
 
-FROM node:22.14.0-bookworm-slim@sha256:1c18d9ab3af4585870b92e4dbc5cac5a0dc77dd13df1a5905cea89fc720eb05b AS runtime
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:af85d11ce7ef10172855a6e3649e3e8125b1b9e3ca41849ec2918036f05cb212 AS runtime
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
-RUN groupadd --system --gid 1001 akc && useradd --system --uid 1001 --gid akc web
-COPY --from=builder --chown=web:akc /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=web:akc /app/apps/web/.next/static ./apps/web/.next/static
-USER web
+COPY --from=builder --chown=nonroot:nonroot /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nonroot:nonroot /app/apps/web/.next/static ./apps/web/.next/static
+USER nonroot
 EXPOSE 3000
-CMD ["node", "apps/web/server.js"]
+CMD ["apps/web/server.js"]

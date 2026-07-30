@@ -11,8 +11,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
 WORKDIR /app
 COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
 RUN python -m pip install "uv==0.12.0" \
-    && python -m uv sync --locked --no-dev \
-    && python -m uv pip check --python /app/.venv/bin/python
+    && uv sync --locked --no-dev \
+    && uv pip check --python /app/.venv/bin/python
 COPY workers/gpu-common/runtime.py ./runtime.py
 COPY workers/gpu-unlimited/handler.py ./handler.py
 RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin akc
@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
 RUN python3 -m pip install --break-system-packages "uv==0.12.0" \
-    && python3 -m uv sync --locked --no-dev \
-    && python3 -m uv pip check --python /app/.venv/bin/python
+    && uv sync --locked --no-dev \
+    && uv pip check --python /app/.venv/bin/python
 COPY workers/gpu-common/runtime.py ./runtime.py
 COPY workers/gpu-unlimited/handler.py ./handler.py
 RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin akc \

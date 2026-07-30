@@ -17,8 +17,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
 RUN python -m pip install "uv==0.12.0" \
-    && python -m uv sync --locked --no-dev \
-    && python -m uv pip check --python /app/.venv/bin/python
+    && uv sync --locked --no-dev \
+    && uv pip check --python /app/.venv/bin/python
 COPY workers/gpu-common/runtime.py ./runtime.py
 COPY workers/gpu-parser/paddleocr_adapter.py ./paddleocr_adapter.py
 COPY workers/gpu-parser/handler.py ./handler.py
@@ -47,13 +47,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
 RUN python3 -m pip install --break-system-packages "uv==0.12.0" \
-    && python3 -m uv sync --locked --no-dev \
-    && python3 -m uv pip install --python /app/.venv/bin/python \
+    && uv sync --locked --no-dev \
+    && uv pip install --python /app/.venv/bin/python \
       --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
       "paddlepaddle-gpu==${PADDLEPADDLE_VERSION}" \
-    && python3 -m uv pip install --python /app/.venv/bin/python \
+    && uv pip install --python /app/.venv/bin/python \
       "paddleocr[doc-parser]==${PADDLEOCR_VERSION}" \
-    && python3 -m uv pip check --python /app/.venv/bin/python
+    && uv pip check --python /app/.venv/bin/python
 COPY workers/gpu-common/runtime.py ./runtime.py
 COPY workers/gpu-parser/paddleocr_adapter.py ./paddleocr_adapter.py
 COPY workers/gpu-parser/handler.py ./handler.py

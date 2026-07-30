@@ -25,6 +25,7 @@ ADAPTER_VERSION = "test-adapter-1.0.0"
 
 class WorkerRuntimeTests(unittest.TestCase):
     def setUp(self) -> None:
+        os.environ.pop("CALLBACK_HMAC_SECRET", None)
         os.environ.update(
             {
                 "MODEL_REVISION": REVISION,
@@ -34,7 +35,6 @@ class WorkerRuntimeTests(unittest.TestCase):
                 "ALLOW_INLINE_INPUT": "true",
                 "GPU_USD_PER_SECOND": "0.00019",
                 "REQUIRE_CALLBACK_AUTH": "false",
-                "CALLBACK_HMAC_SECRET": str(),
                 "MAX_INPUT_BYTES": str(25 * 1024 * 1024),
                 "MAX_OUTPUT_BYTES": str(10 * 1024 * 1024),
                 "MAX_DIRECT_RESPONSE_BYTES": str(1024 * 1024),
