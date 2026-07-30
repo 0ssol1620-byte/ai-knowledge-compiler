@@ -34,6 +34,8 @@ GitHub Pull Request and its CI checks.
 - Next.js production build: pass
 - Vitest: 19 files and 56 tests passed
 - Playwright: 16 passed and 4 intentional project-scope skips
+- live API Playwright journey: 1 passed, including upload, compile, provenance,
+  review, export, and deletion
 - Axe: no A/AA violations in the representative route suite
 - asset schema/naming/hash validators: pass
 - Lighthouse: Performance 93, Accessibility 100, Best Practices 96, SEO 100,
@@ -53,5 +55,5 @@ GitHub Pull Request and its CI checks.
 
 # Next action
 
-Commit the verified release, update Pull Request #16, require all GitHub checks
-to pass, then leave the local homepage open for owner review.
+Push the verified live-state reconciliation fix to Pull Request #16, require all
+GitHub checks to pass, then leave the local homepage open for owner review.

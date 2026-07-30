@@ -43,6 +43,7 @@ import {
 import {
   initialLiveJobState,
   reduceJobEvent,
+  resolveJobPresentationStatus,
   weightedOverallProgress,
 } from "@/lib/event-reducer";
 import {
@@ -385,10 +386,27 @@ function LiveJobView({ jobId }: { jobId: string }) {
   const snapshot = useQuery({
     queryKey: ["job", jobId],
     queryFn: () => apiRequest<JobSnapshot>(`/v1/jobs/${jobId}`),
+    // SSE is the low-latency path. This independent reconciliation poll makes
+    // the durable snapshot authoritative even when a terminal event is lost
+    // while transport heartbeats remain healthy.
+    refetchInterval: (query) => {
+      const value = query.state.data as JobSnapshot | undefined;
+      return value?.job.status === "completed" ||
+        value?.job.status === "failed" ||
+        value?.job.status === "cancelled"
+        ? false
+        : 10_000;
+    },
+    refetchIntervalInBackground: true,
   });
   const status = snapshot.data?.job.status;
+  const effectiveStatus = status
+    ? resolveJobPresentationStatus(status, eventState.terminalStatus)
+    : undefined;
   const snapshotIsTerminal =
-    status === "completed" || status === "failed" || status === "cancelled";
+    effectiveStatus === "completed" ||
+    effectiveStatus === "failed" ||
+    effectiveStatus === "cancelled";
   const refetchAfterSseSilence = useCallback(() => {
     void queryClient.refetchQueries({
       queryKey: ["job", jobId],
@@ -402,10 +420,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
   });
 
   useEffect(() => {
-    if (
-      snapshot.data?.job.status !== "completed" ||
-      resultViewRecorded.current
-    ) {
+    if (effectiveStatus !== "completed" || resultViewRecorded.current) {
       return;
     }
     resultViewRecorded.current = true;
@@ -415,7 +430,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
     }).catch(() => {
       // Optional analytics must never block result rendering.
     });
-  }, [jobId, snapshot.data?.job.status]);
+  }, [effectiveStatus, jobId]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -543,14 +558,20 @@ function LiveJobView({ jobId }: { jobId: string }) {
         .find((block) => block.id === modelMergeBlockId)
     : undefined;
   const progress = { ...data.stage_progress, ...eventState.stageProgress };
+  const presentationStatus = resolveJobPresentationStatus(
+    data.job.status,
+    eventState.terminalStatus,
+  );
   const overallProgress =
-    Object.keys(progress).length > 0
-      ? weightedOverallProgress(progress)
-      : Math.round(data.job.progress * 100);
+    presentationStatus === "completed"
+      ? 100
+      : Object.keys(progress).length > 0
+        ? weightedOverallProgress(progress)
+        : Math.round(data.job.progress * 100);
   const terminal =
-    data.job.status === "completed" ||
-    data.job.status === "failed" ||
-    data.job.status === "cancelled";
+    presentationStatus === "completed" ||
+    presentationStatus === "failed" ||
+    presentationStatus === "cancelled";
   const documentMetadata = displayDocumentMetadata(
     data.document.file_type,
     data.document.semantic_classification?.semantic_type,
@@ -596,7 +617,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
   return (
     <div className="processing-page">
       <ProgressAnnouncement
-        message={`${jobStatusLabel(data.job.status)}. ${
+        message={`${jobStatusLabel(presentationStatus)}. ${
           data.summary.completed_pages
         } / ${pages.length} pages completed. ${
           terminal ? overallProgress : Math.floor(overallProgress / 5) * 5
@@ -682,7 +703,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
           <button
             className="primary-button compact"
             type="button"
-            disabled={!terminal || data.job.status !== "completed"}
+            disabled={!terminal || presentationStatus !== "completed"}
             onClick={() => setExportOpen(true)}
           >
             <DownloadSimple size={15} weight="bold" aria-hidden="true" />
@@ -700,7 +721,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
             <strong>{overallProgress}%</strong>
           </div>
           <div>
-            <strong>{jobStatusLabel(data.job.status)}</strong>
+            <strong>{jobStatusLabel(presentationStatus)}</strong>
             <span>
               {data.summary.completed_pages} / {pages.length} pages completed
             </span>

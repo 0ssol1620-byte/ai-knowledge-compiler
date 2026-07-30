@@ -242,6 +242,14 @@ export function stageFraction(
   return Math.min(1, Math.max(0, value.done / value.total));
 }
 
+export function resolveJobPresentationStatus(
+  snapshotStatus:
+    "created" | "queued" | "running" | "completed" | "failed" | "cancelled",
+  terminalStatus: LiveJobState["terminalStatus"],
+): typeof snapshotStatus {
+  return terminalStatus ?? snapshotStatus;
+}
+
 const stageWeights: Record<string, number> = {
   upload: 0.04,
   security_scan: 0.04,

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   initialLiveJobState,
   reduceJobEvent,
+  resolveJobPresentationStatus,
   weightedOverallProgress,
 } from "@/lib/event-reducer";
 import type { JobEvent, JobEventType } from "@/lib/types";
@@ -64,6 +65,9 @@ describe("reduceJobEvent", () => {
     );
     expect(state.terminalStatus).toBe("completed");
     expect(state.connection).toBe("closed");
+    expect(resolveJobPresentationStatus("running", state.terminalStatus)).toBe(
+      "completed",
+    );
   });
 
   it("clears an unrecoverable replay gap at a persisted snapshot sequence", () => {

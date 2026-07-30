@@ -51,6 +51,10 @@ None.
   knowledge inputs, a recommended plan, credit range, and maximum credit draw.
 - The mobile/desktop homepage E2E expected the retired synthetic-asset label.
   The assertion now matches the truthful first-party asset label.
+- A healthy SSE heartbeat could indefinitely postpone durable-snapshot
+  reconciliation while a terminal event was missed. The live workspace now
+  gives terminal events presentation authority and independently reconciles the
+  stored job snapshot every 10 seconds until terminal.
 
 ## Automated release evidence
 
@@ -59,6 +63,8 @@ None.
 - Next.js production build: pass
 - Vitest: 19 files, 56 tests passed
 - Playwright: 16 passed, 4 intentional project-scope skips
+- live API Playwright: 1 passed, including upload, compile, provenance, review,
+  deterministic export, and deletion
 - Axe: no A/AA violations in the representative route suite
 - asset manifest, naming, and hashes: pass
 - production Lighthouse mobile:
