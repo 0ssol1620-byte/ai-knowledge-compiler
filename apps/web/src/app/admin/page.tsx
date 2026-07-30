@@ -23,7 +23,6 @@ export default function AdminPage() {
 function DemoAdminPage() {
   return (
     <div className="simple-page admin-page">
-      <p className="eyebrow">Restricted operations</p>
       <h1>운영 콘솔</h1>
       <p>
         재시도, DLQ, 삭제 실패와 provider 상태를 content 없이 안전한 ID로

@@ -1,227 +1,173 @@
-# Design System Master File
+# AI Knowledge Compiler — Product Design System
 
-> **LOGIC:** When building a specific page, first check `design-system/pages/[page-name].md`.
-> If that file exists, its rules **override** this Master file.
-> If not, strictly follow the rules below.
+> Source of truth: `AI_Knowledge_Compiler_Enterprise_UI_UX_Masterplan_FINAL_KO_2026-07-30`
+>
+> Scope: authenticated product UI. The marketing site has its own editorial
+> composition, but uses the same color, type, accessibility, and evidence
+> semantics.
 
----
+## Product character
 
-**Project:** AI Knowledge Compiler
-**Generated:** 2026-07-29 16:47:19
-**Category:** AI/Chatbot Platform
-**Design Dials:** Variance 5/10 (Balanced / Modern) | Motion 4/10 (Standard) | Density 8/10 (Dense / Dashboard)
+The interface communicates:
 
----
+- verifiable
+- precise
+- compiled
+- connected
+- calm power
+- transparent intelligence
+- enterprise trust
 
-## Global Rules
+AI symbolism is not a visual motif. Documents, typed blocks, provenance
+threads, structured output, and evidence are the product imagery.
 
-### Color Palette
+## Non-negotiable direction
 
-| Role | Hex | CSS Variable |
-|------|-----|--------------|
-| Primary | `#2563EB` | `--color-primary` |
-| On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#3B82F6` | `--color-secondary` |
-| Accent/CTA | `#059669` | `--color-accent` |
-| Background | `#F8FAFC` | `--color-background` |
-| Foreground | `#0F172A` | `--color-foreground` |
-| Muted | `#F1F5FD` | `--color-muted` |
-| Border | `#E4ECFC` | `--color-border` |
-| Destructive | `#DC2626` | `--color-destructive` |
-| Ring | `#2563EB` | `--color-ring` |
+- Product surfaces are light-first.
+- Dark mode is optional, never inferred from the operating-system preference.
+- The sidebar is quieter and darker than the work surface so content remains
+  the focus.
+- One operational region should normally use one surface. Group within it by
+  spacing, alignment, and rules instead of nested cards.
+- Color marks actions, evidence, and exceptional states. It is not decoration.
+- Monospace is reserved for code, hashes, identifiers, and measured technical
+  values.
+- Korean product copy is primary. English is retained only for established
+  formats, code, API concepts, and product names.
 
-**Color Notes:** Professional blue + deal green
+## Color tokens
 
-### Typography
+| Role                 | Value     |
+| -------------------- | --------- |
+| App background       | `#F6F7F9` |
+| Primary surface      | `#FFFFFF` |
+| Secondary surface    | `#F7F8FA` |
+| Primary text         | `#151922` |
+| Secondary text       | `#4D5665` |
+| Tertiary text        | `#737D8C` |
+| Subtle border        | `#E1E4E9` |
+| Strong border        | `#C9CED6` |
+| Compiler Blue        | `#3157E0` |
+| Compiler Blue active | `#2446C8` |
+| Evidence Teal        | `#08785B` |
+| Warning              | `#9A5B13` |
+| Danger               | `#B42318` |
+| Sidebar              | `#171B23` |
+| Sidebar selected     | `#252D42` |
 
-- **Heading Font:** Cormorant Garamond
-- **Body Font:** Crimson Pro
-- **Mood:** academia, library, mahogany, parchment, brass, scholarly, prestige, antique, victorian, leather
-- **Google Fonts:** [Cormorant Garamond + Crimson Pro](https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,500|Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400)
+Raw colors belong in the token layer, not individual components.
 
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
-```
-
-### Spacing Variables
-
-*Density: 8/10 — Dense / Dashboard*
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--space-xs` | `2px` / `0.125rem` | Tight gaps |
-| `--space-sm` | `4px` / `0.25rem` | Icon gaps, inline spacing |
-| `--space-md` | `8px` / `0.5rem` | Standard padding |
-| `--space-lg` | `12px` / `0.75rem` | Section padding |
-| `--space-xl` | `16px` / `1rem` | Large gaps |
-| `--space-2xl` | `24px` / `1.5rem` | Section margins |
-| `--space-3xl` | `32px` / `2rem` | Hero padding |
-
-### Shadow Depths
-
-| Level | Value | Usage |
-|-------|-------|-------|
-| `--shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | Subtle lift |
-| `--shadow-md` | `0 4px 6px rgba(0,0,0,0.1)` | Cards, buttons |
-| `--shadow-lg` | `0 10px 15px rgba(0,0,0,0.1)` | Modals, dropdowns |
-| `--shadow-xl` | `0 20px 25px rgba(0,0,0,0.15)` | Hero images, featured cards |
-
----
-
-## Component Specs
-
-### Buttons
+## Typography
 
 ```css
-/* Primary Button */
-.btn-primary {
-  background: #059669;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 200ms ease;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-/* Secondary Button */
-.btn-secondary {
-  background: transparent;
-  color: #2563EB;
-  border: 2px solid #2563EB;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 200ms ease;
-  cursor: pointer;
-}
+--font-ui:
+  "Pretendard Variable", "Inter", "Noto Sans KR", "Segoe UI Variable Text",
+  "Apple SD Gothic Neo", system-ui, sans-serif;
+--font-mono:
+  "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 ```
 
-### Cards
+- Product body: `14px / 22px`
+- Dense secondary copy: `12–13px / 18–20px`
+- Panel title: `16px / 24px`, weight 600–650
+- Page title: `28–36px / 34–44px`, weight 600–650
+- Korean heading tracking must not be tighter than `-0.02em`.
+- Use tabular numerals for comparable values.
 
-```css
-.card {
-  background: #F8FAFC;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
-  transition: all 200ms ease;
-  cursor: pointer;
-}
+## Spacing and density
 
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
+Use the 4px base scale:
+
+```text
+2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96
 ```
 
-### Inputs
+Spacing expresses relationships:
 
-```css
-.input {
-  padding: 12px 16px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 200ms ease;
-}
+- 4–8px inside a label or tightly related group
+- 12–20px inside dense controls and panels
+- 24–40px between product sections
+- 44–48px comfortable rows
+- 32–36px compact enterprise rows
 
-.input:focus {
-  border-color: #2563EB;
-  outline: none;
-  box-shadow: 0 0 0 3px #2563EB20;
-}
-```
+Do not stamp the same gap across every relationship.
 
-### Modals
+## Radius and elevation
 
-```css
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-}
+| Token | Value | Use                           |
+| ----- | ----: | ----------------------------- |
+| XS    |   4px | status, code                  |
+| SM    |   6px | inputs, compact buttons       |
+| MD    |   8px | product panels and dialogs    |
+| LG    |  12px | large work surfaces           |
+| XL    |  16px | marketing product frames only |
+| Pill  | 999px | tags only                     |
 
-.modal {
-  background: white;
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow-xl);
-  max-width: 500px;
-  width: 90%;
-}
-```
+Fixed navigation and product panels use borders, not shadows. Shadows are
+reserved for popovers, the command palette, dialogs, and floating marketing
+frames.
 
----
+## App shell
 
-## Style Guidelines
+- Top bar: 48px
+- Expanded sidebar: 248–256px
+- Collapsed sidebar: 56–64px
+- Standard inspector: 360px
+- Wide inspector: 440–520px
+- Main workspace minimum: 640px
 
-**Style:** Soft UI Evolution
+The sidebar may be dark. The main workspace remains light and materially
+brighter. On mobile, navigation becomes a four-item bottom bar.
 
-**Keywords:** Evolved soft UI, better contrast, modern aesthetics, subtle depth, accessibility-focused, improved shadows, hybrid
+## Interaction
 
-**Best For:** Modern enterprise apps, SaaS platforms, health/wellness, modern business tools, professional, hybrid
+- Minimum touch target: 44×44px where space permits.
+- Focus must remain visible.
+- Icon-only controls require an accessible name and tooltip.
+- Motion lasts 150–250ms and changes only meaningful properties.
+- Never animate layout dimensions for decoration.
+- `prefers-reduced-motion` disables non-essential motion.
+- Status is communicated with text or icon plus text, never color alone.
 
-**Key Effects:** Improved shadows (softer than flat, clearer than neumorphism), modern (200-300ms), focus visible, WCAG AA/AAA
+## Quick Convert
 
-### Page Pattern
+The first state is a single document work surface:
 
-**Pattern Name:** AI Personalization Landing
+1. Select or drop files.
+2. Run security and structural preflight.
+3. Show page routes, estimated time, and credit range.
+4. Let the user choose Fast, Balanced, Precision, or Private.
+5. Confirm the reserved maximum before processing.
 
-- **Conversion Strategy:** 20%+ conversion with personalization. Requires analytics integration. Fallback for new users.
-- **CTA Placement:** Context-aware placement based on user segment
-- **Section Order:** 1. Dynamic hero (personalized), 2. Relevant features, 3. Tailored testimonials, 4. Smart CTA
+Do not expose OCR, RAG, schema, model, or provider controls before they become
+relevant.
 
----
+## Prohibited patterns
 
-## Motion
+- default dark mode
+- repeated uppercase kickers
+- generic AI imagery, glowing effects, or decorative gradients
+- nested card stacks
+- one-hue status boxes
+- badge and pill proliferation
+- tinted icon tiles
+- monospace UI chrome
+- ornamental `01 / 02 / 03` markers
+- invented metrics or unsourced accuracy claims
+- a three-column desktop layout merely scaled down on mobile
+- sidebar and workspace with the same luminance
+- color-only status communication
 
-**Stagger List** (Standard) — Trigger: load or scroll | Duration: 300-450ms | Easing: `back.out(1.4)`
+## Release checklist
 
-```js
-gsap.from('.grid-item', { opacity: 0, scale: 0.92, y: 16, duration: 0.4, stagger: { each: 0.06, from: 'start', grid: 'auto' }, ease: 'back.out(1.4)' });
-```
-
-**Framework notes:** grid: 'auto' lets GSAP infer rows/columns from a CSS grid layout for a natural wave stagger
-
-- ✅ Combine with from: 'center' for a bento-grid layout to draw the eye inward first
-- ❌ Don't use back.out on dense data tables; the overshoot reads as sloppy on informational UI
-- ⚡ Group DOM writes; avoid interleaving layout reads (getBoundingClientRect) between staggered tweens
-
----
-
-## Anti-Patterns (Do NOT Use)
-
-- ❌ Heavy chrome
-- ❌ Slow response feedback
-
-### Additional Forbidden Patterns
-
-- ❌ **Emojis as icons** — Use SVG icons (Heroicons, Lucide, Simple Icons)
-- ❌ **Missing cursor:pointer** — All clickable elements must have cursor:pointer
-- ❌ **Layout-shifting hovers** — Avoid scale transforms that shift layout
-- ❌ **Low contrast text** — Maintain 4.5:1 minimum contrast ratio
-- ❌ **Instant state changes** — Always use transitions (150-300ms)
-- ❌ **Invisible focus states** — Focus states must be visible for a11y
-
----
-
-## Pre-Delivery Checklist
-
-Before delivering any UI code, verify:
-
-- [ ] No emojis used as icons (use SVG instead)
-- [ ] All icons from consistent icon set (Heroicons/Lucide)
-- [ ] `cursor-pointer` on all clickable elements
-- [ ] Hover states with smooth transitions (150-300ms)
-- [ ] Light mode: text contrast 4.5:1 minimum
-- [ ] Focus states visible for keyboard navigation
-- [ ] `prefers-reduced-motion` respected
-- [ ] Responsive: 375px, 768px, 1024px, 1440px
-- [ ] No content hidden behind fixed navbars
-- [ ] No horizontal scroll on mobile
+- [ ] Light-first authenticated product
+- [ ] Clear sidebar/workspace hierarchy
+- [ ] No unnecessary heading kicker
+- [ ] One surface per operational region
+- [ ] Keyboard and screen-reader navigation
+- [ ] WCAG 2.2 AA automated checks
+- [ ] No horizontal overflow at 360, 768, 1440, and 1920px
+- [ ] Reduced-motion behavior
+- [ ] Real state labels; no fabricated evidence
+- [ ] Visual inspection of marketing, home, upload, processing, review, and
+      knowledge surfaces

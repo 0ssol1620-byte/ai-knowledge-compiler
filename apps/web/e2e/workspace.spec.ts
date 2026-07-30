@@ -34,7 +34,9 @@ test("dashboard exposes evidence-first project workflow", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "원문에서 검증 가능한 지식까지" }),
   ).toBeVisible();
-  await expect(page.getByText("외부 API 꺼짐").first()).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("외부 API 꺼짐").first(),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /파일을 끌어놓거나 선택하세요/ }),
   ).toBeVisible();
@@ -253,7 +255,7 @@ test("masterplan product routes remain honest and overflow-free", async ({
   ]) {
     await page.goto(path);
     await expect(
-      page.getByText("DEMO MODE", { exact: false }).first(),
+      page.getByText("샘플 화면", { exact: false }).first(),
     ).toBeVisible();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,

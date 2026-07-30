@@ -1,9 +1,9 @@
 import {
-  CheckCircle,
-  Clock,
   FileText,
   LockKey,
+  Receipt,
   ShieldCheck,
+  Timer,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 
@@ -14,59 +14,68 @@ export const metadata: Metadata = { title: "빠른 변환" };
 export default function QuickConvertPage() {
   return (
     <div className="page-shell quick-convert-page">
-      <section className="page-heading">
+      <nav className="page-breadcrumb" aria-label="현재 위치">
+        <span>작업</span>
+        <span aria-hidden="true">/</span>
+        <strong>빠른 변환</strong>
+      </nav>
+      <section className="quick-convert-intro">
         <div>
-          <p className="eyebrow">Quick convert</p>
-          <h1>문서를 검증 가능한 AI용 파일로</h1>
+          <h1>새 변환 시작</h1>
           <p>
-            업로드 후 보안 검사와 문서 분석을 먼저 수행하고, 처리 범위와 최대
-            크레딧을 확인한 뒤 시작합니다.
+            문서를 추가하면 보안 검사와 페이지 분석을 먼저 실행합니다. 처리
+            시간과 최대 크레딧을 확인하기 전에는 변환을 시작하지 않습니다.
           </p>
         </div>
-        <span className="policy-state safe">
-          <LockKey size={14} weight="fill" aria-hidden="true" />
-          외부 provider 기본 차단
-        </span>
+        <div className="quick-convert-policy">
+          <LockKey size={18} aria-hidden="true" />
+          <span>
+            <strong>외부 API 꺼짐</strong>
+            <small>현재 워크스페이스의 기본 정책</small>
+          </span>
+        </div>
       </section>
-      <div className="quick-convert-grid">
-        <UploadPanel />
-        <aside className="panel preflight-explainer">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Before processing</p>
-              <h2>Preflight에서 확인하는 항목</h2>
-            </div>
-          </div>
-          <ol>
+      <div className="quick-convert-workbench">
+        <UploadPanel showPolicy={false} />
+        <aside className="preflight-explainer">
+          <header>
+            <p>파일을 선택한 다음</p>
+            <h2>변환 전에 먼저 확인합니다</h2>
+            <span>
+              분석 결과를 검토하고 처리 방식과 출력 형식을 직접 선택할 수
+              있습니다.
+            </span>
+          </header>
+          <ul>
             <li>
-              <ShieldCheck size={18} weight="duotone" aria-hidden="true" />
+              <ShieldCheck size={19} aria-hidden="true" />
               <span>
-                <strong>보안과 파일 무결성</strong>
-                <small>해시, 악성 파일 검사, 지원 형식과 암호 여부</small>
+                <strong>파일 안전성</strong>
+                <small>무결성, 악성 파일, 암호 및 지원 형식</small>
               </span>
             </li>
             <li>
-              <FileText size={18} weight="duotone" aria-hidden="true" />
+              <FileText size={19} aria-hidden="true" />
               <span>
-                <strong>페이지별 처리 경로</strong>
-                <small>Native, OCR, 복잡 표·수식 페이지를 분리</small>
+                <strong>페이지 구성</strong>
+                <small>일반 텍스트, OCR, 표·수식 페이지 구분</small>
               </span>
             </li>
             <li>
-              <Clock size={18} weight="duotone" aria-hidden="true" />
+              <Timer size={19} aria-hidden="true" />
               <span>
-                <strong>시간과 크레딧 범위</strong>
-                <small>예상값과 예약 최대값, 미사용 예약 반환 정책</small>
+                <strong>처리 시간</strong>
+                <small>예상 완료 시간과 페이지별 처리 경로</small>
               </span>
             </li>
             <li>
-              <CheckCircle size={18} weight="duotone" aria-hidden="true" />
+              <Receipt size={19} aria-hidden="true" />
               <span>
-                <strong>출력 목표</strong>
-                <small>Markdown, Vault, RAG, Knowledge Graph</small>
+                <strong>크레딧 상한</strong>
+                <small>예상 사용량, 예약 최대값, 미사용분 반환</small>
               </span>
             </li>
-          </ol>
+          </ul>
         </aside>
       </div>
     </div>

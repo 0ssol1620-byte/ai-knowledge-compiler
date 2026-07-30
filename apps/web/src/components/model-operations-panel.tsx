@@ -70,7 +70,6 @@ export function ModelOperationsPanel() {
     <section className="panel model-operations-panel">
       <div className="panel-heading">
         <div>
-          <p className="eyebrow">Model governance</p>
           <h2>모델 수명주기</h2>
           <p>
             승인 증거와 세대 잠금을 확인한 뒤 Champion, 즉시 롤백 대상, 폐기
@@ -242,21 +241,18 @@ function ModelActionDialog({
   const [recipeSha, setRecipeSha] = useState(value.model.recipe_sha256 ?? "");
   const copy = {
     promote: {
-      eyebrow: "Champion change",
       title: "모델을 승격하시겠습니까?",
       description:
         "현재 Champion은 즉시 롤백 가능한 Fallback으로 보존되며, 변경은 감사 로그에 남습니다.",
       submit: "Promote model",
     },
     rollback: {
-      eyebrow: "One-change recovery",
       title: "직전 Champion으로 롤백하시겠습니까?",
       description:
         "현재 Champion과 검증된 직전 Fallback을 한 트랜잭션에서 교체합니다.",
       submit: "Roll back model",
     },
     retire: {
-      eyebrow: "Routing removal",
       title: "모델을 폐기 상태로 전환하시겠습니까?",
       description:
         "활성 Champion 또는 Champion의 유일한 롤백 대상은 폐기할 수 없습니다.",
@@ -284,7 +280,6 @@ function ModelActionDialog({
       >
         <div className="modal-heading">
           <div>
-            <p className="eyebrow">{copy.eyebrow}</p>
             <h2 id={titleId}>{copy.title}</h2>
             <p id={descriptionId}>{copy.description}</p>
           </div>

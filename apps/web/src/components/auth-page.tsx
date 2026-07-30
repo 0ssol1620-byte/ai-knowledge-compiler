@@ -40,7 +40,6 @@ export function AuthPage({
       <section className="login-story">
         <BrandMark />
         <div className="login-story-copy">
-          <p className="eyebrow">Evidence-first knowledge</p>
           <h1>AI 결과를 믿으라고 요구하지 않습니다.</h1>
           <p>
             원본 페이지와 좌표, 처리 경로, 수정 이력까지 직접 확인할 수
@@ -118,9 +117,6 @@ export function AuthPage({
           }}
         >
           <div>
-            <p className="eyebrow">
-              {registering ? "Create workspace" : "Welcome back"}
-            </p>
             <h2>
               {registering ? "워크스페이스 만들기" : "워크스페이스 로그인"}
             </h2>

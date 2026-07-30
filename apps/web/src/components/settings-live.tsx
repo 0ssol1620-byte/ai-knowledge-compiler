@@ -146,7 +146,6 @@ export function SettingsLive() {
 
   return (
     <div className="simple-page settings-page">
-      <p className="eyebrow">Workspace policy</p>
       <h1>설정</h1>
       <p>
         데이터 보존과 외부 처리 정책을 서버에 저장된 워크스페이스 단위로
@@ -460,7 +459,6 @@ function SettingsState({
 }) {
   return (
     <div className="simple-page settings-page">
-      <p className="eyebrow">Workspace policy</p>
       <h1>설정</h1>
       <div className="panel honest-state" aria-busy={busy}>
         {busy ? (

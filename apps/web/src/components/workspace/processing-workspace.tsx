@@ -247,9 +247,9 @@ function DemoProcessingWorkspace() {
               <strong>68%</strong>
             </div>
             <div>
-              <span className="mobile-progress-kicker">Current stage</span>
-              <strong>Knowledge compilation</strong>
-              <span>16 of 18 pages are usable</span>
+              <span className="mobile-progress-label">현재 단계</span>
+              <strong>지식 구조 생성</strong>
+              <span>18페이지 중 16페이지 사용 가능</span>
             </div>
           </div>
           <ol className="mobile-stage-list">
@@ -437,7 +437,6 @@ function EstimateDialog({
             <Gauge size={22} weight="duotone" aria-hidden="true" />
           </span>
           <div>
-            <p className="eyebrow">Preflight complete</p>
             <h2 id="estimate-title">처리 전 견적을 확인하세요</h2>
             <p>
               문서 구조를 빠르게 분석한 범위이며 실제 경로에 따라 차액을

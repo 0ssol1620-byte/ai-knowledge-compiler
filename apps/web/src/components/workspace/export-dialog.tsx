@@ -173,7 +173,6 @@ export function ExportDialog({
       >
         <div className="modal-heading">
           <div>
-            <p className="eyebrow">Deterministic export</p>
             <h2 id={titleId}>지식 패키지 만들기</h2>
             <p>동일한 CIR snapshot과 옵션은 동일한 checksum으로 생성됩니다.</p>
           </div>
@@ -232,7 +231,6 @@ export function ExportDialog({
               >
                 <div>
                   <div>
-                    <p className="eyebrow">Read-only collision preview</p>
                     <h3 id="vault-merge-title">기존 Obsidian Vault 비교</h3>
                   </div>
                   <span>
@@ -358,7 +356,9 @@ function VaultPreviewResult({ preview }: { preview: VaultMergePreview }) {
           )}
         </span>
         <div>
-          <p className="eyebrow">Plan {preview.plan_sha256.slice(0, 12)}</p>
+          <p className="metadata-label">
+            계획 식별자 {preview.plan_sha256.slice(0, 12)}
+          </p>
           <h3>
             {preview.safe_to_apply
               ? "선택한 정책으로 안전하게 병합 가능"

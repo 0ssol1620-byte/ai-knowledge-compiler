@@ -33,12 +33,10 @@ export function VerificationPending({
       <section className="login-story">
         <BrandMark />
         <div className="login-story-copy">
-          <p className="eyebrow">One secure step remains</p>
-          <h1>Verify the address that owns this workspace.</h1>
+          <h1>워크스페이스 소유 이메일을 확인하세요.</h1>
           <p>
-            Free processing credits stay locked until the email address is
-            verified. Verification links are single-use and expire
-            automatically.
+            이메일 확인 전에는 무료 처리 크레딧을 사용할 수 없습니다. 확인
+            링크는 한 번만 사용할 수 있으며 일정 시간이 지나면 만료됩니다.
           </p>
         </div>
       </section>
@@ -46,13 +44,12 @@ export function VerificationPending({
         <section className="login-form verification-card" aria-live="polite">
           <EnvelopeSimple size={36} weight="duotone" aria-hidden="true" />
           <div>
-            <p className="eyebrow">Check your inbox</p>
             <h2 ref={heading} tabIndex={-1}>
-              Verification email requested
+              확인 메일을 요청했습니다
             </h2>
             <p>
-              If an eligible account exists for <strong>{email}</strong>, a
-              verification link will arrive shortly.
+              <strong>{email}</strong> 주소로 등록 가능한 계정이 확인되면 잠시
+              후 링크가 도착합니다.
             </p>
           </div>
 
@@ -76,9 +73,7 @@ export function VerificationPending({
                 body: JSON.stringify({ email }),
               })
                 .then(() => {
-                  setNotice(
-                    "If the address is eligible, a fresh verification link has been queued.",
-                  );
+                  setNotice("새 확인 링크 발송을 요청했습니다.");
                 })
                 .catch((reason: unknown) => {
                   setError(resendError(reason));
@@ -91,10 +86,10 @@ export function VerificationPending({
             ) : (
               <PaperPlaneTilt size={16} weight="fill" aria-hidden="true" />
             )}
-            {sending ? "Requesting…" : "Resend verification"}
+            {sending ? "요청 중…" : "확인 메일 다시 보내기"}
           </button>
           <Link className="verification-secondary" href={loginHref as Route}>
-            Return to sign in
+            로그인으로 돌아가기
             <ArrowRight size={15} aria-hidden="true" />
           </Link>
         </section>
@@ -106,12 +101,12 @@ export function VerificationPending({
 function resendError(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.code === "CAPTCHA_REQUIRED") {
-      return "Additional verification is required. Wait briefly, then try again.";
+      return "추가 확인이 필요합니다. 잠시 후 다시 시도해 주세요.";
     }
     if (error.status === 429) {
-      return "Too many requests. Please wait before requesting another link.";
+      return "요청 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요.";
     }
     return error.message;
   }
-  return "The request could not be completed. Please try again later.";
+  return "요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }

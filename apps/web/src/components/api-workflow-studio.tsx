@@ -13,7 +13,6 @@ export function ApiWorkflowStudio() {
   const demoMode = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
   return (
     <div className="simple-page api-workflow-page">
-      <p className="eyebrow">Developer pipeline</p>
       <div className="developer-title">
         <div>
           <h1>API & 워크플로</h1>

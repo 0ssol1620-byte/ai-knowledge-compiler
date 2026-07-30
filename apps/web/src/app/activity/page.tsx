@@ -12,7 +12,6 @@ export const metadata: Metadata = { title: "활동" };
 export default function ActivityPage() {
   return (
     <div className="simple-page activity-page">
-      <p className="eyebrow">Processing activity</p>
       <h1>활동</h1>
       <p>진행 중인 작업, 검토 필요 항목과 최근 완료를 한곳에서 확인합니다.</p>
       <div className="activity-status-grid">

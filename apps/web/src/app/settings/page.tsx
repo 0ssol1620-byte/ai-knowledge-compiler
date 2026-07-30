@@ -26,7 +26,6 @@ export default function SettingsPage() {
 function DemoSettingsPage() {
   return (
     <div className="simple-page settings-page">
-      <p className="eyebrow">Workspace policy</p>
       <h1>설정</h1>
       <p>
         데이터 보존, 외부 처리, 역할과 크레딧 정책을 워크스페이스 단위로

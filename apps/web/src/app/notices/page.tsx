@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 export default function NoticesPage() {
   return (
     <div className="simple-page notices-page">
-      <p className="eyebrow">Trust center</p>
       <h1>도움말·고지</h1>
       <p>
         사용한 기술, 데이터 처리 방식, 정확성 한계와 지원 절차를 숨기지

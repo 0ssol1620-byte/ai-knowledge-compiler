@@ -206,7 +206,6 @@ function EstimateView({ documentId }: { documentId: string }) {
             <Gauge size={22} weight="duotone" aria-hidden="true" />
           </span>
           <div>
-            <p className="eyebrow">Preflight complete</p>
             <h1 id="estimate-live-title">처리 전 견적을 확인하세요</h1>
             <p>
               실제 보안 검사와 preflight 결과이며 승인 전에는 크레딧을 사용하지

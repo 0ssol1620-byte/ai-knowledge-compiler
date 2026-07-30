@@ -47,7 +47,6 @@ export function DashboardLive() {
       <div className="page-shell dashboard-page" aria-busy="true">
         <section className="page-heading">
           <div>
-            <p className="eyebrow">Knowledge workspace</p>
             <h1>원문에서 검증 가능한 지식까지</h1>
             <p>워크스페이스의 검증된 상태를 불러오고 있습니다.</p>
           </div>
@@ -65,7 +64,6 @@ export function DashboardLive() {
       <div className="page-shell dashboard-page">
         <section className="page-heading">
           <div>
-            <p className="eyebrow">Knowledge workspace</p>
             <h1>워크스페이스를 불러오지 못했습니다.</h1>
             <p>
               표시할 수 없는 수치를 추정하지 않습니다. 연결을 확인한 뒤 다시
@@ -102,7 +100,6 @@ export function DashboardLive() {
     <div className="page-shell dashboard-page">
       <section className="page-heading">
         <div>
-          <p className="eyebrow">Knowledge workspace</p>
           <h1>원문에서 검증 가능한 지식까지</h1>
           <p>
             자료를 업로드하면 원문 좌표와 근거를 보존한 Markdown, Obsidian

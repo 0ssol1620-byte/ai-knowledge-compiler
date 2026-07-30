@@ -68,7 +68,6 @@ export function CreateProjectButton({
           >
             <div className="modal-heading">
               <div>
-                <p className="eyebrow">New knowledge project</p>
                 <h2 id={titleId}>프로젝트 만들기</h2>
               </div>
               <button

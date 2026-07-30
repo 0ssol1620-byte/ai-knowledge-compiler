@@ -26,7 +26,7 @@ test("real API journey preserves provenance through export", async ({
   expect((await registerResponse.json()).email_verified).toBe(false);
 
   await expect(
-    page.getByRole("heading", { name: "Verification email requested" }),
+    page.getByRole("heading", { name: "확인 메일을 요청했습니다" }),
   ).toBeVisible();
   const captureResponse = await page.request.post(
     "http://127.0.0.1:8100/__test__/verification-token",
@@ -41,9 +41,9 @@ test("real API journey preserves provenance through export", async ({
     `/verify-email?verification=1#token=${encodeURIComponent(capture.token)}`,
   );
   await expect(
-    page.getByRole("heading", { name: "You are ready" }),
+    page.getByRole("heading", { name: "이메일 확인 완료" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Open workspace" }).click();
+  await page.getByRole("link", { name: "워크스페이스 열기" }).click();
   await page.waitForURL("http://127.0.0.1:3100/home");
   await expect(
     page.getByRole("heading", { name: "원문에서 검증 가능한 지식까지" }),

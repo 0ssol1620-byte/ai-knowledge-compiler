@@ -153,7 +153,6 @@ export function ModelMergeDialog({
       >
         <div className="modal-heading">
           <div>
-            <p className="eyebrow">Revision-safe comparison</p>
             <h2 id={titleId}>Resolve model changes</h2>
             <p id={descriptionId}>
               Compare the saved base, your current text, and a new model

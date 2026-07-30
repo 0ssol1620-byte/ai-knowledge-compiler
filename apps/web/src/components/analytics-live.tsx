@@ -164,7 +164,6 @@ export function AnalyticsLive() {
     <main className={`simple-page analytics-page ${styles.root}`}>
       <div className="analytics-title-row">
         <div>
-          <p className="eyebrow">Measured product evidence</p>
           <h1>제품 분석</h1>
           <p>
             추정값이나 데모 숫자가 아니라 현재 워크스페이스의 운영 기록만
@@ -471,7 +470,6 @@ function AnalyticsState({
 }) {
   return (
     <main className={`simple-page analytics-page ${styles.root}`}>
-      <p className="eyebrow">Measured product evidence</p>
       <h1>제품 분석</h1>
       <div
         className="panel honest-state"

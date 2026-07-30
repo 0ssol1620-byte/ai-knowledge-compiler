@@ -171,8 +171,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className={clsx("app-frame", collapsed && "sidebar-collapsed")}>
       {DEMO_MODE && (
         <div className="demo-mode-banner" role="status">
-          DEMO MODE · 화면의 문서와 지표는 샘플이며 실제 처리·과금 상태가
-          아닙니다.
+          샘플 화면 · 실제 문서 처리와 크레딧 사용은 발생하지 않습니다.
         </div>
       )}
       <aside className="sidebar" aria-label="주 메뉴">
@@ -201,11 +200,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-current={active ? "page" : undefined}
                 title={collapsed ? label : undefined}
               >
-                <Icon
-                  size={19}
-                  weight={active ? "fill" : "regular"}
-                  aria-hidden="true"
-                />
+                <Icon size={19} weight="regular" aria-hidden="true" />
                 <span>{label}</span>
               </Link>
             );
@@ -215,15 +210,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="sidebar-spacer" />
 
         <div className="privacy-card">
-          <ShieldCheck size={19} weight="fill" aria-hidden="true" />
+          <ShieldCheck size={18} aria-hidden="true" />
           <div>
-            <strong>Private by default</strong>
+            <strong>외부 처리 보호</strong>
             <span>
-              {profile?.externalProcessingEnabled === true
-                ? "외부 처리 동의 활성"
-                : profile?.externalProcessingEnabled === false
-                  ? "외부 모델 API 꺼짐"
-                  : "외부 처리 정책 미확인"}
+              {DEMO_MODE
+                ? "외부 API 꺼짐"
+                : profile?.externalProcessingEnabled === true
+                  ? "외부 처리 동의 활성"
+                  : profile?.externalProcessingEnabled === false
+                    ? "외부 API 꺼짐"
+                    : "정책 확인 필요"}
             </span>
           </div>
         </div>
@@ -271,12 +268,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="credit-chip" title="사용 가능한 크레딧">
               <span>
                 {DEMO_MODE
-                  ? "sample"
+                  ? "샘플"
                   : profile
                     ? (profile.creditBalance?.toLocaleString() ?? "—")
                     : "—"}
               </span>
-              <small>credits</small>
+              <small>크레딧</small>
             </div>
             <button
               className="icon-button"
@@ -321,7 +318,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-current={active ? "page" : undefined}
                 key={href}
               >
-                <Icon size={20} weight={active ? "fill" : "regular"} />
+                <Icon size={20} weight="regular" />
                 <span>{label}</span>
               </Link>
             );

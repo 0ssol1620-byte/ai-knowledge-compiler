@@ -19,7 +19,13 @@ const ANALYSIS_MAX_SOURCE_BYTES = 256 * 1024 * 1024;
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 
-export function UploadPanel({ projectId }: { projectId?: string }) {
+export function UploadPanel({
+  projectId,
+  showPolicy = true,
+}: {
+  projectId?: string;
+  showPolicy?: boolean;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [dragging, setDragging] = useState(false);
@@ -41,21 +47,23 @@ export function UploadPanel({ projectId }: { projectId?: string }) {
   }
 
   return (
-    <section className="panel upload-panel">
-      <div className="panel-heading">
+    <section className={`${showPolicy ? "panel " : ""}upload-panel`}>
+      <header className="upload-panel-heading">
         <div>
-          <p className="eyebrow">Quick convert</p>
-          <h2>자료 추가</h2>
-          <p>보안 검사 후 비용 범위를 먼저 계산합니다.</p>
+          <h2>변환할 문서</h2>
+          <p>한 번에 30개까지 추가할 수 있습니다.</p>
         </div>
-        <span className="private-badge">
-          <LockKey size={14} weight="fill" aria-hidden="true" />
-          외부 API 꺼짐
-        </span>
-      </div>
+        {showPolicy && (
+          <span className="upload-policy-inline">
+            <LockKey size={15} aria-hidden="true" />
+            외부 API 꺼짐
+          </span>
+        )}
+      </header>
       <button
         type="button"
         className={`dropzone ${dragging ? "dragging" : ""}`}
+        aria-label="파일을 끌어놓거나 선택하세요"
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
         onDragEnter={(event) => {
@@ -71,11 +79,11 @@ export function UploadPanel({ projectId }: { projectId?: string }) {
         }}
       >
         <span className="dropzone-icon">
-          <FileArrowUp size={28} weight="duotone" aria-hidden="true" />
+          <FileArrowUp size={30} aria-hidden="true" />
         </span>
-        <strong>파일을 끌어놓거나 선택하세요</strong>
-        <span>PDF · Office · 이미지 · HTML · 텍스트 · 자막</span>
-        <small>파일당 최대 50MB · Free 기준 · 네이티브 분석 최대 256MB</small>
+        <strong>문서 또는 폴더를 여기에 놓으세요</strong>
+        <span>PDF, DOCX, PPTX, XLSX, 이미지, HTML</span>
+        <small>클릭해서 직접 선택할 수도 있습니다 · 파일당 최대 50MB</small>
       </button>
       <input
         ref={inputRef}
@@ -119,10 +127,10 @@ export function UploadPanel({ projectId }: { projectId?: string }) {
       )}
 
       <div className="upload-assurance">
-        <ShieldCheck size={18} weight="fill" aria-hidden="true" />
+        <ShieldCheck size={18} aria-hidden="true" />
         <span>
-          원본은 격리 저장되며, 처리 전 유형·checksum·악성 파일 검사를
-          수행합니다.
+          원본은 격리 영역에 저장되며, 변환 전에 파일 형식·무결성·악성 파일
+          여부를 검사합니다.
         </span>
       </div>
 
@@ -172,8 +180,8 @@ export function UploadPanel({ projectId }: { projectId?: string }) {
         {uploading
           ? "업로드·분석 중"
           : files.length > 0
-            ? `${files.length}개 파일 분석하기`
-            : "파일을 먼저 선택하세요"}
+            ? `${files.length}개 문서 사전 분석`
+            : "문서를 선택하면 계속할 수 있습니다"}
         <ArrowRight size={16} aria-hidden="true" />
       </button>
     </section>

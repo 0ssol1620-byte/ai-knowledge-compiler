@@ -96,7 +96,6 @@ export function AdminLive() {
   const cards = healthCards(data);
   return (
     <div className="simple-page admin-page">
-      <p className="eyebrow">Restricted operations</p>
       <div className="admin-title-row">
         <div>
           <h1>운영 콘솔</h1>
@@ -355,7 +354,6 @@ function AdminState({
 }) {
   return (
     <div className="simple-page admin-page">
-      <p className="eyebrow">Restricted operations</p>
       <h1>{title}</h1>
       <div
         className="panel honest-state"

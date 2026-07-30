@@ -41,7 +41,6 @@ export function ReviewStudio() {
   if (!demoMode) {
     return (
       <div className="simple-page">
-        <p className="eyebrow">Precision review</p>
         <h1>검토 스튜디오</h1>
         <div className="honest-state panel">
           <FileMagnifyingGlass size={26} aria-hidden="true" />
