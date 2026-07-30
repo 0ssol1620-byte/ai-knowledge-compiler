@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   SquaresFour,
 } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 import Link from "next/link";
 
 import { StructaraHeroScene } from "@/components/structara-hero";
@@ -205,6 +206,21 @@ export function MarketingLanding() {
             <p>Public proof systems</p>
             <h2>Built for documents that cannot afford to be misunderstood.</h2>
           </div>
+          <figure className="st-proof-material">
+            <Image
+              src="/images/brand/source-atlas.webp"
+              alt="Layered source pages connected by precise evidence lines."
+              width={1694}
+              height={929}
+              sizes="(max-width: 768px) 100vw, 86vw"
+            />
+            <figcaption>
+              <span>Source atlas · material study 01</span>
+              <strong>
+                Structure becomes useful when evidence survives it.
+              </strong>
+            </figcaption>
+          </figure>
           <article>
             <span>KR · DART</span>
             <h3>Korean financial filings</h3>
@@ -299,13 +315,21 @@ export function MarketingLanding() {
             </span>
             <Link href="/security">Explore security architecture</Link>
           </div>
-          <div className="st-policy-orbit">
-            <strong>Document</strong>
-            {["Region", "Retention", "Access", "Audit", "External AI"].map(
-              (item) => (
-                <span key={item}>{item}</span>
-              ),
-            )}
+          <div className="st-security-visual">
+            <Image
+              src="/images/brand/evidence-field.webp"
+              alt=""
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+            <div className="st-policy-orbit">
+              <strong>Document</strong>
+              {["Region", "Retention", "Access", "Audit", "External AI"].map(
+                (item) => (
+                  <span key={item}>{item}</span>
+                ),
+              )}
+            </div>
           </div>
         </section>
 
