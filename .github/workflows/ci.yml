@@ -1,0 +1,241 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python-core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Bootstrap the pinned lockfile installer
+        run: python -m pip install "uv==0.12.0"
+      - name: Sync the immutable development environment
+        run: python -m uv sync --locked --extra dev
+      - name: Verify resolved Python dependencies
+        run: python -m uv pip check --python .venv/bin/python
+      - name: Lint
+        run: python -m uv run --locked --extra dev ruff check packages services workers benchmark infra
+      - name: Type check
+        run: python -m uv run --locked --extra dev mypy packages services
+      - name: Test with core-library coverage gate
+        if: matrix.python-version == '3.12'
+        run: >-
+          python -m uv run --locked --extra dev pytest
+          --cov --cov-report=term --cov-report=xml
+          --cov-fail-under=80
+      - name: Test the second supported interpreter
+        if: matrix.python-version != '3.12'
+        run: python -m uv run --locked --extra dev pytest
+
+  web-and-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Activate declared pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+      - name: Install dependencies
+        run: |
+          if [[ -f pnpm-lock.yaml ]]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "::warning::pnpm-lock.yaml is absent; release gate must require a committed lockfile"
+            pnpm install --no-frozen-lockfile
+          fi
+      - name: Validate opt-in k6 scripts
+        run: |
+          node --check tests/load/k6-health.js
+          node --check tests/load/k6-journey.js
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  live-browser-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+      - name: Sync the immutable API environment
+        run: |
+          python -m pip install "uv==0.12.0"
+          python -m uv sync --locked --extra dev
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Install the immutable web environment
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Install the pinned Chromium runtime
+        run: pnpm --filter @akc/web exec playwright install --with-deps chromium
+      - name: Run the real API and browser journey
+        run: pnpm test:e2e:live
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: live-browser-e2e-evidence
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+          retention-days: 14
+
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Sync immutable contract tooling
+        run: |
+          python -m pip install "uv==0.12.0"
+          python -m uv sync --locked --extra dev
+      - name: Validate model registry
+        run: python -m uv run --locked --extra dev python infra/model-registry/validate_registry.py
+      - name: Validate repository policy and schemas
+        run: |
+          python -m uv run --locked --extra dev python infra/security/validate_repository.py
+          python -m uv run --locked --extra dev python infra/security/validate_deployment.py
+          python -m uv run --locked --extra dev python scripts/generate_contract_types.py --check
+          python -m uv run --locked --extra dev python scripts/check_openapi_compat.py
+      - name: Run benchmark metric tests
+        run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
+      - name: Run GPU handler tests
+        working-directory: workers/gpu-common
+        run: ../../.venv/bin/python -m unittest -v test_runtime.py
+      - name: Exercise synthetic benchmark pipeline
+        run: |
+          .venv/bin/python benchmark/run_benchmark.py \
+            --ground-truth benchmark/ground-truth/synthetic-v1.jsonl \
+            --provider local_mock \
+            --output "${RUNNER_TEMP}/contract-results.jsonl"
+          .venv/bin/python benchmark/report.py \
+            --input "${RUNNER_TEMP}/contract-results.jsonl" \
+            --output "${RUNNER_TEMP}/contract-report.md"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: synthetic-contract-report
+          path: |
+            ${{ runner.temp }}/contract-results.jsonl
+            ${{ runner.temp }}/contract-report.md
+          retention-days: 14
+
+  infrastructure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: "1.10.5"
+      - name: Terraform format
+        run: terraform fmt -check -recursive infra/terraform
+      - name: Terraform validate without backend
+        working-directory: infra/terraform
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+      - name: Render Kubernetes base
+        run: kubectl kustomize infra/kubernetes/base > "${RUNNER_TEMP}/kubernetes.yaml"
+      - name: Validate development Compose
+        run: docker compose -f docker-compose.dev.yml config --quiet
+
+  postgres-rls-and-role-boundaries:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17@sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0
+        env:
+          POSTGRES_DB: akc
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akc"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      CI: "true"
+      AKC_CI_ADMIN_DATABASE_URL: postgresql://postgres:postgres-ci-only@127.0.0.1:5432/akc
+      AKC_DATABASE_URL: postgresql+asyncpg://postgres:postgres-ci-only@127.0.0.1:5432/akc
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Sync immutable migration tooling
+        run: |
+          python -m pip install "uv==0.12.0"
+          python -m uv sync --locked --extra dev
+      - name: Prepare disposable least-privilege login roles
+        run: python -m uv run --locked --extra dev python infra/postgres/verify_postgres_gate.py --prepare-roles
+      - name: Upgrade the real PostgreSQL schema to head
+        run: python -m uv run --locked --extra dev python -m alembic upgrade head
+      - name: Require every source head to be current
+        run: python -m uv run --locked --extra dev python -m alembic current --check-heads
+      - name: Verify tenant RLS and mutually isolated worker roles
+        run: python -m uv run --locked --extra dev python infra/postgres/verify_postgres_gate.py
+
+  worker-syntax:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Check lockfiles and compile Python sources
+        run: |
+          python -m pip install "uv==0.12.0"
+          python -m uv lock --check
+          python -m uv lock --check --project workers/gpu-common
+          python -m compileall -q benchmark infra/model-registry infra/security workers/gpu-common \
+            workers/gpu-parser workers/gpu-knowledge workers/gpu-hpd workers/gpu-unlimited \
+            workers/cpu-document workers/cpu-export

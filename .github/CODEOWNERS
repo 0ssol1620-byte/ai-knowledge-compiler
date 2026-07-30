@@ -1,0 +1,13 @@
+# Default ownership. Repository branch protection must require CODEOWNER review.
+* @phillipsoul
+
+# High-risk and release-critical boundaries.
+/.github/ @phillipsoul
+/infra/ @phillipsoul
+/migrations/ @phillipsoul
+/packages/contracts/ @phillipsoul
+/packages/security/ @phillipsoul
+/services/api/ @phillipsoul
+/workers/gpu-common/ @phillipsoul
+/docs/legal/ @phillipsoul
+/docs/security/ @phillipsoul

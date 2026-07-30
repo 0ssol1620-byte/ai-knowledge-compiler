@@ -1,0 +1,207 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: akc-slo-and-security
+  namespace: monitoring
+spec:
+  groups:
+    - name: akc.telemetry-contract
+      interval: 30s
+      rules:
+        - alert: AKCMetricsScrapeMissing
+          expr: absent(akc_http_requests_total{method="GET", route="/metrics"})
+          for: 5m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: The API metrics endpoint is not being scraped
+        - alert: AKCRequiredTelemetryContractMissing
+          expr: |
+            absent(akc_jobs_terminal_total)
+            or absent(akc_queue_oldest_job_age_seconds)
+            or absent(akc_scanner_up)
+            or absent(akc_provider_up)
+            or absent(akc_audit_write_failure_total)
+            or absent(akc_deletion_oldest_pending_seconds)
+            or absent(akc_analysis_queue_depth)
+            or absent(akc_analysis_dead_letter_tasks)
+            or absent(akc_url_fetch_queue_depth)
+            or absent(akc_url_fetch_dead_letter_tasks)
+            or absent(akc_product_analytics_snapshots_total)
+            or absent(akc_product_analytics_events_total)
+          for: 5m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Required SLO or security telemetry is not instrumented
+            description: Production promotion remains blocked until every required series is emitted and scraped.
+    - name: akc.security
+      interval: 30s
+      rules:
+        - alert: AKCCrossTenantAccessDetected
+          expr: increase(akc_security_cross_tenant_denied_total[5m]) > 0
+          for: 0m
+          labels: { severity: sev0, team: security }
+          annotations:
+            summary: Cross-tenant access attempt or policy violation
+            runbook_url: docs/runbooks/incident-response.md
+        - alert: AKCAuditWriteFailure
+          expr: increase(akc_audit_write_failure_total[5m]) > 0
+          for: 1m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Immutable audit events cannot be written
+        - alert: AKCMalwareScannerUnavailable
+          expr: min_over_time(akc_scanner_up[5m]) < 1
+          for: 5m
+          labels: { severity: sev1, team: security }
+          annotations:
+            summary: Quarantine promotion must stop while scanner is unavailable
+            runbook_url: docs/runbooks/malicious-document.md
+        - alert: AKCExternalEgressPolicyDenied
+          expr: increase(akc_external_egress_denied_total[5m]) > 0
+          for: 0m
+          labels: { severity: sev1, team: security }
+          annotations:
+            summary: A job attempted an unapproved external provider call
+    - name: akc.processing
+      interval: 30s
+      rules:
+        - alert: AKCJobCompletionBelowSLO
+          expr: |
+            (
+              sum(rate(akc_jobs_terminal_total{status="completed"}[15m]))
+              /
+              clamp_min(sum(rate(akc_jobs_terminal_total[15m])), 0.001)
+              < 0.95
+            )
+            and
+            sum(increase(akc_jobs_terminal_total[15m])) >= 20
+          for: 15m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Job completion is below 95 percent
+        - alert: AKCQueueAgeHigh
+          expr: max(akc_queue_oldest_job_age_seconds) > 300
+          for: 10m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Queue age exceeded the initial operational threshold
+        - alert: AKCProviderEndpointDown
+          expr: min_over_time(akc_provider_up[5m]) < 1
+          for: 5m
+          labels: { severity: sev1, team: model-platform }
+          annotations:
+            summary: A configured provider endpoint is unavailable
+            runbook_url: docs/runbooks/provider-outage.md
+        - alert: AKCProviderFailureRateHigh
+          expr: |
+            sum by (provider) (rate(akc_provider_requests_total{result="failed"}[10m]))
+            /
+            clamp_min(sum by (provider) (rate(akc_provider_requests_total[10m])), 0.001)
+            > 0.05
+          for: 10m
+          labels: { severity: sev2, team: model-platform }
+          annotations:
+            summary: Provider failure rate exceeds 5 percent
+        - alert: AKCColdStartP95High
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le, provider) (rate(akc_provider_cold_start_seconds_bucket[30m]))
+            ) > 60
+          for: 30m
+          labels: { severity: sev2, team: model-platform }
+          annotations:
+            summary: Provider cold-start p95 exceeds the initial 60-second threshold
+        - alert: AKCDeadLetterQueueGrowing
+          expr: max_over_time(akc_dlq_messages[15m]) > 10
+          for: 10m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Dead-letter queue contains more than 10 items
+        - alert: AKCAnalysisQueueBacklog
+          expr: sum(akc_analysis_queue_depth{status=~"queued|running"}) > 50
+          for: 10m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Native document analysis backlog exceeded 50 tasks
+            runbook_url: docs/runbooks/analysis-worker.md
+        - alert: AKCAnalysisDeadLetters
+          expr: max(akc_analysis_dead_letter_tasks) > 0
+          for: 5m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: Native document analysis has dead-lettered tasks
+            runbook_url: docs/runbooks/analysis-worker.md
+        - alert: AKCAnalysisSandboxFailures
+          expr: increase(akc_analysis_sandbox_terminations_total[10m]) > 3
+          for: 5m
+          labels: { severity: sev1, team: security }
+          annotations:
+            summary: Document parser sandbox is repeatedly terminating
+            runbook_url: docs/runbooks/analysis-worker.md
+        - alert: AKCUrlFetchQueueBacklog
+          expr: sum(akc_url_fetch_queue_depth{status=~"queued|retry|running"}) > 50
+          for: 10m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: URL ingestion backlog exceeded 50 tasks
+            runbook_url: docs/runbooks/url-ingestion.md
+        - alert: AKCUrlFetchDeadLetters
+          expr: max(akc_url_fetch_dead_letter_tasks) > 0
+          for: 5m
+          labels: { severity: sev1, team: platform }
+          annotations:
+            summary: URL ingestion has dead-lettered tasks
+            runbook_url: docs/runbooks/url-ingestion.md
+    - name: akc.quality-and-cost
+      interval: 1m
+      rules:
+        - alert: AKCUnsupportedAcceptedClaim
+          expr: increase(akc_unsupported_claim_total{accepted="true"}[5m]) > 0
+          for: 0m
+          labels: { severity: sev1, team: quality }
+          annotations:
+            summary: An unsupported generated claim reached an accepted result
+        - alert: AKCCreditDoubleCharge
+          expr: increase(akc_credit_duplicate_consume_total[5m]) > 0
+          for: 0m
+          labels: { severity: sev1, team: billing }
+          annotations:
+            summary: Credit ledger detected a duplicate consume
+        - alert: AKCGPUCostBudgetExceeded
+          expr: sum(increase(akc_provider_estimated_cost_usd_total[1h])) > 100
+          for: 0m
+          labels: { severity: sev2, team: finops }
+          annotations:
+            summary: Hourly estimated GPU cost exceeded the environment threshold
+        - alert: AKCDeletionBacklog
+          expr: max(akc_deletion_oldest_pending_seconds) > 3600
+          for: 15m
+          labels: { severity: sev1, team: privacy }
+          annotations:
+            summary: Deletion jobs are not settling on time
+        - alert: AKCModelRevisionMismatch
+          expr: increase(akc_provider_revision_mismatch_total[5m]) > 0
+          for: 0m
+          labels: { severity: sev1, team: model-platform }
+          annotations:
+            summary: Provider returned a revision different from the registry
+            runbook_url: docs/runbooks/model-supply-chain.md
+    - name: akc.product-analytics
+      interval: 1m
+      rules:
+        - alert: AKCProductAnalyticsSnapshotFailureRateHigh
+          expr: |
+            (
+              sum(rate(akc_product_analytics_snapshots_total{result="failed"}[10m]))
+              /
+              clamp_min(sum(rate(akc_product_analytics_snapshots_total[10m])), 0.001)
+              > 0.05
+            )
+            and
+            sum(increase(akc_product_analytics_snapshots_total[10m])) >= 5
+          for: 10m
+          labels: { severity: sev2, team: product-platform }
+          annotations:
+            summary: Product analytics snapshot failure rate exceeds 5 percent
+            runbook_url: docs/runbooks/product-analytics.md

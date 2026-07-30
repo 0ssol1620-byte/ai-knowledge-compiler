@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <title>근거 보존 HTML</title>
+    <script>window.evil = "must never run";</script>
+  </head>
+  <body>
+    <nav><a href="https://example.invalid/nav">제거할 탐색</a></nav>
+    <main>
+      <h1>실험 보고서</h1>
+      <p>원문 문단과 <a href="https://example.invalid/source">외부 링크</a>입니다.</p>
+      <h2>결과</h2>
+      <ul>
+        <li>첫 번째 근거</li>
+        <li>두 번째 근거</li>
+      </ul>
+      <table>
+        <caption>정확도 비교</caption>
+        <thead>
+          <tr><th>구성</th><th>점수</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>기준</td><td>0.86</td></tr>
+          <tr><td>개선</td><td>0.94</td></tr>
+        </tbody>
+      </table>
+      <figure>
+        <img src="https://example.invalid/chart.png" alt="정확도 차트">
+        <figcaption>그림 1. 정확도 비교</figcaption>
+      </figure>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/error-envelope/1.0.0",
+  "title": "ErrorEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "code",
+    "message",
+    "retryable",
+    "traceId",
+    "details"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "error-1.0.0" },
+    "code": {
+      "enum": [
+        "INVALID_REQUEST",
+        "UNSUPPORTED_FILE_TYPE",
+        "FILE_SIGNATURE_MISMATCH",
+        "FILE_TOO_LARGE",
+        "FILE_MALICIOUS",
+        "ARCHIVE_UNSAFE",
+        "PASSWORD_REQUIRED",
+        "INVALID_PASSWORD",
+        "QUOTA_EXCEEDED",
+        "URL_BLOCKED",
+        "ROUTE_UNAVAILABLE",
+        "PROVIDER_TIMEOUT",
+        "PROVIDER_INVALID_OUTPUT",
+        "QUALITY_REVIEW_REQUIRED",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "retryable": { "type": "boolean" },
+    "traceId": { "type": "string", "minLength": 3 },
+    "details": {
+      "type": "object",
+      "propertyNames": {
+        "not": {
+          "enum": [
+            "authorization",
+            "body",
+            "content",
+            "cookie",
+            "document",
+            "password",
+            "prompt",
+            "raw_text",
+            "secret",
+            "token"
+          ]
+        }
+      }
+    }
+  }
+}

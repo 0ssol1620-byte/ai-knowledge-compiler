@@ -1,0 +1,92 @@
+recipe_registry_version: "1.0.0"
+defaults:
+  parse_profile: parse_balanced_v1
+  knowledge_profile: knowledge_standard_v1
+  retrieval_profile: retrieval_standard_v1
+  allow_external: false
+feature_flags:
+  hpd_fast_route: false
+  unlimited_long_doc: false
+  knowledge_qwen9b: false
+  external_mistral_fallback: false
+  external_precision_api: false
+  url_ingest_enabled: false
+  ontology_export: false
+  existing_vault_merge: false
+  chart_description: false
+recipes:
+  native_v1:
+    lane: parser
+    parser: native
+    verifier: deterministic
+    allow_external: false
+    enabled: true
+  parse_fast_v1:
+    lane: parser
+    parser: hpd_parsing_1b
+    verifier: deterministic
+    required_feature_flag: hpd_fast_route
+    language_allowlist: [en, zh]
+    maximum_preflight_difficulty: 64
+    fallback: parse_balanced_v1
+    allow_external: false
+    enabled: false
+  parse_balanced_v1:
+    lane: parser
+    parser: paddleocr_vl_1_6
+    verifier: deterministic
+    fallback: native_v1
+    allow_external: false
+    enabled: false
+    activation_blocker: pin_and_benchmark_paddleocr_vl_1_6
+  parse_precision_v1:
+    lane: parser
+    parser: paddleocr_vl_1_6
+    verifier: selective_second_parser
+    fallback: review
+    optional_external_fallback: mistral_ocr_4
+    external_consent_required: true
+    allow_external: false
+    enabled: false
+  parse_long_v1:
+    lane: parser
+    parser: paddleocr_vl_1_6
+    long_context_shadow: unlimited_ocr
+    acceptance: consensus_and_quality_gate
+    required_feature_flag: unlimited_long_doc
+    fallback: parse_balanced_v1
+    allow_external: false
+    enabled: false
+  parse_private_v1:
+    lane: parser
+    parser: paddleocr_vl_1_6
+    verifier: deterministic
+    fallback: review
+    allow_external: false
+    egress_policy: self_hosted_only
+    enabled: false
+  knowledge_standard_v1:
+    lane: knowledge
+    model: qwen3_5_4b
+    schema: akmp_knowledge_1
+    evidence_validator: required
+    fallback: review
+    allow_external: false
+    enabled: false
+  knowledge_precision_v1:
+    lane: knowledge
+    model: qwen3_5_9b
+    challenger: qwen3_6_precision
+    schema: akmp_knowledge_1
+    evidence_validator: required
+    required_feature_flag: knowledge_qwen9b
+    fallback: knowledge_standard_v1
+    allow_external: false
+    enabled: false
+  retrieval_standard_v1:
+    lane: retrieval
+    embedding: qwen3_embedding_0_6b
+    reranker: qwen3_reranker_0_6b
+    fallback: review
+    allow_external: false
+    enabled: false

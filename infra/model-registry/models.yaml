@@ -1,0 +1,353 @@
+registry_version: "1.0.0"
+generated_at: "2026-07-29T00:00:00Z"
+policy:
+  floating_revisions_forbidden: true
+  rollout_requires_internal_benchmark: true
+  external_processing_default: false
+  production_statuses: [champion, canary, fallback]
+releases:
+  - provider_key: local_mock_parser
+    upstream_id: local/akc-mock-parser
+    upstream_revision: "1111111111111111111111111111111111111111"
+    model_size: deterministic
+    weight_dtype: none
+    quantization: null
+    licenses:
+      weight_license: not_applicable
+      code_license: Apache-2.0
+      dataset_license: not_applicable
+      runtime_license: Apache-2.0
+      license_snapshot_sha256: "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    runtime:
+      engine: deterministic_mock
+      version: "1.0.0"
+      image_digest: null
+    claimed_languages: [und]
+    internal_validation:
+      corpus: synthetic-contract-v1
+      status: local_test
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
+  - provider_key: paddleocr_vl_1_6
+    upstream_id: PaddlePaddle/PaddleOCR-VL-1.6
+    upstream_revision: null
+    model_size: "0.9B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: review_required
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: paddle_or_vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual, ko, en, zh]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
+  - provider_key: hpd_parsing_1b
+    upstream_id: PaddlePaddle/HPD-Parsing
+    upstream_revision: null
+    model_size: "1B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_custom_vllm
+      license_snapshot_sha256: null
+    runtime:
+      engine: custom_vllm
+      version: null
+      image_digest: null
+    claimed_languages: [en, zh]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: parse_balanced_v1
+  - provider_key: unlimited_ocr
+    upstream_id: baidu/Unlimited-OCR
+    upstream_revision: null
+    model_size: unknown_until_snapshot
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: review_required
+      code_license: MIT
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: transformers_or_vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: parse_balanced_v1
+  - provider_key: infinity_parser2_flash
+    upstream_id: infly/Infinity-Parser2-Flash
+    upstream_revision: null
+    model_size: "2B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm_or_transformers
+      version: null
+      image_digest: null
+    claimed_languages: [en, zh, multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: parse_balanced_v1
+  - provider_key: infinity_parser2_pro
+    upstream_id: infly/Infinity-Parser2-Pro
+    upstream_revision: null
+    model_size: "35B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: null
+      image_digest: null
+    claimed_languages: [en, zh]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: offline_teacher_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: null
+  - provider_key: deepseek_ocr_2
+    upstream_id: deepseek-ai/DeepSeek-OCR-2
+    upstream_revision: null
+    model_size: unknown_until_snapshot
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_custom_wheel_cuda
+      license_snapshot_sha256: null
+    runtime:
+      engine: custom_vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: parse_balanced_v1
+  - provider_key: olmocr_2
+    upstream_id: allenai/olmOCR-2
+    upstream_revision: null
+    model_size: "7B"
+    weight_dtype: fp8
+    quantization: fp8
+    licenses:
+      weight_license: snapshot_required
+      code_license: snapshot_required
+      dataset_license: review_required
+      runtime_license: review_fp8
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: parse_balanced_v1
+  - provider_key: mineru
+    upstream_id: opendatalab/MinerU
+    upstream_revision: null
+    model_size: suite
+    weight_dtype: mixed
+    quantization: null
+    licenses:
+      weight_license: review_required
+      code_license: MinerU-Open-Source-License
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: mineru_pipeline
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: optional_provider_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: parse_balanced_v1
+  - provider_key: qwen3_5_4b
+    upstream_id: Qwen/Qwen3.5-4B
+    upstream_revision: null
+    model_size: "4B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual, ko, en, zh, ja]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: null
+  - provider_key: qwen3_5_9b
+    upstream_id: Qwen/Qwen3.5-9B
+    upstream_revision: null
+    model_size: "9B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual, ko, en, zh, ja]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: knowledge_standard_v1
+  - provider_key: qwen3_6_precision
+    upstream_id: Qwen/Qwen3.6-27B
+    upstream_revision: null
+    model_size: "27B"
+    weight_dtype: bf16
+    quantization: review_required
+    licenses:
+      weight_license: Apache-2.0
+      code_license: Apache-2.0
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual, ko, en, zh, ja]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: precision_shadow_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: knowledge_precision_v1
+  - provider_key: qwen3_embedding_0_6b
+    upstream_id: Qwen/Qwen3-Embedding-0.6B
+    upstream_revision: null
+    model_size: "0.6B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: snapshot_required
+      code_license: snapshot_required
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: transformers_or_vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-retrieval-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: null
+  - provider_key: qwen3_reranker_0_6b
+    upstream_id: Qwen/Qwen3-Reranker-0.6B
+    upstream_revision: null
+    model_size: "0.6B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: snapshot_required
+      code_license: snapshot_required
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: transformers_or_vllm
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-retrieval-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: null
+  - provider_key: mistral_ocr_4
+    upstream_id: mistral/ocr-api
+    upstream_revision: null
+    model_size: provider_managed
+    weight_dtype: provider_managed
+    quantization: provider_managed
+    licenses:
+      weight_license: provider_terms
+      code_license: not_distributed
+      dataset_license: provider_terms
+      runtime_license: commercial_api
+      license_snapshot_sha256: null
+    runtime:
+      engine: external_api
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: external_opt_in_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: review

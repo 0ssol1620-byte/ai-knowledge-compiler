@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "export-manifest-1.0.0",
+  "exportId": "export_001",
+  "tenantId": "tenant_001",
+  "projectId": "project_001",
+  "documentId": "doc_001",
+  "documentVersionId": "docver_001",
+  "profile": "obsidian",
+  "sourceSha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "generatedAt": "2026-07-29T07:10:00Z",
+  "modelProvenance": {},
+  "files": [
+    {
+      "path": "10-Documents/example.md",
+      "mediaType": "text/markdown",
+      "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "sizeBytes": 512
+    }
+  ],
+  "warnings": []
+}

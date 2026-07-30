@@ -1,0 +1,102 @@
+version: "1.0.0"
+as_of: "2026-07-29"
+disclaimer: "Release engineering and counsel must re-verify every entry before production."
+components:
+  - id: paddleocr_vl
+    weight_license: review_current_model_card
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_transitive
+    status: candidate
+    obligations: [NOTICE, revision_pin, custom_code_scan]
+  - id: hpd_parsing_1b
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_custom_vllm
+    status: shadow
+    obligations: [NOTICE, performance_reproduction, security_review]
+  - id: infinity_parser2_flash
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_required
+    status: shadow
+    obligations: [NOTICE, korean_gate]
+  - id: infinity_parser2_pro
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_required
+    status: offline_teacher
+    obligations: [NOTICE, no_mvp_default]
+  - id: deepseek_ocr_2
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_custom_wheel_cuda
+    status: shadow
+    obligations: [NOTICE, sbom, remote_code_review]
+  - id: olmocr_2
+    weight_license: snapshot_required
+    code_license: snapshot_required
+    dataset_license: review_required
+    runtime_license: review_fp8
+    status: shadow
+    obligations: [NOTICE, pipeline_notice, fp8_validation]
+  - id: unlimited_ocr
+    weight_license: snapshot_required
+    code_license: MIT
+    dataset_license: review_required
+    runtime_license: review_required
+    status: experimental
+    obligations: [copyright_notice, experimental_label, repetition_gate]
+  - id: qwen3_5_4b
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_required
+    status: baseline_candidate
+    obligations: [NOTICE, revision_pin, quantization_pin]
+  - id: qwen3_5_9b
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_required
+    status: precision_candidate
+    obligations: [NOTICE, revision_pin, quantization_pin]
+  - id: qwen3_6_precision
+    weight_license: Apache-2.0
+    code_license: Apache-2.0
+    dataset_license: review_required
+    runtime_license: review_required
+    status: shadow
+    obligations: [NOTICE, revision_pin, cost_gate]
+  - id: qwen_embedding_reranker
+    weight_license: snapshot_required
+    code_license: snapshot_required
+    dataset_license: review_required
+    runtime_license: review_required
+    status: candidate
+    obligations: [pre_release_recheck]
+  - id: mineru
+    weight_license: review_required
+    code_license: MinerU-Open-Source-License
+    dataset_license: review_required
+    runtime_license: review_required
+    status: optional_provider
+    obligations: [online_service_attribution, version_snapshot, counsel_review]
+  - id: pypdfium2_pdfium
+    weight_license: not_applicable
+    code_license: Apache-2.0-and-BSD-family
+    dataset_license: not_applicable
+    runtime_license: transitive_notices_required
+    status: baseline_candidate
+    obligations: [third_party_notices]
+  - id: commercial_ocr
+    weight_license: provider_terms
+    code_license: not_distributed
+    dataset_license: provider_terms
+    runtime_license: commercial
+    status: opt_in_only
+    obligations: [DPA, retention_review, region_review, customer_consent]

@@ -1,0 +1,45 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "akmp": "https://schemas.aiknowledgecompiler.dev/akmp/v1#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "schema": "https://schema.org/",
+    "KnowledgeNote": "akmp:KnowledgeNote",
+    "RelationAssertion": "akmp:RelationAssertion",
+    "noteType": "akmp:noteType",
+    "origin": "akmp:origin",
+    "reviewStatus": "akmp:reviewStatus",
+    "assertionStatus": "akmp:assertionStatus",
+    "confidence": "akmp:confidence",
+    "title": "dcterms:title",
+    "source": {
+      "@id": "dcterms:source",
+      "@type": "@id"
+    },
+    "supportedBy": {
+      "@id": "akmp:supportedBy",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "subject": {
+      "@id": "akmp:subject",
+      "@type": "@id"
+    },
+    "predicate": {
+      "@id": "akmp:predicate",
+      "@type": "@id"
+    },
+    "object": {
+      "@id": "akmp:object",
+      "@type": "@id"
+    },
+    "appliesTo": {
+      "@id": "akmp:appliesTo",
+      "@type": "@id"
+    },
+    "created": {
+      "@id": "dcterms:created",
+      "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: akc-runtime
+spec:
+  hard:
+    requests.cpu: "12"
+    requests.memory: 24Gi
+    limits.cpu: "40"
+    limits.memory: 48Gi
+    requests.ephemeral-storage: 20Gi
+    limits.ephemeral-storage: 40Gi
+    pods: "30"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: akc-runtime
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+        ephemeral-storage: 64Mi
+      default:
+        cpu: "1"
+        memory: 1Gi
+        ephemeral-storage: 512Mi

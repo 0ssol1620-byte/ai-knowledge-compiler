@@ -1,0 +1,188 @@
+name: Release Gate Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      gate:
+        type: choice
+        options: [gate-0, gate-1, gate-2, gate-3, gate-4, gate-5, gate-6]
+        required: true
+      release_revision:
+        description: Immutable 40-character application commit under review
+        type: string
+        required: true
+      ci_run_id:
+        description: Successful CI workflow run ID for this commit
+        type: string
+        required: true
+      security_run_id:
+        description: Successful Security workflow run ID for this commit
+        type: string
+        required: true
+      model_ci_run_id:
+        description: Model CI run ID; mandatory for gates 2, 5, and 6
+        type: string
+        default: "0"
+        required: true
+      external_evidence_bundle_sha256:
+        description: SHA-256 of the separately reviewed external evidence bundle
+        type: string
+        required: true
+      approval_reference:
+        description: Change/release approval record reference, never credentials
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: release-evidence-${{ inputs.gate }}-${{ inputs.release_revision }}
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: release-approval
+    steps:
+      - name: Validate immutable inputs
+        env:
+          GATE: ${{ inputs.gate }}
+          RELEASE_REVISION: ${{ inputs.release_revision }}
+          CI_RUN_ID: ${{ inputs.ci_run_id }}
+          SECURITY_RUN_ID: ${{ inputs.security_run_id }}
+          MODEL_CI_RUN_ID: ${{ inputs.model_ci_run_id }}
+          EVIDENCE_DIGEST: ${{ inputs.external_evidence_bundle_sha256 }}
+          APPROVAL_REFERENCE: ${{ inputs.approval_reference }}
+        run: |
+          [[ "$RELEASE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CI_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$SECURITY_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$MODEL_CI_RUN_ID" =~ ^(0|[1-9][0-9]*)$ ]]
+          [[ "$EVIDENCE_DIGEST" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$APPROVAL_REFERENCE" =~ ^[A-Za-z0-9][A-Za-z0-9._:/-]{2,199}$ ]]
+          if [[ "$GATE" =~ ^gate-(2|5|6)$ ]]; then
+            [[ "$MODEL_CI_RUN_ID" != "0" ]]
+          fi
+      - name: Verify prerequisite workflow runs at the same revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REVISION: ${{ inputs.release_revision }}
+          CI_RUN_ID: ${{ inputs.ci_run_id }}
+          SECURITY_RUN_ID: ${{ inputs.security_run_id }}
+          MODEL_CI_RUN_ID: ${{ inputs.model_ci_run_id }}
+        run: |
+          verify_run() {
+            local expected_name="$1"
+            local run_id="$2"
+            local payload
+            payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")"
+            jq -e \
+              --arg sha "$RELEASE_REVISION" \
+              --arg name "$expected_name" \
+              '.head_sha == $sha and .name == $name and .conclusion == "success"' \
+              <<<"$payload" >/dev/null
+          }
+          verify_run "CI" "$CI_RUN_ID"
+          verify_run "Security" "$SECURITY_RUN_ID"
+          if [[ "$MODEL_CI_RUN_ID" != "0" ]]; then
+            verify_run "Model CI" "$MODEL_CI_RUN_ID"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.release_revision }}
+          persist-credentials: false
+      - name: Verify checkout revision and source archive
+        env:
+          RELEASE_REVISION: ${{ inputs.release_revision }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$RELEASE_REVISION"
+          git archive --format=tar HEAD > "${RUNNER_TEMP}/source.tar"
+          sha256sum "${RUNNER_TEMP}/source.tar" > "${RUNNER_TEMP}/source.tar.sha256"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Sync immutable local gate tooling
+        run: |
+          python -m pip install "uv==0.12.0"
+          python -m uv sync --locked --extra dev
+          python -m uv pip check --python .venv/bin/python
+      - name: Re-run local source and contract gates
+        run: |
+          .venv/bin/ruff check packages services workers benchmark infra tests
+          .venv/bin/mypy packages services
+          .venv/bin/pytest
+          .venv/bin/python infra/model-registry/validate_registry.py
+          .venv/bin/python infra/security/validate_repository.py
+          .venv/bin/python infra/security/validate_deployment.py
+          .venv/bin/python -m unittest discover -s benchmark/tests -v
+          (cd workers/gpu-common && ../../.venv/bin/python -m unittest -v test_runtime.py)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Re-run locked web gates
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+      - name: Validate development Compose contract
+        run: docker compose -f docker-compose.dev.yml config --quiet
+      - name: Write non-promotional evidence manifest
+        env:
+          GATE: ${{ inputs.gate }}
+          RELEASE_REVISION: ${{ inputs.release_revision }}
+          CI_RUN_ID: ${{ inputs.ci_run_id }}
+          SECURITY_RUN_ID: ${{ inputs.security_run_id }}
+          MODEL_CI_RUN_ID: ${{ inputs.model_ci_run_id }}
+          EVIDENCE_DIGEST: ${{ inputs.external_evidence_bundle_sha256 }}
+          APPROVAL_REFERENCE: ${{ inputs.approval_reference }}
+        run: |
+          SOURCE_DIGEST="$(cut -d' ' -f1 "${RUNNER_TEMP}/source.tar.sha256")"
+          jq -n \
+            --arg gate "$GATE" \
+            --arg revision "$RELEASE_REVISION" \
+            --arg source_digest "$SOURCE_DIGEST" \
+            --arg workflow_run_id "$GITHUB_RUN_ID" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg ci_run_id "$CI_RUN_ID" \
+            --arg security_run_id "$SECURITY_RUN_ID" \
+            --arg model_ci_run_id "$MODEL_CI_RUN_ID" \
+            --arg evidence_digest "$EVIDENCE_DIGEST" \
+            --arg approval_reference "$APPROVAL_REFERENCE" \
+            '{
+              schema_version: "1.0",
+              gate: $gate,
+              release_revision: $revision,
+              source_archive_sha256: $source_digest,
+              evidence_workflow_run_id: $workflow_run_id,
+              repository: $repository,
+              prerequisite_runs: {
+                ci: $ci_run_id,
+                security: $security_run_id,
+                model_ci: (if $model_ci_run_id == "0" then null else $model_ci_run_id end)
+              },
+              external_evidence_bundle_sha256: $evidence_digest,
+              approval_reference: $approval_reference,
+              local_controls_rechecked: true,
+              external_evidence_contents_verified_by_workflow: false,
+              deployment_performed: false,
+              promotion_authorized: false,
+              state: "evidence-collected-awaiting-human-go-no-go"
+            }' > "${RUNNER_TEMP}/release-gate-evidence.json"
+          sha256sum "${RUNNER_TEMP}/release-gate-evidence.json" \
+            > "${RUNNER_TEMP}/release-gate-evidence.json.sha256"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ inputs.gate }}-${{ inputs.release_revision }}-evidence
+          path: |
+            ${{ runner.temp }}/release-gate-evidence.json
+            ${{ runner.temp }}/release-gate-evidence.json.sha256
+            ${{ runner.temp }}/source.tar.sha256
+          retention-days: 90
+          if-no-files-found: error

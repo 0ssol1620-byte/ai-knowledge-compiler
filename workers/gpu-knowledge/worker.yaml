@@ -1,0 +1,32 @@
+worker_contract_version: "1.0"
+worker_kind: knowledge
+provider_key: qwen3_5_4b
+adapter_module: qwen_adapter
+route_profiles: [knowledge_standard_v1, knowledge_precision_v1]
+production:
+  model_revision_required: true
+  adapter_module_required: true
+  schema_constrained_output: true
+  evidence_validator_required: true
+  tools_enabled: false
+  external: false
+limits:
+  max_input_bytes: 26214400
+  max_output_bytes: 10485760
+required_runtime_env:
+  - MODEL_REVISION
+  - MODEL_ADAPTER_MODULE
+  - RUNTIME_IMAGE_DIGEST
+  - ADAPTER_VERSION
+  - QWEN_MODEL_ATTESTATION
+  - QWEN_MODEL_ATTESTATION_SHA256
+  - QWEN_INFERENCE_URL
+  - KNOWLEDGE_BUNDLE_SCHEMA
+  - KNOWLEDGE_BUNDLE_SCHEMA_SHA256
+  - KNOWLEDGE_PIPELINE_SCHEMA
+  - KNOWLEDGE_PIPELINE_SCHEMA_SHA256
+  - INPUT_HOST_ALLOWLIST
+  - OUTPUT_HOST_ALLOWLIST
+  - GPU_USD_PER_SECOND
+  - REQUIRE_CALLBACK_AUTH
+  - CALLBACK_HMAC_SECRET

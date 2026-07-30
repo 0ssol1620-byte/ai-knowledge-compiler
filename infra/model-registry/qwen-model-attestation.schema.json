@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:akc:model-registry:qwen-model-attestation:1.0",
+  "title": "AKC Qwen immutable serving attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_id",
+    "upstream_revision",
+    "runtime_image_digest",
+    "adapter_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "model_id": {
+      "enum": [
+        "Qwen/Qwen3.5-4B",
+        "Qwen/Qwen3.5-9B"
+      ]
+    },
+    "upstream_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40,64}$"
+    },
+    "runtime_image_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "adapter_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    }
+  }
+}

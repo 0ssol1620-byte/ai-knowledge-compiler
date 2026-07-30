@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/knowledge-bundle/1.0.0",
+  "title": "KnowledgeBundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "documentId", "notes", "relations", "conflicts"],
+  "properties": {
+    "schemaVersion": { "const": "knowledge-1.0.0" },
+    "documentId": { "$ref": "#/$defs/stableId" },
+    "notes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": { "$ref": "#/$defs/note" }
+    },
+    "relations": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/relation" }
+    },
+    "conflicts": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/conflict" }
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "evidenceIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/stableId" }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "origin": {
+      "enum": [
+        "native_extracted",
+        "ocr_extracted",
+        "rule_reconstructed",
+        "ai_reconstructed",
+        "ai_summarized",
+        "ai_inferred",
+        "user_edited"
+      ]
+    },
+    "reviewStatus": {
+      "enum": ["pending", "auto_with_warnings", "user_verified", "rejected"]
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "origin", "sourceBlockIds", "confidence"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 1000000 },
+        "origin": { "$ref": "#/$defs/origin" },
+        "sourceBlockIds": { "$ref": "#/$defs/evidenceIds" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "relatedNoteCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetId", "relation", "reason", "sourceBlockIds", "confidence"],
+      "properties": {
+        "targetId": { "$ref": "#/$defs/stableId" },
+        "relation": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "sourceBlockIds": { "$ref": "#/$defs/evidenceIds" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "noteId",
+        "title",
+        "noteType",
+        "contentOrigin",
+        "evidenceBlockIds",
+        "claims",
+        "aliases",
+        "tags",
+        "relatedNoteCandidates",
+        "reviewStatus"
+      ],
+      "anyOf": [
+        {
+          "required": ["summary"],
+          "properties": { "summary": { "type": "string", "minLength": 1 } }
+        },
+        {
+          "properties": { "claims": { "minItems": 1 } }
+        }
+      ],
+      "properties": {
+        "noteId": { "$ref": "#/$defs/stableId" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "noteType": {
+          "enum": [
+            "concept",
+            "document",
+            "person",
+            "organization",
+            "project",
+            "glossary",
+            "question",
+            "moc"
+          ]
+        },
+        "contentOrigin": { "$ref": "#/$defs/origin" },
+        "evidenceBlockIds": { "$ref": "#/$defs/evidenceIds" },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 2000000 },
+        "claims": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": { "$ref": "#/$defs/claim" }
+        },
+        "aliases": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": { "type": "string", "maxLength": 500 }
+        },
+        "tags": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": { "type": "string", "maxLength": 200 }
+        },
+        "relatedNoteCandidates": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": { "$ref": "#/$defs/relatedNoteCandidate" }
+        },
+        "reviewStatus": { "$ref": "#/$defs/reviewStatus" }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "subject",
+        "predicate",
+        "object",
+        "assertionStatus",
+        "confidence",
+        "evidenceBlockIds",
+        "reviewStatus"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "subject": { "$ref": "#/$defs/stableId" },
+        "predicate": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "object": { "$ref": "#/$defs/stableId" },
+        "assertionStatus": {
+          "enum": ["extracted", "ai_summarized", "ai_inferred", "user_verified"]
+        },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "evidenceBlockIds": { "$ref": "#/$defs/evidenceIds" },
+        "reviewStatus": { "$ref": "#/$defs/reviewStatus" }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "statementA",
+        "statementB",
+        "dimension",
+        "resolution",
+        "requiresReview",
+        "evidenceBlockIds"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "statementA": { "type": "object" },
+        "statementB": { "type": "object" },
+        "dimension": {
+          "enum": [
+            "version_or_time",
+            "contradictory_claim",
+            "definition",
+            "numeric_value",
+            "other"
+          ]
+        },
+        "resolution": { "type": "string", "maxLength": 2000 },
+        "requiresReview": { "type": "boolean" },
+        "evidenceBlockIds": {
+          "allOf": [
+            { "$ref": "#/$defs/evidenceIds" },
+            { "minItems": 2 }
+          ]
+        }
+      }
+    }
+  }
+}

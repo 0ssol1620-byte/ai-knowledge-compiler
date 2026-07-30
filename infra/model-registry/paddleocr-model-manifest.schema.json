@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:akc:model-registry:paddleocr-model-manifest:1.0",
+  "title": "AKC PaddleOCR-VL immutable model manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provider_key",
+    "pipeline_version",
+    "upstream_revision",
+    "layout_detection_model_dir",
+    "vl_rec_model_dir",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "provider_key": {
+      "const": "paddleocr_vl_1_6"
+    },
+    "pipeline_version": {
+      "const": "v1.6"
+    },
+    "upstream_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40,64}$"
+    },
+    "layout_detection_model_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vl_rec_model_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "files": {
+      "type": "object",
+      "minProperties": 2,
+      "propertyNames": {
+        "pattern": "^[^\\\\/].*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    }
+  }
+}

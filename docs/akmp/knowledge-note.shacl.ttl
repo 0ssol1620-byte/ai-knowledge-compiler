@@ -1,0 +1,46 @@
+@prefix akmp: <https://schemas.aiknowledgecompiler.dev/akmp/v1#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+akmp:KnowledgeNoteShape
+  a sh:NodeShape ;
+  sh:targetClass akmp:KnowledgeNote ;
+  sh:closed false ;
+  sh:property [
+    sh:path dcterms:title ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:minLength 1
+  ] ;
+  sh:property [
+    sh:path akmp:noteType ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string
+  ] ;
+  sh:property [
+    sh:path dcterms:source ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI
+  ] ;
+  sh:property [
+    sh:path akmp:supportedBy ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI
+  ] ;
+  sh:property [
+    sh:path akmp:origin ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in (
+      "native_extracted"
+      "ocr_extracted"
+      "rule_reconstructed"
+      "ai_reconstructed"
+      "ai_summarized"
+      "ai_inferred"
+      "user_edited"
+    )
+  ] .

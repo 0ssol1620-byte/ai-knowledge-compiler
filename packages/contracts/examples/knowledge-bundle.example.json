@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "knowledge-1.0.0",
+  "documentId": "doc_001",
+  "notes": [
+    {
+      "noteId": "urn:akmp:note:001",
+      "title": "매출 증가",
+      "noteType": "concept",
+      "contentOrigin": "ai_summarized",
+      "evidenceBlockIds": ["blk_001"],
+      "summary": "문서는 매출 증가를 보고한다.",
+      "claims": [
+        {
+          "text": "매출은 10% 증가했다.",
+          "origin": "ai_summarized",
+          "sourceBlockIds": ["blk_001"],
+          "confidence": 0.96
+        }
+      ],
+      "aliases": [],
+      "tags": ["business"],
+      "relatedNoteCandidates": [],
+      "reviewStatus": "pending"
+    }
+  ],
+  "relations": [],
+  "conflicts": []
+}

@@ -1,0 +1,55 @@
+configuration_version: "1.0.0"
+defaults:
+  queue_based: true
+  flashboot: true
+  idle_timeout_seconds: 30
+  execution_timeout_seconds: 600
+  max_retries_at_provider: 0
+  browser_direct_access: false
+  network_volume_customer_data: false
+  model_revision_from_registry: true
+  external_processing: false
+  require_callback_auth: true
+  callback_token_audience: akc-gpu-worker
+  callback_token_max_lifetime_seconds: 900
+  callback_hmac_secret_from_provider_secret: true
+  allow_inline_input: false
+  input_host_allowlist_required: true
+  output_host_allowlist_required: true
+endpoints:
+  - id: parser-balanced
+    worker: workers/gpu-parser
+    enabled: false
+    gpu_priority: [L4, RTX_4090_PRO, A5000, A6000]
+    minimum_vram_gb: 24
+    min_workers: 0
+    max_workers: 10
+    scaler: queue_delay
+    activation_gate: paddle_revision_license_benchmark
+  - id: knowledge-standard
+    worker: workers/gpu-knowledge
+    enabled: false
+    gpu_priority: [L4, RTX_4090_PRO, A5000, A6000]
+    minimum_vram_gb: 24
+    min_workers: 0
+    max_workers: 5
+    scaler: queue_delay
+    activation_gate: qwen_revision_license_schema_benchmark
+  - id: parser-fast-hpd-shadow
+    worker: workers/gpu-hpd
+    enabled: false
+    gpu_priority: [A6000, A40, A100_80GB]
+    minimum_vram_gb: 24
+    min_workers: 0
+    max_workers: 2
+    scaler: queue_delay
+    activation_gate: hpd_24gb_48gb_custom_vllm_review
+  - id: parser-long-unlimited-shadow
+    worker: workers/gpu-unlimited
+    enabled: false
+    gpu_priority: [A6000, A40, A100_80GB]
+    minimum_vram_gb: 48
+    min_workers: 0
+    max_workers: 2
+    scaler: queue_delay
+    activation_gate: long_document_consensus_safety_benchmark

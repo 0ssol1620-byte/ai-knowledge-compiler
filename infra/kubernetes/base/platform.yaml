@@ -1,0 +1,580 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: akc-api
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: akc-web
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: akc-scheduler
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: akc-dispatch-worker
+automountServiceAccountToken: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akc-api
+  labels:
+    app.kubernetes.io/name: akc-api
+    app.kubernetes.io/component: control-plane
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: akc-api
+        app.kubernetes.io/component: control-plane
+    spec:
+      serviceAccountName: akc-api
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-api
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-api
+      containers:
+        - name: api
+          # An environment overlay MUST replace this with a signed immutable digest.
+          image: registry.invalid/akc-api:replace-with-signed-digest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: HOME
+              value: /tmp
+            - name: XDG_CACHE_HOME
+              value: /tmp/.cache
+          envFrom:
+            - configMapRef:
+                name: akc-runtime
+            - secretRef:
+                name: akc-runtime-secrets
+                optional: false
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+              ephemeral-storage: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+              ephemeral-storage: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: akc-api
+  labels:
+    app.kubernetes.io/name: akc-api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: akc-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+      appProtocol: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akc-web
+  labels:
+    app.kubernetes.io/name: akc-web
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: akc-web
+        app.kubernetes.io/component: frontend
+    spec:
+      serviceAccountName: akc-web
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-web
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-web
+      containers:
+        - name: web
+          # An environment overlay MUST replace this with a signed immutable digest.
+          image: registry.invalid/akc-web:replace-with-signed-digest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: 0.0.0.0
+            - name: NEXT_TELEMETRY_DISABLED
+              value: "1"
+          startupProbe:
+            httpGet:
+              path: /login
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /login
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: 128Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+              ephemeral-storage: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: next-cache
+              mountPath: /app/apps/web/.next/cache
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi
+        - name: next-cache
+          emptyDir:
+            sizeLimit: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: akc-web
+  labels:
+    app.kubernetes.io/name: akc-web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: akc-web
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      protocol: TCP
+      appProtocol: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: akc-api
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akc-scheduler
+  labels:
+    app.kubernetes.io/name: akc-scheduler
+    app.kubernetes.io/component: scheduler
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-scheduler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: akc-scheduler
+        app.kubernetes.io/component: scheduler
+    spec:
+      serviceAccountName: akc-scheduler
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-scheduler
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-scheduler
+      containers:
+        - name: scheduler
+          # An environment overlay MUST replace this with a signed immutable digest.
+          image: registry.invalid/akc-scheduler:replace-with-signed-digest
+          imagePullPolicy: IfNotPresent
+          command: [python, -m, akc_scheduler, --mode, webhook]
+          ports:
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          env:
+            - name: HOME
+              value: /tmp
+          envFrom:
+            - configMapRef:
+                name: akc-scheduler-runtime
+            - secretRef:
+                name: akc-scheduler-secrets
+                optional: false
+          startupProbe:
+            exec:
+              command: [python, -m, akc_scheduler, --check, --mode, webhook]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command: [python, -m, akc_scheduler, --check, --mode, webhook]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: [python, -c, "import os; os.kill(1, 0)"]
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: 64Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+              ephemeral-storage: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: akc-scheduler-metrics
+  labels:
+    app.kubernetes.io/name: akc-scheduler
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: akc-scheduler
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akc-dispatch-worker
+  labels:
+    app.kubernetes.io/name: akc-dispatch-worker
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-dispatch-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: akc-dispatch-worker
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: akc-dispatch-worker
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 330
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-dispatch-worker
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-dispatch-worker
+      containers:
+        - name: dispatch-worker
+          # An environment overlay MUST replace this with a signed immutable digest.
+          image: registry.invalid/akc-scheduler:replace-with-signed-digest
+          imagePullPolicy: IfNotPresent
+          command: [python, -m, akc_scheduler, --mode, dispatch]
+          ports:
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          env:
+            - name: HOME
+              value: /tmp
+          envFrom:
+            - configMapRef:
+                name: akc-dispatch-runtime
+            - secretRef:
+                name: akc-dispatch-secrets
+                optional: false
+          startupProbe:
+            exec:
+              command: [python, -m, akc_scheduler, --check, --mode, dispatch]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command: [python, -m, akc_scheduler, --check, --mode, dispatch]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: [python, -c, "import os; os.kill(1, 0)"]
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+              ephemeral-storage: 128Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+              ephemeral-storage: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: akc-dispatch-metrics
+  labels:
+    app.kubernetes.io/name: akc-dispatch-worker
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: akc-dispatch-worker
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+      protocol: TCP
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: akc-web
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-web
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: akc-scheduler
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-scheduler
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: akc-dispatch-worker
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-dispatch-worker

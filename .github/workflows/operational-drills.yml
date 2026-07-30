@@ -1,0 +1,147 @@
+name: Operational Synthetic Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Read-only health or mutating synthetic vertical journey
+        type: choice
+        options: [health, journey]
+        required: true
+      target_origin:
+        description: Dedicated nonproduction HTTPS API origin
+        type: string
+        required: true
+      declared_target_revision:
+        description: Immutable 40-character revision reported as deployed to the target
+        type: string
+        required: true
+      vus:
+        description: Journey VUs
+        type: choice
+        options: ["1", "2", "5"]
+        default: "1"
+      iterations:
+        description: Total journey iterations
+        type: choice
+        options: ["1", "2", "5", "10"]
+        default: "1"
+      confirmation:
+        description: Type NONPRODUCTION_SYNTHETIC_ONLY
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: operational-drill-${{ inputs.target_origin }}
+  cancel-in-progress: false
+
+jobs:
+  k6:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: staging-drill
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Enforce nonproduction scope
+        env:
+          TARGET_ORIGIN: ${{ inputs.target_origin }}
+          TARGET_REVISION: ${{ inputs.declared_target_revision }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          ALLOWED_ORIGINS: ${{ vars.AKC_STAGING_DRILL_ALLOWED_ORIGINS }}
+        run: |
+          [[ "$TARGET_ORIGIN" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?$ ]]
+          [[ "$TARGET_ORIGIN" != *".invalid"* ]]
+          [[ "$TARGET_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CONFIRMATION" == "NONPRODUCTION_SYNTHETIC_ONLY" ]]
+          test -n "$ALLOWED_ORIGINS"
+          allowed=false
+          IFS=',' read -ra origins <<< "$ALLOWED_ORIGINS"
+          for origin in "${origins[@]}"; do
+            if [[ "$TARGET_ORIGIN" == "$origin" ]]; then
+              allowed=true
+              break
+            fi
+          done
+          [[ "$allowed" == "true" ]]
+      - name: Require dedicated journey credentials
+        if: inputs.profile == 'journey'
+        env:
+          TEST_EMAIL: ${{ secrets.AKC_TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.AKC_TEST_PASSWORD }}
+          TEST_PROJECT_ID: ${{ secrets.AKC_TEST_PROJECT_ID }}
+        run: |
+          test -n "$TEST_EMAIL"
+          test -n "$TEST_PASSWORD"
+          [[ "$TEST_PROJECT_ID" =~ ^[0-9a-fA-F-]{36}$ ]]
+      - name: Run bounded synthetic profile
+        env:
+          PROFILE: ${{ inputs.profile }}
+          AKC_BASE_URL: ${{ inputs.target_origin }}
+          AKC_ALLOWED_REMOTE_ORIGINS: ${{ vars.AKC_STAGING_DRILL_ALLOWED_ORIGINS }}
+          AKC_ALLOW_REMOTE_SYNTHETIC: "true"
+          AKC_SYNTHETIC_CONFIRM: NONPRODUCTION_SYNTHETIC_ONLY
+          AKC_VUS: ${{ inputs.vus }}
+          AKC_ITERATIONS: ${{ inputs.iterations }}
+          AKC_TEST_EMAIL: ${{ secrets.AKC_TEST_EMAIL }}
+          AKC_TEST_PASSWORD: ${{ secrets.AKC_TEST_PASSWORD }}
+          AKC_TEST_PROJECT_ID: ${{ secrets.AKC_TEST_PROJECT_ID }}
+        run: |
+          if [[ "$PROFILE" == "health" ]]; then
+            SCRIPT="/work/tests/load/k6-health.js"
+          else
+            SCRIPT="/work/tests/load/k6-journey.js"
+          fi
+          docker run --rm \
+            --volume "$PWD:/work:ro" \
+            --volume "${RUNNER_TEMP}:/evidence" \
+            --workdir /work \
+            --env AKC_BASE_URL \
+            --env AKC_ALLOWED_REMOTE_ORIGINS \
+            --env AKC_ALLOW_REMOTE_SYNTHETIC \
+            --env AKC_SYNTHETIC_CONFIRM \
+            --env AKC_VUS \
+            --env AKC_ITERATIONS \
+            --env AKC_TEST_EMAIL \
+            --env AKC_TEST_PASSWORD \
+            --env AKC_TEST_PROJECT_ID \
+            grafana/k6:0.57.0@sha256:70af91f86cd8e142e0544a4edaf79835a80033f71974b92edd5ac36fd4442a7b run \
+            --summary-export /evidence/k6-summary.json \
+            "$SCRIPT"
+      - name: Bind evidence to immutable source
+        env:
+          PROFILE: ${{ inputs.profile }}
+          TARGET_ORIGIN: ${{ inputs.target_origin }}
+          TARGET_REVISION: ${{ inputs.declared_target_revision }}
+        run: |
+          jq -n \
+            --arg profile "$PROFILE" \
+            --arg target_origin "$TARGET_ORIGIN" \
+            --arg harness_revision "$GITHUB_SHA" \
+            --arg target_revision "$TARGET_REVISION" \
+            --arg workflow_run_id "$GITHUB_RUN_ID" \
+            '{
+              schema_version: "1.0",
+              profile: $profile,
+              target_origin: $target_origin,
+              harness_source_revision: $harness_revision,
+              declared_target_revision: $target_revision,
+              target_revision_verified_by_workflow: false,
+              workflow_run_id: $workflow_run_id,
+              synthetic_only: true,
+              deployment_performed: false,
+              production_slo_proven: false
+            }' > "${RUNNER_TEMP}/drill-manifest.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: synthetic-${{ inputs.profile }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/k6-summary.json
+            ${{ runner.temp }}/drill-manifest.json
+          retention-days: 30
+          if-no-files-found: warn

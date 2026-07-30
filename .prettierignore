@@ -1,0 +1,7 @@
+docs/masterplan/AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md
+work/
+benchmark/reports/generated/
+apps/web/.next/
+apps/web/playwright-report/
+apps/web/test-results/
+packages/contracts/src/generated-contracts.ts

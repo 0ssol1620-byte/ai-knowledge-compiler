@@ -1,0 +1,25 @@
+worker_contract_version: "1.0"
+worker_kind: parser
+provider_key: paddleocr_vl_1_6
+adapter_module: paddleocr_adapter
+route_profiles: [parse_balanced_v1, parse_precision_v1, parse_private_v1]
+production:
+  model_revision_required: true
+  adapter_module_required: true
+  external: false
+  browser_direct_access: false
+limits:
+  max_input_bytes: 26214400
+  max_output_bytes: 10485760
+required_runtime_env:
+  - MODEL_REVISION
+  - MODEL_ADAPTER_MODULE
+  - PADDLEOCR_MODEL_MANIFEST
+  - PADDLEOCR_MODEL_MANIFEST_SHA256
+  - PADDLEOCR_ENGINE
+  - PADDLEOCR_DEVICE
+  - INPUT_HOST_ALLOWLIST
+  - OUTPUT_HOST_ALLOWLIST
+  - GPU_USD_PER_SECOND
+  - REQUIRE_CALLBACK_AUTH
+  - CALLBACK_HMAC_SECRET

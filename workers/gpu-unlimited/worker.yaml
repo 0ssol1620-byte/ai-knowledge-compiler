@@ -1,0 +1,24 @@
+worker_contract_version: "1.0"
+worker_kind: parser
+provider_key: unlimited_ocr
+route_profiles: [parse_long_v1]
+experimental: true
+default_enabled: false
+acceptance: consensus_and_quality_gate
+standalone_authority: false
+forbidden_document_classes: [tax, account, legal_numeric, complex_table]
+fallback_recipe: parse_balanced_v1
+production:
+  model_revision_required: true
+  repetition_guard_required: true
+  number_guard_required: true
+  external: false
+required_runtime_env:
+  - MODEL_REVISION
+  - MODEL_ADAPTER_MODULE
+  - EXPERIMENT_ENABLED
+  - INPUT_HOST_ALLOWLIST
+  - OUTPUT_HOST_ALLOWLIST
+  - GPU_USD_PER_SECOND
+  - REQUIRE_CALLBACK_AUTH
+  - CALLBACK_HMAC_SECRET

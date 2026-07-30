@@ -1,0 +1,105 @@
+registry_version: "1.0.0"
+packs:
+  - id: study_pack
+    version: "1.0.0"
+    display_name: Study Pack
+    description: Evidence-bound concepts, definitions, examples, and review prompts.
+    note_types: [concept, definition, example, review_prompt]
+    knowledge_profile: knowledge_standard_v1
+    export_profiles: [portable_markdown_v1, obsidian_vault_v1, rag_jsonl_v1]
+    quality_rules:
+      - id: definition_evidence
+        description: Definitions require direct source evidence.
+        severity: review_required
+        evaluator: evidence_coverage
+      - id: numeric_fidelity
+        description: Dates, numbers, and units must match the source.
+        severity: hard_fail
+        evaluator: numeric_exactness
+    forbidden_claims: [unsourced_answer]
+  - id: research_pack
+    version: "1.0.0"
+    display_name: Research Pack
+    description: Claims, methods, findings, limitations, and citation-ready evidence.
+    note_types: [claim, method, finding, limitation, citation]
+    knowledge_profile: knowledge_precision_v1
+    export_profiles: [portable_markdown_v1, obsidian_vault_v1, rag_jsonl_v1, jsonld_v1]
+    quality_rules:
+      - id: claim_evidence
+        description: Every research claim requires evidence.
+        severity: hard_fail
+        evaluator: evidence_coverage
+      - id: conflict_review
+        description: Conflicting findings require human review.
+        severity: review_required
+        evaluator: conflict_detection
+    forbidden_claims: [invented_citation, hidden_limitation]
+  - id: work_project_pack
+    version: "1.0.0"
+    display_name: Work/Project Pack
+    description: Decisions, owners, actions, dependencies, risks, and milestones.
+    note_types: [decision, action, risk, milestone, dependency]
+    knowledge_profile: knowledge_standard_v1
+    export_profiles: [portable_markdown_v1, obsidian_vault_v1, rag_jsonl_v1]
+    quality_rules:
+      - id: owner_source
+        description: Owners and deadlines require explicit evidence.
+        severity: review_required
+        evaluator: evidence_coverage
+      - id: deadline_fidelity
+        description: Deadline dates must match the source.
+        severity: hard_fail
+        evaluator: date_unit_exactness
+    forbidden_claims: [invented_owner, invented_deadline]
+  - id: legal_contract_pack
+    version: "1.0.0"
+    display_name: Legal/Contract Pack
+    description: Clause indexing and obligation extraction without legal conclusions.
+    note_types: [clause, obligation, exception, definition, term]
+    knowledge_profile: knowledge_precision_v1
+    export_profiles: [portable_markdown_v1, rag_jsonl_v1, jsonld_v1]
+    quality_rules:
+      - id: clause_verbatim
+        description: Clause text and defined terms preserve source wording.
+        severity: hard_fail
+        evaluator: text_fidelity
+      - id: legal_review
+        description: Inferences and ambiguous obligations require human review.
+        severity: review_required
+        evaluator: origin_policy
+    forbidden_claims: [legal_advice, enforceability_conclusion, invented_obligation]
+  - id: technical_support_pack
+    version: "1.0.0"
+    display_name: Technical/Support Pack
+    description: Procedures, prerequisites, warnings, commands, and troubleshooting evidence.
+    note_types: [procedure, prerequisite, warning, command, troubleshooting]
+    knowledge_profile: knowledge_standard_v1
+    export_profiles: [portable_markdown_v1, obsidian_vault_v1, rag_jsonl_v1]
+    quality_rules:
+      - id: command_verbatim
+        description: Commands and version strings preserve exact source text.
+        severity: hard_fail
+        evaluator: code_fidelity
+      - id: warning_evidence
+        description: Safety warnings retain evidence and order.
+        severity: review_required
+        evaluator: evidence_coverage
+    forbidden_claims: [invented_command, unsupported_fix]
+  - id: archive_book_pack
+    version: "1.0.0"
+    display_name: Archive/Book Pack
+    description: Chapters, people, places, chronology, index terms, and archival provenance.
+    note_types: [chapter, person, place, event, index_term]
+    knowledge_profile: knowledge_standard_v1
+    export_profiles: [portable_markdown_v1, obsidian_vault_v1, jsonld_v1]
+    quality_rules:
+      - id: chronology_fidelity
+        description: Dates and sequence remain faithful to the source.
+        severity: hard_fail
+        evaluator: date_unit_exactness
+      - id: name_evidence
+        description: Named entities retain source evidence.
+        severity: review_required
+        evaluator: evidence_coverage
+    forbidden_claims: [invented_event, modernized_quote]
+

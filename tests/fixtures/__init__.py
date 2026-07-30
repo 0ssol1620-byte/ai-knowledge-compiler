@@ -1,0 +1,1 @@
+"""Safe generated fixture matrix."""

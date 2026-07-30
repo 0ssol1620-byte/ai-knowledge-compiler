@@ -1,0 +1,53 @@
+name: External evidence gate
+description: Track evidence that cannot be truthfully manufactured inside the repository.
+title: "[External evidence] "
+labels:
+  - external-evidence
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for licensed corpus runs, real provider/GPU evidence,
+        production operations, legal approval, payment evidence, or user research.
+        Repository scaffolding is not proof that the gate passed.
+  - type: input
+    id: gate
+    attributes:
+      label: Gate or requirement
+      placeholder: "Gate 2 — Golden benchmark"
+    validations:
+      required: true
+  - type: textarea
+    id: artifact
+    attributes:
+      label: Evidence artifact required
+      description: Define its owner, immutable identity, source, and retention.
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance and rejection criteria
+      description: Include quantitative thresholds and hard-fail conditions.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety constraints
+      description: Data rights, consent, cost cap, environment, and rollback constraints.
+    validations:
+      required: true
+  - type: dropdown
+    id: authority
+    attributes:
+      label: Approval authority
+      options:
+        - Product owner
+        - Security owner
+        - Legal or privacy counsel
+        - Model or data owner
+        - Production operations owner
+        - Finance or payments owner
+    validations:
+      required: true

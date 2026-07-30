@@ -1,0 +1,11 @@
+{
+  "route": "paddle_vl",
+  "routeProfile": "parse_balanced_v1",
+  "reasonCodes": ["visual_parse_required"],
+  "expectedCredits": 1,
+  "requiresVisualParse": true,
+  "requireCrossCheck": false,
+  "maxAttempts": 3,
+  "policyVersion": "router-1.0.0",
+  "providerOptions": {}
+}

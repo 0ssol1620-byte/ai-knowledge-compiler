@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "verified_at": "2026-07-29",
+  "verification": {
+    "container_images": "Registry manifest bytes were SHA-256 hashed and matched Docker-Content-Digest.",
+    "github_actions": "The upstream exact-version tag commit was resolved and the commit object was verified through the GitHub API."
+  },
+  "container_images": {
+    "grafana/k6:0.57.0": "sha256:70af91f86cd8e142e0544a4edaf79835a80033f71974b92edd5ac36fd4442a7b",
+    "node:22.14.0-bookworm-slim": "sha256:1c18d9ab3af4585870b92e4dbc5cac5a0dc77dd13df1a5905cea89fc720eb05b",
+    "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04": "sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802",
+    "pgvector/pgvector:pg17": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+    "python:3.12-slim-bookworm": "sha256:d50fb7611f86d04a3b0471b46d7557818d88983fc3136726336b2a4c657aa30b",
+    "python:3.13-slim-bookworm": "sha256:9d7f287598e1a5a978c015ee176d8216435aaf335ed69ac3c38dd1bbb10e8d64"
+  },
+  "github_actions": {
+    "actions/checkout@v4.4.0": "11d5960a326750d5838078e36cf38b85af677262",
+    "actions/dependency-review-action@v4.9.0": "2031cfc080254a8a887f58cffee85186f0e49e48",
+    "actions/setup-node@v4.4.0": "49933ea5288caeca8642d1e84afbd3f7d6820020",
+    "actions/setup-python@v5.6.0": "a26af69be951a213d495a4c3e4e4022e16d87065",
+    "actions/upload-artifact@v4.6.2": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+    "anchore/sbom-action@v0.17.9": "df80a981bc6edbc4e220a492d3cbe9f5547a6e75",
+    "aquasecurity/trivy-action@v0.28.0": "915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2",
+    "github/codeql-action@v3.37.3": "4187e74d05793876e9989daffde9c3e66b4acd07",
+    "hashicorp/setup-terraform@v3.1.2": "b9cd54a3c349d3f38e8881555d616ced269862dd"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/export-manifest/1.0.0",
+  "title": "ExportManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "exportId",
+    "tenantId",
+    "projectId",
+    "documentId",
+    "documentVersionId",
+    "profile",
+    "sourceSha256",
+    "generatedAt",
+    "modelProvenance",
+    "files",
+    "warnings"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "export-manifest-1.0.0" },
+    "exportId": { "type": "string", "minLength": 3 },
+    "tenantId": { "type": "string", "minLength": 3 },
+    "projectId": { "type": "string", "minLength": 3 },
+    "documentId": { "type": "string", "minLength": 3 },
+    "documentVersionId": { "type": "string", "minLength": 3 },
+    "profile": {
+      "enum": [
+        "bundle",
+        "portable_raw",
+        "portable_structured",
+        "obsidian",
+        "rag",
+        "json_ld"
+      ]
+    },
+    "sourceSha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "modelProvenance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "mediaType", "sha256", "sizeBytes"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "mediaType": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "sizeBytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: akc-url-fetcher
+automountServiceAccountToken: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akc-url-fetcher
+  labels:
+    app.kubernetes.io/name: akc-url-fetcher
+    app.kubernetes.io/component: url-ingestion-worker
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-url-fetcher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: akc-url-fetcher
+        app.kubernetes.io/component: url-ingestion-worker
+    spec:
+      serviceAccountName: akc-url-fetcher
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 120
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-url-fetcher
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-url-fetcher
+      containers:
+        - name: url-fetcher
+          # An environment overlay MUST replace this with a signed immutable digest.
+          image: registry.invalid/akc-url-fetcher:replace-with-signed-digest
+          imagePullPolicy: IfNotPresent
+          command: [python, -m, akc_url_fetcher]
+          ports:
+            - name: metrics
+              containerPort: 9103
+              protocol: TCP
+          env:
+            - name: HOME
+              value: /tmp
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
+          envFrom:
+            - configMapRef:
+                name: akc-url-fetcher-runtime
+            - secretRef:
+                name: akc-url-fetcher-secrets
+                optional: false
+          startupProbe:
+            exec:
+              command: [python, -m, akc_url_fetcher, --check]
+            periodSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command: [python, -m, akc_url_fetcher, --check]
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: [python, -c, "import os; os.kill(1, 0)"]
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 128Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+              ephemeral-storage: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: akc-url-fetcher-metrics
+  labels:
+    app.kubernetes.io/name: akc-url-fetcher
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: akc-url-fetcher
+  ports:
+    - name: metrics
+      port: 9103
+      targetPort: metrics
+      protocol: TCP
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: akc-url-fetcher
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-url-fetcher

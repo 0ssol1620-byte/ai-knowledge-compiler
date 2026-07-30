@@ -1,0 +1,14 @@
+environment = "staging"
+aws_region  = "ap-northeast-2"
+
+# Exact origin only. Wildcards and HTTP are rejected.
+upload_allowed_origins = [
+  "https://staging.akc.example.invalid",
+]
+
+retention_days         = 3650
+working_retention_days = 1
+audit_object_lock_days = 30
+
+# Remains false unless a reviewed nonproduction teardown explicitly requires it.
+force_destroy_nonproduction = false

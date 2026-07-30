@@ -1,0 +1,174 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-knowledge-compiler"
+version = "0.1.0"
+description = "Provenance-preserving document-to-knowledge compiler control plane and core libraries"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+authors = [{ name = "AI Knowledge Compiler contributors" }]
+dependencies = [
+  "aiosqlite>=0.21,<1",
+  "alembic>=1.16,<2",
+  "argon2-cffi>=25.1,<26",
+  "asyncpg>=0.30,<1",
+  "beautifulsoup4>=4.13,<5",
+  "bleach>=6.2,<7",
+  "boto3>=1.39,<2",
+  "cryptography>=46,<50",
+  "defusedxml>=0.7,<1",
+  "fastapi==0.140.13",
+  "filetype>=1.2,<2",
+  "httpx>=0.28,<1",
+  "jsonschema>=4.25,<5",
+  "lxml>=6.0,<7",
+  "openpyxl>=3.1,<4",
+  "opentelemetry-api>=1.35,<2",
+  "opentelemetry-exporter-otlp>=1.35,<2",
+  "opentelemetry-instrumentation-fastapi>=0.56b0,<1",
+  "opentelemetry-sdk>=1.35,<2",
+  "orjson>=3.11,<4",
+  "pillow>=12.3,<13",
+  "prometheus-client>=0.22,<1",
+  "pydantic==2.13.4",
+  "pydantic-settings>=2.10,<3",
+  "pypdf>=6.14.2,<7",
+  "pypdfium2>=4.30,<5",
+  "python-docx>=1.2,<2",
+  "PyJWT[crypto]>=2.10,<3",
+  "python-multipart>=0.0.20,<1",
+  "python-pptx>=1.0,<2",
+  "pyyaml>=6.0,<7",
+  "redis>=6.2,<7",
+  "sqlalchemy==2.0.51",
+  "structlog>=25.4,<26",
+  "tenacity>=9.1,<10",
+  "uvicorn[standard]>=0.35,<1",
+  "zstandard>=0.24,<1"
+]
+
+[project.optional-dependencies]
+dev = [
+  "bandit[toml]>=1.8,<2",
+  "boto3-stubs[s3]>=1.39,<2",
+  "hypothesis>=6.138,<7",
+  "mypy>=1.17,<2",
+  "pip-audit>=2.9,<3",
+  "pytest>=9.0.3,<10",
+  "pytest-asyncio>=1.1,<2",
+  "pytest-cov>=6.2,<7",
+  "respx>=0.22,<1",
+  "ruff>=0.12,<1",
+  "types-bleach>=6.2,<7",
+  "types-openpyxl>=3.1,<4",
+  "types-pyyaml>=6.0,<7",
+  "uv==0.12.0"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "packages/cir-python/src/akc_cir",
+  "packages/router/src/akc_router",
+  "packages/quality/src/akc_quality",
+  "packages/exporters/src/akc_exporters",
+  "packages/security/src/akc_security",
+  "packages/native-parsers/src/akc_native_parsers",
+  "packages/telemetry/src/akc_telemetry",
+  "packages/retrieval/src/akc_retrieval",
+  "packages/domain-packs/src/akc_domain_packs",
+  "services/api/src/akc_api",
+  "services/url-fetcher/src/akc_url_fetcher",
+  "services/scheduler/src/akc_scheduler",
+  "workers/cpu-document/src/akc_worker_document",
+  "workers/cpu-export/src/akc_worker_export"
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+asyncio_mode = "auto"
+testpaths = ["tests", "packages", "services", "benchmark"]
+pythonpath = [
+  "packages/cir-python/src",
+  "packages/router/src",
+  "packages/quality/src",
+  "packages/exporters/src",
+  "packages/security/src",
+  "packages/native-parsers/src",
+  "packages/telemetry/src",
+  "packages/retrieval/src",
+  "packages/domain-packs/src",
+  "services/api/src",
+  "services/url-fetcher/src",
+  "services/scheduler/src",
+  "workers/cpu-document/src",
+  "workers/cpu-export/src"
+]
+markers = [
+  "integration: requires local infrastructure or multiple services",
+  "security: security regression test",
+  "provider: calls a separately configured provider",
+  "slow: takes more than five seconds"
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["benchmark/reports", "migrations/versions", "work"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "SIM", "RUF"]
+ignore = [
+  "S101",
+  "S104"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S105", "S106", "S311"]
+"benchmark/**/*.py" = ["S603"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+exclude = ["migrations/", "services/.*/tests/"]
+
+[[tool.mypy.overrides]]
+module = ["filetype"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["defusedxml", "defusedxml.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["jsonschema", "jsonschema.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
+# The deterministic compiler and security libraries carry the 80% merge gate.
+# Stateful services are exercised by API, worker, PostgreSQL, browser, and
+# failure-mode integration suites rather than weakening this core signal with
+# generated route wiring.
+source = [
+  "akc_cir",
+  "akc_router",
+  "akc_quality",
+  "akc_exporters",
+  "akc_security",
+  "akc_telemetry"
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+
+[tool.bandit]
+exclude_dirs = ["tests", "benchmark/datasets"]
+skips = ["B101"]

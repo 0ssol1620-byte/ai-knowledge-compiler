@@ -1,0 +1,22 @@
+worker_contract_version: "1.0"
+worker_kind: parser
+provider_key: hpd_parsing_1b
+route_profiles: [parse_fast_v1]
+experimental: true
+default_enabled: false
+language_allowlist: [en, zh]
+fallback_recipe: parse_balanced_v1
+production:
+  model_revision_required: true
+  custom_vllm_review_required: true
+  internal_24gb_benchmark_required: true
+  external: false
+required_runtime_env:
+  - MODEL_REVISION
+  - MODEL_ADAPTER_MODULE
+  - EXPERIMENT_ENABLED
+  - INPUT_HOST_ALLOWLIST
+  - OUTPUT_HOST_ALLOWLIST
+  - GPU_USD_PER_SECOND
+  - REQUIRE_CALLBACK_AUTH
+  - CALLBACK_HMAC_SECRET

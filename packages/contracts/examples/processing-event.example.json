@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "event_id": "evt_001",
+  "event_type": "job.stage.progress.v1",
+  "sequence": 7,
+  "occurred_at": "2026-07-29T07:01:00Z",
+  "project_id": "project_001",
+  "job_id": "job_001",
+  "tenant_id": "tenant_001",
+  "document_id": "doc_001",
+  "document_version_id": "docver_001",
+  "page_id": "page_001",
+  "payload": {
+    "stage": "extract",
+    "done": 1,
+    "total": 1
+  }
+}

@@ -1,0 +1,51 @@
+name: Implementation work
+description: Track a bounded masterplan implementation item with executable acceptance evidence.
+title: "[Implementation] "
+labels:
+  - implementation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not close this issue on code presence alone. Attach the command, test,
+        artifact, or immutable workflow run that demonstrates every criterion.
+  - type: input
+    id: masterplan
+    attributes:
+      label: Masterplan requirement
+      description: Chapter, phase, gate, ADR, or numbered initial-work item.
+      placeholder: "Chapter 17 / Gate 1 / initial work item 9"
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: In-scope outcome
+      description: State the smallest independently verifiable outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Use a checklist with observable, testable results.
+      placeholder: |
+        - [ ] Contract is versioned.
+        - [ ] Failure path is fail-closed.
+        - [ ] Automated regression test passes.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Required evidence
+      description: Commands, reports, workflow runs, screenshots, or signed artifacts.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Security and external-evidence boundaries
+      description: Note tenant, privacy, provider, credential, legal, or production constraints.
+    validations:
+      required: true

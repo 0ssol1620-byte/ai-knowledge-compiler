@@ -1,0 +1,29 @@
+{
+  "name": "@akc/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Canonical wire contracts for AI Knowledge Compiler services and clients",
+  "files": [
+    "dist",
+    "schemas",
+    "examples"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./examples/*": "./examples/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

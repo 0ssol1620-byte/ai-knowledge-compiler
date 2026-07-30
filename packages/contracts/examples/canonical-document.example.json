@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cir-1.0.0",
+  "tenantId": "tenant_001",
+  "documentId": "doc_001",
+  "documentVersionId": "docver_001",
+  "title": "검증 가능한 문서",
+  "sourceFilename": "source.pdf",
+  "sourceSha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "contentLayer": "structured",
+  "blocks": [
+    {
+      "id": "blk_001",
+      "order": 0,
+      "type": "paragraph",
+      "contentLayer": "structured",
+      "rawText": "매출은 10% 증가했다.",
+      "normalizedText": "매출은 10% 증가했다.",
+      "origin": "native_extracted",
+      "sourceRefs": [
+        {
+          "documentId": "doc_001",
+          "documentVersionId": "docver_001",
+          "pageIndex0": 0,
+          "pageNumber1": 1,
+          "bbox1000": [100, 100, 900, 300]
+        }
+      ],
+      "modelRunIds": [],
+      "confidence": 0.99,
+      "qualityFlags": [],
+      "contentHash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "revision": 1
+    }
+  ],
+  "modelRuns": [],
+  "metadata": {},
+  "createdAt": "2026-07-29T07:00:00Z"
+}

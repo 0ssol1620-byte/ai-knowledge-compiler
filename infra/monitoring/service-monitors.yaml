@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: akc-api
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: ai-knowledge-compiler
+spec:
+  namespaceSelector:
+    matchNames: [akc]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: akc-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: false
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: akc-workers
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: ai-knowledge-compiler
+spec:
+  namespaceSelector:
+    matchNames: [akc]
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - akc-scheduler
+          - akc-dispatch-worker
+          - akc-deletion-worker
+          - akc-analysis-worker
+          - akc-url-fetcher
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: false

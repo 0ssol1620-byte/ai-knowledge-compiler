@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: akc-payment-reconciliation
+  namespace: akc
+  labels:
+    app.kubernetes.io/name: akc-payment-reconciliation
+    app.kubernetes.io/part-of: ai-knowledge-compiler
+spec:
+  schedule: "0 * * * *"
+  timeZone: Etc/UTC
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: akc-payment-reconciliation
+        spec:
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: reconcile
+              image: ghcr.io/replace-me/ai-knowledge-compiler-api:replace-with-digest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -c
+                - |
+                  import datetime
+                  import os
+                  import httpx
+
+                  window = datetime.datetime.now(datetime.UTC).strftime("%Y%m%d%H")
+                  response = httpx.post(
+                      os.environ["AKC_PAYMENT_RECONCILIATION_URL"],
+                      headers={
+                          "Authorization": "Bearer " + os.environ["AKC_API_KEY"],
+                          "Idempotency-Key": "scheduled-payment-reconciliation-" + window,
+                      },
+                      timeout=60.0,
+                  )
+                  response.raise_for_status()
+              env:
+                - name: AKC_PAYMENT_RECONCILIATION_URL
+                  value: https://akc.example.invalid/v1/billing/reconciliations
+                - name: AKC_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: akc-payment-reconciliation-secrets
+                      key: AKC_API_KEY
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 250m
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true

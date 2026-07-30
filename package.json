@@ -1,0 +1,28 @@
+{
+  "name": "ai-knowledge-compiler",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provenance-preserving document-to-knowledge compiler SaaS",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @akc/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm --filter @akc/web test",
+    "test:e2e": "pnpm --filter @akc/web test:e2e",
+    "test:e2e:live": "pnpm --filter @akc/web test:e2e:live",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
+    "contracts:check": "pnpm --filter @akc/contracts test",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
+}

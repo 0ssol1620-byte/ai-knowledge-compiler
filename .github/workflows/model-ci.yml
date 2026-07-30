@@ -1,0 +1,223 @@
+name: Model CI
+
+on:
+  pull_request:
+    paths:
+      - "infra/model-registry/**"
+      - "infra/runpod/**"
+      - "workers/gpu-*/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/model-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/model-registry/**"
+      - "infra/runpod/**"
+      - "workers/gpu-*/**"
+      - "pyproject.toml"
+      - "uv.lock"
+  workflow_dispatch:
+    inputs:
+      strict_registry:
+        description: Require every candidate to have an exact revision
+        type: boolean
+        default: false
+      run_provider_smoke:
+        description: Run one approved synthetic Runpod staging request
+        type: boolean
+        default: false
+      endpoint_id:
+        description: Runpod staging endpoint ID
+        type: string
+        required: false
+      expected_revision:
+        description: Expected 40-64 character lowercase revision
+        type: string
+        required: false
+      max_cost_usd:
+        description: Maximum accepted worker-estimated cost
+        type: string
+        default: "0.01"
+
+permissions:
+  contents: read
+
+jobs:
+  registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Sync immutable registry tooling
+        run: |
+          python -m pip install "uv==0.12.0"
+          python -m uv sync --locked --extra dev
+      - name: Validate registry
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.strict_registry }}" == "true" ]]; then
+            .venv/bin/python infra/model-registry/validate_registry.py --strict
+          else
+            .venv/bin/python infra/model-registry/validate_registry.py
+          fi
+      - name: Worker static security checks
+        run: .venv/bin/bandit -q -r workers/gpu-common workers/gpu-parser workers/gpu-knowledge workers/gpu-hpd workers/gpu-unlimited
+      - name: Worker runtime tests
+        working-directory: workers/gpu-common
+        run: ../../.venv/bin/python -m unittest -v test_runtime.py
+      - name: Production adapter contract tests
+        run: .venv/bin/python -m pytest -q tests/test_gpu_production_adapters.py
+
+  local-images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [gpu-parser, gpu-knowledge, gpu-hpd, gpu-unlimited]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Build model-free local handler image
+        run: docker build --target local -f "workers/${{ matrix.worker }}/Dockerfile" -t "akc-${{ matrix.worker }}:contract" .
+      - name: Run local self-test
+        run: |
+          docker run --rm \
+            -e AKC_LOCAL_SELF_TEST=true \
+            -e EXPERIMENT_ENABLED=true \
+            "akc-${{ matrix.worker }}:contract" | tee "${RUNNER_TEMP}/self-test.json"
+          jq -e '.ok == true and (.model_revision | test("^[0-9a-f]{40,64}$"))' "${RUNNER_TEMP}/self-test.json"
+      - name: Scan local image
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        with:
+          image-ref: akc-${{ matrix.worker }}:contract
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Generate local-contract image SBOM
+        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+        with:
+          image: akc-${{ matrix.worker }}:contract
+          format: spdx-json
+          output-file: ${{ runner.temp }}/akc-${{ matrix.worker }}.spdx.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: model-contract-sbom-${{ matrix.worker }}-${{ github.sha }}
+          path: ${{ runner.temp }}/akc-${{ matrix.worker }}.spdx.json
+          retention-days: 30
+          if-no-files-found: error
+
+  provider-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_provider_smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: model-staging
+    steps:
+      - name: Validate approved smoke inputs
+        env:
+          ENDPOINT_ID: ${{ inputs.endpoint_id }}
+          EXPECTED_REVISION: ${{ inputs.expected_revision }}
+          MAX_COST_USD: ${{ inputs.max_cost_usd }}
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          CALLBACK_HMAC_SECRET: ${{ secrets.GPU_CALLBACK_HMAC_SECRET }}
+          MODEL_SMOKE_INPUT_URL: ${{ secrets.MODEL_SMOKE_INPUT_URL }}
+          MODEL_SMOKE_INPUT_OBJECT_KEY: ${{ secrets.MODEL_SMOKE_INPUT_OBJECT_KEY }}
+          MODEL_SMOKE_INPUT_SHA256: ${{ secrets.MODEL_SMOKE_INPUT_SHA256 }}
+        run: |
+          [[ "$ENDPOINT_ID" =~ ^[A-Za-z0-9_-]{3,80}$ ]]
+          [[ "$EXPECTED_REVISION" =~ ^[0-9a-f]{40,64}$ ]]
+          [[ "$MAX_COST_USD" =~ ^0\.[0-9]{1,6}$ ]]
+          [[ "$MAX_COST_USD" =~ [1-9] ]]
+          test -n "$RUNPOD_API_KEY"
+          test "${#CALLBACK_HMAC_SECRET}" -ge 32
+          [[ "$MODEL_SMOKE_INPUT_URL" =~ ^https:// ]]
+          [[ "$MODEL_SMOKE_INPUT_OBJECT_KEY" =~ ^tenants/ci-synthetic/ ]]
+          [[ "$MODEL_SMOKE_INPUT_SHA256" =~ ^[0-9a-f]{64}$ ]]
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Submit one synthetic page and enforce revision/cost cap
+        env:
+          ENDPOINT_ID: ${{ inputs.endpoint_id }}
+          EXPECTED_REVISION: ${{ inputs.expected_revision }}
+          MAX_COST_USD: ${{ inputs.max_cost_usd }}
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          CALLBACK_HMAC_SECRET: ${{ secrets.GPU_CALLBACK_HMAC_SECRET }}
+          MODEL_SMOKE_INPUT_URL: ${{ secrets.MODEL_SMOKE_INPUT_URL }}
+          MODEL_SMOKE_INPUT_OBJECT_KEY: ${{ secrets.MODEL_SMOKE_INPUT_OBJECT_KEY }}
+          MODEL_SMOKE_INPUT_SHA256: ${{ secrets.MODEL_SMOKE_INPUT_SHA256 }}
+        run: |
+          trap 'rm -f "${RUNNER_TEMP}/callback-token" "${RUNNER_TEMP}/request.json"' EXIT
+          python - <<'PY'
+          import base64
+          import hashlib
+          import hmac
+          import json
+          import os
+          import time
+          from pathlib import Path
+
+          encode = lambda value: base64.urlsafe_b64encode(  # noqa: E731
+              json.dumps(value, separators=(",", ":"), sort_keys=True).encode()
+          ).rstrip(b"=").decode()
+          now = int(time.time())
+          header = encode({"alg": "HS256", "typ": "JWT"})
+          claims = encode(
+              {
+                  "aud": "akc-gpu-worker",
+                  "exp": now + 300,
+                  "iat": now,
+                  "job_id": "ci-model-smoke",
+                  "scope": "gpu:execute",
+                  "tenant_id": "ci-synthetic",
+              }
+          )
+          signing_input = f"{header}.{claims}"
+          signature = base64.urlsafe_b64encode(
+              hmac.new(
+                  os.environ["CALLBACK_HMAC_SECRET"].encode(),
+                  signing_input.encode(),
+                  hashlib.sha256,
+              ).digest()
+          ).rstrip(b"=").decode()
+          Path(os.environ["RUNNER_TEMP"], "callback-token").write_text(
+              f"{signing_input}.{signature}", encoding="ascii"
+          )
+          PY
+          jq -n \
+            --rawfile callback_token "${RUNNER_TEMP}/callback-token" \
+            '{
+              input: {
+                job_id: "ci-model-smoke",
+                tenant_id: "ci-synthetic",
+                idempotency_key: ("ci-" + env.GITHUB_RUN_ID),
+                callback_token: $callback_token,
+                input_url: env.MODEL_SMOKE_INPUT_URL,
+                input_object_key: env.MODEL_SMOKE_INPUT_OBJECT_KEY,
+                input_sha256: env.MODEL_SMOKE_INPUT_SHA256,
+                options: {mock_text: "safe synthetic smoke"}
+              }
+            }' > "${RUNNER_TEMP}/request.json"
+          curl --fail-with-body --silent --show-error \
+            --connect-timeout 10 --max-time 300 \
+            -H "Authorization: Bearer ${RUNPOD_API_KEY}" \
+            -H "Content-Type: application/json" \
+            --data-binary "@${RUNNER_TEMP}/request.json" \
+            "https://api.runpod.ai/v2/${ENDPOINT_ID}/runsync" > "${RUNNER_TEMP}/response.json"
+          jq -e \
+            --arg revision "$EXPECTED_REVISION" \
+            --arg input_sha256 "sha256:${MODEL_SMOKE_INPUT_SHA256}" \
+            --argjson cap "$MAX_COST_USD" \
+            '.output.ok == true
+              and .output.model_revision == $revision
+              and .output.input_sha256 == $input_sha256
+              and (.output.result_id | test("^sha256:[0-9a-f]{64}$"))
+              and .output.metrics.metering_source == "worker_estimate_not_provider_invoice"
+              and .output.metrics.estimated_cost_usd <= $cap' \
+            "${RUNNER_TEMP}/response.json"

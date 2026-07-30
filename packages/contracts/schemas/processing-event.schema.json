@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/processing-event/1.0",
+  "title": "ProcessingEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "sequence",
+    "occurred_at",
+    "project_id",
+    "job_id",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "event_id": { "type": "string", "minLength": 3 },
+    "event_type": {
+      "enum": [
+        "job.created.v1",
+        "job.stage.started.v1",
+        "job.stage.progress.v1",
+        "job.stage.completed.v1",
+        "page.preflight.completed.v1",
+        "page.route.selected.v1",
+        "page.processing.started.v1",
+        "page.layout.detected.v1",
+        "page.block.completed.v1",
+        "page.markdown.updated.v1",
+        "page.quality.updated.v1",
+        "page.retry.scheduled.v1",
+        "page.completed.v1",
+        "page.needs_review.v1",
+        "page.failed.v1",
+        "document.knowledge.note_created.v1",
+        "document.knowledge.link_created.v1",
+        "document.validation.completed.v1",
+        "export.started.v1",
+        "export.completed.v1",
+        "job.completed.v1",
+        "job.failed.v1",
+        "credit.reserved.v1",
+        "credit.consumed.v1",
+        "credit.released.v1"
+      ]
+    },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "project_id": { "type": "string", "minLength": 3 },
+    "job_id": { "type": "string", "minLength": 3 },
+    "tenant_id": { "type": "string", "minLength": 3 },
+    "document_id": { "type": "string", "minLength": 3 },
+    "document_version_id": { "type": "string", "minLength": 3 },
+    "page_id": { "type": "string", "minLength": 3 },
+    "payload": { "type": "object" }
+  }
+}

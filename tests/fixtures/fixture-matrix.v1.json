@@ -1,0 +1,108 @@
+{
+  "schema_version": "fixture-matrix-1.0.0",
+  "generator_version": "safe-fixtures-1.0.0",
+  "policy": {
+    "synthetic_only": true,
+    "network_required": false,
+    "executable_payloads": false,
+    "maximum_generated_bytes_per_fixture": 1048576
+  },
+  "fixtures": [
+    {
+      "id": "valid-text-pdf",
+      "path": "valid/text.pdf",
+      "class": "digital_text_pdf",
+      "expected": "accept"
+    },
+    {
+      "id": "valid-scan-pdf",
+      "path": "valid/scan.pdf",
+      "class": "image_only_scan_pdf",
+      "expected": "accept"
+    },
+    {
+      "id": "valid-mixed-pdf",
+      "path": "valid/mixed.pdf",
+      "class": "mixed_text_scan_pdf",
+      "expected": "accept"
+    },
+    {
+      "id": "valid-encrypted-pdf",
+      "path": "valid/encrypted.pdf",
+      "class": "encrypted_pdf",
+      "expected": "password_required"
+    },
+    {
+      "id": "valid-docx-table",
+      "path": "valid/docx-with-tables.docx",
+      "class": "docx_table",
+      "expected": "accept"
+    },
+    {
+      "id": "valid-pptx-group",
+      "path": "valid/pptx-with-groups.pptx",
+      "class": "pptx_group_and_connector",
+      "expected": "accept"
+    },
+    {
+      "id": "valid-xlsx-formula",
+      "path": "valid/xlsx-formulas.xlsx",
+      "class": "xlsx_formula",
+      "expected": "accept"
+    },
+    {
+      "id": "valid-html-table",
+      "path": "valid/html-with-tables.html",
+      "class": "html_table",
+      "expected": "accept"
+    },
+    {
+      "id": "hostile-fake-extension",
+      "path": "hostile/fake-extension.pdf.exe",
+      "class": "extension_magic_mismatch",
+      "expected": "reject"
+    },
+    {
+      "id": "hostile-oversized-image",
+      "path": "hostile/oversized-image.png",
+      "class": "declared_pixel_quota_exceeded",
+      "expected": "reject"
+    },
+    {
+      "id": "hostile-zip-bomb-docx",
+      "path": "hostile/zip-bomb.docx",
+      "class": "bounded_high_compression_ooxml",
+      "expected": "reject"
+    },
+    {
+      "id": "hostile-external-relationship",
+      "path": "hostile/external-relationship.docx",
+      "class": "ooxml_external_relationship",
+      "expected": "reject"
+    },
+    {
+      "id": "hostile-malformed-xref",
+      "path": "hostile/malformed-xref.pdf",
+      "class": "malformed_pdf_xref",
+      "expected": "reject"
+    },
+    {
+      "id": "hostile-javascript-link",
+      "path": "hostile/javascript-link.md",
+      "class": "unsafe_markdown_scheme",
+      "expected": "sanitize_or_reject"
+    },
+    {
+      "id": "hostile-svg-script",
+      "path": "hostile/svg-script.svg",
+      "class": "active_svg",
+      "expected": "reject"
+    },
+    {
+      "id": "hostile-prompt-injection",
+      "path": "hostile/prompt-injection.pdf",
+      "class": "document_instruction_untrusted",
+      "expected": "flag"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "02:00"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
+    labels: [dependencies, python]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "02:30"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    groups:
+      web-runtime:
+        dependency-type: production
+      web-development:
+        dependency-type: development
+    labels: [dependencies, web]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:00"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
+    labels: [dependencies, ci]
+
+  - package-ecosystem: terraform
+    directory: /infra/terraform
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:30"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, infrastructure]
+
+  - package-ecosystem: docker
+    directory: /services/api
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, container]
+
+  - package-ecosystem: docker
+    directory: /services/scheduler
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:10"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, container]
+
+  - package-ecosystem: docker
+    directory: /apps/web
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:15"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, container]
+
+  - package-ecosystem: docker
+    directory: /workers/gpu-parser
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:20"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, gpu, container]
+
+  - package-ecosystem: docker
+    directory: /workers/gpu-knowledge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:25"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, gpu, container]
+
+  - package-ecosystem: docker
+    directory: /workers/gpu-hpd
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:30"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, gpu, container]
+
+  - package-ecosystem: docker
+    directory: /workers/gpu-unlimited
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:35"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 3
+    labels: [dependencies, gpu, container]

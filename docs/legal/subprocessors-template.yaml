@@ -1,0 +1,31 @@
+version: "draft"
+last_reviewed: null
+change_notice_days: null
+entries:
+  - provider: replace_with_cloud_storage_provider
+    purpose: encrypted_object_storage
+    data_categories: [source_documents, derived_assets, export_packages]
+    regions: []
+    retention: governed_by_customer_plan
+    transfer_mechanism: counsel_review_required
+    dpa_signed_at: null
+    zero_retention_available: false
+    status: proposed
+  - provider: replace_with_gpu_provider
+    purpose: self_hosted_model_compute
+    data_categories: [scoped_document_pages]
+    regions: []
+    retention: ephemeral_job_scratch
+    transfer_mechanism: counsel_review_required
+    dpa_signed_at: null
+    zero_retention_available: null
+    status: proposed
+  - provider: replace_with_payment_processor
+    purpose: payment_and_refund
+    data_categories: [billing_identity, payment_reference]
+    regions: []
+    retention: provider_terms
+    transfer_mechanism: counsel_review_required
+    dpa_signed_at: null
+    zero_retention_available: false
+    status: proposed

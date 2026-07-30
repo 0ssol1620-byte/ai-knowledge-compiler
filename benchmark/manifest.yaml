@@ -1,0 +1,139 @@
+benchmark_id: akc-routing-benchmark-v1
+corpus_version: "2.0.0"
+created_at: "2026-07-29"
+updated_at: "2026-07-30T04:15:00+09:00"
+evaluator_version: "22.4-22.8-v1.0.0"
+claim_policy:
+  synthetic_results: contract_test_only
+  official_claims_separate: true
+  failed_pages_count_as_failures: true
+profiles:
+  - {id: ko_native, glob: "corpus/ko-native-pdf/**/*", target_pages: 200}
+  - {id: ko_scan, glob: "corpus/ko-scan/**/*", target_pages: 200}
+  - {id: en_native, glob: "corpus/en-native-pdf/**/*", target_pages: 100}
+  - {id: tables, glob: "corpus/tables/**/*", target_pages: 150}
+  - {id: formulas, glob: "corpus/formulas/**/*", target_pages: 100}
+  - {id: slides, glob: "corpus/slides/**/*", target_pages: 100}
+  - {id: handwriting, glob: "corpus/handwriting/**/*", target_pages: 100}
+  - {id: distorted, glob: "corpus/rotated-distorted/**/*", target_pages: 150}
+  - {id: adversarial, glob: "corpus/adversarial/**/*", target_pages: 100}
+providers:
+  - native_document
+  - paddleocr_vl_1_6
+  - hpd_parsing_1b
+  - infinity_parser2_flash
+  - deepseek_ocr_2
+  - olmocr_2
+  - mineru
+  - unlimited_ocr
+  - mistral_ocr_4
+repetitions:
+  warm: 3
+  cold: 2
+hardware_profiles:
+  - serverless_24gb
+  - serverless_48gb
+  - offline_80gb
+metrics:
+  - schema_validity
+  - cer
+  - wer
+  - normalized_edit_similarity
+  - reading_order_pair_accuracy
+  - table_teds
+  - table_cell_exactness
+  - formula_edit_score
+  - heading_tree_score
+  - numeric_exact_match
+  - date_unit_exact_match
+  - provenance_coverage
+  - unsupported_claim_rate
+  - repetition_rate
+  - p50_latency_ms
+  - p95_latency_ms
+  - cold_start_ms
+  - gpu_seconds
+  - peak_vram_mb
+  - estimated_cost_usd
+  - hangul_syllable_corruption_rate
+  - hangul_jamo_corruption_rate
+  - punctuation_accuracy
+  - whitespace_normalized_exact_match
+  - date_exact_match
+  - currency_percent_unit_match
+  - identifier_exact_match
+  - block_detection_precision_iou50
+  - block_detection_recall_iou50
+  - block_type_macro_f1_iou50
+  - reading_order_kendall_tau
+  - reading_order_spearman_rho
+  - header_footer_precision_iou50
+  - header_footer_recall_iou50
+  - caption_association_accuracy
+  - heading_text_f1
+  - heading_level_accuracy
+  - heading_hierarchy_edit_distance
+  - table_row_count_accuracy
+  - table_column_count_accuracy
+  - table_cell_edit_score
+  - table_span_accuracy
+  - multi_page_table_merge_accuracy
+  - formula_exact_match
+  - formula_symbol_edit_distance
+  - equation_block_precision_iou50
+  - equation_block_recall_iou50
+  - source_page_accuracy
+  - source_bbox_iou
+  - note_split_precision
+  - note_split_recall
+  - title_quality_human_score
+  - duplicate_note_rate
+  - unsupported_summary_claim_rate
+  - relation_precision
+  - evidence_completeness
+  - conflict_detection_recall
+  - user_edit_distance
+  - review_time_ms
+  - rag_recall_at_5
+  - rag_recall_at_10
+  - rag_mrr
+  - rag_ndcg_at_10
+  - rag_citation_precision
+  - rag_citation_recall
+  - rag_answer_groundedness
+  - rag_stale_version_rejection
+  - rag_unanswerable_refusal_accuracy
+  - rag_multihop_evidence_completeness
+  - router_first_pass_acceptance_rate
+  - router_escalation_recall
+  - router_false_escalation_rate
+  - router_fallback_rate
+  - router_quality_after_escalation
+  - router_cost_per_page_by_class
+  - router_latency_ms_per_page_by_class
+  - router_route_regret
+utility_weights:
+  text_accuracy: 0.22
+  reading_order: 0.14
+  table_accuracy: 0.14
+  formula_accuracy: 0.08
+  structure_accuracy: 0.12
+  provenance_coverage: 0.12
+  hallucination_safety: 0.10
+  normalized_speed: 0.08
+hard_fail:
+  - high_risk_numeric_below_threshold
+  - high_risk_date_unit_below_threshold
+  - severe_table_error
+  - unsupported_statement
+  - missing_page
+  - repetition_loop
+  - tenant_data_mixing
+  - provenance_below_threshold
+  - license_or_external_policy_violation
+hard_fail_thresholds:
+  high_risk_numeric_below_threshold: 1.00
+  high_risk_date_unit_below_threshold: 1.00
+  severe_table_error:
+    comparison: "min(available(table_teds, table_cell_exactness)) < threshold"
+    threshold: 0.50

@@ -1,0 +1,74 @@
+version: "1.0.0"
+as_of: "2026-07-29"
+policy:
+  accepted_claim_classes:
+    - official_claim
+    - independent_result
+    - internal_result
+    - estimate
+    - hypothesis
+  production_claims_require:
+    - source_id
+    - checked_at
+    - captured_revision_or_digest
+    - claim_class
+  recheck_before_release:
+    - model_revision_and_framework
+    - model_code_dataset_license
+    - commercial_api_price_and_retention
+    - serverless_gpu_price_capacity_limits
+    - openai_codex_terms_and_rate_limits
+    - obsidian_property_and_link_behavior
+    - current_security_guidance
+sources:
+  - {id: S01, kind: official_model_docs, url: "https://www.paddleocr.ai/main/en/version3.x/algorithm/PaddleOCR-VL/PaddleOCR-VL-1.6.html"}
+  - {id: S02, kind: official_model_docs, url: "https://www.paddleocr.ai/main/en/version3.x/algorithm/PaddleOCR-VL/PaddleOCR-VL.html"}
+  - {id: S03, kind: official_model_card, url: "https://huggingface.co/PaddlePaddle/HPD-Parsing"}
+  - {id: S04, kind: official_repository, url: "https://github.com/baidu/Unlimited-OCR"}
+  - {id: S05, kind: upstream_known_issues, url: "https://github.com/baidu/Unlimited-OCR/issues"}
+  - {id: S06, kind: provider_pricing, url: "https://docs.runpod.io/serverless/pricing"}
+  - {id: S07, kind: standard, url: "https://spec.commonmark.org/0.31.2/"}
+  - {id: S08, kind: product_docs, url: "https://help.obsidian.md/properties"}
+  - {id: S09, kind: product_docs, url: "https://help.obsidian.md/links"}
+  - {id: S10, kind: competitor_product, url: "https://marklune.com/"}
+  - {id: S11, kind: competitor_product, url: "https://aidocprep.app/"}
+  - {id: S12, kind: competitor_pricing, url: "https://reducto.ai/pricing"}
+  - {id: S13, kind: competitor_pricing, url: "https://unstructured.io/pricing"}
+  - {id: S14, kind: provider_pricing, url: "https://mistral.ai/pricing/api/"}
+  - {id: S15, kind: security_guidance, url: "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html"}
+  - {id: S16, kind: upstream_known_issues, url: "https://github.com/PaddlePaddle/PaddleOCR/issues/18162"}
+  - {id: S17, kind: official_model_docs, url: "https://www.paddleocr.ai/latest/en/version3.x/algorithm/PP-OCRv6/PP-OCRv6.html"}
+  - {id: S18, kind: official_model_card, url: "https://huggingface.co/Qwen/Qwen3.5-4B"}
+  - {id: S19, kind: official_model_card, url: "https://huggingface.co/Qwen/Qwen3.5-9B"}
+  - {id: S20, kind: official_model_card, url: "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B"}
+  - {id: S21, kind: official_model_card, url: "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B"}
+  - {id: S22, kind: official_repository, url: "https://github.com/opendatalab/MinerU"}
+  - {id: S23, kind: license, url: "https://github.com/opendatalab/MinerU/blob/master/LICENSE.md"}
+  - {id: S24, kind: product_terms, url: "https://help.openai.com/en/articles/11369540-using-codex-with-your-chat"}
+  - {id: S25, kind: product_pricing, url: "https://help.openai.com/en/articles/20001106-codex-rate-card"}
+  - {id: S26, kind: service_terms, url: "https://openai.com/policies/services-agreement/"}
+  - {id: S27, kind: official_repository, url: "https://github.com/pypdfium2-team/pypdfium2"}
+  - {id: S28, kind: security_guidance, url: "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"}
+  - {id: S29, kind: security_guidance, url: "https://cheatsheetseries.owasp.org/cheatsheets/RAG_Security_Cheat_Sheet.html"}
+  - {id: S30, kind: runtime_docs, url: "https://docs.vllm.ai/en/latest/examples/features/structured_outputs/"}
+  - {id: S31, kind: runtime_docs, url: "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"}
+  - {id: S32, kind: standard, url: "https://www.w3.org/TR/json-ld11/"}
+  - {id: S33, kind: standard, url: "https://www.w3.org/TR/shacl/"}
+  - {id: S34, kind: official_model_card, url: "https://huggingface.co/infly/Infinity-Parser2-Flash"}
+  - {id: S35, kind: official_model_card, url: "https://huggingface.co/infly/Infinity-Parser2-Pro"}
+  - {id: S36, kind: official_repository, url: "https://github.com/deepseek-ai/DeepSeek-OCR-2"}
+  - {id: S37, kind: official_repository, url: "https://github.com/allenai/olmocr"}
+  - {id: S38, kind: official_repository, url: "https://github.com/QwenLM/Qwen3.6"}
+  - {id: S39, kind: official_model_card, url: "https://huggingface.co/Qwen/Qwen3.6-27B"}
+  - {id: S40, kind: official_releases, url: "https://github.com/opendatalab/MinerU/releases"}
+  - {id: S41, kind: official_model_card, url: "https://huggingface.co/PaddlePaddle/HPD-Parsing"}
+  - {id: S42, kind: provider_pricing, url: "https://developers.cloudflare.com/r2/pricing/"}
+  - {id: S43, kind: storage_docs, url: "https://developers.cloudflare.com/r2/api/s3/presigned-urls/"}
+  - {id: S44, kind: storage_limits, url: "https://developers.cloudflare.com/r2/platform/limits/"}
+  - {id: S45, kind: provider_docs, url: "https://docs.runpod.io/serverless/endpoints/model-caching"}
+  - {id: S46, kind: provider_docs, url: "https://docs.runpod.io/serverless/endpoints/endpoint-configurations"}
+  - {id: S47, kind: provider_docs, url: "https://docs.runpod.io/serverless/development/optimization"}
+  - {id: S48, kind: service_terms, url: "https://openai.com/ko-KR/policies/services-agreement/"}
+  - {id: S49, kind: product_pricing, url: "https://help.openai.com/ko-kr/articles/20001106-codex-rate-card"}
+  - {id: S50, kind: storage_docs, url: "https://developers.cloudflare.com/r2/buckets/storage-classes/"}
+  - {id: S51, kind: independent_research, url: "https://arxiv.org/abs/2604.04948"}

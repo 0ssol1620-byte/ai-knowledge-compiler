@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "error-1.0.0",
+  "code": "QUALITY_REVIEW_REQUIRED",
+  "message": "숫자 불일치로 사용자 검토가 필요합니다.",
+  "retryable": false,
+  "traceId": "trace_001",
+  "details": {
+    "pageIndex0": 2,
+    "findingCode": "numeric.mismatch"
+  }
+}

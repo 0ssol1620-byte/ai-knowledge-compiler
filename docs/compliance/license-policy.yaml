@@ -1,0 +1,42 @@
+version: "1.0.0"
+default_action: deny
+allow:
+  - MIT
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - Apache-2.0
+  - ISC
+manual_review:
+  - custom-model-license
+  - RAIL
+  - non-commercial
+  - field-of-use
+  - attribution-in-ui
+  - network-copyleft
+  - dataset-license
+deny:
+  - commercial-use-prohibited
+  - model-service-prohibited
+  - unknown-weight-origin
+  - missing-license
+required_fields:
+  model:
+    - weight_license
+    - code_license
+    - dataset_license
+    - runtime_license
+    - upstream_revision
+    - license_snapshot_sha256
+  dependency:
+    - name
+    - version
+    - license
+    - source
+    - notice_required
+release_requirements:
+  - dependency_scan_passed
+  - transitive_notices_generated
+  - container_sbom_attached
+  - model_license_snapshots_current
+  - open_source_notices_published
+  - unresolved_high_risk_items_zero
