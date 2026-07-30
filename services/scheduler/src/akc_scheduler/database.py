@@ -146,6 +146,13 @@ _POSTGRES_CAPABILITY_QUERY = text(
                           granted_class.relname = 'idempotency_records'
                           AND granted_acl.privilege_type IN ('SELECT', 'DELETE')
                       )
+                      OR (
+                          granted_class.relname IN (
+                              'email_verification_tokens',
+                              'email_verification_deliveries'
+                          )
+                          AND granted_acl.privilege_type IN ('SELECT', 'DELETE')
+                      )
                   )
               )
         ) AS effective_table_acl_exact,
@@ -175,6 +182,19 @@ _POSTGRES_CAPABILITY_QUERY = text(
                               'next_attempt_at',
                               'last_status_code',
                               'last_error',
+                              'delivered_at',
+                              'dead_lettered_at',
+                              'updated_at'
+                          )
+                      )
+                      OR (
+                          column_class.relname = 'email_verification_deliveries'
+                          AND attribute.attname IN (
+                              'status',
+                              'attempts',
+                              'available_at',
+                              'last_error_code',
+                              'provider_message_id',
                               'delivered_at',
                               'dead_lettered_at',
                               'updated_at'
