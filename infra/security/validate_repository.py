@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,14 @@ ACTION_USE_PATTERN = re.compile(
     r"uses:\s*([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)"
     r"@([0-9a-f]{40})\s+#\s+(v[0-9]+\.[0-9]+\.[0-9]+)\s*$"
 )
+FROZEN_MASTERPLAN_DIGESTS = {
+    "AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md": (
+        "B09D3CC3404A44F20EAF4EDDC79FE44C93B458677D151946EFF32D7B601C39AE"
+    ),
+    "AI_Knowledge_Compiler_Enterprise_UI_UX_Masterplan_FINAL_KO_2026-07-30.md": (
+        "9C08E0DF4437D7EF1C9FB21B228187FA7CE4DD26A303BC9FC449AE4C2D2BED28"
+    ),
+}
 
 
 def load_yaml(relative: str) -> Any:
@@ -317,6 +326,54 @@ def validate_implementation_matrix(errors: list[str]) -> None:
         )
 
 
+def validate_frozen_masterplans(errors: list[str]) -> None:
+    directory = ROOT / "docs/masterplan"
+    for filename, expected_digest in FROZEN_MASTERPLAN_DIGESTS.items():
+        path = directory / filename
+        if not path.is_file():
+            errors.append(f"frozen masterplan is missing: {path.relative_to(ROOT)}")
+            continue
+        actual_digest = sha256(path.read_bytes()).hexdigest().upper()
+        if actual_digest != expected_digest:
+            errors.append(
+                f"frozen masterplan digest mismatch: {path.relative_to(ROOT)} "
+                f"expected {expected_digest}, got {actual_digest}"
+            )
+
+
+def validate_ui_implementation_matrix(errors: list[str]) -> None:
+    path = ROOT / "docs/UI_IMPLEMENTATION_MATRIX.md"
+    try:
+        text = path.read_text(encoding="utf-8", errors="strict")
+    except UnicodeDecodeError as exc:
+        errors.append(f"UI implementation matrix is not strict UTF-8: {exc}")
+        return
+    chapter_count = len(
+        re.findall(
+            r"^\|\s+(?:[0-9]|[1-3][0-9]|4[01])\.\s",
+            text,
+            flags=re.MULTILINE,
+        )
+    )
+    epic_count = len(
+        re.findall(
+            r"^\|\s+`EPIC-UI-(?:00[1-9]|01[0-3])`",
+            text,
+            flags=re.MULTILINE,
+        )
+    )
+    if (chapter_count, epic_count) != (42, 13):
+        errors.append(
+            "UI implementation matrix coverage must be chapters=42 epics=13; "
+            f"got {chapter_count}/{epic_count}"
+        )
+    frozen_source = (
+        "docs/masterplan/AI_Knowledge_Compiler_Enterprise_UI_UX_Masterplan_FINAL_KO_2026-07-30.md"
+    )
+    if frozen_source not in text:
+        errors.append("UI implementation matrix must reference the frozen UI source")
+
+
 def main() -> int:
     errors: list[str] = []
     validate_source_registry(errors)
@@ -329,6 +386,8 @@ def main() -> int:
     validate_compose_contract(errors)
     validate_supply_chain_pins(errors)
     validate_implementation_matrix(errors)
+    validate_frozen_masterplans(errors)
+    validate_ui_implementation_matrix(errors)
     if errors:
         for error in sorted(set(errors)):
             print(error)
