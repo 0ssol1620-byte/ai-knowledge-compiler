@@ -6121,7 +6121,13 @@ async def apply_review_rule(
             )
         try:
             for block_id in block_ids:
-                ensure_portable_markdown_safe(blocks_by_id[block_id].source_text)
+                source_text = blocks_by_id[block_id].source_text
+                if source_text is None:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={"code": "REVIEW_SCOPE_SOURCE_TEXT_UNAVAILABLE"},
+                    )
+                ensure_portable_markdown_safe(source_text)
         except ValueError as exc:
             raise HTTPException(
                 status_code=422,
@@ -6149,14 +6155,20 @@ async def apply_review_rule(
         if payload.action == "adopt_source":
             assert row.block_id is not None
             block = blocks_by_id[row.block_id]
+            source_text = block.source_text
+            if source_text is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail={"code": "REVIEW_SCOPE_SOURCE_TEXT_UNAVAILABLE"},
+                )
             previous_revision = block.revision
             previous_markdown = block.markdown or ""
-            block.markdown = block.source_text
-            block.normalized_text = block.source_text
+            block.markdown = source_text
+            block.normalized_text = source_text
             block.origin = "user_edited"
             block.user_locked = True
             block.revision += 1
-            block.content_hash = hashlib.sha256(block.source_text.encode()).hexdigest()
+            block.content_hash = hashlib.sha256(source_text.encode()).hexdigest()
             session.add(
                 BlockRevision(
                     tenant_id=principal.tenant_id,
@@ -6165,7 +6177,7 @@ async def apply_review_rule(
                     new_revision=block.revision,
                     operation="resolve_review_rule_adopt_source",
                     base_value=previous_markdown,
-                    value=block.source_text,
+                    value=source_text,
                     actor_id=principal.user_id,
                 )
             )

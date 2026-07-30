@@ -126,7 +126,10 @@ export function VerifyEmailPage({
             </div>
           )}
           {state === "verified" && (
-            <Link className="primary-button login-submit" href={"/" as Route}>
+            <Link
+              className="primary-button login-submit"
+              href={"/home" as Route}
+            >
               Open workspace
             </Link>
           )}

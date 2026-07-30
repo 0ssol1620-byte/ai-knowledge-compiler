@@ -10,8 +10,8 @@ from importlib.resources import files
 from typing import Annotated, Any, Literal
 
 import yaml
-from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
-from jsonschema.exceptions import SchemaError  # type: ignore[import-untyped]
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 _PACK_ID = r"^[a-z][a-z0-9_]{2,79}$"

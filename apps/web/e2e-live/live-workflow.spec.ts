@@ -44,7 +44,7 @@ test("real API journey preserves provenance through export", async ({
     page.getByRole("heading", { name: "You are ready" }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Open workspace" }).click();
-  await page.waitForURL("http://127.0.0.1:3100/");
+  await page.waitForURL("http://127.0.0.1:3100/home");
   await expect(
     page.getByRole("heading", { name: "원문에서 검증 가능한 지식까지" }),
   ).toBeVisible();

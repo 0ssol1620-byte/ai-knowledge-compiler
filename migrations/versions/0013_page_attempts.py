@@ -86,11 +86,13 @@ def _enable_rls_and_guards() -> None:
         """
     )
     op.execute(
+        "DROP TRIGGER IF EXISTS page_attempt_immutable_guard ON page_attempts"
+    )
+    op.execute(
         """
-        DROP TRIGGER IF EXISTS page_attempt_immutable_guard ON page_attempts;
         CREATE TRIGGER page_attempt_immutable_guard
         BEFORE UPDATE ON page_attempts
-        FOR EACH ROW EXECUTE FUNCTION akc_page_attempt_immutable_guard();
+        FOR EACH ROW EXECUTE FUNCTION akc_page_attempt_immutable_guard()
         """
     )
     op.execute(
