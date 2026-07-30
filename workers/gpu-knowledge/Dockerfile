@@ -23,7 +23,7 @@ RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin a
 USER 10001
 ENTRYPOINT ["python", "handler.py"]
 
-FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802 AS production
+FROM nvidia/cuda:13.3.1-cudnn-runtime-ubuntu24.04@sha256:2c9730db1d78ce3a7503a2f4ff2d64add3e7d1a47d57da504376192dda335242 AS production
 ARG MODEL_REVISION
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
     PATH=/app/.venv/bin:$PATH UV_LINK_MODE=copy UV_NO_CACHE=1 \
