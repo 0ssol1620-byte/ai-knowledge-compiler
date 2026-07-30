@@ -35,6 +35,15 @@ No new token is required if the existing account receives repository access.
 After either action, the prepared branch can be pushed and opened as a draft
 pull request without further code changes.
 
+## Actions needed for native design and UX-research evidence
+
+1. Finish connecting the Figma plugin and select the destination team/project
+   if a native Figma file is required. The repository already freezes the
+   variable, component-variant, naming, and handoff contract.
+2. Recruit and consent the participants defined in UI masterplan chapter 32,
+   then provide the research workspace or approved findings IDs. Local
+   prototypes and test scripts cannot substitute for participant evidence.
+
 ## Actions needed before a real model benchmark
 
 1. Create or approve the GPU/serverless account and billing limit.
