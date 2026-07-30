@@ -9,6 +9,8 @@ import {
 } from "@/components/structara-glyph";
 import { StructaraDiagram } from "@/components/structara-diagram";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
+import { StructaraProofDemo } from "@/components/structara-proof-demo";
+import { StructaraPricingPlanner } from "@/components/structara-pricing-planner";
 import type { StructaraPage } from "@/lib/structara-content";
 import {
   ROUTE_DIAGRAMS,
@@ -99,6 +101,23 @@ export function StructaraMarketingPage({
           <span>Source-linked by design</span>
         </section>
 
+        {definition.path === "/demo/dart" && (
+          <section className="st-route-proof">
+            <div className="st-route-proof-heading">
+              <p className="st-context-label">Public filing proof surface</p>
+              <h2>One number, every transformation, the original evidence.</h2>
+              <p>
+                The values below come from an acquired OpenDART filing. They are
+                a public-source product fixture, not benchmark labels or a
+                quality claim.
+              </p>
+            </div>
+            <StructaraProofDemo />
+          </section>
+        )}
+
+        {definition.path === "/pricing" && <StructaraPricingPlanner />}
+
         {ROUTE_DIAGRAMS[definition.path] && (
           <StructaraDiagram
             id={ROUTE_DIAGRAMS[definition.path] as StructaraDiagramId}
@@ -175,36 +194,118 @@ function ProductEvidence({
 }
 
 function PageThesis({ definition }: { definition: StructaraPage }) {
-  const labels =
-    definition.family === "demo"
-      ? ["Original", "Markdown", "Graph"]
-      : definition.family === "docs"
-        ? ["Request", "Events", "Package"]
-        : ["Source", "Structure", "Knowledge"];
+  if (definition.family === "solution") {
+    return (
+      <div
+        className="st-route-visual st-route-visual-journey"
+        aria-label={`${definition.label} knowledge journey`}
+      >
+        <p>{definition.label} operating path</p>
+        <ol>
+          {definition.sections.slice(0, 3).map((section, index) => (
+            <li key={section.title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{section.title}</strong>
+              <i />
+            </li>
+          ))}
+        </ol>
+        <small>Source → verified knowledge → controlled activation</small>
+      </div>
+    );
+  }
+
+  if (definition.family === "docs") {
+    return (
+      <div
+        className="st-route-visual st-route-visual-code"
+        aria-label={`${definition.label} developer interface`}
+      >
+        <header>
+          <span>POST</span>
+          <code>/v1/compile</code>
+          <i>202</i>
+        </header>
+        <pre>{`{
+  "source": "public-filing.pdf",
+  "mode": "balanced",
+  "proof": true
+}`}</pre>
+        <footer>
+          <span>event: block.verified</span>
+          <strong>source_ref attached</strong>
+        </footer>
+      </div>
+    );
+  }
+
+  if (definition.family === "proof") {
+    const pricing = definition.path === "/pricing";
+    return (
+      <div
+        className="st-route-visual st-route-visual-ledger"
+        aria-label={`${definition.label} control ledger`}
+      >
+        <p>{pricing ? "Plan controls" : "Policy controls"}</p>
+        {(pricing
+          ? [
+              ["Documents", "Included"],
+              ["Knowledge graph", "Portable"],
+              ["Hard cap", "Owner set"],
+            ]
+          : [
+              ["External transfer", "Blocked"],
+              ["Retention", "Policy set"],
+              ["Audit event", "Required"],
+            ]
+        ).map(([label, value]) => (
+          <div key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+        <small>No hidden policy · no unregistered claim</small>
+      </div>
+    );
+  }
+
+  if (definition.family === "editorial" || definition.family === "legal") {
+    return (
+      <div
+        className="st-route-visual st-route-visual-index"
+        aria-label={`${definition.label} editorial index`}
+      >
+        <p>
+          {definition.family === "legal" ? "Document index" : "Field notes"}
+        </p>
+        {definition.sections.slice(0, 4).map((section, index) => (
+          <div key={section.title}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{section.title}</strong>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div className="st-page-visual" aria-label={`${definition.label} workflow`}>
-      <div className="st-page-sheet">
-        <span>{labels[0]}</span>
+    <div
+      className="st-route-visual st-route-visual-demo"
+      aria-label={`${definition.label} evidence workflow`}
+    >
+      <div>
+        <span>Original</span>
         <i />
         <i />
         <b />
       </div>
-      <div className="st-evidence-line" />
-      <div className="st-page-output">
-        <span>{labels[1]}</span>
-        <strong>{labels[2]}</strong>
-        <div>
-          <i />
-          <i />
-          <i />
-        </div>
+      <em />
+      <div>
+        <span>Markdown</span>
+        <strong>Graph</strong>
+        <i />
       </div>
-      <small>
-        {definition.family === "demo"
-          ? "Public sample · evidence preserved"
-          : "Illustrative workflow · deterministic model"}
-      </small>
+      <small>Public sample · evidence preserved</small>
     </div>
   );
 }

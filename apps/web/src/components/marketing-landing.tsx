@@ -14,6 +14,7 @@ import { StructaraHeroScene } from "@/components/structara-hero";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
 import { StructaraPattern } from "@/components/structara-pattern";
 import { StructaraProofDemo } from "@/components/structara-proof-demo";
+import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 
 const chapters = [
   {
@@ -369,7 +370,7 @@ function ChapterVisual({ index }: { index: string }) {
       <div className="st-visual-result">
         <strong>
           {index === "02"
-            ? "12,345,678"
+            ? DART_PUBLIC_FIXTURE.rows[0].current
             : index === "04"
               ? "Export"
               : "Knowledge"}

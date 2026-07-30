@@ -1,91 +1,119 @@
-# Structara Visual QA Report
+# Structara visual QA report
 
-## Baseline
+## Release baseline
 
-The previous landing used the AI Knowledge Compiler identity, a conventional
-SaaS hero, incomplete public navigation, and no Structara route system.
+The current build is one connected Structara system: English-default marketing,
+authentication, onboarding, product, document, knowledge, enterprise, admin,
+pricing, public proof, and developer surfaces. The previous generic dashboard
+and disconnected landing identity are no longer the release baseline.
 
-## Viewport matrix
+## Viewport evidence
 
-Marketing: 1920 x 1080, 1440 x 900, 1280 x 800, 1024 x 768, 768 x 1024,
-390 x 844, and 360 x 800.
+Manual in-app browser review:
 
-Product: 1920 x 1080, 1440 x 900, 1280 x 800, 1024 x 768, 768 x 1024,
-and 390 x 844.
+- homepage at 1440 × 900, 1024 × 768, and 390 × 844
+- developer route at 1440 × 900
+- pricing audience switch and estimator at 390 × 844
+- DART proof tabs and mobile overflow at 390 × 844
+- tablet navigation open and close at 1024 × 768
+- console warning/error review on the current homepage
 
-The browser matrix covers the complete public route registry, the complete
-canonical product route registry, representative narrow layouts, processing
-source and result states, and reduced motion.
+Automated Playwright review:
+
+- all registered public routes on desktop with per-route heading and overflow
+  assertions
+- all registered app routes on desktop with route-specific IA assertions
+- representative auth, onboarding, product, and document mobile routes
+- marketing ↔ app round trip
+- product evidence and deterministic diagram checks
+- processing counts and source-linked output
+- reduced motion
+- WCAG A/AA Axe checks on representative public, auth, and product routes
 
 ## Critical
 
 None.
 
-## High
+## High findings fixed in this release
 
-None.
+- 1024px header navigation crowded the brand and actions. Desktop navigation now
+  changes to the explicit menu below 1180px.
+- The mobile hero poster exposed only its upper breathing room before the
+  object family. The mobile art-directed crop now brings source, evidence, and
+  graph objects into the first asset frame without horizontal overflow.
+- The DART demo used synthetic placeholder numbers. It now uses an acquired
+  public JTC filing with receipt, taxonomy, source line, and hashes.
+- Non-product marketing routes repeated one generic hero model. Solution,
+  developer, proof/pricing, editorial/legal, and demo families now have distinct
+  route visual systems.
+- Pricing lacked the required audience switch and estimate controls. The page
+  now includes six plan definitions, three audiences, page/scan/Precision/
+  knowledge inputs, a recommended plan, credit range, and maximum credit draw.
+- The mobile/desktop homepage E2E expected the retired synthetic-asset label.
+  The assertion now matches the truthful first-party asset label.
 
-## Automated evidence
+## Automated release evidence
 
-- ESLint: pass
-- TypeScript: pass
+- ESLint with zero warnings: pass
+- strict TypeScript: pass
 - Next.js production build: pass
-- Vitest: 54 passed
-- Playwright: 14 passed, 4 intentional cross-project skips
-- Axe: no violations on 11 representative public, auth, and product routes
-- Lighthouse production:
-  - Performance 96
+- Vitest: 19 files, 56 tests passed
+- Playwright: 16 passed, 4 intentional project-scope skips
+- Axe: no A/AA violations in the representative route suite
+- asset manifest, naming, and hashes: pass
+- production Lighthouse mobile:
+  - Performance 93
   - Accessibility 100
   - Best Practices 96
   - SEO 100
-  - First Contentful Paint 1.2 s
-  - Largest Contentful Paint 2.7 s
-  - Total Blocking Time 50 ms
+  - Largest Contentful Paint 3.2 s in simulated mobile lab
+  - Total Blocking Time 40 ms
   - Cumulative Layout Shift 0
-- Python:
-  - repository tests: 217 passed
-  - core packages: 41 passed
-  - scheduler and URL fetcher: 117 passed
-  - benchmark: 24 passed
-  - GPU common runtime: 22 passed
-  - model registry, repository policy, and deployment contract: pass
-- Mypy official CI scope: 136 source files clean
-- Ruff: pass
+  - Speed Index 2.4 s
+  - console errors: none
+- Blender and derivative scripts: Ruff clean
+- full repository backend evidence from the preceding release remains unchanged
+  because this release touches frontend, documentation, and assets only
 
-The machine-readable Lighthouse report is
-`artifacts/lighthouse/home-production.json`.
+The Lighthouse machine-readable result is `work/lighthouse-home.json`. Field
+p75 LCP/INP cannot exist until production traffic is available; the masterplan
+field target remains LCP ≤2.5 s, INP ≤200 ms, CLS ≤0.1.
 
 ## Manual browser findings
 
-- The homepage renders the server poster before WebGL hydration; no blank hero
-  frame remains.
-- The T2 hero resolves from source pages through semantic blocks and evidence
-  links into 12 restrained knowledge nodes, then stops in a stable composition.
-- Product Overview and five product detail routes use T0 browser captures from
-  the actual deterministic workspace rather than generated UI.
-- Twelve deterministic architecture diagrams use the same first-party glyph,
-  coordinate grid, and evidence-line language with ordered text equivalents.
-- Eighteen desktop and five mobile product captures plus eight condensed product
-  loops are registered and hashed.
-- The 11-section homepage reads as one editorial narrative rather than stacked
-  template cards.
-- Public and product shells share the same brand and provide explicit
-  round-trip navigation.
-- Narrow marketing layouts preserve the proof object; narrow product layouts
-  switch to a usable bottom navigation.
-- Authentication and onboarding remain uncluttered while preserving legal and
-  security context.
-- Processing, review, Markdown, sources, and versions surfaces preserve dense
-  information hierarchy without nested application shells.
-- No `transition: all`, layout-property animation, scale-from-zero interaction,
-  or unbounded decorative motion is present in the Structara system.
-- No external or AI-generated production raster asset remains.
+- 1440 desktop preserves a balanced editorial split: copy remains primary and
+  the signature object explains source → structure → evidence → knowledge.
+- 1024 tablet uses a quiet two-action header and a fully operable menu.
+- 390 mobile has no horizontal overflow; primary CTA, secondary CTA, trust line,
+  art-directed hero, and output rail remain legible.
+- The developer route uses a restrained code/evidence surface rather than the
+  same marketing illustration.
+- The pricing audience switch updates the plan set; estimator math is separately
+  covered by deterministic unit tests.
+- DART Original, Markdown, Vault, Graph, and Proof tabs expose distinct semantic
+  states tied to the same public filing.
+- The Graph state keeps the edge attached to an evidence record.
+- Public and product shells retain a clear round trip.
+- Browser console warnings and errors: none.
 
-## Accepted release notes
+## AI-slop audit
 
-- Best Practices 96 is caused by the browser inspector warning on the dynamic
-  nonce CSP and the deliberate `no-store` policy preventing back-forward cache;
-  both are security behaviors, not visual or interaction defects.
-- Final wordmark licensing, Figma synchronization, domain clearance, and the
-  production canonical hostname require owner-controlled actions and do not
-  block the code release.
+The scanner reported 153 candidates in 11 pattern groups. Review disposition:
+
+- accepted: real sequence numbers, graph node circles, monospace for code/hash/
+  coordinates, source-document serif, functional focus underline, 2–3% paper
+  texture gradients, and restrained hero circles required by the brand system
+- rejected from production: generic generated editorial stills, atmospheric
+  purple fields, chrome/glass AI objects, fake dashboards, fake customer proof,
+  decorative particles, and generated product evidence
+- no `transition: all`, `scale(0)`, `ease-in`, unbounded decorative loop, or
+  layout-property animation exists in the Structara surface
+
+## Accepted owner or deployment gates
+
+- `Structara` remains a working name until legal/domain clearance.
+- Currency pricing, overage, storage, and annual discount require an
+  owner-approved price book; the current estimator truthfully reports credits.
+- Final licensed wordmark and Figma source synchronization require owner access.
+- Real participant/customer evidence requires consent and approval.
+- Production p75 Core Web Vitals require a deployed canonical domain and traffic.

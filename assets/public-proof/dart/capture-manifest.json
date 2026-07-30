@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "truthClass": "T0",
+  "source": "OpenDART public filing",
+  "receiptNumber": "20260730000413",
+  "sourceSha256": "312d03bcd23951c21948021dc2ea115e2f5be58b7c5a1eb23d9dc9da1f98e6a3",
+  "qualityClaimEligible": false,
+  "disclosure": "Public-source product fixture. No benchmark labels or quality claim.",
+  "capturedAt": "2026-07-30T15:27:56.422Z",
+  "captures": [
+    {
+      "state": "Original",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-ORIGINAL-1440x900-v01.webp"
+    },
+    {
+      "state": "Markdown",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-MARKDOWN-1440x900-v01.webp"
+    },
+    {
+      "state": "Vault",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-VAULT-1440x900-v01.webp"
+    },
+    {
+      "state": "Graph",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-GRAPH-1440x900-v01.webp"
+    },
+    {
+      "state": "Proof",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-PROOF-1440x900-v01.webp"
+    },
+    {
+      "state": "SOURCE-CELL",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-SOURCE-CELL-1440x900-v01.webp"
+    },
+    {
+      "state": "EVIDENCE-RECEIPT",
+      "viewport": "1440x900",
+      "file": "STR-PROOF-T0-DART-EN-EVIDENCE-RECEIPT-1440x900-v01.webp"
+    },
+    {
+      "state": "TABLET",
+      "viewport": "1024x768",
+      "file": "STR-PROOF-T0-DART-EN-TABLET-1024x768-v01.webp"
+    },
+    {
+      "state": "MOBILE",
+      "viewport": "390x844",
+      "file": "STR-PROOF-T0-DART-EN-MOBILE-390x844-v01.webp"
+    },
+    {
+      "state": "ROUTE",
+      "viewport": "1920x1080",
+      "file": "STR-PROOF-T0-DART-EN-ROUTE-1920x1080-v01.webp"
+    }
+  ]
+}

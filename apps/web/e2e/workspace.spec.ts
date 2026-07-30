@@ -116,7 +116,7 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
     page.getByText("Structara is a working name pending brand clearance."),
   ).toBeVisible();
   await expect(
-    page.getByText("Illustrative model · synthetic sample"),
+    page.getByText("First-party illustrative model · no generated imagery"),
   ).toBeVisible();
 });
 

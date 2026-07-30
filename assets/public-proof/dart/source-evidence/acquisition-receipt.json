@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "source": "OpenDART",
+  "acquiredAt": "2026-07-30T15:06:41.177294Z",
+  "receiptNumber": "20260730000413",
+  "receiptDate": "2026-07-30",
+  "corporationCode": "01041828",
+  "corporationName": "JTC",
+  "stockCode": "950170",
+  "reportName": "Quarterly report (2026.05)",
+  "sourceUrl": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260730000413",
+  "archiveSha256": "3b7876350a2032969e65be1a46c9b9527d19ec2f4d3452b9e696bc8d8cabf655",
+  "archiveSizeBytes": 123148,
+  "sourceSha256": "312d03bcd23951c21948021dc2ea115e2f5be58b7c5a1eb23d9dc9da1f98e6a3",
+  "sourceSizeBytes": 1166549,
+  "labelsPresent": false,
+  "eligibleForQualityClaims": false
+}

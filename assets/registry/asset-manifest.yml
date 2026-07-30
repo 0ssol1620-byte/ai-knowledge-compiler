@@ -4,16 +4,24 @@ assets:
   - id: STR-HOME-T2-HERO-001
     title: Source to Knowledge Hero
     truth_class: T2
-    status: implemented
+    status: approved
     owner: creative_direction
-    source_type: code-r3f
-    master_path: apps/web/src/components/structara-webgl-scene.tsx
+    source_type: blender-first-party
+    master_path: assets/3d/master/hero-master.blend
     derivatives:
-      - path: apps/web/src/components/structara-hero.tsx
-        sha256: "b182192f50247c83d5891d9e47a9f6a4239e1e289a7db94a493331a0c91b07d2"
+      - path: assets/3d/derivatives/hero-master.glb
+        sha256: "23829353487336e08f4db42e8461c39a089b2e41be354ed78d22dec571fadca2"
+      - path: assets/3d/derivatives/hero-master-low.glb
+        sha256: "9368040b98cfc969f34097cfea7f5c8a05327656ef860dd5bba8b4285ac9e27a"
+      - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
+        sha256: "65d8eeeade5a5765b8b78cb6cd6501b25394e639d88b2adca58afe59519eb5be"
+      - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
+        sha256: "b986e3371929b7a6f7f9a01c8cf795c3dd5c94a2836efe76723be8a1cd938266"
+      - path: apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
+        sha256: "ec44cdec40ac85c52e34b78e1a9b765d8fea4860bdb0e5695a868629519e28ff"
     license:
       name: first-party
-      evidence_path: assets/registry/source-evidence/README.md
+      evidence_path: assets/3d/ASSET_COMPLETION_REPORT.md
     provenance:
       generated_with_ai: false
     usage:
@@ -22,26 +30,28 @@ assets:
     alt_text_en: "Illustrative document pages become structured blocks and a small connected knowledge graph."
     alt_text_ko: "문서 페이지가 구조 블록과 작은 연결 지식 그래프로 변하는 상징적 장면"
 
-  - id: STR-HOME-T1-PROOF-001
+  - id: STR-PROOF-T0-DART-001
     title: DART Source Link Proof
-    truth_class: T1
-    status: implemented
+    truth_class: T0
+    status: approved
     owner: product_truth
-    source_type: deterministic-fixture
-    master_path: apps/web/src/components/structara-proof-demo.tsx
+    source_type: public-opendart-filing
+    master_path: assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
     derivatives:
-      - path: apps/web/src/lib/demo-data.ts
-        sha256: "7f80784d00f1cb2067530e96e1df166d1f35e9f6e1d439bf2ec2551464494b5d"
+      - path: assets/public-proof/dart/capture-manifest.json
+        sha256: "5c0ba8a7f8b62a13739eb38481006c96393c05411fa35c3329ae999d2abf5fe0"
+      - path: assets/public-proof/dart/hashes.sha256
+        sha256: "53f8c1a1e4614d8aea58d35164bbb781af08791282cc5fe439682df8e9e060cf"
     license:
-      name: first-party-fixture
-      evidence_path: assets/registry/source-evidence/README.md
+      name: OpenDART-public-disclosure
+      evidence_path: assets/public-proof/dart/source-evidence/acquisition-receipt.json
     provenance:
       generated_with_ai: false
     usage:
       allowed: [homepage, demo-dart]
-      prohibited: [unlabeled-real-world-claim]
-    alt_text_en: "A labeled sample table cell links to the exact source page, block, and cell."
-    alt_text_ko: "샘플 표 셀이 정확한 원문 페이지·블록·셀로 연결되는 화면"
+      prohibited: [benchmark-quality-claim, labeled-ground-truth]
+    alt_text_en: "A public JTC filing revenue cell links to its OpenDART receipt, taxonomy, source line, and archive hash."
+    alt_text_ko: "JTC 공개 공시의 매출 셀이 OpenDART 접수번호, 분류체계, 원문 줄, 보관 해시로 연결되는 화면"
 
   - id: STR-PRODUCT-T0-SCREEN-001
     title: Canonical Product Workspace
@@ -52,7 +62,7 @@ assets:
     master_path: apps/web/src/components/structara-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "83e732d73cf1f3782e9a3c9131a893ea9afbb872d9a67dfbefbf3084f8c351a5"
+        sha256: "e52f697823fa03edebdcd4e10cadbf6d4efcef94b3190d8660bbf2e852e1b4d4"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md
@@ -186,13 +196,13 @@ assets:
   - id: STR-PRODUCT-T0-MOTION-PACK-001
     title: Canonical Product Motion Pack
     truth_class: T0
-    status: implemented
+    status: approved
     owner: product_truth
     source_type: actual-browser-recording
     master_path: assets/product/recordings/capture-manifest.json
     derivatives:
       - path: assets/product/recordings/hashes.sha256
-        sha256: "65d5a3ca1b9daaa10842afb7bbce901d6ee5d7d45f9ba92b6884d81f7442d347"
+        sha256: "2403864f24125641444999304ed47b88e3f6ed624d7779bdc93ba47d583af2ac"
     license:
       name: first-party
       evidence_path: assets/product/recordings/README.md
@@ -201,5 +211,5 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [latency-claim, customer-claim]
-    alt_text_en: "Eight condensed product demonstrations recorded from the deterministic Structara demo workspace."
-    alt_text_ko: "결정론적 Structara 데모 워크스페이스에서 녹화한 8개 압축 제품 시연"
+    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic Structara demo workspace."
+    alt_text_ko: "결정론적 Structara 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const WebglScene = dynamic(() => import("./structara-webgl-scene"), {
@@ -50,40 +51,37 @@ export function StructaraHeroScene() {
 
   return (
     <div ref={sceneRef} className="st-hero-scene" data-enhanced={enhance}>
-      <div className="st-hero-poster" aria-hidden="true">
-        <div className="st-poster-pages">
-          <i />
-          <i />
-          <div>
-            <span>Annual report</span>
-            <b />
-            <em />
-            <strong />
-          </div>
-        </div>
-        <div className="st-poster-blocks">
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="st-poster-graph">
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-      </div>
+      <picture className="st-hero-render">
+        <source
+          media="(max-width: 640px)"
+          srcSet="/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif"
+          type="image/avif"
+        />
+        <source
+          media="(max-width: 960px)"
+          srcSet="/hero/STR-HOME-T2-HERO-EN-TABLET-1600x1200-v01.avif"
+          type="image/avif"
+        />
+        <source
+          srcSet="/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif"
+          type="image/avif"
+        />
+        <Image
+          src="/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.webp"
+          alt=""
+          width={2880}
+          height={1800}
+          decoding="async"
+          priority
+          sizes="(max-width: 640px) 100vw, (max-width: 960px) 92vw, 50vw"
+        />
+      </picture>
       {enhance && (
         <div className="st-webgl-layer" aria-hidden="true">
           <WebglScene active={inView && documentVisible} />
         </div>
       )}
-      <span className="st-scene-label st-scene-source">Source pages</span>
-      <span className="st-scene-label st-scene-output">
-        Connected knowledge
-      </span>
-      <small>Illustrative model · synthetic sample</small>
+      <small>First-party illustrative model · no generated imagery</small>
     </div>
   );
 }

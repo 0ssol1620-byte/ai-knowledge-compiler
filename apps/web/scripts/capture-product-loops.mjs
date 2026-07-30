@@ -1,21 +1,27 @@
 import { chromium } from "@playwright/test";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { promisify } from "node:util";
 
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
 const outputRoot = resolve(repositoryRoot, "assets/product/recordings");
 const temporaryRoot = resolve(outputRoot, ".playwright");
 const baseUrl = process.env.STRUCTARA_CAPTURE_URL ?? "http://127.0.0.1:3000";
+const ffmpeg = process.env.STRUCTARA_FFMPEG ?? "ffmpeg";
+const execFileAsync = promisify(execFile);
 const loops = [
   ["M01-upload-preflight", "/onboarding"],
-  ["M02-semantic-block-detection", "/documents/annual-report-2025/processing"],
-  ["M03-table-reconstruction", "/documents/annual-report-2025/review"],
-  ["M04-markdown-source-proof", "/documents/annual-report-2025/markdown"],
+  ["M02-page-rail-processing", "/documents/annual-report-2025/processing"],
+  ["M03-pdf-hover-to-markdown", "/documents/annual-report-2025/markdown"],
+  ["M04-markdown-to-bbox", "/documents/annual-report-2025/sources"],
   ["M05-numeric-review", "/documents/annual-report-2025/review"],
-  ["M06-notes-local-graph", "/app/projects/public-filing/knowledge"],
-  ["M07-relation-evidence", "/app/projects/public-filing/graph"],
-  ["M08-export-package", "/app/exports"],
+  ["M06-table-diff", "/documents/annual-report-2025/review"],
+  ["M07-note-split-to-backlinks", "/app/projects/public-filing/knowledge"],
+  ["M08-relation-to-proof", "/app/projects/public-filing/graph"],
+  ["M09-export-package", "/app/exports"],
+  ["M10-enterprise-policy-impact", "/app/settings/security"],
 ];
 
 await mkdir(temporaryRoot, { recursive: true });
@@ -50,20 +56,40 @@ for (const [id, route] of loops) {
   await context.close();
 
   const source = await video.path();
-  const file = `STR-PRODUCT-T0-${id.toUpperCase()}-EN-1280x720-v01.webm`;
+  const stem = `STR-PRODUCT-T0-${id.toUpperCase()}-EN-1280x720-v01`;
+  const file = `${stem}.webm`;
+  const mp4 = `${stem}.mp4`;
   await rename(source, resolve(outputRoot, file));
+  await execFileAsync(ffmpeg, [
+    "-y",
+    "-i",
+    resolve(outputRoot, file),
+    "-an",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "25",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    resolve(outputRoot, mp4),
+  ]);
   records.push({
     id,
     route,
     file,
+    derivatives: [mp4],
     truthClass: "T0",
     disclosure: "Sequence condensed for demonstration",
   });
 }
 
 await browser.close();
-const files = (await readdir(outputRoot))
-  .filter((file) => file.endsWith(".webm"))
+const files = records
+  .flatMap((record) => [record.file, ...record.derivatives])
   .sort();
 const hashes = [];
 for (const file of files) {
