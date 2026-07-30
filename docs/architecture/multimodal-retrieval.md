@@ -23,4 +23,3 @@ Production activation remains off until Qwen3 Embedding/Reranker revisions,
 runtime images, corpus indexing, deletion propagation, recall/nDCG results,
 latency, and cost are validated. The API must return unavailable rather than
 silently using this in-memory store as production persistence.
-

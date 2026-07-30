@@ -233,13 +233,9 @@ async def test_purchase_confirmation_grants_append_only_credit_exactly_once(
     async with app.state.database.sessions() as session:
         account = await session.get(CreditAccount, tenant_id)
         grants = list(
-            await session.scalars(
-                select(CreditGrant).where(CreditGrant.tenant_id == tenant_id)
-            )
+            await session.scalars(select(CreditGrant).where(CreditGrant.tenant_id == tenant_id))
         )
-        payment = await session.scalar(
-            select(Payment).where(Payment.tenant_id == tenant_id)
-        )
+        payment = await session.scalar(select(Payment).where(Payment.tenant_id == tenant_id))
         checkout_row = await session.get(Checkout, uuid.UUID(checkout["id"]))
         purchase_ledger_count = await session.scalar(
             select(func.count(CreditLedger.id)).where(
@@ -327,12 +323,8 @@ async def test_out_of_order_full_refund_is_applied_after_payment_confirmation(
     tenant_id = uuid.UUID(registration["tenant_id"])
     async with app.state.database.sessions() as session:
         account = await session.get(CreditAccount, tenant_id)
-        payment = await session.scalar(
-            select(Payment).where(Payment.tenant_id == tenant_id)
-        )
-        refund = await session.scalar(
-            select(Refund).where(Refund.tenant_id == tenant_id)
-        )
+        payment = await session.scalar(select(Payment).where(Payment.tenant_id == tenant_id))
+        refund = await session.scalar(select(Refund).where(Refund.tenant_id == tenant_id))
         reversal = await session.scalar(
             select(Reversal).where(
                 Reversal.tenant_id == tenant_id,
@@ -474,9 +466,7 @@ async def test_partial_refunds_use_cumulative_minor_units_without_rounding_drift
     tenant_id = uuid.UUID(registration["tenant_id"])
     async with app.state.database.sessions() as session:
         account = await session.get(CreditAccount, tenant_id)
-        payment = await session.scalar(
-            select(Payment).where(Payment.tenant_id == tenant_id)
-        )
+        payment = await session.scalar(select(Payment).where(Payment.tenant_id == tenant_id))
         refunds = list(
             await session.scalars(
                 select(Refund)
@@ -521,9 +511,7 @@ async def test_dispute_holds_then_chargeback_consumes_only_held_credits(
     tenant_id = uuid.UUID(registration["tenant_id"])
     async with app.state.database.sessions() as session:
         account = await session.get(CreditAccount, tenant_id)
-        dispute = await session.scalar(
-            select(Dispute).where(Dispute.tenant_id == tenant_id)
-        )
+        dispute = await session.scalar(select(Dispute).where(Dispute.tenant_id == tenant_id))
     assert account is not None
     assert account.balance == Decimal("350")
     assert account.reserved == Decimal("300")
@@ -544,12 +532,8 @@ async def test_dispute_holds_then_chargeback_consumes_only_held_credits(
     assert lost.status_code == 202, lost.text
     async with app.state.database.sessions() as session:
         account = await session.get(CreditAccount, tenant_id)
-        dispute = await session.scalar(
-            select(Dispute).where(Dispute.tenant_id == tenant_id)
-        )
-        payment = await session.scalar(
-            select(Payment).where(Payment.tenant_id == tenant_id)
-        )
+        dispute = await session.scalar(select(Dispute).where(Dispute.tenant_id == tenant_id))
+        payment = await session.scalar(select(Payment).where(Payment.tenant_id == tenant_id))
     assert account is not None
     assert account.balance == Decimal("50")
     assert account.reserved == Decimal("0")
@@ -588,9 +572,7 @@ async def test_amount_mismatch_is_dead_lettered_without_payment_or_credit(
             select(func.count(Payment.id)).where(Payment.tenant_id == tenant_id)
         )
         purchase_grants = await session.scalar(
-            select(func.count(CreditGrant.id)).where(
-                CreditGrant.tenant_id == tenant_id
-            )
+            select(func.count(CreditGrant.id)).where(CreditGrant.tenant_id == tenant_id)
         )
         dlq_audit = await session.scalar(
             select(AuditEvent).where(

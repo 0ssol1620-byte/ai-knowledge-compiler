@@ -18,14 +18,14 @@ support outcomes. Repository tests use synthetic rows only.
 
 Allowlisted optional events:
 
-| Event | Required target/data | Purpose |
-|---|---|---|
-| `estimate_viewed` | one tenant-owned `document_id` | activation |
-| `result_first_viewed` | one tenant-owned `job_id` | activation |
-| `project_revisited` | one tenant-owned `project_id` | reuse |
-| `source_merged` | one tenant-owned `project_id` | reuse |
+| Event                    | Required target/data                 | Purpose                     |
+| ------------------------ | ------------------------------------ | --------------------------- |
+| `estimate_viewed`        | one tenant-owned `document_id`       | activation                  |
+| `result_first_viewed`    | one tenant-owned `job_id`            | activation                  |
+| `project_revisited`      | one tenant-owned `project_id`        | reuse                       |
+| `source_merged`          | one tenant-owned `project_id`        | reuse                       |
 | `support_session_closed` | integer `duration_seconds`, 1–86,400 | instrumented support effort |
-| `user_reported_error` | project plus a bounded category enum | recorded error rate |
+| `user_reported_error`    | project plus a bounded category enum | recorded error rate         |
 
 The event contract rejects unknown fields. It has no free-text, filename, URL,
 email, contact, document-content, or arbitrary metadata field. Server receipt
@@ -40,11 +40,11 @@ changed by an owner/admin through `PATCH /v1/settings` or `PATCH /v1/privacy`.
 The setting uses the existing tenant-scoped feature-flag table, so no new
 customer-content store or migration is needed.
 
-| State | Snapshot | Optional events | External export |
-|---|---|---|---|
-| opted out | definitions only, all metrics `disabled` | discarded | never |
-| private mode | local operational aggregates | discarded | never |
-| enabled, non-private | local operational plus recorded events | allowlisted fields only | never |
+| State                | Snapshot                                 | Optional events         | External export |
+| -------------------- | ---------------------------------------- | ----------------------- | --------------- |
+| opted out            | definitions only, all metrics `disabled` | discarded               | never           |
+| private mode         | local operational aggregates             | discarded               | never           |
+| enabled, non-private | local operational plus recorded events   | allowlisted fields only | never           |
 
 Operational records such as jobs, pages, reviews, exports, credits, and
 payments remain necessary service records. Private mode permits their local

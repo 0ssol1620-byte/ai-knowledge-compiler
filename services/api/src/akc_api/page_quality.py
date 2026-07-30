@@ -185,9 +185,7 @@ def _layout_fidelity(blocks: tuple[PageQualityBlock, ...]) -> float | None:
         assert block.bbox1000 is not None
         x1, y1, x2, y2 = block.bbox1000
         valid += int(
-            all(0 <= coordinate <= 1000 for coordinate in block.bbox1000)
-            and x1 < x2
-            and y1 < y2
+            all(0 <= coordinate <= 1000 for coordinate in block.bbox1000) and x1 < x2 and y1 < y2
         )
     return valid / len(bounded)
 
@@ -228,12 +226,8 @@ def evaluate_page_quality(
     """Evaluate only reproducible text, number, table, provenance and syntax evidence."""
 
     materialized = tuple(blocks)
-    reference = "\n\n".join(
-        block.source_text for block in materialized if block.source_text
-    )
-    candidate = "\n\n".join(
-        block.candidate_text for block in materialized if block.candidate_text
-    )
+    reference = "\n\n".join(block.source_text for block in materialized if block.source_text)
+    candidate = "\n\n".join(block.candidate_text for block in materialized if block.candidate_text)
     source_repetition = repeated_ngram_ratio(reference) if reference else 0.0
     candidate_repetition = repeated_ngram_ratio(candidate) if candidate else 0.0
     ocr_accuracy = _ocr_accuracy(materialized)
@@ -247,8 +241,7 @@ def evaluate_page_quality(
             )
             # Repetition already present in the extracted source is fidelity,
             # not a generated-output loop. Only excess repetition is unsafe.
-            if finding.code != "text.repetition"
-            or candidate_repetition > source_repetition + 0.08
+            if finding.code != "text.repetition" or candidate_repetition > source_repetition + 0.08
         ),
         *markdown_anomalies(candidate),
     ]
@@ -259,8 +252,7 @@ def evaluate_page_quality(
                     code="ocr.accuracy_missing",
                     severity=FindingSeverity.CRITICAL,
                     message=(
-                        "Visual OCR output has no complete block and token "
-                        "confidence evidence."
+                        "Visual OCR output has no complete block and token confidence evidence."
                     ),
                     metric="text_fidelity",
                 )
@@ -282,8 +274,7 @@ def evaluate_page_quality(
                     code="ocr.charset_implausible",
                     severity=FindingSeverity.CRITICAL,
                     message=(
-                        "Visual OCR output contains implausible replacement "
-                        "or control characters."
+                        "Visual OCR output contains implausible replacement or control characters."
                     ),
                     metric="language_consistency",
                     observed=charset_plausibility,
@@ -328,10 +319,7 @@ def evaluate_page_quality(
     if (
         requires_independent_verifier
         and any(block.block_type == "table" for block in materialized)
-        and (
-            verification_table_agreement is None
-            or verification_table_agreement < 0.95
-        )
+        and (verification_table_agreement is None or verification_table_agreement < 0.95)
     ):
         findings.append(
             QualityFinding(
@@ -346,10 +334,7 @@ def evaluate_page_quality(
     if (
         requires_independent_verifier
         and any(block.block_type == "formula" for block in materialized)
-        and (
-            verification_formula_agreement is None
-            or verification_formula_agreement < 0.95
-        )
+        and (verification_formula_agreement is None or verification_formula_agreement < 0.95)
     ):
         findings.append(
             QualityFinding(
@@ -448,36 +433,22 @@ def evaluate_page_quality(
     )
     repetition_excess = max(0.0, candidate_repetition - source_repetition)
     vector = QualityVector(
-        text_fidelity=(
-            _bounded_similarity(reference, candidate)
-            if reference
-            else ocr_accuracy
-        ),
+        text_fidelity=(_bounded_similarity(reference, candidate) if reference else ocr_accuracy),
         numeric_fidelity=numeric_score,
         layout_fidelity=_layout_fidelity(materialized),
         table_fidelity=(min(table_scores) if table_scores else None),
         hierarchy_validity=(
-            _penalty_score(anomaly_findings, codes=hierarchy_codes)
-            if candidate
-            else 0.0
+            _penalty_score(anomaly_findings, codes=hierarchy_codes) if candidate else 0.0
         ),
         provenance_coverage=(
-            (len(materialized) - missing_provenance) / len(materialized)
-            if materialized
-            else 0.0
+            (len(materialized) - missing_provenance) / len(materialized) if materialized else 0.0
         ),
-        repetition_safety=(
-            max(0.0, 1.0 - repetition_excess) if candidate else 0.0
-        ),
+        repetition_safety=(max(0.0, 1.0 - repetition_excess) if candidate else 0.0),
         language_consistency=(
-            _language_consistency(reference, candidate)
-            if reference
-            else charset_plausibility
+            _language_consistency(reference, candidate) if reference else charset_plausibility
         ),
         markdown_validity=(
-            _penalty_score(anomaly_findings, codes=markdown_codes)
-            if candidate
-            else 0.0
+            _penalty_score(anomaly_findings, codes=markdown_codes) if candidate else 0.0
         ),
     )
     evaluation = evaluate_quality(
@@ -490,8 +461,7 @@ def evaluate_page_quality(
     finding_codes = {finding.code for finding in evaluation.findings}
     signal = QualitySignal(
         score=evaluation.overall_score,
-        passed=evaluation.status
-        in {QualityStatus.PASS, QualityStatus.PASS_WITH_WARNINGS},
+        passed=evaluation.status in {QualityStatus.PASS, QualityStatus.PASS_WITH_WARNINGS},
         empty_output="text.empty" in finding_codes,
         repetition_failure="text.repetition" in finding_codes,
         critical_numeric_mismatch="numeric.token_mismatch" in finding_codes,

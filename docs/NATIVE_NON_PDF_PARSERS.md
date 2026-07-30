@@ -14,10 +14,7 @@ from akc_native_parsers import ParseContext, parse_non_pdf_to_cir
 
 cir = parse_non_pdf_to_cir(
     filename="evidence.docx",
-    declared_mime=(
-        "application/vnd.openxmlformats-officedocument."
-        "wordprocessingml.document"
-    ),
+    declared_mime=("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
     data=payload,
     context=ParseContext(
         tenant_id="tenant_123",
@@ -36,13 +33,13 @@ messages never include source bytes.
 
 ## Structure and provenance
 
-| Format | CIR structure | Native source location |
-|---|---|---|
-| DOCX | title, headings with parents, paragraphs, lists, quotes, merged tables, distinct headers and footers | `docx/body/...` and `docx/section/...` |
-| PPTX | one title/heading parent per slide, positioned text/list blocks, merged tables, figures/charts as inert references, speaker notes | `pptx/slide/{index}/shape/{z-path}/...`; normalized `bbox1000` |
-| XLSX | one heading parent and one sparse canonical used-range table per sheet, merged spans, hidden state, formulas plus cached values, explicit table metadata | `xlsx/sheet/{index}/cell/{A1}` and `/range/{A1:B2}` |
-| HTML | DOM-order title/headings/paragraphs/lists/quotes/code/tables/figures/captions; `main` or a single `article` receives priority | `html/{DOM-path}` including stable `text()[n]` nodes |
-| SRT/VTT | transcript title plus time-ranged cue blocks, speaker labels, adjacent repeated-cue merge | `{srt,vtt}/cue/{source-index}` and millisecond ranges |
+| Format  | CIR structure                                                                                                                                            | Native source location                                         |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| DOCX    | title, headings with parents, paragraphs, lists, quotes, merged tables, distinct headers and footers                                                     | `docx/body/...` and `docx/section/...`                         |
+| PPTX    | one title/heading parent per slide, positioned text/list blocks, merged tables, figures/charts as inert references, speaker notes                        | `pptx/slide/{index}/shape/{z-path}/...`; normalized `bbox1000` |
+| XLSX    | one heading parent and one sparse canonical used-range table per sheet, merged spans, hidden state, formulas plus cached values, explicit table metadata | `xlsx/sheet/{index}/cell/{A1}` and `/range/{A1:B2}`            |
+| HTML    | DOM-order title/headings/paragraphs/lists/quotes/code/tables/figures/captions; `main` or a single `article` receives priority                            | `html/{DOM-path}` including stable `text()[n]` nodes           |
+| SRT/VTT | transcript title plus time-ranged cue blocks, speaker labels, adjacent repeated-cue merge                                                                | `{srt,vtt}/cue/{source-index}` and millisecond ranges          |
 
 Every block and table cell has a `SourceRef`. Block, table, and cell IDs are a
 SHA-256 derivation of the source digest and stable native location. Parsers walk
@@ -84,19 +81,19 @@ exists in the workbook; otherwise the cell receives
 These are parser safety ceilings, not customer plan quotas. Callers can replace
 them with stricter positive values through `ParserLimits`.
 
-| Limit | Default | Failure |
-|---|---:|---|
-| Input bytes | 50 MiB | `FILE_TOO_LARGE` |
-| ZIP entries | 2,000 | `ARCHIVE_ENTRY_LIMIT` |
-| Expanded ZIP bytes | 250 MiB | `ARCHIVE_SIZE_LIMIT` |
-| One ZIP member | 64 MiB | `ARCHIVE_MEMBER_LIMIT` |
-| Compression ratio | 100:1 | `ARCHIVE_RATIO_LIMIT` |
-| CIR blocks / extracted characters | 50,000 / 10,000,000 | `BLOCK_LIMIT` / `EXTRACTED_TEXT_LIMIT` |
-| Table rows / columns / occupied grid cells | 100,000 / 1,024 / 500,000 | `TABLE_*_LIMIT` |
-| Slides / shapes per slide | 2,000 / 5,000 | `SLIDE_LIMIT` / `SLIDE_SHAPE_LIMIT` |
-| Sheets / rows / columns / cells per sheet | 512 / 100,000 / 1,024 / 500,000 | `SHEET_*_LIMIT` |
-| HTML nodes / depth | 150,000 / 256 | `HTML_NODE_LIMIT` / `HTML_DEPTH_LIMIT` |
-| Subtitle cues / characters per cue | 100,000 / 20,000 | `SUBTITLE_CUE_LIMIT` / `SUBTITLE_CUE_TEXT_LIMIT` |
+| Limit                                      |                         Default | Failure                                          |
+| ------------------------------------------ | ------------------------------: | ------------------------------------------------ |
+| Input bytes                                |                          50 MiB | `FILE_TOO_LARGE`                                 |
+| ZIP entries                                |                           2,000 | `ARCHIVE_ENTRY_LIMIT`                            |
+| Expanded ZIP bytes                         |                         250 MiB | `ARCHIVE_SIZE_LIMIT`                             |
+| One ZIP member                             |                          64 MiB | `ARCHIVE_MEMBER_LIMIT`                           |
+| Compression ratio                          |                           100:1 | `ARCHIVE_RATIO_LIMIT`                            |
+| CIR blocks / extracted characters          |             50,000 / 10,000,000 | `BLOCK_LIMIT` / `EXTRACTED_TEXT_LIMIT`           |
+| Table rows / columns / occupied grid cells |       100,000 / 1,024 / 500,000 | `TABLE_*_LIMIT`                                  |
+| Slides / shapes per slide                  |                   2,000 / 5,000 | `SLIDE_LIMIT` / `SLIDE_SHAPE_LIMIT`              |
+| Sheets / rows / columns / cells per sheet  | 512 / 100,000 / 1,024 / 500,000 | `SHEET_*_LIMIT`                                  |
+| HTML nodes / depth                         |                   150,000 / 256 | `HTML_NODE_LIMIT` / `HTML_DEPTH_LIMIT`           |
+| Subtitle cues / characters per cue         |                100,000 / 20,000 | `SUBTITLE_CUE_LIMIT` / `SUBTITLE_CUE_TEXT_LIMIT` |
 
 Table area and merged-span occupancy are bounded before grid allocation.
 Worksheet XML is preflighted with `defusedxml` before `openpyxl` materializes a

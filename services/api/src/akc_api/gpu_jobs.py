@@ -223,9 +223,7 @@ class GpuTransitionPolicy:
                 GpuTransitionTarget.from_manifest(fallback) if fallback is not None else None
             ),
             oom_escalation=(
-                GpuTransitionTarget.from_manifest(escalation)
-                if escalation is not None
-                else None
+                GpuTransitionTarget.from_manifest(escalation) if escalation is not None else None
             ),
         )
 
@@ -345,9 +343,7 @@ class GpuInvocationSpec:
                 self.transition_policy.manifest if self.transition_policy is not None else {}
             ),
             "parent_invocation_id": (
-                str(self.parent_invocation_id)
-                if self.parent_invocation_id is not None
-                else None
+                str(self.parent_invocation_id) if self.parent_invocation_id is not None else None
             ),
             "lineage_root_invocation_id": (
                 str(self.lineage_root_invocation_id)

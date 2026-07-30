@@ -54,12 +54,15 @@ class KnowledgeSourceRef(BaseModel):
     document_version_id: Annotated[str, Field(min_length=3, max_length=256)]
     page_index0: Annotated[int, Field(ge=0)]
     page_number1: Annotated[int, Field(ge=1)]
-    bbox1000: tuple[
-        Annotated[int, Field(ge=0, le=1000)],
-        Annotated[int, Field(ge=0, le=1000)],
-        Annotated[int, Field(ge=0, le=1000)],
-        Annotated[int, Field(ge=0, le=1000)],
-    ] | None = None
+    bbox1000: (
+        tuple[
+            Annotated[int, Field(ge=0, le=1000)],
+            Annotated[int, Field(ge=0, le=1000)],
+            Annotated[int, Field(ge=0, le=1000)],
+            Annotated[int, Field(ge=0, le=1000)],
+        ]
+        | None
+    ) = None
 
     @model_validator(mode="after")
     def validate_bbox(self) -> KnowledgeSourceRef:
@@ -139,9 +142,7 @@ class StageAHeading(BaseModel):
 class StageAInput(BaseModel):
     model_config = _INPUT_CONFIG
 
-    schema_version: Literal[
-        "knowledge-pipeline-input-1.0.0"
-    ] = "knowledge-pipeline-input-1.0.0"
+    schema_version: Literal["knowledge-pipeline-input-1.0.0"] = "knowledge-pipeline-input-1.0.0"
     stage: Literal["A"] = "A"
     unit_id: Annotated[str, Field(min_length=3, max_length=128)]
     document_id: Annotated[str, Field(min_length=3, max_length=256)]
@@ -185,9 +186,7 @@ class StageBFragment(BaseModel):
 class StageBInput(BaseModel):
     model_config = _INPUT_CONFIG
 
-    schema_version: Literal[
-        "knowledge-pipeline-input-1.0.0"
-    ] = "knowledge-pipeline-input-1.0.0"
+    schema_version: Literal["knowledge-pipeline-input-1.0.0"] = "knowledge-pipeline-input-1.0.0"
     stage: Literal["B"] = "B"
     unit_id: Annotated[str, Field(min_length=3, max_length=128)]
     document_id: Annotated[str, Field(min_length=3, max_length=256)]
@@ -278,10 +277,7 @@ class StageCCandidateEvidence(BaseModel):
         described = {item.block_id for item in self.evidence}
         if len(described) != len(self.evidence) or described != available:
             raise ValueError("stage C evidence descriptors are outside candidate scope")
-        if any(
-            not set(claim.evidence_block_ids).issubset(available)
-            for claim in self.claims
-        ):
+        if any(not set(claim.evidence_block_ids).issubset(available) for claim in self.claims):
             raise ValueError("stage C claim is outside candidate evidence")
         return self
 
@@ -289,9 +285,7 @@ class StageCCandidateEvidence(BaseModel):
 class StageCInput(BaseModel):
     model_config = _INPUT_CONFIG
 
-    schema_version: Literal[
-        "knowledge-pipeline-input-1.0.0"
-    ] = "knowledge-pipeline-input-1.0.0"
+    schema_version: Literal["knowledge-pipeline-input-1.0.0"] = "knowledge-pipeline-input-1.0.0"
     stage: Literal["C"] = "C"
     unit_id: Annotated[str, Field(min_length=3, max_length=128)]
     document_id: Annotated[str, Field(min_length=3, max_length=256)]
@@ -354,9 +348,7 @@ class StageDAclAttestation(BaseModel):
 class StageDInput(BaseModel):
     model_config = _INPUT_CONFIG
 
-    schema_version: Literal[
-        "knowledge-pipeline-input-1.0.0"
-    ] = "knowledge-pipeline-input-1.0.0"
+    schema_version: Literal["knowledge-pipeline-input-1.0.0"] = "knowledge-pipeline-input-1.0.0"
     stage: Literal["D"] = "D"
     unit_id: Annotated[str, Field(min_length=3, max_length=128)]
     tenant_id: Annotated[str, Field(min_length=3, max_length=64)]
@@ -380,9 +372,7 @@ class StageDInput(BaseModel):
             raise ValueError("stage D allowed project IDs must be unique")
         source_ids = [candidate.candidate_id for candidate in self.source_candidates]
         retrieval_ids = [candidate.stable_id for candidate in self.retrieval_candidates]
-        if len(source_ids) != len(set(source_ids)) or len(retrieval_ids) != len(
-            set(retrieval_ids)
-        ):
+        if len(source_ids) != len(set(source_ids)) or len(retrieval_ids) != len(set(retrieval_ids)):
             raise ValueError("stage D candidate IDs must be unique")
         allowed = set(self.allowed_project_ids)
         if (
@@ -592,10 +582,7 @@ def _validate_attestation(
         raise ValueError("knowledge_schema_revision_mismatch")
     if provider_metrics.get("unsupported_claim_count") != 0:
         raise ValueError("knowledge_unsupported_claim")
-    if (
-        expected_stage is not None
-        and provider_metrics.get("knowledge_stage") != expected_stage
-    ):
+    if expected_stage is not None and provider_metrics.get("knowledge_stage") != expected_stage:
         raise ValueError("knowledge_stage_attestation_mismatch")
     if (
         expected_unit_id is not None
@@ -646,10 +633,7 @@ def _validate_bundle_evidence(
         raise ValueError("knowledge_evidence_invalid")
     for note in bundle.notes:
         note_evidence = set(note.evidence_block_ids)
-        if any(
-            not set(claim.source_block_ids).issubset(note_evidence)
-            for claim in note.claims
-        ):
+        if any(not set(claim.source_block_ids).issubset(note_evidence) for claim in note.claims):
             raise ValueError("knowledge_claim_outside_note_evidence")
         if any(
             not set(candidate.source_block_ids).issubset(note_evidence)
@@ -663,9 +647,7 @@ def _validate_bundle_evidence(
 
 def _validate_stage_a(result: StageAResult, stage_input: StageAInput) -> None:
     expected = {block.block_id for block in stage_input.blocks}
-    observed = [
-        block_id for section in result.sections for block_id in section.block_ids
-    ]
+    observed = [block_id for section in result.sections for block_id in section.block_ids]
     if set(observed) != expected or len(observed) != len(set(observed)):
         raise ValueError("knowledge_stage_a_coverage_invalid")
     section_ids = [section.section_id for section in result.sections]
@@ -712,8 +694,7 @@ def _semantic_merge_supported(
         for candidate in candidates
     ]
     signatures = [
-        {claim.signature_sha256 for claim in candidate.claims}
-        for candidate in candidates
+        {claim.signature_sha256 for claim in candidate.claims} for candidate in candidates
     ]
     tokens = [
         {
@@ -726,9 +707,7 @@ def _semantic_merge_supported(
         }
         for candidate in candidates
     ]
-    adjacency: dict[int, set[int]] = {
-        index: set() for index in range(len(candidates))
-    }
+    adjacency: dict[int, set[int]] = {index: set() for index in range(len(candidates))}
     for left in range(len(candidates)):
         for right in range(left + 1, len(candidates)):
             overlap = tokens[left] & tokens[right]
@@ -736,11 +715,7 @@ def _semantic_merge_supported(
             supported = bool(
                 normalized_values[left] & normalized_values[right]
                 or signatures[left] & signatures[right]
-                or (
-                    len(overlap) >= 2
-                    and union
-                    and len(overlap) / len(union) >= 0.5
-                )
+                or (len(overlap) >= 2 and union and len(overlap) / len(union) >= 0.5)
             )
             if supported:
                 adjacency[left].add(right)
@@ -756,14 +731,10 @@ def _semantic_merge_supported(
 
 
 def _validate_stage_c(result: StageCResult, stage_input: StageCInput) -> None:
-    by_id = {
-        candidate.candidate_id: candidate for candidate in stage_input.candidates
-    }
+    by_id = {candidate.candidate_id: candidate for candidate in stage_input.candidates}
     expected = set(by_id)
     members = [
-        candidate_id
-        for group in result.merge_groups
-        for candidate_id in group.member_candidate_ids
+        candidate_id for group in result.merge_groups for candidate_id in group.member_candidate_ids
     ]
     if set(members) != expected or len(members) != len(set(members)):
         raise ValueError("knowledge_stage_c_candidate_coverage_invalid")
@@ -795,16 +766,12 @@ def _validate_stage_c(result: StageCResult, stage_input: StageCInput) -> None:
             tuple(by_id[candidate_id] for candidate_id in group.member_candidate_ids)
         ):
             raise ValueError("knowledge_stage_c_merge_semantics_unsupported")
-        if (
-            group.parent_candidate_id is not None
-            and group.parent_candidate_id not in canonical
-        ):
+        if group.parent_candidate_id is not None and group.parent_candidate_id not in canonical:
             raise ValueError("knowledge_stage_c_parent_invalid")
         if group.parent_candidate_id == group.canonical_candidate_id:
             raise ValueError("knowledge_stage_c_parent_cycle")
     parents = {
-        group.canonical_candidate_id: group.parent_candidate_id
-        for group in result.merge_groups
+        group.canonical_candidate_id: group.parent_candidate_id for group in result.merge_groups
     }
     for candidate_id in parents:
         seen: set[str] = set()
@@ -831,9 +798,7 @@ def _validate_stage_d(result: StageDResult, stage_input: StageDInput) -> None:
         if (
             link.source_candidate_id not in sources
             or link.target_stable_id not in targets
-            or not set(link.evidence_block_ids).issubset(
-                sources[link.source_candidate_id]
-            )
+            or not set(link.evidence_block_ids).issubset(sources[link.source_candidate_id])
         ):
             raise ValueError("knowledge_stage_d_link_scope_invalid")
         identity = (

@@ -111,17 +111,13 @@ def test_url_secret_codec_encrypts_full_url_and_keys_query() -> None:
         encryption_key="MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=",
         query_hmac_secret=b"query-secret-must-be-at-least-32-bytes",
     )
-    protected = codec.protect(
-        "https://Example.COM/reports/%72eport.pdf?token=customer-secret"
-    )
+    protected = codec.protect("https://Example.COM/reports/%72eport.pdf?token=customer-secret")
 
     assert protected.canonical_url == "https://example.com/reports/%72eport.pdf"
     assert "customer-secret" not in protected.canonical_url
     assert b"customer-secret" not in protected.ciphertext
     assert protected.query_hmac
-    assert protected.query_hmac != hashlib.sha256(
-        b"token=customer-secret"
-    ).hexdigest()
+    assert protected.query_hmac != hashlib.sha256(b"token=customer-secret").hexdigest()
     assert (
         codec.reveal(protected.ciphertext)
         == "https://example.com/reports/%72eport.pdf?token=customer-secret"
@@ -186,9 +182,7 @@ async def test_api_enqueues_202_replays_exactly_and_never_exposes_query(
         task_count = await session.scalar(select(func.count(UrlFetchTask.id)))
         audits = list(
             await session.scalars(
-                select(AuditEvent).where(
-                    AuditEvent.action == "document.url_fetch_queued"
-                )
+                select(AuditEvent).where(AuditEvent.action == "document.url_fetch_queued")
             )
         )
     assert task is not None

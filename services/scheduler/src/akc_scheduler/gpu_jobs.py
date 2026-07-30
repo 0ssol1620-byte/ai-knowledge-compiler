@@ -570,11 +570,7 @@ class GpuInvocationWorker:
             ("tile_size", 256),
         ):
             value = reduced.get(key)
-            if (
-                not isinstance(value, int)
-                or isinstance(value, bool)
-                or value <= minimum
-            ):
+            if not isinstance(value, int) or isinstance(value, bool) or value <= minimum:
                 continue
             reduced[key] = max(minimum, value // 2)
             changed = True
@@ -759,8 +755,7 @@ class GpuInvocationWorker:
                 provider_key=plan.provider_key,
                 endpoint_id=plan.endpoint_id,
                 idempotency_key=(
-                    f"transition-{invocation.id.hex}-{plan.category}-"
-                    f"{plan.transition_attempt}"
+                    f"transition-{invocation.id.hex}-{plan.category}-{plan.transition_attempt}"
                 ),
                 input_bucket=cast(Literal["source", "derived"], invocation.input_bucket),
                 input_object_key=invocation.input_object_key,
@@ -845,8 +840,7 @@ class GpuInvocationWorker:
         invocation_ids = progress.get("invocation_ids")
         if isinstance(invocation_ids, list):
             progress["invocation_ids"] = [
-                str(child.id) if value == str(invocation.id) else value
-                for value in invocation_ids
+                str(child.id) if value == str(invocation.id) else value for value in invocation_ids
             ]
         job.progress = progress
         job.event_sequence += 1
@@ -1435,9 +1429,7 @@ class GpuInvocationWorker:
             attempt = await self._attempt(session, claim)
             lineage = await self._lineage_state(session, invocation)
             retry_category = classify_retry_error(error.code)
-            category_attempt = (
-                lineage.category_transitions.get(retry_category, 0) + 1
-            )
+            category_attempt = lineage.category_transitions.get(retry_category, 0) + 1
             retry_decision = decide_retry(
                 code=error.code,
                 retryable=error.retryable,
@@ -1526,10 +1518,7 @@ class GpuInvocationWorker:
                     "download_timeout",
                     "gpu_oom",
                     "default",
-                } and (
-                    retry_decision.rule_exhausted
-                    or retry_decision.job_budget_exhausted
-                )
+                } and (retry_decision.rule_exhausted or retry_decision.job_budget_exhausted)
                 invocation.status = "dead_letter" if exhausted_retry else "failed"
                 invocation.completed_at = now
                 if attempt is not None:

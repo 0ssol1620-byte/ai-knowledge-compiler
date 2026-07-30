@@ -907,7 +907,14 @@ async def test_native_vertical_slice_export_edit_and_verified_purge(api) -> None
     assert float(credits["available"]) > 0
     dashboard = (await client.get("/v1/dashboard")).json()
     assert dashboard["active_project_count"] == 1
+    assert dashboard["active_jobs"] == 0
+    assert dashboard["failed_jobs"] == 0
+    assert dashboard["processed_pages_this_cycle"] > 0
+    assert dashboard["storage_used_bytes"] > 0
+    assert dashboard["credit_remaining"] > 0
+    assert dashboard["retention_days"] == 7
     assert dashboard["provenance_coverage"] == 1.0
+    assert dashboard["projects"][0]["owner_name"] == "Evidence Owner"
 
     accepted = await client.delete(f"/v1/documents/{document_id}")
     assert accepted.status_code == 202, accepted.text

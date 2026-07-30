@@ -23,7 +23,8 @@ packs:
     description: Claims, methods, findings, limitations, and citation-ready evidence.
     note_types: [claim, method, finding, limitation, citation]
     knowledge_profile: knowledge_precision_v1
-    export_profiles: [portable_markdown_v1, obsidian_vault_v1, rag_jsonl_v1, jsonld_v1]
+    export_profiles:
+      [portable_markdown_v1, obsidian_vault_v1, rag_jsonl_v1, jsonld_v1]
     quality_rules:
       - id: claim_evidence
         description: Every research claim requires evidence.
@@ -67,7 +68,8 @@ packs:
         description: Inferences and ambiguous obligations require human review.
         severity: review_required
         evaluator: origin_policy
-    forbidden_claims: [legal_advice, enforceability_conclusion, invented_obligation]
+    forbidden_claims:
+      [legal_advice, enforceability_conclusion, invented_obligation]
   - id: technical_support_pack
     version: "1.0.0"
     display_name: Technical/Support Pack
@@ -102,4 +104,3 @@ packs:
         severity: review_required
         evaluator: evidence_coverage
     forbidden_claims: [invented_event, modernized_quote]
-

@@ -85,8 +85,7 @@ class UrlFetchTask(Base):
         UniqueConstraint("tenant_id", "id"),
         UniqueConstraint("tenant_id", "document_id"),
         CheckConstraint(
-            "status IN "
-            "('queued','running','retry','completed','failed','dead_letter','cancelled')",
+            "status IN ('queued','running','retry','completed','failed','dead_letter','cancelled')",
             name="url_fetch_tasks_status_check",
         ),
         CheckConstraint("attempt_count >= 0", name="url_fetch_tasks_attempt_nonnegative"),

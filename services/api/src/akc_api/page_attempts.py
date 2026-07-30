@@ -154,9 +154,7 @@ async def transition_page_attempt(
 
     previous = PageState(attempt.status)
     if previous in TERMINAL_PAGE_STATES:
-        raise PageAttemptTransitionError(
-            f"terminal page attempt is immutable: {previous.value}"
-        )
+        raise PageAttemptTransitionError(f"terminal page attempt is immutable: {previous.value}")
     if previous == target:
         return None
     if not page_transition_allowed(previous, target):

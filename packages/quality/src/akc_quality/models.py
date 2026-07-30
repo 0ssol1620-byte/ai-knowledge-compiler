@@ -17,8 +17,8 @@ class FindingSeverity(StrEnum):
 
 
 class QualityStatus(StrEnum):
-    PASS = "PASS"  # noqa: S105 - quality state, not a credential
-    PASS_WITH_WARNINGS = "PASS_WITH_WARNINGS"  # noqa: S105 - quality state
+    PASS = "PASS"  # noqa: S105  # nosec B105
+    PASS_WITH_WARNINGS = "PASS_WITH_WARNINGS"  # noqa: S105  # nosec B105
     ESCALATE = "ESCALATE"
     REVIEW_REQUIRED = "REVIEW_REQUIRED"
     FAIL = "FAIL"

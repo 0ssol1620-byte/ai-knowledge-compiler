@@ -105,8 +105,7 @@ def retention_claim_statement(
         )
     else:
         statement = statement.where(
-            func.julianday(Document.created_at)
-            <= func.julianday(now) - Tenant.data_retention_days
+            func.julianday(Document.created_at) <= func.julianday(now) - Tenant.data_retention_days
         )
     return statement
 

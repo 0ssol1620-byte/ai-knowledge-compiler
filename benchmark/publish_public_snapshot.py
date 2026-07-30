@@ -15,12 +15,7 @@ from jsonschema import Draft202012Validator
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEMPLATE = (
-    REPOSITORY_ROOT
-    / "apps"
-    / "web"
-    / "src"
-    / "data"
-    / "benchmark-public-snapshot.json"
+    REPOSITORY_ROOT / "apps" / "web" / "src" / "data" / "benchmark-public-snapshot.json"
 )
 DEFAULT_SCHEMA = REPOSITORY_ROOT / "benchmark" / "schemas" / "public-snapshot.schema.json"
 _SHA256 = "sha256:"

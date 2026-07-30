@@ -538,13 +538,18 @@ async def harness(
         )
         await session.commit()
     clock = MutableClock()
-    yield engine, sessions, Seed(
-        tenant_id,
-        job_id,
-        project_id,
-        document_id,
-        page_id,
-    ), clock
+    yield (
+        engine,
+        sessions,
+        Seed(
+            tenant_id,
+            job_id,
+            project_id,
+            document_id,
+            page_id,
+        ),
+        clock,
+    )
     await engine.dispose()
 
 
@@ -674,13 +679,9 @@ def visual_spec(
         endpoint_id="parser-accurate",
         idempotency_key="visual-page-1",
         input_bucket="derived",
-        input_object_key=(
-            f"tenants/{seed.tenant_id}/derived/pages/1/inference-300.png"
-        ),
+        input_object_key=(f"tenants/{seed.tenant_id}/derived/pages/1/inference-300.png"),
         input_sha256=input_sha256,
-        output_object_key=(
-            f"tenants/{seed.tenant_id}/derived/pages/1/visual.json"
-        ),
+        output_object_key=(f"tenants/{seed.tenant_id}/derived/pages/1/visual.json"),
         model_revision=MODEL_REVISION,
         runtime_image_digest=IMAGE_DIGEST,
         adapter_version=ADAPTER_VERSION,
@@ -927,11 +928,11 @@ async def test_visual_result_is_page_scoped_attested_and_resumes_parent(
             "page_width_px": 1200,
             "page_height_px": 1600,
             "input_size_bytes": len(raster),
-                "block_count": 1,
-                "source_ref_count": 1,
-                "confidence_count": 4,
-                "verification_present": 0,
-            }
+            "block_count": 1,
+            "source_ref_count": 1,
+            "confidence_count": 4,
+            "verification_present": 0,
+        }
         resume = await session.scalar(
             select(OutboxEvent).where(
                 OutboxEvent.aggregate_id == seed.job_id,
@@ -1210,9 +1211,7 @@ async def test_oom_creates_one_immutable_reduced_child_and_preserves_credit(
         ledger = list(
             (
                 await session.scalars(
-                    select(CreditLedger).where(
-                        CreditLedger.tenant_id == seed.tenant_id
-                    )
+                    select(CreditLedger).where(CreditLedger.tenant_id == seed.tenant_id)
                 )
             ).all()
         )
@@ -1236,8 +1235,7 @@ async def test_oom_creates_one_immutable_reduced_child_and_preserves_credit(
                 await session.scalars(
                     select(GpuInvocationEvent).where(
                         GpuInvocationEvent.invocation_id == parent.id,
-                        GpuInvocationEvent.event_type
-                        == "gpu.invocation.transitioned.v1",
+                        GpuInvocationEvent.event_type == "gpu.invocation.transitioned.v1",
                     )
                 )
             ).all()

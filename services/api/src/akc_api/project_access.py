@@ -52,8 +52,7 @@ def tenant_allows(principal: Principal, capability: ProjectCapability) -> bool:
     if is_project_admin(principal):
         return True
     return any(
-        capability in _TENANT_CAPABILITIES.get(role, frozenset())
-        for role in principal.roles
+        capability in _TENANT_CAPABILITIES.get(role, frozenset()) for role in principal.roles
     )
 
 
@@ -65,9 +64,7 @@ def allowed_project_roles_for_tenant_role(tenant_role: str) -> frozenset[str]:
 
 def project_access_predicate(
     principal: Principal,
-    project_id_column: (
-        ColumnElement[uuid.UUID] | InstrumentedAttribute[uuid.UUID]
-    ),
+    project_id_column: (ColumnElement[uuid.UUID] | InstrumentedAttribute[uuid.UUID]),
     capability: ProjectCapability = "read",
 ) -> ColumnElement[bool]:
     """Build a reusable SQL predicate for lists and direct resource queries."""
@@ -117,9 +114,8 @@ async def require_project_access(
             status_code=404,
             detail={"code": "PROJECT_NOT_FOUND"},
         )
-    if (
-        not tenant_allows(principal, capability)
-        or capability not in _PROJECT_CAPABILITIES.get(membership.role, frozenset())
+    if not tenant_allows(principal, capability) or capability not in _PROJECT_CAPABILITIES.get(
+        membership.role, frozenset()
     ):
         raise HTTPException(
             status_code=403,

@@ -274,13 +274,10 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
         "thumbnail",
         "inference_raster",
     }
-    inference = [
-        asset for asset in assets if asset.asset_type == "inference_raster"
-    ]
+    inference = [asset for asset in assets if asset.asset_type == "inference_raster"]
     assert {asset.metadata_json["dpi"] for asset in inference} == {200, 300}
     assert all(
-        asset.metadata_json["colorspace"] == "RGB"
-        and asset.metadata_json["page_index0"] == 0
+        asset.metadata_json["colorspace"] == "RGB" and asset.metadata_json["page_index0"] == 0
         for asset in inference
     )
 
@@ -375,9 +372,7 @@ async def test_scanned_input_fake_provider_admits_exact_inference_page_once(
     task_id = await _enqueue(client, document_id)
     assert await _worker(app, settings).run_once(task_id=task_id) is True
     async with app.state.database.sessions() as session:
-        page = await session.scalar(
-            select(Page).where(Page.document_id == uuid.UUID(document_id))
-        )
+        page = await session.scalar(select(Page).where(Page.document_id == uuid.UUID(document_id)))
         task = await session.get(AnalysisTask, task_id)
         assert page is not None, (
             task.status if task is not None else None,
@@ -416,25 +411,16 @@ async def test_scanned_input_fake_provider_admits_exact_inference_page_once(
     async with app.state.database.sessions.begin() as session:
         job = await session.get(ProcessingJob, job_id)
         invocation = await session.scalar(
-            select(GpuProviderInvocation).where(
-                GpuProviderInvocation.job_id == job_id
-            )
+            select(GpuProviderInvocation).where(GpuProviderInvocation.job_id == job_id)
         )
-        page = await session.scalar(
-            select(Page).where(Page.document_id == uuid.UUID(document_id))
-        )
+        page = await session.scalar(select(Page).where(Page.document_id == uuid.UUID(document_id)))
         document = await session.get(Document, uuid.UUID(document_id))
         assert (
-            job is not None
-            and invocation is not None
-            and page is not None
-            and document is not None
+            job is not None and invocation is not None and page is not None and document is not None
         ), {
             "job_status": job.status if job is not None else None,
             "job_error": job.error if job is not None else None,
-            "requested_options": (
-                job.requested_options if job is not None else None
-            ),
+            "requested_options": (job.requested_options if job is not None else None),
             "page_route": page.route if page is not None else None,
             "page_status": page.status if page is not None else None,
         }
@@ -471,9 +457,7 @@ async def test_scanned_input_fake_provider_admits_exact_inference_page_once(
                     "source_refs": [
                         {
                             "document_id": str(document.id),
-                            "document_version_id": (
-                                f"{document.id}:v{document.active_version}"
-                            ),
+                            "document_version_id": (f"{document.id}:v{document.active_version}"),
                             "page_index0": 0,
                             "page_number1": 1,
                             "bbox1000": [10, 20, 900, 200],
@@ -530,9 +514,7 @@ async def test_scanned_input_fake_provider_admits_exact_inference_page_once(
             "adapter_version": invocation.adapter_version,
             "result_id": result_id,
             "output_object_key": invocation.output_object_key,
-            "output_sha256": (
-                "sha256:" + hashlib.sha256(output_body).hexdigest()
-            ),
+            "output_sha256": ("sha256:" + hashlib.sha256(output_body).hexdigest()),
             "output_bytes": len(output_body),
             "metrics": output_payload["metrics"],
             "warning_count": 0,
@@ -577,9 +559,7 @@ async def test_scanned_input_fake_provider_admits_exact_inference_page_once(
         )
     async with app.state.database.sessions() as session:
         job = await session.get(ProcessingJob, job_id)
-        page = await session.scalar(
-            select(Page).where(Page.document_id == uuid.UUID(document_id))
-        )
+        page = await session.scalar(select(Page).where(Page.document_id == uuid.UUID(document_id)))
         consumes = int(
             await session.scalar(
                 select(func.count(CreditLedger.id)).where(

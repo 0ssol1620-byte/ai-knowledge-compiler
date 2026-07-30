@@ -14,9 +14,7 @@ HERE = Path(__file__).parent
 
 def test_matrix_is_schema_valid_and_has_unique_ids() -> None:
     matrix = load_matrix()
-    schema = json.loads(
-        (HERE / "scenario-matrix.schema.json").read_text(encoding="utf-8")
-    )
+    schema = json.loads((HERE / "scenario-matrix.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(matrix)
     ids = [scenario["id"] for scenario in matrix["scenarios"]]
     assert len(ids) == len(set(ids))

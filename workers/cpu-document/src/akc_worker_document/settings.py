@@ -148,7 +148,7 @@ class AnalysisWorkerSettings(BaseSettings):
     )
 
     metrics_enabled: bool = True
-    metrics_bind_host: Literal["127.0.0.1", "0.0.0.0"] = "127.0.0.1"
+    metrics_bind_host: Literal["127.0.0.1", "0.0.0.0"] = "127.0.0.1"  # nosec B104
     metrics_port: int = Field(default=9102, ge=1024, le=65535)
 
     @property
@@ -245,7 +245,9 @@ class AnalysisWorkerSettings(BaseSettings):
                 raise ValueError("production analysis worker requires object storage")
             if self.analysis_sandbox_launcher != "bubblewrap":
                 raise ValueError("production analysis worker requires bubblewrap isolation")
-            if not self.metrics_enabled or self.metrics_bind_host != "0.0.0.0":
+            if (
+                not self.metrics_enabled or self.metrics_bind_host != "0.0.0.0"  # nosec B104
+            ):
                 raise ValueError(
                     "production analysis worker requires externally scrapeable metrics"
                 )

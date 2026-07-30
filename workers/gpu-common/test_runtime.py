@@ -147,7 +147,7 @@ class WorkerRuntimeTests(unittest.TestCase):
                         "text": "source",
                         "source_refs": [{"page_index": 0}],
                     }
-                ]
+                ],
             },
         }
         with self.assertRaisesRegex(RuntimeError, "knowledge_evidence_required"):
@@ -307,9 +307,7 @@ class WorkerRuntimeTests(unittest.TestCase):
                     {
                         "block_id": block_id,
                         "snippet": snippet,
-                        "snippet_sha256": hashlib.sha256(
-                            snippet.encode()
-                        ).hexdigest(),
+                        "snippet_sha256": hashlib.sha256(snippet.encode()).hexdigest(),
                     }
                 ],
             }

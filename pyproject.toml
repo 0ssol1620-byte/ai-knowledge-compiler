@@ -117,7 +117,12 @@ markers = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-extend-exclude = ["benchmark/reports", "migrations/versions", "work"]
+extend-exclude = [
+  "benchmark/reports",
+  "docs/masterplan",
+  "migrations/versions",
+  "work",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "SIM", "RUF"]

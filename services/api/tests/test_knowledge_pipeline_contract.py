@@ -65,9 +65,7 @@ def _stage_c_input(*, equivalent: bool) -> StageCInput:
                     "block.two",
                     title="Access control" if equivalent else "Invoice total",
                     summary=(
-                        "Project authorization rules"
-                        if equivalent
-                        else "Quarterly currency amount"
+                        "Project authorization rules" if equivalent else "Quarterly currency amount"
                     ),
                     tags=["security"] if equivalent else ["finance"],
                 ),
@@ -198,8 +196,7 @@ def test_merge_group_cannot_hide_an_unrelated_orphan_candidate() -> None:
                         "block.three",
                     ],
                     "reason": (
-                        "Two candidates match, but the third has no semantic "
-                        "supporting edge."
+                        "Two candidates match, but the third has no semantic supporting edge."
                     ),
                 }
             ],
@@ -216,9 +213,7 @@ def test_stage_d_requires_exact_acl_attestation_and_no_unverified_links() -> Non
     )
     tenant_id = "tenant.one"
     project_id = "project.one"
-    scope_hash = hashlib.sha256(
-        "\0".join((tenant_id, project_id)).encode()
-    ).hexdigest()
+    scope_hash = hashlib.sha256("\0".join((tenant_id, project_id)).encode()).hexdigest()
     stage_input = StageDInput.model_validate(
         {
             "unit_id": "stage.d.unit",

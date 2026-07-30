@@ -227,8 +227,7 @@ def validate_supply_chain_pins(errors: list[str]) -> None:
         errors.append(f"verified action pins are unused: {missing_actions}")
 
     image_pins = {
-        str(image): str(digest)
-        for image, digest in pins.get("container_images", {}).items()
+        str(image): str(digest) for image, digest in pins.get("container_images", {}).items()
     }
     dockerfiles = repository_dockerfiles()
     image_sources = [
@@ -268,9 +267,7 @@ def validate_supply_chain_pins(errors: list[str]) -> None:
         text = dockerfile.read_text(encoding="utf-8")
         for marker in ("COPY pyproject.toml uv.lock", "uv sync --locked --no-dev"):
             if marker not in text:
-                errors.append(
-                    f"{dockerfile.relative_to(ROOT)} must enforce locked production sync"
-                )
+                errors.append(f"{dockerfile.relative_to(ROOT)} must enforce locked production sync")
     for dockerfile in sorted((ROOT / "workers").glob("gpu-*/Dockerfile")):
         text = dockerfile.read_text(encoding="utf-8")
         for marker in (
@@ -278,9 +275,7 @@ def validate_supply_chain_pins(errors: list[str]) -> None:
             "uv sync --locked --no-dev",
         ):
             if marker not in text:
-                errors.append(
-                    f"{dockerfile.relative_to(ROOT)} must enforce the GPU lockfile"
-                )
+                errors.append(f"{dockerfile.relative_to(ROOT)} must enforce the GPU lockfile")
 
     workflow_text = "\n".join(
         path.read_text(encoding="utf-8")

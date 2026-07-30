@@ -46,7 +46,12 @@ test("real API journey preserves provenance through export", async ({
   await page.getByRole("link", { name: "워크스페이스 열기" }).click();
   await page.waitForURL("http://127.0.0.1:3100/home");
   await expect(
-    page.getByRole("heading", { name: "원문에서 검증 가능한 지식까지" }),
+    page.getByRole("heading", { name: "워크스페이스" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "새 업로드" }).click();
+  await page.waitForURL("http://127.0.0.1:3100/quick-convert");
+  await expect(
+    page.getByRole("heading", { name: "새 변환 시작" }),
   ).toBeVisible();
 
   await page.locator('input[type="file"]').setInputFiles({

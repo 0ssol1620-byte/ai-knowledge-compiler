@@ -200,10 +200,13 @@ async def test_transaction_metrics_commit_and_rollback_semantics() -> None:
             await session.rollback()
             await session.commit()
         assert committed == ["committed"]
-        assert _counter_value(
-            AUDIT_WRITE_FAILURE,
-            "akc_audit_write_failure_total",
-        ) == audit_failures + 1
+        assert (
+            _counter_value(
+                AUDIT_WRITE_FAILURE,
+                "akc_audit_write_failure_total",
+            )
+            == audit_failures + 1
+        )
     finally:
         await engine.dispose()
 

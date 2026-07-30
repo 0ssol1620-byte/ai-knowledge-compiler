@@ -26,9 +26,7 @@ VISUAL_RASTER_MAX_DIMENSION = 20_000
 VISUAL_RASTER_MAX_PIXELS = 40_000_000
 VISUAL_PROMPT_REVISION = (
     "sha256:"
-    + hashlib.sha256(
-        b"akc:paddleocr-vl:page-parse:strict-cir-visual-page-1.0.0"
-    ).hexdigest()
+    + hashlib.sha256(b"akc:paddleocr-vl:page-parse:strict-cir-visual-page-1.0.0").hexdigest()
 )
 
 Identifier = Annotated[
@@ -114,8 +112,7 @@ class VisualTableBlock(_VisualBlockBase):
     @model_validator(mode="after")
     def require_cell_confidence(self) -> VisualTableBlock:
         if any(
-            cell.origin != "ocr_extracted" or cell.confidence is None
-            for cell in self.table.cells
+            cell.origin != "ocr_extracted" or cell.confidence is None for cell in self.table.cells
         ):
             raise ValueError("visual table cells require OCR origin and confidence")
         return self
@@ -209,14 +206,8 @@ class VisualPageResult(_StrictModel):
                 not isinstance(key, str)
                 or not key
                 or len(key) > 80
-                or not (
-                    item is None
-                    or isinstance(item, (str, int, float, bool))
-                )
-                or (
-                    isinstance(item, float)
-                    and not math.isfinite(item)
-                )
+                or not (item is None or isinstance(item, (str, int, float, bool)))
+                or (isinstance(item, float) and not math.isfinite(item))
                 or (isinstance(item, str) and len(item) > 160)
             ):
                 raise ValueError("invalid visual metric")
@@ -233,9 +224,7 @@ class VisualPageResult(_StrictModel):
             raise ValueError("visual result token confidence evidence exceeds bound")
         diagnostic_characters = sum(len(item) for item in self.warnings)
         diagnostic_characters += sum(
-            len(item)
-            for block in self.blocks
-            for item in block.quality_flags
+            len(item) for block in self.blocks for item in block.quality_flags
         )
         for metrics in (self.provider_metrics, self.metrics):
             diagnostic_characters += sum(
@@ -361,9 +350,7 @@ def visual_attestation(
         nested_source_ref_count += len(block.source_refs)
         if isinstance(block, VisualTableBlock):
             nested_source_ref_count += len(block.table.source_refs)
-            nested_source_ref_count += sum(
-                len(cell.source_refs) for cell in block.table.cells
-            )
+            nested_source_ref_count += sum(len(cell.source_refs) for cell in block.table.cells)
     return {
         "artifact_contract": VISUAL_ARTIFACT_CONTRACT,
         "schema_version": VISUAL_RESULT_SCHEMA_VERSION,
@@ -374,8 +361,6 @@ def visual_attestation(
         "input_size_bytes": input_size_bytes,
         "block_count": len(result.blocks),
         "source_ref_count": nested_source_ref_count,
-        "confidence_count": sum(
-            1 + len(block.token_confidences) for block in result.blocks
-        ),
+        "confidence_count": sum(1 + len(block.token_confidences) for block in result.blocks),
         "verification_present": int(result.verification is not None),
     }

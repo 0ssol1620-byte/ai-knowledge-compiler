@@ -155,10 +155,7 @@ class FakePaymentProvider:
         provider_id = f"fake_co_{checkout.id.hex}"
         return ProviderCheckout(
             provider_checkout_id=provider_id,
-            checkout_url=(
-                "http://localhost:3000/billing/fake-checkout"
-                f"?checkout_id={checkout.id}"
-            ),
+            checkout_url=(f"http://localhost:3000/billing/fake-checkout?checkout_id={checkout.id}"),
             status="open",
         )
 
@@ -242,9 +239,7 @@ def _uuid(value: Any, *, field: str) -> uuid.UUID:
     try:
         parsed = uuid.UUID(str(value))
     except (TypeError, ValueError) as exc:
-        raise PaymentWebhookError(
-            f"PAYMENT_WEBHOOK_INVALID_{field.upper()}"
-        ) from exc
+        raise PaymentWebhookError(f"PAYMENT_WEBHOOK_INVALID_{field.upper()}") from exc
     if str(parsed) != str(value).lower():
         raise PaymentWebhookError(f"PAYMENT_WEBHOOK_INVALID_{field.upper()}")
     return parsed
@@ -556,9 +551,7 @@ def _credits_for_minor(payment: Payment, amount_minor: int) -> Decimal:
     if amount_minor >= payment.amount_minor:
         return Decimal(payment.credits)
     return (
-        Decimal(payment.credits)
-        * Decimal(amount_minor)
-        / Decimal(payment.amount_minor)
+        Decimal(payment.credits) * Decimal(amount_minor) / Decimal(payment.amount_minor)
     ).quantize(_CREDIT_QUANTUM, rounding=ROUND_DOWN)
 
 
@@ -568,9 +561,7 @@ async def _locked_credit_account(
     tenant_id: uuid.UUID,
 ) -> CreditAccount:
     account = await session.scalar(
-        select(CreditAccount)
-        .where(CreditAccount.tenant_id == tenant_id)
-        .with_for_update()
+        select(CreditAccount).where(CreditAccount.tenant_id == tenant_id).with_for_update()
     )
     if account is None:
         account = CreditAccount(tenant_id=tenant_id)
@@ -599,7 +590,7 @@ async def _existing_reversal(
                 Reversal.tenant_id == tenant_id,
                 Reversal.operation_key == operation_key,
             )
-        )
+        ),
     )
 
 
@@ -912,14 +903,8 @@ async def _chargeback_dispute(
             payment=payment,
             dispute=dispute,
             event=event,
-            operation_key=(
-                f"dispute:{dispute.id}:chargeback-available:{operation_suffix}"
-            ),
-            action=(
-                "chargeback"
-                if event is not None
-                else "debt_recovery"
-            ),
+            operation_key=(f"dispute:{dispute.id}:chargeback-available:{operation_suffix}"),
+            action=("chargeback" if event is not None else "debt_recovery"),
             requested=remaining if event is not None else Decimal("0"),
             applied=applied,
             unrecovered_after=outstanding,
@@ -1124,17 +1109,13 @@ async def _adverse_minor_total(
         )
         or 0
     )
-    dispute_statement = select(
-        func.coalesce(func.sum(Dispute.amount_minor), 0)
-    ).where(
+    dispute_statement = select(func.coalesce(func.sum(Dispute.amount_minor), 0)).where(
         Dispute.tenant_id == payment.tenant_id,
         Dispute.payment_id == payment.id,
         Dispute.status == "lost",
     )
     if exclude_dispute_id is not None:
-        dispute_statement = dispute_statement.where(
-            Dispute.id != exclude_dispute_id
-        )
+        dispute_statement = dispute_statement.where(Dispute.id != exclude_dispute_id)
     lost = int(await session.scalar(dispute_statement) or 0)
     return refunded + lost + include_refund + include_lost_dispute
 

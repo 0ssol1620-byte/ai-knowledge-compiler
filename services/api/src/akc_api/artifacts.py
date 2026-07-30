@@ -255,10 +255,7 @@ def _has_attested_compile_revision(value: Any) -> bool:
     provenance = value.compile_provenance
     if not any(item is not None for item in identity) and not provenance:
         return False
-    if (
-        not all(isinstance(item, str) and item for item in identity)
-        or not provenance
-    ):
+    if not all(isinstance(item, str) and item for item in identity) or not provenance:
         raise ValueError("knowledge compile revision identity is incomplete")
     return True
 

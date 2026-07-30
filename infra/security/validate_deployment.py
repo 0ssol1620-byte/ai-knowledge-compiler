@@ -12,6 +12,15 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# Repository tooling can share the documented AKC_* namespace without being
+# injected into any runtime service. Keep these names explicit so a typo still
+# fails validation and deployment manifests remain restricted to Settings
+# fields.
+TOOLING_ENVIRONMENT_NAMES = {
+    "AKC_DART_API_KEY",
+    "AKC_DART_CREDENTIAL_FILE",
+}
+
 
 class _UniqueKeyLoader(yaml.SafeLoader):
     """Safe YAML loader that rejects silently shadowed mapping keys."""
@@ -89,9 +98,7 @@ def _settings_environment_names(path: Path, class_name: str) -> set[str]:
     raise RuntimeError(f"{class_name} class was not found in {path}")
 
 
-def _check_known_akc_keys(
-    source: str, keys: set[str], known: set[str], errors: list[str]
-) -> None:
+def _check_known_akc_keys(source: str, keys: set[str], known: set[str], errors: list[str]) -> None:
     unknown = sorted(key for key in keys if key.startswith("AKC_") and key not in known)
     if unknown:
         errors.append(f"{source} contains unknown Settings keys: {unknown}")
@@ -119,12 +126,15 @@ def validate_environment_contract(errors: list[str]) -> None:
         for line in (ROOT / ".env.example").read_text(encoding="utf-8").splitlines()
         if line.startswith("AKC_") and "=" in line
     }
-    _check_known_akc_keys(".env.example", example_keys, all_known, errors)
+    _check_known_akc_keys(
+        ".env.example",
+        example_keys,
+        all_known | TOOLING_ENVIRONMENT_NAMES,
+        errors,
+    )
     missing_example_keys = sorted(all_known - example_keys)
     if missing_example_keys:
-        errors.append(
-            f".env.example is missing documented Settings keys: {missing_example_keys}"
-        )
+        errors.append(f".env.example is missing documented Settings keys: {missing_example_keys}")
 
     compose = _load_yaml(ROOT / "docker-compose.dev.yml")
     services = compose.get("services", {})
@@ -193,16 +203,11 @@ def validate_environment_contract(errors: list[str]) -> None:
         errors.append("Compose URL fetcher must assume its restricted role")
     if url_fetcher_environment.get("AKC_CLAMAV_ENABLED") != "true":
         errors.append("Compose URL fetcher must use ClamAV")
-    if (
-        url_fetcher_environment.get("AKC_ALLOW_DEVELOPMENT_ANTIVIRUS_BYPASS")
-        != "false"
-    ):
+    if url_fetcher_environment.get("AKC_ALLOW_DEVELOPMENT_ANTIVIRUS_BYPASS") != "false":
         errors.append("Compose URL fetcher must fail closed on scanner errors")
     if url_fetcher_environment.get("AKC_OBJECT_STORE_DRIVER") != "local":
         errors.append("Compose URL fetcher must share the reachable local object store")
-    url_fetcher_dockerfile = (
-        ROOT / "services/url-fetcher/Dockerfile"
-    ).read_text(encoding="utf-8")
+    url_fetcher_dockerfile = (ROOT / "services/url-fetcher/Dockerfile").read_text(encoding="utf-8")
     for marker in (
         "python:3.13-slim-bookworm@sha256:",
         "USER 10001:10001",
@@ -217,9 +222,7 @@ def validate_environment_contract(errors: list[str]) -> None:
         scheduler_known,
         errors,
     )
-    scheduler_healthcheck = (
-        services.get("scheduler", {}).get("healthcheck", {}).get("test", [])
-    )
+    scheduler_healthcheck = services.get("scheduler", {}).get("healthcheck", {}).get("test", [])
     if "--check" not in scheduler_healthcheck:
         errors.append("Compose scheduler must use its non-mutating database check")
     dispatch_environment = services.get("dispatch-worker", {}).get("environment", {})
@@ -270,9 +273,7 @@ def validate_environment_contract(errors: list[str]) -> None:
 
     config = _load_yaml(ROOT / "infra/kubernetes/base/configmap.yaml")
     config_data = config.get("data", {})
-    _check_known_akc_keys(
-        "Kubernetes akc-runtime ConfigMap", set(config_data), api_known, errors
-    )
+    _check_known_akc_keys("Kubernetes akc-runtime ConfigMap", set(config_data), api_known, errors)
     required_values = {
         "AKC_ENV": "production",
         "AKC_EXTERNAL_OCR_ENABLED": "false",
@@ -327,9 +328,9 @@ def validate_environment_contract(errors: list[str]) -> None:
         errors.append("Kubernetes dispatch worker must assume its restricted role")
     if dispatch_config.get("AKC_WEBHOOK_DELIVERY_ENABLED") != "false":
         errors.append("Kubernetes dispatch worker must disable webhook delivery")
-    analysis_config = _load_yaml(
-        ROOT / "infra/kubernetes/base/analysis-configmap.yaml"
-    ).get("data", {})
+    analysis_config = _load_yaml(ROOT / "infra/kubernetes/base/analysis-configmap.yaml").get(
+        "data", {}
+    )
     _check_known_akc_keys(
         "Kubernetes akc-analysis-runtime ConfigMap",
         set(analysis_config),
@@ -352,15 +353,12 @@ def validate_environment_contract(errors: list[str]) -> None:
     result_limit = int(analysis_config.get("AKC_ANALYSIS_MAX_RESULT_BYTES", 0))
     preview_pixels = int(analysis_config.get("AKC_PREVIEW_MAX_PIXELS", 0))
     if child_memory < (
-        (analysis_limit * 3)
-        + result_limit
-        + (preview_pixels * 4)
-        + (64 * 1024 * 1024)
+        (analysis_limit * 3) + result_limit + (preview_pixels * 4) + (64 * 1024 * 1024)
     ):
         errors.append("Kubernetes analysis child memory does not cover bounded working sets")
-    url_fetcher_config = _load_yaml(
-        ROOT / "infra/kubernetes/base/url-fetcher-configmap.yaml"
-    ).get("data", {})
+    url_fetcher_config = _load_yaml(ROOT / "infra/kubernetes/base/url-fetcher-configmap.yaml").get(
+        "data", {}
+    )
     _check_known_akc_keys(
         "Kubernetes akc-url-fetcher-runtime ConfigMap",
         set(url_fetcher_config),
@@ -380,9 +378,7 @@ def validate_environment_contract(errors: list[str]) -> None:
         if str(url_fetcher_config.get(key)) != expected:
             errors.append(f"Kubernetes URL fetcher {key} must be {expected!r}")
     lease = float(url_fetcher_config.get("AKC_URL_FETCH_LEASE_SECONDS", 0))
-    fetch_timeout = float(
-        url_fetcher_config.get("AKC_URL_FETCH_TOTAL_TIMEOUT_SECONDS", 0)
-    )
+    fetch_timeout = float(url_fetcher_config.get("AKC_URL_FETCH_TOTAL_TIMEOUT_SECONDS", 0))
     scan_timeout = float(url_fetcher_config.get("AKC_CLAMAV_TIMEOUT_SECONDS", 0))
     if lease <= fetch_timeout + scan_timeout:
         errors.append("Kubernetes URL fetch lease must cover fetch and scan timeouts")
@@ -408,9 +404,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
     base = ROOT / "infra/kubernetes/base"
     kustomization = _load_yaml(base / "kustomization.yaml")
     resource_paths = [base / path for path in kustomization.get("resources", [])]
-    documents = [
-        document for path in resource_paths for document in _load_yaml_documents(path)
-    ]
+    documents = [document for path in resource_paths for document in _load_yaml_documents(path)]
     by_kind: dict[str, list[dict[str, Any]]] = {}
     for document in documents:
         by_kind.setdefault(str(document.get("kind")), []).append(document)
@@ -419,9 +413,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
     if not by_kind.get("ResourceQuota") or not by_kind.get("LimitRange"):
         errors.append("Kubernetes base must define namespace resource guardrails")
 
-    deployments = {
-        item["metadata"]["name"]: item for item in by_kind.get("Deployment", [])
-    }
+    deployments = {item["metadata"]["name"]: item for item in by_kind.get("Deployment", [])}
     if set(deployments) != {
         "akc-api",
         "akc-web",
@@ -468,18 +460,14 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
                 for item in container.get("envFrom", [])
                 if item.get("secretRef")
             }
-            expected_secret = (
-                {
-                    "akc-scheduler": "akc-scheduler-secrets",
-                    "akc-dispatch-worker": "akc-dispatch-secrets",
-                    "akc-deletion-worker": "akc-deletion-secrets",
-                    "akc-gpu-worker": "akc-gpu-worker-secrets",
-                }[name]
-            )
+            expected_secret = {
+                "akc-scheduler": "akc-scheduler-secrets",
+                "akc-dispatch-worker": "akc-dispatch-secrets",
+                "akc-deletion-worker": "akc-deletion-secrets",
+                "akc-gpu-worker": "akc-gpu-worker-secrets",
+            }[name]
             if scheduler_secret_refs != {expected_secret}:
-                errors.append(
-                    f"{name} must use only its separate runtime secret"
-                )
+                errors.append(f"{name} must use only its separate runtime secret")
             startup = container.get("startupProbe", {}).get("exec", {}).get("command", [])
             ready = container.get("readinessProbe", {}).get("exec", {}).get("command", [])
             if "--check" not in startup or "--check" not in ready:
@@ -515,9 +503,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
             if pod_spec.get("runtimeClassName") != "gvisor":
                 errors.append("akc-analysis-worker must use the gvisor RuntimeClass")
             if (
-                container.get("securityContext", {})
-                .get("appArmorProfile", {})
-                .get("type")
+                container.get("securityContext", {}).get("appArmorProfile", {}).get("type")
                 != "RuntimeDefault"
             ):
                 errors.append("akc-analysis-worker must use the runtime AppArmor profile")
@@ -565,11 +551,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
 
     policies = by_kind.get("NetworkPolicy", [])
     default_deny = next(
-        (
-            item
-            for item in policies
-            if item.get("metadata", {}).get("name") == "default-deny"
-        ),
+        (item for item in policies if item.get("metadata", {}).get("name") == "default-deny"),
         None,
     )
     if default_deny is None or set(default_deny["spec"].get("policyTypes", [])) != {
@@ -581,8 +563,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         (
             item
             for item in policies
-            if item.get("metadata", {}).get("name")
-            == "url-fetcher-public-https-only"
+            if item.get("metadata", {}).get("name") == "url-fetcher-public-https-only"
         ),
         None,
     )
@@ -590,11 +571,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         errors.append("URL fetcher must declare an explicit public HTTPS egress policy")
     else:
         egress = url_public_policy.get("spec", {}).get("egress", [])
-        ports = {
-            int(port.get("port", 0))
-            for rule in egress
-            for port in rule.get("ports", [])
-        }
+        ports = {int(port.get("port", 0)) for rule in egress for port in rule.get("ports", [])}
         if ports != {443}:
             errors.append("URL fetcher public egress must allow only TCP 443")
         policy_text = json.dumps(url_public_policy, sort_keys=True)
@@ -610,9 +587,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
             "fe80::/10",
         ):
             if forbidden_cidr not in policy_text:
-                errors.append(
-                    f"URL fetcher public egress does not exclude {forbidden_cidr}"
-                )
+                errors.append(f"URL fetcher public egress does not exclude {forbidden_cidr}")
 
     hpas = {item["metadata"]["name"]: item for item in by_kind.get("HorizontalPodAutoscaler", [])}
     if set(hpas) != {
@@ -639,11 +614,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
     if not hosts or any(not host.endswith(".invalid") for host in hosts):
         errors.append("base Ingress hosts must remain non-routable .invalid placeholders")
     api_ingress = next(
-        (
-            item
-            for item in ingresses
-            if item.get("metadata", {}).get("name") == "akc-api"
-        ),
+        (item for item in ingresses if item.get("metadata", {}).get("name") == "akc-api"),
         None,
     )
     annotations = (api_ingress or {}).get("metadata", {}).get("annotations", {})
@@ -655,9 +626,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
 
     migration = _load_yaml(ROOT / "infra/kubernetes/jobs/migrate.yaml")
     migration_container = migration["spec"]["template"]["spec"]["containers"][0]
-    migration_pod_security = migration["spec"]["template"]["spec"].get(
-        "securityContext", {}
-    )
+    migration_pod_security = migration["spec"]["template"]["spec"].get("securityContext", {})
     if migration_pod_security.get("runAsUser") != 10001:
         errors.append("migration Job must use the API image's non-root user")
     if "replace-with-signed-digest" not in str(migration_container.get("image", "")):
@@ -665,9 +634,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
     if migration_container.get("args") != ["upgrade", "head"]:
         errors.append("migration Job must run an Alembic upgrade to head")
     _container_security_errors("akc-migrate", migration_container, errors)
-    secret_contract = (ROOT / "infra/kubernetes/secret-keys.md").read_text(
-        encoding="utf-8"
-    )
+    secret_contract = (ROOT / "infra/kubernetes/secret-keys.md").read_text(encoding="utf-8")
     for key in (
         "AKC_DATABASE_URL",
         "AKC_JWT_SECRET",
@@ -693,6 +660,8 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
     ):
         if secret_name not in secret_contract:
             errors.append(f"Kubernetes secret contract is missing {secret_name}")
+
+
 def validate_gpu_and_terraform_contract(errors: list[str]) -> None:
     runpod = _load_yaml(ROOT / "infra/runpod/endpoints.yaml")
     defaults = runpod.get("defaults", {})
@@ -706,9 +675,7 @@ def validate_gpu_and_terraform_contract(errors: list[str]) -> None:
     for key, expected in required.items():
         if defaults.get(key) != expected:
             errors.append(f"Runpod default {key} must be {expected!r}")
-    sensitive_reference_key = "_".join(
-        ("callback", "hmac", "secret", "from", "provider", "secret")
-    )
+    sensitive_reference_key = "_".join(("callback", "hmac", "secret", "from", "provider", "secret"))
     if defaults.get(sensitive_reference_key) is not True:
         errors.append("Runpod callback HMAC must come from the provider secret manager")
     for worker_path in sorted((ROOT / "workers").glob("gpu-*/worker.yaml")):
@@ -740,9 +707,7 @@ def validate_gpu_and_terraform_contract(errors: list[str]) -> None:
         if f"{storage_class} =" not in terraform:
             errors.append(f"Terraform storage topology is missing: {storage_class}")
 
-    monitoring = (ROOT / "infra/monitoring/prometheus-rules.yaml").read_text(
-        encoding="utf-8"
-    )
+    monitoring = (ROOT / "infra/monitoring/prometheus-rules.yaml").read_text(encoding="utf-8")
     if "AKCRequiredTelemetryContractMissing" not in monitoring:
         errors.append("monitoring must fail closed when required telemetry is absent")
     for series in (
@@ -759,12 +724,8 @@ def validate_gpu_and_terraform_contract(errors: list[str]) -> None:
     ):
         if f"absent({series}" not in monitoring:
             errors.append(f"monitoring does not fail closed for missing {series}")
-    service_monitors = _load_yaml_documents(
-        ROOT / "infra/monitoring/service-monitors.yaml"
-    )
-    monitor_names = {
-        monitor.get("metadata", {}).get("name") for monitor in service_monitors
-    }
+    service_monitors = _load_yaml_documents(ROOT / "infra/monitoring/service-monitors.yaml")
+    monitor_names = {monitor.get("metadata", {}).get("name") for monitor in service_monitors}
     if monitor_names != {"akc-api", "akc-workers"}:
         errors.append("monitoring must scrape the API and durable worker services")
     workers_monitor = next(
@@ -783,9 +744,7 @@ def validate_gpu_and_terraform_contract(errors: list[str]) -> None:
     )
     if "akc-url-fetcher" not in worker_values:
         errors.append("monitoring must scrape the URL fetcher metrics service")
-    collector = (
-        ROOT / "infra/monitoring/otel-collector.yaml"
-    ).read_text(encoding="utf-8")
+    collector = (ROOT / "infra/monitoring/otel-collector.yaml").read_text(encoding="utf-8")
     for forbidden_attribute in (
         "document.content",
         "source.text",
@@ -798,9 +757,7 @@ def validate_gpu_and_terraform_contract(errors: list[str]) -> None:
         "gen_ai.completion",
     ):
         if f"key: {forbidden_attribute}" not in collector:
-            errors.append(
-                f"OpenTelemetry privacy processor must delete {forbidden_attribute}"
-            )
+            errors.append(f"OpenTelemetry privacy processor must delete {forbidden_attribute}")
 
 
 def main() -> int:

@@ -165,9 +165,7 @@ async def _seed(
                 confidence=1.0,
                 revision=1,
             )
-            for index, (block_id, text) in enumerate(
-                zip(ids.block_ids, block_texts, strict=True)
-            )
+            for index, (block_id, text) in enumerate(zip(ids.block_ids, block_texts, strict=True))
         )
         await session.commit()
     return ids
@@ -231,10 +229,7 @@ def _stage_result(
         )
     elif stage == "B":
         evidence = list(
-            dict.fromkeys(
-                fragment["evidence_block_id"]
-                for fragment in stage_input["fragments"]
-            )
+            dict.fromkeys(fragment["evidence_block_id"] for fragment in stage_input["fragments"])
         )
         base.update(
             {
@@ -295,11 +290,7 @@ async def _queued(
             )
         ).all()
     )
-    return [
-        row
-        for row in rows
-        if stage is None or row.options.get("knowledge_stage") == stage
-    ]
+    return [row for row in rows if stage is None or row.options.get("knowledge_stage") == stage]
 
 
 async def _complete_stage(
@@ -407,9 +398,7 @@ async def _drive_pipeline(
 async def test_staged_qwen_resumes_without_whole_document_or_double_charge(
     tmp_path: Path,
 ) -> None:
-    engine = create_async_engine(
-        f"sqlite+aiosqlite:///{(tmp_path / 'durable-qwen.db').as_posix()}"
-    )
+    engine = create_async_engine(f"sqlite+aiosqlite:///{(tmp_path / 'durable-qwen.db').as_posix()}")
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
     sessions = async_sessionmaker(
@@ -435,18 +424,12 @@ async def test_staged_qwen_resumes_without_whole_document_or_double_charge(
             "D",
         ]
         assert all(
-            row.options["artifact_contract"]
-            == KNOWLEDGE_PIPELINE_ARTIFACT_CONTRACT
+            row.options["artifact_contract"] == KNOWLEDGE_PIPELINE_ARTIFACT_CONTRACT
             for row in invocations
         )
-        assert all(
-            "A fact grounded" not in json.dumps(row.options)
-            for row in invocations
-        )
+        assert all("A fact grounded" not in json.dumps(row.options) for row in invocations)
         stage_inputs = {
-            row.options["knowledge_stage"]: json.loads(
-                store.objects[row.input_object_key]
-            )
+            row.options["knowledge_stage"]: json.loads(store.objects[row.input_object_key])
             for row in invocations
         }
         assert stage_inputs["A"]["blocks"][0]["preview"]
@@ -493,9 +476,7 @@ async def test_staged_qwen_resumes_without_whole_document_or_double_charge(
 async def test_recompile_preserves_old_note_and_activates_new_revision(
     tmp_path: Path,
 ) -> None:
-    engine = create_async_engine(
-        f"sqlite+aiosqlite:///{(tmp_path / 'recompile.db').as_posix()}"
-    )
+    engine = create_async_engine(f"sqlite+aiosqlite:///{(tmp_path / 'recompile.db').as_posix()}")
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
     sessions = async_sessionmaker(
@@ -637,6 +618,4 @@ def test_large_multisection_document_is_bounded_per_b_unit() -> None:
         body = canonical_json_bytes(value)
         assert len(body) <= 1024 * 1024
         assert len(value.fragments) <= 32
-        assert sum(len(fragment.text.encode()) for fragment in value.fragments) <= (
-            512 * 1024
-        )
+        assert sum(len(fragment.text.encode()) for fragment in value.fragments) <= (512 * 1024)

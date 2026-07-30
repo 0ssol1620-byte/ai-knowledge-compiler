@@ -138,7 +138,13 @@
     "relatedNoteCandidate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["targetId", "relation", "reason", "sourceBlockIds", "confidence"],
+      "required": [
+        "targetId",
+        "relation",
+        "reason",
+        "sourceBlockIds",
+        "confidence"
+      ],
       "properties": {
         "targetId": { "$ref": "#/$defs/stableId" },
         "relation": { "type": "string", "minLength": 1, "maxLength": 500 },
@@ -266,10 +272,7 @@
         "resolution": { "type": "string", "maxLength": 2000 },
         "requiresReview": { "type": "boolean" },
         "evidenceBlockIds": {
-          "allOf": [
-            { "$ref": "#/$defs/evidenceIds" },
-            { "minItems": 2 }
-          ]
+          "allOf": [{ "$ref": "#/$defs/evidenceIds" }, { "minItems": 2 }]
         }
       }
     },
@@ -386,10 +389,7 @@
                 "maxLength": 2000
               },
               "parentCandidateId": {
-                "oneOf": [
-                  { "$ref": "#/$defs/unitId" },
-                  { "type": "null" }
-                ]
+                "oneOf": [{ "$ref": "#/$defs/unitId" }, { "type": "null" }]
               }
             }
           }

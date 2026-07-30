@@ -464,9 +464,7 @@ async def test_concurrent_owner_removal_cannot_remove_last_owner(
         )
 
     assert [first_delete.status_code, second_delete.status_code].count(204) == 1
-    assert {first_delete.status_code, second_delete.status_code}.issubset(
-        {204, 401, 403, 404, 409}
-    )
+    assert {first_delete.status_code, second_delete.status_code}.issubset({204, 401, 403, 404, 409})
     async with app.state.database.sessions() as session:
         remaining_owners = await session.scalar(
             select(func.count(Membership.user_id)).where(

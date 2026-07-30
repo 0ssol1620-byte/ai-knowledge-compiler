@@ -4,12 +4,12 @@ API keys inherit the creating member's current tenant role, but a role never
 widens the key's explicit scope. Removing or disabling that member invalidates
 the key.
 
-| Scope | Allowed requests |
-|---|---|
-| `api:read` | Any authenticated `GET`, `HEAD`, or `OPTIONS` API request |
-| `api:write` | Authenticated mutation requests, still subject to RBAC and idempotency |
-| `events:read` | Only `/v1/jobs/{job_id}/events` and `/events/replay` |
-| `exports:read` | Only `/v1/exports/{export_id}` and `/download` |
+| Scope          | Allowed requests                                                       |
+| -------------- | ---------------------------------------------------------------------- |
+| `api:read`     | Any authenticated `GET`, `HEAD`, or `OPTIONS` API request              |
+| `api:write`    | Authenticated mutation requests, still subject to RBAC and idempotency |
+| `events:read`  | Only `/v1/jobs/{job_id}/events` and `/events/replay`                   |
+| `exports:read` | Only `/v1/exports/{export_id}` and `/download`                         |
 
 An empty scope list is invalid. Specialized read scopes do not grant project,
 document, settings, credit, analytics, or other tenant reads. `api:write` does

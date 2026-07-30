@@ -8,15 +8,15 @@ claim_policy:
   official_claims_separate: true
   failed_pages_count_as_failures: true
 profiles:
-  - {id: ko_native, glob: "corpus/ko-native-pdf/**/*", target_pages: 200}
-  - {id: ko_scan, glob: "corpus/ko-scan/**/*", target_pages: 200}
-  - {id: en_native, glob: "corpus/en-native-pdf/**/*", target_pages: 100}
-  - {id: tables, glob: "corpus/tables/**/*", target_pages: 150}
-  - {id: formulas, glob: "corpus/formulas/**/*", target_pages: 100}
-  - {id: slides, glob: "corpus/slides/**/*", target_pages: 100}
-  - {id: handwriting, glob: "corpus/handwriting/**/*", target_pages: 100}
-  - {id: distorted, glob: "corpus/rotated-distorted/**/*", target_pages: 150}
-  - {id: adversarial, glob: "corpus/adversarial/**/*", target_pages: 100}
+  - { id: ko_native, glob: "corpus/ko-native-pdf/**/*", target_pages: 200 }
+  - { id: ko_scan, glob: "corpus/ko-scan/**/*", target_pages: 200 }
+  - { id: en_native, glob: "corpus/en-native-pdf/**/*", target_pages: 100 }
+  - { id: tables, glob: "corpus/tables/**/*", target_pages: 150 }
+  - { id: formulas, glob: "corpus/formulas/**/*", target_pages: 100 }
+  - { id: slides, glob: "corpus/slides/**/*", target_pages: 100 }
+  - { id: handwriting, glob: "corpus/handwriting/**/*", target_pages: 100 }
+  - { id: distorted, glob: "corpus/rotated-distorted/**/*", target_pages: 150 }
+  - { id: adversarial, glob: "corpus/adversarial/**/*", target_pages: 100 }
 providers:
   - native_document
   - paddleocr_vl_1_6

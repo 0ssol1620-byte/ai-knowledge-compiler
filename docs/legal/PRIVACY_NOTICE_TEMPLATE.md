@@ -3,17 +3,17 @@
 > Privacy counsel must supply legal bases, entity/contact details, jurisdiction
 > rights, transfer mechanisms, and final retention periods.
 
-| Data | Purpose | Default storage | Sharing | Retention owner |
-|---|---|---|---|---|
-| account and membership | authenticate, authorize, support | control-plane DB | auth provider | Privacy |
-| uploaded source | requested processing | private object storage | none by default | Product/Privacy |
-| derived blocks/assets | review and export | private object storage/DB | none by default | Product/Privacy |
-| optional Precision pages | higher-quality processing | scoped provider transmission | disclosed provider only | Privacy |
-| job/quality/cost telemetry | operate, secure, bill | logs/metrics without content | observability processors | SRE |
-| user corrections | provide editor/reprocessing | project data | none by default | Product/Privacy |
-| opt-in training candidate | stated improvement purpose | separate restricted pool | approved training stack | ML/Privacy |
-| payment reference | billing/refund | billing DB/provider | payment processor | Finance |
-| audit/deletion receipt | security/compliance evidence | immutable audit store | auditors when authorized | Security |
+| Data                       | Purpose                          | Default storage              | Sharing                  | Retention owner |
+| -------------------------- | -------------------------------- | ---------------------------- | ------------------------ | --------------- |
+| account and membership     | authenticate, authorize, support | control-plane DB             | auth provider            | Privacy         |
+| uploaded source            | requested processing             | private object storage       | none by default          | Product/Privacy |
+| derived blocks/assets      | review and export                | private object storage/DB    | none by default          | Product/Privacy |
+| optional Precision pages   | higher-quality processing        | scoped provider transmission | disclosed provider only  | Privacy         |
+| job/quality/cost telemetry | operate, secure, bill            | logs/metrics without content | observability processors | SRE             |
+| user corrections           | provide editor/reprocessing      | project data                 | none by default          | Product/Privacy |
+| opt-in training candidate  | stated improvement purpose       | separate restricted pool     | approved training stack  | ML/Privacy      |
+| payment reference          | billing/refund                   | billing DB/provider          | payment processor        | Finance         |
+| audit/deletion receipt     | security/compliance evidence     | immutable audit store        | auditors when authorized | Security        |
 
 ## Required disclosures
 

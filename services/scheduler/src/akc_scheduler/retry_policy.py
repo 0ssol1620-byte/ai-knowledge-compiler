@@ -118,9 +118,7 @@ def decide_retry(
     if not 0 <= jitter_ratio <= 1 or not 0 <= random_value <= 1:
         raise ValueError("invalid retry jitter")
 
-    category_number = (
-        attempt_number if category_attempt_number is None else category_attempt_number
-    )
+    category_number = attempt_number if category_attempt_number is None else category_attempt_number
     if category_number < 1:
         raise ValueError("category attempt count must be positive")
     category = classify_retry_error(code)

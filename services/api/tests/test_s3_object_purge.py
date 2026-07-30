@@ -63,9 +63,7 @@ class FakeVersionedS3:
                 continue
             self.deleted.append((key, version_id))
             self.entries = [
-                entry
-                for entry in self.entries
-                if (entry[0], entry[1]) != (key, version_id)
+                entry for entry in self.entries if (entry[0], entry[1]) != (key, version_id)
             ]
         return {"Errors": errors}
 
@@ -112,9 +110,7 @@ async def test_versioned_delete_removes_every_version_and_marker_across_pages() 
         ("tenant/document.bin", "version-2"),
         ("tenant/document.bin", "delete-marker-1"),
     }
-    assert client.entries == [
-        ("tenant/document.bin-neighbor", "neighbor-version", False)
-    ]
+    assert client.entries == [("tenant/document.bin-neighbor", "neighbor-version", False)]
     assert client.list_calls >= 3
     assert await store.delete("source", "tenant/document.bin") is False
 

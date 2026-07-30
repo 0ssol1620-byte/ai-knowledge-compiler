@@ -12,4 +12,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     return create_application(settings)
 
+
 __all__ = ["create_app"]

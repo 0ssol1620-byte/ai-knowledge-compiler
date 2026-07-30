@@ -771,17 +771,12 @@ def _validate_legacy_knowledge_output(
         "conflicts",
     }:
         raise SafeWorkerError("invalid_knowledge_bundle")
-    if (
-        bundle.get("schemaVersion") != "knowledge-1.0.0"
-        or bundle.get("documentId") != knowledge_input.get("document_id")
-    ):
+    if bundle.get("schemaVersion") != "knowledge-1.0.0" or bundle.get(
+        "documentId"
+    ) != knowledge_input.get("document_id"):
         raise SafeWorkerError("knowledge_bundle_scope_mismatch")
     notes = bundle.get("notes")
-    if (
-        not isinstance(notes, list)
-        or (require_notes and not notes)
-        or len(notes) > 10_000
-    ):
+    if not isinstance(notes, list) or (require_notes and not notes) or len(notes) > 10_000:
         raise SafeWorkerError("invalid_adapter_notes")
     note_ids: set[str] = set()
     for note in notes:
@@ -842,9 +837,7 @@ def _validate_legacy_knowledge_output(
         }:
             raise SafeWorkerError("invalid_adapter_review_status")
         summary = note.get("summary")
-        if summary is not None and (
-            not isinstance(summary, str) or len(summary) > 2_000_000
-        ):
+        if summary is not None and (not isinstance(summary, str) or len(summary) > 2_000_000):
             raise SafeWorkerError("invalid_adapter_note_summary")
         evidence = note.get("evidenceBlockIds")
         if (
@@ -1005,8 +998,7 @@ def _validate_legacy_knowledge_output(
     if (
         options.get("artifact_contract") != "akc-knowledge-bundle-1.0.0"
         or metrics.get("prompt_sha256") != options.get("prompt_revision")
-        or metrics.get("knowledge_schema_sha256")
-        != options.get("knowledge_schema_sha256")
+        or metrics.get("knowledge_schema_sha256") != options.get("knowledge_schema_sha256")
         or metrics.get("unsupported_claim_count") != 0
     ):
         raise SafeWorkerError("knowledge_attestation_mismatch")
@@ -1051,18 +1043,14 @@ def _validate_classification(
         raise SafeWorkerError("invalid_knowledge_classification")
     document_type = value["documentType" if camel_case else "document_type"]
     language = value["language"]
-    structure_profile = value[
-        "structureProfile" if camel_case else "structure_profile"
-    ]
+    structure_profile = value["structureProfile" if camel_case else "structure_profile"]
     risk_tier = value["riskTier" if camel_case else "risk_tier"]
     if any(
         not isinstance(item, str) or not item or len(item) > 500
         for item in (document_type, language, structure_profile, risk_tier)
     ):
         raise SafeWorkerError("invalid_knowledge_classification")
-    secondary_types = value[
-        "secondaryTypes" if camel_case else "secondary_types"
-    ]
+    secondary_types = value["secondaryTypes" if camel_case else "secondary_types"]
     languages = value["languages"]
     topics = value["topics"]
     domain = value["domain"]
@@ -1087,19 +1075,14 @@ def _validate_classification(
         or any(not isinstance(flag, bool) for flag in contains.values())
     ):
         raise SafeWorkerError("invalid_knowledge_classification")
-    evidence = value[
-        "evidenceBlockIds" if camel_case else "evidence_block_ids"
-    ]
+    evidence = value["evidenceBlockIds" if camel_case else "evidence_block_ids"]
     if (
         not isinstance(evidence, list)
         or not evidence
         or len(evidence) > 10_000
         or len(evidence) != len(set(evidence))
         or any(not isinstance(item, str) or not item for item in evidence)
-        or (
-            available_evidence is not None
-            and not set(evidence).issubset(available_evidence)
-        )
+        or (available_evidence is not None and not set(evidence).issubset(available_evidence))
     ):
         raise SafeWorkerError("invalid_knowledge_classification")
     _validate_confidence(value["confidence"])
@@ -1130,10 +1113,7 @@ def _validate_stage_a_result(
     section_ids: set[str] = set()
     observed: list[str] = []
     for section in sections:
-        if (
-            not isinstance(section, dict)
-            or set(section) != {"sectionId", "title", "blockIds"}
-        ):
+        if not isinstance(section, dict) or set(section) != {"sectionId", "title", "blockIds"}:
             raise SafeWorkerError("invalid_knowledge_stage_a_section")
         section_id = _validate_identifier(section.get("sectionId"), "section_id")
         if len(section_id) > 128 or section_id in section_ids:
@@ -1193,12 +1173,8 @@ def _validate_stage_b_result(
         },
         "provider_metrics": {
             "prompt_sha256": output["provider_metrics"].get("prompt_sha256"),
-            "knowledge_schema_sha256": output["provider_metrics"].get(
-                "knowledge_schema_sha256"
-            ),
-            "unsupported_claim_count": output["provider_metrics"].get(
-                "unsupported_claim_count"
-            ),
+            "knowledge_schema_sha256": output["provider_metrics"].get("knowledge_schema_sha256"),
+            "unsupported_claim_count": output["provider_metrics"].get("unsupported_claim_count"),
         },
     }
     _validate_legacy_knowledge_output(
@@ -1291,8 +1267,7 @@ def _validate_stage_c_result(
             or not group_members
             or len(group_members) != len(set(group_members))
             or any(
-                not isinstance(member, str) or member not in expected
-                for member in group_members
+                not isinstance(member, str) or member not in expected for member in group_members
             )
             or canonical not in group_members
         ):
@@ -1314,8 +1289,7 @@ def _validate_stage_c_result(
             or set(evidence) != expected_evidence
             or not isinstance(reason, str)
             or not reason.strip()
-            or reason.casefold().strip()
-            in {"duplicate", "duplicates", "merge", "same", "similar"}
+            or reason.casefold().strip() in {"duplicate", "duplicates", "merge", "same", "similar"}
         ):
             raise SafeWorkerError("invalid_knowledge_stage_c_group")
         if len(group_members) > 1:
@@ -1350,17 +1324,13 @@ def _validate_stage_c_result(
                 }
                 for member in group_members
             ]
-            adjacency: dict[int, set[int]] = {
-                index: set() for index in range(len(group_members))
-            }
+            adjacency: dict[int, set[int]] = {index: set() for index in range(len(group_members))}
             for left in range(len(group_members)):
                 for right in range(left + 1, len(group_members)):
                     overlap = semantic_tokens[left] & semantic_tokens[right]
                     union = semantic_tokens[left] | semantic_tokens[right]
                     if semantic_values[left] & semantic_values[right] or (
-                        len(overlap) >= 2
-                        and union
-                        and len(overlap) / len(union) >= 0.5
+                        len(overlap) >= 2 and union and len(overlap) / len(union) >= 0.5
                     ):
                         adjacency[left].add(right)
                         adjacency[right].add(left)
@@ -1410,11 +1380,7 @@ def _validate_stage_d_result(
         raise SafeWorkerError("invalid_knowledge_stage_result")
     links = result.get("links")
     status = knowledge_input.get("retrieval_status")
-    if (
-        not isinstance(links, list)
-        or len(links) > 1_000
-        or (status != "ready" and links)
-    ):
+    if not isinstance(links, list) or len(links) > 1_000 or (status != "ready" and links):
         raise SafeWorkerError("invalid_knowledge_stage_d_links")
     sources = {
         candidate["candidate_id"]: set(candidate["evidence_block_ids"])
@@ -1481,13 +1447,11 @@ def _validate_pipeline_knowledge_output(
     ):
         raise SafeWorkerError("knowledge_stage_scope_mismatch")
     if (
-        options.get("artifact_contract")
-        != "akc-knowledge-pipeline-stage-1.0.0"
+        options.get("artifact_contract") != "akc-knowledge-pipeline-stage-1.0.0"
         or options.get("knowledge_stage") != stage
         or options.get("knowledge_unit_id") != unit_id
         or metrics.get("prompt_sha256") != options.get("prompt_revision")
-        or metrics.get("knowledge_schema_sha256")
-        != options.get("knowledge_schema_sha256")
+        or metrics.get("knowledge_schema_sha256") != options.get("knowledge_schema_sha256")
         or metrics.get("knowledge_stage") != stage
         or metrics.get("knowledge_unit_id") != unit_id
         or metrics.get("unsupported_claim_count") != 0
@@ -1508,8 +1472,7 @@ def _validate_pipeline_knowledge_output(
         evidence_ids = {
             fragment["evidence_block_id"]
             for fragment in knowledge_input.get("fragments", [])
-            if isinstance(fragment, dict)
-            and isinstance(fragment.get("evidence_block_id"), str)
+            if isinstance(fragment, dict) and isinstance(fragment.get("evidence_block_id"), str)
         }
         _validate_stage_b_result(
             result,
@@ -1587,7 +1550,8 @@ def _legacy_knowledge_input(
         raise SafeWorkerError("knowledge_input_schema_invalid") from exc
     if (
         not isinstance(value, dict)
-        or set(value) != {
+        or set(value)
+        != {
             "schema_version",
             "document_id",
             "document_version_id",
@@ -1646,9 +1610,7 @@ def _validate_stage_semantic_descriptor(
     if not isinstance(candidate, dict) or set(candidate) != common:
         raise SafeWorkerError("knowledge_semantic_descriptor_invalid")
     identity = candidate.get(expected_id_field)
-    title_field = (
-        "normalized_title" if expected_id_field == "candidate_id" else "title"
-    )
+    title_field = "normalized_title" if expected_id_field == "candidate_id" else "title"
     title = candidate.get(title_field)
     summary = candidate.get("summary")
     tags = candidate.get("tags")
@@ -1729,9 +1691,7 @@ def _validate_stage_semantic_descriptor(
                 or not set(claim_evidence).issubset(available)
                 or not isinstance(signature, str)
                 or signature
-                != hashlib.sha256(
-                    "\0".join((text, *claim_evidence)).encode()
-                ).hexdigest()
+                != hashlib.sha256("\0".join((text, *claim_evidence)).encode()).hexdigest()
             ):
                 raise SafeWorkerError("knowledge_semantic_descriptor_invalid")
     return available
@@ -1752,8 +1712,7 @@ def _pipeline_knowledge_input(
         or value.get("document_id") != request.get("document_id")
         or value.get("document_version_id") != request.get("document_version_id")
         or not isinstance(options, dict)
-        or options.get("artifact_contract")
-        != "akc-knowledge-pipeline-stage-1.0.0"
+        or options.get("artifact_contract") != "akc-knowledge-pipeline-stage-1.0.0"
         or options.get("knowledge_stage") != stage
         or options.get("knowledge_unit_id") != unit_id
     ):
@@ -1832,9 +1791,7 @@ def _pipeline_knowledge_input(
         for heading in headings:
             if (
                 not isinstance(heading, dict)
-                or not {"heading_id", "block_id", "level", "title_preview"}.issubset(
-                    heading
-                )
+                or not {"heading_id", "block_id", "level", "title_preview"}.issubset(heading)
                 or set(heading)
                 - {
                     "heading_id",
@@ -1868,12 +1825,8 @@ def _pipeline_knowledge_input(
             heading_ids.add(heading_id)
             heading_parents.append(parent)
         if any(
-            parent is not None and parent not in heading_ids
-            for parent in heading_parents
-        ) or any(
-            not set(heading_path).issubset(heading_ids)
-            for heading_path in heading_paths
-        ):
+            parent is not None and parent not in heading_ids for parent in heading_parents
+        ) or any(not set(heading_path).issubset(heading_ids) for heading_path in heading_paths):
             raise SafeWorkerError("knowledge_stage_a_input_invalid")
         return value
 
@@ -1954,11 +1907,7 @@ def _pipeline_knowledge_input(
         }:
             raise SafeWorkerError("knowledge_stage_c_input_invalid")
         candidates = value.get("candidates")
-        if (
-            not isinstance(candidates, list)
-            or not candidates
-            or len(candidates) > 1_000
-        ):
+        if not isinstance(candidates, list) or not candidates or len(candidates) > 1_000:
             raise SafeWorkerError("knowledge_stage_c_input_invalid")
         candidate_ids: set[str] = set()
         for candidate in candidates:
@@ -2002,8 +1951,7 @@ def _pipeline_knowledge_input(
         or len(allowed_projects) != len(set(allowed_projects))
         or any(not isinstance(item, str) or not item for item in allowed_projects)
         or not isinstance(acl_attestation, dict)
-        or set(acl_attestation)
-        != {"tenant_id", "allowed_project_ids", "scope_sha256"}
+        or set(acl_attestation) != {"tenant_id", "allowed_project_ids", "scope_sha256"}
         or acl_attestation.get("tenant_id") != value.get("tenant_id")
         or acl_attestation.get("allowed_project_ids") != allowed_projects
         or acl_attestation.get("scope_sha256")
@@ -2013,8 +1961,7 @@ def _pipeline_knowledge_input(
         or not isinstance(sources, list)
         or not sources
         or len(sources) > 1_000
-        or retrieval_status
-        not in {"provider_unverified", "no_candidates", "ready"}
+        or retrieval_status not in {"provider_unverified", "no_candidates", "ready"}
         or not isinstance(retrieval, list)
         or len(retrieval) > 15
         or (retrieval_status != "ready" and retrieval)
@@ -2235,8 +2182,7 @@ class MockKnowledgeAdapter:
         knowledge_input = request.get("knowledge_input")
         if (
             isinstance(knowledge_input, dict)
-            and knowledge_input.get("schema_version")
-            == "knowledge-pipeline-input-1.0.0"
+            and knowledge_input.get("schema_version") == "knowledge-pipeline-input-1.0.0"
         ):
             stage = knowledge_input.get("stage")
             unit_id = knowledge_input.get("unit_id")
@@ -2254,8 +2200,7 @@ class MockKnowledgeAdapter:
                 evidence_ids = [
                     block["block_id"]
                     for block in blocks
-                    if isinstance(block, dict)
-                    and isinstance(block.get("block_id"), str)
+                    if isinstance(block, dict) and isinstance(block.get("block_id"), str)
                 ]
                 if not evidence_ids:
                     raise SafeWorkerError("knowledge_evidence_required")
@@ -2283,9 +2228,7 @@ class MockKnowledgeAdapter:
                         "sections": [
                             {
                                 "sectionId": f"section.{unit_id}",
-                                "title": str(knowledge_input.get("title") or "Document")[
-                                    :500
-                                ],
+                                "title": str(knowledge_input.get("title") or "Document")[:500],
                                 "blockIds": evidence_ids,
                             }
                         ],
@@ -2303,9 +2246,7 @@ class MockKnowledgeAdapter:
                         and isinstance(fragment.get("evidence_block_id"), str)
                     )
                 )
-                stable = hashlib.sha256(
-                    _canonical_json([unit_id, *evidence_ids])
-                ).hexdigest()[:24]
+                stable = hashlib.sha256(_canonical_json([unit_id, *evidence_ids])).hexdigest()[:24]
                 result.update(
                     {
                         "sectionId": knowledge_input.get("section_id"),
@@ -2313,8 +2254,7 @@ class MockKnowledgeAdapter:
                             {
                                 "noteId": f"mock.{stable}",
                                 "title": str(
-                                    knowledge_input.get("section_title")
-                                    or "Mock knowledge note"
+                                    knowledge_input.get("section_title") or "Mock knowledge note"
                                 )[:500],
                                 "noteType": "concept",
                                 "contentOrigin": "ai_summarized",
@@ -2342,9 +2282,7 @@ class MockKnowledgeAdapter:
                 result["mergeGroups"] = [
                     {
                         "groupId": "group."
-                        + hashlib.sha256(
-                            str(candidate["candidate_id"]).encode()
-                        ).hexdigest()[:24],
+                        + hashlib.sha256(str(candidate["candidate_id"]).encode()).hexdigest()[:24],
                         "canonicalCandidateId": candidate["candidate_id"],
                         "memberCandidateIds": [candidate["candidate_id"]],
                         "comparedCandidateIds": [candidate["candidate_id"]],
@@ -2367,17 +2305,13 @@ class MockKnowledgeAdapter:
                 "warnings": ["mock_adapter_result_not_for_production"],
                 "provider_metrics": {
                     "prompt_sha256": options.get("prompt_revision"),
-                    "knowledge_schema_sha256": options.get(
-                        "knowledge_schema_sha256"
-                    ),
+                    "knowledge_schema_sha256": options.get("knowledge_schema_sha256"),
                     "knowledge_stage": stage,
                     "knowledge_unit_id": unit_id,
                     "unsupported_claim_count": 0,
                 },
             }
-        blocks = (
-            knowledge_input.get("blocks") if isinstance(knowledge_input, dict) else None
-        )
+        blocks = knowledge_input.get("blocks") if isinstance(knowledge_input, dict) else None
         if not isinstance(blocks, list) or not blocks:
             raise SafeWorkerError("knowledge_blocks_required")
         evidence_ids = [
@@ -2404,9 +2338,9 @@ class MockKnowledgeAdapter:
                         "noteType": "concept",
                         "contentOrigin": "ai_summarized",
                         "evidenceBlockIds": evidence_ids,
-                        "summary": "\n\n".join(
-                            str(block.get("text") or "") for block in blocks
-                        )[:100_000],
+                        "summary": "\n\n".join(str(block.get("text") or "") for block in blocks)[
+                            :100_000
+                        ],
                         "claims": [],
                         "aliases": [],
                         "tags": [],

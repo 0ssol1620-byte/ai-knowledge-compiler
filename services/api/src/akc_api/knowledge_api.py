@@ -304,18 +304,9 @@ async def document_semantic_classification(
             select(Document, DocumentSemanticClassification)
             .join(
                 DocumentSemanticClassification,
-                (
-                    DocumentSemanticClassification.tenant_id
-                    == Document.tenant_id
-                )
-                & (
-                    DocumentSemanticClassification.document_id
-                    == Document.id
-                )
-                & (
-                    DocumentSemanticClassification.document_version
-                    == Document.active_version
-                )
+                (DocumentSemanticClassification.tenant_id == Document.tenant_id)
+                & (DocumentSemanticClassification.document_id == Document.id)
+                & (DocumentSemanticClassification.document_version == Document.active_version)
                 & DocumentSemanticClassification.is_active.is_(True),
             )
             .where(
@@ -338,21 +329,17 @@ async def document_semantic_classification(
         capability="read",
     )
     try:
-        classification = DocumentClassification.model_validate(
-            stored.classification
-        )
+        classification = DocumentClassification.model_validate(stored.classification)
         provenance = stored.provenance
         invocations = provenance["invocations"]
         if (
-            provenance.get("artifact_contract")
-            != "akc-knowledge-pipeline-stage-1.0.0"
+            provenance.get("artifact_contract") != "akc-knowledge-pipeline-stage-1.0.0"
             or not isinstance(invocations, list)
             or not invocations
         ):
             raise ValueError
         invocation_provenance = [
-            KnowledgeInvocationProvenance.model_validate(value)
-            for value in invocations
+            KnowledgeInvocationProvenance.model_validate(value) for value in invocations
         ]
     except (KeyError, TypeError, ValueError) as exc:
         raise HTTPException(

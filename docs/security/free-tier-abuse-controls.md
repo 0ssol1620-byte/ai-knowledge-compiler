@@ -40,16 +40,16 @@ verification token is consumed successfully.
 
 ## Request controls
 
-| Boundary | Pseudonymous dimensions | Enforcement |
-| --- | --- | --- |
-| Registration | client and normalized account | velocity limit, risk CAPTCHA |
-| Login | client and normalized account | velocity limit, risk CAPTCHA |
-| Resend | client and normalized account | enumeration-safe velocity limit, risk CAPTCHA |
-| Verify | client | velocity limit, opaque failure |
-| Upload | tenant and account | velocity limit, verified-email gate, daily file cap |
-| Analyze | tenant and account | velocity limit, verified-email gate, tenant hash claim, daily page cap |
-| Compile | tenant and account | velocity limit, verified-email gate, daily GPU-cost cap, low queue priority |
-| Export | tenant and account | velocity limit, verified-email gate |
+| Boundary     | Pseudonymous dimensions       | Enforcement                                                                 |
+| ------------ | ----------------------------- | --------------------------------------------------------------------------- |
+| Registration | client and normalized account | velocity limit, risk CAPTCHA                                                |
+| Login        | client and normalized account | velocity limit, risk CAPTCHA                                                |
+| Resend       | client and normalized account | enumeration-safe velocity limit, risk CAPTCHA                               |
+| Verify       | client                        | velocity limit, opaque failure                                              |
+| Upload       | tenant and account            | velocity limit, verified-email gate, daily file cap                         |
+| Analyze      | tenant and account            | velocity limit, verified-email gate, tenant hash claim, daily page cap      |
+| Compile      | tenant and account            | velocity limit, verified-email gate, daily GPU-cost cap, low queue priority |
+| Export       | tenant and account            | velocity limit, verified-email gate                                         |
 
 HTTP hard limits use status `429`, the normal API error envelope, and a
 `Retry-After` response header. Backend-unavailable decisions never silently

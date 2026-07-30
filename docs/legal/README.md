@@ -32,14 +32,14 @@ documents before paid beta.
 
 ## Approval matrix
 
-| Item | Product | Security | Privacy | Finance | Counsel |
-|---|---:|---:|---:|---:|---:|
-| Terms | R | C | C | C | A |
-| Privacy Notice | C | C | R | I | A |
-| DPA | I | C | R | I | A |
-| Subprocessors | I | C | R | I | A |
-| Credits/refunds | R | I | C | A | C |
-| Training consent | R | C | A | I | C |
+| Item             | Product | Security | Privacy | Finance | Counsel |
+| ---------------- | ------: | -------: | ------: | ------: | ------: |
+| Terms            |       R |        C |       C |       C |       A |
+| Privacy Notice   |       C |        C |       R |       I |       A |
+| DPA              |       I |        C |       R |       I |       A |
+| Subprocessors    |       I |        C |       R |       I |       A |
+| Credits/refunds  |       R |        I |       C |       A |       C |
+| Training consent |       R |        C |       A |       I |       C |
 
 `A` is accountable, `R` responsible, `C` consulted, and `I` informed.
 

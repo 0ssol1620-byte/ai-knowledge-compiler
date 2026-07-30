@@ -45,14 +45,14 @@ missing.
 
 ## Operator response
 
-| Error | Meaning | Action |
-|---|---|---|
-| `ENCRYPTED_PDF` | No usable password was available | Prompt the authorized editor |
-| `PDF_PASSWORD_INVALID` | Parser rejected one submitted password | Let the user retry within the remaining limit |
-| `PDF_PASSWORD_EXPIRED` | Secret TTL elapsed | Submit a new password |
-| `PDF_PASSWORD_ATTEMPTS_EXHAUSTED` | Atomic attempt ceiling reached | Require a new submission after abuse controls |
-| `PDF_SECRET_STORE_UNAVAILABLE` | Redis could not prove the secret contract | Retry; never fall back to DB/plaintext |
-| `PDF_PASSWORD_CHANNEL_INVALID` | Child pipe frame was malformed | Treat as worker security failure |
+| Error                             | Meaning                                   | Action                                        |
+| --------------------------------- | ----------------------------------------- | --------------------------------------------- |
+| `ENCRYPTED_PDF`                   | No usable password was available          | Prompt the authorized editor                  |
+| `PDF_PASSWORD_INVALID`            | Parser rejected one submitted password    | Let the user retry within the remaining limit |
+| `PDF_PASSWORD_EXPIRED`            | Secret TTL elapsed                        | Submit a new password                         |
+| `PDF_PASSWORD_ATTEMPTS_EXHAUSTED` | Atomic attempt ceiling reached            | Require a new submission after abuse controls |
+| `PDF_SECRET_STORE_UNAVAILABLE`    | Redis could not prove the secret contract | Retry; never fall back to DB/plaintext        |
+| `PDF_PASSWORD_CHANNEL_INVALID`    | Child pipe frame was malformed            | Treat as worker security failure              |
 
 Never include the submitted password in an incident ticket. Use request ID,
 tenant ID, document ID, source SHA-256, task ID, error code, and attempt number.

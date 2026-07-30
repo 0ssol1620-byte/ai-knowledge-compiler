@@ -65,8 +65,8 @@ Every note is emitted as:
   "@type": "akmp:KnowledgeNote",
   "akmp:noteType": "concept",
   "dcterms:title": "...",
-  "dcterms:source": {"@id": "urn:akmp:doc:..."},
-  "akmp:supportedBy": [{"@id": "urn:akmp:block:..."}]
+  "dcterms:source": { "@id": "urn:akmp:doc:..." },
+  "akmp:supportedBy": [{ "@id": "urn:akmp:block:..." }]
 }
 ```
 

@@ -5,17 +5,27 @@ function boundedInteger(name, fallback, minimum, maximum) {
   const raw = __ENV[name] || String(fallback);
   const value = Number.parseInt(raw, 10);
   if (!Number.isInteger(value) || value < minimum || value > maximum) {
-    throw new Error(`${name} must be an integer between ${minimum} and ${maximum}`);
+    throw new Error(
+      `${name} must be an integer between ${minimum} and ${maximum}`,
+    );
   }
   return value;
 }
 
-const baseUrl = (__ENV.AKC_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const baseUrl = (__ENV.AKC_BASE_URL || "http://127.0.0.1:8000").replace(
+  /\/$/,
+  "",
+);
 const parsed = new URL(baseUrl);
 const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
 if (!localHosts.has(parsed.hostname)) {
-  if (parsed.protocol !== "https:" || __ENV.AKC_ALLOW_REMOTE_SYNTHETIC !== "true") {
-    throw new Error("remote targets require HTTPS and AKC_ALLOW_REMOTE_SYNTHETIC=true");
+  if (
+    parsed.protocol !== "https:" ||
+    __ENV.AKC_ALLOW_REMOTE_SYNTHETIC !== "true"
+  ) {
+    throw new Error(
+      "remote targets require HTTPS and AKC_ALLOW_REMOTE_SYNTHETIC=true",
+    );
   }
 }
 
@@ -41,9 +51,13 @@ export const options = {
 };
 
 export default function () {
-  const live = http.get(`${baseUrl}/health/live`, { tags: { endpoint: "live" } });
+  const live = http.get(`${baseUrl}/health/live`, {
+    tags: { endpoint: "live" },
+  });
   check(live, { "liveness is 200": (response) => response.status === 200 });
 
-  const ready = http.get(`${baseUrl}/health/ready`, { tags: { endpoint: "ready" } });
+  const ready = http.get(`${baseUrl}/health/ready`, {
+    tags: { endpoint: "ready" },
+  });
   check(ready, { "readiness is 200": (response) => response.status === 200 });
 }

@@ -40,4 +40,3 @@ Include:
 
 Do not commit credentials, customer files, licensed private benchmark data, or
 live provider responses containing source content.
-

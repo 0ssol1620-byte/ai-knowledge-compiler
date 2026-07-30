@@ -360,12 +360,7 @@ def _safe_archive_members(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
     for member in members:
         name = member.filename.replace("\\", "/")
         path = PurePosixPath(name)
-        if (
-            member.is_dir()
-            or path.is_absolute()
-            or ".." in path.parts
-            or member.flag_bits & 0x1
-        ):
+        if member.is_dir() or path.is_absolute() or ".." in path.parts or member.flag_bits & 0x1:
             if member.is_dir():
                 continue
             raise DartApiError("UNSAFE_ARCHIVE", "archive contains an unsafe member")
@@ -480,9 +475,7 @@ def acquire_disclosures(
                 _write_receipt(
                     output_root=output_root,
                     disclosure=disclosure,
-                    archive_payload=client.download_document_archive(
-                        disclosure.receipt_number
-                    ),
+                    archive_payload=client.download_document_archive(disclosure.receipt_number),
                 )
             )
         except DartApiError as exc:
@@ -509,9 +502,7 @@ def acquire_disclosures(
         "receipts": [
             {
                 "receipt_number": receipt.disclosure.receipt_number,
-                "receipt_path": (
-                    f"{receipt.disclosure.receipt_number}/acquisition-receipt.json"
-                ),
+                "receipt_path": (f"{receipt.disclosure.receipt_number}/acquisition-receipt.json"),
                 "archive_sha256": receipt.archive_sha256,
             }
             for receipt in receipts

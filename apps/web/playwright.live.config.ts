@@ -45,6 +45,7 @@ export default defineConfig({
       cwd: repoRoot,
       url: "http://127.0.0.1:3100/api/health",
       env: {
+        NEXT_DIST_DIR: ".next-e2e-live",
         NEXT_PUBLIC_AKC_DEMO_MODE: "false",
         NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8100",
       },

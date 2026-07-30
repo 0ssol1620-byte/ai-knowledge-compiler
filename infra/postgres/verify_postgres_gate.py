@@ -198,21 +198,15 @@ async def _verify_schema(admin: asyncpg.Connection[asyncpg.Record]) -> None:
     )
     project_policies: dict[str, dict[str, asyncpg.Record]] = {}
     for row in project_policy_rows:
-        project_policies.setdefault(str(row["tablename"]), {})[
-            str(row["cmd"]).upper()
-        ] = row
+        project_policies.setdefault(str(row["tablename"]), {})[str(row["cmd"]).upper()] = row
     missing_project_tables = PROJECT_SCOPED_TABLES - set(project_policies)
     if missing_project_tables:
-        raise AssertionError(
-            "missing project RLS policies: "
-            f"{sorted(missing_project_tables)}"
-        )
+        raise AssertionError(f"missing project RLS policies: {sorted(missing_project_tables)}")
     for table in PROJECT_SCOPED_TABLES:
         commands = project_policies[table]
         if set(commands) != {"SELECT", "INSERT", "UPDATE", "DELETE"}:
             raise AssertionError(
-                f"incomplete project RLS command policies on {table}: "
-                f"{sorted(commands)}"
+                f"incomplete project RLS command policies on {table}: {sorted(commands)}"
             )
         expected = "PERMISSIVE" if table == "project_memberships" else "RESTRICTIVE"
         unexpected = sorted(
@@ -221,9 +215,7 @@ async def _verify_schema(admin: asyncpg.Connection[asyncpg.Record]) -> None:
             if str(row["permissive"]).upper() != expected
         )
         if unexpected:
-            raise AssertionError(
-                f"unsafe project RLS policy mode on {table}: {unexpected}"
-            )
+            raise AssertionError(f"unsafe project RLS policy mode on {table}: {unexpected}")
     creator_function = await admin.fetchrow(
         """
         SELECT procedure.prosecdef, role.rolname

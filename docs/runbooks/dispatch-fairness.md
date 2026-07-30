@@ -75,4 +75,3 @@ The scheduler regression suite also verifies one-candidate-per-tenant scans,
 busy deferral without attempt consumption, next-tenant admission, unlabeled
 metrics, and cancellation during unlock followed by successful admission of a
 waiter.
-

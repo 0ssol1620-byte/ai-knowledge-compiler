@@ -40,9 +40,7 @@ async def _run(*, once: bool, check: bool) -> None:
     engine = create_url_fetcher_engine(settings)
     try:
         await verify_url_fetcher_database(engine, settings)
-        if settings.clamav_enabled and not await malware_scanner_ready(
-            cast(Settings, settings)
-        ):
+        if settings.clamav_enabled and not await malware_scanner_ready(cast(Settings, settings)):
             raise RuntimeError("url_fetcher_clamav_unavailable")
         if check:
             return
@@ -95,9 +93,7 @@ async def _run(*, once: bool, check: bool) -> None:
                 except NotImplementedError:
                     signal.signal(
                         signal_number,
-                        lambda _signum, _frame: loop.call_soon_threadsafe(
-                            worker.request_stop
-                        ),
+                        lambda _signum, _frame: loop.call_soon_threadsafe(worker.request_stop),
                     )
         try:
             if once:

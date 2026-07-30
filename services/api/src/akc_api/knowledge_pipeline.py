@@ -129,9 +129,7 @@ def build_stage_a_input(
     eligible = [
         block
         for block in blocks
-        if _block_text(block)
-        and block.page_id is not None
-        and block.page_id in page_numbers
+        if _block_text(block) and block.page_id is not None and block.page_id in page_numbers
     ]
     if not eligible:
         raise RuntimeError("knowledge_input_has_no_evidence")
@@ -188,9 +186,7 @@ def build_stage_a_input(
             char_count=len(_block_text(block)),
             preview=_block_text(block)[:_STAGE_A_PREVIEW_CHARS],
             heading_path=tuple(
-                heading_id
-                for heading_id in heading_path(block)
-                if heading_id in heading_ids
+                heading_id for heading_id in heading_path(block) if heading_id in heading_ids
             ),
         )
         for block in eligible
@@ -237,8 +233,7 @@ def _pack_section_fragments(
         candidate = [*current, fragment]
         approximate = sum(len(item.text.encode()) for item in candidate)
         if current and (
-            len(candidate) > _STAGE_B_MAX_FRAGMENTS
-            or approximate > _STAGE_B_UNIT_BYTES
+            len(candidate) > _STAGE_B_MAX_FRAGMENTS or approximate > _STAGE_B_UNIT_BYTES
         ):
             units.append(current)
             current = [fragment]
@@ -265,11 +260,7 @@ def build_stage_b_inputs(
         fragments: list[StageBFragment] = []
         for block_id in section.block_ids:
             block = by_id.get(block_id)
-            if (
-                block is None
-                or block.page_id is None
-                or block.page_id not in page_numbers
-            ):
+            if block is None or block.page_id is None or block.page_id not in page_numbers:
                 raise RuntimeError("knowledge_stage_b_block_scope_invalid")
             text = _block_text(block)
             if not text:
@@ -331,9 +322,7 @@ def _candidate_descriptor(
 ) -> StageCCandidateEvidence:
     fragments_by_block: dict[str, list[str]] = {}
     for fragment in stage_input.fragments:
-        fragments_by_block.setdefault(fragment.evidence_block_id, []).append(
-            fragment.text
-        )
+        fragments_by_block.setdefault(fragment.evidence_block_id, []).append(fragment.text)
     evidence: list[StageCEvidenceDescriptor] = []
     for block_id in note.evidence_block_ids:
         fragment_text = "\n".join(fragments_by_block.get(block_id, ())).strip()
@@ -373,9 +362,7 @@ def _candidate_descriptor(
             if value.strip()
         ),
         tags=tuple(
-            _normalized_semantic_text(value, limit=100)
-            for value in note.tags[:20]
-            if value.strip()
+            _normalized_semantic_text(value, limit=100) for value in note.tags[:20] if value.strip()
         ),
         claims=claims,
         evidence_block_ids=note.evidence_block_ids,
@@ -398,11 +385,13 @@ def pipeline_candidates(
         raise RuntimeError("knowledge_pipeline_duplicate_stage_b_input")
     values = tuple(
         PipelineCandidate(
-            candidate_id=(candidate_id := _stable_id(
-                "candidate",
-                result.unit_id,
-                note.note_id,
-            )),
+            candidate_id=(
+                candidate_id := _stable_id(
+                    "candidate",
+                    result.unit_id,
+                    note.note_id,
+                )
+            ),
             unit_id=result.unit_id,
             note=note,
             descriptor=_candidate_descriptor(
@@ -476,9 +465,7 @@ def build_stage_d_input(
         members = tuple(by_id[member_id] for member_id in group.member_candidate_ids)
         canonical = by_id[group.canonical_candidate_id].descriptor
         descriptors_by_block = {
-            item.block_id: item
-            for member in members
-            for item in member.descriptor.evidence
+            item.block_id: item for member in members for item in member.descriptor.evidence
         }
         claims_by_signature = {
             claim.signature_sha256: claim
@@ -493,15 +480,11 @@ def build_stage_d_input(
                 summary=canonical.summary,
                 aliases=tuple(
                     dict.fromkeys(
-                        alias
-                        for member in members
-                        for alias in member.descriptor.aliases
+                        alias for member in members for alias in member.descriptor.aliases
                     )
                 )[:20],
                 tags=tuple(
-                    dict.fromkeys(
-                        tag for member in members for tag in member.descriptor.tags
-                    )
+                    dict.fromkeys(tag for member in members for tag in member.descriptor.tags)
                 )[:20],
                 claims=tuple(claims_by_signature.values())[:20],
                 evidence_block_ids=evidence[group.canonical_candidate_id],
@@ -566,9 +549,7 @@ def _merge_notes(
     aliases = tuple(
         dict.fromkeys(alias for candidate in group_members for alias in candidate.note.aliases)
     )
-    tags = tuple(
-        dict.fromkeys(tag for candidate in group_members for tag in candidate.note.tags)
-    )
+    tags = tuple(dict.fromkeys(tag for candidate in group_members for tag in candidate.note.tags))
     related: dict[tuple[str, str], RelatedNoteCandidate] = {}
     for candidate in group_members:
         for proposal in candidate.note.related_note_candidates:
@@ -580,9 +561,7 @@ def _merge_notes(
             )
             if target == canonical_candidate_id:
                 continue
-            related[(target, proposal.relation)] = proposal.model_copy(
-                update={"target_id": target}
-            )
+            related[(target, proposal.relation)] = proposal.model_copy(update={"target_id": target})
     for proposal in links:
         if proposal.source_candidate_id != canonical_candidate_id:
             continue
@@ -605,9 +584,7 @@ def _merge_notes(
         tags=tags,
         related_note_candidates=tuple(related.values()),
         review_status=(
-            ReviewStatus.AUTO_WITH_WARNINGS
-            if len(group_members) > 1
-            else canonical.review_status
+            ReviewStatus.AUTO_WITH_WARNINGS if len(group_members) > 1 else canonical.review_status
         ),
     )
 

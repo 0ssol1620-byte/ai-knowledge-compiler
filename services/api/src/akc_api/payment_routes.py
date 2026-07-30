@@ -320,9 +320,7 @@ async def list_payment_events(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> list[PaymentEvent]:
     await _verified_billing_user(session, principal)
-    statement = select(PaymentEvent).where(
-        PaymentEvent.tenant_id == principal.tenant_id
-    )
+    statement = select(PaymentEvent).where(PaymentEvent.tenant_id == principal.tenant_id)
     if event_status is not None:
         statement = statement.where(PaymentEvent.status == event_status)
     return list(

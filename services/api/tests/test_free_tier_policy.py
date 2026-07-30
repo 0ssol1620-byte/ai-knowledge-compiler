@@ -137,7 +137,4 @@ def test_free_work_receives_low_queue_priority() -> None:
 
 
 def test_utc_reset_delay_is_timezone_aware() -> None:
-    assert (
-        seconds_until_utc_reset(datetime(2026, 7, 29, 23, 59, 59, 1, tzinfo=UTC))
-        == 1
-    )
+    assert seconds_until_utc_reset(datetime(2026, 7, 29, 23, 59, 59, 1, tzinfo=UTC)) == 1

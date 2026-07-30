@@ -79,7 +79,7 @@ class UrlFetcherSettings(BaseSettings):
     allow_development_antivirus_bypass: bool = True
 
     metrics_enabled: bool = True
-    metrics_bind_host: Literal["127.0.0.1", "0.0.0.0"] = "127.0.0.1"
+    metrics_bind_host: Literal["127.0.0.1", "0.0.0.0"] = "127.0.0.1"  # nosec B104
     metrics_port: int = Field(default=9103, ge=1024, le=65535)
 
     @property
@@ -165,8 +165,8 @@ class UrlFetcherSettings(BaseSettings):
                 raise ValueError("production URL worker requires ClamAV")
             if self.allow_development_antivirus_bypass:
                 raise ValueError("production URL worker forbids antivirus bypass")
-            if not self.metrics_enabled or self.metrics_bind_host != "0.0.0.0":
-                raise ValueError(
-                    "production URL worker requires externally scrapeable metrics"
-                )
+            if (
+                not self.metrics_enabled or self.metrics_bind_host != "0.0.0.0"  # nosec B104
+            ):
+                raise ValueError("production URL worker requires externally scrapeable metrics")
         return self

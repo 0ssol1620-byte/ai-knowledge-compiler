@@ -46,12 +46,17 @@ def validate(strict: bool = False) -> list[str]:
         revision = release.get("upstream_revision")
         status = (release.get("internal_validation") or {}).get("status")
         traffic = (release.get("rollout") or {}).get("traffic_percent", 0)
-        requires_pin = strict or traffic > 0 or status in {
-            "champion",
-            "canary",
-            "fallback",
-            "shadow",
-        }
+        requires_pin = (
+            strict
+            or traffic > 0
+            or status
+            in {
+                "champion",
+                "canary",
+                "fallback",
+                "shadow",
+            }
+        )
         if isinstance(revision, str) and revision.lower() in FLOATING:
             errors.append(f"{prefix}: floating revision is forbidden")
         if requires_pin and not (isinstance(revision, str) and HEX_REVISION.fullmatch(revision)):
@@ -82,9 +87,7 @@ def validate(strict: bool = False) -> list[str]:
         ):
             provider = recipe.get(provider_field)
             if provider not in {None, "native"} and provider not in by_key:
-                errors.append(
-                    f"recipes.{name}: unknown {provider_field} provider {provider}"
-                )
+                errors.append(f"recipes.{name}: unknown {provider_field} provider {provider}")
         fallback = recipe.get("fallback")
         if fallback not in {None, "review"} and fallback not in recipes:
             errors.append(f"recipes.{name}: unknown fallback {fallback}")

@@ -55,6 +55,9 @@ export function MarketingLanding() {
           <BrandMark />
         </Link>
         <nav aria-label="마케팅 메뉴">
+          <Link href="/home" className="marketing-dashboard-tab">
+            대시보드
+          </Link>
           <a href="#product">제품</a>
           <a href="#demo">데모</a>
           <a href="#benchmark">벤치마크</a>

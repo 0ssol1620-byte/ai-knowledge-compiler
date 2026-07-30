@@ -202,9 +202,7 @@ def test_toc_validation_and_llm_payload_are_bounded_candidate_only() -> None:
     assert records["ambiguous"].llm_candidate is True
     assert len(encoded) <= 32_768
     assert "rawText" not in result.llm_candidate_payload
-    assert result.llm_candidate_payload["purpose"] == (
-        "heading_ambiguity_candidate_review"
-    )
+    assert result.llm_candidate_payload["purpose"] == ("heading_ambiguity_candidate_review")
 
 
 def test_combined_analysis_reorders_before_heading_parent_assignment() -> None:

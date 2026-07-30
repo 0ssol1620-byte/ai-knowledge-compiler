@@ -28,4 +28,3 @@ updates during private beta.
 
 See `docs/security/threat-model.md` and `docs/runbooks/incident-response.md` for
 the operational controls and response process.
-

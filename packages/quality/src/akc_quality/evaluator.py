@@ -62,13 +62,7 @@ def evaluate_quality(
         status = QualityStatus.FAIL
     elif (
         critical_count
-        or (
-            high_risk
-            and (
-                vector.numeric_fidelity is None
-                or vector.numeric_fidelity < 1.0
-            )
-        )
+        or (high_risk and (vector.numeric_fidelity is None or vector.numeric_fidelity < 1.0))
         or failed_attempts >= 2
     ):
         status = QualityStatus.REVIEW_REQUIRED

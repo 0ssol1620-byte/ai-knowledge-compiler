@@ -365,8 +365,7 @@ class InMemoryRateLimiter:
                 retry_after_seconds=retry_after,
                 observed_count=bucket.count,
                 captcha_required=(
-                    policy.captcha_after is not None
-                    and bucket.count >= policy.captcha_after
+                    policy.captcha_after is not None and bucket.count >= policy.captcha_after
                 ),
             )
 
@@ -435,9 +434,7 @@ class RedisRateLimiter:
             observed_count = int(raw_result[0])
             ttl_ms = int(raw_result[1])
         except (TypeError, ValueError) as exc:
-            raise RateLimitBackendUnavailable(
-                "invalid response from rate-limit backend"
-            ) from exc
+            raise RateLimitBackendUnavailable("invalid response from rate-limit backend") from exc
         retry_after = max(1, math.ceil(max(0, ttl_ms) / 1000))
         return RateLimitDecision(
             allowed=observed_count <= policy.limit,
@@ -445,8 +442,7 @@ class RedisRateLimiter:
             retry_after_seconds=retry_after,
             observed_count=observed_count,
             captcha_required=(
-                policy.captcha_after is not None
-                and observed_count >= policy.captcha_after
+                policy.captcha_after is not None and observed_count >= policy.captcha_after
             ),
         )
 
@@ -557,9 +553,7 @@ class TurnstileCaptchaProvider:
             response.raise_for_status()
             payload = response.json()
         except (httpx.HTTPError, ValueError) as exc:
-            raise CaptchaProviderUnavailable(
-                "CAPTCHA verification service is unavailable"
-            ) from exc
+            raise CaptchaProviderUnavailable("CAPTCHA verification service is unavailable") from exc
         if not isinstance(payload, dict) or payload.get("success") is not True:
             return False
         return payload.get("action") == action

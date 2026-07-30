@@ -150,11 +150,7 @@ def _request_context_hint(
             # fixed split positions are not trustworthy. The tenant hint is
             # the only canonical 32-character UUID hex segment in both the
             # current and legacy key formats.
-            tenant_id = next(
-                uuid.UUID(hex=part)
-                for part in parts
-                if len(part) == 32
-            )
+            tenant_id = next(uuid.UUID(hex=part) for part in parts if len(part) == 32)
             return tenant_id, None
         except (StopIteration, ValueError):
             return None, None

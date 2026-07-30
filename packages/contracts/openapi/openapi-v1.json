@@ -289,11 +289,7 @@
             "type": "string"
           },
           "key": {
-            "enum": [
-              "7d",
-              "30d",
-              "90d"
-            ],
+            "enum": ["7d", "30d", "90d"],
             "title": "Key",
             "type": "string"
           },
@@ -309,12 +305,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "key",
-          "start_at",
-          "end_at",
-          "days"
-        ],
+        "required": ["key", "start_at", "end_at", "days"],
         "title": "AnalyticsWindow",
         "type": "object"
       },
@@ -368,13 +359,7 @@
             "type": "integer"
           },
           "status": {
-            "enum": [
-              "queued",
-              "running",
-              "completed",
-              "failed",
-              "dead_letter"
-            ],
+            "enum": ["queued", "running", "completed", "failed", "dead_letter"],
             "title": "Status",
             "type": "string"
           },
@@ -423,9 +408,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "title": "ApiKeyCreate",
         "type": "object"
       },
@@ -462,14 +445,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "prefix",
-          "key",
-          "scopes",
-          "created_at"
-        ],
+        "required": ["id", "name", "prefix", "key", "scopes", "created_at"],
         "title": "ApiKeyCreated",
         "type": "object"
       },
@@ -535,9 +511,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "document_ids"
-        ],
+        "required": ["document_ids"],
         "title": "BatchCompileRequest",
         "type": "object"
       },
@@ -557,13 +531,7 @@
             "type": "array"
           },
           "status": {
-            "enum": [
-              "queued",
-              "running",
-              "completed",
-              "partial",
-              "failed"
-            ],
+            "enum": ["queued", "running", "completed", "partial", "failed"],
             "title": "Status",
             "type": "string"
           },
@@ -573,12 +541,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "batch_id",
-          "status",
-          "total_reserved_credits",
-          "jobs"
-        ],
+        "required": ["batch_id", "status", "total_reserved_credits", "jobs"],
         "title": "BatchCompileResponse",
         "type": "object"
       },
@@ -605,12 +568,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "job_id",
-          "document_id",
-          "status",
-          "reserved_credits"
-        ],
+        "required": ["job_id", "document_id", "status", "reserved_credits"],
         "title": "BatchJobResponse",
         "type": "object"
       },
@@ -639,11 +597,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "base_revision",
-          "new_model_markdown",
-          "model_revision"
-        ],
+        "required": ["base_revision", "new_model_markdown", "model_revision"],
         "title": "BlockModelMergeRequest",
         "type": "object"
       },
@@ -746,9 +700,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "markdown"
-        ],
+        "required": ["markdown"],
         "title": "BlockPatch",
         "type": "object"
       },
@@ -895,9 +847,7 @@
             "default": "error"
           }
         },
-        "required": [
-          "existing_vault"
-        ],
+        "required": ["existing_vault"],
         "title": "Body_preview_export_vault_merge_v1_exports__export_id__vault_merge_preview_post",
         "type": "object"
       },
@@ -927,12 +877,7 @@
           },
           "output_profiles": {
             "items": {
-              "enum": [
-                "portable",
-                "obsidian",
-                "rag",
-                "jsonld"
-              ],
+              "enum": ["portable", "obsidian", "rag", "jsonld"],
               "type": "string"
             },
             "title": "Output Profiles",
@@ -1020,11 +965,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "balance",
-          "reserved",
-          "available"
-        ],
+        "required": ["balance", "reserved", "available"],
         "title": "CreditBalance",
         "type": "object"
       },
@@ -1039,9 +980,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "pack_code"
-        ],
+        "required": ["pack_code"],
         "title": "CreditCheckoutCreate",
         "type": "object"
       },
@@ -1161,12 +1100,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "amount_minor",
-          "currency",
-          "credits"
-        ],
+        "required": ["code", "amount_minor", "currency", "credits"],
         "title": "CreditPackResponse",
         "type": "object"
       },
@@ -1179,9 +1113,7 @@
             "type": "object"
           }
         },
-        "required": [
-          "schema"
-        ],
+        "required": ["schema"],
         "title": "CustomSchemaRequest",
         "type": "object"
       },
@@ -1276,13 +1208,7 @@
             "type": "string"
           },
           "state": {
-            "enum": [
-              "requested",
-              "purging",
-              "retry",
-              "purged",
-              "dead_letter"
-            ],
+            "enum": ["requested", "purging", "retry", "purged", "dead_letter"],
             "title": "State",
             "type": "string"
           },
@@ -1291,10 +1217,7 @@
             "type": "string"
           },
           "target_type": {
-            "enum": [
-              "document",
-              "project"
-            ],
+            "enum": ["document", "project"],
             "title": "Target Type",
             "type": "string"
           }
@@ -1456,10 +1379,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "project_id",
-          "title"
-        ],
+        "required": ["project_id", "title"],
         "title": "DocumentCreate",
         "type": "object"
       },
@@ -1615,11 +1535,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "document_id",
-          "active_version",
-          "versions"
-        ],
+        "required": ["document_id", "active_version", "versions"],
         "title": "DocumentVersionListResponse",
         "type": "object"
       },
@@ -1765,11 +1681,7 @@
             "title": "Source Size Bytes"
           },
           "status": {
-            "enum": [
-              "source_verified",
-              "processed",
-              "archived"
-            ],
+            "enum": ["source_verified", "processed", "archived"],
             "title": "Status",
             "type": "string"
           },
@@ -1893,10 +1805,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "registry_version",
-          "packs"
-        ],
+        "required": ["registry_version", "packs"],
         "title": "DomainPackRegistry",
         "type": "object"
       },
@@ -2104,12 +2013,7 @@
           },
           "export_type": {
             "default": "portable",
-            "enum": [
-              "portable",
-              "obsidian",
-              "rag",
-              "jsonld"
-            ],
+            "enum": ["portable", "obsidian", "rag", "jsonld"],
             "title": "Export Type",
             "type": "string"
           },
@@ -2145,11 +2049,7 @@
             "title": "Share"
           }
         },
-        "required": [
-          "profile",
-          "exports",
-          "share"
-        ],
+        "required": ["profile", "exports", "share"],
         "title": "ExportProfileShare",
         "type": "object"
       },
@@ -2285,12 +2185,7 @@
             "writeOnly": true
           }
         },
-        "required": [
-          "token",
-          "email",
-          "password",
-          "display_name"
-        ],
+        "required": ["token", "email", "password", "display_name"],
         "title": "InvitationAccept",
         "type": "object"
       },
@@ -2317,9 +2212,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "InvitationCreate",
         "type": "object"
       },
@@ -2334,9 +2227,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "items"
-        ],
+        "required": ["items"],
         "title": "InvitationListResponse",
         "type": "object"
       },
@@ -2423,12 +2314,7 @@
             "type": "string"
           },
           "status": {
-            "enum": [
-              "pending",
-              "accepted",
-              "cancelled",
-              "expired"
-            ],
+            "enum": ["pending", "accepted", "cancelled", "expired"],
             "title": "Status",
             "type": "string"
           }
@@ -2539,12 +2425,7 @@
           },
           "profiles": {
             "items": {
-              "enum": [
-                "portable",
-                "obsidian",
-                "rag",
-                "jsonld"
-              ],
+              "enum": ["portable", "obsidian", "rag", "jsonld"],
               "type": "string"
             },
             "maxItems": 4,
@@ -2553,9 +2434,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "profiles"
-        ],
+        "required": ["profiles"],
         "title": "JobExportCreate",
         "type": "object"
       },
@@ -2670,12 +2549,7 @@
             "type": "string"
           },
           "stage": {
-            "enum": [
-              "A",
-              "B",
-              "C",
-              "D"
-            ],
+            "enum": ["A", "B", "C", "D"],
             "title": "Stage",
             "type": "string"
           },
@@ -2824,10 +2698,7 @@
             "title": "Tenant Slug"
           }
         },
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "LoginRequest",
         "type": "object"
       },
@@ -2842,9 +2713,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "items"
-        ],
+        "required": ["items"],
         "title": "MemberListResponse",
         "type": "object"
       },
@@ -2913,9 +2782,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "role"
-        ],
+        "required": ["role"],
         "title": "MemberRolePatch",
         "type": "object"
       },
@@ -2972,9 +2839,7 @@
             "title": "Recovery Code"
           }
         },
-        "required": [
-          "mfa_token"
-        ],
+        "required": ["mfa_token"],
         "title": "MfaChallengeRequest",
         "type": "object"
       },
@@ -2998,10 +2863,7 @@
             "writeOnly": true
           }
         },
-        "required": [
-          "mfa_token",
-          "code"
-        ],
+        "required": ["mfa_token", "code"],
         "title": "MfaEnrollmentConfirmRequest",
         "type": "object"
       },
@@ -3071,9 +2933,7 @@
             "writeOnly": true
           }
         },
-        "required": [
-          "mfa_token"
-        ],
+        "required": ["mfa_token"],
         "title": "MfaEnrollmentRequest",
         "type": "object"
       },
@@ -3116,11 +2976,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "credential_id",
-          "secret",
-          "otpauth_uri"
-        ],
+        "required": ["credential_id", "secret", "otpauth_uri"],
         "title": "MfaEnrollmentResponse",
         "type": "object"
       },
@@ -3137,9 +2993,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "recovery_codes"
-        ],
+        "required": ["recovery_codes"],
         "title": "MfaRecoveryCodesResponse",
         "type": "object"
       },
@@ -3155,9 +3009,7 @@
             "writeOnly": true
           }
         },
-        "required": [
-          "code"
-        ],
+        "required": ["code"],
         "title": "MfaRecoveryRegenerateRequest",
         "type": "object"
       },
@@ -3165,10 +3017,7 @@
         "additionalProperties": false,
         "properties": {
           "action": {
-            "enum": [
-              "enroll",
-              "challenge"
-            ],
+            "enum": ["enroll", "challenge"],
             "title": "Action",
             "type": "string"
           },
@@ -3191,11 +3040,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "action",
-          "mfa_token",
-          "expires_in_seconds"
-        ],
+        "required": ["action", "mfa_token", "expires_in_seconds"],
         "title": "MfaRequiredResponse",
         "type": "object"
       },
@@ -3290,10 +3135,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "authorization_url",
-          "expires_in_seconds"
-        ],
+        "required": ["authorization_url", "expires_in_seconds"],
         "title": "OidcAuthorizeResponse",
         "type": "object"
       },
@@ -3656,11 +3498,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "event_id",
-          "status",
-          "duplicate"
-        ],
+        "required": ["event_id", "status", "duplicate"],
         "title": "PaymentWebhookResponse",
         "type": "object"
       },
@@ -3689,13 +3527,7 @@
             "type": "integer"
           },
           "status": {
-            "enum": [
-              "queued",
-              "running",
-              "completed",
-              "failed",
-              "dead_letter"
-            ],
+            "enum": ["queued", "running", "completed", "failed", "dead_letter"],
             "title": "Status",
             "type": "string"
           },
@@ -3728,9 +3560,7 @@
             "writeOnly": true
           }
         },
-        "required": [
-          "password"
-        ],
+        "required": ["password"],
         "title": "PdfPasswordSubmit",
         "type": "object"
       },
@@ -3817,11 +3647,7 @@
             "type": "boolean"
           },
           "reason": {
-            "enum": [
-              "stored",
-              "analytics_disabled",
-              "private_mode"
-            ],
+            "enum": ["stored", "analytics_disabled", "private_mode"],
             "title": "Reason",
             "type": "string"
           },
@@ -3831,11 +3657,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "accepted",
-          "reason",
-          "server_received_at"
-        ],
+        "required": ["accepted", "reason", "server_received_at"],
         "title": "ProductAnalyticsEventAccepted",
         "type": "object"
       },
@@ -3923,9 +3745,7 @@
             "title": "Project Id"
           }
         },
-        "required": [
-          "event_type"
-        ],
+        "required": ["event_type"],
         "title": "ProductAnalyticsEventCreate",
         "type": "object"
       },
@@ -4060,9 +3880,7 @@
             "type": "object"
           }
         },
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "title": "ProjectCreate",
         "type": "object"
       },
@@ -4070,11 +3888,7 @@
         "additionalProperties": false,
         "properties": {
           "role": {
-            "enum": [
-              "editor",
-              "reviewer",
-              "viewer"
-            ],
+            "enum": ["editor", "reviewer", "viewer"],
             "title": "Role",
             "type": "string"
           },
@@ -4084,10 +3898,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "user_id",
-          "role"
-        ],
+        "required": ["user_id", "role"],
         "title": "ProjectMemberGrant",
         "type": "object"
       },
@@ -4102,9 +3913,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "items"
-        ],
+        "required": ["items"],
         "title": "ProjectMemberListResponse",
         "type": "object"
       },
@@ -4125,11 +3934,7 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "editor",
-              "reviewer",
-              "viewer"
-            ],
+            "enum": ["editor", "reviewer", "viewer"],
             "title": "Role",
             "type": "string"
           },
@@ -4164,18 +3969,12 @@
         "additionalProperties": false,
         "properties": {
           "role": {
-            "enum": [
-              "editor",
-              "reviewer",
-              "viewer"
-            ],
+            "enum": ["editor", "reviewer", "viewer"],
             "title": "Role",
             "type": "string"
           }
         },
-        "required": [
-          "role"
-        ],
+        "required": ["role"],
         "title": "ProjectMemberRolePatch",
         "type": "object"
       },
@@ -4696,21 +4495,12 @@
             "type": "string"
           },
           "severity": {
-            "enum": [
-              "warning",
-              "review_required",
-              "hard_fail"
-            ],
+            "enum": ["warning", "review_required", "hard_fail"],
             "title": "Severity",
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "description",
-          "severity",
-          "evaluator"
-        ],
+        "required": ["id", "description", "severity", "evaluator"],
         "title": "QualityRule",
         "type": "object"
       },
@@ -4776,12 +4566,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email",
-          "password",
-          "display_name",
-          "tenant_name"
-        ],
+        "required": ["email", "password", "display_name", "tenant_name"],
         "title": "RegisterRequest",
         "type": "object"
       },
@@ -4801,9 +4586,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "expected_active_version"
-        ],
+        "required": ["expected_active_version"],
         "title": "ReprocessRequest",
         "type": "object"
       },
@@ -4817,9 +4600,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "ResendVerificationRequest",
         "type": "object"
       },
@@ -4827,11 +4608,7 @@
         "additionalProperties": false,
         "properties": {
           "action": {
-            "enum": [
-              "accept",
-              "replace",
-              "reject"
-            ],
+            "enum": ["accept", "replace", "reject"],
             "title": "Action",
             "type": "string"
           },
@@ -4860,9 +4637,7 @@
             "title": "Value"
           }
         },
-        "required": [
-          "action"
-        ],
+        "required": ["action"],
         "title": "ReviewResolve",
         "type": "object"
       },
@@ -4878,12 +4653,7 @@
             "type": "string"
           },
           "kind": {
-            "enum": [
-              "route",
-              "knowledge",
-              "export",
-              "contract"
-            ],
+            "enum": ["route", "knowledge", "export", "contract"],
             "title": "Kind",
             "type": "string"
           },
@@ -4896,13 +4666,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "kind",
-          "version",
-          "description",
-          "stable"
-        ],
+        "required": ["id", "kind", "version", "description", "stable"],
         "title": "SchemaProfile",
         "type": "object"
       },
@@ -4917,9 +4681,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "profiles"
-        ],
+        "required": ["profiles"],
         "title": "SchemaProfilesResponse",
         "type": "object"
       },
@@ -5267,12 +5029,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "filename",
-          "size",
-          "content_type",
-          "sha256"
-        ],
+        "required": ["filename", "size", "content_type", "sha256"],
         "title": "UploadInitiate",
         "type": "object"
       },
@@ -5302,10 +5059,7 @@
             "type": "object"
           },
           "method": {
-            "enum": [
-              "PUT",
-              "MULTIPART"
-            ],
+            "enum": ["PUT", "MULTIPART"],
             "title": "Method",
             "type": "string"
           },
@@ -5360,10 +5114,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "part_number",
-          "etag"
-        ],
+        "required": ["part_number", "etag"],
         "title": "UploadPartCompleted",
         "type": "object"
       },
@@ -5380,9 +5131,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "part_numbers"
-        ],
+        "required": ["part_numbers"],
         "title": "UploadPartSignRequest",
         "type": "object"
       },
@@ -5411,11 +5160,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "part_number",
-          "upload_url",
-          "expires_at"
-        ],
+        "required": ["part_number", "upload_url", "expires_at"],
         "title": "UploadPartTargetResponse",
         "type": "object"
       },
@@ -5435,10 +5180,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "upload_id",
-          "parts"
-        ],
+        "required": ["upload_id", "parts"],
         "title": "UploadPartTargetsResponse",
         "type": "object"
       },
@@ -5473,10 +5215,7 @@
             "type": "string"
           },
           "method": {
-            "enum": [
-              "PUT",
-              "MULTIPART"
-            ],
+            "enum": ["PUT", "MULTIPART"],
             "title": "Method",
             "type": "string"
           },
@@ -5539,11 +5278,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "part_number",
-          "etag",
-          "size"
-        ],
+        "required": ["part_number", "etag", "size"],
         "title": "UploadedPartResponse",
         "type": "object"
       },
@@ -5568,10 +5303,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "upload_id",
-          "parts"
-        ],
+        "required": ["upload_id", "parts"],
         "title": "UploadedPartsResponse",
         "type": "object"
       },
@@ -5933,11 +5665,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError",
         "type": "object"
       },
@@ -5975,11 +5703,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "source_path",
-          "target",
-          "reason"
-        ],
+        "required": ["source_path", "target", "reason"],
         "title": "VaultBrokenLinkResponse",
         "type": "object"
       },
@@ -6029,11 +5753,7 @@
             "title": "Resolved Path"
           }
         },
-        "required": [
-          "existing_path",
-          "incoming_path",
-          "reason"
-        ],
+        "required": ["existing_path", "incoming_path", "reason"],
         "title": "VaultConflictResponse",
         "type": "object"
       },
@@ -6152,9 +5872,7 @@
             "writeOnly": true
           }
         },
-        "required": [
-          "token"
-        ],
+        "required": ["token"],
         "title": "VerifyEmailRequest",
         "type": "object"
       },
@@ -6182,10 +5900,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "url",
-          "event_types"
-        ],
+        "required": ["url", "event_types"],
         "title": "WebhookCreate",
         "type": "object"
       },
@@ -6301,13 +6016,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "url",
-          "event_types",
-          "active",
-          "created_at"
-        ],
+        "required": ["id", "url", "event_types", "active", "created_at"],
         "title": "WebhookResponse",
         "type": "object"
       }
@@ -6536,11 +6245,7 @@
             "required": false,
             "schema": {
               "default": "30d",
-              "enum": [
-                "7d",
-                "30d",
-                "90d"
-              ],
+              "enum": ["7d", "30d", "90d"],
               "title": "Window",
               "type": "string"
             }
@@ -6625,9 +6330,7 @@
           }
         },
         "summary": "Create Product Analytics Event",
-        "tags": [
-          "analytics"
-        ]
+        "tags": ["analytics"]
       }
     },
     "/v1/api-keys": {
@@ -6868,9 +6571,7 @@
           }
         },
         "summary": "Complete Mfa Challenge",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/mfa/enrollment": {
@@ -6909,9 +6610,7 @@
           }
         },
         "summary": "Start Mfa Enrollment",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/mfa/enrollment/confirm": {
@@ -6950,9 +6649,7 @@
           }
         },
         "summary": "Confirm Mfa Enrollment",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/mfa/recovery-codes/regenerate": {
@@ -6991,9 +6688,7 @@
           }
         },
         "summary": "Regenerate Recovery Codes",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/mfa/status": {
@@ -7012,9 +6707,7 @@
           }
         },
         "summary": "Mfa Status",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/oidc/authorize": {
@@ -7082,9 +6775,7 @@
           }
         },
         "summary": "Oidc Authorize",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/oidc/bind/authorize": {
@@ -7103,9 +6794,7 @@
           }
         },
         "summary": "Oidc Bind Authorize",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/oidc/callback": {
@@ -7166,9 +6855,7 @@
           }
         },
         "summary": "Oidc Callback",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/register": {
@@ -8978,9 +8665,7 @@
           }
         },
         "summary": "List Domain Packs",
-        "tags": [
-          "domain-packs"
-        ]
+        "tags": ["domain-packs"]
       }
     },
     "/v1/domain-packs/{pack_id}": {
@@ -9020,9 +8705,7 @@
           }
         },
         "summary": "Get Domain Pack",
-        "tags": [
-          "domain-packs"
-        ]
+        "tags": ["domain-packs"]
       }
     },
     "/v1/exports/{export_id}": {
@@ -10113,9 +9796,7 @@
           }
         },
         "summary": "List Project Members",
-        "tags": [
-          "project-access"
-        ]
+        "tags": ["project-access"]
       },
       "post": {
         "operationId": "grant_project_member_v1_projects__project_id__members_post",
@@ -10180,9 +9861,7 @@
           }
         },
         "summary": "Grant Project Member",
-        "tags": [
-          "project-access"
-        ]
+        "tags": ["project-access"]
       }
     },
     "/v1/projects/{project_id}/members/{user_id}": {
@@ -10242,9 +9921,7 @@
           }
         },
         "summary": "Revoke Project Member",
-        "tags": [
-          "project-access"
-        ]
+        "tags": ["project-access"]
       },
       "patch": {
         "operationId": "change_project_member_role_v1_projects__project_id__members__user_id__patch",
@@ -10319,9 +9996,7 @@
           }
         },
         "summary": "Change Project Member Role",
-        "tags": [
-          "project-access"
-        ]
+        "tags": ["project-access"]
       }
     },
     "/v1/review-items/{review_id}/resolve": {
@@ -10446,9 +10121,7 @@
           }
         },
         "summary": "Validate Custom Schema",
-        "tags": [
-          "domain-packs"
-        ]
+        "tags": ["domain-packs"]
       }
     },
     "/v1/settings": {
@@ -10567,9 +10240,7 @@
           }
         },
         "summary": "List Invitations",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       },
       "post": {
         "operationId": "create_invitation_v1_team_invitations_post",
@@ -10624,9 +10295,7 @@
           }
         },
         "summary": "Create Invitation",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       }
     },
     "/v1/team/invitations/accept": {
@@ -10673,9 +10342,7 @@
           }
         },
         "summary": "Accept Invitation",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       }
     },
     "/v1/team/invitations/{invitation_id}": {
@@ -10725,9 +10392,7 @@
           }
         },
         "summary": "Cancel Invitation",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       }
     },
     "/v1/team/members": {
@@ -10746,9 +10411,7 @@
           }
         },
         "summary": "List Members",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       }
     },
     "/v1/team/members/{user_id}": {
@@ -10798,9 +10461,7 @@
           }
         },
         "summary": "Remove Member",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       },
       "patch": {
         "operationId": "change_member_role_v1_team_members__user_id__patch",
@@ -10865,9 +10526,7 @@
           }
         },
         "summary": "Change Member Role",
-        "tags": [
-          "team"
-        ]
+        "tags": ["team"]
       }
     },
     "/v1/upload-sessions": {

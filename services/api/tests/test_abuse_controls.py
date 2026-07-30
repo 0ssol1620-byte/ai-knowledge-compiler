@@ -145,10 +145,7 @@ async def test_in_memory_limiter_is_bounded_and_expires() -> None:
         clock=lambda: current_time[0],
     )
     policy = RateLimitPolicy(limit=1, window_seconds=10)
-    subjects = [
-        hasher.pseudonymize(purpose="account", value=f"user-{index}")
-        for index in range(3)
-    ]
+    subjects = [hasher.pseudonymize(purpose="account", value=f"user-{index}") for index in range(3)]
 
     for subject in subjects:
         await limiter.consume(control="upload", subject=subject, policy=policy)
@@ -231,10 +228,7 @@ async def test_redis_limiter_uses_atomic_result_and_fails_closed_on_outage() -> 
     policy = RateLimitPolicy(limit=3, window_seconds=30)
 
     decisions = await asyncio.gather(
-        *(
-            limiter.consume(control="compile", subject=subject, policy=policy)
-            for _ in range(5)
-        )
+        *(limiter.consume(control="compile", subject=subject, policy=policy) for _ in range(5))
     )
     assert [decision.allowed for decision in decisions] == [
         True,

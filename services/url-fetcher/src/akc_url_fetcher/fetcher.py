@@ -396,11 +396,7 @@ class SecureUrlFetcher:
                 raise UrlFetchError("URL_FETCH_TOTAL_TIMEOUT", retryable=True)
             target = _target(current_url, self.policy, self._resolver)
             display_host = f"[{target.host}]" if ":" in target.host else target.host
-            host_header = (
-                display_host
-                if target.port == 443
-                else f"{display_host}:{target.port}"
-            )
+            host_header = display_host if target.port == 443 else f"{display_host}:{target.port}"
             response = self._requester(
                 target,
                 {

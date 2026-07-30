@@ -14,9 +14,9 @@ from codecs import getincrementaldecoder
 from enum import StrEnum
 from pathlib import PurePosixPath, PureWindowsPath
 from typing import Annotated, BinaryIO, cast
-from xml.etree import ElementTree
 
 from akc_cir import ContractModel
+from defusedxml import ElementTree
 from pydantic import Field
 
 ALLOWED_EXTENSIONS = frozenset(
@@ -253,7 +253,7 @@ def _validate_relationship_xml(payload: bytes) -> None:
     if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
         raise ValueError("ooxml_relationship_unsafe_xml")
     try:
-        root = ElementTree.fromstring(payload)  # noqa: S314  # DTD/entities rejected above.
+        root = ElementTree.fromstring(payload)
     except ElementTree.ParseError as exc:
         raise ValueError("ooxml_relationship_invalid") from exc
     for relationship in root.iter():

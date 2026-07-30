@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeft,
   Bell,
   BracketsCurly,
   CaretDown,
@@ -29,7 +30,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { normalizeSessionResponse, type SessionProfile } from "@/lib/session";
 
 const navigation = [
-  { href: "/home", label: "홈", icon: House },
+  { href: "/home", label: "대시보드", icon: House },
   { href: "/projects", label: "프로젝트", icon: FolderOpen },
   { href: "/quick-convert", label: "빠른 변환", icon: Lightning },
   { href: "/knowledge-bases", label: "지식베이스", icon: TreeStructure },
@@ -176,7 +177,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
       <aside className="sidebar" aria-label="주 메뉴">
         <div className="sidebar-brand-row">
-          <Link href="/home" className="brand-link">
+          <Link
+            href="/"
+            className="brand-link"
+            aria-label="제품 사이트로 돌아가기"
+          >
             <BrandMark compact={collapsed} />
           </Link>
           <button
@@ -249,21 +254,35 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Lifebuoy size={19} aria-hidden="true" />
             <span>도움말·고지</span>
           </Link>
+          <Link
+            href="/"
+            className="nav-item product-site-nav"
+            title={collapsed ? "제품 사이트" : undefined}
+          >
+            <ArrowLeft size={19} aria-hidden="true" />
+            <span>제품 사이트</span>
+          </Link>
         </nav>
       </aside>
 
       <div className="app-body">
         <header className="topbar">
-          <button
-            type="button"
-            className="topbar-search"
-            onClick={() => setCommandOpen(true)}
-            aria-haspopup="dialog"
-          >
-            <MagnifyingGlass size={17} aria-hidden="true" />
-            <span>프로젝트, 문서, 근거 검색</span>
-            <kbd>Ctrl K</kbd>
-          </button>
+          <div className="topbar-leading">
+            <Link href="/" className="product-back-link">
+              <ArrowLeft size={15} aria-hidden="true" />
+              <span>제품 사이트</span>
+            </Link>
+            <button
+              type="button"
+              className="topbar-search"
+              onClick={() => setCommandOpen(true)}
+              aria-haspopup="dialog"
+            >
+              <MagnifyingGlass size={17} aria-hidden="true" />
+              <span>프로젝트, 문서, 근거 검색</span>
+              <kbd>Ctrl K</kbd>
+            </button>
+          </div>
           <div className="topbar-actions">
             <div className="credit-chip" title="사용 가능한 크레딧">
               <span>
@@ -304,7 +323,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav className="mobile-app-nav" aria-label="모바일 주 메뉴">
           {(
             [
-              { href: "/home", label: "홈", icon: House },
+              { href: "/home", label: "대시보드", icon: House },
               { href: "/projects", label: "프로젝트", icon: FolderOpen },
               { href: "/activity", label: "활동", icon: Pulse },
               { href: "/settings", label: "내 정보", icon: GearSix },
@@ -366,6 +385,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   ["/review", "검토 스튜디오", "R"],
                   ["/benchmarks", "벤치마크 실행", "B"],
                   ["/settings", "워크스페이스 설정", "S"],
+                  ["/", "제품 사이트", "H"],
                 ] as const
               ).map(([href, label, key]) => (
                 <Link

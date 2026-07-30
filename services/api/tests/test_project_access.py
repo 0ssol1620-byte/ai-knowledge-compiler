@@ -195,12 +195,8 @@ async def test_project_acl_intersection_api_key_revocation_and_audit(
         hidden = await member_client.get(f"/v1/projects/{project_b_id}")
         assert hidden.status_code == 404
         assert hidden.json()["error"]["code"] == "PROJECT_NOT_FOUND"
-        assert (
-            await member_client.get(f"/v1/documents/{document_a_id}")
-        ).status_code == 200
-        assert (
-            await member_client.get(f"/v1/documents/{document_b_id}")
-        ).status_code == 404
+        assert (await member_client.get(f"/v1/documents/{document_a_id}")).status_code == 200
+        assert (await member_client.get(f"/v1/documents/{document_b_id}")).status_code == 404
 
         denied_write = await member_client.patch(
             f"/v1/projects/{project_a_id}",

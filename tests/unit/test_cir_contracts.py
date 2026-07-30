@@ -114,9 +114,7 @@ def test_document_rejects_duplicate_block_ids(source_ref: SourceRef) -> None:
 
 def test_page_state_transition_policy_is_fail_closed() -> None:
     assert page_transition_allowed(PageState.UPLOADED, PageState.SECURITY_SCANNING)
-    assert page_transition_allowed(
-        PageState.SECURITY_SCANNING, PageState.SECURITY_VERIFIED
-    )
+    assert page_transition_allowed(PageState.SECURITY_SCANNING, PageState.SECURITY_VERIFIED)
     assert page_transition_allowed(PageState.SECURITY_VERIFIED, PageState.PREFLIGHTING)
     assert page_transition_allowed(PageState.PREFLIGHTING, PageState.PREFLIGHTED)
     assert not page_transition_allowed(PageState.UPLOADED, PageState.PREFLIGHTING)

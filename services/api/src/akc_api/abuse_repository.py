@@ -111,9 +111,7 @@ async def reserve_free_usage(
         gpu_cost_usd=Decimal("0"),
     )
     await session.execute(
-        insert_statement.on_conflict_do_nothing(
-            index_elements=["tenant_id", "usage_date"]
-        )
+        insert_statement.on_conflict_do_nothing(index_elements=["tenant_id", "usage_date"])
     )
     usage = await session.scalar(
         select(FreeDailyUsage)
@@ -196,9 +194,7 @@ async def free_source_claim(
         source_file_id=source_file_id,
     )
     await session.execute(
-        insert_statement.on_conflict_do_nothing(
-            index_elements=["tenant_id", "sha256"]
-        )
+        insert_statement.on_conflict_do_nothing(index_elements=["tenant_id", "sha256"])
     )
     existing = await session.get(FreeProcessedSource, (tenant_id, digest))
     if existing is None:

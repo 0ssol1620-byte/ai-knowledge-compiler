@@ -33,12 +33,12 @@ user_edited
 origins. A provider adapter MAY accept legacy aliases at its boundary, but MUST
 normalize them before producing CIR:
 
-| Legacy/provider value | Canonical value |
-|---|---|
-| `native` | `native_extracted` |
-| `ocr` | `ocr_extracted` |
+| Legacy/provider value                           | Canonical value      |
+| ----------------------------------------------- | -------------------- |
+| `native`                                        | `native_extracted`   |
+| `ocr`                                           | `ocr_extracted`      |
 | `layout_reconstructed` with deterministic rules | `rule_reconstructed` |
-| `layout_reconstructed` with model generation | `ai_reconstructed` |
+| `layout_reconstructed` with model generation    | `ai_reconstructed`   |
 
 Unknown values fail contract validation. They are not silently mapped.
 

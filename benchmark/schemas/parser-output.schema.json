@@ -3,20 +3,49 @@
   "$id": "https://schemas.ai-knowledge-compiler.example/benchmark/parser-output-1.0.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "benchmark_case_id", "provider", "model_revision", "text", "reading_order", "blocks", "generated_claims", "metrics", "warnings"],
+  "required": [
+    "schema_version",
+    "benchmark_case_id",
+    "provider",
+    "model_revision",
+    "text",
+    "reading_order",
+    "blocks",
+    "generated_claims",
+    "metrics",
+    "warnings"
+  ],
   "properties": {
-    "schema_version": {"const": "1.0"},
-    "benchmark_case_id": {"type": "string", "minLength": 1},
-    "provider": {"type": "string", "minLength": 1},
-    "model_revision": {"type": "string", "minLength": 1},
-    "text": {"type": "string"},
-    "reading_order": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-    "blocks": {"type": "array", "items": {"$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/block"}},
-    "generated_claims": {"type": "array", "items": {"$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/claim"}},
-    "date_unit_annotations": {"$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/dateUnitAnnotations"},
+    "schema_version": { "const": "1.0" },
+    "benchmark_case_id": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "model_revision": { "type": "string", "minLength": 1 },
+    "text": { "type": "string" },
+    "reading_order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/block"
+      }
+    },
+    "generated_claims": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/claim"
+      }
+    },
+    "date_unit_annotations": {
+      "$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/dateUnitAnnotations"
+    },
     "heading_outline": {
       "type": "array",
-      "items": {"$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/headingOutlineItem"}
+      "items": {
+        "$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/headingOutlineItem"
+      }
     },
     "token_annotations": {
       "$ref": "https://schemas.ai-knowledge-compiler.example/benchmark/page-ground-truth-1.0.json#/$defs/tokenAnnotations"
@@ -37,13 +66,13 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "title_quality_human_score": {"$ref": "#/$defs/verifiedHumanMetric"}
+        "title_quality_human_score": { "$ref": "#/$defs/verifiedHumanMetric" }
       },
       "minProperties": 1
     },
-    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "metrics": {"type": "object"},
-    "warnings": {"type": "array", "items": {"type": "string"}}
+    "source_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "metrics": { "type": "object" },
+    "warnings": { "type": "array", "items": { "type": "string" } }
   },
   "$defs": {
     "verifiedHumanMetric": {
@@ -56,9 +85,9 @@
         "evidence_sha256"
       ],
       "properties": {
-        "value": {"type": "number", "minimum": 0, "maximum": 1},
-        "reviewer_count": {"type": "integer", "minimum": 2},
-        "rubric_version": {"type": "string", "minLength": 1},
+        "value": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reviewer_count": { "type": "integer", "minimum": 2 },
+        "rubric_version": { "type": "string", "minLength": 1 },
         "evidence_sha256": {
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"

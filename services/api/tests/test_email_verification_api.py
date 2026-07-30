@@ -35,9 +35,7 @@ async def verification_api(
 ) -> AsyncIterator[tuple[httpx.AsyncClient, Any]]:
     settings = Settings(
         env="test",
-        database_url=(
-            f"sqlite+aiosqlite:///{(tmp_path / 'verification.db').as_posix()}"
-        ),
+        database_url=(f"sqlite+aiosqlite:///{(tmp_path / 'verification.db').as_posix()}"),
         data_dir=tmp_path / "data",
         local_background_tasks=False,
         local_analysis_worker_enabled=False,
@@ -122,8 +120,7 @@ async def test_activation_gates_processing_and_grants_credit_exactly_once(
     async with app.state.database.sessions() as session:
         grants_before = await session.scalar(
             select(func.count(CreditLedger.id)).where(
-                CreditLedger.tenant_id
-                == uuid.UUID(registration["tenant_id"]),
+                CreditLedger.tenant_id == uuid.UUID(registration["tenant_id"]),
                 CreditLedger.entry_type == "grant",
             )
         )
@@ -137,17 +134,13 @@ async def test_activation_gates_processing_and_grants_credit_exactly_once(
         json={"token": verified["token"]},
     )
     assert replay.status_code == 400
-    assert (
-        replay.json()["error"]["code"]
-        == "INVALID_OR_EXPIRED_VERIFICATION_TOKEN"
-    )
+    assert replay.json()["error"]["code"] == "INVALID_OR_EXPIRED_VERIFICATION_TOKEN"
 
     async with app.state.database.sessions() as session:
         grants = list(
             await session.scalars(
                 select(CreditLedger).where(
-                    CreditLedger.tenant_id
-                    == uuid.UUID(registration["tenant_id"]),
+                    CreditLedger.tenant_id == uuid.UUID(registration["tenant_id"]),
                     CreditLedger.entry_type == "grant",
                 )
             )
@@ -207,9 +200,7 @@ async def test_test_support_route_is_bounded_hidden_and_single_consumer(
         json={"email": email},
     )
     assert wrong.status_code == 404
-    assert "/__test__/verification-token" not in (await client.get("/openapi.json")).json()[
-        "paths"
-    ]
+    assert "/__test__/verification-token" not in (await client.get("/openapi.json")).json()["paths"]
     await _take_token(client, email)
     consumed = await client.post(
         "/__test__/verification-token",
@@ -231,10 +222,13 @@ async def test_verify_rate_limit_returns_retry_after(tmp_path: Path) -> None:
         verify_window_seconds=60,
     )
     app = create_app(settings)
-    async with app.router.lifespan_context(app), httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app, raise_app_exceptions=True),
-        base_url="http://testserver",
-    ) as client:
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app, raise_app_exceptions=True),
+            base_url="http://testserver",
+        ) as client,
+    ):
         first = await client.post(
             "/v1/auth/verify-email",
             json={"token": "x" * 64},
@@ -289,14 +283,12 @@ async def test_daily_file_cap_is_transactional(tmp_path: Path) -> None:
         async with app.state.database.sessions() as session:
             usage = await session.scalar(
                 select(FreeDailyUsage).where(
-                    FreeDailyUsage.tenant_id
-                    == uuid.UUID(registration["tenant_id"])
+                    FreeDailyUsage.tenant_id == uuid.UUID(registration["tenant_id"])
                 )
             )
             denial_audit = await session.scalar(
                 select(AuditEvent).where(
-                    AuditEvent.tenant_id
-                    == uuid.UUID(registration["tenant_id"]),
+                    AuditEvent.tenant_id == uuid.UUID(registration["tenant_id"]),
                     AuditEvent.action == "abuse.free_daily_cap_denied",
                 )
             )
@@ -312,17 +304,18 @@ async def test_duplicate_hash_is_blocked_tenant_wide_before_second_upload(
 ) -> None:
     settings = Settings(
         env="test",
-        database_url=(
-            f"sqlite+aiosqlite:///{(tmp_path / 'duplicate.db').as_posix()}"
-        ),
+        database_url=(f"sqlite+aiosqlite:///{(tmp_path / 'duplicate.db').as_posix()}"),
         data_dir=tmp_path / "duplicate-data",
         test_support_key=_SUPPORT_KEY,
     )
     app = create_app(settings)
-    async with app.router.lifespan_context(app), httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app, raise_app_exceptions=True),
-        base_url="http://testserver",
-    ) as client:
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app, raise_app_exceptions=True),
+            base_url="http://testserver",
+        ) as client,
+    ):
         email = "duplicate@example.test"
         registration = await _register_pending(client, email=email)
         await _verify(client, email)
@@ -367,8 +360,7 @@ async def test_duplicate_hash_is_blocked_tenant_wide_before_second_upload(
         async with app.state.database.sessions() as session:
             denial = await session.scalar(
                 select(AuditEvent).where(
-                    AuditEvent.tenant_id
-                    == uuid.UUID(registration["tenant_id"]),
+                    AuditEvent.tenant_id == uuid.UUID(registration["tenant_id"]),
                     AuditEvent.action == "abuse.duplicate_source_denied",
                 )
             )
@@ -466,17 +458,13 @@ async def test_failed_gpu_cap_creates_no_job(tmp_path: Path) -> None:
                 )
             ).status_code == 200
             assert (
-                await client.post(
-                    f"/v1/documents/{upload['document_id']}/analyze"
-                )
+                await client.post(f"/v1/documents/{upload['document_id']}/analyze")
             ).status_code == 202
             async with app.state.database.sessions() as session:
                 from akc_api.models import Page
 
                 page = await session.scalar(
-                    select(Page).where(
-                        Page.tenant_id == uuid.UUID(verified["tenant_id"])
-                    )
+                    select(Page).where(Page.tenant_id == uuid.UUID(verified["tenant_id"]))
                 )
                 assert page is not None
                 page.route = "visual"
@@ -507,10 +495,13 @@ async def test_worker_enforces_daily_page_cap_before_persisting_pages(
         free_daily_page_cap=1,
     )
     app = create_app(settings)
-    async with app.router.lifespan_context(app), httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app, raise_app_exceptions=True),
-        base_url="http://testserver",
-    ) as client:
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app, raise_app_exceptions=True),
+            base_url="http://testserver",
+        ) as client,
+    ):
         email = "page-cap@example.test"
         registration = await _register_pending(client, email=email)
         await _verify(client, email)
@@ -544,23 +535,16 @@ async def test_worker_enforces_daily_page_cap_before_persisting_pages(
                     json={"sha256": digest},
                 )
             ).status_code == 200
-            queued = await client.post(
-                f"/v1/documents/{upload['document_id']}/analyze"
-            )
+            queued = await client.post(f"/v1/documents/{upload['document_id']}/analyze")
             assert queued.status_code == 202, queued.text
-            return (
-                await client.get(
-                    f"/v1/documents/{upload['document_id']}/analysis"
-                )
-            ).json()
+            return (await client.get(f"/v1/documents/{upload['document_id']}/analysis")).json()
 
         first = await upload_and_analyze(b"first page", "first.txt")
         second = await upload_and_analyze(b"second page", "second.txt")
         async with app.state.database.sessions() as session:
             usage = await session.scalar(
                 select(FreeDailyUsage).where(
-                    FreeDailyUsage.tenant_id
-                    == uuid.UUID(registration["tenant_id"])
+                    FreeDailyUsage.tenant_id == uuid.UUID(registration["tenant_id"])
                 )
             )
     assert first["status"] == "completed"

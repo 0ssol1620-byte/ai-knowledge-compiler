@@ -28,11 +28,11 @@ evidence that CodeQL or dependency review passed.
 
 Create these environments with independent reviewers and no self-approval:
 
-| Environment | Purpose | Required configuration |
-|---|---|---|
-| `release-approval` | Non-promotional Gate 0-6 evidence | release approvers, no deployment credentials |
-| `model-staging` | One-page provider smoke | `RUNPOD_API_KEY`, `GPU_CALLBACK_HMAC_SECRET`, synthetic input URL/key/checksum |
-| `staging-drill` | Bounded k6 evidence | exact `AKC_STAGING_DRILL_ALLOWED_ORIGINS`, disposable test user/project secrets |
+| Environment        | Purpose                           | Required configuration                                                          |
+| ------------------ | --------------------------------- | ------------------------------------------------------------------------------- |
+| `release-approval` | Non-promotional Gate 0-6 evidence | release approvers, no deployment credentials                                    |
+| `model-staging`    | One-page provider smoke           | `RUNPOD_API_KEY`, `GPU_CALLBACK_HMAC_SECRET`, synthetic input URL/key/checksum  |
+| `staging-drill`    | Bounded k6 evidence               | exact `AKC_STAGING_DRILL_ALLOWED_ORIGINS`, disposable test user/project secrets |
 
 Limit secret access to the workflow/environment that needs it. Rotate a secret
 after suspected exposure, remove old versions after overlap verification, and

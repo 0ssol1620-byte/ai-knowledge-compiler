@@ -194,6 +194,7 @@ export interface ProjectSummary {
   review_count: number;
   status: "draft" | "processing" | "ready" | "attention";
   updated_at: string;
+  owner_name?: string;
 }
 
 export interface PreflightEstimate {

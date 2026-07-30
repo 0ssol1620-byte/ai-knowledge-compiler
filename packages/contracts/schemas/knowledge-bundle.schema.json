@@ -4,7 +4,13 @@
   "title": "KnowledgeBundle",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "documentId", "notes", "relations", "conflicts"],
+  "required": [
+    "schemaVersion",
+    "documentId",
+    "notes",
+    "relations",
+    "conflicts"
+  ],
   "properties": {
     "schemaVersion": { "const": "knowledge-1.0.0" },
     "documentId": { "$ref": "#/$defs/stableId" },
@@ -71,7 +77,13 @@
     "relatedNoteCandidate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["targetId", "relation", "reason", "sourceBlockIds", "confidence"],
+      "required": [
+        "targetId",
+        "relation",
+        "reason",
+        "sourceBlockIds",
+        "confidence"
+      ],
       "properties": {
         "targetId": { "$ref": "#/$defs/stableId" },
         "relation": { "type": "string", "minLength": 1, "maxLength": 500 },
@@ -199,10 +211,7 @@
         "resolution": { "type": "string", "maxLength": 2000 },
         "requiresReview": { "type": "boolean" },
         "evidenceBlockIds": {
-          "allOf": [
-            { "$ref": "#/$defs/evidenceIds" },
-            { "minItems": 2 }
-          ]
+          "allOf": [{ "$ref": "#/$defs/evidenceIds" }, { "minItems": 2 }]
         }
       }
     }

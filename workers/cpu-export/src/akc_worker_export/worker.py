@@ -23,14 +23,11 @@ def compile_markdown_zip(files: dict[str, str]) -> tuple[bytes, str]:
     payloads = {
         **{name: value.encode("utf-8") for name, value in normalized.items()},
         "manifest.json": (
-            json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-            + "\n"
+            json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
         ).encode(),
     }
     buffer = io.BytesIO()
-    with zipfile.ZipFile(
-        buffer, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
-    ) as archive:
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in sorted(payloads):
             info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED

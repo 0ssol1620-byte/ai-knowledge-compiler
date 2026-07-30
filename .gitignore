@@ -25,6 +25,7 @@ build/
 # JavaScript
 node_modules/
 .next/
+.next-e2e-live/
 out/
 *.tsbuildinfo
 coverage/

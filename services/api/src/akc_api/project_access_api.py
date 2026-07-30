@@ -86,8 +86,7 @@ async def _target(
             select(User, Membership)
             .join(
                 Membership,
-                (Membership.user_id == User.id)
-                & (Membership.tenant_id == principal.tenant_id),
+                (Membership.user_id == User.id) & (Membership.tenant_id == principal.tenant_id),
             )
             .where(User.id == user_id, User.is_active.is_(True))
         )
@@ -288,8 +287,7 @@ async def revoke_project_member(
         select(User, Membership)
         .join(
             Membership,
-            (Membership.user_id == User.id)
-            & (Membership.tenant_id == principal.tenant_id),
+            (Membership.user_id == User.id) & (Membership.tenant_id == principal.tenant_id),
         )
         .where(User.id == user_id)
     )

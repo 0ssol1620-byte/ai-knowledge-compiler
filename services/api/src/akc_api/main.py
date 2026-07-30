@@ -4515,9 +4515,7 @@ async def _archived_job_snapshot_payload(
             "blocks": len(blocks),
             "route_totals": {
                 route: sum(str(page.get("route") or "manual_review") == route for page in pages)
-                for route in sorted(
-                    {str(page.get("route") or "manual_review") for page in pages}
-                )
+                for route in sorted({str(page.get("route") or "manual_review") for page in pages})
             },
             "block_type_totals": _snapshot_block_type_totals(blocks),
             "removed_header_footer": _snapshot_removed_marginals(blocks),
@@ -7204,6 +7202,84 @@ async def dashboard(principal: PrincipalDep, session: SessionDep) -> dict[str, A
             )
         ).all()
     )
+    project_ids = [project.id for project in project_rows]
+    owner_ids = {project.created_by for project in project_rows}
+    owners = (
+        {
+            user.id: user.display_name
+            for user in (await session.scalars(select(User).where(User.id.in_(owner_ids)))).all()
+        }
+        if owner_ids
+        else {}
+    )
+    if project_ids:
+        active_jobs = int(
+            await session.scalar(
+                select(func.count(ProcessingJob.id)).where(
+                    ProcessingJob.tenant_id == principal.tenant_id,
+                    ProcessingJob.project_id.in_(project_ids),
+                    ProcessingJob.status.in_(("queued", "running", "waiting_review")),
+                )
+            )
+            or 0
+        )
+        failed_jobs = int(
+            await session.scalar(
+                select(func.count(ProcessingJob.id)).where(
+                    ProcessingJob.tenant_id == principal.tenant_id,
+                    ProcessingJob.project_id.in_(project_ids),
+                    ProcessingJob.status == "failed",
+                )
+            )
+            or 0
+        )
+        review_required = int(
+            await session.scalar(
+                select(func.count(ReviewItem.id)).where(
+                    ReviewItem.tenant_id == principal.tenant_id,
+                    ReviewItem.project_id.in_(project_ids),
+                    ReviewItem.status == "open",
+                )
+            )
+            or 0
+        )
+        source_storage_bytes = int(
+            await session.scalar(
+                select(func.coalesce(func.sum(SourceFile.size_bytes), 0)).where(
+                    SourceFile.tenant_id == principal.tenant_id,
+                    SourceFile.project_id.in_(project_ids),
+                )
+            )
+            or 0
+        )
+        export_storage_bytes = int(
+            await session.scalar(
+                select(func.coalesce(func.sum(Export.size_bytes), 0)).where(
+                    Export.tenant_id == principal.tenant_id,
+                    Export.project_id.in_(project_ids),
+                    Export.size_bytes.is_not(None),
+                )
+            )
+            or 0
+        )
+    else:
+        active_jobs = 0
+        failed_jobs = 0
+        review_required = 0
+        source_storage_bytes = 0
+        export_storage_bytes = 0
+
+    account = await session.get(CreditAccount, principal.tenant_id)
+    credit_remaining = float(account.balance - account.reserved) if account is not None else None
+    tenant = await session.get(Tenant, principal.tenant_id)
+    retention_days = tenant.data_retention_days if tenant is not None else 0
+    cycle_start = datetime.now(UTC).replace(
+        day=1,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
     active_document = (Document.tenant_id == Page.tenant_id) & (Document.id == Page.document_id)
     pages = list(
         (
@@ -7222,6 +7298,24 @@ async def dashboard(principal: PrincipalDep, session: SessionDep) -> dict[str, A
                 )
             )
         ).all()
+    )
+    processed_pages_this_cycle = int(
+        await session.scalar(
+            select(func.count(Page.id))
+            .join(Document, active_document)
+            .join(
+                Project,
+                (Project.tenant_id == Document.tenant_id) & (Project.id == Document.project_id),
+            )
+            .where(
+                Page.tenant_id == principal.tenant_id,
+                Page.created_at >= cycle_start,
+                Document.deletion_requested_at.is_(None),
+                Project.deletion_requested_at.is_(None),
+                project_access_predicate(principal, Project.id, "read"),
+            )
+        )
+        or 0
     )
     blocks_total = await session.scalar(
         select(func.count(Block.id))
@@ -7308,11 +7402,19 @@ async def dashboard(principal: PrincipalDep, session: SessionDep) -> dict[str, A
                 "review_count": review_count or 0,
                 "status": project_status,
                 "updated_at": project.updated_at,
+                "owner_name": owners.get(project.created_by),
             }
         )
     return {
         "active_project_count": len(project_rows),
+        "active_jobs": active_jobs,
+        "review_required": review_required,
+        "failed_jobs": failed_jobs,
         "processed_pages": len(pages),
+        "processed_pages_this_cycle": processed_pages_this_cycle,
+        "storage_used_bytes": source_storage_bytes + export_storage_bytes,
+        "credit_remaining": credit_remaining,
+        "retention_days": retention_days,
         "native_pages": sum(page.route == "native" for page in pages),
         "visual_pages": sum(page.route not in {None, "native"} for page in pages),
         "provenance_coverage": coverage,

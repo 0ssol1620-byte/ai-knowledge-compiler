@@ -251,9 +251,7 @@ def test_acquisition_records_unavailable_archive_and_continues(tmp_path: Path) -
         maximum_filings=2,
         confirmation=DART_CONFIRMATION,
     )
-    assert [receipt.disclosure.receipt_number for receipt in receipts] == [
-        "20260312000002"
-    ]
+    assert [receipt.disclosure.receipt_number for receipt in receipts] == ["20260312000002"]
     manifest = json.loads((tmp_path / "acquisition-manifest.json").read_text(encoding="utf-8"))
     assert manifest["acquisition_failure_count"] == 1
     assert manifest["failures"] == [

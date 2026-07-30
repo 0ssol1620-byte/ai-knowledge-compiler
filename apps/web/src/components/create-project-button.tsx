@@ -14,7 +14,7 @@ export function CreateProjectButton({
   variant = "primary",
   label,
 }: {
-  variant?: "primary" | "inline";
+  variant?: "primary" | "secondary" | "inline";
   label?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -36,7 +36,11 @@ export function CreateProjectButton({
     <>
       <button
         className={
-          variant === "inline" ? "inline-create-button" : "primary-button"
+          variant === "inline"
+            ? "inline-create-button"
+            : variant === "secondary"
+              ? "secondary-button"
+              : "primary-button"
         }
         type="button"
         onClick={() => {

@@ -32,14 +32,37 @@ test("HTML uses a per-request script nonce and hardened response headers", async
 test("dashboard exposes evidence-first project workflow", async ({ page }) => {
   await page.goto("/home");
   await expect(
-    page.getByRole("heading", { name: "원문에서 검증 가능한 지식까지" }),
+    page.getByRole("heading", { name: "워크스페이스" }),
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "처리 중" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "검토 필요" })).toBeVisible();
   await expect(
-    page.getByRole("main").getByText("외부 API 꺼짐").first(),
+    page.getByRole("table").getByRole("columnheader", { name: "담당자" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: /파일을 끌어놓거나 선택하세요/ }),
-  ).toBeVisible();
+});
+
+test("marketing and dashboard preserve a visible round-trip", async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto("/");
+  if (isMobile) {
+    await page
+      .getByRole("banner")
+      .getByRole("link", { name: "무료로 시작", exact: true })
+      .click();
+  } else {
+    await page
+      .getByRole("navigation", { name: "마케팅 메뉴" })
+      .getByRole("link", { name: "대시보드", exact: true })
+      .click();
+  }
+  await expect(page).toHaveURL(/\/home$/);
+  await page
+    .getByRole("link", { name: "제품 사이트", exact: true })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/$/);
 });
 
 test("marketing page leads with the enterprise knowledge compiler promise", async ({

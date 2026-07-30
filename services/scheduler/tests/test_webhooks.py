@@ -59,11 +59,14 @@ def test_secret_encryption_and_signing_contract() -> None:
         str(timestamp).encode() + b"." + body,
         hashlib.sha256,
     ).hexdigest()
-    assert sign_webhook_payload(
-        body=body,
-        secret=secret,
-        timestamp=timestamp,
-    ) == f"v1={expected}"
+    assert (
+        sign_webhook_payload(
+            body=body,
+            secret=secret,
+            timestamp=timestamp,
+        )
+        == f"v1={expected}"
+    )
     headers = webhook_headers(
         body=body,
         delivery_id="delivery-1",
@@ -216,8 +219,7 @@ async def test_http_delivery_pins_dns_and_revalidates_redirects() -> None:
     ]
     assert all(request.url.host == PUBLIC_IP for request in requests)
     assert all(
-        request.extensions["sni_hostname"]
-        in {"hooks.example.com", "backup.example.com"}
+        request.extensions["sni_hostname"] in {"hooks.example.com", "backup.example.com"}
         for request in requests
     )
 

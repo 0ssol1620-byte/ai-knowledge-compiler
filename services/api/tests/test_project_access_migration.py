@@ -48,8 +48,7 @@ def test_project_membership_sqlite_migration_up_down_up(
 
         MIGRATION.upgrade()
         columns = {
-            column["name"]
-            for column in inspect(connection).get_columns("project_memberships")
+            column["name"] for column in inspect(connection).get_columns("project_memberships")
         }
         assert columns == {
             "tenant_id",
@@ -89,12 +88,8 @@ def test_postgresql_policies_are_restrictive_intersections_and_reversible(
     assert "current_setting('app.user_id', true)" in sql
     assert "access_tenant_membership.role IN ('editor')" in sql
     assert "access_project_membership.role IN ('editor')" in sql
-    assert (
-        "access_tenant_membership.role IN ('editor', 'reviewer')" in sql
-    )
-    assert (
-        "access_project_membership.role IN ('editor', 'reviewer')" in sql
-    )
+    assert "access_tenant_membership.role IN ('editor', 'reviewer')" in sql
+    assert "access_project_membership.role IN ('editor', 'reviewer')" in sql
     assert "pg_current_xact_id()::text::xid" in sql
     assert "SECURITY DEFINER" in sql
     assert (
@@ -102,20 +97,16 @@ def test_postgresql_policies_are_restrictive_intersections_and_reversible(
         "OWNER TO akc_dispatch_worker"
     ) in sql
     assert (
-        'CREATE POLICY "projects_project_select" ON "projects" '
-        "AS RESTRICTIVE FOR SELECT"
+        'CREATE POLICY "projects_project_select" ON "projects" AS RESTRICTIVE FOR SELECT'
     ) in sql
     assert (
-        'CREATE POLICY "documents_project_update" ON "documents" '
-        "AS RESTRICTIVE FOR UPDATE"
+        'CREATE POLICY "documents_project_update" ON "documents" AS RESTRICTIVE FOR UPDATE'
     ) in sql
     assert (
-        'CREATE POLICY "project_memberships_project_select" '
-        'ON "project_memberships" FOR SELECT'
+        'CREATE POLICY "project_memberships_project_select" ON "project_memberships" FOR SELECT'
     ) in sql
     assert (
-        'CREATE POLICY "project_memberships_project_select" '
-        'ON "project_memberships" AS RESTRICTIVE'
+        'CREATE POLICY "project_memberships_project_select" ON "project_memberships" AS RESTRICTIVE'
     ) not in sql
     job_event_policy = next(
         statement

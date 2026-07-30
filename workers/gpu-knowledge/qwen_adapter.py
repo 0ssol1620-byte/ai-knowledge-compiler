@@ -55,6 +55,7 @@ PIPELINE:
 - Never copy source text into stage C or D output.
 """
 
+
 def _canonical_json(value: Any) -> bytes:
     try:
         return json.dumps(
@@ -455,10 +456,7 @@ def _validate_bundle_evidence(
     if value.get("documentId") != document_id:
         raise SafeWorkerError("qwen_schema_output_invalid")
     notes = value.get("notes")
-    if (
-        not isinstance(notes, list)
-        or (require_notes and not notes)
-    ):
+    if not isinstance(notes, list) or (require_notes and not notes):
         raise SafeWorkerError("qwen_schema_output_invalid")
     for note in notes:
         if not isinstance(note, dict):
@@ -521,11 +519,7 @@ def _semantic_merge_supported(candidates: list[dict[str, Any]]) -> bool:
                 candidate["normalized_title"],
                 *aliases,
                 *tags,
-                *[
-                    claim.get("signature_sha256", "")
-                    for claim in claims
-                    if isinstance(claim, dict)
-                ],
+                *[claim.get("signature_sha256", "") for claim in claims if isinstance(claim, dict)],
             )
             if isinstance(value, str) and value.strip()
         }
@@ -535,25 +529,18 @@ def _semantic_merge_supported(candidates: list[dict[str, Any]]) -> bool:
                 token
                 for token in re.findall(
                     r"[\w-]+",
-                    (
-                        f"{candidate['normalized_title']} "
-                        f"{candidate['summary']}"
-                    ).casefold(),
+                    (f"{candidate['normalized_title']} {candidate['summary']}").casefold(),
                 )
                 if len(token) >= 4
             }
         )
-    adjacency: dict[int, set[int]] = {
-        index: set() for index in range(len(candidates))
-    }
+    adjacency: dict[int, set[int]] = {index: set() for index in range(len(candidates))}
     for left in range(len(candidates)):
         for right in range(left + 1, len(candidates)):
             overlap = semantic_tokens[left] & semantic_tokens[right]
             union = semantic_tokens[left] | semantic_tokens[right]
             if semantic_values[left] & semantic_values[right] or (
-                len(overlap) >= 2
-                and union
-                and len(overlap) / len(union) >= 0.5
+                len(overlap) >= 2 and union and len(overlap) / len(union) >= 0.5
             ):
                 adjacency[left].add(right)
                 adjacency[right].add(left)
@@ -622,9 +609,7 @@ def _validate_pipeline_result(
             document_id=str(pipeline_input["document_id"]),
             require_notes=False,
         )
-        note_ids = {
-            note.get("noteId") for note in notes if isinstance(note, dict)
-        }
+        note_ids = {note.get("noteId") for note in notes if isinstance(note, dict)}
         if any(
             not isinstance(relation, dict)
             or relation.get("subject") not in note_ids
@@ -649,16 +634,13 @@ def _validate_pipeline_result(
             for member in group.get("memberCandidateIds", [])
         ]
         canonical = {
-            group.get("canonicalCandidateId")
-            for group in groups
-            if isinstance(group, dict)
+            group.get("canonicalCandidateId") for group in groups if isinstance(group, dict)
         }
         if set(members) != expected or len(members) != len(set(members)):
             raise SafeWorkerError("qwen_pipeline_output_scope_invalid")
         if any(
             not isinstance(group, dict)
-            or group.get("canonicalCandidateId")
-            not in group.get("memberCandidateIds", [])
+            or group.get("canonicalCandidateId") not in group.get("memberCandidateIds", [])
             or set(group.get("comparedCandidateIds", []))
             != set(group.get("memberCandidateIds", []))
             or set(group.get("evidenceBlockIds", []))
@@ -755,9 +737,7 @@ class QwenKnowledgeAdapter:
         ):
             raise SafeWorkerError("qwen_runtime_attestation_mismatch")
         self._knowledge_schemas = _knowledge_schemas()
-        self._prompt_revision = (
-            f"sha256:{hashlib.sha256(_SYSTEM_PROMPT.encode()).hexdigest()}"
-        )
+        self._prompt_revision = f"sha256:{hashlib.sha256(_SYSTEM_PROMPT.encode()).hexdigest()}"
         self._host, self._port, self._target = _endpoint()
         self._model_revision = model_revision
         timeout = float(os.getenv("QWEN_INFERENCE_TIMEOUT_SECONDS", "120"))
@@ -797,8 +777,7 @@ class QwenKnowledgeAdapter:
             raise SafeWorkerError("qwen_request_schema_unattested")
         knowledge_schema, schema_validator = schema_entry
         if (
-            artifact_contract
-            not in {_ARTIFACT_CONTRACT, _PIPELINE_ARTIFACT_CONTRACT}
+            artifact_contract not in {_ARTIFACT_CONTRACT, _PIPELINE_ARTIFACT_CONTRACT}
             or options.get("prompt_revision") != self._prompt_revision
         ):
             raise SafeWorkerError("qwen_request_attestation_mismatch")
@@ -806,9 +785,7 @@ class QwenKnowledgeAdapter:
         stage: str | None = None
         unit_id: str | None = None
         if artifact_contract == _PIPELINE_ARTIFACT_CONTRACT:
-            pipeline_input, stage, unit_id, evidence_ids = _validated_pipeline_input(
-                request
-            )
+            pipeline_input, stage, unit_id, evidence_ids = _validated_pipeline_input(request)
             if (
                 options.get("knowledge_stage") != stage
                 or options.get("knowledge_unit_id") != unit_id

@@ -27,7 +27,7 @@ class SchedulerSettings(BaseSettings):
     env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"
     metrics_enabled: bool = True
-    metrics_bind_host: Literal["127.0.0.1", "0.0.0.0"] = "127.0.0.1"
+    metrics_bind_host: Literal["127.0.0.1", "0.0.0.0"] = "127.0.0.1"  # nosec B104
     metrics_port: int = Field(default=9100, ge=1024, le=65535)
     database_url: str = "sqlite+aiosqlite:///./.akc-data/akc.db"
     scheduler_database_role: str = "akc_scheduler"
@@ -360,7 +360,7 @@ class SchedulerSettings(BaseSettings):
         if self.env == "production" and backend_name != "postgresql":
             raise ValueError("production scheduler requires PostgreSQL")
         if self.env == "production" and (
-            not self.metrics_enabled or self.metrics_bind_host != "0.0.0.0"
+            not self.metrics_enabled or self.metrics_bind_host != "0.0.0.0"  # nosec B104
         ):
             raise ValueError("production scheduler requires externally scrapeable metrics")
         return self
