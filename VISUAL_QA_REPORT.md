@@ -78,6 +78,8 @@ None.
   - Speed Index 2.4 s
   - console errors: none
 - Blender and derivative scripts: Ruff clean
+- GitHub CI on commit `bfbd53e`: 19 executed checks passed; 3
+  policy-conditional checks skipped
 - full repository backend evidence from the preceding release remains unchanged
   because this release touches frontend, documentation, and assets only
 

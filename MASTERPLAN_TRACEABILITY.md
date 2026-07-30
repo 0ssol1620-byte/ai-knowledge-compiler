@@ -119,14 +119,14 @@ reports and may not be inferred from this table alone.
 |  98 | Implemented | calm product UI and processing/review/graph implementation order                 |
 |  99 | Implemented | first-party Blender master, GLB LODs, R3F enhancement, device/fallback policy    |
 | 100 | Verified    | 1920/1440/1024/390, reduced-motion, slow-network, console and visual evidence    |
-| 101 | Active gate | lint, type, unit, E2E, build, asset validators, Lighthouse, GitHub CI            |
+| 101 | Verified    | lint, type, unit, E2E, build, asset validators, Lighthouse, GitHub CI            |
 | 102 | Verified    | ultra-premium rubric recorded in `VISUAL_QA_REPORT.md` and `ASSET_QA_REPORT.md`  |
 | 103 | Implemented | `CLAIM_REGISTER.yml`, explicit sample/public labels, consistent DART fixture     |
 | 104 | Implemented | `DEPENDENCY_LICENSES.md`, first-party asset provenance, no unlicensed intake     |
 | 105 | Implemented | reusable task/review/final-gate prompts remain in the governing masterplan       |
 | 106 | Implemented | repository blueprint and component/token ownership                               |
-| 107 | Active gate | C0–C7 evidence collected through manifest, QA, claims, assets, and CI            |
-| 108 | Active gate | final DoD closes only after local browser QA and PR CI are green                 |
+| 107 | Verified    | C0–C7 evidence collected through manifest, QA, claims, assets, and CI            |
+| 108 | Verified    | final DoD closed after local browser QA and PR CI passed                         |
 
 ## Ultra-premium asset system — 109–130
 
@@ -152,8 +152,8 @@ reports and may not be inferred from this table alone.
 | 126 | Implemented | prompt pack remains governed; no generated output bypasses contact-sheet approval                                                        |
 | 127 | Verified    | automatic blocks and 90/100 asset rubric re-scored after browser QA                                                                      |
 | 128 | Implemented | governance, signature, hero, product proof, public proof, editorial launch backlog                                                       |
-| 129 | Active gate | truth, rights, brand, production, performance, browser release gates                                                                     |
-| 130 | Active gate | asset DoD closes with final manifest hashes and in-context browser evidence                                                              |
+| 129 | Verified    | local truth, rights, brand, production, performance, and browser release gates; external owner gates remain documented                   |
+| 130 | Verified    | asset DoD closed with final manifest hashes and in-context browser evidence                                                              |
 
 ## Owner-controlled completion inputs
 

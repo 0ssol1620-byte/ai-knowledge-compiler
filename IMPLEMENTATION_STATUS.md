@@ -1,8 +1,8 @@
 # Current status
 
 The Structara v2.1 brand, full-website, product, and ultra-premium asset system
-is implementation-complete locally. The active release gate is the updated
-GitHub Pull Request and its CI checks.
+is implementation-complete. Pull Request #16 passed every executed GitHub CI
+check on commit `bfbd53e`.
 
 # Completed
 
@@ -43,6 +43,7 @@ GitHub Pull Request and its CI checks.
 - Blender/derivative scripts: Ruff pass
 - manual browser: 1440, 1024, 390, navigation, pricing, DART tabs, overflow,
   and console verified
+- GitHub CI: 19 executed checks passed; 3 policy-conditional checks skipped
 
 # Owner-controlled blockers
 
@@ -53,7 +54,7 @@ GitHub Pull Request and its CI checks.
 - participant/customer consent for interviews, logos, testimonials, and stories
 - production canonical hostname and post-deployment field Core Web Vitals
 
-# Next action
+# Owner review
 
-Push the verified live-state reconciliation fix to Pull Request #16, require all
-GitHub checks to pass, then leave the local homepage open for owner review.
+The local homepage is ready for owner review. The remaining items above require
+owner or production access rather than additional repository implementation.
