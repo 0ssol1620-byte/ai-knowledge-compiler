@@ -40,7 +40,7 @@ export function VerificationPending({
           </p>
         </div>
       </section>
-      <main className="login-form-wrap">
+      <main id="main-content" className="login-form-wrap">
         <section className="login-form verification-card" aria-live="polite">
           <EnvelopeSimple size={36} weight="duotone" aria-hidden="true" />
           <div>

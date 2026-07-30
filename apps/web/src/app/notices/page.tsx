@@ -5,6 +5,7 @@ import {
   ShieldCheck,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Help & notices",
@@ -50,10 +51,10 @@ export default function NoticesPage() {
             We show evidence links and numeric or table warnings—not synthetic
             confidence scores.
           </p>
-          <a href="/workspace">
+          <Link href="/workspace">
             Open Review Studio
             <ArrowSquareOut size={14} />
-          </a>
+          </Link>
         </article>
       </div>
     </div>

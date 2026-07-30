@@ -30,17 +30,18 @@ import { useAuthStore } from "@/lib/auth-store";
 import { normalizeSessionResponse, type SessionProfile } from "@/lib/session";
 
 const navigation = [
-  { href: "/home", label: "Overview", icon: House },
-  { href: "/projects", label: "Projects", icon: FolderOpen },
-  { href: "/quick-convert", label: "Quick convert", icon: Lightning },
-  { href: "/knowledge-bases", label: "Knowledge", icon: TreeStructure },
-  { href: "/benchmarks", label: "Benchmarks", icon: Flask },
-  { href: "/api-workflows", label: "API & workflows", icon: BracketsCurly },
+  { href: "/app/home", label: "Home", icon: House },
+  { href: "/app/projects", label: "Projects", icon: FolderOpen },
+  { href: "/quick-convert", label: "Documents", icon: Lightning },
+  { href: "/app/knowledge-bases", label: "Knowledge", icon: TreeStructure },
+  { href: "/app/jobs", label: "Jobs", icon: Pulse },
+  { href: "/app/exports", label: "Exports", icon: Flask },
 ] as const;
 
 const secondaryNavigation = [
-  { href: "/activity", label: "Activity", icon: Pulse },
-  { href: "/usage", label: "Usage", icon: CreditCard },
+  { href: "/app/api", label: "API", icon: BracketsCurly },
+  { href: "/app/usage", label: "Usage", icon: CreditCard },
+  { href: "/app/settings/security", label: "Security", icon: ShieldCheck },
   { href: "/settings", label: "Settings", icon: GearSix },
 ] as const;
 
@@ -59,10 +60,32 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const setSession = useAuthStore((state) => state.setSession);
 
-  const marketingRoute = pathname === "/";
+  const marketingRoute =
+    pathname === "/" ||
+    [
+      "/product",
+      "/solutions",
+      "/demo",
+      "/research",
+      "/security",
+      "/pricing",
+      "/customers",
+      "/developers",
+      "/company",
+      "/legal",
+    ].some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    ) ||
+    pathname === "/benchmarks";
+  const authRoute =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/onboarding" ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/sso");
   const publicRoute =
     marketingRoute ||
-    pathname === "/login" ||
+    authRoute ||
     pathname === "/verify-email" ||
     pathname.startsWith("/notices");
 
@@ -122,8 +145,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     return children;
   }
 
-  if (pathname === "/login" || pathname === "/verify-email") {
-    return <main id="main-content">{children}</main>;
+  if (authRoute || pathname === "/verify-email") {
+    return children;
   }
 
   if (!publicRoute && sessionState !== "ready") {
@@ -269,7 +292,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="app-body">
         <header className="topbar">
           <div className="topbar-leading">
-            <Link href="/" className="product-back-link">
+            <Link
+              href="/"
+              className="product-back-link"
+              aria-label="Product site"
+            >
               <ArrowLeft size={15} aria-hidden="true" />
               <span>Product site</span>
             </Link>

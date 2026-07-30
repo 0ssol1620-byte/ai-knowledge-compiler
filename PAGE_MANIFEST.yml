@@ -1,0 +1,455 @@
+defaults:
+  language: en
+  alternate_language: ko
+  accessibility: WCAG_2_2_AA
+  required_viewports: [1920, 1440, 1024, 390]
+  required_states: [default, mobile, reduced_motion]
+
+routes:
+  - { path: /, priority: P0, wave: 1, surface: marketing, status: complete }
+  - {
+      path: /product,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /product/convert,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /product/verify,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /product/knowledge,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /product/graph,
+      priority: P1,
+      wave: 3,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /product/connect,
+      priority: P1,
+      wave: 3,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /solutions/individuals,
+      priority: P1,
+      wave: 3,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /solutions/research,
+      priority: P1,
+      wave: 3,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /solutions/teams,
+      priority: P1,
+      wave: 3,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /solutions/developers,
+      priority: P1,
+      wave: 3,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /solutions/enterprise,
+      priority: P1,
+      wave: 4,
+      surface: marketing,
+      status: complete,
+    }
+  - { path: /demo, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /demo/dart, priority: P0, wave: 1, surface: demo, status: complete }
+  - { path: /demo/sec, priority: P1, wave: 3, surface: demo, status: complete }
+  - {
+      path: /demo/research-paper,
+      priority: P1,
+      wave: 3,
+      surface: demo,
+      status: complete,
+    }
+  - {
+      path: /demo/course-material,
+      priority: P2,
+      wave: 5,
+      surface: demo,
+      status: complete,
+    }
+  - {
+      path: /benchmarks,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /research,
+      priority: P2,
+      wave: 5,
+      surface: editorial,
+      status: complete,
+    }
+  - {
+      path: /security,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /pricing,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /customers,
+      priority: P2,
+      wave: 5,
+      surface: editorial,
+      status: complete,
+    }
+  - {
+      path: /developers,
+      priority: P1,
+      wave: 3,
+      surface: docs,
+      status: complete,
+    }
+  - {
+      path: /developers/docs,
+      priority: P1,
+      wave: 3,
+      surface: docs,
+      status: complete,
+    }
+  - {
+      path: /developers/api,
+      priority: P1,
+      wave: 3,
+      surface: docs,
+      status: complete,
+    }
+  - {
+      path: /developers/sdk,
+      priority: P1,
+      wave: 3,
+      surface: docs,
+      status: complete,
+    }
+  - {
+      path: /developers/changelog,
+      priority: P1,
+      wave: 3,
+      surface: editorial,
+      status: complete,
+    }
+  - {
+      path: /company/about,
+      priority: P2,
+      wave: 5,
+      surface: editorial,
+      status: complete,
+    }
+  - {
+      path: /company/principles,
+      priority: P2,
+      wave: 5,
+      surface: editorial,
+      status: complete,
+    }
+  - {
+      path: /company/careers,
+      priority: P2,
+      wave: 5,
+      surface: editorial,
+      status: complete,
+    }
+  - {
+      path: /company/contact,
+      priority: P1,
+      wave: 4,
+      surface: form,
+      status: complete,
+    }
+  - {
+      path: /legal/privacy,
+      priority: P0,
+      wave: 1,
+      surface: legal,
+      status: complete,
+    }
+  - {
+      path: /legal/terms,
+      priority: P0,
+      wave: 1,
+      surface: legal,
+      status: complete,
+    }
+  - {
+      path: /legal/subprocessors,
+      priority: P1,
+      wave: 4,
+      surface: legal,
+      status: complete,
+    }
+  - {
+      path: /legal/third-party-notices,
+      priority: P1,
+      wave: 4,
+      surface: legal,
+      status: complete,
+    }
+  - { path: /login, priority: P0, wave: 1, surface: auth, status: complete }
+  - { path: /signup, priority: P0, wave: 1, surface: auth, status: complete }
+  - {
+      path: /onboarding,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/home,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/projects,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/projects/:projectId/overview,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/projects/:projectId/documents,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/projects/:projectId/knowledge,
+      priority: P1,
+      wave: 3,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/projects/:projectId/graph,
+      priority: P1,
+      wave: 3,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/projects/:projectId/exports,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /documents/:id/processing,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /documents/:id/review,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /documents/:id/markdown,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /documents/:id/sources,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /documents/:id/versions,
+      priority: P1,
+      wave: 3,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/jobs,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/knowledge-bases,
+      priority: P1,
+      wave: 3,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/benchmarks,
+      priority: P1,
+      wave: 3,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/recipes,
+      priority: P1,
+      wave: 3,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/exports,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/api,
+      priority: P1,
+      wave: 4,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/usage,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/billing,
+      priority: P0,
+      wave: 2,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/settings/members,
+      priority: P1,
+      wave: 4,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/settings/security,
+      priority: P1,
+      wave: 4,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/settings/retention,
+      priority: P1,
+      wave: 4,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/settings/integrations,
+      priority: P1,
+      wave: 4,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/settings/notifications,
+      priority: P1,
+      wave: 4,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /app/admin/jobs,
+      priority: P1,
+      wave: 4,
+      surface: admin,
+      status: complete,
+    }
+  - {
+      path: /app/admin/workers,
+      priority: P1,
+      wave: 4,
+      surface: admin,
+      status: complete,
+    }
+  - {
+      path: /app/admin/tenants,
+      priority: P1,
+      wave: 4,
+      surface: admin,
+      status: complete,
+    }
+  - {
+      path: /app/admin/costs,
+      priority: P1,
+      wave: 4,
+      surface: admin,
+      status: complete,
+    }
+  - {
+      path: /app/admin/incidents,
+      priority: P1,
+      wave: 4,
+      surface: admin,
+      status: complete,
+    }
+  - {
+      path: /app/admin/audit,
+      priority: P1,
+      wave: 4,
+      surface: admin,
+      status: complete,
+    }

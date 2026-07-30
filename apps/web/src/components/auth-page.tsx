@@ -40,10 +40,14 @@ export function AuthPage({
       <section className="login-story">
         <BrandMark />
         <div className="login-story-copy">
-          <h1>AI output should never require blind trust.</h1>
+          <h1>
+            {registering
+              ? "Build knowledge your AI can use."
+              : "Return to your knowledge workspace."}
+          </h1>
           <p>
-            Inspect the source page and coordinates, processing route, and
-            complete edit history yourself.
+            Structure documents, verify every important result, and keep the
+            source attached as knowledge moves into people and AI workflows.
           </p>
           <ul>
             <li>
@@ -56,17 +60,17 @@ export function AuthPage({
             </li>
             <li>
               <Check size={15} weight="bold" aria-hidden="true" />
-              External model APIs off by default
+              Processing and retention controlled by policy
             </li>
           </ul>
         </div>
         <div className="login-security">
           <ShieldCheck size={17} weight="fill" aria-hidden="true" />
           Credentials are carried in secure cookies, not browser storage.
-          Documents are used for training only with explicit consent.
+          Training and provider policies are never implied by the interface.
         </div>
       </section>
-      <main className="login-form-wrap">
+      <main id="main-content" className="login-form-wrap">
         <form
           className="login-form"
           aria-busy={loading}
@@ -77,7 +81,7 @@ export function AuthPage({
             setError(undefined);
             const payload = registering
               ? {
-                  tenant_name: textValue(form, "tenant_name"),
+                  tenant_name: `${textValue(form, "display_name") || "My"} workspace`,
                   display_name: textValue(form, "display_name"),
                   email: textValue(form, "email"),
                   password: textValue(form, "password"),
@@ -117,27 +121,16 @@ export function AuthPage({
           }}
         >
           <div>
-            <h2>{registering ? "Create workspace" : "Sign in to workspace"}</h2>
+            <h2>{registering ? "Create your account" : "Sign in"}</h2>
             <p>
               {registering
-                ? "Create the owner account and first workspace securely."
+                ? "Start with your name, email, and a secure password."
                 : "Continue with active projects and the review queue."}
             </p>
           </div>
 
           {registering && (
             <>
-              <label className="field">
-                <span>Workspace name</span>
-                <input
-                  type="text"
-                  name="tenant_name"
-                  autoComplete="organization"
-                  minLength={1}
-                  maxLength={200}
-                  required
-                />
-              </label>
               <label className="field">
                 <span>Display name</span>
                 <input

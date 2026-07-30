@@ -1,0 +1,28 @@
+claims:
+  - id: claim-category
+    text_en: "The Knowledge Compiler for AI."
+    status: approved
+    evidence:
+      - feature: canonical_document_pipeline
+      - contract: canonical-document.schema.json
+    owner: product
+  - id: claim-source-traceability
+    text_en: "Every output returns to its source."
+    status: approved
+    evidence:
+      - feature: block_source_map
+      - test: live-workflow source-link journey
+    owner: product
+    scope: accepted_blocks
+    limitations: "AI-only generated text is labeled separately."
+  - id: claim-training
+    text_en: "Customer documents are not used for model training."
+    status: blocked_until_policy_confirmed
+    owner: legal_security
+  - id: claim-private-default
+    text_en: "Private by default."
+    status: approved_for_demo_policy
+    evidence:
+      - feature: provider_policy
+      - document: docs/security/threat-model.md
+    owner: security

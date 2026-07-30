@@ -87,7 +87,7 @@ export function VerifyEmailPage({
           </p>
         </div>
       </section>
-      <main className="login-form-wrap">
+      <main id="main-content" className="login-form-wrap">
         <section
           className="login-form verification-card"
           aria-busy={state === "verifying"}

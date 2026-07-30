@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 
-import { BenchmarkLab } from "@/components/benchmark-lab";
+import { StructaraMarketingPage } from "@/components/structara-marketing-page";
+import { PUBLIC_PAGES } from "@/lib/structara-content";
 
-export const metadata: Metadata = { title: "Benchmarks" };
+export const metadata: Metadata = {
+  title: "Document benchmarks",
+  description:
+    "Versioned evaluation for text, numbers, tables, reading order, source coverage, latency, and cost.",
+};
 
 export default function BenchmarksPage() {
-  return <BenchmarkLab />;
+  return <StructaraMarketingPage definition={PUBLIC_PAGES["/benchmarks"]!} />;
 }

@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { MarketingLanding } from "@/components/marketing-landing";
 
 export const metadata: Metadata = {
-  title: "Evidence-linked knowledge from every document",
+  title: "The Knowledge Compiler for AI",
   description:
-    "Turn PDFs, reports, papers, and course material into source-linked Markdown, Obsidian vaults, RAG data, and knowledge graphs.",
+    "Turn documents into structured, verified, connected knowledge with every important result linked back to its source.",
+  alternates: { canonical: "/" },
 };
 
 export default function MarketingPage() {
