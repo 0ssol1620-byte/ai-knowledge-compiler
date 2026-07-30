@@ -21,10 +21,7 @@ GPU_WORKER_ROLE = "akc_gpu_worker"
 
 
 def _columns() -> set[str]:
-    return {
-        str(column["name"])
-        for column in inspect(op.get_bind()).get_columns(TABLE)
-    }
+    return {str(column["name"]) for column in inspect(op.get_bind()).get_columns(TABLE)}
 
 
 def _indexes() -> set[str]:
@@ -54,14 +51,9 @@ def _checks() -> set[str]:
 def _grant_gpu_worker_transition_access() -> None:
     if op.get_bind().dialect.name != "postgresql":
         return
-    op.execute(
-        f"""
-        GRANT SELECT ON TABLE model_registry TO {GPU_WORKER_ROLE};
-        GRANT INSERT ON TABLE audit_events, job_events TO {GPU_WORKER_ROLE};
-        GRANT UPDATE (progress, event_sequence)
-            ON TABLE processing_jobs TO {GPU_WORKER_ROLE};
-        """
-    )
+    op.execute("GRANT SELECT ON TABLE model_registry TO akc_gpu_worker")
+    op.execute("GRANT INSERT ON TABLE audit_events, job_events TO akc_gpu_worker")
+    op.execute("GRANT UPDATE (progress, event_sequence) ON TABLE processing_jobs TO akc_gpu_worker")
 
 
 def upgrade() -> None:
@@ -155,13 +147,10 @@ def upgrade() -> None:
 def downgrade() -> None:
     if op.get_bind().dialect.name == "postgresql":
         op.execute(
-            """
-            REVOKE UPDATE (progress, event_sequence)
-                ON TABLE processing_jobs FROM akc_gpu_worker;
-            REVOKE INSERT ON TABLE audit_events, job_events FROM akc_gpu_worker;
-            REVOKE SELECT ON TABLE model_registry FROM akc_gpu_worker;
-            """
+            "REVOKE UPDATE (progress, event_sequence) ON TABLE processing_jobs FROM akc_gpu_worker"
         )
+        op.execute("REVOKE INSERT ON TABLE audit_events, job_events FROM akc_gpu_worker")
+        op.execute("REVOKE SELECT ON TABLE model_registry FROM akc_gpu_worker")
     indexes = _indexes()
     for name in (
         "gpu_provider_invocations_lineage_idx",
