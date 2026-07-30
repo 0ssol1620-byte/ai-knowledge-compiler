@@ -68,6 +68,7 @@ jobs:
           trivyignores: .trivyignore.yaml
           exit-code: "1"
           format: sarif
+          limit-severities-for-sarif: true
           output: trivy-results.sarif
       - uses: github/codeql-action/upload-sarif@4187e74d05793876e9989daffde9c3e66b4acd07 # v3.37.3
         if: >-

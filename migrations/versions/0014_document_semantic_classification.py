@@ -210,6 +210,16 @@ def _add_compile_revision_columns() -> None:
 
 def upgrade() -> None:
     bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        # Alembic creates version_num as VARCHAR(32), but descriptive revision
+        # identifiers from this migration onward intentionally exceed 32 bytes.
+        op.alter_column(
+            "alembic_version",
+            "version_num",
+            existing_type=sa.String(length=32),
+            type_=sa.String(length=128),
+            existing_nullable=False,
+        )
     if TABLE not in _tables():
         DocumentSemanticClassification.__table__.create(bind=bind)
     elif "provenance" not in _columns(TABLE):

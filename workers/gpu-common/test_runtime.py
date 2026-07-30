@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import io
 import json
 import os
 import time
@@ -16,6 +17,7 @@ from runtime import (
     _validate_tenant_object_key,
     _validate_url,
     build_handler,
+    serve,
 )
 
 REVISION = "1" * 40
@@ -535,6 +537,18 @@ class WorkerRuntimeTests(unittest.TestCase):
         os.environ["MAX_DIRECT_RESPONSE_BYTES"] = "128"
         result = build_handler("parser", "test")(self.event(text="x" * 500))
         self.assertEqual(result["error"]["code"], "direct_response_too_large")
+
+    def test_local_self_test_uses_runtime_attestation_defaults(self) -> None:
+        os.environ.pop("RUNTIME_IMAGE_DIGEST", None)
+        os.environ.pop("ADAPTER_VERSION", None)
+        os.environ["AKC_LOCAL_SELF_TEST"] = "true"
+        output = io.StringIO()
+        with mock.patch("sys.stdout", output):
+            serve("parser", "test")
+        payload = json.loads(output.getvalue())
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["runtime_image_digest"], "sha256:" + ("0" * 64))
+        self.assertEqual(payload["adapter_version"], "mock-adapter-1.0.0")
 
 
 if __name__ == "__main__":

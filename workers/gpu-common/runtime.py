@@ -2673,9 +2673,12 @@ def serve(worker_kind: str, provider_key: str, *, experimental: bool = False) ->
                 "expected_model_revision": os.getenv("MODEL_REVISION", ""),
                 "expected_runtime_image_digest": os.getenv(
                     "RUNTIME_IMAGE_DIGEST",
-                    "",
+                    "sha256:" + ("0" * 64),
                 ),
-                "expected_adapter_version": os.getenv("ADAPTER_VERSION", ""),
+                "expected_adapter_version": os.getenv(
+                    "ADAPTER_VERSION",
+                    "mock-adapter-1.0.0",
+                ),
                 "inline_bytes_b64": base64.b64encode(input_body).decode(),
                 "document_id": "urn:akmp:doc:local-self-test",
                 "document_version_id": "urn:akmp:doc-version:local-self-test-v1",
