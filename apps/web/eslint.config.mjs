@@ -22,6 +22,7 @@ export default defineConfig([
   globalIgnores([
     ".next/**",
     ".next-e2e-live/**",
+    ".next-*/**",
     "coverage/**",
     "playwright-report/**",
     "test-results/**",

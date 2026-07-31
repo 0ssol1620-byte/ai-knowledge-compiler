@@ -88,15 +88,25 @@ export function StructaraProofDemo() {
             <span>Line item</span>
             <span>{DART_PUBLIC_FIXTURE.currentPeriod}</span>
             <span>{DART_PUBLIC_FIXTURE.priorPeriod}</span>
-            {DART_PUBLIC_FIXTURE.rows.slice(0, 2).map((row) => (
+            {DART_PUBLIC_FIXTURE.rows.slice(0, 2).map((row, index) => (
               <div className="st-source-table-row" key={row.label}>
                 <span>{row.label}</span>
-                <b>{row.current}</b>
+                <b
+                  className={
+                    index === 0 ? "st-source-cell-selected" : undefined
+                  }
+                  aria-label={
+                    index === 0
+                      ? `${row.label} ${row.current} ${DART_PUBLIC_FIXTURE.unit}, selected source evidence`
+                      : undefined
+                  }
+                >
+                  {row.current}
+                </b>
                 <span>{row.prior}</span>
               </div>
             ))}
           </div>
-          <i className="st-source-box" />
         </div>
         <div className="st-proof-result">
           <small>{view.eyebrow}</small>

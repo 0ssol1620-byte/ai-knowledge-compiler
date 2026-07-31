@@ -95,6 +95,9 @@ export function ApiWorkflowStudio() {
               className="icon-button compact"
               type="button"
               aria-label="Copy code"
+              disabled
+              title="Copy is available in the connected developer workspace."
+              data-sample-static-control
             >
               <Copy size={15} />
             </button>

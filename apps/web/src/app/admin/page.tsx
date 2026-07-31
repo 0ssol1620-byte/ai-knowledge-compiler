@@ -25,8 +25,9 @@ function DemoAdminPage() {
     <div className="simple-page admin-page">
       <h1>Operations console</h1>
       <p>
-        Manage retries, DLQ entries, deletion failures, and provider status with
-        safe identifiers—never document content.
+        Illustrative operations snapshot. Connect an authorized control plane to
+        retry jobs or change durable state; document content is never shown
+        here.
       </p>
       <section className="admin-health-grid">
         <article>
@@ -79,7 +80,13 @@ function DemoAdminPage() {
               <td>native → paddle</td>
               <td>2 / 3</td>
               <td>
-                <button className="secondary-button compact" type="button">
+                <button
+                  className="secondary-button compact"
+                  type="button"
+                  disabled
+                  title="Retry requires an authorized live control plane."
+                  data-demo-static-control
+                >
                   <ArrowClockwise size={13} />
                   Retry page
                 </button>
@@ -93,7 +100,13 @@ function DemoAdminPage() {
               <td>purging</td>
               <td>3 / 5</td>
               <td>
-                <button className="secondary-button compact" type="button">
+                <button
+                  className="secondary-button compact"
+                  type="button"
+                  disabled
+                  title="Purge recovery requires an authorized live control plane."
+                  data-demo-static-control
+                >
                   <ArrowClockwise size={13} />
                   Resume purge
                 </button>

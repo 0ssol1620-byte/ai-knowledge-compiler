@@ -12,13 +12,26 @@ export default function SsoPage() {
         <p>Enterprise access</p>
         <h1>Continue with your organization.</h1>
         <span>
-          Enter your work email to discover the approved identity provider.
+          Organization discovery becomes available after a production identity
+          provider is configured for the deployment.
         </span>
         <label>
           <span>Work email</span>
-          <input type="email" name="email" autoComplete="email" required />
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            placeholder="Identity provider is not configured"
+            disabled
+          />
         </label>
-        <button type="submit" className="st-app-primary">
+        <button
+          type="button"
+          className="st-app-primary"
+          disabled
+          title="SSO requires a configured production identity provider."
+          data-auth-external-gate
+        >
           Continue to SSO
         </button>
         <Link href="/login">Use password sign in</Link>

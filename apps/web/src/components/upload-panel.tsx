@@ -16,10 +16,14 @@ import {
   PdfPasswordRequiredError,
   uploadAndAnalyze,
 } from "@/lib/upload-client";
+import {
+  partitionFilesBySize,
+  QUICK_CONVERT_MAX_FILE_LABEL,
+  QUICK_CONVERT_MAX_FILES,
+} from "@/lib/upload-policy";
 
 const acceptedExtensions =
   ".pdf,.png,.jpg,.jpeg,.webp,.tif,.tiff,.docx,.pptx,.xlsx,.csv,.html,.htm,.txt,.md,.vtt,.srt";
-const ANALYSIS_MAX_SOURCE_BYTES = 256 * 1024 * 1024;
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 
@@ -47,13 +51,17 @@ export function UploadPanel({
   function addFiles(next: FileList | null) {
     if (!next) return;
     const candidates = Array.from(next);
-    const accepted = candidates.filter(
-      (file) => file.size <= ANALYSIS_MAX_SOURCE_BYTES,
-    );
-    if (accepted.length !== candidates.length) {
-      setError("The native analysis limit is 256 MB per file.");
+    const { accepted, rejected } = partitionFilesBySize(candidates);
+    if (rejected.length > 0) {
+      setError(
+        `The current quick-convert limit is ${QUICK_CONVERT_MAX_FILE_LABEL} per file.`,
+      );
+    } else {
+      setError(undefined);
     }
-    setFiles((current) => [...current, ...accepted].slice(0, 30));
+    setFiles((current) =>
+      [...current, ...accepted].slice(0, QUICK_CONVERT_MAX_FILES),
+    );
   }
 
   return (
@@ -61,12 +69,12 @@ export function UploadPanel({
       <header className="upload-panel-heading">
         <div>
           <h2>Documents to compile</h2>
-          <p>Add up to 30 files at a time.</p>
+          <p>Add up to {QUICK_CONVERT_MAX_FILES} files at a time.</p>
         </div>
         {showPolicy && (
           <span className="upload-policy-inline">
             <LockKey size={15} aria-hidden="true" />
-            External APIs off
+            External providers require consent
           </span>
         )}
       </header>
@@ -91,9 +99,11 @@ export function UploadPanel({
         <span className="dropzone-icon">
           <FileArrowUp size={30} aria-hidden="true" />
         </span>
-        <strong>Drop documents or a folder here</strong>
+        <strong>Drop documents here</strong>
         <span>PDF, DOCX, PPTX, XLSX, images, and HTML</span>
-        <small>Or choose files manually · up to 50 MB each</small>
+        <small>
+          Or choose files manually · up to {QUICK_CONVERT_MAX_FILE_LABEL} each
+        </small>
       </button>
       <input
         ref={inputRef}

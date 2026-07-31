@@ -13,6 +13,8 @@ import type { Route } from "next";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
+import { appActionHref } from "@/lib/app-action";
+
 type AppPageProps = {
   route: string;
   title: string;
@@ -31,6 +33,9 @@ const jobRows = [
   ["Research_Corpus_04.zip", "Knowledge", "18 / 42", "1", "44 / 80", "Running"],
   ["Course_Material.pdf", "Package", "96 / 96", "0", "31 / 40", "Ready"],
 ] as const;
+
+const SAMPLE_CONTROL_TITLE =
+  "Interactive controls require a connected workspace.";
 
 export function StructaraAppPage({
   route,
@@ -62,10 +67,14 @@ export function StructaraAppPage({
           <h1>{title}</h1>
           <span>{description}</span>
         </div>
-        <button type="button" className="st-app-primary">
+        <Link
+          href={appActionHref(route) as Route}
+          className="st-app-primary"
+          data-app-header-action
+        >
           {action}
           <ArrowRight size={14} aria-hidden="true" />
-        </button>
+        </Link>
       </header>
 
       {isHome && <HomeOverview />}
@@ -94,7 +103,7 @@ function HomeOverview() {
           <FileArrowUp size={20} aria-hidden="true" />
           <div>
             <strong>Start with a document</strong>
-            <span>PDF, Office, image, folder, URL, or public filing</span>
+            <span>PDF, Office, image, HTML, text, and subtitle files</span>
           </div>
         </div>
         <Link href="/quick-convert">Upload documents</Link>
@@ -213,17 +222,36 @@ function ProjectsOverview({ route }: { route: string }) {
           <MagnifyingGlass size={15} aria-hidden="true" />
           <input
             aria-label="Search projects"
-            placeholder="Search projects and documents"
+            placeholder="Search requires a connected workspace"
+            disabled
+            title={SAMPLE_CONTROL_TITLE}
           />
         </label>
-        <button type="button">
+        <button
+          type="button"
+          disabled
+          title={SAMPLE_CONTROL_TITLE}
+          data-sample-static-control
+        >
           <Funnel size={14} /> Filters
         </button>
         <div className="st-view-switch" aria-label="Project view">
-          <button type="button" aria-pressed="true">
+          <button
+            type="button"
+            aria-pressed="true"
+            disabled
+            title={SAMPLE_CONTROL_TITLE}
+            data-sample-static-control
+          >
             List
           </button>
-          <button type="button" aria-pressed="false">
+          <button
+            type="button"
+            aria-pressed="false"
+            disabled
+            title={SAMPLE_CONTROL_TITLE}
+            data-sample-static-control
+          >
             Grid
           </button>
         </div>
@@ -528,7 +556,14 @@ function SpecializedOverview({ route }: { route: string }) {
     <>
       <nav className="st-feature-tabs" aria-label={`${route} sections`}>
         {spec.tabs.map((tab, index) => (
-          <button type="button" aria-pressed={index === 0} key={tab}>
+          <button
+            type="button"
+            aria-pressed={index === 0}
+            key={tab}
+            disabled
+            title={SAMPLE_CONTROL_TITLE}
+            data-sample-static-control
+          >
             {tab}
           </button>
         ))}
@@ -617,7 +652,14 @@ function DocumentOverview({ route }: { route: string }) {
               {event}
               <small>{time}</small>
             </span>
-            <button type="button">{action}</button>
+            <button
+              type="button"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
+              {action}
+            </button>
           </div>
         ))}
         <p className="st-feature-note">
@@ -637,7 +679,13 @@ function DocumentOverview({ route }: { route: string }) {
           "Risk factors",
           "Financial statements",
         ].map((item) => (
-          <button type="button" key={item}>
+          <button
+            type="button"
+            key={item}
+            disabled
+            title={SAMPLE_CONTROL_TITLE}
+            data-sample-static-control
+          >
             {item}
           </button>
         ))}
@@ -664,8 +712,22 @@ function DocumentOverview({ route }: { route: string }) {
         <h2>Source page 214</h2>
         <p>Bounding box 92, 178, 914, 440</p>
         <strong>Verified</strong>
-        <button type="button">Compare candidate</button>
-        <button type="button">Keep mine</button>
+        <button
+          type="button"
+          disabled
+          title={SAMPLE_CONTROL_TITLE}
+          data-sample-static-control
+        >
+          Compare candidate
+        </button>
+        <button
+          type="button"
+          disabled
+          title={SAMPLE_CONTROL_TITLE}
+          data-sample-static-control
+        >
+          Keep mine
+        </button>
       </aside>
     </section>
   );
@@ -718,7 +780,14 @@ function KnowledgeOverview() {
         <span>Perspectives</span>
         {["Company", "Risk", "Metric", "Timeline", "Source"].map(
           (item, index) => (
-            <button type="button" data-active={index === 0} key={item}>
+            <button
+              type="button"
+              data-active={index === 0}
+              key={item}
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
               {item}
             </button>
           ),
@@ -735,6 +804,9 @@ function KnowledgeOverview() {
               type="button"
               key={node}
               style={{ "--node-index": index } as CSSProperties}
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
             >
               {node}
             </button>

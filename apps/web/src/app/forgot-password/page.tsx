@@ -12,14 +12,26 @@ export default function ForgotPasswordPage() {
         <p>Account recovery</p>
         <h1>Reset your password.</h1>
         <span>
-          Enter your email. The response is identical whether an account exists
-          or not.
+          Recovery delivery becomes available after the production email service
+          is configured. This repository release candidate does not send email.
         </span>
         <label>
           <span>Email</span>
-          <input type="email" name="email" autoComplete="email" required />
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            placeholder="Email delivery is not configured"
+            disabled
+          />
         </label>
-        <button type="submit" className="st-app-primary">
+        <button
+          type="button"
+          className="st-app-primary"
+          disabled
+          title="Recovery requires the production email service."
+          data-auth-external-gate
+        >
           Send recovery instructions
         </button>
         <Link href="/login">Return to sign in</Link>

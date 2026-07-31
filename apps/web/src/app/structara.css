@@ -196,7 +196,7 @@ body.st-menu-open {
 }
 
 .st-desktop-nav > a,
-.st-nav-group > button {
+.st-nav-trigger {
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -216,7 +216,7 @@ body.st-menu-open {
   align-items: center;
 }
 
-.st-nav-group > button {
+.st-nav-trigger {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -224,8 +224,8 @@ body.st-menu-open {
 
 .st-desktop-nav > a:hover,
 .st-desktop-nav > a:focus-visible,
-.st-nav-group > button:hover,
-.st-nav-group > button:focus-visible {
+.st-nav-trigger:hover,
+.st-nav-trigger:focus-visible {
   color: var(--st-ink);
 }
 
@@ -1208,14 +1208,12 @@ body.st-menu-open {
   background: #eef1fb;
 }
 
-.st-source-box {
-  position: absolute;
-  left: 45%;
-  top: 50%;
-  width: 32%;
-  height: 50px;
-  border: 1px solid var(--st-brand);
-  pointer-events: none;
+.st-source-cell-selected {
+  position: relative;
+  z-index: 1;
+  color: var(--st-brand-deep);
+  background: color-mix(in srgb, var(--st-evidence) 12%, white);
+  box-shadow: inset 0 0 0 2px var(--st-evidence);
 }
 
 .st-proof-result > p button {
@@ -2996,12 +2994,6 @@ body.st-menu-open {
   .st-credit-planner > div,
   .st-credit-planner > aside {
     padding: 34px 22px;
-  }
-
-  .st-source-box {
-    left: 39%;
-    top: 52%;
-    width: 38%;
   }
 
   .st-pillars,

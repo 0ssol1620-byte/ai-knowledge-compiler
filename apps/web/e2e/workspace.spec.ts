@@ -206,12 +206,112 @@ test("every application route renders the masterplan information architecture", 
     );
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator("h1")).toHaveCount(1);
+    if (path.startsWith("/app/")) {
+      const headerAction = page.locator("[data-app-header-action]");
+      await expect(headerAction).toHaveCount(1);
+      const actionHref = await headerAction.getAttribute("href");
+      expect(actionHref, `${path} header action has no destination`).toMatch(
+        /^\//,
+      );
+      expect(
+        actionHref,
+        `${path} header action loops to the same page`,
+      ).not.toBe(path);
+      const staticControls = page.locator("[data-sample-static-control]");
+      const staticControlCount = await staticControls.count();
+      for (let index = 0; index < staticControlCount; index += 1) {
+        await expect(staticControls.nth(index)).toBeDisabled();
+      }
+    }
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
       `${path} overflows the viewport`,
     ).toBe(true);
+  }
+});
+
+test("quick convert exposes one bounded and consent-aware upload contract", async ({
+  page,
+}) => {
+  await page.goto("/quick-convert");
+  await expect(page.getByText("Private route first")).toBeVisible();
+  await expect(
+    page.getByText("External providers require explicit workspace consent"),
+  ).toBeVisible();
+  await expect(page.getByText(/up to 50 MB each/i)).toBeVisible();
+  await expect(page.getByText(/folder here/i)).toHaveCount(0);
+});
+
+test("DART proof marks the exact revenue cell without a detached overlay", async ({
+  page,
+}) => {
+  await page.goto("/demo/dart");
+  await expect(page.locator(".st-source-cell-selected")).toHaveText(
+    "4,902,490,901",
+  );
+  await expect(page.locator(".st-source-box")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Verify receipt 20260730000413" }),
+  ).toBeVisible();
+});
+
+test("demo administration and settings never expose writable-looking controls", async ({
+  page,
+}) => {
+  for (const path of ["/admin", "/settings"] as const) {
+    await page.goto(path);
+    const demoControls = page.locator("[data-demo-static-control]");
+    expect(
+      await demoControls.count(),
+      `${path} has no explicit demo controls`,
+    ).toBeGreaterThan(0);
+    const count = await demoControls.count();
+    for (let index = 0; index < count; index += 1) {
+      await expect(demoControls.nth(index)).toBeDisabled();
+    }
+  }
+});
+
+test("shell actions and fixed studios expose only operable or explicit gated controls", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.goto("/home");
+  await expect(
+    page.locator('[data-shell-action="notifications"]'),
+  ).toHaveAttribute("href", "/notices");
+  await expect(page.locator('[data-shell-action="account"]')).toHaveAttribute(
+    "href",
+    "/settings",
+  );
+
+  for (const path of [
+    "/knowledge-bases",
+    "/review",
+    "/api-workflows",
+    "/workspace",
+  ] as const) {
+    const studioPage = await page.context().newPage();
+    await studioPage.goto(path, { waitUntil: "domcontentloaded" });
+    const fixedControls = studioPage.locator("[data-sample-static-control]");
+    expect(
+      await fixedControls.count(),
+      `${path} has no explicit fixed controls`,
+    ).toBeGreaterThan(0);
+    const count = await fixedControls.count();
+    for (let index = 0; index < count; index += 1) {
+      await expect(fixedControls.nth(index)).toBeDisabled();
+    }
+    await studioPage.close();
+  }
+
+  for (const path of ["/forgot-password", "/sso"] as const) {
+    const authPage = await page.context().newPage();
+    await authPage.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(authPage.locator("[data-auth-external-gate]")).toBeDisabled();
+    await authPage.close();
   }
 });
 

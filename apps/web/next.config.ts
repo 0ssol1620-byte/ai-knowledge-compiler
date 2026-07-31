@@ -15,12 +15,6 @@ const nextConfig: NextConfig = {
     if (!dev) config.cache = false;
     return config;
   },
-  // CI runs `tsc --noEmit` as a separate strict gate. The Next.js Windows
-  // type-check worker can deadlock after compilation, so the build does not
-  // invoke that duplicate worker.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async headers() {
     return [
       {

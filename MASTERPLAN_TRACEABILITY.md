@@ -155,6 +155,25 @@ reports and may not be inferred from this table alone.
 | 129 | Verified    | local truth, rights, brand, production, performance, and browser release gates; external owner gates remain documented                   |
 | 130 | Verified    | asset DoD closed with final manifest hashes and in-context browser evidence                                                              |
 
+## 2026-07-31 v3 trust-remediation trace
+
+This addendum records the executable remediation evidence added after the
+section-by-section baseline above. It does not replace owner-controlled or
+production-only evidence.
+
+| Requirement                                                   | Status   | Repository evidence                                                                                                                                                                    |
+| ------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production builds must fail on TypeScript errors              | Verified | `apps/web/next.config.ts`; final isolated Next.js production build completed its internal TypeScript phase                                                                             |
+| Upload copy and enforcement must use one contract             | Verified | `apps/web/src/lib/upload-policy.ts`; `upload-policy.test.ts`; `upload-panel.tsx`; desktop/mobile Playwright contract test                                                              |
+| External processing must reflect explicit consent             | Verified | `quick-convert/page.tsx`; `upload-panel.tsx`; desktop/mobile Playwright copy assertion                                                                                                 |
+| DART proof must select the exact evidence target              | Verified | `structara-proof-demo.tsx`; detached `.st-source-box` removed; exact revenue cell asserted in desktop/mobile Playwright                                                                |
+| Visible primary controls must operate or be honest            | Verified | `app-action.ts`; 15 route-mapping tests; all `/app/*` header actions browser-validated; fixed fixture controls explicitly disabled; TypeScript-AST gate reports 0 enabled dead buttons |
+| Demo operations must not imply durable writes                 | Verified | demo branches in `admin/page.tsx` and `settings/page.tsx`; desktop/mobile non-writable-control assertions                                                                              |
+| Claims and benchmark values must fail closed                  | Verified | `CLAIM_REGISTER.yml`; unavailable public benchmark snapshot; DART fixture labeled no-quality-claim                                                                                     |
+| Release status must distinguish local completion from go-live | Verified | `IMPLEMENTATION_STATUS.md`; `VISUAL_QA_REPORT.md`; `PAGE_MANIFEST.yml` status semantics                                                                                                |
+| Asset evidence must remain hash-pinned                        | Verified | asset manifest, 119-name validation, and 21-derivative hash validation pass                                                                                                            |
+| Final repository gates                                        | Verified | ESLint; strict TypeScript; 21/72 Vitest; 24/4 Playwright; 0 enabled dead buttons; contracts; assets; production build                                                                  |
+
 ## Owner-controlled completion inputs
 
 - legal and domain clearance for the working name “Structara”

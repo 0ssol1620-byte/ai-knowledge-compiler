@@ -17,6 +17,7 @@
     "test:unit": "pnpm --filter @akc/web test",
     "test:e2e": "pnpm --filter @akc/web test:e2e",
     "test:e2e:live": "pnpm --filter @akc/web test:e2e:live",
+    "interactions:check": "pnpm --filter @akc/web interactions:check",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
     "contracts:check": "pnpm --filter @akc/contracts test",

@@ -3,6 +3,33 @@
 All notable changes are documented here. This project follows Semantic
 Versioning once a public API release is approved.
 
+## Unreleased — 2026-07-31 trust and release-gate remediation
+
+- Removed the Next.js TypeScript build bypass and verified the production build
+  through its internal TypeScript, page-generation, and trace phases.
+- Unified Quick Convert around a 50 MB-per-file, 30-file contract and removed an
+  unsupported folder-upload promise.
+- Replaced absolute external-processing language with the implemented
+  private-first, explicit-consent contract.
+- Replaced the detached JTC proof rectangle with an exact selected revenue cell
+  linked to the public filing receipt, taxonomy, source line, unit, and hashes.
+- Converted generic app header dead buttons into operable internal links with
+  deterministic route mapping and regression tests.
+- Added a TypeScript-AST interaction gate that fails when an enabled JSX button
+  has no click, submit, form-action, disabled, or explicit spread-prop contract.
+- Connected shell notification/account actions, gated unconfigured SSO and
+  recovery delivery, and made fixed Knowledge, Review, API, and Processing
+  controls explicitly non-writable.
+- Made fixed sample controls and demo administration/settings mutations
+  explicitly non-writable while preserving live components outside demo mode.
+- Added custom Next output ignores, updated product-evidence hashes, and passed
+  the current lint, type, unit, browser, contract, asset, and production-build
+  gates.
+
+This remediation establishes a repository release candidate. Legal, commercial,
+licensed-benchmark, provider-configuration, operational, and field-performance
+evidence remain external release gates.
+
 ## 0.1.0 — 2026-07-29
 
 - Established the versioned CIR, processing-event, route, error, export, and

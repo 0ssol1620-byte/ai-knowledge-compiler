@@ -31,8 +31,8 @@ export default function QuickConvertPage() {
         <div className="quick-convert-policy">
           <LockKey size={18} aria-hidden="true" />
           <span>
-            <strong>External APIs off</strong>
-            <small>Current workspace default</small>
+            <strong>Private route first</strong>
+            <small>External providers require explicit workspace consent</small>
           </span>
         </div>
       </section>

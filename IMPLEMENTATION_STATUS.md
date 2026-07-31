@@ -1,60 +1,97 @@
 # Current status
 
-The Structara v2.1 brand, full-website, product, and ultra-premium asset system
-is implementation-complete. Pull Request #16 passed every executed GitHub CI
-check on commit `bfbd53e`.
+Structara is a **repository release candidate** as of 2026-07-31. The registered
+marketing, authentication, onboarding, product, document, knowledge, enterprise,
+and administration surfaces are implemented and pass the local release gates
+listed below. This status is not a production go-live, legal-clearance,
+commercial-pricing, or field-performance assertion.
 
-# Completed
+# Completed repository scope
 
-- audited masterplan sections 0–130 and recorded one-to-one evidence in
-  `MASTERPLAN_TRACEABILITY.md`
 - one connected English-default Structara marketing and authenticated product
   system with round-trip navigation
-- all registered public, authentication, onboarding, app, document, knowledge,
-  enterprise, and admin routes
-- route-specific visual families for product, solution, demo, proof/pricing,
-  developer, editorial, and legal pages
+- all routes registered in `PAGE_MANIFEST.yml`, with route-specific information
+  architecture and no desktop horizontal overflow in the complete route crawl
+- product, solution, demo, proof/pricing, developer, editorial, legal, document,
+  knowledge, enterprise, and administration visual families
 - functional pricing audience switch and bounded credit estimator
-- actual public OpenDART fixture with receipt, source line, taxonomy, source
-  hash, archive hash, and explicit no-quality-claim boundary
-- first-party Blender hero master, GLB LODs, 11 responsive/transparent/concept
-  derivatives, and MP4/WebM delivery
-- 23 product screens, 10 product interaction recordings in two formats, and 10
-  DART proof captures
-- 18 structural glyphs, 6 patterns, 8 textures, and 12 architecture diagrams
-- deterministic asset naming and cryptographic hash gates
-- desktop/tablet/mobile/reduced-motion/accessibility/performance review
-- no generated or external production raster; no fabricated customer, benchmark,
-  certification, security, or pricing claim
+- public OpenDART JTC fixture with receipt `20260730000413`, taxonomy, source
+  line, source hash, archive hash, and an explicit no-quality-claim boundary
+- exact JTC revenue-cell selection in the proof demo; the previous detached
+  absolute-position overlay has been removed
+- Quick Convert contract aligned to 30 files and 50 MB per file; unsupported
+  folder wording and the former 50 MB/256 MB contradiction have been removed
+- private-first processing copy aligned with the actual consent contract:
+  external providers require explicit workspace consent
+- every generic `/app/*` header action resolves to an operable internal route;
+  static fixture controls are visibly disabled instead of pretending to mutate
+  data
+- demo `/admin` and `/settings` surfaces are labeled illustrative and cannot
+  perform write-looking operations; non-demo mode continues to use the live
+  control components
+- Next.js production builds no longer suppress TypeScript errors
+- first-party Blender hero master, GLB LODs, responsive derivatives, product
+  captures, structural glyphs, patterns, textures, and architecture diagrams
+- deterministic asset naming, provenance records, and cryptographic hash gates
+- no fabricated customer, benchmark, certification, security, or commercial
+  pricing evidence
 
-# Local verification evidence
+# Current local verification evidence
+
+Executed with Node.js 22.14.0 and pnpm 11.9.0:
 
 - ESLint: pass with zero warnings
 - strict TypeScript: pass
-- Next.js production build: pass
-- Vitest: 19 files and 56 tests passed
-- Playwright: 16 passed and 4 intentional project-scope skips
-- live API Playwright journey: 1 passed, including upload, compile, provenance,
-  review, export, and deletion
-- Axe: no A/AA violations in the representative route suite
-- asset schema/naming/hash validators: pass
-- Lighthouse: Performance 93, Accessibility 100, Best Practices 96, SEO 100,
-  TBT 40 ms, CLS 0, console errors 0
-- Blender/derivative scripts: Ruff pass
-- manual browser: 1440, 1024, 390, navigation, pricing, DART tabs, overflow,
-  and console verified
-- GitHub CI: 19 executed checks passed; 3 policy-conditional checks skipped
+- Next.js 16.2.12 production build: pass, including the internal TypeScript
+  phase, static-page generation, and build-trace collection
+- Vitest: 21 files and 72 tests passed
+- Playwright: 24 passed and 4 intentional project-scope skips
+- TypeScript-AST button contract gate: 0 enabled dead controls
+- registered public route crawl: pass
+- registered app and document route crawl: pass
+- Quick Convert bounded/consent-aware contract: desktop and mobile pass
+- JTC exact-cell proof and no detached overlay: desktop and mobile pass
+- demo/live control-boundary checks: desktop and mobile pass
+- shell notification/account actions, fixed studios, SSO, and recovery gates:
+  desktop and mobile pass
+- reduced-motion checks: pass
+- Axe representative WCAG A/AA suite: no violations
+- canonical contracts TypeScript check: pass
+- asset manifest: 9 assets verified
+- asset naming: 119 files verified
+- asset hashes: 21 derivatives verified
 
-# Owner-controlled blockers
+The prior live-API Playwright journey and Lighthouse report remain part of the
+existing baseline. They were not rerun by this remediation. The retained
+Lighthouse artifact reports Performance 93, Accessibility 100, Best Practices
+96, SEO 100, TBT 40 ms, and CLS 0 under its recorded lab conditions; it is not
+field Core Web Vitals evidence.
+
+# Intentional architecture boundary
+
+The root layout remains dynamically rendered because `src/proxy.ts` issues a
+per-request CSP nonce. Removing dynamic rendering without replacing that nonce
+architecture would weaken the security contract. Production caching and field
+performance must therefore be assessed on the deployed canonical environment,
+not inferred from route labels alone.
+
+# Remaining owner or external gates
 
 - legal and domain clearance for the working name `Structara`
 - final licensed wordmark and owner Figma workspace synchronization
 - owner-approved commercial price book for currency, overage, storage, and
   annual-discount values
 - participant/customer consent for interviews, logos, testimonials, and stories
-- production canonical hostname and post-deployment field Core Web Vitals
+- rights-cleared benchmark corpora plus real model, hardware, cost, and canary
+  evidence before publishing benchmark values
+- production identity-provider, payment-provider, email-delivery, and external
+  model-provider configuration where those features are enabled
+- production canonical hostname, deployed security-header scan, operational
+  drills, and field p75 Core Web Vitals
 
-# Owner review
+# Release interpretation
 
-The local homepage is ready for owner review. The remaining items above require
-owner or production access rather than additional repository implementation.
+`complete` in repository manifests means that the route or artifact is
+implemented and locally verified. It does not mean that the external gates above
+have been satisfied. Release confidence must continue to be based on evidence,
+not status labels alone.

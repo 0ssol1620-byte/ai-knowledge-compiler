@@ -100,7 +100,13 @@ function DemoProcessingWorkspace() {
               <h1>evidence-grounded-rag-evaluation.pdf</h1>
             </div>
           </div>
-          <button className="mode-select" type="button">
+          <button
+            className="mode-select"
+            type="button"
+            disabled
+            title="Route changes require a live processing session."
+            data-sample-static-control
+          >
             <Gauge size={15} weight="fill" aria-hidden="true" />
             Balanced
             <CaretDown size={13} aria-hidden="true" />

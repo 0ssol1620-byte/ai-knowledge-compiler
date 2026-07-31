@@ -62,7 +62,7 @@ assets:
     master_path: apps/web/src/components/structara-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "e52f697823fa03edebdcd4e10cadbf6d4efcef94b3190d8660bbf2e852e1b4d4"
+        sha256: "d8593453a244915bdaadeb609fba263e45a59fee6a5fc21f942fa64bd1f27c88"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md

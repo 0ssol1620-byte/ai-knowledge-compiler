@@ -3,6 +3,9 @@ docs/masterplan/AI_Knowledge_Compiler_Enterprise_UI_UX_Masterplan_FINAL_KO_2026-
 work/
 benchmark/reports/generated/
 apps/web/.next/
+apps/web/.next-*/
+apps/web/.vercel/
+/.chatgpt2codex/
 apps/web/playwright-report/
 apps/web/test-results/
 packages/contracts/src/generated-contracts.ts

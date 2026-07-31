@@ -50,10 +50,15 @@ export function StructaraMarketingShell({ children }: { children: ReactNode }) {
         <nav className="st-desktop-nav" aria-label="Primary navigation">
           {Object.entries(groups).map(([label, links]) => (
             <div className="st-nav-group" key={label}>
-              <button type="button">
+              <Link
+                className="st-nav-trigger"
+                href={links[0][0] as Route}
+                aria-haspopup="true"
+                aria-label={`${label} overview and submenu`}
+              >
                 {label}
                 <CaretDown size={13} aria-hidden="true" />
-              </button>
+              </Link>
               <div className="st-nav-panel">
                 {links.map(([href, item]) => (
                   <Link key={href} href={href}>

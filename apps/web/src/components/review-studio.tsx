@@ -7,6 +7,7 @@ import {
   Prohibit,
   Warning,
 } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useState } from "react";
 
 const issues = [
@@ -32,6 +33,8 @@ const issues = [
     summary: "Caption may precede figure",
   },
 ] as const;
+
+const SAMPLE_CONTROL_TITLE = "This action requires a connected review session.";
 
 export function ReviewStudio() {
   const [selectedId, setSelectedId] = useState("numeric");
@@ -61,7 +64,13 @@ export function ReviewStudio() {
           <h1>Review Studio</h1>
         </div>
         <span className="demo-sample-chip">Sample review · 3 open</span>
-        <button type="button" className="secondary-button compact">
+        <button
+          type="button"
+          className="secondary-button compact"
+          disabled
+          title={SAMPLE_CONTROL_TITLE}
+          data-sample-static-control
+        >
           Completion summary
         </button>
       </header>
@@ -90,13 +99,13 @@ export function ReviewStudio() {
         <section className="review-source-pane">
           <header>
             <span>Source · Page {selected.page}</span>
-            <button
+            <Link
               className="icon-button compact"
-              type="button"
-              aria-label="View source full screen"
+              href="/documents/sample-dart/sources"
+              aria-label="Open source evidence"
             >
               <FileMagnifyingGlass size={16} />
-            </button>
+            </Link>
           </header>
           <div className="review-paper">
             <span>Consolidated financial statements</span>
@@ -133,12 +142,22 @@ export function ReviewStudio() {
             <small>OCR extraction · disagreement</small>
           </section>
           <div className="candidate-choice-grid">
-            <button type="button">
+            <button
+              type="button"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
               <span>Candidate A · Native</span>
               <strong>12,345,678</strong>
               <small>Matches source text layer</small>
             </button>
-            <button type="button">
+            <button
+              type="button"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
               <span>Candidate B · OCR</span>
               <strong>12,345,673</strong>
               <small>Visual model result</small>
@@ -146,24 +165,46 @@ export function ReviewStudio() {
           </div>
           <label>
             <span>Manual value</span>
-            <input defaultValue="12,345,678" />
+            <input
+              defaultValue="12,345,678"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+            />
           </label>
           <div className="candidate-actions">
-            <button className="secondary-button compact" type="button">
+            <button
+              className="secondary-button compact"
+              type="button"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
               <ArrowClockwise size={14} />
               Reprocess
             </button>
-            <button className="secondary-button compact" type="button">
+            <button
+              className="secondary-button compact"
+              type="button"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
               <Prohibit size={14} />
               Ignore with reason
             </button>
-            <button className="primary-button compact" type="button">
+            <button
+              className="primary-button compact"
+              type="button"
+              disabled
+              title={SAMPLE_CONTROL_TITLE}
+              data-sample-static-control
+            >
               <Check size={14} />
               Accept candidate A
             </button>
           </div>
           <p className="review-shortcuts">
-            J/K next issue · 1/2 choose · E edit · R retry · A accept
+            Sample evidence only · connect a review session to edit or accept
           </p>
         </aside>
       </div>

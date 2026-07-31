@@ -241,11 +241,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <strong>External processing</strong>
             <span>
               {DEMO_MODE
-                ? "External APIs off"
+                ? "External providers disabled"
                 : profile?.externalProcessingEnabled === true
-                  ? "Consent enabled"
+                  ? "Explicit consent enabled"
                   : profile?.externalProcessingEnabled === false
-                    ? "External APIs off"
+                    ? "External providers disabled"
                     : "Policy review required"}
             </span>
           </div>
@@ -322,17 +322,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
               <small>credits</small>
             </div>
-            <button
+            <Link
               className="icon-button"
-              type="button"
+              href="/notices"
               aria-label="Open notifications"
+              data-shell-action="notifications"
             >
               <Bell size={19} />
-            </button>
-            <button
+            </Link>
+            <Link
               className="account-button"
-              type="button"
-              aria-label="Open account menu"
+              href="/settings"
+              aria-label="Open account settings"
+              data-shell-action="account"
             >
               <span className="avatar" aria-hidden="true">
                 {userInitials}
@@ -342,7 +344,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <small>{userRole ?? "Member"}</small>
               </span>
               <CaretDown size={14} aria-hidden="true" />
-            </button>
+            </Link>
           </div>
         </header>
         <main id="main-content" className="main-content" tabIndex={-1}>

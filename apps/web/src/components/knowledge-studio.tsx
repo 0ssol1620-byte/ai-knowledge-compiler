@@ -9,7 +9,7 @@ import {
   Rows,
   ShieldCheck,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import Link from "next/link";
 
 const tabs = [
   "Overview",
@@ -20,8 +20,11 @@ const tabs = [
   "Evidence",
 ];
 
+const SAMPLE_CONTROL_TITLE =
+  "This control requires a connected knowledge base.";
+
 export function KnowledgeStudio() {
-  const [activeTab, setActiveTab] = useState("Graph");
+  const activeTab = "Graph";
   const demoMode = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 
   return (
@@ -34,7 +37,13 @@ export function KnowledgeStudio() {
         <span className="demo-sample-chip">
           {demoMode ? "Sample preview" : "No live base selected"}
         </span>
-        <button className="secondary-button compact" type="button">
+        <button
+          className="secondary-button compact"
+          type="button"
+          disabled
+          title={SAMPLE_CONTROL_TITLE}
+          data-sample-static-control
+        >
           <Funnel size={14} aria-hidden="true" />
           Perspective
         </button>
@@ -45,7 +54,9 @@ export function KnowledgeStudio() {
             type="button"
             className={activeTab === tab ? "active" : undefined}
             aria-pressed={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
+            disabled
+            title={SAMPLE_CONTROL_TITLE}
+            data-sample-static-control
             key={tab}
           >
             {tab}
@@ -69,7 +80,12 @@ export function KnowledgeStudio() {
           <aside className="knowledge-explorer">
             <label>
               <MagnifyingGlass size={14} aria-hidden="true" />
-              <input type="search" placeholder="Search notes or entities" />
+              <input
+                type="search"
+                placeholder="Search requires a connected knowledge base"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+              />
             </label>
             <span>NOTES · SAMPLE</span>
             {[
@@ -83,6 +99,9 @@ export function KnowledgeStudio() {
                 type="button"
                 className={index === 0 ? "active" : undefined}
                 key={label}
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
               >
                 <FileText size={15} weight="duotone" aria-hidden="true" />
                 <span>
@@ -100,7 +119,13 @@ export function KnowledgeStudio() {
                 <strong>Evidence-grounded RAG</strong>
               </div>
               <div>
-                <button className="secondary-button compact" type="button">
+                <button
+                  className="secondary-button compact"
+                  type="button"
+                  disabled
+                  title={SAMPLE_CONTROL_TITLE}
+                  data-sample-static-control
+                >
                   <Rows size={14} aria-hidden="true" />
                   Table alternative
                 </button>
@@ -114,23 +139,59 @@ export function KnowledgeStudio() {
                 <path d="M400 240 L210 120 M400 240 L594 112 M400 240 L650 300 M400 240 L230 345 M400 240 L405 60" />
                 <path d="M210 120 L405 60 M594 112 L650 300 M230 345 L650 300" />
               </svg>
-              <button className="graph-node graph-node-center" type="button">
+              <button
+                className="graph-node graph-node-center"
+                type="button"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
+              >
                 <strong>Evidence-grounded RAG</strong>
                 <small>Knowledge note</small>
               </button>
-              <button className="graph-node graph-node-a" type="button">
+              <button
+                className="graph-node graph-node-a"
+                type="button"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
+              >
                 Source coverage
               </button>
-              <button className="graph-node graph-node-b" type="button">
+              <button
+                className="graph-node graph-node-b"
+                type="button"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
+              >
                 Numeric check
               </button>
-              <button className="graph-node graph-node-c" type="button">
+              <button
+                className="graph-node graph-node-c"
+                type="button"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
+              >
                 Retrieval quality
               </button>
-              <button className="graph-node graph-node-d" type="button">
+              <button
+                className="graph-node graph-node-d"
+                type="button"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
+              >
                 Unsupported claim
               </button>
-              <button className="graph-node graph-node-e" type="button">
+              <button
+                className="graph-node graph-node-e"
+                type="button"
+                disabled
+                title={SAMPLE_CONTROL_TITLE}
+                data-sample-static-control
+              >
                 Research paper
               </button>
               <span className="graph-sample-label">
@@ -177,10 +238,13 @@ export function KnowledgeStudio() {
                 </div>
               </li>
             </ol>
-            <button className="secondary-button" type="button">
+            <Link
+              className="secondary-button"
+              href="/documents/sample-dart/sources"
+            >
               Open source evidence
               <ArrowRight size={14} aria-hidden="true" />
-            </button>
+            </Link>
           </aside>
         </div>
       )}

@@ -26,6 +26,7 @@ build/
 node_modules/
 .next/
 .next-e2e-live/
+.next-*/
 out/
 *.tsbuildinfo
 coverage/
@@ -33,6 +34,7 @@ playwright-report/
 test-results/
 
 # Local data and generated artifacts
+.chatgpt2codex/
 .akc-data/
 data/
 !apps/web/src/data/

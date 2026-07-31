@@ -28,8 +28,8 @@ function DemoSettingsPage() {
     <div className="simple-page settings-page">
       <h1>Settings</h1>
       <p>
-        Manage retention, external processing, roles, and credit policy for this
-        workspace.
+        Illustrative policy snapshot. Connect an authorized workspace to change
+        retention, external processing, roles, or credit policy.
       </p>
 
       <div className="settings-layout">
@@ -76,17 +76,27 @@ function DemoSettingsPage() {
                   cannot process, with notice before every use.
                 </small>
               </span>
-              <input type="checkbox" className="switch" />
+              <input
+                type="checkbox"
+                className="switch"
+                disabled
+                title="Policy editing requires an authorized live workspace."
+              />
             </label>
             <label className="setting-row">
               <span>
                 <strong>Product improvement data</strong>
                 <small>
-                  No document or correction enters a training pool before
-                  explicit opt-in.
+                  Training-pool participation requires explicit opt-in and an
+                  approved workspace policy.
                 </small>
               </span>
-              <input type="checkbox" className="switch" />
+              <input
+                type="checkbox"
+                className="switch"
+                disabled
+                title="Policy editing requires an authorized live workspace."
+              />
             </label>
             <label className="setting-row">
               <span>
@@ -96,7 +106,13 @@ function DemoSettingsPage() {
                   candidates.
                 </small>
               </span>
-              <input type="checkbox" className="switch" defaultChecked />
+              <input
+                type="checkbox"
+                className="switch"
+                defaultChecked
+                disabled
+                title="Policy editing requires an authorized live workspace."
+              />
             </label>
           </section>
 
@@ -110,7 +126,11 @@ function DemoSettingsPage() {
             <div className="retention-grid">
               <label>
                 <span>Verified sources</span>
-                <select defaultValue="7">
+                <select
+                  defaultValue="7"
+                  disabled
+                  title="Retention editing requires an authorized live workspace."
+                >
                   <option value="1">24 hours</option>
                   <option value="7">7 days</option>
                   <option value="30">30 days</option>
@@ -119,7 +139,11 @@ function DemoSettingsPage() {
               </label>
               <label>
                 <span>Raw model response</span>
-                <select defaultValue="7">
+                <select
+                  defaultValue="7"
+                  disabled
+                  title="Retention editing requires an authorized live workspace."
+                >
                   <option value="1">24 hours</option>
                   <option value="7">7 days</option>
                   <option value="30">30 days</option>
@@ -127,7 +151,11 @@ function DemoSettingsPage() {
               </label>
               <label>
                 <span>Final exports</span>
-                <select defaultValue="30">
+                <select
+                  defaultValue="30"
+                  disabled
+                  title="Retention editing requires an authorized live workspace."
+                >
                   <option value="7">7 days</option>
                   <option value="30">30 days</option>
                   <option value="project">Project lifetime</option>
@@ -149,7 +177,13 @@ function DemoSettingsPage() {
                   Separate project, review, and billing permissions by role.
                 </p>
               </div>
-              <button type="button" className="secondary-button compact">
+              <button
+                type="button"
+                className="secondary-button compact"
+                disabled
+                title="Invitations require an authorized live workspace."
+                data-demo-static-control
+              >
                 <Buildings size={14} />
                 Invite member
               </button>
@@ -166,7 +200,13 @@ function DemoSettingsPage() {
 
           <div className="settings-save">
             <span>Changes are recorded in the audit log.</span>
-            <button className="primary-button" type="button">
+            <button
+              className="primary-button"
+              type="button"
+              disabled
+              title="Saving requires an authorized live workspace."
+              data-demo-static-control
+            >
               Save settings
             </button>
           </div>
