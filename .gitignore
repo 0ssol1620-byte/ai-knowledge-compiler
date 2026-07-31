@@ -63,3 +63,5 @@ desktop.ini
 *.tfstate
 *.tfstate.*
 crash.log
+
+.vercel
