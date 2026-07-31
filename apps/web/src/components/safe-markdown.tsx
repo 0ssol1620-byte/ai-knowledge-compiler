@@ -21,7 +21,7 @@ export function SafeMarkdown({ source }: { source: string }) {
       .use(rehypeStringify)
       .process(source)
       .then((result) => {
-        if (!cancelled) setHtml(String(result));
+        if (!cancelled) setHtml(demoteEmbeddedDocumentHeadings(String(result)));
       });
     return () => {
       cancelled = true;
@@ -33,5 +33,12 @@ export function SafeMarkdown({ source }: { source: string }) {
       className="markdown-rendered"
       dangerouslySetInnerHTML={{ __html: html }}
     />
+  );
+}
+
+function demoteEmbeddedDocumentHeadings(html: string): string {
+  return html.replace(
+    /<(\/?)h([1-5])(?=[\s>])/g,
+    (_match, slash: string, level: string) => `<${slash}h${Number(level) + 1}`,
   );
 }

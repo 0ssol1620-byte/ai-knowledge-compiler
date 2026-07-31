@@ -35,6 +35,11 @@ commercial-pricing, or field-performance assertion.
 - deterministic asset naming, provenance records, and cryptographic hash gates
 - no fabricated customer, benchmark, certification, security, or commercial
   pricing evidence
+- v2 Public Core registry with exact OmniDocBench v1.7, ParseBench, and
+  olmOCR-Bench evaluator/dataset revisions and full remote manifest hashes
+- GT-free CIR adapters, immutable prediction freeze, isolation audit,
+  Structara critical gate, candidate/incumbent comparison, exact three-run
+  reproducibility gate, and external-key report signing contract
 
 # Current local verification evidence
 
@@ -44,11 +49,19 @@ Executed with Node.js 22.14.0 and pnpm 11.9.0:
 - strict TypeScript: pass
 - Next.js 16.2.12 production build: pass, including the internal TypeScript
   phase, static-page generation, and build-trace collection
-- Vitest: 21 files and 72 tests passed
-- Playwright: 24 passed and 4 intentional project-scope skips
+- Vitest: 22 files and 109 tests passed
+- Public benchmark contract tests: 11 passed
+- production Playwright: 52 passed and 14 intentional project-scope skips
+- desktop visual regression: 9 approved baselines passed
+- browser/viewport matrix: 9 passed across Chromium, Firefox, and WebKit
+- live-API Playwright: 1 end-to-end provenance/export journey passed
 - TypeScript-AST button contract gate: 0 enabled dead controls
 - registered public route crawl: pass
 - registered app and document route crawl: pass
+- Public Core online registry verification: pass
+- official ParseBench evaluator tests: 198 passed
+- OmniDocBench compatibility smoke: 5 passed, 1 deselected
+- olmOCR-Bench evaluator import/normalization/baseline smoke: pass
 - Quick Convert bounded/consent-aware contract: desktop and mobile pass
 - JTC exact-cell proof and no detached overlay: desktop and mobile pass
 - demo/live control-boundary checks: desktop and mobile pass
@@ -61,19 +74,23 @@ Executed with Node.js 22.14.0 and pnpm 11.9.0:
 - asset naming: 119 files verified
 - asset hashes: 21 derivatives verified
 
-The prior live-API Playwright journey and Lighthouse report remain part of the
-existing baseline. They were not rerun by this remediation. The retained
-Lighthouse artifact reports Performance 93, Accessibility 100, Best Practices
-96, SEO 100, TBT 40 ms, and CLS 0 under its recorded lab conditions; it is not
-field Core Web Vitals evidence.
+The live-API Playwright journey was rerun and passed registration, verification,
+upload, analysis, compilation, ordered SSE, and export against the real local
+API. The retained Lighthouse artifact reports Performance 93, Accessibility
+100, Best Practices 96, SEO 100, TBT 40 ms, and CLS 0 under its recorded lab
+conditions; it is not field Core Web Vitals evidence.
 
 # Intentional architecture boundary
 
-The root layout remains dynamically rendered because `src/proxy.ts` issues a
-per-request CSP nonce. Removing dynamic rendering without replacing that nonce
-architecture would weaken the security contract. Production caching and field
-performance must therefore be assessed on the deployed canonical environment,
-not inferred from route labels alone.
+The root layout remains dynamically rendered because `src/middleware.ts` issues
+a per-request CSP nonce. Next.js 16 prefers the `proxy.ts` convention, but the
+current Windows standalone trace path intermittently omits the renamed proxy
+artifact. The middleware compatibility entry preserves the same nonce and
+header contract until the upstream standalone artifact issue is resolved.
+Removing dynamic rendering without replacing that nonce architecture would
+weaken the security contract. Production caching and field performance must
+therefore be assessed on the deployed canonical environment, not inferred from
+route labels alone.
 
 # Remaining owner or external gates
 
@@ -84,6 +101,9 @@ not inferred from route labels alone.
 - participant/customer consent for interviews, logos, testimonials, and stories
 - rights-cleared benchmark corpora plus real model, hardware, cost, and canary
   evidence before publishing benchmark values
+- three complete same-environment candidate/incumbent runs for OmniDocBench,
+  ParseBench, and olmOCR-Bench, including official and Structara-critical raw
+  outputs, GT-isolation evidence, failure artifacts, and a signed report
 - production identity-provider, payment-provider, email-delivery, and external
   model-provider configuration where those features are enabled
 - production canonical hostname, deployed security-header scan, operational

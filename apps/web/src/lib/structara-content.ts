@@ -426,8 +426,8 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
         },
       ],
       {
-        label: "Open the filing demo",
-        href: "/documents/sample-sec/processing",
+        label: "Open the filing proof",
+        href: "/demo/sec",
       },
     ),
     page(

@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 
+import { KnowledgeStudio } from "@/components/knowledge-studio";
+import { ProjectsWorkspace } from "@/components/projects-workspace";
 import { StructaraAppPage } from "@/components/structara-app-page";
+import { StructaraAppPageLocalized } from "@/components/structara-app-page-localized";
+import { getRequestLocale } from "@/lib/locale-server";
 import { APP_PAGE_COPY } from "@/lib/structara-content";
 
 type Props = { params: Promise<{ slug?: string[] }> };
+
+// Locale-sensitive product pages must never reuse a prerendered child segment.
+// Keeping this declaration next to the page prevents a mixed-language shell
+// when the request cookie differs from a previous render.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function resolve(slug: string[] | undefined) {
   const parts = slug?.length ? slug : ["home"];
@@ -48,15 +58,34 @@ function resolve(slug: string[] | undefined) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await getRequestLocale();
   const definition = resolve(slug);
   return {
-    title: definition.title,
-    description: definition.description,
+    title:
+      locale === "ko"
+        ? `${definition.title} · 운영 워크스페이스`
+        : definition.title,
+    description:
+      locale === "ko"
+        ? "실제 데이터와 데모 fixture의 경계를 명확히 구분하는 Structara 운영 워크스페이스입니다."
+        : definition.description,
     robots: { index: false, follow: false },
   };
 }
 
 export default async function AppRoute({ params }: Props) {
   const { slug } = await params;
-  return <StructaraAppPage {...resolve(slug)} />;
+  const locale = await getRequestLocale();
+  if ((slug?.[0] ?? "home") === "knowledge-bases") {
+    return <KnowledgeStudio locale={locale} />;
+  }
+  if (slug?.[0] === "projects" && slug.length === 1) {
+    return <ProjectsWorkspace locale={locale} />;
+  }
+  const definition = resolve(slug);
+  return locale === "ko" ? (
+    <StructaraAppPageLocalized {...definition} locale={locale} />
+  ) : (
+    <StructaraAppPage {...definition} />
+  );
 }

@@ -700,6 +700,18 @@ function LiveJobView({ jobId }: { jobId: string }) {
               {data.reviews.filter((item) => item.status === "open").length}
             </span>
           </button>
+          <Link
+            className="secondary-button compact"
+            href={`/documents/${data.document.id}/review?job=${jobId}`}
+          >
+            Full Review Studio
+          </Link>
+          <Link
+            className="secondary-button compact"
+            href={`/knowledge-bases?document=${data.document.id}`}
+          >
+            Knowledge Studio
+          </Link>
           <button
             className="primary-button compact"
             type="button"

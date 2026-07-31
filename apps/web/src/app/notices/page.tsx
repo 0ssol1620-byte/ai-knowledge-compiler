@@ -27,10 +27,10 @@ export default function NoticesPage() {
             Review external-transfer consent, retention and deletion, incident
             response, and subprocessor policies.
           </p>
-          <a href="#privacy">
+          <Link href="/legal/privacy">
             Privacy and data handling
             <ArrowSquareOut size={14} />
-          </a>
+          </Link>
         </article>
         <article className="panel notice-card" id="opensource">
           <Scales size={20} weight="fill" />
@@ -39,10 +39,10 @@ export default function NoticesPage() {
             Review model weights, code, runtime, and dataset licenses
             separately.
           </p>
-          <a href="#opensource">
+          <Link href="/legal/third-party-notices">
             Dependency notices
             <ArrowSquareOut size={14} />
-          </a>
+          </Link>
         </article>
         <article className="panel notice-card">
           <FileText size={20} weight="fill" />

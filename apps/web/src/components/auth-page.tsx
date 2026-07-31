@@ -7,10 +7,75 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
+import { useStructaraLocale } from "@/components/locale-provider";
 import { VerificationPending } from "@/components/verification-pending";
 import { apiRequest, ApiError } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import type { StructaraLocale } from "@/lib/locale";
 import { normalizeSessionResponse } from "@/lib/session";
+
+const AUTH_COPY = {
+  en: {
+    registerHero: "Build knowledge your AI can use.",
+    loginHero: "Return to your knowledge workspace.",
+    heroBody:
+      "Structure documents, verify every important result, and keep the source attached as knowledge moves into people and AI workflows.",
+    benefits: [
+      "Source → block → knowledge provenance",
+      "Portable Markdown · Obsidian · RAG",
+      "Processing and retention controlled by policy",
+    ],
+    security:
+      "Credentials are carried in secure cookies, not browser storage. Training and provider policies are never implied by the interface.",
+    createTitle: "Create your account",
+    signInTitle: "Sign in",
+    createIntro: "Start with your name, email, and a secure password.",
+    signInIntro: "Continue with active projects and the review queue.",
+    displayName: "Display name",
+    email: "Email",
+    password: "Password",
+    passwordPlaceholder: "At least 12 characters",
+    passwordHelp:
+      "Use at least 12 characters. Passwords are not stored in the page or browser storage.",
+    creating: "Creating…",
+    checking: "Checking securely…",
+    createWorkspace: "Create workspace",
+    signIn: "Sign in",
+    already: "Already have an account? ",
+    need: "Need an account? ",
+    workspaceSuffix: "workspace",
+  },
+  ko: {
+    registerHero: "AI가 활용할 수 있는 지식을 구축하세요.",
+    loginHero: "지식 워크스페이스로 돌아오세요.",
+    heroBody:
+      "문서를 구조화하고 중요한 모든 결과를 검증하며, 지식이 사람과 AI 워크플로로 이동해도 원본 연결을 유지합니다.",
+    benefits: [
+      "원본 → 블록 → 지식 provenance",
+      "이식 가능한 Markdown · Obsidian · RAG",
+      "정책으로 통제되는 처리와 보존",
+    ],
+    security:
+      "자격 증명은 브라우저 저장소가 아닌 보안 쿠키로 전달됩니다. 학습 및 외부 제공자 정책을 화면만으로 암시하지 않습니다.",
+    createTitle: "계정 만들기",
+    signInTitle: "로그인",
+    createIntro: "이름, 이메일과 안전한 비밀번호로 시작하세요.",
+    signInIntro: "활성 프로젝트와 검토 큐를 이어서 확인하세요.",
+    displayName: "표시 이름",
+    email: "이메일",
+    password: "비밀번호",
+    passwordPlaceholder: "12자 이상 입력",
+    passwordHelp:
+      "12자 이상을 사용하세요. 비밀번호는 페이지나 브라우저 저장소에 저장되지 않습니다.",
+    creating: "생성 중…",
+    checking: "안전하게 확인 중…",
+    createWorkspace: "워크스페이스 만들기",
+    signIn: "로그인",
+    already: "이미 계정이 있나요? ",
+    need: "계정이 필요한가요? ",
+    workspaceSuffix: "워크스페이스",
+  },
+} as const;
 
 export function AuthPage({
   mode,
@@ -19,6 +84,8 @@ export function AuthPage({
   mode: "login" | "register";
   nextPath: string;
 }) {
+  const { locale } = useStructaraLocale();
+  const copy = AUTH_COPY[locale];
   const router = useRouter();
   const setSession = useAuthStore((state) => state.setSession);
   const [loading, setLoading] = useState(false);
@@ -36,38 +103,24 @@ export function AuthPage({
   }
 
   return (
-    <div className="login-page">
+    <div className="login-page" data-locale={locale}>
       <section className="login-story">
         <BrandMark />
         <div className="login-story-copy">
-          <h1>
-            {registering
-              ? "Build knowledge your AI can use."
-              : "Return to your knowledge workspace."}
-          </h1>
-          <p>
-            Structure documents, verify every important result, and keep the
-            source attached as knowledge moves into people and AI workflows.
-          </p>
+          <h1>{registering ? copy.registerHero : copy.loginHero}</h1>
+          <p>{copy.heroBody}</p>
           <ul>
-            <li>
-              <Check size={15} weight="bold" aria-hidden="true" />
-              Source → block → knowledge provenance
-            </li>
-            <li>
-              <Check size={15} weight="bold" aria-hidden="true" />
-              Portable Markdown · Obsidian · RAG
-            </li>
-            <li>
-              <Check size={15} weight="bold" aria-hidden="true" />
-              Processing and retention controlled by policy
-            </li>
+            {copy.benefits.map((benefit) => (
+              <li key={benefit}>
+                <Check size={15} weight="bold" aria-hidden="true" />
+                {benefit}
+              </li>
+            ))}
           </ul>
         </div>
         <div className="login-security">
           <ShieldCheck size={17} weight="fill" aria-hidden="true" />
-          Credentials are carried in secure cookies, not browser storage.
-          Training and provider policies are never implied by the interface.
+          {copy.security}
         </div>
       </section>
       <main id="main-content" className="login-form-wrap">
@@ -79,10 +132,11 @@ export function AuthPage({
             const form = new FormData(event.currentTarget);
             setLoading(true);
             setError(undefined);
+            const displayName = textValue(form, "display_name");
             const payload = registering
               ? {
-                  tenant_name: `${textValue(form, "display_name") || "My"} workspace`,
-                  display_name: textValue(form, "display_name"),
+                  tenant_name: `${displayName || (locale === "ko" ? "내" : "My")} ${copy.workspaceSuffix}`,
+                  display_name: displayName,
                   email: textValue(form, "email"),
                   password: textValue(form, "password"),
                 }
@@ -115,38 +169,32 @@ export function AuthPage({
                 router.refresh();
               })
               .catch((reason: unknown) => {
-                setError(authErrorMessage(reason, registering));
+                setError(authErrorMessage(reason, registering, locale));
               })
               .finally(() => setLoading(false));
           }}
         >
           <div>
-            <h2>{registering ? "Create your account" : "Sign in"}</h2>
-            <p>
-              {registering
-                ? "Start with your name, email, and a secure password."
-                : "Continue with active projects and the review queue."}
-            </p>
+            <h2>{registering ? copy.createTitle : copy.signInTitle}</h2>
+            <p>{registering ? copy.createIntro : copy.signInIntro}</p>
           </div>
 
           {registering && (
-            <>
-              <label className="field">
-                <span>Display name</span>
-                <input
-                  type="text"
-                  name="display_name"
-                  autoComplete="name"
-                  minLength={1}
-                  maxLength={200}
-                  required
-                />
-              </label>
-            </>
+            <label className="field">
+              <span>{copy.displayName}</span>
+              <input
+                type="text"
+                name="display_name"
+                autoComplete="name"
+                minLength={1}
+                maxLength={200}
+                required
+              />
+            </label>
           )}
 
           <label className="field">
-            <span>Email</span>
+            <span>{copy.email}</span>
             <input
               type="email"
               name="email"
@@ -156,7 +204,7 @@ export function AuthPage({
             />
           </label>
           <label className="field">
-            <span>Password</span>
+            <span>{copy.password}</span>
             <input
               type="password"
               name="password"
@@ -164,11 +212,10 @@ export function AuthPage({
               minLength={12}
               required
               aria-describedby="password-help"
-              placeholder="At least 12 characters"
+              placeholder={copy.passwordPlaceholder}
             />
             <small id="password-help" className="field-help">
-              Use at least 12 characters. Passwords are not stored in the page
-              or browser storage.
+              {copy.passwordHelp}
             </small>
           </label>
 
@@ -189,17 +236,17 @@ export function AuthPage({
             )}
             {loading
               ? registering
-                ? "Creating…"
-                : "Checking securely…"
+                ? copy.creating
+                : copy.checking
               : registering
-                ? "Create workspace"
-                : "Sign in"}
+                ? copy.createWorkspace
+                : copy.signIn}
             {!loading && <ArrowRight size={15} aria-hidden="true" />}
           </button>
           <p className="login-register">
-            {registering ? "Already have an account? " : "Need an account? "}
+            {registering ? copy.already : copy.need}
             <Link href={(registering ? loginHref : registerHref) as Route}>
-              {registering ? "Sign in" : "Create workspace"}
+              {registering ? copy.signIn : copy.createWorkspace}
             </Link>
           </p>
         </form>
@@ -213,22 +260,46 @@ function textValue(form: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
-function authErrorMessage(error: unknown, registering: boolean): string {
+function authErrorMessage(
+  error: unknown,
+  registering: boolean,
+  locale: StructaraLocale,
+): string {
+  const korean = locale === "ko";
   if (error instanceof ApiError) {
-    const messages: Record<string, string> = {
-      INVALID_CREDENTIALS: "The email or password is incorrect.",
-      EMAIL_EXISTS:
-        "This email is already registered. Sign in or use another email.",
-      REGISTER_CONFLICT:
-        "A workspace with the same information already exists.",
-      NO_TENANT_MEMBERSHIP: "No workspace is connected to this account.",
-      CSRF_ORIGIN_DENIED:
-        "This request came from an unapproved origin. Try again from the official service URL.",
-    };
-    return messages[error.code] ?? error.message;
+    const messages: Record<string, string> = korean
+      ? {
+          INVALID_CREDENTIALS: "이메일 또는 비밀번호가 올바르지 않습니다.",
+          EMAIL_EXISTS:
+            "이미 등록된 이메일입니다. 로그인하거나 다른 이메일을 사용하세요.",
+          REGISTER_CONFLICT: "동일한 정보의 워크스페이스가 이미 존재합니다.",
+          NO_TENANT_MEMBERSHIP: "이 계정에 연결된 워크스페이스가 없습니다.",
+          CSRF_ORIGIN_DENIED:
+            "승인되지 않은 출처의 요청입니다. 공식 서비스 주소에서 다시 시도하세요.",
+        }
+      : {
+          INVALID_CREDENTIALS: "The email or password is incorrect.",
+          EMAIL_EXISTS:
+            "This email is already registered. Sign in or use another email.",
+          REGISTER_CONFLICT:
+            "A workspace with the same information already exists.",
+          NO_TENANT_MEMBERSHIP: "No workspace is connected to this account.",
+          CSRF_ORIGIN_DENIED:
+            "This request came from an unapproved origin. Try again from the official service URL.",
+        };
+    return (
+      messages[error.code] ??
+      (korean
+        ? `요청을 완료할 수 없습니다. 오류 코드: ${error.code || error.status}`
+        : error.message)
+    );
   }
-  if (error instanceof Error) return error.message;
-  return registering
-    ? "The workspace could not be created."
-    : "Sign-in failed.";
+  if (!korean && error instanceof Error) return error.message;
+  return korean
+    ? registering
+      ? "워크스페이스를 만들 수 없습니다."
+      : "로그인에 실패했습니다."
+    : registering
+      ? "The workspace could not be created."
+      : "Sign-in failed.";
 }

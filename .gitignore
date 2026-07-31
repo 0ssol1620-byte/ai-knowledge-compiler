@@ -43,6 +43,8 @@ tmp/
 work/
 artifacts/
 benchmark/reports/generated/
+benchmark/cache/
+benchmark/public-runs/
 benchmark/datasets/private/
 benchmark/datasets/acquired/
 *.db

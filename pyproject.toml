@@ -90,6 +90,15 @@ packages = [
 addopts = "-ra --strict-config --strict-markers"
 asyncio_mode = "auto"
 testpaths = ["tests", "packages", "services", "benchmark"]
+norecursedirs = [
+  ".git",
+  ".hypothesis",
+  ".venv",
+  "node_modules",
+  "benchmark/cache",
+  "benchmark/public-runs",
+  "benchmark/datasets/private",
+]
 pythonpath = [
   ".",
   "packages/cir-python/src",

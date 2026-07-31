@@ -1,0 +1,105 @@
+schema_version: "1.0"
+locked_at: "2026-07-31T00:00:00Z"
+suite_id: public-core-2026-07-31
+policy:
+  ground_truth_inference_access: forbidden
+  immutable_predictions: required
+  official_and_critical_evaluators: required
+  repetitions: 3
+  full_run_required_for_production: true
+benchmarks:
+  - id: omnidocbench
+    display_name: OmniDocBench
+    tier: public_core
+    required: true
+    version: v1.7
+    evaluator:
+      repository: https://github.com/opendatalab/OmniDocBench.git
+      commit: 193627ae9e97d89188468ed1ee3b7a856ff76044
+      license: Apache-2.0
+      entrypoint: python pdf_validation.py --config config.yaml
+    dataset:
+      repository: opendatalab/OmniDocBench
+      revision: aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec
+      manifest_sha256: sha256:1902d23db1b0e409d774f1420306f9e9e82d1aa8638050f0fc8fd6b94c58aa99
+      file_count: 1662
+      total_bytes: 1550688430
+      license: research-only-non-commercial
+      redistribution: prohibited_without_separate_rights_review
+    dimensions: [text_ocr, layout, tables, formulas, reading_order, end_to_end]
+  - id: parsebench
+    display_name: ParseBench
+    tier: public_core
+    required: true
+    version: 2026-07-27
+    evaluator:
+      repository: https://github.com/run-llama/ParseBench.git
+      commit: 1d460294b3b9c57fb3fa944dc17a9c044c24d1e5
+      license: Apache-2.0
+      entrypoint: uv run parse-bench evaluation run --output_dir OUTPUT_DIR
+    dataset:
+      repository: llamaindex/ParseBench
+      revision: 2805a1d940f95a203e0ae4b88be9934f7765b3fc
+      manifest_sha256: sha256:9e3a722a5db9e8e23273176827c06a30fe6a58a983850329db917fabcff6c30e
+      file_count: 2113
+      total_bytes: 592182175
+      license: Apache-2.0
+      redistribution: license_permits_with_notice
+      expected_unique_pages: 2078
+      expected_documents: 1211
+      expected_rules: 169011
+    dimensions:
+      [
+        tables,
+        charts,
+        content_faithfulness,
+        semantic_formatting,
+        visual_grounding,
+      ]
+  - id: olmocr-bench
+    display_name: olmOCR-Bench
+    tier: public_core
+    required: true
+    version: 2026-02-19
+    evaluator:
+      repository: https://github.com/jina-ai/olmocr-bench.git
+      commit: cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c
+      license: upstream-license-file-absent
+      entrypoint: python benchmark.py --dir BENCH_DATA_DIR
+    dataset:
+      repository: allenai/olmOCR-bench
+      revision: 54a96a6fb6a2bd3b297e59869491db4d3625b711
+      manifest_sha256: sha256:55f347b01850aec77d457f6b3b2b54ddf5adce6f451ed501e59995ec0e9bff15
+      file_count: 1418
+      total_bytes: 356940588
+      license: license-review-required
+      redistribution: prohibited_until_license_review
+    dimensions:
+      - text_presence
+      - text_absence
+      - tables
+      - old_scans
+      - old_scans_math
+      - headers_footers
+      - multi_column
+      - long_tiny_text
+      - base_cases
+      - repetition
+expansion:
+  - id: real5-omnidocbench
+    status: research_watch
+    reason: no_official_dataset_and_evaluator_repository_verified
+    paper: https://arxiv.org/abs/2603.04205
+  - id: dr-docbench
+    status: challenge_information_only
+    reason: public_challenge_site_has_no_dataset_or_evaluator_release
+    repository: https://github.com/AaronLuo00/drdocbench-challenge.git
+    commit: 549faf2104d68b6cbc84d3e0aa13af82573b1a8e
+    paper: https://arxiv.org/abs/2606.01393
+  - id: realdocbench
+    status: research_watch
+    reason: no_official_dataset_and_evaluator_repository_verified
+    paper: https://arxiv.org/abs/2606.07401
+  - id: korean-public-benchmark
+    status: research_watch
+    reason: no_reproducible_official_dataset_ground_truth_evaluator_bundle_selected

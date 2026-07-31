@@ -9,8 +9,11 @@ import {
 } from "@/components/structara-glyph";
 import { StructaraDiagram } from "@/components/structara-diagram";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
+import { StructaraLegalRegister } from "@/components/structara-legal-register";
 import { StructaraProofDemo } from "@/components/structara-proof-demo";
 import { StructaraPricingPlanner } from "@/components/structara-pricing-planner";
+import { StructaraSecProofDemo } from "@/components/structara-sec-proof-demo";
+import { StructaraSecurityArchitecture } from "@/components/structara-security-architecture";
 import type { StructaraPage } from "@/lib/structara-content";
 import {
   ROUTE_DIAGRAMS,
@@ -87,10 +90,7 @@ export function StructaraMarketingPage({
             </div>
           </div>
           {productEvidence[definition.path] ? (
-            <ProductEvidence
-              evidence={productEvidence[definition.path]!}
-              path={definition.path}
-            />
+            <ProductEvidence evidence={productEvidence[definition.path]!} />
           ) : (
             <PageThesis definition={definition} />
           )}
@@ -116,9 +116,21 @@ export function StructaraMarketingPage({
           </section>
         )}
 
+        {definition.path === "/demo/sec" && (
+          <section className="st-route-proof st-route-proof-sec">
+            <StructaraSecProofDemo />
+          </section>
+        )}
+
+        {definition.path === "/security" && <StructaraSecurityArchitecture />}
+
         {definition.path === "/pricing" && <StructaraPricingPlanner />}
 
-        {ROUTE_DIAGRAMS[definition.path] && (
+        {definition.family === "legal" && (
+          <StructaraLegalRegister path={definition.path} />
+        )}
+
+        {ROUTE_DIAGRAMS[definition.path] && definition.path !== "/security" && (
           <StructaraDiagram
             id={ROUTE_DIAGRAMS[definition.path] as StructaraDiagramId}
           />
@@ -168,10 +180,8 @@ export function StructaraMarketingPage({
 
 function ProductEvidence({
   evidence,
-  path,
 }: {
   evidence: (typeof productEvidence)[string];
-  path: string;
 }) {
   return (
     <figure className="st-page-product-evidence">
@@ -182,7 +192,7 @@ function ProductEvidence({
           width={1440}
           height={900}
           sizes="(max-width: 960px) 92vw, 52vw"
-          priority={path === "/product"}
+          priority
         />
       </div>
       <figcaption>

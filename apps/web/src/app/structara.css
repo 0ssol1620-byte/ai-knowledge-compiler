@@ -289,6 +289,26 @@ body.st-menu-open {
   gap: 20px;
 }
 
+.st-header .locale-switcher {
+  border-color: color-mix(in srgb, var(--st-graphite) 18%, transparent);
+  background: color-mix(in srgb, var(--st-paper) 88%, transparent);
+}
+
+.st-header .locale-switcher button {
+  color: var(--st-muted);
+}
+
+.st-header .locale-switcher button[aria-pressed="true"] {
+  background: var(--st-graphite);
+  color: var(--st-paper);
+  box-shadow: none;
+}
+
+.st-mobile-locale-switcher {
+  width: max-content;
+  margin-bottom: 12px;
+}
+
 .st-text-link,
 .st-text-action {
   color: var(--st-graphite);

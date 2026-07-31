@@ -5,6 +5,42 @@ model-card claims are candidate-discovery inputs only. Production claims and
 promotion decisions require the same licensed internal corpus, output contract,
 hardware class, tuning budget, and cost boundary.
 
+## Public Core suite
+
+`benchmark-registry.lock.yaml` pins OmniDocBench v1.7, ParseBench, and
+olmOCR-Bench to exact evaluator commits and Hugging Face dataset revisions. The
+lock records a deterministic digest over every dataset path, blob identity,
+size, and LFS SHA-256. A mutable branch or unpinned dataset is not accepted.
+
+```powershell
+.venv\Scripts\python.exe benchmark/public_suite.py verify-registry --online
+.venv\Scripts\python.exe benchmark/public_suite.py adapt `
+  --benchmark parsebench --cir CIR.json --page-index 0 --output prediction.json
+.venv\Scripts\python.exe benchmark/public_suite.py freeze `
+  --predictions RUN\predictions --candidate parser-router-v1 `
+  --output RUN\prediction-manifest.json
+.venv\Scripts\python.exe benchmark/public_suite.py audit-isolation `
+  --prediction-manifest RUN\prediction-manifest.json `
+  --ground-truth-root EVALUATOR_ONLY_GT --output RUN\isolation-report.json
+.venv\Scripts\python.exe benchmark/public_suite.py reproducibility `
+  --run RUN\repeat-1.json --run RUN\repeat-2.json --run RUN\repeat-3.json `
+  --max-metric-span 0.005 --output RUN\reproducibility.json
+```
+
+The adapter command accepts CIR only; it has no ground-truth parameter. Frozen
+predictions are hash-bound before the evaluator can access labels. Candidate
+and incumbent reports must share benchmark, dataset, evaluator, and environment
+identities. `critical-evaluate` separately blocks numeric, row, page,
+repetition, unsupported-content, and evidence-loss failures even when an
+official overall score improves. `reproducibility` requires exactly three
+same-candidate, same-environment runs, zero hard-gate failures, and a bounded
+score span before a report can support promotion.
+
+The committed lock is a reproducibility contract, not a claim that a full GPU
+run has passed. Full Public Core output, official evaluator raw results,
+critical results, three-run variance, cost/latency, and a signed report remain
+mandatory for model promotion.
+
 ## Local contract run
 
 The committed corpus is harmless synthetic data. It validates schemas,

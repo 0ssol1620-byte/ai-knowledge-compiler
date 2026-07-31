@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { StructaraMarketingPage } from "@/components/structara-marketing-page";
-import { PUBLIC_PAGES } from "@/lib/structara-content";
+import { getRequestLocale } from "@/lib/locale-server";
+import { getPublicPage } from "@/lib/structara-content-localized";
 
 type Props = { params: Promise<{ slug: string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const definition = PUBLIC_PAGES[`/${slug.join("/")}`];
+  const locale = await getRequestLocale();
+  const definition = getPublicPage(`/${slug.join("/")}`, locale);
   if (!definition) return {};
   return {
     title: definition.title,
@@ -24,7 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StructaraPublicRoute({ params }: Props) {
   const { slug } = await params;
-  const definition = PUBLIC_PAGES[`/${slug.join("/")}`];
+  const locale = await getRequestLocale();
+  const definition = getPublicPage(`/${slug.join("/")}`, locale);
   if (!definition) notFound();
   return <StructaraMarketingPage definition={definition} />;
 }

@@ -1,7 +1,10 @@
 # Structara masterplan traceability
 
 Authority:
-`D:\Structara_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
+`D:\Structara_World_Class_Brand_Product_Completion_Masterplan_FINAL_v2_Public_Benchmark_KO_2026-07-31.md`
+
+The earlier ultra-premium brand and asset masterplan remains an inherited
+design authority where it does not conflict with this v2 completion contract.
 
 This is the release ledger for every top-level numbered requirement. “Implemented”
 means the repository contains the required system or surface. “Owner gate” means
@@ -172,7 +175,7 @@ production-only evidence.
 | Claims and benchmark values must fail closed                  | Verified | `CLAIM_REGISTER.yml`; unavailable public benchmark snapshot; DART fixture labeled no-quality-claim                                                                                     |
 | Release status must distinguish local completion from go-live | Verified | `IMPLEMENTATION_STATUS.md`; `VISUAL_QA_REPORT.md`; `PAGE_MANIFEST.yml` status semantics                                                                                                |
 | Asset evidence must remain hash-pinned                        | Verified | asset manifest, 119-name validation, and 21-derivative hash validation pass                                                                                                            |
-| Final repository gates                                        | Verified | ESLint; strict TypeScript; 21/72 Vitest; 24/4 Playwright; 0 enabled dead buttons; contracts; assets; production build                                                                  |
+| Final repository gates                                        | Verified | ESLint; strict TypeScript; 22 files/109 Vitest; 52/14 production Playwright; 9 visual; 9 browser matrix; 1 live API E2E; 0 enabled dead buttons; contracts; assets; production build     |
 
 ## Owner-controlled completion inputs
 
@@ -185,3 +188,29 @@ production-only evidence.
   selected
 
 None of these gates prevents local product, public demo, QA, or review.
+
+## 2026-07-31 v2 Public Benchmark addendum
+
+This addendum supersedes any earlier wording that could be read as a parser or
+router production-promotion claim. Repository readiness and Full Public Core
+evidence are separate gates.
+
+| v2 requirement                           | Status             | Repository evidence                                                                                                     |
+| ---------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| OmniDocBench v1.7 immutable lock         | Verified           | `benchmark/benchmark-registry.lock.yaml`; exact evaluator commit, dataset revision, 1,662-file manifest digest          |
+| ParseBench five-dimension immutable lock | Verified           | exact evaluator commit, dataset revision, 2,113-file manifest digest, all five dimensions registered                    |
+| olmOCR-Bench all-category immutable lock | Verified           | exact evaluator commit, dataset revision, 1,418-file manifest digest, all categories registered                         |
+| Registry drift detection                 | Verified           | `benchmark/public_suite.py verify-registry --online`; GitHub commit and Hugging Face full manifest verification         |
+| GT-free prediction adapters              | Verified           | CIR-only adapters and adapter golden tests; no GT argument exists on the inference-side command                         |
+| Immutable prediction and GT isolation    | Verified           | per-file/archive hashes, read-only freeze, disjoint-root and environment audit, post-freeze rehash                      |
+| Official and Structara-critical split    | Implemented        | official outputs remain evaluator-owned; separate numeric/sign/unit/row/page/evidence/omission/false-verified hard gate |
+| Candidate/incumbent environment parity   | Verified           | compare refuses dataset, evaluator, benchmark, or environment hash mismatch                                             |
+| Three-run reproducibility                | Verified           | exactly three identical-environment runs and bounded metric span required                                               |
+| Signed report                            | Owner gate         | report hash is deterministic; external private signing key and completed full run are required                          |
+| Tier-0 evaluator readiness               | Verified           | ParseBench 198 tests; OmniDocBench compatibility smoke 5 passed/1 deselected; olmOCR evaluator smoke passed             |
+| Tier-2 Full Public Core                  | Open external gate | no RunPod endpoint and no full candidate/incumbent three-repeat outputs; `EG-15` remains open                           |
+| Production promotion                     | Rejected           | Full Public Core, private Finance/Knowledge/Robustness gates, license approval, and independent go/no-go are absent     |
+
+Detailed evidence and the exact claims boundary are recorded in
+`docs/release/PUBLIC_BENCHMARK_READINESS_REPORT_2026-07-31.md` and
+`benchmark/reports/public-core-tier0-status-2026-07-31.json`.
