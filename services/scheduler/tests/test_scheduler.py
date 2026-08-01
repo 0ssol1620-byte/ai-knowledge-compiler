@@ -495,9 +495,12 @@ def test_dispatch_capability_probe_covers_collection_finalizer_authority() -> No
     assert "collection_select_access" in statement
     assert "collection_event_access" in statement
     assert "collection_update_access" in statement
+    assert "integrity_action_execution_access" in statement
     assert "'collections'" in statement
     assert "'collection_events'" in statement
-    assert "select count(*) = 21" in statement
+    assert "'collection_integrity_action_executions'" in statement
+    assert "'result_code'" in statement
+    assert "select count(*) = 22" in statement
 
 
 def test_dispatch_advisory_keys_are_stable_and_domain_separated() -> None:

@@ -440,6 +440,10 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                           granted_class.relname = 'collection_events'
                           AND granted_acl.privilege_type IN ('SELECT', 'INSERT')
                       )
+                      OR (
+                          granted_class.relname = 'collection_integrity_action_executions'
+                          AND granted_acl.privilege_type = 'SELECT'
+                      )
                   )
               )
         ) AS effective_table_acl_exact,
@@ -500,6 +504,13 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                               'quality_vector', 'quality_findings',
                               'quality_evaluation', 'escalation_decision',
                               'event_sequence', 'completed_at', 'updated_at'
+                          )
+                      )
+                      OR (
+                          column_class.relname = 'collection_integrity_action_executions'
+                          AND attribute.attname IN (
+                              'status', 'result_code', 'result', 'started_at',
+                              'completed_at', 'updated_at'
                           )
                       )
                   )
@@ -589,6 +600,29 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                 ARRAY['status', 'status_reason', 'event_sequence', 'updated_at']
             ) AS columns(column_name)
         ) AS collection_update_access,
+        (
+            has_table_privilege(
+                current_user,
+                'public.collection_integrity_action_executions',
+                'SELECT'
+            )
+            AND (
+                SELECT bool_and(
+                    has_column_privilege(
+                        current_user,
+                        'public.collection_integrity_action_executions',
+                        column_name,
+                        'UPDATE'
+                    )
+                )
+                FROM unnest(
+                    ARRAY[
+                        'status', 'result_code', 'result', 'started_at',
+                        'completed_at', 'updated_at'
+                    ]
+                ) AS columns(column_name)
+            )
+        ) AS integrity_action_execution_access,
         (
             has_table_privilege(current_user, 'public.tenants', 'SELECT')
             AND has_table_privilege(current_user, 'public.projects', 'SELECT')
@@ -714,7 +748,7 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
             ) AS columns(column_name)
         ) AS credit_account_update_access,
         (
-            SELECT count(*) = 21
+            SELECT count(*) = 22
                 AND bool_and(class.relrowsecurity)
                 AND bool_and(class.relforcerowsecurity)
             FROM pg_class AS class
@@ -741,8 +775,9 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                   'feature_flags',
                   'page_attempts',
                   'page_attempt_transition_events',
-                  'collections',
-                  'collection_events'
+                   'collections',
+                   'collection_events',
+                   'collection_integrity_action_executions'
               )
         ) AS forced_rls_present
     FROM pg_roles AS role
@@ -1551,6 +1586,7 @@ async def verify_dispatch_database(
         "collection_select_access",
         "collection_event_access",
         "collection_update_access",
+        "integrity_action_execution_access",
         "routing_context_access",
         "page_attempt_access",
         "page_update_access",
