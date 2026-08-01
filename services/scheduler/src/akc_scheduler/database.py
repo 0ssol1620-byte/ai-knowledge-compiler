@@ -444,6 +444,17 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                           granted_class.relname = 'collection_integrity_action_executions'
                           AND granted_acl.privilege_type = 'SELECT'
                       )
+                      OR (
+                          granted_class.relname IN (
+                              'parse_shards', 'parse_attempts',
+                              'attempt_validations', 'worker_health',
+                              'semantic_health_events', 'continuity_edges',
+                              'accepted_blocks', 'recovery_tasks',
+                              'arbitration_decisions',
+                              'accepted_block_invalidations'
+                          )
+                          AND granted_acl.privilege_type IN ('SELECT', 'INSERT')
+                      )
                   )
               )
         ) AS effective_table_acl_exact,
@@ -511,6 +522,37 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                           AND attribute.attname IN (
                               'status', 'result_code', 'result', 'started_at',
                               'completed_at', 'updated_at'
+                          )
+                      )
+                      OR (
+                          column_class.relname = 'parse_shards'
+                          AND attribute.attname IN ('status', 'priority', 'updated_at')
+                      )
+                      OR (
+                          column_class.relname = 'parse_attempts'
+                          AND attribute.attname IN (
+                              'state', 'worker_id', 'output_artifact_key',
+                              'output_sha256', 'output_summary', 'failure_domain',
+                              'failure_code', 'billing_disposition',
+                              'gpu_milliseconds', 'cost_usd', 'started_at',
+                              'output_received_at', 'completed_at'
+                          )
+                      )
+                      OR (
+                          column_class.relname = 'worker_health'
+                          AND attribute.attname IN (
+                              'region', 'state', 'infrastructure_status',
+                              'semantic_status', 'infrastructure_score',
+                              'semantic_score', 'inflight', 'capacity',
+                              'consecutive_semantic_failures', 'metrics',
+                              'drain_reason', 'last_heartbeat_at', 'last_canary_at',
+                              'updated_at'
+                          )
+                      )
+                      OR (
+                          column_class.relname = 'recovery_tasks'
+                          AND attribute.attname IN (
+                              'state', 'result_attempt_id', 'completed_at'
                           )
                       )
                   )
@@ -623,6 +665,71 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                 ) AS columns(column_name)
             )
         ) AS integrity_action_execution_access,
+        (
+            (
+                SELECT bool_and(
+                    has_table_privilege(
+                        current_user,
+                        'public.' || quote_ident(table_name),
+                        'SELECT,INSERT'
+                    )
+                )
+                FROM unnest(
+                    ARRAY[
+                        'parse_shards', 'parse_attempts', 'attempt_validations',
+                        'worker_health', 'semantic_health_events',
+                        'continuity_edges', 'accepted_blocks', 'recovery_tasks',
+                        'arbitration_decisions', 'accepted_block_invalidations'
+                    ]
+                ) AS tables(table_name)
+            )
+            AND (
+                SELECT bool_and(
+                    has_column_privilege(
+                        current_user,
+                        'public.' || quote_ident(table_name),
+                        column_name,
+                        'UPDATE'
+                    )
+                )
+                FROM (
+                    VALUES
+                        ('parse_shards', 'status'),
+                        ('parse_shards', 'priority'),
+                        ('parse_shards', 'updated_at'),
+                        ('parse_attempts', 'state'),
+                        ('parse_attempts', 'worker_id'),
+                        ('parse_attempts', 'output_artifact_key'),
+                        ('parse_attempts', 'output_sha256'),
+                        ('parse_attempts', 'output_summary'),
+                        ('parse_attempts', 'failure_domain'),
+                        ('parse_attempts', 'failure_code'),
+                        ('parse_attempts', 'billing_disposition'),
+                        ('parse_attempts', 'gpu_milliseconds'),
+                        ('parse_attempts', 'cost_usd'),
+                        ('parse_attempts', 'started_at'),
+                        ('parse_attempts', 'output_received_at'),
+                        ('parse_attempts', 'completed_at'),
+                        ('worker_health', 'region'),
+                        ('worker_health', 'state'),
+                        ('worker_health', 'infrastructure_status'),
+                        ('worker_health', 'semantic_status'),
+                        ('worker_health', 'infrastructure_score'),
+                        ('worker_health', 'semantic_score'),
+                        ('worker_health', 'inflight'),
+                        ('worker_health', 'capacity'),
+                        ('worker_health', 'consecutive_semantic_failures'),
+                        ('worker_health', 'metrics'),
+                        ('worker_health', 'drain_reason'),
+                        ('worker_health', 'last_heartbeat_at'),
+                        ('worker_health', 'last_canary_at'),
+                        ('worker_health', 'updated_at'),
+                        ('recovery_tasks', 'state'),
+                        ('recovery_tasks', 'result_attempt_id'),
+                        ('recovery_tasks', 'completed_at')
+                ) AS columns(table_name, column_name)
+            )
+        ) AS parallel_runtime_access,
         (
             has_table_privilege(current_user, 'public.tenants', 'SELECT')
             AND has_table_privilege(current_user, 'public.projects', 'SELECT')
@@ -748,7 +855,7 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
             ) AS columns(column_name)
         ) AS credit_account_update_access,
         (
-            SELECT count(*) = 22
+            SELECT count(*) = 32
                 AND bool_and(class.relrowsecurity)
                 AND bool_and(class.relforcerowsecurity)
             FROM pg_class AS class
@@ -777,7 +884,17 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                   'page_attempt_transition_events',
                    'collections',
                    'collection_events',
-                   'collection_integrity_action_executions'
+                   'collection_integrity_action_executions',
+                   'parse_shards',
+                   'parse_attempts',
+                   'attempt_validations',
+                   'worker_health',
+                   'semantic_health_events',
+                   'continuity_edges',
+                   'accepted_blocks',
+                   'recovery_tasks',
+                   'arbitration_decisions',
+                   'accepted_block_invalidations'
               )
         ) AS forced_rls_present
     FROM pg_roles AS role
@@ -1256,6 +1373,21 @@ _POSTGRES_GPU_CAPABILITY_QUERY = text(
                           )
                           AND granted_acl.privilege_type = 'INSERT'
                       )
+                      OR (
+                          granted_class.relname IN (
+                              'parse_shards', 'parse_attempts',
+                              'attempt_validations', 'worker_health',
+                              'semantic_health_events', 'recovery_tasks'
+                          )
+                          AND granted_acl.privilege_type = 'SELECT'
+                      )
+                      OR (
+                          granted_class.relname IN (
+                              'attempt_validations', 'worker_health',
+                              'semantic_health_events'
+                          )
+                          AND granted_acl.privilege_type = 'INSERT'
+                      )
                   )
               )
         ) AS effective_table_acl_exact,
@@ -1302,6 +1434,33 @@ _POSTGRES_GPU_CAPABILITY_QUERY = text(
                               column_class.relname = 'processing_jobs'
                               AND attribute.attname IN (
                                   'progress', 'event_sequence'
+                              )
+                          )
+                          OR (
+                              column_class.relname = 'parse_attempts'
+                              AND attribute.attname IN (
+                                  'state', 'worker_id', 'output_artifact_key',
+                                  'output_sha256', 'output_summary',
+                                  'failure_domain', 'failure_code',
+                                  'gpu_milliseconds', 'cost_usd', 'started_at',
+                                  'output_received_at', 'completed_at'
+                              )
+                          )
+                          OR (
+                              column_class.relname = 'worker_health'
+                              AND attribute.attname IN (
+                                  'region', 'state', 'infrastructure_status',
+                                  'semantic_status', 'infrastructure_score',
+                                  'semantic_score', 'inflight', 'capacity',
+                                  'consecutive_semantic_failures', 'metrics',
+                                  'drain_reason', 'last_heartbeat_at',
+                                  'last_canary_at', 'updated_at'
+                              )
+                          )
+                          OR (
+                              column_class.relname = 'recovery_tasks'
+                              AND attribute.attname IN (
+                                  'state', 'result_attempt_id', 'completed_at'
                               )
                           )
                       )
@@ -1358,7 +1517,81 @@ _POSTGRES_GPU_CAPABILITY_QUERY = text(
             )
         ) AS required_table_access,
         (
-            SELECT count(*) = 3
+            (
+                SELECT bool_and(
+                    has_table_privilege(
+                        current_user,
+                        'public.' || quote_ident(table_name),
+                        'SELECT'
+                    )
+                )
+                FROM unnest(
+                    ARRAY[
+                        'parse_shards', 'parse_attempts', 'attempt_validations',
+                        'worker_health', 'semantic_health_events', 'recovery_tasks'
+                    ]
+                ) AS tables(table_name)
+            )
+            AND (
+                SELECT bool_and(
+                    has_table_privilege(
+                        current_user,
+                        'public.' || quote_ident(table_name),
+                        'INSERT'
+                    )
+                )
+                FROM unnest(
+                    ARRAY[
+                        'attempt_validations', 'worker_health',
+                        'semantic_health_events'
+                    ]
+                ) AS tables(table_name)
+            )
+            AND (
+                SELECT bool_and(
+                    has_column_privilege(
+                        current_user,
+                        'public.' || quote_ident(table_name),
+                        column_name,
+                        'UPDATE'
+                    )
+                )
+                FROM (
+                    VALUES
+                        ('parse_attempts', 'state'),
+                        ('parse_attempts', 'worker_id'),
+                        ('parse_attempts', 'output_artifact_key'),
+                        ('parse_attempts', 'output_sha256'),
+                        ('parse_attempts', 'output_summary'),
+                        ('parse_attempts', 'failure_domain'),
+                        ('parse_attempts', 'failure_code'),
+                        ('parse_attempts', 'gpu_milliseconds'),
+                        ('parse_attempts', 'cost_usd'),
+                        ('parse_attempts', 'started_at'),
+                        ('parse_attempts', 'output_received_at'),
+                        ('parse_attempts', 'completed_at'),
+                        ('worker_health', 'region'),
+                        ('worker_health', 'state'),
+                        ('worker_health', 'infrastructure_status'),
+                        ('worker_health', 'semantic_status'),
+                        ('worker_health', 'infrastructure_score'),
+                        ('worker_health', 'semantic_score'),
+                        ('worker_health', 'inflight'),
+                        ('worker_health', 'capacity'),
+                        ('worker_health', 'consecutive_semantic_failures'),
+                        ('worker_health', 'metrics'),
+                        ('worker_health', 'drain_reason'),
+                        ('worker_health', 'last_heartbeat_at'),
+                        ('worker_health', 'last_canary_at'),
+                        ('worker_health', 'updated_at'),
+                        ('recovery_tasks', 'state'),
+                        ('recovery_tasks', 'result_attempt_id'),
+                        ('recovery_tasks', 'completed_at')
+                ) AS columns(table_name, column_name)
+            )
+        ) AS parallel_runtime_access,
+        (
+            SELECT count(*) = 13
                 AND bool_and(class.relrowsecurity)
                 AND bool_and(class.relforcerowsecurity)
             FROM pg_class AS class
@@ -1366,9 +1599,19 @@ _POSTGRES_GPU_CAPABILITY_QUERY = text(
               ON namespace.oid = class.relnamespace
             WHERE namespace.nspname = 'public'
               AND class.relname IN (
-                  'gpu_provider_invocations',
-                  'gpu_provider_attempts',
-                  'gpu_invocation_events'
+                   'gpu_provider_invocations',
+                   'gpu_provider_attempts',
+                   'gpu_invocation_events',
+                   'parse_shards',
+                   'parse_attempts',
+                   'attempt_validations',
+                   'worker_health',
+                   'semantic_health_events',
+                   'continuity_edges',
+                   'accepted_blocks',
+                   'recovery_tasks',
+                   'arbitration_decisions',
+                   'accepted_block_invalidations'
               )
         ) AS forced_rls_present
     FROM pg_roles AS role
@@ -1587,6 +1830,7 @@ async def verify_dispatch_database(
         "collection_event_access",
         "collection_update_access",
         "integrity_action_execution_access",
+        "parallel_runtime_access",
         "routing_context_access",
         "page_attempt_access",
         "page_update_access",
@@ -1684,7 +1928,11 @@ async def verify_gpu_database(
     if row is None:
         raise SchedulerDatabasePrivilegeError("gpu_role_not_found")
     failures = _role_safety_failures(row)
-    for flag in ("required_table_access", "forced_rls_present"):
+    for flag in (
+        "required_table_access",
+        "parallel_runtime_access",
+        "forced_rls_present",
+    ):
         if not bool(row[flag]):
             failures.append(flag)
     if str(row["effective_role"]) != settings.gpu_database_role:

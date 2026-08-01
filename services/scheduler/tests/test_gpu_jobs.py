@@ -765,6 +765,7 @@ def gpu_role_evidence() -> dict[str, object]:
         "effective_table_acl_exact": True,
         "effective_column_acl_exact": True,
         "required_table_access": True,
+        "parallel_runtime_access": True,
         "forced_rls_present": True,
     }
 
@@ -783,6 +784,13 @@ async def test_gpu_database_role_and_runtime_fail_closed() -> None:
     missing = gpu_role_evidence()
     missing["effective_column_acl_exact"] = False
     with pytest.raises(SchedulerDatabasePrivilegeError, match="effective_column_acl_exact"):
+        await verify_gpu_database(
+            FakePostgresEngine(missing),  # type: ignore[arg-type]
+            settings,
+        )
+    missing = gpu_role_evidence()
+    missing["parallel_runtime_access"] = False
+    with pytest.raises(SchedulerDatabasePrivilegeError, match="parallel_runtime_access"):
         await verify_gpu_database(
             FakePostgresEngine(missing),  # type: ignore[arg-type]
             settings,
