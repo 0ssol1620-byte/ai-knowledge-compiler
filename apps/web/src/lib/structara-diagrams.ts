@@ -26,9 +26,9 @@ export const STRUCTARA_DIAGRAMS = {
   },
   review: {
     id: "review",
-    title: "Review and Approval",
+    title: "Autonomous Integrity",
     question: "How are high-risk differences resolved without hiding them?",
-    nodes: ["Risk signal", "Candidate diff", "Human decision", "Audit event"],
+    nodes: ["Risk signal", "Auto repair", "Unresolved isolation", "Audit event"],
   },
   knowledge: {
     id: "knowledge",

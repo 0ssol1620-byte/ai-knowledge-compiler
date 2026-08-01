@@ -7,7 +7,11 @@ const representativeRoutes = [
   "/demo/sec",
   "/security",
   "/quick-convert",
+  "/intake",
+  "/integrity",
+  "/benchmarks",
   "/projects",
+  "/workspace",
   "/knowledge-bases",
   "/review",
   "/legal/privacy",
@@ -35,6 +39,17 @@ test("representative public and product surfaces remain usable across the releas
       page.locator("h1"),
       `${route} H1 must be visible on ${testInfo.project.name}`,
     ).toBeVisible();
+
+    if (route === "/workspace" && (page.viewportSize()?.width ?? 1280) < 1280) {
+      const views = page.getByRole("navigation", {
+        name: "Mobile processing views",
+      });
+      await expect(views).toBeVisible();
+      await views.getByRole("button", { name: "Source" }).click();
+      await expect(page.getByLabel("Source document")).toBeVisible();
+      await views.getByRole("button", { name: "Result" }).click();
+      await expect(page.getByLabel("Markdown output")).toBeVisible();
+    }
 
     const metrics = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,

@@ -30,6 +30,8 @@ import {
   ExportDialog,
   type VaultMergePreview,
 } from "@/components/workspace/export-dialog";
+import { CollectionProcessingTheater } from "@/components/collection-processing-theater";
+import { useStructaraLocale } from "@/components/locale-provider";
 import { MarkdownWorkspace } from "@/components/workspace/markdown-workspace";
 import { ModelMergeDialog } from "@/components/workspace/model-merge-dialog";
 import { PageRail } from "@/components/workspace/page-rail";
@@ -50,6 +52,12 @@ import {
   displayDocumentMetadata,
   normalizedDocumentVersion,
 } from "@/lib/document-metadata";
+import { publicRouteLabel } from "@/lib/public-processing-labels";
+import {
+  groupedProcessingStageFraction,
+  PROCESSING_EVENT_BATCH_MS,
+  PROCESSING_THEATER_STAGES,
+} from "@/lib/processing-theater";
 import type {
   BlockModelMergeResponse,
   CanonicalBlock,
@@ -64,18 +72,12 @@ import type {
 import { useThrottledAnnouncement } from "@/lib/use-throttled-announcement";
 import { useSseSilenceFallback } from "@/lib/use-sse-silence-fallback";
 
-const stageLabels = [
-  ["upload", "Upload"],
-  ["security_scan", "Security"],
-  ["preflight", "Preflight"],
-  ["extract", "Extract"],
-  ["normalize", "Structure"],
-  ["knowledge", "Knowledge"],
-  ["validate", "Validate"],
-  ["package", "Package"],
-] as const;
-
-type MobileTab = "progress" | "pages" | "source" | "result" | "review";
+type MobileTab =
+  | "progress"
+  | "source"
+  | "result"
+  | "knowledge"
+  | "integrity";
 
 interface JobSnapshot {
   last_sequence?: number;
@@ -134,9 +136,20 @@ interface JobSnapshot {
 
 export function ProcessingWorkspaceLive() {
   const searchParams = useSearchParams();
+  const { locale } = useStructaraLocale();
   const jobId = searchParams.get("job");
   const documentId = searchParams.get("document");
+  const collectionId = searchParams.get("collection");
 
+  if (collectionId) {
+    return (
+      <CollectionProcessingTheater
+        key={collectionId}
+        collectionId={collectionId}
+        locale={locale}
+      />
+    );
+  }
   if (jobId) return <LiveJobView key={jobId} jobId={jobId} />;
   if (documentId)
     return <EstimateView key={documentId} documentId={documentId} />;
@@ -208,7 +221,7 @@ function EstimateView({ documentId }: { documentId: string }) {
           </span>
           <div>
             <h1 id="estimate-live-title">
-              Review the estimate before processing
+              Confirm the estimate before processing
             </h1>
             <p>
               These are live security and preflight results. No credits are used
@@ -224,7 +237,7 @@ function EstimateView({ documentId }: { documentId: string }) {
             onChange={(event) => setConsented(event.currentTarget.checked)}
           />
           <span>
-            I reviewed the {value.credit_max}-credit maximum reservation and the
+            I confirmed the {value.credit_max}-credit maximum reservation and the
             automatic return policy for failed pages.
           </span>
         </label>
@@ -288,14 +301,14 @@ function EstimateFacts({ estimate }: { estimate: PreflightEstimate }) {
           detail="pages"
         />
         <EstimateFact
-          label="Native text"
+          label="Source structure"
           value={estimate.native_pages}
           detail="Lower-cost route"
         />
         <EstimateFact
           label="Visual parsing"
           value={estimate.visual_pages}
-          detail="OCR·layout"
+          detail="Visual layout"
         />
         <EstimateFact
           label="Precision candidates"
@@ -367,6 +380,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
     initialLiveJobState,
   );
   const lastEventId = useRef<string | undefined>(undefined);
+  const eventBuffer = useRef<JobEvent[]>([]);
   const replayInFlight = useRef(false);
   const resultViewRecorded = useRef(false);
   const [connection, setConnection] = useState<
@@ -420,6 +434,18 @@ function LiveJobView({ jobId }: { jobId: string }) {
   });
 
   useEffect(() => {
+    eventBuffer.current = [];
+    const interval = window.setInterval(() => {
+      const batch = eventBuffer.current.splice(0);
+      for (const event of batch) dispatch(event);
+    }, PROCESSING_EVENT_BATCH_MS);
+    return () => {
+      window.clearInterval(interval);
+      eventBuffer.current = [];
+    };
+  }, [jobId]);
+
+  useEffect(() => {
     if (effectiveStatus !== "completed" || resultViewRecorded.current) {
       return;
     }
@@ -444,7 +470,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
         onActivity: markSseActivity,
         onEvent(event) {
           lastEventId.current = event.event_id;
-          dispatch(event);
+          eventBuffer.current.push(event);
           if (
             event.event_type === "job.completed.v1" ||
             event.event_type === "job.failed.v1" ||
@@ -486,7 +512,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
         for (const event of events.sort(
           (left, right) => left.sequence - right.sequence,
         )) {
-          dispatch(event);
+          eventBuffer.current.push(event);
         }
         if (events.length === 0) {
           void queryClient.invalidateQueries({ queryKey: ["job", jobId] });
@@ -671,7 +697,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
           </div>
           <span className="mode-select">
             <Gauge size={15} weight="fill" aria-hidden="true" />
-            {data.job.route_profile}
+            {publicRouteLabel(data.job.route_profile)}
           </span>
           <span
             className={clsx(
@@ -694,18 +720,12 @@ function LiveJobView({ jobId }: { jobId: string }) {
             type="button"
             onClick={() => setReviewOpen(true)}
           >
-            <Warning size={15} weight="fill" aria-hidden="true" />
-            Review
+            <ShieldCheck size={15} weight="fill" aria-hidden="true" />
+            Integrity
             <span>
               {data.reviews.filter((item) => item.status === "open").length}
             </span>
           </button>
-          <Link
-            className="secondary-button compact"
-            href={`/documents/${data.document.id}/review?job=${jobId}`}
-          >
-            Full Review Studio
-          </Link>
           <Link
             className="secondary-button compact"
             href={`/knowledge-bases?document=${data.document.id}`}
@@ -740,10 +760,8 @@ function LiveJobView({ jobId }: { jobId: string }) {
           </div>
         </div>
         <div className="stage-track">
-          {stageLabels.map(([id, label], index) => {
-            const value = progress[id];
-            const fraction =
-              value && value.total > 0 ? value.done / value.total : 0;
+          {PROCESSING_THEATER_STAGES.map(({ id, label, members }, index) => {
+            const fraction = groupedProcessingStageFraction(progress, members);
             return (
               <div
                 className={clsx(
@@ -761,7 +779,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
                   )}
                 </span>
                 <span>{label}</span>
-                {index < stageLabels.length - 1 && (
+                {index < PROCESSING_THEATER_STAGES.length - 1 && (
                   <i>
                     <b style={{ width: `${Math.min(1, fraction) * 100}%` }} />
                   </i>
@@ -786,10 +804,10 @@ function LiveJobView({ jobId }: { jobId: string }) {
         {(
           [
             ["progress", "Progress"],
-            ["pages", "Pages"],
             ["source", "Source"],
             ["result", "Result"],
-            ["review", `Review ${data.reviews.length}`],
+            ["knowledge", "Knowledge"],
+            ["integrity", "Integrity"],
           ] as Array<[MobileTab, string]>
         ).map(([id, label]) => (
           <button
@@ -797,7 +815,6 @@ function LiveJobView({ jobId }: { jobId: string }) {
             className={mobileTab === id ? "active" : undefined}
             onClick={() => {
               setMobileTab(id);
-              if (id === "review") setReviewOpen(true);
             }}
             aria-pressed={mobileTab === id}
             key={id}
@@ -812,7 +829,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
           <div
             className={clsx(
               "mobile-panel",
-              mobileTab !== "pages" && "mobile-hidden",
+              mobileTab !== "source" && "mobile-hidden",
             )}
           >
             <PageRail
@@ -874,6 +891,45 @@ function LiveJobView({ jobId }: { jobId: string }) {
               }
             />
           </div>
+          <section
+            className={clsx(
+              "mobile-only-workspace-panel mobile-panel",
+              mobileTab !== "knowledge" && "mobile-hidden",
+            )}
+            aria-label="Knowledge output"
+          >
+            <h2>Knowledge</h2>
+            <p>
+              {data.summary.knowledge_notes} knowledge notes are reported by the
+              authoritative job snapshot.
+            </p>
+            <Link
+              className="secondary-button"
+              href={`/knowledge-bases?document=${data.document.id}`}
+            >
+              Open Knowledge Studio
+            </Link>
+          </section>
+          <section
+            className={clsx(
+              "mobile-only-workspace-panel mobile-panel",
+              mobileTab !== "integrity" && "mobile-hidden",
+            )}
+            aria-label="Integrity findings"
+          >
+            <h2>Integrity</h2>
+            <p>
+              {data.reviews.filter((item) => item.status === "open").length}
+              {" "}open findings retain source evidence in this job.
+            </p>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setReviewOpen(true)}
+            >
+              Open integrity findings
+            </button>
+          </section>
         </div>
       ) : (
         <div className="honest-state">
@@ -887,8 +943,8 @@ function LiveJobView({ jobId }: { jobId: string }) {
             <CheckCircle size={14} weight="fill" aria-hidden="true" />
             {data.summary.completed_pages} pages completed
           </span>
-          <span>{data.summary.native_pages} Native</span>
-          <span>{data.summary.ocr_pages} OCR</span>
+          <span>{data.summary.native_pages} source-structured pages</span>
+          <span>{data.summary.ocr_pages} visually interpreted pages</span>
           <span>{data.summary.tables_rebuilt} tables rebuilt</span>
           <span>{data.summary.knowledge_notes} knowledge notes</span>
         </div>
@@ -908,7 +964,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
         >
           <OperationalMetric
             label="Routes"
-            value={formatCounterMap(data.summary.route_totals)}
+            value={formatRouteCounters(data.summary.route_totals)}
           />
           <OperationalMetric
             label="Blocks"
@@ -919,7 +975,7 @@ function LiveJobView({ jobId }: { jobId: string }) {
             value={`H ${data.summary.removed_header_footer.header} / F ${data.summary.removed_header_footer.footer}`}
           />
           <OperationalMetric
-            label="Open review"
+            label="Integrity findings"
             value={String(data.summary.review_blocks)}
           />
           <OperationalMetric
@@ -984,13 +1040,21 @@ function LiveJobView({ jobId }: { jobId: string }) {
             body: JSON.stringify({
               action,
               preview_sha256: previewSha256,
-              note: "Document-wide rule applied from review queue",
+              note: "Document-wide integrity rule applied after preview",
             }),
           }).then(() => {
             void queryClient.invalidateQueries({ queryKey: ["job", jobId] });
           })
         }
       />
+      {reviewOpen && (
+        <button
+          className="drawer-scrim"
+          aria-label="Close integrity findings"
+          onClick={() => setReviewOpen(false)}
+        />
+      )}
+
       {modelMergeBlock && (
         <ModelMergeDialog
           block={modelMergeBlock}
@@ -1027,13 +1091,6 @@ function LiveJobView({ jobId }: { jobId: string }) {
           onStale={() => {
             void queryClient.invalidateQueries({ queryKey: ["job", jobId] });
           }}
-        />
-      )}
-      {reviewOpen && (
-        <button
-          className="drawer-scrim"
-          aria-label="Close review pane"
-          onClick={() => setReviewOpen(false)}
         />
       )}
       <ExportDialog
@@ -1129,6 +1186,14 @@ function formatCounterMap(values: Record<string, number>): string {
   const entries = Object.entries(values).filter(([, value]) => value > 0);
   if (entries.length === 0) return "None";
   return entries.map(([key, value]) => `${key} ${value}`).join(" · ");
+}
+
+function formatRouteCounters(values: Record<string, number>): string {
+  const entries = Object.entries(values).filter(([, value]) => value > 0);
+  if (entries.length === 0) return "None";
+  return entries
+    .map(([key, value]) => `${publicRouteLabel(key)} ${value}`)
+    .join(" · ");
 }
 
 function WorkspaceState({

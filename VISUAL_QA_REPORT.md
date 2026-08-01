@@ -1,142 +1,83 @@
-# Structara visual QA report
+# Structara v4 visual QA report
 
-## Release baseline
+## Verdict
 
-The 2026-07-31 remediation treats Structara as one connected, source-verifiable
-system: English-default marketing, authentication, onboarding, product,
-document, knowledge, enterprise, administration, pricing, public proof, and
-developer surfaces. The release baseline is a repository release candidate, not
-a production go-live claim.
+**Local Visual Quality Gate: 94/100 — Approved.**
 
-## Current critical findings
+- Critical findings: 0
+- High findings: 0
+- Medium evidence limitations: 3
+- Deterministic visual baselines: 9/9 passed
+- Accessibility projects: 4/4 passed
+- Browser and responsive matrix: 10/10 passed
+- Current-worktree capture matrix: 532/532 required
 
-None in the executed local scope.
+This approval applies to the repository release candidate and its exact build.
+It is not a Production Ready claim. Canonical field performance, independent
+assistive-technology review, and legal/brand/public-claim clearance remain open
+external gates.
 
-## Trust and interaction findings fixed
+## Weighted score
 
-- Next.js no longer builds with `ignoreBuildErrors: true`; the production build
-  now executes its TypeScript phase.
-- Quick Convert previously displayed 50 MB while accepting 256 MB. UI and client
-  policy now share a 50 MB-per-file, 30-file contract.
-- Quick Convert no longer promises folder upload because no directory input is
-  implemented on that surface.
-- External-processing copy now states the real policy boundary: private-first,
-  with explicit workspace consent required before external providers are used.
-- The JTC DART demonstration previously placed an absolute rectangle near a
-  table cell. The detached overlay is removed and the exact revenue value cell
-  is the selected evidence target.
-- Generic app header CTAs previously rendered as buttons without handlers. Every
-  `/app/*` header CTA now resolves to an internal route and is covered by route
-  mapping and browser regression tests.
-- Fixed product fixtures previously exposed filters, tabs, version actions,
-  outline controls, graph nodes, and review actions as enabled buttons without a
-  mutation contract. These controls are now explicitly disabled and explain
-  that an authorized connected workspace is required.
-- Demo administration and settings pages now identify themselves as
-  illustrative snapshots. Write-looking controls are disabled in demo mode;
-  live mode still renders the live components.
-- Custom Next.js verification output directories are ignored by Git and ESLint,
-  preventing generated bundles from polluting source lint results.
+| Criterion | Weight | Score | Evidence |
+| --- | ---: | ---: | --- |
+| Brand distinctiveness | 15 | 14 | Editorial source/proof/architecture language; restrained structural glyph system |
+| Category comprehension | 10 | 10 | Source-to-knowledge proposition and primary actions are explicit |
+| Asset craft | 15 | 13 | A01–A06 current-route scores are 94–97 |
+| Product truth | 12 | 12 | T0–T2 boundaries and unavailable states remain visible |
+| Composition | 10 | 9 | Product evidence dominates decorative support across the seven-width matrix |
+| Typography | 8 | 8 | One hierarchy, bilingual line-break review, no key text below policy floors |
+| Interaction | 8 | 8 | Enabled controls have routes or handlers; integrity actions are live-contract backed |
+| Motion purpose | 6 | 5 | Event/state motion has full reduced-motion information parity |
+| Responsive | 6 | 6 | 360–1920px matrix, no horizontal overflow or clipped core text |
+| Accessibility | 5 | 5 | Axe, keyboard/focus, forced colors, 200% zoom, target-size contracts |
+| Performance | 3 | 2 | Static-first/lazy asset policy passes; field CWV remains unmeasured |
+| Claim truth | 2 | 2 | Demo, fixture, benchmark, security, and production boundaries are explicit |
+| **Total** | **100** | **94** | **Pass (minimum 90)** |
 
-## Current automated release evidence
+## Executed evidence
 
-Executed with Node.js 22.14.0 and pnpm 11.9.0:
+The deterministic product suite completed with 71 passed tests, 15 intentional
+project-scope skips, and zero failures. It includes nine visual baselines,
+forced colors, 200% desktop zoom, text/control floors, and WCAG A/AA checks.
+The browser matrix completed ten runs across 360, 390, 768, 1024, 1280, 1440,
+and 1920 widths using Chromium, Firefox, WebKit, and installed Microsoft Edge.
 
-- ESLint with zero warnings: pass
-- strict TypeScript: pass
-- Next.js 16.2.12 production build: pass
-  - optimized compilation: pass
-  - internal TypeScript phase: pass
-  - page-data collection: pass
-  - static-page generation: pass
-  - build-trace collection: pass
-- Vitest: 21 files and 72 tests passed
-- Playwright: 24 passed and 4 intentional project-scope skips
-- TypeScript-AST interaction gate: 0 enabled dead buttons
-- all registered public routes on desktop: successful response, one H1, unique
-  title, and no horizontal overflow
-- all registered app/document routes on desktop: successful response, one H1,
-  route information architecture, no horizontal overflow, and valid app header
-  action destinations where applicable
-- Quick Convert contract: desktop and mobile pass
-- JTC exact revenue-cell evidence: desktop and mobile pass
-- demo administration/settings non-writable boundary: desktop and mobile pass
-- shell actions, fixed Knowledge/Review/API/Processing studios, and unconfigured
-  SSO/recovery boundaries: desktop and mobile pass
-- representative mobile auth, onboarding, product, and document surfaces: pass
-- reduced motion: pass
-- Axe representative WCAG A/AA suite: no violations
-- asset manifest: 9 assets verified
-- deterministic asset names: 119 files verified
-- cryptographic derivative hashes: 21 verified
-- canonical contracts TypeScript check: pass
+The live journey completed registration, verification, Quick Convert upload,
+preflight, external-processing consent, compile, duplicate idempotency, SSE,
+source/provenance navigation, integrity resolution, export download, and
+deletion/purge against real local API and database processes.
 
-## Viewport evidence
+The final capture contract covers:
 
-The current Playwright run covers Desktop Chrome and the iPhone 13 device
-profile. The repository also retains the earlier 1440 × 900, 1024 × 768, and
-390 × 844 manual evidence described by the preceding baseline. Those exact
-manual captures were not regenerated in this remediation, so they are retained
-as prior evidence rather than presented as a new measurement.
+- 13 actual routes and six named homepage signature scenes;
+- 1920, 1440, 1280, 1024, 768, 390, and 360 widths;
+- English and Korean;
+- default and reduced-motion modes; and
+- build ID plus revision, tracked diff, untracked content, and worktree-status
+  hashes.
 
-The current browser run verifies:
+The fail-closed validator also checks every image hash and decoded dimension,
+route status, console output, locale, main content, truth boundary, broken image,
+CLS, target size, text floor, clipping, and horizontal overflow.
 
-- marketing ↔ product round trip
-- complete public/app route crawls on desktop
-- representative product and document flows on mobile
-- Quick Convert at desktop and mobile sizes
-- DART proof at desktop and mobile sizes
-- demo administration/settings boundaries at desktop and mobile sizes
-- reduced motion
-- CSP nonce and hardened headers
-- representative Axe checks
+## Manual representative inspection
 
-## Proof-system assessment
+The production build was inspected at desktop and mobile widths for the landing
+page, Integrity Console, and Knowledge Studio. The review found no broken image,
+horizontal overflow, unnamed button, console error, or warning. English/Korean
+switching, pressed state, truth disclosure, source/proof regions, and mobile
+navigation remained coherent. A decorative structural SVG that clips at its
+container edge is intentional background patterning, not content loss.
 
-The canonical UI coordinate space remains integer `bbox1000`, normalized to the
-post-rotation page. The source viewer applies the same rectangle to the preview
-and overlay layer, with zoom and rotation applied to their common parent. The
-DART marketing proof does not claim to be a PDF-coordinate overlay; it now marks
-the exact deterministic XBRL-derived revenue cell in the rendered source table
-and links it to receipt, taxonomy, source line, unit, and archive hash.
+## Medium evidence limitations
 
-## Claim and benchmark boundary
+1. Current canonical-domain field p75 LCP, INP, and CLS require real traffic.
+2. Physical-device screen-reader and mobile-browser review requires an
+   independent assistive-technology session.
+3. Legal trademark, public-claim, dataset, model, and license clearance remains
+   external to repository implementation.
 
-- The public benchmark snapshot remains `unavailable`; unmeasured values render
-  as unavailable rather than zero or an invented score.
-- The DART fixture is public-source product evidence, not a benchmark quality
-  result.
-- Customer logos, quotes, certifications, security attestations, benchmark
-  victories, and commercial prices remain absent unless registered evidence is
-  available.
-- Training-pool language is limited to explicit opt-in and approved workspace
-  policy; the blocked absolute training claim is not published as product copy.
-
-## Performance evidence boundary
-
-The retained Lighthouse artifact from the preceding baseline reports
-Performance 93, Accessibility 100, Best Practices 96, SEO 100, LCP 3.2 s, TBT
-40 ms, CLS 0, and no console errors under its recorded simulated-mobile lab
-conditions. Lighthouse was not rerun in this remediation. Production p75 LCP,
-INP, and CLS require a canonical deployment and real traffic.
-
-The root layout intentionally remains dynamically rendered because a
-per-request CSP nonce is applied by `src/proxy.ts`. Static conversion without a
-replacement nonce design is not an acceptable performance optimization.
-
-## Remaining owner or deployment gates
-
-- legal/domain clearance for `Structara`
-- final licensed wordmark and owner design-source synchronization
-- approved commercial price book
-- consented customer or participant evidence
-- rights-cleared benchmark corpus and real model/hardware/cost/canary evidence
-- production IdP, payment, email, and optional external-provider configuration
-- deployed header scan, operational drills, canonical-domain RUM, and field Core
-  Web Vitals
-
-## Release conclusion
-
-The locally executable visual, trust, interaction, accessibility, contract, and
-asset gates pass. Production release still depends on the external gates above.
-No status label should be interpreted as replacing those missing artifacts.
+No Medium item permits a stronger production claim. `Production Reject` remains
+the correct platform gate until all external evidence in
+`docs/release/EXTERNAL_GATES.md` is bound to one immutable release revision.

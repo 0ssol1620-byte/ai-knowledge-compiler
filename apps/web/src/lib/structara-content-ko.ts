@@ -49,7 +49,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
           {
             title: "검증",
             body: "중요한 모든 결과를 원본 페이지, 블록, 바운딩 박스로 되돌아가 확인할 수 있게 합니다.",
-            items: ["원본 링크", "위험 검토", "숫자 차이"],
+            items: ["원본 링크", "무결성 항목", "숫자 차이"],
           },
           {
             title: "컴파일",
@@ -112,7 +112,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
             body: "페이지, 블록, 바운딩 박스와 원본 해시가 출력과 함께 이동합니다.",
           },
           {
-            title: "위험 기반 검토",
+            title: "자율 무결성",
             body: "숫자, 날짜, 단위, 표와 누락 콘텐츠를 영향도에 따라 우선 처리합니다.",
           },
           {
@@ -141,7 +141,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
           },
           {
             title: "속성",
-            body: "제목, 별칭, 원본, 상태, 태그와 검토 메타데이터를 명시적으로 유지합니다.",
+            body: "제목, 별칭, 원본, 상태, 태그와 무결성 메타데이터를 명시적으로 유지합니다.",
           },
           {
             title: "연결",
@@ -263,12 +263,12 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
         "solution",
         "팀",
         "사람과 AI가 공유하는 하나의 기준 정보를 만듭니다.",
-        "공유 프로젝트, 검토자 역할, 버전 기록, 지식 업데이트와 감사 이벤트로 팀의 기준을 일치시킵니다.",
-        "사람의 검토와 자동화가 동일한 승인 지식으로 수렴합니다.",
+        "공유 프로젝트, 선택적 결정 권한, 버전 기록, 지식 업데이트와 감사 이벤트로 팀의 기준을 일치시킵니다.",
+        "자율 검증이 불확실성을 격리하며 선택적 재정의는 감사 기록으로 남습니다.",
         [
           {
             title: "함께 작업",
-            body: "프로젝트 접근 권한, 검토자 역할과 공유 지식 소유권을 지정합니다.",
+            body: "프로젝트 접근 권한, 선택적 결정 권한과 공유 지식 소유권을 지정합니다.",
           },
           {
             title: "변경 승인",
@@ -557,7 +557,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
           },
           {
             title: "Pro와 Team",
-            body: "정밀 처리, 원본 비교, 지식 노트, 그래프, 검토자와 API를 제공합니다.",
+            body: "정밀 처리, 원본 비교, 지식 노트, 그래프, 무결성 원장과 API를 제공합니다.",
           },
           {
             title: "Business와 Enterprise",
@@ -599,7 +599,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
         "docs",
         "개발자",
         "검증된 문서 지식 위에 제품을 구축하세요.",
-        "업로드하고, 작업을 생성하고, 이벤트를 수신하고, 원본 맵을 검토하고, 결정적 패키지를 다운로드합니다.",
+        "업로드하고, 작업을 생성하고, 이벤트를 수신하고, 원본 맵을 확인하고, 결정적 패키지를 다운로드합니다.",
         "API 키에서 검증 출력까지 이어지는 다섯 단계입니다.",
         [
           {
@@ -616,7 +616,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
           },
           {
             title: "4. 확인과 내보내기",
-            body: "Canonical Block, 원본 맵, 검토 항목과 manifest를 확인합니다.",
+            body: "Canonical Block, 원본 맵, 무결성 항목과 manifest를 확인합니다.",
           },
         ],
         { label: "문서 열기", href: "/developers/docs" },
@@ -628,7 +628,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
         "문서",
         "검증된 지식을 컴파일하는 데 필요한 모든 내용을 제공합니다.",
         "버전이 관리되는 가이드를 검색하고 예제를 복사하며 API 계약, 한도와 보안 동작을 확인합니다.",
-        "시작하기 · 핵심 개념 · 업로드 · 처리 · 검토 · 지식 · 내보내기 · API · Webhook",
+        "시작하기 · 핵심 개념 · 업로드 · 처리 · 무결성 · 지식 · 내보내기 · API · Webhook",
         [
           {
             title: "시작하기",
@@ -654,7 +654,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
         "docs",
         "API 레퍼런스",
         "원본 연결 지식을 위한 타입 계약",
-        "버전이 관리되는 엔드포인트가 인증, 프로젝트, 업로드, 작업, 검토, 지식, 내보내기와 운영을 다룹니다.",
+        "버전이 관리되는 엔드포인트가 인증, 프로젝트, 업로드, 작업, 무결성, 지식, 내보내기와 운영을 다룹니다.",
         "요청은 비동기이며 변경 작업은 멱등적이고 이벤트는 순서를 인식합니다.",
         [
           {
@@ -666,7 +666,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
             body: "작업을 시작하고 SSE를 따라가며 스냅샷을 조정하고 재시도를 처리합니다.",
           },
           {
-            title: "검토와 지식",
+            title: "무결성과 지식",
             body: "후보를 해결하고 원본 연결 노트, 엔티티와 관계에 접근합니다.",
           },
           {
@@ -681,7 +681,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
         "docs",
         "SDK",
         "계약을 숨기지 않고 연동합니다.",
-        "작고 타입이 지정된 클라이언트가 작업, 이벤트, 검토와 내보내기 동작을 명시적으로 유지합니다.",
+        "작고 타입이 지정된 클라이언트가 작업, 이벤트, 무결성과 내보내기 동작을 명시적으로 유지합니다.",
         "Python과 TypeScript를 우선 지원하며 cURL은 이식 가능한 기준 예제로 유지합니다.",
         [
           {
@@ -713,7 +713,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
           },
           {
             title: "2026.07 — Evidence 워크플로",
-            body: "처리 및 검토 화면에서 결과를 페이지와 블록 근거에 연결했습니다.",
+            body: "처리 및 무결성 화면에서 결과를 페이지와 블록 근거에 연결했습니다.",
           },
           {
             title: "2026.07 — 공개 Proof",
@@ -767,7 +767,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
           },
           {
             title: "자동화보다 통제",
-            body: "무인 처리보다 정책과 검토 경계를 먼저 설정합니다.",
+            body: "무인 처리보다 동의와 무결성 경계를 먼저 설정합니다.",
           },
           {
             title: "종속보다 이식성",

@@ -19,15 +19,22 @@ const statusLabel = {
   evidence_required: "Corpus required",
 } as const;
 
-export function BenchmarkLab() {
+export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
   const snapshot = publicBenchmarkSnapshot;
   const isAvailable = snapshot.status === "available";
+  const Wrapper = embedded ? "section" : "main";
+  const Heading = embedded ? "h2" : "h1";
 
   return (
-    <main className="simple-page benchmark-lab-page" id="main-content">
+    <Wrapper
+      className="simple-page benchmark-lab-page"
+      id={embedded ? undefined : "main-content"}
+      data-embedded={embedded}
+      aria-label={embedded ? "Public benchmark evidence" : undefined}
+    >
       <header className="benchmark-lab-heading">
         <div>
-          <h1>Benchmark Lab</h1>
+          <Heading>Benchmark Lab</Heading>
           <p>
             Compare text, number, table, and provenance accuracy alongside
             latency and per-page cost using the same corpus and evaluator.
@@ -177,6 +184,6 @@ export function BenchmarkLab() {
           documents are never used for benchmarks.
         </p>
       </section>
-    </main>
+    </Wrapper>
   );
 }

@@ -39,7 +39,7 @@ const COPY = {
     eyebrow: "Knowledge operations",
     title: "Projects",
     description:
-      "Organize source files, review obligations, knowledge outputs, and retention policy around a durable project boundary.",
+      "Organize source files, integrity findings, knowledge outputs, and retention policy around a durable project boundary.",
     newProject: "New project",
     summaryLabel: "Project summary",
     total: "Total",
@@ -56,7 +56,7 @@ const COPY = {
     updated: "Recently updated",
     name: "Project name",
     documentCount: "Document count",
-    reviewCount: "Review count",
+    reviewCount: "Integrity finding count",
     viewLabel: "Project view",
     table: "Table",
     grid: "Grid",
@@ -73,7 +73,7 @@ const COPY = {
     deselectVisible: "Deselect visible projects",
     project: "Project",
     documents: "Documents",
-    review: "Review",
+    review: "Integrity",
     owner: "Owner",
     updatedColumn: "Updated",
     open: "Open",
@@ -81,7 +81,7 @@ const COPY = {
     deselect: "Deselect",
     noDescription: "No project description",
     workspace: "Workspace",
-    openReview: "Open review",
+    openReview: "Unresolved or quarantined",
     ledger:
       "Project status, owner, and counts are loaded from the workspace ledger; unavailable data is never estimated.",
     notRecorded: "Not recorded",
@@ -95,7 +95,7 @@ const COPY = {
     eyebrow: "지식 운영",
     title: "프로젝트",
     description:
-      "원본 파일, 검토 의무, 지식 출력과 보존 정책을 지속 가능한 프로젝트 경계 안에서 관리합니다.",
+      "원본 파일, 무결성 상태, 지식 출력과 보존 정책을 지속 가능한 프로젝트 경계 안에서 관리합니다.",
     newProject: "새 프로젝트",
     summaryLabel: "프로젝트 요약",
     total: "전체",
@@ -112,7 +112,7 @@ const COPY = {
     updated: "최근 업데이트",
     name: "프로젝트 이름",
     documentCount: "문서 수",
-    reviewCount: "검토 수",
+    reviewCount: "무결성 예외 수",
     viewLabel: "프로젝트 보기",
     table: "표",
     grid: "카드",
@@ -129,7 +129,7 @@ const COPY = {
     deselectVisible: "표시된 프로젝트 선택 해제",
     project: "프로젝트",
     documents: "문서",
-    review: "검토",
+    review: "무결성",
     owner: "소유자",
     updatedColumn: "업데이트",
     open: "열기",
@@ -137,7 +137,7 @@ const COPY = {
     deselect: "선택 해제",
     noDescription: "프로젝트 설명 없음",
     workspace: "워크스페이스",
-    openReview: "미해결 검토",
+    openReview: "미해결 또는 격리",
     ledger:
       "프로젝트 상태, 소유자와 건수는 워크스페이스 원장에서 불러오며 사용할 수 없는 데이터는 추정하지 않습니다.",
     notRecorded: "기록 없음",
@@ -271,11 +271,7 @@ export function ProjectsWorkspace({
           <h1>{copy.title}</h1>
           <p>{copy.description}</p>
         </div>
-        <Link
-          className="primary-button"
-          href="/quick-convert"
-          data-app-header-action
-        >
+        <Link className="primary-button" href="/intake" data-app-header-action>
           <Plus size={16} /> {copy.newProject}
         </Link>
       </header>

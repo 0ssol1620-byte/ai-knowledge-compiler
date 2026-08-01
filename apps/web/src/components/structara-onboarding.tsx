@@ -48,7 +48,7 @@ const ONBOARDING = {
     ],
     back: "Back",
     continue: "Continue",
-    openUpload: "Open upload",
+    openUpload: "Open collection intake",
   },
   ko: {
     project: "첫 번째 지식 프로젝트",
@@ -75,7 +75,7 @@ const ONBOARDING = {
     ],
     back: "이전",
     continue: "계속",
-    openUpload: "업로드 열기",
+    openUpload: "컬렉션 수집 열기",
   },
 } as const;
 
@@ -144,7 +144,7 @@ export function StructaraOnboarding() {
               {copy.continue} <ArrowRight size={14} />
             </button>
           ) : (
-            <Link className="st-app-primary" href="/quick-convert">
+            <Link className="st-app-primary" href="/intake">
               {copy.openUpload} <ArrowRight size={14} />
             </Link>
           )}

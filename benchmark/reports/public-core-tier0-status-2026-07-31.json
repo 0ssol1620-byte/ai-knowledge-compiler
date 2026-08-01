@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "assessed_at": "2026-07-31",
   "suite_id": "public-core-2026-07-31",
-  "registry_sha256": "sha256:46e586268944309b1be69d5afcfb164f1c18643c47cbb350bda6cda5c4a22985",
+  "registry_sha256": "sha256:4b536485a0ce8304b906e3206fcc60d8d438a21c0202a3c58f6e728ac4f96cbe",
   "tier": "tier_0_adapter_and_evaluator_smoke",
   "registry_remote_manifest_verified": true,
   "benchmarks": {
@@ -30,7 +30,7 @@
       "full_all_category_run": false
     }
   },
-  "structara_public_suite_tests": "11 passed",
+  "structara_public_suite_tests": "12 passed",
   "runpod_endpoint_count": 0,
   "signed_report": false,
   "signature_status": "external_signing_key_and_full_run_required",

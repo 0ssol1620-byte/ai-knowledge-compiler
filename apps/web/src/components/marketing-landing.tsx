@@ -24,6 +24,7 @@ type HomeCopy = {
   build: string;
   watch: string;
   trust: string;
+  intakeSignals: readonly [string, string, string];
   outputsLabel: string;
   outputs: readonly string[];
   problemTitle: readonly [string, string];
@@ -84,12 +85,17 @@ type HomeCopy = {
 const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
   en: {
     context: "The Knowledge Compiler for AI",
-    heroTitle: "Your AI is only as good as the knowledge it receives.",
+    heroTitle: "Don’t organize your files.\nCompile the knowledge.",
     heroIntro:
-      "Turn documents into structured, verified, connected knowledge with every important result linked back to its source.",
-    build: "Build your knowledge",
+      "Drop everything in. Structara turns it into structured, verified, connected knowledge for people and AI.",
+    build: "Compile your collection",
     watch: "Watch the transformation",
     trust: "Source-linked · Portable · Private by policy",
+    intakeSignals: [
+      "Folder tree preserved",
+      "Classification ready",
+      "Dedupe provisional",
+    ],
     outputsLabel: "Supported outputs",
     outputs: [
       "Portable Markdown",
@@ -235,12 +241,13 @@ const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
   },
   ko: {
     context: "AI를 위한 지식 컴파일러",
-    heroTitle: "AI의 성능은 전달받는 지식의 품질을 넘을 수 없습니다.",
+    heroTitle: "파일을 정리하지 마세요.\n지식으로 컴파일하세요.",
     heroIntro:
-      "문서를 구조화되고 검증되며 서로 연결된 지식으로 전환하고, 중요한 모든 결과를 원본에 다시 연결합니다.",
-    build: "지식 시스템 구축하기",
+      "폴더째 넣으면 Structara가 구조·근거·연결을 갖춘 지식 시스템으로 만듭니다.",
+    build: "컬렉션 컴파일하기",
     watch: "변환 과정 보기",
     trust: "원본 연결 · 이식 가능 · 정책 기반 비공개",
+    intakeSignals: ["폴더 구조 보존", "자동 분류 준비", "중복 후보 임시 표시"],
     outputsLabel: "지원 출력",
     outputs: [
       "이식 가능한 Markdown",
@@ -383,13 +390,17 @@ export function MarketingLanding({
   return (
     <StructaraMarketingShell>
       <main id="main-content" className="st-home">
-        <section className="st-home-hero">
+        <section
+          className="st-home-hero"
+          data-signature-asset="A01"
+          data-truth-class="deterministic-reference-scene"
+        >
           <div className="st-home-copy">
             <p className="st-context-label">{copy.context}</p>
             <h1>{copy.heroTitle}</h1>
             <p className="st-home-intro">{copy.heroIntro}</p>
             <div className="st-actions">
-              <Link href="/signup" className="st-button st-button-dark">
+              <Link href="/intake" className="st-button st-button-dark">
                 {copy.build}
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
@@ -398,6 +409,18 @@ export function MarketingLanding({
               </a>
             </div>
             <p className="st-trust-line">{copy.trust}</p>
+            <div
+              className="st-intake-signal"
+              aria-label={
+                locale === "ko"
+                  ? "수집 매니페스트 상태"
+                  : "Intake manifest state"
+              }
+            >
+              {copy.intakeSignals.map((signal) => (
+                <span key={signal}>{signal}</span>
+              ))}
+            </div>
             <p className="st-compiler-sequence">
               Page → Structure → Evidence → Knowledge → Intelligence
             </p>
@@ -423,7 +446,11 @@ export function MarketingLanding({
             </h2>
             <p>{copy.problemBody}</p>
           </div>
-          <div className="st-before-after">
+          <div
+            className="st-before-after"
+            data-signature-asset="A02"
+            data-truth-class="deterministic-reference-scene"
+          >
             <article>
               <span>{copy.rawDocuments}</span>
               <div className="st-fragments">
@@ -463,7 +490,19 @@ export function MarketingLanding({
           </header>
           <div className="st-chapters">
             {copy.chapters.map((chapter) => (
-              <article key={chapter.number}>
+              <article
+                key={chapter.number}
+                data-truth-class="deterministic-reference-scene"
+                data-signature-asset={
+                  chapter.number === "01"
+                    ? "A02"
+                    : chapter.number === "02"
+                      ? "A03"
+                      : chapter.number === "03"
+                        ? "A04"
+                        : "A06"
+                }
+              >
                 <div className="st-chapter-copy">
                   <span>{chapter.number}</span>
                   <h3>{chapter.title}</h3>
@@ -480,7 +519,11 @@ export function MarketingLanding({
           </div>
         </section>
 
-        <section className="st-demo-section">
+        <section
+          className="st-demo-section"
+          data-signature-assets="A03 A05"
+          data-truth-class="public-filing-reference-snapshot"
+        >
           <div className="st-section-intro">
             <p>{copy.publicFilingDemo}</p>
             <h2>{copy.inspectTitle}</h2>
@@ -489,7 +532,7 @@ export function MarketingLanding({
           <StructaraProofDemo />
           <div className="st-inline-actions">
             <Link href="/demo/dart">{copy.openDart}</Link>
-            <Link href="/signup">{copy.tryDocument}</Link>
+            <Link href="/intake">{copy.tryDocument}</Link>
           </div>
         </section>
 
@@ -594,7 +637,7 @@ export function MarketingLanding({
           <p>{copy.finalIntro}</p>
           <h2>{copy.finalTitle}</h2>
           <div className="st-actions">
-            <Link href="/signup" className="st-button st-button-dark">
+            <Link href="/intake" className="st-button st-button-dark">
               {copy.build} <ArrowRight size={16} />
             </Link>
             <Link href="/company/contact" className="st-text-action">

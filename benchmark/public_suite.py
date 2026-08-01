@@ -47,6 +47,18 @@ CRITICAL_CODES = {
     "false_verified",
     "unresolved_detection_miss",
 }
+LICENSE_APPROVALS = frozenset(
+    {
+        "dataset_evaluator_license",
+        "internal_use",
+        "public_score",
+        "redistribution",
+        "failure_screenshot",
+    }
+)
+COMMAND_PLACEHOLDERS = frozenset(
+    {"{PREDICTIONS}", "{GROUND_TRUTH}", "{OUTPUT}"}
+)
 
 
 class PublicSuiteError(RuntimeError):
@@ -151,7 +163,8 @@ def _dataset_identity(repository: str, revision: str) -> DatasetIdentity:
         if not isinstance(item, dict) or not isinstance(item.get("rfilename"), str):
             raise PublicSuiteError(f"{repository}: malformed dataset file manifest")
         size = int(item.get("size", 0))
-        lfs = item.get("lfs") if isinstance(item.get("lfs"), dict) else {}
+        lfs_value = item.get("lfs")
+        lfs = lfs_value if isinstance(lfs_value, dict) else {}
         files.append(
             {
                 "path": item["rfilename"],
@@ -208,9 +221,7 @@ def verify_registry(*, registry_path: Path, online: bool) -> dict[str, Any]:
                 total_bytes=int(dataset["total_bytes"]),
             )
             if actual != expected:
-                raise PublicSuiteError(
-                    f"{benchmark['id']}: dataset manifest differs from the lock"
-                )
+                raise PublicSuiteError(f"{benchmark['id']}: dataset manifest differs from the lock")
             check["status"] = "remote_manifest_verified"
             check["dataset_manifest_sha256"] = actual.manifest_sha256
         checks.append(check)
@@ -220,6 +231,172 @@ def verify_registry(*, registry_path: Path, online: bool) -> dict[str, Any]:
         "registry_sha256": _digest(registry_path.read_bytes()),
         "online": online,
         "checks": checks,
+    }
+
+
+def _receipt_sha256(path: Path) -> str | None:
+    try:
+        return _digest(path.read_bytes())
+    except OSError:
+        return None
+
+
+def _safe_receipt(path: Path, *, blocker: str, blockers: list[str]) -> dict[str, Any]:
+    try:
+        return _load_json(path)
+    except (OSError, UnicodeError, ValueError, json.JSONDecodeError, PublicSuiteError):
+        blockers.append(blocker)
+        return {}
+
+
+def official_execution_preflight(
+    *,
+    registry_path: Path,
+    benchmark_id: str,
+    evaluator_checkout: Path,
+    dataset_receipt_path: Path,
+    license_receipt_path: Path,
+    command_manifest_path: Path,
+) -> dict[str, Any]:
+    """Build a fail-closed receipt before an official evaluator can run.
+
+    This is orchestration evidence only.  It never claims that inference,
+    evaluator runs, or the required three repetitions have occurred.
+    """
+
+    registry = _load_registry(registry_path)
+    benchmark = next(
+        (item for item in registry["benchmarks"] if item["id"] == benchmark_id),
+        None,
+    )
+    if benchmark is None:
+        raise PublicSuiteError(f"benchmark is not in Public Core: {benchmark_id}")
+    blockers: list[str] = []
+    evaluator = benchmark["evaluator"]
+    dataset = benchmark["dataset"]
+
+    checkout_revision: str | None = None
+    if not evaluator_checkout.is_dir():
+        blockers.append("EVALUATOR_CHECKOUT_MISSING")
+    else:
+        git = shutil.which("git")
+        if git is None:
+            blockers.append("GIT_TOOL_MISSING")
+        else:
+            completed = subprocess.run(
+                [git, "-C", str(evaluator_checkout), "rev-parse", "HEAD"],
+                capture_output=True,
+                check=False,
+                text=True,
+                timeout=30,
+            )
+            checkout_revision = completed.stdout.strip() if completed.returncode == 0 else None
+            if checkout_revision != evaluator["commit"]:
+                blockers.append("EVALUATOR_COMMIT_MISMATCH")
+
+    dataset_receipt = _safe_receipt(
+        dataset_receipt_path,
+        blocker="DATASET_RECEIPT_MISSING_OR_INVALID",
+        blockers=blockers,
+    )
+    expected_dataset = {
+        "benchmark_id": benchmark_id,
+        "repository": dataset["repository"],
+        "revision": dataset["revision"],
+        "manifest_sha256": dataset["manifest_sha256"],
+        "file_count": int(dataset["file_count"]),
+        "total_bytes": int(dataset["total_bytes"]),
+    }
+    if any(dataset_receipt.get(key) != value for key, value in expected_dataset.items()):
+        blockers.append("DATASET_RECEIPT_LOCK_MISMATCH")
+    if dataset_receipt.get("verified") is not True:
+        blockers.append("DATASET_BYTES_NOT_VERIFIED")
+
+    license_receipt = _safe_receipt(
+        license_receipt_path,
+        blocker="LICENSE_RECEIPT_MISSING_OR_INVALID",
+        blockers=blockers,
+    )
+    approvals = license_receipt.get("approvals")
+    if (
+        license_receipt.get("schema_version") != "1.0"
+        or license_receipt.get("benchmark_id") != benchmark_id
+        or license_receipt.get("dataset_revision") != dataset["revision"]
+        or license_receipt.get("evaluator_commit") != evaluator["commit"]
+        or not isinstance(approvals, dict)
+    ):
+        blockers.append("LICENSE_RECEIPT_SCOPE_MISMATCH")
+        approvals = {}
+    for approval in sorted(LICENSE_APPROVALS):
+        value = approvals.get(approval) if isinstance(approvals, dict) else None
+        if (
+            not isinstance(value, dict)
+            or value.get("status") != "approved"
+            or not str(value.get("approved_by", "")).strip()
+            or not str(value.get("approved_at", "")).strip()
+        ):
+            blockers.append(f"LICENSE_APPROVAL_MISSING:{approval}")
+
+    command_manifest = _safe_receipt(
+        command_manifest_path,
+        blocker="COMMAND_MANIFEST_MISSING_OR_INVALID",
+        blockers=blockers,
+    )
+    argv = command_manifest.get("argv_template")
+    if (
+        command_manifest.get("schema_version") != "1.0"
+        or command_manifest.get("benchmark_id") != benchmark_id
+        or command_manifest.get("evaluator_commit") != evaluator["commit"]
+        or command_manifest.get("repetitions") != 3
+        or not isinstance(argv, list)
+        or not argv
+        or any(not isinstance(item, str) or not item or len(item) > 2_000 for item in argv)
+    ):
+        blockers.append("COMMAND_MANIFEST_SCOPE_MISMATCH")
+        argv = []
+    placeholders = {
+        placeholder
+        for placeholder in COMMAND_PLACEHOLDERS
+        if any(placeholder in item for item in argv)
+    }
+    if placeholders != COMMAND_PLACEHOLDERS:
+        blockers.append("COMMAND_PLACEHOLDERS_INCOMPLETE")
+    if argv:
+        executable = sys.executable if argv[0] == "{PYTHON}" else argv[0]
+        if not Path(executable).is_file() and shutil.which(executable) is None:
+            blockers.append("EVALUATOR_TOOL_MISSING")
+
+    blockers = list(dict.fromkeys(blockers))
+    return {
+        "schema_version": "1.0",
+        "receipt_kind": "public_benchmark_execution_preflight",
+        "suite_id": registry["suite_id"],
+        "benchmark_id": benchmark_id,
+        "status": "ready" if not blockers else "blocked",
+        "blockers": blockers,
+        "required_repetitions_per_candidate": 3,
+        "required_subjects": ["candidate", "incumbent"],
+        "registry_sha256": _digest(registry_path.read_bytes()),
+        "evaluator": {
+            "repository": evaluator["repository"],
+            "expected_commit": evaluator["commit"],
+            "checkout_commit": checkout_revision,
+            "checkout": str(evaluator_checkout.resolve()),
+        },
+        "dataset": expected_dataset,
+        "input_receipts": {
+            "dataset_receipt_sha256": _receipt_sha256(dataset_receipt_path),
+            "license_receipt_sha256": _receipt_sha256(license_receipt_path),
+            "command_manifest_sha256": _receipt_sha256(command_manifest_path),
+        },
+        "official_runs_completed": 0,
+        "production_evidence": False,
+        "limitations": [
+            "preflight_only",
+            "no_inference_executed",
+            "no_official_evaluator_executed",
+            "no_public_score_claim_allowed",
+        ],
     }
 
 
@@ -427,8 +604,14 @@ def compare_runs(candidate: dict[str, Any], incumbent: dict[str, Any]) -> dict[s
     incumbent_metrics = incumbent.get("metrics")
     if not isinstance(candidate_metrics, dict) or not isinstance(incumbent_metrics, dict):
         raise PublicSuiteError("candidate and incumbent metrics are required")
-    overall_candidate = float(candidate_metrics.get("official_overall"))
-    overall_incumbent = float(incumbent_metrics.get("official_overall"))
+    candidate_overall = candidate_metrics.get("official_overall")
+    incumbent_overall = incumbent_metrics.get("official_overall")
+    if not isinstance(candidate_overall, (int, float)) or isinstance(candidate_overall, bool):
+        raise PublicSuiteError("candidate official_overall metric must be numeric")
+    if not isinstance(incumbent_overall, (int, float)) or isinstance(incumbent_overall, bool):
+        raise PublicSuiteError("incumbent official_overall metric must be numeric")
+    overall_candidate = float(candidate_overall)
+    overall_incumbent = float(incumbent_overall)
     dimensions = sorted((set(candidate_metrics) | set(incumbent_metrics)) - {"official_overall"})
     regressions: dict[str, float] = {}
     for key in dimensions:
@@ -503,12 +686,8 @@ def evaluate_reproducibility(
             and int(run.get("critical_failure_count", -1)) == 0
             and run.get("gt_leakage_count") == 0
         )
-    spans = {
-        name: max(values) - min(values) for name, values in sorted(metric_values.items())
-    }
-    unstable = {
-        name: span for name, span in spans.items() if span > max_metric_span
-    }
+    spans = {name: max(values) - min(values) for name, values in sorted(metric_values.items())}
+    unstable = {name: span for name, span in spans.items() if span > max_metric_span}
     return {
         "schema_version": "1.0",
         "benchmark_id": reference.get("benchmark_id"),
@@ -614,6 +793,14 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--input", type=Path, required=True)
     report.add_argument("--signing-key", type=Path)
     report.add_argument("--output", type=Path, required=True)
+
+    execution = commands.add_parser("execution-preflight")
+    execution.add_argument("--benchmark", required=True)
+    execution.add_argument("--evaluator-checkout", type=Path, required=True)
+    execution.add_argument("--dataset-receipt", type=Path, required=True)
+    execution.add_argument("--license-receipt", type=Path, required=True)
+    execution.add_argument("--command-manifest", type=Path, required=True)
+    execution.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -670,6 +857,18 @@ def main() -> int:
             )
         elif args.command == "report":
             _write_json(args.output, sign_report(_load_json(args.input), key_path=args.signing_key))
+        elif args.command == "execution-preflight":
+            result = official_execution_preflight(
+                registry_path=args.registry,
+                benchmark_id=args.benchmark,
+                evaluator_checkout=args.evaluator_checkout,
+                dataset_receipt_path=args.dataset_receipt,
+                license_receipt_path=args.license_receipt,
+                command_manifest_path=args.command_manifest,
+            )
+            _write_json(args.output, result)
+            if result["status"] != "ready":
+                return 2
         else:  # pragma: no cover
             parser.error("unsupported command")
     except (OSError, UnicodeError, ValueError, yaml.YAMLError, PublicSuiteError) as exc:

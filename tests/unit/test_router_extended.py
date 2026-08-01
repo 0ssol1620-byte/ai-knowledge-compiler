@@ -141,11 +141,11 @@ def test_provider_registry_rejects_duplicates_and_wrong_capability() -> None:
     registry.set_parser_state("dummy-parser", ready=False)
     with pytest.raises(LookupError, match="not ready") as unavailable:
         registry.parser_for("dummy-parser", Route.NATIVE)
-    assert unavailable.value.manual_review_required
+    assert unavailable.value.autonomous_isolation_required
     registry.set_knowledge_state("dummy-knowledge", enabled=False)
     with pytest.raises(LookupError, match="disabled") as disabled:
         registry.knowledge_for("dummy-knowledge")
-    assert disabled.value.manual_review_required
+    assert disabled.value.autonomous_isolation_required
 
 
 def test_parse_request_requires_unique_nonnegative_pages() -> None:
@@ -175,7 +175,7 @@ def test_remaining_escalation_outcomes_are_bounded() -> None:
             max_attempts=3,
             context=context,
         ).action
-        == EscalationAction.FAIL
+        == EscalationAction.QUARANTINE
     )
     retry = decide_escalation(
         current_route=Route.PADDLE_VL,

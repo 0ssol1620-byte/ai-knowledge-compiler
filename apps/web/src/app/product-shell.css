@@ -67,7 +67,7 @@
 
 .app-frame .brand-copy small {
   color: #8f99a7;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0;
 }
 
@@ -116,13 +116,13 @@
 
 .app-frame .privacy-card strong {
   color: #dce1e8;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .app-frame .privacy-card span {
   color: #8f99a7;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .app-frame .sidebar-secondary {
@@ -154,7 +154,7 @@
   border-right: 1px solid var(--border);
   padding-right: 12px;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   transition: color 150ms ease;
 }
@@ -210,7 +210,7 @@
   border-bottom-color: #e5e7eb;
   background: #f4f5f7;
   color: #5d6674;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 550;
 }
 
@@ -228,7 +228,7 @@
 .app-frame .eyebrow {
   color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 560;
   letter-spacing: 0;
   text-transform: none;
@@ -260,7 +260,7 @@
   margin: 0 0 5px;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .app-frame .metric-icon,
@@ -283,7 +283,7 @@
   gap: 5px;
   margin-bottom: 15px;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .dashboard-breadcrumb a {
@@ -323,7 +323,7 @@
   background: var(--surface);
   padding: 3px 6px;
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 620;
 }
 
@@ -408,7 +408,7 @@
 .dashboard-section-heading p {
   margin: 3px 0 0;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .dashboard-action-heading > strong {
@@ -436,7 +436,7 @@
   gap: 5px;
   margin-top: auto;
   color: var(--accent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -469,7 +469,7 @@
 
 .dashboard-usage-heading a {
   color: #b9c7ff;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -493,13 +493,13 @@
 
 .dashboard-usage dt {
   color: #9ea8b6;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .dashboard-usage dd {
   margin: 0;
   color: #f5f7fa;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   font-weight: 640;
 }
@@ -529,7 +529,7 @@
 
 .dashboard-evidence-strip span {
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .dashboard-evidence-strip strong {
@@ -551,7 +551,7 @@
 
 .dashboard-policy-state span {
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -576,7 +576,7 @@
   align-items: center;
   gap: 5px;
   color: var(--accent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -598,7 +598,7 @@
   border-bottom: 1px solid var(--border);
   padding: 0 14px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 450;
   vertical-align: middle;
 }
@@ -607,7 +607,7 @@
   height: 38px;
   background: #fafbfc;
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 620;
 }
 
@@ -689,7 +689,7 @@
   overflow: hidden;
   margin-top: 3px;
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 430;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -722,7 +722,7 @@
 
 .dashboard-empty p {
   margin: 3px 0 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .dashboard-security-note {
@@ -737,13 +737,13 @@
 
 .dashboard-security-note p {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .dashboard-security-note > a {
   margin-left: auto;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 620;
 }
 
@@ -1026,7 +1026,7 @@
   gap: 7px;
   margin-bottom: 18px;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .page-breadcrumb strong {
@@ -1091,7 +1091,7 @@
 .quick-convert-policy small {
   margin-top: 2px;
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .quick-convert-workbench {
@@ -1130,7 +1130,7 @@
 .upload-panel-heading p {
   margin: 4px 0 0;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .upload-policy-inline {
@@ -1139,7 +1139,7 @@
   gap: 5px;
   padding-top: 2px;
   color: var(--success);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1186,7 +1186,7 @@
 .quick-convert-workbench .dropzone small {
   margin-top: 11px;
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .quick-convert-workbench .selected-files {
@@ -1206,7 +1206,7 @@
   border-top: 1px solid #edf0f3;
   padding-top: 15px;
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .quick-convert-workbench .upload-assurance svg {
@@ -1240,7 +1240,7 @@
 .preflight-explainer header > p {
   margin: 0 0 7px;
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .preflight-explainer h2 {
@@ -1255,7 +1255,7 @@
   display: block;
   margin-top: 8px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
   word-break: keep-all;
 }
@@ -1295,7 +1295,7 @@
 
 .preflight-explainer li small {
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
 }
 

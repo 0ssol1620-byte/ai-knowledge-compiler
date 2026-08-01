@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.example/schemas/v6/spend-report.schema.json",
+  "title": "Structara v6 spend and duplicate-work safety report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "state",
+    "expected_cost_usd",
+    "provider_cost_usd",
+    "provider_cost_by_cause",
+    "user_charge_usd",
+    "dispatch_count",
+    "accepted_count",
+    "settled_work_count",
+    "alerts",
+    "provider_retries",
+    "cost_used_as_mandatory_test_blocker",
+    "report_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "6.0.0" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "state": { "enum": ["healthy", "soft_alert", "hard_stop_runaway"] },
+    "expected_cost_usd": { "$ref": "#/$defs/money" },
+    "provider_cost_usd": { "$ref": "#/$defs/money" },
+    "provider_cost_by_cause": { "type": "object", "additionalProperties": { "$ref": "#/$defs/money" } },
+    "user_charge_usd": { "$ref": "#/$defs/money" },
+    "dispatch_count": { "type": "integer", "minimum": 0 },
+    "accepted_count": { "type": "integer", "minimum": 0 },
+    "settled_work_count": { "type": "integer", "minimum": 0 },
+    "alerts": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "provider_retries": { "const": 0 },
+    "cost_used_as_mandatory_test_blocker": { "const": false },
+    "report_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "money": { "type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" }
+  }
+}

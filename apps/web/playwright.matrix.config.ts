@@ -6,6 +6,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
+  // WebKit needs additional teardown time after traversing every public and
+  // product route in the release matrix. Keep the budget explicit so a slow
+  // browser shutdown cannot mask a fully completed interaction pass.
+  timeout: 90_000,
   workers: 1,
   reporter: [["html", { open: "never" }], ["list"]],
   use: {
@@ -77,6 +81,18 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
+    ...(process.env.AKC_INCLUDE_EDGE === "true"
+      ? [
+          {
+            name: "edge-desktop-1440",
+            use: {
+              ...devices["Desktop Chrome"],
+              channel: "msedge" as const,
+              viewport: { width: 1440, height: 900 },
+            },
+          },
+        ]
+      : []),
   ],
   webServer: {
     command: "pnpm build && pnpm start:e2e:standalone",

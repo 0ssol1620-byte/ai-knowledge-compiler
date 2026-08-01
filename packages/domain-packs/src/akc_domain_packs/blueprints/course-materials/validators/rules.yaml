@@ -1,0 +1,8 @@
+blueprint: course-materials
+kind: validation-rules
+version: 1.0.0
+rules:
+  - {id: source_coverage, severity: critical, minimum: 1.0}
+  - {id: sequence_preservation, severity: high, minimum: 1.0}
+  - {id: objective_evidence, severity: high, minimum: 1.0}
+  - {id: answer_boundary, severity: critical, minimum: 1.0}

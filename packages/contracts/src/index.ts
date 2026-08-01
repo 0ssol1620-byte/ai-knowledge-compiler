@@ -149,6 +149,8 @@ export const PAGE_STATES = [
   "NORMALIZING",
   "VALIDATING",
   "COMPLETED",
+  "UNRESOLVED",
+  "QUARANTINED",
   "NEEDS_REVIEW",
   "RETRY_SCHEDULED",
   "FAILED",
@@ -179,6 +181,8 @@ export type EventType =
   | "page.quality.updated.v1"
   | "page.retry.scheduled.v1"
   | "page.completed.v1"
+  | "page.unresolved.v1"
+  | "page.quarantined.v1"
   | "page.needs_review.v1"
   | "page.failed.v1"
   | "document.knowledge.note_created.v1"
@@ -188,6 +192,7 @@ export type EventType =
   | "export.completed.v1"
   | "job.completed.v1"
   | "job.failed.v1"
+  | "job.cancelled.v1"
   | "credit.reserved.v1"
   | "credit.consumed.v1"
   | "credit.released.v1";
@@ -214,7 +219,10 @@ export type Route =
   | "hpd_fast"
   | "unlimited_long"
   | "mistral_fallback"
-  | "manual_review";
+  | "region_recovery"
+  | "authority_reconstruction"
+  | "unresolved"
+  | "quarantine";
 
 export type RouteProfile =
   | "parse_fast_v1"
@@ -232,6 +240,9 @@ export interface FeatureFlags {
   readonly paddleFastEnabled: boolean;
   readonly unlimitedLongEnabled: boolean;
   readonly externalFallbackEnabled: boolean;
+  readonly regionRecoveryEnabled: boolean;
+  readonly authorityVerificationEnabled: boolean;
+  readonly differentialVerificationEnabled: boolean;
 }
 
 export interface DataPolicy {

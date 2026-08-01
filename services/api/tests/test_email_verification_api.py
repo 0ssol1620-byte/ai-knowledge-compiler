@@ -372,6 +372,7 @@ async def test_duplicate_hash_is_blocked_tenant_wide_before_second_upload(
 def test_production_public_registration_requires_real_controls() -> None:
     common: dict[str, Any] = {
         "env": "production",
+        "deployment_revision": "a" * 40,
         "jwt_secret": "j" * 40,
         "database_url": "postgresql+asyncpg://akc@database/akc",
         "local_background_tasks": False,

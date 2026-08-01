@@ -79,6 +79,7 @@ packages = [
   "packages/telemetry/src/akc_telemetry",
   "packages/retrieval/src/akc_retrieval",
   "packages/domain-packs/src/akc_domain_packs",
+  "packages/parallel-runtime/src/akc_parallel_runtime",
   "services/api/src/akc_api",
   "services/url-fetcher/src/akc_url_fetcher",
   "services/scheduler/src/akc_scheduler",
@@ -110,6 +111,7 @@ pythonpath = [
   "packages/telemetry/src",
   "packages/retrieval/src",
   "packages/domain-packs/src",
+  "packages/parallel-runtime/src",
   "services/api/src",
   "services/url-fetcher/src",
   "services/scheduler/src",
@@ -150,7 +152,14 @@ strict = true
 warn_unreachable = true
 show_error_codes = true
 plugins = ["pydantic.mypy"]
-exclude = ["migrations/", "services/.*/tests/"]
+exclude = [
+  "migrations/",
+  "tests/",
+  "packages/.*/tests/",
+  "services/.*/tests/",
+  "benchmark/tests/",
+  "work/",
+]
 
 [[tool.mypy.overrides]]
 module = ["filetype"]
@@ -176,6 +185,7 @@ source = [
   "akc_quality",
   "akc_exporters",
   "akc_security",
+  "akc_parallel_runtime",
   "akc_telemetry"
 ]
 

@@ -102,16 +102,18 @@ function HomeOverview() {
         <div>
           <FileArrowUp size={20} aria-hidden="true" />
           <div>
-            <strong>Start with a document</strong>
-            <span>PDF, Office, image, HTML, text, and subtitle files</span>
+            <strong>Start with a collection</strong>
+            <span>
+              Preserve folders across PDF, Office, images, HTML, and text
+            </span>
           </div>
         </div>
-        <Link href="/quick-convert">Upload documents</Link>
+        <Link href="/intake">Intake collection</Link>
       </section>
       <MetricStrip
         values={[
           ["Active jobs", "2", "1 table route escalated"],
-          ["Review required", "3", "2 numeric · 1 table"],
+          ["Integrity findings", "3", "2 unresolved · 1 quarantined"],
           ["Knowledge notes", "852", "18 created today"],
           ["Source coverage", "99.6%", "5 AI-only blocks labeled"],
         ]}
@@ -128,7 +130,7 @@ function HomeOverview() {
               "Document",
               "Stage",
               "Progress",
-              "Review",
+              "Integrity",
               "Credits",
               "State",
             ]}
@@ -136,18 +138,18 @@ function HomeOverview() {
           />
         </div>
         <aside className="st-app-panel st-review-summary">
-          <PanelHeader label="Priority queue" title="Needs review" />
+          <PanelHeader label="Integrity ledger" title="Isolated findings" />
           {(
             [
               [
                 "Numeric mismatch",
                 "Annual report · p214 · Table 7",
-                "/documents/sample-dart/review",
+                "/integrity?reference=1&focus=numeric-mismatch",
               ],
               [
                 "Table structure",
                 "Research corpus · p38",
-                "/documents/research-sample/review",
+                "/integrity?reference=1&focus=table-structure",
               ],
             ] as const
           ).map(([title, note, href]) => (
@@ -157,7 +159,7 @@ function HomeOverview() {
                 <strong>{title}</strong>
                 <span>{note}</span>
               </div>
-              <Link href={href}>Review</Link>
+              <Link href={href}>Inspect</Link>
             </article>
           ))}
         </aside>
@@ -176,7 +178,7 @@ function HomeOverview() {
             </div>
             <div>
               <dt>Source-linked Research</dt>
-              <dd>486 notes · 1 review item</dd>
+              <dd>486 notes · 1 unresolved item isolated</dd>
             </div>
           </dl>
         </article>
@@ -206,7 +208,7 @@ function HomeOverview() {
           <strong className="st-usage-number">
             1,284 <small>pages</small>
           </strong>
-          <p>42 jobs · 18% precision route · 1.4% review rate</p>
+          <p>42 jobs · 18% precision route · 1.4% integrity exception rate</p>
         </article>
       </section>
     </>
@@ -260,7 +262,7 @@ function ProjectsOverview({ route }: { route: string }) {
         values={[
           ["Documents", detail ? "6" : "33", "Accepted sources"],
           ["Knowledge notes", detail ? "152" : "852", "Source-linked"],
-          ["Review required", detail ? "3" : "4", "High impact"],
+          ["Integrity findings", detail ? "3" : "4", "Isolated by policy"],
           ["Broken links", "0", "Last checked today"],
         ]}
       />
@@ -277,10 +279,10 @@ function ProjectsOverview({ route }: { route: string }) {
                   "Version",
                   "Pages",
                   "Processing",
-                  "Review",
+                  "Integrity",
                   "Updated",
                 ]
-              : ["Project", "Documents", "Notes", "Review", "Members", "Status"]
+              : ["Project", "Documents", "Notes", "Integrity", "Members", "Status"]
           }
           rows={projectRows}
         />
@@ -293,7 +295,7 @@ function ProjectsOverview({ route }: { route: string }) {
             ["Broken links", "0"],
             ["Duplicate entities", "4"],
             ["Outdated documents", "2"],
-            ["Review required", "3"],
+            ["Unresolved or quarantined", "3"],
           ].map(([label, value]) => (
             <div key={label}>
               <span>{label}</span>
@@ -317,15 +319,15 @@ type SpecializedSpec = {
 
 const specializedSpecs: Record<string, SpecializedSpec> = {
   jobs: {
-    tabs: ["All", "Queued", "Running", "Review", "Failed", "Completed"],
+    tabs: ["All", "Queued", "Running", "Integrity", "Failed", "Completed"],
     metrics: [
       ["Running", "2", "Durable jobs"],
-      ["Review", "3", "High impact"],
+      ["Integrity", "3", "Isolated findings"],
       ["Failed", "0", "Last 24 hours"],
       ["p95 duration", "8m 42s", "Balanced route"],
     ],
     title: "Durable job ledger",
-    headers: ["Job", "Project", "Stage", "Progress", "Review", "Cost"],
+    headers: ["Job", "Project", "Stage", "Progress", "Integrity", "Cost"],
     rows: [
       [
         "job_28c9",
@@ -407,7 +409,7 @@ const specializedSpecs: Record<string, SpecializedSpec> = {
     headers: [
       "Recipe",
       "Parsing",
-      "Review",
+      "Integrity",
       "Knowledge",
       "External",
       "Retention",
@@ -416,7 +418,7 @@ const specializedSpecs: Record<string, SpecializedSpec> = {
       [
         "Balanced Knowledge",
         "Native first",
-        "Numbers + tables",
+        "Autonomous",
         "Enabled",
         "Ask",
         "7 days",
@@ -424,7 +426,7 @@ const specializedSpecs: Record<string, SpecializedSpec> = {
       [
         "Private Archive",
         "Local only",
-        "Critical",
+        "Quarantine",
         "Enabled",
         "Disabled",
         "24 hours",
@@ -432,13 +434,13 @@ const specializedSpecs: Record<string, SpecializedSpec> = {
       [
         "Fast Markdown",
         "Native first",
-        "Errors only",
+        "Unresolved only",
         "Disabled",
         "Ask",
         "7 days",
       ],
     ],
-    note: "Recipes describe input, parsing mode, review policy, knowledge output, privacy, and export—never vendor model names.",
+    note: "Recipes describe input, parsing mode, integrity policy, knowledge output, privacy, and export—never vendor model names.",
   },
   api: {
     tabs: ["Keys", "Playground", "Webhooks", "Usage", "Logs"],
@@ -588,7 +590,7 @@ function DocumentOverview({ route }: { route: string }) {
             ["Accepted blocks", "1,284", "Current version"],
             ["Source-linked", "1,279", "Page + bbox"],
             ["AI-only", "5", "Clearly labeled"],
-            ["Coverage", "99.6%", "Review tracked"],
+            ["Coverage", "99.6%", "Integrity tracked"],
           ]}
         />
         <section className="st-app-panel">
@@ -600,7 +602,7 @@ function DocumentOverview({ route }: { route: string }) {
               "Source bbox",
               "Origin",
               "Evidence",
-              "Review",
+              "Integrity",
             ]}
             rows={[
               [
@@ -625,7 +627,7 @@ function DocumentOverview({ route }: { route: string }) {
                 "210,260,778,510",
                 "Inferred",
                 "Weak",
-                "Review",
+                "Unresolved",
               ],
             ]}
           />
@@ -737,7 +739,7 @@ function AdminOverview({ route }: { route: string }) {
   const section = route.split("/").at(-1) ?? "jobs";
   const rows: readonly (readonly string[])[] = [
     [`${section}_28c9`, "Healthy", "v2026.07.30", "4.2s", "0.12%", "Inspect"],
-    [`${section}_1ac4`, "Review", "v2026.07.29", "18.6s", "0.84%", "Open"],
+    [`${section}_1ac4`, "Investigate", "v2026.07.29", "18.6s", "0.84%", "Open"],
     [`${section}_88df`, "Healthy", "v2026.07.30", "6.1s", "0.08%", "Inspect"],
   ];
   return (
@@ -747,7 +749,7 @@ function AdminOverview({ route }: { route: string }) {
           ["Queue age", "4.2s", "p95"],
           ["Workers", "12 / 14", "Warm"],
           ["Terminal success", "99.7%", "24 hours"],
-          ["Cost outliers", "2", "Review required"],
+          ["Cost outliers", "2", "Investigation open"],
         ]}
       />
       <section className="st-app-panel">
@@ -820,7 +822,7 @@ function KnowledgeOverview() {
         <p>2025 Annual Report · page 214</p>
         <p>2024 Annual Report · page 208</p>
         <p>2026 Q1 Filing · page 92</p>
-        <small>Origin: extracted · Review: user verified</small>
+        <small>Origin: extracted · Integrity: source verified</small>
         <Link href="/documents/sample-dart/sources">Open source</Link>
       </aside>
     </section>
@@ -868,7 +870,7 @@ function OperationsOverview({ route }: { route: string }) {
           ["Pages", "1,284", "This period"],
           ["Jobs", "42", "2 active"],
           ["Precision ratio", "18%", "Within policy"],
-          ["Review rate", "1.4%", "High impact only"],
+          ["Integrity exception rate", "1.4%", "Unresolved or quarantined"],
         ]}
       />
       <section className="st-app-panel">
@@ -881,7 +883,7 @@ function OperationsOverview({ route }: { route: string }) {
             "Document",
             "Stage",
             "Progress",
-            "Review",
+            "Integrity",
             "Credits",
             "State",
           ]}

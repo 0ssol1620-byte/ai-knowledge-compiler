@@ -10,7 +10,7 @@ function configuredApiOrigin(): string {
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID().replaceAll("-", "");
   const development = process.env.NODE_ENV !== "production";
   const apiOrigin = configuredApiOrigin();

@@ -56,7 +56,11 @@ async def refresh_scheduler_metrics(
             rows = (
                 await session.execute(
                     select(ProcessingJob.status, func.count(ProcessingJob.id))
-                    .where(ProcessingJob.status.in_(("queued", "running", "waiting_review")))
+                    .where(
+                        ProcessingJob.status.in_(
+                            ("queued", "running", "paused", "waiting_review")
+                        )
+                    )
                     .group_by(ProcessingJob.status)
                 )
             ).all()

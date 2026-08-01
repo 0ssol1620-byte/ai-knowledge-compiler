@@ -19,6 +19,10 @@ import { useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
 import type { StructaraLocale } from "@/lib/locale";
+import {
+  publicOriginLabel,
+  publicRouteLabel,
+} from "@/lib/public-processing-labels";
 
 type ProvenanceNote = {
   note_id: string;
@@ -141,10 +145,10 @@ const sampleNodes: KnowledgeNode[] = [
     id: "risk:supply-chain",
     title: "Supply-chain concentration",
     type: "Risk",
-    status: "review",
+    status: "unresolved",
     origin: "source-linked note",
     content:
-      "Risk note requires contextual review; no unsupported severity score is shown.",
+      "Risk note remains unresolved; no unsupported severity score is shown.",
     evidenceBlockIds: ["blk_risk_note"],
   },
   {
@@ -293,7 +297,7 @@ const KNOWLEDGE_COPY = {
     page: "Page",
     block: "Block",
     origin: "Origin",
-    engine: "Engine",
+    engine: "Processing route",
     notRecorded: "not recorded",
     revision: "Revision",
     content: "KNOWLEDGE CONTENT",
@@ -364,7 +368,7 @@ const KNOWLEDGE_COPY = {
     page: "페이지",
     block: "블록",
     origin: "출처",
-    engine: "엔진",
+    engine: "처리 경로",
     notRecorded: "기록 없음",
     revision: "리비전",
     content: "지식 콘텐츠",
@@ -451,7 +455,7 @@ export function KnowledgeStudio({
       perspective === "Document" ||
       (perspective === "Entity" && /entity|company|segment/i.test(node.type)) ||
       (perspective === "Risk" &&
-        /risk|review/i.test(`${node.type} ${node.status}`)) ||
+        /risk|unresolved/i.test(`${node.type} ${node.status}`)) ||
       (perspective === "Timeline" &&
         /filing|document|date|year/i.test(`${node.type} ${node.title}`)) ||
       (perspective === "Evidence" && node.evidenceBlockIds.length > 0);
@@ -773,11 +777,15 @@ export function KnowledgeStudio({
                     </div>
                     <div>
                       <dt>{copy.origin}</dt>
-                      <dd>{block.origin}</dd>
+                      <dd>{publicOriginLabel(block.origin, locale)}</dd>
                     </div>
                     <div>
                       <dt>{copy.engine}</dt>
-                      <dd>{block.engine || copy.notRecorded}</dd>
+                      <dd>
+                        {block.engine
+                          ? publicRouteLabel(block.engine, locale)
+                          : copy.notRecorded}
+                      </dd>
                     </div>
                     <div>
                       <dt>{copy.revision}</dt>
@@ -795,10 +803,13 @@ export function KnowledgeStudio({
             <>
               <header>
                 <span>{selected.type}</span>
-                <strong>{selected.title}</strong>
-                <small>
-                  {selected.origin} · {selected.status}
-                </small>
+                <div>
+                  <strong>{selected.title}</strong>
+                  <small>
+                    {publicOriginLabel(selected.origin, locale)} ·{" "}
+                    {selected.status}
+                  </small>
+                </div>
               </header>
               <section>
                 <span>{copy.content}</span>
@@ -836,7 +847,8 @@ export function KnowledgeStudio({
                         {block.block_type}
                       </strong>
                       <small>
-                        {block.origin} · {copy.revision} {block.revision}
+                        {publicOriginLabel(block.origin, locale)} ·{" "}
+                        {copy.revision} {block.revision}
                       </small>
                       <code>{block.block_id}</code>
                     </div>

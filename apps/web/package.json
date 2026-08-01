@@ -15,10 +15,14 @@
     "test:e2e:live": "playwright test --config=playwright.live.config.ts",
     "test:e2e:matrix": "playwright test --config=playwright.matrix.config.ts",
     "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts --project=desktop",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook:build": "storybook build --test",
+    "brand:capture:v4": "node scripts/capture-v4-brand-evidence.mjs",
     "interactions:check": "node scripts/verify-button-contracts.mjs",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\""
   },
   "dependencies": {
+    "@akc/contracts": "workspace:*",
     "@microsoft/fetch-event-source": "2.0.1",
     "@phosphor-icons/react": "2.1.10",
     "@react-three/drei": "10.7.6",
@@ -43,6 +47,9 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "10.5.5",
+    "@storybook/addon-docs": "10.5.5",
+    "@storybook/nextjs-vite": "10.5.5",
     "@axe-core/playwright": "4.12.1",
     "@playwright/test": "1.62.0",
     "@testing-library/jest-dom": "7.0.0",
@@ -55,6 +62,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.2.12",
     "jsdom": "30.0.1",
+    "storybook": "10.5.5",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
   }

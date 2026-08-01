@@ -2,7 +2,7 @@ defaults:
   language: en
   alternate_language: ko
   accessibility: WCAG_2_2_AA
-  required_viewports: [1920, 1440, 1024, 390]
+  required_viewports: [1920, 1440, 1280, 1024, 768, 390, 360]
   required_states: [default, mobile, reduced_motion]
 
 status_semantics:
@@ -10,6 +10,10 @@ status_semantics:
     Implemented and locally verified in the repository. This does not imply
     production deployment, legal clearance, commercial approval, or field SLO
     evidence.
+  partial: >-
+    The named surface and honest unavailable states are implemented, but a
+    declared live dependency or end-to-end evidence gate remains. Partial must
+    never be presented as production-ready or as completed processing.
 
 release_review:
   reviewed_at: 2026-07-31
@@ -257,6 +261,53 @@ routes:
   - { path: /login, priority: P0, wave: 1, surface: auth, status: complete }
   - { path: /signup, priority: P0, wave: 1, surface: auth, status: complete }
   - {
+      path: /quick-convert,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /intake,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: partial,
+      gate: signed_collection_preflight_api,
+    }
+  - {
+      path: /workspace,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: partial,
+      gate: production_job_and_event_evidence,
+    }
+  - {
+      path: /integrity,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: partial,
+      gate: connected_integrity_ledger_write_path,
+    }
+  - {
+      path: /review,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: complete,
+      gate: compatibility_redirect_to_integrity_with_query_context,
+    }
+  - {
+      path: /knowledge-bases,
+      priority: P0,
+      wave: 9,
+      surface: product,
+      status: partial,
+      gate: deployable_package_and_live_graph_evidence,
+    }
+  - {
       path: /onboarding,
       priority: P0,
       wave: 2,
@@ -325,6 +376,7 @@ routes:
       wave: 2,
       surface: product,
       status: complete,
+      gate: compatibility_redirect_to_integrity_with_query_context,
     }
   - {
       path: /documents/:id/markdown,

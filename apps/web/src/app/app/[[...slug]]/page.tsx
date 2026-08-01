@@ -36,7 +36,7 @@ function resolve(slug: string[] | undefined) {
                 : "DART Annual Report",
       description:
         view === "documents"
-          ? "Inspect versions, pages, processing, review, knowledge, retention, and output files."
+          ? "Inspect versions, pages, processing, integrity, knowledge, retention, and output files."
           : "Source coverage, knowledge health, recent activity, documents, and notes.",
       action: view === "exports" ? "New export" : "Upload documents",
     };

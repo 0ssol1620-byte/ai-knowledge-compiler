@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
@@ -8,25 +7,20 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
-export function SafeMarkdown({ source }: { source: string }) {
-  const [html, setHtml] = useState("");
+const safeMarkdownProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype)
+  .use(rehypeSanitize)
+  .use(rehypeStringify);
 
-  useEffect(() => {
-    let cancelled = false;
-    void unified()
-      .use(remarkParse)
-      .use(remarkGfm)
-      .use(remarkRehype)
-      .use(rehypeSanitize)
-      .use(rehypeStringify)
-      .process(source)
-      .then((result) => {
-        if (!cancelled) setHtml(demoteEmbeddedDocumentHeadings(String(result)));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [source]);
+export function SafeMarkdown({ source }: { source: string }) {
+  // All plugins in this pipeline are synchronous. Rendering the sanitized
+  // result during SSR and the first client render keeps the block's geometry
+  // stable; deferring it to an effect caused a visible post-hydration reflow.
+  const html = demoteEmbeddedDocumentHeadings(
+    String(safeMarkdownProcessor.processSync(source)),
+  );
 
   return (
     <div

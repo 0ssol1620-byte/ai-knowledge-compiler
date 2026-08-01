@@ -43,8 +43,33 @@ class WireModel(BaseModel):
 class QualityRule(WireModel):
     id: Annotated[str, Field(pattern=_PACK_ID)]
     description: Annotated[str, Field(min_length=1, max_length=500)]
+    # ``severity`` is the frozen v1 wire classification.  It remains readable
+    # by existing clients, but production routing MUST use
+    # ``autonomous_outcome`` so ``review_required`` never becomes a v4 runtime
+    # state or human completion dependency.
     severity: Literal["warning", "review_required", "hard_fail"]
+    autonomous_outcome: Literal[
+        "warning",
+        "autonomous_repair",
+        "unresolved",
+        "quarantine",
+        "hard_fail",
+    ]
     evaluator: Annotated[str, Field(pattern=_SAFE_PROFILE)]
+
+    @model_validator(mode="after")
+    def compatible_autonomous_outcome(self) -> QualityRule:
+        if self.severity == "warning" and self.autonomous_outcome != "warning":
+            raise ValueError("warning wire severity must remain an autonomous warning")
+        if self.severity == "hard_fail" and self.autonomous_outcome != "hard_fail":
+            raise ValueError("hard-fail wire severity must remain an autonomous hard fail")
+        if self.severity == "review_required" and self.autonomous_outcome not in {
+            "autonomous_repair",
+            "unresolved",
+            "quarantine",
+        }:
+            raise ValueError("legacy review severity must map to a non-human autonomous outcome")
+        return self
 
 
 class DomainPack(WireModel):

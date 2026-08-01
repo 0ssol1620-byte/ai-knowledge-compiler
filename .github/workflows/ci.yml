@@ -73,9 +73,15 @@ jobs:
         run: |
           node --check tests/load/k6-health.js
           node --check tests/load/k6-journey.js
+          node --check tests/load/k6-collection-manifest.js
+          node --check tests/load/k6-preflight-30000.js
+          node --check tests/load/resume-10gib.mjs
+          node --check tests/load/browser-scale-probe.mjs
+          node --check apps/web/scripts/capture-v4-brand-evidence.mjs
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm --filter @akc/web storybook:build
       - run: pnpm build
 
   live-browser-e2e:
@@ -135,6 +141,10 @@ jobs:
         run: pnpm --filter @akc/web test:e2e:visual
       - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
         run: pnpm --filter @akc/web test:e2e:matrix
+      - name: Run forced-colors and 200-percent accessibility contracts
+        run: >-
+          pnpm --filter @akc/web exec playwright test
+          e2e/accessibility-matrix.spec.ts --project=desktop --project=mobile
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -172,6 +182,12 @@ jobs:
           python -m uv run --locked --extra dev python infra/security/validate_deployment.py
           python -m uv run --locked --extra dev python scripts/generate_contract_types.py --check
           python -m uv run --locked --extra dev python scripts/check_openapi_compat.py
+      - name: Validate v4 release traceability
+        run: |
+          python -m uv run --locked --extra dev python infra/release/validate_v4_subsections.py
+          python -m uv run --locked --extra dev python infra/release/validate_v4_traceability.py
+          python -m uv run --locked --extra dev python infra/release/validate_v4_brand_evidence.py
+          python -m uv run --locked --extra dev python tests/load/validate_profiles.py
       - name: Run benchmark metric tests
         run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
       - name: Run GPU handler tests

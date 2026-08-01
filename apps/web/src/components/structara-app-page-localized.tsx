@@ -43,12 +43,12 @@ const routeCopy: Record<
     eyebrow: "운영 개요",
     title: "지식 컴파일 워크스페이스",
     description:
-      "활성 작업, 검토 의무, 지식 상태와 사용량을 하나의 운영 화면에서 확인합니다.",
+      "활성 작업, 무결성 상태, 지식 상태와 사용량을 하나의 운영 화면에서 확인합니다.",
     action: "문서 업로드",
     icon: Pulse,
     metrics: [
       ["활성 작업", "2", "데모 fixture"],
-      ["검토 필요", "3", "영향도 우선"],
+      ["무결성 예외", "3", "미해결·격리"],
       ["지식 노트", "852", "원본 연결"],
       ["원본 커버리지", "99.6%", "로컬 검증"],
     ],
@@ -59,9 +59,9 @@ const routeCopy: Record<
         state: "연결 시 실데이터",
       },
       {
-        title: "검토 큐",
-        body: "숫자, 표와 누락 콘텐츠를 영향도 순으로 Review Studio에 전달합니다.",
-        state: "Review 연결",
+        title: "무결성 원장",
+        body: "숫자, 표와 누락 콘텐츠는 자동 복구와 권위 원천 대조를 거쳐 미해결 또는 격리 상태로 분리됩니다.",
+        state: "Integrity 연결",
       },
       {
         title: "지식 상태",
@@ -79,7 +79,7 @@ const routeCopy: Record<
     icon: Pulse,
     metrics: [
       ["실행 중", "2", "지속 작업"],
-      ["검토", "3", "영향도 높음"],
+      ["무결성 예외", "3", "자동 격리"],
       ["실패", "0", "최근 24시간"],
       ["p95", "8분 42초", "Balanced 경로"],
     ],
@@ -167,7 +167,7 @@ const routeCopy: Record<
     eyebrow: "개발자",
     title: "API 콘솔",
     description:
-      "프로젝트, 업로드, 작업, 검토, 지식과 내보내기 계약을 확인합니다.",
+      "프로젝트, 업로드, 작업, 무결성, 지식과 내보내기 계약을 확인합니다.",
     action: "API 문서 열기",
     icon: BracketsCurly,
     metrics: [
@@ -265,13 +265,13 @@ function resolveKoreanSpec(route: string) {
       eyebrow: "프로젝트 운영",
       title: route.split("/").length > 1 ? "프로젝트 상세" : "프로젝트",
       description:
-        "문서, 검토, 지식, 원본 커버리지와 내보내기를 프로젝트 경계 안에서 관리합니다.",
+        "문서, 무결성 상태, 지식, 원본 커버리지와 내보내기를 프로젝트 경계 안에서 관리합니다.",
       action: "문서 업로드",
       icon: FolderOpen,
       metrics: [
         ["문서", "33", "승인 원본"],
         ["지식 노트", "852", "원본 연결"],
-        ["검토 필요", "4", "영향도 높음"],
+        ["무결성 예외", "4", "미해결·격리"],
         ["끊어진 링크", "0", "오늘 확인"],
       ] as const,
       sections: [
@@ -374,7 +374,7 @@ function resolveKoreanSpec(route: string) {
       metrics: [
         ["페이지", "421", "원본 버전"],
         ["승인 블록", "1,284", "원본 연결"],
-        ["검토 필요", "3", "영향도 높음"],
+        ["무결성 예외", "3", "미해결·격리"],
         ["버전", "4", "비파괴"],
       ] as const,
       sections: [
@@ -406,13 +406,13 @@ function resolveEnglishSpec(route: string) {
       eyebrow: "Project operations",
       title: route.split("/").length > 1 ? "Project detail" : "Projects",
       description:
-        "Manage documents, review obligations, knowledge, source coverage, and exports inside one project boundary.",
+        "Manage documents, integrity findings, knowledge, source coverage, and exports inside one project boundary.",
       action: "Upload documents",
       icon: FolderOpen,
       metrics: [
         ["Documents", "33", "accepted sources"],
         ["Knowledge notes", "852", "source-linked"],
-        ["Review required", "4", "high impact"],
+        ["Integrity findings", "4", "unresolved or quarantined"],
         ["Broken links", "0", "checked today"],
       ] as const,
       sections: [
@@ -515,7 +515,7 @@ function resolveEnglishSpec(route: string) {
       metrics: [
         ["Pages", "421", "source version"],
         ["Accepted blocks", "1,284", "source-linked"],
-        ["Review required", "3", "high impact"],
+        ["Integrity findings", "3", "unresolved or quarantined"],
         ["Versions", "4", "non-destructive"],
       ] as const,
       sections: [
@@ -624,9 +624,9 @@ export function StructaraAppPageLocalized(props: Props) {
           </p>
         </div>
         <div>
-          <Link href="/quick-convert">
+          <Link href="/intake">
             <FileArrowUp size={16} />
-            {korean ? "문서 업로드" : "Upload documents"}
+            {korean ? "컬렉션 수집" : "Intake collection"}
           </Link>
           <Link href="/app/projects">
             <FolderOpen size={16} />

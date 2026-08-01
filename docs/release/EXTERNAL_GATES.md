@@ -40,7 +40,7 @@ An acceptable evidence bundle:
 | `EG-04` | Licensed golden corpus and measured quality        | Rights-cleared corpus manifest, split hashes, annotation QA, holdout isolation, at least 1,500 pages and 150 documents for Gate 2, all required candidate runs, immutable raw outputs, failure cases, per-class quality/cost/latency, hard-fail checks, champion recipe, and rollback target. Synthetic fixtures do not close this gate.                                                                                                              | Quality / Data Governance             | 22, 34, 37, Gate 2                 |
 | `EG-05` | Model promotion, canary, and rollback              | Shadow results; staged 1%→5%→20% evidence (and later stages where approved); route-, language-, and document-class metrics; user-edit and failure signals; one-change rollback demonstration; independent promotion approval.                                                                                                                                                                                                                         | Model Platform / SRE                  | 22.8–22.10, 23, 35.3–35.4, Gate 5  |
 | `EG-06` | Security, privacy, and tenant-isolation assessment | Exact production OIDC tenant/issuer/client/callback/claims/JWKS-rotation verification and Team/Enterprise MFA enrollment, challenge, recovery, and policy evidence; deployed cross-tenant/IDOR/BOLA and PostgreSQL RLS report; presigned URL, SSRF, parser sandbox, XSS/CSP, prompt-injection, audit-integrity, API-key-scope, webhook, payment-webhook, and secret-rotation results; cloud-policy review; penetration test and vulnerability triage. | Security / Privacy                    | 5.3, 7, 21, 26.10, 40, Gate 5      |
-| `EG-07` | Performance, SLO, load, fairness, and chaos        | Route-specific p50/p95 baseline; error budgets; alert delivery; 1,000 SSE, 100 upload, 10,000-page enqueue, mixed-size fairness and export-burst results; provider slowdown, DB/Redis restart/failover, OOM, partial upload, duplicate completion, expired URL, rollback, and clock-skew drills.                                                                                                                                                      | SRE / Platform                        | 23, 26.11–26.12, Gate 5            |
+| `EG-07` | Performance, SLO, load, fairness, and chaos        | Route-specific p50/p95 baseline; error budgets; alert delivery; exact 5,000-file manifest, interrupted 10 GiB/new-process resume, 30,000-page preflight, 1,000-page UI, 10,000-block workspace, 5,000-node graph, 1,000 SSE, 100 upload, 10,000-page enqueue, mixed-size fairness, and export-burst results; provider slowdown, DB/Redis restart/failover, OOM, partial upload, duplicate completion, expired URL, rollback, and clock-skew drills. | SRE / Platform                        | v4 32, 42 Wave 10, 44.6, Gate 5    |
 | `EG-08` | Backup, restore, deletion, and incident readiness  | Timed PostgreSQL backup/PITR and object restore with measured RPO/RTO; isolated destruction; mass deletion receipt and backup-expiry proof; provider-outage, credential-rotation, breach, and incident-escalation exercises.                                                                                                                                                                                                                          | SRE / Security / Privacy              | 18.12, 21.13–21.14, 23.8, Gate 4–5 |
 | `EG-09` | Merchant, credits, invoices, and unit economics    | Approved merchant connector; purchase→reserve→consume/release→refund/reversal and dispute evidence; no duplicate charge; provider invoice reconciliation; storage/support/refund costs; recognized revenue; plan-level margin and budget guardrails.                                                                                                                                                                                                  | Finance / Billing                     | 20, 31 과금, 41, Gate 4            |
 | `EG-10` | Legal, licenses, notices, and product claims       | Current model/code/dataset/runtime licenses and upstream terms; SBOMs; generated Third-Party Notices; MinerU decision and attribution if used; approved Terms, Privacy Notice, DPA, subprocessors, transfer/residency decisions, upload-rights clause, training statement, and external-provider disclosure.                                                                                                                                          | Counsel / Compliance                  | 2, 30, 31 법률·라이선스, 40, 44    |
@@ -49,6 +49,68 @@ An acceptable evidence bundle:
 | `EG-13` | Enterprise and moat capabilities                   | Customer-backed SSO/SAML/SCIM, BYOK, legal hold, zero-retention, data-residency, dedicated VPC/private-cloud requirements; private deployment proof; consented correction flywheel; trained learned router/verifier; domain-pack and API-ecosystem adoption evidence.                                                                                                                                                                                 | Enterprise / Security / Product       | 38, 40, 42.4–42.5, Gate 6          |
 | `EG-14` | Current market and source claims                   | Re-fetch and date every drift-prone source; archive the reviewed snapshot; verify competitor pricing/features, provider pricing, framework compatibility, model revisions, and product wording immediately before release.                                                                                                                                                                                                                            | Product Marketing / Compliance        | 2, 20, 35, 44                      |
 | `EG-15` | Full Public Core benchmark execution               | Three complete OmniDocBench v1.7, ParseBench five-dimension, and olmOCR-Bench all-category candidate and incumbent runs on one immutable environment; GT-isolation audit; frozen prediction hashes; official and Structara-critical raw outputs; cost/latency; failure artifacts; bounded variance; license approval; and a signed report bound to the release candidate. Tier-0 smoke evidence is insufficient.                                      | Quality / Model Platform / Compliance | 15A, Phase 5A, Gate 2              |
+
+### Collection semantic retrieval closure evidence
+
+The checked-in collection finalizer, semantic compiler, PostgreSQL retrieval
+adapter, Settings validation, and Kubernetes contracts are implementation
+evidence only. They do not close `EG-02`, `EG-03`, `EG-05`, `EG-06`, or
+`EG-07`. Enabling the collection finalizer and semantic retrieval in a release
+overlay requires one immutable evidence bundle containing all of the following:
+
+1. the exact application commit, rendered overlay, signed image digests,
+   PostgreSQL migration head, database role grants, and RLS policy inspection;
+2. proof that `AKC_COLLECTION_FINALIZER_ENABLED` and
+   `AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED` changed from `false` to `true`
+   atomically, while provider and HMAC values came only from the approved
+   external Secret controller;
+3. the provider endpoint identity, provider ID, model ID, immutable model
+   revision, endpoint-scoped credential grant, and an attested 1024-dimensional
+   embedding response with no customer content;
+4. rendered NetworkPolicy or CNI evidence for only dispatch-to-API TCP 8000,
+   the managed PostgreSQL destination, and the exact approved embedding FQDN on
+   TLS 443, with no wildcard public API egress;
+5. a synthetic end-to-end canary that records the canonical plan, semantic
+   model, retrieval-index receipt, query result, package export/import hashes,
+   terminal events, and deployment revision from the same run;
+6. deployed failure injections for provider timeout, attestation or model-pin
+   mismatch, database unavailability, and package validation failure, proving
+   no completed terminal state and exactly one idempotent credit refund where
+   credits were consumed; and
+7. key-rotation and one-change disable/rollback evidence proving both runtime
+   flags return to `false` together without accepting stale-model or stale-plan
+   retrieval rows.
+
+Credentials and raw secret values must never be included in the bundle. Record
+only Secret object versions or external-controller references and the reviewed
+scope of each credential.
+
+### Collection metadata encryption closure evidence
+
+The repository's AEAD codec, blind-index contract, 0026/0027 migrations,
+tenant-scoped backfill command, and SQLite/PostgreSQL contract tests do not by
+themselves close `EG-02`, `EG-06`, or `EG-08`. Production activation also
+requires one reviewed bundle containing:
+
+1. the pre-change backup/PITR recovery point and a timed restore proof;
+2. external Secret object versions for the AES decrypt keyring, active key ID,
+   and independent blind-index key, without raw secret values;
+3. a dated collection-write fence/drain record, serving-role denial on the
+   checkpoint table, and the exact managed PostgreSQL migration from 0025 to
+   bridge revision 0026;
+4. count-only dry-run, apply, and authenticated verify reports for every data
+   tenant, plus verified checkpoint/key-ID/count reconciliation;
+5. the global 0027 fail-closed gate result, schema inspection proving all three
+   plaintext columns are absent, and an authorized API round-trip canary;
+6. log, trace, analytics, event, idempotency, replica, snapshot, backup, and WAL
+   handling evidence showing where pre-0027 plaintext may remain and its
+   approved expiration or cryptographic-erasure date; and
+7. an encryption-key rotation, blind-index full-reindex rehearsal, and restore
+   or disable rollback exercise using the same write-fence procedure.
+
+Use `docs/runbooks/collection-metadata-encryption.md`. A local report, an
+unexecuted runbook, a checkpoint without the authenticated verifier, or a
+successful 0027 migration on an empty database is insufficient evidence.
 
 ## Gate-to-release mapping
 

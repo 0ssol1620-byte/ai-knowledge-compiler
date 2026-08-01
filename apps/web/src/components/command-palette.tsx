@@ -30,28 +30,29 @@ const commandDefinitions = [
     en: {
       label: "Workspace home",
       description:
-        "Open active jobs, review obligations, and knowledge health.",
+        "Open active jobs, integrity findings, and knowledge health.",
       category: "Navigate",
     },
     ko: {
       label: "워크스페이스 홈",
-      description: "진행 중인 작업, 검토 의무, 지식 상태를 확인합니다.",
+      description: "진행 중인 작업, 무결성 상태, 지식 상태를 확인합니다.",
       category: "이동",
     },
   },
   {
-    href: "/quick-convert",
+    href: "/intake",
     shortcut: "U",
     icon: Lightning,
     keywords: "new convert import files 새 문서 변환 업로드 가져오기",
     en: {
-      label: "Upload documents",
-      description: "Start a private-first document intake and preflight.",
+      label: "Intake a collection",
+      description:
+        "Preserve folder structure and prepare a private-first manifest.",
       category: "Create",
     },
     ko: {
-      label: "문서 업로드",
-      description: "비공개 우선 문서 접수와 사전 검사를 시작합니다.",
+      label: "컬렉션 수집",
+      description: "폴더 구조를 보존하고 비공개 우선 매니페스트를 준비합니다.",
       category: "생성",
     },
   },
@@ -88,20 +89,20 @@ const commandDefinitions = [
     },
   },
   {
-    href: "/review",
-    shortcut: "R",
+    href: "/integrity",
+    shortcut: "I",
     icon: FileText,
-    keywords: "candidate source decision mismatch 검토 후보 원문 결정 불일치",
+    keywords: "integrity unresolved quarantine evidence 무결성 미해결 격리 근거",
     en: {
-      label: "Open Review Studio",
+      label: "Open Integrity Console",
       description:
-        "Resolve source-linked review findings and preserve audit history.",
-      category: "Review",
+        "Inspect automatic repair, unresolved findings, quarantine, and durable evidence.",
+      category: "Navigate",
     },
     ko: {
-      label: "Review Studio 열기",
-      description: "원문 연결 검토 항목을 해결하고 감사 이력을 보존합니다.",
-      category: "검토",
+      label: "무결성 콘솔 열기",
+      description: "자동 복구, 미해결 항목, 격리 상태와 불변 근거를 확인합니다.",
+      category: "이동",
     },
   },
   {
@@ -111,7 +112,7 @@ const commandDefinitions = [
     keywords: "processing queue retry operation 처리 작업 큐 재시도 운영",
     en: {
       label: "Inspect jobs",
-      description: "Review processing state, retries, and operational history.",
+      description: "Inspect processing state, retries, and operational history.",
       category: "Operate",
     },
     ko: {
@@ -144,7 +145,7 @@ const commandDefinitions = [
     keywords: "developer endpoint key webhook 개발자 엔드포인트 키 웹훅",
     en: {
       label: "Open API Console",
-      description: "Review API workflows, keys, and request contracts.",
+      description: "Inspect API workflows, keys, and request contracts.",
       category: "Develop",
     },
     ko: {
@@ -160,7 +161,7 @@ const commandDefinitions = [
     keywords: "cost credits pages storage 사용량 비용 크레딧 페이지 저장소",
     en: {
       label: "Inspect usage",
-      description: "Review pages, credits, storage, and operating profile.",
+      description: "Inspect pages, credits, storage, and operating profile.",
       category: "Operate",
     },
     ko: {
@@ -208,7 +209,7 @@ const paletteCopy = {
   en: {
     dialog: "Workspace command menu",
     search: "Search workspace commands",
-    placeholder: "Navigate projects, review, knowledge, or settings",
+    placeholder: "Navigate projects, integrity, knowledge, or settings",
     clearSearch: "Clear command search",
     clear: "Clear",
     close: "Close command menu",
@@ -222,7 +223,7 @@ const paletteCopy = {
   ko: {
     dialog: "워크스페이스 명령 메뉴",
     search: "워크스페이스 명령 검색",
-    placeholder: "프로젝트, 검토, 지식 또는 설정으로 이동",
+    placeholder: "프로젝트, 무결성, 지식 또는 설정으로 이동",
     clearSearch: "명령 검색어 지우기",
     clear: "지우기",
     close: "명령 메뉴 닫기",

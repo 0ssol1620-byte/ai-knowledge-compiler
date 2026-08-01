@@ -1413,7 +1413,7 @@ async def test_transition_budget_registry_and_unsupported_fail_closed(
             )
         )
         assert terminal is not None
-        assert terminal.payload["next_action"] == "manual_review"
+        assert terminal.payload["next_action"] == "unresolved"
 
         invalid_parent = await enqueue_gpu_invocation(
             session,
@@ -1452,7 +1452,7 @@ async def test_transition_budget_registry_and_unsupported_fail_closed(
         )
         assert failed is not None
         assert failed.payload["transition_unavailable"] is True
-        assert failed.payload["next_action"] == "manual_review"
+        assert failed.payload["next_action"] == "unresolved"
 
         unsupported_parent = await enqueue_gpu_invocation(
             session,

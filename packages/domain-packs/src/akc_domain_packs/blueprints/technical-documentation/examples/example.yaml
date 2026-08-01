@@ -1,0 +1,7 @@
+blueprint: technical-documentation
+kind: verified-example
+version: 1.0.0
+input: {document_type: product_manual, version: 4.2}
+expected:
+  object_kinds: [Product, Component, Procedure, Interface, Concept, FailureMode]
+  required_authority: [source_ref, page, version_scope]

@@ -62,7 +62,7 @@ from akc_api.services import audit, credit_entry
 from akc_api.storage import MultipartUploadNotFoundError, ObjectStore
 
 DeletionTargetType = Literal["document", "project"]
-_ACTIVE_JOB_STATES = frozenset({"queued", "running", "waiting_review"})
+_ACTIVE_JOB_STATES = frozenset({"queued", "running", "paused", "waiting_review"})
 _DELETION_EVENT_TYPES = (
     "deletion.purge.requested.v1",
     "deletion.retry.requested.v1",

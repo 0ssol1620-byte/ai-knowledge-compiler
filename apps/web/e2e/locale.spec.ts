@@ -19,7 +19,9 @@ test("Korean locale remains consistent across marketing and core product workflo
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
   await expect(
-    page.getByRole("heading", { name: /AI의 성능은 전달받는 지식의 품질/ }),
+    page.getByRole("heading", {
+      name: "파일을 정리하지 마세요. 지식으로 컴파일하세요.",
+    }),
   ).toBeVisible();
   const desktopProductLink = page
     .getByRole("navigation", { name: "주요 내비게이션" })
@@ -58,13 +60,16 @@ test("Korean locale remains consistent across marketing and core product workflo
     .click();
   await expect(page.getByText("1 개 선택됨")).toBeVisible();
 
-  await page.goto("/review");
+  await page.goto("/review?project=project-7&token=secret");
+  await expect(page).toHaveURL(/\/integrity\?project=project-7$/);
   await expect(
-    page.getByRole("heading", { name: "검토 Studio" }),
+    page.getByRole("heading", {
+      name: "자동 복구를 먼저 수행하고, 근거가 멈춘 곳만 사람이 판단합니다",
+    }),
   ).toBeVisible();
-  await expect(page.getByText("인터랙티브 샘플")).toBeVisible();
-  await page.getByRole("button", { name: "교체값 승인" }).click();
-  await expect(page.getByText("최근 감사 이벤트")).toBeVisible();
+  await expect(page.getByText("선택한 컬렉션이 없습니다")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("secret");
+  await expect(page.locator("body")).not.toContainText("검토 Studio");
 
   await page.goto("/knowledge-bases");
   await expect(
@@ -88,7 +93,9 @@ test("language switch persists and returns the product to English", async ({
   await switcher.getByRole("button", { name: "EN" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(
-    page.getByRole("heading", { name: /Your AI is only as good/ }),
+    page.getByRole("heading", {
+      name: "Don’t organize your files. Compile the knowledge.",
+    }),
   ).toBeVisible();
 
   await page.goto("/projects");
@@ -122,7 +129,9 @@ test("Korean authentication, onboarding, and quick-convert controls stay actiona
   await page.getByRole("button", { name: "외부 처리 사용 안 함" }).click();
   await page.getByRole("button", { name: "계속" }).click();
   await page.getByRole("button", { name: "파일 선택" }).click();
-  await expect(page.getByRole("link", { name: /업로드 열기/ })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "컬렉션 수집 열기" }),
+  ).toBeVisible();
 
   await page.goto("/quick-convert");
   await expect(

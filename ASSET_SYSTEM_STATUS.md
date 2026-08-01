@@ -2,10 +2,17 @@
 
 ## Governing document
 
-`Structara_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
-v2.1 is the current asset authority.
+`D:\Structara_World_Class_Autonomous_Knowledge_Platform_FINAL_Completion_Masterplan_v4_KO_2026-07-31.md`
+is the current product and asset authority. The earlier asset-system masterplan
+remains a historical implementation source where it does not conflict with v4.
 
-## Implemented P0 system
+Current v4 approval is fail-closed: A01–A06 have source and composition
+contracts, but current-worktree screenshots, weighted scores, and Critical/High
+finding counts are not yet attached. See `ASSET_REMEDIATION_LEDGER.yml`,
+`ART_DIRECTION_BOARD.md`, `VISUAL_QUALITY_GATES.yml`, and
+`ASSET_QA_REPORT.md`.
+
+## Inherited implementation inventory
 
 - T0–T4 truth classification, source order, and automatic naming/hash gates
 - repository-owned `structara-asset-director` skill and focused references
@@ -27,6 +34,9 @@ v2.1 is the current asset authority.
 - explicit illustrative, deterministic-demo, public-source, and no-quality-claim
   labels
 - no external or AI-generated production raster asset
+
+This inventory records what exists; it does not by itself approve current v4
+craft, composition, responsive behavior, accessibility, or performance.
 
 ## Source strategy
 

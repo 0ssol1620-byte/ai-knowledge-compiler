@@ -58,7 +58,9 @@ from akc_api.visual_gpu import (
     visual_attestation,
 )
 from akc_telemetry import (
+    observe_parallel_provider_job,
     observe_provider_cold_start,
+    record_collection_gpu_seconds,
     record_provider_cost,
     record_provider_request,
     record_provider_revision_mismatch,
@@ -1368,6 +1370,44 @@ class GpuInvocationWorker:
             attempt = await self._attempt(session, claim)
             if attempt is None:
                 raise RuntimeError("gpu_attempt_missing")
+            # Establish the outer write transaction before the orchestrator's
+            # savepoint.  This is semantically redundant on PostgreSQL, but it
+            # also prevents SQLite from treating a first-write SAVEPOINT as an
+            # independently committed transaction during deterministic tests.
+            invocation.updated_at = now
+            await session.flush()
+            if "parallel_v6" in claim.options:
+                # Keep the optional parallel runtime out of the scheduler/API
+                # import graph and every legacy GPU completion path.
+                from akc_scheduler.parallel_v6_admission import (
+                    ParallelV6AdmissionError,
+                    admit_parallel_v6_output,
+                )
+
+                try:
+                    await admit_parallel_v6_output(
+                        session,
+                        options=claim.options,
+                        provider_invocation_id=claim.invocation_id,
+                        tenant_id=claim.tenant_id,
+                        job_id=claim.job_id,
+                        document_id=claim.document_id,
+                        document_version_id=claim.document_version_id,
+                        provider_job_id=claim.provider_job_id,
+                        provider_key=claim.provider_key,
+                        endpoint_id=claim.endpoint_id,
+                        input_sha256=claim.input_sha256,
+                        output_object_key=claim.output_object_key,
+                        model_revision=claim.model_revision,
+                        runtime_image_digest=claim.runtime_image_digest,
+                        adapter_version=claim.adapter_version,
+                        result=result,
+                        output_payload=output_payload,
+                        completion_source=source,
+                        completed_at=now,
+                    )
+                except ParallelV6AdmissionError as exc:
+                    raise GpuProviderError(exc.code, retryable=False) from exc
             invocation.status = "completed"
             invocation.provider_status = "COMPLETED"
             invocation.result_manifest = manifest
@@ -1411,6 +1451,23 @@ class GpuInvocationWorker:
         ):
             with contextlib.suppress(InvalidOperation):
                 record_provider_cost(claim.provider_key, Decimal(str(estimated_cost)))
+        gpu_seconds = metrics.get("gpu_seconds")
+        if isinstance(gpu_seconds, (int, float, str)) and not isinstance(gpu_seconds, bool):
+            record_collection_gpu_seconds(gpu_seconds)
+        if "parallel_v6" in claim.options:
+            observe_parallel_provider_job(
+                provider="runpod",
+                queue_delay_seconds=(
+                    None
+                    if result.provider_queue_delay_ms is None
+                    else result.provider_queue_delay_ms / 1000
+                ),
+                execution_seconds=(
+                    None
+                    if result.provider_execution_time_ms is None
+                    else result.provider_execution_time_ms / 1000
+                ),
+            )
         record_provider_request(claim.provider_key, result="success")
         return True
 
@@ -1532,7 +1589,7 @@ class GpuInvocationWorker:
                         "attempt": invocation.attempt_count,
                         "code": error.code,
                         "next_action": (
-                            "manual_review"
+                            "unresolved"
                             if transition_requested
                             and (
                                 transition_unavailable

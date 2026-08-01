@@ -1,0 +1,10 @@
+blueprint: generic-mixed-corpus
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  document: Document
+  topic: OntologyTerm
+  entity: Entity
+  claim: Claim
+  evidence: Evidence
+  asset: Asset

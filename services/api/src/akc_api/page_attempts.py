@@ -21,6 +21,8 @@ from akc_api.models import (
 TERMINAL_PAGE_STATES = frozenset(
     {
         PageState.COMPLETED,
+        PageState.UNRESOLVED,
+        PageState.QUARANTINED,
         PageState.NEEDS_REVIEW,
         PageState.FAILED,
     }

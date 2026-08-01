@@ -13,6 +13,7 @@ import pytest
 import pytest_asyncio
 from akc_api.database import Base
 from akc_api.models import (
+    Collection,
     Document,
     IdempotencyRecord,
     JobEvent,
@@ -24,6 +25,7 @@ from akc_api.models import (
     WebhookDelivery,
     WebhookEndpoint,
 )
+from akc_scheduler.database import _POSTGRES_DISPATCH_CAPABILITY_QUERY
 from akc_scheduler.scheduler import (
     DurableScheduler,
     _PostgresDispatchLease,
@@ -306,6 +308,7 @@ async def seed_dispatch(
     sessions: async_sessionmaker[AsyncSession],
     *,
     payload: dict[str, object] | None = None,
+    job_status: str = "queued",
 ) -> tuple[uuid.UUID, uuid.UUID]:
     async with sessions.begin() as session:
         tenant = Tenant(slug=f"tenant-{uuid.uuid4()}", name="Tenant")
@@ -336,7 +339,7 @@ async def seed_dispatch(
             project_id=project.id,
             document_id=document.id,
             job_type="compile",
-            status="queued",
+            status=job_status,
         )
         session.add(job)
         await session.flush()
@@ -380,6 +383,15 @@ async def test_scheduler_metrics_reflect_durable_global_state(
         endpoint = await session.get(WebhookEndpoint, endpoint_id)
         assert job is not None and dispatch_event is not None and endpoint is not None
         job.created_at = NOW - timedelta(minutes=10)
+        session.add(
+            ProcessingJob(
+                tenant_id=job.tenant_id,
+                project_id=job.project_id,
+                document_id=job.document_id,
+                job_type="collection_processing",
+                status="paused",
+            )
+        )
         dispatch_event.dead_lettered_at = NOW
         dispatch_event.published_at = NOW
         session.add(
@@ -412,6 +424,14 @@ async def test_scheduler_metrics_reflect_durable_global_state(
             QUEUE_DEPTH,
             "akc_queue_depth",
             {"status": "queued"},
+        )
+        == 1
+    )
+    assert (
+        metric_value(
+            QUEUE_DEPTH,
+            "akc_queue_depth",
+            {"status": "paused"},
         )
         == 1
     )
@@ -468,6 +488,16 @@ def test_claim_statements_use_skip_locked_only_for_postgresql() -> None:
     assert "FOR UPDATE OF outbox_events SKIP LOCKED" in dispatch_postgres
     assert "FOR UPDATE OF webhook_deliveries SKIP LOCKED" in delivery_postgres
     assert "FOR UPDATE" not in outbox_sqlite
+
+
+def test_dispatch_capability_probe_covers_collection_finalizer_authority() -> None:
+    statement = str(_POSTGRES_DISPATCH_CAPABILITY_QUERY).casefold()
+    assert "collection_select_access" in statement
+    assert "collection_event_access" in statement
+    assert "collection_update_access" in statement
+    assert "'collections'" in statement
+    assert "'collection_events'" in statement
+    assert "select count(*) = 21" in statement
 
 
 def test_dispatch_advisory_keys_are_stable_and_domain_separated() -> None:
@@ -668,6 +698,33 @@ async def test_dispatch_executes_job_and_acknowledges_outbox(
     assert event.attempts == 1
 
 
+async def test_paused_dispatch_is_deferred_without_execution_or_retry_charge(
+    sessions: async_sessionmaker[AsyncSession],
+) -> None:
+    encryption_key = Fernet.generate_key().decode("ascii")
+    job_id, event_id = await seed_dispatch(sessions, job_status="paused")
+    compile_job = RecordingCompileJob()
+    scheduler = DurableScheduler(
+        sessions=sessions,
+        http_client=RecordingHttpClient(),  # type: ignore[arg-type]
+        settings=settings(encryption_key, dispatch_paused_delay_seconds=17),
+        compile_job=compile_job,  # type: ignore[arg-type]
+        clock=MutableClock(),
+    )
+
+    assert await scheduler.dispatch_one()
+    async with sessions() as session:
+        job = await session.get(ProcessingJob, job_id)
+        event = await session.get(OutboxEvent, event_id)
+    assert compile_job.calls == []
+    assert job is not None and job.status == "paused"
+    assert event is not None and event.published_at is None
+    assert event.dead_lettered_at is None
+    assert event.attempts == 0
+    assert event.last_error is None
+    assert as_utc(event.available_at) == NOW + timedelta(seconds=17)
+
+
 async def test_dispatch_acknowledges_durable_provider_wait_without_retrying(
     sessions: async_sessionmaker[AsyncSession],
 ) -> None:
@@ -804,6 +861,93 @@ async def test_dispatch_attempt_limit_dead_letters_terminally(
     assert job is not None and job.status == "failed"
     assert job.error is not None
     assert job.error["code"] == "DISPATCH_ATTEMPTS_EXHAUSTED"
+
+
+async def test_collection_finalizer_exhaustion_enters_customer_retryable_state(
+    sessions: async_sessionmaker[AsyncSession],
+) -> None:
+    encryption_key = Fernet.generate_key().decode("ascii")
+    scheduler = DurableScheduler(
+        sessions=sessions,
+        http_client=RecordingHttpClient(),  # type: ignore[arg-type]
+        settings=settings(encryption_key, dispatch_max_attempts=1),
+        clock=MutableClock(),
+    )
+    async with sessions.begin() as session:
+        tenant = Tenant(slug=f"tenant-{uuid.uuid4()}", name="Tenant")
+        user = User(
+            email=f"{uuid.uuid4()}@example.com",
+            password_hash=uuid.uuid4().hex,
+            display_name="Owner",
+        )
+        session.add_all((tenant, user))
+        await session.flush()
+        project = Project(tenant_id=tenant.id, name="Project", created_by=user.id)
+        session.add(project)
+        await session.flush()
+        collection = Collection(
+            tenant_id=tenant.id,
+            project_id=project.id,
+            name="Finalizer exhaustion",
+            status="VERIFYING_OUTPUT",
+            profile={},
+            manifest_revision=1,
+            created_by=user.id,
+        )
+        job = ProcessingJob(
+            tenant_id=tenant.id,
+            project_id=project.id,
+            document_id=None,
+            job_type="collection_processing",
+            status="running",
+            progress={"stage": "semantic_compile_queued"},
+            cost_actual={"consumed": "0.000000", "refunded": "0.000000"},
+        )
+        session.add_all((collection, job))
+        await session.flush()
+        event = OutboxEvent(
+            tenant_id=tenant.id,
+            aggregate_type="collection_processing",
+            aggregate_id=job.id,
+            event_type="collection.semantic.compile.requested.v1",
+            payload={
+                "tenant_id": str(tenant.id),
+                "collection_id": str(collection.id),
+                "processing_job_id": str(job.id),
+                "architecture_plan_id": str(uuid.uuid4()),
+                "actor_user_id": str(user.id),
+            },
+            available_at=NOW,
+        )
+        session.add(event)
+        await session.flush()
+        collection_id = collection.id
+        job_id = job.id
+        await scheduler._fail_dispatch_job(
+            session=session,
+            event=event,
+            job=job,
+            now=NOW,
+            error="dispatch_adapter_error:TimeoutError",
+        )
+
+    async with sessions() as session:
+        collection = await session.get(Collection, collection_id)
+        job = await session.get(ProcessingJob, job_id)
+        failure_events = list(
+            await session.scalars(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == job_id,
+                    OutboxEvent.event_type == "processing.failed.v1",
+                )
+            )
+        )
+    assert collection is not None and collection.status == "FAILED_RETRYABLE"
+    assert collection.status_reason == "COLLECTION_FINALIZER_ATTEMPTS_EXHAUSTED"
+    assert job is not None and job.status == "failed"
+    assert job.progress["stage"] == "semantic_finalizer_failed"
+    assert job.error is not None and job.error["retryable"] is True
+    assert len(failure_events) == 1
 
 
 @pytest.mark.parametrize(

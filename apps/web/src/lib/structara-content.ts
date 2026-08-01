@@ -65,7 +65,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
         {
           title: "Verify",
           body: "Return every important result to its page, block, and bounding box.",
-          items: ["Source links", "Risk review", "Numeric differences"],
+          items: ["Source links", "Integrity findings", "Numeric differences"],
         },
         {
           title: "Compile",
@@ -128,7 +128,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
           body: "Page, block, bounding box, and source hash travel with the output.",
         },
         {
-          title: "Risk-based review",
+          title: "Autonomous integrity",
           body: "Numbers, dates, units, tables, and missing content are prioritized by impact.",
         },
         {
@@ -157,7 +157,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
         },
         {
           title: "Properties",
-          body: "Title, aliases, source, status, tags, and review metadata stay explicit.",
+          body: "Title, aliases, source, status, tags, and integrity metadata stay explicit.",
         },
         {
           title: "Connections",
@@ -280,7 +280,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "Teams",
       "One source of truth for people and AI.",
       "Shared projects, reviewer roles, version history, knowledge updates, and audit events keep teams aligned.",
-      "Human review and automation converge on the same approved knowledge.",
+      "Autonomous verification isolates uncertainty, while optional overrides remain audited.",
       [
         {
           title: "Work together",
@@ -615,7 +615,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "docs",
       "Developers",
       "Build on verified document knowledge.",
-      "Upload, create a job, listen to events, review source maps, and download a deterministic package.",
+      "Upload, create a job, listen to events, inspect source maps, and download a deterministic package.",
       "Five steps from API key to verified output.",
       [
         {
@@ -632,7 +632,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
         },
         {
           title: "4. Inspect and export",
-          body: "Read canonical blocks, source maps, review items, and manifests.",
+          body: "Read canonical blocks, source maps, integrity findings, and manifests.",
         },
       ],
       { label: "Open documentation", href: "/developers/docs" },
@@ -644,7 +644,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "Documentation",
       "Everything needed to compile verified knowledge.",
       "Search versioned guides, copy examples, inspect API contracts, and understand limits and security behavior.",
-      "Getting Started · Core Concepts · Upload · Processing · Review · Knowledge · Exports · API · Webhooks",
+      "Getting Started · Core Concepts · Upload · Processing · Integrity · Knowledge · Exports · API · Webhooks",
       [
         {
           title: "Getting started",
@@ -670,7 +670,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "docs",
       "API reference",
       "A typed contract for source-linked knowledge.",
-      "Versioned endpoints cover authentication, projects, uploads, jobs, review, knowledge, exports, and operations.",
+      "Versioned endpoints cover authentication, projects, uploads, jobs, integrity, knowledge, exports, and operations.",
       "Requests are asynchronous; mutations are idempotent; events are sequence-aware.",
       [
         {
@@ -682,7 +682,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
           body: "Start work, follow SSE, reconcile snapshots, and handle retries.",
         },
         {
-          title: "Review and knowledge",
+          title: "Integrity and knowledge",
           body: "Resolve candidates and access source-linked notes, entities, and relations.",
         },
         {
@@ -697,7 +697,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "docs",
       "SDKs",
       "Integrate without hiding the contract.",
-      "Small typed clients preserve explicit job, event, review, and export behavior.",
+      "Small typed clients preserve explicit job, event, integrity, and export behavior.",
       "Python and TypeScript first; cURL remains the canonical portable example.",
       [
         {
@@ -729,7 +729,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
         },
         {
           title: "2026.07 — Evidence workflow",
-          body: "Processing and review surfaces connect results to page and block evidence.",
+          body: "Processing and integrity surfaces connect results to page and block evidence.",
         },
         {
           title: "2026.07 — Public proof",
@@ -783,7 +783,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
         },
         {
           title: "Control before automation",
-          body: "Policy and review boundaries precede unattended processing.",
+          body: "Consent and integrity boundaries precede unattended processing.",
         },
         {
           title: "Portability before lock-in",
@@ -944,7 +944,7 @@ export const APP_PAGE_COPY: Record<
   home: {
     title: "Today in your workspace",
     description:
-      "Active processing, high-impact review, recent knowledge, and usage at a glance.",
+      "Active processing, isolated integrity findings, recent knowledge, and usage at a glance.",
     action: "Upload documents",
   },
   projects: {
@@ -956,7 +956,7 @@ export const APP_PAGE_COPY: Record<
   jobs: {
     title: "Jobs",
     description:
-      "Inspect durable stage progress, review state, cost ledger, retries, and events.",
+      "Inspect durable stage progress, integrity state, cost ledger, retries, and events.",
     action: "Open filters",
   },
   "knowledge-bases": {
@@ -990,7 +990,7 @@ export const APP_PAGE_COPY: Record<
   usage: {
     title: "Usage",
     description:
-      "Understand pages, credits, jobs, storage, precision, review, and bounded cost.",
+      "Understand pages, credits, jobs, storage, precision, integrity, and bounded cost.",
     action: "Export usage",
   },
   billing: {

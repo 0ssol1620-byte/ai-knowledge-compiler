@@ -31,7 +31,7 @@ Production Reject의 직접 사유는 다음과 같다.
 | ParseBench        | `1d460294b3b9c57fb3fa944dc17a9c044c24d1e5` | `2805a1d940f95a203e0ae4b88be9934f7765b3fc` | `9e3a722a5db9e8e23273176827c06a30fe6a58a983850329db917fabcff6c30e` | 5개 공식 차원                                   |
 | olmOCR-Bench      | `cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c` | `54a96a6fb6a2bd3b297e59869491db4d3625b711` | `55f347b01850aec77d457f6b3b2b54ddf5adce6f451ed501e59995ec0e9bff15` | 전체 fact category                              |
 
-온라인 검증은 GitHub의 정확한 commit과 Hugging Face의 전체 파일 목록·크기·blob/LFS identity를 다시 계산해 lock과 일치할 때만 통과한다. 현재 registry 자체 SHA-256은 `46e586268944309b1be69d5afcfb164f1c18643c47cbb350bda6cda5c4a22985`다.
+온라인 검증은 GitHub의 정확한 commit과 Hugging Face의 전체 파일 목록·크기·blob/LFS identity를 다시 계산해 lock과 일치할 때만 통과한다. 현재 registry 자체 SHA-256은 `4b536485a0ce8304b906e3206fcc60d8d438a21c0202a3c58f6e728ac4f96cbe`다.
 
 Real5-OmniDocBench와 RealDocBench는 실행 가능한 공식 데이터셋·evaluator를 확인하지 못해 `research_watch`로, Dr. DocBench는 공개 challenge 안내만 있고 데이터·evaluator가 없어 `challenge_information_only`로 등록했다. 한국어 공개 세트도 공식성·권리·GT·evaluator가 함께 검증될 때까지 watch 상태다.
 
@@ -74,7 +74,7 @@ v2 작업 중 실제 브라우저에서 확인된 결함도 함께 수정했다.
 
 | 검증                                    | 결과                   | 해석                                                                           |
 | --------------------------------------- | ---------------------- | ------------------------------------------------------------------------------ |
-| Structara public-suite 단위·계약 테스트 | 11 passed              | adapter, freeze, isolation, critical, compare, 3-repeat, unsigned 경계 통과    |
+| Structara public-suite 단위·계약 테스트 | 12 passed              | adapter, freeze, isolation, critical, compare, 3-repeat, unsigned 경계 통과    |
 | Registry online verification            | pass                   | 3개 evaluator commit과 dataset manifest 일치                                   |
 | ParseBench official evaluator tests     | 198 passed             | evaluator 로직 실행 가능. 전체 데이터 점수가 아님                              |
 | OmniDocBench compatibility smoke        | 5 passed, 1 deselected | Windows/Python 3.11 호환 환경에서 smoke 통과. 전체 공식 평가가 아님            |

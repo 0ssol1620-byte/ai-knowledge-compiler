@@ -97,9 +97,9 @@ class _ProviderState:
 
 
 class ProviderUnavailableError(LookupError):
-    """Execution must route to manual review when this error is raised."""
+    """Execution must isolate the unit when this error is raised."""
 
-    manual_review_required = True
+    autonomous_isolation_required = True
 
 
 class ProviderRegistry:

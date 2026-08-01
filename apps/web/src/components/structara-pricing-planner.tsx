@@ -25,7 +25,7 @@ const plans = [
     name: "Team",
     audience: "Teams",
     summary: "Shared projects, reviewers, API, and audit basics.",
-    includes: ["Shared projects", "Review roles", "API and audit"],
+    includes: ["Shared projects", "Integrity roles", "API and audit"],
   },
   {
     name: "Business",

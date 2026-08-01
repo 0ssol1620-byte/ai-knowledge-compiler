@@ -14,7 +14,7 @@ const visualRoutes = [
   { name: "sec-public-proof", path: "/demo/sec" },
   { name: "security-architecture", path: "/security" },
   { name: "projects-operations", path: "/projects" },
-  { name: "review-studio", path: "/review" },
+  { name: "integrity-console", path: "/integrity?reference=1" },
   { name: "knowledge-studio", path: "/knowledge-bases" },
   { name: "privacy-publication-control", path: "/legal/privacy" },
 ] as const;

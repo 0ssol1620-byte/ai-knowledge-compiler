@@ -6,9 +6,8 @@
 .st-sec-proof {
   overflow: hidden;
   border: 1px solid var(--st-line);
-  border-radius: 12px;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 28px 80px rgb(26 44 78 / 12%);
 }
 
 .st-sec-proof-header {
@@ -16,9 +15,7 @@
   grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
   gap: clamp(28px, 5vw, 70px);
   border-bottom: 1px solid var(--st-line);
-  background:
-    radial-gradient(circle at 90% -10%, rgb(38 103 255 / 10%), transparent 42%),
-    var(--st-paper);
+  background: var(--st-paper);
   padding: clamp(30px, 5vw, 64px);
 }
 
@@ -65,7 +62,7 @@
 
 .st-sec-source-summary dt {
   color: var(--st-ink-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -172,7 +169,7 @@
 .st-sec-graph > header span,
 .st-sec-ledger > header span {
   color: var(--st-ink-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -190,7 +187,7 @@
 .st-sec-original > header small {
   color: var(--st-ink-muted);
   font-family: var(--st-mono);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .st-sec-filing-paper {
@@ -199,7 +196,7 @@
   justify-self: center;
   border: 1px solid #d7d1c5;
   background: #fffefb;
-  box-shadow: 0 24px 70px rgb(46 39 25 / 13%);
+  box-shadow: var(--st-shadow-raised);
   padding: clamp(28px, 5vw, 58px);
 }
 
@@ -207,7 +204,7 @@
   margin: 0 0 36px;
   color: #777066;
   font-family: Georgia, serif;
-  font-size: 11px;
+  font-size: 12px;
   text-align: right;
 }
 
@@ -313,7 +310,7 @@
 
 .st-sec-fact-inspector > header span {
   color: var(--st-ink-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -346,7 +343,7 @@
 
 .st-sec-selected-value span {
   color: var(--st-ink-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .st-sec-fact-inspector dl {
@@ -365,7 +362,7 @@
 
 .st-sec-fact-inspector dt {
   color: var(--st-ink-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 720;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -376,7 +373,7 @@
   margin: 0;
   color: var(--st-ink);
   font-family: var(--st-mono);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -417,7 +414,7 @@
 
 .st-sec-proof-caveat p {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -454,7 +451,7 @@
 
 .st-sec-vault-grid article > span {
   color: var(--st-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -483,7 +480,7 @@
   border-top: 1px solid var(--st-line);
   padding-top: 12px;
   color: var(--st-ink-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .st-sec-graph {
@@ -494,9 +491,7 @@
   position: relative;
   min-height: 430px;
   overflow: hidden;
-  background:
-    radial-gradient(circle at center, rgb(38 103 255 / 10%), transparent 43%),
-    var(--st-paper-deep);
+  background: var(--st-paper-deep);
 }
 
 .st-sec-graph-stage::before,
@@ -533,7 +528,7 @@
   border: 1px solid var(--st-line-strong);
   border-radius: 9px;
   background: #fff;
-  box-shadow: 0 14px 34px rgb(22 43 80 / 11%);
+  box-shadow: var(--st-shadow-low);
   padding: 10px 14px;
   color: var(--st-ink);
   font-size: 12px;
@@ -568,7 +563,7 @@
   padding: 4px 7px;
   color: #fff;
   font-family: var(--st-mono);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .st-sec-edge.edge-a {
@@ -588,7 +583,7 @@
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .st-sec-graph-table th,
@@ -600,7 +595,7 @@
 
 .st-sec-graph-table th {
   color: var(--st-ink-muted);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -644,7 +639,7 @@
 
 .st-sec-proof-chain span {
   color: var(--st-ink-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -654,7 +649,7 @@
   overflow-wrap: anywhere;
   color: var(--st-ink);
   font-family: var(--st-mono);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -674,7 +669,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .st-sec-proof-footer > span {

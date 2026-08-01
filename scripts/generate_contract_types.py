@@ -9,10 +9,19 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from akc_cir.collection_events import (
+    COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS,
+    COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS,
+    COLLECTION_EVENT_TYPES,
+    PayloadFieldType,
+)
 from akc_cir.schema import all_json_schemas
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "packages" / "contracts" / "src" / "generated-contracts.ts"
+COLLECTION_EVENT_SCHEMA_OUTPUT = (
+    ROOT / "packages" / "contracts" / "schemas" / "collection-event.schema.json"
+)
 _IDENTIFIER = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*$")
 
 
@@ -42,6 +51,25 @@ def _literal(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
+def _payload_field_descriptor(expected: PayloadFieldType) -> str:
+    expected_types = expected if isinstance(expected, tuple) else (expected,)
+    labels = [
+        "string"
+        if item is str
+        else "integer"
+        if item is int
+        else "boolean"
+        if item is bool
+        else "object"
+        if item is dict
+        else "array"
+        if item is list
+        else "null"
+        for item in expected_types
+    ]
+    return "|".join(labels)
+
+
 def _union(values: list[str]) -> str:
     unique = list(dict.fromkeys(values))
     if not unique:
@@ -65,7 +93,15 @@ def _render_schema(schema: Any) -> str:
     for keyword, operator in (("anyOf", " | "), ("oneOf", " | "), ("allOf", " & ")):
         variants = schema.get(keyword)
         if isinstance(variants, list):
-            rendered = list(dict.fromkeys(_render_schema(item) for item in variants))
+            typed_variants = [
+                item for item in variants if not (isinstance(item, Mapping) and "if" in item)
+            ]
+            if not typed_variants or (
+                keyword == "allOf"
+                and ("type" in schema or isinstance(schema.get("properties"), Mapping))
+            ):
+                continue
+            rendered = list(dict.fromkeys(_render_schema(item) for item in typed_variants))
             return operator.join(
                 f"({item})" if operator == " & " and " | " in item else item for item in rendered
             )
@@ -118,6 +154,39 @@ def generate_types() -> str:
         "  | ReadonlyArray<GeneratedJsonValue>",
         "  | Readonly<{ [key: string]: GeneratedJsonValue }>;",
         "",
+        "export const COLLECTION_EVENT_TYPES = [",
+        *[f"  {_literal(event_type)}," for event_type in COLLECTION_EVENT_TYPES],
+        "] as const;",
+        "export type CollectionEventType = (typeof COLLECTION_EVENT_TYPES)[number];",
+        "",
+        "export const COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS = {",
+        *[
+            "  "
+            + _literal(event_type)
+            + ": { "
+            + ", ".join(
+                f"{_property_name(key)}: {_literal(_payload_field_descriptor(expected))}"
+                for key, expected in required.items()
+            )
+            + " },"
+            for event_type, required in COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS.items()
+        ],
+        "} as const;",
+        "",
+        "export const COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS = {",
+        *[
+            "  "
+            + _literal(event_type)
+            + ": { "
+            + ", ".join(
+                f"{_property_name(key)}: {_literal(_payload_field_descriptor(expected))}"
+                for key, expected in optional.items()
+            )
+            + " },"
+            for event_type, optional in COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS.items()
+        ],
+        "} as const;",
+        "",
     ]
     for schema_name, schema in schemas.items():
         namespace = _pascal(schema_name) + "Contract"
@@ -146,17 +215,40 @@ def main() -> int:
     )
     args = parser.parse_args()
     generated = generate_types()
+    collection_event_schema = (
+        json.dumps(
+            all_json_schemas()["collection-event"],
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
     if args.check:
-        if not OUTPUT.is_file() or OUTPUT.read_text(encoding="utf-8") != generated:
+        stale_types = not OUTPUT.is_file() or OUTPUT.read_text(encoding="utf-8") != generated
+        stale_collection_event_schema = (
+            not COLLECTION_EVENT_SCHEMA_OUTPUT.is_file()
+            or COLLECTION_EVENT_SCHEMA_OUTPUT.read_text(encoding="utf-8") != collection_event_schema
+        )
+        if stale_types or stale_collection_event_schema:
             raise SystemExit(
-                "generated TypeScript contracts are stale; run "
-                "python scripts/generate_contract_types.py"
+                "generated contracts are stale; run python scripts/generate_contract_types.py"
             )
-        print(f"generated TypeScript contracts are current: {OUTPUT.relative_to(ROOT)}")
+        print(
+            "generated contracts are current: "
+            f"{OUTPUT.relative_to(ROOT)}, "
+            f"{COLLECTION_EVENT_SCHEMA_OUTPUT.relative_to(ROOT)}"
+        )
         return 0
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(generated, encoding="utf-8", newline="\n")
-    print(f"wrote {OUTPUT.relative_to(ROOT)}")
+    COLLECTION_EVENT_SCHEMA_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    COLLECTION_EVENT_SCHEMA_OUTPUT.write_text(
+        collection_event_schema,
+        encoding="utf-8",
+        newline="\n",
+    )
+    print(f"wrote {OUTPUT.relative_to(ROOT)}, {COLLECTION_EVENT_SCHEMA_OUTPUT.relative_to(ROOT)}")
     return 0
 
 

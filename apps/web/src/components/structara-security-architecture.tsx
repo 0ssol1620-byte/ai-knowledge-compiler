@@ -122,7 +122,7 @@ export function StructaraSecurityArchitecture() {
             <UserFocus size={22} aria-hidden="true" />
             <div>
               <strong>Browser</strong>
-              <small>Upload, review, export, delete</small>
+              <small>Upload, integrity, export, delete</small>
             </div>
           </article>
           <article>

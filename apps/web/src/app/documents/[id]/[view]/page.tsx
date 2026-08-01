@@ -1,15 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { ReviewStudio } from "@/components/review-studio";
 import { StructaraAppPage } from "@/components/structara-app-page";
 import { StructaraAppPageLocalized } from "@/components/structara-app-page-localized";
 import { ProcessingWorkspace } from "@/components/workspace/processing-workspace";
+import {
+  type CompatibilityQuery,
+  integrityCompatibilityTarget,
+} from "@/lib/integrity-compatibility";
 import { getRequestLocale } from "@/lib/locale-server";
 
 type Props = {
   params: Promise<{ id: string; view: string }>;
-  searchParams: Promise<{ job?: string }>;
+  searchParams: Promise<CompatibilityQuery>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -18,15 +22,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title:
       locale === "ko"
-        ? `${view === "review" ? "검토" : view === "processing" ? "처리" : "문서"} Studio`
-        : `${view[0]?.toUpperCase()}${view.slice(1)} Studio`,
+        ? view === "review"
+          ? "무결성 콘솔"
+          : `${view === "processing" ? "처리" : "문서"} Studio`
+        : view === "review"
+          ? "Integrity Console"
+          : `${view[0]?.toUpperCase()}${view.slice(1)} Studio`,
     robots: { index: false, follow: false },
   };
 }
 
 export default async function DocumentRoute({ params, searchParams }: Props) {
   const { id, view } = await params;
-  const { job } = await searchParams;
+  const query = await searchParams;
   const locale = await getRequestLocale();
   if (view === "processing") {
     return (
@@ -40,7 +48,9 @@ export default async function DocumentRoute({ params, searchParams }: Props) {
     );
   }
   if (view === "review") {
-    return <ReviewStudio documentId={id} jobId={job} locale={locale} />;
+    redirect(
+      integrityCompatibilityTarget(query, { documentId: id }) as Route,
+    );
   }
   const definition = {
     route: `document/${view}`,

@@ -1,0 +1,8 @@
+blueprint: generic-mixed-corpus
+kind: validation-rules
+version: 1.0.0
+rules:
+  - {id: source_coverage, severity: critical, minimum: 1.0}
+  - {id: type_confidence, severity: high, minimum: 1.0}
+  - {id: entity_identity, severity: high, minimum: 1.0}
+  - {id: relation_evidence, severity: critical, minimum: 1.0}

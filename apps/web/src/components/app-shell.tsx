@@ -35,7 +35,7 @@ import { normalizeSessionResponse, type SessionProfile } from "@/lib/session";
 const navigation = [
   { href: "/app/home", key: "home", icon: House },
   { href: "/app/projects", key: "projects", icon: FolderOpen },
-  { href: "/quick-convert", key: "documents", icon: Lightning },
+  { href: "/intake", key: "documents", icon: Lightning },
   { href: "/app/knowledge-bases", key: "knowledge", icon: TreeStructure },
   { href: "/app/jobs", key: "jobs", icon: Pulse },
   { href: "/app/exports", key: "exports", icon: Flask },
@@ -78,7 +78,7 @@ const shellCopy = {
     externalProcessing: "External processing",
     externalDisabled: "External providers disabled",
     consentEnabled: "Explicit consent enabled",
-    policyReview: "Policy review required",
+    policyReview: "Policy acknowledgment required",
     administration: "Workspace administration",
     help: "Help & notices",
     productSite: "Product site",
@@ -123,7 +123,7 @@ const shellCopy = {
     externalProcessing: "외부 처리",
     externalDisabled: "외부 제공업체 비활성화",
     consentEnabled: "명시적 동의 활성화",
-    policyReview: "정책 검토 필요",
+    policyReview: "정책 확인 필요",
     administration: "워크스페이스 관리",
     help: "도움말 및 공지",
     productSite: "제품 사이트",
@@ -410,6 +410,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="topbar-search"
               onClick={() => setCommandOpen(true)}
               aria-haspopup="dialog"
+              aria-label={copy.search}
             >
               <MagnifyingGlass size={17} aria-hidden="true" />
               <span>{copy.search}</span>

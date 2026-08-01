@@ -16,6 +16,10 @@ import { useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { demoReviews } from "@/lib/demo-data";
 import type { StructaraLocale } from "@/lib/locale";
+import {
+  publicCandidateLabel,
+  publicOriginLabel,
+} from "@/lib/public-processing-labels";
 import type {
   PageSummary,
   ReviewItem,
@@ -40,30 +44,30 @@ const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 
 const REVIEW_COPY = {
   en: {
-    loading: "Loading the review ledger…",
-    title: "Review Studio",
-    loadError: "The review ledger could not be loaded",
+    loading: "Loading the integrity ledger…",
+    title: "Legacy integrity decisions",
+    loadError: "The integrity ledger could not be loaded",
     retry: "Retry",
-    breadcrumbReview: "Review",
+    breadcrumbReview: "Integrity",
     sample: "Interactive sample",
-    connected: "Connected review ledger",
+    connected: "Connected integrity ledger",
     openSuffix: "open",
     completion: "Completion summary",
     auditUnavailable:
       "Audit export is unavailable in the deterministic demo workspace.",
     exportAudit: "Export audit",
-    summaryLabel: "Review completion summary",
+    summaryLabel: "Integrity finding summary",
     open: "Open",
     resolved: "Resolved",
     critical: "Critical",
     highRisk: "High risk",
     auditEvents: "Audit events",
-    completeTitle: "No review findings remain",
+    completeTitle: "No unresolved findings remain",
     completeBody:
-      "The current document version has no unresolved review items.",
+      "The current document version has no unresolved integrity findings.",
     returnProcessing: "Return to processing",
-    queueLabel: "Risk-ordered review queue",
-    queue: "Issue queue",
+    queueLabel: "Risk-ordered integrity findings",
+    queue: "Integrity findings",
     queueNote: "Ordered by severity and source impact",
     source: "Source",
     page: "Page",
@@ -74,9 +78,9 @@ const REVIEW_COPY = {
     revision: "Revision",
     evidenceLinks: "Evidence links",
     exactContext: "Exact source context · no synthetic confidence score",
-    decisionRequired: "Decision required",
+    decisionRequired: "Optional evidence decision",
     currentResult: "CURRENT RESULT",
-    reviewRequired: "Review required",
+    reviewRequired: "Unresolved",
     candidateComparison: "candidate comparison",
     candidateNote: "Use this value and preserve an audit event",
     manual: "Manual replacement",
@@ -95,32 +99,32 @@ const REVIEW_COPY = {
     latestAudit: "LATEST AUDIT EVENT",
     selectedCandidate: "Selected candidate",
     ignoredAudit: "Ignored with an explicit audit reason",
-    manualAccepted: "Manual replacement accepted in Review Studio",
+    manualAccepted: "Optional replacement recorded in the legacy integrity ledger",
   },
   ko: {
-    loading: "검토 원장을 불러오는 중…",
-    title: "검토 Studio",
-    loadError: "검토 원장을 불러올 수 없습니다",
+    loading: "무결성 원장을 불러오는 중…",
+    title: "레거시 무결성 결정",
+    loadError: "무결성 원장을 불러올 수 없습니다",
     retry: "다시 시도",
-    breadcrumbReview: "검토",
+    breadcrumbReview: "무결성",
     sample: "인터랙티브 샘플",
-    connected: "연결된 검토 원장",
+    connected: "연결된 무결성 원장",
     openSuffix: "개 미해결",
     completion: "완료 요약",
     auditUnavailable:
       "결정적 데모 워크스페이스에서는 감사 내보내기를 사용할 수 없습니다.",
     exportAudit: "감사 내보내기",
-    summaryLabel: "검토 완료 요약",
+    summaryLabel: "무결성 항목 요약",
     open: "미해결",
     resolved: "해결됨",
     critical: "Critical",
     highRisk: "High 위험",
     auditEvents: "감사 이벤트",
-    completeTitle: "남은 검토 항목이 없습니다",
-    completeBody: "현재 문서 버전에는 해결되지 않은 검토 항목이 없습니다.",
+    completeTitle: "남은 미해결 항목이 없습니다",
+    completeBody: "현재 문서 버전에는 해결되지 않은 무결성 항목이 없습니다.",
     returnProcessing: "처리 화면으로 돌아가기",
-    queueLabel: "위험도 순 검토 큐",
-    queue: "이슈 큐",
+    queueLabel: "위험도 순 무결성 항목",
+    queue: "무결성 항목",
     queueNote: "심각도와 원본 영향 순으로 정렬",
     source: "원본",
     page: "페이지",
@@ -131,9 +135,9 @@ const REVIEW_COPY = {
     revision: "리비전",
     evidenceLinks: "근거 링크",
     exactContext: "정확한 원본 맥락 · 합성 confidence 점수 없음",
-    decisionRequired: "결정 필요",
+    decisionRequired: "선택적 근거 결정",
     currentResult: "현재 결과",
-    reviewRequired: "검토 필요",
+    reviewRequired: "미해결",
     candidateComparison: "후보 비교",
     candidateNote: "이 값을 사용하고 감사 이벤트를 보존합니다",
     manual: "직접 교체",
@@ -152,7 +156,7 @@ const REVIEW_COPY = {
     latestAudit: "최근 감사 이벤트",
     selectedCandidate: "후보 선택",
     ignoredAudit: "명시적 감사 사유와 함께 무시",
-    manualAccepted: "Review Studio에서 직접 교체값 승인",
+    manualAccepted: "레거시 무결성 원장에 선택적 교체값 기록",
   },
 } as const;
 
@@ -217,7 +221,7 @@ export function ReviewStudio({
     ? "Canonical public-filing fixture"
     : snapshot.data?.document.title ||
       snapshot.data?.document.filename ||
-      "Document review";
+      "Document integrity";
 
   const severityCounts = useMemo(
     () =>
@@ -271,7 +275,7 @@ export function ReviewStudio({
       setError(
         reason instanceof Error
           ? reason.message
-          : "The review decision could not be saved.",
+          : "The integrity decision could not be saved.",
       );
     } finally {
       setPendingId(undefined);
@@ -382,7 +386,7 @@ export function ReviewStudio({
           body: JSON.stringify({
             action,
             preview_sha256: scopePreview.preview_sha256,
-            note: "Document-wide rule applied from Review Studio",
+            note: "Document-wide rule applied from the legacy integrity ledger",
           }),
         });
         await snapshot.refetch();
@@ -411,11 +415,11 @@ export function ReviewStudio({
   if (!DEMO_MODE && !jobId) {
     return (
       <div className="simple-page">
-        <h1>Review Studio</h1>
+        <h1>Legacy integrity decisions</h1>
         <div className="honest-state panel">
           <FileMagnifyingGlass size={26} aria-hidden="true" />
           <div>
-            <h2>Open a compiled job to review its evidence</h2>
+            <h2>Open a compiled job to inspect its integrity evidence</h2>
             <p>
               The dedicated studio requires a job snapshot so every decision can
               be persisted against an exact document version.
@@ -635,34 +639,41 @@ export function ReviewStudio({
                     copy.reviewRequired}
                 </strong>
                 <small>
-                  {selectedBlock?.origin?.replaceAll("_", " ") ||
-                    copy.candidateComparison}
+                  {selectedBlock?.origin
+                    ? publicOriginLabel(selectedBlock.origin, locale)
+                    : copy.candidateComparison}
                 </small>
               </section>
 
               {selected.candidates && selected.candidates.length > 0 && (
                 <div className="candidate-choice-grid">
-                  {selected.candidates.map((candidate) => (
-                    <button
-                      type="button"
-                      key={candidate.engine}
-                      disabled={
-                        selected.status === "resolved" ||
-                        pendingId === selected.id
-                      }
-                      onClick={() =>
-                        void resolve(selected, {
-                          action: "replace",
-                          value: candidate.value,
-                          note: `${copy.selectedCandidate}: ${candidate.engine}`,
-                        })
-                      }
-                    >
-                      <span>{candidate.engine}</span>
-                      <strong>{candidate.value}</strong>
-                      <small>{copy.candidateNote}</small>
-                    </button>
-                  ))}
+                  {selected.candidates.map((candidate) => {
+                    const candidateLabel = publicCandidateLabel(
+                      candidate.engine,
+                      locale,
+                    );
+                    return (
+                      <button
+                        type="button"
+                        key={candidate.engine}
+                        disabled={
+                          selected.status === "resolved" ||
+                          pendingId === selected.id
+                        }
+                        onClick={() =>
+                          void resolve(selected, {
+                            action: "replace",
+                            value: candidate.value,
+                            note: `${copy.selectedCandidate}: ${candidateLabel}`,
+                          })
+                        }
+                      >
+                        <span>{candidateLabel}</span>
+                        <strong>{candidate.value}</strong>
+                        <small>{copy.candidateNote}</small>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
@@ -822,13 +833,13 @@ function severityLabel(
     ? {
         critical: "Critical",
         high: "High",
-        medium: "검토",
+        medium: "미해결",
         low: "알림",
       }[severity]
     : {
         critical: "Critical",
         high: "High",
-        medium: "Review",
+        medium: "Unresolved",
         low: "Notice",
       }[severity];
 }

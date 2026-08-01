@@ -3,10 +3,7 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
-import {
-  StructaraGlyph,
-  type StructaraGlyphName,
-} from "@/components/structara-glyph";
+import { BenchmarkLab } from "@/components/benchmark-lab";
 import { StructaraDiagram } from "@/components/structara-diagram";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
 import { StructaraLegalRegister } from "@/components/structara-legal-register";
@@ -20,8 +17,6 @@ import {
   type StructaraDiagramId,
 } from "@/lib/structara-diagrams";
 
-const glyphs: StructaraGlyphName[] = ["page", "block", "evidence", "node"];
-
 const productEvidence: Record<
   string,
   { src: string; label: string; alt: string }
@@ -29,7 +24,7 @@ const productEvidence: Record<
   "/product": {
     src: "/product/workspace-home.webp",
     label: "Actual product · deterministic demo workspace",
-    alt: "Structara workspace with active jobs, review items, knowledge notes, and source coverage.",
+    alt: "Structara workspace with active jobs, integrity findings, knowledge notes, and source coverage.",
   },
   "/product/convert": {
     src: "/product/processing.webp",
@@ -38,8 +33,8 @@ const productEvidence: Record<
   },
   "/product/verify": {
     src: "/product/review.webp",
-    label: "Actual product · review workspace",
-    alt: "Structara review workspace showing source-linked numeric and table review.",
+    label: "Actual product · integrity workspace",
+    alt: "Structara integrity workspace showing source-linked numeric and table findings.",
   },
   "/product/knowledge": {
     src: "/product/knowledge.webp",
@@ -126,6 +121,8 @@ export function StructaraMarketingPage({
 
         {definition.path === "/pricing" && <StructaraPricingPlanner />}
 
+        {definition.path === "/benchmarks" && <BenchmarkLab embedded />}
+
         {definition.family === "legal" && (
           <StructaraLegalRegister path={definition.path} />
         )}
@@ -137,31 +134,24 @@ export function StructaraMarketingPage({
         )}
 
         <section className="st-page-sections">
-          {definition.sections.map((section, index) => {
-            const glyph = glyphs[index % glyphs.length]!;
-            return (
-              <article key={section.title}>
-                <div className="st-section-index">
-                  <StructaraGlyph name={glyph} size={18} />
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                </div>
-                <div>
-                  <h2>{section.title}</h2>
-                  <p>{section.body}</p>
-                  {section.items && (
-                    <ul>
-                      {section.items.map((item) => (
-                        <li key={item}>
-                          <CheckCircle size={15} aria-hidden="true" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </article>
-            );
-          })}
+          {definition.sections.map((section) => (
+            <article key={section.title}>
+              <div>
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+                {section.items && (
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item}>
+                        <CheckCircle size={15} aria-hidden="true" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </article>
+          ))}
         </section>
 
         <section className="st-route-cta">

@@ -1,0 +1,10 @@
+blueprint: personal-knowledge
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Inbox, primary_type: Note, sort: created_at_desc}
+  - {name: Projects, primary_type: Project, sort: stable_title}
+  - {name: People, primary_type: Person, sort: stable_title}
+  - {name: Topics, primary_type: Topic, sort: stable_title}
+  - {name: Decisions, primary_type: Decision, sort: source_date_desc}
+  - {name: Tasks, primary_type: Task, sort: source_date_desc}

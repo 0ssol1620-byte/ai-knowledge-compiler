@@ -712,6 +712,27 @@ async def test_partial_failure_retries_preserve_manifest_cancel_work_and_release
     assert all(not path.is_file() for path in harness.settings.object_root.rglob("*"))
 
 
+async def test_deletion_cancels_paused_processing_job_and_releases_reservation(
+    harness: Harness,
+) -> None:
+    seed = await _seed_document(harness, job_status="paused")
+    async with harness.database.sessions() as session:
+        job = await session.get(ProcessingJob, seed.job_id)
+        account = await session.get(CreditAccount, seed.tenant_id)
+        release_count = int(
+            await session.scalar(
+                select(func.count(CreditLedger.id)).where(
+                    CreditLedger.tenant_id == seed.tenant_id,
+                    CreditLedger.operation_key == f"job:{seed.job_id}:deletion-release",
+                )
+            )
+            or 0
+        )
+    assert job is not None and job.status == "cancelled"
+    assert account is not None and Decimal(account.reserved) == 0
+    assert release_count == 1
+
+
 async def test_s3_partial_version_delete_never_issues_receipt(
     harness: Harness,
 ) -> None:

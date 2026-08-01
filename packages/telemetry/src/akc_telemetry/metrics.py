@@ -6,7 +6,7 @@ import re
 import threading
 from collections.abc import Mapping
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from wsgiref.simple_server import WSGIServer
 
 from prometheus_client import (
@@ -171,6 +171,59 @@ PRODUCT_ANALYTICS_EVENTS = Counter(
     ("event_type", "result"),
     registry=REGISTRY,
 )
+COLLECTION_ESTIMATE_CREDIT_ERROR_RATIO = Histogram(
+    "akc_collection_estimate_credit_error_ratio",
+    "Absolute P50 credit estimate error divided by actual credits.",
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.2, 0.35, 0.5, 0.75, 1, 2, 5),
+    registry=REGISTRY,
+)
+COLLECTION_ESTIMATE_DURATION_ERROR_RATIO = Histogram(
+    "akc_collection_estimate_duration_error_ratio",
+    "Absolute P50 duration estimate error divided by actual duration.",
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.2, 0.35, 0.5, 0.75, 1, 2, 5),
+    registry=REGISTRY,
+)
+COLLECTION_ROUTE_MIX_ERROR_RATIO = Histogram(
+    "akc_collection_route_mix_error_ratio",
+    "Total-variation distance between predicted and completed route mix.",
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.2, 0.35, 0.5, 0.75, 1),
+    registry=REGISTRY,
+)
+COLLECTION_RETRY_RATIO = Histogram(
+    "akc_collection_retry_ratio",
+    "Observed retry attempts divided by completed processing units.",
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.5, 1, 2, 5),
+    registry=REGISTRY,
+)
+COLLECTION_GPU_SECONDS = Counter(
+    "akc_collection_gpu_seconds_total",
+    "Provider-reported GPU seconds accepted from verified result manifests.",
+    registry=REGISTRY,
+)
+COLLECTION_KNOWLEDGE_TOKENS = Counter(
+    "akc_collection_knowledge_tokens_total",
+    "Measured knowledge pipeline tokens by bounded stage.",
+    ("stage",),
+    registry=REGISTRY,
+)
+COLLECTION_EXPORT_SECONDS = Histogram(
+    "akc_collection_export_duration_seconds",
+    "Committed collection export duration by bounded profile.",
+    ("profile",),
+    buckets=(0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300, 900),
+    registry=REGISTRY,
+)
+COLLECTION_STORAGE_AMPLIFICATION_RATIO = Histogram(
+    "akc_collection_storage_amplification_ratio",
+    "Completed package bytes divided by unique verified source bytes.",
+    buckets=(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.2, 1.5, 2, 2.5, 5, 10, 25),
+    registry=REGISTRY,
+)
+COLLECTION_CREDITS_REFUNDED = Counter(
+    "akc_collection_credits_refunded_total",
+    "Credits actually refunded while settling collection processing.",
+    registry=REGISTRY,
+)
 
 _SAFE_ROUTE = re.compile(r"^/[A-Za-z0-9_./{}:-]{0,240}$")
 _UUID_SEGMENT = re.compile(
@@ -191,7 +244,7 @@ _PROVIDERS = frozenset(
 )
 _ROUTES = frozenset({"native", "visual", "precision", "unknown"})
 _JOB_STATUSES = frozenset({"completed", "failed", "cancelled"})
-_PAGE_STATUSES = frozenset({"completed", "failed", "needs_review"})
+_PAGE_STATUSES = frozenset({"completed", "failed", "quarantined", "unresolved"})
 _CREDIT_TYPES = frozenset({"grant", "reserve", "consume", "release", "refund", "expire", "adjust"})
 _ABUSE_CONTROLS = frozenset(
     {
@@ -244,6 +297,8 @@ _PRODUCT_ANALYTICS_EVENT_TYPES = frozenset(
 )
 _PRODUCT_ANALYTICS_EVENT_RESULTS = frozenset({"stored", "opted_out", "private_mode", "rejected"})
 _PRODUCT_ANALYTICS_SNAPSHOT_RESULTS = frozenset({"enabled", "disabled", "failed"})
+_KNOWLEDGE_TOKEN_STAGES = frozenset({"probe", "compile", "export"})
+_COLLECTION_EXPORT_PROFILES = frozenset({"complete_knowledge", "repository_manifest"})
 
 
 def _bounded(value: object, allowed: frozenset[str], fallback: str = "other") -> str:
@@ -374,7 +429,7 @@ def set_queue_gauges(
     queue_counts: Mapping[str, int],
     oldest_queue_age_seconds: float,
 ) -> None:
-    for status in ("queued", "running", "waiting_review"):
+    for status in ("queued", "running", "paused", "waiting_review"):
         QUEUE_DEPTH.labels(status).set(max(0, int(queue_counts.get(status, 0))))
     QUEUE_OLDEST_AGE.set(max(0.0, oldest_queue_age_seconds))
 
@@ -410,6 +465,79 @@ def record_product_analytics_event(event_type: str, *, result: str) -> None:
         _bounded(event_type, _PRODUCT_ANALYTICS_EVENT_TYPES),
         _bounded(result, _PRODUCT_ANALYTICS_EVENT_RESULTS),
     ).inc()
+
+
+def _nonnegative_metric(value: Decimal | float | int | str) -> float | None:
+    try:
+        numeric = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    if not numeric.is_finite() or numeric < 0:
+        return None
+    return float(numeric)
+
+
+def observe_collection_estimate_calibration(
+    *,
+    credit_error_ratio: Decimal | float | str | None = None,
+    duration_error_ratio: Decimal | float | str | None = None,
+    route_mix_error_ratio: Decimal | float | str | None = None,
+) -> None:
+    """Observe only ratios derived from committed estimates and actual outcomes."""
+
+    for metric, value in (
+        (COLLECTION_ESTIMATE_CREDIT_ERROR_RATIO, credit_error_ratio),
+        (COLLECTION_ESTIMATE_DURATION_ERROR_RATIO, duration_error_ratio),
+        (COLLECTION_ROUTE_MIX_ERROR_RATIO, route_mix_error_ratio),
+    ):
+        if value is None:
+            continue
+        numeric = _nonnegative_metric(value)
+        if numeric is not None:
+            metric.observe(numeric)
+
+
+def observe_collection_retry_ratio(value: Decimal | float | str) -> None:
+    numeric = _nonnegative_metric(value)
+    if numeric is not None:
+        COLLECTION_RETRY_RATIO.observe(numeric)
+
+
+def record_collection_gpu_seconds(value: Decimal | float | str) -> None:
+    numeric = _nonnegative_metric(value)
+    if numeric is not None and numeric > 0:
+        COLLECTION_GPU_SECONDS.inc(numeric)
+
+
+def record_collection_knowledge_tokens(*, stage: str, tokens: int) -> None:
+    if tokens <= 0:
+        return
+    COLLECTION_KNOWLEDGE_TOKENS.labels(
+        _bounded(stage, _KNOWLEDGE_TOKEN_STAGES)
+    ).inc(tokens)
+
+
+def observe_collection_export(
+    *,
+    profile: str,
+    duration_seconds: Decimal | float | str,
+    storage_amplification_ratio: Decimal | float | str | None = None,
+) -> None:
+    duration = _nonnegative_metric(duration_seconds)
+    if duration is not None:
+        COLLECTION_EXPORT_SECONDS.labels(
+            _bounded(profile, _COLLECTION_EXPORT_PROFILES)
+        ).observe(duration)
+    if storage_amplification_ratio is not None:
+        ratio = _nonnegative_metric(storage_amplification_ratio)
+        if ratio is not None:
+            COLLECTION_STORAGE_AMPLIFICATION_RATIO.observe(ratio)
+
+
+def record_collection_credits_refunded(value: Decimal | float | str) -> None:
+    numeric = _nonnegative_metric(value)
+    if numeric is not None and numeric > 0:
+        COLLECTION_CREDITS_REFUNDED.inc(numeric)
 
 
 def set_runtime_gauges(
@@ -462,7 +590,7 @@ def _initialize_contract_series() -> None:
     for status in sorted(_PAGE_STATUSES):
         for route in sorted(_ROUTES):
             PAGES_TERMINAL.labels(status, route).inc(0)
-    for status in ("queued", "running", "waiting_review"):
+    for status in ("queued", "running", "paused", "waiting_review"):
         QUEUE_DEPTH.labels(status).set(0)
     for provider in sorted(_PROVIDERS):
         PROVIDER_COLD_START.labels(provider)
@@ -483,6 +611,10 @@ def _initialize_contract_series() -> None:
     for event_type in sorted(_PRODUCT_ANALYTICS_EVENT_TYPES):
         for result in sorted(_PRODUCT_ANALYTICS_EVENT_RESULTS):
             PRODUCT_ANALYTICS_EVENTS.labels(event_type, result).inc(0)
+    for stage in sorted(_KNOWLEDGE_TOKEN_STAGES):
+        COLLECTION_KNOWLEDGE_TOKENS.labels(stage).inc(0)
+    for profile in sorted(_COLLECTION_EXPORT_PROFILES):
+        COLLECTION_EXPORT_SECONDS.labels(profile)
     QUEUE_OLDEST_AGE.set(0)
     DLQ_MESSAGES.set(0)
     DELETION_OLDEST_PENDING.set(0)

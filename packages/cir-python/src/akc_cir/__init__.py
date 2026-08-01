@@ -9,6 +9,17 @@ from .base import (
     canonical_json,
     sha256_digest,
 )
+from .collection_events import (
+    COLLECTION_EVENT_ENUM_FIELDS,
+    COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS,
+    COLLECTION_EVENT_PAYLOAD_CONTRACTS,
+    COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS,
+    COLLECTION_EVENT_TYPES,
+    CollectionEventEnvelope,
+    CollectionEventPayloadContract,
+    CollectionEventType,
+    validate_collection_event_payload,
+)
 from .errors import ErrorCode, ErrorEnvelope
 from .events import (
     ALLOWED_PAGE_TRANSITIONS,
@@ -43,6 +54,14 @@ from .knowledge import (
     RelatedNoteCandidate,
     RelationAssertion,
     ReviewStatus,
+)
+from .knowledge_model import (
+    CanonicalKnowledgeModel,
+    CanonicalKnowledgeObject,
+    KnowledgeObjectKind,
+    KnowledgeOrigin,
+    KnowledgeVerificationState,
+    build_knowledge_object,
 )
 from .models import (
     BBox1000,
@@ -89,6 +108,11 @@ from .schema import all_json_schemas, json_schema
 
 __all__ = [
     "ALLOWED_PAGE_TRANSITIONS",
+    "COLLECTION_EVENT_ENUM_FIELDS",
+    "COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS",
+    "COLLECTION_EVENT_PAYLOAD_CONTRACTS",
+    "COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS",
+    "COLLECTION_EVENT_TYPES",
     "HEADING_INFERENCE_VERSION",
     "KNOWLEDGE_SYSTEM_PROMPT",
     "NORMALIZATION_VERSION",
@@ -100,8 +124,13 @@ __all__ = [
     "CanonicalBlock",
     "CanonicalCell",
     "CanonicalDocument",
+    "CanonicalKnowledgeModel",
+    "CanonicalKnowledgeObject",
     "CanonicalTable",
     "Claim",
+    "CollectionEventEnvelope",
+    "CollectionEventPayloadContract",
+    "CollectionEventType",
     "Confidence",
     "ConflictCandidate",
     "ConflictDimension",
@@ -122,6 +151,9 @@ __all__ = [
     "HeadingInferenceResult",
     "KnowledgeBundle",
     "KnowledgeNote",
+    "KnowledgeObjectKind",
+    "KnowledgeOrigin",
+    "KnowledgeVerificationState",
     "MarkdownRange",
     "ModelRunRecord",
     "NonEmptyStr",
@@ -149,6 +181,7 @@ __all__ = [
     "analyze_document_structure",
     "build_heading_llm_candidate_payload",
     "build_knowledge_messages",
+    "build_knowledge_object",
     "build_source_payload",
     "canonical_json",
     "detect_repeated_marginal_blocks",
@@ -160,4 +193,5 @@ __all__ = [
     "prompt_version_sha256",
     "restore_cross_page_continuity",
     "sha256_digest",
+    "validate_collection_event_payload",
 ]

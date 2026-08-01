@@ -12,8 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: locale === "ko" ? "프로젝트" : "Projects",
     description:
       locale === "ko"
-        ? "원본 연결 문서 프로젝트, 검토 의무, 소유권과 지식 출력을 관리합니다."
-        : "Manage source-bound document projects, review obligations, ownership, and knowledge outputs.",
+        ? "원본 연결 문서 프로젝트, 무결성 상태, 소유권과 지식 출력을 관리합니다."
+        : "Manage source-bound document projects, integrity findings, ownership, and knowledge outputs.",
     robots: { index: false, follow: false },
   };
 }

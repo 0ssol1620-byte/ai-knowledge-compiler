@@ -11,7 +11,6 @@ import {
   Gauge,
   LockKey,
   ShieldCheck,
-  Warning,
 } from "@phosphor-icons/react";
 import clsx from "clsx";
 import Link from "next/link";
@@ -21,7 +20,6 @@ import { useMemo, useRef, useState, type CSSProperties } from "react";
 import { ExportDialog } from "@/components/workspace/export-dialog";
 import { MarkdownWorkspace } from "@/components/workspace/markdown-workspace";
 import { PageRail } from "@/components/workspace/page-rail";
-import { ReviewDrawer } from "@/components/workspace/review-drawer";
 import { ProcessingWorkspaceLive } from "@/components/workspace/processing-workspace-live";
 import { SourceViewer } from "@/components/workspace/source-viewer";
 import {
@@ -30,21 +28,34 @@ import {
   demoPages,
   demoReviews,
 } from "@/lib/demo-data";
-import type { ReviewItem } from "@/lib/types";
+import { PROCESSING_THEATER_STAGES } from "@/lib/processing-theater";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 
-const stages = [
-  { id: "upload", label: "Upload", done: true },
-  { id: "security_scan", label: "Security", done: true },
-  { id: "preflight", label: "Preflight", done: true },
-  { id: "extract", label: "Extract", done: false, progress: 88 },
-  { id: "normalize", label: "Structure", done: false, progress: 72 },
-  { id: "knowledge", label: "Knowledge", done: false, progress: 44 },
-  { id: "validate", label: "Validate", done: false, progress: 26 },
-  { id: "package", label: "Package", done: false, progress: 0 },
-] as const;
+const demoProgress = {
+  collect: 100,
+  understand: 88,
+  verify: 26,
+  compile: 44,
+  architect: 12,
+  package: 0,
+} as const;
+const stages = PROCESSING_THEATER_STAGES.map(({ id, label }) => ({
+  id,
+  label,
+  done: demoProgress[id] === 100,
+  progress: demoProgress[id],
+}));
 
-type MobileTab = "progress" | "pages" | "source" | "result" | "review";
+const demoOverallProgress = Math.round(
+  stages.reduce((total, stage) => total + stage.progress, 0) / stages.length,
+);
+
+type MobileTab =
+  | "progress"
+  | "source"
+  | "result"
+  | "knowledge"
+  | "integrity";
 
 export function ProcessingWorkspace() {
   return process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true" ? (
@@ -63,7 +74,6 @@ function DemoProcessingWorkspace() {
   );
   const [selectedPageId, setSelectedPageId] = useState("page_8");
   const [selectedBlockId, setSelectedBlockId] = useState("blk_paragraph");
-  const [reviewOpen, setReviewOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("progress");
 
@@ -73,12 +83,6 @@ function DemoProcessingWorkspace() {
   );
   const visibleBlocks =
     selectedPage.blocks.length > 0 ? selectedPage.blocks : demoBlocks;
-
-  function selectEvidence(item: ReviewItem) {
-    if (item.page_id) setSelectedPageId(item.page_id);
-    if (item.block_id) setSelectedBlockId(item.block_id);
-    setMobileTab("source");
-  }
 
   return (
     <div className="processing-page">
@@ -120,15 +124,14 @@ function DemoProcessingWorkspace() {
           </span>
         </div>
         <div className="processing-actions">
-          <button
+          <Link
             className="review-button"
-            type="button"
-            onClick={() => setReviewOpen(true)}
+            href="/integrity?reference=1"
           >
-            <Warning size={15} weight="fill" aria-hidden="true" />
-            Review
+            <ShieldCheck size={15} weight="fill" aria-hidden="true" />
+            Integrity
             <span>{demoReviews.length}</span>
-          </button>
+          </Link>
           <button
             className="primary-button compact"
             type="button"
@@ -140,19 +143,23 @@ function DemoProcessingWorkspace() {
         </div>
       </header>
 
-      <section className="pipeline-bar" aria-label="Processing progress">
+      <section
+        className="pipeline-bar"
+        aria-label="Reference processing progress"
+        data-reference-snapshot
+      >
         <div className="pipeline-summary">
           <div
             className="overall-progress-ring"
-            style={{ "--progress": "68%" } as CSSProperties}
+            style={{ "--progress": `${demoOverallProgress}%` } as CSSProperties}
           >
-            <strong>68%</strong>
+            <strong>{demoOverallProgress}%</strong>
           </div>
           <div>
             <strong>
               {processingStarted
                 ? "Compiling knowledge"
-                : "Review preflight estimate"}
+                : "Confirm preflight estimate"}
             </strong>
             <span>
               {processingStarted
@@ -168,7 +175,7 @@ function DemoProcessingWorkspace() {
                 "stage-item",
                 stage.done && "done",
                 !stage.done && stage.progress > 0 && "active",
-                stage.id === "knowledge" && "current",
+                stage.id === "compile" && "current",
               )}
               key={stage.id}
             >
@@ -220,10 +227,10 @@ function DemoProcessingWorkspace() {
         {(
           [
             ["progress", "Progress"],
-            ["pages", "Pages"],
             ["source", "Source"],
             ["result", "Result"],
-            ["review", `Review ${demoReviews.length}`],
+            ["knowledge", "Knowledge"],
+            ["integrity", "Integrity"],
           ] as Array<[MobileTab, string]>
         ).map(([id, label]) => (
           <button
@@ -231,7 +238,6 @@ function DemoProcessingWorkspace() {
             className={mobileTab === id ? "active" : undefined}
             onClick={() => {
               setMobileTab(id);
-              if (id === "review") setReviewOpen(true);
             }}
             aria-pressed={mobileTab === id}
             key={id}
@@ -252,10 +258,12 @@ function DemoProcessingWorkspace() {
           <div className="mobile-progress-overview">
             <div
               className="overall-progress-ring"
-              style={{ "--progress": "68%" } as CSSProperties}
-              aria-label="Overall progress 68%"
+              style={
+                { "--progress": `${demoOverallProgress}%` } as CSSProperties
+              }
+              aria-label={`Reference snapshot progress ${demoOverallProgress}%`}
             >
-              <strong>68%</strong>
+              <strong>{demoOverallProgress}%</strong>
             </div>
             <div>
               <span className="mobile-progress-label">Current stage</span>
@@ -268,7 +276,7 @@ function DemoProcessingWorkspace() {
               <li
                 className={clsx(
                   stage.done && "done",
-                  stage.id === "knowledge" && "current",
+                  stage.id === "compile" && "current",
                 )}
                 key={stage.id}
               >
@@ -321,7 +329,7 @@ function DemoProcessingWorkspace() {
         <div
           className={clsx(
             "mobile-panel",
-            mobileTab !== "pages" && "mobile-hidden",
+            mobileTab !== "source" && "mobile-hidden",
           )}
         >
           <PageRail
@@ -363,6 +371,32 @@ function DemoProcessingWorkspace() {
             }}
           />
         </div>
+        <section
+          className={clsx(
+            "mobile-only-workspace-panel mobile-panel",
+            mobileTab !== "knowledge" && "mobile-hidden",
+          )}
+          aria-label="Knowledge output"
+        >
+          <h2>Knowledge</h2>
+          <p>11 reference knowledge notes are represented in this static demo snapshot.</p>
+          <Link className="secondary-button" href="/knowledge-bases">
+            Open Knowledge Studio
+          </Link>
+        </section>
+        <section
+          className={clsx(
+            "mobile-only-workspace-panel mobile-panel",
+            mobileTab !== "integrity" && "mobile-hidden",
+          )}
+          aria-label="Integrity findings"
+        >
+          <h2>Integrity</h2>
+          <p>{demoReviews.length} reference findings retain their source evidence.</p>
+          <Link className="secondary-button" href="/integrity?reference=1">
+            Open Integrity Console
+          </Link>
+        </section>
       </div>
 
       <footer className="processing-footer">
@@ -371,8 +405,8 @@ function DemoProcessingWorkspace() {
             <CheckCircle size={14} weight="fill" aria-hidden="true" />
             16 pages completed
           </span>
-          <span>12 Native</span>
-          <span>4 OCR</span>
+          <span>12 source-structured pages</span>
+          <span>4 visually interpreted pages</span>
           <span>3 tables rebuilt</span>
           <span>11 knowledge notes</span>
         </div>
@@ -388,19 +422,6 @@ function DemoProcessingWorkspace() {
         </div>
       </footer>
 
-      <ReviewDrawer
-        items={demoReviews}
-        open={reviewOpen}
-        onClose={() => setReviewOpen(false)}
-        onSelectEvidence={selectEvidence}
-      />
-      {reviewOpen && (
-        <button
-          className="drawer-scrim"
-          aria-label="Close review pane"
-          onClick={() => setReviewOpen(false)}
-        />
-      )}
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
 
       {estimateOpen && (
@@ -453,7 +474,7 @@ function EstimateDialog({
             <Gauge size={22} weight="duotone" aria-hidden="true" />
           </span>
           <div>
-            <h2 id="estimate-title">Review the estimate before processing</h2>
+            <h2 id="estimate-title">Confirm the estimate before processing</h2>
             <p>
               This estimate comes from a fast structural analysis. Any
               difference is returned after the actual route completes.
@@ -520,7 +541,7 @@ function EstimateDialog({
         <label className="consent-check">
           <input ref={consentRef} type="checkbox" defaultChecked />
           <span>
-            I reviewed the {demoEstimate.credit_max}-credit maximum reservation
+            I confirmed the {demoEstimate.credit_max}-credit maximum reservation
             and automatic return policy for failed pages.
           </span>
         </label>

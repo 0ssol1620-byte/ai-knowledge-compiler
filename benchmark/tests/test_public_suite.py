@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from benchmark.public_suite import (
     critical_evaluate,
     evaluate_reproducibility,
     freeze_predictions,
+    official_execution_preflight,
     sign_report,
     verify_registry,
 )
@@ -59,6 +61,17 @@ def test_registry_is_complete_and_valid_offline() -> None:
         "parsebench",
         "olmocr-bench",
     }
+
+
+def test_committed_tier0_status_is_bound_to_current_registry() -> None:
+    registry_path = Path("benchmark/benchmark-registry.lock.yaml")
+    status = json.loads(
+        Path("benchmark/reports/public-core-tier0-status-2026-07-31.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    expected = "sha256:" + hashlib.sha256(registry_path.read_bytes()).hexdigest()
+    assert status["registry_sha256"] == expected
 
 
 @pytest.mark.parametrize("benchmark_id", ["omnidocbench", "parsebench", "olmocr-bench"])
@@ -134,6 +147,10 @@ def test_comparison_requires_identical_environment_and_no_regression() -> None:
     candidate["environment_sha256"] = "sha256:" + "d" * 64
     with pytest.raises(PublicSuiteError, match="environment_sha256"):
         compare_runs(candidate, incumbent)
+    candidate["environment_sha256"] = common["environment_sha256"]
+    candidate["metrics"] = {"tables": 0.8}
+    with pytest.raises(PublicSuiteError, match="candidate official_overall"):
+        compare_runs(candidate, incumbent)
 
 
 def test_unsigned_report_is_explicitly_not_signed() -> None:
@@ -166,3 +183,24 @@ def test_reproducibility_requires_three_stable_identical_runs() -> None:
 def test_reproducibility_rejects_incomplete_repeat_set() -> None:
     with pytest.raises(PublicSuiteError, match="exactly three"):
         evaluate_reproducibility([])
+
+
+def test_official_execution_preflight_is_explicitly_blocked_without_receipts(
+    tmp_path: Path,
+) -> None:
+    receipt = official_execution_preflight(
+        registry_path=Path("benchmark/benchmark-registry.lock.yaml"),
+        benchmark_id="parsebench",
+        evaluator_checkout=tmp_path / "missing-evaluator",
+        dataset_receipt_path=tmp_path / "missing-dataset.json",
+        license_receipt_path=tmp_path / "missing-license.json",
+        command_manifest_path=tmp_path / "missing-command.json",
+    )
+
+    assert receipt["status"] == "blocked"
+    assert receipt["production_evidence"] is False
+    assert receipt["official_runs_completed"] == 0
+    assert "EVALUATOR_CHECKOUT_MISSING" in receipt["blockers"]
+    assert "DATASET_RECEIPT_MISSING_OR_INVALID" in receipt["blockers"]
+    assert "LICENSE_RECEIPT_MISSING_OR_INVALID" in receipt["blockers"]
+    assert "COMMAND_MANIFEST_MISSING_OR_INVALID" in receipt["blockers"]

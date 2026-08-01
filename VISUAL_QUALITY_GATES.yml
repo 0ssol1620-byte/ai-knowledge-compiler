@@ -1,0 +1,225 @@
+schema_version: "1.0"
+reviewed_at: "2026-08-01"
+release_state: local_visual_gate_approved_external_production_gates_open
+governing_sections:
+  - "22.6 Asset QA"
+  - "30 Mobile"
+  - "31 Accessibility"
+  - "45 Visual Quality Gate"
+  - "48 Definition of Done"
+
+approval_policy:
+  score_minimum: 90
+  critical_findings_required: 0
+  high_findings_required: 0
+  actual_page_screenshots_required: true
+  current_worktree_required: true
+  generated_or_component_only_mock_is_evidence: false
+  prior_commit_baseline_is_current_evidence: false
+
+asset_rubric:
+  weights:
+    brand_fit: 15
+    message_clarity: 15
+    product_truth: 15
+    ownability: 12
+    composition: 10
+    typography_and_material: 8
+    responsive: 7
+    accessibility: 5
+    performance: 6
+    provenance_and_license: 7
+  total: 100
+
+visual_rubric:
+  weights:
+    brand_distinctiveness: 15
+    category_comprehension: 10
+    asset_craft: 15
+    product_truth: 12
+    composition: 10
+    typography: 8
+    interaction: 8
+    motion_purpose: 6
+    responsive: 6
+    accessibility: 5
+    performance: 3
+    claim_truth: 2
+  total: 100
+
+finding_policy:
+  blocking_severities: [Critical, High]
+  required_zero_conditions:
+    - generic_ai_hero
+    - fake_product
+    - broken_crop
+    - tiny_key_text
+    - dead_cta
+    - mobile_overflow
+    - reduced_motion_information_loss
+  forbidden_patterns:
+    - purple_blue_atmospheric_gradient
+    - glowing_ai_brain
+    - chrome_sphere
+    - meaningless_particles
+    - repeated_bento_card_wall
+    - generated_product_or_public_proof
+    - fabricated_progress_or_score
+    - confidence_without_source_evidence
+
+composition_policy:
+  required_candidates:
+    - id: A
+      name: Editorial Source
+    - id: B
+      name: Proof-First Product
+    - id: C
+      name: Knowledge Architecture
+  all_three_required_before_approval: true
+  selection_requires_current_page_evidence: true
+
+capture_policy:
+  exact_widths_px: [1920, 1440, 1280, 1024, 768, 390, 360]
+  required_modes: [default, reduced_motion]
+  required_languages: [en, ko]
+  current_worktree_only: true
+  actual_route_only: true
+  full_page_or_named_scene_crop: true
+  required_route_sets:
+    marketing:
+      - /
+      - /product
+      - /benchmarks
+      - /security
+      - /pricing
+    product:
+      - /intake
+      - /workspace
+      - /integrity
+      - /knowledge-bases
+    signature_support:
+      - /app/projects/project_research/graph
+      - /app/projects/project_research/exports
+    public_proof:
+      - /demo/dart
+      - /demo/sec
+  inspect_each_capture_for:
+    - horizontal_overflow
+    - visible_clipping
+    - broken_crop
+    - source_and_fixture_label
+    - state_and_claim_truth
+    - primary_action_hierarchy
+    - korean_and_english_line_breaks
+    - focus_obscuration
+    - key_text_legibility
+    - asset_loading_failure
+    - cumulative_layout_shift
+
+signature_asset_policy:
+  required_ids: [A01, A02, A03, A04, A05, A06]
+  per_asset_requirements:
+    - three_static_compositions
+    - current_actual_page_capture_matrix
+    - truth_class_and_source_strategy
+    - actual_data_contract
+    - responsive_and_reduced_motion_behavior
+    - alt_text_or_decorative_decision
+    - provenance_and_license_evidence
+    - performance_result
+    - asset_score_at_least_90
+    - critical_and_high_findings_zero
+
+accessibility_policy:
+  standard: WCAG_2_2_AA
+  automated_serious_or_critical_findings_required: 0
+  required_checks:
+    - keyboard_core_flows
+    - no_drag_only_action
+    - visible_unobscured_focus
+    - 200_percent_zoom
+    - high_contrast
+    - reduced_motion_information_parity
+    - source_bbox_text_alternative
+    - graph_table_alternative
+    - throttled_progress_announcements
+    - status_not_color_only
+  target_size_px:
+    minimum: 24
+    mobile_target: 44
+
+performance_policy:
+  marketing_lighthouse_lab_targets:
+    performance_minimum: 90
+    accessibility_minimum: 100
+    best_practices_minimum: 95
+    seo_minimum: 95
+  required_checks:
+    - lcp_uses_html_text_or_responsive_poster
+    - webgl_and_glb_are_lazy
+    - mobile_has_independent_poster_or_composition
+    - reduced_motion_has_complete_static_state
+    - save_data_has_complete_static_state
+    - context_loss_has_static_fallback
+    - no_layout_shift_from_progressive_asset
+    - slow_network_asset_failure_is_honest
+  evidence_boundary:
+    lab_is_not_field_performance: true
+    field_cwv_requires_canonical_deployment_and_real_traffic: true
+
+provenance_policy:
+  source_priority:
+    - actual_product_or_public_proof
+    - deterministic_code_or_svg
+    - first_party_3d
+    - ai_generated_editorial_only
+    - rights_cleared_external_media
+  generated_media_prohibited_for:
+    - product_evidence
+    - benchmark_evidence
+    - customer_evidence
+    - logos
+    - certifications
+    - security_claims
+    - public_document_evidence
+  external_asset_required_fields:
+    - source_url
+    - creator
+    - license_name_and_url
+    - commercial_use_right
+    - modification_right
+    - sha256
+    - allowed_use
+    - evidence_path
+    - review_date
+
+current_evidence:
+  worktree_state: current_v4_release_candidate
+  scoring_status: measured_local_current_worktree
+  visual_score: 94
+  critical_findings: 0
+  high_findings: 0
+  medium_findings: 3
+  actual_page_capture_records:
+    - artifacts/v4-brand-captures/capture-manifest.json
+  signature_asset_scores:
+    A01: 94
+    A02: 95
+    A03: 97
+    A04: 94
+    A05: 96
+    A06: 95
+  approval: true
+  approval_scope: local_visual_quality_gate_only
+  capture_count: 532
+  automated_matrix:
+    routes: 13
+    named_signature_scenes: 6
+    viewports: 7
+    languages: 2
+    motion_modes: 2
+    blocking_findings: 0
+  non_blocking_limitations:
+    - current_field_core_web_vitals_require_canonical_traffic
+    - physical_device_screen_reader_signoff_is_external
+    - legal_brand_and_public_claim_clearance_is_external

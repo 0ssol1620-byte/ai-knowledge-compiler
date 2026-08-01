@@ -194,7 +194,12 @@ export function SourceViewer({
           </button>
         </div>
       </header>
-      <div className="source-canvas">
+      <div
+        className="source-canvas"
+        role="region"
+        aria-label={`Scrollable source page ${page.page_number}`}
+        tabIndex={0}
+      >
         <div
           className="paper-wrap"
           style={{
@@ -225,7 +230,7 @@ export function SourceViewer({
             </div>
           )}
           {overlayVisible && (
-            <div className="bbox-layer" aria-label="Detected document blocks">
+            <div className="bbox-layer" aria-hidden="true">
               {blocks.flatMap((block) =>
                 block.source_refs.flatMap((source, sourceIndex) => {
                   const bbox = source.bbox1000;
@@ -237,9 +242,8 @@ export function SourceViewer({
                     sameSource(highlightedEvidence.source, source);
                   const active = block.id === selectedBlockId || highlighted;
                   return [
-                    <button
+                    <span
                       key={`${block.id}:${sourceIndex}:${bbox.join(",")}`}
-                      type="button"
                       className={clsx(
                         "bbox-rect",
                         `bbox-${block.type}`,
@@ -247,28 +251,9 @@ export function SourceViewer({
                         highlighted && "highlighted",
                       )}
                       style={bboxStyle(bbox)}
-                      onMouseEnter={() =>
-                        onEvidenceInteraction?.(block.id, source, "focus")
-                      }
-                      onMouseLeave={() =>
-                        onEvidenceInteraction?.(block.id, source, "blur")
-                      }
-                      onFocus={() =>
-                        onEvidenceInteraction?.(block.id, source, "focus")
-                      }
-                      onBlur={() =>
-                        onEvidenceInteraction?.(block.id, source, "blur")
-                      }
-                      onClick={() => {
-                        onSelectBlock(block.id);
-                        onEvidenceInteraction?.(block.id, source, "select");
-                      }}
-                      aria-label={`${block.type} block ${block.order}, evidence ${
-                        sourceIndex + 1
-                      } on page ${source.page_number}`}
                     >
                       <span>{block.type}</span>
-                    </button>,
+                    </span>,
                   ];
                 }),
               )}
@@ -281,19 +266,16 @@ export function SourceViewer({
             >
               {rawBlocks.length > 0 ? (
                 rawBlocks.map((block) => (
-                  <button
+                  <span
                     key={block.id}
-                    type="button"
                     className={clsx(
                       "source-text-block",
                       block.id === selectedBlockId && "active",
                     )}
                     style={bboxStyle(block.source_refs[0]!.bbox1000!)}
-                    onClick={() => onSelectBlock(block.id)}
-                    aria-label={`${block.type} source block ${block.order}: ${block.source_text}`}
                   >
                     {block.source_text}
-                  </button>
+                  </span>
                 ))
               ) : (
                 <p className="source-text-empty">
@@ -304,6 +286,62 @@ export function SourceViewer({
           )}
         </div>
       </div>
+      {overlayVisible && (
+        <section
+          className="bbox-selection-controls"
+          aria-label="Detected document blocks"
+        >
+          <strong>Detected blocks</strong>
+          <div className="bbox-control-list">
+            {blocks.flatMap((block) =>
+              block.source_refs.flatMap((source, sourceIndex) => {
+                const bbox = source.bbox1000;
+                if (!bbox || source.page_number !== page.page_number) {
+                  return [];
+                }
+                const highlighted =
+                  highlightedEvidence?.blockId === block.id &&
+                  sameSource(highlightedEvidence.source, source);
+                const active = block.id === selectedBlockId || highlighted;
+                return [
+                  <button
+                    key={`${block.id}:${sourceIndex}:control`}
+                    type="button"
+                    className={clsx(
+                      "bbox-control",
+                      active && "active",
+                      highlighted && "highlighted",
+                    )}
+                    aria-pressed={active}
+                    onMouseEnter={() =>
+                      onEvidenceInteraction?.(block.id, source, "focus")
+                    }
+                    onMouseLeave={() =>
+                      onEvidenceInteraction?.(block.id, source, "blur")
+                    }
+                    onFocus={() =>
+                      onEvidenceInteraction?.(block.id, source, "focus")
+                    }
+                    onBlur={() =>
+                      onEvidenceInteraction?.(block.id, source, "blur")
+                    }
+                    onClick={() => {
+                      onSelectBlock(block.id);
+                      onEvidenceInteraction?.(block.id, source, "select");
+                    }}
+                    aria-label={`${block.type} block ${block.order}, evidence ${
+                      sourceIndex + 1
+                    } on page ${source.page_number}`}
+                  >
+                    <span>{block.order}</span>
+                    {block.type}
+                  </button>,
+                ];
+              }),
+            )}
+          </div>
+        </section>
+      )}
       <footer className="source-footer">
         <span>
           <i className="legend-dot native" /> Native extracted
@@ -312,7 +350,7 @@ export function SourceViewer({
           <i className="legend-dot ocr" /> OCR extracted
         </span>
         <span>
-          <i className="legend-dot warning" /> Review
+          <i className="legend-dot warning" /> Unresolved
         </span>
       </footer>
     </section>

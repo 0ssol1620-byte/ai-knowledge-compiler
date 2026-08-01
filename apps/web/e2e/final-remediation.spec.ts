@@ -1,5 +1,32 @@
 import { expect, test } from "@playwright/test";
 
+test("Home hero matches the autonomous collection promise and exposes the six signature semantics", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Don’t organize your files. Compile the knowledge.",
+  );
+  await expect(
+    page.getByText(
+      "Drop everything in. Structara turns it into structured, verified, connected knowledge for people and AI.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Compile your collection" }).first(),
+  ).toHaveAttribute("href", "/intake");
+  await expect(page.locator('[data-signature-asset="A01"]')).toBeVisible();
+  await expect(
+    page.locator('[data-signature-asset="A02"]').first(),
+  ).toBeVisible();
+  await expect(
+    page.locator('[data-signature-asset="A03"]').first(),
+  ).toBeVisible();
+  await expect(page.locator('[data-signature-asset="A04"]')).toBeVisible();
+  await expect(page.locator('[data-signature-assets~="A05"]')).toBeVisible();
+  await expect(page.locator('[data-signature-asset="A06"]')).toBeVisible();
+});
+
 test("SEC proof preserves the actual filing fact through every transformation", async ({
   page,
 }) => {
@@ -39,24 +66,19 @@ test("SEC proof preserves the actual filing fact through every transformation", 
   ).toBeVisible();
 });
 
-test("Review Studio performs audited decisions instead of exposing a static mock", async ({
+test("legacy review links enter the Integrity Console without leaking unsafe context", async ({
   page,
 }) => {
-  await page.goto("/review");
+  await page.goto(
+    "/review?project=project-7&token=secret&redirect_uri=https%3A%2F%2Fevil.example",
+  );
+  await expect(page).toHaveURL(/\/integrity\?project=project-7$/);
   await expect(
-    page.getByRole("heading", { name: "Review Studio" }),
+    page.getByRole("heading", { name: /Automatic recovery first/ }),
   ).toBeVisible();
-  await expect(page.getByText("Interactive sample")).toBeVisible();
-  const accept = page.getByRole("button", { name: "Accept replacement" });
-  await expect(accept).toBeEnabled();
-  await accept.click();
-  await expect(page.getByText("LATEST AUDIT EVENT")).toBeVisible();
-  await expect(page.getByText(/Manual replacement accepted/)).toBeVisible();
-
-  await page.getByRole("button", { name: "Completion summary" }).click();
-  await expect(
-    page.getByRole("region", { name: "Review completion summary" }),
-  ).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Review Studio");
+  await expect(page.locator("body")).not.toContainText("secret");
+  await expect(page.locator("body")).not.toContainText("evil.example");
 });
 
 test("Knowledge Studio filters, changes perspective, and exposes accessible relations", async ({
@@ -182,4 +204,132 @@ test("Security architecture exposes real trust boundaries and honest evidence st
   await expect(
     page.getByRole("heading", { name: "Accessible trust-boundary sequence" }),
   ).toBeVisible();
+});
+
+test("Processing Theater uses the six-stage reference contract without pretending it is live", async ({
+  page,
+}) => {
+  await page.goto("/documents/sample-dart/processing");
+  await expect(
+    page.getByText(
+      "Demo workspace · No documents are processed and no credits are used.",
+    ),
+  ).toBeVisible();
+  await expect(page.locator("[data-reference-snapshot]")).toHaveCount(1);
+  const stages = page.locator(".stage-track .stage-item");
+  await expect(stages).toHaveCount(6);
+  await expect(stages).toHaveText([
+    /COLLECT/,
+    /UNDERSTAND/,
+    /VERIFY/,
+    /COMPILE/,
+    /ARCHITECT/,
+    /PACKAGE/,
+  ]);
+  await expect(page.locator("body")).not.toContainText(/paddle|mineru/i);
+});
+
+test("Collection intake preserves manifest truth and cannot start before signed preflight", async ({
+  page,
+}) => {
+  await page.goto("/intake");
+  await expect(
+    page.getByRole("heading", {
+      name: "Bring a document collection in without losing its structure",
+    }),
+  ).toBeVisible();
+
+  const folderInput = page.locator("[data-collection-folder-input]");
+  await expect(folderInput).toHaveAttribute("webkitdirectory", "");
+  await expect(
+    page.getByText("Up to 5,000 files · 10 GiB per collection"),
+  ).toBeVisible();
+  await page.locator("[data-collection-file-input]").setInputFiles([
+    {
+      name: "research-note.md",
+      mimeType: "text/markdown",
+      buffer: Buffer.from("source-linked note"),
+    },
+  ]);
+
+  await expect(page.getByText("research-note.md")).toBeVisible();
+  await expect(page.getByText("Sampled P50").locator("..")).toContainText(
+    "Not measured",
+  );
+  await page.getByRole("button", { name: "Pause intake" }).click();
+  await expect(
+    page.getByRole("button", { name: "Prepare server preflight" }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Resume intake" }).click();
+  await page.getByRole("button", { name: "Prepare server preflight" }).click();
+  await expect(
+    page.getByText("Local preflight request is ready"),
+  ).toBeVisible();
+  await expect(page.getByText(/No API call, upload, job/)).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Start processing" }),
+  ).toBeDisabled();
+  await expect(page.locator("body")).not.toContainText(/paddle|mineru/i);
+});
+
+test("Integrity Console leads with automatic history and keeps override secondary", async ({
+  page,
+}) => {
+  await page.goto("/integrity?reference=1");
+  await expect(
+    page.getByRole("heading", {
+      name: /Automatic recovery first/,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Reference state · no live workspace connected"),
+  ).toBeVisible();
+
+  for (const status of [
+    "verified",
+    "authority_verified",
+    "auto_repaired",
+    "reprocessing",
+    "warning",
+    "unresolved",
+    "quarantined",
+  ]) {
+    await expect(page.getByText(status).first()).toBeVisible();
+  }
+
+  await page.getByRole("button", { name: /Continued table row/ }).click();
+  await expect(page.getByText("Overlap recovery")).toBeVisible();
+  const decisionPanel = page.locator(".integrity-override");
+  await decisionPanel.getByText("Optional customer decision").click();
+  await expect(
+    decisionPanel.getByRole("combobox", { name: "Decision" }),
+  ).toBeDisabled();
+  await expect(
+    decisionPanel.getByText(
+      "A live open finding and collection write permission are required.",
+    ),
+  ).toBeVisible();
+  await expect(
+    decisionPanel.getByRole("option", { name: "Optional override" }),
+  ).toHaveCount(0);
+  await expect(
+    decisionPanel.getByRole("button", { name: "Record audited decision" }),
+  ).toBeDisabled();
+  await expect(page.locator("body")).not.toContainText(/paddle|mineru/i);
+});
+
+test("Public benchmark route mounts the fail-closed evidence lab", async ({
+  page,
+}) => {
+  await page.goto("/benchmarks");
+  await expect(
+    page.getByRole("heading", { name: "Benchmark Lab" }),
+  ).toBeVisible();
+  await expect(page.getByText("Public metrics locked")).toBeVisible();
+  await expect(
+    page.getByText("No performance metrics are ready for publication."),
+  ).toBeVisible();
+  await expect(
+    page.locator('.benchmark-table-frame tbody td:has-text("Not measured")'),
+  ).toHaveCount(24);
 });

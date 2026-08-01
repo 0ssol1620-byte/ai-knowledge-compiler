@@ -432,6 +432,14 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                           granted_class.relname = 'job_events'
                           AND granted_acl.privilege_type = 'INSERT'
                       )
+                      OR (
+                          granted_class.relname = 'collections'
+                          AND granted_acl.privilege_type = 'SELECT'
+                      )
+                      OR (
+                          granted_class.relname = 'collection_events'
+                          AND granted_acl.privilege_type IN ('SELECT', 'INSERT')
+                      )
                   )
               )
         ) AS effective_table_acl_exact,
@@ -477,6 +485,12 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                           column_class.relname = 'credit_accounts'
                           AND attribute.attname IN (
                               'balance', 'reserved', 'version', 'updated_at'
+                          )
+                      )
+                      OR (
+                          column_class.relname = 'collections'
+                          AND attribute.attname IN (
+                              'status', 'status_reason', 'event_sequence', 'updated_at'
                           )
                       )
                       OR (
@@ -551,6 +565,30 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
         has_table_privilege(
             current_user, 'public.pages', 'SELECT'
         ) AS page_select_access,
+        has_table_privilege(
+            current_user, 'public.collections', 'SELECT'
+        ) AS collection_select_access,
+        (
+            has_table_privilege(
+                current_user, 'public.collection_events', 'SELECT'
+            )
+            AND has_table_privilege(
+                current_user, 'public.collection_events', 'INSERT'
+            )
+        ) AS collection_event_access,
+        (
+            SELECT bool_and(
+                has_column_privilege(
+                    current_user,
+                    'public.collections',
+                    column_name,
+                    'UPDATE'
+                )
+            )
+            FROM unnest(
+                ARRAY['status', 'status_reason', 'event_sequence', 'updated_at']
+            ) AS columns(column_name)
+        ) AS collection_update_access,
         (
             has_table_privilege(current_user, 'public.tenants', 'SELECT')
             AND has_table_privilege(current_user, 'public.projects', 'SELECT')
@@ -676,7 +714,7 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
             ) AS columns(column_name)
         ) AS credit_account_update_access,
         (
-            SELECT count(*) = 19
+            SELECT count(*) = 21
                 AND bool_and(class.relrowsecurity)
                 AND bool_and(class.relforcerowsecurity)
             FROM pg_class AS class
@@ -702,7 +740,9 @@ _POSTGRES_DISPATCH_CAPABILITY_QUERY = text(
                   'source_files',
                   'feature_flags',
                   'page_attempts',
-                  'page_attempt_transition_events'
+                  'page_attempt_transition_events',
+                  'collections',
+                  'collection_events'
               )
         ) AS forced_rls_present
     FROM pg_roles AS role
@@ -1508,6 +1548,9 @@ async def verify_dispatch_database(
         "document_select_access",
         "block_select_access",
         "page_select_access",
+        "collection_select_access",
+        "collection_event_access",
+        "collection_update_access",
         "routing_context_access",
         "page_attempt_access",
         "page_update_access",

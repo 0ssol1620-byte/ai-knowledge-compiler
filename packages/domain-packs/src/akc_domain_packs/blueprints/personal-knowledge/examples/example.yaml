@@ -1,0 +1,7 @@
+blueprint: personal-knowledge
+kind: verified-example
+version: 1.0.0
+input: {document_type: personal_notes, temporal_structure: daily}
+expected:
+  object_kinds: [Note, Project, Person, Topic, Decision, Task]
+  required_authority: [source_ref, source_date, access_scope]

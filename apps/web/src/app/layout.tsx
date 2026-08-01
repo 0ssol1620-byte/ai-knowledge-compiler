@@ -4,8 +4,10 @@ import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
 import { LocaleProvider } from "@/components/locale-provider";
 import { Providers } from "@/components/providers";
+import { ScaleEvidenceBridge } from "@/components/system/scale-evidence-bridge";
 import { localeCopy } from "@/lib/locale";
 import { getRequestLocale } from "@/lib/locale-server";
+import { scaleEvidenceServerConfig } from "@/lib/scale-evidence-server";
 
 import "./globals.css";
 import "./product-shell.css";
@@ -106,6 +108,9 @@ export default async function RootLayout({
         </a>
         <LocaleProvider locale={locale}>
           <Providers>
+            <ScaleEvidenceBridge
+              config={scaleEvidenceServerConfig(process.env)}
+            />
             <AppShell>{children}</AppShell>
           </Providers>
         </LocaleProvider>

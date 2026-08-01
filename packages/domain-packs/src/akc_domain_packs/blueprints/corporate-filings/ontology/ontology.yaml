@@ -1,0 +1,8 @@
+blueprint: corporate-filings
+kind: ontology
+version: 1.0.0
+classes: [Company, Filing, Risk, Metric, ReportingPeriod]
+relations:
+  - {type: filed_by, source: Filing, target: Company, authority: source_explicit}
+  - {type: reports_metric, source: Filing, target: Metric, authority: structured_derived}
+  - {type: discloses_risk, source: Filing, target: Risk, authority: source_explicit}

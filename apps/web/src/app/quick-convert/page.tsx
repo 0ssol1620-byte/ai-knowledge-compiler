@@ -16,11 +16,11 @@ const COPY = {
     jobs: "Jobs",
     heading: "Start a new conversion",
     intro:
-      "Add documents to run security checks and page analysis first. Processing does not begin until you review the time range and maximum credit reservation.",
+      "Add documents to run security checks and page analysis first. Processing does not begin until you confirm the time range and maximum credit reservation.",
     privateTitle: "Private route first",
     privateBody: "External providers require explicit workspace consent",
     after: "After you select files",
-    preflight: "Review the preflight first",
+    preflight: "Confirm the preflight first",
     preflightBody:
       "Inspect the analysis, then choose the processing route and output formats yourself.",
     checks: [
@@ -38,11 +38,11 @@ const COPY = {
     jobs: "작업",
     heading: "새 변환 시작",
     intro:
-      "먼저 문서를 추가해 보안 검사와 페이지 분석을 실행합니다. 예상 시간 범위와 최대 크레딧 예약량을 검토하기 전에는 처리를 시작하지 않습니다.",
+      "먼저 문서를 추가해 보안 검사와 페이지 분석을 실행합니다. 예상 시간 범위와 최대 크레딧 예약량을 확인하기 전에는 처리를 시작하지 않습니다.",
     privateTitle: "비공개 처리 우선",
     privateBody: "외부 제공자 사용에는 워크스페이스의 명시적 동의가 필요합니다",
     after: "파일 선택 후",
-    preflight: "사전 분석을 먼저 검토하세요",
+    preflight: "사전 분석을 먼저 확인하세요",
     preflightBody:
       "분석 결과를 확인한 뒤 처리 경로와 출력 형식을 직접 선택합니다.",
     checks: [

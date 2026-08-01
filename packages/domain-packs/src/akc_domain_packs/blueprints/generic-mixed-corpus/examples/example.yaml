@@ -1,0 +1,7 @@
+blueprint: generic-mixed-corpus
+kind: verified-example
+version: 1.0.0
+input: {document_type: mixed_bundle, temporal_structure: mixed}
+expected:
+  object_kinds: [Document, Topic, Entity, Claim, Evidence, Asset]
+  required_authority: [source_ref, document_id, region]

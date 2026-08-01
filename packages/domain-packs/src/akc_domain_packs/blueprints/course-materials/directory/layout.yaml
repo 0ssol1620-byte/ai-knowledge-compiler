@@ -1,0 +1,7 @@
+blueprint: course-materials
+kind: directory-layout
+version: 1.0.0
+roots: [Sources, Courses, Modules, Concepts, Learning Paths, Assessments, MOCs, Evidence, Packages]
+maximum_depth: 4
+naming_policy: stable-title
+preserve_existing_folders: true

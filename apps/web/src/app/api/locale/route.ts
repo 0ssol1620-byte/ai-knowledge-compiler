@@ -15,15 +15,22 @@ export function GET(request: NextRequest) {
     requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")
       ? requestedReturn
       : "/";
-  const response = NextResponse.redirect(
-    new URL(returnTo, request.nextUrl.origin),
-  );
+  // A relative Location keeps the browser on the exact public origin that
+  // initiated the request. Building an absolute URL from Next's internal
+  // origin can otherwise switch localhost/127.0.0.1 in local verification or
+  // leak an infrastructure hostname behind a reverse proxy.
+  const response = new NextResponse(null, {
+    status: 303,
+    headers: { Location: returnTo },
+  });
   response.cookies.set(STRUCTARA_LOCALE_COOKIE, locale, {
     path: "/",
     maxAge: 31_536_000,
     sameSite: "lax",
     httpOnly: false,
-    secure: request.nextUrl.protocol === "https:",
+    secure:
+      request.nextUrl.protocol === "https:" ||
+      request.headers.get("x-forwarded-proto") === "https",
   });
   return response;
 }

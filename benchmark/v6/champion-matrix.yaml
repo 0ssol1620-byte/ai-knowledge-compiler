@@ -1,0 +1,67 @@
+schema_version: "6.0.0"
+champions:
+  native_pdf:
+    primary: null
+    fallback: null
+    recovery: null
+    authority: native_authority_lane
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  normal_scan:
+    primary: null
+    fallback: null
+    recovery: null
+    authority: null
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  korean_financial_table:
+    primary: null
+    fallback: null
+    recovery: pp-structure-v3-ppocrv6
+    authority: opendart_xbrl
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  english_filing:
+    primary: null
+    fallback: null
+    recovery: pp-structure-v3-ppocrv6
+    authority: sec_inline_xbrl
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  photographed_document:
+    primary: null
+    fallback: null
+    recovery: null
+    authority: null
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  formula_heavy:
+    primary: null
+    fallback: null
+    recovery: null
+    authority: source_geometry
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  cross_page_table:
+    primary: null
+    fallback: null
+    recovery: pp-structure-v3-ppocrv6
+    authority: native_or_source_geometry
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+  handwriting_form:
+    primary: null
+    fallback: null
+    recovery: null
+    authority: source_geometry
+    selection_basis: null
+    evidence_sha256: null
+    status: unresolved
+matrix_sha256: "sha256:ef28b285db85d20fba70cb7d8c5d1b83aa21cbc0fcda3e132f2ac6c37c1a8d9d"
