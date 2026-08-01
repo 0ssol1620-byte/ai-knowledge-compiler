@@ -9,6 +9,21 @@ const WebglScene = dynamic(() => import("./structara-webgl-scene"), {
   loading: () => null,
 });
 
+export function hasUsableWebGL2(
+  canvas: HTMLCanvasElement = document.createElement("canvas"),
+) {
+  try {
+    const context = canvas.getContext("webgl2", {
+      failIfMajorPerformanceCaveat: true,
+    });
+    if (!context) return false;
+    context.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function StructaraHeroScene() {
   const [enhance, setEnhance] = useState(false);
   const [inView, setInView] = useState(true);
@@ -23,7 +38,7 @@ export function StructaraHeroScene() {
     const connection = (
       navigator as Navigator & { connection?: { saveData?: boolean } }
     ).connection;
-    if (reduced || narrow || connection?.saveData) return;
+    if (reduced || narrow || connection?.saveData || !hasUsableWebGL2()) return;
 
     const id = window.requestIdleCallback(() => setEnhance(true), {
       timeout: 1600,
