@@ -7,9 +7,9 @@
 - Critical findings: 0
 - High findings: 0
 - Medium evidence limitations: 3
-- Deterministic visual baselines: 9/9 passed
+- Deterministic visual baselines: 11/11 passed
 - Accessibility projects: 4/4 passed
-- Browser and responsive matrix: 10/10 passed
+- Browser and responsive matrix: 9/9 passed
 - Current-worktree capture matrix: 532/532 required
 
 This approval applies to the repository release candidate and its exact build.
@@ -37,10 +37,10 @@ external gates.
 
 ## Executed evidence
 
-The deterministic product suite completed with 71 passed tests, 15 intentional
-project-scope skips, and zero failures. It includes nine visual baselines,
+The deterministic product suite completed with 77 passed tests, 17 intentional
+project-scope skips, and zero failures. It includes eleven visual baselines,
 forced colors, 200% desktop zoom, text/control floors, and WCAG A/AA checks.
-The browser matrix completed ten runs across 360, 390, 768, 1024, 1280, 1440,
+The browser matrix completed nine runs across 360, 390, 768, 1024, 1280, 1440,
 and 1920 widths using Chromium, Firefox, WebKit, and installed Microsoft Edge.
 
 The live journey completed registration, verification, Quick Convert upload,
@@ -72,10 +72,13 @@ container edge is intentional background patterning, not content loss.
 
 ## Medium evidence limitations
 
-1. Current canonical-domain field p75 LCP, INP, and CLS require real traffic.
-2. Physical-device screen-reader and mobile-browser review requires an
+1. Desktop Lighthouse is 99/100/100/100 with LCP 0.9s. Mobile simulated
+   Lighthouse is 76/100/100/100 with LCP 4.7s; the shared global CSS payload is
+   a documented performance block, while WebGL remains disabled on mobile.
+2. Current canonical-domain field p75 LCP, INP, and CLS require real traffic.
+3. Physical-device screen-reader and mobile-browser review requires an
    independent assistive-technology session.
-3. Legal trademark, public-claim, dataset, model, and license clearance remains
+4. Legal trademark, public-claim, dataset, model, and license clearance remains
    external to repository implementation.
 
 No Medium item permits a stronger production claim. `Production Reject` remains

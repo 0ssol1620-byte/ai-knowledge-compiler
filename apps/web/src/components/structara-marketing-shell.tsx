@@ -59,7 +59,7 @@ const labels = {
     sales: "Talk to sales",
     brandBody:
       "Structured, verified, connected, portable knowledge for people and AI.",
-    clearance: "Structara is a working name pending brand clearance.",
+    copyright: "© 2026 Structara. Evidence-first knowledge systems.",
     productFooter: "Product",
     solutionsFooter: "Solutions",
     resources: "Resources",
@@ -119,7 +119,7 @@ const labels = {
     footerTitle: "Structara가 사용할 수 있는 지식으로 만듭니다.",
     sales: "도입 문의",
     brandBody: "사람과 AI를 위한 구조화·검증·연결·이식 가능한 지식.",
-    clearance: "Structara는 브랜드 권리 검토 중인 작업명입니다.",
+    copyright: "© 2026 Structara. 근거 중심 지식 시스템.",
     productFooter: "제품",
     solutionsFooter: "솔루션",
     resources: "리소스",
@@ -290,7 +290,7 @@ export function StructaraMarketingShell({ children }: { children: ReactNode }) {
           <div className="st-footer-brand">
             <BrandMark />
             <p>{copy.brandBody}</p>
-            <small>{copy.clearance}</small>
+            <small>{copy.copyright}</small>
           </div>
           {[
             [

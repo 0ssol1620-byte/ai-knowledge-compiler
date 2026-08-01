@@ -76,7 +76,7 @@ const appRoutes = [
 test("HTML uses a per-request script nonce and hardened response headers", async ({
   page,
 }) => {
-  const response = await page.goto("/");
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   expect(response).not.toBeNull();
   const headers = response!.headers();
   expect(headers["x-content-type-options"]).toBe("nosniff");
@@ -94,10 +94,10 @@ test("HTML uses a per-request script nonce and hardened response headers", async
 test("brand homepage expresses the full source-to-intelligence thesis", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", {
-      name: "Don’t organize your files. Compile the knowledge.",
+      name: "Compile documents. Build trusted AI knowledge.",
     }),
   ).toBeVisible();
   await expect(
@@ -113,11 +113,12 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
   ).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
   await expect(
-    page.getByText("Structara is a working name pending brand clearance."),
+    page.getByText("© 2026 Structara. Evidence-first knowledge systems."),
   ).toBeVisible();
-  await expect(
-    page.getByText("First-party illustrative model · no generated imagery"),
-  ).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(
+    "working name pending brand clearance",
+  );
+  await expect(page.getByText("Actual product film")).toBeVisible();
 });
 
 test("product marketing uses real product evidence and deterministic diagrams", async ({
@@ -150,7 +151,7 @@ test("marketing and product retain a clear round trip", async ({
   page,
   isMobile,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   if (isMobile) {
     await page.getByRole("button", { name: "Open navigation" }).click();
     await page.getByRole("link", { name: "Workspace", exact: true }).click();
@@ -164,7 +165,7 @@ test("marketing and product retain a clear round trip", async ({
     page.getByRole("heading", { name: "Today in your workspace" }),
   ).toBeVisible();
   await expect(page.locator(".product-back-link")).toHaveAttribute("href", "/");
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -261,7 +262,7 @@ test("demo administration and settings never expose writable-looking controls", 
   page,
 }) => {
   for (const path of ["/admin", "/settings"] as const) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const demoControls = page.locator("[data-demo-static-control]");
     expect(
       await demoControls.count(),
@@ -382,7 +383,7 @@ test("auth, onboarding, product, and document surfaces remain usable on mobile",
     "/documents/sample-dart/processing",
     "/documents/sample-dart/markdown",
   ]) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     expect(
       await page.evaluate(
@@ -397,7 +398,7 @@ test("reduced motion removes travel, WebGL, and nonessential animation", async (
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".st-webgl-layer")).toBeHidden();
   const moving = await page.evaluate(() =>
     Array.from(document.querySelectorAll<HTMLElement>(".st-site *"))
@@ -449,13 +450,7 @@ test("representative routes have no automated WCAG A or AA violations", async ({
     await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     const results = await new AxeBuilder({ page })
-      .withTags([
-        "wcag2a",
-        "wcag2aa",
-        "wcag21a",
-        "wcag21aa",
-        "wcag22aa",
-      ])
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze();
     expect(
       results.violations,

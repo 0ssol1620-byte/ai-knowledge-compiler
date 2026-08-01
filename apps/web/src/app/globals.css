@@ -10480,6 +10480,92 @@ a {
   color: var(--success);
 }
 
+.benchmark-diagnostics {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+  gap: 36px;
+  margin-top: 32px;
+  border: 1px solid color-mix(in srgb, var(--warning) 28%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--warning) 4%, var(--surface));
+  padding: 24px;
+}
+
+.benchmark-diagnostics > div > span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.benchmark-diagnostics h2 {
+  margin: 9px 0 0;
+  color: var(--text);
+  font-size: 22px;
+}
+
+.benchmark-diagnostics > div > p,
+.benchmark-diagnostics article > p {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.benchmark-diagnostics article {
+  border-left: 1px solid var(--border);
+  padding-left: 28px;
+}
+
+.benchmark-diagnostics article header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.benchmark-diagnostics article header div {
+  display: grid;
+  gap: 4px;
+}
+
+.benchmark-diagnostics article header strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.benchmark-diagnostics article header span,
+.benchmark-diagnostics article header b {
+  color: var(--warning-strong, #835b13);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.benchmark-diagnostics article dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 22px;
+  margin: 20px 0 0;
+}
+
+.benchmark-diagnostics article dl > div {
+  min-width: 0;
+}
+
+.benchmark-diagnostics article dt {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.benchmark-diagnostics article dd {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .benchmark-methodology {
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) minmax(520px, 1.2fr);
@@ -10566,6 +10652,17 @@ a {
     grid-template-columns: 1fr;
     gap: 28px;
   }
+
+  .benchmark-diagnostics {
+    grid-template-columns: 1fr;
+  }
+
+  .benchmark-diagnostics article {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+    padding-top: 22px;
+    padding-left: 0;
+  }
 }
 
 @media (max-width: 620px) {
@@ -10589,6 +10686,15 @@ a {
   .benchmark-methodology dl > div {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .benchmark-diagnostics article header,
+  .benchmark-diagnostics article dl {
+    grid-template-columns: 1fr;
+  }
+
+  .benchmark-diagnostics article header {
+    flex-direction: column;
   }
 }
 

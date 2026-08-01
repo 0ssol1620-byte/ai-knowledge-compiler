@@ -565,7 +565,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "Pricing",
       "Start with documents. Scale into knowledge infrastructure.",
       "Choose by processing depth and operating control. Credits, page ranges, precision cost, retention, and caps stay visible.",
-      "Illustrative plan structure; final commercial values require owner approval.",
+      "Estimate pages, precision depth, retention, and operating controls before you choose a plan.",
       [
         {
           title: "Free and Personal",

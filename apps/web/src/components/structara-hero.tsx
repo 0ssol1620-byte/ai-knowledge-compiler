@@ -2,12 +2,40 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import {
+  Component,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import type { StructaraLocale } from "@/lib/locale";
 
 const WebglScene = dynamic(() => import("./structara-webgl-scene"), {
   ssr: false,
   loading: () => null,
 });
+
+class WebglFallbackBoundary extends Component<
+  { children: ReactNode; onFailure: () => void },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  override componentDidCatch() {
+    this.props.onFailure();
+  }
+
+  override render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 export function hasUsableWebGL2(
   canvas: HTMLCanvasElement = document.createElement("canvas"),
@@ -24,11 +52,15 @@ export function hasUsableWebGL2(
   }
 }
 
-export function StructaraHeroScene() {
+export function StructaraHeroScene({ locale }: { locale: StructaraLocale }) {
   const [enhance, setEnhance] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const [sceneRun, setSceneRun] = useState(0);
   const [inView, setInView] = useState(true);
   const [documentVisible, setDocumentVisible] = useState(true);
   const sceneRef = useRef<HTMLDivElement>(null);
+  const settleScene = useCallback(() => setSettled(true), []);
+  const disableScene = useCallback(() => setEnhance(false), []);
 
   useEffect(() => {
     const reduced = window.matchMedia(
@@ -65,7 +97,13 @@ export function StructaraHeroScene() {
   }, []);
 
   return (
-    <div ref={sceneRef} className="st-hero-scene" data-enhanced={enhance}>
+    <div
+      ref={sceneRef}
+      className="st-hero-scene"
+      data-enhanced={enhance}
+      data-settled={settled}
+      data-truth-class="first-party-illustrative-3d"
+    >
       <picture className="st-hero-render">
         <source
           media="(max-width: 640px)"
@@ -87,16 +125,41 @@ export function StructaraHeroScene() {
           width={2880}
           height={1800}
           decoding="async"
-          priority
+          loading="lazy"
+          fetchPriority="low"
           sizes="(max-width: 640px) 100vw, (max-width: 960px) 92vw, 50vw"
         />
       </picture>
       {enhance && (
         <div className="st-webgl-layer" aria-hidden="true">
-          <WebglScene active={inView && documentVisible} />
+          <WebglFallbackBoundary key={sceneRun} onFailure={disableScene}>
+            <WebglScene
+              active={inView && documentVisible && !settled}
+              onSettled={settleScene}
+              onContextFailure={disableScene}
+            />
+          </WebglFallbackBoundary>
         </div>
       )}
-      <small>First-party illustrative model · no generated imagery</small>
+      <p className="sr-only">
+        {locale === "ko"
+          ? "서로 다른 보고서, 논문, 표와 매뉴얼이 의미 블록으로 분해되고 검증된 뒤 하나의 지식 구조로 결합되는 애니메이션."
+          : "Reports, papers, tables, and manuals separate into semantic blocks, receive source verification, and compile into one knowledge plane."}
+      </p>
+      <div className="st-hero-scene-meta">
+        <small>12 SOURCES → VERIFIED KNOWLEDGE PLANE</small>
+        {enhance && settled && (
+          <button
+            type="button"
+            onClick={() => {
+              setSettled(false);
+              setSceneRun((value) => value + 1);
+            }}
+          >
+            {locale === "ko" ? "장면 다시 보기" : "Replay scene"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

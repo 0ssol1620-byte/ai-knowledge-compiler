@@ -10,15 +10,19 @@ assets:
     master_path: assets/3d/master/hero-master.blend
     derivatives:
       - path: assets/3d/derivatives/hero-master.glb
-        sha256: "23829353487336e08f4db42e8461c39a089b2e41be354ed78d22dec571fadca2"
+        sha256: "2f6d5f4181f68173a8c92792e6b10bc3a285b440128e72cabb6173d18697a75a"
       - path: assets/3d/derivatives/hero-master-low.glb
-        sha256: "9368040b98cfc969f34097cfea7f5c8a05327656ef860dd5bba8b4285ac9e27a"
+        sha256: "97ddbc2199c3687e75fee23329d0a11253c313125d95364aeaa9e97102391bd2"
+      - path: apps/web/public/hero/hero-documents-master.glb
+        sha256: "2f6d5f4181f68173a8c92792e6b10bc3a285b440128e72cabb6173d18697a75a"
+      - path: apps/web/public/hero/hero-documents-tablet.glb
+        sha256: "97ddbc2199c3687e75fee23329d0a11253c313125d95364aeaa9e97102391bd2"
       - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
-        sha256: "65d8eeeade5a5765b8b78cb6cd6501b25394e639d88b2adca58afe59519eb5be"
+        sha256: "d2b9a8b80e1db80634374e8f51c63c2f4b3307b740ded591fd47baa572cd04fa"
       - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
-        sha256: "b986e3371929b7a6f7f9a01c8cf795c3dd5c94a2836efe76723be8a1cd938266"
+        sha256: "15998f908a67d322afffaf6fa73cf3e8f9756b3abffd26d311161f381ff54f6d"
       - path: apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
-        sha256: "ec44cdec40ac85c52e34b78e1a9b765d8fea4860bdb0e5695a868629519e28ff"
+        sha256: "bfe49ea4bb3fa29be850a09d0b05ced0d0c5af06e468ad2b94c56f80f057f718"
     license:
       name: first-party
       evidence_path: assets/3d/ASSET_COMPLETION_REPORT.md
@@ -62,7 +66,7 @@ assets:
     master_path: apps/web/src/components/structara-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "41acffe0d66f84d594bd1bc3d07be1e9fef1d231d8556d33694bbacd41630a01"
+        sha256: "f370760a7a643cdd3ac7f9467e26f7f01795ca88a6ecdbd00de18262544a0caf"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md

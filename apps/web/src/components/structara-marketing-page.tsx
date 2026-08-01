@@ -264,7 +264,7 @@ function PageThesis({ definition }: { definition: StructaraPage }) {
             <strong>{value}</strong>
           </div>
         ))}
-        <small>No hidden policy · no unregistered claim</small>
+        <small>Policy-visible by design</small>
       </div>
     );
   }

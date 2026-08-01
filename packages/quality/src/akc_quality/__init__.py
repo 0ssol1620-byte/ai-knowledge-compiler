@@ -25,6 +25,16 @@ from .evidence import (
     validate_knowledge_evidence,
     validate_relation_evidence,
 )
+from .evidence_ladder import (
+    EvidenceDecision,
+    EvidenceLevel,
+    EvidencePolicy,
+    RiskCoveragePoint,
+    SelectivePrediction,
+    ValidationEvidence,
+    risk_coverage_curve,
+    verify_evidence,
+)
 from .models import (
     AgreementScore,
     FindingSeverity,
@@ -70,6 +80,9 @@ __all__ = [
     "AutonomousVerificationDecision",
     "AutonomousVerificationInput",
     "DartXbrlProvenance",
+    "EvidenceDecision",
+    "EvidenceLevel",
+    "EvidencePolicy",
     "FindingLevel",
     "FindingSeverity",
     "GeometryMatchSignals",
@@ -91,7 +104,10 @@ __all__ = [
     "QualityStatus",
     "QualityVector",
     "RecoveryStage",
+    "RiskCoveragePoint",
     "SecInlineXbrlProvenance",
+    "SelectivePrediction",
+    "ValidationEvidence",
     "VerificationAgent",
     "compare_engine_outputs",
     "compare_numeric_tokens",
@@ -101,6 +117,7 @@ __all__ = [
     "markdown_anomalies",
     "match_numeric_geometry",
     "repeated_ngram_ratio",
+    "risk_coverage_curve",
     "source_coverage_ratio",
     "table_numeric_fidelity",
     "table_shape_fidelity",
@@ -109,5 +126,6 @@ __all__ = [
     "validate_knowledge_evidence",
     "validate_relation_evidence",
     "validate_table",
+    "verify_evidence",
     "weighted_quality",
 ]

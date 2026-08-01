@@ -16,11 +16,11 @@ test.beforeEach(async ({ context }) => {
 test("Korean locale remains consistent across marketing and core product workflows", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
   await expect(
     page.getByRole("heading", {
-      name: "파일을 정리하지 마세요. 지식으로 컴파일하세요.",
+      name: "흩어진 문서를 AI가 신뢰할 수 있는 지식으로.",
     }),
   ).toBeVisible();
   const desktopProductLink = page
@@ -87,14 +87,18 @@ test("Korean locale remains consistent across marketing and core product workflo
 
 test("language switch persists and returns the product to English", async ({
   page,
+  isMobile,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  if (isMobile) {
+    await page.getByRole("button", { name: "내비게이션 열기" }).click();
+  }
   const switcher = page.getByRole("group", { name: "언어 선택" }).first();
   await switcher.getByRole("button", { name: "EN" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(
     page.getByRole("heading", {
-      name: "Don’t organize your files. Compile the knowledge.",
+      name: "Compile documents. Build trusted AI knowledge.",
     }),
   ).toBeVisible();
 

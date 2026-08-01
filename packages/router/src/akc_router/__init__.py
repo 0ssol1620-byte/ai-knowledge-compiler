@@ -56,9 +56,20 @@ from .providers import (
     ProviderRegistry,
     ProviderUnavailableError,
 )
+from .research import (
+    BetaBinomialPosterior,
+    CandidateForecast,
+    MonteCarloScheduleEstimate,
+    ScheduleScenario,
+    SelectiveRouteDecision,
+    estimate_schedule,
+    select_risk_constrained_candidate,
+)
 
 __all__ = [
     "MODE_PROFILE",
+    "BetaBinomialPosterior",
+    "CandidateForecast",
     "ClusterSamplePlan",
     "CollectionEstimate",
     "CollectionEstimateInput",
@@ -76,6 +87,7 @@ __all__ = [
     "KnowledgeRequest",
     "KnowledgeResult",
     "LearnedRouterShadowRecord",
+    "MonteCarloScheduleEstimate",
     "PageMetrics",
     "PageTechnicalClass",
     "ParseRequest",
@@ -94,6 +106,8 @@ __all__ = [
     "RouteProfile",
     "RouterContext",
     "RoutingAudit",
+    "ScheduleScenario",
+    "SelectiveRouteDecision",
     "StaticDocumentFeatures",
     "build_cluster_identity",
     "build_zero_authority_learned_router_shadow",
@@ -103,9 +117,11 @@ __all__ = [
     "detect_script_distribution",
     "estimate_collection",
     "estimate_route_credits",
+    "estimate_schedule",
     "native_candidate",
     "native_requires_visual_cross_check",
     "preflight_difficulty",
     "select_adaptive_samples",
     "select_first_route",
+    "select_risk_constrained_candidate",
 ]

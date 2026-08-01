@@ -16,18 +16,23 @@ status_semantics:
     never be presented as production-ready or as completed processing.
 
 release_review:
-  reviewed_at: 2026-07-31
+  reviewed_at: 2026-08-02
   state: repository_release_candidate
   current_evidence:
     eslint: pass
     typescript: pass
     production_build: pass
-    vitest: 72_passed
-    playwright: 24_passed_4_intentional_skips
+    vitest: 214_passed
+    playwright: 77_passed_17_intentional_project_skips
+    browser_matrix: 9_passed
+    visual_baselines: 11_passed
+    brand_capture: 532_passed_0_blocking_findings
+    lighthouse_desktop: performance_99_accessibility_100_best_practices_100_seo_100_lcp_0_9s
+    lighthouse_mobile: performance_76_accessibility_100_best_practices_100_seo_100_lcp_4_7s_documented_block
     enabled_dead_buttons: 0
     asset_manifest: 9_verified
-    asset_names: 119_verified
-    asset_hashes: 21_verified
+    asset_names: 133_verified
+    asset_hashes: 23_verified
   external_gates:
     - legal_and_domain_clearance
     - approved_commercial_price_book
@@ -138,6 +143,14 @@ routes:
       wave: 1,
       surface: marketing,
       status: complete,
+    }
+  - {
+      path: /film,
+      priority: P0,
+      wave: 1,
+      surface: editorial,
+      status: complete,
+      gate: measured_product_composite_with_disclosure,
     }
   - {
       path: /research,

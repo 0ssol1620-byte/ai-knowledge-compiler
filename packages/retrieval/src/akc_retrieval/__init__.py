@@ -10,6 +10,13 @@ from .engine import (
     VectorStore,
     cosine_similarity,
 )
+from .entity_resolution import (
+    DEFAULT_FIELD_WEIGHTS,
+    EntityRecord,
+    EntityResolutionDecision,
+    FieldWeight,
+    resolve_entities,
+)
 from .models import (
     EmbeddingRequest,
     EmbeddingResult,
@@ -55,13 +62,17 @@ from .postgres import (
 )
 
 __all__ = [
+    "DEFAULT_FIELD_WEIGHTS",
     "POSTGRES_HYBRID_SEARCH_SQL",
     "PRODUCTION_EMBEDDING_DIMENSION",
     "AttestedRetrievalPayload",
     "EmbeddingProvider",
     "EmbeddingRequest",
     "EmbeddingResult",
+    "EntityRecord",
+    "EntityResolutionDecision",
     "EvidenceHit",
+    "FieldWeight",
     "HmacSha256RowAttestor",
     "HybridWeights",
     "InMemoryVectorStore",
@@ -99,5 +110,6 @@ __all__ = [
     "canonical_attestation_payload",
     "cosine_similarity",
     "normalize_numeric_token",
+    "resolve_entities",
     "verify_numeric_answer",
 ]

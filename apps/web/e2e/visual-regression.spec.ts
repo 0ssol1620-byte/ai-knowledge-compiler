@@ -9,6 +9,8 @@ test.beforeEach(({}, testInfo) => {
 
 const visualRoutes = [
   { name: "marketing-home", path: "/" },
+  { name: "evidence-film", path: "/film?scene=4&static=1" },
+  { name: "benchmark-evidence", path: "/benchmarks" },
   { name: "verify-product", path: "/product/verify" },
   { name: "dart-public-proof", path: "/demo/dart" },
   { name: "sec-public-proof", path: "/demo/sec" },
@@ -34,6 +36,9 @@ for (const route of visualRoutes) {
           caret-color: transparent !important;
           transition-delay: 0s !important;
           transition-duration: 0s !important;
+        }
+        .st-home > section {
+          content-visibility: visible !important;
         }
       `,
     });

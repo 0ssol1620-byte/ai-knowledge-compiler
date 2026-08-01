@@ -165,6 +165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       "/product",
       "/solutions",
       "/demo",
+      "/film",
       "/research",
       "/security",
       "/pricing",

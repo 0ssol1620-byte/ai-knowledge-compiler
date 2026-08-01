@@ -141,6 +141,12 @@ from .scheduling import (
     size_aware_bin_pack,
     straggler_candidates,
 )
+from .semantic_monitor import (
+    SemanticDriftMonitor,
+    SemanticHealthProjection,
+    SemanticSample,
+    StratumPosterior,
+)
 from .sharding import (
     AdaptiveShardPredictor,
     ContinuitySignal,
@@ -275,11 +281,15 @@ __all__ = [
     "RouterStage",
     "RoutingUnavailable",
     "RuntimeStack",
+    "SemanticDriftMonitor",
+    "SemanticHealthProjection",
     "SemanticObservation",
+    "SemanticSample",
     "SettlementResult",
     "ShardOutput",
     "ShardPlan",
     "ShardSizing",
+    "StratumPosterior",
     "TableIdentity",
     "UnresolvedManifestEntry",
     "ValidationFinding",

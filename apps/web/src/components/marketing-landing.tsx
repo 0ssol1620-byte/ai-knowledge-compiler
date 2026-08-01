@@ -1,20 +1,26 @@
 import {
   ArrowRight,
   CheckCircle,
-  FileText,
-  Graph,
-  LinkSimple,
   LockKey,
-  SquaresFour,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
+import { KnowledgeFlow } from "@/components/marketing/knowledge-flow";
+import { ProductFilmDialog } from "@/components/marketing/product-film-dialog";
+import { RawCompiledCompare } from "@/components/marketing/raw-compiled-compare";
+import { TransformationStory } from "@/components/marketing/transformation-story";
 import { StructaraGlyph } from "@/components/structara-glyph";
 import { StructaraHeroScene } from "@/components/structara-hero";
+import { StructaraLiveDemo } from "@/components/structara-live-demo";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
 import { StructaraPattern } from "@/components/structara-pattern";
 import { StructaraProofDemo } from "@/components/structara-proof-demo";
-import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
+import {
+  formatBenchmarkCost,
+  formatBenchmarkLatency,
+  formatBenchmarkPercent,
+  publicBenchmarkSnapshot,
+} from "@/lib/benchmark-public";
 import type { StructaraLocale } from "@/lib/locale";
 
 type HomeCopy = {
@@ -23,6 +29,7 @@ type HomeCopy = {
   heroIntro: string;
   build: string;
   watch: string;
+  verifiedDemo: string;
   trust: string;
   intakeSignals: readonly [string, string, string];
   outputsLabel: string;
@@ -59,9 +66,7 @@ type HomeCopy = {
   secLink: string;
   benchmarkLabel: string;
   benchmarkTitle: string;
-  benchmarkBody: string;
   metricHeaders: readonly string[];
-  metrics: readonly [string, string, string][];
   benchmarkLink: string;
   useCasesTitle: string;
   useCases: readonly [string, string][];
@@ -85,11 +90,12 @@ type HomeCopy = {
 const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
   en: {
     context: "The Knowledge Compiler for AI",
-    heroTitle: "Don’t organize your files.\nCompile the knowledge.",
+    heroTitle: "Compile documents.\nBuild trusted AI knowledge.",
     heroIntro:
-      "Drop everything in. Structara turns it into structured, verified, connected knowledge for people and AI.",
+      "Compile reports, papers, manuals, and data into one source-linked knowledge system.",
     build: "Compile your collection",
     watch: "Watch the transformation",
+    verifiedDemo: "Open the verified demo",
     trust: "Source-linked · Portable · Private by policy",
     intakeSignals: [
       "Folder tree preserved",
@@ -188,15 +194,7 @@ const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
     secLink: "Explore SEC",
     benchmarkLabel: "Benchmark discipline",
     benchmarkTitle: "Accuracy should be demonstrated, not declared.",
-    benchmarkBody:
-      "Dataset, sample count, route version, evaluator, and date travel with every result. Unmeasured values remain unavailable.",
     metricHeaders: ["Metric", "Public status", "Evidence"],
-    metrics: [
-      ["Text fidelity", "Not measured", "Dataset required"],
-      ["Numeric preservation", "Not measured", "Ground truth required"],
-      ["Table structure", "Not measured", "Comparator required"],
-      ["Source coverage", "Verified locally", "Live source-link E2E"],
-    ],
     benchmarkLink: "Explore benchmark methodology",
     useCasesTitle: "One compiler. Different knowledge systems.",
     useCases: [
@@ -241,11 +239,12 @@ const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
   },
   ko: {
     context: "AI를 위한 지식 컴파일러",
-    heroTitle: "파일을 정리하지 마세요.\n지식으로 컴파일하세요.",
+    heroTitle: "흩어진 문서를\nAI가 신뢰할 수 있는 지식으로.",
     heroIntro:
-      "폴더째 넣으면 Structara가 구조·근거·연결을 갖춘 지식 시스템으로 만듭니다.",
+      "보고서, 논문, 매뉴얼과 데이터를 원문 근거가 연결된 하나의 지식 시스템으로 컴파일합니다.",
     build: "컬렉션 컴파일하기",
     watch: "변환 과정 보기",
+    verifiedDemo: "검증된 데모 열기",
     trust: "원본 연결 · 이식 가능 · 정책 기반 비공개",
     intakeSignals: ["폴더 구조 보존", "자동 분류 준비", "중복 후보 임시 표시"],
     outputsLabel: "지원 출력",
@@ -328,15 +327,7 @@ const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
     secLink: "SEC 살펴보기",
     benchmarkLabel: "벤치마크 원칙",
     benchmarkTitle: "정확도는 선언이 아니라 근거로 증명해야 합니다.",
-    benchmarkBody:
-      "모든 결과에 데이터셋, 샘플 수, 처리 경로 버전, 평가기와 날짜를 함께 제공합니다. 측정하지 않은 값은 측정 불가로 유지합니다.",
     metricHeaders: ["지표", "공개 상태", "근거"],
-    metrics: [
-      ["텍스트 충실도", "미측정", "데이터셋 필요"],
-      ["숫자 보존", "미측정", "정답 데이터 필요"],
-      ["표 구조", "미측정", "비교기 필요"],
-      ["원본 커버리지", "로컬 검증 완료", "원본 링크 E2E"],
-    ],
     benchmarkLink: "벤치마크 방법론 살펴보기",
     useCasesTitle: "하나의 컴파일러로 서로 다른 지식 시스템을 만듭니다.",
     useCases: [
@@ -387,6 +378,78 @@ export function MarketingLanding({
   locale?: StructaraLocale;
 }) {
   const copy = HOME_COPY[locale];
+  const measuredCandidates = publicBenchmarkSnapshot.datasets.filter(
+    (dataset) => dataset.status === "available",
+  );
+  const formalCaseCount = measuredCandidates.reduce(
+    (total, dataset) => total + (dataset.evidence?.case_count ?? 0),
+    0,
+  );
+  const candidateEvidence = measuredCandidates
+    .map((dataset) =>
+      dataset.label
+        .replace("MinerU 3.4.4 · ", "MinerU ")
+        .replace("PaddleOCR-VL 1.6 · FastDeploy c8", "Paddle VL"),
+    )
+    .join(" · ");
+  const metricRows = [
+    [
+      locale === "ko" ? "텍스트 1−편집거리" : "Text 1−edit",
+      measuredCandidates
+        .map((dataset) =>
+          formatBenchmarkPercent(dataset.metrics.text_edit_companion),
+        )
+        .join(" · "),
+      candidateEvidence,
+    ],
+    [
+      locale === "ko" ? "수식 1−편집거리" : "Formula 1−edit",
+      measuredCandidates
+        .map((dataset) =>
+          formatBenchmarkPercent(dataset.metrics.formula_edit_companion),
+        )
+        .join(" · "),
+      candidateEvidence,
+    ],
+    [
+      locale === "ko" ? "표 TEDS" : "Table TEDS",
+      measuredCandidates
+        .map((dataset) => formatBenchmarkPercent(dataset.metrics.table_teds))
+        .join(" · "),
+      locale === "ko" ? "공식 부분 지표" : "Official partial metric",
+    ],
+    [
+      locale === "ko" ? "표 1−편집거리" : "Table 1−edit",
+      measuredCandidates
+        .map((dataset) =>
+          formatBenchmarkPercent(dataset.metrics.table_edit_companion),
+        )
+        .join(" · "),
+      candidateEvidence,
+    ],
+    [
+      locale === "ko" ? "평균 실행시간" : "Mean runtime",
+      measuredCandidates
+        .map((dataset) =>
+          formatBenchmarkLatency(dataset.metrics.mean_latency_ms),
+        )
+        .join(" · "),
+      "RTX 4090 · $0.69/h",
+    ],
+    [
+      locale === "ko" ? "페이지당 추정 비용" : "Estimated cost/page",
+      measuredCandidates
+        .map((dataset) =>
+          formatBenchmarkCost(dataset.metrics.cost_per_page_usd),
+        )
+        .join(" · "),
+      locale === "ko" ? "GPU 시간 기준" : "GPU time only",
+    ],
+  ] as const;
+  const benchmarkBody =
+    locale === "ko"
+      ? `${measuredCandidates.length}개 파서 후보가 동일한 OmniDocBench 공식 데모 18페이지에서 정식 추론 ${formalCaseCount}건을 완료했습니다. 모든 공개 수치에 평가기, 런타임, 증거 해시를 함께 제공합니다.`
+      : `${measuredCandidates.length} parser candidates completed ${formalCaseCount} formal inference cases on the same 18-page OmniDocBench demo subset. Every published value carries its evaluator, runtime, and evidence hash.`;
   return (
     <StructaraMarketingShell>
       <main id="main-content" className="st-home">
@@ -397,7 +460,21 @@ export function MarketingLanding({
         >
           <div className="st-home-copy">
             <p className="st-context-label">{copy.context}</p>
-            <h1>{copy.heroTitle}</h1>
+            <h1
+              style={{
+                maxWidth: "18ch",
+                margin: 0,
+                fontFamily:
+                  '"Segoe UI Variable", "Segoe UI", Arial, sans-serif',
+                fontSize: "clamp(46px, 10vw, 60px)",
+                fontWeight: 590,
+                letterSpacing: "-0.058em",
+                lineHeight: 0.94,
+                whiteSpace: "pre-line",
+              }}
+            >
+              {copy.heroTitle}
+            </h1>
             <p className="st-home-intro">{copy.heroIntro}</p>
             <div className="st-actions">
               <Link href="/intake" className="st-button st-button-dark">
@@ -408,6 +485,9 @@ export function MarketingLanding({
                 {copy.watch}
               </a>
             </div>
+            <Link href="/demo/dart" className="st-hero-tertiary">
+              {copy.verifiedDemo}
+            </Link>
             <p className="st-trust-line">{copy.trust}</p>
             <div
               className="st-intake-signal"
@@ -425,7 +505,7 @@ export function MarketingLanding({
               Page → Structure → Evidence → Knowledge → Intelligence
             </p>
           </div>
-          <StructaraHeroScene />
+          <StructaraHeroScene locale={locale} />
           <div className="st-output-rail" aria-label={copy.outputsLabel}>
             {copy.outputs.map((output) => (
               <span key={output}>{output}</span>
@@ -446,82 +526,42 @@ export function MarketingLanding({
             </h2>
             <p>{copy.problemBody}</p>
           </div>
-          <div
-            className="st-before-after"
-            data-signature-asset="A02"
-            data-truth-class="deterministic-reference-scene"
-          >
-            <article>
-              <span>{copy.rawDocuments}</span>
-              <div className="st-fragments">
-                <i />
-                <i />
-                <i />
-                <i />
-              </div>
-              <p>{copy.rawSignal}</p>
-            </article>
-            <div className="st-compile-path" aria-hidden="true">
-              <FileText size={16} />
-              <span />
-              <SquaresFour size={16} />
-              <span />
-              <LinkSimple size={16} />
-              <span />
-              <Graph size={16} />
-            </div>
-            <article>
-              <span>{copy.compiledKnowledge}</span>
-              <div className="st-compiled">
-                <strong>{copy.compiledItems[0]}</strong>
-                {copy.compiledItems.slice(1).map((item) => (
-                  <i key={item}>{item}</i>
-                ))}
-              </div>
-              <p>{copy.compiledSignal}</p>
-            </article>
-          </div>
         </section>
 
-        <section id="transformation" className="st-transformation">
-          <header>
-            <p>{copy.compilerPath}</p>
-            <h2>{copy.transformationTitle}</h2>
-          </header>
-          <div className="st-chapters">
-            {copy.chapters.map((chapter) => (
-              <article
-                key={chapter.number}
-                data-truth-class="deterministic-reference-scene"
-                data-signature-asset={
-                  chapter.number === "01"
-                    ? "A02"
-                    : chapter.number === "02"
-                      ? "A03"
-                      : chapter.number === "03"
-                        ? "A04"
-                        : "A06"
-                }
-              >
-                <div className="st-chapter-copy">
-                  <span>{chapter.number}</span>
-                  <h3>{chapter.title}</h3>
-                  <p>{chapter.body}</p>
-                  <small>{chapter.signal}</small>
-                </div>
-                <ChapterVisual
-                  index={chapter.number}
-                  exportLabel={copy.exportLabel}
-                  knowledgeLabel={copy.knowledgeLabel}
-                />
-              </article>
-            ))}
+        <RawCompiledCompare locale={locale} />
+
+        <TransformationStory
+          locale={locale}
+          chapters={copy.chapters.map((chapter) => ({
+            ...chapter,
+            id: `chapter-${chapter.number}`,
+          }))}
+        />
+
+        <section
+          className="st-live-product-section"
+          data-truth-class="deterministic-reference-scene"
+        >
+          <div className="st-section-intro">
+            <p>{locale === "ko" ? "실제 제품" : "Actual product"}</p>
+            <h2>
+              {locale === "ko"
+                ? "설명보다 먼저, 작동하는 컴파일러를 확인하세요."
+                : "See the working compiler before the claims."}
+            </h2>
+            <span>
+              {locale === "ko"
+                ? "고정된 공개 픽스처가 수집부터 패키지까지 다섯 단계를 재현합니다."
+                : "A frozen public fixture reproduces all five stages from collection to package."}
+            </span>
           </div>
+          <StructaraLiveDemo locale={locale} />
         </section>
 
         <section
           className="st-demo-section"
-          data-signature-assets="A03 A05"
+          data-signature-asset="A03"
+          data-signature-assets="A05"
           data-truth-class="public-filing-reference-snapshot"
         >
           <div className="st-section-intro">
@@ -535,6 +575,8 @@ export function MarketingLanding({
             <Link href="/intake">{copy.tryDocument}</Link>
           </div>
         </section>
+
+        <KnowledgeFlow locale={locale} />
 
         <section className="st-pillars">
           <header>
@@ -572,7 +614,7 @@ export function MarketingLanding({
           <div>
             <p>{copy.benchmarkLabel}</p>
             <h2>{copy.benchmarkTitle}</h2>
-            <span>{copy.benchmarkBody}</span>
+            <span>{benchmarkBody}</span>
           </div>
           <div className="st-metric-table">
             <div>
@@ -580,7 +622,7 @@ export function MarketingLanding({
                 <span key={cell}>{cell}</span>
               ))}
             </div>
-            {copy.metrics.map((row) => (
+            {metricRows.map((row) => (
               <div key={row[0]}>
                 {row.map((cell) => (
                   <span key={cell}>{cell}</span>
@@ -592,6 +634,8 @@ export function MarketingLanding({
             {copy.benchmarkLink}
           </Link>
         </section>
+
+        <ProductFilmDialog locale={locale} />
 
         <section className="st-use-cases">
           <header>
@@ -650,47 +694,5 @@ export function MarketingLanding({
         </section>
       </main>
     </StructaraMarketingShell>
-  );
-}
-
-function ChapterVisual({
-  index,
-  exportLabel,
-  knowledgeLabel,
-}: {
-  index: string;
-  exportLabel: string;
-  knowledgeLabel: string;
-}) {
-  const glyph =
-    index === "01"
-      ? "block"
-      : index === "02"
-        ? "evidence"
-        : index === "03"
-          ? "node"
-          : "package";
-  return (
-    <div className={`st-chapter-visual st-chapter-${index}`} aria-hidden="true">
-      <StructaraGlyph name={glyph} size={26} />
-      <div className="st-visual-page">
-        <i />
-        <i />
-        <i />
-        <b />
-      </div>
-      <div className="st-visual-result">
-        <strong>
-          {index === "02"
-            ? DART_PUBLIC_FIXTURE.rows[0].current
-            : index === "04"
-              ? exportLabel
-              : knowledgeLabel}
-        </strong>
-        <span />
-        <span />
-      </div>
-      <div className="st-visual-link" />
-    </div>
   );
 }

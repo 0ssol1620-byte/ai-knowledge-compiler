@@ -1,15 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-test("Home hero matches the autonomous collection promise and exposes the six signature semantics", async ({
+import benchmarkSnapshot from "../src/data/benchmark-public-snapshot.json";
+
+test("Home hero matches the compiler promise and exposes the six signature semantics", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Don’t organize your files. Compile the knowledge.",
+    "Compile documents. Build trusted AI knowledge.",
   );
   await expect(
     page.getByText(
-      "Drop everything in. Structara turns it into structured, verified, connected knowledge for people and AI.",
+      "Compile reports, papers, manuals, and data into one source-linked knowledge system.",
     ),
   ).toBeVisible();
   await expect(
@@ -25,6 +27,42 @@ test("Home hero matches the autonomous collection promise and exposes the six si
   await expect(page.locator('[data-signature-asset="A04"]')).toBeVisible();
   await expect(page.locator('[data-signature-assets~="A05"]')).toBeVisible();
   await expect(page.locator('[data-signature-asset="A06"]')).toBeVisible();
+});
+
+test("Reference compare, reduced-motion hero, and product film remain fully operable", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  const hero = page.locator(".st-hero-scene");
+  await expect(hero).toHaveAttribute("data-enhanced", "false");
+  await expect(hero.locator("canvas")).toHaveCount(0);
+  await expect(hero.locator("picture")).toBeVisible();
+
+  const boundary = page.getByRole("slider", { name: "Comparison boundary" });
+  await boundary.scrollIntoViewIfNeeded();
+  await expect(boundary).toHaveValue("50");
+  await page.getByRole("button", { name: "Original", exact: true }).click();
+  await expect(boundary).toHaveValue("100");
+  await boundary.press("Space");
+  await expect(boundary).toHaveValue("50");
+  await page.getByRole("button", { name: "Result", exact: true }).click();
+  await expect(boundary).toHaveValue("0");
+
+  const filmTrigger = page.getByRole("button", {
+    name: "Play the 60-second film",
+    exact: true,
+  });
+  await filmTrigger.scrollIntoViewIfNeeded();
+  await filmTrigger.click();
+  const dialog = page.getByRole("dialog", {
+    name: "Evidence in Motion product film",
+  });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator("video")).toHaveAttribute("controls", "");
+  await dialog.getByRole("button", { name: "Close film" }).click();
+  await expect(dialog).not.toBeVisible();
 });
 
 test("SEC proof preserves the actual filing fact through every transformation", async ({
@@ -318,18 +356,66 @@ test("Integrity Console leads with automatic history and keeps override secondar
   await expect(page.locator("body")).not.toContainText(/paddle|mineru/i);
 });
 
-test("Public benchmark route mounts the fail-closed evidence lab", async ({
+test("Public benchmark route mounts the measured evidence lab", async ({
   page,
 }) => {
   await page.goto("/benchmarks");
   await expect(
     page.getByRole("heading", { name: "Benchmark Lab" }),
   ).toBeVisible();
-  await expect(page.getByText("Public metrics locked")).toBeVisible();
+  await expect(page.getByText("Publishable evidence bundle")).toBeVisible();
   await expect(
-    page.getByText("No performance metrics are ready for publication."),
+    page.getByRole("heading", { name: "Measured parser evidence" }),
   ).toBeVisible();
+  await expect(page.locator(".benchmark-table-frame tbody tr")).toHaveCount(
+    benchmarkSnapshot.datasets.length,
+  );
+  for (const candidate of benchmarkSnapshot.datasets) {
+    await expect(page.getByText(candidate.label)).toBeVisible();
+  }
+  await expect(page.locator(".benchmark-table-frame")).not.toContainText(
+    "Not measured",
+  );
   await expect(
-    page.locator('.benchmark-table-frame tbody td:has-text("Not measured")'),
-  ).toHaveCount(24);
+    page.getByRole("heading", { name: "Failures stay visible." }),
+  ).toBeVisible();
+  await expect(page.getByText("OvisOCR2 · vLLM 0.22.1")).toBeVisible();
+  await expect(page.getByText("0 scored cases")).toBeVisible();
+});
+
+test("Evidence film exposes the signed model portfolio with real controls", async ({
+  page,
+}) => {
+  await page.goto("/film?scene=4&static=1");
+  await expect(
+    page.getByRole("heading", {
+      name: "Different strengths become one routing advantage.",
+    }),
+  ).toBeVisible();
+  const formalCaseCount = benchmarkSnapshot.datasets.reduce(
+    (total, candidate) => total + (candidate.evidence?.case_count ?? 0),
+    0,
+  );
+  await expect(
+    page.getByText(
+      `${formalCaseCount} / ${formalCaseCount} formal inference cases completed`,
+    ),
+  ).toBeVisible();
+  for (const candidate of benchmarkSnapshot.datasets) {
+    const expected = candidate.label
+      .replace("MinerU 3.4.4 · Pipeline", "MinerU pipe")
+      .replace("PaddleOCR-VL 1.6 · FastDeploy c8", "Paddle VL")
+      .replace("MinerU 3.4.4 · VLM c1", "MinerU VLM")
+      .replace("DeepSeek-OCR-2 · Transformers", "DeepSeek 2")
+      .replace("OvisOCR2 0.9B · vLLM cu129", "Ovis 0.9B");
+    await expect(page.getByText(expected)).toBeVisible();
+  }
+  await page.getByRole("button", { name: "Next scene" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Documents become inspectable notes." }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Previous scene" }).click();
+  await expect(
+    page.getByRole("heading", { name: /Different strengths/ }),
+  ).toBeVisible();
 });
