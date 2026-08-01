@@ -206,13 +206,13 @@ def _enable_rls() -> None:
         "processing_job_id IS NOT NULL AND EXISTS ("  # noqa: S608
         "SELECT 1 FROM processing_jobs integrity_execution_job "
         f"WHERE integrity_execution_job.tenant_id = \"{_TABLE}\".tenant_id "
-        f"AND integrity_execution_job.id = \"{_TABLE}\".processing_job_id))"
+        f"AND integrity_execution_job.id = \"{_TABLE}\".processing_job_id)"
     )
     analysis_scope = (
         "analysis_task_id IS NOT NULL AND EXISTS ("  # noqa: S608
         "SELECT 1 FROM analysis_tasks integrity_execution_task "
         f"WHERE integrity_execution_task.tenant_id = \"{_TABLE}\".tenant_id "
-        f"AND integrity_execution_task.id = \"{_TABLE}\".analysis_task_id))"
+        f"AND integrity_execution_task.id = \"{_TABLE}\".analysis_task_id)"
     )
     for role, scope in (
         ("akc_dispatch_worker", dispatch_scope),

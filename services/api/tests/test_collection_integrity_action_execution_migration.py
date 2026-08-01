@@ -111,3 +111,35 @@ def test_integrity_action_execution_rls_is_project_and_worker_bound() -> None:
     assert "GRANT SELECT, UPDATE (status, result_code, result" in source
     columns = {column.name for column in CollectionIntegrityActionExecution.__table__.c}
     assert "password" not in columns
+
+
+def test_integrity_action_execution_postgres_policy_sql_is_balanced(
+    monkeypatch: Any,
+) -> None:
+    statements: list[str] = []
+
+    class _Dialect:
+        name = "postgresql"
+
+    class _Bind:
+        dialect = _Dialect()
+
+    class _PostgresOperations:
+        @staticmethod
+        def get_bind() -> _Bind:
+            return _Bind()
+
+        @staticmethod
+        def execute(statement: str) -> None:
+            statements.append(statement)
+
+    monkeypatch.setattr(MIGRATION, "op", _PostgresOperations())
+    MIGRATION._enable_rls()
+
+    worker_policies = [
+        statement
+        for statement in statements
+        if statement.startswith("CREATE POLICY") and "_akc_" in statement
+    ]
+    assert len(worker_policies) == 4
+    assert all(statement.count("(") == statement.count(")") for statement in statements)
