@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-08-02T09:56:21.478759+00:00",
+  "generated_at": "2026-08-02T10:01:37.125372+00:00",
   "source": {
     "path": "D:\\FOLYNTA_FINAL_END_TO_END_RESOLUTION_MASTERPLAN_v2_TRACEABILITY_COMPLETE_KO_2026-08-02.md",
     "sha256": "f841236d757b82888b0b767576fe5c8da72a1ad477ac9cd0ef476ab28debe3f6",
@@ -1769,10 +1769,15 @@
           "path": "benchmark/reports/folynta-system-algorithm-evaluation-2026-08-02.json",
           "claim": "The current full backend regression passed all billing, retry, scheduler, and API integrity tests.",
           "exists": "true"
+        },
+        {
+          "path": "benchmark/reports/folynta-runpod-provider-billing-72h-2026-08-02.json",
+          "claim": "A read-only 72-hour RunPod serverless billing query returned zero records and zero provider spend, proving that the pod-based evaluation is not represented by this serverless invoice surface.",
+          "exists": "true"
         }
       ],
-      "blocker": "A production provider invoice has not been reconciled against GPU seconds, internal cost, user credits, and margin.",
-      "notes": "The immutable local billing contract passes; production invoice calibration remains open."
+      "blocker": "RunPod Pod invoice data for the GPU evaluation has not been obtained, so pod runtime estimates cannot yet be reconciled against provider invoice, internal cost, user credits, and margin.",
+      "notes": "The immutable local billing contract passes. Serverless billing was queried read-only and correctly remained separate from pod spend."
     },
     {
       "requirement_id": "H-1702",
@@ -9184,5 +9189,5 @@
       "notes": ""
     }
   ],
-  "ledger_sha256": "sha256:19e7b41aa71585c083936eacd2310150da6238e0ae9d80f331bc10497dfb1df0"
+  "ledger_sha256": "sha256:98184c69ac68315ff8bd164a11a8d616ede36dcc76da691a682172e73ccf06fc"
 }
