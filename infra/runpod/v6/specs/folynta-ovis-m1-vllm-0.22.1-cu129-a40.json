@@ -6,9 +6,10 @@
   "container_disk_gb": 120,
   "volume_gb": 20,
   "allowed_cuda_versions": ["12.8", "12.9"],
-  "docker_entrypoint": ["/bin/bash", "-lc"],
-  "docker_start_cmd": [
-    "apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-server && mkdir -p /root/.ssh /run/sshd && printf '%s\\n' \"$PUBLIC_KEY\" > /root/.ssh/authorized_keys && chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys && exec /usr/sbin/sshd -D -e"
-  ],
+  "docker_entrypoint": [],
+  "docker_start_cmd": [],
+  "qualification_state": "BUILD_REQUIRED",
+  "baked_image_source": "infra/runpod/v6/images/ovisocr2-m1/Dockerfile",
+  "baked_runtime_receipt_sha256": null,
   "vllm_cuda_compatibility": true
 }

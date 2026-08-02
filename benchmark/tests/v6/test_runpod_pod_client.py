@@ -19,6 +19,8 @@ def spec() -> PodCreateSpec:
             "docker_entrypoint": ["/bin/bash", "-lc"],
             "docker_start_cmd": ["exec /usr/sbin/sshd -D -e"],
             "vllm_cuda_compatibility": True,
+            "qualification_state": "READY",
+            "baked_runtime_receipt_sha256": "sha256:" + "b" * 64,
         }
     )
 
@@ -66,6 +68,35 @@ def test_compatibility_flag_is_strict_boolean() -> None:
                 "vllm_cuda_compatibility": "true",
             }
         )
+
+
+def test_runtime_install_commands_are_rejected() -> None:
+    with pytest.raises(ContractError, match="may not install"):
+        PodCreateSpec.from_mapping(
+            {
+                "name": "folynta-m1-test",
+                "image_name": "runpod/pytorch@sha256:" + "a" * 64,
+                "gpu_type": "NVIDIA A40",
+                "public_key": "ssh-ed25519 AAAATEST test",
+                "docker_start_cmd": ["python -m pip install vllm"],
+            }
+        )
+
+
+def test_build_required_spec_cannot_create_paid_capacity() -> None:
+    blocked = PodCreateSpec.from_mapping(
+        {
+            "name": "folynta-m1-test",
+            "image_name": "runpod/pytorch@sha256:" + "a" * 64,
+            "gpu_type": "NVIDIA A40",
+            "public_key": "ssh-ed25519 AAAATEST test",
+            "qualification_state": "BUILD_REQUIRED",
+        }
+    )
+    client = RunPodPodClient(api_key="secret", transport=httpx.MockTransport(lambda r: None))
+    with pytest.raises(ContractError, match="cannot create paid capacity"):
+        client.create_pod(blocked)
+    client.close()
 
 
 def test_unknown_status_fails_closed() -> None:

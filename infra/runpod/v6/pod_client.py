@@ -24,7 +24,19 @@ PODS_BASE_URL: Final = "https://rest.runpod.io/v1"
 RUNPOD_KEY_ENV: Final = "RUNPOD_API_KEY"
 _POD_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{2,63}$")
 _IMAGE_DIGEST = re.compile(r"^[a-z0-9._/-]+@sha256:[0-9a-f]{64}$")
+_SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 _ALLOWED_STATUS = frozenset({"RUNNING", "EXITED", "TERMINATED"})
+_QUALIFICATION_STATES = frozenset({"BUILD_REQUIRED", "READY"})
+_RUNTIME_INSTALL_MARKERS = (
+    "apt-get ",
+    "apt ",
+    "pip install",
+    "uv pip",
+    "conda install",
+    "micromamba install",
+    "hf download",
+    "huggingface-cli download",
+)
 _ALLOWED_GPU = frozenset(
     {
         "NVIDIA GeForce RTX 4090",
@@ -51,6 +63,8 @@ class PodCreateSpec:
     docker_entrypoint: tuple[str, ...] = ()
     docker_start_cmd: tuple[str, ...] = ()
     vllm_cuda_compatibility: bool = False
+    qualification_state: str = "BUILD_REQUIRED"
+    baked_runtime_receipt_sha256: str | None = None
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> PodCreateSpec:
@@ -70,6 +84,14 @@ class PodCreateSpec:
             docker_entrypoint=tuple(str(item) for item in value.get("docker_entrypoint", [])),
             docker_start_cmd=tuple(str(item) for item in value.get("docker_start_cmd", [])),
             vllm_cuda_compatibility=compatibility,
+            qualification_state=str(
+                value.get("qualification_state", "BUILD_REQUIRED")
+            ).strip(),
+            baked_runtime_receipt_sha256=(
+                str(value["baked_runtime_receipt_sha256"]).strip()
+                if value.get("baked_runtime_receipt_sha256") is not None
+                else None
+            ),
         )
         if not spec.name or len(spec.name) > 80 or not spec.image_name:
             raise ContractError("pod name and immutable image name are required")
@@ -87,6 +109,13 @@ class PodCreateSpec:
             re.fullmatch(r"1[123]\.\d", item) for item in spec.allowed_cuda_versions
         ):
             raise ContractError("allowed_cuda_versions are invalid")
+        if spec.qualification_state not in _QUALIFICATION_STATES:
+            raise ContractError("qualification_state must be BUILD_REQUIRED or READY")
+        if spec.qualification_state == "READY" and not (
+            spec.baked_runtime_receipt_sha256
+            and _SHA256.fullmatch(spec.baked_runtime_receipt_sha256)
+        ):
+            raise ContractError("READY pod specs require a baked runtime receipt sha256")
         for label, command in (
             ("docker_entrypoint", spec.docker_entrypoint),
             ("docker_start_cmd", spec.docker_start_cmd),
@@ -95,10 +124,24 @@ class PodCreateSpec:
                 not item or len(item) > 4_096 or "\x00" in item for item in command
             ):
                 raise ContractError(f"{label} is invalid")
+            lowered = " ".join(command).lower()
+            if any(marker in lowered for marker in _RUNTIME_INSTALL_MARKERS):
+                raise ContractError(f"{label} may not install or download runtime dependencies")
         return spec
 
+    def require_ready(self) -> None:
+        if self.qualification_state != "READY":
+            raise ContractError("pod spec is BUILD_REQUIRED and cannot create paid capacity")
+
     def provider_payload(self) -> dict[str, Any]:
-        environment = {"PUBLIC_KEY": self.public_key}
+        environment = {
+            "PUBLIC_KEY": self.public_key,
+            "FOLYNTA_IMAGE_DIGEST": self.image_name,
+        }
+        if self.baked_runtime_receipt_sha256:
+            environment["FOLYNTA_BAKED_RUNTIME_RECEIPT_SHA256"] = (
+                self.baked_runtime_receipt_sha256
+            )
         if self.vllm_cuda_compatibility:
             environment["VLLM_ENABLE_CUDA_COMPATIBILITY"] = "1"
         return {
@@ -123,10 +166,17 @@ class PodCreateSpec:
 
     def redacted_identity(self) -> dict[str, Any]:
         payload = self.provider_payload()
+        payload["qualificationState"] = self.qualification_state
+        payload["bakedRuntimeReceiptSha256"] = self.baked_runtime_receipt_sha256
         payload["env"] = {
             "PUBLIC_KEY_SHA256": "sha256:"
-            + hashlib.sha256(self.public_key.encode("utf-8")).hexdigest()
+            + hashlib.sha256(self.public_key.encode("utf-8")).hexdigest(),
+            "FOLYNTA_IMAGE_DIGEST": self.image_name,
         }
+        if self.baked_runtime_receipt_sha256:
+            payload["env"]["FOLYNTA_BAKED_RUNTIME_RECEIPT_SHA256"] = (
+                self.baked_runtime_receipt_sha256
+            )
         if self.vllm_cuda_compatibility:
             payload["env"]["VLLM_ENABLE_CUDA_COMPATIBILITY"] = "1"
         return payload
@@ -169,6 +219,7 @@ class RunPodPodClient:
         return self._receipt(value)
 
     def create_pod(self, spec: PodCreateSpec) -> dict[str, Any]:
+        spec.require_ready()
         value = self._request(
             "POST", "/pods", json_body=spec.provider_payload(), expected={200, 201}
         )
