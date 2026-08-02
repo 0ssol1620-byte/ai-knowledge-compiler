@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-08-02T09:35:29.875876+00:00",
+  "generated_at": "2026-08-02T09:56:21.478759+00:00",
   "source": {
     "path": "D:\\FOLYNTA_FINAL_END_TO_END_RESOLUTION_MASTERPLAN_v2_TRACEABILITY_COMPLETE_KO_2026-08-02.md",
     "sha256": "f841236d757b82888b0b767576fe5c8da72a1ad477ac9cd0ef476ab28debe3f6",
@@ -1678,10 +1678,20 @@
           "path": "services/api/tests/test_multipart_upload.py",
           "claim": "Presigned single and multipart upload scope, expiry, ETag, digest, finalization, recovery, and abort behavior are regression tested.",
           "exists": "true"
+        },
+        {
+          "path": "services/api/src/akc_api/storage.py",
+          "claim": "The S3 adapter partitions source/intake, working, derived/export, and audit operations across role-specific clients.",
+          "exists": "true"
+        },
+        {
+          "path": "services/api/src/akc_api/settings.py",
+          "claim": "Production fails closed unless all four S3 workload roles have distinct credential identities.",
+          "exists": "true"
         }
       ],
-      "blocker": "Both available S3 credential profiles can list objects in all four buckets; workload and browser prefix-scoped credentials are not yet separated.",
-      "notes": "The live probe was read-only and performed no provider mutation."
+      "blocker": "Both currently available provider S3 credential profiles can still list objects in all four buckets; four restricted provider credentials have not been issued and installed.",
+      "notes": "Code-side role separation is complete and production is fail-closed. The live provider probe was read-only and performed no credential mutation."
     },
     {
       "requirement_id": "H-1639",
@@ -9174,5 +9184,5 @@
       "notes": ""
     }
   ],
-  "ledger_sha256": "sha256:dcec9c2ac3ada34d18fdad62edbadef1348263c3ef896ccc4daf1402066da461"
+  "ledger_sha256": "sha256:19e7b41aa71585c083936eacd2310150da6238e0ae9d80f331bc10497dfb1df0"
 }

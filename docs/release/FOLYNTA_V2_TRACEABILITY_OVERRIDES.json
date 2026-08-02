@@ -488,10 +488,18 @@
         {
           "path": "services/api/tests/test_multipart_upload.py",
           "claim": "Presigned single and multipart upload scope, expiry, ETag, digest, finalization, recovery, and abort behavior are regression tested."
+        },
+        {
+          "path": "services/api/src/akc_api/storage.py",
+          "claim": "The S3 adapter partitions source/intake, working, derived/export, and audit operations across role-specific clients."
+        },
+        {
+          "path": "services/api/src/akc_api/settings.py",
+          "claim": "Production fails closed unless all four S3 workload roles have distinct credential identities."
         }
       ],
-      "blocker": "Both available S3 credential profiles can list objects in all four buckets; workload and browser prefix-scoped credentials are not yet separated.",
-      "notes": "The live probe was read-only and performed no provider mutation."
+      "blocker": "Both currently available provider S3 credential profiles can still list objects in all four buckets; four restricted provider credentials have not been issued and installed.",
+      "notes": "Code-side role separation is complete and production is fail-closed. The live provider probe was read-only and performed no credential mutation."
     },
     "H-1639": {
       "status": "PARTIAL",
