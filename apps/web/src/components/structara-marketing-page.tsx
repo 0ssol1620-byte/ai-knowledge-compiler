@@ -3,21 +3,19 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
-import {
-  StructaraGlyph,
-  type StructaraGlyphName,
-} from "@/components/structara-glyph";
+import { BenchmarkLab } from "@/components/benchmark-lab";
 import { StructaraDiagram } from "@/components/structara-diagram";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
+import { StructaraLegalRegister } from "@/components/structara-legal-register";
 import { StructaraProofDemo } from "@/components/structara-proof-demo";
 import { StructaraPricingPlanner } from "@/components/structara-pricing-planner";
+import { StructaraSecProofDemo } from "@/components/structara-sec-proof-demo";
+import { StructaraSecurityArchitecture } from "@/components/structara-security-architecture";
 import type { StructaraPage } from "@/lib/structara-content";
 import {
   ROUTE_DIAGRAMS,
   type StructaraDiagramId,
 } from "@/lib/structara-diagrams";
-
-const glyphs: StructaraGlyphName[] = ["page", "block", "evidence", "node"];
 
 const productEvidence: Record<
   string,
@@ -26,32 +24,32 @@ const productEvidence: Record<
   "/product": {
     src: "/product/workspace-home.webp",
     label: "Actual product · deterministic demo workspace",
-    alt: "Structara workspace with active jobs, review items, knowledge notes, and source coverage.",
+    alt: "FOLYNTA workspace with active jobs, integrity findings, knowledge notes, and source coverage.",
   },
   "/product/convert": {
     src: "/product/processing.webp",
     label: "Actual product · processing workspace",
-    alt: "Structara processing workspace linking source pages to structured output.",
+    alt: "FOLYNTA processing workspace linking source pages to structured output.",
   },
   "/product/verify": {
     src: "/product/review.webp",
-    label: "Actual product · review workspace",
-    alt: "Structara review workspace showing source-linked numeric and table review.",
+    label: "Actual product · integrity workspace",
+    alt: "FOLYNTA integrity workspace showing source-linked numeric and table findings.",
   },
   "/product/knowledge": {
     src: "/product/knowledge.webp",
     label: "Actual product · knowledge workspace",
-    alt: "Structara knowledge workspace with notes, entities, and source coverage.",
+    alt: "FOLYNTA knowledge workspace with notes, entities, and source coverage.",
   },
   "/product/graph": {
     src: "/product/graph.webp",
     label: "Actual product · local graph workspace",
-    alt: "Structara local knowledge graph with a restrained evidence-focused layout.",
+    alt: "FOLYNTA local knowledge graph with a restrained evidence-focused layout.",
   },
   "/product/connect": {
     src: "/product/exports.webp",
     label: "Actual product · export center",
-    alt: "Structara export center with portable knowledge packages and verified status.",
+    alt: "FOLYNTA export center with portable knowledge packages and verified status.",
   },
 };
 
@@ -87,10 +85,7 @@ export function StructaraMarketingPage({
             </div>
           </div>
           {productEvidence[definition.path] ? (
-            <ProductEvidence
-              evidence={productEvidence[definition.path]!}
-              path={definition.path}
-            />
+            <ProductEvidence evidence={productEvidence[definition.path]!} />
           ) : (
             <PageThesis definition={definition} />
           )}
@@ -116,40 +111,47 @@ export function StructaraMarketingPage({
           </section>
         )}
 
+        {definition.path === "/demo/sec" && (
+          <section className="st-route-proof st-route-proof-sec">
+            <StructaraSecProofDemo />
+          </section>
+        )}
+
+        {definition.path === "/security" && <StructaraSecurityArchitecture />}
+
         {definition.path === "/pricing" && <StructaraPricingPlanner />}
 
-        {ROUTE_DIAGRAMS[definition.path] && (
+        {definition.path === "/benchmarks" && <BenchmarkLab embedded />}
+
+        {definition.family === "legal" && (
+          <StructaraLegalRegister path={definition.path} />
+        )}
+
+        {ROUTE_DIAGRAMS[definition.path] && definition.path !== "/security" && (
           <StructaraDiagram
             id={ROUTE_DIAGRAMS[definition.path] as StructaraDiagramId}
           />
         )}
 
         <section className="st-page-sections">
-          {definition.sections.map((section, index) => {
-            const glyph = glyphs[index % glyphs.length]!;
-            return (
-              <article key={section.title}>
-                <div className="st-section-index">
-                  <StructaraGlyph name={glyph} size={18} />
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                </div>
-                <div>
-                  <h2>{section.title}</h2>
-                  <p>{section.body}</p>
-                  {section.items && (
-                    <ul>
-                      {section.items.map((item) => (
-                        <li key={item}>
-                          <CheckCircle size={15} aria-hidden="true" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </article>
-            );
-          })}
+          {definition.sections.map((section) => (
+            <article key={section.title}>
+              <div>
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+                {section.items && (
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item}>
+                        <CheckCircle size={15} aria-hidden="true" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </article>
+          ))}
         </section>
 
         <section className="st-route-cta">
@@ -168,10 +170,8 @@ export function StructaraMarketingPage({
 
 function ProductEvidence({
   evidence,
-  path,
 }: {
   evidence: (typeof productEvidence)[string];
-  path: string;
 }) {
   return (
     <figure className="st-page-product-evidence">
@@ -182,7 +182,7 @@ function ProductEvidence({
           width={1440}
           height={900}
           sizes="(max-width: 960px) 92vw, 52vw"
-          priority={path === "/product"}
+          priority
         />
       </div>
       <figcaption>
@@ -264,7 +264,7 @@ function PageThesis({ definition }: { definition: StructaraPage }) {
             <strong>{value}</strong>
           </div>
         ))}
-        <small>No hidden policy · no unregistered claim</small>
+        <small>Policy-visible by design</small>
       </div>
     );
   }

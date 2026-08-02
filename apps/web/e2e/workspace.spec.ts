@@ -76,7 +76,7 @@ const appRoutes = [
 test("HTML uses a per-request script nonce and hardened response headers", async ({
   page,
 }) => {
-  const response = await page.goto("/");
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   expect(response).not.toBeNull();
   const headers = response!.headers();
   expect(headers["x-content-type-options"]).toBe("nosniff");
@@ -94,30 +94,23 @@ test("HTML uses a per-request script nonce and hardened response headers", async
 test("brand homepage expresses the full source-to-intelligence thesis", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", {
-      name: "Your AI is only as good as the knowledge it receives.",
+      name: "From scattered documents to one knowledge system.",
     }),
   ).toBeVisible();
   await expect(
     page.getByText("Page → Structure → Evidence → Knowledge → Intelligence"),
   ).toBeVisible();
-  await expect(
-    page.getByText("Every output returns to its source."),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "AI does not need more information. It needs better knowledge.",
-    ),
-  ).toBeVisible();
+  await expect(page.locator("main > section[data-scene]")).toHaveCount(7);
+  await expect(page.getByText("Return every important result to the exact source that supports it.")).toBeVisible();
+  await expect(page.getByText("Understand. Verify. Connect. Activate.")).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
-  await expect(
-    page.getByText("Structara is a working name pending brand clearance."),
-  ).toBeVisible();
-  await expect(
-    page.getByText("First-party illustrative model · no generated imagery"),
-  ).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(
+    "working name pending brand clearance",
+  );
+  await expect(page.getByRole("heading", { name: "Turn your documents into a system of knowledge." })).toBeVisible();
 });
 
 test("product marketing uses real product evidence and deterministic diagrams", async ({
@@ -150,7 +143,7 @@ test("marketing and product retain a clear round trip", async ({
   page,
   isMobile,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   if (isMobile) {
     await page.getByRole("button", { name: "Open navigation" }).click();
     await page.getByRole("link", { name: "Workspace", exact: true }).click();
@@ -164,7 +157,7 @@ test("marketing and product retain a clear round trip", async ({
     page.getByRole("heading", { name: "Today in your workspace" }),
   ).toBeVisible();
   await expect(page.locator(".product-back-link")).toHaveAttribute("href", "/");
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -261,7 +254,7 @@ test("demo administration and settings never expose writable-looking controls", 
   page,
 }) => {
   for (const path of ["/admin", "/settings"] as const) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const demoControls = page.locator("[data-demo-static-control]");
     expect(
       await demoControls.count(),
@@ -289,7 +282,6 @@ test("shell actions and fixed studios expose only operable or explicit gated con
 
   for (const path of [
     "/knowledge-bases",
-    "/review",
     "/api-workflows",
     "/workspace",
   ] as const) {
@@ -307,6 +299,19 @@ test("shell actions and fixed studios expose only operable or explicit gated con
     await studioPage.close();
   }
 
+  const integrityPage = await page.context().newPage();
+  await integrityPage.goto("/integrity?reference=1", {
+    waitUntil: "domcontentloaded",
+  });
+  await integrityPage.getByText("Optional customer decision").click();
+  await expect(
+    integrityPage.getByRole("combobox", { name: "Decision" }),
+  ).toBeDisabled();
+  await expect(
+    integrityPage.getByRole("button", { name: "Record audited decision" }),
+  ).toBeDisabled();
+  await integrityPage.close();
+
   for (const path of ["/forgot-password", "/sso"] as const) {
     const authPage = await page.context().newPage();
     await authPage.goto(path, { waitUntil: "domcontentloaded" });
@@ -322,8 +327,17 @@ test("processing workspace exposes real stage counts and source-linked output", 
   await page.goto("/documents/sample-dart/processing");
   await expect(page.getByText("Building knowledge structure")).toHaveCount(1);
   await expect(page.getByText("16 of 18 pages available")).toHaveCount(1);
-  await expect(page.getByText("Review queue")).toHaveCount(1);
   if (isMobile) {
+    await page
+      .getByRole("navigation", { name: "Mobile processing views" })
+      .getByRole("button", { name: "Integrity" })
+      .click();
+    await expect(page.getByLabel("Integrity findings")).toContainText(
+      "2 reference findings retain their source evidence.",
+    );
+    await expect(
+      page.getByRole("link", { name: "Open Integrity Console" }),
+    ).toHaveAttribute("href", "/integrity?reference=1");
     await page
       .getByRole("navigation", { name: "Mobile processing views" })
       .getByRole("button", { name: "Source" })
@@ -335,6 +349,9 @@ test("processing workspace exposes real stage counts and source-linked output", 
       .click();
     await expect(page.getByLabel("Markdown output")).toBeVisible();
   } else {
+    await expect(
+      page.getByRole("link", { name: "Integrity 2" }),
+    ).toHaveAttribute("href", "/integrity?reference=1");
     await expect(page.getByLabel("Source document")).toBeVisible();
     await expect(page.getByLabel("Markdown output")).toBeVisible();
   }
@@ -350,12 +367,15 @@ test("auth, onboarding, product, and document surfaces remain usable on mobile",
     "/product",
     "/signup",
     "/onboarding",
+    "/intake",
+    "/integrity",
+    "/benchmarks",
     "/app/home",
     "/app/usage",
     "/documents/sample-dart/processing",
     "/documents/sample-dart/markdown",
   ]) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     expect(
       await page.evaluate(
@@ -370,7 +390,7 @@ test("reduced motion removes travel, WebGL, and nonessential animation", async (
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".st-webgl-layer")).toBeHidden();
   const moving = await page.evaluate(() =>
     Array.from(document.querySelectorAll<HTMLElement>(".st-site *"))
@@ -404,6 +424,12 @@ test("representative routes have no automated WCAG A or AA violations", async ({
     "/",
     "/product/verify",
     "/pricing",
+    "/intake",
+    "/workspace",
+    "/integrity",
+    "/knowledge-bases",
+    "/demo/dart",
+    "/demo/sec",
     "/signup",
     "/onboarding",
     "/app/home",
@@ -416,7 +442,7 @@ test("representative routes have no automated WCAG A or AA violations", async ({
     await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze();
     expect(
       results.violations,

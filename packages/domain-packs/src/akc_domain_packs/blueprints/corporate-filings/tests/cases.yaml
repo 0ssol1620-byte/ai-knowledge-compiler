@@ -1,0 +1,7 @@
+blueprint: corporate-filings
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: metric_keeps_unit_and_period, fixture: annual_filing, expected: pass}
+  - {id: unsupported_risk_relation, fixture: inferred_relation, expected: unresolved}
+  - {id: missing_source_cell, fixture: orphan_metric, expected: quarantine}

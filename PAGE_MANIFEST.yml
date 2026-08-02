@@ -2,7 +2,7 @@ defaults:
   language: en
   alternate_language: ko
   accessibility: WCAG_2_2_AA
-  required_viewports: [1920, 1440, 1024, 390]
+  required_viewports: [1920, 1440, 1280, 1024, 768, 390, 360]
   required_states: [default, mobile, reduced_motion]
 
 status_semantics:
@@ -10,20 +10,31 @@ status_semantics:
     Implemented and locally verified in the repository. This does not imply
     production deployment, legal clearance, commercial approval, or field SLO
     evidence.
+  partial: >-
+    The named surface and honest unavailable states are implemented, but a
+    declared live dependency or end-to-end evidence gate remains. Partial must
+    never be presented as production-ready or as completed processing.
 
 release_review:
-  reviewed_at: 2026-07-31
+  reviewed_at: 2026-08-02
   state: repository_release_candidate
   current_evidence:
     eslint: pass
     typescript: pass
     production_build: pass
-    vitest: 72_passed
-    playwright: 24_passed_4_intentional_skips
+    vitest: 217_passed_50_files
+    folynta_playwright_contract: 10_passed_desktop_mobile_en_ko_reduced_motion_proof_wcag
+    folynta_in_app_browser: 1440_768_390_passed_no_page_overflow
+    retained_pre_folynta_full_playwright_baseline: 77_passed_17_intentional_project_skips
+    retained_pre_folynta_browser_matrix: 9_passed
+    visual_baselines: folynta_home_refreshed_and_passed_retained_suite_11
+    brand_capture: 532_passed_0_blocking_findings
+    lighthouse_desktop: performance_99_accessibility_100_best_practices_100_seo_100_lcp_0_9s
+    lighthouse_mobile: performance_76_accessibility_100_best_practices_100_seo_100_lcp_4_7s_documented_block
     enabled_dead_buttons: 0
-    asset_manifest: 9_verified
-    asset_names: 119_verified
-    asset_hashes: 21_verified
+    asset_manifest: 10_verified
+    asset_names: 136_verified
+    asset_hashes: 26_verified
   external_gates:
     - legal_and_domain_clearance
     - approved_commercial_price_book
@@ -134,6 +145,14 @@ routes:
       wave: 1,
       surface: marketing,
       status: complete,
+    }
+  - {
+      path: /film,
+      priority: P0,
+      wave: 1,
+      surface: editorial,
+      status: complete,
+      gate: measured_product_composite_with_disclosure,
     }
   - {
       path: /research,
@@ -257,6 +276,53 @@ routes:
   - { path: /login, priority: P0, wave: 1, surface: auth, status: complete }
   - { path: /signup, priority: P0, wave: 1, surface: auth, status: complete }
   - {
+      path: /quick-convert,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: complete,
+    }
+  - {
+      path: /intake,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: partial,
+      gate: signed_collection_preflight_api,
+    }
+  - {
+      path: /workspace,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: partial,
+      gate: production_job_and_event_evidence,
+    }
+  - {
+      path: /integrity,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: partial,
+      gate: connected_integrity_ledger_write_path,
+    }
+  - {
+      path: /review,
+      priority: P0,
+      wave: 8,
+      surface: product,
+      status: complete,
+      gate: compatibility_redirect_to_integrity_with_query_context,
+    }
+  - {
+      path: /knowledge-bases,
+      priority: P0,
+      wave: 9,
+      surface: product,
+      status: partial,
+      gate: deployable_package_and_live_graph_evidence,
+    }
+  - {
       path: /onboarding,
       priority: P0,
       wave: 2,
@@ -325,6 +391,7 @@ routes:
       wave: 2,
       surface: product,
       status: complete,
+      gate: compatibility_redirect_to_integrity_with_query_context,
     }
   - {
       path: /documents/:id/markdown,

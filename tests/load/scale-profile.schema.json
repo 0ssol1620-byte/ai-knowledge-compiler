@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.invalid/schemas/nonproduction-scale-profile-v2.json",
+  "title": "Structara nonproduction scale profile catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "catalog_id",
+    "masterplan_revision",
+    "safety",
+    "profiles"
+  ],
+  "properties": {
+    "$schema": { "const": "scale-profile.schema.json" },
+    "schema_version": { "const": "2.0.0" },
+    "catalog_id": { "const": "akc-v4-nonproduction-readiness" },
+    "masterplan_revision": { "type": "string", "minLength": 1 },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_confirmation_env",
+        "required_confirmation",
+        "remote_https_required",
+        "exact_origin_allowlist_required",
+        "customer_data_permitted",
+        "synthetic_fixtures_only",
+        "automatic_production_execution",
+        "production_evidence_permitted",
+        "default_execution"
+      ],
+      "properties": {
+        "required_confirmation_env": { "const": "AKC_LOAD_CONFIRM" },
+        "required_confirmation": { "const": "NONPRODUCTION_LOAD_ONLY" },
+        "remote_https_required": { "const": true },
+        "exact_origin_allowlist_required": { "const": true },
+        "customer_data_permitted": { "const": false },
+        "synthetic_fixtures_only": { "const": true },
+        "automatic_production_execution": { "const": false },
+        "production_evidence_permitted": { "const": false },
+        "default_execution": { "const": "disabled" }
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/profile" }
+    }
+  },
+  "$defs": {
+    "command": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_refs",
+        "execution_class",
+        "mutates_target",
+        "runner",
+        "script",
+        "dimensions",
+        "required_fixture_env",
+        "thresholds",
+        "required_evidence_metrics",
+        "cleanup"
+      ],
+      "oneOf": [
+        {
+          "required": ["command"],
+          "not": { "required": ["commands"] }
+        },
+        {
+          "required": ["commands"],
+          "not": { "required": ["command"] }
+        }
+      ],
+      "properties": {
+        "requirement_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "execution_class": {
+          "enum": ["external_scale", "external_browser_scale"]
+        },
+        "mutates_target": { "type": "boolean" },
+        "runner": { "enum": ["k6", "node"] },
+        "script": {
+          "type": "string",
+          "pattern": "^tests/load/[A-Za-z0-9._-]+\\.(js|mjs)$"
+        },
+        "command": { "$ref": "#/$defs/command" },
+        "commands": {
+          "type": "object",
+          "minProperties": 2,
+          "additionalProperties": { "$ref": "#/$defs/command" }
+        },
+        "runner_env": {
+          "type": "object",
+          "propertyNames": { "pattern": "^AKC_[A-Z0-9_]+$" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "dimensions": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": ["integer", "number", "boolean"],
+            "minimum": 0
+          }
+        },
+        "required_fixture_env": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^AKC_[A-Z0-9_]+$" }
+        },
+        "thresholds": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        },
+        "required_evidence_metrics": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]+$" }
+        },
+        "cleanup": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    }
+  }
+}

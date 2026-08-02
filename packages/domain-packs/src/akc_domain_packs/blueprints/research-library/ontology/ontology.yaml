@@ -1,0 +1,8 @@
+blueprint: research-library
+kind: ontology
+version: 1.0.0
+classes: [Paper, Author, Method, Dataset, Finding, Citation]
+relations:
+  - {type: authored_by, source: Paper, target: Author, authority: source_explicit}
+  - {type: uses_method, source: Paper, target: Method, authority: source_explicit}
+  - {type: reports_finding, source: Paper, target: Finding, authority: structured_derived}

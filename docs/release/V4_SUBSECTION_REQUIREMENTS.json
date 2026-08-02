@@ -1,0 +1,862 @@
+{
+  "schema_version": "1.0.0",
+  "ledger_kind": "v4_subsection_requirement_traceability",
+  "authority": {
+    "path": "D:\\Structara_World_Class_Autonomous_Knowledge_Platform_FINAL_Completion_Masterplan_v4_KO_2026-07-31.md",
+    "scope": "sections 0.1 through 48 and appendices A through E",
+    "snapshot_date": "2026-07-31",
+    "sha256": "b8ce82840df252633075e80fede87e8f0a44de57bde4265a20579e8616a15d68",
+    "line_count": 3411
+  },
+  "release": {
+    "verdict": "Production Reject",
+    "promotion_authorized": false,
+    "reason": "Local contracts exist, but production-scale, public benchmark, provider, security, legal, billing, and deployment evidence remain open."
+  },
+  "status_vocabulary": {
+    "implemented": "The requirement has an actual production caller or artifact and a passing verification artifact; it has no known blocker.",
+    "local-contract": "A schema, implementation, fixture, or test exists locally, but production or field evidence is absent.",
+    "external-evidence-required": "Completion requires an owner approval, licensed data, production account, independent review, or deployed-environment evidence.",
+    "blocked": "A stated hard gate is unmet or a required end-to-end execution is absent."
+  },
+  "evidence_sets": {
+    "collection-ingestion": [
+      "migrations/versions/0023_v4_collections.py",
+      "services/api/src/akc_api/collection_api.py",
+      "services/api/tests/test_collection_api.py"
+    ],
+    "collection-ui": [
+      "apps/web/src/components/collection-intake.tsx",
+      "apps/web/src/lib/collection-intake.ts",
+      "apps/web/src/lib/upload-client.ts",
+      "apps/web/src/components/collection-intake.test.tsx"
+    ],
+    "preflight-credit": [
+      "packages/router/src/akc_router/preflight.py",
+      "packages/router/src/akc_router/estimation.py",
+      "services/api/src/akc_api/credit_policy.py",
+      "tests/unit/test_collection_estimation.py"
+    ],
+    "routing-verification": [
+      "packages/router/src/akc_router/engine.py",
+      "packages/quality/src/akc_quality/autonomous.py",
+      "services/api/src/akc_api/page_attempts.py",
+      "services/api/src/akc_api/collection_region_runtime.py",
+      "services/api/tests/test_collection_region_runtime.py"
+    ],
+    "numeric-authority": [
+      "packages/quality/src/akc_quality/numeric.py",
+      "packages/quality/src/akc_quality/numeric_geometry.py",
+      "services/api/src/akc_api/collection_authority.py",
+      "services/api/tests/test_collection_authority.py"
+    ],
+    "benchmark": [
+      "benchmark/benchmark-registry.lock.yaml",
+      "benchmark/public_suite.py",
+      "benchmark/tests/test_public_suite.py",
+      "benchmark/reports/public-core-tier0-status-2026-07-31.json"
+    ],
+    "compiler-model": [
+      "packages/cir-python/src/akc_cir/knowledge_model.py",
+      "services/api/src/akc_api/collection_semantic_runtime.py",
+      "tests/unit/test_canonical_knowledge_model_v4.py",
+      "services/api/tests/test_collection_semantic_runtime.py"
+    ],
+    "blueprints": [
+      "packages/domain-packs/src/akc_domain_packs/blueprints.py",
+      "packages/domain-packs/src/akc_domain_packs/blueprints/corporate-filings/module.yaml",
+      "packages/domain-packs/tests/test_blueprints.py"
+    ],
+    "retrieval": [
+      "packages/retrieval/src/akc_retrieval/engine.py",
+      "packages/retrieval/src/akc_retrieval/postgres.py",
+      "packages/retrieval/src/akc_retrieval/numeric.py",
+      "packages/retrieval/tests/test_retrieval.py"
+    ],
+    "package": [
+      "packages/exporters/src/akc_exporters/knowledge_package.py",
+      "tests/unit/test_knowledge_package_v4.py"
+    ],
+    "theater": [
+      "apps/web/src/components/collection-processing-theater.tsx",
+      "apps/web/src/components/collection-processing-theater.test.tsx",
+      "packages/cir-python/src/akc_cir/collection_events.py",
+      "tests/contract/test_collection_event_contract.py"
+    ],
+    "integrity-ui": [
+      "apps/web/src/components/integrity-console.tsx",
+      "apps/web/src/components/integrity-decision-panel.tsx",
+      "services/api/src/akc_api/collection_integrity_runtime.py",
+      "services/api/tests/test_collection_integrity_decisions.py"
+    ],
+    "brand-design": [
+      "STRUCTARA_BRAND_DECISIONS.md",
+      "PAGE_MANIFEST.yml",
+      "apps/web/src/app/globals.css",
+      "apps/web/src/components/marketing-landing.tsx"
+    ],
+    "assets": [
+      "ASSET_REMEDIATION_LEDGER.yml",
+      "ART_DIRECTION_BOARD.md",
+      "ASSET_QA_REPORT.md",
+      "VISUAL_QUALITY_GATES.yml",
+      "tests/contract/test_v4_brand_evidence.py"
+    ],
+    "web-routes": [
+      "PAGE_MANIFEST.yml",
+      "apps/web/e2e/visual-regression.spec.ts",
+      "apps/web/e2e/workspace.spec.ts"
+    ],
+    "design-system": [
+      "apps/web/src/app/globals.css",
+      "apps/web/.storybook/main.ts",
+      "apps/web/e2e/accessibility-matrix.spec.ts"
+    ],
+    "operations": [
+      "services/api/src/akc_api/main.py",
+      "services/api/src/akc_api/storage.py",
+      "services/scheduler/src/akc_scheduler/scheduler.py",
+      "docs/runbooks/load-and-chaos.md",
+      "tests/operational/scenario-matrix.json"
+    ],
+    "api-contract": [
+      "services/api/src/akc_api/openapi_contract.py",
+      "services/api/tests/test_openapi_contract.py"
+    ],
+    "event-contract": [
+      "packages/contracts/schemas/collection-event.schema.json",
+      "packages/cir-python/src/akc_cir/collection_events.py",
+      "tests/contract/test_collection_event_contract.py"
+    ],
+    "auto-gold": [
+      "benchmark/auto_gold.py",
+      "benchmark/tests/test_auto_gold.py"
+    ],
+    "security": [
+      "services/api/src/akc_api/security.py",
+      "infra/security/validate_deployment.py",
+      "docs/release/EXTERNAL_GATES.md"
+    ],
+    "scale": [
+      "tests/load/profiles.json",
+      "tests/load/validate_profiles.py",
+      "tests/load/scale-evidence.schema.json"
+    ],
+    "release": [
+      "CURRENT_STATE_AUDIT_V4.md",
+      "V4_MASTERPLAN_TRACEABILITY.md",
+      "docs/release/V4_DEPLOYMENT_MANIFEST.json",
+      "docs/release/EXTERNAL_GATES.md"
+    ],
+    "research": [
+      "REFERENCE_LEDGER.md",
+      "benchmark/benchmark-registry.lock.yaml",
+      "infra/model-registry/models.yaml"
+    ]
+  },
+  "sections": [
+    {
+      "id": "0",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["release", "research"],
+      "default_blockers": ["The authority and inherited policy are fixed locally, but the production gaps they identify remain governed by their individual release gates."],
+      "entries": [
+        {"id": "0.1", "title": "이 문서가 해결하는 문제", "source_lines": [54, 89], "status": "blocked", "evidence_refs": ["release", "collection-ingestion", "preflight-credit", "routing-verification", "benchmark", "retrieval", "assets"], "blockers": ["The seven audited gaps are not all closed with immutable production evidence."], "requirements": ["Close the gap between drop-everything promise and limited Quick Convert", "Replace v4 runtime manual-review dependency with autonomous repair, authority comparison, and isolation", "Replace fixed credit weights with adaptive sampling and P50/P95 cost/time prediction", "Calibrate the rule router and validate a zero-authority learned-router shadow", "Produce real Parser and Knowledge Compiler production evidence", "Treat visual regression and asset hashes as regression checks rather than premium-design proof", "Complete structured-filter graph retrieval and numeric final verification"]},
+        {"id": "0.2", "title": "권한 순서", "source_lines": [90, 102], "requirements": ["1 Truth, security, privacy, and law", "2 This v4 document", "3 Explicitly inherited v3 brand invariants", "4 Structara Brand Skill", "5 Structara Asset Director Skill", "6 Approved Brand Decisions, Page Manifest, and Claim Register", "7 External design/development skills", "8 Framework defaults"]},
+        {"id": "0.3", "title": "기존 v3에서 그대로 계승하는 불변 조건", "source_lines": [103, 117], "requirements": ["Category: Knowledge Compiler", "Brand style: Editorial Intelligence", "Marketing: Cinematic Intelligence", "Product: Calm Precision", "Primary proof: source-linked verification", "Hero metaphor: Page→Block→Evidence→Knowledge→Intelligence", "Color: warm paper, ink, controlled blue, evidence cyan", "Public proof: DART, SEC, Public Benchmark", "3D policy: Blender→GLB→React Three Fiber, static-first", "Truth policy: actual product and source are the primary visual evidence"]},
+        {"id": "0.4", "title": "v4가 기존 v3를 명시적으로 변경하는 부분", "source_lines": [118, 133], "requirements": ["Manual review→autonomous repair, authority check, differential verification, unresolved/quarantined", "Quick Convert center→lightweight trial with Knowledge Intake as the core product", "File unit→Collection→File→Page→Region→Block", "Fixed credit heuristic→Static Preflight, Adaptive Sampling, P50/P95 predictor", "Single-parser promotion→page-class Champion Router", "Graph-first→structured filters, retrieval, numeric verifier, and proof first", "Asset count/hash completion→Creative QA 90+ in actual pages", "Visual regression pass→baseline plus art direction, craft review, and reference comparison", "Human Gold required→Authority/Synthetic/Mutation/Metamorphic/Frozen Holdout auto-Gold"]}
+      ]
+    },
+    {
+      "id": "1",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["release", "brand-design"],
+      "default_blockers": ["The audit is a repository snapshot; its strengths and defects require revalidation on the final immutable deployment revision."],
+      "entries": [
+        {"id": "1.1", "title": "잘된 부분", "source_lines": [136, 151], "requirements": ["Next.js public/authenticated product system", "English/Korean locale", "Real upload, analysis, compile, SSE, and export connection", "Single-file R2 multipart, resume, part retry, ETag, and SHA-256", "Processing Studio source/result/evidence linkage", "Append-only credit reserve/consume/release/refund ledger", "Deterministic Router, Preflight, and quality-gate contracts", "Obsidian, RDF, OWL, SHACL, Neo4j, and RAG export", "Public benchmark registry, GT isolation, prediction freeze, and three-run contract", "CSP nonce, accessibility, browser matrix, visual regression, and asset hash gate", "Fail closed on unsupported public claims"]},
+        {"id": "1.2", "title": "아직 출시를 막는 핵심", "source_lines": [152, 166], "status": "blocked", "evidence_refs": ["release"], "blockers": ["At least one P0 condition remains open, so Production Reject is mandatory."], "requirements": ["P0-01 Collection ingestion absent", "P0-02 autonomous verification incomplete", "P0-03 credit/time prediction incomplete", "P0-04 real-model Parser/Compiler full benchmark not run", "P0-05 numeric/table authority mapping incomplete", "P0-06 graph numeric retrieval incomplete", "P0-07 low-quality signature assets exposed", "P0-08 deployed SHA/latest branch match unverified", "P0-09 weak public signature experience", "P0-10 Quick Convert conflicts with the core promise"]},
+        {"id": "1.3", "title": "현재 디자인의 본질적 문제", "source_lines": [167, 198], "requirements": ["Problem A: many components but weak proprietary transformation scene", "Problem B: assets read as background decoration rather than system evidence", "Problem C: product screens prioritize density over premium visual hierarchy", "Problem D: marketing does not connect actual upload→scan→Markdown→directory→graph→package into one truthful scene"]}
+      ]
+    },
+    {
+      "id": "2",
+      "default_status": "external-evidence-required",
+      "default_boundary": "external",
+      "default_evidence_refs": ["research"],
+      "default_blockers": ["These are dated research conclusions; current product behavior, availability, license, model revision, and official claims must be reverified before production use."],
+      "entries": [
+        {"id": "2.1", "title": "경쟁 제품에서 배울 것", "source_lines": [201, 239], "requirements": ["Reducto: extend exact source-bbox citation from values to notes, entities, relations, and exports", "Chunkr: expose task/result viewing, segment/word bbox, reading order, and Markdown/HTML, then extend to corpus architecture", "kib/knwler/Onta: keep anything-ingest simplicity while differentiating with proof, numeric safety, and packages", "Attio: present Router, Verifier, and Compiler as embedded workflow intelligence rather than model names", "Linear 2026: calm complexity through consistent headers, action positions, and hierarchy", "Vercel/Geist: earn premium quality through contrast, grid, consistency, restraint, and meticulous interaction", "Figma Config 2026: systematize restrained glyph, texture, coordinates, and evidence lines to combine machine precision with human inspectability"]},
+        {"id": "2.2", "title": "대량 업로드 연구 결론", "source_lines": [240, 260], "status": "local-contract", "boundary": "mixed", "evidence_refs": ["research", "collection-ingestion", "collection-ui"], "blockers": ["R2/Uppy patterns inform local implementation, but live account limits, CORS/ETag, browser recovery, and masterplan-scale evidence remain unproven."], "requirements": ["Respect R2 multipart maximum-part and large-object constraints", "Retry failed multipart parts only", "Use presigned browser-to-R2 upload without exposing credentials", "Expose ETag through CORS", "Support large-file queue", "Support pause/resume/retry", "Show remaining capacity/time", "Support direct multipart upload", "Restore state after tab close/refresh", "Represent reselection-required ghost state", "Keep Structara multipart engine and build collection orchestration/UI from validated patterns; adopt Uppy only selectively and reskin it"]},
+        {"id": "2.3", "title": "최신 Parser 후보 연구 결론", "source_lines": [261, 278], "status": "blocked", "boundary": "mixed", "evidence_refs": ["research", "benchmark"], "blockers": ["Official claims are screening inputs only; candidates have not all passed Structara smoke, hard-set, three-run, license, cost, and rollback gates."], "requirements": ["PaddleOCR-VL-1.6 compact-accuracy baseline", "Infinity-Parser2-Pro precision challenger", "Infinity-Parser2-Flash latency challenger", "HPD-Parsing throughput challenger", "HunyuanOCR-1.5 fast lightweight challenger", "MonkeyOCRv2-Parsing multilingual challenger", "Chandra OCR 2 commercial-ceiling comparator with license review", "MinerU M2+Tiling incumbent research baseline", "Native Parser preferred first route", "Structara hard gates, not official scores, grant production authority"]},
+        {"id": "2.4", "title": "Knowledge Compiler 후보 연구 결론", "source_lines": [279, 300], "status": "blocked", "boundary": "mixed", "evidence_refs": ["research", "compiler-model"], "blockers": ["Model adapters and schemas do not prove checkpoint/license availability or note/entity/relation/directory quality on a rights-cleared corpus."], "requirements": ["Fast compiler candidate: Qwen3.5-9B", "Precision compiler candidate: Qwen3.6-27B", "Independent challenger: Gemma 4 12B", "High-end challenger: Gemma 4 26B family only after checkpoint/license verification", "Deterministic renderer is code, not a model", "Models never write Obsidian files directly", "Pipeline: Verified CIR→schema-bound candidates→evidence/ontology validators→deterministic renderer→package validators"]}
+      ]
+    },
+    {
+      "id": "3",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["brand-design", "assets"],
+      "default_blockers": ["Brand strategy and product-language contracts exist locally, but final comprehension, originality, claim, and deployed-experience evidence remain release gates."],
+      "entries": [
+        {"id": "3.1", "title": "브랜드 정의", "source_lines": [303, 306], "requirements": ["Define Structara as infrastructure that compiles unorganized source material into a verified knowledge system for people and AI, not as an OCR product"]},
+        {"id": "3.2", "title": "경쟁 우위 5개", "source_lines": [307, 316], "requirements": ["Frictionless Collection", "Evidence-Preserving Compilation", "Autonomous Verification", "Knowledge Architecture Generation", "Deployable Multi-Format Outputs"]},
+        {"id": "3.3", "title": "고객이 기억해야 할 세 장면", "source_lines": [317, 330], "requirements": ["Scene 1 Drop Everything: bulk folders/files automatically deduplicated, classified, secured, and structured", "Scene 2 Watch Knowledge Form: actual pages become typed blocks, Markdown, verified values, notes, entities, and relations", "Scene 3 Receive a Knowledge System: purpose-fit directory/MOC plus ready Obsidian, Ontology, Neo4j, and RAG packages"]},
+        {"id": "3.4", "title": "사용자에게 보여주지 않을 것", "source_lines": [331, 339], "requirements": ["Internal parser/model names", "GPU endpoint names", "OCR confidence alone", "Complex internal retry counts", "Internal cost formula", "Message that human review is required to finish"]},
+        {"id": "3.5", "title": "사용자에게 보여줄 것", "source_lines": [340, 351], "requirements": ["What was collected", "Which route handled each page", "What was verified or isolated", "Which knowledge structure was generated", "Credit cap and actual usage", "Where to inspect the source", "Where the final package can be used immediately"]}
+      ]
+    },
+    {
+      "id": "4",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["web-routes", "collection-ui", "integrity-ui"],
+      "default_blockers": ["Surface separation is represented locally, but complete hosted journeys and scale evidence are absent."],
+      "entries": [
+        {"id": "4.1", "title": "Quick Convert", "source_lines": [354, 366], "requirements": ["Purpose is fast product trial", "Maximum 30 files", "50 MiB per file", "Short processing", "Single/small documents", "Keep limits but never present this surface as the core brand promise"]},
+        {"id": "4.2", "title": "Knowledge Intake — 핵심 제품", "source_lines": [367, 398], "status": "blocked", "evidence_refs": ["collection-ui", "collection-ingestion", "scale"], "blockers": ["MVP 5,000-file/10 GiB interruption evidence is absent, and Pro/Enterprise connectors and continuous sync are roadmap rather than production proof."], "requirements": ["Purpose: drop everything", "MVP 5,000 files/session", "MVP 10 GiB/session", "MVP 2 GiB/file", "MVP preserve folder and relative path", "MVP browser interruption/resume", "MVP collection-level estimate, processing, and result", "Pro 20,000 files/session", "Pro 50 GiB/session", "Pro Google Drive/OneDrive/Dropbox import", "Enterprise Desktop Upload Agent/CLI", "Enterprise NAS/SharePoint/S3/R2 connectors", "Enterprise 100 GiB+ and continuous sync", "Enterprise incremental processing"]},
+        {"id": "4.3", "title": "Knowledge Studio", "source_lines": [399, 410], "requirements": ["Directory tree", "Notes", "Entities", "Relations", "Source proof", "Graph", "Export"]},
+        {"id": "4.4", "title": "Integrity Console", "source_lines": [411, 439], "requirements": ["Replace Review Studio", "Users do not need the console to complete processing", "Show Verified", "Show Authority-verified", "Show Auto-repaired", "Show Unresolved", "Show Quarantined", "Show Reprocessing", "Show autonomous decision evidence", "Show parser disagreement", "Show authoritative value", "Show mutation/validator evidence", "Show source crop", "Show reprocessing history", "Allow optional user override"]}
+      ]
+    },
+    {
+      "id": "5",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["collection-ingestion"],
+      "default_blockers": ["No immutable production-scale evidence proves 5,000-file and 10 GiB interrupted collection ingestion against the production object store."],
+      "entries": [
+        {"id": "5.1", "title": "계층", "source_lines": [442, 455], "requirements": ["Workspace owns Collection", "Collection owns Source Root", "Collection owns File Entries", "Collection owns Upload Sessions", "Collection owns Dedupe/Version Graph", "Collection owns Preflight Profile", "Collection owns Compilation Job", "Collection owns Knowledge Package"]},
+        {"id": "5.2", "title": "Collection state machine", "source_lines": [456, 486], "requirements": ["Main chain: CREATED→DISCOVERING→HASHING→UPLOADING→VERIFYING→SECURITY_SCAN→DEDUPLICATING→INGESTED→PREFLIGHTING→ESTIMATED→AWAITING_APPROVAL→PROCESSING→VERIFYING_OUTPUT→KNOWLEDGE_COMPILING→PACKAGING→COMPLETED", "Side states: PAUSED, PARTIAL, FAILED_RETRYABLE, UNRESOLVED, QUARANTINED, CANCEL_REQUESTED, CANCELED, PURGED"]},
+        {"id": "5.3", "title": "File manifest", "source_lines": [487, 505], "requirements": ["Manifest fields: file_id, collection_id, source_root_id, relative_path, display_name, size_bytes, last_modified_ms, mime_detected, sha256, quick_fingerprint, status, version_candidate_of"]},
+        {"id": "5.4", "title": "폴더 업로드", "source_lines": [506, 522], "evidence_refs": ["collection-ingestion", "collection-ui"], "requirements": ["Support input webkitdirectory multiple", "Preserve File.webkitRelativePath", "Provide drag/drop DataTransferEntry fallback", "Detect browser capabilities", "Guide unsupported browsers to ZIP or file selection", "Never use an absolute source path as an object key", "Use tenant_id/collection_id/file_id/original object keys and keep relative_path encrypted as metadata"]},
+        {"id": "5.5", "title": "Collection upload session", "source_lines": [523, 539], "requirements": ["Track total_files", "Track total_bytes", "Track completed_files", "Track active_files", "Track failed_files", "Track duplicate_files", "Track source_manifest_hash", "Track browser_resume_token", "Track expires_at"]},
+        {"id": "5.6", "title": "병렬 처리", "source_lines": [540, 547], "requirements": ["Adaptive file concurrency 3–8", "Adaptive part concurrency 2–8", "Adjust for network, device memory, and browser visibility", "One file failure does not stop the collection", "Use weighted fair queue so large and small files do not starve"]},
+        {"id": "5.7", "title": "Hashing", "source_lines": [548, 556], "requirements": ["SHA-256 in a Web Worker", "4–16 MiB chunks", "Never block the display thread", "Use quick fingerprint for early duplicate candidates", "Use full SHA-256 for final confirmation", "Reuse parse/export results for identical hashes"]},
+        {"id": "5.8", "title": "재개", "source_lines": [557, 565], "requirements": ["Server upload session is source of truth", "localStorage stores only a session pointer", "IndexedDB stores queue metadata", "Optionally use File System Access API handles", "Show ghost state and request reselection when a handle cannot be restored", "Reuse UploadId after reselection only when hash, size, and path match"]},
+        {"id": "5.9", "title": "R2", "source_lines": [566, 579], "status": "external-evidence-required", "boundary": "external", "evidence_refs": ["collection-ingestion", "security"], "blockers": ["Production R2 bootstrap/app token separation, least privilege, CORS, presigned URL, and lifecycle policies require live account evidence; a test Admin token is not production proof."], "requirements": ["Admin Read & Write token may remain only during test stage", "Separate bootstrap token before production", "Use least-privilege app token", "Use short-lived presigned URLs", "Pin bucket CORS origins", "Expose ETag", "Configure incomplete multipart lifecycle", "Configure working-artifact lifecycle"]},
+        {"id": "5.10", "title": "Dedupe와 Version", "source_lines": [580, 594], "requirements": ["Same SHA-256 reuses storage and processing for zero processing credits", "Same template plus page overlap becomes a version candidate", "Same pages across different files reuse page-level cache"]},
+        {"id": "5.11", "title": "Collection 결과", "source_lines": [595, 609], "requirements": ["Return successful-file results even when some files fail", "Report discovered files", "Report new files", "Report duplicates", "Report password-required files", "Report unsupported files", "Report corrupted files"]}
+      ]
+    },
+    {
+      "id": "6",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["collection-ui", "collection-ingestion"],
+      "default_blockers": ["The intake experience has local component and contract tests, but no immutable hosted folder/cloud/agent journey at masterplan scale."],
+      "entries": [
+        {"id": "6.1", "title": "Entry screen", "source_lines": [612, 630], "requirements": ["Hero tells users not to organize files and to add the folder as-is", "Promise deduplication, document understanding, and one knowledge system", "Primary actions: folder selection, file addition, cloud connection"]},
+        {"id": "6.2", "title": "Intake Canvas", "source_lines": [631, 648], "requirements": ["Show collection name, file count, total bytes, and pause/continue", "Show source roots including local folder, Google Drive, and OneDrive", "Show upload percentage, completed, retrying, and duplicate counts", "Show format-level totals and completion counts"]},
+        {"id": "6.3", "title": "시각 연출", "source_lines": [649, 667], "requirements": ["Animate folder file clusters entering intake lanes", "Merge duplicates and increase reference count", "Classify into format lanes", "Bind security/integrity checks to actual events", "Quietly compact successful files", "Move errors to a separate queue without blocking the flow", "No fake scanning beam", "No particles unrelated to actual progress", "Do not render thousands of file DOM cards", "Do not rapidly expose user filenames like marketing footage", "Do not turn the whole upload red for one file failure"]},
+        {"id": "6.4", "title": "진행 정보", "source_lines": [668, 691], "requirements": ["Show overall progress", "Show completed/total files", "Show completed/total bytes", "Show current speed", "Show estimated remaining time", "Show duplicate savings", "Show retry count", "Detail drawer exposes part upload", "Detail drawer exposes checksum", "Detail drawer exposes MIME", "Detail drawer exposes security scan", "Detail drawer exposes server receipt"]},
+        {"id": "6.5", "title": "완료 장면", "source_lines": [692, 707], "requirements": ["Confirm all materials arrived safely", "Report new, reused duplicate, password-required, and excluded counts", "Announce structure and cost analysis as the next phase", "State that processing continues after the browser closes"]}
+      ]
+    },
+    {
+      "id": "7",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["preflight-credit"],
+      "default_blockers": ["Static extraction and deterministic sampling are tested locally, but the latency SLO and calibration are not proven on a 30,000-page production-like corpus."],
+      "entries": [
+        {"id": "7.1", "title": "전체 문서에 모델을 먼저 돌리지 않는다", "source_lines": [710, 733], "requirements": ["Extract file type", "Extract page count", "Detect native text presence", "Extract PDF producer", "Extract font profile", "Measure image coverage", "Measure page dimensions", "Measure resolution/DPI", "Detect table-line candidates", "Estimate column count", "Measure numeric density", "Detect language/script", "Detect rotation/skew", "Measure blur", "Detect compression artifacts", "Measure archive expansion ratio", "Build document-template fingerprint"]},
+        {"id": "7.2", "title": "문서 군집화", "source_lines": [734, 745], "requirements": ["Cluster PDFs by producer, page size, font, and layout fingerprint", "Cluster DOCX by style signature", "Cluster PPTX by theme/master signature", "Cluster scans by device/DPI signature", "Use folder/path context"]},
+        {"id": "7.3", "title": "대표·이상치 선택", "source_lines": [746, 759], "requirements": ["Select median page", "Select first and last pages", "Select highest table-density page", "Select highest image-density page", "Select highest numeric-density page", "Select lowest native-quality page", "Select most unusual dimensions"]},
+        {"id": "7.4", "title": "Static estimate", "source_lines": [760, 770], "requirements": ["Immediately return a fast estimate", "Return a credit range", "Return a duration range", "Return confidence"]},
+        {"id": "7.5", "title": "Sampled estimate", "source_lines": [771, 779], "requirements": ["Run fast probes only on new clusters", "Use at least three pages per cluster", "Stop when variance is low", "Expand samples 5→10→20 when variance is high", "Do not force a fixed one-percent sample across the corpus"]},
+        {"id": "7.6", "title": "시간 목표", "source_lines": [780, 792], "requirements": ["≤500 pages: fast ≤10s and precise ≤2m", "≤5,000 pages: fast ≤30s and precise ≤5m", "≤30,000 pages: fast ≤2m and precise ≤15m", "Very large/new format: fast ≤5m and precise ≤30m", "Treat values as SLO targets and recalibrate from telemetry"]}
+      ]
+    },
+    {
+      "id": "8",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["preflight-credit"],
+      "default_blockers": ["Predictor, reservation, settlement, refund, and telemetry contracts are local; workload calibration and merchant reconciliation evidence are absent."],
+      "entries": [
+        {"id": "8.1", "title": "원칙", "source_lines": [795, 802], "requirements": ["Upload, duplicate detection, and static preflight are free", "Internal retry and validator repair are not additionally billed", "Duplicate reuse consumes zero processing credits", "Unresolved and quarantined scope is unbilled", "A user-requested additional output profile is billed separately"]},
+        {"id": "8.2", "title": "Predictor 입력", "source_lines": [803, 819], "requirements": ["Static page features", "Cluster identity", "Predicted route", "Sample runtime", "Sample output length", "Recovery probability", "Knowledge-note count", "Entity/relation candidate count", "Export profile", "Queue profile", "GPU class", "Cold/warm state"]},
+        {"id": "8.3", "title": "Predictor 출력", "source_lines": [820, 837], "requirements": ["credit_p50", "credit_p95", "duration_p50_seconds", "duration_p95_seconds", "native/fast/precision/recovery route mix", "confidence"]},
+        {"id": "8.4", "title": "구현 단계", "source_lines": [838, 856], "requirements": ["v1 rules extend heuristics with measured median/P95 per document class and route", "v2 quantile model uses LightGBM or CatBoost for P50/P90/P95 plus calibration curve", "v3 online recalibration updates posterior per document cluster, detects drift, and preserves champion/challenger"]},
+        {"id": "8.5", "title": "예약·정산", "source_lines": [857, 868], "requirements": ["Reserve P95 plus safety buffer", "Accumulate stage-level actual cost", "Consume actual cost at job completion", "Release unused reservation", "Refund unresolved scope"]},
+        {"id": "8.6", "title": "견적 UI", "source_lines": [869, 885], "requirements": ["Show estimated credit range", "Show maximum reservation", "Show estimated duration range", "Show estimate confidence", "Offer automatic stop at cap", "Offer up to ten-percent overage", "Offer continue within balance"]},
+        {"id": "8.7", "title": "Telemetry", "source_lines": [886, 902], "requirements": ["estimate_error_ratio", "duration_error_ratio", "route_mix_error", "retry_rate", "cold_start_seconds", "gpu_seconds", "knowledge_tokens", "export_seconds", "storage_amplification", "credits_refunded"]}
+      ]
+    },
+    {
+      "id": "9",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["routing-verification", "preflight-credit"],
+      "default_blockers": ["Routing and shadow-learning contracts are tested locally, but real provider quality/cost/latency calibration and a 30-day zero-authority shadow record are absent."],
+      "entries": [
+        {"id": "9.1", "title": "목표", "source_lines": [905, 913], "requirements": ["Try the cheapest safe route first", "Exit immediately after validator approval", "Escalate only failed regions", "Quarantine unrecoverable output"]},
+        {"id": "9.2", "title": "경로", "source_lines": [914, 924], "requirements": ["Native", "Fast OCR/Parser", "Precision Parser", "Region Recovery", "Authority Reconstruction", "Quarantine"]},
+        {"id": "9.3", "title": "페이지가 아니라 Region 단위", "source_lines": [925, 934], "requirements": ["Paragraph can pass native", "Figure can use fast route", "Table can use precision route", "One cell can receive authority repair"]},
+        {"id": "9.4", "title": "Early Exit", "source_lines": [935, 951], "requirements": ["Content completeness", "Numeric agreement", "Row/column consistency", "Reading order", "Source references", "Output schema", "No repetition", "No unsupported content", "Never approve from model confidence alone"]},
+        {"id": "9.5", "title": "Threshold calibration", "source_lines": [952, 967], "requirements": ["Fixed thresholds are initial policy only", "Measure route_precision", "Measure route_recall", "Measure false_early_exit", "Measure unnecessary_escalation", "Measure critical_error_escape", "Measure cost_per_verified_page", "Measure latency_per_verified_page"]},
+        {"id": "9.6", "title": "Learned Router", "source_lines": [968, 977], "requirements": ["Predict route selection rather than model output quality", "Use technical rather than content features", "Run in shadow for 30 days or sufficient corpus", "Require zero critical false early exits", "Preserve deterministic fallback"]}
+      ]
+    },
+    {
+      "id": "10",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["routing-verification", "numeric-authority"],
+      "default_blockers": ["Verifier and recovery contracts exist, but there is no immutable no-human end-to-end production-like run and the authority provider/runtime caller is not yet connected."],
+      "entries": [
+        {"id": "10.1", "title": "상태 모델", "source_lines": [980, 993], "requirements": ["verified", "authority_verified", "auto_repaired", "verified_with_warning", "unresolved", "quarantined", "rejected", "Remove manual_review from production routing states"]},
+        {"id": "10.2", "title": "Agent Mesh", "source_lines": [994, 1051], "requirements": ["Source Integrity Agent checks file hash, page count, missing pages, and rendering corruption", "Structure Agent checks headings, reading order, table rows/columns, and cross-page continuity", "Numeric Agent checks digits, signs, decimals, units, dates, percentages, currency, and period", "Differential Agent compares parser A/B/native, rejects simple majority, and prioritizes authority evidence", "Citation Agent requires source coverage for every accepted block, note, and relation", "Knowledge Agent checks unsupported knowledge, evidence chains, and ontology constraints", "Export Agent validates links, YAML, RDF/SHACL, Neo4j endpoints, and package hash", "Retrieval Agent validates answer exactness, citation exactness, source miss, and ambiguity"]},
+        {"id": "10.3", "title": "자동 복구 순서", "source_lines": [1052, 1064], "requirements": ["1 deterministic normalization", "2 native text reconstruction", "3 bbox expansion/crop retry", "4 overlapping tile", "5 second parser", "6 authority source mapping", "7 schema repair", "8 unresolved/quarantine"]},
+        {"id": "10.4", "title": "Authority hierarchy", "source_lines": [1065, 1074], "requirements": ["1 Official API/XML/XBRL", "2 Native PDF text with coordinates", "3 Original document image", "4 Independent parser consensus", "5 LLM/VLM interpretation"]},
+        {"id": "10.5", "title": "합의 규칙", "source_lines": [1075, 1085], "requirements": ["Do not treat two matching models as truth", "Accept when authority confirms", "Or accept when independent signals agree and no hard gate fails"]},
+        {"id": "10.6", "title": "미과금", "source_lines": [1086, 1095], "requirements": ["Quarantine region", "Unsupported file", "Corrupted page", "Verifier-false-positive output discarded", "Internal recovery work"]}
+      ]
+    },
+    {
+      "id": "11",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["numeric-authority"],
+      "default_blockers": ["Authority facts can be validated and idempotently written locally, but no DART/SEC provider/runtime caller or AuthorityMapping production writer proves machine-grounded end-to-end numeric recovery."],
+      "entries": [
+        {"id": "11.1", "title": "DART", "source_lines": [1098, 1105], "requirements": ["Join OpenDART XML/XBRL fact", "Map PDF bbox/cell", "Use statement/account/period/unit key"]},
+        {"id": "11.2", "title": "SEC", "source_lines": [1106, 1114], "requirements": ["Join Inline XBRL", "Use filing HTML", "Use accession/form/period", "Map rendered page region"]},
+        {"id": "11.3", "title": "Cell key", "source_lines": [1115, 1133], "requirements": ["entity_id", "statement", "concept", "period_start", "period_end", "instant", "unit", "scale", "dimensions", "page", "row_key", "column_key"]},
+        {"id": "11.4", "title": "Geometry matcher", "source_lines": [1134, 1145], "requirements": ["PDF words/cells", "XBRL label", "Numeric value", "Page", "Row/column headers", "Statement context", "Unit/scale", "Fuzzy label", "Constrained bipartite matching"]},
+        {"id": "11.5", "title": "Numeric output policy", "source_lines": [1146, 1154], "requirements": ["Never treat VLM number as authoritative when authority exists", "Take structure from parser", "Take value from authority", "Take source bbox from mapper", "Retain original parser number in audit"]},
+        {"id": "11.6", "title": "Hard Gate", "source_lines": [1155, 1167], "status": "blocked", "blockers": ["No immutable mixed DART/SEC hard-set run proves all six numeric error counts are zero."], "requirements": ["critical numeric mismatch = 0", "unsupported numeric row = 0", "missing authoritative row = 0", "wrong sign = 0", "wrong unit/scale = 0", "wrong period = 0"]}
+      ]
+    },
+    {
+      "id": "12",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["benchmark"],
+      "default_blockers": ["Candidate registry and fail-closed orchestration exist, but official Public Core three-run outputs, approved private sets, champion matrix, shadow/canary evidence, and verified rollback are absent."],
+      "entries": [
+        {"id": "12.1", "title": "평가 레이어", "source_lines": [1170, 1209], "requirements": ["Public Core: OmniDocBench, ParseBench, olmOCR-Bench within approved public licenses", "Structara Finance: DART, SEC, numbers/sign/unit/period, long and multi-page tables, corrected filings", "Structara General: manuals, research, course materials, office files, scans/photos, multilingual", "Robustness: rotation, skew, warp, blur, JPEG, low DPI, screen photo, prompt injection, repeated page, missing page"]},
+        {"id": "12.2", "title": "Candidate screening", "source_lines": [1210, 1239], "requirements": ["Tier 0: install, one-page, VRAM, output schema, license", "Tier 1: critical 30-page set with no new critical error", "Tier 2: Public Core full three runs in the same immutable environment", "Tier 3: Finance, General, and Robustness", "Tier 4: shadow traffic, canary, and rollback"]},
+        {"id": "12.3", "title": "Page Class별 승격", "source_lines": [1240, 1250], "requirements": ["Native clean→Native", "Scan text→fastest safe parser", "Table heavy→table champion", "Formula heavy→formula champion", "Real-world distorted→robustness champion", "Multilingual→multilingual champion"]},
+        {"id": "12.4", "title": "Production hard gate", "source_lines": [1251, 1265], "requirements": ["page omission = 0", "critical number/sign error = 0", "unsupported critical content = 0", "large repetition = 0", "source evidence loss = 0", "GT leakage = 0", "Three-run variance bounded", "Rollback recipe verified"]}
+      ]
+    },
+    {
+      "id": "13",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["compiler-model", "blueprints"],
+      "default_blockers": ["Canonical compiler and deterministic projections are locally tested, but rights-cleared corpus evaluation and a production precision-model provider run are absent."],
+      "entries": [
+        {"id": "13.1", "title": "입력", "source_lines": [1268, 1271], "requirements": ["Use Verified CIR only"]},
+        {"id": "13.2", "title": "출력", "source_lines": [1272, 1286], "requirements": ["architecture_plan", "notes", "entities", "relations", "claims", "mocs", "ontology_candidates", "warnings"]},
+        {"id": "13.3", "title": "모델 역할", "source_lines": [1287, 1315], "requirements": ["Fast: section classification, note-boundary proposals, title/alias/tag, explicit entity candidates", "Precision: cross-document entity resolution, relation validation, ontology mapping, merge/split decisions, corpus architecture", "Deterministic code: stable IDs, folder paths, filenames, YAML, Wikilinks, JSON-LD, OWL/RDF, Neo4j CSV, checksums"]},
+        {"id": "13.4", "title": "Note boundary", "source_lines": [1316, 1326], "requirements": ["Coverage", "Split/merge F1", "Title acceptability", "Source-block continuity", "Duplicate-note ratio", "File churn on rerun"]},
+        {"id": "13.5", "title": "Entity Resolution", "source_lines": [1327, 1339], "requirements": ["Name aliases", "Official identifiers", "Context", "Time", "Relationships", "Document source", "Do not auto-merge uncertain cases; emit entity_cluster_candidate"]},
+        {"id": "13.6", "title": "Relation policy", "source_lines": [1340, 1350], "requirements": ["source_explicit", "structured_derived", "rule_derived", "model_inferred", "Never auto-promote model_inferred into the verified graph"]},
+        {"id": "13.7", "title": "디렉토리 Architecture Planner", "source_lines": [1351, 1376], "requirements": ["Inputs: domain, object types, user goal, corpus size, temporal structure, existing folders", "Outputs: blueprint, root_views, mocs, folder_depth, naming_policy, source_preservation"]}
+      ]
+    },
+    {
+      "id": "14",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["blueprints"],
+      "default_blockers": ["Declarative blueprint modules and validation tests exist locally, but tenant sandbox, signing, migration, and production registry evidence are absent."],
+      "entries": [
+        {"id": "14.1", "title": "모듈", "source_lines": [1379, 1394], "requirements": ["module.yaml", "ontology/", "schemas/", "prompts/", "templates/", "directory/", "validators/", "mappings/", "examples/", "tests/", "migrations/"]},
+        {"id": "14.2", "title": "기본 모듈", "source_lines": [1395, 1406], "requirements": ["corporate-filings", "research-library", "technical-documentation", "course-materials", "personal-knowledge", "legal-contracts", "generic-mixed-corpus"]},
+        {"id": "14.3", "title": "Drop-in", "source_lines": [1407, 1417], "requirements": ["Load modules/{blueprint}", "Registry validation", "UI views", "Compiler prompts", "Validators", "Export profiles"]},
+        {"id": "14.4", "title": "보안", "source_lines": [1418, 1432], "requirements": ["Initial modules are declarative only", "Allow YAML", "Allow JSON Schema", "Allow prompt Markdown", "Allow templates", "Allow SHACL", "Allow mappings", "Forbid arbitrary Python", "Forbid shell", "Forbid network"]}
+      ]
+    },
+    {
+      "id": "15",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["compiler-model"],
+      "default_blockers": ["The canonical object schema is locally implemented, but a production compatibility, migration, and cross-renderer corpus proof is absent."],
+      "entries": [
+        {"id": "15", "title": "Canonical Knowledge Model", "source_lines": [1433, 1480], "requirements": ["Objects: Collection, Document, DocumentVersion, Page, Region, Block, Table, Figure, Note, Entity, Relation, Claim, Evidence, Asset, OntologyTerm, ExportArtifact, ValidationRecord", "Every object carries stable_id, tenant_id, collection_id, source_refs, origin, verification_state, created_by_activity, version, hash", "Folders are not source of truth", "Canonical model renders to Obsidian, Ontology, Neo4j, and RAG"]}
+      ]
+    },
+    {
+      "id": "16",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["retrieval"],
+      "default_blockers": ["Hybrid retrieval code and local tests exist, but a production vector store and a machine-grounded DART/SEC benchmark are absent."],
+      "entries": [
+        {"id": "16.1", "title": "Production stack", "source_lines": [1483, 1493], "requirements": ["Structured filters", "BM25", "Vector", "Graph neighborhood", "Reranker", "Numeric/citation verifier"]},
+        {"id": "16.2", "title": "필터", "source_lines": [1494, 1511], "requirements": ["tenant", "project", "document", "statement", "account/concept", "period", "current/prior", "consolidated/separate", "unit", "currency", "entity", "source type", "verification state"]},
+        {"id": "16.3", "title": "Vector store", "source_lines": [1512, 1521], "requirements": ["Do not use development in-memory vector store in production", "Support pgvector, Qdrant, or a managed vector database"]},
+        {"id": "16.4", "title": "Numeric final verifier", "source_lines": [1522, 1533], "requirements": ["Compare answer numeric token", "Compare selected fact", "Compare source evidence", "Compare unit/period", "Count ambiguities", "On mismatch, refuse answer and return explicit ambiguity"]},
+        {"id": "16.5", "title": "목표", "source_lines": [1534, 1546], "status": "blocked", "blockers": ["No immutable OpenDART/SEC machine-grounded run proves Recall@5 ≥0.99, Numeric Exact ≥0.95/0.99, Citation Precision 1.00, and Source Miss 0."], "requirements": ["Recall@5 ≥0.99", "Numeric Exact ≥0.95 initially and ≥0.99 target", "Citation Precision = 1.00", "Source Miss = 0"]}
+      ]
+    },
+    {
+      "id": "17",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["package"],
+      "default_blockers": ["Build/import/tamper and normalized round-trip tests are local; current real target-version imports and production signing-key custody evidence are absent."],
+      "entries": [
+        {"id": "17.1", "title": "Package", "source_lines": [1549, 1565], "requirements": ["manifest.json", "README.md", "source/", "canonical/", "obsidian/", "ontology/", "graph/", "rag/", "provenance/", "validation/", "checksums.sha256", "signature/"]},
+        {"id": "17.2", "title": "Obsidian", "source_lines": [1566, 1578], "requirements": ["Vault works immediately after unzip/open", "Broken links = 0", "Invalid YAML = 0", "Missing assets = 0", "Home/MOC", "Source evidence", "Graph", "Portable profile", "Enhanced profile"]},
+        {"id": "17.3", "title": "Ontology", "source_lines": [1579, 1588], "requirements": ["TTL", "OWL", "JSON-LD", "SKOS", "SHACL", "Vocabulary", "Provenance"]},
+        {"id": "17.4", "title": "Neo4j", "source_lines": [1589, 1597], "requirements": ["nodes.csv", "relationships.csv", "constraints", "indexes", "import.cypher", "strict import"]},
+        {"id": "17.5", "title": "RAG", "source_lines": [1598, 1605], "requirements": ["documents.jsonl", "chunks.jsonl", "metadata.jsonl", "evidence.jsonl", "retrieval profile"]},
+        {"id": "17.6", "title": "Round-trip", "source_lines": [1606, 1615], "requirements": ["Canonical→Export→Import→Normalized Canonical", "Critical loss = 0"]}
+      ]
+    },
+    {
+      "id": "18",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["theater"],
+      "default_blockers": ["The event reducer and UI are locally tested, but there is no deployed real-job stream proving no fake progress, reconnect replay, privacy masking, and sustained client performance."],
+      "entries": [
+        {"id": "18.1", "title": "단순 progress bar가 아니다", "source_lines": [1618, 1627], "requirements": ["Turn waiting into trust", "Explain the actual processing algorithm", "Prove Structara is more than OCR", "Expose cost, time, and quality state", "Show value forming"]},
+        {"id": "18.2", "title": "전체 흐름", "source_lines": [1628, 1638], "requirements": ["COLLECT→UNDERSTAND→VERIFY→COMPILE→ARCHITECT→PACKAGE"]},
+        {"id": "18.3", "title": "화면 구조", "source_lines": [1639, 1665], "requirements": ["Left Collection & Page Intelligence: clusters, page rail, route, warnings, actual thumbnail", "Center Source Transformation: actual page, block overlays, table reconstruction, reading order, source proof", "Right Knowledge Formation: live Markdown, notes, directory tree, entities, relations, package outputs"]},
+        {"id": "18.4", "title": "단계별 장면", "source_lines": [1666, 1704], "requirements": ["Collect: files arrive, duplicates merge, formats classify", "Understand: page classification, route selection, typed blocks", "Verify: numeric/source comparison, authority badge, quarantine", "Compile: blocks become notes with properties and source refs", "Architect: directory/MOCs, entity resolution, graph neighborhoods", "Package: Obsidian, Ontology, Neo4j, RAG, checksum/signature"]},
+        {"id": "18.5", "title": "실제 Event Map", "source_lines": [1705, 1731], "requirements": ["collection.file.discovered", "collection.file.hashed", "collection.file.uploaded", "collection.file.duplicate", "collection.ingested", "preflight.cluster.created", "preflight.estimate.updated", "page.route.selected", "page.rendered", "region.detected", "block.completed", "table.reconstructed", "numeric.authority_verified", "output.quarantined", "note.created", "entity.resolved", "relation.created", "architecture.folder.created", "architecture.moc.created", "export.started", "export.ready", "package.signed"]},
+        {"id": "18.6", "title": "가짜 연출 금지", "source_lines": [1732, 1740], "requirements": ["No typing without actual event", "Do not render every page every frame", "No random graph nodes", "No timeline diverging from actual progress", "No fake package-ready before completion", "Never paint unresolved as verified green"]},
+        {"id": "18.7", "title": "이벤트 성능", "source_lines": [1741, 1749], "requirements": ["Immutable backend sequence", "Client batch update ≤10Hz", "Aggregate high-volume block events", "Only selected page is detailed", "History replay", "Snapshot reconciliation"]},
+        {"id": "18.8", "title": "Cinema Mode", "source_lines": [1750, 1764], "requirements": ["Default app is Calm Precision", "Watch transformation opens full-screen summary theater", "Use actual event stream", "Optionally mask filenames", "Use selected representative pages", "Ambient sound defaults off", "Support reduced motion"]}
+      ]
+    },
+    {
+      "id": "19",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["theater", "package", "integrity-ui"],
+      "default_blockers": ["Result surfaces are present locally, but no production-generated collection result proves actual KPI truth, two-click source proof, and target-package imports."],
+      "entries": [
+        {"id": "19.1", "title": "완료 Hero", "source_lines": [1767, 1773], "requirements": ["State that the full material volume was compiled into one connected knowledge system"]},
+        {"id": "19.2", "title": "KPI", "source_lines": [1774, 1787], "requirements": ["Documents", "Pages", "Notes", "Entities", "Relations", "Source coverage", "Duplicates reused", "Display actual values only"]},
+        {"id": "19.3", "title": "패키지 카드", "source_lines": [1788, 1796], "requirements": ["Obsidian Vault", "Complete Knowledge", "Ontology", "Neo4j", "RAG", "Validation Report"]},
+        {"id": "19.4", "title": "Integrity Summary", "source_lines": [1797, 1806], "requirements": ["Verified", "Authority verified", "Auto-repaired", "Unresolved", "Quarantined"]},
+        {"id": "19.5", "title": "결과 탐색", "source_lines": [1807, 1817], "requirements": ["Original↔output", "Directory", "Notes", "Graph", "Source proof", "Package preview"]}
+      ]
+    },
+    {
+      "id": "20",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["integrity-ui", "routing-verification"],
+      "default_blockers": ["Integrity decisions and UI contracts exist, but live quarantine/retry/provider actions and a complete customer decision journey are not yet proven end-to-end."],
+      "entries": [
+        {"id": "20.1", "title": "목적", "source_lines": [1820, 1825], "requirements": ["Surface explains what the autonomous system verified, quarantined, and why", "It is not a human completion queue"]},
+        {"id": "20.2", "title": "기본 grouping", "source_lines": [1826, 1836], "requirements": ["source corruption", "parser disagreement", "numeric mismatch", "missing row", "unsupported relation", "ontology conflict", "export validation", "retrieval ambiguity"]},
+        {"id": "20.3", "title": "자동 작업 표시", "source_lines": [1837, 1846], "requirements": ["Show ordered attempts", "Show selected parser/repair method", "Show authority match", "Show final verification result"]},
+        {"id": "20.4", "title": "고객 선택", "source_lines": [1847, 1859], "requirements": ["Keep quarantined", "Exclude", "Retry with new engine", "Provide password", "Correct source file", "Optional override", "Override is convenience, never an operational review dependency"]}
+      ]
+    },
+    {
+      "id": "21",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["brand-design"],
+      "default_blockers": ["Design tokens and surfaces encode the direction locally, but final multi-viewport visual approval and user-comprehension evidence are absent."],
+      "entries": [
+        {"id": "21.1", "title": "더 많은 장식이 답이 아니다", "source_lines": [1862, 1884], "requirements": ["Remove repeated small cards, unexplained icons, nested border panels, generic AI gradients, meaningless graphs, tiny metadata, and identical section composition", "Strengthen actual documents, actual UI, editorial typography, intentional whitespace, source proof, structured motion, proprietary glyph/material, and one dominant scene per page"]},
+        {"id": "21.2", "title": "시각적 비중", "source_lines": [1885, 1894], "requirements": ["Actual Product/Public Proof 50%", "Deterministic SVG/Data Visual 22%", "Designed 3D 18%", "AI Editorial 7%", "Licensed Photo 3%"]},
+        {"id": "21.3", "title": "페이지 composition rhythm", "source_lines": [1895, 1906], "requirements": ["Editorial statement→full-bleed product proof→explanation→actual interaction→evidence/limitations", "Do not use consecutive card grids"]},
+        {"id": "21.4", "title": "Product UI", "source_lines": [1907, 1921], "requirements": ["1px borders", "Minimal shadow", "Neutral background", "Blue only for active transformation", "Cyan only for evidence", "Semantic status color", "Readable body ≥14px", "12px meta only when nonessential", "Reduce panel count", "One primary action"]}
+      ]
+    },
+    {
+      "id": "22",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["assets"],
+      "default_blockers": ["Asset ledgers, scoring rules, and local regression checks exist, but final legal/brand clearance and full-page reviewer sign-off remain external release gates."],
+      "entries": [
+        {"id": "22.1", "title": "기존 asset 전수 판정", "source_lines": [1924, 1934], "requirements": ["Classify every existing asset KEEP, POLISH, REBUILD, or REMOVE", "Existence, hash pass, and snapshot pass are not quality approval"]},
+        {"id": "22.2", "title": "새 필수 ledger", "source_lines": [1935, 1943], "requirements": ["ASSET_REMEDIATION_LEDGER.yml", "ART_DIRECTION_BOARD.md", "ASSET_QA_REPORT.md", "VISUAL_QUALITY_GATES.yml"]},
+        {"id": "22.3", "title": "Signature assets", "source_lines": [1944, 1969], "requirements": ["A01 Drop Everything", "A02 Source to Structure", "A03 Proof Link", "A04 Knowledge Architecture", "A05 Graph with Evidence", "A06 Deployable Package"]},
+        {"id": "22.4", "title": "제작법", "source_lines": [1970, 1981], "requirements": ["Actual UI/proof from real browser capture", "Diagrams in HTML/SVG", "Hero object in Blender/R3F", "Editorial cover may use generation model", "Texture uses procedural/CC0 base", "Logo/glyph is directly vectored", "Benchmark chart uses actual data"]},
+        {"id": "22.5", "title": "3안 의무", "source_lines": [1982, 2001], "requirements": ["Create A Editorial Source static composition", "Create B Proof-First Product static composition", "Create C Knowledge Architecture static composition", "Evaluate category comprehension, ownability, truth, crop, performance, accessibility, and implementation feasibility"]},
+        {"id": "22.6", "title": "Asset QA", "source_lines": [2002, 2027], "requirements": ["Score Brand fit 15", "Score Message clarity 15", "Score Product truth 15", "Score Ownability 12", "Score Composition 10", "Score Typography/material 8", "Score Responsive 7", "Score Accessibility 5", "Score Performance 6", "Score Provenance/license 7", "Require score ≥90", "Require Critical = 0", "Require High = 0", "Require actual-page screenshots"]}
+      ]
+    },
+    {
+      "id": "23",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["brand-design", "assets"],
+      "default_blockers": ["The static-first hero and local visual artifacts exist, but field LCP/INP/CLS, device fallback, and final 90+ release review are not proven."],
+      "entries": [
+        {"id": "23.1", "title": "한 장면", "source_lines": [2030, 2045], "requirements": ["Left: strong editorial copy, one primary CTA, one secondary CTA", "Right: actual source page, blocks, proof line, note tree, typed graph"]},
+        {"id": "23.2", "title": "Copy", "source_lines": [2046, 2068], "requirements": ["English: Don’t organize your files. Compile the knowledge.", "English promise: structured, verified, connected knowledge for people and AI", "Korean: 파일을 정리하지 마세요. 지식으로 컴파일하세요.", "Korean promise: 구조·근거·연결을 갖춘 지식 시스템"]},
+        {"id": "23.3", "title": "Static-first", "source_lines": [2069, 2075], "requirements": ["HTML copy", "AVIF poster", "Actual product data", "Static state alone scores 90+"]},
+        {"id": "23.4", "title": "R3F enhancement", "source_lines": [2076, 2086], "requirements": ["Page separation", "Evidence line", "Notes form", "Graph appears", "Restrained camera", "No endless float", "No chrome", "No neon particles"]},
+        {"id": "23.5", "title": "Performance", "source_lines": [2087, 2098], "requirements": ["LCP uses text/poster", "Lazy GLB", "Mobile poster", "Reduced-motion poster", "Save-data poster", "Context-loss fallback", "No CLS"]}
+      ]
+    },
+    {
+      "id": "24",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["brand-design", "theater"],
+      "default_blockers": ["The transformation component is local; a production-generated same-source artifact with all proof interactions is not captured as immutable evidence."],
+      "entries": [
+        {"id": "24.1", "title": "actual same source", "source_lines": [2101, 2104], "requirements": ["Left raw and right compiled use the same source section"]},
+        {"id": "24.2", "title": "interactions", "source_lines": [2105, 2112], "requirements": ["Repeated header→excluded", "Table fragment→structured table", "Page-split paragraph→connected block", "Section→note", "Number→authority proof"]},
+        {"id": "24.3", "title": "format", "source_lines": [2113, 2118], "requirements": ["Use DOM/SVG, not raster"]}
+      ]
+    },
+    {
+      "id": "25",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["assets", "integrity-ui"],
+      "default_blockers": ["Proof UI and local coordinate checks exist, but a production result/source lineage matrix across crop, rotation, zoom, DPI, responsive layout, and table cells is absent."],
+      "entries": [
+        {"id": "25.1", "title": "actual product component", "source_lines": [2121, 2129], "requirements": ["Source page", "Selected result", "Source bbox", "Value", "Authority", "Verification status"]},
+        {"id": "25.2", "title": "coordinate tests", "source_lines": [2130, 2138], "requirements": ["Crop/media box", "Rotation", "Zoom", "DPI", "Responsive", "Table cells"]},
+        {"id": "25.3", "title": "no connector crossing text", "source_lines": [2139, 2144], "requirements": ["Use collision-aware connectors that never cross text"]}
+      ]
+    },
+    {
+      "id": "26",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["assets", "security"],
+      "default_blockers": ["A product-specific security architecture artifact exists locally, but it does not replace production threat-model, provider-boundary, and tenant-isolation evidence."],
+      "entries": [
+        {"id": "26", "title": "Security asset", "source_lines": [2145, 2165], "requirements": ["Remove the abstract ellipse", "Show Browser→Presigned Multipart→Quarantine→Scanner/CDR→Source Store→Isolated Workers→Derived Knowledge→Retention/Purge", "Mark external-provider boundary", "Mark tenant boundary"]}
+      ]
+    },
+    {
+      "id": "27",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["web-routes", "brand-design"],
+      "default_blockers": ["Routes and local browser/visual contracts exist, but a fresh hosted screenshot and interaction matrix for every required route is absent."],
+      "entries": [
+        {"id": "27.1", "title": "/", "source_lines": [2168, 2179], "requirements": ["Hero reboot", "Drop Everything section", "Live transformation", "Actual proof", "Package result", "DART/SEC", "Benchmark limitations", "Security", "CTA"]},
+        {"id": "27.2", "title": "/product", "source_lines": [2180, 2187], "requirements": ["Pipeline spine", "Collection Ingestion", "Autonomous verification", "Architecture generation", "Deployable outputs"]},
+        {"id": "27.3", "title": "/quick-convert", "source_lines": [2188, 2193], "requirements": ["Explicitly position as lightweight trial", "Limit to 30 files/50 MiB", "Upsell to Knowledge Intake"]},
+        {"id": "27.4", "title": "/intake", "source_lines": [2194, 2202], "requirements": ["Folder/cloud/agent", "Collection queue", "Resume", "Dedupe", "Security", "Whole-corpus preflight"]},
+        {"id": "27.5", "title": "/workspace", "source_lines": [2203, 2209], "requirements": ["Evolve current Processing Studio", "Collection and document modes", "Actual Theater", "Directory/graph formation"]},
+        {"id": "27.6", "title": "/integrity", "source_lines": [2210, 2215], "requirements": ["Replace Review", "Automatic verification history", "Unresolved/quarantine"]},
+        {"id": "27.7", "title": "/knowledge-bases", "source_lines": [2216, 2222], "requirements": ["Directory tree and MOC first", "Notes/entities/relations", "Graph secondary", "Persistent source proof"]},
+        {"id": "27.8", "title": "/benchmarks", "source_lines": [2223, 2230], "status": "blocked", "evidence_refs": ["web-routes", "benchmark"], "blockers": ["The page must not publish smoke scores; official full results, separated critical results, cost/latency, and failure gallery do not yet exist."], "requirements": ["Public full results only", "No smoke score", "Separate official and Structara critical", "Per-class cost/latency", "Failure gallery"]},
+        {"id": "27.9", "title": "/pricing", "source_lines": [2231, 2237], "status": "external-evidence-required", "boundary": "external", "evidence_refs": ["web-routes", "preflight-credit"], "blockers": ["Public prices require owner-approved, telemetry-calibrated price book and merchant reconciliation evidence."], "requirements": ["Quick Convert versus Knowledge Intake", "Storage versus processing", "Credit estimate", "No uncalibrated public price claim"]},
+        {"id": "27.10", "title": "/security", "source_lines": [2238, 2247], "status": "external-evidence-required", "boundary": "external", "evidence_refs": ["web-routes", "security"], "blockers": ["Security page claim clearance and live architectural controls require external production evidence."], "requirements": ["Actual architecture", "Current versus roadmap", "Retention/deletion", "External AI policy", "No certification claim"]}
+      ]
+    },
+    {
+      "id": "28",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["design-system"],
+      "default_blockers": ["Local tokens, typography, component consolidation, and Storybook scaffolding exist, but a clean full Storybook state matrix and design-owner source synchronization are absent."],
+      "entries": [
+        {"id": "28.1", "title": "Token single source", "source_lines": [2250, 2258], "requirements": ["One token source feeds CSS", "Components", "Screenshots", "Diagrams", "3D materials", "Video graphics"]},
+        {"id": "28.2", "title": "Typography", "source_lines": [2259, 2267], "requirements": ["Separate Korean/English line-break rules", "Manual headline breaks", "Body 15–18px", "App body 14–15px", "Meta 12px limited", "Line length 50–72 characters"]},
+        {"id": "28.3", "title": "Component pruning", "source_lines": [2268, 2276], "requirements": ["Merge duplicate button/card/badge variants", "Separate status badge from origin badge", "Remove pill overuse", "Define radius hierarchy", "Define border hierarchy", "Use shadow only for floating interaction"]},
+        {"id": "28.4", "title": "Storybook", "source_lines": [2277, 2293], "requirements": ["Default", "Hover", "Focus", "Loading", "Empty", "Error", "Long Korean/English", "Compact/comfortable", "Mobile", "Reduced motion"]}
+      ]
+    },
+    {
+      "id": "29",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["theater", "design-system"],
+      "default_blockers": ["Motion is encoded locally, but actual-device long-session jank, accessibility, and event-truth evidence are not complete."],
+      "entries": [
+        {"id": "29.1", "title": "Product", "source_lines": [2296, 2308], "requirements": ["Event-based file arrived", "Block detected", "Numeric verified", "Note created", "Folder created", "Package ready"]},
+        {"id": "29.2", "title": "Marketing", "source_lines": [2309, 2315], "requirements": ["Scroll story", "Static composition remains complete", "One transformation per chapter", "Design motion and static together"]},
+        {"id": "29.3", "title": "Remove", "source_lines": [2316, 2325], "requirements": ["Remove infinite float", "Remove glow pulse", "Remove loading unrelated to actual progress", "Do not animate every card", "Do not type completed output"]}
+      ]
+    },
+    {
+      "id": "30",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["collection-ui", "theater", "web-routes"],
+      "default_blockers": ["Responsive local layouts and baselines exist, but actual mobile Safari/Chrome device evidence and 5,000-item interaction proof are absent."],
+      "entries": [
+        {"id": "30.1", "title": "Intake", "source_lines": [2328, 2334], "requirements": ["Summary first", "Collapse file groups", "Pause/retry accessible", "No 5,000-row list"]},
+        {"id": "30.2", "title": "Processing", "source_lines": [2335, 2346], "requirements": ["Progress tab", "Source tab", "Result tab", "Knowledge tab", "Integrity tab"]},
+        {"id": "30.3", "title": "Graph", "source_lines": [2347, 2350], "requirements": ["List-first", "Local neighborhood only"]},
+        {"id": "30.4", "title": "Hero", "source_lines": [2351, 2356], "requirements": ["Use separate mobile poster/composition", "Do not crop desktop composition"]}
+      ]
+    },
+    {
+      "id": "31",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["design-system"],
+      "default_blockers": ["Automated accessibility contracts do not replace screen-reader, 200-percent zoom, actual high-contrast, and mobile-device sign-off."],
+      "entries": [
+        {"id": "31", "title": "Accessibility", "source_lines": [2357, 2372], "requirements": ["WCAG 2.2 AA", "Keyboard all core flows", "No drag-only action", "24×24 minimum and 44×44 mobile target", "Focus not obscured", "Reduced motion", "200% zoom", "Source bbox text alternative", "Graph table alternative", "Throttle progress announcements", "Status not color-only"]}
+      ]
+    },
+    {
+      "id": "32",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["scale", "web-routes"],
+      "default_blockers": ["No immutable hosted field/lab evidence proves the masterplan Core Web Vitals, asset budgets, large-app memory limits, or 5,000-file upload performance."],
+      "entries": [
+        {"id": "32.1", "title": "Marketing", "source_lines": [2375, 2385], "requirements": ["LCP p75 ≤2.5s", "INP p75 ≤200ms", "CLS p75 ≤0.1", "Initial JS ≤220KB target", "Hero poster ≤180–250KB", "GLB ≤1.5MB target"]},
+        {"id": "32.2", "title": "App", "source_lines": [2386, 2397], "requirements": ["Virtualize", "Page canvas current ±1", "Update ≤10Hz", "Worker hashing", "Graph clustering", "Lazy PDF/editor/graph", "1,000-page memory test", "10,000 blocks", "5,000 nodes"]},
+        {"id": "32.3", "title": "Upload", "source_lines": [2398, 2407], "requirements": ["No main-thread hash stall", "Adaptive concurrency", "Visibility pause", "Memory cap", "5,000-file manifest performance"]}
+      ]
+    },
+    {
+      "id": "33",
+      "default_status": "external-evidence-required",
+      "default_boundary": "external",
+      "default_evidence_refs": ["security"],
+      "default_blockers": ["Local security controls and validators require independent production-like assessment, provider sandbox evidence, tenant isolation tests, and operational privacy/deletion proof."],
+      "entries": [
+        {"id": "33.1", "title": "Upload", "source_lines": [2410, 2422], "requirements": ["Extension allowlist", "Magic bytes", "MIME", "Size", "Archive ratio", "Recursive limit", "Malware", "CDR boundary", "Random object key", "Quarantine"]},
+        {"id": "33.2", "title": "Parser", "source_lines": [2423, 2430], "requirements": ["Sandbox", "Resource limits", "No network by default", "No tool calls", "Treat source as data"]},
+        {"id": "33.3", "title": "Tenant", "source_lines": [2431, 2437], "requirements": ["RLS", "Tenant-scoped object prefixes", "Presigned URL scopes", "Cross-tenant tests"]},
+        {"id": "33.4", "title": "Privacy", "source_lines": [2438, 2448], "requirements": ["Actual retention", "Source/dependency deletion propagation", "External-provider consent", "No training by default", "Logs contain no document body", "Analytics contain no filenames/emails"]}
+      ]
+    },
+    {
+      "id": "34",
+      "default_status": "external-evidence-required",
+      "default_boundary": "external",
+      "default_evidence_refs": ["preflight-credit", "release"],
+      "default_blockers": ["Billing contracts are local; public tariffs, merchant/KYC, payment webhooks, invoices, tax, and reconciliation require owner and production evidence."],
+      "entries": [
+        {"id": "34.1", "title": "Processing tiers", "source_lines": [2451, 2464], "requirements": ["Internal Structured Markdown baseline 5 credits/page", "Internal Verified Document baseline 8 credits/page", "Internal Obsidian Vault baseline 12 credits/page", "Internal Ontology Package baseline 15 credits/page", "Internal Complete Knowledge baseline 20 credits/page", "Calibrate before public release", "Predictor applies difficulty coefficient"]},
+        {"id": "34.2", "title": "고객에게 모델 원가를 노출하지 않는다", "source_lines": [2465, 2468], "requirements": ["Expose output grade and maximum cost", "Do not expose model cost"]},
+        {"id": "34.3", "title": "Refund", "source_lines": [2469, 2478], "requirements": ["Refund failed/rejected/quarantined page", "Refund duplicate", "Refund server error", "Release unused cancellation reservation", "Prevent double event"]}
+      ]
+    },
+    {
+      "id": "35",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["operations", "scale"],
+      "default_blockers": ["Local health and operational contracts do not provide complete production admin, live SLO, alert delivery, load, restore, billing, canary, or rollback evidence."],
+      "entries": [
+        {"id": "35.1", "title": "Admin", "source_lines": [2481, 2496], "requirements": ["Collections", "Files", "Queue", "GPU invocations", "Routes", "Verifier failures", "Quarantines", "Credit ledger", "Costs", "Exports", "Incidents", "Model canary", "Rollback"]},
+        {"id": "35.2", "title": "SLO", "source_lines": [2497, 2506], "requirements": ["Collection acceptance", "Upload resume success", "Estimate latency", "Processing page throughput", "SSE replay", "Package success", "Deletion completion"]},
+        {"id": "35.3", "title": "Chaos", "source_lines": [2507, 2522], "requirements": ["Part loss", "Browser close", "Duplicated complete", "R2 429/503", "Redis restart", "DB restart", "Worker OOM", "Provider slowdown", "Out-of-order callback", "Credit double consume", "Export burst"]}
+      ]
+    },
+    {
+      "id": "36",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["collection-ingestion", "routing-verification", "numeric-authority", "compiler-model", "package", "assets"],
+      "default_blockers": ["Models and migrations exist locally, but managed PostgreSQL migration, rollback, RLS, tenant, and data-retention evidence are absent."],
+      "entries": [
+        {"id": "36", "title": "Data Model 추가", "source_lines": [2523, 2555], "requirements": ["collections", "collection_source_roots", "collection_files", "collection_upload_sessions", "upload_file_sessions", "upload_parts", "file_content_hashes", "file_versions", "page_fingerprints", "document_clusters", "preflight_feature_records", "estimate_runs", "estimate_samples", "cost_prediction_models", "route_attempts", "region_attempts", "verification_records", "authority_facts", "authority_mappings", "quarantine_items", "architecture_plans", "blueprint_modules", "knowledge_compile_runs", "export_packages", "package_validations", "asset_registry"]}
+      ]
+    },
+    {
+      "id": "37",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["api-contract", "collection-ingestion"],
+      "default_blockers": ["The exact OpenAPI operations and required idempotency headers are locally tested, but the deployed /v1 revision is not verified against the current repository."],
+      "entries": [
+        {"id": "37", "title": "API 계약", "source_lines": [2556, 2578], "requirements": ["POST /v1/collections", "POST /v1/collections/{id}/sources/local", "POST /v1/collections/{id}/files/plan", "GET /v1/collections/{id}/upload", "POST /v1/collections/{id}/upload/complete", "POST /v1/collections/{id}/preflight", "GET /v1/collections/{id}/estimate", "POST /v1/collections/{id}/compile", "GET /v1/collections/{id}/events", "GET /v1/collections/{id}/integrity", "GET /v1/collections/{id}/knowledge", "POST /v1/collections/{id}/exports", "GET /v1/exports/{id}/download", "DELETE /v1/collections/{id}", "Require idempotency key for every create/finalize/compile/export/delete operation"]}
+      ]
+    },
+    {
+      "id": "38",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["event-contract"],
+      "default_blockers": ["The versioned event schema, generated contract, and replay tests are local; production broker ordering, reconnect, snapshot, and 1,000-client evidence are absent."],
+      "entries": [
+        {"id": "38", "title": "Event Contract", "source_lines": [2579, 2601], "requirements": ["event_id", "collection_id", "job_id", "sequence", "versioned event_type", "timestamp", "payload", "schema_version", "Append-only", "Replay", "Snapshot", "Schema registry", "PII-safe"]}
+      ]
+    },
+    {
+      "id": "39",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["benchmark"],
+      "default_blockers": ["Fail-closed execution preflight exists, but it intentionally performs zero official evaluator runs and produces no publishable benchmark score."],
+      "entries": [
+        {"id": "39.1", "title": "실행", "source_lines": [2604, 2611], "requirements": ["Run candidate three times on OmniDocBench", "Run incumbent three times on OmniDocBench", "Run candidate three times on ParseBench", "Run incumbent three times on ParseBench", "Run candidate three times on olmOCR-Bench", "Run incumbent three times on olmOCR-Bench"]},
+        {"id": "39.2", "title": "산출물", "source_lines": [2612, 2623], "requirements": ["Frozen prediction", "Official raw", "Critical raw", "Cost", "Latency", "Failure cases", "Environment", "Model revision", "Signed report"]},
+        {"id": "39.3", "title": "추가", "source_lines": [2624, 2631], "requirements": ["Finance Hard Set", "General Hard Set", "Robustness", "Knowledge Compiler", "Retrieval"]},
+        {"id": "39.4", "title": "License", "source_lines": [2632, 2643], "status": "external-evidence-required", "boundary": "external", "blockers": ["Dataset/evaluator license, internal-use, public-score, redistribution, and failure-screenshot approvals require named owners and legal evidence."], "requirements": ["Dataset/evaluator license approval", "Internal-use approval", "Public-score approval", "Redistribution approval", "Failure-screenshot approval"]}
+      ]
+    },
+    {
+      "id": "40",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["auto-gold", "numeric-authority", "package"],
+      "default_blockers": ["Deterministic mutations and HTML-contract transforms are locally executed; browser/raster rendering, production OCR, independent annotation QA, and private-holdout approval are explicitly not evidenced."],
+      "entries": [
+        {"id": "40.1", "title": "Authority", "source_lines": [2646, 2652], "requirements": ["OpenDART", "SEC XBRL", "Native PDF", "HTML/XML"]},
+        {"id": "40.2", "title": "Synthetic", "source_lines": [2653, 2658], "requirements": ["HTML/CSS generated documents", "Table/formula/layout", "Exact ground truth"]},
+        {"id": "40.3", "title": "Mutation", "source_lines": [2659, 2671], "requirements": ["Sign", "Digit", "Decimal", "Unit", "Row deletion", "Duplicate", "Page omission", "Order", "BBox", "Prompt injection"]},
+        {"id": "40.4", "title": "Metamorphic", "source_lines": [2672, 2680], "requirements": ["Rotate as HTML/CSS contract transform only", "Scale as HTML/CSS contract transform only", "Deterministic DOM re-render only", "Gzip compression contract only", "Equivalent-font CSS contract only", "DOM page split/merge contract only", "Receipt states production raster renderer not exercised", "Receipt states production OCR not exercised"]},
+        {"id": "40.5", "title": "Round-trip", "source_lines": [2681, 2690], "requirements": ["Canonical/export/import", "Obsidian", "RDF", "Neo4j", "RAG"]}
+      ]
+    },
+    {
+      "id": "41",
+      "default_status": "local-contract",
+      "default_boundary": "local",
+      "default_evidence_refs": ["collection-ui", "preflight-credit", "retrieval", "operations", "benchmark", "assets"],
+      "default_blockers": ["The required audit inventory is represented, but it must be rerun after every material change and tied to the final immutable release revision."],
+      "entries": [
+        {"id": "41", "title": "실행 파일·코드 감사 대상", "source_lines": [2691, 2752], "requirements": ["Frontend inventory: upload panel/client, live processing workspace, review/integrity, knowledge studio, marketing landing, global and product CSS", "Router/Credits inventory: preflight, engine, models, credit policy, payments", "Retrieval inventory: engine and models", "API/Scheduler inventory: main, services, scheduler tree", "Benchmark inventory: public suite, locked registry, evaluators, model registry", "Brand/Assets inventory: brand decisions, page manifest, claim register, asset registry, brand/asset skills"]}
+      ]
+    },
+    {
+      "id": "42",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["release"],
+      "default_blockers": ["The campaign has local artifacts, but completion requires every wave output to be tied to one clean immutable revision and all hard gates to pass."],
+      "entries": [
+        {"id": "42", "title": "단일 실행 Campaign", "source_lines": [2753, 2756], "requirements": ["Execute Wave 0 through Wave 11 in order in one long campaign", "Use small internal commits/checkpoints without repeatedly stopping for user approval"]},
+        {"id": "42.W0", "title": "Wave 0 — Baseline & Deploy Truth", "source_lines": [2757, 2772], "status": "blocked", "evidence_refs": ["release", "web-routes", "assets"], "blockers": ["The checked-in deployment snapshot does not prove the current repository revision is deployed; hosted revision and rollback truth remain open."], "requirements": ["Git status, branch, commits", "Verify deployed SHA", "Live route screenshot crawl", "Current asset/control inventory", "Visual baseline", "Current functional matrix", "Rollback point", "Produce current-state audit, screenshots, deployment manifest"]},
+        {"id": "42.W1", "title": "Wave 1 — Collection Ingestion", "source_lines": [2773, 2784], "evidence_refs": ["collection-ingestion", "collection-ui", "scale"], "requirements": ["DB migrations", "Collection APIs", "Folder manifest", "Multi-file concurrency", "Collection resume", "Dedupe/version", "UI", "5,000-file test", "10 GiB resume test"]},
+        {"id": "42.W2", "title": "Wave 2 — Preflight & Credits", "source_lines": [2785, 2794], "evidence_refs": ["preflight-credit"], "requirements": ["Static features", "Cluster", "Adaptive sample", "Predictor interface", "Reserve/settle/refund", "UI", "Estimate calibration tests"]},
+        {"id": "42.W3", "title": "Wave 3 — Autonomous Routing", "source_lines": [2795, 2803], "status": "blocked", "evidence_refs": ["routing-verification", "numeric-authority"], "blockers": ["The v4 collection slice resolves ReviewItem through autonomous isolation locally, but region-authority production callers and immutable no-human production-like execution evidence remain incomplete; legacy review names are compatibility surfaces, not v4 runtime authority."], "requirements": ["Remove manual_review from v4 production path", "Add unresolved/quarantine", "Region attempts", "Verifier mesh", "Authority repair", "No-human end-to-end"]},
+        {"id": "42.W4", "title": "Wave 4 — Parser Benchmarks", "source_lines": [2804, 2813], "status": "blocked", "evidence_refs": ["benchmark"], "blockers": ["Candidate smoke, critical set, Public Core three-run, private sets, champion matrix, and rollback execution are not complete."], "requirements": ["Candidate containers", "One-page smoke", "Critical set", "Public Core three times", "Finance/General", "Champion matrix", "Rollback"]},
+        {"id": "42.W5", "title": "Wave 5 — Knowledge Compiler", "source_lines": [2814, 2824], "evidence_refs": ["compiler-model", "blueprints", "auto-gold"], "requirements": ["JSON schemas", "Qwen/Gemma adapters", "Auto Gold", "Note/entity/relation", "Architecture planner", "Module runtime", "Deterministic render", "Tests"]},
+        {"id": "42.W6", "title": "Wave 6 — Retrieval", "source_lines": [2825, 2833], "evidence_refs": ["retrieval"], "requirements": ["Production store", "Filters", "BM25/vector/graph", "Reranker", "Numeric verifier", "DART/SEC benchmark"]},
+        {"id": "42.W7", "title": "Wave 7 — Package", "source_lines": [2834, 2842], "evidence_refs": ["package"], "requirements": ["Obsidian", "Ontology", "Neo4j", "RAG", "Round-trip", "Signed package"]},
+        {"id": "42.W8", "title": "Wave 8 — Brand/Asset Reset", "source_lines": [2843, 2854], "evidence_refs": ["assets", "brand-design"], "requirements": ["Delete/rebuild low quality", "Three static variants", "Hero", "Intake scene", "Processing scene", "Knowledge architecture scene", "Security diagram", "Actual product captures", "Motion loops"]},
+        {"id": "42.W9", "title": "Wave 9 — Page Redesign", "source_lines": [2855, 2866], "evidence_refs": ["web-routes", "brand-design"], "requirements": ["Homepage", "Product", "Intake", "Processing", "Integrity", "Knowledge", "Benchmark", "Security", "Pricing"]},
+        {"id": "42.W10", "title": "Wave 10 — Operations", "source_lines": [2867, 2876], "status": "blocked", "evidence_refs": ["operations", "security", "scale"], "blockers": ["Actual production admin, telemetry delivery, load/chaos, security assessment, restore, billing, and canary evidence remain incomplete."], "requirements": ["Admin", "Telemetry", "Load/chaos", "Security", "Deletion/restore", "Billing", "Canary"]},
+        {"id": "42.W11", "title": "Wave 11 — Release", "source_lines": [2877, 2889], "status": "blocked", "evidence_refs": ["release", "web-routes", "benchmark"], "blockers": ["Clean all-tests, complete screenshot matrix, quality scores, Core Web Vitals, public claims, matching deployment, smoke, and rollback rehearsal are not all green on one revision."], "requirements": ["All tests", "Screenshot matrix", "Visual/asset score", "Lighthouse/Core Web Vitals", "Public claims", "Deployment", "Smoke", "Rollback rehearsal"]}
+      ]
+    },
+    {
+      "id": "43",
+      "default_status": "local-contract",
+      "default_boundary": "local",
+      "default_evidence_refs": ["release"],
+      "default_blockers": ["Repository rules and ledgers encode the operating policy, but final compliance must be re-audited on the immutable release revision."],
+      "entries": [
+        {"id": "43.1", "title": "멈추지 말 것", "source_lines": [2892, 2905], "requirements": ["When external cost/secrets are absent, still finish interfaces", "Schemas", "Fixtures", "Tests", "Commands", "Fail-closed adapters", "Exact handoff"]},
+        {"id": "43.2", "title": "완료 금지 조건", "source_lines": [2906, 2918], "requirements": ["No TODO", "No placeholder", "No mock claimed live", "No v4 manual_review dependency", "No fake progress", "No dead primary control", "No low-quality P0 asset", "No unmeasured public score", "No failed Critical/High", "No missing screenshot"]},
+        {"id": "43.3", "title": "각 Wave loop", "source_lines": [2919, 2931], "requirements": ["Audit→implement→run→inspect output→identify defect→fix→regression→gate"]},
+        {"id": "43.4", "title": "checkpoint", "source_lines": [2932, 2941], "requirements": ["Small commits", "No secrets", "Ignore generated benchmark data", "Evidence linked to commit", "Status files updated"]}
+      ]
+    },
+    {
+      "id": "44",
+      "default_status": "local-contract",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["release"],
+      "default_blockers": ["Local suites cover representative contracts, but the complete release matrix is not green on one immutable deployed revision."],
+      "entries": [
+        {"id": "44.1", "title": "Unit/Contract", "source_lines": [2944, 2957], "requirements": ["Collection", "Upload", "Resume", "Dedupe", "Estimate", "Credit", "Router", "Verifier", "Compiler", "Retrieval", "Exports"]},
+        {"id": "44.2", "title": "E2E", "source_lines": [2958, 2971], "status": "blocked", "evidence_refs": ["scale", "collection-ingestion", "theater", "package"], "blockers": ["No single E2E proves all eleven required stages at 5,000 files/10 GiB with interruption and deletion."], "requirements": ["5,000-file selection", "10 GiB interruption", "Refresh/reselect", "Preflight", "Credit approval", "Processing SSE", "Autonomous repair", "Quarantine", "Architecture", "Package", "Deletion"]},
+        {"id": "44.3", "title": "Visual", "source_lines": [2972, 2984], "evidence_refs": ["web-routes", "assets"], "requirements": ["1920", "1440", "1280", "1024", "768", "390", "360", "Reduced motion", "Long Korean/English", "Empty/error/loading"]},
+        {"id": "44.4", "title": "Browser", "source_lines": [2985, 2992], "status": "external-evidence-required", "boundary": "external", "evidence_refs": ["web-routes"], "blockers": ["Edge and actual mobile Safari/Chrome monitoring require device/browser evidence beyond the local three-engine matrix."], "requirements": ["Chromium", "Firefox", "WebKit", "Edge", "Mobile Safari/Chrome monitoring"]},
+        {"id": "44.5", "title": "Accessibility", "source_lines": [2993, 3001], "status": "external-evidence-required", "boundary": "external", "evidence_refs": ["design-system"], "blockers": ["Screen-reader core flows, 200-percent zoom, and actual high-contrast evidence require manual/device sign-off."], "requirements": ["Axe", "Keyboard", "Screen-reader core", "200%", "High contrast", "Reduced motion"]},
+        {"id": "44.6", "title": "Performance", "source_lines": [3002, 3012], "status": "blocked", "evidence_refs": ["scale"], "blockers": ["Signed scale evidence for every required profile is absent."], "requirements": ["5,000 files", "10 GiB", "30,000-page preflight", "1,000-page processing UI", "10,000 blocks", "5,000 graph nodes", "1,000 SSE clients", "100 uploads"]},
+        {"id": "44.7", "title": "Security", "source_lines": [3013, 3028], "status": "external-evidence-required", "boundary": "external", "evidence_refs": ["security"], "blockers": ["Local tests do not replace independent production-like assessment of all required attack and replay cases."], "requirements": ["IDOR", "RLS", "Presigned URL", "SSRF", "MIME", "Archive bomb", "XSS", "Prompt injection", "Export traversal", "Webhook replay", "Credit duplicate"]}
+      ]
+    },
+    {
+      "id": "45",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["assets", "web-routes"],
+      "default_blockers": ["Asset-level scores do not prove the full product scorecard or zero Critical/High findings across the complete final screenshot matrix."],
+      "entries": [
+        {"id": "45.1", "title": "점수", "source_lines": [3031, 3049], "requirements": ["Brand distinctiveness 15", "Category comprehension 10", "Asset craft 15", "Product truth 12", "Composition 10", "Typography 8", "Interaction 8", "Motion purpose 6", "Responsive 6", "Accessibility 5", "Performance 3", "Claim truth 2", "Total score ≥90"]},
+        {"id": "45.2", "title": "반드시 0", "source_lines": [3050, 3063], "requirements": ["Critical = 0", "High = 0", "Generic AI hero = 0", "Fake product = 0", "Broken crop = 0", "Tiny key text = 0", "Dead CTA = 0", "Mobile overflow = 0", "Reduced-motion loss = 0"]}
+      ]
+    },
+    {
+      "id": "46",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["collection-ingestion", "preflight-credit", "routing-verification", "compiler-model", "package", "retrieval"],
+      "default_blockers": ["The v4 collection vertical slice resolves ReviewItem through autonomous isolation and reaches a package in local tests; legacy waiting_review/REVIEW_REQUIRED routes remain compatibility surfaces, not v4 execution authority. Production-scale resume/calibration, critical-escape, target-import, and source-miss gates remain unproven."],
+      "entries": [
+        {"id": "46", "title": "Product Gate", "source_lines": [3064, 3080], "requirements": ["Collection upload complete", "Resume tested", "Dedupe tested", "Preflight estimate calibrated", "Credits reserve/settle/refund", "No v4 runtime manual dependency", "Critical error escape = 0", "Knowledge architecture generated", "All export packages import", "Retrieval source miss = 0"]}
+      ]
+    },
+    {
+      "id": "47",
+      "default_status": "blocked",
+      "default_boundary": "external",
+      "default_evidence_refs": ["release", "benchmark", "security", "scale"],
+      "default_blockers": ["The checked-in snapshot does not prove all production gates on the latest commit; no local-only artifact can substitute for these external release conditions."],
+      "entries": [
+        {"id": "47", "title": "Production Gate", "source_lines": [3081, 3100], "requirements": ["Latest branch deployed", "Commit SHA visible", "Real endpoint revisions", "Public Core three times", "Private hard sets", "Signed report", "Security/load/restore", "Actual payment connector", "Actual email/auth", "Legal/brand clearance", "Canary/rollback", "Reduce test R2 Admin token to production least privilege"]}
+      ]
+    },
+    {
+      "id": "48",
+      "default_status": "blocked",
+      "default_boundary": "mixed",
+      "default_evidence_refs": ["release"],
+      "default_blockers": ["The 45 Definition-of-Done checks are not all satisfied with immutable production evidence on one deployed revision."],
+      "entries": [
+        {"id": "48", "title": "최종 Definition of Done", "source_lines": [3101, 3176], "requirements": ["Brand: understand document-to-knowledge-system in 10 seconds", "Brand: three signature scenes", "Brand: no generic AI aesthetic", "Brand: P0 assets score 90+", "Ingestion: whole folder", "Ingestion: 5,000 files/10 GiB", "Ingestion: pause/resume", "Ingestion: browser restart", "Ingestion: dedupe", "Ingestion: partial failure isolation", "Credits: fast and sampled estimate", "Credits: P50/P95", "Credits: hard cap", "Credits: actual settle", "Credits: automatic refund", "Intelligence: adaptive routing", "Intelligence: region recovery", "Intelligence: authority numeric", "Intelligence: no human dependency", "Intelligence: honest unresolved/quarantine", "Knowledge: directory/MOC", "Knowledge: notes/entities/relations", "Knowledge: Obsidian", "Knowledge: ontology", "Knowledge: Neo4j", "Knowledge: RAG", "Knowledge: provenance", "UX: actual Processing Theater", "UX: no fake progress", "UX: mobile", "UX: accessible", "UX: source proof within two clicks", "Quality: Public Core", "Quality: Finance/General/Robustness", "Quality: Knowledge Compiler", "Quality: Retrieval", "Quality: visual/asset 90+", "Quality: Critical/High 0", "Operations: telemetry", "Operations: admin", "Operations: billing", "Operations: deletion", "Operations: backup/restore", "Operations: incident", "Operations: canary/rollback"]}
+      ]
+    }
+  ],
+  "appendices": [
+    {
+      "id": "Appendix.A",
+      "title": "Collection DB 초안",
+      "source_lines": [3177, 3221],
+      "status": "local-contract",
+      "boundary": "mixed",
+      "evidence_refs": ["collection-ingestion", "preflight-credit", "routing-verification"],
+      "blockers": ["The draft tables are represented by local models/migrations, but managed database migration, RLS, retention, and rollback evidence are absent."],
+      "requirements": ["collections table", "collection_files table", "collection_upload_sessions table", "preflight_feature_records table", "estimate_runs table", "verification_records table", "quarantine_items table", "architecture_plans table"]
+    },
+    {
+      "id": "Appendix.B",
+      "title": "Event 목록",
+      "source_lines": [3222, 3267],
+      "status": "local-contract",
+      "boundary": "mixed",
+      "evidence_refs": ["event-contract"],
+      "blockers": ["The local event registry and generated contracts require production broker/replay evidence on the release revision."],
+      "requirements": ["collection.created.v1", "collection.discovery.progress.v1", "file.discovered.v1", "file.hash.progress.v1", "file.upload.progress.v1", "file.upload.resumed.v1", "file.upload.completed.v1", "file.duplicate.detected.v1", "file.security.passed.v1", "collection.ingested.v1", "preflight.started.v1", "preflight.cluster.created.v1", "estimate.fast.ready.v1", "estimate.sample.updated.v1", "estimate.final.ready.v1", "credits.reserved.v1", "processing.started.v1", "page.route.selected.v1", "region.route.selected.v1", "block.completed.v1", "table.reconstructed.v1", "numeric.authority.verified.v1", "verification.failed.v1", "repair.started.v1", "repair.completed.v1", "output.quarantined.v1", "note.created.v1", "entity.resolved.v1", "relation.created.v1", "architecture.plan.created.v1", "architecture.folder.created.v1", "architecture.moc.created.v1", "export.started.v1", "export.ready.v1", "package.validated.v1", "package.signed.v1", "credits.consumed.v1", "credits.released.v1", "collection.completed.v1"]
+    },
+    {
+      "id": "Appendix.C",
+      "title": "Asset Brief",
+      "source_lines": [3268, 3292],
+      "status": "local-contract",
+      "boundary": "local",
+      "evidence_refs": ["assets"],
+      "blockers": ["The ledger schema exists locally; final owner/license and route-specific QA approvals remain release evidence."],
+      "requirements": ["asset_id", "route", "message", "truth_class", "source_strategy", "static_master", "interactive_behavior", "responsive_variants", "reduced_motion", "performance_budget", "actual_data_contract", "claim_ids", "license", "alt_ko", "alt_en", "qa_score", "critical_findings", "status"]
+    },
+    {
+      "id": "Appendix.D",
+      "title": "Agent Kickoff Prompt",
+      "source_lines": [3293, 3337],
+      "status": "local-contract",
+      "boundary": "local",
+      "evidence_refs": ["release"],
+      "blockers": ["The kickoff instructions are policy, not execution proof; all listed gates still require their own evidence."],
+      "requirements": ["Use the exact v4 authority and repository", "Do not stop at scaffolding or treat hashes/snapshots as quality", "Do not preserve low-quality P0 assets or depend on human review", "Execute Wave 0–11 in order", "Prioritize collection ingestion, estimates, routing, autonomous verification, benchmarks, compiler, architecture, retrieval, packages, brand, actual-event theater, and operations", "For every phase run audit→implement→execute→inspect→fix→regress→gate", "Do not declare completion without zero Critical/High, score ≥90, no manual dependency, scale E2E, benchmark gates, successful package imports, and verified latest deployment"]
+    },
+    {
+      "id": "Appendix.E",
+      "title": "Research Registry",
+      "source_lines": [3338, 3410],
+      "status": "external-evidence-required",
+      "boundary": "external",
+      "evidence_refs": ["research"],
+      "blockers": ["The registry is a dated source list; current availability, license, revision, and suitability must be reverified before production claims or spend."],
+      "requirements": ["Product/Design sources: Linear, Vercel Design/Geist, Figma Config 2026, Attio, Reducto, Chunkr", "Upload/Storage sources: Cloudflare R2 upload/limits/presigned/CORS and Uppy Dashboard/AWS S3/Golden Retriever", "Parser candidates: PaddleOCR-VL-1.6, Infinity-Parser2-Pro, HPD-Parsing, HunyuanOCR, MonkeyOCRv2, Chandra OCR 2", "Knowledge models: Qwen3.6, Qwen3.6-27B, Gemma 4 12B", "Standards: WCAG 2.2, Core Web Vitals, Playwright Visual Comparisons, OWASP File Upload, OWASP CSP"]
+    }
+  ]
+}

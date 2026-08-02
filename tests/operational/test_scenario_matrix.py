@@ -42,6 +42,12 @@ def test_matrix_covers_every_required_operational_scenario() -> None:
         "SSE",
         "uploads",
         "ten-thousand-page",
+        "five-thousand-file",
+        "ten-GiB interrupted",
+        "thirty-thousand-page preflight",
+        "one-thousand-page processing UI",
+        "ten-thousand-block workspace",
+        "five-thousand-node graph",
         "export burst",
     }
     assert all(term in names for term in required_terms)
@@ -53,11 +59,15 @@ def test_external_profiles_are_declared_and_fail_closed() -> None:
         (HERE.parent / "load" / "profiles.json").read_text(encoding="utf-8")
     )
     assert profiles["safety"] == {
+        "required_confirmation_env": "AKC_LOAD_CONFIRM",
         "required_confirmation": "NONPRODUCTION_LOAD_ONLY",
         "remote_https_required": True,
         "exact_origin_allowlist_required": True,
         "customer_data_permitted": False,
+        "synthetic_fixtures_only": True,
         "automatic_production_execution": False,
+        "production_evidence_permitted": False,
+        "default_execution": "disabled",
     }
     external = {
         scenario["profile"]

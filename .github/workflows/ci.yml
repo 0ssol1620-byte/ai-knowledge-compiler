@@ -73,9 +73,16 @@ jobs:
         run: |
           node --check tests/load/k6-health.js
           node --check tests/load/k6-journey.js
+          node --check tests/load/k6-collection-manifest.js
+          node --check tests/load/k6-preflight-30000.js
+          node --check tests/load/resume-10gib.mjs
+          node --check tests/load/browser-scale-probe.mjs
+          node --check apps/web/scripts/capture-v4-brand-evidence.mjs
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm --filter @akc/contracts build
+      - run: pnpm --filter @akc/web storybook:build
       - run: pnpm build
 
   live-browser-e2e:
@@ -114,6 +121,42 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  visual-and-browser-matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Install the immutable web environment
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Install the pinned release browser matrix
+        run: pnpm --filter @akc/web exec playwright install --with-deps chromium firefox webkit
+      - name: Compare approved visual baselines
+        run: pnpm --filter @akc/web test:e2e:visual
+      - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
+        run: pnpm --filter @akc/web test:e2e:matrix
+      - name: Run forced-colors and 200-percent accessibility contracts
+        run: >-
+          pnpm --filter @akc/web exec playwright test
+          e2e/accessibility-matrix.spec.ts --project=desktop --project=mobile
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: visual-and-browser-matrix-evidence
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            apps/web/e2e/visual-baselines
+          if-no-files-found: error
+          retention-days: 14
+
   contracts:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -130,12 +173,22 @@ jobs:
           python -m uv sync --locked --extra dev
       - name: Validate model registry
         run: python -m uv run --locked --extra dev python infra/model-registry/validate_registry.py
+      - name: Verify pinned public benchmark metadata
+        run: >-
+          python -m uv run --locked --extra dev python benchmark/public_suite.py
+          verify-registry --online
       - name: Validate repository policy and schemas
         run: |
           python -m uv run --locked --extra dev python infra/security/validate_repository.py
           python -m uv run --locked --extra dev python infra/security/validate_deployment.py
           python -m uv run --locked --extra dev python scripts/generate_contract_types.py --check
           python -m uv run --locked --extra dev python scripts/check_openapi_compat.py
+      - name: Validate v4 release traceability
+        run: |
+          python -m uv run --locked --extra dev python infra/release/validate_v4_subsections.py
+          python -m uv run --locked --extra dev python infra/release/validate_v4_traceability.py
+          python -m uv run --locked --extra dev python infra/release/validate_v4_brand_evidence.py
+          python -m uv run --locked --extra dev python tests/load/validate_profiles.py
       - name: Run benchmark metric tests
         run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
       - name: Run GPU handler tests

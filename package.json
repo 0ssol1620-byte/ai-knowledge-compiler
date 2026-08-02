@@ -25,6 +25,7 @@
     "clean": "pnpm -r clean"
   },
   "devDependencies": {
+    "next": "16.2.12",
     "prettier": "3.9.6"
   }
 }

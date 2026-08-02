@@ -118,3 +118,55 @@ async def test_custom_schema_cannot_override_provenance(
 
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "CUSTOM_SCHEMA_POLICY_VIOLATION"
+
+
+async def test_knowledge_blueprints_are_complete_and_plannable(
+    domain_api: httpx.AsyncClient,
+) -> None:
+    await _register(domain_api)
+
+    registry = await domain_api.get("/v1/knowledge-blueprints")
+    detail = await domain_api.get("/v1/knowledge-blueprints/corporate-filings")
+    plan = await domain_api.post(
+        "/v1/knowledge-blueprints/plan",
+        json={
+            "domain": "finance",
+            "object_types": ["company", "filing", "metric"],
+            "user_goal": "Compile source-grounded filings",
+            "corpus_size": 5000,
+            "temporal_structure": "quarterly",
+        },
+    )
+
+    assert registry.status_code == 200
+    assert len(registry.json()["blueprints"]) == 7
+    assert set(registry.json()["module_sha256"]) == {
+        item["id"] for item in registry.json()["blueprints"]
+    }
+    assert detail.status_code == 200
+    assert len(detail.json()["assets"]) >= 10
+    assert plan.status_code == 200
+    assert plan.json()["blueprint"] == "corporate-filings"
+    assert plan.json()["module_sha256"] == detail.json()["module_sha256"]
+
+
+async def test_unknown_knowledge_blueprint_fails_closed(
+    domain_api: httpx.AsyncClient,
+) -> None:
+    await _register(domain_api)
+    missing = await domain_api.get("/v1/knowledge-blueprints/missing")
+    plan = await domain_api.post(
+        "/v1/knowledge-blueprints/plan",
+        json={
+            "domain": "general",
+            "object_types": ["document"],
+            "user_goal": "Compile",
+            "corpus_size": 1,
+            "temporal_structure": "none",
+            "requested_blueprint": "missing",
+        },
+    )
+
+    assert missing.status_code == 404
+    assert plan.status_code == 422
+    assert plan.json()["error"]["code"] == "KNOWLEDGE_BLUEPRINT_NOT_FOUND"

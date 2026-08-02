@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "akc-parallel-runtime"
+version = "0.1.0"
+description = "Deterministic, fail-closed parallel parsing runtime domain core"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0.3,<10",
+  "pytest-cov>=6.2,<7",
+  "mypy>=1.17,<2",
+  "ruff>=0.12,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/akc_parallel_runtime"]

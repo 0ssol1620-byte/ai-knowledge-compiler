@@ -21,6 +21,28 @@ TOOLING_ENVIRONMENT_NAMES = {
     "AKC_DART_CREDENTIAL_FILE",
 }
 
+COLLECTION_RUNTIME_SECRET_KEYS = {
+    "AKC_COLLECTION_FINALIZER_HMAC_SECRET",
+    "AKC_COLLECTION_METADATA_BLIND_INDEX_KEY",
+    "AKC_COLLECTION_METADATA_KEYRING",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_API_KEY",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_ROW_HMAC_SECRET",
+}
+COLLECTION_METADATA_CONFIG_KEYS = {
+    "AKC_COLLECTION_METADATA_ACTIVE_KEY_ID",
+    "AKC_COLLECTION_METADATA_BLIND_INDEX_KEY_ID",
+    "AKC_COLLECTION_METADATA_ENCRYPTION_ENABLED",
+}
+COLLECTION_RETRIEVAL_CONFIG_KEYS = {
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_ENDPOINT_URL",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_PROVIDER_ID",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_MODEL_ID",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_MODEL_REVISION",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS",
+    "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_CONCURRENCY",
+}
+
 
 class _UniqueKeyLoader(yaml.SafeLoader):
     """Safe YAML loader that rejects silently shadowed mapping keys."""
@@ -104,6 +126,81 @@ def _check_known_akc_keys(source: str, keys: set[str], known: set[str], errors: 
         errors.append(f"{source} contains unknown Settings keys: {unknown}")
 
 
+def _validate_collection_runtime_activation(
+    api_config: dict[str, Any],
+    dispatch_config: dict[str, Any],
+    errors: list[str],
+) -> None:
+    finalizer_enabled = str(dispatch_config.get("AKC_COLLECTION_FINALIZER_ENABLED", ""))
+    retrieval_enabled = str(api_config.get("AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED", ""))
+    metadata_encryption_enabled = str(
+        api_config.get("AKC_COLLECTION_METADATA_ENCRYPTION_ENABLED", "")
+    )
+    if finalizer_enabled != retrieval_enabled:
+        errors.append(
+            "Kubernetes collection finalizer and semantic retrieval must be enabled atomically"
+        )
+    if finalizer_enabled not in {"true", "false"}:
+        errors.append("Kubernetes collection finalizer enable flag is invalid")
+    if metadata_encryption_enabled not in {"true", "false"}:
+        errors.append("Kubernetes collection metadata encryption enable flag is invalid")
+    if retrieval_enabled == "true" and metadata_encryption_enabled != "true":
+        errors.append("Kubernetes semantic retrieval requires encrypted collection metadata")
+    if dispatch_config.get("AKC_COLLECTION_FINALIZER_API_URL") != (
+        "http://akc-api:8000/v1/internal/collections/finalize"
+    ):
+        errors.append("Kubernetes collection finalizer must target the exact internal API route")
+    if str(dispatch_config.get("AKC_COLLECTION_FINALIZER_TIMEOUT_SECONDS")) != "300":
+        errors.append("Kubernetes collection finalizer timeout must match its reviewed budget")
+
+
+def _validate_collection_finalizer_network_policies(
+    policies: list[dict[str, Any]],
+    errors: list[str],
+) -> None:
+    policies_by_name = {str(item.get("metadata", {}).get("name")): item for item in policies}
+    contracts = (
+        (
+            "dispatch-worker-to-api-finalizer",
+            "Egress",
+            "egress",
+            "to",
+            "akc-dispatch-worker",
+            "akc-api",
+        ),
+        (
+            "api-from-dispatch-finalizer",
+            "Ingress",
+            "ingress",
+            "from",
+            "akc-api",
+            "akc-dispatch-worker",
+        ),
+    )
+    for name, policy_type, rule_key, peer_key, selected_app, peer_app in contracts:
+        policy = policies_by_name.get(name)
+        spec = policy.get("spec", {}) if policy is not None else {}
+        selected = spec.get("podSelector", {}).get("matchLabels", {})
+        rules = spec.get(rule_key, [])
+        valid_rule = len(rules) == 1 and any(
+            {
+                (str(port.get("protocol", "TCP")), int(port.get("port", 0)))
+                for port in rule.get("ports", [])
+            }
+            == {("TCP", 8000)}
+            and rule.get(peer_key, [])
+            == [{"podSelector": {"matchLabels": {"app.kubernetes.io/name": peer_app}}}]
+            for rule in rules
+        )
+        if (
+            policy is None
+            or set(spec.get("policyTypes", [])) != {policy_type}
+            or selected.get("app.kubernetes.io/name") != selected_app
+            or not valid_rule
+        ):
+            errors.append(f"Kubernetes finalizer policy {name} must allow only its TCP 8000 peer")
+
+
 def validate_environment_contract(errors: list[str]) -> None:
     api_known = _settings_environment_names(
         ROOT / "services/api/src/akc_api/settings.py", "Settings"
@@ -121,11 +218,12 @@ def validate_environment_contract(errors: list[str]) -> None:
         "UrlFetcherSettings",
     )
     all_known = api_known | scheduler_known | analysis_known | url_fetcher_known
-    example_keys = {
-        line.split("=", 1)[0].strip()
+    example_values = {
+        line.split("=", 1)[0].strip(): line.split("=", 1)[1]
         for line in (ROOT / ".env.example").read_text(encoding="utf-8").splitlines()
         if line.startswith("AKC_") and "=" in line
     }
+    example_keys = set(example_values)
     _check_known_akc_keys(
         ".env.example",
         example_keys,
@@ -135,6 +233,9 @@ def validate_environment_contract(errors: list[str]) -> None:
     missing_example_keys = sorted(all_known - example_keys)
     if missing_example_keys:
         errors.append(f".env.example is missing documented Settings keys: {missing_example_keys}")
+    for key in sorted(COLLECTION_RUNTIME_SECRET_KEYS):
+        if example_values.get(key):
+            errors.append(f".env.example must not contain a value for {key}")
 
     compose = _load_yaml(ROOT / "docker-compose.dev.yml")
     services = compose.get("services", {})
@@ -274,8 +375,29 @@ def validate_environment_contract(errors: list[str]) -> None:
     config = _load_yaml(ROOT / "infra/kubernetes/base/configmap.yaml")
     config_data = config.get("data", {})
     _check_known_akc_keys("Kubernetes akc-runtime ConfigMap", set(config_data), api_known, errors)
+    leaked_collection_secrets = sorted(COLLECTION_RUNTIME_SECRET_KEYS & set(config_data))
+    if leaked_collection_secrets:
+        errors.append(
+            "Kubernetes akc-runtime ConfigMap contains collection runtime Secrets: "
+            f"{leaked_collection_secrets}"
+        )
+    missing_retrieval_config = sorted(COLLECTION_RETRIEVAL_CONFIG_KEYS - set(config_data))
+    if missing_retrieval_config:
+        errors.append(
+            "Kubernetes akc-runtime ConfigMap is missing retrieval configuration: "
+            f"{missing_retrieval_config}"
+        )
+    missing_metadata_config = sorted(COLLECTION_METADATA_CONFIG_KEYS - set(config_data))
+    if missing_metadata_config:
+        errors.append(
+            "Kubernetes akc-runtime ConfigMap is missing collection metadata configuration: "
+            f"{missing_metadata_config}"
+        )
     required_values = {
         "AKC_ENV": "production",
+        # The base is intentionally non-deployable: a release overlay must bind
+        # the exact immutable Git SHA shared by the API and web health surfaces.
+        "AKC_DEPLOYMENT_REVISION": "replace-with-40-character-git-sha",
         "AKC_EXTERNAL_OCR_ENABLED": "false",
         "AKC_PRIVATE_MODE": "true",
         "AKC_LOCAL_BACKGROUND_TASKS": "false",
@@ -288,6 +410,8 @@ def validate_environment_contract(errors: list[str]) -> None:
         "AKC_PAYMENT_PROVIDER": "disabled",
         "AKC_METRICS_ENABLED": "true",
         "AKC_OTEL_ENABLED": "true",
+        "AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED": "false",
+        "AKC_COLLECTION_METADATA_ENCRYPTION_ENABLED": "false",
     }
     for key, expected in required_values.items():
         if str(config_data.get(key)) != expected:
@@ -328,6 +452,7 @@ def validate_environment_contract(errors: list[str]) -> None:
         errors.append("Kubernetes dispatch worker must assume its restricted role")
     if dispatch_config.get("AKC_WEBHOOK_DELIVERY_ENABLED") != "false":
         errors.append("Kubernetes dispatch worker must disable webhook delivery")
+    _validate_collection_runtime_activation(config_data, dispatch_config, errors)
     analysis_config = _load_yaml(ROOT / "infra/kubernetes/base/analysis-configmap.yaml").get(
         "data", {}
     )
@@ -410,6 +535,13 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         by_kind.setdefault(str(document.get("kind")), []).append(document)
     if by_kind.get("Secret"):
         errors.append("Kubernetes base must not contain a plaintext Secret")
+    for config_map in by_kind.get("ConfigMap", []):
+        leaked = sorted(COLLECTION_RUNTIME_SECRET_KEYS & set(config_map.get("data", {})))
+        if leaked:
+            name = config_map.get("metadata", {}).get("name", "unknown")
+            errors.append(
+                f"Kubernetes ConfigMap {name} contains collection runtime Secrets: {leaked}"
+            )
     if not by_kind.get("ResourceQuota") or not by_kind.get("LimitRange"):
         errors.append("Kubernetes base must define namespace resource guardrails")
 
@@ -529,6 +661,21 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
             if pod_spec.get("runtimeClassName") is not None:
                 errors.append("akc-url-fetcher must not inherit the parser RuntimeClass")
         else:
+            if name == "akc-api":
+                config_refs = {
+                    item.get("configMapRef", {}).get("name")
+                    for item in container.get("envFrom", [])
+                    if item.get("configMapRef")
+                }
+                secret_refs = {
+                    item.get("secretRef", {}).get("name")
+                    for item in container.get("envFrom", [])
+                    if item.get("secretRef")
+                }
+                if config_refs != {"akc-runtime"} or secret_refs != {"akc-runtime-secrets"}:
+                    errors.append(
+                        "akc-api must use akc-runtime plus only its external runtime Secret"
+                    )
             probes = {
                 probe: container.get(probe, {}).get("httpGet", {}).get("path")
                 for probe in ("startupProbe", "readinessProbe", "livenessProbe")
@@ -548,6 +695,25 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
             )
             if probes != expected:
                 errors.append(f"{name} probe paths do not match real application routes")
+            if name == "akc-web":
+                revision_bindings = [
+                    item
+                    for item in container.get("env", [])
+                    if item.get("name") == "AKC_DEPLOYMENT_REVISION"
+                ]
+                expected_binding = {
+                    "name": "AKC_DEPLOYMENT_REVISION",
+                    "valueFrom": {
+                        "configMapKeyRef": {
+                            "name": "akc-runtime",
+                            "key": "AKC_DEPLOYMENT_REVISION",
+                        }
+                    },
+                }
+                if revision_bindings != [expected_binding]:
+                    errors.append(
+                        "akc-web must expose the same immutable deployment revision as the API"
+                    )
 
     policies = by_kind.get("NetworkPolicy", [])
     default_deny = next(
@@ -559,6 +725,18 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         "Egress",
     }:
         errors.append("Kubernetes base must default-deny ingress and egress")
+    _validate_collection_finalizer_network_policies(policies, errors)
+    for policy in policies:
+        selector = policy.get("spec", {}).get("podSelector", {}).get("matchLabels", {})
+        if selector.get("app.kubernetes.io/name") != "akc-api":
+            continue
+        for rule in policy.get("spec", {}).get("egress", []):
+            for destination in rule.get("to", []):
+                cidr = destination.get("ipBlock", {}).get("cidr")
+                if cidr in {"0.0.0.0/0", "::/0"}:
+                    errors.append(
+                        "Kubernetes base must leave external collection-provider egress denied"
+                    )
     url_public_policy = next(
         (
             item
@@ -646,6 +824,11 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         "AKC_PAYMENT_MERCHANT_ID",
         "AKC_PAYMENT_WEBHOOK_SECRET",
         "AKC_WEBHOOK_ENCRYPTION_KEY",
+        "AKC_COLLECTION_FINALIZER_HMAC_SECRET",
+        "AKC_COLLECTION_METADATA_BLIND_INDEX_KEY",
+        "AKC_COLLECTION_METADATA_KEYRING",
+        "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_API_KEY",
+        "AKC_COLLECTION_SEMANTIC_RETRIEVAL_ROW_HMAC_SECRET",
     ):
         if key not in secret_contract:
             errors.append(f"Kubernetes secret contract is missing {key}")

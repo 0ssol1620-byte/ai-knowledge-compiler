@@ -99,6 +99,8 @@ class ObjectStoreSettings(Protocol):
 
 
 class ObjectStore(Protocol):
+    async def healthcheck(self) -> None: ...
+
     async def create_gpu_input_target(
         self,
         *,
@@ -208,6 +210,19 @@ class LocalObjectStore:
         # where nested tenant/project UUID prefixes otherwise exceed MAX_PATH.
         digest = hashlib.sha256(object_key.encode("utf-8")).hexdigest()
         return self.root / bucket / digest[:2] / digest
+
+    async def healthcheck(self) -> None:
+        """Prove that every local development bucket is currently accessible."""
+
+        buckets = ("quarantine", "source", "working", "derived", "exports", "audit")
+
+        def check() -> None:
+            if not self.root.is_dir():
+                raise OSError("object store root is unavailable")
+            if any(not (self.root / bucket).is_dir() for bucket in buckets):
+                raise OSError("object store bucket is unavailable")
+
+        await asyncio.to_thread(check)
 
     async def create_gpu_input_target(
         self,
@@ -394,6 +409,22 @@ class S3ObjectStore:
             aws_access_key_id=settings.s3_access_key_id,
             aws_secret_access_key=settings.s3_secret_access_key,
         )
+
+    async def healthcheck(self) -> None:
+        """HEAD every configured bucket; configuration alone is not health."""
+
+        buckets = {
+            self.settings.s3_bucket_quarantine,
+            self.settings.s3_bucket_source,
+            self.settings.s3_bucket_working,
+            self.settings.s3_bucket_derived,
+            self.settings.s3_bucket_exports,
+            self.settings.s3_bucket_audit,
+        }
+        if len(buckets) != 6:
+            raise RuntimeError("object store bucket identities must be distinct")
+        for bucket in sorted(buckets):
+            await asyncio.to_thread(self.client.head_bucket, Bucket=bucket)
 
     async def create_gpu_input_target(
         self,

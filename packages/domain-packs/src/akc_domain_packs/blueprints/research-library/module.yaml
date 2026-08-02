@@ -1,0 +1,13 @@
+id: research-library
+version: 1.0.0
+display_name: Research Library
+domains: [research, science, academic]
+object_types: [paper, author, method, dataset, finding]
+root_views: [Papers, Topics, Methods, Findings]
+moc_templates: [Topics, Methods, Findings]
+folder_depth: 3
+naming_policy: stable-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, citation_evidence, entity_identity, relation_evidence]
+export_profiles: [obsidian, ontology, neo4j, rag]

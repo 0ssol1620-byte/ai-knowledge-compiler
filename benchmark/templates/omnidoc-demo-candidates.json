@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_revision": "OmniDocBench official demo / 18 images / Apache-2.0",
+  "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207",
+  "evaluator_version": "OmniDocBench@193627ae9e97d89188468ed1ee3b7a856ff76044",
+  "hardware_profile": "RunPod Secure Cloud / NVIDIA RTX 4090 24,564 MiB / $0.69 GPU-hour observed",
+  "candidates": [
+    {
+      "id": "mineru-3.4.4-pipeline",
+      "label": "MinerU 3.4.4 · Pipeline",
+      "model_identity": "MinerU 3.4.4 pipeline@79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "evidence_path": "benchmark/reports/mineru-3.4.4-pipeline-omnidocbench-demo-18-evidence-2026-08-01.json"
+    },
+    {
+      "id": "paddleocr-vl-1.6-fastdeploy-c8",
+      "label": "PaddleOCR-VL 1.6 · FastDeploy c8",
+      "model_identity": "PaddleOCR-VL 1.6 FastDeploy@sha256:83482fee6ec1a6bd7b822f32dcc3cb9a412419786b2ae6cc87320290132334a2",
+      "evidence_path": "benchmark/reports/paddleocr-vl-1.6-fastdeploy-omnidocbench-demo-18-evidence-2026-08-01.json"
+    },
+    {
+      "id": "mineru-3.4.4-vlm-c1",
+      "label": "MinerU 3.4.4 · VLM c1",
+      "model_identity": "MinerU 3.4.4 VLM c1@79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "evidence_path": "benchmark/reports/mineru-3.4.4-vlm-c1-omnidocbench-demo-18-evidence-2026-08-01.json"
+    },
+    {
+      "id": "deepseek-ocr-2-3b-transformers",
+      "label": "DeepSeek-OCR-2 · Transformers",
+      "model_identity": "DeepSeek-OCR-2@aaa02f3811945a91062062994c5c4a3f4c0af2b0 / artifact sha256:ddb70c12791d2583344b73a065c8b4757e5827aa2fe608e763074c33bfab876c",
+      "evidence_path": "benchmark/reports/deepseek-ocr-2-omnidocbench-demo-18-evidence-2026-08-01.json"
+    },
+    {
+      "id": "ovisocr2-0.9b-vllm-0.22.1-cu129",
+      "label": "OvisOCR2 0.9B · vLLM cu129",
+      "model_identity": "OvisOCR2@65c619d374b55d4152e85150fc1b003700bc1f0c / artifact sha256:847f485bc71908a70075fe6b0d76609f52bc7f1e730c03670c764da56da08c9a / vLLM 0.22.1+cu129",
+      "evidence_path": "benchmark/reports/ovisocr2-0.9b-vllm-0.22.1-cu129-omnidocbench-demo-18-evidence-2026-08-01.json"
+    }
+  ]
+}

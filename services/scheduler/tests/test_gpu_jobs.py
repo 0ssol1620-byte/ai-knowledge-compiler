@@ -765,6 +765,7 @@ def gpu_role_evidence() -> dict[str, object]:
         "effective_table_acl_exact": True,
         "effective_column_acl_exact": True,
         "required_table_access": True,
+        "parallel_runtime_access": True,
         "forced_rls_present": True,
     }
 
@@ -783,6 +784,13 @@ async def test_gpu_database_role_and_runtime_fail_closed() -> None:
     missing = gpu_role_evidence()
     missing["effective_column_acl_exact"] = False
     with pytest.raises(SchedulerDatabasePrivilegeError, match="effective_column_acl_exact"):
+        await verify_gpu_database(
+            FakePostgresEngine(missing),  # type: ignore[arg-type]
+            settings,
+        )
+    missing = gpu_role_evidence()
+    missing["parallel_runtime_access"] = False
+    with pytest.raises(SchedulerDatabasePrivilegeError, match="parallel_runtime_access"):
         await verify_gpu_database(
             FakePostgresEngine(missing),  # type: ignore[arg-type]
             settings,
@@ -1413,7 +1421,7 @@ async def test_transition_budget_registry_and_unsupported_fail_closed(
             )
         )
         assert terminal is not None
-        assert terminal.payload["next_action"] == "manual_review"
+        assert terminal.payload["next_action"] == "unresolved"
 
         invalid_parent = await enqueue_gpu_invocation(
             session,
@@ -1452,7 +1460,7 @@ async def test_transition_budget_registry_and_unsupported_fail_closed(
         )
         assert failed is not None
         assert failed.payload["transition_unavailable"] is True
-        assert failed.payload["next_action"] == "manual_review"
+        assert failed.payload["next_action"] == "unresolved"
 
         unsupported_parent = await enqueue_gpu_invocation(
             session,

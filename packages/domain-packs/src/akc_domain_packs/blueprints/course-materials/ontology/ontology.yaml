@@ -1,0 +1,8 @@
+blueprint: course-materials
+kind: ontology
+version: 1.0.0
+classes: [Course, Module, Lesson, Concept, Assessment, LearningObjective]
+relations:
+  - {type: contains_lesson, source: Module, target: Lesson, authority: structured_derived}
+  - {type: teaches_concept, source: Lesson, target: Concept, authority: source_explicit}
+  - {type: assesses_objective, source: Assessment, target: LearningObjective, authority: source_explicit}

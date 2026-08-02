@@ -1715,6 +1715,7 @@ def test_production_settings_fail_closed_without_durable_dependencies() -> None:
     with pytest.raises(ValueError, match="production requires PostgreSQL"):
         Settings(
             env="production",
+            deployment_revision="a" * 40,
             database_url="sqlite+aiosqlite:///:memory:",
             jwt_secret="a" * 48,
             local_background_tasks=False,

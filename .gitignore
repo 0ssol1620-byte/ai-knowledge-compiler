@@ -32,6 +32,7 @@ out/
 coverage/
 playwright-report/
 test-results/
+storybook-static/
 
 # Local data and generated artifacts
 .chatgpt2codex/
@@ -42,7 +43,10 @@ data/
 tmp/
 work/
 artifacts/
+/reports/
 benchmark/reports/generated/
+benchmark/cache/
+benchmark/public-runs/
 benchmark/datasets/private/
 benchmark/datasets/acquired/
 *.db
@@ -61,3 +65,5 @@ desktop.ini
 *.tfstate
 *.tfstate.*
 crash.log
+
+.vercel

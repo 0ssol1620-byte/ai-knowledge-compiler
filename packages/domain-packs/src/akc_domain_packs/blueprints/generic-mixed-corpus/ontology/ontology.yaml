@@ -1,0 +1,8 @@
+blueprint: generic-mixed-corpus
+kind: ontology
+version: 1.0.0
+classes: [Document, Topic, Entity, Claim, Evidence, Asset]
+relations:
+  - {type: discusses_topic, source: Document, target: Topic, authority: structured_derived}
+  - {type: mentions_entity, source: Document, target: Entity, authority: source_explicit}
+  - {type: supported_by, source: Claim, target: Evidence, authority: source_explicit}

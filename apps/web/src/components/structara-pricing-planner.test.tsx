@@ -1,13 +1,21 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { LocaleProvider } from "@/components/locale-provider";
 import { StructaraPricingPlanner } from "@/components/structara-pricing-planner";
 
 afterEach(cleanup);
 
 describe("StructaraPricingPlanner", () => {
+  const renderPlanner = () =>
+    render(
+      <LocaleProvider locale="en">
+        <StructaraPricingPlanner />
+      </LocaleProvider>,
+    );
+
   it("switches audience without hiding the estimator", () => {
-    render(<StructaraPricingPlanner />);
+    renderPlanner();
 
     fireEvent.click(screen.getByRole("button", { name: "Teams" }));
 
@@ -17,7 +25,7 @@ describe("StructaraPricingPlanner", () => {
   });
 
   it("updates the bounded credit estimate from page volume", () => {
-    render(<StructaraPricingPlanner />);
+    renderPlanner();
 
     fireEvent.change(screen.getByRole("slider", { name: /Monthly pages/ }), {
       target: { value: "50000" },

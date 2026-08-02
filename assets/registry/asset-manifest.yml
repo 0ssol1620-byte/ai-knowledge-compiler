@@ -10,15 +10,19 @@ assets:
     master_path: assets/3d/master/hero-master.blend
     derivatives:
       - path: assets/3d/derivatives/hero-master.glb
-        sha256: "23829353487336e08f4db42e8461c39a089b2e41be354ed78d22dec571fadca2"
+        sha256: "592d5e2142e8206435176f9b0ee613123bf35ba0fa4a9b77500d60719d97a36a"
       - path: assets/3d/derivatives/hero-master-low.glb
-        sha256: "9368040b98cfc969f34097cfea7f5c8a05327656ef860dd5bba8b4285ac9e27a"
+        sha256: "c2062309db4248cf0cb36e3306218bc1c8f842e0febf097f38c521200668bf70"
+      - path: apps/web/public/hero/hero-documents-master.glb
+        sha256: "592d5e2142e8206435176f9b0ee613123bf35ba0fa4a9b77500d60719d97a36a"
+      - path: apps/web/public/hero/hero-documents-tablet.glb
+        sha256: "c2062309db4248cf0cb36e3306218bc1c8f842e0febf097f38c521200668bf70"
       - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
-        sha256: "65d8eeeade5a5765b8b78cb6cd6501b25394e639d88b2adca58afe59519eb5be"
+        sha256: "d2b9a8b80e1db80634374e8f51c63c2f4b3307b740ded591fd47baa572cd04fa"
       - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
-        sha256: "b986e3371929b7a6f7f9a01c8cf795c3dd5c94a2836efe76723be8a1cd938266"
+        sha256: "15998f908a67d322afffaf6fa73cf3e8f9756b3abffd26d311161f381ff54f6d"
       - path: apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
-        sha256: "ec44cdec40ac85c52e34b78e1a9b765d8fea4860bdb0e5695a868629519e28ff"
+        sha256: "e3c5e4a6fb8ef82ee6537cde200bda291995b3b425efdf2a2fe194d0174fdc3a"
     license:
       name: first-party
       evidence_path: assets/3d/ASSET_COMPLETION_REPORT.md
@@ -62,7 +66,7 @@ assets:
     master_path: apps/web/src/components/structara-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "d8593453a244915bdaadeb609fba263e45a59fee6a5fc21f942fa64bd1f27c88"
+        sha256: "b7a44ca54019bc7324513f6427f172b8bed177d43014eacb8cb9118bf2fa0d00"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md
@@ -71,8 +75,8 @@ assets:
     usage:
       allowed: [product-marketing, documentation, sales]
       prohibited: [customer-claim]
-    alt_text_en: "The Structara sample workspace showing active processing, review, knowledge, and source coverage."
-    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 Structara 샘플 워크스페이스"
+    alt_text_en: "The FOLYNTA sample workspace showing active processing, review, knowledge, and source coverage."
+    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 FOLYNTA 샘플 워크스페이스"
 
   - id: STR-BRAND-T2-GLYPHS-001
     title: Structural Glyph Family
@@ -190,8 +194,8 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [customer-claim, fabricated-live-state]
-    alt_text_en: "Canonical Structara product views captured from the deterministic public demo workspace."
-    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 Structara 제품 화면"
+    alt_text_en: "Canonical FOLYNTA product views captured from the deterministic public demo workspace."
+    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 FOLYNTA 제품 화면"
 
   - id: STR-PRODUCT-T0-MOTION-PACK-001
     title: Canonical Product Motion Pack
@@ -211,5 +215,30 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [latency-claim, customer-claim]
-    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic Structara demo workspace."
-    alt_text_ko: "결정론적 Structara 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"
+    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic FOLYNTA demo workspace."
+    alt_text_ko: "결정론적 FOLYNTA 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"
+
+  - id: FOL-HOME-T1-CONCEPT-DIRECTIONS-001
+    title: FOLYNTA Hero Static Direction Set
+    truth_class: T1
+    status: implemented
+    owner: creative_direction
+    source_type: deterministic-first-party-svg
+    master_path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-A-EDITORIAL-LIBRARY.svg
+    derivatives:
+      - path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-A-EDITORIAL-LIBRARY.svg
+        sha256: "7f32fd07807085093aca9208fb09061977e6264957dc6e299848998cc1d60835"
+      - path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-B-COMPUTATIONAL-ARCHIVE.svg
+        sha256: "0c88430ff99997d8bb20cd798d36850525996f9b2a9d571f420def7f6e21dcc0"
+      - path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-C-KNOWLEDGE-MONOLITH.svg
+        sha256: "c036911679d0f307f8d38b2f18842ee4bd804e829bcf0a2c6a1e38666235a67c"
+    license:
+      name: first-party
+      evidence_path: FOLYNTA_BRAND_DECISIONS.md
+    provenance:
+      generated_with_ai: false
+    usage:
+      allowed: [creative-review, homepage-support, reduced-motion-reference]
+      prohibited: [product-evidence, benchmark-evidence, customer-claim]
+    alt_text_en: "Three distinct deterministic directions show an editorial source library, a computational evidence archive, and a compiled knowledge plane."
+    alt_text_ko: "편집형 원천 라이브러리, 계산형 근거 아카이브, 컴파일된 지식 평면을 구분해 보여주는 세 가지 결정론적 방향"

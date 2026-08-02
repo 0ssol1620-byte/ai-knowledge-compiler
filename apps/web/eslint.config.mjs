@@ -24,6 +24,7 @@ export default defineConfig([
     ".next-e2e-live/**",
     ".next-*/**",
     "coverage/**",
+    "storybook-static/**",
     "playwright-report/**",
     "test-results/**",
   ]),

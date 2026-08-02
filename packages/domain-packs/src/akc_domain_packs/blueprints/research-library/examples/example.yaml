@@ -1,0 +1,7 @@
+blueprint: research-library
+kind: verified-example
+version: 1.0.0
+input: {document_type: research_paper, citation_style: mixed}
+expected:
+  object_kinds: [Paper, Author, Method, Dataset, Finding, Citation]
+  required_authority: [source_ref, page, quote]

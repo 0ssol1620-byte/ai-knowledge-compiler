@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from akc_api.abuse_repository import reserve_free_usage
+from akc_api.collection_processing import reconcile_collection_analysis_task
 from akc_api.database import Database
 from akc_api.free_tier import (
     FreeTierCapExceeded,
@@ -32,6 +33,7 @@ from akc_api.models import (
     AnalysisTask,
     AuditEvent,
     Block,
+    CollectionProcessingTaskBinding,
     Document,
     DocumentVersion,
     OutboxEvent,
@@ -86,7 +88,7 @@ from akc_security import (
 )
 from akc_telemetry import record_abuse_control_decision, record_page_terminal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from sqlalchemy import delete, func, or_, select, text
+from sqlalchemy import delete, exists, func, or_, select, text
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -1011,6 +1013,22 @@ def analysis_claim_statement(
             AnalysisTask.status.in_(("queued", "running")),
             AnalysisTask.available_at <= now,
             or_(
+                ~exists(
+                    select(CollectionProcessingTaskBinding.id).where(
+                        CollectionProcessingTaskBinding.tenant_id == AnalysisTask.tenant_id,
+                        CollectionProcessingTaskBinding.analysis_task_id == AnalysisTask.id,
+                        CollectionProcessingTaskBinding.status.in_(("active", "paused")),
+                    )
+                ),
+                exists(
+                    select(CollectionProcessingTaskBinding.id).where(
+                        CollectionProcessingTaskBinding.tenant_id == AnalysisTask.tenant_id,
+                        CollectionProcessingTaskBinding.analysis_task_id == AnalysisTask.id,
+                        CollectionProcessingTaskBinding.status == "active",
+                    )
+                ),
+            ),
+            or_(
                 AnalysisTask.status == "queued",
                 AnalysisTask.lease_expires_at.is_(None),
                 AnalysisTask.lease_expires_at <= now,
@@ -1201,12 +1219,20 @@ class AnalysisWorker:
                 event.last_error = "SOURCE_VERSION_CHANGED"
                 event.dead_lettered_at = now
                 event.published_at = now
+                await reconcile_collection_analysis_task(
+                    session,
+                    task=task,
+                )
                 await session.commit()
                 if lock_key is not None:
                     await self._release_advisory_lock(connection, lock_key)
                 record_attempt("stale")
                 return None, None
             document.status = "PREFLIGHTING"
+            await reconcile_collection_analysis_task(
+                session,
+                task=task,
+            )
             await session.commit()
             return (
                 AnalysisClaim(
@@ -1915,6 +1941,7 @@ class AnalysisWorker:
             preview_count = 0
             route_policy_versions: set[str] = set()
             pages_by_number: dict[int, Page] = {}
+            analysis_states: set[PageState] = set()
             normalization_rows: dict[str, Block] = {}
             normalization_views: list[NormalizationBlock] = []
             for parsed_page in manifest.pages:
@@ -2068,6 +2095,14 @@ class AnalysisWorker:
                 accepted_native = (
                     route_decision.route == Route.NATIVE
                     and escalation.action == EscalationAction.ACCEPT
+                    and not injection.suspected
+                )
+                analysis_state = (
+                    PageState.QUARANTINED
+                    if injection.suspected
+                    else PageState.COMPLETED
+                    if accepted_native
+                    else PageState.UNRESOLVED
                 )
                 preview_reason = (
                     parsed_page.preview.reason
@@ -2099,7 +2134,7 @@ class AnalysisWorker:
                         if preprocessing_transform is not None
                         else 0
                     ),
-                    status="COMPLETED" if accepted_native else "NEEDS_REVIEW",
+                    status=analysis_state.value,
                     route=effective_route.value,
                     route_policy_version=route_decision.policy_version,
                     thumbnail_key=page_assets.thumbnail_key,
@@ -2157,7 +2192,9 @@ class AnalysisWorker:
                             and not injection.suspected
                             else "warning"
                             if accepted_native
-                            else "review"
+                            else "quarantined"
+                            if injection.suspected
+                            else "unresolved"
                         ),
                         "vector": quality.vector_payload,
                         "findings": quality.findings_payload,
@@ -2200,11 +2237,13 @@ class AnalysisWorker:
                 await transition_page_attempt(
                     session,
                     page_attempt,
-                    (PageState.COMPLETED if accepted_native else PageState.NEEDS_REVIEW),
+                    analysis_state,
                     reason=(
                         "quality_gate_accepted"
                         if accepted_native
-                        else "quality_gate_requires_followup"
+                        else "prompt_injection_quarantined"
+                        if injection.suspected
+                        else "quality_gate_unresolved"
                     ),
                     payload={
                         "quality_status": quality.evaluation.status.value,
@@ -2221,6 +2260,7 @@ class AnalysisWorker:
                     now=now,
                 )
                 pages_by_number[parsed_page.page_number] = page
+                analysis_states.add(analysis_state)
                 for asset_type, key, descriptor in (
                     ("preview", page_assets.preview_key, page_assets.preview),
                     ("thumbnail", page_assets.thumbnail_key, page_assets.thumbnail),
@@ -2329,95 +2369,8 @@ class AnalysisWorker:
                         )
                     )
                     block_count += 1
-                if not accepted_native:
-                    finding_codes = {finding["code"] for finding in quality.findings_payload}
-                    critical_quality = bool(
-                        {
-                            "numeric.token_mismatch",
-                            "table.structure_invalid",
-                            "table.integrity_critical",
-                        }
-                        & finding_codes
-                    )
-                    provider_unavailable = effective_route == Route.MANUAL_REVIEW
-                    session.add(
-                        ReviewItem(
-                            tenant_id=claim.tenant_id,
-                            project_id=context.project_id,
-                            document_id=claim.document_id,
-                            page_id=page.id,
-                            severity="high",
-                            category=(
-                                "quality_critical"
-                                if critical_quality
-                                else "provider_unavailable"
-                                if provider_unavailable
-                                else "visual_parse_required"
-                            ),
-                            evidence={
-                                "message": (
-                                    "A critical numeric or table integrity check failed."
-                                    if critical_quality
-                                    else (
-                                        "Visual parsing is required, but no verified "
-                                        "provider is enabled."
-                                        if provider_unavailable
-                                        else "A verified visual parser is required."
-                                    )
-                                ),
-                                "route_reasons": list(route_decision.reason_codes),
-                                "quality_findings": quality.findings_payload,
-                                "attempt_id": str(page_attempt.id),
-                                "attempt_number": page_attempt.attempt_number,
-                                "candidates": [],
-                            },
-                        )
-                    )
-                elif injection.suspected:
-                    session.add(
-                        ReviewItem(
-                            tenant_id=claim.tenant_id,
-                            project_id=context.project_id,
-                            document_id=claim.document_id,
-                            page_id=page.id,
-                            severity=("high" if injection.risk.value == "high" else "medium"),
-                            category="prompt_injection",
-                            evidence={
-                                "message": (
-                                    "Potential indirect prompt injection was "
-                                    "detected in source content."
-                                ),
-                                "rules": [signal.rule_id for signal in injection.signals],
-                                "candidates": [],
-                            },
-                        )
-                    )
-                if sensitive_scan.has_secret:
-                    session.add(
-                        ReviewItem(
-                            tenant_id=claim.tenant_id,
-                            project_id=context.project_id,
-                            document_id=claim.document_id,
-                            page_id=page.id,
-                            severity="high",
-                            category="secret_detected",
-                            evidence={
-                                "message": (
-                                    "Potential secret material was detected. External "
-                                    "fallback is disabled until explicit confirmation."
-                                ),
-                                "counts": sensitive_counts,
-                                "false_positive_notice": (
-                                    "Pattern detection can produce false positives and "
-                                    "can miss secret material."
-                                ),
-                                "external_fallback_disabled": True,
-                                "candidates": [],
-                            },
-                        )
-                    )
                 record_page_terminal(
-                    "completed" if accepted_native else "needs_review",
+                    analysis_state.value.casefold(),
                     effective_route.value,
                 )
             if canonical is not None:
@@ -2512,7 +2465,9 @@ class AnalysisWorker:
             )
             document.document_type = manifest.document_type
             document.page_count = len(manifest.pages)
-            document.status = "COMPLETED"
+            document.status = (
+                "QUARANTINED" if analysis_states == {PageState.QUARANTINED} else "COMPLETED"
+            )
             document.updated_at = now
             policy_versions = sorted(route_policy_versions)
             if len(policy_versions) == 1 and len(policy_versions[0]) <= 120:
@@ -2590,6 +2545,10 @@ class AnalysisWorker:
                     },
                 )
             )
+            await reconcile_collection_analysis_task(
+                session,
+                task=task,
+            )
 
     async def _terminal_failure_in_session(
         self,
@@ -2648,6 +2607,10 @@ class AnalysisWorker:
                     "attempts": task.attempt_count,
                 },
             )
+        )
+        await reconcile_collection_analysis_task(
+            session,
+            task=task,
         )
 
     async def _record_failure(
@@ -2725,6 +2688,10 @@ class AnalysisWorker:
             ):
                 document.status = "ANALYSIS_QUEUED"
                 document.updated_at = now
+            await reconcile_collection_analysis_task(
+                session,
+                task=task,
+            )
             record_attempt("retry")
 
     async def _execute_claim(self, claim: AnalysisClaim) -> None:

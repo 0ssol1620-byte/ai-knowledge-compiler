@@ -135,6 +135,8 @@ class GpuJobResult:
     metrics: dict[str, Any]
     warnings: tuple[str, ...]
     raw_provider_response_sha256: str
+    provider_queue_delay_ms: float | None = None
+    provider_execution_time_ms: float | None = None
 
 
 @dataclass(frozen=True)
@@ -501,6 +503,8 @@ def _validate_terminal_response(
         or any(not isinstance(item, str) or not item or len(item) > 1000 for item in warnings)
     ):
         raise GpuProviderError("GPU_PROVIDER_INVALID_RESULT")
+    provider_queue_delay_ms = _provider_duration_ms(response, "delayTime")
+    provider_execution_time_ms = _provider_duration_ms(response, "executionTime")
     raw_hash = hashlib.sha256(_canonical_json(response)).hexdigest()
     return GpuJobResult(
         provider_job_id=submitted.provider_job_id,
@@ -516,4 +520,23 @@ def _validate_terminal_response(
         metrics=metrics,
         warnings=tuple(warnings),
         raw_provider_response_sha256=f"sha256:{raw_hash}",
+        provider_queue_delay_ms=provider_queue_delay_ms,
+        provider_execution_time_ms=provider_execution_time_ms,
     )
+
+
+def _provider_duration_ms(response: dict[str, Any], field_name: str) -> float | None:
+    """Validate a RunPod-owned duration without trusting worker output metrics."""
+
+    value = response.get(field_name)
+    if value is None:
+        return None
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or value < 0
+        or value > 604_800_000
+    ):
+        raise GpuProviderError("GPU_PROVIDER_INVALID_RESULT")
+    return float(value)

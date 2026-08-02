@@ -9,56 +9,96 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 
-const steps = ["Goal", "Document type", "Privacy", "First upload"] as const;
+import { useStructaraLocale } from "@/components/locale-provider";
 
-const choices = {
-  Goal: [
-    "Clean Markdown",
-    "Obsidian Vault",
-    "AI / RAG knowledge",
-    "Ontology / Graph",
-    "Not sure yet",
-  ],
-  "Document type": [
-    "Reports",
-    "Research papers",
-    "Course materials",
-    "Manuals",
-    "Contracts",
-    "Mixed files",
-  ],
-  Privacy: [
-    "Ask before external processing",
-    "Never use external processing",
-    "Allow approved providers",
-  ],
-  "First upload": [
-    "Choose files",
-    "Use the public sample",
-    "Explore the demo first",
-  ],
+const ONBOARDING = {
+  en: {
+    project: "First knowledge project",
+    progress: "Onboarding progress",
+    steps: ["Goal", "Document type", "Privacy", "First upload"],
+    questions: [
+      "What do you want to build?",
+      "What will you compile first?",
+      "Choose the processing boundary.",
+      "Start with your first source.",
+    ],
+    note: "This choice sets helpful defaults. It never locks your project to a model or output.",
+    choices: [
+      [
+        "Clean Markdown",
+        "Obsidian Vault",
+        "AI / RAG knowledge",
+        "Ontology / Graph",
+        "Not sure yet",
+      ],
+      [
+        "Reports",
+        "Research papers",
+        "Course materials",
+        "Manuals",
+        "Contracts",
+        "Mixed files",
+      ],
+      [
+        "Ask before external processing",
+        "Never use external processing",
+        "Allow approved providers",
+      ],
+      ["Choose files", "Use the public sample", "Explore the demo first"],
+    ],
+    back: "Back",
+    continue: "Continue",
+    openUpload: "Open collection intake",
+  },
+  ko: {
+    project: "첫 번째 지식 프로젝트",
+    progress: "온보딩 진행 상태",
+    steps: ["목표", "문서 유형", "개인정보", "첫 업로드"],
+    questions: [
+      "무엇을 만들고 싶나요?",
+      "어떤 문서를 먼저 컴파일할까요?",
+      "처리 경계를 선택하세요.",
+      "첫 번째 원본으로 시작하세요.",
+    ],
+    note: "이 선택은 도움이 되는 기본값을 설정하지만 프로젝트를 특정 모델이나 출력에 종속시키지 않습니다.",
+    choices: [
+      [
+        "정돈된 Markdown",
+        "Obsidian Vault",
+        "AI / RAG 지식",
+        "온톨로지 / 그래프",
+        "아직 모르겠음",
+      ],
+      ["보고서", "연구 논문", "강의 자료", "매뉴얼", "계약서", "혼합 파일"],
+      ["외부 처리 전 확인", "외부 처리 사용 안 함", "승인된 제공자 허용"],
+      ["파일 선택", "공개 샘플 사용", "데모 먼저 살펴보기"],
+    ],
+    back: "이전",
+    continue: "계속",
+    openUpload: "컬렉션 수집 열기",
+  },
 } as const;
 
 export function StructaraOnboarding() {
+  const { locale } = useStructaraLocale();
+  const copy = ONBOARDING[locale];
   const [step, setStep] = useState(0);
-  const [selected, setSelected] = useState<Record<string, string>>({});
-  const current = steps[step]!;
+  const [selected, setSelected] = useState<Record<number, string>>({});
+  const currentLabel = copy.steps[step]!;
+  const currentChoices = copy.choices[step]!;
 
   return (
-    <main id="main-content" className="st-onboarding">
+    <main id="main-content" className="st-onboarding" data-locale={locale}>
       <header>
-        <Link href="/">Structara</Link>
-        <span>First knowledge project</span>
+        <Link href="/">FOLYNTA</Link>
+        <span>{copy.project}</span>
         <small>
-          {step + 1} / {steps.length}
+          {step + 1} / {copy.steps.length}
         </small>
       </header>
       <section>
-        <div
-          className="st-onboarding-progress"
-          aria-label="Onboarding progress"
-        >
-          {steps.map((label, index) => (
+        <div className="st-onboarding-progress" aria-label={copy.progress}>
+          {copy.steps.map((label, index) => (
             <span key={label} data-active={index <= step}>
               <i>{index < step ? <Check size={12} /> : index + 1}</i>
               {label}
@@ -66,34 +106,23 @@ export function StructaraOnboarding() {
           ))}
         </div>
         <div className="st-onboarding-copy">
-          <p>{current}</p>
-          <h1>
-            {current === "Goal"
-              ? "What do you want to build?"
-              : current === "Document type"
-                ? "What will you compile first?"
-                : current === "Privacy"
-                  ? "Choose the processing boundary."
-                  : "Start with your first source."}
-          </h1>
-          <span>
-            This choice sets helpful defaults. It never locks your project to a
-            model or output.
-          </span>
+          <p>{currentLabel}</p>
+          <h1>{copy.questions[step]}</h1>
+          <span>{copy.note}</span>
         </div>
         <div className="st-onboarding-options">
-          {choices[current].map((choice) => (
+          {currentChoices.map((choice) => (
             <button
               type="button"
               key={choice}
-              data-selected={selected[current] === choice}
+              data-selected={selected[step] === choice}
               onClick={() =>
-                setSelected((value) => ({ ...value, [current]: choice }))
+                setSelected((value) => ({ ...value, [step]: choice }))
               }
             >
-              {current === "First upload" && <FileArrowUp size={17} />}
+              {step === copy.steps.length - 1 && <FileArrowUp size={17} />}
               <span>{choice}</span>
-              {selected[current] === choice && <Check size={15} />}
+              {selected[step] === choice && <Check size={15} />}
             </button>
           ))}
         </div>
@@ -103,20 +132,20 @@ export function StructaraOnboarding() {
             disabled={step === 0}
             onClick={() => setStep((value) => value - 1)}
           >
-            <ArrowLeft size={14} /> Back
+            <ArrowLeft size={14} /> {copy.back}
           </button>
-          {step < steps.length - 1 ? (
+          {step < copy.steps.length - 1 ? (
             <button
               type="button"
               className="st-app-primary"
-              disabled={!selected[current]}
+              disabled={!selected[step]}
               onClick={() => setStep((value) => value + 1)}
             >
-              Continue <ArrowRight size={14} />
+              {copy.continue} <ArrowRight size={14} />
             </button>
           ) : (
-            <Link className="st-app-primary" href="/quick-convert">
-              Open upload <ArrowRight size={14} />
+            <Link className="st-app-primary" href="/intake">
+              {copy.openUpload} <ArrowRight size={14} />
             </Link>
           )}
         </footer>

@@ -14,6 +14,8 @@ import yaml
 from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 FORBIDDEN_PUBLIC_SUFFIXES = {".exe", ".dll", ".scr", ".com", ".ps1", ".bat"}
 SECRET_PATTERNS = {
     "private_key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
@@ -38,6 +40,8 @@ SCAN_EXCLUDED_PARTS = {
     ".akc-data-test",
     "__pycache__",
     "coverage",
+    "cache",
+    "public-runs",
     "work",
     "playwright-report",
     "test-results",
@@ -104,6 +108,16 @@ def validate_synthetic_ground_truth(errors: list[str]) -> None:
                 errors.append(f"{path.relative_to(ROOT)}:{line_number}: must be synthetic")
 
 
+def validate_public_benchmark_registry(errors: list[str]) -> None:
+    from benchmark.public_suite import PublicSuiteError, verify_registry
+
+    path = ROOT / "benchmark/benchmark-registry.lock.yaml"
+    try:
+        verify_registry(registry_path=path, online=False)
+    except (OSError, ValueError, yaml.YAMLError, PublicSuiteError) as exc:
+        errors.append(f"public benchmark registry is invalid: {exc}")
+
+
 def validate_feature_defaults(errors: list[str]) -> None:
     recipes = load_yaml("infra/model-registry/recipes.yaml")
     if recipes.get("defaults", {}).get("allow_external") is not False:
@@ -163,6 +177,8 @@ def validate_serialized_documents(errors: list[str]) -> None:
             if not path.is_file():
                 continue
             relative = path.relative_to(ROOT)
+            if SCAN_EXCLUDED_PARTS.intersection(relative.parts):
+                continue
             try:
                 if path.suffix in {".json", ".jsonld"}:
                     value = json.loads(path.read_text(encoding="utf-8"))
@@ -379,6 +395,7 @@ def main() -> int:
     validate_source_registry(errors)
     validate_conflict_decisions(errors)
     validate_synthetic_ground_truth(errors)
+    validate_public_benchmark_registry(errors)
     validate_feature_defaults(errors)
     scan_public_fixtures(errors)
     scan_secrets(errors)

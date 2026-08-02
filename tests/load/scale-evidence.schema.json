@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.invalid/schemas/nonproduction-scale-evidence-v1.json",
+  "title": "Structara nonproduction scale evidence receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile",
+    "catalog_sha256",
+    "script_sha256",
+    "harness_revision",
+    "target",
+    "fixture",
+    "execution",
+    "observations",
+    "acceptance",
+    "cleanup",
+    "declarations"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "profile": { "type": "string", "minLength": 1 },
+    "catalog_sha256": { "$ref": "#/$defs/sha256" },
+    "script_sha256": { "$ref": "#/$defs/sha256" },
+    "harness_revision": { "$ref": "#/$defs/gitRevision" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin",
+        "environment",
+        "production",
+        "deployment_revision",
+        "revision_verified",
+        "revision_evidence_sha256",
+        "origin_allowlist_match",
+        "origin_allowlist_sha256"
+      ],
+      "properties": {
+        "origin": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "environment": { "enum": ["development", "staging", "performance"] },
+        "production": { "const": false },
+        "deployment_revision": { "$ref": "#/$defs/gitRevision" },
+        "revision_verified": { "type": "boolean" },
+        "revision_evidence_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        },
+        "origin_allowlist_match": { "type": "boolean" },
+        "origin_allowlist_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        }
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "synthetic",
+        "customer_data",
+        "manifest_sha256",
+        "attestation_sha256",
+        "dimensions"
+      ],
+      "properties": {
+        "synthetic": { "const": true },
+        "customer_data": { "const": false },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "attestation_sha256": { "$ref": "#/$defs/sha256" },
+        "dimensions": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": ["integer", "number", "boolean"],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "started_at",
+        "finished_at",
+        "exit_code",
+        "command_sha256",
+        "raw_summary_sha256"
+      ],
+      "properties": {
+        "status": { "enum": ["not_run", "passed", "failed", "aborted"] },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "finished_at": { "type": ["string", "null"], "format": "date-time" },
+        "exit_code": { "type": ["integer", "null"] },
+        "command_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        },
+        "raw_summary_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value", "unit", "threshold", "passed", "source_sha256"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]+$" },
+          "value": { "type": ["number", "integer", "boolean"] },
+          "unit": { "type": "string", "minLength": 1 },
+          "threshold": { "type": ["number", "integer", "boolean", "string"] },
+          "passed": { "type": "boolean" },
+          "source_sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["all_required_metrics_present", "all_thresholds_passed"],
+      "properties": {
+        "all_required_metrics_present": { "type": "boolean" },
+        "all_thresholds_passed": { "type": "boolean" }
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "completed", "receipt_sha256"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "completed": { "type": "boolean" },
+        "receipt_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        }
+      }
+    },
+    "declarations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nonproduction_only",
+        "deployment_performed_by_harness",
+        "production_slo_proven",
+        "release_gate_closed",
+        "confirmation"
+      ],
+      "properties": {
+        "nonproduction_only": { "const": true },
+        "deployment_performed_by_harness": { "const": false },
+        "production_slo_proven": { "const": false },
+        "release_gate_closed": { "const": false },
+        "confirmation": { "const": "NONPRODUCTION_LOAD_ONLY" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": { "status": { "const": "passed" } },
+            "required": ["status"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "properties": {
+              "revision_verified": { "const": true },
+              "revision_evidence_sha256": { "$ref": "#/$defs/sha256" },
+              "origin_allowlist_match": { "const": true },
+              "origin_allowlist_sha256": { "$ref": "#/$defs/sha256" }
+            }
+          },
+          "execution": {
+            "properties": {
+              "started_at": { "type": "string", "format": "date-time" },
+              "finished_at": { "type": "string", "format": "date-time" },
+              "exit_code": { "const": 0 },
+              "command_sha256": { "$ref": "#/$defs/sha256" },
+              "raw_summary_sha256": { "$ref": "#/$defs/sha256" }
+            }
+          },
+          "observations": { "minItems": 1 },
+          "acceptance": {
+            "properties": {
+              "all_required_metrics_present": { "const": true },
+              "all_thresholds_passed": { "const": true }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gitRevision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  }
+}

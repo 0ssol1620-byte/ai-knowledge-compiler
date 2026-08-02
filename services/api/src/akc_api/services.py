@@ -49,6 +49,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from akc_api.artifacts import build_export_bundle as build_artifact_bundle
+from akc_api.collection_integrity_runtime import (
+    IntegrityActionRejected,
+    integrity_region_bbox,
+    reconcile_integrity_retry_job,
+    resolve_pinned_retry_binding,
+)
 from akc_api.credit_policy import (
     CreditPolicyError,
     CreditState,
@@ -101,7 +107,6 @@ from akc_api.models import (
     ProcessingJob,
     Project,
     Relation,
-    ReviewItem,
     SourceFile,
     utcnow,
 )
@@ -415,6 +420,7 @@ async def analyze_document(
         await session.delete(page)
     await session.flush()
     block_count = 0
+    document_states: set[str] = set()
     for parsed_page in parsed.pages:
         injection = detect_prompt_injection(parsed_page.text)
         metrics = page_preflight(
@@ -463,13 +469,15 @@ async def analyze_document(
             router_metrics,
         )
         accepted_native = route_decision.route == Route.NATIVE
+        verified_native = accepted_native and not injection.suspected
+        isolated_status = "QUARANTINED" if injection.suspected else "UNRESOLVED"
         page = Page(
             tenant_id=document.tenant_id,
             document_id=document.id,
             page_number=parsed_page.page_number,
             width_pt=parsed_page.width_pt,
             height_pt=parsed_page.height_pt,
-            status="COMPLETED" if accepted_native else "NEEDS_REVIEW",
+            status="COMPLETED" if verified_native else isolated_status,
             route=route_decision.route.value,
             route_policy_version=route_decision.policy_version,
             preflight_metrics={
@@ -482,12 +490,20 @@ async def analyze_document(
                 "expected_credits": route_decision.expected_credits,
             },
             quality_metrics={
-                "schema_valid": accepted_native,
+                "schema_valid": verified_native,
                 "source_coverage": 1.0 if parsed_page.text else 0.0,
-                "state": "verified" if accepted_native else "review",
+                "state": (
+                    "verified"
+                    if verified_native
+                    else "quarantined"
+                    if injection.suspected
+                    else "unresolved"
+                ),
+                "prompt_injection_advisory": injection.suspected,
             },
         )
         session.add(page)
+        document_states.add(page.status)
         await session.flush()
         if parsed_page.text:
             content_hash = hashlib.sha256(parsed_page.text.encode()).hexdigest()
@@ -510,48 +526,15 @@ async def analyze_document(
                 )
             )
             block_count += 1
-        if not accepted_native:
-            session.add(
-                ReviewItem(
-                    tenant_id=document.tenant_id,
-                    project_id=document.project_id,
-                    document_id=document.id,
-                    page_id=page.id,
-                    severity="high",
-                    category="provider_unavailable",
-                    evidence={
-                        "message": (
-                            "시각 파싱이 필요하지만 검증된 provider가 활성화되지 않았습니다."
-                        ),
-                        "route_reasons": list(route_decision.reason_codes),
-                        "candidates": [],
-                    },
-                )
-            )
-        elif injection.suspected:
-            page.quality_metrics = {
-                **page.quality_metrics,
-                "state": "review",
-                "prompt_injection_advisory": True,
-            }
-            session.add(
-                ReviewItem(
-                    tenant_id=document.tenant_id,
-                    project_id=document.project_id,
-                    document_id=document.id,
-                    page_id=page.id,
-                    severity="high" if injection.risk.value == "high" else "medium",
-                    category="prompt_injection",
-                    evidence={
-                        "message": "문서에서 간접 프롬프트 인젝션 신호가 감지되었습니다.",
-                        "rules": [signal.rule_id for signal in injection.signals],
-                        "candidates": [],
-                    },
-                )
-            )
     document.document_type = parsed.document_type
     document.page_count = len(parsed.pages)
-    document.status = "COMPLETED"
+    document.status = (
+        "QUARANTINED"
+        if "QUARANTINED" in document_states
+        else "PARTIAL"
+        if "UNRESOLVED" in document_states
+        else "COMPLETED"
+    )
     await session.flush()
     return len(parsed.pages), block_count
 
@@ -1915,8 +1898,16 @@ async def _enqueue_visual_page(
     runtime: RoutingRuntime,
     route: Route,
 ) -> GpuProviderInvocation:
-    binding = runtime.provider_for(route)
-    if binding is None or route not in runtime.context.ready_routes:
+    try:
+        binding = await resolve_pinned_retry_binding(
+            session,
+            job=job,
+            runtime=runtime,
+            route=route,
+        )
+    except IntegrityActionRejected as exc:
+        raise ProviderUnavailable(exc.code) from exc
+    if route not in runtime.context.ready_routes:
         raise ProviderUnavailable("VISUAL_PROVIDER_NOT_READY")
     try:
         width, height, size_bytes, dpi = _visual_asset_values(page_asset)
@@ -1957,11 +1948,20 @@ async def _enqueue_visual_page(
         user_id=requested_by,
         document_type=document.document_type,
     )
+    integrity_options: dict[str, Any] = {}
+    if job.job_type == "collection_integrity_retry":
+        region_bbox = integrity_region_bbox(job)
+        if region_bbox is not None:
+            integrity_options["bbox1000"] = region_bbox
     transition_policy: GpuTransitionPolicy | None = None
-    fallback_route = {
-        Route.HPD_FAST: (Route.PADDLE_VL, "parse_balanced_v1"),
-        Route.PADDLE_FAST: (Route.PADDLE_VL, "parse_balanced_v1"),
-    }.get(route)
+    fallback_route = (
+        None
+        if job.job_type == "collection_integrity_retry"
+        else {
+            Route.HPD_FAST: (Route.PADDLE_VL, "parse_balanced_v1"),
+            Route.PADDLE_FAST: (Route.PADDLE_VL, "parse_balanced_v1"),
+        }.get(route)
+    )
     if fallback_route is not None:
         target_route, target_profile = fallback_route
         target_binding = runtime.provider_for(target_route)
@@ -2030,6 +2030,7 @@ async def _enqueue_visual_page(
                 "orientation_classify": False,
                 "unwarp": False,
                 "ocr_image_blocks": True,
+                **integrity_options,
                 **preprocessing_option,
             },
             max_attempts=attempt.max_attempts,
@@ -2572,6 +2573,17 @@ async def _annotate_document_normalization(
     await session.flush()
 
 
+def _bbox_intersects(left: object, right: list[int]) -> bool:
+    if (
+        not isinstance(left, (list, tuple))
+        or len(left) != 4
+        or any(not isinstance(value, (int, float)) or isinstance(value, bool) for value in left)
+    ):
+        return False
+    x0, y0, x1, y1 = (float(value) for value in left)
+    return x0 < right[2] and x1 > right[0] and y0 < right[3] and y1 > right[1]
+
+
 async def _promote_visual_blocks(
     session: AsyncSession,
     *,
@@ -2584,16 +2596,44 @@ async def _promote_visual_blocks(
     result: VisualPageResult,
 ) -> list[Block]:
     # A visual result remains an in-memory candidate until the quality gate
-    # accepts it. Promotion atomically replaces prior machine output for the
-    # page while preserving user-locked edits.
-    await session.execute(
-        delete(Block).where(
-            Block.tenant_id == job.tenant_id,
-            Block.document_id == document.id,
-            Block.page_id == page.id,
-            Block.user_locked.is_(False),
+    # accepts it. A region-scoped integrity recovery replaces only intersecting
+    # machine output; ordinary page execution retains the full-page behavior.
+    region_bbox = integrity_region_bbox(job)
+    visual_blocks = list(result.blocks)
+    if region_bbox is None:
+        await session.execute(
+            delete(Block).where(
+                Block.tenant_id == job.tenant_id,
+                Block.document_id == document.id,
+                Block.page_id == page.id,
+                Block.user_locked.is_(False),
+            )
         )
-    )
+    else:
+        visual_blocks = [
+            block
+            for block in visual_blocks
+            if any(_bbox_intersects(ref.bbox1000, region_bbox) for ref in block.source_refs)
+        ]
+        if not visual_blocks:
+            raise ValueError("INTEGRITY_RETRY_REGION_EMPTY")
+        prior_machine_blocks = list(
+            await session.scalars(
+                select(Block).where(
+                    Block.tenant_id == job.tenant_id,
+                    Block.document_id == document.id,
+                    Block.page_id == page.id,
+                    Block.user_locked.is_(False),
+                )
+            )
+        )
+        replace_ids = tuple(
+            block.id
+            for block in prior_machine_blocks
+            if _bbox_intersects(block.bbox1000, region_bbox)
+        )
+        if replace_ids:
+            await session.execute(delete(Block).where(Block.id.in_(replace_ids)))
     await session.flush()
     manifest = invocation.result_manifest
     if (
@@ -2655,7 +2695,7 @@ async def _promote_visual_blocks(
         + 1
     )
     persisted: list[Block] = []
-    for index, visual_block in enumerate(result.blocks):
+    for index, visual_block in enumerate(visual_blocks):
         block_id = uuid.uuid5(invocation.id, visual_block.block_id)
         text_value = visual_block_text(visual_block)
         normalized = normalize_block_text(
@@ -2726,10 +2766,11 @@ async def _promote_visual_blocks(
         session.add(row)
         persisted.append(row)
     await session.flush()
-    await _annotate_document_normalization(
-        session,
-        document=document,
-    )
+    if region_bbox is None:
+        await _annotate_document_normalization(
+            session,
+            document=document,
+        )
     return persisted
 
 
@@ -2818,7 +2859,7 @@ async def _fail_expected_compile(
     await session.commit()
 
 
-async def _park_compile_for_review(
+async def _isolate_compile_page(
     session: AsyncSession,
     *,
     job: ProcessingJob,
@@ -2826,13 +2867,20 @@ async def _park_compile_for_review(
     page_attempt: PageAttempt,
     reserved: Decimal,
     attempt: int,
+    state: PageState,
+    code: str,
     category: str,
     message: str,
 ) -> None:
-    job.status = "waiting_review"
+    if state not in {PageState.UNRESOLVED, PageState.QUARANTINED}:
+        raise ValueError("autonomous isolation requires unresolved or quarantined state")
+    job.status = "failed"
+    job.completed_at = utcnow()
+    job.error = {"code": code, "retryable": False}
+    page.status = state.value
     job.progress = {
-        "stage": "review",
-        "state": "WAITING_REVIEW",
+        "stage": "verify",
+        "state": state.value,
         "done": 0,
         "total": 1,
         "page_id": str(page.id),
@@ -2842,10 +2890,12 @@ async def _park_compile_for_review(
     await emit_event(
         session,
         job=job,
-        event_type="page.needs_review.v1",
+        event_type=(
+            "page.quarantined.v1" if state == PageState.QUARANTINED else "page.unresolved.v1"
+        ),
         payload={
             "page_id": str(page.id),
-            "status": "needs_review",
+            "status": state.value.casefold(),
             "severity": "high",
             "category": category,
             "message": message,
@@ -2853,17 +2903,33 @@ async def _park_compile_for_review(
             "attempt_number": page_attempt.attempt_number,
         },
     )
+    await emit_event(
+        session,
+        job=job,
+        event_type="job.failed.v1",
+        payload={"status": "failed", "code": code, "isolated_state": state.value},
+    )
     await _release_compile_reservation(
         session,
         job=job,
         reserved=reserved,
         attempt=attempt,
-        reason="waiting_review",
+        reason=state.value.casefold(),
     )
+    session.add(
+        OutboxEvent(
+            tenant_id=job.tenant_id,
+            aggregate_type="job",
+            aggregate_id=job.id,
+            event_type="job.failed.v1",
+            payload={"job_id": str(job.id), "code": code, "isolated_state": state.value},
+        )
+    )
+    after_commit_metric(session, record_job_terminal, "failed")
     await session.commit()
 
 
-async def run_compile_job(
+async def _run_compile_job_impl(
     *,
     session: AsyncSession,
     job_id: uuid.UUID,
@@ -3341,8 +3407,8 @@ async def run_compile_job(
                 await transition_page_attempt(
                     session,
                     page_attempt,
-                    PageState.NEEDS_REVIEW,
-                    reason="visual_security_review_required",
+                    PageState.QUARANTINED,
+                    reason="visual_security_quarantined",
                     payload={
                         "invocation_id": str(invocation.id),
                         "has_pii": bool(sensitive_summary["has_pii"]),
@@ -3352,36 +3418,19 @@ async def run_compile_job(
                         "prompt_injection_rule_ids": injection_summary["rule_ids"],
                     },
                 )
-                session.add(
-                    ReviewItem(
-                        tenant_id=job.tenant_id,
-                        project_id=job.project_id,
-                        document_id=document.id,
-                        page_id=page.id,
-                        severity="high",
-                        category="visual_security",
-                        evidence={
-                            "has_pii": bool(sensitive_summary["has_pii"]),
-                            "has_secret": bool(sensitive_summary["has_secret"]),
-                            "sensitive_counts": sensitive_summary["counts"],
-                            "prompt_injection_suspected": bool(injection_summary["suspected"]),
-                            "prompt_injection_rule_ids": (injection_summary["rule_ids"]),
-                            "attempt_id": str(page_attempt.id),
-                            "invocation_id": str(invocation.id),
-                        },
-                    )
-                )
-                await _park_compile_for_review(
+                await _isolate_compile_page(
                     session,
                     job=job,
                     page=page,
                     page_attempt=page_attempt,
                     reserved=reserved,
                     attempt=attempt,
+                    state=PageState.QUARANTINED,
+                    code="VISUAL_SECURITY_QUARANTINED",
                     category="visual_security",
                     message=(
-                        "Visual OCR security signals require manual review; "
-                        "candidate content was not promoted."
+                        "Visual OCR security signals were isolated; candidate content was not "
+                        "promoted or billed."
                     ),
                 )
                 # The strict manifest retains only hashes. Remove the rejected
@@ -3583,9 +3632,16 @@ async def run_compile_job(
                     ).all()
                 )
             elif (
+                job.job_type != "collection_integrity_retry"
+                and
                 escalation.action in {EscalationAction.RETRY, EscalationAction.ESCALATE}
                 and escalation.route is not None
-                and escalation.route != Route.MANUAL_REVIEW
+                and escalation.route
+                not in {
+                    Route.UNRESOLVED,
+                    Route.QUARANTINE,
+                    Route.AUTHORITY_RECONSTRUCTION,
+                }
                 and escalation.route in page_runtime.context.ready_routes
                 and page_runtime.provider_for(escalation.route) is not None
             ):
@@ -3665,7 +3721,9 @@ async def run_compile_job(
                 terminal_state = (
                     PageState.FAILED
                     if escalation.action == EscalationAction.FAIL
-                    else PageState.NEEDS_REVIEW
+                    else PageState.QUARANTINED
+                    if escalation.action == EscalationAction.QUARANTINE
+                    else PageState.UNRESOLVED
                 )
                 await transition_page_attempt(
                     session,
@@ -3686,15 +3744,21 @@ async def run_compile_job(
                         attempt=attempt,
                     )
                 else:
-                    await _park_compile_for_review(
+                    await _isolate_compile_page(
                         session,
                         job=job,
                         page=page,
                         page_attempt=page_attempt,
                         reserved=reserved,
                         attempt=attempt,
+                        state=terminal_state,
+                        code=(
+                            "VISUAL_PAGE_QUARANTINED"
+                            if terminal_state == PageState.QUARANTINED
+                            else "VISUAL_PAGE_UNRESOLVED"
+                        ),
                         category="visual_quality_gate",
-                        message=("Measured visual-parser quality requires review."),
+                        message="Automatic visual verification exhausted safe recovery paths.",
                     )
                 return
         blocks_by_page: dict[uuid.UUID, list[Block]] = {}
@@ -3798,17 +3862,17 @@ async def run_compile_job(
                 try:
                     route = Route(page_attempt.route)
                 except ValueError:
-                    route = Route.MANUAL_REVIEW
+                    route = Route.UNRESOLVED
                 route_profile = page_attempt.route_profile
                 route_policy_version = page_attempt.route_policy_version
                 max_attempts = page_attempt.max_attempts
                 route_reasons = ("persisted_page_attempt_route",)
                 expected_credits = 0.0
             if has_sensitive_secret and route == Route.MISTRAL_FALLBACK:
-                route = Route.MANUAL_REVIEW
+                route = Route.QUARANTINE
                 route_reasons = (
                     "sensitive_data_external_transfer_denied",
-                    "fail_closed_manual_review",
+                    "fail_closed_quarantine",
                 )
             await emit_event(
                 session,
@@ -3856,21 +3920,39 @@ async def run_compile_job(
             )
             if page_attempt is not None and PageState(page_attempt.status) in {
                 PageState.COMPLETED,
+                PageState.UNRESOLVED,
+                PageState.QUARANTINED,
                 PageState.NEEDS_REVIEW,
                 PageState.FAILED,
             }:
                 if PageState(page_attempt.status) == PageState.COMPLETED:
                     continue
-                if PageState(page_attempt.status) == PageState.NEEDS_REVIEW:
-                    await _park_compile_for_review(
+                terminal_attempt_state = PageState(page_attempt.status)
+                if terminal_attempt_state in {
+                    PageState.UNRESOLVED,
+                    PageState.QUARANTINED,
+                    PageState.NEEDS_REVIEW,
+                }:
+                    isolated_state = (
+                        PageState.QUARANTINED
+                        if terminal_attempt_state == PageState.QUARANTINED
+                        else PageState.UNRESOLVED
+                    )
+                    await _isolate_compile_page(
                         session,
                         job=job,
                         page=page,
                         page_attempt=page_attempt,
                         reserved=reserved,
                         attempt=attempt,
-                        category="persisted_quality_review",
-                        message="The latest immutable attempt requires review.",
+                        state=isolated_state,
+                        code=(
+                            "PAGE_QUARANTINED"
+                            if isolated_state == PageState.QUARANTINED
+                            else "PAGE_UNRESOLVED"
+                        ),
+                        category="persisted_quality_isolation",
+                        message="The latest immutable attempt remains safely isolated.",
                     )
                     return
                 await _fail_expected_compile(
@@ -3881,7 +3963,7 @@ async def run_compile_job(
                     attempt=attempt,
                 )
                 return
-            if route == Route.MANUAL_REVIEW:
+            if route in {Route.UNRESOLVED, Route.QUARANTINE}:
                 if page_attempt is None:
                     page_attempt = await create_page_attempt(
                         session,
@@ -3905,30 +3987,43 @@ async def run_compile_job(
                 await transition_page_attempt(
                     session,
                     page_attempt,
-                    PageState.FAILED,
-                    reason="visual_provider_not_configured",
+                    (PageState.QUARANTINED if route == Route.QUARANTINE else PageState.UNRESOLVED),
+                    reason="automatic_route_isolated",
                     payload={"reason_codes": list(route_reasons)},
                 )
                 await emit_event(
                     session,
                     job=job,
-                    event_type="page.needs_review.v1",
+                    event_type=(
+                        "page.quarantined.v1" if route == Route.QUARANTINE else "page.unresolved.v1"
+                    ),
                     payload={
                         "page_id": str(page.id),
-                        "status": "needs_review",
+                        "status": route.value,
                         "severity": "high",
-                        "category": "provider_unavailable",
-                        "message": "No benchmark-approved visual parser is configured.",
+                        "category": "automatic_route_unavailable",
+                        "message": "No verified automatic route is available for this page.",
                         "attempt_id": str(page_attempt.id),
                         "attempt_number": page_attempt.attempt_number,
                     },
                 )
-                await _fail_expected_compile(
+                await _isolate_compile_page(
                     session,
                     job=job,
-                    code="VISUAL_PROVIDER_NOT_CONFIGURED",
+                    page=page,
+                    page_attempt=page_attempt,
                     reserved=reserved,
                     attempt=attempt,
+                    state=(
+                        PageState.QUARANTINED if route == Route.QUARANTINE else PageState.UNRESOLVED
+                    ),
+                    code=(
+                        "PAGE_QUARANTINED"
+                        if route == Route.QUARANTINE
+                        else "VISUAL_PROVIDER_NOT_CONFIGURED"
+                    ),
+                    category="automatic_route_unavailable",
+                    message="The page was isolated without billing or human dependency.",
                 )
                 return
             if route != Route.NATIVE:
@@ -4233,7 +4328,9 @@ async def run_compile_job(
                 terminal_state = (
                     PageState.FAILED
                     if escalation.action == EscalationAction.FAIL
-                    else PageState.NEEDS_REVIEW
+                    else PageState.QUARANTINED
+                    if escalation.action == EscalationAction.QUARANTINE
+                    else PageState.UNRESOLVED
                 )
                 await transition_page_attempt(
                     session,
@@ -4252,9 +4349,15 @@ async def run_compile_job(
                     route.value,
                 )
                 if (
-                    escalation.action == EscalationAction.ESCALATE
+                    job.job_type != "collection_integrity_retry"
+                    and escalation.action == EscalationAction.ESCALATE
                     and escalation.route is not None
-                    and escalation.route != Route.MANUAL_REVIEW
+                    and escalation.route
+                    not in {
+                        Route.UNRESOLVED,
+                        Route.QUARANTINE,
+                        Route.AUTHORITY_RECONSTRUCTION,
+                    }
                     and escalation.route in page_context.ready_routes
                 ):
                     escalation_asset = _select_inference_raster(
@@ -4330,15 +4433,21 @@ async def run_compile_job(
                         attempt=attempt,
                     )
                     return
-                await _park_compile_for_review(
+                await _isolate_compile_page(
                     session,
                     job=job,
                     page=page,
                     page_attempt=page_attempt,
                     reserved=reserved,
                     attempt=attempt,
+                    state=terminal_state,
+                    code=(
+                        "PAGE_QUARANTINED"
+                        if terminal_state == PageState.QUARANTINED
+                        else "PAGE_UNRESOLVED"
+                    ),
                     category="quality_gate",
-                    message="Measured quality requires review before compilation.",
+                    message="Automatic verification exhausted safe recovery paths.",
                 )
                 return
             job.progress = {"done": index, "total": max(1, total_pages)}
@@ -4355,6 +4464,49 @@ async def run_compile_job(
                     "attempt_number": page_attempt.attempt_number,
                 },
             )
+        if job.job_type == "collection_integrity_retry":
+            # Integrity retries are extraction-only and never fan out into
+            # knowledge compilation or billing authority.
+            job.status = "completed"
+            job.completed_at = utcnow()
+            job.progress = {
+                "stage": "integrity_retry_completed",
+                "done": max(1, total_pages),
+                "total": max(1, total_pages),
+            }
+            job.cost_actual = {
+                "credits": "0.000000",
+                "provider": provider_name,
+                "released": "0.000000",
+                "billing_disposition": "unbillable_integrity_retry",
+            }
+            await emit_event(
+                session,
+                job=job,
+                event_type="job.stage.completed.v1",
+                payload={"stage": "route", "done": total_pages, "total": total_pages},
+            )
+            await emit_event(
+                session,
+                job=job,
+                event_type="job.completed.v1",
+                payload={"status": "completed", "credits": "0.000000"},
+            )
+            session.add(
+                OutboxEvent(
+                    tenant_id=job.tenant_id,
+                    aggregate_type="job",
+                    aggregate_id=job.id,
+                    event_type="job.completed.v1",
+                    payload={
+                        "job_id": str(job.id),
+                        "billing_disposition": "unbillable_integrity_retry",
+                    },
+                )
+            )
+            after_commit_metric(session, record_job_terminal, "completed")
+            await session.commit()
+            return
         # Repeated marginal blocks remain persisted for provenance and review,
         # but high-confidence non-legal header/footer annotations do not enter
         # the knowledge compiler's body context.
@@ -4544,6 +4696,25 @@ async def run_compile_job(
             )
         after_commit_metric(session, record_job_terminal, "failed")
         await session.commit()
+
+
+async def run_compile_job(
+    *,
+    session: AsyncSession,
+    job_id: uuid.UUID,
+    settings: KnowledgeProviderSettings,
+    object_store: ObjectStore | None = None,
+) -> None:
+    try:
+        await _run_compile_job_impl(
+            session=session,
+            job_id=job_id,
+            settings=settings,
+            object_store=object_store,
+        )
+    finally:
+        # No return path may strand customer-visible integrity execution state.
+        await reconcile_integrity_retry_job(session, job_id=job_id)
 
 
 async def build_export_bundle(

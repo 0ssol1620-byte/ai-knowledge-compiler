@@ -1,0 +1,10 @@
+blueprint: legal-contracts
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Agreements, primary_type: Agreement, sort: effective_date_desc}
+  - {name: Parties, primary_type: Party, sort: stable_title}
+  - {name: Clauses, primary_type: Clause, sort: source_order}
+  - {name: Obligations, primary_type: Obligation, sort: source_order}
+  - {name: Definitions, primary_type: Definition, sort: stable_title}
+  - {name: Dates, primary_type: Claim, sort: source_date_asc}

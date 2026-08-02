@@ -16,6 +16,8 @@ from decimal import Decimal
 from typing import Literal, Protocol
 
 from akc_api.models import (
+    Collection,
+    CollectionEvent,
     IdempotencyRecord,
     JobEvent,
     OutboxEvent,
@@ -34,6 +36,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
+from akc_scheduler.collection_finalizer import CollectionFinalizer
 from akc_scheduler.settings import SchedulerSettings
 from akc_scheduler.telemetry import record_dispatch_tenant_busy_deferral
 from akc_scheduler.webhooks import (
@@ -56,6 +59,8 @@ RandomSource = Callable[[], float]
 _RETRYABLE_HTTP_STATUSES = frozenset({408, 425, 429})
 _DELIVERY_READY_STATES = ("pending", "retry")
 _DISPATCH_EVENT_TYPE = "job.dispatch.requested.v1"
+_COLLECTION_FINALIZE_EVENT_TYPE = "collection.semantic.compile.requested.v1"
+_INTERNAL_DISPATCH_EVENT_TYPES = frozenset({_DISPATCH_EVENT_TYPE, _COLLECTION_FINALIZE_EVENT_TYPE})
 _TERMINAL_JOB_STATES = frozenset({"cancelled", "completed", "failed", "waiting_review"})
 _ERROR_LIMIT = 500
 _SYSTEM_RANDOM = random.SystemRandom()
@@ -238,7 +243,7 @@ def dispatch_claim_statement(
             OutboxEvent.published_at.is_(None),
             OutboxEvent.dead_lettered_at.is_(None),
             OutboxEvent.available_at <= now,
-            OutboxEvent.event_type == _DISPATCH_EVENT_TYPE,
+            OutboxEvent.event_type.in_(_INTERNAL_DISPATCH_EVENT_TYPES),
         )
         .subquery("tenant_dispatch_rank")
     )
@@ -310,6 +315,7 @@ class DurableScheduler:
         dispatch_engine: AsyncEngine | None = None,
         compile_job: CompileJob = run_compile_job,
         object_store: ObjectStore | None = None,
+        collection_finalizer: CollectionFinalizer | None = None,
         clock: Clock = utcnow,
         random_source: RandomSource = _SYSTEM_RANDOM.random,
     ) -> None:
@@ -324,6 +330,7 @@ class DurableScheduler:
         self._dispatch_engine = dispatch_engine
         self._compile_job = compile_job
         self._object_store = object_store
+        self._collection_finalizer = collection_finalizer
         self._clock = clock
         self._random = random_source
         self._stop_event = asyncio.Event()
@@ -357,10 +364,24 @@ class DurableScheduler:
     @staticmethod
     def _dispatch_job_id(event: OutboxEvent) -> uuid.UUID:
         try:
-            job_id = uuid.UUID(str(event.payload["job_id"]))
+            payload_key = (
+                "processing_job_id"
+                if event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE
+                else "job_id"
+            )
+            job_id = uuid.UUID(str(event.payload[payload_key]))
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("dispatch_payload_invalid_job_id") from exc
-        if event.aggregate_type != "job" or event.aggregate_id != job_id:
+        expected_aggregate_type = (
+            "collection_processing"
+            if event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE
+            else "job"
+        )
+        if (
+            event.event_type not in _INTERNAL_DISPATCH_EVENT_TYPES
+            or event.aggregate_type != expected_aggregate_type
+            or event.aggregate_id != job_id
+        ):
             raise ValueError("dispatch_payload_aggregate_mismatch")
         return job_id
 
@@ -487,6 +508,78 @@ class DurableScheduler:
         now: datetime,
         error: str,
     ) -> None:
+        if event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE:
+            actual = dict(job.cost_actual or {})
+            consumed = Decimal(str(actual.get("consumed", "0")))
+            refunded = Decimal(str(actual.get("refunded", "0")))
+            reimbursement = max(Decimal("0"), consumed - refunded)
+            if reimbursement > 0:
+                await credit_entry(
+                    session,
+                    tenant_id=job.tenant_id,
+                    operation_key=f"collection:{job.id}:semantic-refund",
+                    entry_type="refund",
+                    credits=reimbursement,
+                    job_id=job.id,
+                    metadata={"reason": "collection_finalizer_attempts_exhausted"},
+                )
+                refunded += reimbursement
+                job.cost_actual = {**actual, "refunded": str(refunded)}
+            try:
+                collection_id = uuid.UUID(str(event.payload["collection_id"]))
+            except (KeyError, TypeError, ValueError):
+                collection_id = None
+            collection = (
+                await session.scalar(
+                    select(Collection)
+                    .where(
+                        Collection.tenant_id == job.tenant_id,
+                        Collection.id == collection_id,
+                    )
+                    .with_for_update()
+                )
+                if collection_id is not None
+                else None
+            )
+            if collection is not None:
+                collection.status = "FAILED_RETRYABLE"
+                collection.status_reason = "COLLECTION_FINALIZER_ATTEMPTS_EXHAUSTED"
+                collection.event_sequence += 1
+                failure_payload = {
+                    "collection_id": str(collection.id),
+                    "processing_job_id": str(job.id),
+                    "error_code": "COLLECTION_FINALIZER_ATTEMPTS_EXHAUSTED",
+                }
+                session.add(
+                    CollectionEvent(
+                        tenant_id=job.tenant_id,
+                        collection_id=collection.id,
+                        job_id=job.id,
+                        sequence=collection.event_sequence,
+                        event_type="processing.failed.v1",
+                        schema_version="1.0",
+                        payload=failure_payload,
+                    )
+                )
+                session.add(
+                    OutboxEvent(
+                        tenant_id=job.tenant_id,
+                        aggregate_type="collection_processing",
+                        aggregate_id=job.id,
+                        event_type="processing.failed.v1",
+                        payload={**failure_payload, "job_id": str(job.id)},
+                        available_at=now,
+                    )
+                )
+            job.status = "failed"
+            job.completed_at = now
+            job.progress = {**job.progress, "stage": "semantic_finalizer_failed"}
+            job.error = {
+                "code": "COLLECTION_FINALIZER_ATTEMPTS_EXHAUSTED",
+                "retryable": True,
+                "detail": error[:_ERROR_LIMIT],
+            }
+            return
         reserved = Decimal(str(job.cost_estimate.get("reserved", "0")))
         if reserved > 0:
             await credit_entry(
@@ -539,6 +632,7 @@ class DurableScheduler:
             )
             event_id: uuid.UUID | None = None
             execute_job = False
+            claimed_event: OutboxEvent | None = None
             job_id: uuid.UUID | None = None
             tenant_id: uuid.UUID | None = None
             lease: _PostgresDispatchLease | None = None
@@ -570,6 +664,7 @@ class DurableScheduler:
                     if admission is None:
                         return True
                     event = admission.event
+                    claimed_event = event
                     job_id = admission.job_id
                     event_id = event.id
                     tenant_id = event.tenant_id
@@ -592,8 +687,23 @@ class DurableScheduler:
                         )
                         return True
 
+                    if job.status == "paused":
+                        # A customer pause is neither a successful dispatch nor
+                        # an adapter failure. Preserve the durable outbox row and
+                        # its retry budget so resume can continue the exact job.
+                        event.available_at = now + timedelta(
+                            seconds=self._settings.dispatch_paused_delay_seconds
+                        )
+                        event.last_error = None
+                        return True
+
                     if event.attempts >= self._settings.dispatch_max_attempts:
-                        if job.status in _TERMINAL_JOB_STATES:
+                        retryable_package_terminal = (
+                            event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE
+                            and job.status == "failed"
+                            and str(job.progress.get("stage", "")) == "package_failed"
+                        )
+                        if job.status in _TERMINAL_JOB_STATES and not retryable_package_terminal:
                             event.published_at = now
                             event.last_error = None
                         else:
@@ -616,18 +726,28 @@ class DurableScheduler:
                     event.available_at = now + timedelta(
                         seconds=self._settings.dispatch_lease_seconds
                     )
-                    execute_job = job.status not in _TERMINAL_JOB_STATES
+                    execute_job = job.status not in _TERMINAL_JOB_STATES or (
+                        event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE
+                        and job.status == "failed"
+                        and str(job.progress.get("stage", "")) == "package_failed"
+                    )
 
                 if execute_job:
                     assert job_id is not None
+                    assert claimed_event is not None
                     try:
                         async with asyncio.timeout(self._settings.dispatch_attempt_timeout_seconds):
-                            await self._compile_job(
-                                session=session,
-                                job_id=job_id,
-                                settings=self._settings,
-                                object_store=self._object_store,
-                            )
+                            if claimed_event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE:
+                                if self._collection_finalizer is None:
+                                    raise RuntimeError("collection_finalizer_not_configured")
+                                await self._collection_finalizer.finalize(claimed_event)
+                            else:
+                                await self._compile_job(
+                                    session=session,
+                                    job_id=job_id,
+                                    settings=self._settings,
+                                    object_store=self._object_store,
+                                )
                         status_row = (
                             await session.execute(
                                 select(
@@ -645,9 +765,19 @@ class DurableScheduler:
                         waiting_stage = (
                             str(progress.get("stage", "")) if isinstance(progress, dict) else ""
                         )
-                        if status == "queued" or (
-                            status == "running" and not waiting_stage.endswith("_waiting")
-                        ):
+                        collection_finalize = (
+                            claimed_event.event_type == _COLLECTION_FINALIZE_EVENT_TYPE
+                        )
+                        invalid_collection_terminal = collection_finalize and status not in {
+                            "completed",
+                            "failed",
+                            "cancelled",
+                        }
+                        invalid_standard_terminal = not collection_finalize and (
+                            status == "queued"
+                            or (status == "running" and not waiting_stage.endswith("_waiting"))
+                        )
+                        if invalid_collection_terminal or invalid_standard_terminal:
                             raise RuntimeError("dispatch_job_not_terminal_or_waiting")
                         await session.rollback()
                     except Exception as exc:

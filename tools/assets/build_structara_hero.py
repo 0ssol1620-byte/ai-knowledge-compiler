@@ -1,10 +1,10 @@
-"""Build the first-party Structara Source-to-Knowledge hero master.
+"""Build the first-party FOLYNTA source-to-Knowledge-Plane hero master.
 
 Run with Blender 4.5 LTS:
     blender --background --python tools/assets/build_structara_hero.py
 
 The scene intentionally uses only procedural geometry, Blender's bundled font,
-and the approved Structara material palette. No external mesh, HDRI, texture,
+and the approved FOLYNTA material palette. No external mesh, HDRI, texture,
 image, or generated source is used.
 """
 
@@ -152,143 +152,222 @@ def look_at(obj: bpy.types.Object, point: tuple[float, float, float]) -> None:
 
 reset_scene()
 
-paper = material("Paper", (0.72, 0.74, 0.77, 1.0), roughness=0.82)
-paper_light = material("Paper light", (0.91, 0.90, 0.86, 1.0), roughness=0.86)
-studio = material("Warm studio", (0.82, 0.81, 0.77, 1.0), roughness=0.92)
-ink = material("Ink", (0.025, 0.031, 0.043, 1.0), roughness=0.5)
-graphite = material("Graphite", (0.28, 0.31, 0.36, 1.0), roughness=0.45)
-line_gray = material("Document line", (0.61, 0.63, 0.68, 1.0), roughness=0.65)
+paper = material("Warm paper", (0.64, 0.61, 0.54, 1.0), roughness=0.86)
+paper_light = material("Paper highlight", (0.82, 0.79, 0.71, 1.0), roughness=0.9)
+studio = material("Warm studio", (0.52, 0.50, 0.46, 1.0), roughness=0.94)
+ink = material("Ink", (0.025, 0.031, 0.043, 1.0), roughness=0.58)
+graphite = material("Graphite", (0.25, 0.28, 0.33, 1.0), roughness=0.62)
+line_gray = material("Document line", (0.58, 0.60, 0.64, 1.0), roughness=0.72)
+review = material("Review amber", (0.62, 0.29, 0.055, 1.0), roughness=0.62)
 cobalt = material(
-    "Cobalt",
+    "Transformation blue",
     (0.035, 0.16, 0.82, 1.0),
-    metallic=0.08,
-    roughness=0.28,
+    roughness=0.5,
     emission=(0.035, 0.16, 0.82, 1.0),
 )
 cyan = material(
     "Evidence cyan",
     (0.02, 0.55, 0.64, 1.0),
-    metallic=0.04,
-    roughness=0.3,
+    roughness=0.48,
     emission=(0.02, 0.55, 0.64, 1.0),
 )
 
-pages: list[bpy.types.Object] = []
-blocks: list[bpy.types.Object] = []
-graph: list[bpy.types.Object] = []
-edges: list[bpy.types.Object] = []
+documents: list[bpy.types.Object] = []
+document_parts: list[bpy.types.Object] = []
+semantic_blocks: list[bpy.types.Object] = []
+evidence_paths: list[bpy.types.Object] = []
+plane_parts: list[bpy.types.Object] = []
+brand_parts: list[bpy.types.Object] = []
 
-page_specs = [
-    ((-2.15, 0.35, 0.30), (-0.09, 0.03, 0.02)),
-    ((-1.72, 0.00, 0.16), (-0.03, -0.03, 0.01)),
-    ((-1.28, -0.36, 0.02), (0.04, 0.02, -0.01)),
+document_names = [
+    "Annual Report",
+    "Research Paper",
+    "Technical Manual",
+    "Contract",
+    "Presentation",
+    "Spreadsheet",
+    "Scanned Archive",
+    "Policy",
+    "Dataset Dictionary",
+    "Support Logs",
+    "Public Filing",
+    "Knowledge Notes",
 ]
-for index, (location, rotation) in enumerate(page_specs):
-    page = box(f"Source page {index + 1}", location, (1.18, 1.55, 0.035), paper_light)
-    page.rotation_euler = rotation
-    pages.append(page)
-    header = box(
-        f"Page {index + 1} heading",
-        (location[0] - 0.12, location[1] + 0.78, location[2] + 0.075),
-        (0.72, 0.11, 0.018),
-        ink,
-        bevel=0.015,
+initial_positions = [
+    (-3.25, 1.15, 0.70),
+    (-2.55, 0.62, 0.25),
+    (-1.92, 1.35, 0.48),
+    (-1.22, 0.42, 0.08),
+    (-0.48, 1.05, 0.64),
+    (0.18, 0.22, 0.18),
+    (0.82, 1.22, 0.40),
+    (1.55, 0.48, 0.04),
+    (2.22, 1.12, 0.58),
+    (2.86, 0.28, 0.16),
+    (3.46, 1.04, 0.44),
+    (3.96, 0.14, 0.02),
+]
+rotations = [
+    (-4, 9, -7),
+    (3, -10, 5),
+    (-5, 7, 4),
+    (2, -8, -6),
+    (-3, 11, 6),
+    (4, -6, -5),
+    (-2, 8, -4),
+    (5, -11, 5),
+    (-4, 6, -6),
+    (3, -9, 4),
+    (-5, 10, 3),
+    (2, -7, -4),
+]
+cover_materials = [
+    ink,
+    paper,
+    graphite,
+    paper_light,
+    cobalt,
+    paper,
+    graphite,
+    ink,
+    paper_light,
+    graphite,
+    cobalt,
+    paper,
+]
+
+for index, name in enumerate(document_names):
+    root = bpy.data.objects.new(f"Document {index + 1:02d} {name}", None)
+    bpy.context.collection.objects.link(root)
+    root.location = initial_positions[index]
+    root.rotation_euler = tuple(math.radians(v) for v in rotations[index])
+    root.keyframe_insert("location", frame=1)
+    root.keyframe_insert("rotation_euler", frame=1)
+
+    width = 0.42 + (index % 4) * 0.055
+    height = 1.34 + (index % 3) * 0.15
+    depth = 0.16 + (index % 2) * 0.055
+    body = box(f"{name} volume", (0, 0, 0), (width, depth, height * 0.5), paper, bevel=0.035)
+    body.parent = root
+    cover = box(
+        f"{name} spine",
+        (0, -depth - 0.026, 0),
+        (width + 0.025, 0.022, height * 0.5 + 0.025),
+        cover_materials[index],
+        bevel=0.025,
     )
-    header.rotation_euler = rotation
-    pages.append(header)
-    for row in range(4):
-        content = box(
-            f"Page {index + 1} line {row + 1}",
-            (
-                location[0] - 0.08,
-                location[1] + 0.42 - row * 0.24,
-                location[2] + 0.07,
-            ),
-            (0.76 - row * 0.06, 0.025, 0.012),
-            line_gray,
-            bevel=0.008,
+    cover.parent = root
+    stripe = box(
+        f"{name} semantic stripe",
+        (0, -depth - 0.054, height * 0.16),
+        (width * 0.66, 0.012, 0.035),
+        cyan if index in (1, 5, 10) else line_gray,
+        bevel=0.008,
+    )
+    stripe.parent = root
+    for row in range(3):
+        mark = box(
+            f"{name} mark {row + 1}",
+            (-width * 0.1, -depth - 0.054, height * (0.02 - row * 0.105)),
+            (width * (0.58 - row * 0.07), 0.012, 0.018),
+            paper_light if cover_materials[index] in (ink, graphite, cobalt) else ink,
+            bevel=0.006,
         )
-        content.rotation_euler = rotation
-        pages.append(content)
+        mark.parent = root
+        document_parts.append(mark)
+    documents.append(root)
+    document_parts.extend([body, cover, stripe])
 
-block_specs = [
-    ("Heading block", (-0.05, 0.78, 0.48), (0.86, 0.11, 0.055), ink),
-    ("Paragraph block", (0.18, 0.40, 0.34), (1.03, 0.19, 0.05), paper),
-    ("Formula block", (0.45, 0.03, 0.24), (0.68, 0.14, 0.05), paper),
-    ("Figure block", (0.64, -0.50, 0.17), (0.82, 0.39, 0.05), paper_light),
-    ("Caption block", (0.84, -0.94, 0.10), (0.62, 0.08, 0.04), graphite),
-]
-for name, location, scale, mat in block_specs:
-    obj = box(name, location, scale, mat, bevel=0.025)
-    blocks.append(obj)
+    # Orientation: all spines face the viewer by 2 seconds.
+    root.location.z += 0.12
+    root.rotation_euler = (0, 0, 0)
+    root.keyframe_insert("location", frame=25)
+    root.keyframe_insert("rotation_euler", frame=25)
 
-figure_outline = [
-    (-0.10, -0.78, 0.24),
-    (1.38, -0.78, 0.24),
-    (1.38, -0.22, 0.24),
-    (-0.10, -0.22, 0.24),
-    (-0.10, -0.78, 0.24),
-]
-blocks.append(line("Figure evidence frame", figure_outline, cyan, width=0.025))
-blocks.append(line("Figure evidence diagonal A", [(-0.10, -0.78, 0.24), (1.38, -0.22, 0.24)], cyan))
-blocks.append(line("Figure evidence diagonal B", [(-0.10, -0.22, 0.24), (1.38, -0.78, 0.24)], cyan))
+    # Semantic separation: rows open without losing their source identity.
+    root.location.y += (index % 3 - 1) * 0.16
+    root.location.z += 0.24 + (index % 2) * 0.08
+    root.keyframe_insert("location", frame=48)
 
-node_positions = [
-    (2.10, 0.80, 0.38),
-    (2.72, 1.05, 0.57),
-    (3.35, 0.72, 0.35),
-    (3.70, 0.10, 0.48),
-    (3.26, -0.42, 0.24),
-    (2.61, -0.22, 0.14),
-    (2.00, -0.58, 0.34),
-    (1.67, -1.03, 0.18),
-    (2.45, -1.12, 0.29),
-    (3.16, -0.94, 0.45),
-    (3.90, -0.72, 0.26),
-    (4.18, 0.61, 0.15),
+    # Alignment and compilation: a deterministic 4 x 3 knowledge plane.
+    column = index % 4
+    row = index // 4
+    root.location = (-2.10 + column * 1.38, 0.42, 1.12 - row * 1.18)
+    root.rotation_euler = (0, 0, 0)
+    root.scale = (0.88, 0.36, 0.72)
+    root.keyframe_insert("location", frame=83)
+    root.keyframe_insert("rotation_euler", frame=83)
+    root.keyframe_insert("scale", frame=83)
+    root.location.y = 0.10 + (index % 3) * 0.018
+    root.scale = (0.92, 0.22, 0.76)
+    root.keyframe_insert("location", frame=102)
+    root.keyframe_insert("scale", frame=102)
+
+# A shallow substrate unifies accepted blocks while keeping material depth.
+plane = box(
+    "Knowledge Plane substrate", (0.0, 0.25, 0.0), (3.04, 0.06, 1.94), paper_light, bevel=0.10
+)
+plane_parts.append(plane)
+key_scale(plane, 76, 98)
+
+# Only a few measured-looking anchors receive evidence cyan; no global glow.
+anchor_positions = [(-2.40, 0.00, 1.42), (-0.88, -0.02, 0.18), (1.76, 0.01, -1.02)]
+for index, position in enumerate(anchor_positions):
+    frame = box(f"Verified anchor {index + 1}", position, (0.34, 0.022, 0.16), cyan, bevel=0.012)
+    semantic_blocks.append(frame)
+    key_scale(frame, 55 + index * 4, 67 + index * 4)
+
+evidence_specs = [
+    [(-2.40, -0.05, 1.42), (-1.52, -0.18, 0.62), (-0.55, -0.05, 0.30)],
+    [(-0.88, -0.05, 0.18), (0.18, -0.20, 0.56), (1.22, -0.05, 0.22)],
+    [(1.76, -0.05, -1.02), (0.92, -0.18, -0.56), (0.15, -0.05, -0.42)],
 ]
-edge_pairs = [
-    (0, 1),
-    (0, 5),
-    (1, 2),
-    (2, 3),
-    (2, 4),
-    (3, 11),
-    (4, 5),
-    (4, 9),
-    (5, 6),
-    (6, 7),
-    (6, 8),
-    (7, 8),
-    (8, 9),
-    (9, 10),
-    (3, 10),
-    (0, 6),
-]
-for index, location in enumerate(node_positions):
-    node = sphere(
-        f"Knowledge node {index + 1}",
-        location,
-        0.14 if index not in (2, 3) else 0.21,
-        cobalt if index in (2, 3, 9) else (cyan if index in (0, 5, 8) else graphite),
+for index, points in enumerate(evidence_specs):
+    path = line(f"Evidence path {index + 1}", points, cyan, width=0.018)
+    evidence_paths.append(path)
+    key_scale(path, 60 + index * 4, 78 + index * 4)
+
+# Two provisional candidates move to a clearly separated quarantine lane.
+for index, z in enumerate((0.48, -0.38)):
+    candidate = box(
+        f"Quarantine candidate {index + 1}",
+        (3.34, 0.02, z),
+        (0.34, 0.035, 0.24),
+        review,
+        bevel=0.025,
     )
-    graph.append(node)
-for index, (start, end) in enumerate(edge_pairs):
-    edge = line(
-        f"Knowledge edge {index + 1}",
-        [node_positions[start], node_positions[end]],
-        cyan if index in (0, 4, 8) else line_gray,
-        width=0.012,
-    )
-    edges.append(edge)
+    semantic_blocks.append(candidate)
+    key_scale(candidate, 58 + index * 5, 72 + index * 5)
 
-text("Source label", "SOURCE PAGES", (-2.95, 1.88, 0.12), 0.18, graphite)
-text("Graph label", "CONNECTED KNOWLEDGE", (2.05, 1.88, 0.12), 0.18, graphite)
+# The FOLYNTA symbol is completed by negative space and two restrained paths.
+symbol_points = [
+    (-0.46, -0.09, 0.46),
+    (0.46, -0.09, 0.46),
+    (0.46, -0.09, -0.46),
+    (-0.46, -0.09, -0.46),
+    (-0.46, -0.09, 0.46),
+]
+symbol_outline = line("FOLYNTA negative-space outline", symbol_points, ink, width=0.028)
+symbol_blue = line(
+    "FOLYNTA transformation stroke",
+    [(-0.26, -0.11, -0.12), (0.30, -0.11, 0.22)],
+    cobalt,
+    width=0.045,
+)
+symbol_cyan = line(
+    "FOLYNTA evidence stroke", [(-0.18, -0.12, 0.22), (0.30, -0.12, -0.10)], cyan, width=0.032
+)
+brand_parts.extend([symbol_outline, symbol_blue, symbol_cyan])
+for index, obj in enumerate(brand_parts):
+    key_scale(obj, 100 + index * 3, 112 + index * 3)
+
+text("Collection label", "12 SOURCES", (-3.10, 1.92, 0.02), 0.16, graphite)
+text("Plane label", "VERIFIED KNOWLEDGE PLANE", (0.86, 1.92, 0.02), 0.16, graphite)
 text(
     "Proof label",
-    "SOURCE  >  STRUCTURE  >  EVIDENCE  >  KNOWLEDGE",
-    (-0.65, -1.74, 0.07),
-    0.13,
+    "PAGE  >  STRUCTURE  >  EVIDENCE  >  KNOWLEDGE",
+    (-1.72, -2.12, 0.02),
+    0.12,
     graphite,
 )
 
@@ -296,15 +375,15 @@ text(
 floor = box("Studio floor", (0.55, 0.0, -0.18), (36.0, 36.0, 0.04), studio, bevel=0.0)
 
 world = bpy.context.scene.world
-world.color = (0.82, 0.81, 0.77)
+world.color = (0.52, 0.50, 0.46)
 world.use_nodes = True
-world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.82, 0.81, 0.77, 1)
-world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.28
+world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.52, 0.50, 0.46, 1)
+world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.2
 
 for name, light_type, location, energy, size in [
-    ("Key", "AREA", (-3.0, -4.2, 6.5), 1250, 5.0),
-    ("Fill", "AREA", (4.5, -1.0, 4.0), 850, 4.0),
-    ("Rim", "AREA", (1.0, 4.0, 5.5), 950, 3.0),
+    ("Key", "AREA", (-3.0, -4.2, 6.5), 680, 5.0),
+    ("Fill", "AREA", (4.5, -1.0, 4.0), 360, 4.0),
+    ("Rim", "AREA", (1.0, 4.0, 5.5), 480, 3.0),
 ]:
     data = bpy.data.lights.new(name, light_type)
     data.energy = energy
@@ -319,9 +398,9 @@ camera_data = bpy.data.cameras.new("Camera")
 camera = bpy.data.objects.new("Camera", camera_data)
 bpy.context.collection.objects.link(camera)
 bpy.context.scene.camera = camera
-camera.location = (0.55, -8.8, 6.3)
+camera.location = (0.20, -10.6, 6.7)
 camera.data.lens = 56
-look_at(camera, (0.55, 0.0, 0.18))
+look_at(camera, (0.15, 0.0, 0.08))
 
 scene = bpy.context.scene
 scene.render.engine = "BLENDER_EEVEE_NEXT"
@@ -331,42 +410,35 @@ scene.render.resolution_percentage = 100
 scene.render.image_settings.color_mode = "RGBA"
 scene.render.image_settings.color_depth = "8"
 scene.view_settings.look = "AgX - Medium High Contrast"
-scene.render.fps = 12
+scene.render.fps = 15
 scene.frame_start = 1
-scene.frame_end = 144
+scene.frame_end = 123
 
-# One explanatory 12-second motion: source, separation, proof, graph, resolve.
-for obj in blocks:
-    key_scale(obj, 34, 64)
-for offset, obj in enumerate(edges):
-    key_scale(obj, 72 + offset, 92 + offset)
-for offset, obj in enumerate(graph):
-    key_scale(obj, 82 + offset * 2, 104 + offset * 2)
-for page_index, obj in enumerate(pages):
-    if "Source page" not in obj.name:
+# All object actions use the same restrained ease; the sequence ends once.
+for obj in bpy.context.scene.objects:
+    action = obj.animation_data.action if obj.animation_data else None
+    if not action:
         continue
-    origin = obj.location.copy()
-    obj.location.x += 0.32 * page_index
-    obj.keyframe_insert("location", frame=1)
-    obj.location = origin
-    obj.keyframe_insert("location", frame=32)
+    for fcurve in action.fcurves:
+        for point in fcurve.keyframe_points:
+            point.interpolation = "BEZIER"
 
-for fcurve in (
-    scene.animation_data.action.fcurves
-    if scene.animation_data and scene.animation_data.action
-    else []
-):
-    for point in fcurve.keyframe_points:
-        point.interpolation = "BEZIER"
-
-scene.frame_set(144)
+scene.frame_set(123)
 bpy.ops.wm.save_as_mainfile(filepath=str(MASTER_DIR / "hero-master.blend"))
 
-# Full geometry export.
+# Full geometry and one-shot animation export.
+export_objects = [
+    *documents,
+    *document_parts,
+    *semantic_blocks,
+    *evidence_paths,
+    *plane_parts,
+    *brand_parts,
+]
 bpy.ops.object.select_all(action="DESELECT")
-for obj in [*pages, *blocks, *graph, *edges]:
+for obj in export_objects:
     obj.select_set(True)
-bpy.context.view_layer.objects.active = pages[0]
+bpy.context.view_layer.objects.active = documents[0]
 bpy.ops.export_scene.gltf(
     filepath=str(DERIVATIVE_DIR / "hero-master.glb"),
     export_format="GLB",
@@ -375,12 +447,10 @@ bpy.ops.export_scene.gltf(
     export_animations=True,
 )
 
-# LOD1 excludes page typography, thin content lines, and half the graph edges.
+# LOD1 excludes thin document marks and keeps the same deterministic framing.
 bpy.ops.object.select_all(action="DESELECT")
 low_objects = [
-    obj
-    for obj in [*pages, *blocks, *graph, *edges[::2]]
-    if " line " not in obj.name and "label" not in obj.name.lower()
+    obj for obj in export_objects if " mark " not in obj.name and "label" not in obj.name.lower()
 ]
 for obj in low_objects:
     obj.select_set(True)
@@ -392,6 +462,8 @@ bpy.ops.export_scene.gltf(
     export_apply=True,
     export_animations=True,
 )
+shutil.copy2(DERIVATIVE_DIR / "hero-master.glb", PUBLIC_DIR / "hero-documents-master.glb")
+shutil.copy2(DERIVATIVE_DIR / "hero-master-low.glb", PUBLIC_DIR / "hero-documents-tablet.glb")
 
 
 def render_still(
@@ -401,10 +473,12 @@ def render_still(
     *,
     camera_location: tuple[float, float, float] | None = None,
     transparent: bool = False,
+    frame: int = 123,
 ) -> None:
+    scene.frame_set(frame)
     if camera_location is not None:
         camera.location = camera_location
-        look_at(camera, (0.55, 0.0, 0.18))
+        look_at(camera, (0.15, 0.0, 0.08))
     scene.render.resolution_x = width
     scene.render.resolution_y = height
     scene.render.film_transparent = transparent
@@ -413,23 +487,33 @@ def render_still(
 
 
 render_still("hero-poster-2880x1800.png", 2880, 1800)
-render_still("hero-tablet-1600x1200.png", 1600, 1200, camera_location=(0.45, -9.5, 6.9))
-render_still("hero-mobile-1080x1440.png", 1080, 1440, camera_location=(0.50, -10.9, 7.4))
-render_still("hero-reduced-motion.png", 1200, 750, camera_location=(0.55, -8.8, 6.3))
-render_still("hero-og-1200x630.png", 1200, 630, camera_location=(0.55, -9.2, 6.0))
-render_still("hero-composition-a.png", 1200, 750, camera_location=(0.20, -8.6, 6.5))
-render_still("hero-composition-b.png", 1200, 750, camera_location=(1.10, -9.4, 5.8))
-render_still("hero-composition-c.png", 1200, 750, camera_location=(-0.35, -9.0, 6.1))
+render_still("hero-tablet-1600x1200.png", 1600, 1200, camera_location=(0.20, -11.3, 7.2))
+render_still("hero-mobile-1080x1440.png", 1080, 1440, camera_location=(0.15, -12.8, 7.8))
+render_still("hero-reduced-motion.png", 1200, 750, camera_location=(0.20, -10.6, 6.7))
+render_still("hero-og-1200x630.png", 1200, 630, camera_location=(0.20, -11.2, 6.4))
+# Deliberately differentiated static directions, reviewed before the runtime
+# animation: editorial sources, computational evidence, and compiled plane.
+render_still("hero-composition-a.png", 1200, 750, camera_location=(-0.55, -10.1, 7.0), frame=25)
+render_still("hero-composition-b.png", 1200, 750, camera_location=(0.72, -11.0, 6.5), frame=72)
+render_still("hero-composition-c.png", 1200, 750, camera_location=(-0.62, -10.7, 6.7), frame=123)
 
 # Transparent extraction objects for compositing and campaign derivatives.
-all_renderables = [*pages, *blocks, *graph, *edges, floor]
+all_renderables = [
+    *document_parts,
+    *semantic_blocks,
+    *evidence_paths,
+    *plane_parts,
+    *brand_parts,
+    floor,
+]
 transparent_groups = {
-    "hero-object-source-pages-transparent.png": pages,
-    "hero-object-evidence-blocks-transparent.png": blocks,
-    "hero-object-knowledge-graph-transparent.png": [*graph, *edges],
+    "hero-object-source-pages-transparent.png": document_parts,
+    "hero-object-evidence-blocks-transparent.png": [*semantic_blocks, *evidence_paths],
+    "hero-object-knowledge-graph-transparent.png": [*plane_parts, *brand_parts],
 }
-camera.location = (0.55, -8.8, 6.3)
-look_at(camera, (0.55, 0.0, 0.18))
+camera.location = (0.20, -10.6, 6.7)
+look_at(camera, (0.15, 0.0, 0.08))
+scene.frame_set(123)
 for filename, visible in transparent_groups.items():
     visible_set = set(visible)
     for obj in all_renderables:
@@ -439,8 +523,8 @@ for obj in all_renderables:
     obj.hide_render = False
 
 # Return to the approved master camera before rendering motion.
-camera.location = (0.55, -8.8, 6.3)
-look_at(camera, (0.55, 0.0, 0.18))
+camera.location = (0.20, -10.6, 6.7)
+look_at(camera, (0.15, 0.0, 0.08))
 scene.render.resolution_x = 960
 scene.render.resolution_y = 600
 scene.render.resolution_percentage = 100
@@ -461,4 +545,4 @@ for output in DERIVATIVE_DIR.glob("hero-*.png"):
 for output in DERIVATIVE_DIR.glob("hero-*.mp4"):
     shutil.copy2(output, PUBLIC_DIR / output.name)
 
-print("Structara hero master and derivatives created.")
+print("FOLYNTA hero master and derivatives created.")

@@ -1,0 +1,8 @@
+blueprint: corporate-filings
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Companies, primary_type: Company, sort: stable_title}
+  - {name: Filings, primary_type: Filing, sort: reporting_period_desc}
+  - {name: Risks, primary_type: Risk, sort: source_order}
+  - {name: Metrics, primary_type: Metric, sort: reporting_period_desc}

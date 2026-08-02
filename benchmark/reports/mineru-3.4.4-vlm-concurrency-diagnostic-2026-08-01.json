@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "claim_class": "internal_runtime_diagnostic",
+  "candidate_id": "mineru-3.4.4-vlm-engine-c3",
+  "promotion_eligible": false,
+  "repository_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+  "model": {
+    "identity": "opendatalab/MinerU2.5-Pro-2605-1.2B@bff20d4ae2bf202df9f45284b4d43681555a97ed",
+    "artifact_manifest_sha256": "sha256:1611a8892cc0e7e287d31c4a1b5af87652f0f6e4a3f80276b92b4c71f982de84",
+    "file_count": 13,
+    "bytes": 2328028720
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "mineru": "3.4.4",
+    "torch": "2.8.0+cu128",
+    "accelerate_added": "1.14.0",
+    "request_concurrency": 3
+  },
+  "stage1_single_image_smoke": {
+    "completed": 1,
+    "failed": 0,
+    "latency_seconds": 48.838794850278646
+  },
+  "cohort_probe": {
+    "input_pages": 18,
+    "repeat_count": 3,
+    "attempted": 54,
+    "completed": 6,
+    "failed": 48,
+    "timed_out": 0,
+    "latency_seconds_per_repeat": [
+      311.1508979899809,
+      311.5495686470531,
+      347.54121921304613
+    ],
+    "run_summary_sha256": "sha256:6cb6c7a50f9e0da0cdede0a975069dda76c6b31ee704132106f06365cdae66bb",
+    "evidence_bundle_sha256": "sha256:384d33f785010ce3a088b8295425af7d10939f828c87fd18c8bd0a80d123c305"
+  },
+  "dominant_failure": {
+    "class": "tensor_shape_mismatch_during_concurrent_vlm_inference",
+    "example": "The expanded size of the tensor must match the existing size at non-singleton dimension 1.",
+    "observation": "The set of completed pages changed between repeats, indicating a runtime scheduling/concurrency reliability failure rather than a stable unsupported-input classification."
+  },
+  "accuracy_scores": null,
+  "next_action": "Run the same frozen 18-page Stage-1 cohort with MINERU_API_MAX_CONCURRENT_REQUESTS=1. Only a clean cohort may proceed to official accuracy evaluation."
+}

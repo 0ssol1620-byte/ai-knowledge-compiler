@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import ipaddress
@@ -14,7 +15,7 @@ from typing import Literal, cast
 from urllib.parse import urlsplit
 
 from cryptography.fernet import Fernet
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +30,10 @@ class Settings(BaseSettings):
     )
 
     env: Literal["development", "test", "production"] = "development"
+    deployment_revision: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{40}$",
+    )
     log_level: str = "INFO"
     database_url: str = "sqlite+aiosqlite:///./.akc-data/akc.db"
     data_dir: Path = Path(".akc-data")
@@ -111,6 +116,29 @@ class Settings(BaseSettings):
     qwen_prompt_revision: str = ""
     qwen_knowledge_schema_sha256: str = ""
     qwen_max_attempts: int = Field(default=3, ge=1, le=10)
+    collection_metadata_encryption_enabled: bool = False
+    collection_metadata_active_key_id: str = ""
+    collection_metadata_keyring: SecretStr | None = None
+    collection_metadata_blind_index_key_id: str = ""
+    collection_metadata_blind_index_key: SecretStr | None = None
+    collection_semantic_retrieval_enabled: bool = False
+    collection_semantic_retrieval_row_hmac_secret: SecretStr | None = None
+    collection_semantic_retrieval_embedding_endpoint_url: str | None = None
+    collection_semantic_retrieval_embedding_api_key: SecretStr | None = None
+    collection_semantic_retrieval_embedding_provider_id: str = ""
+    collection_semantic_retrieval_embedding_model_id: str = ""
+    collection_semantic_retrieval_embedding_model_revision: str = ""
+    collection_semantic_retrieval_embedding_timeout_seconds: float = Field(
+        default=20.0,
+        ge=1.0,
+        le=120.0,
+    )
+    collection_semantic_retrieval_embedding_concurrency: int = Field(
+        default=4,
+        ge=1,
+        le=32,
+    )
+    collection_finalizer_hmac_secret: SecretStr | None = None
     external_ocr_enabled: bool = False
     private_mode: bool = True
     training_opt_in_default: bool = False
@@ -419,6 +447,17 @@ class Settings(BaseSettings):
         return self._development_secret("url-query-hmac")
 
     @property
+    def effective_collection_finalizer_hmac_secret(self) -> bytes:
+        if self.collection_finalizer_hmac_secret is not None:
+            value = self.collection_finalizer_hmac_secret.get_secret_value().encode("utf-8")
+            if len(value) < 32:
+                raise ValueError("collection finalizer HMAC secret must contain at least 32 bytes")
+            return value
+        if self.env == "production":
+            raise ValueError("production collection finalizer HMAC secret is not configured")
+        return self._development_secret("collection-finalizer")
+
+    @property
     def effective_pdf_password_encryption_key(self) -> str:
         if self.pdf_password_encryption_key:
             return self.pdf_password_encryption_key
@@ -478,6 +517,83 @@ class Settings(BaseSettings):
                 raise ValueError("production payment webhook secret must contain at least 32 bytes")
         if self.payment_webhook_secret and len(self.payment_webhook_secret.encode("utf-8")) < 32:
             raise ValueError("payment webhook secret must contain at least 32 bytes")
+        if self.collection_metadata_encryption_enabled:
+            from akc_api.collection_metadata import build_collection_metadata_codec
+
+            _ = build_collection_metadata_codec(self)
+        if self.collection_semantic_retrieval_enabled:
+            if not self.collection_metadata_encryption_enabled:
+                raise ValueError(
+                    "collection semantic retrieval requires encrypted collection metadata"
+                )
+            _ = self.effective_collection_finalizer_hmac_secret
+            if not self.database_url.startswith(("postgresql://", "postgresql+asyncpg://")):
+                raise ValueError("enabled collection semantic retrieval requires PostgreSQL")
+            endpoint_url = self.collection_semantic_retrieval_embedding_endpoint_url
+            if endpoint_url is None:
+                raise ValueError("enabled collection semantic retrieval requires an endpoint")
+            endpoint = urlsplit(endpoint_url)
+            local_http = (
+                self.env != "production"
+                and endpoint.scheme == "http"
+                and endpoint.hostname in {"127.0.0.1", "localhost", "testserver"}
+            )
+            if (
+                (endpoint.scheme != "https" and not local_http)
+                or not endpoint.hostname
+                or endpoint.username
+                or endpoint.password
+                or endpoint.query
+                or endpoint.fragment
+            ):
+                raise ValueError(
+                    "collection embedding endpoint must be credential-free HTTPS "
+                    "(or local HTTP in non-production)"
+                )
+            row_secret = self.collection_semantic_retrieval_row_hmac_secret
+            api_key = self.collection_semantic_retrieval_embedding_api_key
+            if row_secret is None or api_key is None:
+                raise ValueError(
+                    "enabled collection semantic retrieval requires Secret-backed credentials"
+                )
+            encoded_row_secret = row_secret.get_secret_value()
+            if encoded_row_secret.startswith("base64:"):
+                try:
+                    row_secret_bytes = base64.b64decode(
+                        encoded_row_secret.removeprefix("base64:"),
+                        validate=True,
+                    )
+                except (ValueError, binascii.Error) as exc:
+                    raise ValueError(
+                        "collection retrieval row HMAC secret is not valid base64"
+                    ) from exc
+            else:
+                row_secret_bytes = encoded_row_secret.encode("utf-8")
+            if len(row_secret_bytes) < 32:
+                raise ValueError(
+                    "collection retrieval row HMAC secret must contain at least 32 bytes"
+                )
+            if re.fullmatch(r"[\x21-\x7e]{1,4096}", api_key.get_secret_value()) is None:
+                raise ValueError("collection embedding API key must be a visible ASCII token")
+            identifiers = (
+                self.collection_semantic_retrieval_embedding_provider_id,
+                self.collection_semantic_retrieval_embedding_model_id,
+            )
+            if any(
+                re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}", value) is None
+                for value in identifiers
+            ):
+                raise ValueError("collection embedding provider/model identifiers are invalid")
+            if (
+                re.fullmatch(
+                    r"[0-9a-f]{40,64}",
+                    self.collection_semantic_retrieval_embedding_model_revision,
+                )
+                is None
+            ):
+                raise ValueError(
+                    "collection embedding model revision must be a pinned hexadecimal digest"
+                )
         if self.url_encryption_key:
             try:
                 Fernet(self.url_encryption_key.encode("ascii"))
@@ -692,6 +808,8 @@ class Settings(BaseSettings):
         ):
             raise ValueError("webhook delivery requires an explicit host allowlist")
         if self.env == "production":
+            if self.deployment_revision is None:
+                raise ValueError("production requires an immutable deployment revision")
             if len(self.jwt_secret) < 32 or "change-before-production" in self.jwt_secret:
                 raise ValueError("AKC_JWT_SECRET must be a strong production secret")
             if self.database_url.startswith("sqlite"):

@@ -1,0 +1,543 @@
+schema_version: "6.0.0"
+registry_status: local_contract_complete_external_identity_pending
+identity_resolution:
+  resolved_at: "2026-08-01T00:00:00Z"
+  method: official_github_and_huggingface_read_only
+  immutable_repository_revision_is_not_artifact_manifest: true
+  unresolved_fields_remain_null: true
+promotion_policy:
+  fail_closed: true
+  exact_model_revision_required: true
+  exact_artifact_sha256_required: true
+  exact_runtime_image_digest_required: true
+  immutable_environment_identity_required: true
+  exactly_three_public_core_repeats: true
+  signed_external_evidence_required: true
+  public_scores_may_not_be_fabricated: true
+  cost_may_not_skip_mandatory_tests: true
+
+required_candidate_ids:
+  - mineru-3.4.4-pipeline
+  - mineru-3.4.4-hybrid-medium
+  - mineru-3.4.4-hybrid-high
+  - mineru-3.4.4-vlm
+  - paddleocr-vl-1.6
+  - deepseek-ocr-2
+  - infinity-parser2-pro
+  - infinity-parser2-flash
+  - ovisocr2
+  - hunyuanocr-1.5
+  - monkeyocrv2-b-parsing
+  - glm-ocr
+  - qianfan-ocr
+  - chandra-ocr-2
+  - olmocr-2-7b-1025-fp8
+  - lightonocr-2-1b
+  - dots-ocr-1.5
+  - native-authority-lane
+  - docling-2.115.0
+  - pp-structure-v3-ppocrv6
+  - marker-1.10.2
+  - current-structara-native-parser
+  - qwen3.5-9b
+  - qwen3.6-27b
+  - gemma-4-12b-it
+  - deepseek-v4-flash
+  - deepseek-v4-pro
+  - codex-gpt-5.6-sol
+
+candidates:
+  - id: mineru-3.4.4-pipeline
+    tier: A
+    kind: parser
+    role: deterministic_pipeline_baseline
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "AGPL-3.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [exact_repository_revision, stable_wheel_sha256, isolated_pipeline_image, license_snapshot]
+
+  - id: mineru-3.4.4-hybrid-medium
+    tier: A
+    kind: parser
+    role: balanced_primary_candidate
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "AGPL-3.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [exact_repository_revision, stable_wheel_sha256, isolated_hybrid_medium_image, license_snapshot]
+
+  - id: mineru-3.4.4-hybrid-high
+    tier: A
+    kind: parser
+    role: precision_primary_candidate
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "AGPL-3.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [exact_repository_revision, stable_wheel_sha256, isolated_hybrid_high_image, license_snapshot]
+
+  - id: mineru-3.4.4-vlm
+    tier: A
+    kind: parser
+    role: vlm_isolation_comparator
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "AGPL-3.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [exact_repository_revision, stable_wheel_sha256, isolated_vlm_image, license_snapshot]
+
+  - id: paddleocr-vl-1.6
+    tier: A
+    kind: parser
+    role: compact_document_vlm_baseline
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "PaddlePaddle/PaddleOCR-VL-1.6", revision: "66317acc4c9fc17bd154591ce650735cd2855f3e", artifact_sha256: null, runtime_recipe: null, runtime_source_repository: "PaddlePaddle/PaddleOCR", runtime_source_revision: "2661c7c0ef5c613e8f93c6e93b2e052399f0f854" }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, native_and_transformers_recipes, hpi_separate_experiment, signed_image_digest]
+
+  - id: deepseek-ocr-2
+    tier: A
+    kind: parser
+    role: precision_grounded_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "deepseek-ai/DeepSeek-OCR-2", revision: "aaa02f3811945a91062062994c5c4a3f4c0af2b0", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [cuda_11_8_torch_2_6_vllm_0_8_5_recipe, model_file_manifest_sha256, signed_image_digest]
+
+  - id: infinity-parser2-pro
+    tier: A
+    kind: parser
+    role: maximum_accuracy_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "infly/Infinity-Parser2-Pro", revision: "b27d470100514329fc6439aada8f16ccea5f9e2a", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, vllm_0_17_1_recipe, flash_attention_identity, signed_image_digest]
+
+  - id: infinity-parser2-flash
+    tier: A
+    kind: parser
+    role: low_latency_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "infly/Infinity-Parser2-Flash", revision: "cfddc4106b0abc4706f05575a164f7dd35d09c46", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, isolated_runtime, signed_image_digest]
+
+  - id: ovisocr2
+    tier: A
+    kind: parser
+    role: sub_1b_end_to_end_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "ATH-MaaS/OvisOCR2", revision: "65c619d374b55d4152e85150fc1b003700bc1f0c", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, isolated_runtime, signed_image_digest]
+
+  - id: hunyuanocr-1.5
+    tier: B
+    kind: parser
+    role: fast_structured_output_challenger
+    required: true
+    execution_state: artifact_manifest_runtime_and_license_pending
+    promotion_eligible: false
+    identity: { repository: "tencent/HunyuanOCR", revision: "449e7d471a8a1ef5bd5d652e4881183d7252cbc7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "other-upstream-license", status: review_required, commercial_use: unknown }
+    conditions: [model_file_manifest_sha256, dflash_revision, toolkit_revision, commercial_terms, signed_image_digest]
+
+  - id: monkeyocrv2-b-parsing
+    tier: B
+    kind: parser
+    role: multilingual_and_photographed_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "zenosai/MonkeyOCRv2-B-Parsing", revision: "de7a993bd0f39a97b122dac767e82ae04935bce4", artifact_sha256: null, runtime_recipe: null, runtime_source_repository: "Yuliang-Liu/MonkeyOCR" }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [runtime_source_exact_revision, model_file_manifest_sha256, isolated_runtime, signed_image_digest]
+
+  - id: glm-ocr
+    tier: B
+    kind: parser
+    role: compact_pipeline_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "zai-org/GLM-OCR", revision: "ca5d8b3e287e52589e37c28385d9655ee4372f9d", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "MIT", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, model_and_sdk_recipes_separate, exact_vllm_commit, exact_transformers_commit, signed_image_digest]
+
+  - id: qianfan-ocr
+    tier: B
+    kind: parser
+    role: unified_document_intelligence_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "baidu/Qianfan-OCR", revision: "623bf5d20d446abdb36606aa4547cd0c18886fe5", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, exact_runtime, output_schema_adapter, signed_image_digest]
+
+  - id: chandra-ocr-2
+    tier: B
+    kind: parser
+    role: table_form_handwriting_ceiling
+    required: true
+    execution_state: artifact_manifest_runtime_and_license_pending
+    promotion_eligible: false
+    identity: { repository: "datalab-to/chandra-ocr-2", revision: "af93b47dba1b47b6640c86ccf487ed2260ab9a09", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Modified-OpenRAIL", status: review_required, commercial_use: unknown }
+    conditions: [self_host_commercial_rights, model_file_manifest_sha256, exact_parameter_manifest, vllm_or_sglang_recipe, signed_image_digest]
+
+  - id: olmocr-2-7b-1025-fp8
+    tier: B
+    kind: parser
+    role: unit_test_reward_baseline
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "allenai/olmOCR-2-7B-1025-FP8", revision: "40bd7202494b8264ee17ada08b401b5aab7a9ce1", artifact_sha256: null, runtime_recipe: null, runtime_source_repository: "allenai/olmocr" }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [runtime_source_exact_revision, model_file_manifest_sha256, exact_fp8_recipe, benchmark_license_review, signed_image_digest]
+
+  - id: lightonocr-2-1b
+    tier: B
+    kind: parser
+    role: compact_cost_latency_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "lightonai/LightOnOCR-2-1B", revision: "c97bd377f04481830395218fa8951df9deaba756", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, isolated_runtime, signed_image_digest]
+
+  - id: dots-ocr-1.5
+    tier: B
+    kind: parser
+    role: multilingual_challenger
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: null, revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "custom-dots-ocr-license", status: review_required, commercial_use: unknown }
+    conditions: [official_non_mirror_checkpoint, exact_revision, commercial_terms]
+
+  - id: native-authority-lane
+    tier: C
+    kind: deterministic
+    role: authoritative_structured_source
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: "local://packages/native-parsers", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "repository-proprietary", status: approved_with_conditions, commercial_use: allowed }
+    conditions: [release_commit_binding, source_tree_sha256, native_format_fixture_receipts]
+
+  - id: docling-2.115.0
+    tier: C
+    kind: deterministic
+    role: deterministic_multiformat_baseline
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: "docling-project/docling", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "MIT-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [release_commit, wheel_sha256, model_artifact_manifest, isolated_runtime]
+
+  - id: pp-structure-v3-ppocrv6
+    tier: C
+    kind: deterministic
+    role: coordinate_and_cell_geometry_specialist
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: "PaddlePaddle/PaddleOCR", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0-plus-model-terms", status: review_required, commercial_use: unknown }
+    conditions: [exact_code_revision, exact_model_revisions, cell_geometry_contract]
+
+  - id: marker-1.10.2
+    tier: C
+    kind: deterministic
+    role: mature_pipeline_baseline
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: "datalab-to/marker", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "GPL-3.0-plus-model-terms", status: review_required, commercial_use: unknown }
+    conditions: [release_commit, wheel_sha256, commercial_model_terms]
+
+  - id: current-structara-native-parser
+    tier: C
+    kind: deterministic
+    role: incumbent_native_parser
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: "local://packages/native-parsers", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "repository-proprietary", status: approved_with_conditions, commercial_use: allowed }
+    conditions: [release_commit_binding, clean_or_hashed_dirty_tree, same_environment_incumbent_repeat]
+
+  - id: llamaparse-agentic
+    tier: D
+    kind: api_comparator
+    role: commercial_accuracy_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://llamaparse", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, external_processing_consent, provider_version_receipt]
+
+  - id: llamaparse-cost-effective
+    tier: D
+    kind: api_comparator
+    role: commercial_cost_effective_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://llamaparse", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, external_processing_consent, provider_version_receipt]
+
+  - id: reducto-agentic
+    tier: D
+    kind: api_comparator
+    role: commercial_accuracy_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://reducto", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, external_processing_consent, provider_version_receipt]
+
+  - id: reducto-standard
+    tier: D
+    kind: api_comparator
+    role: commercial_standard_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://reducto", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, external_processing_consent, provider_version_receipt]
+
+  - id: google-gemini-3-flash-thinking-high
+    tier: D
+    kind: api_comparator
+    role: commercial_multimodal_high_thinking_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://google-gemini", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, exact_model_version_receipt, external_processing_consent]
+
+  - id: google-gemini-3-flash-thinking-minimal
+    tier: D
+    kind: api_comparator
+    role: commercial_multimodal_low_latency_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://google-gemini", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, exact_model_version_receipt, external_processing_consent]
+
+  - id: google-gemini-3.1-pro
+    tier: D
+    kind: api_comparator
+    role: commercial_multimodal_precision_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://google-gemini", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, exact_model_version_receipt, external_processing_consent]
+
+  - id: mistral-ocr-api
+    tier: D
+    kind: api_comparator
+    role: commercial_ocr_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://mistral-ocr", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, external_processing_consent, model_version_receipt]
+
+  - id: azure-document-intelligence
+    tier: D
+    kind: api_comparator
+    role: commercial_document_ai_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://azure-document-intelligence", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, api_version_receipt, region_and_processing_policy]
+
+  - id: google-document-ai
+    tier: D
+    kind: api_comparator
+    role: commercial_document_ai_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://google-document-ai", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, processor_version_receipt, region_and_processing_policy]
+
+  - id: aws-textract
+    tier: D
+    kind: api_comparator
+    role: commercial_document_ai_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://aws-textract", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, api_model_version_receipt, region_and_processing_policy]
+
+  - id: landingai
+    tier: D
+    kind: api_comparator
+    role: commercial_parser_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://landingai", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, provider_version_receipt, external_processing_consent]
+
+  - id: extend-parse
+    tier: D
+    kind: api_comparator
+    role: commercial_parser_ceiling
+    required: false
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://extend-parse", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, provider_version_receipt, external_processing_consent]
+
+  - id: qwen3.5-4b
+    tier: E
+    kind: multimodal_baseline
+    role: general_multimodal_small_baseline
+    required: false
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: null, revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [official_checkpoint, exact_revision, document_prompt]
+
+  - id: qwen3.5-9b-page-parse
+    tier: E
+    kind: multimodal_baseline
+    role: general_multimodal_document_baseline
+    required: false
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: null, revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [official_checkpoint, exact_revision, direct_page_parse_recipe]
+
+  - id: gemma-4-12b-it-page-parse
+    tier: E
+    kind: multimodal_baseline
+    role: independent_general_multimodal_baseline
+    required: false
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "google/gemma-4-12B-it", revision: "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, direct_page_parse_recipe, signed_image_digest]
+
+  - id: qwen3.6-27b-page-parse
+    tier: E
+    kind: multimodal_baseline
+    role: optional_high_capacity_direct_page_baseline
+    required: false
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "Qwen/Qwen3.6-27B", revision: "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, direct_page_parse_recipe, optional_expansion_only, signed_image_digest]
+
+  - id: qwen3.5-9b
+    tier: K
+    kind: knowledge_compiler
+    role: fast_knowledge_compiler
+    required: true
+    execution_state: identity_pending
+    promotion_eligible: false
+    identity: { repository: null, revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0-or-upstream-current", status: review_required, commercial_use: unknown }
+    conditions: [official_checkpoint, exact_revision, schema_constrained_recipe]
+
+  - id: qwen3.6-27b
+    tier: K
+    kind: knowledge_compiler
+    role: precision_knowledge_compiler
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "Qwen/Qwen3.6-27B", revision: "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, 262144_context_recipe, schema_constrained_recipe, signed_image_digest]
+
+  - id: gemma-4-12b-it
+    tier: K
+    kind: knowledge_compiler
+    role: independent_schema_challenger
+    required: true
+    execution_state: artifact_manifest_and_runtime_pending
+    promotion_eligible: false
+    identity: { repository: "google/gemma-4-12B-it", revision: "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7", artifact_sha256: null, runtime_recipe: null }
+    license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
+    conditions: [model_file_manifest_sha256, schema_constrained_recipe, signed_image_digest]
+
+  - id: deepseek-v4-flash
+    tier: K
+    kind: knowledge_compiler
+    role: cross_document_reasoning_and_verification_challenger
+    required: true
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://deepseek-v4-flash", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [credential, exact_model_version_receipt, external_processing_consent]
+
+  - id: deepseek-v4-pro
+    tier: K
+    kind: knowledge_compiler
+    role: high_end_reasoning_ceiling
+    required: true
+    execution_state: credential_and_policy_pending
+    promotion_eligible: false
+    identity: { repository: "api://deepseek-v4-pro", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "provider-terms", status: review_required, commercial_use: conditional }
+    conditions: [approved_ceiling_subset, credential, exact_model_version_receipt, external_processing_consent]
+
+  - id: codex-gpt-5.6-sol
+    tier: K
+    kind: agent
+    role: autonomous_evidence_and_visual_auditor
+    required: true
+    execution_state: control_plane_only
+    promotion_eligible: false
+    identity: { repository: "service://codex", revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "service-terms", status: approved_with_conditions, commercial_use: conditional }
+    conditions: [service_model_receipt, tool_policy_receipt, deterministic_values_decided_by_code]

@@ -1,0 +1,99 @@
+schema_version: 1.0.0
+reviewed_at: 2026-08-02
+policy: behavior_extraction_without_external_visual_defaults
+authority_sha256: 86e883fc1a017ca945bada6c2f43844e4a9d46cba04c9ec5d10d05288ed1ebb0
+preview_media_copied: false
+pro_source_in_public_repository: false
+components:
+  - id: shadcn-primitives
+    source: https://ui.shadcn.com/
+    source_repository: https://github.com/shadcn-ui/ui
+    source_revision: cb2bcd88d93b2f9bddb030e9136f1f8773e7eac4
+    license: MIT
+    decision: retain_as_product_primitive_reference
+    source_code_copied_in_this_change: false
+    applied_to:
+      - apps/web/src/components/app-shell.tsx
+      - apps/web/src/components/structara-app-page-localized.tsx
+      - apps/web/src/components/structara-pricing-planner.tsx
+    notes: Existing Structara-owned semantic controls remain the production boundary; no demo styling is imported.
+
+  - id: aceternity-compare-sticky-lens
+    source:
+      - https://ui.aceternity.com/components/compare
+      - https://ui.aceternity.com/components/sticky-scroll-reveal
+      - https://ui.aceternity.com/components/lens
+    license_page: https://ui.aceternity.com/licence
+    decision: behavior_reimplemented
+    source_code_copied_in_this_change: false
+    applied_to:
+      - apps/web/src/components/marketing/raw-compiled-compare.tsx
+      - apps/web/src/components/marketing/transformation-story.tsx
+      - apps/web/src/components/structara-proof-demo.tsx
+    modifications:
+      - raster_compare_replaced_with_source_linked_dom_layers
+      - native_keyboard_range_and_three_explicit_view_buttons
+      - sticky_disabled_below_tablet_and_for_reduced_motion
+      - lens_pattern_limited_to_existing_source_proof_interaction
+
+  - id: magic-ui-flow-tree-film
+    source:
+      - https://magicui.design/docs/components/animated-beam
+      - https://magicui.design/docs/components/file-tree
+      - https://magicui.design/docs/components/hero-video-dialog
+    source_repository: https://github.com/magicuidesign/magicui
+    source_revision: 0bd8b9fe0e15c4697c8d22dee1d35d88b5152c25
+    license: MIT
+    decision: behavior_reimplemented
+    source_code_copied_in_this_change: false
+    applied_to:
+      - apps/web/src/components/marketing/knowledge-flow.tsx
+      - apps/web/src/components/marketing/product-film-dialog.tsx
+      - apps/web/src/components/knowledge-studio.tsx
+    modifications:
+      - brand_glyphs_replace_logo_clouds
+      - beam_repeat_limited_to_one_viewport_entry
+      - native_dialog_video_controls_captions_and_transcript
+      - deterministic_fixture_data_only
+
+  - id: 21st-upload-patterns
+    source:
+      - https://21st.dev/community/components/ruixenui/timeline-upload
+      - https://21st.dev/@ruixen.ui/components/stacked-cards-upload
+    terms: https://21st.dev/terms
+    decision: pattern_reference_only
+    author: ruixen.ui
+    source_code_copied_in_this_change: false
+    preview_media_copied: false
+    applied_to:
+      - apps/web/src/components/upload-panel.tsx
+      - apps/web/src/components/collection-intake.tsx
+    notes: Existing resumable state machine and accessible status rows are retained; marketplace media and source are not redistributed.
+
+  - id: react-bits-stack-scroll
+    source:
+      - https://reactbits.dev/components/scroll-stack
+      - https://reactbits.dev/components/stack
+      - https://reactbits.dev/components/card-swap
+    source_repository: https://github.com/DavidHDev/react-bits
+    source_revision: 8761041fbebf32630f39ce2d79427bcb69dec62a
+    license_boundary: MIT_plus_Commons_Clause_as_published_by_source
+    decision: composition_principle_reimplemented
+    source_code_copied_in_this_change: false
+    applied_to:
+      - tools/assets/build_structara_hero.py
+      - apps/web/src/components/structara-hero.tsx
+      - apps/web/src/components/marketing/transformation-story.tsx
+    modifications:
+      - first_party_blender_and_r3f_scene
+      - no_external_shader_or_component_runtime
+      - mobile_and_reduced_motion_use_owned_static_poster
+
+rejected_patterns:
+  - aurora_and_full_page_gradients
+  - particles_meteors_sparkles
+  - chrome_liquid_and_shader_backgrounds
+  - infinite_beams_or_marquees
+  - glass_dashboard_and_bento_wall
+  - typewriter_fake_ai_output
+  - marketplace_preview_media

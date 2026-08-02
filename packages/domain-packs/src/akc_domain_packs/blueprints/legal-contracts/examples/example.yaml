@@ -1,0 +1,7 @@
+blueprint: legal-contracts
+kind: verified-example
+version: 1.0.0
+input: {document_type: amended_agreement, effective_date: 2026-01-01}
+expected:
+  object_kinds: [Agreement, Party, Clause, Obligation, Right, Definition, GoverningLaw]
+  required_authority: [source_ref, clause, amendment_chain]

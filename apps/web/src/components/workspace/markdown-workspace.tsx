@@ -31,20 +31,28 @@ const originPresentation: Record<
     className: "origin-native",
     icon: FileMagnifyingGlass,
   },
-  ocr_extracted: { label: "OCR Extracted", className: "origin-ocr", icon: Eye },
+  ocr_extracted: {
+    label: "Visual Extraction",
+    className: "origin-ocr",
+    icon: Eye,
+  },
   rule_reconstructed: {
     label: "Structure Rebuilt",
     className: "origin-structure",
     icon: Code,
   },
   ai_reconstructed: {
-    label: "AI Reconstructed",
+    label: "Generated Reconstruction",
     className: "origin-ai",
     icon: Sparkle,
   },
-  ai_summarized: { label: "AI Summary", className: "origin-ai", icon: Sparkle },
+  ai_summarized: {
+    label: "Generated Summary",
+    className: "origin-ai",
+    icon: Sparkle,
+  },
   ai_inferred: {
-    label: "AI Inference",
+    label: "Generated Inference",
     className: "origin-inference",
     icon: Warning,
   },
@@ -236,7 +244,7 @@ export function MarkdownWorkspace({
                 {block.quality_flags.length > 0 && (
                   <span className="warning-badge">
                     <Warning size={12} weight="fill" aria-hidden="true" />
-                    Review
+                    Unresolved
                   </span>
                 )}
               </button>
@@ -412,8 +420,7 @@ export function MarkdownWorkspace({
                       {block.quality_flags.length === 0 ? (
                         <>
                           <Check size={13} weight="bold" aria-hidden="true" />
-                          {measuredConfidenceLabel(block.confidence) ??
-                            "No review flags"}
+                          Source linked · no unresolved flags
                         </>
                       ) : (
                         <>
@@ -462,19 +469,4 @@ function evidenceKey(block: CanonicalBlock, source: SourceRef): string {
     source.page_number,
     source.bbox1000?.join(",") ?? "page",
   ].join(":");
-}
-
-function measuredConfidenceLabel(
-  value: number | undefined,
-): string | undefined {
-  if (
-    value === undefined ||
-    !Number.isFinite(value) ||
-    value < 0 ||
-    value > 100
-  ) {
-    return undefined;
-  }
-  const score = value <= 1 ? value * 100 : value;
-  return `Measured confidence ${score.toFixed(1)} / 100`;
 }

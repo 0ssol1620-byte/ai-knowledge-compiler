@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_id": "ovisocr2-0.9b-vllm-0.22.1",
+  "claim_class": "diagnostic_only",
+  "promotion_status": "blocked_runtime_incompatible",
+  "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+  "artifact_manifest_sha256": "sha256:847f485bc71908a70075fe6b0d76609f52bc7f1e730c03670c764da56da08c9a",
+  "ground_truth_mounted": false,
+  "completed_inference_cases": 0,
+  "metrics": null,
+  "attempts": [
+    {
+      "id": "stage1-library-default",
+      "status": "failed_before_inference",
+      "failure_class": "cuda_reinitialization_after_fork",
+      "remediation": "VLLM_WORKER_MULTIPROC_METHOD=spawn"
+    },
+    {
+      "id": "stage1-spawn",
+      "status": "blocked_before_inference",
+      "failure_class": "host_driver_incompatible_with_cuda13_runtime",
+      "host_driver": "570.158.01",
+      "host_cuda_capability": "12.8",
+      "runtime": {
+        "python": "3.11.10",
+        "vllm": "0.22.1",
+        "torch": "2.11.0",
+        "cuda_build": "13.0"
+      }
+    }
+  ],
+  "next_gate": "compatible CUDA 13 host or separately frozen CUDA 12.8 source build"
+}
