@@ -5445,7 +5445,10 @@ async def get_proof_crop(
         raise HTTPException(status_code=409, detail={"code": "PROOF_BBOX_NOT_AVAILABLE"})
     preview = await get_page_preview(region.page_id, request, principal, session)
     try:
-        crop = crop_preview_png(preview.body, tuple(bbox))
+        crop = crop_preview_png(
+            bytes(preview.body),
+            (bbox[0], bbox[1], bbox[2], bbox[3]),
+        )
     except UnsafePreviewError as exc:
         raise HTTPException(
             status_code=503,

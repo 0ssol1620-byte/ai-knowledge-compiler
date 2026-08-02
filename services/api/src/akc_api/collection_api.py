@@ -4786,7 +4786,7 @@ async def get_collection_scene(
         if latest_preflight is not None
         else []
     )
-    source_ids = list(
+    source_ids = set(
         await session.scalars(
             select(CollectionFile.source_file_id)
             .where(
@@ -4801,7 +4801,7 @@ async def get_collection_scene(
         session,
         tenant_id=principal.tenant_id,
         project_id=collection.project_id,
-        source_ids=[source_id for source_id in source_ids if source_id is not None],
+        source_ids={source_id for source_id in source_ids if source_id is not None},
     )
     document_ids = sorted((document.id for document in documents.values()), key=str)
     versions = list(
@@ -4855,8 +4855,9 @@ async def get_collection_scene(
             .distinct()
         )
     ) if page_ids else set()
-    finding_counts = dict(
-        (
+    finding_counts: dict[uuid.UUID, int] = {}
+    if page_ids:
+        finding_rows = (
             await session.execute(
                 select(CollectionRegion.page_id, func.count(VerificationRecord.id))
                 .join(
@@ -4875,7 +4876,11 @@ async def get_collection_scene(
                 .group_by(CollectionRegion.page_id)
             )
         ).all()
-    ) if page_ids else {}
+        finding_counts = {
+            page_id: int(count)
+            for page_id, count in finding_rows
+            if page_id is not None
+        }
     knowledge = await _collection_knowledge_projection(session, collection=collection)
     package_ids = list(
         await session.scalars(
@@ -4910,6 +4915,19 @@ async def get_collection_scene(
         if status in {"unresolved", "rejected", "failed"}
     )
     quarantined_count = int(integrity["verification_status_counts"].get("quarantined", 0))
+    integrity_projection = SceneIntegrityProjection(
+        file_status_counts=dict(sorted(integrity["file_status_counts"].items())),
+        verification_status_counts=dict(
+            sorted(integrity["verification_status_counts"].items())
+        ),
+        authority_mapping_status_counts=dict(
+            sorted(integrity["authority_mapping_status_counts"].items())
+        ),
+        package_status_counts=dict(sorted(integrity["package_status_counts"].items())),
+        unresolved_count=unresolved_count,
+        quarantined_count=quarantined_count,
+        blocker_codes=sorted(integrity["blockers"]),
+    )
     response_basis = {
         "collection_id": str(collection.id),
         "collection_status": collection.status,
@@ -4934,19 +4952,7 @@ async def get_collection_scene(
             "relation_ids": sorted(str(relation.id) for relation in knowledge.relations),
             "package_ids": sorted(str(package_id) for package_id in package_ids),
         },
-        "integrity": {
-            "file_status_counts": dict(sorted(integrity["file_status_counts"].items())),
-            "verification_status_counts": dict(
-                sorted(integrity["verification_status_counts"].items())
-            ),
-            "authority_mapping_status_counts": dict(
-                sorted(integrity["authority_mapping_status_counts"].items())
-            ),
-            "package_status_counts": dict(sorted(integrity["package_status_counts"].items())),
-            "unresolved_count": unresolved_count,
-            "quarantined_count": quarantined_count,
-            "blocker_codes": sorted(integrity["blockers"]),
-        },
+        "integrity": integrity_projection.model_dump(mode="json"),
     }
     return CollectionSceneResponse(
         collection_id=collection.id,
@@ -4979,7 +4985,7 @@ async def get_collection_scene(
             relation_count=knowledge.relation_count,
             package_count=len(package_ids),
         ),
-        integrity=SceneIntegrityProjection(**response_basis["integrity"]),
+        integrity=integrity_projection,
         scene_hash=_sha256(_canonical_json(response_basis)),
     )
 
