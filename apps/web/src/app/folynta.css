@@ -154,7 +154,7 @@
 .folynta-evidence-state > span,
 .folynta-evidence-state > small {
   color: var(--folynta-muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -223,11 +223,11 @@
 }
 
 .folynta-knowledge-grid article:last-child { border-right: 0; }
-.folynta-knowledge-grid small { color: var(--folynta-brand-deep); font-size: 11px; font-weight: 760; letter-spacing: 0.1em; }
+.folynta-knowledge-grid small { color: var(--folynta-brand-deep); font-size: 12px; font-weight: 760; letter-spacing: 0.1em; }
 .folynta-knowledge-grid strong { font-size: clamp(22px, 2vw, 32px); font-weight: 570; letter-spacing: -0.035em; }
 .folynta-knowledge-grid span { color: var(--folynta-muted); line-height: 1.55; }
 .folynta-knowledge-grid b { color: var(--folynta-verified); font-weight: 650; }
-.folynta-knowledge-grid code { overflow-wrap: anywhere; color: var(--folynta-graphite); font-size: 11px; }
+.folynta-knowledge-grid code { overflow-wrap: anywhere; color: var(--folynta-graphite); font-size: 12px; }
 .folynta-graph > div { display: flex; align-items: center; gap: 9px; }
 .folynta-graph > div span { min-width: 82px; padding: 9px; border: 1px solid var(--folynta-line); color: var(--folynta-ink); text-align: center; }
 .folynta-graph > div i { flex: 1; height: 1px; background: var(--folynta-evidence); }
@@ -239,7 +239,7 @@
 .folynta-benchmark-table > div { display: grid; grid-template-columns: minmax(240px, 2fr) repeat(4, minmax(120px, 1fr)); border-bottom: 1px solid rgb(255 255 255 / 15%); }
 .folynta-benchmark-table strong,
 .folynta-benchmark-table span { min-width: 0; padding: 18px 14px; font-size: 13px; font-variant-numeric: tabular-nums; }
-.folynta-benchmark-table strong { color: #aeb7c7; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.folynta-benchmark-table strong { color: #aeb7c7; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .folynta-quality-footer { width: min(1500px, 92vw); margin: 24px auto 0; display: flex; justify-content: space-between; gap: 24px; color: #aeb7c7; font-size: 12px; line-height: 1.55; }
 .folynta-quality-footer a { color: #fff; text-underline-offset: 4px; }
 
@@ -247,11 +247,11 @@
 .folynta-security-flow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .folynta-security-flow > div { position: relative; min-height: 250px; padding: 28px 20px; display: grid; align-content: center; gap: 10px; border-right: 1px solid var(--folynta-line); }
 .folynta-security-flow > div:not(:last-child)::after { content: ""; position: absolute; top: 50%; right: -7px; z-index: 1; width: 12px; height: 12px; border-top: 1px solid var(--folynta-evidence); border-right: 1px solid var(--folynta-evidence); background: var(--folynta-paper); transform: rotate(45deg); }
-.folynta-security-flow span { color: #176878; font-size: 11px; font-variant-numeric: tabular-nums; }
+.folynta-security-flow span { color: #176878; font-size: 12px; font-variant-numeric: tabular-nums; }
 .folynta-security-flow strong { font-size: 15px; }
 .folynta-security-flow small { color: var(--folynta-muted); line-height: 1.5; }
 .folynta-security-layout aside { padding: 28px; display: grid; align-content: center; gap: 14px; color: var(--folynta-paper); background: var(--folynta-ink); }
-.folynta-security-layout aside > strong { font-size: 11px; letter-spacing: 0.1em; }
+.folynta-security-layout aside > strong { font-size: 12px; letter-spacing: 0.1em; }
 .folynta-security-layout aside > span { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #dce3ee; font-size: 13px; }
 .folynta-security-layout aside > span svg { color: #78cbb7; }
 .folynta-security-layout aside > a { margin-top: 14px; color: white; font-size: 12px; text-underline-offset: 4px; }

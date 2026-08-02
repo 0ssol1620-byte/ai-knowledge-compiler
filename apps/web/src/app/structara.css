@@ -172,7 +172,7 @@
 .st-hero-scene-meta small {
   color: var(--st-graphite);
   font-family: var(--font-mono), monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
 }
 
@@ -267,7 +267,7 @@
   border: 1px solid currentColor;
   color: var(--st-graphite);
   font-family: var(--font-mono), monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -527,7 +527,7 @@
 
 .st-story-scene > div small {
   color: #9da8bc;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -584,7 +584,7 @@
   border: 1px solid #303a50;
   color: #8994a8;
   font-family: var(--font-mono), monospace;
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: none;
 }
 
@@ -630,7 +630,7 @@
 .st-flow-core > span {
   margin-bottom: 8px;
   color: var(--st-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 720;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -776,7 +776,7 @@
   bottom: 28px;
   color: #bcebf1;
   font-family: var(--font-mono), monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.07em;
 }
 
@@ -964,7 +964,7 @@
   }
 
   .st-hero-scene-meta small {
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .st-output-rail {
