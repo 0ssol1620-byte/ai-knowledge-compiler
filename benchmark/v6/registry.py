@@ -17,6 +17,7 @@ _ALLOWED_EXECUTION_STATES = {
     "identity_pending",
     "artifact_manifest_and_runtime_pending",
     "artifact_manifest_runtime_and_license_pending",
+    "measured_partial_runtime_image_pending",
     "credential_and_policy_pending",
     "control_plane_only",
     *_EXECUTABLE_STATES,

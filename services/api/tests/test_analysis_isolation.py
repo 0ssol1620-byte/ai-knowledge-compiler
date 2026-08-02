@@ -29,6 +29,7 @@ from akc_api.models import (
     CollectionSourceRoot,
     CreditLedger,
     Document,
+    DocumentVersion,
     FeatureFlag,
     GpuProviderInvocation,
     ModelRegistry,
@@ -264,6 +265,12 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
 
     async with app.state.database.sessions() as session:
         task = await session.get(AnalysisTask, task_id)
+        version = await session.scalar(
+            select(DocumentVersion).where(
+                DocumentVersion.document_id == uuid.UUID(document_id),
+                DocumentVersion.version == 1,
+            )
+        )
         pages = list(
             await session.scalars(select(Page).where(Page.document_id == uuid.UUID(document_id)))
         )
@@ -276,6 +283,7 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
             else []
         )
     assert task is not None
+    assert version is not None
     assert task.status == "completed"
     assert task.attempt_count == 1
     assert len(pages) == len(blocks) == 1
@@ -297,6 +305,11 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
     assert preview.content.startswith(b"\x89PNG\r\n\x1a\n")
     assert preview.headers["cache-control"].startswith("private")
     assert preview.headers["etag"].startswith('"sha256-')
+    version_preview = await client.get(
+        f"/v1/document-versions/{version.id}/pages/1/preview"
+    )
+    assert version_preview.status_code == 200
+    assert version_preview.content == preview.content
 
     await _register(
         client,

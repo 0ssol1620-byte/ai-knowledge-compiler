@@ -24,6 +24,14 @@ class RedactedPreview:
     height: int
 
 
+@dataclass(frozen=True, slots=True)
+class CroppedPreview:
+    png_bytes: bytes
+    sha256: str
+    width: int
+    height: int
+
+
 def _validate_box(box: NormalizedBox) -> None:
     if len(box) != 4:
         raise UnsafePreviewError("normalized box must contain four coordinates")
@@ -86,4 +94,60 @@ def redact_preview_png(
         masked_region_count=len(boxes1000),
         width=width,
         height=height,
+    )
+
+
+def crop_preview_png(
+    png_bytes: bytes,
+    box1000: NormalizedBox,
+    *,
+    padding1000: int = 16,
+    maximum_bytes: int = 16 * 1024 * 1024,
+    maximum_pixels: int = 20_000_000,
+) -> CroppedPreview:
+    """Crop a bounded proof derivative in the canonical bbox1000 space."""
+
+    _validate_box(box1000)
+    if not isinstance(padding1000, int) or isinstance(padding1000, bool):
+        raise UnsafePreviewError("proof crop padding must be an integer")
+    if not 0 <= padding1000 <= 100:
+        raise UnsafePreviewError("proof crop padding is outside the configured bound")
+    if not png_bytes or len(png_bytes) > maximum_bytes:
+        raise UnsafePreviewError("preview byte size is outside the configured bound")
+    try:
+        with Image.open(io.BytesIO(png_bytes)) as source:
+            if source.format != "PNG":
+                raise UnsafePreviewError("preview must be a PNG")
+            width, height = source.size
+            if width < 1 or height < 1 or width * height > maximum_pixels:
+                raise UnsafePreviewError("preview dimensions exceed the configured bound")
+            source.load()
+            image = source.convert("RGB")
+    except (UnidentifiedImageError, OSError) as exc:
+        raise UnsafePreviewError("preview image is malformed") from exc
+
+    left, top, right, bottom = box1000
+    padded = (
+        max(0, left - padding1000),
+        max(0, top - padding1000),
+        min(1000, right + padding1000),
+        min(1000, bottom + padding1000),
+    )
+    pixel_box = (
+        (padded[0] * width) // 1000,
+        (padded[1] * height) // 1000,
+        max(1, ((padded[2] * width) + 999) // 1000),
+        max(1, ((padded[3] * height) + 999) // 1000),
+    )
+    cropped = image.crop(pixel_box)
+    output = io.BytesIO()
+    cropped.save(output, format="PNG", optimize=True)
+    result = output.getvalue()
+    if not result or len(result) > maximum_bytes:
+        raise UnsafePreviewError("proof crop exceeds the configured byte bound")
+    return CroppedPreview(
+        png_bytes=result,
+        sha256=hashlib.sha256(result).hexdigest(),
+        width=cropped.width,
+        height=cropped.height,
     )

@@ -1,0 +1,543 @@
+{
+  "schema": "folynta.algorithm-evaluation-summary.v1",
+  "generated_at": "2026-08-02T09:22:03.937473+00:00",
+  "source": {
+    "junit_path": "artifacts/folynta-e2e-v2/algorithms/algorithm-contract-suite.xml",
+    "sha256": "4077b2b650d609672706f7d252f5265511a9b5f76928cd59459c512e6389a5b6"
+  },
+  "totals": {
+    "tests": 356,
+    "passed": 356,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "areas": [
+    {
+      "key": "classification_routing",
+      "title": "페이지 분류·비용 예측·적응형 라우팅",
+      "contract": "객관 특징 분류, 준비된 경로만 선택, 비공개 데이터 외부 전송 금지",
+      "modules": [
+        "akc_router",
+        "akc_parallel_runtime.routing",
+        "akc_router.estimation"
+      ],
+      "tests": 51,
+      "passed": 51,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 10.674,
+      "gate": "PASS"
+    },
+    {
+      "key": "credit_cost_accounting",
+      "title": "크레딧·비용·결제 원장",
+      "contract": "검증 승인된 논리 작업만 1회 과금하고 retry·hedge·실패는 중복 과금하지 않음",
+      "modules": [
+        "akc_parallel_runtime.credits",
+        "akc_api.credit_policy",
+        "akc_api.payments"
+      ],
+      "tests": 36,
+      "passed": 36,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 24.437,
+      "gate": "PASS"
+    },
+    {
+      "key": "quality_verification",
+      "title": "품질·수치·표·근거 검증",
+      "contract": "critical finding과 authority mismatch가 점수·다수결을 우회하지 못함",
+      "modules": [
+        "akc_quality",
+        "akc_parallel_runtime.validation",
+        "akc_parallel_runtime.arbitration"
+      ],
+      "tests": 63,
+      "passed": 63,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.108,
+      "gate": "PASS"
+    },
+    {
+      "key": "fault_detection_health",
+      "title": "침묵 실패·이상 결과·worker health 탐지",
+      "contract": "HTTP 200이어도 의미 오류를 실패로 처리하고 오염 worker를 격리함",
+      "modules": [
+        "akc_parallel_runtime.failures",
+        "akc_parallel_runtime.health",
+        "semantic_monitor"
+      ],
+      "tests": 30,
+      "passed": 30,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.054,
+      "gate": "PASS"
+    },
+    {
+      "key": "retry_recovery",
+      "title": "최소 범위 재시도·선택 복구·무효화",
+      "contract": "cell→row→table→region→page 순서의 최소 범위 복구와 완전한 lineage 보존",
+      "modules": [
+        "akc_parallel_runtime.recovery",
+        "collection_region_runtime",
+        "collection_integrity"
+      ],
+      "tests": 42,
+      "passed": 42,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 31.313,
+      "gate": "PASS"
+    },
+    {
+      "key": "knowledge_architecture",
+      "title": "문서→지식 아키텍처·검색·패키지",
+      "contract": "노트·엔티티·관계·아키텍처·패키지가 원문 근거와 동일한 canonical identity를 유지함",
+      "modules": [
+        "knowledge_pipeline",
+        "collection_semantic_runtime",
+        "akc_exporters"
+      ],
+      "tests": 30,
+      "passed": 30,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.563,
+      "gate": "PASS"
+    },
+    {
+      "key": "state_identity_security",
+      "title": "상태기계·동시성·결정 추적·보안 경계",
+      "contract": "idempotency, append-only history, first-verified, tenant/object scope가 깨지지 않음",
+      "modules": [
+        "attempts",
+        "identity",
+        "finalization",
+        "storage security"
+      ],
+      "tests": 104,
+      "passed": 104,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 22.725,
+      "gate": "PASS"
+    }
+  ],
+  "coverage": {
+    "path": "artifacts/folynta-e2e-v2/algorithms/algorithm-coverage.json",
+    "sha256": "5fd055fb555b1a7ac47ba3bab61401a710519aeacbea33212fb03cbe1efef3a8",
+    "percent_covered": 81.60675127915476,
+    "statements": 11391,
+    "covered_lines": 9768,
+    "branches": 3658,
+    "covered_branches": 2513,
+    "gate_percent": 80.0,
+    "gate": "PASS"
+  },
+  "golden_evaluation": {
+    "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+    "sha256": "554edb53dbca4769ff61a1ea2c5a2c09e6217ef7f51267c96466020caf5bc1a4",
+    "gate": "PASS",
+    "corpus_type": "frozen_golden_contract_fixtures",
+    "metrics": {
+      "credit_accounting": {
+        "available_credits": "0.000000",
+        "conservation_invariant": true,
+        "consumed_credits": "5.000000",
+        "duplicate_attempts": 32,
+        "duplicate_charge_credits": "0.000000",
+        "logical_work_items": 3,
+        "rejected_charge_credits": "0.000000",
+        "released_credits": "5.000000"
+      },
+      "failure_diagnosis": {
+        "accuracy": 1.0,
+        "correct": 24,
+        "fixtures": 24,
+        "outcomes": [
+          {
+            "actual": "healthy",
+            "expected": "healthy",
+            "fixture": "healthy"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "unknown_fail_closed"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "container_crash"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "oom"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "health_503"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "connection_timeout"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "cuda_error"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "model_checksum_mismatch"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "model_identity_mismatch"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "disk_cache_error"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "malformed_protocol"
+          },
+          {
+            "actual": "infrastructure_failed",
+            "expected": "infrastructure_failed",
+            "fixture": "dependency_import_failure"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "numeric_mutation"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "row_omission"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "repetition"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "blank_page"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "table_column_shift"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "caption_omission"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "reading_order_error"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "source_coverage_incomplete"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "hallucinated_row"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "false_verified"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "false_bbox"
+          },
+          {
+            "actual": "semantic_failed",
+            "expected": "semantic_failed",
+            "fixture": "truncated_output"
+          }
+        ]
+      },
+      "page_classification": {
+        "accuracy": 1.0,
+        "correct": 12,
+        "fixtures": 12,
+        "outcomes": [
+          {
+            "actual": "HANDWRITTEN",
+            "expected": "HANDWRITTEN",
+            "fixture": "handwritten"
+          },
+          {
+            "actual": "ROTATED_OR_WARPED",
+            "expected": "ROTATED_OR_WARPED",
+            "fixture": "rotated"
+          },
+          {
+            "actual": "TABLE_HEAVY",
+            "expected": "TABLE_HEAVY",
+            "fixture": "table"
+          },
+          {
+            "actual": "FORMULA_HEAVY",
+            "expected": "FORMULA_HEAVY",
+            "fixture": "formula"
+          },
+          {
+            "actual": "CHART_HEAVY",
+            "expected": "CHART_HEAVY",
+            "fixture": "chart"
+          },
+          {
+            "actual": "PHOTO_DOCUMENT",
+            "expected": "PHOTO_DOCUMENT",
+            "fixture": "photo"
+          },
+          {
+            "actual": "NATIVE_CLEAN",
+            "expected": "NATIVE_CLEAN",
+            "fixture": "native_clean"
+          },
+          {
+            "actual": "NATIVE_COMPLEX",
+            "expected": "NATIVE_COMPLEX",
+            "fixture": "native_complex"
+          },
+          {
+            "actual": "MIXED",
+            "expected": "MIXED",
+            "fixture": "mixed"
+          },
+          {
+            "actual": "SCAN_TEXT",
+            "expected": "SCAN_TEXT",
+            "fixture": "scan_text"
+          },
+          {
+            "actual": "SCAN_COMPLEX",
+            "expected": "SCAN_COMPLEX",
+            "fixture": "scan_complex"
+          },
+          {
+            "actual": "UNKNOWN",
+            "expected": "UNKNOWN",
+            "fixture": "unknown"
+          }
+        ]
+      },
+      "quality_anomaly_detection": {
+        "f1": 1.0,
+        "false_negative": 0,
+        "false_positive": 0,
+        "fixtures": 6,
+        "outcomes": [
+          {
+            "actual": [],
+            "expected": [],
+            "fixture": "healthy"
+          },
+          {
+            "actual": [
+              "text.empty"
+            ],
+            "expected": [
+              "text.empty"
+            ],
+            "fixture": "empty"
+          },
+          {
+            "actual": [
+              "text.replacement_characters"
+            ],
+            "expected": [
+              "text.replacement_characters"
+            ],
+            "fixture": "replacement"
+          },
+          {
+            "actual": [
+              "text.control_characters"
+            ],
+            "expected": [
+              "text.control_characters"
+            ],
+            "fixture": "control"
+          },
+          {
+            "actual": [
+              "text.repetition"
+            ],
+            "expected": [
+              "text.repetition"
+            ],
+            "fixture": "repetition"
+          },
+          {
+            "actual": [
+              "text.length_anomaly"
+            ],
+            "expected": [
+              "text.length_anomaly"
+            ],
+            "fixture": "length"
+          }
+        ],
+        "precision": 1.0,
+        "recall": 1.0,
+        "true_positive": 5
+      },
+      "recovery_selection": {
+        "correct": 7,
+        "fixtures": 7,
+        "minimum_scope_selected": "cell",
+        "outcomes": [
+          {
+            "actual": "authority_mapping",
+            "expected": "authority_mapping",
+            "fixture": "authority_numeric_mismatch"
+          },
+          {
+            "actual": "ocr_exact",
+            "expected": "ocr_exact",
+            "fixture": "numeric_character_ambiguity"
+          },
+          {
+            "actual": "crop_margin",
+            "expected": "crop_margin",
+            "fixture": "cropped_region"
+          },
+          {
+            "actual": "rotate",
+            "expected": "rotate",
+            "fixture": "rotation_detected"
+          },
+          {
+            "actual": "dewarp",
+            "expected": "dewarp",
+            "fixture": "photographed_low_quality"
+          },
+          {
+            "actual": "cell_geometry_specialist",
+            "expected": "cell_geometry_specialist",
+            "fixture": "row_omission"
+          },
+          {
+            "actual": "overlapping_tile",
+            "expected": "overlapping_tile",
+            "fixture": "unknown"
+          }
+        ],
+        "selection_accuracy": 1.0
+      },
+      "routing_and_escalation": {
+        "correct": 10,
+        "decision_accuracy": 1.0,
+        "fixtures": 10,
+        "outcomes": [
+          {
+            "actual": "native",
+            "expected": "native",
+            "fixture": "native"
+          },
+          {
+            "actual": "paddle_vl",
+            "expected": "paddle_vl",
+            "fixture": "scan"
+          },
+          {
+            "actual": "hpd_fast",
+            "expected": "hpd_fast",
+            "fixture": "speed_hpd"
+          },
+          {
+            "actual": "unresolved",
+            "expected": "unresolved",
+            "fixture": "unready"
+          },
+          {
+            "actual": "unresolved",
+            "expected": "unresolved",
+            "fixture": "numeric_unresolved"
+          },
+          {
+            "actual": "verify_authority",
+            "expected": "verify_authority",
+            "fixture": "numeric_authority"
+          },
+          {
+            "actual": "retry",
+            "expected": "retry",
+            "fixture": "retry"
+          },
+          {
+            "actual": "escalate",
+            "expected": "escalate",
+            "fixture": "external_consent"
+          },
+          {
+            "actual": "quarantine",
+            "expected": "quarantine",
+            "fixture": "security"
+          },
+          {
+            "actual": "accept",
+            "expected": "accept",
+            "fixture": "accept"
+          }
+        ]
+      }
+    },
+    "claim_boundary": "PASS proves deterministic golden-contract behavior only; it does not prove real-distribution or private-holdout accuracy."
+  },
+  "full_backend_regression": {
+    "path": "artifacts/folynta-e2e-v2/production/full-python-regression.xml",
+    "sha256": "12c826c14538470b908112dbe97d8fa29e1ec38a6f52e86dbc1c9f3f22ac5f28",
+    "tests": 1489,
+    "passed": 1489,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 491.272,
+    "gate": "PASS"
+  },
+  "gates": {
+    "deterministic_contract_suite": "PASS",
+    "public_empirical_corpus": "PARTIAL",
+    "private_holdout": "EXTERNAL_BLOCKED",
+    "production_calibration": "PARTIAL"
+  },
+  "claim_boundary": {
+    "proven": "고정 입력에 대한 결정 규칙, 상태 보존성, 과금 불변식, 오류 주입 대응, 지식 패키지 근거 계약",
+    "not_proven": "현실 분포 전체의 분류 정확도, private holdout 품질, production invoice와 provider telemetry의 장기 calibration"
+  }
+}

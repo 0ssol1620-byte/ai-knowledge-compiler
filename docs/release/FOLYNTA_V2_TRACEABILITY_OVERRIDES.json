@@ -1,0 +1,660 @@
+{
+  "schema_version": "2.0",
+  "source_sha256": "f841236d757b82888b0b767576fe5c8da72a1ad477ac9cd0ef476ab28debe3f6",
+  "requirements": {
+    "H-0036": {
+      "status": "PARTIAL",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "docs/release/FOLYNTA_FINAL_E2E_V2_REQUIREMENTS_INDEX.json",
+          "claim": "The authoritative 8,015-line source is hash-pinned and fully indexed."
+        }
+      ],
+      "blocker": "Implementation, external experiments, approvals, and deployment remain open.",
+      "notes": "Indexing is coverage evidence, not completion evidence."
+    },
+    "H-0053": {
+      "status": "DONE",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "tools/release/build_folynta_v2_traceability.py",
+          "claim": "The ledger enforces fail-closed status and evidence semantics."
+        },
+        {
+          "path": "docs/release/FOLYNTA_FINAL_E2E_V2_REQUIREMENTS_INDEX.json",
+          "claim": "Every indexed source item retains an exact source line."
+        }
+      ],
+      "blocker": "",
+      "notes": "The document authority and traceability method are implemented."
+    },
+    "H-0162": {
+      "status": "PARTIAL",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "benchmark/reports/STRUCTARA_TIER_A_MODEL_PORTFOLIO_EVALUATION_FINAL_2026-08-02.md",
+          "claim": "The measured 18-page x 3 x 5-candidate cohort is preserved as partial evidence."
+        }
+      ],
+      "blocker": "Full public core, private holdout, fault/load, legal, owner, and production evidence remain open.",
+      "notes": "Current truthful release state remains shadow / production-reject."
+    },
+    "H-0512": {
+      "status": "PARTIAL",
+      "owner": "product-engineering",
+      "evidence": [
+        {
+          "path": "apps/web/src/components/processing-scene-workbench.tsx",
+          "claim": "The Processing Theater renders actual collection, page, knowledge, and integrity projections."
+        },
+        {
+          "path": "services/api/src/akc_api/collection_api.py",
+          "claim": "The tenant-authorized collection scene endpoint derives the view from persisted state."
+        },
+        {
+          "path": "services/api/src/akc_api/main.py",
+          "claim": "Persisted page previews and PII-masked verification crops are tenant-authorized and fail closed."
+        },
+        {
+          "path": "apps/web/src/components/processing-scene-workbench.test.tsx",
+          "claim": "The actual-source proof surface and invalid-proof fail-closed behavior are regression tested."
+        }
+      ],
+      "blocker": "Owner-approved hero direction and final visual baselines are pending.",
+      "notes": "No simulated page counts or benchmark metrics are used."
+    },
+    "H-0672": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/reports/STRUCTARA_TIER_A_MODEL_PORTFOLIO_EVALUATION_FINAL_2026-08-02.md",
+          "claim": "Five candidates completed the same 18-page source-only cohort exactly three times with official partial metrics."
+        },
+        {
+          "path": "benchmark/reports/FOLYNTA_OVISOCR2_M1_A40_CROSS_HARDWARE_EVALUATION_2026-08-02.md",
+          "claim": "OvisOCR2 completed a separate six-family A40 runtime smoke with exact repeat and cross-environment evidence."
+        }
+      ],
+      "blocker": "The current evidence remains a public demo subset and cannot support a universal champion or production claim.",
+      "notes": "Missing CDM, overall, full-public, and private metrics remain unavailable rather than zero."
+    },
+    "H-0685": {
+      "status": "DONE",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/reports/model-evaluation-evidence-bundle-2026-08-01.json",
+          "claim": "Five frozen candidate identities have 18 pages by three repeats of ground-truth-isolated evidence."
+        },
+        {
+          "path": "benchmark/reports/STRUCTARA_TIER_A_MODEL_PORTFOLIO_EVALUATION_FINAL_2026-08-02.md",
+          "claim": "The measured role hypotheses and non-universal routing decision are documented without promotion overreach."
+        }
+      ],
+      "blocker": "",
+      "notes": "This requirement records the current 18-page by five-model by three-repeat evidence, not full qualification."
+    },
+    "H-0701": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/v6/candidate-registry.yaml",
+          "claim": "Incumbent, challenger, deterministic, commercial, and compiler candidates are registered fail closed with immutable identity fields."
+        },
+        {
+          "path": "benchmark/tests/v6/test_identity_and_registry.py",
+          "claim": "Registry completeness and promotion rejection are regression tested."
+        }
+      ],
+      "blocker": "Several candidates still lack artifact manifests, runtime image digests, license decisions, or measured runs.",
+      "notes": "Registry presence does not imply runtime or promotion eligibility."
+    },
+    "H-0746": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "artifacts/folynta-e2e-v2/datasets/omnidocbench-aa1ee96.manifest.json",
+          "claim": "The exact-revision OmniDocBench payload is byte-hashed locally."
+        },
+        {
+          "path": "benchmark/reports/model-evaluation-evidence-bundle-2026-08-01.json",
+          "claim": "The official demo subset has five-candidate partial evaluation evidence."
+        }
+      ],
+      "blocker": "OmniDocBench full by three, ParseBench full by three, and olmOCR-Bench full by three have not completed.",
+      "notes": "Dataset acquisition and demo metrics are not full-core completion."
+    },
+    "H-0811": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/runpod_eval/evaluate_omnidoc_repeats.py",
+          "claim": "The official evaluator requires an exact page-count match and preserves excluded metrics."
+        },
+        {
+          "path": "benchmark/runpod_eval/filter_omnidoc_ground_truth.py",
+          "claim": "Evaluator-only ground truth subsets are joined fail closed from the source-only inference manifest."
+        },
+        {
+          "path": "benchmark/runpod_eval/stage_prediction_subset.py",
+          "claim": "Cross-run prediction subsets are staged by exact frozen case identity and byte hash."
+        }
+      ],
+      "blocker": "Full public-core scheduling, signed external imports, and private holdout execution remain open.",
+      "notes": "The local evaluation factory contracts are implemented and measured on partial cohorts."
+    },
+    "H-0826": {
+      "status": "DONE",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/runpod_eval/stage_m1_cohort.py",
+          "claim": "Inference bundles contain source pages and hashes only and forbid ground truth."
+        },
+        {
+          "path": "benchmark/runpod_eval/filter_omnidoc_ground_truth.py",
+          "claim": "Ground truth is created only in the evaluator role from a manifest that records ground_truth_mounted false."
+        },
+        {
+          "path": "benchmark/reports/model-evaluation-evidence-bundle-2026-08-01.json",
+          "claim": "All five measured candidate runs record absent ground truth on inference workers."
+        }
+      ],
+      "blocker": "",
+      "notes": "Role isolation is a fail-closed contract; future runs must still present receipts."
+    },
+    "H-0840": {
+      "status": "DONE",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/runpod_eval/ovisocr2_stage2.py",
+          "claim": "The runner accepts only one diagnostic repeat or exactly three formal repeats and emits separate run identities."
+        },
+        {
+          "path": "benchmark/reports/model-evaluation-evidence-bundle-2026-08-01.json",
+          "claim": "Five candidates each have three formal repeats."
+        },
+        {
+          "path": "benchmark/reports/folynta-ovisocr2-m1-a40-cross-hardware-evidence-2026-08-02.json",
+          "claim": "The A40 smoke contains exactly three repeats and page-level stability evidence."
+        }
+      ],
+      "blocker": "",
+      "notes": "Exactly-three-repeat execution semantics are implemented; unrun datasets remain separately open."
+    },
+    "H-2207": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/v6/candidate-registry.yaml",
+          "claim": "Candidate identity, license, artifact, runtime, and promotion conditions are fail-closed."
+        },
+        {
+          "path": "benchmark/reports/model-evaluation-evidence-bundle-2026-08-01.json",
+          "claim": "Five candidates have frozen partial experiment evidence."
+        },
+        {
+          "path": "benchmark/reports/FOLYNTA_OVISOCR2_M1_A40_CROSS_HARDWARE_EVALUATION_2026-08-02.md",
+          "claim": "The A40 Ovis runtime image, model payload, six-family cohort, three repeats, and official partial metrics are frozen."
+        }
+      ],
+      "blocker": "Runtime image digests and M1 smoke for all remaining admissible candidates are incomplete.",
+      "notes": "Paid execution is allowed only after immutable identity preflight."
+    },
+    "H-2241": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/v6/cohorts/m1-omnidoc-demo-smoke.yaml",
+          "claim": "The six required M1 page families are frozen."
+        },
+        {
+          "path": "benchmark/reports/FOLYNTA_OVISOCR2_M1_A40_CROSS_HARDWARE_EVALUATION_2026-08-02.md",
+          "claim": "OvisOCR2 completed all six families exactly three times on A40 with zero hard failures."
+        },
+        {
+          "path": "artifacts/folynta-e2e-v2/runpod/pod-inventory-final-zero-20260802T1716.json",
+          "claim": "All paid Pods were terminated after evidence recovery."
+        }
+      ],
+      "blocker": "The M1 matrix is not complete for every registered admissible candidate and hardware target.",
+      "notes": "This closes Ovis-on-A40 runtime smoke only."
+    },
+    "H-2271": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/reports/STRUCTARA_TIER_A_MODEL_PORTFOLIO_EVALUATION_FINAL_2026-08-02.md",
+          "claim": "A heterogeneous 18-page challenge cohort was run exactly three times for five candidates."
+        }
+      ],
+      "blocker": "The required rights-cleared 200-page challenge cohort has not run.",
+      "notes": "The smaller cohort is never represented as M2 completion."
+    },
+    "H-2295": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "artifacts/folynta-e2e-v2/datasets/omnidocbench-aa1ee96.manifest.json",
+          "claim": "The 1,651-image OmniDocBench payload is byte-hashed at the exact upstream revision without cache metadata."
+        },
+        {
+          "path": "benchmark/runpod_eval/artifact_manifest.py",
+          "claim": "Dataset and model payloads use canonical byte-level manifests with explicit cache exclusion."
+        }
+      ],
+      "blocker": "OmniDocBench full x 3 inference is not complete; ParseBench full and olmOCR-Bench full x 3 are not staged or executed.",
+      "notes": "Dataset acquisition is evidence only; missing metrics remain NOT_RUN, never zero."
+    },
+    "H-2315": {
+      "status": "EXTERNAL_BLOCKED",
+      "owner": "data-owner",
+      "evidence": [],
+      "blocker": "Frozen 1,500-page private holdout manifest, ground truth, and owner approval are unavailable.",
+      "notes": "Inference workers may never mount holdout ground truth."
+    },
+    "H-2322": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/reports/folynta-ovisocr2-m1-a40-cross-hardware-evidence-2026-08-02.json",
+          "claim": "A40 runtime and same-page aggregate deltas against prior 4090 outputs are measured with explicit environment differences."
+        }
+      ],
+      "blocker": "An immutable identical-environment A/B across 4090, A40/A6000, and L40S is not complete.",
+      "notes": "The current A40 result is deliberately not represented as isolated hardware equivalence."
+    },
+    "C-2158": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/reports/model-evaluation-evidence-bundle-2026-08-01.json",
+          "claim": "Five candidates have successful three-repeat demo evidence."
+        },
+        {
+          "path": "benchmark/reports/FOLYNTA_OVISOCR2_M1_A40_CROSS_HARDWARE_EVALUATION_2026-08-02.md",
+          "claim": "OvisOCR2 also has a six-family A40 runtime smoke."
+        }
+      ],
+      "blocker": "Smoke evidence is incomplete for the remaining new open candidates.",
+      "notes": "Partial candidate smoke is not the full checklist item."
+    },
+    "C-2154": {
+      "status": "DONE",
+      "owner": "product-engineering",
+      "evidence": [
+        {
+          "path": "artifacts/folynta-e2e-v2/qa/lighthouse-mobile-home-lazy-scale-renderers.json",
+          "claim": "Pinned Lighthouse 12.8.2 mobile audit measured performance 94, accessibility 100, best practices 100, SEO 100, LCP 3.1 s, CLS 0, and TBT 20 ms."
+        },
+        {
+          "path": "apps/web/src/components/system/scale-evidence-bridge.tsx",
+          "claim": "Nonproduction scale renderers are lazy-loaded only when the evidence harness is explicitly enabled, removing CodeMirror from the landing-page critical path."
+        }
+      ],
+      "blocker": "",
+      "notes": "The measured mobile Lighthouse performance threshold of at least 90 is satisfied."
+    },
+    "H-4435": {
+      "status": "PARTIAL",
+      "owner": "product-engineering",
+      "evidence": [
+        {
+          "path": "artifacts/folynta-e2e-v2/qa/lighthouse-mobile-home-lazy-scale-renderers.json",
+          "claim": "The isolated production-style demo build has a frozen Lighthouse mobile result above the required landing threshold."
+        }
+      ],
+      "blocker": "Authenticated product-route field performance, sustained-load, and production-origin evidence remain open.",
+      "notes": "A landing-page laboratory result is not represented as whole-product production performance."
+    },
+    "H-4446": {
+      "status": "PARTIAL",
+      "owner": "product-engineering",
+      "evidence": [
+        {
+          "path": "apps/web/e2e/accessibility-matrix.spec.ts",
+          "claim": "Forced-colors focus, 200 percent text scaling, minimum visible text size, and control-label size are automated across representative routes."
+        },
+        {
+          "path": "artifacts/folynta-e2e-v2/qa/accessibility-matrix-after-performance-fix.json",
+          "claim": "The frozen desktop/mobile QA run recorded seven passes, zero unexpected failures, and one intentionally skipped mobile-only desktop scaling case."
+        }
+      ],
+      "blocker": "Manual screen-reader, actual high-contrast device, keyboard-only, and Lighthouse mobile evidence remain open.",
+      "notes": "Automated browser evidence does not replace assistive-technology sign-off."
+    },
+    "H-5202": {
+      "status": "PARTIAL",
+      "owner": "product-engineering",
+      "evidence": [
+        {
+          "path": "apps/web/e2e/accessibility-matrix.spec.ts",
+          "claim": "Representative accessibility requirements have deterministic browser contracts."
+        },
+        {
+          "path": "artifacts/folynta-e2e-v2/qa/accessibility-matrix-after-performance-fix.json",
+          "claim": "The latest isolated demo-mode QA result has zero unexpected failures."
+        }
+      ],
+      "blocker": "Complete manual assistive-technology and Lighthouse evidence is not yet available.",
+      "notes": "The production approval gate remains fail closed."
+    },
+    "H-0875": {
+      "status": "PARTIAL",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/reports/FOLYNTA_SYSTEM_ALGORITHM_EVALUATION_2026-08-02.md",
+          "claim": "The page classification, quality, recovery, routing, credit, and knowledge contracts pass a 356-test nonvisual algorithm suite."
+        },
+        {
+          "path": "benchmark/v6/champion-matrix.yaml",
+          "claim": "Champion declarations remain evidence-gated and reject unqualified production candidates."
+        }
+      ],
+      "blocker": "M2/M3 public-core and private-holdout page-family lower bounds are incomplete.",
+      "notes": "Deterministic router contracts do not substitute for the empirical Champion Matrix."
+    },
+    "H-0899": {
+      "status": "PARTIAL",
+      "owner": "routing-engineering",
+      "evidence": [
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+          "claim": "Ten frozen first-route and escalation decisions matched their expected outcomes exactly."
+        },
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/routing.py",
+          "claim": "The adaptive objective uses quality, numeric fidelity, row completeness, latency, cost, health, consent, and independent-family speculation evidence."
+        }
+      ],
+      "blocker": "Expected Verified Cost probabilities and page-family lower bounds are not calibrated on full public and private corpora.",
+      "notes": "The router remains bootstrap/shadow rather than empirically promoted."
+    },
+    "H-0962": {
+      "status": "DONE",
+      "owner": "quality-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/tests/test_validation_and_arbitration.py",
+          "claim": "Transport, identity, schema, structure, numeric, authority, retrieval, and independent-evidence gates fail closed."
+        },
+        {
+          "path": "benchmark/reports/FOLYNTA_SYSTEM_ALGORITHM_EVALUATION_2026-08-02.md",
+          "claim": "The quality and validation area completed 63 tests with zero failures."
+        }
+      ],
+      "blocker": "",
+      "notes": "Future empirical threshold calibration is tracked separately from validator contract completion."
+    },
+    "H-1022": {
+      "status": "DONE",
+      "owner": "runtime-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/failures.py",
+          "claim": "Infrastructure, semantic, unknown, and healthy observations have explicit fail-closed diagnoses and actions."
+        },
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+          "claim": "All 24 frozen healthy, infrastructure, semantic, and unknown failure observations were classified correctly."
+        }
+      ],
+      "blocker": "",
+      "notes": "Unknown reason codes are semantic failures rather than implicit success."
+    },
+    "H-1046": {
+      "status": "PARTIAL",
+      "owner": "recovery-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/recovery.py",
+          "claim": "Recovery selects the smallest source-localized scope and failure-specific preprocessing specialist with immutable lineage."
+        },
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+          "claim": "Seven frozen failure-to-specialist cases achieved exact selection and the cell scope won the scope ladder."
+        }
+      ],
+      "blocker": "A rights-cleared empirical recovery corpus has not yet demonstrated the required automatic pass rate and latency target.",
+      "notes": "Golden-contract selection is complete; empirical recovery effectiveness remains open."
+    },
+    "H-1108": {
+      "status": "DONE",
+      "owner": "runtime-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/health.py",
+          "claim": "Infrastructure and semantic health are separate, with drain, quarantine, and canary reproduction rules."
+        },
+        {
+          "path": "packages/parallel-runtime/tests/test_attempts_and_health.py",
+          "claim": "Identity drift, memory slope, schema failure, repetition, numeric failure, and influence analysis are regression tested."
+        }
+      ],
+      "blocker": "",
+      "notes": "Production alert calibration remains an operational activity, not an implementation gap."
+    },
+    "H-1147": {
+      "status": "PARTIAL",
+      "owner": "quality-engineering",
+      "evidence": [
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+          "claim": "Frozen injections cover ten infrastructure, twelve semantic, one healthy, and one unknown fail-closed observation."
+        },
+        {
+          "path": "packages/parallel-runtime/tests/test_validation_and_arbitration.py",
+          "claim": "Silent output mutations are rejected before arbitration and billing."
+        }
+      ],
+      "blocker": "Burst/load worker corruption, time-to-detection, and false-positive intervals are not yet measured on a production-like GPU pool.",
+      "notes": "Deterministic injections are not represented as a completed distributed fault campaign."
+    },
+    "H-1176": {
+      "status": "PARTIAL",
+      "owner": "recovery-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/tests/test_recovery_and_continuity.py",
+          "claim": "Cell, row, table, region, page, continuity, ownership, and provenance scope rules are regression tested."
+        }
+      ],
+      "blocker": "Known-fault dependency fixtures have not produced empirical impact-scope precision and recall.",
+      "notes": "Minimum-scope correctness is implemented; measured scope precision/recall remains open."
+    },
+    "H-1622": {
+      "status": "PARTIAL",
+      "owner": "platform-security",
+      "evidence": [
+        {
+          "path": "benchmark/reports/folynta-r2-production-gate-2026-08-02.json",
+          "claim": "A read-only live R2 probe verified four private buckets, exact-origin CORS where configured, ETag exposure, and abort-incomplete-multipart lifecycle rules."
+        },
+        {
+          "path": "services/api/tests/test_multipart_upload.py",
+          "claim": "Presigned single and multipart upload scope, expiry, ETag, digest, finalization, recovery, and abort behavior are regression tested."
+        }
+      ],
+      "blocker": "Both available S3 credential profiles can list objects in all four buckets; workload and browser prefix-scoped credentials are not yet separated.",
+      "notes": "The live probe was read-only and performed no provider mutation."
+    },
+    "H-1639": {
+      "status": "PARTIAL",
+      "owner": "platform-security",
+      "evidence": [
+        {
+          "path": "infra/postgres/verify_postgres_gate.py",
+          "claim": "The CI gate executes migrations, FORCE RLS inspection, owner and BYPASSRLS checks, cross-tenant reads and writes, pool context, and worker-role capabilities."
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "claim": "The real PostgreSQL 17 RLS gate is wired into CI."
+        }
+      ],
+      "blocker": "The current local PostgreSQL instance rejected the stale repository credential; branch CI evidence is pending push.",
+      "notes": "No local database password or role was reset to avoid altering unrelated host state."
+    },
+    "H-1659": {
+      "status": "PARTIAL",
+      "owner": "platform-security",
+      "evidence": [
+        {
+          "path": "infra/security/validate_deployment.py",
+          "claim": "Deployment contracts enforce non-root, read-only root, dropped capabilities, resource limits, metadata disablement, and deny-by-default network policy."
+        },
+        {
+          "path": "workers/cpu-document/src/akc_worker_document/worker.py",
+          "claim": "Production refuses the direct parser launcher and requires the bounded bubblewrap sandbox."
+        },
+        {
+          "path": "services/url-fetcher/tests/test_fetcher.py",
+          "claim": "SSRF, redirect, DNS rebinding, metadata address, size, content, and timeout boundaries are tested."
+        },
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-evaluation-2026-08-02.json",
+          "claim": "The current full backend regression passed 1,489 tests with zero failures, errors, or skips."
+        }
+      ],
+      "blocker": "A signed production image running under an enforcing CNI has not supplied an external runtime sandbox receipt.",
+      "notes": "Deployment validation and the focused parser/SSRF security suite passed 103 tests."
+    },
+    "H-1674": {
+      "status": "PARTIAL",
+      "owner": "billing-engineering",
+      "evidence": [
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+          "claim": "Thirty-two duplicate hedge attempts incurred exactly 0.000000 credits and the reservation conservation invariant passed."
+        },
+        {
+          "path": "services/api/tests/test_payment_credit_purchase_api.py",
+          "claim": "Purchase, duplicate callback, refund, partial refund, dispute, chargeback, mismatch, and reconciliation behavior is tested."
+        },
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-evaluation-2026-08-02.json",
+          "claim": "The current full backend regression passed all billing, retry, scheduler, and API integrity tests."
+        }
+      ],
+      "blocker": "A production provider invoice has not been reconciled against GPU seconds, internal cost, user credits, and margin.",
+      "notes": "The immutable local billing contract passes; production invoice calibration remains open."
+    },
+    "H-1702": {
+      "status": "PARTIAL",
+      "owner": "site-reliability",
+      "evidence": [
+        {
+          "path": "services/scheduler/tests/test_deletions.py",
+          "claim": "Document and project purge, remote object failure, crash recovery, dead letter, concurrency, retention, and immutable receipt behavior are tested."
+        },
+        {
+          "path": "services/api/tests/test_s3_object_purge.py",
+          "claim": "Versioned and explicit-unversioned object deletion verify final key absence."
+        },
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-evaluation-2026-08-02.json",
+          "claim": "The current full backend regression passed all deletion, purge, dead-letter, and recovery-path tests."
+        }
+      ],
+      "blocker": "PITR, isolated restore, regional/provider outage, credential rotation, and model rollback drills lack production receipts.",
+      "notes": "Deletion implementation does not imply restore and incident-drill completion."
+    },
+    "H-2355": {
+      "status": "PARTIAL",
+      "owner": "routing-engineering",
+      "evidence": [
+        {
+          "path": "benchmark/reports/folynta-system-algorithm-golden-evaluation-2026-08-02.json",
+          "claim": "Twelve frozen page-family feature vectors achieved exact expected classification."
+        }
+      ],
+      "blocker": "Family calibration, confusion matrix, and lower bounds on the 200-page and full public corpora are incomplete.",
+      "notes": "Golden feature-boundary accuracy is not real-distribution classification accuracy."
+    },
+    "H-2407": {
+      "status": "PARTIAL",
+      "owner": "routing-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/routing.py",
+          "claim": "The route objective explicitly combines quality, numeric, row, reliability, latency, cost, timeout, OOM, and failure risk."
+        },
+        {
+          "path": "tests/unit/test_collection_estimation.py",
+          "claim": "Adaptive sampling, quantiles, unbillable states, calibration, and zero-authority learned shadow behavior are tested."
+        }
+      ],
+      "blocker": "Failure, recovery, retry, and validation-cost probabilities require full-corpus and production calibration.",
+      "notes": "No uncalibrated shadow score can promote a production route."
+    },
+    "H-2459": {
+      "status": "PARTIAL",
+      "owner": "quality-engineering",
+      "evidence": [
+        {
+          "path": "packages/quality/src/akc_quality/evidence_ladder.py",
+          "claim": "Cheap evidence gates precede higher evidence levels and hard failures abstain."
+        },
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/routing.py",
+          "claim": "The cascade exits only to arbitration and escalates through available stages before unresolved."
+        }
+      ],
+      "blocker": "Beta-Binomial confidence bounds and early-stop savings are not calibrated on the full benchmark.",
+      "notes": "Sequential semantics are implemented while empirical efficiency remains open."
+    },
+    "H-2495": {
+      "status": "PARTIAL",
+      "owner": "recovery-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/recovery.py",
+          "claim": "Table, row, and cell failures choose cell-geometry recovery before broader replay."
+        },
+        {
+          "path": "packages/parallel-runtime/tests/test_recovery_and_continuity.py",
+          "claim": "Cross-page table identity, row ownership, continuation, omission, and scope escalation contracts are tested."
+        }
+      ],
+      "blocker": "The declared long-table recovery corpus has not met the automatic pass and latency targets across all table families.",
+      "notes": "Specialist routing is complete but recovery efficacy is only partially measured."
+    },
+    "H-2544": {
+      "status": "PARTIAL",
+      "owner": "quality-engineering",
+      "evidence": [
+        {
+          "path": "packages/quality/tests/test_numeric_geometry.py",
+          "claim": "DART and SEC provenance, unit, scale, period, dimension, geometry, ambiguity, sign, and value gates are tested."
+        },
+        {
+          "path": "services/api/tests/test_collection_semantic_runtime.py",
+          "claim": "Authority mismatches block indexing and verified DART/SEC numeric tables can complete."
+        }
+      ],
+      "blocker": "Broader DART/SEC authority recovery corpus precision and source-availability behavior remain only partially measured.",
+      "notes": "Parser agreement can never replace authority evidence for high-risk numeric claims."
+    },
+    "H-7770": {
+      "status": "APPROVAL_REQUIRED",
+      "owner": "legal-counsel",
+      "evidence": [],
+      "blocker": "Written trademark knockout opinion and filing evidence are external legal work.",
+      "notes": "No paid campaign, press launch, or final domain migration is authorized."
+    }
+  }
+}

@@ -611,6 +611,61 @@ class CollectionEventsResponse(CollectionWireModel):
     next_sequence: int = Field(ge=0)
 
 
+class SceneClusterProjection(CollectionWireModel):
+    cluster_id: uuid.UUID
+    strategy: str
+    member_count: int = Field(ge=1)
+    representative_file_ids: list[uuid.UUID]
+    outlier_count: int = Field(ge=0)
+
+
+class ScenePageProjection(CollectionWireModel):
+    page_id: uuid.UUID
+    document_id: uuid.UUID
+    document_version_id: uuid.UUID | None = None
+    page_number: int = Field(ge=1)
+    status: str
+    route: str | None = None
+    preview_ref: str | None = None
+    finding_count: int = Field(default=0, ge=0)
+
+
+class SceneKnowledgeProjection(CollectionWireModel):
+    note_ids: list[uuid.UUID]
+    entity_ids: list[uuid.UUID]
+    relation_ids: list[uuid.UUID]
+    package_ids: list[uuid.UUID]
+    note_count: int = Field(ge=0)
+    entity_count: int = Field(ge=0)
+    relation_count: int = Field(ge=0)
+    package_count: int = Field(ge=0)
+
+
+class SceneIntegrityProjection(CollectionWireModel):
+    file_status_counts: dict[str, int]
+    verification_status_counts: dict[str, int]
+    authority_mapping_status_counts: dict[str, int]
+    package_status_counts: dict[str, int]
+    unresolved_count: int = Field(ge=0)
+    quarantined_count: int = Field(ge=0)
+    blocker_codes: list[str]
+
+
+class CollectionSceneResponse(CollectionWireModel):
+    collection_id: uuid.UUID
+    collection_status: CollectionState
+    manifest_revision: int = Field(ge=0)
+    sequence: int = Field(ge=0)
+    total_pages: int = Field(ge=0)
+    projected_page_count: int = Field(ge=0, le=200)
+    route_state_counts: dict[str, int]
+    clusters: list[SceneClusterProjection]
+    pages: list[ScenePageProjection]
+    knowledge: SceneKnowledgeProjection
+    integrity: SceneIntegrityProjection
+    scene_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
 class CollectionIntegrityResponse(CollectionWireModel):
     collection_id: uuid.UUID
     collection_status: CollectionState

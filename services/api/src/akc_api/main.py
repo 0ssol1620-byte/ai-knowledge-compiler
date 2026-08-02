@@ -35,6 +35,7 @@ from akc_security import (
     PlanTier,
     RedisPdfSecretStore,
     UnsafePreviewError,
+    crop_preview_png,
     detect_sensitive_data,
     ensure_portable_markdown_safe,
     redact_preview_png,
@@ -64,6 +65,7 @@ from fastapi import (
     Form,
     Header,
     HTTPException,
+    Path,
     Query,
     Request,
     Response,
@@ -149,6 +151,7 @@ from akc_api.models import (
     ApiKey,
     Block,
     BlockRevision,
+    CollectionRegion,
     CreditAccount,
     CreditLedger,
     DeletionReceipt,
@@ -175,6 +178,7 @@ from akc_api.models import (
     Tenant,
     UploadSession,
     User,
+    VerificationRecord,
     WebhookDelivery,
     WebhookEndpoint,
     utcnow,
@@ -5358,6 +5362,108 @@ async def get_page_preview(
             "Content-Security-Policy": "default-src 'none'; sandbox",
             "X-AKC-Preview-Redaction": redaction_state,
             "X-AKC-Masked-Regions": str(masked_region_count),
+        },
+    )
+
+
+@router.get("/document-versions/{document_version_id}/pages/{page_number}/preview")
+async def get_document_version_page_preview(
+    document_version_id: uuid.UUID,
+    page_number: Annotated[int, Path(ge=1)],
+    request: Request,
+    principal: PrincipalDep,
+    session: SessionDep,
+) -> Response:
+    """Resolve an active document version to its authenticated page preview."""
+
+    version = await session.scalar(
+        select(DocumentVersion).where(
+            DocumentVersion.tenant_id == principal.tenant_id,
+            DocumentVersion.id == document_version_id,
+        )
+    )
+    if version is None:
+        raise HTTPException(status_code=404, detail={"code": "DOCUMENT_VERSION_NOT_FOUND"})
+    document = await _tenant_document(
+        session,
+        principal.tenant_id,
+        version.document_id,
+        principal=principal,
+        capability="read",
+    )
+    if document.active_version != version.version or version.status == "archived":
+        raise HTTPException(
+            status_code=409,
+            detail={"code": "VERSION_PREVIEW_NOT_AVAILABLE"},
+        )
+    page = await session.scalar(
+        select(Page).where(
+            Page.tenant_id == principal.tenant_id,
+            Page.document_id == document.id,
+            Page.page_number == page_number,
+        )
+    )
+    if page is None:
+        raise HTTPException(status_code=404, detail={"code": "PAGE_NOT_FOUND"})
+    return await get_page_preview(page.id, request, principal, session)
+
+
+@router.get("/proofs/{proof_id}/crop")
+async def get_proof_crop(
+    proof_id: uuid.UUID,
+    request: Request,
+    principal: PrincipalDep,
+    session: SessionDep,
+) -> Response:
+    """Return a privacy-preserving crop from an actual verification lineage."""
+
+    proof = await session.scalar(
+        select(VerificationRecord).where(
+            VerificationRecord.tenant_id == principal.tenant_id,
+            VerificationRecord.id == proof_id,
+        )
+    )
+    if proof is None:
+        raise HTTPException(status_code=404, detail={"code": "PROOF_NOT_FOUND"})
+    if proof.region_id is None:
+        raise HTTPException(status_code=409, detail={"code": "PROOF_REGION_NOT_AVAILABLE"})
+    region = await session.scalar(
+        select(CollectionRegion).where(
+            CollectionRegion.tenant_id == principal.tenant_id,
+            CollectionRegion.collection_id == proof.collection_id,
+            CollectionRegion.id == proof.region_id,
+        )
+    )
+    if region is None or region.page_id is None:
+        raise HTTPException(status_code=409, detail={"code": "PROOF_PAGE_NOT_AVAILABLE"})
+    bbox = region.bbox1000
+    if (
+        bbox is None
+        or len(bbox) != 4
+        or any(not isinstance(value, int) or isinstance(value, bool) for value in bbox)
+    ):
+        raise HTTPException(status_code=409, detail={"code": "PROOF_BBOX_NOT_AVAILABLE"})
+    preview = await get_page_preview(region.page_id, request, principal, session)
+    try:
+        crop = crop_preview_png(preview.body, tuple(bbox))
+    except UnsafePreviewError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "PROOF_CROP_INTEGRITY_FAILURE"},
+        ) from exc
+    return Response(
+        content=crop.png_bytes,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "private, no-store, max-age=0",
+            "ETag": f'"sha256-{crop.sha256}"',
+            "Content-Security-Policy": "default-src 'none'; sandbox",
+            "X-AKC-Proof-Id": str(proof.id),
+            "X-AKC-Page-Id": str(region.page_id),
+            "X-AKC-Source-Preview-Redaction": preview.headers.get(
+                "x-akc-preview-redaction",
+                "unknown",
+            ),
         },
     )
 
