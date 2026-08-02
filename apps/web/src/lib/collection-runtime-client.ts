@@ -116,6 +116,53 @@ export type CollectionIntegritySummary = {
   blockers: string[];
 };
 
+export type CollectionScene = {
+  collection_id: string;
+  collection_status: CollectionState;
+  manifest_revision: number;
+  sequence: number;
+  total_pages: number;
+  projected_page_count: number;
+  route_state_counts: Record<string, number>;
+  clusters: Array<{
+    cluster_id: string;
+    strategy: string;
+    member_count: number;
+    representative_file_ids: string[];
+    outlier_count: number;
+  }>;
+  pages: Array<{
+    page_id: string;
+    document_id: string;
+    document_version_id: string | null;
+    page_number: number;
+    status: string;
+    route: string | null;
+    preview_ref: string | null;
+    finding_count: number;
+  }>;
+  knowledge: {
+    note_ids: string[];
+    entity_ids: string[];
+    relation_ids: string[];
+    package_ids: string[];
+    note_count: number;
+    entity_count: number;
+    relation_count: number;
+    package_count: number;
+  };
+  integrity: {
+    file_status_counts: Record<string, number>;
+    verification_status_counts: Record<string, number>;
+    authority_mapping_status_counts: Record<string, number>;
+    package_status_counts: Record<string, number>;
+    unresolved_count: number;
+    quarantined_count: number;
+    blocker_codes: string[];
+  };
+  scene_hash: string;
+};
+
 export type CollectionOveragePolicy =
   "stop_at_cap" | "allow_10_percent" | "continue_within_balance";
 
@@ -140,12 +187,7 @@ export type CollectionProcessingControlResult = {
   processing_job_id: string;
   collection_status: CollectionState;
   processing_status:
-    | "queued"
-    | "running"
-    | "paused"
-    | "completed"
-    | "failed"
-    | "cancelled";
+    "queued" | "running" | "paused" | "completed" | "failed" | "cancelled";
   immutable_plan_sha256: string;
   approved_preflight_sha256: string;
   approved_estimate_sha256: string;
@@ -206,14 +248,7 @@ const architecturePlanStartSchema = z
     ),
     processing_job_id: z.uuid().nullable(),
     processing_status: z
-      .enum([
-        "queued",
-        "running",
-        "paused",
-        "completed",
-        "failed",
-        "cancelled",
-      ])
+      .enum(["queued", "running", "paused", "completed", "failed", "cancelled"])
       .nullable(),
     processing_resume_token: z.string().min(32).max(256).nullable(),
     credits_reserved: decimalSchema,
@@ -261,12 +296,7 @@ const processingControlSchema = z
   .strict();
 
 type CollectionPayloadFieldDescriptor =
-  | "string"
-  | "integer"
-  | "boolean"
-  | "object"
-  | "array"
-  | "string|null";
+  "string" | "integer" | "boolean" | "object" | "array" | "string|null";
 
 function matchesPayloadFieldDescriptor(
   value: unknown,
@@ -280,7 +310,9 @@ function matchesPayloadFieldDescriptor(
     case "boolean":
       return typeof value === "boolean";
     case "object":
-      return typeof value === "object" && value !== null && !Array.isArray(value);
+      return (
+        typeof value === "object" && value !== null && !Array.isArray(value)
+      );
     case "array":
       return Array.isArray(value);
     case "string|null":
@@ -392,14 +424,7 @@ const collectionSnapshotSchema = z
       .nullable(),
     processing_job_id: z.uuid().nullable(),
     processing_status: z
-      .enum([
-        "queued",
-        "running",
-        "paused",
-        "completed",
-        "failed",
-        "cancelled",
-      ])
+      .enum(["queued", "running", "paused", "completed", "failed", "cancelled"])
       .nullable(),
     processing_stage: z.string().min(1).nullable(),
     total_tasks: z.number().int().nonnegative(),
@@ -439,6 +464,86 @@ const collectionIntegritySchema = z
     blockers: z.array(z.string().min(1)),
   })
   .strict();
+
+const collectionSceneSchema = z
+  .object({
+    collection_id: z.uuid(),
+    collection_status: collectionStateSchema,
+    manifest_revision: z.number().int().nonnegative(),
+    sequence: z.number().int().nonnegative(),
+    total_pages: z.number().int().nonnegative(),
+    projected_page_count: z.number().int().nonnegative().max(200),
+    route_state_counts: nonnegativeCountRecordSchema,
+    clusters: z.array(
+      z
+        .object({
+          cluster_id: z.uuid(),
+          strategy: z.string().min(1),
+          member_count: z.number().int().positive(),
+          representative_file_ids: z.array(z.uuid()),
+          outlier_count: z.number().int().nonnegative(),
+        })
+        .strict(),
+    ),
+    pages: z.array(
+      z
+        .object({
+          page_id: z.uuid(),
+          document_id: z.uuid(),
+          document_version_id: z.uuid().nullable(),
+          page_number: z.number().int().positive(),
+          status: z.string().min(1),
+          route: z.string().min(1).nullable(),
+          preview_ref: z
+            .string()
+            .regex(/^\/v1\/pages\/[0-9a-f-]{36}\/preview$/)
+            .nullable(),
+          finding_count: z.number().int().nonnegative(),
+        })
+        .strict(),
+    ),
+    knowledge: z
+      .object({
+        note_ids: z.array(z.uuid()),
+        entity_ids: z.array(z.uuid()),
+        relation_ids: z.array(z.uuid()),
+        package_ids: z.array(z.uuid()),
+        note_count: z.number().int().nonnegative(),
+        entity_count: z.number().int().nonnegative(),
+        relation_count: z.number().int().nonnegative(),
+        package_count: z.number().int().nonnegative(),
+      })
+      .strict(),
+    integrity: z
+      .object({
+        file_status_counts: nonnegativeCountRecordSchema,
+        verification_status_counts: nonnegativeCountRecordSchema,
+        authority_mapping_status_counts: nonnegativeCountRecordSchema,
+        package_status_counts: nonnegativeCountRecordSchema,
+        unresolved_count: z.number().int().nonnegative(),
+        quarantined_count: z.number().int().nonnegative(),
+        blocker_codes: z.array(z.string().min(1)),
+      })
+      .strict(),
+    scene_hash: sha256Schema,
+  })
+  .strict()
+  .superRefine((scene, context) => {
+    if (scene.projected_page_count !== scene.pages.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["projected_page_count"],
+        message: "Projected page count must match the bounded page projection.",
+      });
+    }
+    if (scene.projected_page_count > scene.total_pages) {
+      context.addIssue({
+        code: "custom",
+        path: ["total_pages"],
+        message: "The page projection cannot exceed the collection page total.",
+      });
+    }
+  });
 
 export class CollectionEventContractError extends Error {
   constructor(message: string) {
@@ -825,6 +930,52 @@ export async function getCollectionIntegrity(
     );
   }
   return parsed.data;
+}
+
+export async function getCollectionScene(
+  collectionId: string,
+  signal?: AbortSignal,
+): Promise<CollectionScene> {
+  const raw = await apiRequest<unknown>(
+    `/v1/collections/${collectionId}/scene`,
+    {
+      signal,
+    },
+  );
+  const parsed = collectionSceneSchema.safeParse(raw);
+  if (!parsed.success || parsed.data.collection_id !== collectionId) {
+    throw new CollectionEventContractError(
+      "The collection scene does not match its deterministic identifier-only contract.",
+    );
+  }
+  return parsed.data;
+}
+
+export function getDocumentVersionPagePreviewUrl(
+  documentVersionId: string,
+  pageNumber: number,
+): string {
+  if (
+    !z.uuid().safeParse(documentVersionId).success ||
+    !Number.isSafeInteger(pageNumber) ||
+    pageNumber < 1
+  ) {
+    throw new CollectionEventContractError(
+      "A valid document version and page number are required.",
+    );
+  }
+  return apiAbsoluteUrl(
+    `/v1/document-versions/${documentVersionId}/pages/${pageNumber}/preview`,
+  );
+}
+
+export function getProofCropUrl(proofId: string): string {
+  if (!z.uuid().safeParse(proofId).success) {
+    throw new CollectionEventContractError(
+      "A valid proof identifier is required.",
+    );
+  }
+  return apiAbsoluteUrl(`/v1/proofs/${proofId}/crop`);
 }
 
 export async function streamCollectionEvents(

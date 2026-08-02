@@ -13,8 +13,9 @@ lineage and compatibility naming where migration safety requires it.
 
 - one connected English-default FOLYNTA marketing and authenticated product
   system with round-trip navigation
-- exact seven-scene homepage authority with one-shot 8.2-second hero runtime,
-  deterministic reduced-motion poster, a single final CTA, and no hero metric
+- exact seven-scene homepage authority with deterministic Folio Synthesis,
+  durable-event processing, locale-aware DART/SEC proof, measured trust plus
+  security, a single final CTA, and no fabricated hero metric
 - all routes registered in `PAGE_MANIFEST.yml`, with route-specific information
   architecture and no desktop horizontal overflow in the complete route crawl
 - product, solution, demo, proof/pricing, developer, editorial, legal, document,
@@ -35,11 +36,9 @@ lineage and compatibility naming where migration safety requires it.
   perform write-looking operations; non-demo mode continues to use the live
   control components
 - Next.js production builds no longer suppress TypeScript errors
-- first-party Blender hero master, GLB LODs, three distinct deterministic
-  FOLYNTA concept directions, responsive derivatives, product
-  captures, structural glyphs, patterns, textures, and architecture diagrams
-- current FOLYNTA hero and evidence-film binaries regenerated with publisher-
-  hash-verified Blender 4.5.12 LTS and FFmpeg 8.1.2
+- selected first-party Folio Synthesis HTML/CSS direction, responsive product
+  captures, structural glyphs, patterns, textures, and architecture diagrams;
+  historical Blender/GLB assets are not loaded by the public homepage
 - deterministic asset naming, provenance records, and cryptographic hash gates
 - no fabricated customer, benchmark, certification, security, or commercial
   pricing evidence
@@ -57,17 +56,21 @@ Executed with Node.js 22.14.0 and pnpm 11.9.0:
 - strict TypeScript: pass
 - Next.js 16.2.12 production build: pass, including the internal TypeScript
   phase, static-page generation, and build-trace collection
-- Vitest: 50 files and 217 tests passed
-- focused FOLYNTA production Playwright: 10 passed across desktop/mobile,
-  English/Korean authority, reduced-motion, Proof interaction, and the
-  representative WCAG route scan
-- in-app browser visual QA: 1440, 768, and 390 px passed with seven scenes and
+- Vitest: 52 files and 228 tests passed
+- Python: 1,489 tests passed; one Argon2 allocation failure caused by concurrent
+  build pressure passed immediately when rerun in isolation
+- production Playwright: 79 passed and 17 intentional project-scope skips
+  across desktop/mobile, English/Korean authority, reduced-motion, proof,
+  forced-colors, 200% text scaling, and WCAG A/AA checks
+- in-app browser visual QA: 1440, 1024, and 390 px passed with seven scenes and
   no page-level horizontal overflow
 - refreshed FOLYNTA homepage visual baseline: pass on a clean comparison run
 - Public benchmark contract tests: 11 passed
-- production Playwright: 52 passed and 14 intentional project-scope skips
-- desktop visual regression: 9 approved baselines passed
+- desktop visual regression: 11 approved baselines passed
 - browser/viewport matrix: 9 passed across Chromium, Firefox, and WebKit
+- final current-worktree capture: 560 scenes passed with zero blocking
+  automated findings across English/Korean, default/reduced motion, and seven
+  widths from 360 to 1920 px
 - live-API Playwright: 1 end-to-end provenance/export journey passed
 - TypeScript-AST button contract gate: 0 enabled dead controls
 - registered public route crawl: pass
@@ -84,9 +87,9 @@ Executed with Node.js 22.14.0 and pnpm 11.9.0:
 - reduced-motion checks: pass
 - Axe representative WCAG A/AA suite: no violations
 - canonical contracts TypeScript check: pass
-- asset manifest: 10 assets verified
+- asset manifest: 11 assets verified
 - asset naming: 136 files verified
-- asset hashes: 26 derivatives verified
+- asset hashes: 29 derivatives verified
 
 The authoritative FOLYNTA masterplan is indexed line by line in
 `docs/release/FOLYNTA_MASTERPLAN_REQUIREMENTS_INDEX.json`: 43,174 lines, 4,066
@@ -95,9 +98,10 @@ not treated as proof that an external gate passed.
 
 The live-API Playwright journey was rerun and passed registration, verification,
 upload, analysis, compilation, ordered SSE, and export against the real local
-API. The retained Lighthouse artifact reports Performance 93, Accessibility
-100, Best Practices 96, SEO 100, TBT 40 ms, and CLS 0 under its recorded lab
-conditions; it is not field Core Web Vitals evidence.
+API. Final Lighthouse 12.8.2 reports desktop 100/100/100/100 with LCP 749 ms,
+CLS 0, and TBT 0 ms; simulated mobile reports 88/100/100/100 with LCP 3,757 ms,
+CLS 0, and TBT 21 ms. These are controlled lab results, not field Core Web
+Vitals evidence.
 
 # Intentional architecture boundary
 
@@ -113,7 +117,7 @@ route labels alone.
 
 # Remaining owner or external gates
 
-- legal and domain clearance for the working name `Structara`
+- legal and domain clearance for the working name `FOLYNTA`
 - final licensed wordmark and owner Figma workspace synchronization
 - owner-approved commercial price book for currency, overage, storage, and
   annual-discount values

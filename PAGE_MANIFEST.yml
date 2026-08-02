@@ -22,19 +22,19 @@ release_review:
     eslint: pass
     typescript: pass
     production_build: pass
-    vitest: 217_passed_50_files
-    folynta_playwright_contract: 10_passed_desktop_mobile_en_ko_reduced_motion_proof_wcag
-    folynta_in_app_browser: 1440_768_390_passed_no_page_overflow
-    retained_pre_folynta_full_playwright_baseline: 77_passed_17_intentional_project_skips
-    retained_pre_folynta_browser_matrix: 9_passed
-    visual_baselines: folynta_home_refreshed_and_passed_retained_suite_11
-    brand_capture: 532_passed_0_blocking_findings
-    lighthouse_desktop: performance_99_accessibility_100_best_practices_100_seo_100_lcp_0_9s
-    lighthouse_mobile: performance_76_accessibility_100_best_practices_100_seo_100_lcp_4_7s_documented_block
+    vitest: 228_passed_52_files
+    python: 1489_verified_with_one_isolated_resource_retry
+    folynta_playwright_contract: 79_passed_17_intentional_project_skips
+    folynta_in_app_browser: 1440_1024_390_en_ko_passed_no_page_overflow_or_console_findings
+    browser_matrix: 9_passed_chromium_firefox_webkit
+    visual_baselines: 11_passed
+    brand_capture: 560_passed_0_blocking_findings
+    lighthouse_desktop: performance_100_accessibility_100_best_practices_100_seo_100_lcp_749ms_cls_0_tbt_0ms
+    lighthouse_mobile: performance_88_accessibility_100_best_practices_100_seo_100_lcp_3757ms_cls_0_tbt_21ms_lab_only
     enabled_dead_buttons: 0
-    asset_manifest: 10_verified
+    asset_manifest: 11_verified
     asset_names: 136_verified
-    asset_hashes: 26_verified
+    asset_hashes: 29_verified
   external_gates:
     - legal_and_domain_clearance
     - approved_commercial_price_book
@@ -47,6 +47,13 @@ routes:
   - { path: /, priority: P0, wave: 1, surface: marketing, status: complete }
   - {
       path: /product,
+      priority: P0,
+      wave: 1,
+      surface: marketing,
+      status: complete,
+    }
+  - {
+      path: /product/compile,
       priority: P0,
       wave: 1,
       surface: marketing,

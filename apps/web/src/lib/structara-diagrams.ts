@@ -28,7 +28,12 @@ export const STRUCTARA_DIAGRAMS = {
     id: "review",
     title: "Autonomous Integrity",
     question: "How are high-risk differences resolved without hiding them?",
-    nodes: ["Risk signal", "Auto repair", "Unresolved isolation", "Audit event"],
+    nodes: [
+      "Risk signal",
+      "Auto repair",
+      "Unresolved isolation",
+      "Audit event",
+    ],
   },
   knowledge: {
     id: "knowledge",
@@ -84,6 +89,7 @@ export type StructaraDiagramId = keyof typeof STRUCTARA_DIAGRAMS;
 
 export const ROUTE_DIAGRAMS: Partial<Record<string, StructaraDiagramId>> = {
   "/product": "compiler",
+  "/product/compile": "compiler",
   "/product/convert": "routing",
   "/product/verify": "provenance",
   "/product/knowledge": "knowledge",

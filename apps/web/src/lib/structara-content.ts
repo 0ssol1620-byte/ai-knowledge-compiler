@@ -78,8 +78,36 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
           items: ["Markdown", "Obsidian", "RAG and JSON-LD"],
         },
       ],
-      { label: "Explore Convert", href: "/product/convert" },
+      { label: "Explore Compile", href: "/product/compile" },
       { label: "Watch the end-to-end demo", href: "/demo/dart" },
+    ),
+    page(
+      "/product/compile",
+      "product",
+      "Compile",
+      "A source-linked result is the beginning of a knowledge system.",
+      "Compile native files, scans, tables, figures, and notes into typed, inspectable knowledge while preserving exact source locations.",
+      "Understand, verify, connect, and package through one durable event contract.",
+      [
+        {
+          title: "Understand",
+          body: "Recover reading order, hierarchy, tables, figures, formulas, and footnotes as typed blocks.",
+        },
+        {
+          title: "Verify",
+          body: "Attach important text, numbers, and cells to the source page, block, taxonomy, and receipt.",
+        },
+        {
+          title: "Connect",
+          body: "Form notes, entities, relations, and maps of content from stored compiler events.",
+        },
+        {
+          title: "Package",
+          body: "Derive Markdown, Vault, RAG JSONL, JSON-LD, and signed knowledge packages from the same verified core.",
+        },
+      ],
+      { label: "Compile a collection", href: "/intake" },
+      { label: "Inspect public proof", href: "/demo/dart" },
     ),
     page(
       "/product/convert",

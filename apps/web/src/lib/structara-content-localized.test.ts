@@ -12,7 +12,7 @@ describe("localized public content", () => {
     expect(Object.keys(PUBLIC_PAGES_KO).sort()).toEqual(
       Object.keys(PUBLIC_PAGES).sort(),
     );
-    expect(Object.keys(PUBLIC_PAGES_KO)).toHaveLength(34);
+    expect(Object.keys(PUBLIC_PAGES_KO)).toHaveLength(35);
   });
 
   it("preserves route, family, section, item, and action contracts", () => {

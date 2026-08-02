@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowRight, Check, LockKey, ShieldCheck } from "@phosphor-icons/react";
+import {
+  ArrowRight,
+  Check,
+  GoogleLogo,
+  LockKey,
+  ShieldCheck,
+} from "@phosphor-icons/react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,6 +47,11 @@ const AUTH_COPY = {
     checking: "Checking securely…",
     createWorkspace: "Create workspace",
     signIn: "Sign in",
+    continueGoogle: "Continue with Google",
+    connectingGoogle: "Connecting securely…",
+    googleUnavailable:
+      "Google sign-in is not configured for this environment. Continue with email or contact your administrator.",
+    emailDivider: "or continue with email",
     already: "Already have an account? ",
     need: "Need an account? ",
     workspaceSuffix: "workspace",
@@ -71,6 +82,11 @@ const AUTH_COPY = {
     checking: "안전하게 확인 중…",
     createWorkspace: "워크스페이스 만들기",
     signIn: "로그인",
+    continueGoogle: "Google로 계속하기",
+    connectingGoogle: "안전하게 연결 중…",
+    googleUnavailable:
+      "이 환경에는 Google 로그인이 구성되지 않았습니다. 이메일로 계속하거나 관리자에게 문의하세요.",
+    emailDivider: "또는 이메일로 계속",
     already: "이미 계정이 있나요? ",
     need: "계정이 필요한가요? ",
     workspaceSuffix: "워크스페이스",
@@ -89,6 +105,7 @@ export function AuthPage({
   const router = useRouter();
   const setSession = useAuthStore((state) => state.setSession);
   const [loading, setLoading] = useState(false);
+  const [oidcLoading, setOidcLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [pendingEmail, setPendingEmail] = useState<string>();
   const registering = mode === "register";
@@ -179,6 +196,41 @@ export function AuthPage({
             <p>{registering ? copy.createIntro : copy.signInIntro}</p>
           </div>
 
+          <button
+            className="login-google"
+            type="button"
+            disabled={loading || oidcLoading}
+            onClick={() => {
+              setOidcLoading(true);
+              setError(undefined);
+              void apiRequest<{ authorization_url: string }>(
+                "/v1/auth/oidc/authorize",
+              )
+                .then(({ authorization_url: authorizationUrl }) => {
+                  const destination = new URL(authorizationUrl);
+                  if (destination.protocol !== "https:") {
+                    throw new Error("OIDC authorization URL must use HTTPS");
+                  }
+                  window.location.assign(destination.href);
+                })
+                .catch(() => {
+                  setError(copy.googleUnavailable);
+                  setOidcLoading(false);
+                });
+            }}
+          >
+            {oidcLoading ? (
+              <span className="spinner" aria-hidden="true" />
+            ) : (
+              <GoogleLogo size={18} weight="bold" aria-hidden="true" />
+            )}
+            {oidcLoading ? copy.connectingGoogle : copy.continueGoogle}
+          </button>
+
+          <div className="login-divider" aria-hidden="true">
+            <span>{copy.emailDivider}</span>
+          </div>
+
           {registering && (
             <label className="field">
               <span>{copy.displayName}</span>
@@ -227,7 +279,7 @@ export function AuthPage({
           <button
             className="primary-button login-submit"
             type="submit"
-            disabled={loading}
+            disabled={loading || oidcLoading}
           >
             {loading ? (
               <span className="spinner" aria-hidden="true" />

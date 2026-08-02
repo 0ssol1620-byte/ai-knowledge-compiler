@@ -11,7 +11,7 @@ vi.mock("@/components/structara-marketing-shell", () => ({
 }));
 vi.mock("@/components/marketing/transformation-story", () => ({
   TransformationStory: () => (
-    <section className="folynta-scene" data-scene="03-transformation" />
+    <section className="folynta-scene" data-scene="04-transformation" />
   ),
 }));
 
@@ -25,13 +25,15 @@ describe("FOLYNTA landing authority", () => {
     const scenes = container.querySelectorAll("main > section");
 
     expect(scenes).toHaveLength(7);
-    expect(Array.from(scenes, (scene) => scene.getAttribute("data-scene"))).toEqual([
+    expect(
+      Array.from(scenes, (scene) => scene.getAttribute("data-scene")),
+    ).toEqual([
       "01-hero",
-      "02-proof",
-      "03-transformation",
-      "04-knowledge",
-      "05-quality",
-      "06-security",
+      "02-processing",
+      "03-proof",
+      "04-transformation",
+      "05-knowledge",
+      "06-trust-security",
       "07-final",
     ]);
   });
@@ -46,8 +48,8 @@ describe("FOLYNTA landing authority", () => {
       }),
     ).toBeVisible();
     expect(screen.getByText(/모든 중요한 결과를 원문으로/)).toBeVisible();
-    expect(container.querySelector('[data-scene="01-hero"]')).not.toHaveTextContent(
-      /%|latency|cost\/page/i,
-    );
+    expect(
+      container.querySelector('[data-scene="01-hero"]'),
+    ).not.toHaveTextContent(/%|latency|cost\/page/i);
   });
 });

@@ -66,7 +66,7 @@ assets:
     master_path: apps/web/src/components/structara-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "b7a44ca54019bc7324513f6427f172b8bed177d43014eacb8cb9118bf2fa0d00"
+        sha256: "afb74117dfef40c7851bcd3effc4dd499b534c2749aa06f2d031093344ace7c8"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md
@@ -242,3 +242,31 @@ assets:
       prohibited: [product-evidence, benchmark-evidence, customer-claim]
     alt_text_en: "Three distinct deterministic directions show an editorial source library, a computational evidence archive, and a compiled knowledge plane."
     alt_text_ko: "편집형 원천 라이브러리, 계산형 근거 아카이브, 컴파일된 지식 평면을 구분해 보여주는 세 가지 결정론적 방향"
+
+  - id: FOL-HOME-T1-FOLIO-SYNTHESIS-002
+    title: Folio Synthesis Public Hero
+    truth_class: T1
+    status: approved
+    owner: creative_direction
+    source_type: deterministic-first-party-html-css
+    master_path: apps/web/src/components/creative-review/folynta-creative-review.tsx
+    derivatives:
+      - path: apps/web/src/components/structara-hero.tsx
+        sha256: "2f6fb662a89bc130c89c17755ebfbfd7cd68feb1e7fda48c6f164f8fdbfe1bbc"
+      - path: docs/creative-reset/evidence/folio-1440x900.png
+        sha256: "2e29195d3ae3dcdc6a0fa566ebb4db61d2e99d59bff1067309239233571805ae"
+      - path: docs/creative-reset/evidence/folio-390x844.png
+        sha256: "92005e49e82a2222b3625f89641e5e87e09758e7497271e393035a42e75a8eac"
+    license:
+      name: first-party
+      evidence_path: FOLYNTA_BRAND_DECISIONS.md
+    provenance:
+      generated_with_ai: false
+      master_sha256: "07ee3a9782ac50a7bc161dda81c5a6505f112c56e3eb4d0eeb91c95ae1e26047"
+      authority_sha256: "fa8ce3a01499fcc558c6bfdf63200849667bc7d774f74bcba86d970e288e8bb5"
+    usage:
+      allowed: [public-homepage, marketing, creative-review, reduced-motion]
+      prohibited:
+        [product-evidence, benchmark-evidence, customer-claim, security-claim]
+    alt_text_en: "Twelve source classes compile into one verified folio and a source receipt."
+    alt_text_ko: "열두 가지 원문 유형이 하나의 검증된 folio와 원문 영수증으로 컴파일되는 장면"

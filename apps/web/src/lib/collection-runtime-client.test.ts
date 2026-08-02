@@ -13,6 +13,9 @@ import {
   CollectionEventContractError,
   controlCollectionProcessing,
   getCollectionEvents,
+  getCollectionScene,
+  getDocumentVersionPagePreviewUrl,
+  getProofCropUrl,
   retryCollectionProcessing,
   startCollectionProcessing,
   streamCollectionEvents,
@@ -535,6 +538,101 @@ describe("collection processing runtime contract", () => {
       expect.objectContaining({
         headers: expect.objectContaining({ "Last-Event-ID": "17" }),
       }),
+    );
+  });
+
+  it("accepts a bounded identifier-only deterministic scene snapshot", async () => {
+    const pageId = "00000000-0000-4000-8000-000000000021";
+    vi.mocked(apiRequest).mockResolvedValue({
+      collection_id: collectionId,
+      collection_status: "PROCESSING",
+      manifest_revision: 2,
+      sequence: 17,
+      total_pages: 1,
+      projected_page_count: 1,
+      route_state_counts: { "native:COMPLETED": 1 },
+      clusters: [],
+      pages: [
+        {
+          page_id: pageId,
+          document_id: "00000000-0000-4000-8000-000000000022",
+          document_version_id: "00000000-0000-4000-8000-000000000023",
+          page_number: 1,
+          status: "COMPLETED",
+          route: "native",
+          preview_ref: `/v1/pages/${pageId}/preview`,
+          finding_count: 1,
+        },
+      ],
+      knowledge: {
+        note_ids: [],
+        entity_ids: [],
+        relation_ids: [],
+        package_ids: [],
+        note_count: 0,
+        entity_count: 0,
+        relation_count: 0,
+        package_count: 0,
+      },
+      integrity: {
+        file_status_counts: {},
+        verification_status_counts: {},
+        authority_mapping_status_counts: {},
+        package_status_counts: {},
+        unresolved_count: 0,
+        quarantined_count: 0,
+        blocker_codes: [],
+      },
+      scene_hash: "f".repeat(64),
+    });
+
+    await expect(getCollectionScene(collectionId)).resolves.toEqual(
+      expect.objectContaining({ scene_hash: "f".repeat(64) }),
+    );
+  });
+
+  it("rejects inconsistent scene counts and validates proof URLs locally", async () => {
+    vi.mocked(apiRequest).mockResolvedValue({
+      collection_id: collectionId,
+      collection_status: "PROCESSING",
+      manifest_revision: 1,
+      sequence: 1,
+      total_pages: 0,
+      projected_page_count: 1,
+      route_state_counts: {},
+      clusters: [],
+      pages: [],
+      knowledge: {
+        note_ids: [],
+        entity_ids: [],
+        relation_ids: [],
+        package_ids: [],
+        note_count: 0,
+        entity_count: 0,
+        relation_count: 0,
+        package_count: 0,
+      },
+      integrity: {
+        file_status_counts: {},
+        verification_status_counts: {},
+        authority_mapping_status_counts: {},
+        package_status_counts: {},
+        unresolved_count: 0,
+        quarantined_count: 0,
+        blocker_codes: [],
+      },
+      scene_hash: "f".repeat(64),
+    });
+
+    await expect(getCollectionScene(collectionId)).rejects.toBeInstanceOf(
+      CollectionEventContractError,
+    );
+    expect(getDocumentVersionPagePreviewUrl(planId, 1)).toContain(
+      `/v1/document-versions/${planId}/pages/1/preview`,
+    );
+    expect(getProofCropUrl(jobId)).toContain(`/v1/proofs/${jobId}/crop`);
+    expect(() => getProofCropUrl("not-a-proof")).toThrow(
+      CollectionEventContractError,
     );
   });
 

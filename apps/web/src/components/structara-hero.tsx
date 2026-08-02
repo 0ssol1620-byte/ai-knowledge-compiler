@@ -1,41 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import {
-  Component,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
+import { SignatureScene } from "@/components/creative-review/folynta-creative-review";
+import creativeStyles from "@/components/creative-review/folynta-creative-review.module.css";
 import type { StructaraLocale } from "@/lib/locale";
-
-const WebglScene = dynamic(() => import("./structara-webgl-scene"), {
-  ssr: false,
-  loading: () => null,
-});
-
-class WebglFallbackBoundary extends Component<
-  { children: ReactNode; onFailure: () => void },
-  { failed: boolean }
-> {
-  override state = { failed: false };
-
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-
-  override componentDidCatch() {
-    this.props.onFailure();
-  }
-
-  override render() {
-    return this.state.failed ? null : this.props.children;
-  }
-}
 
 export function hasUsableWebGL2(
   canvas: HTMLCanvasElement = document.createElement("canvas"),
@@ -53,112 +20,24 @@ export function hasUsableWebGL2(
 }
 
 export function StructaraHeroScene({ locale }: { locale: StructaraLocale }) {
-  const [enhance, setEnhance] = useState(false);
-  const [settled, setSettled] = useState(false);
-  const [sceneRun, setSceneRun] = useState(0);
-  const [inView, setInView] = useState(true);
-  const [documentVisible, setDocumentVisible] = useState(true);
-  const sceneRef = useRef<HTMLDivElement>(null);
-  const settleScene = useCallback(() => setSettled(true), []);
-  const disableScene = useCallback(() => setEnhance(false), []);
-
-  useEffect(() => {
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const narrow = window.matchMedia("(max-width: 960px)").matches;
-    const connection = (
-      navigator as Navigator & { connection?: { saveData?: boolean } }
-    ).connection;
-    if (reduced || narrow || connection?.saveData || !hasUsableWebGL2()) return;
-
-    const id = window.requestIdleCallback(() => setEnhance(true), {
-      timeout: 1600,
-    });
-    return () => {
-      window.cancelIdleCallback(id);
-    };
-  }, []);
-
-  useEffect(() => {
-    const scene = sceneRef.current;
-    if (!scene) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
-      { rootMargin: "120px" },
-    );
-    const handleVisibility = () => setDocumentVisible(!document.hidden);
-    observer.observe(scene);
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      observer.disconnect();
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, []);
-
   return (
     <div
-      ref={sceneRef}
-      className="st-hero-scene"
-      data-enhanced={enhance}
-      data-settled={settled}
-      data-truth-class="first-party-illustrative-3d"
+      className="st-hero-scene folynta-folio-hero"
+      data-enhanced="false"
+      data-settled="true"
+      data-direction="folio-synthesis"
+      data-truth-class="deterministic-first-party-t1"
     >
-      <picture className="st-hero-render">
-        <source
-          media="(max-width: 640px)"
-          srcSet="/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif"
-          type="image/avif"
-        />
-        <source
-          media="(max-width: 960px)"
-          srcSet="/hero/STR-HOME-T2-HERO-EN-TABLET-1600x1200-v01.avif"
-          type="image/avif"
-        />
-        <source
-          srcSet="/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif"
-          type="image/avif"
-        />
-        <Image
-          src="/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.webp"
-          alt=""
-          width={2880}
-          height={1800}
-          decoding="async"
-          loading="eager"
-          fetchPriority="low"
-          sizes="(max-width: 640px) 100vw, (max-width: 960px) 92vw, 50vw"
-        />
-      </picture>
-      {enhance && (
-        <div className="st-webgl-layer" aria-hidden="true">
-          <WebglFallbackBoundary key={sceneRun} onFailure={disableScene}>
-            <WebglScene
-              active={inView && documentVisible && !settled}
-              onSettled={settleScene}
-              onContextFailure={disableScene}
-            />
-          </WebglFallbackBoundary>
-        </div>
-      )}
+      <div className={creativeStyles.publicSignature} aria-hidden="true">
+        <SignatureScene direction="folio" />
+      </div>
       <p className="sr-only">
         {locale === "ko"
-          ? "서로 다른 보고서, 논문, 표와 매뉴얼이 의미 블록으로 분해되고 검증된 뒤 하나의 지식 구조로 결합되는 애니메이션."
-          : "Reports, papers, tables, and manuals separate into semantic blocks, receive source verification, and compile into one knowledge plane."}
+          ? "보고서, 원장, 논문, 슬라이드, 스캔 문서 등 열두 유형의 원문이 검증된 하나의 folio와 원문 영수증으로 컴파일됩니다."
+          : "Twelve source types compile into one verified folio while an evidence receipt preserves the route to the exact source."}
       </p>
       <div className="st-hero-scene-meta">
-        <small>12 SOURCES → VERIFIED KNOWLEDGE PLANE</small>
-        {enhance && settled && (
-          <button
-            type="button"
-            onClick={() => {
-              setSettled(false);
-              setSceneRun((value) => value + 1);
-            }}
-          >
-            {locale === "ko" ? "장면 다시 보기" : "Replay scene"}
-          </button>
-        )}
+        <small>12 SOURCES → 1 VERIFIED FOLIO → SOURCE RECEIPT</small>
       </div>
     </div>
   );

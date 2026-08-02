@@ -180,6 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       "/developers",
       "/company",
       "/legal",
+      "/creative-review",
     ].some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
     ) ||

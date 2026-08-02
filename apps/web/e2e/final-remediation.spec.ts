@@ -18,8 +18,9 @@ test("FOLYNTA home matches the compiler promise and exact seven-scene authority"
     page.getByRole("link", { name: "Compile your collection" }).first(),
   ).toHaveAttribute("href", "/intake");
   await expect(page.locator("main > section[data-scene]")).toHaveCount(7);
-  await expect(page.locator('[data-scene="02-proof"]')).toBeVisible();
-  await expect(page.locator('[data-scene="06-security"]')).toBeAttached();
+  await expect(page.locator('[data-scene="02-processing"]')).toBeVisible();
+  await expect(page.locator('[data-scene="03-proof"]')).toBeAttached();
+  await expect(page.locator('[data-scene="06-trust-security"]')).toBeAttached();
   await expect(page.locator('[data-scene="07-final"]')).toBeAttached();
 });
 
@@ -32,10 +33,18 @@ test("Reduced-motion hero and source-evidence compare remain fully operable", as
   const hero = page.locator(".st-hero-scene");
   await expect(hero).toHaveAttribute("data-enhanced", "false");
   await expect(hero.locator("canvas")).toHaveCount(0);
-  await expect(hero.locator("picture")).toBeVisible();
+  await expect(hero).toHaveAttribute("data-direction", "folio-synthesis");
+  await expect(hero).toHaveAttribute(
+    "data-truth-class",
+    "deterministic-first-party-t1",
+  );
+  await expect(
+    hero.getByText("1 verified folio", { exact: true }),
+  ).toBeVisible();
 
-  const proof = page.locator('[data-scene="02-proof"]');
+  const proof = page.locator('[data-scene="03-proof"]');
   await proof.scrollIntoViewIfNeeded();
+  await proof.getByRole("button", { name: "DART · Korea" }).click();
   await proof.getByRole("tab", { name: "Original" }).click();
   await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
     "data-evidence-state",
@@ -409,4 +418,27 @@ test("Evidence film exposes the signed model portfolio with real controls", asyn
   await expect(
     page.getByRole("heading", { name: /Different strengths/ }),
   ).toBeVisible();
+});
+
+test("Compile route and signup keep the Google-centered entry contract", async ({
+  page,
+}) => {
+  await page.goto("/product/compile");
+  await expect(
+    page.getByRole("heading", {
+      name: "A source-linked result is the beginning of a knowledge system.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Actual product · durable processing workspace"),
+  ).toBeVisible();
+
+  await page.goto("/signup");
+  await expect(
+    page.getByRole("button", { name: "Continue with Google" }),
+  ).toBeVisible();
+  await expect(page.getByText("or continue with email")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Create workspace" }),
+  ).toBeEnabled();
 });

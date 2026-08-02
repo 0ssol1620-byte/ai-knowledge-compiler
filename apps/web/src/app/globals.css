@@ -4113,6 +4113,48 @@ a {
   min-height: 44px;
 }
 
+.login-google {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #5d6470;
+  background: #fff;
+  color: #111318;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.login-google:disabled {
+  cursor: progress;
+  opacity: 0.68;
+}
+
+.login-google:focus-visible {
+  outline: 2px solid #9db4ff;
+  outline-offset: 3px;
+}
+
+.login-divider {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  color: #9ba2ad;
+  font-size: 11px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  height: 1px;
+  background: #3c424b;
+  content: "";
+}
+
 .login-form .field input {
   min-height: 44px;
   font-size: 16px;
@@ -11551,6 +11593,39 @@ a {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.collection-theater-view-switch {
+  width: max-content;
+  margin: 0 0 14px;
+  display: flex;
+  border: 1px solid var(--border);
+}
+
+.collection-theater-view-switch button {
+  min-height: 40px;
+  padding: 9px 14px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 0;
+  border-right: 1px solid var(--border);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.collection-theater-view-switch button:last-child {
+  border-right: 0;
+}
+
+.collection-theater-view-switch button[aria-pressed="true"] {
+  color: var(--surface);
+  background: var(--text);
+}
+
+.collection-theater-view-switch button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .collection-connection {

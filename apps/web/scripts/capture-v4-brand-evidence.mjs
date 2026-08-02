@@ -35,13 +35,14 @@ const routes = [
   ["demo-dart", "/demo/dart", "public_proof"],
   ["demo-sec", "/demo/sec", "public_proof"],
 ];
-const signatureScenes = [
-  ["A01", '[data-signature-asset="A01"]'],
-  ["A02", '[data-signature-asset="A02"]'],
-  ["A03", '[data-signature-asset="A03"]'],
-  ["A04", '[data-signature-asset="A04"]'],
-  ["A05", '[data-signature-assets~="A05"]'],
-  ["A06", '[data-signature-asset="A06"]'],
+const narrativeScenes = [
+  ["01-hero", '[data-scene="01-hero"]'],
+  ["02-processing", '[data-scene="02-processing"]'],
+  ["03-proof", '[data-scene="03-proof"]'],
+  ["04-transformation", '[data-scene="04-transformation"]'],
+  ["05-knowledge", '[data-scene="05-knowledge"]'],
+  ["06-trust-security", '[data-scene="06-trust-security"]'],
+  ["07-final", '[data-scene="07-final"]'],
 ];
 const viewports = [
   [1920, 1080],
@@ -653,8 +654,8 @@ for (const locale of locales) {
         },
         { expectedLocale: locale },
       );
-      for (const [assetId, selector] of signatureScenes) {
-        const scene = `signature_${assetId}`;
+      for (const [sceneId, selector] of narrativeScenes) {
+        const scene = `narrative_${sceneId}`;
         const locator = signaturePage.locator(selector).first();
         await locator.waitFor({ state: "visible", timeout: 20_000 });
         await locator.scrollIntoViewIfNeeded();
@@ -815,7 +816,7 @@ for (const locale of locales) {
               .map((image) => image.currentSrc || image.src),
           };
         });
-        const file = `signature-${assetId.toLowerCase()}__${locale}__${width}x${height}__${motion}.webp`;
+        const file = `narrative-${sceneId.toLowerCase()}__${locale}__${width}x${height}__${motion}.webp`;
         const filePath = resolve(outputRoot, file);
         await locator.screenshot({
           path: filePath,
@@ -827,7 +828,7 @@ for (const locale of locales) {
         const dimensions = webpDimensions(bytes);
         records.push({
           route: "/",
-          route_set: "signature_asset",
+          route_set: "homepage_narrative_scene",
           scene,
           locale,
           motion,
@@ -867,7 +868,7 @@ for (const locale of locales) {
       }
       await signaturePage.close();
       console.log(
-        `Captured ${locale} / ${motion} / ${width}x${height} (${records.length}/${(routes.length + signatureScenes.length) * viewports.length * locales.length * motionModes.length}).`,
+        `Captured ${locale} / ${motion} / ${width}x${height} (${records.length}/${(routes.length + narrativeScenes.length) * viewports.length * locales.length * motionModes.length}).`,
       );
       await context.close();
     }
@@ -890,12 +891,12 @@ const blockers = records.flatMap((record) => {
     findings.push("empty_main");
   }
   if (
-    record.scene.startsWith("signature_") &&
+    record.scene.startsWith("narrative_") &&
     (record.inspection.asset_width_px <= 0 ||
       record.inspection.asset_height_px <= 0 ||
       record.inspection.asset_text_length <= 0)
   ) {
-    findings.push("empty_signature_asset");
+    findings.push("empty_narrative_scene");
   }
   if (record.inspection.horizontal_overflow_px > 0) {
     findings.push("horizontal_overflow");
@@ -945,7 +946,7 @@ const manifest = {
     screenshot_kind: "named_scene_crop",
     scenes: [
       "above_fold",
-      ...signatureScenes.map(([assetId]) => `signature_${assetId}`),
+      ...narrativeScenes.map(([sceneId]) => `narrative_${sceneId}`),
     ],
     exact_widths_px: viewports.map(([width]) => width),
     languages: locales,
@@ -954,11 +955,11 @@ const manifest = {
     computed_core_text_floor_px: 14,
     core_target_floor_px: { desktop: 24, mobile: 44 },
     expected_capture_count:
-      (routes.length + signatureScenes.length) *
+      (routes.length + narrativeScenes.length) *
       viewports.length *
       locales.length *
       motionModes.length,
-    signature_assets: signatureScenes.map(([assetId]) => assetId),
+    homepage_narrative_scenes: narrativeScenes.map(([sceneId]) => sceneId),
   },
   application: {
     base_url: baseUrl.origin,

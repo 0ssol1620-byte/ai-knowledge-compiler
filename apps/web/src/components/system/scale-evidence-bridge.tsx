@@ -1,11 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 
-import { MarkdownWorkspace } from "@/components/workspace/markdown-workspace";
-import { PageRail } from "@/components/workspace/page-rail";
 import type { ScaleEvidenceServerConfig } from "@/lib/scale-evidence-server";
 import type { CanonicalBlock, PageSummary } from "@/lib/types";
+
+const ScalePageRail = dynamic(
+  () => import("@/components/workspace/page-rail").then((module) => module.PageRail),
+  { ssr: false },
+);
+const ScaleMarkdownWorkspace = dynamic(
+  () =>
+    import("@/components/workspace/markdown-workspace").then(
+      (module) => module.MarkdownWorkspace,
+    ),
+  { ssr: false },
+);
 
 type ScaleProfile =
   | "processing_ui_1000_pages"
@@ -110,30 +121,34 @@ export function ScaleEvidenceBridge({
       delete window.__AKC_SCALE_EVIDENCE__;
       return;
     }
-    let frameOne = 0;
-    let frameTwo = 0;
-    frameOne = window.requestAnimationFrame(() => {
-      frameTwo = window.requestAnimationFrame(() => {
-        const root = document.querySelector<HTMLElement>(
-          `[data-akc-scale-root="${evidence.profile}"]`,
-        );
-        if (
-          !root ||
-          root.dataset.fixtureSha256 !== evidence.fixture_sha256 ||
-          root.dataset.rendererComponent !==
-            evidence.virtualization.renderer_component ||
-          !root.querySelector('[data-akc-renderer-bound="true"]')
-        ) {
-          delete window.__AKC_SCALE_EVIDENCE__;
-          return;
-        }
+    let frame = 0;
+    let attempts = 0;
+    const verifyRenderer = () => {
+      const root = document.querySelector<HTMLElement>(
+        `[data-akc-scale-root="${evidence.profile}"]`,
+      );
+      const identityMatches =
+        root?.dataset.fixtureSha256 === evidence.fixture_sha256 &&
+        root?.dataset.rendererComponent ===
+          evidence.virtualization.renderer_component;
+      if (
+        identityMatches &&
+        root?.querySelector('[data-akc-renderer-bound="true"]')
+      ) {
         window.__AKC_SCALE_EVIDENCE__ = { ...evidence, ready: true };
         root.dataset.ready = "true";
-      });
-    });
+        return;
+      }
+      attempts += 1;
+      if (attempts < 300) {
+        frame = window.requestAnimationFrame(verifyRenderer);
+      } else {
+        delete window.__AKC_SCALE_EVIDENCE__;
+      }
+    };
+    frame = window.requestAnimationFrame(verifyRenderer);
     return () => {
-      window.cancelAnimationFrame(frameOne);
-      window.cancelAnimationFrame(frameTwo);
+      window.cancelAnimationFrame(frame);
       delete window.__AKC_SCALE_EVIDENCE__;
     };
   }, [evidence]);
@@ -222,7 +237,7 @@ function ProcessingPageScaleAdapter() {
       data-data-contract="PageSummary[]"
       data-source-total={pages.length}
     >
-      <PageRail
+      <ScalePageRail
         pages={pages}
         selectedPageId={pages[0]!.id}
         onSelect={() => undefined}
@@ -266,7 +281,7 @@ function WorkspaceBlockScaleAdapter() {
       data-source-total={allBlocks.length}
       data-window-items={visible.length}
     >
-      <MarkdownWorkspace
+      <ScaleMarkdownWorkspace
         blocks={visible}
         selectedBlockId={visible[0]!.id}
         onSelectBlock={() => undefined}

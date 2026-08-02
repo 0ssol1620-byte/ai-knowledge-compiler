@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 const publicRoutes = [
   "/",
   "/product",
+  "/product/compile",
   "/product/convert",
   "/product/verify",
   "/product/knowledge",
@@ -104,13 +105,23 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
     page.getByText("Page → Structure → Evidence → Knowledge → Intelligence"),
   ).toBeVisible();
   await expect(page.locator("main > section[data-scene]")).toHaveCount(7);
-  await expect(page.getByText("Return every important result to the exact source that supports it.")).toBeVisible();
-  await expect(page.getByText("Understand. Verify. Connect. Activate.")).toBeVisible();
+  await expect(
+    page.getByText(
+      "Return every important result to the exact source that supports it.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Understand. Verify. Connect. Activate."),
+  ).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
   await expect(page.locator("body")).not.toContainText(
     "working name pending brand clearance",
   );
-  await expect(page.getByRole("heading", { name: "Turn your documents into a system of knowledge." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Turn your documents into a system of knowledge.",
+    }),
+  ).toBeVisible();
 });
 
 test("product marketing uses real product evidence and deterministic diagrams", async ({

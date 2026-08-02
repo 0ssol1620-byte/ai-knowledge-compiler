@@ -30,6 +30,7 @@ from akc_api.models import (
     CollectionEvent,
     CollectionFile,
     CollectionProcessingTaskBinding,
+    CollectionRegion,
     CollectionSourceRoot,
     CostPredictionModel,
     CreditLedger,
@@ -46,6 +47,7 @@ from akc_api.models import (
     PackageManifest,
     PackageValidation,
     Page,
+    PageAsset,
     PageAttempt,
     PreflightFeatureRecord,
     ProcessingJob,
@@ -56,6 +58,7 @@ from akc_api.models import (
 from akc_api.settings import Settings
 from akc_exporters import import_knowledge_package
 from akc_retrieval import HmacSha256RowAttestor, PostgresHybridIndexer
+from PIL import Image
 from sqlalchemy import func, select
 
 _SUPPORT_KEY = "v4-collection-test-support-key"
@@ -673,6 +676,61 @@ async def test_collection_vertical_slice_is_idempotent_partial_and_fail_closed(
         project_id=uuid.UUID(project_id),
         document_id=uuid.UUID(legacy["document_id"]),
     )
+    preview_buffer = io.BytesIO()
+    Image.new("RGB", (200, 300), (247, 244, 235)).save(preview_buffer, format="PNG")
+    preview_bytes = preview_buffer.getvalue()
+    proof_storage_key = f"proof-tests/{collection_id}/page-1.png"
+    await app.state.object_store.put_derived(proof_storage_key, preview_bytes)
+    async with app.state.database.sessions() as session:
+        page = await session.scalar(
+            select(Page).where(
+                Page.tenant_id == tenant_id,
+                Page.document_id == uuid.UUID(legacy["document_id"]),
+                Page.page_number == 1,
+            )
+        )
+        assert page is not None
+        session.add(
+            PageAsset(
+                tenant_id=tenant_id,
+                page_id=page.id,
+                asset_type="preview",
+                storage_key=proof_storage_key,
+                sha256=hashlib.sha256(preview_bytes).hexdigest(),
+                metadata_json={"size_bytes": len(preview_bytes)},
+            )
+        )
+        region = CollectionRegion(
+            tenant_id=tenant_id,
+            collection_id=uuid.UUID(collection_id),
+            collection_file_id=uuid.UUID(by_path["research/verified-source.txt"]["id"]),
+            document_id=uuid.UUID(legacy["document_id"]),
+            page_id=page.id,
+            stable_key="proof-region-1",
+            region_type="table_cell",
+            bbox1000=[200, 250, 800, 750],
+            status="verified",
+        )
+        session.add(region)
+        await session.flush()
+        proof = VerificationRecord(
+            tenant_id=tenant_id,
+            collection_id=uuid.UUID(collection_id),
+            collection_file_id=uuid.UUID(by_path["research/verified-source.txt"]["id"]),
+            region_id=region.id,
+            status="verified",
+            validator_revision="proof-crop-test-v1",
+            evidence={"block_id": "identifier-only"},
+        )
+        session.add(proof)
+        await session.commit()
+        proof_id = proof.id
+
+    proof_crop = await client.get(f"/v1/proofs/{proof_id}/crop")
+    assert proof_crop.status_code == 200, proof_crop.text
+    assert proof_crop.content.startswith(b"\x89PNG\r\n\x1a\n")
+    assert proof_crop.headers["cache-control"].startswith("private")
+    assert proof_crop.headers["x-akc-proof-id"] == str(proof_id)
     preflight = await client.post(
         f"/v1/collections/{collection_id}/preflight",
         headers={"Idempotency-Key": "collection-preflight"},
@@ -795,6 +853,21 @@ async def test_collection_vertical_slice_is_idempotent_partial_and_fail_closed(
     assert knowledge.json()["note_count"] == 1
     assert knowledge.json()["entity_count"] == 1
     assert knowledge.json()["relation_count"] == 1
+
+    scene = await client.get(f"/v1/collections/{collection_id}/scene")
+    scene_replay = await client.get(f"/v1/collections/{collection_id}/scene")
+    assert scene.status_code == scene_replay.status_code == 200, scene.text
+    assert scene.json() == scene_replay.json()
+    assert scene.json()["scene_hash"] == scene_replay.json()["scene_hash"]
+    assert scene.json()["sequence"] >= 1
+    assert scene.json()["projected_page_count"] <= 200
+    assert scene.json()["knowledge"]["note_count"] == 1
+    assert scene.json()["knowledge"]["entity_count"] == 1
+    assert scene.json()["knowledge"]["relation_count"] == 1
+    scene_wire = json.dumps(scene.json(), sort_keys=True)
+    assert "storage_key" not in scene_wire
+    assert "source_text" not in scene_wire
+    assert "presigned" not in scene_wire
 
     exported = await client.post(
         f"/v1/collections/{collection_id}/exports",

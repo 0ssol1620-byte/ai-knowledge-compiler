@@ -26,6 +26,11 @@ const productEvidence: Record<
     label: "Actual product · deterministic demo workspace",
     alt: "FOLYNTA workspace with active jobs, integrity findings, knowledge notes, and source coverage.",
   },
+  "/product/compile": {
+    src: "/product/processing.webp",
+    label: "Actual product · durable processing workspace",
+    alt: "FOLYNTA processing workspace linking source pages, typed blocks, evidence, notes, and a signed package.",
+  },
   "/product/convert": {
     src: "/product/processing.webp",
     label: "Actual product · processing workspace",

@@ -91,6 +91,16 @@ from .prompts import (
     build_source_payload,
     prompt_version_sha256,
 )
+from .public_proof import (
+    PublicAuthorityReceipt,
+    PublicProofAnchor,
+    PublicProofFixture,
+    PublicProofLocale,
+    PublicProofMarket,
+    PublicProofResult,
+    resolve_public_proof_market,
+    validate_public_proof_binding,
+)
 from .reading_order import (
     HEADING_INFERENCE_VERSION,
     READING_ORDER_VERSION,
@@ -162,6 +172,12 @@ __all__ = [
     "PageState",
     "ProcessingEvent",
     "ProcessingStage",
+    "PublicAuthorityReceipt",
+    "PublicProofAnchor",
+    "PublicProofFixture",
+    "PublicProofLocale",
+    "PublicProofMarket",
+    "PublicProofResult",
     "QualityReport",
     "RagChunk",
     "ReadingOrderRecord",
@@ -191,7 +207,9 @@ __all__ = [
     "normalize_block_text",
     "page_transition_allowed",
     "prompt_version_sha256",
+    "resolve_public_proof_market",
     "restore_cross_page_continuity",
     "sha256_digest",
     "validate_collection_event_payload",
+    "validate_public_proof_binding",
 ]

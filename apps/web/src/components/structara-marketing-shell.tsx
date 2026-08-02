@@ -12,7 +12,7 @@ import { useStructaraLocale } from "@/components/locale-provider";
 const routeGroups = {
   product: [
     ["/product", "overview"],
-    ["/product/convert", "convert"],
+    ["/product/compile", "convert"],
     ["/product/verify", "verify"],
     ["/product/knowledge", "knowledge"],
     ["/product/graph", "graph"],
@@ -32,7 +32,7 @@ const labels = {
     product: "Product",
     solutions: "Solutions",
     overview: "Overview",
-    convert: "Convert",
+    convert: "Compile",
     verify: "Verify",
     knowledge: "Knowledge",
     graph: "Graph",
@@ -67,7 +67,7 @@ const labels = {
     legal: "Legal",
     productTagline: "From every page, a system of knowledge.",
     footerLinks: {
-      convert: "convert",
+      convert: "compile",
       verify: "verify",
       knowledge: "knowledge",
       graph: "graph",
@@ -93,7 +93,7 @@ const labels = {
     product: "제품",
     solutions: "솔루션",
     overview: "개요",
-    convert: "변환",
+    convert: "컴파일",
     verify: "검증",
     knowledge: "지식",
     graph: "그래프",
@@ -127,7 +127,7 @@ const labels = {
     legal: "법적 고지",
     productTagline: "From every page, a system of knowledge.",
     footerLinks: {
-      convert: "변환",
+      convert: "컴파일",
       verify: "검증",
       knowledge: "지식",
       graph: "그래프",
@@ -280,18 +280,20 @@ export function StructaraMarketingShell({
       )}
       {children}
       <footer className="st-footer">
-        {showFooterCta && <div className="st-footer-cta">
-          <p>{copy.footerLead}</p>
-          <h2>{copy.footerTitle}</h2>
-          <div>
-            <Link href="/signup" className="st-button st-button-light">
-              {copy.build}
-            </Link>
-            <Link href="/company/contact" className="st-footer-link">
-              {copy.sales}
-            </Link>
+        {showFooterCta && (
+          <div className="st-footer-cta">
+            <p>{copy.footerLead}</p>
+            <h2>{copy.footerTitle}</h2>
+            <div>
+              <Link href="/signup" className="st-button st-button-light">
+                {copy.build}
+              </Link>
+              <Link href="/company/contact" className="st-footer-link">
+                {copy.sales}
+              </Link>
+            </div>
           </div>
-        </div>}
+        )}
         <div className="st-footer-grid">
           <div className="st-footer-brand">
             <BrandMark />
@@ -302,7 +304,7 @@ export function StructaraMarketingShell({
             [
               copy.productFooter,
               [
-                ["/product/convert", copy.footerLinks.convert],
+                ["/product/compile", copy.footerLinks.convert],
                 ["/product/verify", copy.footerLinks.verify],
                 ["/product/knowledge", copy.footerLinks.knowledge],
                 ["/product/graph", copy.footerLinks.graph],

@@ -15,14 +15,14 @@ type Chapter = {
 
 const labels = {
   en: {
-    eyebrow: "03 · Compiler transformation",
+    eyebrow: "04 · Compiler transformation",
     title: "Understand. Verify. Connect. Activate.",
     visual: "Active transformation",
     source: "Source page",
     result: "Verified output",
   },
   ko: {
-    eyebrow: "03 · 컴파일러 변환",
+    eyebrow: "04 · 컴파일러 변환",
     title: "이해하고, 검증하고, 연결하고, 활성화합니다.",
     visual: "현재 변환 단계",
     source: "원본 페이지",
@@ -65,7 +65,7 @@ export function TransformationStory({
     <section
       id="transformation"
       className="st-reference-story folynta-scene"
-      data-scene="03-transformation"
+      data-scene="04-transformation"
       data-signature-asset="A06"
       data-signature-assets="A02 A03 A04"
       data-truth-class="deterministic-reference-scene"

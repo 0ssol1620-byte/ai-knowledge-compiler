@@ -4812,6 +4812,17 @@ body.st-menu-open {
 
   .st-logo-link {
     min-width: 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .st-story-visual nav a,
+  .st-proof-provenance a,
+  .st-footer-grid nav a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .st-brand-copy small {

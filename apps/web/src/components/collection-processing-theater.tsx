@@ -27,18 +27,22 @@ import {
   ParallelProcessingTheater,
   type V6ConnectionState,
 } from "@/components/v6";
+import { ProcessingSceneWorkbench } from "@/components/processing-scene-workbench";
 import {
   CollectionSseUnavailableError,
   controlCollectionProcessing,
   getCollectionEvents,
+  getCollectionScene,
   restoreCollectionProcessing,
   retryCollectionProcessing,
   streamCollectionEvents,
   type CollectionEvent,
   type CollectionEventSnapshot,
+  type CollectionScene,
   type CollectionProcessingRun,
   type CollectionState,
 } from "@/lib/collection-runtime-client";
+import { projectProcessingScene } from "@/lib/processing-scene-model";
 import {
   collectionEventStage,
   localizedProcessingStageLabel,
@@ -85,6 +89,9 @@ export function CollectionProcessingTheater({
   const [retryHardCap, setRetryHardCap] = useState("");
   const [mobileTabsActive, setMobileTabsActive] = useState(false);
   const [mobileTab, setMobileTab] = useState<TheaterMobileTab>("progress");
+  const [viewMode, setViewMode] = useState<"scene" | "technical">("scene");
+  const [collectionScene, setCollectionScene] =
+    useState<CollectionScene | null>(null);
   const eventBuffer = useRef<CollectionEvent[]>([]);
   const sequence = useRef(
     Math.max(
@@ -150,6 +157,9 @@ export function CollectionProcessingTheater({
     void Promise.all([
       reconcile(controller.signal),
       restoreCollectionProcessing(collectionId).then(setRun),
+      getCollectionScene(collectionId, controller.signal).then(
+        setCollectionScene,
+      ),
     ]).catch((reason: unknown) => {
       if (controller.signal.aborted) return;
       setError(
@@ -165,7 +175,12 @@ export function CollectionProcessingTheater({
     if (!live || terminal) return;
     const controller = new AbortController();
     const interval = window.setInterval(() => {
-      void reconcile(controller.signal).catch((reason: unknown) => {
+      void Promise.all([
+        reconcile(controller.signal),
+        getCollectionScene(collectionId, controller.signal).then(
+          setCollectionScene,
+        ),
+      ]).catch((reason: unknown) => {
         if (!controller.signal.aborted) {
           setError(
             reason instanceof Error ? reason.message : "Event replay failed.",
@@ -224,6 +239,10 @@ export function CollectionProcessingTheater({
     [activeJobId, correlatedEvents],
   );
   const parallelEvidenceAvailable = hasV6ParallelEvidence(v6Events);
+  const sceneProjection = useMemo(
+    () => projectProcessingScene(collectionId, correlatedEvents).scene,
+    [collectionId, correlatedEvents],
+  );
   const v6Connection: V6ConnectionState = terminal
     ? "complete"
     : error
@@ -320,8 +339,7 @@ export function CollectionProcessingTheater({
   const processingControlAvailable =
     (snapshot?.status === "PROCESSING" &&
       snapshot.processing_status === "running") ||
-    (snapshot?.status === "PAUSED" &&
-      snapshot.processing_status === "paused");
+    (snapshot?.status === "PAUSED" && snapshot.processing_status === "paused");
 
   async function toggleProcessing(): Promise<void> {
     if (!run || controlling) return;
@@ -530,256 +548,289 @@ export function CollectionProcessingTheater({
       )}
 
       <nav
-        className="collection-theater-mobile-tabs"
-        aria-label={copy.mobileViews}
-        aria-hidden={!mobileTabsActive}
-        role={mobileTabsActive ? "tablist" : undefined}
+        className="collection-theater-view-switch"
+        aria-label={copy.viewModesLabel}
       >
-        {(
-          [
-            "progress",
-            "source",
-            "result",
-            "knowledge",
-            "integrity",
-          ] as TheaterMobileTab[]
-        ).map((id) => (
-          <button
-            key={id}
-            id={`collection-mobile-tab-${id}`}
-            type="button"
-            className={mobileTab === id ? "active" : undefined}
-            role={mobileTabsActive ? "tab" : undefined}
-            aria-selected={mobileTabsActive ? mobileTab === id : undefined}
-            aria-controls={
-              mobileTabsActive ? `collection-mobile-panel-${id}` : undefined
-            }
-            tabIndex={mobileTabsActive && mobileTab !== id ? -1 : 0}
-            onKeyDown={(event) => selectMobileTab(event, id)}
-            onClick={() => setMobileTab(id)}
-          >
-            {copy.mobileTabs[id]}
-          </button>
-        ))}
+        <button
+          type="button"
+          aria-pressed={viewMode === "scene"}
+          onClick={() => setViewMode("scene")}
+        >
+          {copy.sceneView}
+        </button>
+        <button
+          type="button"
+          aria-pressed={viewMode === "technical"}
+          onClick={() => setViewMode("technical")}
+        >
+          {copy.technicalView}
+        </button>
       </nav>
 
-      <section
-        id="collection-mobile-panel-progress"
-        className={clsx(
-          "collection-theater-stage-panel collection-theater-mobile-panel",
-          mobileTab !== "progress" && "collection-theater-mobile-hidden",
-        )}
-        role={mobileTabsActive ? "tabpanel" : undefined}
-        aria-labelledby={
-          mobileTabsActive
-            ? "collection-mobile-tab-progress"
-            : "collection-stage-title"
-        }
-        hidden={mobileTabsActive && mobileTab !== "progress"}
-      >
-        <header>
-          <div>
-            <p>01</p>
-            <h2 id="collection-stage-title">{copy.pipeline}</h2>
-          </div>
-          <span>
-            <Clock size={16} aria-hidden="true" />
-            {copy.persistedEvents(formatLocaleNumber(locale, events.length))}
-          </span>
-        </header>
-        <ol className="collection-stage-track">
-          {stages.map((stage, index) => (
-            <li key={stage.id} data-state={stage.state}>
-              <span className="collection-stage-marker">
-                {stage.state === "complete" ? (
-                  <Check size={14} weight="bold" aria-hidden="true" />
-                ) : (
-                  index + 1
+      {viewMode === "scene" ? (
+        <ProcessingSceneWorkbench
+          scene={collectionScene}
+          projection={sceneProjection}
+          locale={locale}
+          mobile={mobileTabsActive}
+        />
+      ) : (
+        <>
+          <nav
+            className="collection-theater-mobile-tabs"
+            aria-label={copy.mobileViews}
+            aria-hidden={!mobileTabsActive}
+            role={mobileTabsActive ? "tablist" : undefined}
+          >
+            {(
+              [
+                "progress",
+                "source",
+                "result",
+                "knowledge",
+                "integrity",
+              ] as TheaterMobileTab[]
+            ).map((id) => (
+              <button
+                key={id}
+                id={`collection-mobile-tab-${id}`}
+                type="button"
+                className={mobileTab === id ? "active" : undefined}
+                role={mobileTabsActive ? "tab" : undefined}
+                aria-selected={mobileTabsActive ? mobileTab === id : undefined}
+                aria-controls={
+                  mobileTabsActive ? `collection-mobile-panel-${id}` : undefined
+                }
+                tabIndex={mobileTabsActive && mobileTab !== id ? -1 : 0}
+                onKeyDown={(event) => selectMobileTab(event, id)}
+                onClick={() => setMobileTab(id)}
+              >
+                {copy.mobileTabs[id]}
+              </button>
+            ))}
+          </nav>
+
+          <section
+            id="collection-mobile-panel-progress"
+            className={clsx(
+              "collection-theater-stage-panel collection-theater-mobile-panel",
+              mobileTab !== "progress" && "collection-theater-mobile-hidden",
+            )}
+            role={mobileTabsActive ? "tabpanel" : undefined}
+            aria-labelledby={
+              mobileTabsActive
+                ? "collection-mobile-tab-progress"
+                : "collection-stage-title"
+            }
+            hidden={mobileTabsActive && mobileTab !== "progress"}
+          >
+            <header>
+              <div>
+                <p>01</p>
+                <h2 id="collection-stage-title">{copy.pipeline}</h2>
+              </div>
+              <span>
+                <Clock size={16} aria-hidden="true" />
+                {copy.persistedEvents(
+                  formatLocaleNumber(locale, events.length),
                 )}
               </span>
-              <span>
-                <strong>
-                  {localizedProcessingStageLabel(stage.id, locale)}
-                </strong>
-                <small>{copy.stageState[stage.state]}</small>
-              </span>
-              <b aria-label={copy.eventCount(stage.eventCount)}>
-                {formatLocaleNumber(locale, stage.eventCount)}
-              </b>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section
-        className="collection-evidence-workbench"
-        aria-label={copy.workbench}
-      >
-        <EvidencePanel
-          eyebrow="01"
-          title={copy.collectionIntelligence}
-          description={copy.collectionIntelligenceBody}
-          mobileTab="source"
-          activeMobileTab={mobileTab}
-          mobileTabsActive={mobileTabsActive}
-        >
-          {snapshot?.upload ? (
-            <dl className="collection-evidence-register">
-              <EvidenceFact
-                label={copy.uploadState}
-                value={snapshot.upload.status}
-              />
-              <EvidenceFact
-                label={copy.totalFiles}
-                value={snapshot.upload.total_files}
-              />
-              <EvidenceFact
-                label={copy.completedFiles}
-                value={snapshot.upload.completed_files}
-              />
-              <EvidenceFact
-                label={copy.duplicateFiles}
-                value={snapshot.upload.duplicate_files}
-              />
-              <EvidenceFact
-                label={copy.failedFiles}
-                value={snapshot.upload.failed_files}
-              />
-              <EvidenceFact
-                label={copy.manifestHash}
-                value={snapshot.upload.source_manifest_hash}
-                mono
-              />
-            </dl>
-          ) : (
-            <UnavailableEvidence>{copy.unavailable}</UnavailableEvidence>
-          )}
-          <EvidenceEventList
-            events={pageIntelligenceEvents}
-            unavailable={copy.pageEvidenceUnavailable}
-          />
-        </EvidencePanel>
-
-        <EvidencePanel
-          eyebrow="02"
-          title={copy.sourceTransformation}
-          description={copy.sourceTransformationBody}
-          mobileTab="result"
-          activeMobileTab={mobileTab}
-          mobileTabsActive={mobileTabsActive}
-        >
-          <EvidenceEventList
-            events={sourceTransformationEvents}
-            unavailable={copy.unavailable}
-          />
-        </EvidencePanel>
-
-        <EvidencePanel
-          eyebrow="03"
-          title={copy.knowledgeFormation}
-          description={copy.knowledgeFormationBody}
-          mobileTab="knowledge"
-          activeMobileTab={mobileTab}
-          mobileTabsActive={mobileTabsActive}
-        >
-          <EvidenceEventList
-            events={knowledgeFormationEvents}
-            unavailable={copy.unavailable}
-          />
-        </EvidencePanel>
-      </section>
-
-      <section
-        id="collection-mobile-panel-integrity"
-        className={clsx(
-          "collection-integrity-preview collection-theater-mobile-panel",
-          mobileTab !== "integrity" && "collection-theater-mobile-hidden",
-        )}
-        role={mobileTabsActive ? "tabpanel" : undefined}
-        aria-labelledby={
-          mobileTabsActive
-            ? "collection-mobile-tab-integrity"
-            : "collection-integrity-preview-title"
-        }
-        hidden={mobileTabsActive && mobileTab !== "integrity"}
-      >
-        <header>
-          <div>
-            <p>04</p>
-            <h2 id="collection-integrity-preview-title">
-              {copy.integrityEvidence}
-            </h2>
-          </div>
-          <Link href={`/integrity?collection=${collectionId}`}>
-            {copy.integrity}
-          </Link>
-        </header>
-        <EvidenceEventList
-          events={integrityEvents}
-          unavailable={copy.unavailable}
-        />
-      </section>
-
-      <div className="collection-theater-grid">
-        <section
-          className={clsx(
-            "collection-theater-mobile-panel",
-            mobileTab !== "progress" && "collection-theater-mobile-hidden",
-          )}
-          aria-labelledby="collection-credit-title"
-        >
-          <header>
-            <p>02</p>
-            <h2 id="collection-credit-title">{copy.credits}</h2>
-          </header>
-          <dl className="collection-credit-ledger">
-            <Credit label={copy.reserved} value={run?.credits_reserved} />
-            <Credit label={copy.consumed} value={run?.credits_consumed} />
-            <Credit label={copy.refunded} value={run?.credits_refunded} />
-            <Credit label={copy.released} value={run?.credits_released} />
-            <Credit label={copy.hardCap} value={run?.hard_cap_credits} />
-          </dl>
-          <p className="collection-policy-note">
-            <ShieldCheck size={16} weight="fill" aria-hidden="true" />
-            {run?.overage_policy ?? copy.policyPending}
-          </p>
-        </section>
-
-        <section
-          className={clsx(
-            "collection-theater-mobile-panel",
-            mobileTab !== "integrity" && "collection-theater-mobile-hidden",
-          )}
-          aria-labelledby="collection-event-title"
-        >
-          <header>
-            <p>03</p>
-            <h2 id="collection-event-title">{copy.evidence}</h2>
-          </header>
-          {events.length === 0 ? (
-            <p className="collection-event-empty">{copy.noEvents}</p>
-          ) : (
-            <ol className="collection-event-ledger">
-              {events
-                .slice(-20)
-                .reverse()
-                .map((event) => (
-                  <li key={event.event_id}>
-                    <Database size={15} aria-hidden="true" />
-                    <span>
-                      <strong>{event.event_type}</strong>
-                      <small>
-                        #{event.sequence} ·{" "}
-                        {formatTimestamp(event.timestamp, locale)}
-                      </small>
-                    </span>
-                    {event.job_id && <code>{event.job_id}</code>}
-                  </li>
-                ))}
+            </header>
+            <ol className="collection-stage-track">
+              {stages.map((stage, index) => (
+                <li key={stage.id} data-state={stage.state}>
+                  <span className="collection-stage-marker">
+                    {stage.state === "complete" ? (
+                      <Check size={14} weight="bold" aria-hidden="true" />
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
+                  <span>
+                    <strong>
+                      {localizedProcessingStageLabel(stage.id, locale)}
+                    </strong>
+                    <small>{copy.stageState[stage.state]}</small>
+                  </span>
+                  <b aria-label={copy.eventCount(stage.eventCount)}>
+                    {formatLocaleNumber(locale, stage.eventCount)}
+                  </b>
+                </li>
+              ))}
             </ol>
-          )}
-        </section>
-      </div>
+          </section>
+
+          <section
+            className="collection-evidence-workbench"
+            aria-label={copy.workbench}
+          >
+            <EvidencePanel
+              eyebrow="01"
+              title={copy.collectionIntelligence}
+              description={copy.collectionIntelligenceBody}
+              mobileTab="source"
+              activeMobileTab={mobileTab}
+              mobileTabsActive={mobileTabsActive}
+            >
+              {snapshot?.upload ? (
+                <dl className="collection-evidence-register">
+                  <EvidenceFact
+                    label={copy.uploadState}
+                    value={snapshot.upload.status}
+                  />
+                  <EvidenceFact
+                    label={copy.totalFiles}
+                    value={snapshot.upload.total_files}
+                  />
+                  <EvidenceFact
+                    label={copy.completedFiles}
+                    value={snapshot.upload.completed_files}
+                  />
+                  <EvidenceFact
+                    label={copy.duplicateFiles}
+                    value={snapshot.upload.duplicate_files}
+                  />
+                  <EvidenceFact
+                    label={copy.failedFiles}
+                    value={snapshot.upload.failed_files}
+                  />
+                  <EvidenceFact
+                    label={copy.manifestHash}
+                    value={snapshot.upload.source_manifest_hash}
+                    mono
+                  />
+                </dl>
+              ) : (
+                <UnavailableEvidence>{copy.unavailable}</UnavailableEvidence>
+              )}
+              <EvidenceEventList
+                events={pageIntelligenceEvents}
+                unavailable={copy.pageEvidenceUnavailable}
+              />
+            </EvidencePanel>
+
+            <EvidencePanel
+              eyebrow="02"
+              title={copy.sourceTransformation}
+              description={copy.sourceTransformationBody}
+              mobileTab="result"
+              activeMobileTab={mobileTab}
+              mobileTabsActive={mobileTabsActive}
+            >
+              <EvidenceEventList
+                events={sourceTransformationEvents}
+                unavailable={copy.unavailable}
+              />
+            </EvidencePanel>
+
+            <EvidencePanel
+              eyebrow="03"
+              title={copy.knowledgeFormation}
+              description={copy.knowledgeFormationBody}
+              mobileTab="knowledge"
+              activeMobileTab={mobileTab}
+              mobileTabsActive={mobileTabsActive}
+            >
+              <EvidenceEventList
+                events={knowledgeFormationEvents}
+                unavailable={copy.unavailable}
+              />
+            </EvidencePanel>
+          </section>
+
+          <section
+            id="collection-mobile-panel-integrity"
+            className={clsx(
+              "collection-integrity-preview collection-theater-mobile-panel",
+              mobileTab !== "integrity" && "collection-theater-mobile-hidden",
+            )}
+            role={mobileTabsActive ? "tabpanel" : undefined}
+            aria-labelledby={
+              mobileTabsActive
+                ? "collection-mobile-tab-integrity"
+                : "collection-integrity-preview-title"
+            }
+            hidden={mobileTabsActive && mobileTab !== "integrity"}
+          >
+            <header>
+              <div>
+                <p>04</p>
+                <h2 id="collection-integrity-preview-title">
+                  {copy.integrityEvidence}
+                </h2>
+              </div>
+              <Link href={`/integrity?collection=${collectionId}`}>
+                {copy.integrity}
+              </Link>
+            </header>
+            <EvidenceEventList
+              events={integrityEvents}
+              unavailable={copy.unavailable}
+            />
+          </section>
+
+          <div className="collection-theater-grid">
+            <section
+              className={clsx(
+                "collection-theater-mobile-panel",
+                mobileTab !== "progress" && "collection-theater-mobile-hidden",
+              )}
+              aria-labelledby="collection-credit-title"
+            >
+              <header>
+                <p>02</p>
+                <h2 id="collection-credit-title">{copy.credits}</h2>
+              </header>
+              <dl className="collection-credit-ledger">
+                <Credit label={copy.reserved} value={run?.credits_reserved} />
+                <Credit label={copy.consumed} value={run?.credits_consumed} />
+                <Credit label={copy.refunded} value={run?.credits_refunded} />
+                <Credit label={copy.released} value={run?.credits_released} />
+                <Credit label={copy.hardCap} value={run?.hard_cap_credits} />
+              </dl>
+              <p className="collection-policy-note">
+                <ShieldCheck size={16} weight="fill" aria-hidden="true" />
+                {run?.overage_policy ?? copy.policyPending}
+              </p>
+            </section>
+
+            <section
+              className={clsx(
+                "collection-theater-mobile-panel",
+                mobileTab !== "integrity" && "collection-theater-mobile-hidden",
+              )}
+              aria-labelledby="collection-event-title"
+            >
+              <header>
+                <p>03</p>
+                <h2 id="collection-event-title">{copy.evidence}</h2>
+              </header>
+              {events.length === 0 ? (
+                <p className="collection-event-empty">{copy.noEvents}</p>
+              ) : (
+                <ol className="collection-event-ledger">
+                  {events
+                    .slice(-20)
+                    .reverse()
+                    .map((event) => (
+                      <li key={event.event_id}>
+                        <Database size={15} aria-hidden="true" />
+                        <span>
+                          <strong>{event.event_type}</strong>
+                          <small>
+                            #{event.sequence} ·{" "}
+                            {formatTimestamp(event.timestamp, locale)}
+                          </small>
+                        </span>
+                        {event.job_id && <code>{event.job_id}</code>}
+                      </li>
+                    ))}
+                </ol>
+              )}
+            </section>
+          </div>
+        </>
+      )}
 
       <footer className="collection-theater-footer">
         <Link href={`/integrity?collection=${collectionId}`}>
@@ -1019,6 +1070,9 @@ const COPY = {
     loading: "Loading snapshot",
     notAssigned: "Not assigned",
     notMeasured: "Not measured",
+    viewModesLabel: "Processing view",
+    sceneView: "Scene view",
+    technicalView: "Technical view",
     pipeline: "Autonomous knowledge pipeline",
     workbench: "Evidence-backed processing workbench",
     collectionIntelligence: "Collection & Page Intelligence",
@@ -1101,6 +1155,9 @@ const COPY = {
     loading: "스냅샷 불러오는 중",
     notAssigned: "할당되지 않음",
     notMeasured: "측정되지 않음",
+    viewModesLabel: "처리 보기",
+    sceneView: "장면 보기",
+    technicalView: "기술 보기",
     pipeline: "자율 지식 파이프라인",
     workbench: "근거 기반 처리 워크벤치",
     collectionIntelligence: "컬렉션 및 페이지 인텔리전스",

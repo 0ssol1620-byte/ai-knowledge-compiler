@@ -91,7 +91,8 @@ export function StructaraProofDemo({
         </div>
         <div className="st-proof-source">
           <small>
-            ORIGINAL · OPENDART RECEIPT {DART_PUBLIC_FIXTURE.receiptNumber}
+            SOURCE-NATIVE XBRL · OPENDART RECEIPT{" "}
+            {DART_PUBLIC_FIXTURE.receiptNumber}
           </small>
           <h3>{DART_PUBLIC_FIXTURE.company}</h3>
           <p>{DART_PUBLIC_FIXTURE.statement}</p>
@@ -151,7 +152,9 @@ export function StructaraProofDemo({
             </small>
           </div>
           <div className="folynta-evidence-state" aria-live="polite">
-            <span>{locale === "ko" ? "상호작용 상태" : "Interaction state"}</span>
+            <span>
+              {locale === "ko" ? "상호작용 상태" : "Interaction state"}
+            </span>
             <strong>{evidenceState}</strong>
             <small>
               {locale === "ko"

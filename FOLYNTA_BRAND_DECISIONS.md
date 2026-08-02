@@ -1,8 +1,8 @@
 # FOLYNTA approved repository decisions
 
-Authority: `D:\FOLYNTA_World_Class_Category_Leading_Enterprise_Product_ULTRA_DETAILED_Integrated_Masterplan_FINAL_KO_2026-08-02.md`
+Authority: `D:\FOLYNTA_WEBSITE_TOTAL_CREATIVE_REBUILD_MASTERPLAN_FINAL_v3_FREE_ASSET_FIRST_NO_GENERATION_DEFAULT_KO_2026-08-02.md`
 
-Authority SHA-256: `ed169695892277a184b467d850cb32ba007e6ced7b8b0ddd6f04a4bc6508386b`
+Authority SHA-256: `fa8ce3a01499fcc558c6bfdf63200849667bc7d774f74bcba86d970e288e8bb5`
 
 ## D-001 — Public brand contract
 
@@ -24,27 +24,39 @@ Warm matte paper and near-black ink lead. Cobalt marks transformation, cyan mark
 
 Status: Approved and tokenized in `apps/web/src/app/folynta.css`.
 
-## D-004 — Static directions before runtime 3D
+## D-004 — Folio Synthesis is the selected static direction
 
-The required distinct directions are:
+Four deterministic studies were reviewed at desktop and mobile sizes:
 
-1. Editorial Library — source diversity and calm archive rhythm.
-2. Computational Archive — typed blocks, evidence routing, and quarantine.
-3. Knowledge Monolith — shallow verified plane and FOLYNTA negative space.
+1. Folio Synthesis — twelve source classes become one verified folio and receipt.
+2. Evidence Axis — a directional compilation axis.
+3. Knowledge Plane — a restrained compiled plane.
+4. Symbol Marks — an identity-mark study.
 
-The deterministic SVG masters are registered as `FOL-HOME-T1-CONCEPT-DIRECTIONS-001`. They are brand illustrations, never product or benchmark evidence.
+The 2026-08-02 owner directive to execute the v3 masterplan accepts its named
+`Folio Synthesis` direction as the public default. It is a deterministic T1
+brand illustration, never product, benchmark, customer, or security evidence.
 
-Status: Implemented and reviewed in current in-app Chromium at 1440, 768, and 390 px.
+Status: Selected and implemented; verified in current in-app Chromium at 1440,
+1024, and 390 px in KO and EN. Independent external creative review remains an
+external governance gate and is not represented as completed by automation.
 
-## D-005 — Hero runtime
+## D-005 — Deterministic-first hero runtime
 
-The 3D sequence runs once and settles at 8.2 seconds. Runtime action speed is normalized to the target even while the checked-in GLB retains the older source duration. It pauses offscreen or when the document is hidden, does not initialize for reduced motion or narrow/data-saver contexts, and offers explicit replay only after settlement.
+The public hero renders Folio Synthesis directly from first-party semantic HTML
+and CSS. It has no WebGL initialization, fake progress, autoplay loop, or
+network-dependent visual asset. Reduced motion receives the same information
+and hierarchy without needing a separate substitute.
 
-Status: Implemented and regenerated with hash-verified Blender 4.5.12 LTS. The checked-in master, GLB LODs, 8.2-second motion, stills, transparent objects, and browser derivatives are current.
+Status: Implemented. The former GLB assets remain historical repository
+artifacts only and are not loaded by the public homepage.
 
 ## D-006 — Landing authority
 
-The homepage has exactly seven narrative scenes: hero, full-bleed proof, compiler transformation, knowledge system, measured quality/routing, security/control, and one final CTA. The footer CTA is suppressed on the homepage to preserve the single-final-CTA contract.
+The homepage has exactly seven narrative scenes: Folio Synthesis hero, durable
+event processing, locale-aware public proof, compiler transformation, knowledge
+system, measured trust plus security, and one final CTA. The footer CTA is
+suppressed on the homepage to preserve the single-final-CTA contract.
 
 Status: Implemented locally.
 
