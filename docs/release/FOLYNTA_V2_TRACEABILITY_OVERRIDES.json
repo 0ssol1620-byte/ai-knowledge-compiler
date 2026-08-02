@@ -502,12 +502,12 @@
           "claim": "The CI gate executes migrations, FORCE RLS inspection, owner and BYPASSRLS checks, cross-tenant reads and writes, pool context, and worker-role capabilities."
         },
         {
-          "path": ".github/workflows/ci.yml",
-          "claim": "The real PostgreSQL 17 RLS gate is wired into CI."
+          "path": "benchmark/reports/folynta-postgres-rls-ci-gate-2026-08-02.json",
+          "claim": "GitHub Actions run 30741895129 passed the real PostgreSQL 17 migration, FORCE RLS, cross-tenant, pool-context, owner, BYPASSRLS, and worker-role gate."
         }
       ],
-      "blocker": "The current local PostgreSQL instance rejected the stale repository credential; branch CI evidence is pending push.",
-      "notes": "No local database password or role was reset to avoid altering unrelated host state."
+      "blocker": "A production database deployment receipt proving the same migration and role state is still unavailable.",
+      "notes": "The disposable PostgreSQL 17 CI gate passed. No unrelated local database password or role was reset."
     },
     "H-1659": {
       "status": "PARTIAL",
