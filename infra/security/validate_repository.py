@@ -148,16 +148,20 @@ def scan_public_fixtures(errors: list[str]) -> None:
             errors.append(f"public corpus file exceeds 5 MiB: {path.relative_to(ROOT)}")
 
 
-def scan_secrets(errors: list[str]) -> None:
+def scan_secrets(errors: list[str], *, root: Path = ROOT) -> None:
     scanner_path = Path(__file__).resolve()
-    for directory, child_directories, filenames in os.walk(ROOT):
+    for directory, child_directories, filenames in os.walk(root):
         child_directories[:] = [
             name for name in child_directories if name not in SCAN_EXCLUDED_PARTS
         ]
         base = Path(directory)
         for filename in filenames:
             path = base / filename
-            if path == scanner_path or path.stat().st_size > 2 * 1024 * 1024:
+            try:
+                size = path.stat().st_size
+            except OSError:
+                continue
+            if path == scanner_path or size > 2 * 1024 * 1024:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
@@ -165,7 +169,31 @@ def scan_secrets(errors: list[str]) -> None:
                 continue
             for name, pattern in SECRET_PATTERNS.items():
                 if pattern.search(text):
-                    errors.append(f"possible {name} in {path.relative_to(ROOT)}")
+                    errors.append(f"possible {name} in {path.relative_to(root)}")
+
+
+BROWSER_SECRET_EXPORT_PATTERNS = (
+    re.compile(r"NEXT_PUBLIC_[A-Z0-9_]*(?:SECRET|PASSWORD|PRIVATE_KEY|ACCESS_TOKEN)"),
+    re.compile(
+        r"process\.env\.(?:OIDC_CLIENT_SECRET|GOOGLE_CLIENT_SECRET|"
+        r"AKC_JWT_SECRET|S3_SECRET_ACCESS_KEY)"
+    ),
+)
+
+
+def scan_browser_secret_exports(errors: list[str], *, root: Path = ROOT) -> None:
+    browser_source = root / "apps/web/src"
+    if not browser_source.exists():
+        return
+    for path in browser_source.rglob("*"):
+        if not path.is_file() or path.suffix not in {".js", ".jsx", ".ts", ".tsx"}:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        if any(pattern.search(text) for pattern in BROWSER_SECRET_EXPORT_PATTERNS):
+            errors.append(f"browser secret export marker in {path.relative_to(root)}")
 
 
 def validate_serialized_documents(errors: list[str]) -> None:
@@ -399,6 +427,7 @@ def main() -> int:
     validate_feature_defaults(errors)
     scan_public_fixtures(errors)
     scan_secrets(errors)
+    scan_browser_secret_exports(errors)
     validate_serialized_documents(errors)
     validate_compose_contract(errors)
     validate_supply_chain_pins(errors)

@@ -39,6 +39,12 @@ def test_registry_covers_every_mandatory_parser_and_compiler_fail_closed(
     assert registry.get("deepseek-ocr-2").license_status == "approved"
     assert registry.get("hunyuanocr-1.5").license_status == "review_required"
     assert registry.get("chandra-ocr-2").license_status == "review_required"
+    assert registry.get("paddleocr-vl-1.6").execution_state == (
+        "measured_partial_runtime_image_pending"
+    )
+    assert registry.get("paddleocr-vl-1.6").identity_complete
+    assert registry.get("deepseek-ocr-2").identity_complete
+    assert registry.get("ovisocr2").identity_complete
 
 
 def test_environment_identity_is_canonical_and_every_field_is_binding(

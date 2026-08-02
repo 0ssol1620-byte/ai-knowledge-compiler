@@ -58,6 +58,24 @@ def render_config(*, ground_truth: Path, prediction: Path, workers: int) -> str:
 """
 
 
+def require_exact_page_count(metric_result: object, prediction: Path) -> int:
+    if not isinstance(metric_result, dict):
+        raise ValueError("official evaluator result must be an object")
+    debug = metric_result.get("match_debug")
+    if not isinstance(debug, dict):
+        raise ValueError("official evaluator result is missing match_debug")
+    measured = int(debug.get("page_count", 0))
+    expected = sum(1 for path in prediction.glob("*.md") if path.is_file())
+    if expected < 1:
+        raise ValueError("prediction directory contains no Markdown pages")
+    if measured != expected:
+        raise ValueError(
+            "official evaluator page count differs from frozen predictions: "
+            f"expected {expected}, received {measured}"
+        )
+    return measured
+
+
 def evaluator_revision(evaluator_dir: Path) -> str:
     executable = shutil.which("git")
     if executable is None:
@@ -120,14 +138,13 @@ def run_evaluation(
         destination = repeat_dir / "metric-result.json"
         shutil.copy2(source_result, destination)
         parsed = json.loads(destination.read_text(encoding="utf-8"))
-        if int(parsed["match_debug"]["page_count"]) < 1:
-            raise ValueError("official evaluator returned an empty page set")
+        page_count = require_exact_page_count(parsed, prediction)
         records.append(
             {
                 "repeat_index": repeat_index,
                 "elapsed_seconds": time.time() - started,
                 "metric_result_sha256": sha256_file(destination),
-                "page_count": int(parsed["match_debug"]["page_count"]),
+                "page_count": page_count,
             }
         )
 

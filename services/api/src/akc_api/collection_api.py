@@ -115,6 +115,7 @@ from akc_api.collection_schemas import (
     CollectionProcessingResponse,
     CollectionProcessingRetryRequest,
     CollectionResponse,
+    CollectionSceneResponse,
     CollectionUploadComplete,
     CollectionUploadCompleteResponse,
     CollectionUploadControlRequest,
@@ -126,6 +127,10 @@ from akc_api.collection_schemas import (
     LocalSourceCreate,
     PackageFileResponse,
     RelationProjection,
+    SceneClusterProjection,
+    SceneIntegrityProjection,
+    SceneKnowledgeProjection,
+    ScenePageProjection,
     SourceRootResponse,
 )
 from akc_api.collection_semantic_runtime import (
@@ -155,6 +160,7 @@ from akc_api.models import (
     CostPredictionModel,
     Document,
     DocumentCluster,
+    DocumentVersion,
     Entity,
     EstimateRun,
     EstimateSample,
@@ -4735,6 +4741,252 @@ async def get_collection_events(
         ),
         events=events,
         next_sequence=events[-1].sequence if events else after_sequence,
+    )
+
+
+@router.get(
+    "/collections/{collection_id}/scene",
+    response_model=CollectionSceneResponse,
+)
+async def get_collection_scene(
+    collection_id: uuid.UUID,
+    principal: PrincipalDep,
+    session: SessionDep,
+) -> CollectionSceneResponse:
+    """Return a bounded, deterministic, identifier-only visual projection."""
+
+    collection = await _collection(
+        session,
+        principal=principal,
+        collection_id=collection_id,
+        capability="read",
+    )
+    latest_preflight = await session.scalar(
+        select(CollectionPreflight)
+        .where(
+            CollectionPreflight.tenant_id == principal.tenant_id,
+            CollectionPreflight.collection_id == collection.id,
+            CollectionPreflight.status != "stale",
+        )
+        .order_by(CollectionPreflight.manifest_revision.desc())
+        .limit(1)
+    )
+    clusters = (
+        list(
+            await session.scalars(
+                select(DocumentCluster)
+                .where(
+                    DocumentCluster.tenant_id == principal.tenant_id,
+                    DocumentCluster.collection_id == collection.id,
+                    DocumentCluster.preflight_id == latest_preflight.id,
+                )
+                .order_by(DocumentCluster.cluster_key, DocumentCluster.id)
+            )
+        )
+        if latest_preflight is not None
+        else []
+    )
+    source_ids = set(
+        await session.scalars(
+            select(CollectionFile.source_file_id)
+            .where(
+                CollectionFile.tenant_id == principal.tenant_id,
+                CollectionFile.collection_id == collection.id,
+                CollectionFile.source_file_id.is_not(None),
+            )
+            .order_by(CollectionFile.id)
+        )
+    )
+    documents = await _documents_by_source(
+        session,
+        tenant_id=principal.tenant_id,
+        project_id=collection.project_id,
+        source_ids={source_id for source_id in source_ids if source_id is not None},
+    )
+    document_ids = sorted((document.id for document in documents.values()), key=str)
+    versions = list(
+        await session.scalars(
+            select(DocumentVersion)
+            .where(
+                DocumentVersion.tenant_id == principal.tenant_id,
+                DocumentVersion.document_id.in_(document_ids),
+            )
+            .order_by(DocumentVersion.document_id, DocumentVersion.version.desc())
+        )
+    ) if document_ids else []
+    active_version_ids: dict[uuid.UUID, uuid.UUID] = {}
+    active_versions = {document.id: document.active_version for document in documents.values()}
+    for version in versions:
+        if (
+            version.document_id not in active_version_ids
+            and version.version == active_versions.get(version.document_id)
+        ):
+            active_version_ids[version.document_id] = version.id
+
+    total_pages = int(
+        await session.scalar(
+            select(func.count(Page.id)).where(
+                Page.tenant_id == principal.tenant_id,
+                Page.document_id.in_(document_ids),
+            )
+        )
+        or 0
+    ) if document_ids else 0
+    page_rows = list(
+        await session.scalars(
+            select(Page)
+            .where(
+                Page.tenant_id == principal.tenant_id,
+                Page.document_id.in_(document_ids),
+            )
+            .order_by(Page.document_id, Page.page_number)
+            .limit(200)
+        )
+    ) if document_ids else []
+    page_ids = [page.id for page in page_rows]
+    preview_page_ids = set(
+        await session.scalars(
+            select(PageAsset.page_id)
+            .where(
+                PageAsset.tenant_id == principal.tenant_id,
+                PageAsset.page_id.in_(page_ids),
+                PageAsset.asset_type.in_(("preview", "thumbnail")),
+            )
+            .distinct()
+        )
+    ) if page_ids else set()
+    finding_counts: dict[uuid.UUID, int] = {}
+    if page_ids:
+        finding_rows = (
+            await session.execute(
+                select(CollectionRegion.page_id, func.count(VerificationRecord.id))
+                .join(
+                    VerificationRecord,
+                    (
+                        (VerificationRecord.tenant_id == CollectionRegion.tenant_id)
+                        & (VerificationRecord.collection_id == CollectionRegion.collection_id)
+                        & (VerificationRecord.region_id == CollectionRegion.id)
+                    ),
+                )
+                .where(
+                    CollectionRegion.tenant_id == principal.tenant_id,
+                    CollectionRegion.collection_id == collection.id,
+                    CollectionRegion.page_id.in_(page_ids),
+                )
+                .group_by(CollectionRegion.page_id)
+            )
+        ).all()
+        finding_counts = {
+            page_id: int(count)
+            for page_id, count in finding_rows
+            if page_id is not None
+        }
+    knowledge = await _collection_knowledge_projection(session, collection=collection)
+    package_ids = list(
+        await session.scalars(
+            select(PackageManifest.id)
+            .where(
+                PackageManifest.tenant_id == principal.tenant_id,
+                PackageManifest.collection_id == collection.id,
+            )
+            .order_by(PackageManifest.id)
+        )
+    )
+    integrity = await _integrity_projection(session, collection=collection)
+    page_projections = [
+        ScenePageProjection(
+            page_id=page.id,
+            document_id=page.document_id,
+            document_version_id=active_version_ids.get(page.document_id),
+            page_number=page.page_number,
+            status=page.status,
+            route=page.route,
+            preview_ref=(f"/v1/pages/{page.id}/preview" if page.id in preview_page_ids else None),
+            finding_count=int(finding_counts.get(page.id, 0)),
+        )
+        for page in page_rows
+    ]
+    route_state_counts = dict(
+        sorted(Counter(f"{page.route or 'unrouted'}:{page.status}" for page in page_rows).items())
+    )
+    unresolved_count = sum(
+        count
+        for status, count in integrity["verification_status_counts"].items()
+        if status in {"unresolved", "rejected", "failed"}
+    )
+    quarantined_count = int(integrity["verification_status_counts"].get("quarantined", 0))
+    integrity_projection = SceneIntegrityProjection(
+        file_status_counts=dict(sorted(integrity["file_status_counts"].items())),
+        verification_status_counts=dict(
+            sorted(integrity["verification_status_counts"].items())
+        ),
+        authority_mapping_status_counts=dict(
+            sorted(integrity["authority_mapping_status_counts"].items())
+        ),
+        package_status_counts=dict(sorted(integrity["package_status_counts"].items())),
+        unresolved_count=unresolved_count,
+        quarantined_count=quarantined_count,
+        blocker_codes=sorted(integrity["blockers"]),
+    )
+    response_basis = {
+        "collection_id": str(collection.id),
+        "collection_status": collection.status,
+        "manifest_revision": collection.manifest_revision,
+        "sequence": collection.event_sequence,
+        "total_pages": total_pages,
+        "route_state_counts": route_state_counts,
+        "clusters": [
+            {
+                "cluster_id": str(cluster.id),
+                "strategy": cluster.strategy,
+                "member_count": cluster.member_count,
+                "representative_file_ids": sorted(cluster.representative_file_ids),
+                "outlier_count": len(cluster.outlier_file_ids),
+            }
+            for cluster in clusters
+        ],
+        "pages": [projection.model_dump(mode="json") for projection in page_projections],
+        "knowledge": {
+            "note_ids": sorted(str(note.id) for note in knowledge.notes),
+            "entity_ids": sorted(str(entity.id) for entity in knowledge.entities),
+            "relation_ids": sorted(str(relation.id) for relation in knowledge.relations),
+            "package_ids": sorted(str(package_id) for package_id in package_ids),
+        },
+        "integrity": integrity_projection.model_dump(mode="json"),
+    }
+    return CollectionSceneResponse(
+        collection_id=collection.id,
+        collection_status=cast(Any, collection.status),
+        manifest_revision=collection.manifest_revision,
+        sequence=collection.event_sequence,
+        total_pages=total_pages,
+        projected_page_count=len(page_projections),
+        route_state_counts=route_state_counts,
+        clusters=[
+            SceneClusterProjection(
+                cluster_id=cluster.id,
+                strategy=cluster.strategy,
+                member_count=cluster.member_count,
+                representative_file_ids=[
+                    uuid.UUID(str(item)) for item in sorted(cluster.representative_file_ids)
+                ],
+                outlier_count=len(cluster.outlier_file_ids),
+            )
+            for cluster in clusters
+        ],
+        pages=page_projections,
+        knowledge=SceneKnowledgeProjection(
+            note_ids=[note.id for note in knowledge.notes],
+            entity_ids=[entity.id for entity in knowledge.entities],
+            relation_ids=[relation.id for relation in knowledge.relations],
+            package_ids=package_ids,
+            note_count=knowledge.note_count,
+            entity_count=knowledge.entity_count,
+            relation_count=knowledge.relation_count,
+            package_count=len(package_ids),
+        ),
+        integrity=integrity_projection,
+        scene_hash=_sha256(_canonical_json(response_basis)),
     )
 
 
