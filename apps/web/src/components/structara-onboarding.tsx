@@ -90,7 +90,7 @@ export function StructaraOnboarding() {
   return (
     <main id="main-content" className="st-onboarding" data-locale={locale}>
       <header>
-        <Link href="/">Structara</Link>
+        <Link href="/">FOLYNTA</Link>
         <span>{copy.project}</span>
         <small>
           {step + 1} / {copy.steps.length}

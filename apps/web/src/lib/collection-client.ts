@@ -351,7 +351,7 @@ export async function prepareConnectedCollection(input: {
           project_id: projectId,
           name,
           description:
-            "Collection created from the Structara folder intake surface.",
+            "Collection created from the FOLYNTA folder intake surface.",
           profile: { source: "web_collection_intake_v1" },
         }),
         signal: input.signal,

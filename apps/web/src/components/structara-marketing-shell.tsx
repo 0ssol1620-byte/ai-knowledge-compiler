@@ -55,17 +55,17 @@ const labels = {
     explore: "Explore",
     workspace: "Workspace",
     footerLead: "Your documents already contain what your AI needs.",
-    footerTitle: "Structara makes it usable.",
+    footerTitle: "FOLYNTA makes it usable.",
     sales: "Talk to sales",
     brandBody:
       "Structured, verified, connected, portable knowledge for people and AI.",
-    copyright: "© 2026 Structara. Evidence-first knowledge systems.",
+    copyright: "© 2026 FOLYNTA. Evidence-first knowledge systems.",
     productFooter: "Product",
     solutionsFooter: "Solutions",
     resources: "Resources",
     company: "Company",
     legal: "Legal",
-    productTagline: "The Knowledge Compiler for AI",
+    productTagline: "From every page, a system of knowledge.",
     footerLinks: {
       convert: "convert",
       verify: "verify",
@@ -116,16 +116,16 @@ const labels = {
     explore: "살펴보기",
     workspace: "워크스페이스",
     footerLead: "AI에 필요한 정보는 이미 문서 안에 있습니다.",
-    footerTitle: "Structara가 사용할 수 있는 지식으로 만듭니다.",
+    footerTitle: "FOLYNTA가 사용할 수 있는 지식으로 만듭니다.",
     sales: "도입 문의",
     brandBody: "사람과 AI를 위한 구조화·검증·연결·이식 가능한 지식.",
-    copyright: "© 2026 Structara. 근거 중심 지식 시스템.",
+    copyright: "© 2026 FOLYNTA. 근거 중심 지식 시스템.",
     productFooter: "제품",
     solutionsFooter: "솔루션",
     resources: "리소스",
     company: "회사",
     legal: "법적 고지",
-    productTagline: "AI를 위한 지식 컴파일러",
+    productTagline: "From every page, a system of knowledge.",
     footerLinks: {
       convert: "변환",
       verify: "검증",
@@ -151,7 +151,13 @@ const labels = {
   },
 } as const;
 
-export function StructaraMarketingShell({ children }: { children: ReactNode }) {
+export function StructaraMarketingShell({
+  children,
+  showFooterCta = true,
+}: {
+  children: ReactNode;
+  showFooterCta?: boolean;
+}) {
   const { locale } = useStructaraLocale();
   const copy = locale === "ko" ? labels.ko : labels.en;
   const [open, setOpen] = useState(false);
@@ -274,7 +280,7 @@ export function StructaraMarketingShell({ children }: { children: ReactNode }) {
       )}
       {children}
       <footer className="st-footer">
-        <div className="st-footer-cta">
+        {showFooterCta && <div className="st-footer-cta">
           <p>{copy.footerLead}</p>
           <h2>{copy.footerTitle}</h2>
           <div>
@@ -285,7 +291,7 @@ export function StructaraMarketingShell({ children }: { children: ReactNode }) {
               {copy.sales}
             </Link>
           </div>
-        </div>
+        </div>}
         <div className="st-footer-grid">
           <div className="st-footer-brand">
             <BrandMark />
@@ -352,7 +358,7 @@ export function StructaraMarketingShell({ children }: { children: ReactNode }) {
           ))}
         </div>
         <div className="st-footer-meta">
-          <span>© 2026 Structara</span>
+          <span>© 2026 FOLYNTA</span>
           <span>{copy.productTagline}</span>
         </div>
       </footer>

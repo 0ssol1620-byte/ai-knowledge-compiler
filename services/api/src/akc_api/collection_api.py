@@ -7119,7 +7119,7 @@ async def _existing_package_response(
 
 def _package_readme(collection: Collection) -> bytes:
     return (
-        "# Structara Collection Repository Manifest\n\n"
+        "# FOLYNTA Collection Repository Manifest\n\n"
         "This package is a deterministic repository-local manifest over existing "
         "server-verified document and knowledge artifacts.\n\n"
         "It does not claim a complete signed ontology, Neo4j import, or production "
@@ -7409,43 +7409,43 @@ async def _complete_knowledge_groups(
 
     obsidian: dict[str, bytes] = {
         "Home.md": (
-            "# Structara Knowledge Package\n\n"
+            "# FOLYNTA Knowledge Package\n\n"
             f"Collection `{collection.id}`\n\n"
             "## Notes\n\n" + "".join(f"- [[notes/{row.id}|{row.title}]]\n" for row in notes)
         ).encode("utf-8")
     }
     for note_row in notes:
         obsidian[f"notes/{note_row.id}.md"] = (
-            f"---\nstructara_id: {note_row.id}\ndocument_id: {note_row.document_id}\n"
+            f"---\nakc_id: {note_row.id}\ndocument_id: {note_row.document_id}\n"
             f"note_type: {note_row.note_type}\n---\n\n# {note_row.title}\n\n"
             f"{note_row.content_markdown}\n"
         ).encode()
 
     ttl_lines = [
-        "@prefix sk: <urn:structara:> .",
+        "@prefix sk: <urn:akc:> .",
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .",
         "@prefix prov: <http://www.w3.org/ns/prov#> .",
         "",
     ]
     for entity_row in entities:
         ttl_lines.append(
-            f"<urn:structara:entity:{entity_row.id}> a sk:Entity ; "
+            f"<urn:akc:entity:{entity_row.id}> a sk:Entity ; "
             f"rdfs:label {_turtle_literal(entity_row.label)} ."
         )
     for note_row in notes:
         ttl_lines.append(
-            f"<urn:structara:note:{note_row.id}> a sk:KnowledgeNote ; "
+            f"<urn:akc:note:{note_row.id}> a sk:KnowledgeNote ; "
             f"rdfs:label {_turtle_literal(note_row.title)} ."
         )
     for relation_row in relations:
         ttl_lines.append(
-            f"<urn:structara:relation:{relation_row.id}> a sk:Relation ; "
+            f"<urn:akc:relation:{relation_row.id}> a sk:Relation ; "
             f"sk:predicate {_turtle_literal(relation_row.predicate)} ."
         )
     knowledge_ttl = ("\n".join(ttl_lines) + "\n").encode("utf-8")
     jsonld_graph = [
         {
-            "@id": f"urn:structara:entity:{row.id}",
+            "@id": f"urn:akc:entity:{row.id}",
             "@type": "Entity",
             "label": row.label,
             "evidence": projected_evidence(row.evidence_block_ids),
@@ -7453,7 +7453,7 @@ async def _complete_knowledge_groups(
         for row in entities
     ] + [
         {
-            "@id": f"urn:structara:note:{row.id}",
+            "@id": f"urn:akc:note:{row.id}",
             "@type": "KnowledgeNote",
             "label": row.title,
             "evidence": projected_evidence(row.evidence_block_ids),
@@ -7578,7 +7578,7 @@ async def _complete_knowledge_groups(
                 '<?xml version="1.0" encoding="UTF-8"?>\n'
                 '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" '
                 'xmlns:owl="http://www.w3.org/2002/07/owl#">'
-                f'<owl:Ontology rdf:about="urn:structara:collection:{collection.id}"/>'
+                f'<owl:Ontology rdf:about="urn:akc:collection:{collection.id}"/>'
                 "</rdf:RDF>\n"
             ).encode(),
             "knowledge.jsonld": _canonical_json(
@@ -7590,18 +7590,18 @@ async def _complete_knowledge_groups(
             "knowledge.skos.ttl": (
                 "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n"
                 + "".join(
-                    f"<urn:structara:entity:{row.id}> skos:prefLabel "
+                    f"<urn:akc:entity:{row.id}> skos:prefLabel "
                     f"{_turtle_literal(row.label)} .\n"
                     for row in entities
                 )
             ).encode("utf-8"),
             "shapes.shacl.ttl": (
                 b"@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
-                b"@prefix sk: <urn:structara:> .\n"
+                b"@prefix sk: <urn:akc:> .\n"
                 b"sk:KnowledgeNodeShape a sh:NodeShape ; sh:targetClass sk:KnowledgeNote .\n"
             ),
             "vocabulary.md": (
-                b"# Structara Vocabulary\n\n"
+                b"# FOLYNTA Vocabulary\n\n"
                 b"- `KnowledgeNote`: evidence-bound knowledge note.\n"
                 b"- `Entity`: project entity scoped by collection evidence.\n"
                 b"- `Relation`: evidence-bound assertion.\n"
@@ -7609,8 +7609,8 @@ async def _complete_knowledge_groups(
             "provenance.jsonld": _canonical_json(
                 {
                     "@context": {"prov": "http://www.w3.org/ns/prov#"},
-                    "@id": f"urn:structara:collection:{collection.id}",
-                    "prov:wasGeneratedBy": f"urn:structara:architecture-plan:{plan.id}",
+                    "@id": f"urn:akc:collection:{collection.id}",
+                    "prov:wasGeneratedBy": f"urn:akc:architecture-plan:{plan.id}",
                 }
             ),
         },
@@ -7621,11 +7621,12 @@ async def _complete_knowledge_groups(
                 graph_relationships,
             ),
             "constraints.cypher": (
-                b"CREATE CONSTRAINT structara_id IF NOT EXISTS "
-                b"FOR (n:StructaraNode) REQUIRE n.id IS UNIQUE;\n"
+                b"CREATE CONSTRAINT akc_knowledge_id IF NOT EXISTS "
+                b"FOR (n:KnowledgeNode) REQUIRE n.id IS UNIQUE;\n"
             ),
             "indexes.cypher": (
-                b"CREATE INDEX structara_name IF NOT EXISTS FOR (n:StructaraNode) ON (n.name);\n"
+                b"CREATE INDEX akc_knowledge_name IF NOT EXISTS "
+                b"FOR (n:KnowledgeNode) ON (n.name);\n"
             ),
             "import.cypher": (
                 b"// Import nodes.csv and relationships.csv with the approved deployment loader.\n"

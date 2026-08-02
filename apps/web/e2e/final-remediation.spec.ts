@@ -2,34 +2,28 @@ import { expect, test } from "@playwright/test";
 
 import benchmarkSnapshot from "../src/data/benchmark-public-snapshot.json";
 
-test("Home hero matches the compiler promise and exposes the six signature semantics", async ({
+test("FOLYNTA home matches the compiler promise and exact seven-scene authority", async ({
   page,
 }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Compile documents. Build trusted AI knowledge.",
+    "From scattered documents to one knowledge system.",
   );
   await expect(
     page.getByText(
-      "Compile reports, papers, manuals, and data into one source-linked knowledge system.",
+      "Compile every page into structured, verified, connected knowledge that people and AI can reuse.",
     ),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Compile your collection" }).first(),
   ).toHaveAttribute("href", "/intake");
-  await expect(page.locator('[data-signature-asset="A01"]')).toBeVisible();
-  await expect(
-    page.locator('[data-signature-asset="A02"]').first(),
-  ).toBeVisible();
-  await expect(
-    page.locator('[data-signature-asset="A03"]').first(),
-  ).toBeVisible();
-  await expect(page.locator('[data-signature-asset="A04"]')).toBeVisible();
-  await expect(page.locator('[data-signature-assets~="A05"]')).toBeVisible();
-  await expect(page.locator('[data-signature-asset="A06"]')).toBeVisible();
+  await expect(page.locator("main > section[data-scene]")).toHaveCount(7);
+  await expect(page.locator('[data-scene="02-proof"]')).toBeVisible();
+  await expect(page.locator('[data-scene="06-security"]')).toBeAttached();
+  await expect(page.locator('[data-scene="07-final"]')).toBeAttached();
 });
 
-test("Reference compare, reduced-motion hero, and product film remain fully operable", async ({
+test("Reduced-motion hero and source-evidence compare remain fully operable", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -40,29 +34,26 @@ test("Reference compare, reduced-motion hero, and product film remain fully oper
   await expect(hero.locator("canvas")).toHaveCount(0);
   await expect(hero.locator("picture")).toBeVisible();
 
-  const boundary = page.getByRole("slider", { name: "Comparison boundary" });
-  await boundary.scrollIntoViewIfNeeded();
-  await expect(boundary).toHaveValue("50");
-  await page.getByRole("button", { name: "Original", exact: true }).click();
-  await expect(boundary).toHaveValue("100");
-  await boundary.press("Space");
-  await expect(boundary).toHaveValue("50");
-  await page.getByRole("button", { name: "Result", exact: true }).click();
-  await expect(boundary).toHaveValue("0");
-
-  const filmTrigger = page.getByRole("button", {
-    name: "Play the 60-second film",
-    exact: true,
+  const proof = page.locator('[data-scene="02-proof"]');
+  await proof.scrollIntoViewIfNeeded();
+  await proof.getByRole("tab", { name: "Original" }).click();
+  await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
+    "data-evidence-state",
+    "compare",
+  );
+  const selectedCell = proof.getByRole("button", {
+    name: /selected source evidence/,
   });
-  await filmTrigger.scrollIntoViewIfNeeded();
-  await filmTrigger.click();
-  const dialog = page.getByRole("dialog", {
-    name: "Evidence in Motion product film",
-  });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.locator("video")).toHaveAttribute("controls", "");
-  await dialog.getByRole("button", { name: "Close film" }).click();
-  await expect(dialog).not.toBeVisible();
+  await selectedCell.focus();
+  await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
+    "data-evidence-state",
+    "keyboard",
+  );
+  await selectedCell.click();
+  await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
+    "data-evidence-state",
+    "pinned",
+  );
 });
 
 test("SEC proof preserves the actual filing fact through every transformation", async ({

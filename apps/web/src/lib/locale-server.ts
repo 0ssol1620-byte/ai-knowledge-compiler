@@ -3,12 +3,16 @@ import "server-only";
 import { cookies } from "next/headers";
 
 import {
+  AKC_LOCALE_COOKIE,
+  LEGACY_LOCALE_COOKIE,
   normalizeStructaraLocale,
-  STRUCTARA_LOCALE_COOKIE,
   type StructaraLocale,
 } from "@/lib/locale";
 
 export async function getRequestLocale(): Promise<StructaraLocale> {
   const store = await cookies();
-  return normalizeStructaraLocale(store.get(STRUCTARA_LOCALE_COOKIE)?.value);
+  return normalizeStructaraLocale(
+    store.get(AKC_LOCALE_COOKIE)?.value ??
+      store.get(LEGACY_LOCALE_COOKIE)?.value,
+  );
 }

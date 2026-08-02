@@ -114,7 +114,7 @@ export function StructaraSecurityArchitecture() {
 
       <div
         className="st-security-system"
-        aria-label="Structara security architecture diagram"
+        aria-label="FOLYNTA security architecture diagram"
       >
         <section className="st-security-zone st-security-zone-browser">
           <span className="st-security-zone-label">User boundary</span>

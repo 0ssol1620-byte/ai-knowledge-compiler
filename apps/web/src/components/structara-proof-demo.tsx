@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
+import type { StructaraLocale } from "@/lib/locale";
 
 const tabs = ["Original", "Markdown", "Vault", "Graph", "Proof"] as const;
 const viewContent = {
@@ -51,13 +52,20 @@ const viewContent = {
   }
 >;
 
-export function StructaraProofDemo() {
+type EvidenceState = "idle" | "hover" | "keyboard" | "pinned" | "compare";
+
+export function StructaraProofDemo({
+  locale = "en",
+}: {
+  locale?: StructaraLocale;
+}) {
   const [active, setActive] = useState<(typeof tabs)[number]>("Proof");
+  const [evidenceState, setEvidenceState] = useState<EvidenceState>("pinned");
   const revenue = DART_PUBLIC_FIXTURE.rows[0];
   const view = viewContent[active];
 
   return (
-    <div className="st-proof-demo">
+    <div className="st-proof-demo" data-evidence-state={evidenceState}>
       <div className="st-proof-tabs" role="tablist" aria-label="DART demo view">
         {tabs.map((tab) => (
           <button
@@ -65,7 +73,10 @@ export function StructaraProofDemo() {
             type="button"
             role="tab"
             aria-selected={active === tab}
-            onClick={() => setActive(tab)}
+            onClick={() => {
+              setActive(tab);
+              setEvidenceState(tab === "Original" ? "compare" : "pinned");
+            }}
           >
             {tab}
           </button>
@@ -91,7 +102,8 @@ export function StructaraProofDemo() {
             {DART_PUBLIC_FIXTURE.rows.slice(0, 2).map((row, index) => (
               <div className="st-source-table-row" key={row.label}>
                 <span>{row.label}</span>
-                <b
+                <button
+                  type="button"
                   className={
                     index === 0 ? "st-source-cell-selected" : undefined
                   }
@@ -100,9 +112,14 @@ export function StructaraProofDemo() {
                       ? `${row.label} ${row.current} ${DART_PUBLIC_FIXTURE.unit}, selected source evidence`
                       : undefined
                   }
+                  onMouseEnter={() => index === 0 && setEvidenceState("hover")}
+                  onMouseLeave={() => index === 0 && setEvidenceState("idle")}
+                  onFocus={() => index === 0 && setEvidenceState("keyboard")}
+                  onBlur={() => index === 0 && setEvidenceState("idle")}
+                  onClick={() => index === 0 && setEvidenceState("pinned")}
                 >
                   {row.current}
-                </b>
+                </button>
                 <span>{row.prior}</span>
               </div>
             ))}
@@ -131,6 +148,15 @@ export function StructaraProofDemo() {
             <small>
               Origin: native XBRL-tagged table · Unit:{" "}
               {DART_PUBLIC_FIXTURE.unit} · No quality claim
+            </small>
+          </div>
+          <div className="folynta-evidence-state" aria-live="polite">
+            <span>{locale === "ko" ? "상호작용 상태" : "Interaction state"}</span>
+            <strong>{evidenceState}</strong>
+            <small>
+              {locale === "ko"
+                ? "hover · keyboard · pinned · compare를 직접 확인할 수 있습니다. loading · missing · unresolved는 유효한 현재 픽스처에 적용되지 않습니다."
+                : "Inspect hover, keyboard, pinned, and compare directly. Loading, missing, and unresolved do not apply to this valid fixture."}
             </small>
           </div>
         </div>

@@ -3,7 +3,10 @@ export const STRUCTARA_LOCALES = ["en", "ko"] as const;
 export type StructaraLocale = (typeof STRUCTARA_LOCALES)[number];
 
 export const DEFAULT_STRUCTARA_LOCALE: StructaraLocale = "en";
-export const STRUCTARA_LOCALE_COOKIE = "structara_locale";
+export const AKC_LOCALE_COOKIE = "akc_locale";
+export const LEGACY_LOCALE_COOKIE = "structara_locale";
+/** @deprecated Use the brand-neutral AKC_LOCALE_COOKIE. */
+export const STRUCTARA_LOCALE_COOKIE = AKC_LOCALE_COOKIE;
 
 export function normalizeStructaraLocale(
   value: string | null | undefined,

@@ -125,7 +125,7 @@ export function StructaraHeroScene({ locale }: { locale: StructaraLocale }) {
           width={2880}
           height={1800}
           decoding="async"
-          loading="lazy"
+          loading="eager"
           fetchPriority="low"
           sizes="(max-width: 640px) 100vw, (max-width: 960px) 92vw, 50vw"
         />

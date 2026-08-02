@@ -1,19 +1,9 @@
-import {
-  ArrowRight,
-  CheckCircle,
-  LockKey,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-import { KnowledgeFlow } from "@/components/marketing/knowledge-flow";
-import { ProductFilmDialog } from "@/components/marketing/product-film-dialog";
-import { RawCompiledCompare } from "@/components/marketing/raw-compiled-compare";
 import { TransformationStory } from "@/components/marketing/transformation-story";
-import { StructaraGlyph } from "@/components/structara-glyph";
 import { StructaraHeroScene } from "@/components/structara-hero";
-import { StructaraLiveDemo } from "@/components/structara-live-demo";
 import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
-import { StructaraPattern } from "@/components/structara-pattern";
 import { StructaraProofDemo } from "@/components/structara-proof-demo";
 import {
   formatBenchmarkCost,
@@ -21,676 +11,182 @@ import {
   formatBenchmarkPercent,
   publicBenchmarkSnapshot,
 } from "@/lib/benchmark-public";
+import { PUBLIC_BRAND } from "@/lib/brand";
+import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 import type { StructaraLocale } from "@/lib/locale";
 
-type HomeCopy = {
-  context: string;
-  heroTitle: string;
-  heroIntro: string;
-  build: string;
-  watch: string;
-  verifiedDemo: string;
-  trust: string;
-  intakeSignals: readonly [string, string, string];
-  outputsLabel: string;
-  outputs: readonly string[];
-  problemTitle: readonly [string, string];
-  problemBody: string;
-  rawDocuments: string;
-  rawSignal: string;
-  compiledKnowledge: string;
-  compiledItems: readonly string[];
-  compiledSignal: string;
-  compilerPath: string;
-  transformationTitle: string;
-  chapters: readonly {
-    number: string;
-    title: string;
-    body: string;
-    signal: string;
-  }[];
-  publicFilingDemo: string;
-  inspectTitle: string;
-  inspectBody: string;
-  openDart: string;
-  tryDocument: string;
-  pillarsTitle: string;
-  pillars: readonly [string, string, string][];
-  publicProofSystems: string;
-  publicProofTitle: string;
-  dartTitle: string;
-  dartBody: string;
-  dartLink: string;
-  secTitle: string;
-  secBody: string;
-  secLink: string;
-  benchmarkLabel: string;
-  benchmarkTitle: string;
-  metricHeaders: readonly string[];
-  benchmarkLink: string;
-  useCasesTitle: string;
-  useCases: readonly [string, string][];
-  privateLabel: string;
-  securityTitle: string;
-  securityBody: string;
-  securityLink: string;
-  policyCenter: string;
-  policies: readonly string[];
-  manifesto: string;
-  knowledgeStatements: readonly string[];
-  compilerStatement: string;
-  finalIntro: string;
-  finalTitle: string;
-  sales: string;
-  finalTrust: string;
-  exportLabel: string;
-  knowledgeLabel: string;
-};
-
-const HOME_COPY: Record<StructaraLocale, HomeCopy> = {
+const COPY = {
   en: {
-    context: "The Knowledge Compiler for AI",
-    heroTitle: "Compile documents.\nBuild trusted AI knowledge.",
-    heroIntro:
-      "Compile reports, papers, manuals, and data into one source-linked knowledge system.",
-    build: "Compile your collection",
-    watch: "Watch the transformation",
-    verifiedDemo: "Open the verified demo",
+    hero: PUBLIC_BRAND.english.hero,
+    intro: PUBLIC_BRAND.english.category,
+    proof: PUBLIC_BRAND.english.proof,
+    primary: "Compile your collection",
+    secondary: "Inspect the public proof",
     trust: "Source-linked · Portable · Private by policy",
-    intakeSignals: [
-      "Folder tree preserved",
-      "Classification ready",
-      "Dedupe provisional",
-    ],
-    outputsLabel: "Supported outputs",
-    outputs: [
-      "Portable Markdown",
-      "Obsidian Vault",
-      "RAG JSONL",
-      "Knowledge Graph",
-    ],
-    problemTitle: ["Powerful models.", "Weak context."],
-    problemBody:
-      "Complex layouts, broken tables, repeated headers, page boundaries, and summaries without sources leave AI with text but not usable knowledge.",
-    rawDocuments: "Raw documents",
-    rawSignal: "Fragments · repeated headers · broken table · no links",
-    compiledKnowledge: "Compiled knowledge",
-    compiledItems: [
-      "Heading tree",
-      "Table object",
-      "Source link",
-      "Note network",
-    ],
-    compiledSignal: "Structure · evidence · relationships · portable output",
-    compilerPath: "The compiler path",
-    transformationTitle:
-      "From pages to intelligence, without losing the proof.",
-    chapters: [
-      {
-        number: "01",
-        title: "It sees more than text.",
-        body: "Headings, paragraphs, tables, formulas, figures, footnotes, and reading order become one inspectable document structure.",
-        signal: "Page → typed blocks",
-      },
-      {
-        number: "02",
-        title: "Every output returns to its source.",
-        body: "Select a sentence, number, or table cell and return to the exact page region that produced it.",
-        signal: "Result → page · block · bbox",
-      },
-      {
-        number: "03",
-        title: "Documents become a knowledge system.",
-        body: "Sections become notes. Notes surface entities. Evidence-backed relations connect documents that previously stood alone.",
-        signal: "Blocks → notes · entities · relations",
-      },
-      {
-        number: "04",
-        title: "Compile once. Use it everywhere.",
-        body: "Portable Markdown, Obsidian, RAG JSONL, JSON-LD, and project packs derive from the same verified source map.",
-        signal: "One core → many destinations",
-      },
-    ],
-    publicFilingDemo: "Public filing demo",
-    inspectTitle: "Do not take our word for it. Inspect the result.",
-    inspectBody:
-      "The same DART sample connects the original page, Markdown, knowledge package, graph, and proof panel.",
-    openDart: "Open full DART demo",
-    tryDocument: "Try it with your document",
-    pillarsTitle:
-      "Knowledge has structure, evidence, connection, and a way out.",
-    pillars: [
-      [
-        "Structure",
-        "Preserve hierarchy, not just characters.",
-        "Heading tree + reading order",
-      ],
-      [
-        "Evidence",
-        "Trace every result back to the page.",
-        "Page · block · bounding box",
-      ],
-      [
-        "Connection",
-        "Turn isolated files into a knowledge network.",
-        "Notes · entities · relations",
-      ],
-      [
-        "Portability",
-        "Your knowledge should not belong to one tool.",
-        "Markdown · Vault · RAG · JSON-LD",
-      ],
-    ],
-    publicProofSystems: "Public proof systems",
-    publicProofTitle:
-      "Built for documents that cannot afford to be misunderstood.",
-    dartTitle: "Korean financial filings",
-    dartBody:
-      "Long-form Korean, XML/XBRL ground truth, complex tables, metrics, risks, segments, and corrected filing relationships.",
-    dartLink: "Explore DART",
-    secTitle: "10-K, 10-Q, and 8-K",
-    secBody:
-      "Inline XBRL, risk factors, exhibits, filing relationships, and source-linked entities in the same ontology.",
-    secLink: "Explore SEC",
-    benchmarkLabel: "Benchmark discipline",
-    benchmarkTitle: "Accuracy should be demonstrated, not declared.",
-    metricHeaders: ["Metric", "Public status", "Evidence"],
-    benchmarkLink: "Explore benchmark methodology",
-    useCasesTitle: "One compiler. Different knowledge systems.",
-    useCases: [
-      [
-        "Research",
-        "Papers become methods, datasets, results, limitations, and citation-linked notes.",
-      ],
-      [
-        "Personal knowledge",
-        "Books, lectures, and notes become an Obsidian-ready concept system.",
-      ],
-      [
-        "Enterprise",
-        "Manuals, policies, and reports remain governed by access, retention, and audit.",
-      ],
-      [
-        "AI and RAG",
-        "Source-linked chunks and JSONL arrive ready for evaluation and retrieval.",
-      ],
-    ],
-    privateLabel: "Private by default",
-    securityTitle: "Your knowledge stays yours.",
-    securityBody:
-      "Region, retention, access, audit, and external processing policy surround the document before a job begins.",
-    securityLink: "Explore security architecture",
-    policyCenter: "Document",
-    policies: ["Region", "Retention", "Access", "Audit", "External AI"],
-    manifesto: "AI does not need more information. It needs better knowledge.",
-    knowledgeStatements: [
-      "Knowledge has structure.",
-      "Knowledge has context.",
-      "Knowledge has relationships.",
-      "Knowledge has evidence.",
-    ],
-    compilerStatement: "Structara compiles all four.",
-    finalIntro: "Your documents already contain what your AI needs.",
-    finalTitle: "Make it usable.",
-    sales: "Talk to sales",
-    finalTrust: "Source-linked · Portable · Policy controlled",
-    exportLabel: "Export",
-    knowledgeLabel: "Knowledge",
+    proofLabel: "02 · Full-bleed proof",
+    proofTitle: "Select the result. Return to the exact source cell.",
+    proofBody:
+      "One frozen public filing connects source PDF evidence, structured output, metadata, a portable note, and a graph relation.",
+    transformationLabel: "03 · Compiler transformation",
+    transformationTitle: "Understand. Verify. Connect. Activate.",
+    knowledgeLabel: "04 · Knowledge system",
+    knowledgeTitle: "One verified fixture. Four reusable views.",
+    knowledgeBody:
+      "The vault tree, atomic note, local graph, and export all resolve to the same evidence record.",
+    qualityLabel: "05 · Quality and routing",
+    qualityTitle: "Measured on a fixed subset. Never promoted by marketing.",
+    qualityBody:
+      "These are formal inference results from the frozen 18-page OmniDocBench demo subset—not a full public benchmark and not a production promotion decision.",
+    securityLabel: "06 · Security and control",
+    securityTitle: "Policy surrounds the document before processing begins.",
+    securityBody: PUBLIC_BRAND.english.enterprise,
+    policyRail: ["Region", "Retention", "Access", "Audit", "External AI"],
+    finalLabel: "07 · Begin",
+    finalTitle: "Turn your documents into a system of knowledge.",
+    finalBody:
+      "Start with a local manifest, a calibrated estimate, and a source-linked result—or review the enterprise control model first.",
+    sales: "Review enterprise controls",
+    benchmark: "Open methodology and evidence",
   },
   ko: {
-    context: "AI를 위한 지식 컴파일러",
-    heroTitle: "흩어진 문서를\nAI가 신뢰할 수 있는 지식으로.",
-    heroIntro:
-      "보고서, 논문, 매뉴얼과 데이터를 원문 근거가 연결된 하나의 지식 시스템으로 컴파일합니다.",
-    build: "컬렉션 컴파일하기",
-    watch: "변환 과정 보기",
-    verifiedDemo: "검증된 데모 열기",
+    hero: PUBLIC_BRAND.korean.hero,
+    intro: PUBLIC_BRAND.korean.category,
+    proof: PUBLIC_BRAND.korean.proof,
+    primary: "컬렉션 컴파일하기",
+    secondary: "공개 근거 확인하기",
     trust: "원본 연결 · 이식 가능 · 정책 기반 비공개",
-    intakeSignals: ["폴더 구조 보존", "자동 분류 준비", "중복 후보 임시 표시"],
-    outputsLabel: "지원 출력",
-    outputs: [
-      "이식 가능한 Markdown",
-      "Obsidian Vault",
-      "RAG JSONL",
-      "Knowledge Graph",
-    ],
-    problemTitle: ["강력한 모델.", "부족한 맥락."],
-    problemBody:
-      "복잡한 레이아웃, 깨진 표, 반복 머리글, 페이지 경계와 원본 없는 요약은 AI에 텍스트만 전달할 뿐 활용 가능한 지식을 제공하지 못합니다.",
-    rawDocuments: "원본 문서",
-    rawSignal: "조각난 내용 · 반복 머리글 · 깨진 표 · 연결 없음",
-    compiledKnowledge: "컴파일된 지식",
-    compiledItems: ["제목 계층", "표 객체", "원본 링크", "노트 네트워크"],
-    compiledSignal: "구조 · 근거 · 관계 · 이식 가능한 출력",
-    compilerPath: "컴파일러 경로",
-    transformationTitle: "근거를 잃지 않고 페이지를 지능으로 전환합니다.",
-    chapters: [
-      {
-        number: "01",
-        title: "텍스트 너머를 이해합니다.",
-        body: "제목, 문단, 표, 수식, 그림, 각주와 읽기 순서를 하나의 확인 가능한 문서 구조로 만듭니다.",
-        signal: "페이지 → 타입 블록",
-      },
-      {
-        number: "02",
-        title: "모든 출력은 원본으로 돌아갑니다.",
-        body: "문장, 숫자 또는 표 셀을 선택하면 그 결과를 만든 정확한 페이지 영역으로 이동합니다.",
-        signal: "결과 → 페이지 · 블록 · bbox",
-      },
-      {
-        number: "03",
-        title: "문서를 지식 시스템으로 만듭니다.",
-        body: "섹션은 노트가 되고, 노트는 엔티티를 드러내며, 근거가 있는 관계가 분리돼 있던 문서를 연결합니다.",
-        signal: "블록 → 노트 · 엔티티 · 관계",
-      },
-      {
-        number: "04",
-        title: "한 번 컴파일하고 어디서나 사용합니다.",
-        body: "동일한 검증 원본 맵에서 Markdown, Obsidian, RAG JSONL, JSON-LD와 프로젝트 패키지를 생성합니다.",
-        signal: "하나의 코어 → 여러 목적지",
-      },
-    ],
-    publicFilingDemo: "공개 공시 데모",
-    inspectTitle: "설명을 믿지 말고 결과를 직접 확인하세요.",
-    inspectBody:
-      "동일한 DART 샘플이 원본 페이지, Markdown, 지식 패키지, 그래프와 Proof 패널을 연결합니다.",
-    openDart: "전체 DART 데모 열기",
-    tryDocument: "내 문서로 사용해 보기",
-    pillarsTitle: "지식에는 구조, 근거, 연결과 이식 가능한 출구가 있습니다.",
-    pillars: [
-      ["구조", "문자만이 아니라 계층을 보존합니다.", "제목 계층 + 읽기 순서"],
-      [
-        "근거",
-        "모든 결과를 원본 페이지까지 추적합니다.",
-        "페이지 · 블록 · 바운딩 박스",
-      ],
-      [
-        "연결",
-        "분리된 파일을 지식 네트워크로 만듭니다.",
-        "노트 · 엔티티 · 관계",
-      ],
-      [
-        "이식성",
-        "지식이 하나의 도구에 종속되지 않게 합니다.",
-        "Markdown · Vault · RAG · JSON-LD",
-      ],
-    ],
-    publicProofSystems: "공개 Proof 시스템",
-    publicProofTitle: "오해가 허용되지 않는 문서를 위해 설계했습니다.",
-    dartTitle: "한국 금융 공시",
-    dartBody:
-      "한국어 장문, XML/XBRL 정답 데이터, 복잡한 표, 지표, 위험, 사업 부문과 정정 공시 관계를 다룹니다.",
-    dartLink: "DART 살펴보기",
-    secTitle: "10-K, 10-Q와 8-K",
-    secBody:
-      "Inline XBRL, 위험 요인, 첨부 문서, 공시 관계와 원본 연결 엔티티를 동일한 온톨로지로 다룹니다.",
-    secLink: "SEC 살펴보기",
-    benchmarkLabel: "벤치마크 원칙",
-    benchmarkTitle: "정확도는 선언이 아니라 근거로 증명해야 합니다.",
-    metricHeaders: ["지표", "공개 상태", "근거"],
-    benchmarkLink: "벤치마크 방법론 살펴보기",
-    useCasesTitle: "하나의 컴파일러로 서로 다른 지식 시스템을 만듭니다.",
-    useCases: [
-      [
-        "연구",
-        "논문을 방법, 데이터셋, 결과, 한계와 인용 연결 노트로 전환합니다.",
-      ],
-      [
-        "개인 지식",
-        "책, 강의와 노트를 Obsidian 호환 개념 시스템으로 전환합니다.",
-      ],
-      [
-        "엔터프라이즈",
-        "매뉴얼, 정책과 보고서를 접근, 보존과 감사 정책으로 통제합니다.",
-      ],
-      [
-        "AI와 RAG",
-        "원본 연결 청크와 JSONL을 평가 및 검색에 바로 사용할 수 있게 제공합니다.",
-      ],
-    ],
-    privateLabel: "기본 비공개",
-    securityTitle: "고객의 지식은 고객에게 남습니다.",
-    securityBody:
-      "작업 시작 전에 리전, 보존, 접근, 감사와 외부 처리 정책이 문서를 둘러싸고 통제합니다.",
-    securityLink: "보안 아키텍처 살펴보기",
-    policyCenter: "문서",
-    policies: ["리전", "보존", "접근", "감사", "외부 AI"],
-    manifesto: "AI에는 더 많은 정보가 아니라 더 나은 지식이 필요합니다.",
-    knowledgeStatements: [
-      "지식에는 구조가 있습니다.",
-      "지식에는 맥락이 있습니다.",
-      "지식에는 관계가 있습니다.",
-      "지식에는 근거가 있습니다.",
-    ],
-    compilerStatement: "Structara는 이 네 가지를 모두 컴파일합니다.",
-    finalIntro: "문서에는 이미 AI에 필요한 정보가 담겨 있습니다.",
-    finalTitle: "활용 가능한 지식으로 만드세요.",
-    sales: "영업팀 문의",
-    finalTrust: "원본 연결 · 이식 가능 · 정책 통제",
-    exportLabel: "내보내기",
-    knowledgeLabel: "지식",
+    proofLabel: "02 · 전체 폭 Proof",
+    proofTitle: "결과를 선택하면 정확한 원문 셀로 돌아갑니다.",
+    proofBody:
+      "하나의 고정 공개 공시가 원문 PDF 근거, 구조화 결과, 메타데이터, 이식 가능한 노트와 그래프 관계를 연결합니다.",
+    transformationLabel: "03 · 컴파일러 변환",
+    transformationTitle: "이해하고, 검증하고, 연결하고, 활성화합니다.",
+    knowledgeLabel: "04 · 지식 시스템",
+    knowledgeTitle: "하나의 검증 픽스처를 네 가지 방식으로 재사용합니다.",
+    knowledgeBody:
+      "Vault 트리, 원자 노트, 로컬 그래프와 내보내기가 모두 같은 근거 레코드로 돌아갑니다.",
+    qualityLabel: "05 · 품질과 라우팅",
+    qualityTitle: "고정 부분집합에서 측정하며, 마케팅으로 승격하지 않습니다.",
+    qualityBody:
+      "고정된 OmniDocBench 공식 데모 18페이지에서 수행한 정식 추론 결과입니다. 전체 공개 벤치마크도, 프로덕션 승격 결정도 아닙니다.",
+    securityLabel: "06 · 보안과 제어",
+    securityTitle: "처리 전에 정책이 문서를 먼저 둘러쌉니다.",
+    securityBody: PUBLIC_BRAND.korean.enterprise,
+    policyRail: ["리전", "보존", "접근", "감사", "외부 AI"],
+    finalLabel: "07 · 시작",
+    finalTitle: "문서를 하나의 지식 시스템으로 만드세요.",
+    finalBody:
+      "로컬 매니페스트, 보정된 예상치와 원문 연결 결과로 시작하거나 엔터프라이즈 제어 모델을 먼저 검토하세요.",
+    sales: "엔터프라이즈 제어 검토",
+    benchmark: "방법론과 근거 열기",
   },
-};
+} as const;
 
-export function MarketingLanding({
-  locale = "en",
-}: {
-  locale?: StructaraLocale;
-}) {
-  const copy = HOME_COPY[locale];
-  const measuredCandidates = publicBenchmarkSnapshot.datasets.filter(
+const TRANSFORMATION = {
+  en: [
+    ["01", "Understand", "Recover reading order, hierarchy, tables, figures, formulas, and footnotes as typed blocks.", "Page → semantic blocks"],
+    ["02", "Verify", "Bind claims, numbers, and cells to page, block, bounding box, and immutable receipt.", "Block → evidence"],
+    ["03", "Connect", "Compile sections into notes, entities, relations, and continuity across documents.", "Evidence → knowledge"],
+    ["04", "Activate", "Derive Markdown, Vault, RAG JSONL, JSON-LD, and project packs from one verified core.", "One core → many uses"],
+  ],
+  ko: [
+    ["01", "이해", "읽기 순서, 계층, 표, 그림, 수식과 각주를 타입이 있는 블록으로 복원합니다.", "페이지 → 의미 블록"],
+    ["02", "검증", "주장, 숫자와 셀을 페이지, 블록, 바운딩 박스와 불변 영수증에 결합합니다.", "블록 → 근거"],
+    ["03", "연결", "섹션을 노트, 엔티티, 관계와 문서 간 연속성으로 컴파일합니다.", "근거 → 지식"],
+    ["04", "활성화", "하나의 검증 코어에서 Markdown, Vault, RAG JSONL, JSON-LD와 프로젝트 팩을 파생합니다.", "하나의 코어 → 여러 활용"],
+  ],
+} as const;
+
+export function MarketingLanding({ locale = "en" }: { locale?: StructaraLocale }) {
+  const copy = COPY[locale];
+  const candidates = publicBenchmarkSnapshot.datasets.filter(
     (dataset) => dataset.status === "available",
   );
-  const formalCaseCount = measuredCandidates.reduce(
-    (total, dataset) => total + (dataset.evidence?.case_count ?? 0),
-    0,
-  );
-  const candidateEvidence = measuredCandidates
-    .map((dataset) =>
-      dataset.label
-        .replace("MinerU 3.4.4 · ", "MinerU ")
-        .replace("PaddleOCR-VL 1.6 · FastDeploy c8", "Paddle VL"),
-    )
-    .join(" · ");
-  const metricRows = [
-    [
-      locale === "ko" ? "텍스트 1−편집거리" : "Text 1−edit",
-      measuredCandidates
-        .map((dataset) =>
-          formatBenchmarkPercent(dataset.metrics.text_edit_companion),
-        )
-        .join(" · "),
-      candidateEvidence,
-    ],
-    [
-      locale === "ko" ? "수식 1−편집거리" : "Formula 1−edit",
-      measuredCandidates
-        .map((dataset) =>
-          formatBenchmarkPercent(dataset.metrics.formula_edit_companion),
-        )
-        .join(" · "),
-      candidateEvidence,
-    ],
-    [
-      locale === "ko" ? "표 TEDS" : "Table TEDS",
-      measuredCandidates
-        .map((dataset) => formatBenchmarkPercent(dataset.metrics.table_teds))
-        .join(" · "),
-      locale === "ko" ? "공식 부분 지표" : "Official partial metric",
-    ],
-    [
-      locale === "ko" ? "표 1−편집거리" : "Table 1−edit",
-      measuredCandidates
-        .map((dataset) =>
-          formatBenchmarkPercent(dataset.metrics.table_edit_companion),
-        )
-        .join(" · "),
-      candidateEvidence,
-    ],
-    [
-      locale === "ko" ? "평균 실행시간" : "Mean runtime",
-      measuredCandidates
-        .map((dataset) =>
-          formatBenchmarkLatency(dataset.metrics.mean_latency_ms),
-        )
-        .join(" · "),
-      "RTX 4090 · $0.69/h",
-    ],
-    [
-      locale === "ko" ? "페이지당 추정 비용" : "Estimated cost/page",
-      measuredCandidates
-        .map((dataset) =>
-          formatBenchmarkCost(dataset.metrics.cost_per_page_usd),
-        )
-        .join(" · "),
-      locale === "ko" ? "GPU 시간 기준" : "GPU time only",
-    ],
-  ] as const;
-  const benchmarkBody =
-    locale === "ko"
-      ? `${measuredCandidates.length}개 파서 후보가 동일한 OmniDocBench 공식 데모 18페이지에서 정식 추론 ${formalCaseCount}건을 완료했습니다. 모든 공개 수치에 평가기, 런타임, 증거 해시를 함께 제공합니다.`
-      : `${measuredCandidates.length} parser candidates completed ${formalCaseCount} formal inference cases on the same 18-page OmniDocBench demo subset. Every published value carries its evaluator, runtime, and evidence hash.`;
+  const revenue = DART_PUBLIC_FIXTURE.rows[0];
+  const chapters = TRANSFORMATION[locale].map(([number, title, body, signal]) => ({
+    id: `compiler-${number}`,
+    number,
+    title,
+    body,
+    signal,
+  }));
+
   return (
-    <StructaraMarketingShell>
-      <main id="main-content" className="st-home">
-        <section
-          className="st-home-hero"
-          data-signature-asset="A01"
-          data-truth-class="deterministic-reference-scene"
-        >
+    <StructaraMarketingShell showFooterCta={false}>
+      <main id="main-content" className="st-home folynta-home">
+        <section className="st-home-hero folynta-scene" data-scene="01-hero">
           <div className="st-home-copy">
-            <p className="st-context-label">{copy.context}</p>
-            <h1
-              style={{
-                maxWidth: "18ch",
-                margin: 0,
-                fontFamily:
-                  '"Segoe UI Variable", "Segoe UI", Arial, sans-serif',
-                fontSize: "clamp(46px, 10vw, 60px)",
-                fontWeight: 590,
-                letterSpacing: "-0.058em",
-                lineHeight: 0.94,
-                whiteSpace: "pre-line",
-              }}
-            >
-              {copy.heroTitle}
-            </h1>
-            <p className="st-home-intro">{copy.heroIntro}</p>
+            <p className="st-context-label">{PUBLIC_BRAND.category}</p>
+            <h1>{copy.hero}</h1>
+            <p className="st-home-intro">{copy.intro}</p>
+            <p className="folynta-proof-line">{copy.proof}</p>
             <div className="st-actions">
               <Link href="/intake" className="st-button st-button-dark">
-                {copy.build}
-                <ArrowRight size={16} aria-hidden="true" />
+                {copy.primary}<ArrowRight size={16} aria-hidden="true" />
               </Link>
-              <a href="#transformation" className="st-text-action">
-                {copy.watch}
-              </a>
+              <Link href="#proof" className="st-text-action">{copy.secondary}</Link>
             </div>
-            <Link href="/demo/dart" className="st-hero-tertiary">
-              {copy.verifiedDemo}
-            </Link>
             <p className="st-trust-line">{copy.trust}</p>
-            <div
-              className="st-intake-signal"
-              aria-label={
-                locale === "ko"
-                  ? "수집 매니페스트 상태"
-                  : "Intake manifest state"
-              }
-            >
-              {copy.intakeSignals.map((signal) => (
-                <span key={signal}>{signal}</span>
-              ))}
-            </div>
-            <p className="st-compiler-sequence">
-              Page → Structure → Evidence → Knowledge → Intelligence
-            </p>
+            <p className="st-compiler-sequence">Page → Structure → Evidence → Knowledge → Intelligence</p>
           </div>
           <StructaraHeroScene locale={locale} />
-          <div className="st-output-rail" aria-label={copy.outputsLabel}>
-            {copy.outputs.map((output) => (
-              <span key={output}>{output}</span>
-            ))}
-          </div>
         </section>
 
-        <section className="st-problem">
-          <StructaraPattern
-            name="coordinate-field"
-            className="st-section-pattern st-problem-pattern"
-          />
-          <div>
-            <h2>
-              {copy.problemTitle[0]}
-              <br />
-              {copy.problemTitle[1]}
-            </h2>
-            <p>{copy.problemBody}</p>
-          </div>
-        </section>
-
-        <RawCompiledCompare locale={locale} />
-
-        <TransformationStory
-          locale={locale}
-          chapters={copy.chapters.map((chapter) => ({
-            ...chapter,
-            id: `chapter-${chapter.number}`,
-          }))}
-        />
-
-        <section
-          className="st-live-product-section"
-          data-truth-class="deterministic-reference-scene"
-        >
-          <div className="st-section-intro">
-            <p>{locale === "ko" ? "실제 제품" : "Actual product"}</p>
-            <h2>
-              {locale === "ko"
-                ? "설명보다 먼저, 작동하는 컴파일러를 확인하세요."
-                : "See the working compiler before the claims."}
-            </h2>
-            <span>
-              {locale === "ko"
-                ? "고정된 공개 픽스처가 수집부터 패키지까지 다섯 단계를 재현합니다."
-                : "A frozen public fixture reproduces all five stages from collection to package."}
-            </span>
-          </div>
-          <StructaraLiveDemo locale={locale} />
-        </section>
-
-        <section
-          className="st-demo-section"
-          data-signature-asset="A03"
-          data-signature-assets="A05"
-          data-truth-class="public-filing-reference-snapshot"
-        >
-          <div className="st-section-intro">
-            <p>{copy.publicFilingDemo}</p>
-            <h2>{copy.inspectTitle}</h2>
-            <span>{copy.inspectBody}</span>
-          </div>
-          <StructaraProofDemo />
-          <div className="st-inline-actions">
-            <Link href="/demo/dart">{copy.openDart}</Link>
-            <Link href="/intake">{copy.tryDocument}</Link>
-          </div>
-        </section>
-
-        <KnowledgeFlow locale={locale} />
-
-        <section className="st-pillars">
-          <header>
-            <h2>{copy.pillarsTitle}</h2>
+        <section id="proof" className="folynta-proof-scene folynta-scene" data-scene="02-proof">
+          <header className="folynta-section-heading">
+            <p>{copy.proofLabel}</p><h2>{copy.proofTitle}</h2><span>{copy.proofBody}</span>
           </header>
-          {copy.pillars.map(([title, body, proof]) => (
-            <article key={title}>
-              <span>{title}</span>
-              <h3>{body}</h3>
-              <p>{proof}</p>
-            </article>
-          ))}
+          <StructaraProofDemo locale={locale} />
         </section>
 
-        <section className="st-public-proof">
-          <div className="st-section-intro">
-            <p>{copy.publicProofSystems}</p>
-            <h2>{copy.publicProofTitle}</h2>
+        <TransformationStory locale={locale} chapters={chapters} />
+
+        <section className="folynta-knowledge-scene folynta-scene" data-scene="04-knowledge">
+          <header className="folynta-section-heading">
+            <p>{copy.knowledgeLabel}</p><h2>{copy.knowledgeTitle}</h2><span>{copy.knowledgeBody}</span>
+          </header>
+          <div className="folynta-knowledge-grid">
+            <article><small>VAULT TREE</small><strong>JTC / 2026 / Q1</strong><span>Financial statements</span><b>Revenue.md</b></article>
+            <article><small>ATOMIC NOTE</small><strong>{revenue.label}</strong><span>{revenue.current} {DART_PUBLIC_FIXTURE.unit}</span><code>receipt: {DART_PUBLIC_FIXTURE.receiptNumber}</code></article>
+            <article className="folynta-graph"><small>LOCAL GRAPH</small><div><span>JTC</span><i /><span>Revenue</span></div><code>evidence: source line {revenue.sourceLine}</code></article>
+            <article><small>EXPORT</small><strong>Verified core</strong><span>Markdown · Vault · RAG JSONL</span><span>JSON-LD · Knowledge package</span></article>
           </div>
-          <article>
-            <span>KR · DART</span>
-            <h3>{copy.dartTitle}</h3>
-            <p>{copy.dartBody}</p>
-            <Link href="/demo/dart">{copy.dartLink}</Link>
-          </article>
-          <article>
-            <span>US · SEC EDGAR</span>
-            <h3>{copy.secTitle}</h3>
-            <p>{copy.secBody}</p>
-            <Link href="/demo/sec">{copy.secLink}</Link>
-          </article>
         </section>
 
-        <section className="st-benchmark">
-          <div>
-            <p>{copy.benchmarkLabel}</p>
-            <h2>{copy.benchmarkTitle}</h2>
-            <span>{benchmarkBody}</span>
+        <section className="folynta-quality-scene folynta-scene" data-scene="05-quality">
+          <header className="folynta-section-heading">
+            <p>{copy.qualityLabel}</p><h2>{copy.qualityTitle}</h2><span>{copy.qualityBody}</span>
+          </header>
+          <div className="folynta-benchmark-table" role="table" aria-label={copy.qualityTitle}>
+            <div role="row"><strong role="columnheader">Candidate</strong><strong role="columnheader">Text 1−edit</strong><strong role="columnheader">Table TEDS</strong><strong role="columnheader">Runtime</strong><strong role="columnheader">Est. cost/page</strong></div>
+            {candidates.map((dataset) => <div role="row" key={dataset.id}>
+              <span role="cell">{dataset.label}</span>
+              <span role="cell">{formatBenchmarkPercent(dataset.metrics.text_edit_companion)}</span>
+              <span role="cell">{formatBenchmarkPercent(dataset.metrics.table_teds)}</span>
+              <span role="cell">{formatBenchmarkLatency(dataset.metrics.mean_latency_ms)}</span>
+              <span role="cell">{formatBenchmarkCost(dataset.metrics.cost_per_page_usd)}</span>
+            </div>)}
           </div>
-          <div className="st-metric-table">
-            <div>
-              {copy.metricHeaders.map((cell) => (
-                <span key={cell}>{cell}</span>
-              ))}
+          <div className="folynta-quality-footer"><span>SHADOW · 18-page fixed subset · RTX 4090 · $0.69/h · no public parser promoted</span><Link href="/benchmarks">{copy.benchmark}</Link></div>
+        </section>
+
+        <section className="folynta-security-scene folynta-scene" data-scene="06-security">
+          <header className="folynta-section-heading"><p>{copy.securityLabel}</p><h2>{copy.securityTitle}</h2><span>{copy.securityBody}</span></header>
+          <div className="folynta-security-layout">
+            <div className="folynta-security-flow" aria-label="Verified document processing flow">
+              {[
+                ["Browser", "Local manifest"], ["Quarantine", "Hash + scan"], ["Verified Source", "Immutable receipt"],
+                ["Isolated Worker", "Tenant-scoped"], ["Derived Knowledge", "Source-linked"], ["Purge", "Retention policy"],
+              ].map(([title, detail], index) => <div key={title}><span>{String(index + 1).padStart(2, "0")}</span><strong>{title}</strong><small>{detail}</small></div>)}
             </div>
-            {metricRows.map((row) => (
-              <div key={row[0]}>
-                {row.map((cell) => (
-                  <span key={cell}>{cell}</span>
-                ))}
-              </div>
-            ))}
-          </div>
-          <Link href="/benchmarks" className="st-text-action">
-            {copy.benchmarkLink}
-          </Link>
-        </section>
-
-        <ProductFilmDialog locale={locale} />
-
-        <section className="st-use-cases">
-          <header>
-            <h2>{copy.useCasesTitle}</h2>
-          </header>
-          {copy.useCases.map(([title, body], index) => (
-            <article key={title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{title}</h3>
-              <p>{body}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="st-security-band">
-          <div>
-            <LockKey size={22} aria-hidden="true" />
-            <p>{copy.privateLabel}</p>
-            <h2>{copy.securityTitle}</h2>
-            <span>{copy.securityBody}</span>
-            <Link href="/security">{copy.securityLink}</Link>
-          </div>
-          <div className="st-policy-orbit">
-            <strong>{copy.policyCenter}</strong>
-            {copy.policies.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
+            <aside><LockKey size={22} aria-hidden="true" /><strong>POLICY RAIL</strong>{copy.policyRail.map((policy) => <span key={policy}>{policy}<CheckCircle size={14} aria-hidden="true" /></span>)}<Link href="/security">Security architecture</Link></aside>
           </div>
         </section>
 
-        <section className="st-manifesto">
-          <StructaraGlyph name="verified" size={24} />
-          <p>{copy.manifesto}</p>
-          <div>
-            {copy.knowledgeStatements.map((statement) => (
-              <span key={statement}>{statement}</span>
-            ))}
-          </div>
-          <h2>{copy.compilerStatement}</h2>
-        </section>
-
-        <section className="st-home-final">
-          <p>{copy.finalIntro}</p>
-          <h2>{copy.finalTitle}</h2>
-          <div className="st-actions">
-            <Link href="/intake" className="st-button st-button-dark">
-              {copy.build} <ArrowRight size={16} />
-            </Link>
-            <Link href="/company/contact" className="st-text-action">
-              {copy.sales}
-            </Link>
-          </div>
-          <small>
-            <CheckCircle size={14} /> {copy.finalTrust}
-          </small>
+        <section className="st-home-final folynta-scene" data-scene="07-final">
+          <p>{copy.finalLabel}</p><h2>{copy.finalTitle}</h2><span>{copy.finalBody}</span>
+          <div className="st-actions"><Link href="/intake" className="st-button st-button-dark">{copy.primary}<ArrowRight size={16} aria-hidden="true" /></Link><Link href="/company/contact" className="st-text-action">{copy.sales}</Link></div>
+          <small><CheckCircle size={14} aria-hidden="true" /> {PUBLIC_BRAND.tagline}</small>
         </section>
       </main>
     </StructaraMarketingShell>

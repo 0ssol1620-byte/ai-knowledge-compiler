@@ -14,14 +14,14 @@ describe("locale redirect contract", () => {
     expect(response.status).toBe(303);
     expect(response.headers.get("Location")).toBe("/intake?tab=files");
     expect(response.headers.get("Set-Cookie")).toContain(
-      "structara_locale=ko",
+      "akc_locale=ko",
     );
   });
 
   it("rejects protocol-relative return targets", () => {
     const response = GET(
       new NextRequest(
-        "https://structara.example/api/locale?value=ko&returnTo=%2F%2Fevil.example",
+        "https://folynta.example/api/locale?value=ko&returnTo=%2F%2Fevil.example",
       ),
     );
 

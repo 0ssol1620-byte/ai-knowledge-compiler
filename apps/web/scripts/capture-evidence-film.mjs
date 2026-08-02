@@ -9,9 +9,12 @@ const execFileAsync = promisify(execFile);
 const root = resolve(import.meta.dirname, "../../..");
 const output = resolve(root, "apps/web/public/film");
 const scratch = resolve(output, ".capture");
-const baseUrl = process.env.STRUCTARA_CAPTURE_URL ?? "http://127.0.0.1:3001";
-const ffmpeg = process.env.STRUCTARA_FFMPEG;
-if (!ffmpeg) throw new Error("STRUCTARA_FFMPEG must point to a validated ffmpeg binary");
+const baseUrl =
+  process.env.AKC_CAPTURE_URL ??
+  process.env.STRUCTARA_CAPTURE_URL ??
+  "http://127.0.0.1:3001";
+const ffmpeg = process.env.AKC_FFMPEG ?? process.env.STRUCTARA_FFMPEG;
+if (!ffmpeg) throw new Error("AKC_FFMPEG must point to a validated ffmpeg binary");
 const benchmarkSnapshot = JSON.parse(
   await readFile(resolve(root, "apps/web/src/data/benchmark-public-snapshot.json"), "utf8"),
 );
@@ -81,7 +84,7 @@ for (let index = 0; index < loops.length; index += 1) {
 }
 await browser.close();
 
-const captions = `WEBVTT\n\n00:00.000 --> 00:06.000\nRaw files become verified knowledge.\n\n00:06.000 --> 00:12.000\nCollect: hash, deduplicate, classify, and estimate.\n\n00:12.000 --> 00:18.000\nStructure: adaptive routes preserve page and block identity.\n\n00:18.000 --> 00:24.000\nVerify: numeric, table, continuity, and source hard gates.\n\n00:24.000 --> 00:30.000\nMeasured portfolio: ${formalCaseCount} formal inference cases.\n\n00:30.000 --> 00:36.000\nKnowledge: notes, entities, and evidence-backed relations.\n\n00:36.000 --> 00:42.000\nConnect: every relation can return to its source.\n\n00:42.000 --> 00:48.000\nPackage: Markdown, Obsidian, RAG JSONL, and JSON-LD.\n\n00:48.000 --> 00:60.000\nStructara. Compile the knowledge.\n`;
+const captions = `WEBVTT\n\n00:00.000 --> 00:06.000\nRaw files become verified knowledge.\n\n00:06.000 --> 00:12.000\nCollect: hash, deduplicate, classify, and estimate.\n\n00:12.000 --> 00:18.000\nStructure: adaptive routes preserve page and block identity.\n\n00:18.000 --> 00:24.000\nVerify: numeric, table, continuity, and source hard gates.\n\n00:24.000 --> 00:30.000\nMeasured portfolio: ${formalCaseCount} formal inference cases.\n\n00:30.000 --> 00:36.000\nKnowledge: notes, entities, and evidence-backed relations.\n\n00:36.000 --> 00:42.000\nConnect: every relation can return to its source.\n\n00:42.000 --> 00:48.000\nPackage: Markdown, Obsidian, RAG JSONL, and JSON-LD.\n\n00:48.000 --> 00:60.000\nFOLYNTA. From every page, a system of knowledge.\n`;
 await writeFile(resolve(output, "structara-evidence-in-motion.en.vtt"), captions);
 
 const files = ["structara-evidence-in-motion-60s.webm", "structara-evidence-in-motion-60s.mp4", "structara-evidence-in-motion-poster.webp", "structara-evidence-in-motion.en.vtt", ...loopRecords.map((item) => item.file)].sort();

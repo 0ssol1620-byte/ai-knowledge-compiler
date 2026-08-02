@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python -m infra.runpod.v6",
-        description="Dry-run-first RunPod REST API v2 operations for Structara v6.",
+        description="Dry-run-first RunPod REST API v2 operations for FOLYNTA.",
     )
     parser.add_argument(
         "--execute",

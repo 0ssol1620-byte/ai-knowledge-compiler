@@ -26,10 +26,13 @@ function KnowledgePlaneModel({
       if (!action) return;
       action.reset();
       action.setLoop(LoopOnce, 1);
+      action.setEffectiveTimeScale(
+        Math.max(action.getClip().duration / 8.2, 1),
+      );
       action.clampWhenFinished = true;
       action.play();
     });
-    const timer = window.setTimeout(onSettled, 8_300);
+    const timer = window.setTimeout(onSettled, 8_250);
     return () => {
       window.clearTimeout(timer);
       clips.forEach((action) => action?.stop());

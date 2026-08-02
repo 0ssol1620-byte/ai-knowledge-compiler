@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://structara.example/schemas/v6/endpoint-lifecycle.schema.json",
-  "title": "Structara v6 temporary endpoint cleanup receipt",
+  "$id": "urn:akc:schema:runpod:v6:endpoint-lifecycle",
+  "title": "FOLYNTA temporary endpoint cleanup receipt",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "endpoint_id", "run_id", "pool_id", "created_at", "state", "events", "receipt_sha256"],

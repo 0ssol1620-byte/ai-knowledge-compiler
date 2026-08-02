@@ -48,7 +48,7 @@ def _endpoint(run_tag: str, *, workers: tuple[int, int] = (0, 0)) -> dict[str, A
         "args": "",
         "disk": 20,
         "ports": [],
-        "env": {"STRUCTARA_RUN_TAG": run_tag},
+        "env": {"AKC_RUN_TAG": run_tag},
         "registry": None,
         "gpu": {"pools": ["ADA_24"], "count": 1},
         "cpu": None,

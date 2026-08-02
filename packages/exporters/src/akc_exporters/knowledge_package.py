@@ -386,7 +386,7 @@ def build_knowledge_package(
             blueprint_modules=blueprint_modules,
         )
     readme = (
-        b"# Structara Knowledge Package\n\n"
+        b"# FOLYNTA Knowledge Package\n\n"
         b"Open `obsidian/Home.md` to begin. The canonical model is the source of truth; "
         b"all other directories are portable renderers with source evidence. Verify "
         b"`manifest.json`, `checksums.sha256`, and `signature/` before import.\n"
@@ -402,7 +402,7 @@ def build_knowledge_package(
     ]
     manifest: dict[str, object] = {
         "schema_version": "1.0",
-        "package_type": "structara-knowledge-package",
+        "package_type": "akc-knowledge-package",
         "collection_id": collection_id,
         "architecture_plan_sha256": architecture_plan_sha256,
         "roots": list(_REQUIRED_ROOTS),
@@ -480,7 +480,8 @@ def import_knowledge_package(
     if (
         not isinstance(manifest, dict)
         or manifest.get("schema_version") != "1.0"
-        or manifest.get("package_type") != "structara-knowledge-package"
+        or manifest.get("package_type")
+        not in {"akc-knowledge-package", "structara-knowledge-package"}
         or manifest.get("roots") != list(_REQUIRED_ROOTS)
         or not isinstance(manifest.get("collection_id"), str)
         or not str(manifest["collection_id"]).strip()

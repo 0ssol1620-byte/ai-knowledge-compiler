@@ -180,10 +180,13 @@ class EndpointCreateSpec:
             if key == RUNPOD_KEY_ENV:
                 raise ContractError("RUNPOD_API_KEY may not be copied into endpoint environment")
             normalized_env[key] = value
-        previous_tag = normalized_env.get("STRUCTARA_RUN_TAG")
+        previous_tag = normalized_env.get("AKC_RUN_TAG") or normalized_env.get(
+            "STRUCTARA_RUN_TAG"
+        )
         if previous_tag is not None and previous_tag != self.run_tag:
-            raise ContractError("STRUCTARA_RUN_TAG conflicts with the immutable run tag")
-        normalized_env["STRUCTARA_RUN_TAG"] = self.run_tag
+            raise ContractError("run tag conflicts with the immutable run tag")
+        normalized_env.pop("STRUCTARA_RUN_TAG", None)
+        normalized_env["AKC_RUN_TAG"] = self.run_tag
         object.__setattr__(self, "env", MappingProxyType(normalized_env))
 
     @classmethod
@@ -717,8 +720,8 @@ class RunPodV2Client:
         ):
             raise RunPodProtocolError("created endpoint identity differs from the requested spec")
         env = raw_object.get("env")
-        if not isinstance(env, Mapping) or env.get("STRUCTARA_RUN_TAG") != spec.run_tag:
-            raise RunPodProtocolError("created endpoint did not preserve STRUCTARA_RUN_TAG")
+        if not isinstance(env, Mapping) or env.get("AKC_RUN_TAG") != spec.run_tag:
+            raise RunPodProtocolError("created endpoint did not preserve AKC_RUN_TAG")
         return endpoint
 
     def get_endpoint(
@@ -1105,11 +1108,11 @@ def _parse_endpoint(value: object) -> EndpointSummary:
         not isinstance(key, str) or not isinstance(item, str) for key, item in env.items()
     ):
         raise RunPodProtocolError("endpoint env must be a string map")
-    run_tag_raw = env.get("STRUCTARA_RUN_TAG")
+    run_tag_raw = env.get("AKC_RUN_TAG") or env.get("STRUCTARA_RUN_TAG")
     if run_tag_raw is not None and (
         not isinstance(run_tag_raw, str) or not _RUN_TAG_RE.fullmatch(run_tag_raw)
     ):
-        raise RunPodProtocolError("endpoint STRUCTARA_RUN_TAG is malformed")
+        raise RunPodProtocolError("endpoint run tag is malformed")
     return EndpointSummary(
         endpoint_id=endpoint_id,
         name=name,
@@ -1273,7 +1276,7 @@ def _parse_billing_query_echo(value: object) -> None:
 
 
 def _write_headers(run_tag: str, idempotency_key: str) -> dict[str, str]:
-    return {"Idempotency-Key": idempotency_key, "X-Structara-Run-Tag": run_tag}
+    return {"Idempotency-Key": idempotency_key, "X-AKC-Run-Tag": run_tag}
 
 
 def _strict_object(

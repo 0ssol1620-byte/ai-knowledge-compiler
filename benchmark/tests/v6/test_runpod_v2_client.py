@@ -55,7 +55,7 @@ def _endpoint(
         "args": "",
         "disk": 20,
         "ports": [],
-        "env": env or {"STRUCTARA_RUN_TAG": RUN_TAG},
+        "env": env or {"AKC_RUN_TAG": RUN_TAG},
         "registry": None,
         "gpu": {"pools": ["ADA_24"], "count": 1},
         "cpu": None,
@@ -140,7 +140,7 @@ def test_management_queue_and_billing_operations_follow_documented_v2_contract(
             )
         if request.method == "POST" and request.url.path == "/v2/serverless":
             assert request.headers["idempotency-key"].startswith("idem-")
-            assert request.headers["x-structara-run-tag"] == RUN_TAG
+            assert request.headers["x-akc-run-tag"] == RUN_TAG
             body = json.loads(request.content)
             assert body["type"] == "QUEUE"
             assert body["workers"] == {"min": 0, "max": 3, "idleTimeout": 300}

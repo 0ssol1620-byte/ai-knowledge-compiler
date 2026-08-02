@@ -6,6 +6,7 @@ import {
   BracketsCurly,
   CaretDown,
   CreditCard,
+  ClipboardText,
   Flask,
   FolderOpen,
   GearSix,
@@ -17,6 +18,7 @@ import {
   ShieldCheck,
   SidebarSimple,
   TreeStructure,
+  UsersThree,
 } from "@phosphor-icons/react";
 import clsx from "clsx";
 import Link from "next/link";
@@ -39,13 +41,14 @@ const navigation = [
   { href: "/app/knowledge-bases", key: "knowledge", icon: TreeStructure },
   { href: "/app/jobs", key: "jobs", icon: Pulse },
   { href: "/app/exports", key: "exports", icon: Flask },
+  { href: "/app/usage", key: "usage", icon: CreditCard },
 ] as const;
 
 const secondaryNavigation = [
   { href: "/app/api", key: "api", icon: BracketsCurly },
-  { href: "/app/usage", key: "usage", icon: CreditCard },
+  { href: "/app/settings/members", key: "members", icon: UsersThree },
   { href: "/app/settings/security", key: "security", icon: ShieldCheck },
-  { href: "/settings", key: "settings", icon: GearSix },
+  { href: "/app/admin/audit", key: "audit", icon: ClipboardText },
 ] as const;
 
 const shellCopy = {
@@ -58,6 +61,8 @@ const shellCopy = {
     exports: "Exports",
     api: "API",
     usage: "Usage",
+    members: "Members",
+    audit: "Audit",
     security: "Security",
     settings: "Settings",
     unknownSessionError:
@@ -104,6 +109,8 @@ const shellCopy = {
     exports: "내보내기",
     api: "API",
     usage: "사용량",
+    members: "구성원",
+    audit: "감사",
     security: "보안",
     settings: "설정",
     unknownSessionError: "세션을 확인하는 중 알 수 없는 오류가 발생했습니다.",

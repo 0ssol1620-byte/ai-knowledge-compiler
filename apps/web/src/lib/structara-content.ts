@@ -724,7 +724,7 @@ export const PUBLIC_PAGES: Record<string, StructaraPage> = Object.fromEntries(
       "Model changes are described by route behavior and quality impact, with technical detail available.",
       [
         {
-          title: "2026.07 — Structara foundation",
+          title: "2026.08 — FOLYNTA foundation",
           body: "New category, source-to-knowledge narrative, route system, and calm product shell.",
         },
         {

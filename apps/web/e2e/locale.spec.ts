@@ -20,7 +20,7 @@ test("Korean locale remains consistent across marketing and core product workflo
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
   await expect(
     page.getByRole("heading", {
-      name: "흩어진 문서를 AI가 신뢰할 수 있는 지식으로.",
+      name: "흩어진 문서를 하나의 지식 시스템으로.",
     }),
   ).toBeVisible();
   const desktopProductLink = page
@@ -98,7 +98,7 @@ test("language switch persists and returns the product to English", async ({
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(
     page.getByRole("heading", {
-      name: "Compile documents. Build trusted AI knowledge.",
+      name: "From scattered documents to one knowledge system.",
     }),
   ).toBeVisible();
 

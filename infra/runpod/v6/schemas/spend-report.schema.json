@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://structara.example/schemas/v6/spend-report.schema.json",
-  "title": "Structara v6 spend and duplicate-work safety report",
+  "$id": "urn:akc:schema:runpod:v6:spend-report",
+  "title": "FOLYNTA spend and duplicate-work safety report",
   "type": "object",
   "additionalProperties": false,
   "required": [

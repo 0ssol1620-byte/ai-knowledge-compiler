@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import {
+  AKC_LOCALE_COOKIE,
   normalizeStructaraLocale,
-  STRUCTARA_LOCALE_COOKIE,
 } from "@/lib/locale";
 
 export function GET(request: NextRequest) {
@@ -23,7 +23,7 @@ export function GET(request: NextRequest) {
     status: 303,
     headers: { Location: returnTo },
   });
-  response.cookies.set(STRUCTARA_LOCALE_COOKIE, locale, {
+  response.cookies.set(AKC_LOCALE_COOKIE, locale, {
     path: "/",
     maxAge: 31_536_000,
     sameSite: "lax",

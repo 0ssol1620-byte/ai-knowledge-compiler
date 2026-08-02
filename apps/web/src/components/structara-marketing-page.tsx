@@ -24,32 +24,32 @@ const productEvidence: Record<
   "/product": {
     src: "/product/workspace-home.webp",
     label: "Actual product · deterministic demo workspace",
-    alt: "Structara workspace with active jobs, integrity findings, knowledge notes, and source coverage.",
+    alt: "FOLYNTA workspace with active jobs, integrity findings, knowledge notes, and source coverage.",
   },
   "/product/convert": {
     src: "/product/processing.webp",
     label: "Actual product · processing workspace",
-    alt: "Structara processing workspace linking source pages to structured output.",
+    alt: "FOLYNTA processing workspace linking source pages to structured output.",
   },
   "/product/verify": {
     src: "/product/review.webp",
     label: "Actual product · integrity workspace",
-    alt: "Structara integrity workspace showing source-linked numeric and table findings.",
+    alt: "FOLYNTA integrity workspace showing source-linked numeric and table findings.",
   },
   "/product/knowledge": {
     src: "/product/knowledge.webp",
     label: "Actual product · knowledge workspace",
-    alt: "Structara knowledge workspace with notes, entities, and source coverage.",
+    alt: "FOLYNTA knowledge workspace with notes, entities, and source coverage.",
   },
   "/product/graph": {
     src: "/product/graph.webp",
     label: "Actual product · local graph workspace",
-    alt: "Structara local knowledge graph with a restrained evidence-focused layout.",
+    alt: "FOLYNTA local knowledge graph with a restrained evidence-focused layout.",
   },
   "/product/connect": {
     src: "/product/exports.webp",
     label: "Actual product · export center",
-    alt: "Structara export center with portable knowledge packages and verified status.",
+    alt: "FOLYNTA export center with portable knowledge packages and verified status.",
   },
 };
 

@@ -1,4 +1,4 @@
-# Structara v6 RunPod orchestration contract
+# FOLYNTA RunPod orchestration contract
 
 Importing or testing this directory does not inspect credentials, call RunPod,
 create paid resources, or change an endpoint. `client.py` is the production REST

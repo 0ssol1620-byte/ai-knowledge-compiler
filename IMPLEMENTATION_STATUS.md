@@ -1,15 +1,20 @@
 # Current status
 
-Structara is a **repository release candidate** as of 2026-07-31. The registered
-marketing, authentication, onboarding, product, document, knowledge, enterprise,
-and administration surfaces are implemented and pass the local release gates
-listed below. This status is not a production go-live, legal-clearance,
-commercial-pricing, or field-performance assertion.
+FOLYNTA is an **implemented-local repository release candidate** as of
+2026-08-02. The public identity is `FOLYNTA / The Knowledge Compiler / From
+every page, a system of knowledge.` The registered marketing, authentication,
+onboarding, product, document, knowledge, enterprise, and administration
+surfaces are implemented. This status is not a production go-live,
+legal-clearance, commercial-pricing, full-public-benchmark, or field-performance
+assertion. The legacy Structara implementation remains only as repository
+lineage and compatibility naming where migration safety requires it.
 
 # Completed repository scope
 
-- one connected English-default Structara marketing and authenticated product
+- one connected English-default FOLYNTA marketing and authenticated product
   system with round-trip navigation
+- exact seven-scene homepage authority with one-shot 8.2-second hero runtime,
+  deterministic reduced-motion poster, a single final CTA, and no hero metric
 - all routes registered in `PAGE_MANIFEST.yml`, with route-specific information
   architecture and no desktop horizontal overflow in the complete route crawl
 - product, solution, demo, proof/pricing, developer, editorial, legal, document,
@@ -30,8 +35,11 @@ commercial-pricing, or field-performance assertion.
   perform write-looking operations; non-demo mode continues to use the live
   control components
 - Next.js production builds no longer suppress TypeScript errors
-- first-party Blender hero master, GLB LODs, responsive derivatives, product
+- first-party Blender hero master, GLB LODs, three distinct deterministic
+  FOLYNTA concept directions, responsive derivatives, product
   captures, structural glyphs, patterns, textures, and architecture diagrams
+- current FOLYNTA hero and evidence-film binaries regenerated with publisher-
+  hash-verified Blender 4.5.12 LTS and FFmpeg 8.1.2
 - deterministic asset naming, provenance records, and cryptographic hash gates
 - no fabricated customer, benchmark, certification, security, or commercial
   pricing evidence
@@ -49,7 +57,13 @@ Executed with Node.js 22.14.0 and pnpm 11.9.0:
 - strict TypeScript: pass
 - Next.js 16.2.12 production build: pass, including the internal TypeScript
   phase, static-page generation, and build-trace collection
-- Vitest: 22 files and 109 tests passed
+- Vitest: 50 files and 217 tests passed
+- focused FOLYNTA production Playwright: 10 passed across desktop/mobile,
+  English/Korean authority, reduced-motion, Proof interaction, and the
+  representative WCAG route scan
+- in-app browser visual QA: 1440, 768, and 390 px passed with seven scenes and
+  no page-level horizontal overflow
+- refreshed FOLYNTA homepage visual baseline: pass on a clean comparison run
 - Public benchmark contract tests: 11 passed
 - production Playwright: 52 passed and 14 intentional project-scope skips
 - desktop visual regression: 9 approved baselines passed
@@ -70,9 +84,14 @@ Executed with Node.js 22.14.0 and pnpm 11.9.0:
 - reduced-motion checks: pass
 - Axe representative WCAG A/AA suite: no violations
 - canonical contracts TypeScript check: pass
-- asset manifest: 9 assets verified
-- asset naming: 119 files verified
-- asset hashes: 21 derivatives verified
+- asset manifest: 10 assets verified
+- asset naming: 136 files verified
+- asset hashes: 26 derivatives verified
+
+The authoritative FOLYNTA masterplan is indexed line by line in
+`docs/release/FOLYNTA_MASTERPLAN_REQUIREMENTS_INDEX.json`: 43,174 lines, 4,066
+headings, 463 checkboxes, and 325 normative lines. Coverage of a requirement is
+not treated as proof that an external gate passed.
 
 The live-API Playwright journey was rerun and passed registration, verification,
 upload, analysis, compilation, ordered SSE, and export against the real local

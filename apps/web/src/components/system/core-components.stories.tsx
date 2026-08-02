@@ -9,7 +9,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Release-bound state coverage for Structara buttons, distinct status/origin badges, surfaces, and system feedback.",
+          "Release-bound state coverage for FOLYNTA buttons, distinct status/origin badges, surfaces, and system feedback.",
       },
     },
   },

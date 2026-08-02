@@ -65,7 +65,7 @@ const COPY = {
     eyebrow: "Collection intake",
     title: "Bring a document collection in without losing its structure",
     intro:
-      "Choose a folder or add individual files. Structara builds a safe local manifest first; no upload, processing job, or credit reservation begins on this screen.",
+      "Choose a folder or add individual files. FOLYNTA builds a safe local manifest first; no upload, processing job, or credit reservation begins on this screen.",
     boundary: "Local manifest only",
     boundaryBody:
       "A signed server preflight and your approval are required before processing.",
@@ -120,7 +120,7 @@ const COPY = {
       "No API call, upload, job, or credit reservation has started. Connect an authenticated workspace to continue.",
     connectedTitle: "Connected collection control plane",
     connectedBody:
-      "Select a project. Structara hashes files locally, writes an immutable plan, uploads only required sources through the verified browser pipeline, binds their receipts, and requests preflight when valid.",
+      "Select a project. FOLYNTA hashes files locally, writes an immutable plan, uploads only required sources through the verified browser pipeline, binds their receipts, and requests preflight when valid.",
     project: "Project",
     loadingProjects: "Loading accessible projects…",
     noProjects: "No writable project is available.",

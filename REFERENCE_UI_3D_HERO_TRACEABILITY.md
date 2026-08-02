@@ -1,5 +1,9 @@
 # Structara Reference UI + 3D Hero traceability
 
+> Legacy lineage record. Public display and current homepage authority are
+> superseded by `FOLYNTA_MASTERPLAN_TRACEABILITY.md` and
+> `FOLYNTA_BRAND_DECISIONS.md`. Historical evidence remains preserved.
+
 Authority: `D:\Structara_Reference_UI_Integration_Landing_3D_Hero_Implementation_Masterplan_FINAL_KO_2026-08-02.md`
 Authority SHA-256: `86e883fc1a017ca945bada6c2f43844e4a9d46cba04c9ec5d10d05288ed1ebb0`
 

@@ -708,7 +708,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
         "모델 변경은 처리 경로 동작과 품질 영향으로 설명하고 기술 세부 정보도 제공합니다.",
         [
           {
-            title: "2026.07 — Structara 기반",
+            title: "2026.08 — FOLYNTA 기반",
             body: "새로운 카테고리, 원본에서 지식으로 이어지는 내러티브, 경로 시스템과 차분한 제품 Shell을 구축했습니다.",
           },
           {

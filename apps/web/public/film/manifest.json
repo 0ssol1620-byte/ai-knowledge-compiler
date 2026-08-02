@@ -64,17 +64,17 @@
     }
   ],
   "sha256": {
-    "loop-01-intake-dedupe.webm": "0a99ad2ee22e064f7089b4f14b04894c70be41e1ab6ad62b3b2332cdccaeeb93",
-    "loop-02-adaptive-estimate.webm": "edf6ac305f19fada17a56a7be0da78a9985b534346355f2191d4061939ede8f6",
-    "loop-03-page-block-detection.webm": "b5527e66a30f1ef096b3da03eedb53849709f76112c8e4f68fb30a7df1881d56",
-    "loop-04-cross-page-table.webm": "838d1d73efc17b29c13baa7a43e2cafb6cb23e5448fc55546283e2ba19a2ff0e",
-    "loop-05-numeric-proof.webm": "880292fa22d113abf024cf6eecddbef6716c4be92d6d5b1b156a2924fcb2e0e7",
-    "loop-06-auto-repair.webm": "6ce53d1bce8042d7afa3a04c45b6913dc85974264213949667754c3ff1c4ffc0",
-    "loop-07-knowledge-relations.webm": "4e5ed4f14c2a3f33a4b2dec463e111980966864c44d88d683450df7163b5b394",
-    "loop-08-export-ready.webm": "d27a2a6771728cb18b4ffc6a544385b5fd298cf021bd81cdd684931a20e7b89e",
-    "structara-evidence-in-motion-60s.mp4": "15d1078266b35aea3457947071e01822b5584ff68cf6836d82ef66b13f4dd86b",
-    "structara-evidence-in-motion-60s.webm": "3fe170408a0d339a5836221c766a1510a83c53bf55158bb3d40d639937189e5c",
-    "structara-evidence-in-motion-poster.webp": "c79d7ddb11574b5792fb5f1591fb102d8230718985e36bdc41fea94045cc3665",
-    "structara-evidence-in-motion.en.vtt": "43323e98fbc2f7be17c64916262ba1a673fccbad4f1820051dbecf025ab4fdfa"
+    "loop-01-intake-dedupe.webm": "6c0aba73d198d9258d0367865d931853a0a4cb94430068cca23b1856913d4a76",
+    "loop-02-adaptive-estimate.webm": "0a1af63a37be2f69838369b3f2f3b71f2e66afe6939f8d62b70056518bee466f",
+    "loop-03-page-block-detection.webm": "bfd8e17f8a7918a308452b8c6ab1d125e574d59ec6adbc983e2fb8d7818ed00c",
+    "loop-04-cross-page-table.webm": "a4887550b20cf40207a57065dd27fd806442ba00ae7e5371ad4d4912169bef57",
+    "loop-05-numeric-proof.webm": "9a98f77f882c743c5194e08f8e0fe035a6ed3196554fc969d995fe879269e411",
+    "loop-06-auto-repair.webm": "c0d298eb9d6dfcb15ccfdf0d31c32f2b616e45e7bb9511993294ac3edf7f9258",
+    "loop-07-knowledge-relations.webm": "b48b5d0ec650a803df47a2860a92cd6cb24a88ab93f4c13b9b8812a4992ec479",
+    "loop-08-export-ready.webm": "c4fb0ea0c6c4ffd1e182d7c527f7764386f8979dee3acf65f73b28009b39e0c2",
+    "structara-evidence-in-motion-60s.mp4": "579501dcdbe84ce993e9da0f101cce25b9243849a8ef3e94c48e2123316b4499",
+    "structara-evidence-in-motion-60s.webm": "28035beb57d2acb14c100a23476bceab07ba784592588f5b5e5a69909a2b6e78",
+    "structara-evidence-in-motion-poster.webp": "1e8b64ac36d513ba4475d8f647c1ce37ac71de59930c02c5de37b860e23c8f5a",
+    "structara-evidence-in-motion.en.vtt": "b4daac5878a3b24b031bdc2767494d0b15ca6ad6f69efd50ae06fdfc2b612acf"
   }
 }

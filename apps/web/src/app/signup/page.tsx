@@ -9,8 +9,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: locale === "ko" ? "지식 시스템 구축하기" : "Build your knowledge",
     description:
       locale === "ko"
-        ? "Structara 계정을 만들고 첫 문서로 시작하세요."
-        : "Create a Structara account and begin with your first document.",
+        ? "FOLYNTA 계정을 만들고 첫 문서로 시작하세요."
+        : "Create a FOLYNTA account and begin with your first document.",
   };
 }
 

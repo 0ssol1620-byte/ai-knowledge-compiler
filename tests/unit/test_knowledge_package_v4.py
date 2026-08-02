@@ -34,7 +34,7 @@ def _groups() -> dict[str, dict[str, bytes]]:
         "canonical": {"model.json": b'{"blocks":[]}'},
         "obsidian": {"Home.md": b"# Home\n", "Notes/Document.md": b"# Document\n"},
         "ontology": {
-            "knowledge.ttl": b"@prefix str: <urn:structara:> .\n",
+            "knowledge.ttl": b"@prefix akc: <urn:akc:> .\n",
             "knowledge.owl": b"<rdf:RDF />\n",
             "knowledge.jsonld": b"{}\n",
             "knowledge.skos.ttl": b"@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n",
@@ -178,6 +178,8 @@ def test_signed_package_round_trip_preserves_every_profile() -> None:
     assert imported.files["obsidian/Home.md"] == b"# Home\n"
     assert imported.files["obsidian/Notes/Document.md"] == b"# Document\n"
     assert imported.files["graph/nodes.csv"].startswith(b"id:ID")
+    assert imported.manifest["package_type"] == "akc-knowledge-package"
+    assert imported.files["README.md"].startswith(b"# FOLYNTA Knowledge Package")
 
 
 def test_unsigned_package_is_allowed_for_local_export_but_not_production_import() -> None:

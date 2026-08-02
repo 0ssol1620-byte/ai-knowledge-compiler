@@ -1,4 +1,6 @@
-# Approved decisions
+# Legacy Structara decisions
+
+> Superseded for public display by `FOLYNTA_BRAND_DECISIONS.md`. Internal component and artifact identifiers remain temporarily for migration compatibility and must not be interpreted as the current public brand.
 
 ## D-001 — Brand surface
 

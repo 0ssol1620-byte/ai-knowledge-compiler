@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : definition.title,
     description:
       locale === "ko"
-        ? "실제 데이터와 데모 fixture의 경계를 명확히 구분하는 Structara 운영 워크스페이스입니다."
+        ? "실제 데이터와 데모 fixture의 경계를 명확히 구분하는 FOLYNTA 운영 워크스페이스입니다."
         : definition.description,
     robots: { index: false, follow: false },
   };

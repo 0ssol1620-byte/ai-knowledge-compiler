@@ -110,7 +110,7 @@ export default function StructaraOpenGraphImage() {
                 letterSpacing: "-0.03em",
               }}
             >
-              Structara
+              FOLYNTA
             </span>
             <span
               style={{

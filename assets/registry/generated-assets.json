@@ -1,34 +1,34 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-01T19:30:20.422035+00:00",
+  "generatedAt": "2026-08-02T02:46:27.525148+00:00",
   "generator": "tools/assets/build_derivatives.py",
   "namingConvention": "^STR-[A-Z0-9-]+-T[0-4]-[A-Z0-9-]+-(?:EN|KO|MULTI)-[A-Z0-9-]+-\\d+x\\d+-v\\d{2}\\.(?:avif|mp4|webm|webp)$",
   "assets": [
     {
       "path": "assets/3d/master/hero-master.blend",
       "bytes": 1207132,
-      "sha256": "fefb1099c463852e1540de84d987a7398f9180bc70ce1ab2ccfec09c6034ad18",
+      "sha256": "fb3c494d1b20b5cad78d58233c1cbffcc6308ce3a0a091b4d91d34b4764cbfab",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-master.glb",
-      "bytes": 1106456,
-      "sha256": "2f6d5f4181f68173a8c92792e6b10bc3a285b440128e72cabb6173d18697a75a",
+      "bytes": 1106436,
+      "sha256": "592d5e2142e8206435176f9b0ee613123bf35ba0fa4a9b77500d60719d97a36a",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-master-low.glb",
-      "bytes": 634648,
-      "sha256": "97ddbc2199c3687e75fee23329d0a11253c313125d95364aeaa9e97102391bd2",
+      "bytes": 634628,
+      "sha256": "c2062309db4248cf0cb36e3306218bc1c8f842e0febf097f38c521200668bf70",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-composition-a.png",
-      "bytes": 961799,
-      "sha256": "cb4a7ec5ce57d348d3b7579f24b81932f6d29449aec16452a8534896802ff2be",
+      "bytes": 940841,
+      "sha256": "42d4a5a98c4e0465c3855f486d1e11cbce137c024ac8fcf644f90bec39b28496",
       "dimensions": [
         1200,
         750
@@ -37,8 +37,8 @@
     },
     {
       "path": "assets/3d/derivatives/hero-composition-b.png",
-      "bytes": 952849,
-      "sha256": "eca84b2385028bb7c1c7167f4f58dc893d964281e30313bff592d1df50dd1ff8",
+      "bytes": 933147,
+      "sha256": "d34d481d0c9d214c2e41db8e1cf503fc492355fde34af5ad7eb8d0bfd5828db2",
       "dimensions": [
         1200,
         750
@@ -47,8 +47,8 @@
     },
     {
       "path": "assets/3d/derivatives/hero-composition-c.png",
-      "bytes": 963970,
-      "sha256": "d531373277054b8a0084a59647910464ad8b00dc2989f78743d9c2e3de28c9a4",
+      "bytes": 963740,
+      "sha256": "6cf3d9b4bbb7d97e84d1b3acf53bc700a13c074d70f40fad537ca10e6ca4aa6b",
       "dimensions": [
         1200,
         750
@@ -58,7 +58,7 @@
     {
       "path": "assets/3d/derivatives/hero-mobile-1080x1440.png",
       "bytes": 1551590,
-      "sha256": "eaba7f599731c13919571fa8983b810f5b36ef6e97d71b57fd39962d603f5d59",
+      "sha256": "31e42d8874b1253ae211e352256d41eb8d97d31a95f8c59ac882424d07432ccc",
       "dimensions": [
         1080,
         1440
@@ -68,7 +68,7 @@
     {
       "path": "assets/3d/derivatives/hero-object-evidence-blocks-transparent.png",
       "bytes": 534200,
-      "sha256": "b243336a2ec41dae8ce719624819f66ccbb9f4d50aa07fe16283a52e0d042e38",
+      "sha256": "354f17cb6410b75510aac60055090fdf14a7b30d385a15bc51d70d40b7de55a0",
       "dimensions": [
         1600,
         1000
@@ -78,7 +78,7 @@
     {
       "path": "assets/3d/derivatives/hero-object-knowledge-graph-transparent.png",
       "bytes": 1043535,
-      "sha256": "b629c3ff6bab5cb599decd04d9816b3dd893ebef3f75c903e85f6aa708e66a37",
+      "sha256": "5c34cc59e0a65ea45ba3f13fcab6f2bd20cf5d583fcbd2959f9e15c341abc5dd",
       "dimensions": [
         1600,
         1000
@@ -88,7 +88,7 @@
     {
       "path": "assets/3d/derivatives/hero-object-source-pages-transparent.png",
       "bytes": 873127,
-      "sha256": "0add6ec7727b43578dc1da3a6caf08acef308abd5f1eeba5bd02bd692ee7fbdf",
+      "sha256": "1aeb6cea8697d2ea65376058e9e9d33213c355a8a2897d03fd6d2f08d27b2be2",
       "dimensions": [
         1600,
         1000
@@ -98,7 +98,7 @@
     {
       "path": "assets/3d/derivatives/hero-og-1200x630.png",
       "bytes": 813413,
-      "sha256": "9836a5e067ab4f5fdb1fafdad77d5f854352f08ca81b2ae88e747efba2c6bab1",
+      "sha256": "61e81a20d315f4d870941b197461a5fcb26452ef75e3a3f8b36aa2c1de7e405f",
       "dimensions": [
         1200,
         630
@@ -108,7 +108,7 @@
     {
       "path": "assets/3d/derivatives/hero-poster-2880x1800.png",
       "bytes": 5281086,
-      "sha256": "773aa5d14ea6a39a41febb2be96395efb4563ebef0d391d55ee7eb4def63f35b",
+      "sha256": "1b56bff4113b716934a85836d0f00468df3fec02c8adc78319009b8fb5eb1bd1",
       "dimensions": [
         2880,
         1800
@@ -118,7 +118,7 @@
     {
       "path": "assets/3d/derivatives/hero-reduced-motion.png",
       "bytes": 955848,
-      "sha256": "13009a310ddc6ee1d532d5ad7c45d0f4449c2c5e294d049284739596a021b146",
+      "sha256": "f23ca70ef674da0560789ba3337aae3e773b4ae2dbed8225e37b51fb51d3fe3b",
       "dimensions": [
         1200,
         750
@@ -128,7 +128,7 @@
     {
       "path": "assets/3d/derivatives/hero-tablet-1600x1200.png",
       "bytes": 1944055,
-      "sha256": "df2edf90d992b8baba20c6a7f4ca9619626048671fdea12affd2497e4104076e",
+      "sha256": "942da2395b8e2f11196a6a7f433e220131a09dab1a78785b3db70711c4568e56",
       "dimensions": [
         1600,
         1200
@@ -137,15 +137,15 @@
     },
     {
       "path": "assets/3d/derivatives/hero-loop-12s.mp4",
-      "bytes": 440214,
-      "sha256": "88243ff42d6992df234de704e9c20f02783f33196220a4e316ccbb3ac95ff388",
+      "bytes": 365138,
+      "sha256": "25e10040bf6ddf978efd61909727ccd9cfa6ef7a0a01e19e243645ba720042ba",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01.avif",
-      "bytes": 19538,
-      "sha256": "8d121c2a7d5b8d82fd1be90f042a9e3b9114859fbb7a926c1ed80f39d32b72a1",
+      "bytes": 18505,
+      "sha256": "b1c4f036010f7c6d67e4f07dccded2193e68c9b6a01a2314023fece68ee1b01d",
       "dimensions": [
         1200,
         750
@@ -154,8 +154,8 @@
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01.webp",
-      "bytes": 17012,
-      "sha256": "dbace81b53248561f951d6aec18c93dc60542b3aa888c22994393774e82e4d54",
+      "bytes": 17644,
+      "sha256": "5b3b5c728b74c3bf600d78929081edd9936463a8c349504c2d47dcdf8ac4398d",
       "dimensions": [
         1200,
         750
@@ -164,8 +164,8 @@
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01.avif",
-      "bytes": 19517,
-      "sha256": "0b2f0457a37652f3f5c62a5cc11cad314c36d5ec91a246be357f40208b6e5e66",
+      "bytes": 16220,
+      "sha256": "3ffd38a2fe21f0a14ffeb510d174b1e0c9a1f3286fb4d860d59877bfbaf98584",
       "dimensions": [
         1200,
         750
@@ -174,8 +174,8 @@
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01.webp",
-      "bytes": 16644,
-      "sha256": "e98bb9fe7203635fa7d617f1f141434e42dcbbe451949a312c09762bb3f8da0c",
+      "bytes": 14372,
+      "sha256": "a13fd35d82cb471f86b8954aa612895079f68876605d1dac519f13f0f4fbc120",
       "dimensions": [
         1200,
         750
@@ -184,8 +184,8 @@
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01.avif",
-      "bytes": 19650,
-      "sha256": "0df83bbc4eaca42f7b5fd68c957f590e7dc8b92ae52ac143f3c9def8d63a640c",
+      "bytes": 19673,
+      "sha256": "aff7c2537c13677ca1604498f287c6d0809a95adcec376d6c01f85da8650ec45",
       "dimensions": [
         1200,
         750
@@ -194,8 +194,8 @@
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01.webp",
-      "bytes": 17540,
-      "sha256": "f74ede11d23214db83979fdc286c76483da2e74f580bfe52152ff533a16ccbf3",
+      "bytes": 17658,
+      "sha256": "34240e7c106ce998008fce54845defd50c6985e35426df625d0a7ac2beaa19da",
       "dimensions": [
         1200,
         750
@@ -304,15 +304,15 @@
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.mp4",
-      "bytes": 440214,
-      "sha256": "88243ff42d6992df234de704e9c20f02783f33196220a4e316ccbb3ac95ff388",
+      "bytes": 365138,
+      "sha256": "25e10040bf6ddf978efd61909727ccd9cfa6ef7a0a01e19e243645ba720042ba",
       "dimensions": null,
       "role": "web-derivative"
     },
     {
       "path": "apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm",
-      "bytes": 154420,
-      "sha256": "bfe49ea4bb3fa29be850a09d0b05ced0d0c5af06e468ad2b94c56f80f057f718",
+      "bytes": 143265,
+      "sha256": "e3c5e4a6fb8ef82ee6537cde200bda291995b3b425efdf2a2fe194d0174fdc3a",
       "dimensions": null,
       "role": "web-derivative"
     },

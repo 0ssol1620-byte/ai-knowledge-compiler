@@ -74,11 +74,11 @@ const scenes = [
     signal: "Portable · source-linked · policy-controlled",
   },
   {
-    eyebrow: "09 · Structara",
+    eyebrow: "09 · FOLYNTA",
     title: "Do not organize the files. Compile the knowledge.",
     body: "An evidence-first knowledge compiler for people, enterprise systems, and AI.",
     image: "/product/processing.webp",
-    signal: "structara.ai",
+    signal: "From every page, a system of knowledge.",
   },
 ] as const;
 
@@ -166,7 +166,7 @@ export function EvidenceFilmStage() {
   return (
     <main className="film-stage" id="main-content">
       <header className="film-stage-nav">
-        <Link href="/" aria-label="Structara home"><span className="film-mark">S</span><strong>Structara</strong></Link>
+        <Link href="/" aria-label="FOLYNTA home"><span className="film-mark">F</span><strong>FOLYNTA</strong></Link>
         <span>Evidence in Motion · measured 2026-08-01</span>
       </header>
       <section className="film-scene" key={index} aria-live="polite">

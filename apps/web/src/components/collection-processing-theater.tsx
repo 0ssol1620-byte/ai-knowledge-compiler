@@ -1060,7 +1060,7 @@ const COPY = {
     recoveryEyebrow: "Recoverable interruption",
     recoveryTitle: "Resume from the last verified checkpoint",
     recoveryBody:
-      "Structara will create an idempotent retry from durable evidence and keep the approved credit boundary.",
+      "FOLYNTA will create an idempotent retry from durable evidence and keep the approved credit boundary.",
     newHardCap: "New approved hard cap",
     hardCapHint: (current: string) =>
       `Enter a value above the previous ${current}-credit cap. This explicitly approves the new limit.`,

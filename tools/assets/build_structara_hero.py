@@ -1,10 +1,10 @@
-"""Build the first-party Structara Books-to-Knowledge-Plane hero master.
+"""Build the first-party FOLYNTA source-to-Knowledge-Plane hero master.
 
 Run with Blender 4.5 LTS:
     blender --background --python tools/assets/build_structara_hero.py
 
 The scene intentionally uses only procedural geometry, Blender's bundled font,
-and the approved Structara material palette. No external mesh, HDRI, texture,
+and the approved FOLYNTA material palette. No external mesh, HDRI, texture,
 image, or generated source is used.
 """
 
@@ -339,7 +339,7 @@ for index, z in enumerate((0.48, -0.38)):
     semantic_blocks.append(candidate)
     key_scale(candidate, 58 + index * 5, 72 + index * 5)
 
-# The Structara symbol is completed by negative space and two restrained paths.
+# The FOLYNTA symbol is completed by negative space and two restrained paths.
 symbol_points = [
     (-0.46, -0.09, 0.46),
     (0.46, -0.09, 0.46),
@@ -347,15 +347,15 @@ symbol_points = [
     (-0.46, -0.09, -0.46),
     (-0.46, -0.09, 0.46),
 ]
-symbol_outline = line("Structara negative-space outline", symbol_points, ink, width=0.028)
+symbol_outline = line("FOLYNTA negative-space outline", symbol_points, ink, width=0.028)
 symbol_blue = line(
-    "Structara transformation stroke",
+    "FOLYNTA transformation stroke",
     [(-0.26, -0.11, -0.12), (0.30, -0.11, 0.22)],
     cobalt,
     width=0.045,
 )
 symbol_cyan = line(
-    "Structara evidence stroke", [(-0.18, -0.12, 0.22), (0.30, -0.12, -0.10)], cyan, width=0.032
+    "FOLYNTA evidence stroke", [(-0.18, -0.12, 0.22), (0.30, -0.12, -0.10)], cyan, width=0.032
 )
 brand_parts.extend([symbol_outline, symbol_blue, symbol_cyan])
 for index, obj in enumerate(brand_parts):
@@ -410,9 +410,9 @@ scene.render.resolution_percentage = 100
 scene.render.image_settings.color_mode = "RGBA"
 scene.render.image_settings.color_depth = "8"
 scene.view_settings.look = "AgX - Medium High Contrast"
-scene.render.fps = 12
+scene.render.fps = 15
 scene.frame_start = 1
-scene.frame_end = 144
+scene.frame_end = 123
 
 # All object actions use the same restrained ease; the sequence ends once.
 for obj in bpy.context.scene.objects:
@@ -423,7 +423,7 @@ for obj in bpy.context.scene.objects:
         for point in fcurve.keyframe_points:
             point.interpolation = "BEZIER"
 
-scene.frame_set(144)
+scene.frame_set(123)
 bpy.ops.wm.save_as_mainfile(filepath=str(MASTER_DIR / "hero-master.blend"))
 
 # Full geometry and one-shot animation export.
@@ -473,7 +473,9 @@ def render_still(
     *,
     camera_location: tuple[float, float, float] | None = None,
     transparent: bool = False,
+    frame: int = 123,
 ) -> None:
+    scene.frame_set(frame)
     if camera_location is not None:
         camera.location = camera_location
         look_at(camera, (0.15, 0.0, 0.08))
@@ -489,9 +491,11 @@ render_still("hero-tablet-1600x1200.png", 1600, 1200, camera_location=(0.20, -11
 render_still("hero-mobile-1080x1440.png", 1080, 1440, camera_location=(0.15, -12.8, 7.8))
 render_still("hero-reduced-motion.png", 1200, 750, camera_location=(0.20, -10.6, 6.7))
 render_still("hero-og-1200x630.png", 1200, 630, camera_location=(0.20, -11.2, 6.4))
-render_still("hero-composition-a.png", 1200, 750, camera_location=(-0.35, -10.3, 6.9))
-render_still("hero-composition-b.png", 1200, 750, camera_location=(0.80, -11.4, 6.3))
-render_still("hero-composition-c.png", 1200, 750, camera_location=(-0.70, -10.8, 6.6))
+# Deliberately differentiated static directions, reviewed before the runtime
+# animation: editorial sources, computational evidence, and compiled plane.
+render_still("hero-composition-a.png", 1200, 750, camera_location=(-0.55, -10.1, 7.0), frame=25)
+render_still("hero-composition-b.png", 1200, 750, camera_location=(0.72, -11.0, 6.5), frame=72)
+render_still("hero-composition-c.png", 1200, 750, camera_location=(-0.62, -10.7, 6.7), frame=123)
 
 # Transparent extraction objects for compositing and campaign derivatives.
 all_renderables = [
@@ -509,6 +513,7 @@ transparent_groups = {
 }
 camera.location = (0.20, -10.6, 6.7)
 look_at(camera, (0.15, 0.0, 0.08))
+scene.frame_set(123)
 for filename, visible in transparent_groups.items():
     visible_set = set(visible)
     for obj in all_renderables:
@@ -540,4 +545,4 @@ for output in DERIVATIVE_DIR.glob("hero-*.png"):
 for output in DERIVATIVE_DIR.glob("hero-*.mp4"):
     shutil.copy2(output, PUBLIC_DIR / output.name)
 
-print("Structara hero master and derivatives created.")
+print("FOLYNTA hero master and derivatives created.")

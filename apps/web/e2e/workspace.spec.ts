@@ -97,28 +97,20 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", {
-      name: "Compile documents. Build trusted AI knowledge.",
+      name: "From scattered documents to one knowledge system.",
     }),
   ).toBeVisible();
   await expect(
     page.getByText("Page → Structure → Evidence → Knowledge → Intelligence"),
   ).toBeVisible();
-  await expect(
-    page.getByText("Every output returns to its source."),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "AI does not need more information. It needs better knowledge.",
-    ),
-  ).toBeVisible();
+  await expect(page.locator("main > section[data-scene]")).toHaveCount(7);
+  await expect(page.getByText("Return every important result to the exact source that supports it.")).toBeVisible();
+  await expect(page.getByText("Understand. Verify. Connect. Activate.")).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
-  await expect(
-    page.getByText("© 2026 Structara. Evidence-first knowledge systems."),
-  ).toBeVisible();
   await expect(page.locator("body")).not.toContainText(
     "working name pending brand clearance",
   );
-  await expect(page.getByText("Actual product film")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Turn your documents into a system of knowledge." })).toBeVisible();
 });
 
 test("product marketing uses real product evidence and deterministic diagrams", async ({
