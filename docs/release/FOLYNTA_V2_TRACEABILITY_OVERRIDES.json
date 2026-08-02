@@ -359,7 +359,7 @@
       "evidence": [
         {
           "path": "benchmark/reports/FOLYNTA_SYSTEM_ALGORITHM_EVALUATION_2026-08-02.md",
-          "claim": "The page classification, quality, recovery, routing, credit, and knowledge contracts pass a 356-test nonvisual algorithm suite."
+          "claim": "The page classification, quality, recovery, routing, credit, public-proof, and knowledge contracts pass a 376-test nonvisual algorithm suite."
         },
         {
           "path": "benchmark/v6/champion-matrix.yaml",
@@ -535,7 +535,7 @@
         },
         {
           "path": "benchmark/reports/folynta-system-algorithm-evaluation-2026-08-02.json",
-          "claim": "The current full backend regression passed 1,489 tests with zero failures, errors, or skips."
+          "claim": "The current full backend regression passed 1,500 tests with zero failures, errors, or skips."
         }
       ],
       "blocker": "A signed production image running under an enforcing CNI has not supplied an external runtime sandbox receipt.",
@@ -660,6 +660,401 @@
       ],
       "blocker": "Broader DART/SEC authority recovery corpus precision and source-availability behavior remain only partially measured.",
       "notes": "Parser agreement can never replace authority evidence for high-risk numeric claims."
+    },
+    "H-0850": {
+      "status": "PARTIAL",
+      "masterplan_state": "SHADOW",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "benchmark/v6/champion-matrix.yaml",
+          "claim": "Candidate promotion and elimination remain fail closed when required evidence is absent."
+        },
+        {
+          "path": "benchmark/tests/v6/test_evidence_and_promotion.py",
+          "claim": "Evidence omissions and invalid promotion paths are rejected by regression tests."
+        }
+      ],
+      "blocker": "Full public-core and private-holdout results required for empirical elimination are incomplete.",
+      "notes": "Elimination policy is implemented; candidate elimination is not promoted from partial cohorts."
+    },
+    "H-1078": {
+      "status": "PARTIAL",
+      "owner": "runtime-engineering",
+      "evidence": [
+        {
+          "path": "services/api/src/akc_api/parallel_runtime_store.py",
+          "claim": "The runtime persists and settles the first verified winner as the only billable accepted attempt."
+        },
+        {
+          "path": "services/api/tests/test_parallel_runtime_store.py",
+          "claim": "First-verified arbitration, idempotency, and persistence behavior are regression tested."
+        }
+      ],
+      "blocker": "Production-like TTFV distributions and pre-trigger savings are not yet measured at the declared load matrix.",
+      "notes": "First-verified semantics are implemented locally; the latency objective remains shadow."
+    },
+    "H-1200": {
+      "status": "PARTIAL",
+      "owner": "recovery-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/tests/test_recovery_and_continuity.py",
+          "claim": "Cell, row, table, region, page, and continuity recovery scopes are exercised deterministically."
+        },
+        {
+          "path": "benchmark/reports/FOLYNTA_SYSTEM_ALGORITHM_EVALUATION_2026-08-02.md",
+          "claim": "The recovery and invalidation area passed 42 focused tests with zero failures."
+        }
+      ],
+      "blocker": "A rights-cleared empirical corpus has not completed the full/page/region/row ablation with cost and latency confidence intervals.",
+      "notes": "Scope contracts are implemented but empirical ablation efficacy is not complete."
+    },
+    "H-1401": {
+      "status": "PARTIAL",
+      "owner": "platform-engineering",
+      "evidence": [
+        {
+          "path": "infra/runpod/v6/images/ovisocr2-m1/Dockerfile",
+          "claim": "The Ovis runtime, SSH service, pinned model revision, and model payload hash are installed and verified only at image build time."
+        },
+        {
+          "path": "benchmark/runpod_eval/bootstrap_ovisocr2_m1.sh",
+          "claim": "The runtime verifier performs no package or model installation and checks the image digest, baked receipt, exact packages, and model hash."
+        },
+        {
+          "path": "benchmark/tests/v6/test_ovis_runtime_image.py",
+          "claim": "Unpublished BUILD_REQUIRED image specs are prevented from creating paid Pod capacity."
+        }
+      ],
+      "blocker": "The baked image has not been built, published by immutable digest, and promoted with its runtime receipt; cold-start distributions also remain unmeasured.",
+      "notes": "Runtime installation is now fail closed. Existing historical measurements remain historical and are not relabeled as baked-image evidence."
+    },
+    "H-1442": {
+      "status": "PARTIAL",
+      "masterplan_state": "SHADOW",
+      "owner": "performance-engineering",
+      "evidence": [
+        {
+          "path": "tests/load/test_scale_profiles.py",
+          "claim": "Declared load profiles and scale invariants are deterministic and regression tested."
+        },
+        {
+          "path": "services/scheduler/tests/test_autonomous_v6_pipeline.py",
+          "claim": "Pipeline phase timestamps and autonomous completion paths are exercised end to end."
+        }
+      ],
+      "blocker": "The required production-like TTFP, TTFV, TTVC, and TTKP percentile matrix has not been executed against real provider pools.",
+      "notes": "Instrumentation and load contracts exist; SLA claims remain prohibited."
+    },
+    "H-1523": {
+      "status": "PARTIAL",
+      "owner": "identity-engineering",
+      "evidence": [
+        {
+          "path": "services/api/tests/test_oidc_mfa_auth.py",
+          "claim": "OIDC state, nonce, PKCE, account linking, MFA, and replay boundaries are regression tested."
+        },
+        {
+          "path": "services/api/tests/test_email_verification_api.py",
+          "claim": "Verified email delivery and production registration controls fail closed."
+        }
+      ],
+      "blocker": "Production Google client configuration, redirect-origin receipt, and provider-side verification are unavailable.",
+      "notes": "The backend OIDC contract is implemented locally without claiming provider deployment."
+    },
+    "H-1719": {
+      "status": "PARTIAL",
+      "masterplan_state": "PRODUCTION-REJECT",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "services/api/tests/test_feature_flags.py",
+          "claim": "Feature gates are deterministic and fail closed."
+        },
+        {
+          "path": "services/api/tests/test_free_tier_policy.py",
+          "claim": "Beta-facing quota and policy boundaries are regression tested."
+        }
+      ],
+      "blocker": "Named beta tenants, owner approval, support rotation, production monitoring, and exit receipts are external operational work.",
+      "notes": "Local beta controls exist; private beta launch is not approved."
+    },
+    "H-2597": {
+      "status": "PARTIAL",
+      "owner": "knowledge-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/tests/test_recovery_and_continuity.py",
+          "claim": "Cross-page table, caption, footnote, list, and ownership continuity rules fail closed."
+        },
+        {
+          "path": "services/scheduler/tests/test_autonomous_v6_pipeline.py",
+          "claim": "Continuity merge receipts are persisted within the autonomous pipeline."
+        }
+      ],
+      "blocker": "Continuity precision and recall on the declared full public and private corpora remain unmeasured.",
+      "notes": "Continuity architecture is implemented locally; empirical qualification remains open."
+    },
+    "H-5858": {
+      "status": "PARTIAL",
+      "masterplan_state": "PRODUCTION-REJECT",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "infra/security/validate_deployment.py",
+          "claim": "Deployment manifests are validated for sandbox, network, resource, and immutable-runtime boundaries."
+        },
+        {
+          "path": "docs/runbooks/deployment-rollback.md",
+          "claim": "Deployment rollback requirements and operator steps are documented."
+        }
+      ],
+      "blocker": "A production release revision, deployment receipt, smoke receipt, and rollback drill receipt are unavailable for this branch.",
+      "notes": "Green CI is build evidence, not production deployment evidence."
+    },
+    "C-2145": {
+      "status": "NOT_APPLICABLE",
+      "masterplan_state": "TARGET-DESIGN",
+      "execution_scope": "OUT_OF_SCOPE_DESIGN",
+      "owner": "design-session",
+      "evidence": [],
+      "blocker": "Delegated to the separate UI/UX session.",
+      "notes": "The non-design branch must not complete or approve this item."
+    },
+    "C-2146": {"inherits": "C-2145"},
+    "C-2147": {"inherits": "C-2145"},
+    "C-2148": {"inherits": "C-2145"},
+    "C-2149": {"inherits": "C-2145"},
+    "C-2150": {"inherits": "C-2145"},
+    "C-2151": {"inherits": "C-2145"},
+    "C-2152": {"inherits": "C-2145"},
+    "C-2153": {"inherits": "C-2145"},
+    "C-2154": {"inherits": "C-2145"},
+    "C-2158": {"inherits": "H-2241"},
+    "C-2159": {"inherits": "H-2295"},
+    "C-2160": {"inherits": "H-2295"},
+    "C-2161": {"inherits": "H-2295"},
+    "C-2162": {"inherits": "H-2315"},
+    "C-2163": {"inherits": "H-0701"},
+    "C-2164": {"inherits": "H-0701"},
+    "C-2165": {"inherits": "H-0850"},
+    "C-2166": {"inherits": "H-0875"},
+    "C-2170": {"inherits": "H-0962"},
+    "C-2171": {"inherits": "H-1022"},
+    "C-2172": {"inherits": "H-1046"},
+    "C-2173": {"inherits": "H-1147"},
+    "C-2174": {"inherits": "H-1176"},
+    "C-2175": {"inherits": "H-1200"},
+    "C-2176": {"inherits": "H-1078"},
+    "C-2177": {"inherits": "H-1176"},
+    "C-2178": {"inherits": "H-2597"},
+    "C-2182": {"inherits": "H-0672"},
+    "C-2183": {"inherits": "H-2241"},
+    "C-2184": {"inherits": "H-2322"},
+    "C-2185": {"inherits": "H-1401"},
+    "C-2186": {"inherits": "H-1401"},
+    "C-2187": {"inherits": "H-1442"},
+    "C-2188": {"inherits": "H-1442"},
+    "C-2189": {"inherits": "H-1674"},
+    "C-2193": {"inherits": "H-1523"},
+    "C-2194": {"inherits": "H-1523"},
+    "C-2195": {"inherits": "H-2544"},
+    "C-2196": {"inherits": "H-1622"},
+    "C-2197": {"inherits": "H-1639"},
+    "C-2198": {"inherits": "H-1659"},
+    "C-2199": {"inherits": "H-1674"},
+    "C-2200": {"inherits": "H-1702"},
+    "C-2201": {"inherits": "H-1719"},
+    "C-2202": {"inherits": "H-5858"},
+    "N-0278": {
+      "status": "NOT_APPLICABLE",
+      "masterplan_state": "TARGET-DESIGN",
+      "execution_scope": "OUT_OF_SCOPE_DESIGN",
+      "owner": "design-session",
+      "evidence": [],
+      "blocker": "Delegated to the separate UI/UX session.",
+      "notes": "Creative baseline approval is outside the non-design branch."
+    },
+    "N-1374": {
+      "status": "DONE",
+      "owner": "runtime-engineering",
+      "evidence": [
+        {
+          "path": "packages/parallel-runtime/src/akc_parallel_runtime/scheduling.py",
+          "claim": "Admission evaluates queue, URL, cache, evaluator, database, and cost capacity independently rather than through a global concurrency flag."
+        },
+        {
+          "path": "packages/parallel-runtime/tests/test_scheduling_and_credits.py",
+          "claim": "Independent backpressure and deterministic worker-selection boundaries are regression tested."
+        }
+      ],
+      "blocker": "",
+      "notes": "Provider pool calibration remains separate from the no-global-flag architecture contract."
+    },
+    "N-1405": {"inherits": "H-1401"},
+    "N-1754": {
+      "status": "PARTIAL",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "docs/release/FOLYNTA_NONDESIGN_COMPLETION_AUDIT_2026-08-02.md",
+          "claim": "The non-design work packet declares explicit in-scope and out-of-scope files, stop conditions, evidence, rollback, and release state."
+        }
+      ],
+      "blocker": "The accumulated non-design PR is still broader than the masterplan's preferred small-PR rule.",
+      "notes": "Design-session changes remain excluded, but PR size is not represented as fully compliant."
+    },
+    "N-2004": {
+      "status": "DONE",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "docs/release/FOLYNTA_NONDESIGN_COMPLETION_AUDIT_2026-08-02.md",
+          "claim": "The authoritative work packet contains every required field from problem IDs through gate and status."
+        }
+      ],
+      "blocker": "",
+      "notes": "Future work packets must continue using the same complete contract."
+    },
+    "N-2318": {"inherits": "H-2315"},
+    "N-2455": {
+      "status": "PARTIAL",
+      "owner": "quality-engineering",
+      "evidence": [
+        {
+          "path": "packages/quality/src/akc_quality/evidence_ladder.py",
+          "claim": "Unresolved and insufficient-evidence outcomes abstain without making human review a mandatory success path."
+        },
+        {
+          "path": "services/api/tests/test_collection_integrity_decisions.py",
+          "claim": "Authorized integrity decisions and unresolved collection state are preserved and regression tested."
+        }
+      ],
+      "blocker": "The Enterprise unresolved exploration surface is part of the separately delegated UI/UX scope.",
+      "notes": "Backend abstention and decision contracts are implemented without claiming the visual exploration workflow."
+    },
+    "N-2749": {
+      "status": "DONE",
+      "owner": "model-evaluation",
+      "evidence": [
+        {
+          "path": "infra/runpod/v6/pod_client.py",
+          "claim": "A benchmark Pod request binds exactly one explicit GPU type; availability priority cannot substitute another GPU type."
+        },
+        {
+          "path": "benchmark/tests/v6/test_runpod_pod_client.py",
+          "claim": "Unsupported GPUs, mutable images, unready images, and unsafe runtime commands fail closed."
+        }
+      ],
+      "blocker": "",
+      "notes": "Production availability routing remains separate from controlled benchmark comparison."
+    },
+    "N-3240": {
+      "status": "DONE",
+      "owner": "release",
+      "evidence": [
+        {
+          "path": "docs/release/FOLYNTA_NONDESIGN_COMPLETION_AUDIT_2026-08-02.md",
+          "claim": "Completion is reported as an evidence table, traceability state, stop conditions, rollback, and explicit external gates rather than a one-line claim."
+        }
+      ],
+      "blocker": "",
+      "notes": "The release remains production-reject until external gates close."
+    },
+    "N-6651": {
+      "status": "NOT_APPLICABLE",
+      "masterplan_state": "TARGET-DESIGN",
+      "execution_scope": "OUT_OF_SCOPE_DESIGN",
+      "owner": "design-session",
+      "evidence": [],
+      "blocker": "Delegated to the separate UI/UX session.",
+      "notes": "Field CWV approval is outside the non-design branch."
+    },
+    "N-7073": {
+      "status": "DONE",
+      "owner": "identity-engineering",
+      "evidence": [
+        {
+          "path": "packages/cir-python/src/akc_cir/public_proof.py",
+          "claim": "Public proof market resolution accepts explicit choice, account preference, and locale only; IP and country are not inputs."
+        },
+        {
+          "path": "tests/unit/test_public_proof_fixture.py",
+          "claim": "Explicit, account, locale, and unknown-locale precedence is regression tested."
+        }
+      ],
+      "blocker": "",
+      "notes": "UI selector behavior remains in the delegated design session, but the canonical resolution algorithm is complete."
+    },
+    "N-7237": {
+      "status": "DONE",
+      "owner": "platform-security",
+      "evidence": [
+        {
+          "path": "services/api/src/akc_api/auth_security.py",
+          "claim": "OIDC confidential client authentication is performed only by the server-side authorization service."
+        },
+        {
+          "path": "infra/security/validate_repository.py",
+          "claim": "Repository validation rejects public or direct browser references to OIDC, Google, JWT, and S3 secret environment variables."
+        },
+        {
+          "path": "infra/security/test_validate_repository_browser_secrets.py",
+          "claim": "Browser secret export detection is regression tested with safe and unsafe environment markers."
+        }
+      ],
+      "blocker": "",
+      "notes": "Provider deployment of the server-side secret remains separately external."
+    },
+    "N-7446": {
+      "status": "DONE",
+      "owner": "knowledge-engineering",
+      "evidence": [
+        {
+          "path": "packages/cir-python/src/akc_cir/public_proof.py",
+          "claim": "Public proof results bind fixture ID, canonical fixture digest, source document digest, markdown, note, and graph delta atomically."
+        },
+        {
+          "path": "tests/unit/test_public_proof_fixture.py",
+          "claim": "Cross-fixture and stale projection mismatches are rejected."
+        }
+      ],
+      "blocker": "",
+      "notes": "Rendering and switcher animation remain outside the non-design branch."
+    },
+    "N-7480": {
+      "status": "DONE",
+      "owner": "knowledge-engineering",
+      "evidence": [
+        {
+          "path": "packages/cir-python/src/akc_cir/public_proof.py",
+          "claim": "The DART fixture contract requires issuer, accession, filing type/date, report period, consolidation scope, authority concept/context/unit, source locator, page anchor, and archive hash."
+        }
+      ],
+      "blocker": "",
+      "notes": "A specific live DART fixture receipt remains a separate empirical artifact."
+    },
+    "N-7499": {
+      "status": "DONE",
+      "owner": "knowledge-engineering",
+      "evidence": [
+        {
+          "path": "packages/cir-python/src/akc_cir/public_proof.py",
+          "claim": "The SEC fixture contract requires issuer/CIK identity, accession, form type/date, report period, taxonomy/concept/context/unit, source locator, page or source fragment, and archive hash."
+        }
+      ],
+      "blocker": "",
+      "notes": "A specific live SEC fixture receipt remains a separate empirical artifact."
+    },
+    "N-7783": {"inherits": "H-7770"},
+    "N-7987": {
+      "status": "APPROVAL_REQUIRED",
+      "masterplan_state": "EXTERNAL-BLOCKED",
+      "owner": "legal-counsel",
+      "evidence": [],
+      "blocker": "Patent counsel must approve any public novelty-sensitive disclosure.",
+      "notes": "No publication approval is inferred from local artifacts."
     },
     "H-7770": {
       "status": "APPROVAL_REQUIRED",

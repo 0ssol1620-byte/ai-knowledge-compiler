@@ -1,13 +1,13 @@
 {
   "schema": "folynta.algorithm-evaluation-summary.v1",
-  "generated_at": "2026-08-02T09:22:03.937473+00:00",
+  "generated_at": "2026-08-02T10:58:05.881413+00:00",
   "source": {
     "junit_path": "artifacts/folynta-e2e-v2/algorithms/algorithm-contract-suite.xml",
-    "sha256": "4077b2b650d609672706f7d252f5265511a9b5f76928cd59459c512e6389a5b6"
+    "sha256": "dff90256c95847ef932bf4ed40a89923b054d017264473bafdf2ebab8af2aab2"
   },
   "totals": {
-    "tests": 356,
-    "passed": 356,
+    "tests": 376,
+    "passed": 376,
     "failed": 0,
     "errors": 0,
     "skipped": 0
@@ -22,12 +22,12 @@
         "akc_parallel_runtime.routing",
         "akc_router.estimation"
       ],
-      "tests": 51,
-      "passed": 51,
+      "tests": 54,
+      "passed": 54,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 10.674,
+      "duration_seconds": 10.938,
       "gate": "PASS"
     },
     {
@@ -44,7 +44,7 @@
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 24.437,
+      "duration_seconds": 26.783,
       "gate": "PASS"
     },
     {
@@ -56,12 +56,12 @@
         "akc_parallel_runtime.validation",
         "akc_parallel_runtime.arbitration"
       ],
-      "tests": 63,
-      "passed": 63,
+      "tests": 67,
+      "passed": 67,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 0.108,
+      "duration_seconds": 1.407,
       "gate": "PASS"
     },
     {
@@ -78,7 +78,7 @@
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 0.054,
+      "duration_seconds": 0.046,
       "gate": "PASS"
     },
     {
@@ -95,7 +95,7 @@
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 31.313,
+      "duration_seconds": 33.354,
       "gate": "PASS"
     },
     {
@@ -112,7 +112,7 @@
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 0.563,
+      "duration_seconds": 0.589,
       "gate": "PASS"
     },
     {
@@ -125,23 +125,23 @@
         "finalization",
         "storage security"
       ],
-      "tests": 104,
-      "passed": 104,
+      "tests": 117,
+      "passed": 117,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "duration_seconds": 22.725,
+      "duration_seconds": 27.329,
       "gate": "PASS"
     }
   ],
   "coverage": {
     "path": "artifacts/folynta-e2e-v2/algorithms/algorithm-coverage.json",
-    "sha256": "5fd055fb555b1a7ac47ba3bab61401a710519aeacbea33212fb03cbe1efef3a8",
-    "percent_covered": 81.60675127915476,
-    "statements": 11391,
-    "covered_lines": 9768,
-    "branches": 3658,
-    "covered_branches": 2513,
+    "sha256": "5499ac078df2c77270f780f7672fa01315f7f4be21e3f23b7e99094f3812ae6d",
+    "percent_covered": 81.7174515235457,
+    "statements": 11486,
+    "covered_lines": 9861,
+    "branches": 3676,
+    "covered_branches": 2529,
     "gate_percent": 80.0,
     "gate": "PASS"
   },
@@ -521,13 +521,13 @@
   },
   "full_backend_regression": {
     "path": "artifacts/folynta-e2e-v2/production/full-python-regression.xml",
-    "sha256": "12c826c14538470b908112dbe97d8fa29e1ec38a6f52e86dbc1c9f3f22ac5f28",
-    "tests": 1489,
-    "passed": 1489,
+    "sha256": "52f3b1d28f1119d7512f8738ef508e9435d214f856fbe18d0a158392f63e449a",
+    "tests": 1500,
+    "passed": 1500,
     "failed": 0,
     "errors": 0,
     "skipped": 0,
-    "duration_seconds": 491.272,
+    "duration_seconds": 501.029,
     "gate": "PASS"
   },
   "gates": {

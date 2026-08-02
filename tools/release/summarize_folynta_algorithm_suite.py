@@ -144,6 +144,7 @@ def _area(classname: str, name: str) -> str:
             "sharding",
             "sampling",
             "provider",
+            "public_proof",
         )
     ):
         return "classification_routing"
