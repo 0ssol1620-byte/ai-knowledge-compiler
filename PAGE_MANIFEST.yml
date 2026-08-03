@@ -1,6 +1,6 @@
 defaults:
-  language: en
-  alternate_language: ko
+  language: ko
+  alternate_language: en
   accessibility: WCAG_2_2_AA
   required_viewports: [1920, 1440, 1280, 1024, 768, 390, 360]
   required_states: [default, mobile, reduced_motion]
@@ -16,25 +16,28 @@ status_semantics:
     never be presented as production-ready or as completed processing.
 
 release_review:
-  reviewed_at: 2026-08-02
-  state: repository_release_candidate
+  reviewed_at: 2026-08-03
+  state: repository_verified_production_reject
   current_evidence:
     eslint: pass
     typescript: pass
     production_build: pass
-    vitest: 228_passed_52_files
-    python: 1489_verified_with_one_isolated_resource_retry
-    folynta_playwright_contract: 79_passed_17_intentional_project_skips
-    folynta_in_app_browser: 1440_1024_390_en_ko_passed_no_page_overflow_or_console_findings
+    production_build_id: VQb2YDoXM66oOrNG92wIY
+    vitest: 233_passed_54_files
+    python: 1517_passed_coverage_88_27_percent
+    folynta_current_build_captures: 16_passed_ko_en_default_reduced_1920_1440_1024_390
     browser_matrix: 9_passed_chromium_firefox_webkit
-    visual_baselines: 11_passed
-    brand_capture: 560_passed_0_blocking_findings
-    lighthouse_desktop: performance_100_accessibility_100_best_practices_100_seo_100_lcp_749ms_cls_0_tbt_0ms
-    lighthouse_mobile: performance_88_accessibility_100_best_practices_100_seo_100_lcp_3757ms_cls_0_tbt_21ms_lab_only
+    live_end_to_end: 1_passed_registration_verification_upload_compile_sse_export_delete
+    storybook_static_build: passed
+    accessibility_matrix: 7_passed_1_intentional_mobile_duplicate_skip
+    visual_baselines: 11_passed_default_ko
+    lighthouse_desktop: performance_100_accessibility_100_best_practices_100_seo_100_lcp_601ms_cls_0_tbt_0ms
+    lighthouse_mobile: performance_97_accessibility_100_best_practices_100_seo_100_lcp_2407ms_cls_0_tbt_96ms_lab_only
+    initial_script_transfer: 208870_bytes_under_220kb_budget
     enabled_dead_buttons: 0
-    asset_manifest: 11_verified
-    asset_names: 136_verified
-    asset_hashes: 29_verified
+    asset_manifest: 12_verified
+    asset_names: 137_verified
+    asset_hashes: 30_verified
   external_gates:
     - legal_and_domain_clearance
     - approved_commercial_price_book

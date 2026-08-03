@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   experimental: {
     webpackBuildWorker: false,
+    inlineCss: true,
   },
   webpack(config, { dev }) {
     if (!dev) config.cache = false;

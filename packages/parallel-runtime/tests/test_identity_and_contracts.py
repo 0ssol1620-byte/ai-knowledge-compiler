@@ -70,7 +70,30 @@ def test_sha256_contract_is_strict_lowercase() -> None:
 
 def test_parallel_contract_lists_match_v6_masterplan() -> None:
     assert len(PARALLEL_RUNTIME_TABLES) == 9
-    assert len(PARALLEL_RUNTIME_EVENT_TYPES) == 16
+    assert len(PARALLEL_RUNTIME_EVENT_TYPES) == 37
+    assert {
+        "recovery.planned.v1",
+        "recovery.started.v1",
+        "recovery.validated.v1",
+        "region.verified.v1",
+        "region.unresolved.v1",
+        "worker.semantic.canary_failed.v1",
+        "impact.replay.requested.v1",
+        "final.accuracy.calculated.v1",
+        "trust.receipt.issued.v1",
+        "drift.detected.v1",
+        "rollback.triggered.v1",
+        "quality.finding.created.v1",
+        "recovery.plan.created.v1",
+        "recovery.attempt.started.v1",
+        "recovery.candidate.generated.v1",
+        "recovery.validation.completed.v1",
+        "recovery.candidate.accepted.v1",
+        "recovery.exhausted.v1",
+        "knowledge.objects.invalidated.v1",
+        "knowledge.objects.regenerated.v1",
+        "package.trust_receipt.created.v1",
+    } <= set(PARALLEL_RUNTIME_EVENT_TYPES)
     assert {
         "shard_dispatch",
         "hedge",

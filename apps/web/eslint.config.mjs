@@ -27,5 +27,6 @@ export default defineConfig([
     "storybook-static/**",
     "playwright-report/**",
     "test-results/**",
+    "public/proof-sources/pdf.worker-*.min.mjs",
   ]),
 ]);

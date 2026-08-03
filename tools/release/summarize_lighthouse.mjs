@@ -6,7 +6,7 @@ const root = resolve(import.meta.dirname, "../..");
 for (const profile of ["desktop", "mobile"]) {
   const report = JSON.parse(
     await readFile(
-      resolve(root, `artifacts/lighthouse/folynta-v3-${profile}.json`),
+      resolve(root, `artifacts/lighthouse/folynta-v1-${profile}.json`),
       "utf8",
     ),
   );

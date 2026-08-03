@@ -9,6 +9,14 @@ test("real API journey preserves provenance through export", async ({
   const email = `live-e2e-${unique}@example.test`;
   const filename = "e2e-source.txt";
 
+  await page.context().addCookies([
+    {
+      name: "akc_locale",
+      value: "en",
+      url: "http://127.0.0.1:3100",
+    },
+  ]);
+
   await page.goto("/login?mode=register");
   await page.getByLabel("Display name").fill("Live E2E Owner");
   await page.getByLabel("Email").fill(email);

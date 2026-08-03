@@ -53,6 +53,7 @@ from .credits import (
     CreditReservation,
     SettlementResult,
 )
+from .drift import DriftDecision, detect_quality_drift
 from .failures import (
     INFRASTRUCTURE_FAILURE_CODES,
     SEMANTIC_FAILURE_CODES,
@@ -68,6 +69,7 @@ from .finalization import (
     Finalizer,
     UnresolvedManifestEntry,
 )
+from .first_verified import VerifiedCandidate, select_first_verified
 from .health import (
     HealthTransition,
     InfrastructureObservation,
@@ -84,6 +86,7 @@ from .identity import (
     sha256_hex,
     stable_id,
 )
+from .impact_scope import LineageEdge, impacted_descendants
 from .models import (
     ACCEPTED_VERIFICATION_STATES,
     AttemptKind,
@@ -109,6 +112,7 @@ from .recovery import (
     RecoveryScope,
     RecoveryTask,
 )
+from .recovery_planner import FailureCode, plan_minimal_recovery
 from .routing import (
     AdaptiveRouter,
     CascadeController,
@@ -141,6 +145,7 @@ from .scheduling import (
     size_aware_bin_pack,
     straggler_candidates,
 )
+from .semantic_health import SemanticHealthDecision, SemanticState, decide_semantic_health
 from .semantic_monitor import (
     SemanticDriftMonitor,
     SemanticHealthProjection,
@@ -229,12 +234,14 @@ __all__ = [
     "DiagnosisState",
     "DispatchSpec",
     "DomainEvent",
+    "DriftDecision",
     "EndpointPool",
     "EndpointPoolRegistry",
     "EventConflictError",
     "EventJournal",
     "EvidenceReceipt",
     "FailureClass",
+    "FailureCode",
     "FailureDiagnosis",
     "FailureObservation",
     "FairPriorityQueue",
@@ -251,6 +258,7 @@ __all__ = [
     "InvalidAttemptTransition",
     "JobPriority",
     "LevelResult",
+    "LineageEdge",
     "MarginalRole",
     "MergedBlock",
     "PageClass",
@@ -282,9 +290,11 @@ __all__ = [
     "RoutingUnavailable",
     "RuntimeStack",
     "SemanticDriftMonitor",
+    "SemanticHealthDecision",
     "SemanticHealthProjection",
     "SemanticObservation",
     "SemanticSample",
+    "SemanticState",
     "SettlementResult",
     "ShardOutput",
     "ShardPlan",
@@ -299,6 +309,7 @@ __all__ = [
     "ValidationSeverity",
     "ValidatorPipeline",
     "VerificationState",
+    "VerifiedCandidate",
     "WorkItem",
     "WorkerHealthRegistry",
     "WorkerRegistrationConflict",
@@ -310,12 +321,17 @@ __all__ = [
     "can_scale_down",
     "canonical_json",
     "canonical_sha256",
+    "decide_semantic_health",
+    "detect_quality_drift",
     "deterministic_benchmark_assignments",
     "diagnose_failure",
     "evaluate_backpressure",
     "evaluate_router_promotion",
     "ideal_worker_target",
+    "impacted_descendants",
+    "plan_minimal_recovery",
     "require_sha256",
+    "select_first_verified",
     "sha256_hex",
     "size_aware_bin_pack",
     "stable_id",

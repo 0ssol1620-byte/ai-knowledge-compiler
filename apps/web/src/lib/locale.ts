@@ -2,7 +2,7 @@ export const STRUCTARA_LOCALES = ["en", "ko"] as const;
 
 export type StructaraLocale = (typeof STRUCTARA_LOCALES)[number];
 
-export const DEFAULT_STRUCTARA_LOCALE: StructaraLocale = "en";
+export const DEFAULT_STRUCTARA_LOCALE: StructaraLocale = "ko";
 export const AKC_LOCALE_COOKIE = "akc_locale";
 export const LEGACY_LOCALE_COOKIE = "structara_locale";
 /** @deprecated Use the brand-neutral AKC_LOCALE_COOKIE. */
@@ -11,7 +11,7 @@ export const STRUCTARA_LOCALE_COOKIE = AKC_LOCALE_COOKIE;
 export function normalizeStructaraLocale(
   value: string | null | undefined,
 ): StructaraLocale {
-  return value === "ko" ? "ko" : DEFAULT_STRUCTARA_LOCALE;
+  return value === "en" || value === "ko" ? value : DEFAULT_STRUCTARA_LOCALE;
 }
 
 export function localeLanguageTag(locale: StructaraLocale): "en-US" | "ko-KR" {

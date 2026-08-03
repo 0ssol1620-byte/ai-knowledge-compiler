@@ -1,5 +1,5 @@
 version: 1
-reviewed_at: 2026-07-30
+reviewed_at: 2026-08-03
 assets:
   - id: STR-HOME-T2-HERO-001
     title: Source to Knowledge Hero
@@ -126,7 +126,7 @@ assets:
     status: implemented
     owner: creative_direction
     source_type: first-party-css
-    master_path: apps/web/src/app/structara.css
+    master_path: apps/web/public/styles/structara.css
     derivatives:
       - path: assets/brand/textures/README.md
         sha256: "95504651553b3b2581bd436809f8c3d02a16a9244c399554fe631c6a37c930b3"
@@ -246,7 +246,7 @@ assets:
   - id: FOL-HOME-T1-FOLIO-SYNTHESIS-002
     title: Folio Synthesis Public Hero
     truth_class: T1
-    status: approved
+    status: historical
     owner: creative_direction
     source_type: deterministic-first-party-html-css
     master_path: apps/web/src/components/creative-review/folynta-creative-review.tsx
@@ -270,3 +270,29 @@ assets:
         [product-evidence, benchmark-evidence, customer-claim, security-claim]
     alt_text_en: "Twelve source classes compile into one verified folio and a source receipt."
     alt_text_ko: "열두 가지 원문 유형이 하나의 검증된 folio와 원문 영수증으로 컴파일되는 장면"
+
+  - id: FOL-PROOF-T0-DART-PDF-20260803
+    title: JTC 2026 Q1 Actual DART Filing PDF
+    truth_class: T0
+    status: approved
+    owner: product_truth
+    source_type: public-dart-regulatory-filing
+    master_path: apps/web/public/proof-sources/dart-jtc-2026-q1.pdf
+    derivatives:
+      - path: assets/public-proof/dart/source-evidence/jtc-2026q1-pdf-receipt.json
+        sha256: "b386c4091648c951dda9bab440038868083ab11abf6444878edd335f9e29edac"
+    license:
+      name: attributed-public-regulatory-disclosure
+      evidence_path: assets/public-proof/dart/source-evidence/jtc-2026q1-pdf-receipt.json
+    provenance:
+      generated_with_ai: false
+      source_url: https://dart.fss.or.kr/pdf/download/pdf.do?rcp_no=20260730000413&dcm_no=11502479
+      sha256: "fb998430db82774afc0d69090383650421ab9a14e6e37c7f32821aa1c6a32eee"
+      size_bytes: 2276931
+      page_count: 121
+    usage:
+      allowed: [homepage-actual-source-proof, demo-dart, source-verification]
+      prohibited:
+        [benchmark-ground-truth, quality-claim, customer-claim, unattributed-redistribution]
+    alt_text_en: "Actual page 30 of the JTC 2026 first-quarter DART filing rendered from the official PDF bytes."
+    alt_text_ko: "DART 공식 PDF 바이트에서 렌더링한 JTC 2026년 1분기 공시 30페이지"

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import nextDynamic from "next/dynamic";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/app-shell";
@@ -11,13 +12,16 @@ import { scaleEvidenceServerConfig } from "@/lib/scale-evidence-server";
 import { PUBLIC_BRAND } from "@/lib/brand";
 
 import "./globals.css";
-import "./product-shell.css";
-import "./enterprise-refresh.css";
-import "./structara.css";
-import "./structara-legal.css";
-import "./structara-sec-proof.css";
-import "./structara-security.css";
-import "./folynta.css";
+
+const legacyStyleSheets = [
+  "/styles/product-shell.css",
+  "/styles/enterprise-refresh.css",
+  "/styles/structara.css",
+  "/styles/structara-legal.css",
+  "/styles/structara-sec-proof.css",
+  "/styles/structara-security.css",
+  "/styles/folynta.css",
+] as const;
 
 const ScaleEvidenceBridge = nextDynamic(() =>
   import("@/components/system/scale-evidence-bridge").then(
@@ -103,6 +107,8 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   const locale = await getRequestLocale();
+  const pathname = (await headers()).get("x-folynta-pathname") ?? "/";
+  const includeLegacyStyles = pathname !== "/";
   const scaleEvidenceConfig = scaleEvidenceServerConfig(process.env);
   const skipLabel = localeCopy(locale, {
     en: "Skip to main content",
@@ -111,6 +117,13 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      {includeLegacyStyles ? (
+        <head>
+          {legacyStyleSheets.map((href) => (
+            <link key={href} rel="stylesheet" href={href} />
+          ))}
+        </head>
+      ) : null}
       <body>
         <a className="skip-link" href="#main-content">
           {skipLabel}

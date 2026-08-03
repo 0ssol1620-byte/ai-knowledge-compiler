@@ -1,9 +1,9 @@
 schema_version: 2.0.0
-reviewed_at: 2026-08-02
+reviewed_at: 2026-08-03
 policy: source_first_no_behavior_reimplementation
 authority:
-  path: D:\FOLYNTA_WEBSITE_TOTAL_CREATIVE_REBUILD_MASTERPLAN_FINAL_v3_FREE_ASSET_FIRST_NO_GENERATION_DEFAULT_KO_2026-08-02.md
-  sha256: fa8ce3a01499fcc558c6bfdf63200849667bc7d774f74bcba86d970e288e8bb5
+  path: D:\FOLYNTA_NEAR_PERFECT_BACKEND_AND_CINEMATIC_WORLD_CLASS_FRONTEND_MASTERPLAN_FINAL_v1_KO_2026-08-03.md
+  sha256: adc06f84ae9a6d7f455b8fcfec4d7afc8b9f83132b4f5baaaaee87254ae925c7
 preview_media_copied: false
 components:
   - id: shadcn-resizable
@@ -41,7 +41,7 @@ components:
     source_revision: 0bd8b9fe0e15c4697c8d22dee1d35d88b5152c25
     license: MIT
     decision: REJECTED
-    reason: Infinite decorative beams and generic file-tree animation do not improve source verification and are not used by the v3 homepage.
+    reason: Infinite decorative beams and generic file-tree animation do not improve source verification and are not used by the v4 clean-room homepage.
 
   - id: 21st-upload-patterns
     provider: 21st.dev / Ruixen UI
@@ -54,20 +54,32 @@ components:
   - id: react-bits-stack-scroll
     provider: React Bits
     source_repository: https://github.com/DavidHDev/react-bits
-    source_revision: 8761041fbebf32630f39ce2d79427bcb69dec62a
-    license_boundary: MIT_plus_Commons_Clause_as_published_by_source
+    source_revision: d26ed7a
+    license_boundary: NOASSERTION_pending_published_license_review
     decision: REJECTED
-    reason: The public Folio Synthesis hero is complete as deterministic first-party semantic HTML/CSS and does not need a card-stack runtime.
+    reason: The current revision has no machine-asserted license in the official repository metadata, and a card-stack runtime would weaken actual-product truth.
 
 custom_approved:
+  - id: folynta-v4-product-film
+    source: apps/web/src/components/folynta-v4/product-film-hero.tsx
+    applied_to: apps/web/src/components/marketing-landing.tsx
+    approver_evidence: owner v1 masterplan execution directive, 2026-08-03
+    reason: The scene uses actual product concepts and deterministic first-party UI; no library preview is used as product evidence.
+  - id: folynta-v4-actual-source-proof
+    source: apps/web/src/components/folynta-v4/actual-source-proof.tsx
+    applied_to: apps/web/src/components/marketing-landing.tsx
+    approver_evidence: owner v1 masterplan execution directive, 2026-08-03
+    reason: PDF.js renders acquired DART bytes and preserves exact public-source attribution.
   - id: folio-synthesis-t1
     source: apps/web/src/components/creative-review/folynta-creative-review.tsx
     applied_to: apps/web/src/components/structara-hero.tsx
+    status: historical_not_active_on_v1_homepage
     approver_evidence: owner v3 masterplan execution directive, 2026-08-02
     reason: First-party brand illustration; no third-party component provides its source-class-to-verified-folio semantic contract.
   - id: source-native-proof-switcher
     source: apps/web/src/components/folynta/localization/public-proof-switcher.tsx
-    applied_to: apps/web/src/components/marketing-landing.tsx
+    applied_to: historical_v3_marketing_landing
+    status: superseded_by_folynta-v4-actual-source-proof
     approver_evidence: owner v3 masterplan execution directive, 2026-08-02
     reason: Market-aware public filing evidence requires registered DART and SEC fixtures with exact source links.
 

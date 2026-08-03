@@ -1,95 +1,104 @@
-# FOLYNTA website v3 visual QA report
+# FOLYNTA v1 cinematic frontend visual QA report
 
-Review date: 2026-08-02
+Review date: 2026-08-03
 
-Authority: `D:\FOLYNTA_WEBSITE_TOTAL_CREATIVE_REBUILD_MASTERPLAN_FINAL_v3_FREE_ASSET_FIRST_NO_GENERATION_DEFAULT_KO_2026-08-02.md`
+Build ID: `fInuyY5S3_esZDbQXJ7SW`
+
+Python regression: `1517 passed`, total coverage `88.27%`
+
+Authority: `D:\FOLYNTA_NEAR_PERFECT_BACKEND_AND_CINEMATIC_WORLD_CLASS_FRONTEND_MASTERPLAN_FINAL_v1_KO_2026-08-03.md`
+
+Authority SHA-256: `adc06f84ae9a6d7f455b8fcfec4d7afc8b9f83132b4f5baaaaee87254ae925c7`
 
 ## Verdict
 
-**Repository visual quality gate: 96/100 — approved.**
+**Repository visual, interaction, accessibility, and lab-performance gates: PASS.**
 
-- Critical findings: 0
-- High findings: 0
-- Automated capture blockers: 0
-- Current-worktree captures: 560/560 passed
-- Approved visual baselines: 11/11 passed
-- Browser/viewport matrix: 9/9 passed
-- Lighthouse accessibility: 100 desktop and 100 mobile
+**Overall release gate: PRODUCTION-REJECT.**
 
-This approval applies to the exact local release candidate. It does not claim
-legal clearance, independent human creative approval, production provider
-readiness, field Core Web Vitals, or consented customer evidence.
+Storybook static build and the connected live browser journey both pass. The
+live journey covers registration, email verification, document upload,
+analysis, compilation, SSE replay, provenance navigation, export, and purge.
 
-## Weighted review
+The local release candidate implements the seven-act clean-room homepage and
+passes every repository-owned visual gate. This does not substitute for the
+masterplan's private Q1/Q2 labels, Q3 100,000-page field shadow, three-repeat
+public benchmark, production-provider drills, independent beta, or legal and
+commercial approvals.
 
-| Criterion              |  Weight |  Score | Evidence                                                                    |
-| ---------------------- | ------: | -----: | --------------------------------------------------------------------------- |
-| Brand distinctiveness  |      15 |     15 | Deterministic Folio Synthesis direction; no generic generated imagery       |
-| Category comprehension |      10 |     10 | Seven-scene source-to-knowledge narrative and one final collection action   |
-| Asset craft            |      15 |     14 | T0/T1 source-first assets; 11 manifest records and 29 verified derivatives  |
-| Product truth          |      12 |     12 | Durable event replay, source-native proof, and explicit fixture boundaries  |
-| Composition            |      10 |     10 | Product evidence remains primary from 360 through 1920 px                   |
-| Typography             |       8 |      8 | Bilingual hierarchy, 12 px text floor, 14 px core-control floor             |
-| Interaction            |       8 |      8 | Zero enabled dead controls; market and locale switches remain explicit      |
-| Motion purpose         |       6 |      6 | Finite state transitions and full reduced-motion information parity         |
-| Responsive             |       6 |      6 | Seven widths, two locales, and two motion modes; no blocking overflow       |
-| Accessibility          |       5 |      5 | Axe, forced colors, keyboard, 200% text, target-size, and contrast checks   |
-| Performance            |       3 |      1 | Desktop lab performance 100; simulated mobile 88; field data remains open   |
-| Claim truth            |       2 |      1 | Repository claims are bounded; legal and independent review remain external |
-| **Total**              | **100** | **96** | **Pass (minimum 90)**                                                       |
+## Final evidence
 
-## Executed evidence
+| Gate                       | Result                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Responsive evidence        | 16/16 captures passed: KO/EN × default/reduced motion × 1920, 1440, 1024, 390                                                |
+| Seven-scene contract       | Exact ordered scene IDs `01-product-film` through `07-final`                                                                 |
+| Actual-source proof        | Official 2,276,931-byte DART PDF, page 30/121, rendered by PDF.js 6.2.108                                                    |
+| PDF SHA-256                | `fb998430db82774afc0d69090383650421ab9a14e6e37c7f32821aa1c6a32eee`                                                           |
+| Browser matrix             | 9/9 passed: Chromium at 360/390/768/1024/1280/1440/1920, Firefox 1440, WebKit 1440                                           |
+| Accessibility matrix       | 7 passed, 1 intentional mobile duplicate skip; forced colors, 200% desktop text, 12px visible-text floor, 14px control floor |
+| Visual regression          | 11/11 approved route baselines passed                                                                                        |
+| Console and page errors    | 0 / 0 across all 16 captures                                                                                                 |
+| Horizontal overflow        | Maximum 0px                                                                                                                  |
+| Actual PDF canvas          | Minimum captured width 487px                                                                                                 |
+| ESLint / strict TypeScript | PASS / PASS                                                                                                                  |
+| Production build           | PASS, Next.js 16.2.12 standalone                                                                                             |
 
-- ESLint and strict TypeScript: passed with zero warnings or errors.
-- Vitest and contracts: 52 files, 228 tests passed.
-- Python: 1,489 tests verified. One Argon2 allocation failure occurred while
-  builds competed for memory; the affected test passed immediately in an
-  isolated retry.
-- Playwright: 79 passed, 17 intentional project-scope skips, zero failures.
-- Accessibility matrix: forced colors, 200% text, WCAG A/AA, keyboard and
-  target-size contracts passed.
-- Browser matrix: Chromium at 360, 390, 768, 1024, 1280, 1440 and 1920 px;
-  Firefox and WebKit at 1440 px; 9/9 passed.
-- In-app browser: KO at 1440, 1024 and 390 px plus EN at 390 px; exact seven
-  scenes, no page overflow, no broken images, and no console warnings/errors.
-- Visual regression: 11/11 approved route baselines passed.
-- Current-worktree capture: 560/560 passed across 13 routes, seven homepage
-  scenes, English/Korean, default/reduced motion, and seven widths.
-- Asset validation: 11 manifest assets, 136 names, and 29 derivatives verified.
-- Interaction contract: zero enabled dead controls.
-- Storybook and Next.js 16.2.12 production builds: passed.
+Evidence locations:
 
-## Lighthouse lab results
+- `artifacts/folynta-v1-visual-qa/report.json`
+- `artifacts/folynta-v1-visual-qa/{ko,en}/{default,reduced}/{viewport}/home.webp`
+- `artifacts/lighthouse/folynta-v1-mobile.json`
+- `artifacts/lighthouse/folynta-v1-desktop.json`
+- `apps/web/e2e/visual-baselines/desktop/win32/visual-regression.spec.ts/`
 
-| Profile          | Performance | Accessibility | Best practices | SEO |      LCP | CLS |   TBT |
-| ---------------- | ----------: | ------------: | -------------: | --: | -------: | --: | ----: |
-| Desktop          |         100 |           100 |            100 | 100 |   749 ms |   0 |  0 ms |
-| Simulated mobile |          88 |           100 |            100 | 100 | 3,757 ms |   0 | 21 ms |
+## Lighthouse 12.8.2 lab results
 
-These measurements were taken with Lighthouse 12.8.2 against the production
-standalone build. They are reproducible lab evidence, not canonical-domain
-field p75 Core Web Vitals.
+| Profile          | Performance | Accessibility | Best practices | SEO |     LCP | CLS |  TBT | Initial script transfer |
+| ---------------- | ----------: | ------------: | -------------: | --: | ------: | --: | ---: | ----------------------: |
+| Simulated mobile |          97 |           100 |            100 | 100 | 2,407ms |   0 | 96ms |           208,870 bytes |
+| Desktop          |         100 |           100 |            100 | 100 |   601ms |   0 |  0ms |           208,870 bytes |
+
+The masterplan budgets are met: mobile performance ≥90, accessibility 100,
+best practices ≥95, SEO ≥95, LCP ≤2.5s, CLS ≤0.1, TBT ≤200ms, and initial
+script transfer below 220KB. These are local standalone lab measurements, not
+canonical-domain field p75 Core Web Vitals.
+
+## Scene review
+
+| Scene                  | Product-truth and composition decision                                                        | Result |
+| ---------------------- | --------------------------------------------------------------------------------------------- | ------ |
+| 01 Product Film        | Static-first verified folio; no WebGL hero or generated proof                                 | PASS   |
+| 02 Intake              | Local manifest, file classes, dedupe and excluded state before processing                     | PASS   |
+| 03 Recovery Theater    | Detected → recovered → verified; Basic/Technical; no timer progress                           | PASS   |
+| 04 Actual Source       | DART defaults in KO, SEC defaults in EN; actual PDF versus truthful Inline XBRL HTML boundary | PASS   |
+| 05 Knowledge Formation | One receipt projects into vault, atomic note, relation and exports                            | PASS   |
+| 06 Trust               | Verified, recovered-and-verified, unresolved and excluded remain distinct                     | PASS   |
+| 07 Final               | One restrained document-upload CTA and truth-bound supporting copy                            | PASS   |
 
 ## Motion review
 
-| Before                              | After                                                             | Why                                                                      |
-| ----------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Historical decorative WebGL hero    | Static-first Folio Synthesis HTML/CSS scene                       | Keeps the signature visual legible, deterministic, and inexpensive       |
-| Ambient or timer-like progress risk | Frozen durable-event replay with finite 120/160 ms state feedback | Motion now communicates real state and never invents processing progress |
-| Motion-dependent emphasis           | Reduced-motion parity with the same content and controls          | Preserves comprehension and access without animation                     |
+| Before                                       | After                                                                             | Why                                                                           |
+| -------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Built-in `ease` on color and border feedback | `cubic-bezier(0.23, 1, 0.32, 1)` with 140–180ms explicit-property transitions     | Strong ease-out feels responsive and never animates unrelated properties      |
+| Potential first-load PDF work below the fold | Intersection-gated PDF.js and source-byte load with a stable intrinsic region     | Keeps product proof real while protecting initial render and layout stability |
+| Historical decorative or timer-like motion   | Finite press/state feedback only; no loops, springs, fake progress, or WebGL hero | Every motion now explains state or input feedback                             |
 
-Motion verdict: **Approve.** No infinite loop, layout-property animation,
-`transition: all`, scale-from-zero entrance, or reduced-motion content loss was
-found.
+Verdict: **Approve.** No feel-breaking regression, high-frequency animation,
+`transition: all`, `scale(0)`, `ease-in`, layout-property animation, ungated
+hover motion, or reduced-motion information loss remains. Active feedback is
+interruptible CSS transition motion and stays below 300ms.
 
 ## External gates that remain open
 
-- legal and domain clearance for the FOLYNTA working name
-- independent human creative review and physical assistive-technology review
-- owner-approved commercial pricing
-- consented customer proof and rights-cleared full public benchmark evidence
-- production identity, payment, email, and external-model provider configuration
-- canonical-domain security scan, operational drills, and field p75 CWV
+- private Q1: 1,500 pages and at least 10,000 labeled facts
+- private Q2: 5,000 pages and at least 30,000 labeled facts
+- Q3 field shadow: 100,000 pages
+- three-repeat rights-cleared public benchmark artifacts
+- production RunPod billing/concurrency/fault evidence
+- production R2 role, lifecycle, deletion and restoration evidence
+- production Postgres RLS, backup and restoration drill evidence
+- independent private-beta and assistive-technology evidence
+- legal, domain, licensing, claim, and commercial approval
 
-The repository release candidate is approved; stronger production or public
-evidence claims remain fail-closed until the relevant external evidence exists.
+Until those artifacts exist, `PRODUCTION-REJECT` is mandatory even though the
+repository-owned frontend gates pass.

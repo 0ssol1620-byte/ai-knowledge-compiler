@@ -35,6 +35,13 @@ from .evidence_ladder import (
     risk_coverage_curve,
     verify_evidence,
 )
+from .final_metrics import (
+    FinalDisposition,
+    FinalMetricInput,
+    FinalMetrics,
+    calculate_final_metrics,
+)
+from .knowledge_quality import KnowledgeObject, KnowledgeQuality, validate_knowledge_quality
 from .models import (
     AgreementScore,
     FindingSeverity,
@@ -44,6 +51,7 @@ from .models import (
     QualityVector,
 )
 from .numeric import NumericComparison, compare_numeric_tokens, extract_numeric_tokens
+from .numeric_authority import NumericAuthorityDecision, verify_authority_number
 from .numeric_geometry import (
     AuthorityNumericFact,
     AuthorityProvenance,
@@ -65,6 +73,8 @@ from .numeric_geometry import (
     SecInlineXbrlProvenance,
     match_numeric_geometry,
 )
+from .page_coverage import PageCoverage, validate_page_coverage
+from .table_conservation import TableConservation, validate_table_conservation
 from .tables import table_numeric_fidelity, table_shape_fidelity, validate_table
 
 __all__ = [
@@ -83,6 +93,9 @@ __all__ = [
     "EvidenceDecision",
     "EvidenceLevel",
     "EvidencePolicy",
+    "FinalDisposition",
+    "FinalMetricInput",
+    "FinalMetrics",
     "FindingLevel",
     "FindingSeverity",
     "GeometryMatchSignals",
@@ -90,6 +103,9 @@ __all__ = [
     "GeometrySource",
     "GeometryWord",
     "GeometryWordRole",
+    "KnowledgeObject",
+    "KnowledgeQuality",
+    "NumericAuthorityDecision",
     "NumericAuthorityMerge",
     "NumericCellKey",
     "NumericComparison",
@@ -98,6 +114,7 @@ __all__ = [
     "NumericHardGate",
     "NumericMismatchCode",
     "NumericResolutionState",
+    "PageCoverage",
     "ParserNumericCell",
     "QualityEvaluation",
     "QualityFinding",
@@ -107,8 +124,10 @@ __all__ = [
     "RiskCoveragePoint",
     "SecInlineXbrlProvenance",
     "SelectivePrediction",
+    "TableConservation",
     "ValidationEvidence",
     "VerificationAgent",
+    "calculate_final_metrics",
     "compare_engine_outputs",
     "compare_numeric_tokens",
     "decide_autonomously",
@@ -124,8 +143,12 @@ __all__ = [
     "text_anomalies",
     "validate_block_provenance",
     "validate_knowledge_evidence",
+    "validate_knowledge_quality",
+    "validate_page_coverage",
     "validate_relation_evidence",
     "validate_table",
+    "validate_table_conservation",
+    "verify_authority_number",
     "verify_evidence",
     "weighted_quality",
 ]

@@ -171,6 +171,10 @@ def test_recovery_acceptance_preserves_base_diff_evidence_and_lineage() -> None:
     assert decision.repaired_prediction_sha256 == HASH_B
     assert [event.event_type for event in events.events()] == [
         "recovery.region.requested.v1",
+        "recovery.planned.v1",
+        "recovery.started.v1",
+        "recovery.validated.v1",
+        "region.verified.v1",
         "recovery.completed.v1",
     ]
     with pytest.raises(RecoveryConflictError, match="already completed"):

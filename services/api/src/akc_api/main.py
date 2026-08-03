@@ -299,6 +299,7 @@ from akc_api.storage import (
 )
 from akc_api.team_api import TeamInvitationTokenCodec
 from akc_api.team_api import router as team_router
+from akc_api.trust_api import router as trust_router
 from akc_api.vault_merge import (
     DEFAULT_VAULT_ZIP_LIMITS,
 )
@@ -9239,6 +9240,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(collection_integrity_router)
     app.include_router(collection_retrieval_router)
     app.include_router(parallel_runtime_router)
+    app.include_router(trust_router)
     install_v4_openapi_contract(app)
     return app
 

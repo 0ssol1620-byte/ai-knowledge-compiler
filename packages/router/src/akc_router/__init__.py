@@ -1,5 +1,7 @@
 """Deterministic routing and preflight policy."""
 
+from .calibration import CalibrationBin, expected_calibration_error
+from .champion_matrix import ChampionCandidate, ChampionMatrix
 from .engine import decide_escalation, estimate_route_credits, select_first_route
 from .estimation import (
     ClusterSamplePlan,
@@ -20,6 +22,7 @@ from .estimation import (
     estimate_collection,
     select_adaptive_samples,
 )
+from .expected_verified_cost import RouteCostCandidate, select_expected_verified_cost
 from .models import (
     MODE_PROFILE,
     DataPolicy,
@@ -69,7 +72,10 @@ from .research import (
 __all__ = [
     "MODE_PROFILE",
     "BetaBinomialPosterior",
+    "CalibrationBin",
     "CandidateForecast",
+    "ChampionCandidate",
+    "ChampionMatrix",
     "ClusterSamplePlan",
     "CollectionEstimate",
     "CollectionEstimateInput",
@@ -101,6 +107,7 @@ __all__ = [
     "QualitySignal",
     "RiskTier",
     "Route",
+    "RouteCostCandidate",
     "RouteDecision",
     "RoutePopulation",
     "RouteProfile",
@@ -118,10 +125,12 @@ __all__ = [
     "estimate_collection",
     "estimate_route_credits",
     "estimate_schedule",
+    "expected_calibration_error",
     "native_candidate",
     "native_requires_visual_cross_check",
     "preflight_difficulty",
     "select_adaptive_samples",
+    "select_expected_verified_cost",
     "select_first_route",
     "select_risk_constrained_candidate",
 ]

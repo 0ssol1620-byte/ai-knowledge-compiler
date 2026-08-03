@@ -197,6 +197,25 @@ class RecoveryPlanner:
                     occurred_at=created_at,
                     idempotency_key=f"recovery-requested:{task.task_id}",
                 )
+                self._events.append(
+                    event_type="recovery.planned.v1",
+                    aggregate_id=task.task_id,
+                    payload={
+                        "scope_id": scope.scope_id,
+                        "scope_level": scope.level.value,
+                        "variant": variant.value,
+                        "parser_recipe": parser_recipe,
+                    },
+                    occurred_at=created_at,
+                    idempotency_key=f"recovery-planned:{task.task_id}",
+                )
+                self._events.append(
+                    event_type="recovery.started.v1",
+                    aggregate_id=task.task_id,
+                    payload={"base_attempt_id": base_attempt_id},
+                    occurred_at=created_at,
+                    idempotency_key=f"recovery-started:{task.task_id}",
+                )
             return task
 
     @classmethod
@@ -273,6 +292,30 @@ class RecoveryPlanner:
                     )
                 return existing_decision
             if self._events is not None:
+                self._events.append(
+                    event_type="recovery.validated.v1",
+                    aggregate_id=candidate.task.task_id,
+                    payload={
+                        "passed": candidate.validation.passed,
+                        "hard_failure_count": candidate.validation.hard_failure_count,
+                        "validation_sha256": candidate.validation.digest,
+                    },
+                    occurred_at=completed_at,
+                    idempotency_key=f"recovery-validated:{candidate.task.task_id}",
+                )
+                self._events.append(
+                    event_type=(
+                        "region.verified.v1" if accepted else "region.unresolved.v1"
+                    ),
+                    aggregate_id=candidate.task.task_id,
+                    payload={
+                        "scope_id": candidate.task.scope.scope_id,
+                        "selected_attempt_id": decision.selected_attempt_id,
+                        "reason_codes": decision.reason_codes,
+                    },
+                    occurred_at=completed_at,
+                    idempotency_key=f"recovery-region-final:{candidate.task.task_id}",
+                )
                 self._events.append(
                     event_type="recovery.completed.v1",
                     aggregate_id=candidate.task.task_id,

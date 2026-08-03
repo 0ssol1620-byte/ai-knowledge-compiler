@@ -1,7 +1,7 @@
 import type { Preview } from "@storybook/nextjs-vite";
 
 import "../src/app/globals.css";
-import "../src/app/structara.css";
+import "../public/styles/structara.css";
 
 const preview: Preview = {
   parameters: {

@@ -37,7 +37,8 @@ for (const route of visualRoutes) {
           transition-delay: 0s !important;
           transition-duration: 0s !important;
         }
-        .st-home > section {
+        .st-home > section,
+        .folynta-v4-home > section {
           content-visibility: visible !important;
         }
       `,

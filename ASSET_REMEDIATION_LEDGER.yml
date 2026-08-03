@@ -128,7 +128,7 @@ existing_families:
       Retain token-driven material texture only where it improves hierarchy without encoding data
       or reducing legibility.
     evidence_paths:
-      - apps/web/src/app/structara.css
+      - apps/web/public/styles/structara.css
       - assets/brand/textures/README.md
     current_v4_approval: true
   - asset_id: STR-SYSTEM-T1-DIAGRAMS-001
