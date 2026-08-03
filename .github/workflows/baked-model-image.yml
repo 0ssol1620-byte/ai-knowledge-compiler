@@ -41,6 +41,15 @@ jobs:
           image_repository="ghcr.io/${GITHUB_REPOSITORY,,}/ovisocr2-m1"
           echo "IMAGE_TAG=${image_repository}:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "IMAGE_REPOSITORY=${image_repository}" >> "$GITHUB_ENV"
+      - name: Bootstrap attestation-capable Buildx builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create \
+            --driver docker-container \
+            --name folynta-builder \
+            --use
+          docker buildx inspect --bootstrap
       - name: Build and push frozen image
         shell: bash
         run: |

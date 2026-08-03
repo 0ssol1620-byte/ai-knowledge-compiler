@@ -35,6 +35,8 @@ def test_workflow_builds_only_the_frozen_ovis_image_and_never_allocates_gpu() ->
 def test_workflow_publishes_content_bound_evidence() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "--metadata-file" in text
+    assert "--driver docker-container" in text
+    assert "docker buildx inspect --bootstrap" in text
     assert "source-tree.sha256" in text
     assert "ovisocr2-m1.spdx.json" in text
     assert "ovisocr2-m1.trivy.json" in text
