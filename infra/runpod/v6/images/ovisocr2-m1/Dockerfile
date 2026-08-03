@@ -16,16 +16,14 @@ RUN apt-get update -qq \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /run/sshd /root/.ssh /opt/folynta/models/OvisOCR2
 
-RUN python3 -m pip install --no-cache-dir --disable-pip-version-check \
-      'huggingface-hub==0.36.0' \
-      'pillow==12.3.0' \
-    && python3 - <<'PY'
+RUN python3 - <<'PY'
 from importlib.metadata import version
 
 expected = {
     "vllm": "0.22.1",
-    "huggingface-hub": "0.36.0",
-    "pillow": "12.3.0",
+    "huggingface-hub": "1.17.0",
+    "pillow": "12.2.0",
+    "transformers": "5.10.2",
 }
 actual = {name: version(name) for name in expected}
 if actual != expected:

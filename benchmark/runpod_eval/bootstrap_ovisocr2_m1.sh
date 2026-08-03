@@ -25,8 +25,9 @@ from importlib.metadata import version
 
 expected = {
     "vllm": "0.22.1",
-    "huggingface-hub": "0.36.0",
-    "pillow": "12.3.0",
+    "huggingface-hub": "1.17.0",
+    "pillow": "12.2.0",
+    "transformers": "5.10.2",
 }
 actual = {name: version(name) for name in expected}
 if actual != expected:
