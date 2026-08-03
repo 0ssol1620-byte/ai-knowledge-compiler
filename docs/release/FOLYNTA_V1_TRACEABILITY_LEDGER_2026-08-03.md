@@ -36,8 +36,8 @@ Status terms:
 |  22 | End-to-end final benchmark                                       | EXTERNAL-EVIDENCE | Q1/Q2/Q3 datasets and three-repeat artifacts required                                        |
 |  23 | Runtime trust receipt                                            | LOCAL-VERIFIED    | `GET /v1/packages/{id}/trust-receipt`; deterministic receipt hash                            |
 |  24 | Continuous field quality / drift / rollback                      | INTEGRATED        | drift policy and event contracts; field observation window remains external                  |
-|  25 | GPU and multi-pod qualification                                  | EXTERNAL-EVIDENCE | provider invoices, concurrency and fault drills required                                     |
-|  26 | Security and operations gate                                     | EXTERNAL-EVIDENCE | local R2/RLS/sandbox gates exist; deployed credentials, restore/delete drills required       |
+|  25 | GPU and multi-pod qualification                                  | EXTERNAL-EVIDENCE | live inventory is clean; provider invoices, model concurrency and fault drills remain required |
+|  26 | Security and operations gate                                     | EXTERNAL-EVIDENCE | live R2 is PARTIAL due broad credentials; production RLS and restore/delete drills remain required |
 |  27 | Creative reset                                                   | LOCAL-VERIFIED    | v3 Folio marked historical; v4 clean-room component directory is active                      |
 |  28 | Brand north star and three remembered scenes                     | LOCAL-VERIFIED    | product film, recovery theater, actual-source proof                                          |
 |  29 | Skill operating system                                           | LOCAL-VERIFIED    | Structara brand/asset, UI/UX, and motion guidance applied under design authority             |
@@ -99,3 +99,6 @@ web and API processes.
 The final source-equivalent production build also passes with build ID
 `VQb2YDoXM66oOrNG92wIY`; the visual captures remain cryptographically bound to
 their captured build ID above.
+
+The secret-free live provider observations and their exact claim boundaries are
+recorded in `docs/release/FOLYNTA_V1_EXTERNAL_GATE_AUDIT_2026-08-03.md`.
