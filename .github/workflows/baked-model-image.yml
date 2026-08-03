@@ -77,13 +77,16 @@ jobs:
           docker buildx build \
             --file infra/runpod/v6/images/ovisocr2-m1/Dockerfile \
             --tag "$IMAGE_TAG" \
-            --provenance=mode=max \
-            --sbom=true \
+            --provenance=false \
+            --sbom=false \
             --metadata-file "${RUNNER_TEMP}/build-metadata.json" \
             --push .
           image_digest="$(jq -r '.["containerimage.digest"]' "${RUNNER_TEMP}/build-metadata.json")"
           [[ "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
           echo "IMAGE_DIGEST=${IMAGE_REPOSITORY}@${image_digest}" >> "$GITHUB_ENV"
+          docker buildx rm folynta-builder
+          docker system prune --all --force --volumes
+          df -h /
       - name: Generate independently downloadable SBOM
         uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
         with:
