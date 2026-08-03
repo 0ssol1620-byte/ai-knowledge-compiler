@@ -30,6 +30,12 @@ def test_workflow_builds_only_the_frozen_ovis_image_and_never_allocates_gpu() ->
     assert "api.runpod.ai" not in text.lower()
     assert "pod_client" not in text.lower()
     assert "run_provider_smoke" not in text.lower()
+    assert "readonly targets=" in text
+    assert "/usr/local/lib/android" in text
+    assert "/usr/share/dotnet" in text
+    assert "/opt/ghc" in text
+    assert "/opt/hostedtoolcache/CodeQL" in text
+    assert "refusing unexpected cleanup target" in text
 
 
 def test_workflow_publishes_content_bound_evidence() -> None:
