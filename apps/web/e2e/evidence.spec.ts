@@ -61,15 +61,40 @@ test("the homepage does not scroll sideways at 200% zoom", async ({
   ).toBeLessThanOrEqual(0);
 });
 
+/**
+ * §25.3 "console errors 0". This is the authoritative check, not Lighthouse's
+ * errors-in-console audit — that audit counts failed network requests, and the
+ * App Router prefetches every visible <Link> then aborts those requests, so it
+ * reports two dozen failures on a page that has none.
+ *
+ * Here the three signals are separated: real console errors and page
+ * exceptions must be zero, and a failed request must be zero unless it is an
+ * RSC prefetch the framework itself cancelled.
+ */
 test("public routes log no console errors", async ({ page }) => {
   const errors: string[] = [];
+  const failedRequests: string[] = [];
+
   page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
+    if (message.type() === "error") errors.push(`console: ${message.text()}`);
   });
-  page.on("pageerror", (error) => errors.push(String(error)));
+  page.on("pageerror", (error) => errors.push(`pageerror: ${error}`));
+  page.on("requestfailed", (request) => {
+    // ?_rsc= is the App Router's prefetch; aborting one is normal.
+    if (request.url().includes("_rsc=")) return;
+    failedRequests.push(`${request.url()} — ${request.failure()?.errorText}`);
+  });
+  page.on("response", (response) => {
+    if (response.status() >= 400) {
+      failedRequests.push(`HTTP ${response.status()} ${response.url()}`);
+    }
+  });
+
   for (const route of ["/", "/product", "/benchmarks"]) {
     await page.goto(route, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
   }
+
   expect(errors).toEqual([]);
+  expect(failedRequests).toEqual([]);
 });
