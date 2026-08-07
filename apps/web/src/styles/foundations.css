@@ -65,20 +65,30 @@
 
 @layer base {
   /*
-   * §7.2 plan B — OpenType features applied globally. `ss01`–`ss03` and
-   * `cv01`/`cv02` are the alternate sets kept in the Latin subset by
-   * tools/fonts/build_fonts.py; a face renders them only where it has them, so
-   * listing a set the font lacks costs nothing.
+   * Standard typesetting features only.
+   *
+   * §7.2 plan B says to apply OpenType features globally, and the example it
+   * gives — `cv01`, `ss03` — is Inter's. Those tags are font-specific, and an
+   * earlier revision of this file copied them onto Wanted Sans without
+   * checking what they map to here. They map to:
+   *
+   *   ss03  lowercase a  ->  a.cv21   (a circle with a closed inner loop —
+   *                                    it does not read as a Latin "a")
+   *   ss01  j, t, Q      ->  alternates, +86 more glyphs
+   *   cv01  j            ->  alternate
+   *
+   * Wanted Sans is already not a stock face — the de-stocking §7.2 asks for is
+   * satisfied by choosing it at all. Substituting glyphs blind, in a family
+   * whose alternate sets nobody surveyed, damaged legibility instead of
+   * improving distinctiveness. If a stylistic set is ever wanted here it goes
+   * in with a specimen and a reason, one tag at a time.
    */
   html {
     font-feature-settings:
       "kern" 1,
       "liga" 1,
       "clig" 1,
-      "calt" 1,
-      "ss01" 1,
-      "ss03" 1,
-      "cv01" 1;
+      "calt" 1;
     font-optical-sizing: auto;
     text-rendering: optimizeLegibility;
   }

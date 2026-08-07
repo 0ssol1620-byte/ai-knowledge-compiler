@@ -2,19 +2,19 @@
   "source": "C:\\Users\\2021602\\AppData\\Local\\Temp\\claude\\C--Users-2021602\\7800a757-40aa-4bbb-a630-2138cc709a4d\\scratchpad\\ws\\package\\fonts\\variable\\WantedSansVariable.ttf",
   "latin": {
     "path": "public\\fonts\\wanted-sans-latin-var.woff2",
-    "bytes": 28472
+    "bytes": 25688
   },
   "korean": [
     {
       "path": "public\\fonts\\wanted-sans-ko-400.woff2",
-      "bytes": 2000
+      "bytes": 2756
     },
     {
       "path": "public\\fonts\\wanted-sans-ko-600.woff2",
-      "bytes": 2028
+      "bytes": 2804
     }
   ],
-  "koreanCharacters": 8,
+  "koreanCharacters": 19,
   "budgets": {
     "en": 61440,
     "koMarketingFirstView": 184320,
