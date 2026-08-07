@@ -1,6 +1,6 @@
 # Material texture system
 
-The production texture set is deterministic CSS in `structara.css`:
+The production texture set is deterministic CSS in `folynta.css`:
 
 1. warm paper fiber
 2. technical tracing

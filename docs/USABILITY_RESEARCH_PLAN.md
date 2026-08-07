@@ -1,4 +1,4 @@
-# Structara usability research plan
+# FOLYNTA usability research plan
 
 This protocol is ready to run when the owner supplies participants and consent.
 No synthetic participant result may be reported as research evidence.
@@ -17,7 +17,7 @@ data for the public demo workspace.
 
 ## Tasks
 
-1. Explain what Structara does after viewing only the homepage hero.
+1. Explain what FOLYNTA does after viewing only the homepage hero.
 2. Find and verify one number in the public DART demo.
 3. Upload a permitted sample and understand the preflight estimate.
 4. Follow a Markdown block back to its source bounding box.

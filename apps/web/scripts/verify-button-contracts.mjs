@@ -29,7 +29,7 @@ if (findings.length > 0) {
   process.exit(1);
 }
 
-console.log("Structara button contracts verified (0 enabled dead controls).");
+console.log("FOLYNTA button contracts verified (0 enabled dead controls).");
 
 function visit(node, sourceFile) {
   if (ts.isJsxElement(node)) checkButton(node.openingElement, sourceFile);

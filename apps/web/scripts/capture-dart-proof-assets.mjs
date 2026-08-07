@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
 const outputRoot = resolve(repositoryRoot, "assets/public-proof/dart");
-const baseUrl = process.env.STRUCTARA_CAPTURE_URL ?? "http://127.0.0.1:3000";
+const baseUrl = process.env.FOLYNTA_CAPTURE_URL ?? "http://127.0.0.1:3000";
 const receiptNumber = "20260730000413";
 const sourceSha256 =
   "312d03bcd23951c21948021dc2ea115e2f5be58b7c5a1eb23d9dc9da1f98e6a3";
@@ -29,19 +29,19 @@ async function prepare(viewport, reducedMotion = "reduce") {
   });
   await page.addStyleTag({
     content:
-      "html{scroll-behavior:auto!important}*{caret-color:transparent!important}.nextjs-toast,.st-header,.skip-link,nextjs-portal{display:none!important}",
+      "html{scroll-behavior:auto!important}*{caret-color:transparent!important}.nextjs-toast,.fl-header,.skip-link,nextjs-portal{display:none!important}",
   });
   return { context, page };
 }
 
 async function captureTabs() {
   const { context, page } = await prepare({ width: 1440, height: 900 });
-  const proof = page.locator(".st-route-proof");
+  const proof = page.locator(".fl-route-proof");
   await proof.scrollIntoViewIfNeeded();
   for (const tab of ["Original", "Markdown", "Vault", "Graph", "Proof"]) {
     await page.getByRole("tab", { name: tab }).click();
     await page.waitForTimeout(100);
-    const file = `STR-PROOF-T0-DART-EN-${tab.toUpperCase()}-1440x900-v01.webp`;
+    const file = `FLY-PROOF-T0-DART-EN-${tab.toUpperCase()}-1440x900-v01.webp`;
     await proof.screenshot({
       path: resolve(outputRoot, file),
       type: "webp",
@@ -51,10 +51,10 @@ async function captureTabs() {
     records.push({ state: tab, viewport: "1440x900", file });
   }
   for (const [state, selector] of [
-    ["SOURCE-CELL", ".st-proof-source"],
-    ["EVIDENCE-RECEIPT", ".st-proof-evidence"],
+    ["SOURCE-CELL", ".fl-proof-source"],
+    ["EVIDENCE-RECEIPT", ".fl-proof-evidence"],
   ]) {
-    const file = `STR-PROOF-T0-DART-EN-${state}-1440x900-v01.webp`;
+    const file = `FLY-PROOF-T0-DART-EN-${state}-1440x900-v01.webp`;
     await page.locator(selector).screenshot({
       path: resolve(outputRoot, file),
       type: "webp",
@@ -68,10 +68,10 @@ async function captureTabs() {
 
 async function captureViewport(name, viewport) {
   const { context, page } = await prepare(viewport);
-  const proof = page.locator(".st-route-proof");
+  const proof = page.locator(".fl-route-proof");
   await proof.scrollIntoViewIfNeeded();
   await page.getByRole("tab", { name: "Proof" }).click();
-  const file = `STR-PROOF-T0-DART-EN-${name}-${viewport.width}x${viewport.height}-v01.webp`;
+  const file = `FLY-PROOF-T0-DART-EN-${name}-${viewport.width}x${viewport.height}-v01.webp`;
   await proof.screenshot({
     path: resolve(outputRoot, file),
     type: "webp",
@@ -89,7 +89,7 @@ async function captureViewport(name, viewport) {
 async function captureRoute() {
   const viewport = { width: 1920, height: 1080 };
   const { context, page } = await prepare(viewport);
-  const file = "STR-PROOF-T0-DART-EN-ROUTE-1920x1080-v01.webp";
+  const file = "FLY-PROOF-T0-DART-EN-ROUTE-1920x1080-v01.webp";
   await page.screenshot({
     path: resolve(outputRoot, file),
     type: "webp",

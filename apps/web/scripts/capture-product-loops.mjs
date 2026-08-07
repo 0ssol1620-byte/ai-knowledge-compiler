@@ -8,8 +8,8 @@ import { promisify } from "node:util";
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
 const outputRoot = resolve(repositoryRoot, "assets/product/recordings");
 const temporaryRoot = resolve(outputRoot, ".playwright");
-const baseUrl = process.env.STRUCTARA_CAPTURE_URL ?? "http://127.0.0.1:3000";
-const ffmpeg = process.env.STRUCTARA_FFMPEG ?? "ffmpeg";
+const baseUrl = process.env.FOLYNTA_CAPTURE_URL ?? "http://127.0.0.1:3000";
+const ffmpeg = process.env.FOLYNTA_FFMPEG ?? "ffmpeg";
 const execFileAsync = promisify(execFile);
 const loops = [
   ["M01-upload-preflight", "/onboarding"],
@@ -56,7 +56,7 @@ for (const [id, route] of loops) {
   await context.close();
 
   const source = await video.path();
-  const stem = `STR-PRODUCT-T0-${id.toUpperCase()}-EN-1280x720-v01`;
+  const stem = `FLY-PRODUCT-T0-${id.toUpperCase()}-EN-1280x720-v01`;
   const file = `${stem}.webm`;
   const mp4 = `${stem}.mp4`;
   await rename(source, resolve(outputRoot, file));

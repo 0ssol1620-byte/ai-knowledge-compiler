@@ -113,7 +113,7 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
   ).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
   await expect(
-    page.getByText("Structara is a working name pending brand clearance."),
+    page.getByText("FOLYNTA is a working name pending brand clearance."),
   ).toBeVisible();
   await expect(
     page.getByText("First-party illustrative model · no generated imagery"),
@@ -124,7 +124,7 @@ test("product marketing uses real product evidence and deterministic diagrams", 
   page,
 }) => {
   await page.goto("/product");
-  const evidence = page.locator(".st-page-product-evidence");
+  const evidence = page.locator(".fl-page-product-evidence");
   await expect(evidence).toBeVisible();
   await expect(evidence.getByText("Actual product")).toBeVisible();
   await expect(evidence.locator("img")).toHaveJSProperty("complete", true);
@@ -137,7 +137,7 @@ test("product marketing uses real product evidence and deterministic diagrams", 
     page.getByRole("heading", { name: "Source-to-Knowledge Compiler" }),
   ).toBeVisible();
   await expect(
-    page.locator(".st-diagram-equivalent").getByRole("listitem"),
+    page.locator(".fl-diagram-equivalent").getByRole("listitem"),
   ).toHaveCount(4);
   expect(
     await page.evaluate(
@@ -248,10 +248,10 @@ test("DART proof marks the exact revenue cell without a detached overlay", async
   page,
 }) => {
   await page.goto("/demo/dart");
-  await expect(page.locator(".st-source-cell-selected")).toHaveText(
+  await expect(page.locator(".fl-source-cell-selected")).toHaveText(
     "4,902,490,901",
   );
-  await expect(page.locator(".st-source-box")).toHaveCount(0);
+  await expect(page.locator(".fl-source-box")).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Verify receipt 20260730000413" }),
   ).toBeVisible();
@@ -371,9 +371,9 @@ test("reduced motion removes travel, WebGL, and nonessential animation", async (
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator(".st-webgl-layer")).toBeHidden();
+  await expect(page.locator(".fl-webgl-layer")).toBeHidden();
   const moving = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLElement>(".st-site *"))
+    Array.from(document.querySelectorAll<HTMLElement>(".fl-site *"))
       .map((element) => {
         const style = getComputedStyle(element);
         return {

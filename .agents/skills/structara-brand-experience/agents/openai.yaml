@@ -1,4 +1,0 @@
-interface:
-  display_name: "Structara Brand Experience"
-  short_description: "Enforces the Structara brand and product experience"
-  default_prompt: "Use $structara-brand-experience to design and verify this Structara route."

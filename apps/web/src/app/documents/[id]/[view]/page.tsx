@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { ReviewStudio } from "@/components/review-studio";
-import { StructaraAppPage } from "@/components/structara-app-page";
+import { FolyntaAppPage } from "@/components/folynta-app-page";
 import { ProcessingWorkspace } from "@/components/workspace/processing-workspace";
 
 type Props = { params: Promise<{ id: string; view: string }> };
@@ -21,7 +21,7 @@ export default async function DocumentRoute({ params }: Props) {
     return (
       <Suspense
         fallback={
-          <div className="st-document-loading">Opening Processing Studio…</div>
+          <div className="fl-document-loading">Opening Processing Studio…</div>
         }
       >
         <ProcessingWorkspace />
@@ -30,7 +30,7 @@ export default async function DocumentRoute({ params }: Props) {
   }
   if (view === "review") return <ReviewStudio />;
   return (
-    <StructaraAppPage
+    <FolyntaAppPage
       route={`document/${view}`}
       title={
         view === "markdown"

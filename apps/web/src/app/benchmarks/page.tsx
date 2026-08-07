@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { StructaraMarketingPage } from "@/components/structara-marketing-page";
-import { PUBLIC_PAGES } from "@/lib/structara-content";
+import { FolyntaMarketingPage } from "@/components/folynta-marketing-page";
+import { PUBLIC_PAGES } from "@/lib/folynta-content";
 
 export const metadata: Metadata = {
   title: "Document benchmarks",
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function BenchmarksPage() {
-  return <StructaraMarketingPage definition={PUBLIC_PAGES["/benchmarks"]!} />;
+  return <FolyntaMarketingPage definition={PUBLIC_PAGES["/benchmarks"]!} />;
 }

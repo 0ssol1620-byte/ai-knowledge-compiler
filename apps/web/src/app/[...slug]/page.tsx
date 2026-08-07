@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { StructaraMarketingPage } from "@/components/structara-marketing-page";
-import { PUBLIC_PAGES } from "@/lib/structara-content";
+import { FolyntaMarketingPage } from "@/components/folynta-marketing-page";
+import { PUBLIC_PAGES } from "@/lib/folynta-content";
 
 type Props = { params: Promise<{ slug: string[] }> };
 
@@ -22,9 +22,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function StructaraPublicRoute({ params }: Props) {
+export default async function FolyntaPublicRoute({ params }: Props) {
   const { slug } = await params;
   const definition = PUBLIC_PAGES[`/${slug.join("/")}`];
   if (!definition) notFound();
-  return <StructaraMarketingPage definition={definition} />;
+  return <FolyntaMarketingPage definition={definition} />;
 }

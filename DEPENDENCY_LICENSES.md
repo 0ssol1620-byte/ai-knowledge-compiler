@@ -10,7 +10,7 @@
 | Phosphor Icons             | `2.1.10`         | MIT                           | Yes     | Consistent interface icons |
 | UI UX Pro Max              | local skill      | License metadata inconsistent | No      | Internal research only     |
 | Emil Design Engineering    | local skill      | Upstream repository guidance  | No      | Internal craft review      |
-| Structara Brand Experience | project guidance | Proprietary project guidance  | No      | Brand authority            |
+| FOLYNTA Brand Experience | project guidance | Proprietary project guidance  | No      | Brand authority            |
 
 Reviewed: 2026-07-30. Package lock is the source of truth for transitive
 versions. No external skill database is redistributed with the product.
