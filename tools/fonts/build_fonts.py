@@ -44,10 +44,16 @@ LATIN_UNICODES = (
     "U+2193,U+2192,U+2190,U+2212,U+2215,U+FEFF,U+FFFD"
 )
 
-# OpenType features kept in the Latin subset. §7.2 plan B applies alternates
-# globally to move the face away from its stock reading; `kern` and `liga` are
-# needed for ordinary typesetting, `tnum` for §7.5 tabular figures.
-LATIN_LAYOUT_FEATURES = "kern,liga,clig,calt,ccmp,mark,mkmk,tnum,ss01,ss02,ss03,cv01,cv02"
+# OpenType features kept in the Latin subset. Standard typesetting only: `kern`
+# and `liga` for ordinary text, `tnum` for §7.5 tabular figures, `frac`/`zero`
+# for the numeric surfaces.
+#
+# The stylistic and character-variant sets are deliberately dropped. They are
+# not referenced by any stylesheet (see the note in foundations.css about what
+# ss03 does to lowercase a in this family), so shipping them is dead weight —
+# and keeping them out means a future `font-feature-settings` typo cannot
+# silently swap glyphs.
+LATIN_LAYOUT_FEATURES = "kern,liga,clig,calt,ccmp,mark,mkmk,tnum,frac,zero"
 
 # A-02: two static Korean weights, matching --w-body and --w-strong.
 KOREAN_WEIGHTS = (400, 600)

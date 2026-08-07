@@ -16,7 +16,7 @@
   font-weight: 400;
   font-display: swap;
   src: url("/fonts/wanted-sans-ko-400.woff2") format("woff2");
-  unicode-range: U+ac01, U+c0c1, U+c0c9, U+c13c, U+c561, U+c815, U+d2b8, U+d655;
+  unicode-range: U+ac00, U+ae08, U+b294, U+b2e4, U+b454, U+b4dc, U+b808, U+b85c, U+ba74, U+c2a4, U+c2dd, U+c5c6, U+c73c, U+c7a5, U+c815, U+c88c, U+c9c0, U+d45c, U+d655;
 }
 
 @font-face {
@@ -25,5 +25,5 @@
   font-weight: 600;
   font-display: swap;
   src: url("/fonts/wanted-sans-ko-600.woff2") format("woff2");
-  unicode-range: U+ac01, U+c0c1, U+c0c9, U+c13c, U+c561, U+c815, U+d2b8, U+d655;
+  unicode-range: U+ac00, U+ae08, U+b294, U+b2e4, U+b454, U+b4dc, U+b808, U+b85c, U+ba74, U+c2a4, U+c2dd, U+c5c6, U+c73c, U+c7a5, U+c815, U+c88c, U+c9c0, U+d45c, U+d655;
 }
