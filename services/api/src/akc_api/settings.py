@@ -162,11 +162,16 @@ class Settings(BaseSettings):
     # Two budgets, not one. Creating a session and presigning an object are
     # different operations with different costs, and sharing a counter meant a
     # visitor who mis-picked a file twice was locked out of uploading at all.
-    trial_ingest_sessions_per_client: int = Field(default=3, ge=1, le=20)
+    trial_ingest_sessions_per_client: int = Field(default=5, ge=1, le=20)
     trial_ingest_uploads_per_client: int = Field(default=10, ge=1, le=100)
     # CAPTCHA escalates before the hard limit, so a human near the boundary is
     # challenged rather than refused.
-    trial_ingest_captcha_after: int = Field(default=2, ge=1, le=20)
+    #
+    # Third session onward, not second: trying the hero with two documents is
+    # ordinary behaviour, and where no CAPTCHA provider is configured — which
+    # is the default outside production — escalation is a refusal rather than a
+    # challenge. The threshold has to leave room for a person.
+    trial_ingest_captcha_after: int = Field(default=3, ge=1, le=20)
 
     url_ingestion_enabled: bool = False
     url_encryption_key: str | None = None
