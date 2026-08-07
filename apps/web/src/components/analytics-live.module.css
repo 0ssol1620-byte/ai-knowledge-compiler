@@ -173,7 +173,7 @@
 
 .root :global(.activation-rate small) {
   color: var(--text-tertiary);
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 8px;
 }
 

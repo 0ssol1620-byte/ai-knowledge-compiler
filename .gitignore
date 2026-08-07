@@ -61,3 +61,6 @@ desktop.ini
 *.tfstate
 *.tfstate.*
 crash.log
+
+# Font build scratch environment (tools/fonts/build_fonts.py)
+.venv-fonts/

@@ -1,0 +1,137 @@
+/*
+ * Type roles — DESIGN_MASTER_V3 §7.3, §7.5, with decision.md G-B plan B and
+ * A-02/A-04/A-05 applied.
+ *
+ * The scale in §7.3 lists weights 620 / 600 / 500 for plan A or C. Plan B was
+ * chosen, so the stops here are non-integer (590 / 570 / 560 / 510) — one of
+ * the three techniques §7.2 lists for keeping a stock variable face from
+ * reading as stock. The other two live in this file as well: OpenType feature
+ * settings applied globally, and tracking that varies with size instead of one
+ * letter-spacing value.
+ */
+
+@layer tokens {
+  :root {
+    /* ── SIZE (1440 reference, §7.3) ────────────────── */
+    --fs-scale: 1;
+    --fs-display-1: calc(72px * var(--fs-scale));
+    --fs-display-2: calc(52px * var(--fs-scale));
+    --fs-title-1: calc(34px * var(--fs-scale));
+    --fs-title-2: calc(24px * var(--fs-scale));
+    --fs-lead: calc(20px * var(--fs-scale));
+    --fs-body: calc(17px * var(--fs-scale));
+    --fs-small: calc(15px * var(--fs-scale));
+    --fs-label: calc(12px * var(--fs-scale));
+
+    /* §7.3 [확정] body and UI never go below 12px. */
+    --fs-min: 12px;
+
+    /* ── LINE HEIGHT — no single global value (§7.5) ── */
+    --lh-display-1: 76px;
+    --lh-display-2: 58px;
+    --lh-title-1: 42px;
+    --lh-title-2: 32px;
+    --lh-lead: 32px;
+    --lh-body: 1.55;
+    --lh-small: 24px;
+    --lh-label: 16px;
+
+    /* ── WEIGHT — plan B, non-integer stops (§7.2) ──── */
+    --w-body: 400;
+    --w-medium: 510;
+    --w-strong: 560;
+    --w-title: 570;
+    --w-display: 590;
+
+    /*
+     * ── TRACKING — size dependent (§7.2) ────────────
+     * Negative at display sizes where letterforms crowd, converging to 0 at
+     * body size. A single letter-spacing value is explicitly forbidden.
+     */
+    --tracking-display-1: -0.03em;
+    --tracking-display-2: -0.025em;
+    --tracking-title-1: -0.02em;
+    --tracking-title-2: -0.015em;
+    --tracking-lead: -0.005em;
+    --tracking-body: 0;
+    --tracking-label: 0.08em;
+
+    /* ── MEASURE (§7.5) ─────────────────────────────── */
+    --measure-en: 68ch;
+    --measure-ko: 37ch;
+    --measure: var(--measure-en);
+  }
+}
+
+@layer base {
+  /*
+   * §7.2 plan B — OpenType features applied globally. `ss01`–`ss03` and
+   * `cv01`/`cv02` are the alternate sets kept in the Latin subset by
+   * tools/fonts/build_fonts.py; a face renders them only where it has them, so
+   * listing a set the font lacks costs nothing.
+   */
+  html {
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "clig" 1,
+      "calt" 1,
+      "ss01" 1,
+      "ss03" 1,
+      "cv01" 1;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* §7.5 — every number is tabular so columns line up. */
+  [data-numeric],
+  output,
+  time,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * §7.4 + decision.md A-04 — Korean overrides.
+   *
+   * size-adjust is deliberately not used: it scales the Latin glyphs of the
+   * same face too, and it needs Safari 17+. Scaling through --fs-scale keeps
+   * the adjustment on the Korean branch only.
+   *
+   * The KO family is declared in src/styles/korean.css, which the /ko segment
+   * imports. Until the i18n track creates that segment this block is inert,
+   * because nothing sets lang="ko" yet.
+   */
+  :lang(ko) {
+    --fs-scale: 1.06;
+    --lh-body: 1.65;
+    --measure: var(--measure-ko);
+    --tracking-display-1: -0.012em;
+    --tracking-display-2: -0.012em;
+    --tracking-title-1: -0.01em;
+    --tracking-title-2: -0.008em;
+  }
+
+  :lang(ko) h1,
+  :lang(ko) h2,
+  :lang(ko) h3 {
+    word-break: keep-all;
+    text-wrap: initial;
+  }
+
+  :lang(ko) p {
+    word-break: normal;
+  }
+
+  @media (max-width: 480px) {
+    :lang(ko) h1 {
+      word-break: normal;
+    }
+  }
+
+  /* §7.5 — prose measure only, never on cards. */
+  .prose {
+    max-width: var(--measure);
+    text-wrap: pretty;
+  }
+}

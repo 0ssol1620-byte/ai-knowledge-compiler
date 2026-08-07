@@ -78,6 +78,42 @@ jobs:
       - run: pnpm test
       - run: pnpm build
 
+  # §22 — the performance budget is a declaration until something measures it.
+  # Runs against the production build so the numbers mean something.
+  lighthouse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Activate declared pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build the production bundle
+        run: pnpm --filter @akc/web build
+        env:
+          NEXT_PUBLIC_AKC_DEMO_MODE: "true"
+          NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000"
+      - name: Collect and assert Lighthouse budgets
+        run: pnpm --filter @akc/web lighthouse
+        env:
+          NEXT_PUBLIC_AKC_DEMO_MODE: "true"
+          NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: lighthouse-evidence
+          path: apps/web/.lighthouseci
+          if-no-files-found: ignore
+          retention-days: 14
+
   live-browser-e2e:
     runs-on: ubuntu-24.04
     timeout-minutes: 30

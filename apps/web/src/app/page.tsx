@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
+import { JsonLd } from "@/components/json-ld";
 import { MarketingLanding } from "@/components/marketing-landing";
+import { organizationGraph, SITE_BASE } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "The Knowledge Compiler for AI",
@@ -10,5 +12,10 @@ export const metadata: Metadata = {
 };
 
 export default function MarketingPage() {
-  return <MarketingLanding />;
+  return (
+    <>
+      <JsonLd nodes={organizationGraph(SITE_BASE)} />
+      <MarketingLanding />
+    </>
+  );
 }

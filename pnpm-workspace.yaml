@@ -12,6 +12,11 @@ patchedDependencies:
 
 allowBuilds:
   esbuild: true
+  # impeccable lists puppeteer as an optional dependency and only needs it to
+  # scan live URLs. The checker runs over source files, and browser-rendered
+  # checks already have Playwright's pinned Chromium, so the Chrome download is
+  # skipped.
+  puppeteer: false
   sharp: true
   unrs-resolver: true
 

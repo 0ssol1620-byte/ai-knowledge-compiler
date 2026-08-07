@@ -1,0 +1,115 @@
+/*
+ * DESIGN_MASTER_V3 §6.1 — the token layer.
+ *
+ * This file is imported first in layout.tsx, ahead of the four legacy
+ * stylesheets, so legacy :root declarations still win where they overlap. That
+ * is deliberate for W0: nothing repaints yet. §23.2 removes the legacy files
+ * wave by wave, and each removal uncovers the values below.
+ */
+
+/*
+ * Layer order. Later layers win.
+ *
+ * CAUTION — the masterplan (§18.3, §23.2) states that putting new CSS in
+ * layers while leaving the legacy files unlayered makes the new CSS win. The
+ * cascade works the other way round: unlayered declarations outrank every
+ * layered one. So today the four legacy stylesheets still beat everything
+ * here, which is exactly what W0 wants — no repaint yet.
+ *
+ * The W9 flip is one line per file: import the legacy sheets through
+ * `@import url(...) layer(legacy)` and add `legacy` to the front of this list.
+ * From that moment the layers below take over without a single specificity
+ * bump. Nothing else has to change.
+ */
+@layer tokens, base, components, utilities;
+
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* ── PAPER surface ──────────────────────────────── */
+    --paper-0: oklch(100% 0 0); /* #FFFFFF  recto / knowledge side */
+    --paper-1: oklch(96.6% 0.006 84); /* #F7F5F1  verso / source side */
+    --paper-2: oklch(93.5% 0.012 84); /* #EFEBE3  recessed, code, quote */
+    --ink-0: oklch(16% 0.012 250); /* #0B0D10 */
+    --ink-1: oklch(30% 0.014 250); /* #2B3038 */
+    --ink-2: oklch(50% 0.012 250); /* #626A76 */
+    --ink-3: oklch(63% 0.01 250); /* #8B929C */
+
+    /* ── INSTRUMENT surface ─────────────────────────── */
+    --inst-0: oklch(14% 0.01 250); /* #0A0C10 */
+    --inst-1: oklch(18% 0.011 250); /* #12151B */
+    --inst-2: oklch(22% 0.012 250); /* #191D25 */
+    --inst-ink-0: oklch(94% 0.005 250); /* #EDF0F4 */
+    --inst-ink-1: oklch(74% 0.01 250); /* #A6AEBA */
+    --inst-ink-2: oklch(54% 0.012 250); /* #6B7481 */
+
+    /* ── RULES — alpha, never a hardcoded hex (§6.3) ── */
+    --rule-paper-1: oklch(16% 0.012 250 / 6%);
+    --rule-paper-2: oklch(16% 0.012 250 / 12%);
+    --rule-inst-1: oklch(100% 0 0 / 5%);
+    --rule-inst-2: oklch(100% 0 0 / 9%);
+
+    /*
+     * ── SEMANTIC ─────────────────────────────────────
+     * Hue angles are provisional. §6.2 narrows brand to 250–260° and evidence
+     * to 200–210° to avoid both the slop-detector hues and the Linear/Stripe
+     * indigo. The exact values are decided in the three static comps —
+     * open item "액센트 색상각 확정" in decision.md.
+     */
+    --brand: oklch(48% 0.2 265);
+    --brand-d: oklch(72% 0.14 265);
+    --brand-hover: oklch(53% 0.2 265);
+    --brand-press: oklch(42% 0.19 265);
+    --evidence: oklch(60% 0.11 210);
+    --evidence-d: oklch(78% 0.11 210);
+    --verified: oklch(48% 0.1 165);
+    --verified-d: oklch(74% 0.11 165);
+    --review: oklch(52% 0.12 70);
+    --review-d: oklch(78% 0.12 70);
+    --danger: oklch(50% 0.17 25);
+    --danger-d: oklch(74% 0.16 25);
+
+    /* ── SPACING (4px base) ─────────────────────────── */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 24px;
+    --s-6: 32px;
+    --s-7: 48px;
+    --s-8: 64px;
+    --s-9: 96px;
+    --s-10: 128px;
+    --s-11: 160px;
+    --s-12: 200px;
+
+    /* ── RADIUS ─────────────────────────────────────── */
+    --r-paper: 2px;
+    --r-paper-lg: 4px;
+    --r-inst: 6px;
+    --r-inst-lg: 8px;
+    --r-media: 12px;
+
+    /* ── DEPTH — affordance only (§6.3) ─────────────── */
+    --depth-focus: 0 0 0 3px oklch(48% 0.2 265 / 30%);
+    --depth-hover: 0 1px 2px oklch(16% 0.012 250 / 5%);
+    --depth-overlay:
+      0 1px 0 oklch(0% 0 0 / 50%), 0 8px 24px -12px oklch(0% 0 0 / 60%);
+
+    /* ── MOTION ─────────────────────────────────────── */
+    --t-1: 90ms;
+    --t-2: 140ms;
+    --t-3: 200ms;
+    --t-4: 280ms;
+    --t-5: 420ms;
+    --e-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --e-inout: cubic-bezier(0.77, 0, 0.175, 1);
+    --e-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /*
+     * --t-cine is deliberately absent. Hero cinematics are a scene script, not
+     * a token (§6.1, §9).
+     */
+  }
+}
