@@ -3,7 +3,16 @@ packages:
   - "packages/*"
 
 overrides:
-  brace-expansion: 5.0.8
+  # All three close `pnpm audit --audit-level high` findings. Transitive only —
+  # nothing here is a direct dependency, so an override is the whole fix.
+  #   brace-expansion  <5.0.9   via eslint and @lhci/cli
+  #   js-yaml          <4.3.1   via eslint
+  #   tmp              <0.2.7   via @lhci/cli
+  # The previous brace-expansion pin (5.0.8) was itself inside the vulnerable
+  # range the advisory names.
+  brace-expansion: 5.0.9
+  js-yaml: 4.3.1
+  tmp: 0.2.7
   postcss: 8.5.24
   sharp: 0.35.3
 
