@@ -76,19 +76,19 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from akc_api.abuse import (
-    CaptchaProviderUnavailable,
-    CaptchaRejectedError,
-    CaptchaRequiredError,
     IdentityHasher,
     RateLimitBackendUnavailable,
-    RateLimitDecision,
     RateLimitPolicy,
     TrustedProxyIdentityResolver,
     TurnstileCaptchaProvider,
     UnavailableCaptchaProvider,
     build_rate_limiter,
-    enforce_captcha,
-    rate_limit_http_exception,
+)
+from akc_api.abuse_controls import (
+    account_subject,
+    client_subject,
+    consume_rate_control,
+    tenant_subject,
 )
 from akc_api.abuse_repository import (
     DuplicateFreeSource,
@@ -672,82 +672,14 @@ def _free_caps(settings: Settings) -> FreeTierCaps:
     )
 
 
-def _client_subject(request: Request) -> str:
-    resolver = cast(
-        TrustedProxyIdentityResolver,
-        request.app.state.client_identity_resolver,
-    )
-    identity = resolver.resolve_request(request)
-    return identity.pseudonym
-
-
-def _account_subject(request: Request, value: str) -> str:
-    hasher = cast(IdentityHasher, request.app.state.identity_hasher)
-    return hasher.pseudonymize(
-        purpose="account",
-        value=value.strip().casefold(),
-    )
-
-
-def _tenant_subject(request: Request, tenant_id: uuid.UUID) -> str:
-    hasher = cast(IdentityHasher, request.app.state.identity_hasher)
-    return hasher.pseudonymize(
-        purpose="tenant",
-        value=str(tenant_id),
-    )
-
-
-async def _consume_rate_control(
-    request: Request,
-    *,
-    control: str,
-    subjects: list[tuple[str, RateLimitPolicy]],
-    captcha_action: str | None = None,
-) -> None:
-    captcha_required = False
-    try:
-        for subject, policy in subjects:
-            decision: RateLimitDecision = await request.app.state.rate_limiter.consume(
-                control=control,
-                subject=subject,
-                policy=policy,
-            )
-            if not decision.allowed:
-                record_abuse_control_decision(control=control, result="limited")
-                raise rate_limit_http_exception(decision)
-            captcha_required = captcha_required or decision.captcha_required
-    except RateLimitBackendUnavailable as exc:
-        record_abuse_control_decision(control=control, result="unavailable")
-        raise HTTPException(
-            status_code=503,
-            detail={"code": "ABUSE_CONTROL_UNAVAILABLE"},
-        ) from exc
-    if captcha_action is not None:
-        try:
-            await enforce_captcha(
-                required=captcha_required,
-                token=request.headers.get("X-Captcha-Token"),
-                provider=request.app.state.captcha_provider,
-                client_identity=_client_subject(request),
-                action=captcha_action,
-            )
-        except CaptchaRequiredError as exc:
-            record_abuse_control_decision(control="captcha", result="required")
-            raise HTTPException(
-                status_code=403,
-                detail={"code": "CAPTCHA_REQUIRED"},
-            ) from exc
-        except CaptchaRejectedError as exc:
-            unavailable = isinstance(exc.__cause__, CaptchaProviderUnavailable)
-            record_abuse_control_decision(
-                control="captcha",
-                result="unavailable" if unavailable else "rejected",
-            )
-            raise HTTPException(
-                status_code=503 if unavailable else 403,
-                detail={"code": ("CAPTCHA_UNAVAILABLE" if unavailable else "CAPTCHA_REJECTED")},
-            ) from exc
-    record_abuse_control_decision(control=control, result="allowed")
+# Implemented in akc_api.abuse_controls so routers outside this module can
+# enforce the same limits without importing main (which would be circular).
+# Aliased under the original private names so every call site below is
+# unchanged and there is exactly one implementation.
+_client_subject = client_subject
+_account_subject = account_subject
+_tenant_subject = tenant_subject
+_consume_rate_control = consume_rate_control
 
 
 async def _verified_user(
