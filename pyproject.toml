@@ -18,7 +18,7 @@ dependencies = [
   "beautifulsoup4>=4.13,<5",
   "bleach>=6.2,<7",
   "boto3>=1.39,<2",
-  "cryptography>=46,<50",
+  "cryptography>=50.0.0,<51",
   "defusedxml>=0.7,<1",
   "fastapi==0.140.13",
   "filetype>=1.2,<2",
