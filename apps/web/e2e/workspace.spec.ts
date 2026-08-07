@@ -113,7 +113,7 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
   ).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
   await expect(
-    page.getByText("FOLYNTA is a working name pending brand clearance."),
+    page.getByText("TAVONEL is a working name pending brand clearance."),
   ).toBeVisible();
   await expect(
     page.getByText("First-party illustrative model · no generated imagery"),
@@ -124,7 +124,7 @@ test("product marketing uses real product evidence and deterministic diagrams", 
   page,
 }) => {
   await page.goto("/product");
-  const evidence = page.locator(".fl-page-product-evidence");
+  const evidence = page.locator(".tv-page-product-evidence");
   await expect(evidence).toBeVisible();
   await expect(evidence.getByText("Actual product")).toBeVisible();
   await expect(evidence.locator("img")).toHaveJSProperty("complete", true);
@@ -137,7 +137,7 @@ test("product marketing uses real product evidence and deterministic diagrams", 
     page.getByRole("heading", { name: "Source-to-Knowledge Compiler" }),
   ).toBeVisible();
   await expect(
-    page.locator(".fl-diagram-equivalent").getByRole("listitem"),
+    page.locator(".tv-diagram-equivalent").getByRole("listitem"),
   ).toHaveCount(4);
   expect(
     await page.evaluate(
@@ -248,10 +248,10 @@ test("DART proof marks the exact revenue cell without a detached overlay", async
   page,
 }) => {
   await page.goto("/demo/dart");
-  await expect(page.locator(".fl-source-cell-selected")).toHaveText(
+  await expect(page.locator(".tv-source-cell-selected")).toHaveText(
     "4,902,490,901",
   );
-  await expect(page.locator(".fl-source-box")).toHaveCount(0);
+  await expect(page.locator(".tv-source-box")).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Verify receipt 20260730000413" }),
   ).toBeVisible();
@@ -378,10 +378,10 @@ test("reduced motion removes travel and nonessential animation", async ({
   await page.goto("/");
   // decision.md G-C dropped TIER 1 3D outright, so the layer must not exist at
   // all rather than merely be hidden under reduced motion.
-  await expect(page.locator(".fl-webgl-layer")).toHaveCount(0);
+  await expect(page.locator(".tv-webgl-layer")).toHaveCount(0);
   await expect(page.locator("canvas")).toHaveCount(0);
   const moving = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLElement>(".fl-site *"))
+    Array.from(document.querySelectorAll<HTMLElement>(".tv-site *"))
       .map((element) => {
         const style = getComputedStyle(element);
         return {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TAVONEL Brand Experience"
+  short_description: "Enforces the TAVONEL brand and product experience"
+  default_prompt: "Use $tavonel-brand-experience to design and verify this TAVONEL route."

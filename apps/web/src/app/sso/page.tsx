@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 
 export default function SsoPage() {
   return (
-    <main id="main-content" className="fl-auth-simple">
+    <main id="main-content" className="tv-auth-simple">
       <Link href="/">
         <BrandMark />
       </Link>
@@ -27,7 +27,7 @@ export default function SsoPage() {
         </label>
         <button
           type="button"
-          className="fl-app-primary"
+          className="tv-app-primary"
           disabled
           title="SSO requires a configured production identity provider."
           data-auth-external-gate

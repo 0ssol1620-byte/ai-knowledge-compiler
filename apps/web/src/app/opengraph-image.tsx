@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "FOLYNTA — structured, verified, connected knowledge for people and AI";
+  "TAVONEL — structured, verified, connected knowledge for people and AI";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -29,7 +29,7 @@ export default function OpenGraphImage() {
             display: "flex",
           }}
         />
-        <div style={{ fontSize: 28, fontWeight: 700 }}>FOLYNTA</div>
+        <div style={{ fontSize: 28, fontWeight: 700 }}>TAVONEL</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
         <div

@@ -1,8 +1,8 @@
-# FOLYNTA Agent Instructions
+# TAVONEL Agent Instructions
 
 ## Mission
 
-Build FOLYNTA as an ultra-premium Knowledge Compiler brand and a precise,
+Build TAVONEL as an ultra-premium Knowledge Compiler brand and a precise,
 source-verifiable enterprise product. Optimize for clarity, trust, craft,
 accessibility, and measured performance rather than feature count.
 
@@ -10,20 +10,20 @@ accessibility, and measured performance rather than feature count.
 
 Before UI, UX, copy, motion, or 3D work, read:
 
-- `.agents/skills/folynta-brand-experience/SKILL.md`
-- `.agents/skills/folynta-asset-director/SKILL.md` for every image, 3D,
+- `.agents/skills/tavonel-brand-experience/SKILL.md`
+- `.agents/skills/tavonel-asset-director/SKILL.md` for every image, 3D,
   screenshot, diagram, texture, video, glyph, or sourced asset task
-- `FOLYNTA_BRAND_DECISIONS.md`
+- `TAVONEL_BRAND_DECISIONS.md`
 - the active route in `PAGE_MANIFEST.yml`
-- the relevant section of `design-system/folynta/DESIGN_MASTER_V3.md`
+- the relevant section of `design-system/tavonel/DESIGN_MASTER_V3.md`
 
 ## Design authority
 
 1. Truth, safety, privacy, and legal requirements
-2. `design-system/folynta/DESIGN_MASTER_V3.md`
-3. `design-system/folynta/decision.md` — gate decisions and approved static
+2. `design-system/tavonel/DESIGN_MASTER_V3.md`
+3. `design-system/tavonel/decision.md` — gate decisions and approved static
    comps. Where it contradicts the masterplan, it wins.
-4. The FOLYNTA Brand Skill
+4. The TAVONEL Brand Skill
 5. Approved route brief
 6. External skills
 7. Library defaults
@@ -68,7 +68,7 @@ Before UI, UX, copy, motion, or 3D work, read:
 
 This file used to ask for four widths while the masterplan asked for seven and
 `playwright.config.ts` ran two. W0 settled it on seven — see
-`design-system/folynta/DESIGN_MASTER_V3.md` §20 — and the config now has one
+`design-system/tavonel/DESIGN_MASTER_V3.md` §20 — and the config now has one
 project per width running `e2e/evidence.spec.ts`.
 
 ## Required evidence

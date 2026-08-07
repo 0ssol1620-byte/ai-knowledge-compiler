@@ -12,7 +12,7 @@ const mobileOutputRoot = resolve(
   repositoryRoot,
   "assets/product/screenshots/en/390x844",
 );
-const baseUrl = process.env.FOLYNTA_CAPTURE_URL ?? "http://127.0.0.1:3000";
+const baseUrl = process.env.TAVONEL_CAPTURE_URL ?? "http://127.0.0.1:3000";
 const captures = [
   ["home", "/app/home"],
   ["projects", "/app/projects"],
@@ -55,7 +55,7 @@ for (const [name, route] of captures) {
       "html{scroll-behavior:auto!important}*{caret-color:transparent!important} .nextjs-toast{display:none!important}",
   });
   await page.waitForTimeout(350);
-  const fileName = `FLY-PRODUCT-T0-${name.toUpperCase()}-EN-1440x900-v01.webp`;
+  const fileName = `TAV-PRODUCT-T0-${name.toUpperCase()}-EN-1440x900-v01.webp`;
   const filePath = resolve(outputRoot, fileName);
   await page.screenshot({
     path: filePath,
@@ -106,7 +106,7 @@ for (const [name, route] of mobileCaptures) {
       "html{scroll-behavior:auto!important}*{caret-color:transparent!important} .nextjs-toast{display:none!important}",
   });
   await mobilePage.waitForTimeout(300);
-  const fileName = `FLY-PRODUCT-T0-${name.toUpperCase()}-EN-390x844-v01.webp`;
+  const fileName = `TAV-PRODUCT-T0-${name.toUpperCase()}-EN-390x844-v01.webp`;
   await mobilePage.screenshot({
     path: resolve(mobileOutputRoot, fileName),
     type: "webp",

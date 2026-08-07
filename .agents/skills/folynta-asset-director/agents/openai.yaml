@@ -1,4 +1,0 @@
-interface:
-  display_name: "FOLYNTA Asset Director"
-  short_description: "Truthful premium asset production and governance"
-  default_prompt: "Classify the asset, choose the highest-authority source, produce it in the FOLYNTA visual language, register provenance, and validate it in context."

@@ -1,4 +1,4 @@
-"""Create web derivatives and a cryptographic manifest for FOLYNTA assets."""
+"""Create web derivatives and a cryptographic manifest for TAVONEL assets."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ SOURCE = ROOT / "assets" / "3d" / "derivatives"
 PUBLIC = ROOT / "apps" / "web" / "public" / "hero"
 REGISTRY = ROOT / "assets" / "registry" / "generated-assets.json"
 NAME_PATTERN = re.compile(
-    r"^FLY-[A-Z0-9-]+-T[0-4]-[A-Z0-9-]+-(?:EN|KO|MULTI)-[A-Z0-9-]+-\d+x\d+-v\d{2}\.(?:avif|mp4|webm|webp)$"
+    r"^TAV-[A-Z0-9-]+-T[0-4]-[A-Z0-9-]+-(?:EN|KO|MULTI)-[A-Z0-9-]+-\d+x\d+-v\d{2}\.(?:avif|mp4|webm|webp)$"
 )
 EXPLICIT_SOURCE_NAMES = {
     "hero-master.blend",
@@ -38,17 +38,17 @@ EXPLICIT_SOURCE_NAMES = {
     "hero-loop-12s.mp4",
 }
 DERIVATIVE_NAMES = {
-    "hero-poster-2880x1800": "FLY-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01",
-    "hero-tablet-1600x1200": "FLY-HOME-T2-HERO-EN-TABLET-1600x1200-v01",
-    "hero-mobile-1080x1440": "FLY-HOME-T2-HERO-EN-MOBILE-1080x1440-v01",
-    "hero-reduced-motion": "FLY-HOME-T2-HERO-EN-REDUCED-1200x750-v01",
-    "hero-og-1200x630": "FLY-HOME-T2-HERO-EN-OG-1200x630-v01",
-    "hero-composition-a": "FLY-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01",
-    "hero-composition-b": "FLY-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01",
-    "hero-composition-c": "FLY-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01",
-    "hero-object-source-pages-transparent": "FLY-HOME-T2-OBJECT-EN-SOURCE-1600x1000-v01",
-    "hero-object-evidence-blocks-transparent": "FLY-HOME-T2-OBJECT-EN-EVIDENCE-1600x1000-v01",
-    "hero-object-knowledge-graph-transparent": "FLY-HOME-T2-OBJECT-EN-GRAPH-1600x1000-v01",
+    "hero-poster-2880x1800": "TAV-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01",
+    "hero-tablet-1600x1200": "TAV-HOME-T2-HERO-EN-TABLET-1600x1200-v01",
+    "hero-mobile-1080x1440": "TAV-HOME-T2-HERO-EN-MOBILE-1080x1440-v01",
+    "hero-reduced-motion": "TAV-HOME-T2-HERO-EN-REDUCED-1200x750-v01",
+    "hero-og-1200x630": "TAV-HOME-T2-HERO-EN-OG-1200x630-v01",
+    "hero-composition-a": "TAV-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01",
+    "hero-composition-b": "TAV-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01",
+    "hero-composition-c": "TAV-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01",
+    "hero-object-source-pages-transparent": "TAV-HOME-T2-OBJECT-EN-SOURCE-1600x1000-v01",
+    "hero-object-evidence-blocks-transparent": "TAV-HOME-T2-OBJECT-EN-EVIDENCE-1600x1000-v01",
+    "hero-object-knowledge-graph-transparent": "TAV-HOME-T2-OBJECT-EN-GRAPH-1600x1000-v01",
 }
 
 
@@ -125,7 +125,7 @@ def main() -> None:
     mp4_source = SOURCE / "hero-loop-12s.mp4"
     if not mp4_source.exists():
         raise SystemExit("Missing hero-loop-12s.mp4")
-    mp4_target = PUBLIC / "FLY-HOME-T2-HERO-MULTI-LOOP-960x600-v01.mp4"
+    mp4_target = PUBLIC / "TAV-HOME-T2-HERO-MULTI-LOOP-960x600-v01.mp4"
     shutil.copy2(mp4_source, mp4_target)
 
     if args.ffmpeg:
@@ -135,7 +135,7 @@ def main() -> None:
         webm(
             ffmpeg_path,
             mp4_source,
-            PUBLIC / "FLY-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm",
+            PUBLIC / "TAV-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm",
         )
 
     source_assets = [
@@ -145,7 +145,7 @@ def main() -> None:
         *pngs,
         mp4_source,
     ]
-    public_assets = sorted(PUBLIC.glob("FLY-HOME-*"))
+    public_assets = sorted(PUBLIC.glob("TAV-HOME-*"))
     validate_names([*source_assets, *public_assets])
     missing = [str(path.relative_to(ROOT)) for path in source_assets if not path.exists()]
     if missing:

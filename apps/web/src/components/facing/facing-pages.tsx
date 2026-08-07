@@ -82,7 +82,7 @@ export function FacingPages({
 
   return (
     <figure
-      className={["fl-facing", className].filter(Boolean).join(" ")}
+      className={["tv-facing", className].filter(Boolean).join(" ")}
       style={
         {
           // The unit belongs in the value: `var(--facing-verso)fr` is not
@@ -94,17 +94,17 @@ export function FacingPages({
       }
       data-ratio={ratio}
     >
-      {meta && <div className="fl-facing-meta">{meta}</div>}
+      {meta && <div className="tv-facing-meta">{meta}</div>}
 
-      <div className="fl-facing-frame">
-        <div className="fl-facing-verso">{verso}</div>
-        <div className="fl-facing-spine" aria-hidden="true" />
-        <div className="fl-facing-recto">{recto}</div>
+      <div className="tv-facing-frame">
+        <div className="tv-facing-verso">{verso}</div>
+        <div className="tv-facing-spine" aria-hidden="true" />
+        <div className="tv-facing-recto">{recto}</div>
 
         {threads.length > 0 && (
           <>
             <svg
-              className="fl-facing-threads"
+              className="tv-facing-threads"
               viewBox="0 0 1000 1000"
               preserveAspectRatio="none"
               aria-hidden="true"
@@ -124,7 +124,7 @@ export function FacingPages({
             {threads.map((thread) => (
               <span key={`${thread.id}-ends`} aria-hidden="true">
                 <span
-                  className="fl-facing-thread-dot"
+                  className="tv-facing-thread-dot"
                   data-state={thread.state}
                   style={{
                     left: `${thread.from.x * 100}%`,
@@ -132,7 +132,7 @@ export function FacingPages({
                   }}
                 />
                 <span
-                  className="fl-facing-thread-dot"
+                  className="tv-facing-thread-dot"
                   data-state={thread.state}
                   style={{
                     left: `${thread.to.x * 100}%`,
@@ -158,7 +158,7 @@ export function FacingPages({
         </ul>
       )}
 
-      {caption && <figcaption className="fl-facing-caption">{caption}</figcaption>}
+      {caption && <figcaption className="tv-facing-caption">{caption}</figcaption>}
     </figure>
   );
 }

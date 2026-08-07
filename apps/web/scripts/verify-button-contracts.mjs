@@ -265,7 +265,7 @@ function collectRoutes() {
   //    from this map, so the map — not the catch-all — is what makes a
   //    marketing path real. Entries are built by page("/product", …) calls, so
   //    the first string argument is the path.
-  const contentFile = path.join(sourceRoot, "lib", "folynta-content.ts");
+  const contentFile = path.join(sourceRoot, "lib", "tavonel-content.ts");
   if (fs.existsSync(contentFile)) {
     const text = fs.readFileSync(contentFile, "utf8");
     const source = ts.createSourceFile(
@@ -440,13 +440,13 @@ function report() {
 
   if (blocking.length === 0) {
     console.log(
-      `FOLYNTA affordance contracts verified — ${files.length} files, ${routes.size} known routes, 0 blocking findings.`,
+      `TAVONEL affordance contracts verified — ${files.length} files, ${routes.size} known routes, 0 blocking findings.`,
     );
     return;
   }
 
   console.error(
-    `\nFOLYNTA affordance contracts failed — ${blocking.length} blocking finding(s). §14.3: every interactive-looking element must work, be disabled with a reason, be a plain label, or be removed.`,
+    `\nTAVONEL affordance contracts failed — ${blocking.length} blocking finding(s). §14.3: every interactive-looking element must work, be disabled with a reason, be a plain label, or be removed.`,
   );
   const byRule = new Map();
   for (const finding of blocking) {

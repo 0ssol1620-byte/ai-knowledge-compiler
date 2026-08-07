@@ -13,7 +13,7 @@ import "@/styles/foundations.css";
 import "./globals.css";
 import "./product-shell.css";
 import "./enterprise-refresh.css";
-import "./folynta.css";
+import "./tavonel.css";
 import "@/styles/components.css";
 import "@/styles/facing.css";
 import "@/styles/hero-comp.css";
@@ -26,13 +26,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000",
   ),
+  // decision.md G-A — the name carries identity, the narrative carries the
+  // meaning: "A traceable path from every source to knowledge."
   title: {
-    default: "FOLYNTA — The Knowledge Compiler for AI",
-    template: "%s · FOLYNTA",
+    default: "TAVONEL — The Knowledge Compiler",
+    template: "%s · TAVONEL",
   },
   description:
-    "Turn documents into structured, verified, connected, and portable knowledge for people and AI.",
-  applicationName: "FOLYNTA",
+    "A traceable path from every source to knowledge. TAVONEL turns documents into structured, verified knowledge that people and AI can reuse.",
+  applicationName: "TAVONEL",
   keywords: [
     "knowledge compiler",
     "document intelligence",
@@ -40,22 +42,21 @@ export const metadata: Metadata = {
     "verified knowledge",
     "RAG preparation",
   ],
-  authors: [{ name: "FOLYNTA" }],
-  creator: "FOLYNTA",
-  publisher: "FOLYNTA",
+  authors: [{ name: "TAVONEL" }],
+  creator: "TAVONEL",
+  publisher: "TAVONEL",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    siteName: "FOLYNTA",
-    title: "FOLYNTA — The Knowledge Compiler for AI",
+    siteName: "TAVONEL",
+    title: "TAVONEL — The Knowledge Compiler",
     description:
-      "Structured, verified, connected, portable knowledge with every important result linked to its source.",
+      "A traceable path from every source to knowledge. Every important result stays linked to the page it came from.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "FOLYNTA — The Knowledge Compiler for AI",
-    description:
-      "Turn documents into source-linked knowledge for people and AI.",
+    title: "TAVONEL — The Knowledge Compiler",
+    description: "A traceable path from every source to knowledge.",
   },
 };
 

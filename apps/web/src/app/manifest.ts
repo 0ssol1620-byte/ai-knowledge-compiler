@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FOLYNTA — The Knowledge Compiler for AI",
-    short_name: "FOLYNTA",
+    name: "TAVONEL — The Knowledge Compiler for AI",
+    short_name: "TAVONEL",
     description:
       "Compile documents into structured, verified, connected, portable knowledge.",
     start_url: "/",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FolyntaOnboarding } from "@/components/folynta-onboarding";
+import { TavonelOnboarding } from "@/components/tavonel-onboarding";
 
 export const metadata: Metadata = {
   title: "First knowledge project",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function OnboardingPage() {
-  return <FolyntaOnboarding />;
+  return <TavonelOnboarding />;
 }

@@ -1,8 +1,8 @@
 # 프론트엔드 규칙
 
 이 저장소의 에이전트 계약은 AGENTS.md 다. 먼저 읽는다.
-시각 설계의 단일 진실은 design-system/folynta/DESIGN_MASTER_V3.md 다.
-설계도와 design-system/folynta/decision.md 가 충돌하면 decision.md 가 이긴다.
+시각 설계의 단일 진실은 design-system/tavonel/DESIGN_MASTER_V3.md 다.
+설계도와 design-system/tavonel/decision.md 가 충돌하면 decision.md 가 이긴다.
 이 파일과 충돌하는 제안은 거절한다.
 
 ## 절대 규칙
@@ -33,7 +33,7 @@ WebGL 이 필요해 보이면 멈추고 물어본다.
 
 외부 UI 컴포넌트는 shadcn/ui 하나다. 가상화는 react-virtuoso.
 아이콘은 @phosphor-icons/react. 애니메이션 라이브러리를 추가하지 않는다.
-추가 설치가 필요하면 먼저 이유를 design-system/folynta/decision.md 에 적고 승인을 받는다.
+추가 설치가 필요하면 먼저 이유를 design-system/tavonel/decision.md 에 적고 승인을 받는다.
 
 ## 게이트
 

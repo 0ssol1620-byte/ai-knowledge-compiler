@@ -1,6 +1,6 @@
-"""Build the FOLYNTA web font payloads from Wanted Sans Variable.
+"""Build the TAVONEL web font payloads from Wanted Sans Variable.
 
-DESIGN_MASTER_V3 §7 with the amendments in design-system/folynta/decision.md:
+DESIGN_MASTER_V3 §7 with the amendments in design-system/tavonel/decision.md:
 
   A-01  budgets are /en <= 60 KB, /ko marketing first view <= 180 KB,
         /ko product UI first view <= 250 KB. The masterplan's single <= 90 KB

@@ -1,10 +1,12 @@
-# FOLYNTA
+# TAVONEL — The Knowledge Compiler
 
-> Knowledge Compiler. FOLYNTA turns documents into structured, verified,
-> connected knowledge that people and AI systems can use, with every important
-> result linked back to the span of the source document it came from.
+> A traceable path from every source to knowledge.
+>
+> TAVONEL turns documents into structured, verified, connected knowledge that
+> people and AI systems can use, with every important result linked back to the
+> span of the source document it came from.
 
-FOLYNTA is a working name pending trademark clearance.
+TAVONEL is a working name pending trademark clearance.
 
 ## What the category means here
 
