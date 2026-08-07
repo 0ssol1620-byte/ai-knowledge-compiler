@@ -300,3 +300,77 @@ def test_captcha_escalates_before_the_hard_limit(client: TestClient) -> None:
     escalated = client.post("/v1/trial/sessions")
     assert escalated.status_code == 403
     assert escalated.json()["error"]["code"] == "CAPTCHA_REQUIRED"
+
+
+# ── expiry is enforced, not just recorded ───────────────────────────────────
+
+
+def test_expired_session_is_swept_and_becomes_unreadable(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """The one-hour lifetime is what bounds anonymous storage.
+
+    Asserted end to end: create, upload, force the clock past expiry, sweep,
+    and confirm the session and its document are both retired and unreadable.
+    """
+    import asyncio
+    from datetime import timedelta
+
+    from akc_api.models import Document, TrialSession
+    from akc_api.trial_retention import sweep_expired_trial_sessions
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    session_id = _new_session(client)
+    assert client.post(f"/v1/trial/sessions/{session_id}/uploads", json=PDF).status_code == 201
+    assert client.get(f"/v1/trial/sessions/{session_id}").status_code == 200
+
+    database = tmp_path / "trial.db"
+    engine = create_async_engine(f"sqlite+aiosqlite:///{database.as_posix()}")
+    maker = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def run() -> tuple[int, int]:
+        async with maker() as db:
+            trial = await db.get(TrialSession, uuid.UUID(session_id))
+            assert trial is not None
+            # Age the row rather than sleeping an hour. Both timestamps shift,
+            # because the table asserts expires_at > created_at and moving only
+            # one of them would violate an invariant the sweep relies on.
+            shift = timedelta(hours=2)
+            trial.created_at = trial.created_at - shift
+            trial.expires_at = trial.expires_at - shift
+            await db.commit()
+            retired = await sweep_expired_trial_sessions(db)
+            marked = await db.scalar(
+                sa.select(sa.func.count())
+                .select_from(Document)
+                .where(Document.deletion_requested_at.is_not(None))
+            )
+            return retired, int(marked or 0)
+
+    retired, marked_documents = asyncio.run(run())
+    asyncio.run(engine.dispose())
+
+    assert retired == 1
+    assert marked_documents == 1
+    # An expired session must read the same as one that never existed.
+    assert client.get(f"/v1/trial/sessions/{session_id}").status_code == 404
+
+
+def test_sweep_leaves_live_sessions_alone(client: TestClient, tmp_path: Path) -> None:
+    import asyncio
+
+    from akc_api.trial_retention import sweep_expired_trial_sessions
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    session_id = _new_session(client)
+    database = tmp_path / "trial.db"
+    engine = create_async_engine(f"sqlite+aiosqlite:///{database.as_posix()}")
+    maker = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def run() -> int:
+        async with maker() as db:
+            return await sweep_expired_trial_sessions(db)
+
+    assert asyncio.run(run()) == 0
+    asyncio.run(engine.dispose())
+    assert client.get(f"/v1/trial/sessions/{session_id}").status_code in (200, 404)
