@@ -20,7 +20,18 @@
     "became a declaration in the first place - the assertions below are a",
     "RATCHET pinned just above today's measurement. Nothing may get worse, and",
     "each wave that rebuilds a scene should lower these numbers toward §22.",
-    "Never raise a value here to make a build pass."
+    "Never raise a value here to make a build pass.",
+    "",
+    "ONE AUDIT IS DELIBERATELY ABSENT: errors-in-console. Lighthouse counts a",
+    "failed network request as a console error, and the Next.js App Router",
+    "prefetches every <Link> in view then aborts those requests on teardown -",
+    "24 ERR_ABORTED on ?_rsc= URLs per run. Measured against a production build",
+    "on 2026-08-07: 0 console errors, 0 page errors, 0 responses >= 400, and 0",
+    "failed requests that were not an RSC prefetch. The audit cannot tell the",
+    "framework's behaviour from an application defect, so the precise check",
+    "lives in e2e/evidence.spec.ts instead, which filters to real console",
+    "errors and pageerrors and asserts zero. Do not re-add this audit here",
+    "without also removing the reason it fires."
   ],
   "ci": {
     "collect": {
@@ -61,7 +72,6 @@
         "resource-summary:font:size": ["error", { "maxNumericValue": 61440 }],
         "resource-summary:image:size": ["error", { "maxNumericValue": 307200 }],
 
-        "errors-in-console": "error",
         "image-alt": "error",
         "structured-data": "off",
         "uses-responsive-images": "warn",
