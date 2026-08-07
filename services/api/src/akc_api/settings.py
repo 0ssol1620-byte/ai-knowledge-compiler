@@ -157,9 +157,16 @@ class Settings(BaseSettings):
     trial_ingest_max_bytes: int = Field(default=8 * 1024 * 1024, ge=64 * 1024)
     trial_ingest_max_pages: int = Field(default=10, ge=1, le=50)
     trial_ingest_ttl_seconds: int = Field(default=3600, ge=60, le=86_400)
-    # Live sessions one pseudonymised client may hold at once.
-    trial_ingest_sessions_per_client: int = Field(default=3, ge=1, le=20)
     trial_ingest_window_seconds: int = Field(default=3600, ge=60, le=86_400)
+
+    # Two budgets, not one. Creating a session and presigning an object are
+    # different operations with different costs, and sharing a counter meant a
+    # visitor who mis-picked a file twice was locked out of uploading at all.
+    trial_ingest_sessions_per_client: int = Field(default=3, ge=1, le=20)
+    trial_ingest_uploads_per_client: int = Field(default=10, ge=1, le=100)
+    # CAPTCHA escalates before the hard limit, so a human near the boundary is
+    # challenged rather than refused.
+    trial_ingest_captcha_after: int = Field(default=2, ge=1, le=20)
 
     url_ingestion_enabled: bool = False
     url_encryption_key: str | None = None
@@ -706,6 +713,13 @@ class Settings(BaseSettings):
         if self.trial_ingest_max_bytes > self.analysis_max_source_bytes:
             raise ValueError(
                 "trial_ingest_max_bytes cannot exceed analysis_max_source_bytes"
+            )
+        # RateLimitPolicy rejects a captcha threshold above the hard limit, and
+        # it would be a startup crash rather than a config error if it reached
+        # that constructor. Catch it here where the message is actionable.
+        if self.trial_ingest_captcha_after > self.trial_ingest_sessions_per_client:
+            raise ValueError(
+                "trial_ingest_captcha_after cannot exceed trial_ingest_sessions_per_client"
             )
         # Enabling anonymous ingest without a limiter would leave the endpoint
         # with no bound at all. _consume_rate_control fails closed when the

@@ -286,6 +286,7 @@ from akc_api.storage import (
 )
 from akc_api.team_api import TeamInvitationTokenCodec
 from akc_api.team_api import router as team_router
+from akc_api.trial_api import router as trial_api_router
 from akc_api.vault_merge import (
     DEFAULT_VAULT_ZIP_LIMITS,
 )
@@ -8976,6 +8977,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(project_access_router)
     app.include_router(product_analytics_event_router)
     app.include_router(domain_api_router)
+    # ADR-006. The only unauthenticated write surface; every handler in it
+    # returns 404 while trial_ingest_enabled is false.
+    app.include_router(trial_api_router)
     return app
 
 
