@@ -173,3 +173,49 @@ feature flag        trial_ingest_enabled = false
   the documented error codes.
 - A retention test that objects are unreachable after the TTL.
 - `scripts/check.ps1`.
+
+## Implementation status
+
+Landed and verified:
+
+```
+migration 0023            system trial tenant, service user, trial_sessions, RLS, TTL index
+settings                  flag off by default, caps, two guarding validators
+schemas + OpenAPI v1      three paths, four schemas, published additively
+abuse_controls.py         helpers extracted from main.py so this router can reuse them
+trial_api.py              the three endpoints, exercised end to end
+trial_retention.py        expiry sweep, wired into the scheduler pass
+tests/security            17 boundary tests
+apps/web                  hero wired to both modes, privacy copy corrected
+```
+
+**Not yet connected: the quarantine pipeline.** A completed trial upload does
+not currently advance past `UPLOADED`, so no scan runs and no preflight is
+produced. The UI reports this honestly — it shows "Queued for security
+scanning…" and never a page count it does not have — but the capability is not
+end to end, which is why `trial_ingest_enabled` staying `false` is load-bearing
+rather than merely cautious.
+
+What that step needs is deliberate work, not a small patch. The authenticated
+`POST /v1/uploads/{id}/complete` handler carries the whole pipeline in **675
+lines with 22 external dependencies** — object store, malware scanner, CDR,
+metadata recovery, audit, and the `SECURITY_SCANNING → SECURITY_VERIFIED →
+SECURITY_REJECTED` transitions. Trial ingest must run that exact path; this ADR
+says so and says why.
+
+Two ways to get there, and the choice belongs with a reviewer rather than with
+whoever picks the task up:
+
+```
+extract    lift the pipeline into a shared function both routes call.
+           Right architecture, one implementation, and the largest
+           security-critical refactor in the repository.
+delegate   have the trial completion route call the existing handler with a
+           synthesized principal. Smaller diff, but it manufactures a principal
+           on an anonymous path, which is the property this ADR was careful to
+           avoid needing.
+```
+
+The first is almost certainly correct. It was deliberately not attempted at the
+end of the session that wrote everything above: a hurried extraction of malware
+scanning and quarantine promotion is how a check quietly stops running.
