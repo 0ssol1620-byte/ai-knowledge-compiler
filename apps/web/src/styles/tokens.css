@@ -52,15 +52,20 @@
 
     /*
      * ── SEMANTIC ─────────────────────────────────────
-     * Hue angles are provisional. §6.2 narrows brand to 250–260° and evidence
-     * to 200–210° to avoid both the slop-detector hues and the Linear/Stripe
-     * indigo. The exact values are decided in the three static comps —
-     * open item "액센트 색상각 확정" in decision.md.
+     * Brand hue is 255°, decided at the W1 comp review (decision.md G-F).
+     * §6.2 narrows the field to 250–260°: far enough from the Linear
+     * (#5e6ad2) and Stripe (#635BFF) indigo that two of three benchmarks no
+     * longer share our hue, and clear of the amber / terracotta / emerald the
+     * slop detector flags. Evidence stays at 210° so the two never read as
+     * the same colour.
+     *
+     * The whole brand ramp is one hue with a state ramp — §6.2 is explicit
+     * that the discipline is one *hue*, not one hex.
      */
-    --brand: oklch(48% 0.2 265);
-    --brand-d: oklch(72% 0.14 265);
-    --brand-hover: oklch(53% 0.2 265);
-    --brand-press: oklch(42% 0.19 265);
+    --brand: oklch(48% 0.2 255);
+    --brand-d: oklch(72% 0.14 255);
+    --brand-hover: oklch(53% 0.2 255);
+    --brand-press: oklch(42% 0.19 255);
     --evidence: oklch(60% 0.11 210);
     --evidence-d: oklch(78% 0.11 210);
     --verified: oklch(48% 0.1 165);
@@ -92,7 +97,7 @@
     --r-media: 12px;
 
     /* ── DEPTH — affordance only (§6.3) ─────────────── */
-    --depth-focus: 0 0 0 3px oklch(48% 0.2 265 / 30%);
+    --depth-focus: 0 0 0 3px oklch(48% 0.2 255 / 30%);
     --depth-hover: 0 1px 2px oklch(16% 0.012 250 / 5%);
     --depth-overlay:
       0 1px 0 oklch(0% 0 0 / 50%), 0 8px 24px -12px oklch(0% 0 0 / 60%);
