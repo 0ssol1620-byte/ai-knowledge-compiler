@@ -1,7 +1,7 @@
-# Structara masterplan traceability
+# FOLYNTA masterplan traceability
 
 Authority:
-`D:\Structara_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
+`D:\FOLYNTA_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
 
 This is the release ledger for every top-level numbered requirement. “Implemented”
 means the repository contains the required system or surface. “Owner gate” means
@@ -13,11 +13,11 @@ reports and may not be inferred from this table alone.
 
 |   § | Status      | Primary evidence                                                                                    |
 | --: | ----------- | --------------------------------------------------------------------------------------------------- |
-|   0 | Owner gate  | `STRUCTARA_BRAND_DECISIONS.md`; working-name legal/domain clearance remains owner-controlled        |
-|   1 | Implemented | brand positioning, promise, surface split in `STRUCTARA_BRAND_DECISIONS.md` and `structara.css`     |
+|   0 | Owner gate  | `FOLYNTA_BRAND_DECISIONS.md`; working-name legal/domain clearance remains owner-controlled        |
+|   1 | Implemented | brand positioning, promise, surface split in `FOLYNTA_BRAND_DECISIONS.md` and `folynta.css`     |
 |   2 | Implemented | `REFERENCE_LEDGER.md`; reference decisions translated, not copied                                   |
 |   3 | Implemented | brand platform in the repository brand skill and marketing copy                                     |
-|   4 | Implemented | English-default and Korean-ready copy system in `structara-content.ts`                              |
+|   4 | Implemented | English-default and Korean-ready copy system in `folynta-content.ts`                              |
 |   5 | Implemented | color, type, grid, glyph, and logo direction in tokens, CSS, and brand assets                       |
 |   6 | Implemented | Blender/R3F hero, product loops, motion tokens, reduced-motion fallback                             |
 |   7 | Implemented | public and authenticated IA in `PAGE_MANIFEST.yml`                                                  |
@@ -111,7 +111,7 @@ reports and may not be inferred from this table alone.
 |  90 | Implemented | repository brand/asset skills plus UI, craft, browser, and web-quality workflows |
 |  91 | Implemented | authority order in `AGENTS.md`                                                   |
 |  92 | Implemented | pinned local skills, package scripts, validation commands                        |
-|  93 | Implemented | `.agents/skills/structara-brand-experience`                                      |
+|  93 | Implemented | `.agents/skills/folynta-brand-experience`                                      |
 |  94 | Implemented | root `AGENTS.md`                                                                 |
 |  95 | Implemented | brand decisions, page manifest, reference ledger, option rules                   |
 |  96 | Implemented | audit → research → prototype → build → polish → QA → release workflow            |
@@ -147,7 +147,7 @@ reports and may not be inferred from this table alone.
 | 121 | Implemented | 12 architecture diagrams, benchmark/limitation surfaces, graph visual tiers                                                              |
 | 122 | Implemented | asset repository, exact naming validator, manifest, prompt index                                                                         |
 | 123 | Implemented | AVIF/WebP/MP4/WebM delivery, art direction, byte/dimension/hash registry                                                                 |
-| 124 | Implemented | `.agents/skills/structara-asset-director`                                                                                                |
+| 124 | Implemented | `.agents/skills/folynta-asset-director`                                                                                                |
 | 125 | Implemented | need audit through in-context approval workflow and completion report                                                                    |
 | 126 | Implemented | prompt pack remains governed; no generated output bypasses contact-sheet approval                                                        |
 | 127 | Verified    | automatic blocks and 90/100 asset rubric re-scored after browser QA                                                                      |
@@ -166,7 +166,7 @@ production-only evidence.
 | Production builds must fail on TypeScript errors              | Verified | `apps/web/next.config.ts`; final isolated Next.js production build completed its internal TypeScript phase                                                                             |
 | Upload copy and enforcement must use one contract             | Verified | `apps/web/src/lib/upload-policy.ts`; `upload-policy.test.ts`; `upload-panel.tsx`; desktop/mobile Playwright contract test                                                              |
 | External processing must reflect explicit consent             | Verified | `quick-convert/page.tsx`; `upload-panel.tsx`; desktop/mobile Playwright copy assertion                                                                                                 |
-| DART proof must select the exact evidence target              | Verified | `structara-proof-demo.tsx`; detached `.st-source-box` removed; exact revenue cell asserted in desktop/mobile Playwright                                                                |
+| DART proof must select the exact evidence target              | Verified | `folynta-proof-demo.tsx`; detached `.fl-source-box` removed; exact revenue cell asserted in desktop/mobile Playwright                                                                |
 | Visible primary controls must operate or be honest            | Verified | `app-action.ts`; 15 route-mapping tests; all `/app/*` header actions browser-validated; fixed fixture controls explicitly disabled; TypeScript-AST gate reports 0 enabled dead buttons |
 | Demo operations must not imply durable writes                 | Verified | demo branches in `admin/page.tsx` and `settings/page.tsx`; desktop/mobile non-writable-control assertions                                                                              |
 | Claims and benchmark values must fail closed                  | Verified | `CLAIM_REGISTER.yml`; unavailable public benchmark snapshot; DART fixture labeled no-quality-claim                                                                                     |
@@ -176,7 +176,7 @@ production-only evidence.
 
 ## Owner-controlled completion inputs
 
-- legal and domain clearance for the working name “Structara”
+- legal and domain clearance for the working name “FOLYNTA”
 - final licensed wordmark, if a licensed typeface or custom mark is chosen
 - access to the owner’s final Figma workspace for source synchronization
 - real participant/customer approval for research, logos, testimonials, or case studies

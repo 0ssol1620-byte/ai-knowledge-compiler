@@ -1,0 +1,4 @@
+interface:
+  display_name: "FOLYNTA Brand Experience"
+  short_description: "Enforces the FOLYNTA brand and product experience"
+  default_prompt: "Use $folynta-brand-experience to design and verify this FOLYNTA route."

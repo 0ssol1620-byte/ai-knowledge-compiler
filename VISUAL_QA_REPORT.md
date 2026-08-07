@@ -1,8 +1,8 @@
-# Structara visual QA report
+# FOLYNTA visual QA report
 
 ## Release baseline
 
-The 2026-07-31 remediation treats Structara as one connected, source-verifiable
+The 2026-07-31 remediation treats FOLYNTA as one connected, source-verifiable
 system: English-default marketing, authentication, onboarding, product,
 document, knowledge, enterprise, administration, pricing, public proof, and
 developer surfaces. The release baseline is a repository release candidate, not
@@ -126,7 +126,7 @@ replacement nonce design is not an acceptable performance optimization.
 
 ## Remaining owner or deployment gates
 
-- legal/domain clearance for `Structara`
+- legal/domain clearance for `FOLYNTA`
 - final licensed wordmark and owner design-source synchronization
 - approved commercial price book
 - consented customer or participant evidence

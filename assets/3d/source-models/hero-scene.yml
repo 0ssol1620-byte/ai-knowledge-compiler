@@ -1,6 +1,6 @@
-id: STR-HOME-T2-HERO-001
+id: FLY-HOME-T2-HERO-001
 title: Source to Knowledge
-source_master: apps/web/src/components/structara-webgl-scene.tsx
+source_master: apps/web/src/components/folynta-webgl-scene.tsx
 runtime: react-three-fiber
 truth_class: T2
 camera:

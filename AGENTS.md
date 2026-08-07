@@ -1,8 +1,8 @@
-# Structara Agent Instructions
+# FOLYNTA Agent Instructions
 
 ## Mission
 
-Build Structara as an ultra-premium Knowledge Compiler brand and a precise,
+Build FOLYNTA as an ultra-premium Knowledge Compiler brand and a precise,
 source-verifiable enterprise product. Optimize for clarity, trust, craft,
 accessibility, and measured performance rather than feature count.
 
@@ -10,18 +10,18 @@ accessibility, and measured performance rather than feature count.
 
 Before UI, UX, copy, motion, or 3D work, read:
 
-- `.agents/skills/structara-brand-experience/SKILL.md`
-- `.agents/skills/structara-asset-director/SKILL.md` for every image, 3D,
+- `.agents/skills/folynta-brand-experience/SKILL.md`
+- `.agents/skills/folynta-asset-director/SKILL.md` for every image, 3D,
   screenshot, diagram, texture, video, glyph, or sourced asset task
-- `STRUCTARA_BRAND_DECISIONS.md`
+- `FOLYNTA_BRAND_DECISIONS.md`
 - the active route in `PAGE_MANIFEST.yml`
 - the relevant masterplan section
 
 ## Design authority
 
 1. Truth, safety, privacy, and legal requirements
-2. The Structara masterplan
-3. The Structara Brand Skill
+2. The FOLYNTA masterplan
+3. The FOLYNTA Brand Skill
 4. Approved design decisions
 5. Approved route brief
 6. External skills

@@ -1,9 +1,9 @@
-# Structara signature hero
+# FOLYNTA signature hero
 
 Truth class: T2 first-party designed brand object.
 
 The complete hero family is generated from
-`tools/assets/build_structara_hero.py` with Blender 4.5 LTS. It contains no
+`tools/assets/build_folynta_hero.py` with Blender 4.5 LTS. It contains no
 external mesh, HDRI, texture, font, stock media, or generated image.
 
 ## Canonical object family
@@ -84,7 +84,7 @@ Reduced-motion surfaces use the resolved static poster with identical meaning.
 ## Reproduction
 
 ```powershell
-& D:\CodexTools\blender-4.5.9\blender.exe --background --python tools\assets\build_structara_hero.py
+& D:\CodexTools\blender-4.5.9\blender.exe --background --python tools\assets\build_folynta_hero.py
 .\.venv\Scripts\python.exe tools\assets\build_derivatives.py --ffmpeg D:\CodexTools\ffmpeg\ffmpeg-8.1.2-essentials_build\bin\ffmpeg.exe
 pnpm assets:validate
 ```

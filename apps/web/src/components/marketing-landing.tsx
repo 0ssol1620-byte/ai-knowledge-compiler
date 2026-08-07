@@ -9,11 +9,11 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-import { StructaraGlyph } from "@/components/structara-glyph";
-import { StructaraHeroScene } from "@/components/structara-hero";
-import { StructaraMarketingShell } from "@/components/structara-marketing-shell";
-import { StructaraPattern } from "@/components/structara-pattern";
-import { StructaraProofDemo } from "@/components/structara-proof-demo";
+import { FolyntaGlyph } from "@/components/folynta-glyph";
+import { FolyntaHeroScene } from "@/components/folynta-hero";
+import { FolyntaMarketingShell } from "@/components/folynta-marketing-shell";
+import { FolyntaPattern } from "@/components/folynta-pattern";
+import { FolyntaProofDemo } from "@/components/folynta-proof-demo";
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 
 const chapters = [
@@ -45,34 +45,34 @@ const chapters = [
 
 export function MarketingLanding() {
   return (
-    <StructaraMarketingShell>
-      <main id="main-content" className="st-home">
-        <section className="st-home-hero">
-          <div className="st-home-copy">
-            <p className="st-context-label">The Knowledge Compiler for AI</p>
+    <FolyntaMarketingShell>
+      <main id="main-content" className="fl-home">
+        <section className="fl-home-hero">
+          <div className="fl-home-copy">
+            <p className="fl-context-label">The Knowledge Compiler for AI</p>
             <h1>Your AI is only as good as the knowledge it receives.</h1>
-            <p className="st-home-intro">
+            <p className="fl-home-intro">
               Turn documents into structured, verified, connected knowledge with
               every important result linked back to its source.
             </p>
-            <div className="st-actions">
-              <Link href="/signup" className="st-button st-button-dark">
+            <div className="fl-actions">
+              <Link href="/signup" className="fl-button fl-button-dark">
                 Build your knowledge
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
-              <a href="#transformation" className="st-text-action">
+              <a href="#transformation" className="fl-text-action">
                 Watch the transformation
               </a>
             </div>
-            <p className="st-trust-line">
+            <p className="fl-trust-line">
               Source-linked · Portable · Private by policy
             </p>
-            <p className="st-compiler-sequence">
+            <p className="fl-compiler-sequence">
               Page → Structure → Evidence → Knowledge → Intelligence
             </p>
           </div>
-          <StructaraHeroScene />
-          <div className="st-output-rail" aria-label="Supported outputs">
+          <FolyntaHeroScene />
+          <div className="fl-output-rail" aria-label="Supported outputs">
             {[
               "Portable Markdown",
               "Obsidian Vault",
@@ -84,10 +84,10 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="st-problem">
-          <StructaraPattern
+        <section className="fl-problem">
+          <FolyntaPattern
             name="coordinate-field"
-            className="st-section-pattern st-problem-pattern"
+            className="fl-section-pattern fl-problem-pattern"
           />
           <div>
             <h2>
@@ -101,10 +101,10 @@ export function MarketingLanding() {
               knowledge.
             </p>
           </div>
-          <div className="st-before-after">
+          <div className="fl-before-after">
             <article>
               <span>Raw documents</span>
-              <div className="st-fragments">
+              <div className="fl-fragments">
                 <i />
                 <i />
                 <i />
@@ -112,7 +112,7 @@ export function MarketingLanding() {
               </div>
               <p>Fragments · repeated headers · broken table · no links</p>
             </article>
-            <div className="st-compile-path" aria-hidden="true">
+            <div className="fl-compile-path" aria-hidden="true">
               <FileText size={16} />
               <span />
               <SquaresFour size={16} />
@@ -123,7 +123,7 @@ export function MarketingLanding() {
             </div>
             <article>
               <span>Compiled knowledge</span>
-              <div className="st-compiled">
+              <div className="fl-compiled">
                 <strong>Heading tree</strong>
                 <i>Table object</i>
                 <i>Source link</i>
@@ -134,15 +134,15 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section id="transformation" className="st-transformation">
+        <section id="transformation" className="fl-transformation">
           <header>
             <p>The compiler path</p>
             <h2>From pages to intelligence, without losing the proof.</h2>
           </header>
-          <div className="st-chapters">
+          <div className="fl-chapters">
             {chapters.map((chapter) => (
               <article key={chapter.number}>
-                <div className="st-chapter-copy">
+                <div className="fl-chapter-copy">
                   <span>{chapter.number}</span>
                   <h3>{chapter.title}</h3>
                   <p>{chapter.body}</p>
@@ -154,8 +154,8 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="st-demo-section">
-          <div className="st-section-intro">
+        <section className="fl-demo-section">
+          <div className="fl-section-intro">
             <p>Public filing demo</p>
             <h2>Do not take our word for it. Inspect the result.</h2>
             <span>
@@ -163,14 +163,14 @@ export function MarketingLanding() {
               knowledge package, graph, and proof panel.
             </span>
           </div>
-          <StructaraProofDemo />
-          <div className="st-inline-actions">
+          <FolyntaProofDemo />
+          <div className="fl-inline-actions">
             <Link href="/demo/dart">Open full DART demo</Link>
             <Link href="/signup">Try it with your document</Link>
           </div>
         </section>
 
-        <section className="st-pillars">
+        <section className="fl-pillars">
           <header>
             <h2>
               Knowledge has structure, evidence, connection, and a way out.
@@ -206,8 +206,8 @@ export function MarketingLanding() {
           ))}
         </section>
 
-        <section className="st-public-proof">
-          <div className="st-section-intro">
+        <section className="fl-public-proof">
+          <div className="fl-section-intro">
             <p>Public proof systems</p>
             <h2>Built for documents that cannot afford to be misunderstood.</h2>
           </div>
@@ -231,7 +231,7 @@ export function MarketingLanding() {
           </article>
         </section>
 
-        <section className="st-benchmark">
+        <section className="fl-benchmark">
           <div>
             <p>Benchmark discipline</p>
             <h2>Accuracy should be demonstrated, not declared.</h2>
@@ -240,7 +240,7 @@ export function MarketingLanding() {
               with every result. Unmeasured values remain unavailable.
             </span>
           </div>
-          <div className="st-metric-table">
+          <div className="fl-metric-table">
             <div>
               <span>Metric</span>
               <span>Public status</span>
@@ -259,12 +259,12 @@ export function MarketingLanding() {
               </div>
             ))}
           </div>
-          <Link href="/benchmarks" className="st-text-action">
+          <Link href="/benchmarks" className="fl-text-action">
             Explore benchmark methodology
           </Link>
         </section>
 
-        <section className="st-use-cases">
+        <section className="fl-use-cases">
           <header>
             <h2>One compiler. Different knowledge systems.</h2>
           </header>
@@ -294,7 +294,7 @@ export function MarketingLanding() {
           ))}
         </section>
 
-        <section className="st-security-band">
+        <section className="fl-security-band">
           <div>
             <LockKey size={22} aria-hidden="true" />
             <p>Private by default</p>
@@ -305,7 +305,7 @@ export function MarketingLanding() {
             </span>
             <Link href="/security">Explore security architecture</Link>
           </div>
-          <div className="st-policy-orbit">
+          <div className="fl-policy-orbit">
             <strong>Document</strong>
             {["Region", "Retention", "Access", "Audit", "External AI"].map(
               (item) => (
@@ -315,8 +315,8 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="st-manifesto">
-          <StructaraGlyph name="verified" size={24} />
+        <section className="fl-manifesto">
+          <FolyntaGlyph name="verified" size={24} />
           <p>AI does not need more information. It needs better knowledge.</p>
           <div>
             <span>Knowledge has structure.</span>
@@ -324,17 +324,17 @@ export function MarketingLanding() {
             <span>Knowledge has relationships.</span>
             <span>Knowledge has evidence.</span>
           </div>
-          <h2>Structara compiles all four.</h2>
+          <h2>FOLYNTA compiles all four.</h2>
         </section>
 
-        <section className="st-home-final">
+        <section className="fl-home-final">
           <p>Your documents already contain what your AI needs.</p>
           <h2>Make it usable.</h2>
-          <div className="st-actions">
-            <Link href="/signup" className="st-button st-button-dark">
+          <div className="fl-actions">
+            <Link href="/signup" className="fl-button fl-button-dark">
               Build your knowledge <ArrowRight size={16} />
             </Link>
-            <Link href="/company/contact" className="st-text-action">
+            <Link href="/company/contact" className="fl-text-action">
               Talk to sales
             </Link>
           </div>
@@ -344,7 +344,7 @@ export function MarketingLanding() {
           </small>
         </section>
       </main>
-    </StructaraMarketingShell>
+    </FolyntaMarketingShell>
   );
 }
 
@@ -359,15 +359,15 @@ function ChapterVisual({ index }: { index: string }) {
           : "package";
 
   return (
-    <div className={`st-chapter-visual st-chapter-${index}`} aria-hidden="true">
-      <StructaraGlyph name={glyph} size={26} />
-      <div className="st-visual-page">
+    <div className={`fl-chapter-visual fl-chapter-${index}`} aria-hidden="true">
+      <FolyntaGlyph name={glyph} size={26} />
+      <div className="fl-visual-page">
         <i />
         <i />
         <i />
         <b />
       </div>
-      <div className="st-visual-result">
+      <div className="fl-visual-result">
         <strong>
           {index === "02"
             ? DART_PUBLIC_FIXTURE.rows[0].current
@@ -378,7 +378,7 @@ function ChapterVisual({ index }: { index: string }) {
         <span />
         <span />
       </div>
-      <div className="st-visual-link" />
+      <div className="fl-visual-link" />
     </div>
   );
 }

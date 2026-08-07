@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Structara — The Knowledge Compiler for AI",
-    short_name: "Structara",
+    name: "FOLYNTA — The Knowledge Compiler for AI",
+    short_name: "FOLYNTA",
     description:
       "Compile documents into structured, verified, connected, portable knowledge.",
     start_url: "/",

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { StructaraAppPage } from "@/components/structara-app-page";
-import { APP_PAGE_COPY } from "@/lib/structara-content";
+import { FolyntaAppPage } from "@/components/folynta-app-page";
+import { APP_PAGE_COPY } from "@/lib/folynta-content";
 
 type Props = { params: Promise<{ slug?: string[] }> };
 
@@ -58,5 +58,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AppRoute({ params }: Props) {
   const { slug } = await params;
-  return <StructaraAppPage {...resolve(slug)} />;
+  return <FolyntaAppPage {...resolve(slug)} />;
 }

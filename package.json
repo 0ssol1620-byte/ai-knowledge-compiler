@@ -21,7 +21,7 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
     "contracts:check": "pnpm --filter @akc/contracts test",
-    "assets:validate": "node .agents/skills/structara-asset-director/scripts/validate-asset-manifest.mjs && node .agents/skills/structara-asset-director/scripts/validate-asset-names.mjs && node .agents/skills/structara-asset-director/scripts/verify-asset-hashes.mjs",
+    "assets:validate": "node .agents/skills/folynta-asset-director/scripts/validate-asset-manifest.mjs && node .agents/skills/folynta-asset-director/scripts/validate-asset-names.mjs && node .agents/skills/folynta-asset-director/scripts/verify-asset-hashes.mjs",
     "clean": "pnpm -r clean"
   },
   "devDependencies": {

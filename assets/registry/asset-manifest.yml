@@ -1,7 +1,7 @@
 version: 1
 reviewed_at: 2026-07-30
 assets:
-  - id: STR-HOME-T2-HERO-001
+  - id: FLY-HOME-T2-HERO-001
     title: Source to Knowledge Hero
     truth_class: T2
     status: approved
@@ -13,11 +13,11 @@ assets:
         sha256: "23829353487336e08f4db42e8461c39a089b2e41be354ed78d22dec571fadca2"
       - path: assets/3d/derivatives/hero-master-low.glb
         sha256: "9368040b98cfc969f34097cfea7f5c8a05327656ef860dd5bba8b4285ac9e27a"
-      - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
+      - path: apps/web/public/hero/FLY-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
         sha256: "65d8eeeade5a5765b8b78cb6cd6501b25394e639d88b2adca58afe59519eb5be"
-      - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
+      - path: apps/web/public/hero/FLY-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
         sha256: "b986e3371929b7a6f7f9a01c8cf795c3dd5c94a2836efe76723be8a1cd938266"
-      - path: apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
+      - path: apps/web/public/hero/FLY-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
         sha256: "ec44cdec40ac85c52e34b78e1a9b765d8fea4860bdb0e5695a868629519e28ff"
     license:
       name: first-party
@@ -30,7 +30,7 @@ assets:
     alt_text_en: "Illustrative document pages become structured blocks and a small connected knowledge graph."
     alt_text_ko: "문서 페이지가 구조 블록과 작은 연결 지식 그래프로 변하는 상징적 장면"
 
-  - id: STR-PROOF-T0-DART-001
+  - id: FLY-PROOF-T0-DART-001
     title: DART Source Link Proof
     truth_class: T0
     status: approved
@@ -53,13 +53,13 @@ assets:
     alt_text_en: "A public JTC filing revenue cell links to its OpenDART receipt, taxonomy, source line, and archive hash."
     alt_text_ko: "JTC 공개 공시의 매출 셀이 OpenDART 접수번호, 분류체계, 원문 줄, 보관 해시로 연결되는 화면"
 
-  - id: STR-PRODUCT-T0-SCREEN-001
+  - id: FLY-PRODUCT-T0-SCREEN-001
     title: Canonical Product Workspace
     truth_class: T0
     status: implemented
     owner: product_truth
     source_type: actual-product
-    master_path: apps/web/src/components/structara-app-page.tsx
+    master_path: apps/web/src/components/folynta-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
         sha256: "d8593453a244915bdaadeb609fba263e45a59fee6a5fc21f942fa64bd1f27c88"
@@ -71,18 +71,18 @@ assets:
     usage:
       allowed: [product-marketing, documentation, sales]
       prohibited: [customer-claim]
-    alt_text_en: "The Structara sample workspace showing active processing, review, knowledge, and source coverage."
-    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 Structara 샘플 워크스페이스"
+    alt_text_en: "The FOLYNTA sample workspace showing active processing, review, knowledge, and source coverage."
+    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 FOLYNTA 샘플 워크스페이스"
 
-  - id: STR-BRAND-T2-GLYPHS-001
+  - id: FLY-BRAND-T2-GLYPHS-001
     title: Structural Glyph Family
     truth_class: T2
     status: implemented
     owner: creative_direction
     source_type: first-party-svg
-    master_path: apps/web/public/brand/structara-glyphs.svg
+    master_path: apps/web/public/brand/folynta-glyphs.svg
     derivatives:
-      - path: apps/web/src/components/structara-glyph.tsx
+      - path: apps/web/src/components/folynta-glyph.tsx
         sha256: "f483488b419d75c12a00d19ac86768e493fa176e97b43148ca155b7f6ca778ba"
     license:
       name: first-party
@@ -95,13 +95,13 @@ assets:
     alt_text_en: ""
     alt_text_ko: ""
 
-  - id: STR-BRAND-T2-PATTERNS-001
+  - id: FLY-BRAND-T2-PATTERNS-001
     title: Structural Pattern Family
     truth_class: T2
     status: implemented
     owner: creative_direction
     source_type: first-party-svg
-    master_path: apps/web/src/components/structara-pattern.tsx
+    master_path: apps/web/src/components/folynta-pattern.tsx
     derivatives:
       - path: assets/brand/patterns/README.md
         sha256: "e1a6e3fe30536db2720fc48500a75088d01a60c0bc3f88167e0f8360ce50359e"
@@ -116,13 +116,13 @@ assets:
     alt_text_en: ""
     alt_text_ko: ""
 
-  - id: STR-BRAND-T2-TEXTURES-001
+  - id: FLY-BRAND-T2-TEXTURES-001
     title: Material Texture Family
     truth_class: T2
     status: implemented
     owner: creative_direction
     source_type: first-party-css
-    master_path: apps/web/src/app/structara.css
+    master_path: apps/web/src/app/folynta.css
     derivatives:
       - path: assets/brand/textures/README.md
         sha256: "95504651553b3b2581bd436809f8c3d02a16a9244c399554fe631c6a37c930b3"
@@ -137,15 +137,15 @@ assets:
     alt_text_en: ""
     alt_text_ko: ""
 
-  - id: STR-SYSTEM-T1-DIAGRAMS-001
+  - id: FLY-SYSTEM-T1-DIAGRAMS-001
     title: Architecture Diagram System
     truth_class: T1
     status: implemented
     owner: product_truth
     source_type: deterministic-svg-html
-    master_path: apps/web/src/lib/structara-diagrams.ts
+    master_path: apps/web/src/lib/folynta-diagrams.ts
     derivatives:
-      - path: apps/web/src/components/structara-diagram.tsx
+      - path: apps/web/src/components/folynta-diagram.tsx
         sha256: "3a036578fdd56547ac693b87c243dbfe5ec7b525e4c75853e6ba150f4f824b36"
     license:
       name: first-party
@@ -158,7 +158,7 @@ assets:
     alt_text_en: "A four-step system diagram with an ordered text equivalent."
     alt_text_ko: "순서화된 텍스트 대안이 있는 4단계 시스템 다이어그램"
 
-  - id: STR-PRODUCT-T0-CAPTURE-PACK-001
+  - id: FLY-PRODUCT-T0-CAPTURE-PACK-001
     title: Canonical Product Capture Pack
     truth_class: T0
     status: implemented
@@ -190,10 +190,10 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [customer-claim, fabricated-live-state]
-    alt_text_en: "Canonical Structara product views captured from the deterministic public demo workspace."
-    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 Structara 제품 화면"
+    alt_text_en: "Canonical FOLYNTA product views captured from the deterministic public demo workspace."
+    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 FOLYNTA 제품 화면"
 
-  - id: STR-PRODUCT-T0-MOTION-PACK-001
+  - id: FLY-PRODUCT-T0-MOTION-PACK-001
     title: Canonical Product Motion Pack
     truth_class: T0
     status: approved
@@ -211,5 +211,5 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [latency-claim, customer-claim]
-    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic Structara demo workspace."
-    alt_text_ko: "결정론적 Structara 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"
+    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic FOLYNTA demo workspace."
+    alt_text_ko: "결정론적 FOLYNTA 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"
