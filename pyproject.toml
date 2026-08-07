@@ -18,7 +18,10 @@ dependencies = [
   "beautifulsoup4>=4.13,<5",
   "bleach>=6.2,<7",
   "boto3>=1.39,<2",
-  "cryptography>=46,<50",
+  # >=50 is required: CVE-2026-69247 / PYSEC-2026-3552 is HIGH and fixed in
+  # 50.0.0. The old <50 cap held the tree on 49.0.0, which fails both
+  # `dependency-audit` and the trivy gate on all four GPU worker images.
+  "cryptography>=50,<51",
   "defusedxml>=0.7,<1",
   "fastapi==0.140.13",
   "filetype>=1.2,<2",

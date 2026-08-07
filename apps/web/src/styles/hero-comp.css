@@ -1,0 +1,419 @@
+/*
+ * Hero static comps — DESIGN_MASTER_V3 §12.2, W1.
+ *
+ * Three variants share one grid and one frame; only the arrangement changes.
+ * §25.7 forbids cards in the hero, so nothing here is a card: no rounded
+ * container with a shadow, no repeated tile. Depth is the paper-1/paper-0
+ * luminance step and a single alpha hairline (§6.3).
+ */
+
+@layer components {
+  .fl-hero-comp {
+    display: grid;
+    grid-template-columns: 5fr 7fr; /* §6.4 — hero is the only 5:7 */
+    align-items: center;
+    gap: var(--s-7);
+    min-height: min(88vh, 920px); /* §6.4 vertical rhythm */
+    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    background: var(--paper-1);
+    color: var(--ink-0);
+  }
+
+  .fl-hero-comp-eyebrow {
+    margin: 0 0 var(--s-4);
+    color: var(--brand);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: var(--w-medium);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--lh-label);
+    text-transform: uppercase;
+  }
+
+  .fl-hero-comp h1 {
+    margin: 0;
+    font-size: var(--fs-display-1);
+    font-weight: var(--w-display); /* 590 — §7.2 plan B non-integer stop */
+    letter-spacing: var(--tracking-display-1);
+    line-height: var(--lh-display-1);
+    /* No text-wrap: balance. §12.2 sets the line breaks by hand, per language. */
+  }
+
+  .fl-hero-comp-lead {
+    max-width: var(--measure);
+    margin: var(--s-5) 0 0;
+    color: var(--ink-1);
+    font-size: var(--fs-lead);
+    font-weight: var(--w-body);
+    letter-spacing: var(--tracking-lead);
+    line-height: var(--lh-lead);
+    text-wrap: pretty;
+  }
+
+  .fl-hero-comp-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+
+  /*
+   * Rendered as <span> on purpose: these comps are not wired, and §14.3 says a
+   * control that looks interactive must work. A button here would be a dead
+   * control. W2 turns the winning variant's spans into real controls.
+   */
+  .fl-hero-comp-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--s-5);
+    border-radius: var(--r-paper-lg);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    letter-spacing: -0.005em;
+  }
+
+  .fl-hero-comp-cta[data-kind="primary"] {
+    background: var(--brand);
+    color: var(--paper-0);
+  }
+
+  .fl-hero-comp-cta[data-kind="secondary"] {
+    border-bottom: 1px solid var(--rule-paper-2);
+    border-radius: 0;
+    padding: 0;
+    color: var(--ink-1);
+  }
+
+  .fl-hero-comp-trust {
+    margin: var(--s-6) 0 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--lh-label);
+    text-transform: uppercase;
+  }
+
+  .fl-hero-comp-stage {
+    position: relative;
+    min-width: 0;
+  }
+
+  /* ── the source side ──────────────────────────────── */
+
+  /*
+   * .paper-page is position: absolute; inset: 0, so it contributes no height
+   * and the panel would collapse. A page has a page's proportions, so the
+   * wrapper carries them and the source side sets the height of the spread —
+   * which is what a facing spread does.
+   */
+  .fl-hero-comp-page {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    width: 100%;
+  }
+
+  /*
+   * A page facsimile whose blocks sit at their stored bbox1000 coordinates, so
+   * a highlight over "Table 3" is over the table by construction rather than by
+   * luck. §5 makes the source side warm paper and the output side white, so
+   * the two are distinguishable in greyscale (§25.4 squint test).
+   */
+  .fl-hero-comp-paper {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    /* §5, §12.2 — the source side is warm paper, the knowledge side is white.
+       The luminance step is what gives §25.3 its two-peak histogram. */
+    background: var(--paper-1);
+    color: var(--ink-1);
+    /* A serif here is the document's voice, not the product's. Product UI type
+       is Wanted Sans; §7.5 keeps them apart. */
+    font-family: Georgia, "Times New Roman", serif;
+    container-type: inline-size;
+  }
+
+  .fl-hero-comp-paper-head {
+    position: absolute;
+    top: 3.2%;
+    right: 11%;
+    left: 11%;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding-bottom: 0.6%;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--rule-paper-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 2.1cqw;
+    letter-spacing: 0.06em;
+  }
+
+  .fl-hero-comp-block {
+    position: absolute;
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+    line-height: 1.35;
+  }
+
+  .fl-hero-comp-block[data-kind="title"] {
+    align-items: center;
+    font-size: 3.6cqw;
+    font-weight: 700;
+    line-height: 1.18;
+  }
+
+  .fl-hero-comp-block[data-kind="heading"] {
+    align-items: center;
+    font-size: 2.8cqw;
+    font-weight: 700;
+  }
+
+  .fl-hero-comp-block[data-kind="paragraph"] {
+    font-size: 2.4cqw;
+    text-align: justify;
+  }
+
+  .fl-hero-comp-block[data-kind="table"] {
+    flex-direction: column;
+    font-size: 2.1cqw;
+  }
+
+  .fl-hero-comp-block table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fl-hero-comp-block caption {
+    padding-bottom: 0.5em;
+    color: var(--ink-2);
+    text-align: left;
+  }
+
+  .fl-hero-comp-block th {
+    border-bottom: 1px solid var(--ink-3);
+    padding: 0.35em 0.4em 0.35em 0;
+    text-align: left;
+  }
+
+  .fl-hero-comp-block td {
+    border-bottom: 1px solid var(--rule-paper-2);
+    padding: 0.35em 0.4em 0.35em 0;
+  }
+
+  .fl-hero-comp-block th:not(:first-child),
+  .fl-hero-comp-block td:not(:first-child) {
+    text-align: right;
+  }
+
+  .fl-hero-comp-paper-number {
+    position: absolute;
+    bottom: 3.5%;
+    left: 50%;
+    color: var(--ink-3);
+    font-size: 2.1cqw;
+    translate: -50%;
+  }
+
+  /*
+   * The bounding boxes a thread starts from, drawn at the stored coordinates.
+   * Percentage geometry comes from bboxStyle(), so what is highlighted is what
+   * the server recorded — not a rectangle placed to look right.
+   */
+  .fl-hero-comp-bbox {
+    position: absolute;
+    border: 1px solid var(--evidence);
+    background: color-mix(in oklab, var(--evidence) 8%, transparent);
+    pointer-events: none;
+  }
+
+  .fl-hero-comp-bbox[data-state="review"] {
+    border-color: var(--review);
+    border-style: dashed;
+    background: color-mix(in oklab, var(--review) 8%, transparent);
+  }
+
+  /* ── the knowledge side ───────────────────────────── */
+
+  .fl-hero-comp-output {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+
+  .fl-hero-comp-row {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .fl-hero-comp-row strong {
+    color: var(--ink-0);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    letter-spacing: var(--tracking-title-2);
+    line-height: 1.35;
+  }
+
+  .fl-hero-comp-row[data-kind="title"] strong {
+    font-size: var(--fs-title-2);
+    line-height: var(--lh-title-2);
+  }
+
+  .fl-hero-comp-tag {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .fl-hero-comp-ref {
+    color: var(--evidence);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+
+  /* §11.2 R2 — state carried by more than colour. */
+  .fl-hero-comp-ref[data-state="review"] {
+    padding-left: var(--s-3);
+    border-left: 2px solid var(--review);
+    color: var(--review);
+  }
+
+  .fl-hero-comp-row table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-min);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fl-hero-comp-row th {
+    padding: var(--s-2) var(--s-2) var(--s-2) 0;
+    border-bottom: 1px solid var(--rule-paper-2);
+    color: var(--ink-2);
+    font-weight: var(--w-medium);
+    text-align: left;
+  }
+
+  .fl-hero-comp-row td {
+    padding: var(--s-2) var(--s-2) var(--s-2) 0;
+    border-bottom: 1px solid var(--rule-paper-1);
+    color: var(--ink-1);
+  }
+
+  .fl-hero-comp-row[data-state="review"] tbody tr:last-child td {
+    background: color-mix(in oklab, var(--review) 6%, transparent);
+  }
+
+  /* ── variant A · Frame ────────────────────────────── */
+  /* One frame, both pages inside it. The recommended direction in §12.2. */
+
+  /* ── variant B · Overlap ──────────────────────────── */
+  /* The knowledge side floats 12% over the source page. */
+
+  .fl-hero-comp[data-variant="overlap"] .fl-facing-frame {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .fl-hero-comp[data-variant="overlap"] .fl-facing-verso {
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-media);
+  }
+
+  .fl-hero-comp[data-variant="overlap"] .fl-facing-spine {
+    background: transparent;
+  }
+
+  .fl-hero-comp[data-variant="overlap"] .fl-facing-spine::before {
+    display: none;
+  }
+
+  .fl-hero-comp[data-variant="overlap"] .fl-facing-recto {
+    z-index: 2;
+    align-self: center;
+    margin-left: -12%;
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-media);
+    /* The one place §6.3 allows depth on paper is an overlay, and a floating
+       panel is one. --depth-overlay, not a decorative card shadow. */
+    box-shadow: var(--depth-overlay);
+  }
+
+  /* ── variant C · Full-bleed verso ─────────────────── */
+  /* The source page runs off the right edge; the output sits over it. */
+
+  .fl-hero-comp[data-variant="fullbleed"] {
+    grid-template-columns: 5fr 7fr;
+    padding-right: 0;
+  }
+
+  .fl-hero-comp[data-variant="fullbleed"] .fl-facing-frame {
+    border-right: 0;
+    border-radius: var(--r-media) 0 0 var(--r-media);
+  }
+
+  .fl-hero-comp[data-variant="fullbleed"] .fl-facing-verso img {
+    object-position: top left;
+  }
+
+  .fl-hero-comp[data-variant="fullbleed"] .fl-facing-recto {
+    background: color-mix(in oklab, var(--paper-0) 92%, transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── 767 and below · recomposition, not a scaled desktop ── */
+
+  @media (max-width: 767px) {
+    .fl-hero-comp,
+    .fl-hero-comp[data-variant="fullbleed"] {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
+      min-height: 0;
+      padding: var(--s-8) var(--s-5) var(--s-9);
+    }
+
+    .fl-hero-comp h1 {
+      font-size: var(--fs-display-2);
+      letter-spacing: var(--tracking-display-2);
+      line-height: var(--lh-display-2);
+    }
+
+    .fl-hero-comp-lead {
+      font-size: var(--fs-body);
+      line-height: var(--lh-body);
+    }
+
+    .fl-hero-comp-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .fl-hero-comp-cta {
+      justify-content: center;
+    }
+
+    /* Overlap and full-bleed collapse to the plain stack: overlapping panels
+       in a 390px column would bury the source page. */
+    .fl-hero-comp[data-variant="overlap"] .fl-facing-recto,
+    .fl-hero-comp[data-variant="fullbleed"] .fl-facing-recto {
+      margin-left: 0;
+      background: var(--paper-0);
+      backdrop-filter: none;
+      box-shadow: none;
+    }
+
+    .fl-hero-comp[data-variant="fullbleed"] .fl-facing-frame {
+      border-right: 1px solid var(--rule-paper-2);
+      border-radius: var(--r-media);
+    }
+  }
+}

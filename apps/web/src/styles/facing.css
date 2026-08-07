@@ -1,0 +1,186 @@
+/*
+ * FacingPages — DESIGN_MASTER_V3 §4, §6.3, §6.4.
+ *
+ * Container queries, not media queries (§18.3): the component reacts to the
+ * width it is given, so the same rules hold whether it sits in a hero, a proof
+ * card, or a two-column route template.
+ *
+ * Surfaces follow §6.3 — alpha hairlines, no decorative shadow. The frame gets
+ * no box-shadow at all; depth is the luminance step between paper-1 and
+ * paper-0 plus a single alpha rule.
+ */
+
+@layer components {
+  .fl-facing {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    margin: 0;
+  }
+
+  .fl-facing-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-bottom: var(--s-2);
+    border-bottom: 1px solid var(--rule-paper-1);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--lh-label);
+    text-transform: uppercase;
+  }
+
+  .fl-facing-frame {
+    position: relative;
+    display: grid;
+    grid-template-columns:
+      minmax(0, var(--facing-verso, 5fr))
+      minmax(0, 0.6fr)
+      minmax(0, var(--facing-recto, 7fr));
+    align-items: stretch;
+    overflow: hidden;
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-media);
+    background: var(--paper-0);
+  }
+
+  /* Verso — always the source. §4.4 forbids swapping the sides. */
+  /*
+   * §5 — verso is the deeper warm surface the page rests on, recto is white.
+   * Two peaks in the luminance histogram, which §25.3 checks.
+   */
+  .fl-facing-verso {
+    position: relative;
+    overflow: hidden;
+    background: var(--paper-2);
+  }
+
+  .fl-facing-verso img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* Spine — the fold of the folio. One alpha hairline, no shadow. */
+  .fl-facing-spine {
+    position: relative;
+    background: var(--paper-1);
+  }
+
+  .fl-facing-spine::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--rule-paper-2);
+    content: "";
+  }
+
+  /* Recto — always the output. */
+  .fl-facing-recto {
+    position: relative;
+    overflow: hidden;
+    background: var(--paper-0);
+  }
+
+  .fl-facing-threads {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .fl-facing-threads path {
+    fill: none;
+    stroke: var(--evidence);
+    stroke-width: 1.25;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fl-facing-threads path[data-state="review"] {
+    stroke: var(--review);
+  }
+
+  /*
+   * §11.2 R2 — state is encoded twice. A recovered thread is dashed as well as
+   * differently coloured, so the distinction survives greyscale and the squint
+   * test in §25.4.
+   */
+  .fl-facing-threads path[data-state="recovered"] {
+    stroke: var(--review);
+    stroke-dasharray: 5 3;
+  }
+
+  .fl-facing-thread-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--evidence);
+    pointer-events: none;
+    translate: -50% -50%;
+  }
+
+  .fl-facing-thread-dot[data-state="review"],
+  .fl-facing-thread-dot[data-state="recovered"] {
+    background: var(--review);
+  }
+
+  .fl-facing-caption {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--lh-label);
+  }
+
+  /*
+   * §20 stacks the layout below 768 — but that is a *viewport* threshold, and
+   * this is a container query. A hero frame in the 7-column slot of a 1440
+   * page is only ~730px wide, so reusing 767 here would stack it on desktop.
+   * The number that matters is the width below which two panels stop being
+   * readable side by side: 560px, i.e. two ~260px columns plus the spine.
+   */
+  @container (max-width: 560px) {
+    .fl-facing-frame {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+    }
+
+    /*
+     * The thread geometry is computed for the side-by-side arrangement, so in
+     * the stacked one it would land in the wrong place. §4.4 does not allow a
+     * thread that is not where the coordinates say — a wrong line is worse
+     * than no line — so it is withdrawn here. The text equivalent stays, so no
+     * evidence is lost.
+     *
+     * W2 restores it: a vertical thread needs the component to know its own
+     * measured width, which means a client component, and W1 is static comps.
+     */
+    .fl-facing-threads,
+    .fl-facing-thread-dot {
+      display: none;
+    }
+
+    .fl-facing-spine {
+      min-height: var(--s-5);
+    }
+
+    .fl-facing-spine::before {
+      top: 50%;
+      right: 0;
+      bottom: auto;
+      left: 0;
+      width: auto;
+      height: 1px;
+    }
+  }
+}

@@ -94,9 +94,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     pathname === "/onboarding" ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/sso");
+  // W1 comp gallery — renders a bare design comp with no shell so the three
+  // variants can be captured under identical conditions (§25.1). Removed once
+  // decision.md records the chosen direction.
+  const designRoute = pathname.startsWith("/design/");
   const publicRoute =
     marketingRoute ||
     authRoute ||
+    designRoute ||
     pathname === "/verify-email" ||
     pathname.startsWith("/notices");
 
@@ -172,7 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       label.toLowerCase().includes(commandQueryNormalized),
   );
 
-  if (marketingRoute) {
+  if (marketingRoute || designRoute) {
     return children;
   }
 
