@@ -273,6 +273,7 @@ def test_trial_cap_cannot_exceed_the_authenticated_cap() -> None:
     """An anonymous caller must not submit a larger object than a paying tenant."""
     with pytest.raises(ValueError, match="trial_ingest_max_bytes"):
         Settings(
+            trial_ingest_enabled=True,
             trial_ingest_max_bytes=512 * 1024 * 1024,
             analysis_max_source_bytes=256 * 1024 * 1024,
         )
@@ -280,7 +281,23 @@ def test_trial_cap_cannot_exceed_the_authenticated_cap() -> None:
 
 def test_captcha_threshold_cannot_exceed_the_session_limit() -> None:
     with pytest.raises(ValueError, match="trial_ingest_captcha_after"):
-        Settings(trial_ingest_captcha_after=9, trial_ingest_sessions_per_client=3)
+        Settings(
+            trial_ingest_enabled=True,
+            trial_ingest_captcha_after=9,
+            trial_ingest_sessions_per_client=3,
+        )
+
+
+def test_the_caps_do_not_constrain_a_deployment_with_the_flag_off() -> None:
+    """The invariant is about anonymous callers, and there are none while off.
+
+    Checking it unconditionally rejected configurations unrelated to trial
+    ingest — a deployment tightening analysis_max_source_bytes should not have
+    to reason about a disabled feature's defaults.
+    """
+    settings = Settings(analysis_max_source_bytes=1024 * 1024)
+    assert settings.trial_ingest_enabled is False
+    assert settings.trial_ingest_max_bytes > settings.analysis_max_source_bytes
 
 
 def test_captcha_escalates_before_the_hard_limit(client: TestClient) -> None:

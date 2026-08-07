@@ -712,20 +712,28 @@ class Settings(BaseSettings):
             raise ValueError("analysis_lease_seconds must exceed analysis_attempt_timeout_seconds")
         if self.analysis_max_source_bytes > self.max_upload_bytes:
             raise ValueError("analysis_max_source_bytes cannot exceed max_upload_bytes")
-        # ADR-006 — the anonymous cap may only be tighter than the authenticated
-        # one. Misconfiguring it the other way would let a visitor with no
-        # account submit a larger object than a paying tenant can.
-        if self.trial_ingest_max_bytes > self.analysis_max_source_bytes:
-            raise ValueError(
-                "trial_ingest_max_bytes cannot exceed analysis_max_source_bytes"
-            )
-        # RateLimitPolicy rejects a captcha threshold above the hard limit, and
-        # it would be a startup crash rather than a config error if it reached
-        # that constructor. Catch it here where the message is actionable.
-        if self.trial_ingest_captcha_after > self.trial_ingest_sessions_per_client:
-            raise ValueError(
-                "trial_ingest_captcha_after cannot exceed trial_ingest_sessions_per_client"
-            )
+        # ADR-006. These bind only where anonymous callers exist: the invariant
+        # is that a visitor with no account cannot exceed what a paying tenant
+        # can, which is vacuous while the capability is off. Checking it
+        # unconditionally rejected configurations that had nothing to do with
+        # trial ingest — a deployment that tightens analysis_max_source_bytes
+        # should not have to think about a disabled feature's defaults.
+        #
+        # A deployment that enables the flag later fails at boot with an
+        # actionable message, which is the right moment to find out.
+        if self.trial_ingest_enabled:
+            if self.trial_ingest_max_bytes > self.analysis_max_source_bytes:
+                raise ValueError(
+                    "trial_ingest_max_bytes cannot exceed analysis_max_source_bytes"
+                )
+            # RateLimitPolicy rejects a captcha threshold above the hard limit,
+            # and reaching that constructor would be a crash rather than a
+            # config error. Catch it where the message is actionable.
+            if self.trial_ingest_captcha_after > self.trial_ingest_sessions_per_client:
+                raise ValueError(
+                    "trial_ingest_captcha_after cannot exceed "
+                    "trial_ingest_sessions_per_client"
+                )
         # Enabling anonymous ingest without a limiter would leave the endpoint
         # with no bound at all. _consume_rate_control fails closed when the
         # backend is unavailable, but an operator should not be able to ship the
