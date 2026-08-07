@@ -1,4 +1,4 @@
-import type { FolyntaPage } from "@/lib/folynta-content";
+import type { TavonelPage } from "@/lib/tavonel-content";
 
 /**
  * schema.org payloads — DESIGN_MASTER_V3 §19.
@@ -28,16 +28,17 @@ export function organizationGraph(base: string): JsonLdNode[] {
     {
       "@type": "Organization",
       "@id": absolute(base, "/") + ORGANIZATION_ID.slice(1),
-      name: "FOLYNTA",
+      name: "TAVONEL",
       url: base,
       description:
-        "Knowledge Compiler. Turns documents into structured, verified, connected knowledge for people and AI.",
+        "The Knowledge Compiler. A traceable path from every source to knowledge — documents become structured, verified knowledge that people and AI can reuse.",
+      slogan: "A traceable path from every source to knowledge.",
     },
     {
       "@type": "WebSite",
       "@id": absolute(base, "/") + SITE_ID.slice(1),
       url: base,
-      name: "FOLYNTA",
+      name: "TAVONEL",
       inLanguage: "en",
       publisher: { "@id": absolute(base, "/") + ORGANIZATION_ID.slice(1) },
     },
@@ -51,7 +52,7 @@ export function organizationGraph(base: string): JsonLdNode[] {
  *   TechArticle          research and developer documentation
  *   FAQPage              only where the route actually asks and answers
  */
-export function pageGraph(page: FolyntaPage, base: string): JsonLdNode[] {
+export function pageGraph(page: TavonelPage, base: string): JsonLdNode[] {
   const url = absolute(base, page.path);
   const publisher = { "@id": absolute(base, "/") + ORGANIZATION_ID.slice(1) };
 

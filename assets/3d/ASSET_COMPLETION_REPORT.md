@@ -17,7 +17,7 @@ T2 — first-party designed brand object.
 ## Source and generation
 
 Procedural Blender 4.5 LTS source at
-`tools/assets/build_folynta_hero.py`. No AI image generation and no external
+`tools/assets/build_tavonel_hero.py`. No AI image generation and no external
 asset.
 
 ## Master and derivatives
@@ -51,7 +51,7 @@ loaded only on capable non-mobile, non-Save-Data, non-reduced-motion clients.
 
 ## Remaining risks
 
-Legal clearance of the FOLYNTA working name is owner-controlled and does not
+Legal clearance of the TAVONEL working name is owner-controlled and does not
 alter this generic first-party object family.
 
 ## Final status

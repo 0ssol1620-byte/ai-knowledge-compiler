@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { FolyntaAppPage } from "@/components/folynta-app-page";
-import { APP_PAGE_COPY } from "@/lib/folynta-content";
+import { TavonelAppPage } from "@/components/tavonel-app-page";
+import { APP_PAGE_COPY } from "@/lib/tavonel-content";
 
 type Props = { params: Promise<{ slug?: string[] }> };
 
@@ -58,5 +58,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AppRoute({ params }: Props) {
   const { slug } = await params;
-  return <FolyntaAppPage {...resolve(slug)} />;
+  return <TavonelAppPage {...resolve(slug)} />;
 }

@@ -11,7 +11,7 @@
 | fontTools                  | `>=4.55,<5`      | MIT                           | No      | Font subsetting (dev)      |
 | UI UX Pro Max              | local skill      | License metadata inconsistent | No      | Internal research only     |
 | Emil Design Engineering    | local skill      | Upstream repository guidance  | No      | Internal craft review      |
-| FOLYNTA Brand Experience   | project guidance | Proprietary project guidance  | No      | Brand authority            |
+| TAVONEL Brand Experience   | project guidance | Proprietary project guidance  | No      | Brand authority            |
 
 Reviewed: 2026-08-07. Package lock is the source of truth for transitive
 versions. No external skill database is redistributed with the product.

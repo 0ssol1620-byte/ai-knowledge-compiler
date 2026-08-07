@@ -1,4 +1,4 @@
-# FOLYNTA asset QA report
+# TAVONEL asset QA report
 
 ## Release assets
 
@@ -60,4 +60,4 @@ zero.
 
 Verdict: **Approve**. No `transition: all`, `scale(0)`, `ease-in`, layout-property
 animation, high-frequency keyframe, or reduced-motion violation is present in
-the FOLYNTA system.
+the TAVONEL system.

@@ -13,4 +13,4 @@ pnpm --filter @akc/web exec node scripts/capture-product-loops.mjs
 
 WebM is the browser-recorded delivery master. The script also creates an H.264
 MP4 derivative with FFmpeg for Safari, presentation, and sales channels. Set
-`FOLYNTA_FFMPEG` to the reviewed executable path.
+`TAVONEL_FFMPEG` to the reviewed executable path.

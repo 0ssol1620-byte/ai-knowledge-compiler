@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { FolyntaMarketingPage } from "@/components/folynta-marketing-page";
+import { TavonelMarketingPage } from "@/components/tavonel-marketing-page";
 import { JsonLd } from "@/components/json-ld";
-import { PUBLIC_PAGES } from "@/lib/folynta-content";
+import { PUBLIC_PAGES } from "@/lib/tavonel-content";
 import { pageGraph, SITE_BASE } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default function BenchmarksPage() {
   return (
     <>
       <JsonLd nodes={pageGraph(definition, SITE_BASE)} />
-      <FolyntaMarketingPage definition={definition} />
+      <TavonelMarketingPage definition={definition} />
     </>
   );
 }

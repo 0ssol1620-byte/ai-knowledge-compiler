@@ -1,16 +1,16 @@
-# FOLYNTA asset system status
+# TAVONEL asset system status
 
 ## Governing document
 
-`FOLYNTA_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
+`TAVONEL_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
 v2.1 is the current asset authority.
 
 ## Implemented P0 system
 
 - T0–T4 truth classification, source order, and automatic naming/hash gates
-- repository-owned `folynta-asset-director` skill and focused references
+- repository-owned `tavonel-asset-director` skill and focused references
 - asset manifest, generated derivative registry, prompt index, source evidence,
-  licensing roots, and exact `FLY-{...}-vNN` validator
+  licensing roots, and exact `TAV-{...}-vNN` validator
 - editable first-party Blender 4.5 LTS hero master
 - LOD0 and LOD1 GLBs plus responsive LOD2 posters
 - 14 canonical hero object types and one six-state, 12-second explanation

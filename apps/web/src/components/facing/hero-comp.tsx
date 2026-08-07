@@ -75,9 +75,9 @@ export function HeroComp({
   copy: HeroCopy;
 }) {
   return (
-    <section className="fl-hero-comp" data-variant={variant}>
-      <div className="fl-hero-comp-copy">
-        <p className="fl-hero-comp-eyebrow">The Knowledge Compiler</p>
+    <section className="tv-hero-comp" data-variant={variant}>
+      <div className="tv-hero-comp-copy">
+        <p className="tv-hero-comp-eyebrow">The Knowledge Compiler</p>
         <h1>
           {copy.headline.map((line, index) => (
             <span key={line}>
@@ -86,24 +86,24 @@ export function HeroComp({
             </span>
           ))}
         </h1>
-        <p className="fl-hero-comp-lead">{copy.lead}</p>
+        <p className="tv-hero-comp-lead">{copy.lead}</p>
 
         {/* §3.4 — exactly two CTAs, different labels, primary once. */}
-        <div className="fl-hero-comp-actions">
-          <span className="fl-hero-comp-cta" data-kind="primary">
+        <div className="tv-hero-comp-actions">
+          <span className="tv-hero-comp-cta" data-kind="primary">
             Start compiling
           </span>
-          <span className="fl-hero-comp-cta" data-kind="secondary">
+          <span className="tv-hero-comp-cta" data-kind="secondary">
             Inspect the proof
           </span>
         </div>
 
-        <p className="fl-hero-comp-trust">
+        <p className="tv-hero-comp-trust">
           Source-linked output · KO DART / US SEC · No unverified claims
         </p>
       </div>
 
-      <div className="fl-hero-comp-stage">
+      <div className="tv-hero-comp-stage">
         <FacingPages
           ratio="hero"
           sourcePageNumber={8}
@@ -137,9 +137,9 @@ export function HeroComp({
  */
 function VersoPage() {
   return (
-    <div className="fl-hero-comp-page">
-      <article className="fl-hero-comp-paper">
-        <div className="fl-hero-comp-paper-head">
+    <div className="tv-hero-comp-page">
+      <article className="tv-hero-comp-paper">
+        <div className="tv-hero-comp-paper-head">
           SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
           <span>Demo document · not an actual source</span>
         </div>
@@ -147,7 +147,7 @@ function VersoPage() {
         {PAGE_BLOCKS.map((block) => (
           <div
             key={block.id}
-            className="fl-hero-comp-block"
+            className="tv-hero-comp-block"
             data-kind={block.kind}
             style={bboxStyle(block.bbox)}
           >
@@ -155,14 +155,14 @@ function VersoPage() {
           </div>
         ))}
 
-        <span className="fl-hero-comp-paper-number">8</span>
+        <span className="tv-hero-comp-paper-number">8</span>
       </article>
 
       {ANCHORS.map((anchor) =>
         anchor.bbox ? (
           <span
             key={anchor.id}
-            className="fl-hero-comp-bbox"
+            className="tv-hero-comp-bbox"
             data-state={anchor.state}
             style={bboxStyle(anchor.bbox)}
             aria-hidden="true"
@@ -241,20 +241,20 @@ const PAGE_BLOCKS = [
  */
 function RectoOutput() {
   return (
-    <div className="fl-hero-comp-output">
-      <div className="fl-hero-comp-row" data-kind="title">
-        <span className="fl-hero-comp-tag">Title</span>
+    <div className="tv-hero-comp-output">
+      <div className="tv-hero-comp-row" data-kind="title">
+        <span className="tv-hero-comp-tag">Title</span>
         <strong>Evaluating Evidence Fidelity in Retrieval-Augmented Generation</strong>
-        <span className="fl-hero-comp-ref">p.8 · 112, 94, 882, 158</span>
+        <span className="tv-hero-comp-ref">p.8 · 112, 94, 882, 158</span>
       </div>
 
-      <div className="fl-hero-comp-row" data-kind="heading">
-        <span className="fl-hero-comp-tag">Heading</span>
+      <div className="tv-hero-comp-row" data-kind="heading">
+        <span className="tv-hero-comp-tag">Heading</span>
         <strong>4.2 Experimental Results</strong>
       </div>
 
-      <div className="fl-hero-comp-row" data-kind="table" data-state="review">
-        <span className="fl-hero-comp-tag">Table</span>
+      <div className="tv-hero-comp-row" data-kind="table" data-state="review">
+        <span className="tv-hero-comp-tag">Table</span>
         <table>
           <thead>
             <tr>
@@ -276,7 +276,7 @@ function RectoOutput() {
             </tr>
           </tbody>
         </table>
-        <span className="fl-hero-comp-ref" data-state="review">
+        <span className="tv-hero-comp-ref" data-state="review">
           p.8 · numeric cross-check required
         </span>
       </div>

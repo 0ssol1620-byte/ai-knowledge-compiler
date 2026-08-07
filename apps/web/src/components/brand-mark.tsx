@@ -1,4 +1,4 @@
-import { FolyntaSymbol } from "@/components/brand/folynta-symbol";
+import { TavonelSymbol } from "@/components/brand/tavonel-symbol";
 
 /**
  * Brand lockup — DESIGN_MASTER_V3 §8.2.
@@ -15,12 +15,12 @@ import { FolyntaSymbol } from "@/components/brand/folynta-symbol";
  */
 export function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
-    <span className="brand fl-brand" aria-label="FOLYNTA" translate="no">
-      <FolyntaSymbol size={26} />
+    <span className="brand tv-brand" aria-label="TAVONEL" translate="no">
+      <TavonelSymbol size={26} />
       {!compact && (
-        <span className="brand-copy fl-brand-copy">
-          <span>FOLYNTA</span>
-          <small>Knowledge Compiler</small>
+        <span className="brand-copy tv-brand-copy">
+          <span>TAVONEL</span>
+          <small>The Knowledge Compiler</small>
         </span>
       )}
     </span>

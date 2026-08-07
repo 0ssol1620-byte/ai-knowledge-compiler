@@ -9,11 +9,11 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-import { FolyntaGlyph } from "@/components/folynta-glyph";
-import { FolyntaHeroScene } from "@/components/folynta-hero";
-import { FolyntaMarketingShell } from "@/components/folynta-marketing-shell";
-import { FolyntaPattern } from "@/components/folynta-pattern";
-import { FolyntaProofDemo } from "@/components/folynta-proof-demo";
+import { TavonelGlyph } from "@/components/tavonel-glyph";
+import { TavonelHeroScene } from "@/components/tavonel-hero";
+import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
+import { TavonelPattern } from "@/components/tavonel-pattern";
+import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 
 const chapters = [
@@ -45,34 +45,34 @@ const chapters = [
 
 export function MarketingLanding() {
   return (
-    <FolyntaMarketingShell>
-      <main id="main-content" className="fl-home">
-        <section className="fl-home-hero">
-          <div className="fl-home-copy">
-            <p className="fl-context-label">The Knowledge Compiler for AI</p>
+    <TavonelMarketingShell>
+      <main id="main-content" className="tv-home">
+        <section className="tv-home-hero">
+          <div className="tv-home-copy">
+            <p className="tv-context-label">The Knowledge Compiler for AI</p>
             <h1>Your AI is only as good as the knowledge it receives.</h1>
-            <p className="fl-home-intro">
+            <p className="tv-home-intro">
               Turn documents into structured, verified, connected knowledge with
               every important result linked back to its source.
             </p>
-            <div className="fl-actions">
-              <Link href="/signup" className="fl-button fl-button-dark">
+            <div className="tv-actions">
+              <Link href="/signup" className="tv-button tv-button-dark">
                 Build your knowledge
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
-              <a href="#transformation" className="fl-text-action">
+              <a href="#transformation" className="tv-text-action">
                 Watch the transformation
               </a>
             </div>
-            <p className="fl-trust-line">
+            <p className="tv-trust-line">
               Source-linked · Portable · Private by policy
             </p>
-            <p className="fl-compiler-sequence">
+            <p className="tv-compiler-sequence">
               Page → Structure → Evidence → Knowledge → Intelligence
             </p>
           </div>
-          <FolyntaHeroScene />
-          <div className="fl-output-rail" aria-label="Supported outputs">
+          <TavonelHeroScene />
+          <div className="tv-output-rail" aria-label="Supported outputs">
             {[
               "Portable Markdown",
               "Obsidian Vault",
@@ -84,10 +84,10 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="fl-problem">
-          <FolyntaPattern
+        <section className="tv-problem">
+          <TavonelPattern
             name="coordinate-field"
-            className="fl-section-pattern fl-problem-pattern"
+            className="tv-section-pattern tv-problem-pattern"
           />
           <div>
             <h2>
@@ -101,10 +101,10 @@ export function MarketingLanding() {
               knowledge.
             </p>
           </div>
-          <div className="fl-before-after">
+          <div className="tv-before-after">
             <article>
               <span>Raw documents</span>
-              <div className="fl-fragments">
+              <div className="tv-fragments">
                 <i />
                 <i />
                 <i />
@@ -112,7 +112,7 @@ export function MarketingLanding() {
               </div>
               <p>Fragments · repeated headers · broken table · no links</p>
             </article>
-            <div className="fl-compile-path" aria-hidden="true">
+            <div className="tv-compile-path" aria-hidden="true">
               <FileText size={16} />
               <span />
               <SquaresFour size={16} />
@@ -123,7 +123,7 @@ export function MarketingLanding() {
             </div>
             <article>
               <span>Compiled knowledge</span>
-              <div className="fl-compiled">
+              <div className="tv-compiled">
                 <strong>Heading tree</strong>
                 <i>Table object</i>
                 <i>Source link</i>
@@ -134,15 +134,15 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section id="transformation" className="fl-transformation">
+        <section id="transformation" className="tv-transformation">
           <header>
             <p>The compiler path</p>
             <h2>From pages to intelligence, without losing the proof.</h2>
           </header>
-          <div className="fl-chapters">
+          <div className="tv-chapters">
             {chapters.map((chapter) => (
               <article key={chapter.number}>
-                <div className="fl-chapter-copy">
+                <div className="tv-chapter-copy">
                   <span>{chapter.number}</span>
                   <h3>{chapter.title}</h3>
                   <p>{chapter.body}</p>
@@ -154,8 +154,8 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="fl-demo-section">
-          <div className="fl-section-intro">
+        <section className="tv-demo-section">
+          <div className="tv-section-intro">
             <p>Public filing demo</p>
             <h2>Do not take our word for it. Inspect the result.</h2>
             <span>
@@ -163,14 +163,14 @@ export function MarketingLanding() {
               knowledge package, graph, and proof panel.
             </span>
           </div>
-          <FolyntaProofDemo />
-          <div className="fl-inline-actions">
+          <TavonelProofDemo />
+          <div className="tv-inline-actions">
             <Link href="/demo/dart">Open full DART demo</Link>
             <Link href="/signup">Try it with your document</Link>
           </div>
         </section>
 
-        <section className="fl-pillars">
+        <section className="tv-pillars">
           <header>
             <h2>
               Knowledge has structure, evidence, connection, and a way out.
@@ -206,8 +206,8 @@ export function MarketingLanding() {
           ))}
         </section>
 
-        <section className="fl-public-proof">
-          <div className="fl-section-intro">
+        <section className="tv-public-proof">
+          <div className="tv-section-intro">
             <p>Public proof systems</p>
             <h2>Built for documents that cannot afford to be misunderstood.</h2>
           </div>
@@ -231,7 +231,7 @@ export function MarketingLanding() {
           </article>
         </section>
 
-        <section className="fl-benchmark">
+        <section className="tv-benchmark">
           <div>
             <p>Benchmark discipline</p>
             <h2>Accuracy should be demonstrated, not declared.</h2>
@@ -240,7 +240,7 @@ export function MarketingLanding() {
               with every result. Unmeasured values remain unavailable.
             </span>
           </div>
-          <div className="fl-metric-table">
+          <div className="tv-metric-table">
             <div>
               <span>Metric</span>
               <span>Public status</span>
@@ -259,12 +259,12 @@ export function MarketingLanding() {
               </div>
             ))}
           </div>
-          <Link href="/benchmarks" className="fl-text-action">
+          <Link href="/benchmarks" className="tv-text-action">
             Explore benchmark methodology
           </Link>
         </section>
 
-        <section className="fl-use-cases">
+        <section className="tv-use-cases">
           <header>
             <h2>One compiler. Different knowledge systems.</h2>
           </header>
@@ -294,7 +294,7 @@ export function MarketingLanding() {
           ))}
         </section>
 
-        <section className="fl-security-band">
+        <section className="tv-security-band">
           <div>
             <LockKey size={22} aria-hidden="true" />
             <p>Private by default</p>
@@ -305,7 +305,7 @@ export function MarketingLanding() {
             </span>
             <Link href="/security">Explore security architecture</Link>
           </div>
-          <div className="fl-policy-orbit">
+          <div className="tv-policy-orbit">
             <strong>Document</strong>
             {["Region", "Retention", "Access", "Audit", "External AI"].map(
               (item) => (
@@ -315,8 +315,8 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="fl-manifesto">
-          <FolyntaGlyph name="verified" size={24} />
+        <section className="tv-manifesto">
+          <TavonelGlyph name="verified" size={24} />
           <p>AI does not need more information. It needs better knowledge.</p>
           <div>
             <span>Knowledge has structure.</span>
@@ -324,17 +324,17 @@ export function MarketingLanding() {
             <span>Knowledge has relationships.</span>
             <span>Knowledge has evidence.</span>
           </div>
-          <h2>FOLYNTA compiles all four.</h2>
+          <h2>TAVONEL compiles all four.</h2>
         </section>
 
-        <section className="fl-home-final">
+        <section className="tv-home-final">
           <p>Your documents already contain what your AI needs.</p>
           <h2>Make it usable.</h2>
-          <div className="fl-actions">
-            <Link href="/signup" className="fl-button fl-button-dark">
+          <div className="tv-actions">
+            <Link href="/signup" className="tv-button tv-button-dark">
               Build your knowledge <ArrowRight size={16} />
             </Link>
-            <Link href="/company/contact" className="fl-text-action">
+            <Link href="/company/contact" className="tv-text-action">
               Talk to sales
             </Link>
           </div>
@@ -344,7 +344,7 @@ export function MarketingLanding() {
           </small>
         </section>
       </main>
-    </FolyntaMarketingShell>
+    </TavonelMarketingShell>
   );
 }
 
@@ -359,15 +359,15 @@ function ChapterVisual({ index }: { index: string }) {
           : "package";
 
   return (
-    <div className={`fl-chapter-visual fl-chapter-${index}`} aria-hidden="true">
-      <FolyntaGlyph name={glyph} size={26} />
-      <div className="fl-visual-page">
+    <div className={`tv-chapter-visual tv-chapter-${index}`} aria-hidden="true">
+      <TavonelGlyph name={glyph} size={26} />
+      <div className="tv-visual-page">
         <i />
         <i />
         <i />
         <b />
       </div>
-      <div className="fl-visual-result">
+      <div className="tv-visual-result">
         <strong>
           {index === "02"
             ? DART_PUBLIC_FIXTURE.rows[0].current
@@ -378,7 +378,7 @@ function ChapterVisual({ index }: { index: string }) {
         <span />
         <span />
       </div>
-      <div className="fl-visual-link" />
+      <div className="tv-visual-link" />
     </div>
   );
 }

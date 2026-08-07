@@ -1,6 +1,6 @@
 # Current status
 
-FOLYNTA is a **repository release candidate** as of 2026-07-31. The registered
+TAVONEL is a **repository release candidate** as of 2026-07-31. The registered
 marketing, authentication, onboarding, product, document, knowledge, enterprise,
 and administration surfaces are implemented and pass the local release gates
 listed below. This status is not a production go-live, legal-clearance,
@@ -8,7 +8,7 @@ commercial-pricing, or field-performance assertion.
 
 # Completed repository scope
 
-- one connected English-default FOLYNTA marketing and authenticated product
+- one connected English-default TAVONEL marketing and authenticated product
   system with round-trip navigation
 - all routes registered in `PAGE_MANIFEST.yml`, with route-specific information
   architecture and no desktop horizontal overflow in the complete route crawl
@@ -77,7 +77,7 @@ not inferred from route labels alone.
 
 # Remaining owner or external gates
 
-- legal and domain clearance for the working name `FOLYNTA`
+- legal and domain clearance for the working name `TAVONEL`
 - final licensed wordmark and owner Figma workspace synchronization
 - owner-approved commercial price book for currency, overage, storage, and
   annual-discount values

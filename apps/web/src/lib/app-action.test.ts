@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { appActionHref } from "@/lib/app-action";
 
-describe("FOLYNTA app header actions", () => {
+describe("TAVONEL app header actions", () => {
   it.each([
     ["home", "/quick-convert"],
     ["projects", "/projects"],
