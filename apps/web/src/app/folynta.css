@@ -127,43 +127,8 @@ body.fl-menu-open {
 .fl-brand {
   display: inline-flex;
   align-items: center;
-  gap: 11px;
-}
-
-.fl-brand-glyph {
-  position: relative;
-  width: 30px;
-  height: 30px;
-  display: block;
-}
-
-.fl-brand-glyph span {
-  position: absolute;
-  width: 17px;
-  height: 22px;
-  border: 1.5px solid currentcolor;
-  background: var(--fl-paper);
-}
-
-.fl-brand-glyph span:first-child {
-  left: 2px;
-  top: 2px;
-}
-
-.fl-brand-glyph span:nth-child(2) {
-  right: 2px;
-  bottom: 2px;
-}
-
-.fl-brand-glyph i {
-  position: absolute;
-  width: 11px;
-  height: 1.5px;
-  left: 10px;
-  top: 14px;
-  background: var(--fl-brand);
-  transform: rotate(-32deg);
-  transform-origin: center;
+  /* §8.2 — symbol-to-wordmark gap is symbol width × 0.5. Symbol is 26px. */
+  gap: 13px;
 }
 
 .fl-brand-copy {
@@ -171,10 +136,17 @@ body.fl-menu-open {
   line-height: 1;
 }
 
+/*
+ * §8.2 — uppercase, weight 620 in the plan A/C scale, which is 590 on the
+ * plan B stops the project actually shipped (§7.2). Tracking +0.14em: a
+ * wordmark is read as a shape, not as running text, so it opens up where body
+ * copy would close in.
+ */
 .fl-brand-copy > span {
-  font-size: 16px;
-  font-weight: 660;
-  letter-spacing: -0.025em;
+  font-size: 15px;
+  font-weight: 590;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .fl-brand-copy small {
@@ -3231,10 +3203,6 @@ body.fl-menu-open {
 
 .app-frame .brand-copy small {
   color: #505862;
-}
-
-.app-frame .fl-brand-glyph span {
-  background: #eef0f2;
 }
 
 .app-frame .sidebar-nav {
