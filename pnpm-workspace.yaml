@@ -8,11 +8,13 @@ overrides:
   #   brace-expansion  <5.0.9   via eslint and @lhci/cli
   #   js-yaml          <4.3.1   via eslint
   #   tmp              <0.2.7   via @lhci/cli
+  #   nanoid           <3.3.17  via postcss, which next and vite both pull in
   # The previous brace-expansion pin (5.0.8) was itself inside the vulnerable
   # range the advisory names.
   brace-expansion: 5.0.9
   js-yaml: 4.3.1
   tmp: 0.2.7
+  nanoid: 3.3.17
   postcss: 8.5.24
   sharp: 0.35.3
 
