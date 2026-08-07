@@ -33,9 +33,11 @@
   --shadow-xs: 0 1px 2px rgb(14 22 36 / 5%);
   --shadow-sm: 0 2px 7px rgb(14 22 36 / 7%);
   --shadow-md: 0 12px 32px rgb(14 22 36 / 13%);
+  /* Kept in step with globals.css — decision.md G-B. §23.2 folds this file
+     into the token layer in W9 and the duplication goes away. */
   --font-ui:
-    "Aptos", "Segoe UI Variable Text", "Segoe UI", "Pretendard Variable",
-    "Noto Sans KR", system-ui, sans-serif;
+    var(--font-wanted-sans), "Wanted Sans KO", "Segoe UI Variable Text",
+    system-ui, sans-serif;
 }
 
 html {

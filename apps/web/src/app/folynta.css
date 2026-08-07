@@ -85,9 +85,7 @@ body.fl-menu-open {
     11px 13px,
     17px 19px;
   color: var(--fl-ink);
-  font-family:
-    "Pretendard Variable", "Segoe UI Variable", "Noto Sans KR",
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .fl-site *,
@@ -438,6 +436,10 @@ body.fl-menu-open {
   line-height: 0.98;
   font-weight: 590;
   letter-spacing: -0.058em;
+}
+
+/* balance breaks Korean lines mid-word; §7.4 gates it to Latin. */
+:lang(en) .fl-home-copy h1 {
   text-wrap: balance;
 }
 
@@ -499,16 +501,10 @@ body.fl-menu-open {
   bottom: 40px;
 }
 
-.fl-hero-render,
-.fl-webgl-layer {
-  position: absolute;
-  inset: 0;
-}
-
 .fl-hero-render {
+  position: absolute;
   overflow: hidden;
-  opacity: 0.96;
-  transition: opacity 500ms var(--fl-ease-enter);
+  inset: 0;
 }
 
 .fl-hero-render img {
@@ -516,17 +512,6 @@ body.fl-menu-open {
   height: 100%;
   display: block;
   object-fit: contain;
-}
-
-.fl-webgl-layer {
-  z-index: 3;
-  opacity: 0;
-  pointer-events: none;
-  animation: fl-fade-in 700ms var(--fl-ease-enter) forwards;
-}
-
-.fl-hero-scene[data-enhanced="true"] .fl-hero-render {
-  opacity: 0.08;
 }
 
 .fl-poster-pages {
@@ -781,6 +766,16 @@ body.fl-menu-open {
   line-height: 1.03;
   font-weight: 570;
   letter-spacing: -0.052em;
+}
+
+:lang(en) .fl-problem h2,
+:lang(en) .fl-section-intro h2,
+:lang(en) .fl-pillars > header h2,
+:lang(en) .fl-public-proof .fl-section-intro h2,
+:lang(en) .fl-benchmark h2,
+:lang(en) .fl-use-cases h2,
+:lang(en) .fl-security-band h2,
+:lang(en) .fl-home-final h2 {
   text-wrap: balance;
 }
 
@@ -1343,7 +1338,6 @@ body.fl-menu-open {
 
 .fl-route-proof-heading h2 {
   margin: 0;
-  font-family: var(--fl-serif);
   font-size: clamp(34px, 4vw, 60px);
   font-weight: 500;
   letter-spacing: -0.045em;
@@ -1382,7 +1376,6 @@ body.fl-menu-open {
 .fl-credit-planner h2 {
   max-width: 760px;
   margin: 0;
-  font-family: var(--fl-serif);
   font-size: clamp(38px, 4.5vw, 66px);
   font-weight: 500;
   letter-spacing: -0.05em;
@@ -1440,7 +1433,6 @@ body.fl-menu-open {
 
 .fl-plan-ledger h3 {
   margin: 44px 0 18px;
-  font-family: var(--fl-serif);
   font-size: 40px;
   font-weight: 500;
   letter-spacing: -0.04em;
@@ -1983,6 +1975,9 @@ body.fl-menu-open {
   line-height: 1.01;
   font-weight: 560;
   letter-spacing: -0.056em;
+}
+
+:lang(en) .fl-page-hero-copy h1 {
   text-wrap: balance;
 }
 
@@ -2054,7 +2049,6 @@ body.fl-menu-open {
 }
 
 .fl-route-visual-journey li strong {
-  font-family: var(--fl-serif);
   font-size: 24px;
   font-weight: 500;
   letter-spacing: -0.025em;
@@ -2174,7 +2168,6 @@ body.fl-menu-open {
 }
 
 .fl-route-visual-index > div strong {
-  font-family: var(--fl-serif);
   font-size: 22px;
   font-weight: 500;
 }
@@ -2558,15 +2551,6 @@ body.fl-menu-open {
   line-height: 1.04;
   font-weight: 540;
   letter-spacing: -0.05em;
-}
-
-@keyframes fl-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 @media (max-width: 1180px) {
@@ -3197,10 +3181,6 @@ body.fl-menu-open {
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
-
-  .fl-webgl-layer {
-    display: none;
-  }
 }
 
 @media (forced-colors: active) {
@@ -3216,9 +3196,7 @@ body.fl-menu-open {
 .app-frame {
   background: #eef0f2;
   color: #171a1f;
-  font-family:
-    "Pretendard Variable", "Segoe UI Variable", "Noto Sans KR",
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .app-frame .demo-mode-banner {
@@ -4170,9 +4148,7 @@ body.fl-menu-open {
   min-height: 100vh;
   background: var(--fl-canvas);
   color: var(--fl-ink);
-  font-family:
-    "Pretendard Variable", "Segoe UI Variable", "Noto Sans KR", Arial,
-    sans-serif;
+  font-family: var(--font-ui);
 }
 
 .fl-onboarding > header {
@@ -4329,9 +4305,7 @@ body.fl-menu-open {
   align-items: center;
   padding: 70px clamp(28px, 8vw, 140px);
   background: var(--fl-canvas);
-  font-family:
-    "Pretendard Variable", "Segoe UI Variable", "Noto Sans KR", Arial,
-    sans-serif;
+  font-family: var(--font-ui);
 }
 
 .fl-auth-simple > a {

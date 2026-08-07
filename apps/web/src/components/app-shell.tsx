@@ -47,6 +47,16 @@ const secondaryNavigation = [
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 
+const COMMAND_ENTRIES = [
+  ["/quick-convert", "Upload documents", "U"],
+  ["/projects", "Open projects", "P"],
+  ["/knowledge-bases", "Search entities", "E"],
+  ["/review", "Open Review Studio", "R"],
+  ["/benchmarks", "Run benchmark", "B"],
+  ["/settings", "Workspace settings", "S"],
+  ["/", "Product site", "H"],
+] as const satisfies ReadonlyArray<readonly [string, string, string]>;
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -58,6 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [sessionError, setSessionError] = useState<string>();
   const [profile, setProfile] = useState<SessionProfile>();
   const [commandOpen, setCommandOpen] = useState(false);
+  const [commandQuery, setCommandQuery] = useState("");
   const setSession = useAuthStore((state) => state.setSession);
 
   const marketingRoute =
@@ -134,12 +145,32 @@ export function AppShell({ children }: { children: ReactNode }) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setCommandOpen((value) => !value);
+        setCommandQuery("");
       }
-      if (event.key === "Escape") setCommandOpen(false);
+      if (event.key === "Escape") {
+        setCommandOpen(false);
+        setCommandQuery("");
+      }
     }
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
+
+  function closeCommandMenu() {
+    setCommandOpen(false);
+    setCommandQuery("");
+  }
+
+  // §14.3 — the palette input used to render with no value/onChange, which is
+  // the definition of a dead control. It filters the quick-navigation list it
+  // sits above. Global search over projects and entities needs a backend
+  // contract that does not exist yet, so the placeholder says what it does.
+  const commandQueryNormalized = commandQuery.trim().toLowerCase();
+  const commandMatches = COMMAND_ENTRIES.filter(
+    ([, label]) =>
+      commandQueryNormalized === "" ||
+      label.toLowerCase().includes(commandQueryNormalized),
+  );
 
   if (marketingRoute) {
     return children;
@@ -393,40 +424,37 @@ export function AppShell({ children }: { children: ReactNode }) {
               <input
                 type="search"
                 autoFocus
-                aria-label="Search commands"
-                placeholder="Search projects, entities, or commands"
+                aria-label="Filter commands"
+                aria-controls="command-results"
+                placeholder="Filter quick navigation"
+                value={commandQuery}
+                onChange={(event) => setCommandQuery(event.currentTarget.value)}
               />
               <button
                 type="button"
                 className="icon-button compact"
                 aria-label="Close command menu"
-                onClick={() => setCommandOpen(false)}
+                onClick={() => closeCommandMenu()}
               >
                 <X size={16} />
               </button>
             </header>
-            <div>
+            <div id="command-results">
               <span>Quick navigation</span>
-              {(
-                [
-                  ["/quick-convert", "Upload documents", "U"],
-                  ["/projects", "Open projects", "P"],
-                  ["/knowledge-bases", "Search entities", "E"],
-                  ["/review", "Open Review Studio", "R"],
-                  ["/benchmarks", "Run benchmark", "B"],
-                  ["/settings", "Workspace settings", "S"],
-                  ["/", "Product site", "H"],
-                ] as const
-              ).map(([href, label, key]) => (
-                <Link
-                  href={href}
-                  onClick={() => setCommandOpen(false)}
-                  key={href}
-                >
-                  <span>{label}</span>
-                  <kbd>{key}</kbd>
-                </Link>
-              ))}
+              {commandMatches.length === 0 ? (
+                <p role="status">No command matches “{commandQuery}”.</p>
+              ) : (
+                commandMatches.map(([href, label, key]) => (
+                  <Link
+                    href={href}
+                    onClick={() => closeCommandMenu()}
+                    key={href}
+                  >
+                    <span>{label}</span>
+                    <kbd>{key}</kbd>
+                  </Link>
+                ))
+              )}
             </div>
           </section>
         </div>

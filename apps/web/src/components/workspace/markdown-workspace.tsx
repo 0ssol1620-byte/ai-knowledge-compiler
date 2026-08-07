@@ -14,13 +14,25 @@ import {
   UserCircle,
   Warning,
 } from "@phosphor-icons/react";
-import CodeMirror from "@uiw/react-codemirror";
 import clsx from "clsx";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { SafeMarkdown } from "@/components/safe-markdown";
 import { measuredQualityBreakdown } from "@/lib/quality-evidence";
 import type { BlockOrigin, CanonicalBlock, SourceRef } from "@/lib/types";
+
+// §22 — the editor was a static import, so CodeMirror shipped in the workspace
+// bundle for every reader who never edits a block. It is only mounted behind
+// the Edit affordance, so it loads there too.
+const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), {
+  ssr: false,
+  loading: () => (
+    <div className="block-editor-loading" role="status">
+      Loading editor…
+    </div>
+  ),
+});
 
 const originPresentation: Record<
   BlockOrigin,

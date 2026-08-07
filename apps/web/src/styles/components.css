@@ -1,0 +1,39 @@
+/*
+ * W0 component layer. Everything added from W0 onward lives in a layer so that
+ * §23.2 can delete the legacy sheets without a specificity fight. See the note
+ * at the top of tokens.css about which side currently wins.
+ */
+
+@layer components {
+  /*
+   * Replaces .overall-progress-ring in the frozen demo. The ring drew a
+   * conic-gradient from a hardcoded 68%, which §25.7 rejects outright. This
+   * shows a finished/total stage count instead — a fact the component already
+   * holds — and keeps the 48px footprint so the pipeline bar does not reflow.
+   */
+  .overall-progress-stage {
+    position: relative;
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--surface);
+  }
+
+  .overall-progress-stage strong {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 1180px) {
+    .overall-progress-stage {
+      width: 41px;
+      height: 41px;
+    }
+  }
+}

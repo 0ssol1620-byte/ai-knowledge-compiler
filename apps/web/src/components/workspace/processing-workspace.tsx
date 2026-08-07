@@ -16,7 +16,7 @@ import {
 import clsx from "clsx";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { ExportDialog } from "@/components/workspace/export-dialog";
 import { MarkdownWorkspace } from "@/components/workspace/markdown-workspace";
@@ -33,16 +33,37 @@ import {
 import type { ReviewItem } from "@/lib/types";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 
+// No percentage lives here. DESIGN_MASTER_V3 §25.7 rejects progress literals,
+// and this demo has no event log to derive them from — replaying a frozen log is
+// W3. Until then the demo is an explicitly paused snapshot: stages carry a
+// finished/not-finished state and nothing more.
 const stages = [
   { id: "upload", label: "Upload", done: true },
   { id: "security_scan", label: "Security", done: true },
   { id: "preflight", label: "Preflight", done: true },
-  { id: "extract", label: "Extract", done: false, progress: 88 },
-  { id: "normalize", label: "Structure", done: false, progress: 72 },
-  { id: "knowledge", label: "Knowledge", done: false, progress: 44 },
-  { id: "validate", label: "Validate", done: false, progress: 26 },
-  { id: "package", label: "Package", done: false, progress: 0 },
+  { id: "extract", label: "Extract", done: false },
+  { id: "normalize", label: "Structure", done: false },
+  { id: "knowledge", label: "Knowledge", done: false },
+  { id: "validate", label: "Validate", done: false },
+  { id: "package", label: "Package", done: false },
 ] as const;
+
+const currentStageId = "knowledge";
+const completedStages = stages.filter((stage) => stage.done).length;
+const currentStageLabel =
+  stages.find((stage) => stage.id === currentStageId)?.label ?? "";
+
+// Derived from the fixture rather than typed in. "16 / 18 pages usable" was a
+// literal that matched nothing in demoPages.
+const totalPages = demoPages.length;
+const availablePages = demoPages.filter(
+  (page) => page.status !== "ocr_running",
+).length;
+
+function describeStage(stage: (typeof stages)[number]) {
+  if (stage.done) return "Done";
+  return stage.id === currentStageId ? "In progress" : "Waiting";
+}
 
 type MobileTab = "progress" | "pages" | "source" | "result" | "review";
 
@@ -142,21 +163,20 @@ function DemoProcessingWorkspace() {
 
       <section className="pipeline-bar" aria-label="Processing progress">
         <div className="pipeline-summary">
-          <div
-            className="overall-progress-ring"
-            style={{ "--progress": "68%" } as CSSProperties}
-          >
-            <strong>68%</strong>
+          <div className="overall-progress-stage" aria-hidden="true">
+            <strong>
+              {completedStages}/{stages.length}
+            </strong>
           </div>
           <div>
             <strong>
               {processingStarted
-                ? "Compiling knowledge"
+                ? "Building knowledge structure"
                 : "Review preflight estimate"}
             </strong>
             <span>
               {processingStarted
-                ? "16 / 18 pages usable"
+                ? `Paused demo · ${availablePages} of ${totalPages} pages available`
                 : "No credits are used before approval."}
             </span>
           </div>
@@ -167,8 +187,7 @@ function DemoProcessingWorkspace() {
               className={clsx(
                 "stage-item",
                 stage.done && "done",
-                !stage.done && stage.progress > 0 && "active",
-                stage.id === "knowledge" && "current",
+                stage.id === currentStageId && "active current",
               )}
               key={stage.id}
             >
@@ -182,11 +201,7 @@ function DemoProcessingWorkspace() {
               <span>{stage.label}</span>
               {index < stages.length - 1 && (
                 <i>
-                  <b
-                    style={{
-                      width: stage.done ? "100%" : `${stage.progress}%`,
-                    }}
-                  />
+                  <b style={{ width: stage.done ? "100%" : "0%" }} />
                 </i>
               )}
             </div>
@@ -251,16 +266,20 @@ function DemoProcessingWorkspace() {
         >
           <div className="mobile-progress-overview">
             <div
-              className="overall-progress-ring"
-              style={{ "--progress": "68%" } as CSSProperties}
-              aria-label="Overall progress 68%"
+              className="overall-progress-stage"
+              aria-label={`${completedStages} of ${stages.length} stages finished`}
             >
-              <strong>68%</strong>
+              <strong>
+                {completedStages}/{stages.length}
+              </strong>
             </div>
             <div>
               <span className="mobile-progress-label">Current stage</span>
-              <strong>Building knowledge structure</strong>
-              <span>16 of 18 pages available</span>
+              <strong>{currentStageLabel}</strong>
+              <span>
+                {completedStages} of {stages.length} stages finished · this
+                snapshot does not advance
+              </span>
             </div>
           </div>
           <ol className="mobile-stage-list">
@@ -268,7 +287,7 @@ function DemoProcessingWorkspace() {
               <li
                 className={clsx(
                   stage.done && "done",
-                  stage.id === "knowledge" && "current",
+                  stage.id === currentStageId && "current",
                 )}
                 key={stage.id}
               >
@@ -277,21 +296,10 @@ function DemoProcessingWorkspace() {
                 </span>
                 <span>
                   <strong>{stage.label}</strong>
-                  <small>
-                    {stage.done
-                      ? "Completed"
-                      : stage.progress > 0
-                        ? `${stage.progress}% complete`
-                        : "Waiting"}
-                  </small>
+                  <small>{describeStage(stage)}</small>
                 </span>
-                <b
-                  className="mobile-stage-value"
-                  aria-label={
-                    stage.done ? "Complete" : `Progress ${stage.progress}%`
-                  }
-                >
-                  {stage.done ? "Done" : `${stage.progress}%`}
+                <b className="mobile-stage-value" aria-hidden="true">
+                  {describeStage(stage)}
                 </b>
               </li>
             ))}

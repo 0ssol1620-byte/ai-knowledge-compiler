@@ -321,7 +321,12 @@ test("processing workspace exposes real stage counts and source-linked output", 
 }) => {
   await page.goto("/documents/sample-dart/processing");
   await expect(page.getByText("Building knowledge structure")).toHaveCount(1);
-  await expect(page.getByText("16 of 18 pages available")).toHaveCount(1);
+  // Both figures are derived from demoPages and the stage list, not typed in.
+  // The old copy said "16 of 18", which matched nothing in the fixture, and the
+  // ring beside it showed a hardcoded 68% that §25.7 rejects outright.
+  await expect(page.getByText("15 of 18 pages available")).toHaveCount(1);
+  await expect(page.getByText("3 of 8 stages finished")).toHaveCount(1);
+  await expect(page.locator("body")).not.toContainText("68%");
   await expect(page.getByText("Review queue")).toHaveCount(1);
   if (isMobile) {
     await page
@@ -366,12 +371,15 @@ test("auth, onboarding, product, and document surfaces remain usable on mobile",
   }
 });
 
-test("reduced motion removes travel, WebGL, and nonessential animation", async ({
+test("reduced motion removes travel and nonessential animation", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator(".fl-webgl-layer")).toBeHidden();
+  // decision.md G-C dropped TIER 1 3D outright, so the layer must not exist at
+  // all rather than merely be hidden under reduced motion.
+  await expect(page.locator(".fl-webgl-layer")).toHaveCount(0);
+  await expect(page.locator("canvas")).toHaveCount(0);
   const moving = await page.evaluate(() =>
     Array.from(document.querySelectorAll<HTMLElement>(".fl-site *"))
       .map((element) => {

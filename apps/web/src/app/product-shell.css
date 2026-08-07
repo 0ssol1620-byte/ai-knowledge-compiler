@@ -1061,6 +1061,10 @@
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.65;
+}
+
+/* keep-all is a Korean line-breaking rule; §7.4 gates it to :lang(ko). */
+:lang(ko) .quick-convert-intro > div:first-child > p {
   word-break: keep-all;
 }
 
@@ -1257,6 +1261,9 @@
   color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.6;
+}
+
+:lang(ko) .preflight-explainer header > span {
   word-break: keep-all;
 }
 
