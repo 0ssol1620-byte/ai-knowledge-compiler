@@ -832,3 +832,74 @@ class ErrorDetail(WireModel):
 
 class ErrorEnvelope(WireModel):
     error: ErrorDetail
+
+
+# ── Anonymous trial ingest — ADR-006 ────────────────────────────────────────
+#
+# A visitor with no account may submit one document and see the preflight it
+# produces. The flow stops at PREFLIGHTED: no extraction, no knowledge, no
+# export, and no GPU work, which is what keeps an anonymous caller away from
+# the cost surface.
+
+
+class TrialSessionCreated(WireModel):
+    """The only credential a trial visitor gets.
+
+    ``session_id`` grants read access to exactly one project under the reserved
+    system trial tenant and nothing else. It is not a token, carries no claims,
+    and stops working at ``expires_at``.
+    """
+
+    session_id: uuid.UUID
+    expires_at: datetime
+    max_bytes: int = Field(ge=1)
+    max_pages: int = Field(ge=1)
+    accepted_content_types: list[str]
+
+
+class TrialUploadRequest(WireModel):
+    filename: str = Field(min_length=1, max_length=500)
+    size: int = Field(ge=1)
+    content_type: str = Field(min_length=1, max_length=160)
+    # The client computes this before sending; the server verifies it against
+    # the stored object. Same integrity contract as the authenticated path.
+    sha256: str = Field(pattern=r"^[a-fA-F0-9]{64}$")
+
+
+class TrialUploadAccepted(WireModel):
+    document_id: uuid.UUID
+    upload_url: str
+    headers: dict[str, str] = Field(default_factory=dict)
+    expires_at: datetime
+
+
+class TrialPreflight(WireModel):
+    """What the compiler established, and what it did not.
+
+    ``pages_inspected`` and ``page_count`` are separate on purpose. A document
+    longer than the trial cap is inspected in part, and §25.7 forbids reporting
+    a partial measurement as a whole one — ``truncated`` says so explicitly
+    rather than leaving the caller to compare two numbers.
+    """
+
+    session_id: uuid.UUID
+    document_id: uuid.UUID
+    status: Literal[
+        "UPLOADED",
+        "SECURITY_SCANNING",
+        "SECURITY_VERIFIED",
+        "SECURITY_REJECTED",
+        "PREFLIGHTING",
+        "PREFLIGHTED",
+        "FAILED",
+    ]
+    page_count: int | None = Field(default=None, ge=0)
+    pages_inspected: int = Field(default=0, ge=0)
+    truncated: bool = False
+    detected_language_codes: list[str] = Field(default_factory=list)
+    encrypted: bool | None = None
+    # The recipe the compiler would run. Shown so the visitor sees a decision
+    # was made, not a generic promise.
+    route_profile: str | None = None
+    error_code: str | None = None
+    expires_at: datetime

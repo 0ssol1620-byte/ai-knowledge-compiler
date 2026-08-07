@@ -1,7 +1,8 @@
 # ADR-006: Anonymous Trial Ingest
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-07
+- Accepted: 2026-08-08
 - Owners: Platform, Security, Product
 
 ## Context

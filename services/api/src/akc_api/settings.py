@@ -142,6 +142,25 @@ class Settings(BaseSettings):
     otel_exporter_otlp_endpoint: str | None = None
     otel_export_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     allow_public_registration: bool = True
+
+    # ADR-006 · anonymous trial ingest.
+    #
+    # Off by default, following url_ingestion_enabled: a capability whose blast
+    # radius is the public internet does not arrive switched on. Enabling it is
+    # a deployment decision that also requires the rate limiter and, in
+    # production, a CAPTCHA provider.
+    #
+    # The caps are settings rather than constants so an operator can tighten
+    # them without a release. They can only be tightened relative to the
+    # authenticated limits — see the validator below.
+    trial_ingest_enabled: bool = False
+    trial_ingest_max_bytes: int = Field(default=8 * 1024 * 1024, ge=64 * 1024)
+    trial_ingest_max_pages: int = Field(default=10, ge=1, le=50)
+    trial_ingest_ttl_seconds: int = Field(default=3600, ge=60, le=86_400)
+    # Live sessions one pseudonymised client may hold at once.
+    trial_ingest_sessions_per_client: int = Field(default=3, ge=1, le=20)
+    trial_ingest_window_seconds: int = Field(default=3600, ge=60, le=86_400)
+
     url_ingestion_enabled: bool = False
     url_encryption_key: str | None = None
     url_query_hmac_secret: str | None = None
@@ -681,6 +700,26 @@ class Settings(BaseSettings):
             raise ValueError("analysis_lease_seconds must exceed analysis_attempt_timeout_seconds")
         if self.analysis_max_source_bytes > self.max_upload_bytes:
             raise ValueError("analysis_max_source_bytes cannot exceed max_upload_bytes")
+        # ADR-006 — the anonymous cap may only be tighter than the authenticated
+        # one. Misconfiguring it the other way would let a visitor with no
+        # account submit a larger object than a paying tenant can.
+        if self.trial_ingest_max_bytes > self.analysis_max_source_bytes:
+            raise ValueError(
+                "trial_ingest_max_bytes cannot exceed analysis_max_source_bytes"
+            )
+        # Enabling anonymous ingest without a limiter would leave the endpoint
+        # with no bound at all. _consume_rate_control fails closed when the
+        # backend is unavailable, but an operator should not be able to ship the
+        # endpoint with no backend configured either.
+        if self.env == "production" and self.trial_ingest_enabled:
+            if not self.redis_url:
+                raise ValueError(
+                    "trial_ingest_enabled requires AKC_REDIS_URL in production"
+                )
+            if self.captcha_provider == "disabled":
+                raise ValueError(
+                    "trial_ingest_enabled requires a captcha provider in production"
+                )
         if self.analysis_backoff_max_seconds < self.analysis_backoff_base_seconds:
             raise ValueError(
                 "analysis_backoff_max_seconds must be at least analysis_backoff_base_seconds"
