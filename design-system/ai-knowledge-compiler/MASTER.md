@@ -5,6 +5,11 @@
 > Scope: authenticated product UI. The marketing site has its own editorial
 > composition, but uses the same color, type, accessibility, and evidence
 > semantics.
+>
+> **Visual design is superseded by [`DESIGN_MASTER_V3.md`](./DESIGN_MASTER_V3.md)**
+> (2026-08-07). Colour, type, grid, surface, motion, and asset decisions live
+> there; this file's remaining value is the product-behaviour vocabulary. V3 is
+> gated — see its §0.5 before implementing against it.
 
 ## Product character
 
