@@ -4914,6 +4914,193 @@
         "title": "SessionResponse",
         "type": "object"
       },
+      "TrialPreflight": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["UPLOADED", "SECURITY_SCANNING", "SECURITY_VERIFIED", "SECURITY_REJECTED", "PREFLIGHTING", "PREFLIGHTED", "FAILED"],
+            "title": "Status"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "pages_inspected": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Pages Inspected",
+            "default": 0
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
+          },
+          "detected_language_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Detected Language Codes"
+          },
+          "encrypted": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encrypted"
+          },
+          "route_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Profile"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["session_id", "document_id", "status", "expires_at"],
+        "title": "TrialPreflight",
+        "description": "What the compiler established, and what it did not.\n\n``pages_inspected`` and ``page_count`` are separate on purpose. A document\nlonger than the trial cap is inspected in part, and §25.7 forbids reporting\na partial measurement as a whole one — ``truncated`` says so explicitly\nrather than leaving the caller to compare two numbers."
+      },
+      "TrialSessionCreated": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "max_bytes": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Max Bytes"
+          },
+          "max_pages": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Max Pages"
+          },
+          "accepted_content_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Accepted Content Types"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["session_id", "expires_at", "max_bytes", "max_pages", "accepted_content_types"],
+        "title": "TrialSessionCreated",
+        "description": "The only credential a trial visitor gets.\n\n``session_id`` grants read access to exactly one project under the reserved\nsystem trial tenant and nothing else. It is not a token, carries no claims,\nand stops working at ``expires_at``."
+      },
+      "TrialUploadAccepted": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "upload_url": {
+            "type": "string",
+            "title": "Upload Url"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["document_id", "upload_url", "expires_at"],
+        "title": "TrialUploadAccepted"
+      },
+      "TrialUploadRequest": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Size"
+          },
+          "content_type": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Content Type"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$",
+            "title": "Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["filename", "size", "content_type", "sha256"],
+        "title": "TrialUploadRequest"
+      },
       "UploadComplete": {
         "additionalProperties": false,
         "properties": {
@@ -10527,6 +10714,120 @@
         },
         "summary": "Change Member Role",
         "tags": ["team"]
+      }
+    },
+    "/v1/trial/sessions": {
+      "post": {
+        "tags": ["trial"],
+        "summary": "Create Trial Session",
+        "description": "Issue one session and the project that will hold its document.",
+        "operationId": "create_trial_session_v1_trial_sessions_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrialSessionCreated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trial/sessions/{session_id}": {
+      "get": {
+        "tags": ["trial"],
+        "summary": "Read Trial Preflight",
+        "description": "Report where the document is in the quarantine path, and what preflight found.",
+        "operationId": "read_trial_preflight_v1_trial_sessions__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrialPreflight"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trial/sessions/{session_id}/uploads": {
+      "post": {
+        "tags": ["trial"],
+        "summary": "Initiate Trial Upload",
+        "description": "Presign one object for this session. One document per session, ever.",
+        "operationId": "initiate_trial_upload_v1_trial_sessions__session_id__uploads_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrialUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrialUploadAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/upload-sessions": {
