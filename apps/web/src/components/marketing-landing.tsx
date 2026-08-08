@@ -5,6 +5,7 @@ import { HeroComp, HERO_COPY } from "@/components/facing/hero-comp";
 import { TavonelGlyph } from "@/components/tavonel-glyph";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
+import { homepageMetricRows } from "@/lib/benchmark-public";
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 
 const chapters = [
@@ -180,16 +181,11 @@ export function MarketingLanding() {
               <span>Public status</span>
               <span>Evidence</span>
             </div>
-            {[
-              ["Text fidelity", "Not measured", "Dataset required"],
-              ["Numeric preservation", "Not measured", "Ground truth required"],
-              ["Table structure", "Not measured", "Comparator required"],
-              ["Source coverage", "Verified locally", "Live source-link E2E"],
-            ].map((row) => (
-              <div key={row[0]}>
-                {row.map((cell) => (
-                  <span key={cell}>{cell}</span>
-                ))}
+            {homepageMetricRows().map((row) => (
+              <div key={row.metric}>
+                <span>{row.metric}</span>
+                <span>{row.status}</span>
+                <span>{row.evidence}</span>
               </div>
             ))}
           </div>

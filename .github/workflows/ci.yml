@@ -175,6 +175,11 @@ jobs:
           python -m uv run --locked --extra dev python infra/security/validate_deployment.py
           python -m uv run --locked --extra dev python scripts/generate_contract_types.py --check
           python -m uv run --locked --extra dev python scripts/check_openapi_compat.py
+      # One Alembic head. Two branches adding a revision off the same parent
+      # merge cleanly in git and then refuse to run, so this fails at the
+      # merge instead of at the deploy.
+      - name: Migration chain has a single head
+        run: python -m uv run --locked --extra dev python scripts/check_migration_chain.py
       - name: Run benchmark metric tests
         run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
       - name: Run GPU handler tests
