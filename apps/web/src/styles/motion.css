@@ -99,6 +99,56 @@
 }
 
 /*
+ * ── View transitions ────────────────────────────────────────────────────
+ * No scene uses one yet. These are here for the same reason the primitives
+ * above are: the two rules below are contract, and a contract that arrives
+ * after the first transition ships arrives too late.
+ *
+ * React's <ViewTransition> is the mechanism (App Router navigations are
+ * transitions, so it activates automatically, and `document.startViewTransition`
+ * must never be called by hand). The animations themselves belong to the scene
+ * that owns them. What belongs here is what is true of every transition.
+ *
+ * The brand's transition is the shared-element morph, not the directional
+ * slide. §4 puts a source page and its knowledge side by side; carrying one
+ * element across a navigation says "the same thing, seen closer", which is the
+ * §1 claim. A slide says "somewhere else", which is not. §10.4 also forbids
+ * movement across the viewport, and Next's own guide names directional slides
+ * as the most common trigger for motion sensitivity.
+ */
+::view-transition {
+  /* The overlay captures pointer events for the length of the animation, so
+   * clicks during a transition are otherwise swallowed. */
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * The refined form, which §10.4 requires and the reference material does
+   * not supply. Both the Vercel skill and the Next.js guide reduce motion
+   * here with `animation-duration: 0s !important` — removal, which §10.4
+   * rules out, and which the Next guide itself flags as the blunt option
+   * while leaving the better one as an exercise.
+   *
+   * Movement goes; the crossfade stays. A transition still reads as one
+   * state becoming another, it just stops travelling to get there.
+   *
+   * These need their own rule because `*` does not match pseudo-elements —
+   * the global clamp further down never reaches the ::view-transition tree.
+   */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: var(--t-1, 90ms) !important;
+    animation-delay: 0s !important;
+    animation-timing-function: var(--e-out) !important;
+    translate: none !important;
+    rotate: none !important;
+    scale: none !important;
+  }
+}
+
+/*
  * ── The reduced-motion contract ─────────────────────────────────────────
  * §10.4: "정보 손실 0 — 최종 상태를 즉시 표시한다. 감쇠이지 제거가 아니다
  * (젠틀한 페이드는 유지)."

@@ -64,3 +64,9 @@ crash.log
 
 # Font build scratch environment (tools/fonts/build_fonts.py)
 .venv-fonts/
+
+# Agent skill installs. `.agents/skills/` and skills-lock.json are committed —
+# the reference material is useful to later waves and the lockfile pins what
+# was reviewed. `.claude/skills/` is not: the installer writes absolute
+# symlinks into it, so the entries are valid only on the machine that ran it.
+.claude/skills/
