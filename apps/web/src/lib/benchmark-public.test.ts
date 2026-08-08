@@ -1,110 +1,112 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  homepageMetricRows,
-  publicBenchmarkSnapshot,
-  type PublicBenchmarkSnapshot,
-} from "./benchmark-public";
+import { homepageMetricRows } from "./benchmark-public";
+import { claimFigure, claimsPack, documentTypeRows } from "./claims";
 
 /**
- * The handoff between the benchmark work and this site.
+ * What the site is allowed to say, checked against the pack that says it.
  *
- * The benchmark session writes one file — data/benchmark-public-snapshot.json —
- * and nothing else. These tests pin what happens at both ends of that file so
- * neither side has to read the other's code to know what will render.
- *
- * The empty case is the one that matters most. §25.7 forbids publishing a
- * figure nothing measured, and the previous version of this table typed
- * "Not measured" in by hand — true only for as long as somebody remembered to
- * keep it true.
+ * The pack carries editorial constraints beside its numbers, and the ones below
+ * are the constraints that a component could plausibly violate by accident.
+ * `scripts/verify-claims.mjs` covers the greppable half — forbidden phrasings
+ * and withheld figures. These cover the half that is about structure.
  */
 
-const EMPTY = publicBenchmarkSnapshot;
+describe("the claims pack", () => {
+  it("refuses to hand over a withheld claim", () => {
+    // quality-retry-improvement has no measurement yet, and blind-quality-
+    // detection was measured and rejected. Reaching for either is a mistake in
+    // the calling code, so it throws rather than returning something empty that
+    // would render as a blank.
+    expect(() => claimFigure("quality-retry-improvement")).toThrow(/withheld/);
+    expect(() => claimFigure("blind-quality-detection")).toThrow(/withheld/);
+  });
 
-const MEASURED: PublicBenchmarkSnapshot = {
-  ...EMPTY,
-  status: "available",
-  generated_at: "2026-08-08T00:00:00Z",
-  datasets: [
-    {
-      id: "ko-dart",
-      label: "KO DART",
-      source: "OpenDART",
-      status: "available",
-      document_count: 120,
-      page_count: 4310,
-      metrics: {
-        text: 0.981,
-        numbers: 0.994,
-        tables: 0.912,
-        provenance: 1,
-        p95_latency_ms: 8400,
-        cost_per_page_usd: 0.0031,
-      },
-      evidence: {
-        case_count: 120,
-        hard_failure_count: 0,
-        score_records_sha256: "a".repeat(64),
-        corpus_manifest_sha256: "b".repeat(64),
-      },
-    },
-    ...EMPTY.datasets.filter((dataset) => dataset.id !== "ko-dart"),
-  ],
-};
-
-describe("homepage metric table", () => {
-  it("says Not measured while the snapshot is empty", () => {
-    const rows = homepageMetricRows(EMPTY);
-    const scored = rows.filter((row) => row.metric !== "Source coverage");
-
-    expect(scored).toHaveLength(3);
-    for (const row of scored) {
-      expect(row.status).toBe("Not measured");
-      // The evidence column says what is missing, not a percentage.
-      expect(row.evidence).toMatch(/required$/);
+  it("carries the mandatory context with every figure it publishes", () => {
+    const published = claimsPack.claims.filter(
+      (claim) => claim.status !== "withheld",
+    );
+    for (const claim of published) {
+      const figure = claimFigure(claim.id);
+      // A claim that came with must_say or conditions must expose them; a
+      // component cannot render the number and silently drop the sentence.
+      const owed =
+        (claim.must_say_en ? 1 : 0) + (claim.conditions?.length ?? 0);
+      expect(figure.context).toHaveLength(owed);
     }
   });
 
-  it("reports the measurement and names the corpus once one exists", () => {
-    const rows = homepageMetricRows(MEASURED);
-    const text = rows.find((row) => row.metric === "Text fidelity");
+  it("gives conditional claims their conditions", () => {
+    // The pack allows these only when the conditions are shown with them.
+    for (const id of ["leaderboard-position", "cost-per-page"]) {
+      expect(claimFigure(id).context.length).toBeGreaterThan(0);
+    }
+  });
+});
 
-    expect(text?.status).toBe("98.1%");
-    // A percentage with no corpus behind it is the figure §25.7 keeps off the
-    // page, so the citation travels with the number.
-    expect(text?.evidence).toBe("KO DART · 120 documents");
+describe("accuracy by document type", () => {
+  it("keeps the low-quality scan row", () => {
+    // Removing it is forbidden outright: the spread runs 99.0% to 36.9%, and a
+    // table without the bottom row promises something the product does not do
+    // for degraded scans.
+    const rows = documentTypeRows();
+    const worst = rows.at(-1);
+    expect(rows).toHaveLength(8);
+    expect(worst?.accuracy_percent).toBe(36.9);
+    expect(worst?.label_en).toBe("Low-quality scans");
   });
 
-  it("leaves a metric the run did not cover at Not measured", () => {
-    const partial: PublicBenchmarkSnapshot = {
-      ...MEASURED,
-      datasets: [
-        {
-          ...MEASURED.datasets[0]!,
-          metrics: { ...MEASURED.datasets[0]!.metrics, tables: null },
-        },
-        ...MEASURED.datasets.slice(1),
-      ],
-    };
+  it("orders worst last so the spread is the last thing read", () => {
+    const rows = documentTypeRows();
+    const accuracies = rows.map((row) => row.accuracy_percent);
+    expect(accuracies).toEqual([...accuracies].sort((a, b) => b - a));
+  });
 
-    const rows = homepageMetricRows(partial);
-    expect(rows.find((row) => row.metric === "Table structure")?.status).toBe(
-      "Not measured",
-    );
-    expect(rows.find((row) => row.metric === "Text fidelity")?.status).toBe(
-      "98.1%",
-    );
+  it("every row states its denominator", () => {
+    for (const row of documentTypeRows()) {
+      expect(row.checks_total).toBeGreaterThan(0);
+      expect(row.checks_passed).toBeLessThanOrEqual(row.checks_total);
+    }
+  });
+});
+
+describe("homepage metric table", () => {
+  it("reports the fidelity measurements with their corpus", () => {
+    const rows = homepageMetricRows();
+    const text = rows.find((row) => row.metric === "Text fidelity");
+
+    expect(text?.status).toBe("94.2%");
+    // An unattributed percentage is the figure §25.7 keeps off this page, and
+    // the pack's first global rule is that every ratio carries its denominator.
+    expect(text?.evidence).toContain("5,132 documents");
+    expect(text?.evidence).toContain("OmniDocBench");
+  });
+
+  it("keeps the completion rate off the accuracy table", () => {
+    // 99.98% is the share that produced output. Calling it accuracy is listed
+    // as forbidden, and a row here is exactly the position that would.
+    const rows = homepageMetricRows();
+    for (const row of rows) {
+      expect(row.status).not.toContain("99.98");
+      expect(row.metric).not.toMatch(/completion/i);
+    }
+  });
+
+  it("keeps the check pass rate off it too", () => {
+    // 80.6% measures something different from 94.2%, and the pack requires
+    // labelling which is which when both appear. They are kept apart instead.
+    for (const row of homepageMetricRows()) {
+      expect(row.status).not.toContain("80.6");
+    }
   });
 
   it("keeps source coverage out of the benchmark claim", () => {
-    // It is an end-to-end assertion in the Playwright suite, not a score, so
-    // it must not start reporting a percentage when the snapshot fills in.
-    for (const snapshot of [EMPTY, MEASURED]) {
-      const row = homepageMetricRows(snapshot).find(
-        (candidate) => candidate.metric === "Source coverage",
-      );
-      expect(row?.status).toBe("Verified locally");
-      expect(row?.evidence).toBe("Live source-link E2E");
-    }
+    const row = homepageMetricRows().find(
+      (candidate) => candidate.metric === "Source coverage",
+    );
+    // An end-to-end assertion, not a score. It must not start reporting a
+    // percentage just because the surrounding rows do.
+    expect(row?.status).toBe("Verified locally");
+    expect(row?.evidence).toBe("Live source-link E2E");
   });
 });

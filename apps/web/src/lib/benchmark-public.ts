@@ -1,4 +1,9 @@
 import snapshot from "@/data/benchmark-public-snapshot.json";
+import {
+  claimFigure,
+  type CorpusScale,
+  type FidelityMetrics,
+} from "@/lib/claims";
 
 export type PublicBenchmarkStatus =
   "available" | "source_adapter_ready" | "evidence_required";
@@ -67,23 +72,24 @@ export function formatBenchmarkCost(value: number | null): string {
 
 
 /**
- * The homepage metric table, derived rather than transcribed.
+ * The homepage metric table, from the public claims pack.
  *
- * These four rows used to be a literal array inside marketing-landing.tsx with
- * "Not measured" typed in by hand. That made the snapshot and the homepage two
- * separate claims about the same thing, and it put the benchmark session in a
- * position where publishing a result meant editing a React component in
- * someone else's directory.
+ * These four rows were a literal array with "Not measured" typed in by hand,
+ * then briefly derived from benchmark-public-snapshot.json, which was never
+ * filled. The measurements arrived instead as a claims pack — numbers with the
+ * editorial constraints that make them defensible — so that is the source now.
  *
- * Now the only thing anyone writes is
- * `apps/web/src/data/benchmark-public-snapshot.json`. A metric with a value
- * shows it and names the corpus it came from; a metric still at null keeps
- * saying "Not measured", which §25.7 requires and which stays true by
- * construction rather than by remembering to update it.
+ * Two of the pack's rules shape this table specifically:
  *
- * Source coverage is not in the snapshot because it is not a benchmark score:
- * it is an end-to-end assertion in the Playwright suite, so it reports what
- * that suite establishes and says where.
+ *   completion-rate is not on it. 99.98% is the share of documents that
+ *   produced output, the pack forbids calling that accuracy, and a row in an
+ *   accuracy table is exactly the position that would.
+ *
+ *   the 80.6% check pass rate and the 94.2% character match are different
+ *   measures, and customer-facing-fidelity requires labelling which is which
+ *   when both appear. This table carries the fidelity figures, which are the
+ *   ones a reader can act on; the pass rate lives in the accuracy section with
+ *   its own context.
  */
 export interface HomepageMetricRow {
   metric: string;
@@ -91,36 +97,27 @@ export interface HomepageMetricRow {
   evidence: string;
 }
 
-export function homepageMetricRows(
-  snapshot: PublicBenchmarkSnapshot = publicBenchmarkSnapshot,
-): HomepageMetricRow[] {
-  // The first dataset carrying a measurement is the one the homepage cites.
-  // Naming it matters: an unattributed percentage is the kind of figure §25.7
-  // exists to keep off this page.
-  const measured = snapshot.datasets.find((dataset) =>
-    Object.values(dataset.metrics).some((value) => value !== null),
-  );
-
-  const cite = (value: number | null, fallback: string): string =>
-    value === null || measured === undefined
-      ? fallback
-      : `${measured.label} · ${measured.document_count ?? "?"} documents`;
+export function homepageMetricRows(): HomepageMetricRow[] {
+  const fidelity = claimFigure<FidelityMetrics>("customer-facing-fidelity");
+  const corpus = claimFigure<CorpusScale>("corpus-scale");
+  // Every ratio carries its denominator — the pack's first global rule.
+  const corpusNote = `${corpus.numbers.documents.toLocaleString("en-US")} documents`;
 
   return [
     {
       metric: "Text fidelity",
-      status: formatBenchmarkPercent(measured?.metrics.text ?? null),
-      evidence: cite(measured?.metrics.text ?? null, "Dataset required"),
-    },
-    {
-      metric: "Numeric preservation",
-      status: formatBenchmarkPercent(measured?.metrics.numbers ?? null),
-      evidence: cite(measured?.metrics.numbers ?? null, "Ground truth required"),
+      status: `${fidelity.numbers.text_character_match_percent}%`,
+      evidence: `Character match · OmniDocBench · ${corpusNote}`,
     },
     {
       metric: "Table structure",
-      status: formatBenchmarkPercent(measured?.metrics.tables ?? null),
-      evidence: cite(measured?.metrics.tables ?? null, "Comparator required"),
+      status: `${fidelity.numbers.table_structure_percent}%`,
+      evidence: `Structure accuracy · OmniDocBench · ${corpusNote}`,
+    },
+    {
+      metric: "Reading order",
+      status: `${fidelity.numbers.reading_order_match_percent}%`,
+      evidence: `Order match · OmniDocBench · ${corpusNote}`,
     },
     {
       metric: "Source coverage",

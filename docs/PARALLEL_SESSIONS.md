@@ -79,43 +79,55 @@ additive before committing.
 
 ## Benchmark results reaching the website
 
-This is a one-file interface and it already exists. The benchmark session writes
-exactly one file:
+One file, regenerated upstream, committed here verbatim:
 
 ```
-apps/web/src/data/benchmark-public-snapshot.json
+apps/web/src/data/claims/public-claims-pack.json
 ```
 
-Nothing else. No React, no TSX, no component in `apps/web/src/components/`. The
-site derives everything it shows from that file:
+Its human-readable twin lives at `docs/claims/PUBLIC_CLAIMS_2026-08-08.md`. The
+site reads only the JSON.
 
-- `apps/web/src/lib/benchmark-public.ts` types it and formats it
-- `homepageMetricRows()` builds the homepage metric table from it
-- `/benchmarks` renders the datasets from it
+**Numbers are never edited in that file.** To change one, regenerate the
+receipt that produced it and hand over a new pack. `verify-claims.mjs` checks
+`claim_count` and `counts_by_status` against the array, so a hand-edit that
+adjusts a figure without regenerating shows up as a mismatch.
 
-The schema is `PublicBenchmarkSnapshot` in `benchmark-public.ts`. Its shape
-matters in one respect above the rest:
+### The rules are enforced, not reviewed
 
-**Every metric is `number | null`, and `null` means "not measured".** A metric
-left null renders as `Not measured` with the reason it is missing. A metric with
-a value renders as a percentage *and the corpus it came from* — the label and
-document count travel with the figure, because §25.7 keeps unattributed numbers
-off this page. Publishing a result is therefore filling in a field, and
-withdrawing one is setting it back to null. Neither requires touching code.
-
-`apps/web/src/lib/benchmark-public.test.ts` pins both directions: empty snapshot
-stays at "Not measured", filled snapshot reports the value with its citation,
-and a partially covered run reports only what it covered. Run it before handing
-a snapshot over:
+The pack ships more than numbers. Nearly every claim carries a `must_say`, and
+several carry `forbidden` phrasings. Those are the difference between a
+defensible figure and a misleading one, and they are the part most likely to be
+lost when someone writes a headline quickly. Two mechanisms hold them:
 
 ```
-pnpm --filter @akc/web test -- benchmark-public
+verify-claims.mjs   forbidden phrasings and withheld figures, scanned across
+  (CI, per branch)  the web source. Fails the build.
+
+lib/claims.ts       claimFigure() returns the numbers and the mandatory
+  (structural)      context in one object, so a component takes both.
+                    Dropping the sentence takes deliberate effort rather than
+                    forgetfulness. It throws outright for a withheld claim.
 ```
 
-The rows also carry `evidence.score_records_sha256` and
-`corpus_manifest_sha256`. `/benchmarks` shows them. They are the difference
-between a benchmark and a claim, so a snapshot with metrics and empty digests
-should not ship.
+`benchmark-public.test.ts` pins the specifics that matter most: the low-quality
+scan row stays in the document-type table (removing it is forbidden), the 99.98%
+completion rate never appears in an accuracy table (calling it accuracy is
+forbidden), and the 80.6% check pass rate is kept away from the 94.2% character
+match unless both are labelled.
+
+### When the next pack arrives
+
+Replace the JSON, run `pnpm --filter @akc/web claims:check` and
+`pnpm --filter @akc/web test -- benchmark-public`, and read the diff of
+`counts_by_status`. A claim moving from `withheld` to `approved` is the
+interesting case: `quality-retry-improvement` unblocks when the retry and
+no-regression gate finish, and at that point its numbers may be published for
+the first time.
+
+The older `apps/web/src/data/benchmark-public-snapshot.json` still types the
+`/benchmarks` dataset view. It was the earlier contract and was never filled;
+the claims pack supersedes it for anything the marketing surface states.
 
 ## Before pushing, either session
 
@@ -123,6 +135,7 @@ should not ship.
 python -m uv run --extra dev python scripts/check_migration_chain.py
 python -m uv run --extra dev python scripts/check_openapi_compat.py
 pnpm --filter @akc/web blueprint:check
+pnpm --filter @akc/web claims:check
 ```
 
 The first two are the silent-failure guards. The third holds the design layer

@@ -78,6 +78,9 @@ jobs:
       # DESIGN_MASTER_V3 [확정] items that are checkable from source. The V3
       # layer must be clean; the legacy sheets ratchet downward only.
       - run: pnpm --filter @akc/web blueprint:check
+      # The public claims pack ships forbidden phrasings and two withheld
+      # claims. This fails if either reaches the site.
+      - run: pnpm --filter @akc/web claims:check
       - run: pnpm test
       - run: pnpm build
 
