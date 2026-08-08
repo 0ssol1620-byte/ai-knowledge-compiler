@@ -1,0 +1,172 @@
+/*
+ * Motion primitives — DESIGN_MASTER_V3 §10.
+ *
+ * Two primitives and one contract. Waves W2–W9 are meant to reach for these
+ * rather than write their own, which is the whole reason the file exists: the
+ * legacy stylesheets grew four `prefers-reduced-motion` blocks with different
+ * scopes and different values (§25 audit, 0.01ms in one, 1ms in another),
+ * because each section that needed motion invented its own handling.
+ *
+ * §10.5 sets the implementation rule — "JS 없는 모션을 기본으로 한다". Both
+ * primitives below are CSS only. Nothing here needs an effect, an observer, or
+ * a library.
+ */
+
+@layer base {
+  /* ── Entry ────────────────────────────────────────────────────────────
+   * §10.5: `@starting-style` + transition, no JavaScript.
+   *
+   * The element is styled at its final state and given a starting state to
+   * transition *from*. An element that is never inserted simply renders at
+   * its final state, so there is no first-paint flash and nothing to undo.
+   */
+  .tv-enter {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--t-4) var(--e-out),
+      translate var(--t-4) var(--e-out);
+
+    @starting-style {
+      opacity: 0;
+      /* 8px, not 24px. §10.1 sizes entry to a settling, not an arrival. */
+      translate: 0 8px;
+    }
+  }
+
+  /* ── Scroll reveal ────────────────────────────────────────────────────
+   * §10.5 names `animation-timeline: view()`, then requires an
+   * IntersectionObserver fallback because Firefox does not support it.
+   *
+   * This is built the other way round and the deviation is deliberate. The
+   * default state below is the *final* state — visible, in place. The
+   * animation is applied only inside `@supports`, so a browser without
+   * scroll-driven animations shows the content and no JavaScript is involved
+   * at all. An observer fallback would add a script to reproduce an effect,
+   * and would introduce the one failure mode that matters here: if the script
+   * does not run, content that started at `opacity: 0` never appears.
+   *
+   * §10.4's contract is "정보 손실 0". Content that is visible without the
+   * enhancement satisfies it by construction; content hidden until a script
+   * reveals it can only satisfy it if the script always runs.
+   */
+  .tv-reveal {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  @supports (animation-timeline: view()) {
+    .tv-reveal {
+      animation: tv-reveal linear both;
+      animation-timeline: view();
+      /* Complete by the time the element is a third of the way up the
+       * viewport — the reveal should be finished before it is being read,
+       * not still resolving under the reader's eye. */
+      animation-range: entry 0% cover 33%;
+    }
+
+    @keyframes tv-reveal {
+      from {
+        opacity: 0;
+        translate: 0 8px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+  }
+
+  /* ── Rule draw ────────────────────────────────────────────────────────
+   * §8 draws rules rather than fading them in. Uses the registered
+   * `--tv-rule-draw` from properties.css, which is what makes it animatable.
+   */
+  .tv-rule {
+    background-image: linear-gradient(
+      to right,
+      currentColor 0 var(--tv-rule-draw),
+      transparent var(--tv-rule-draw)
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    transition: --tv-rule-draw var(--t-5) var(--e-out);
+  }
+
+  .tv-rule[data-drawn="true"] {
+    --tv-rule-draw: 100%;
+  }
+}
+
+/*
+ * ── The reduced-motion contract ─────────────────────────────────────────
+ * §10.4: "정보 손실 0 — 최종 상태를 즉시 표시한다. 감쇠이지 제거가 아니다
+ * (젠틀한 페이드는 유지)."
+ *
+ * Attenuation, not removal, and the distinction is the point:
+ *
+ *   removed    Movement. `translate`, `scale`, `rotate` are zeroed and their
+ *              transitions cancelled. Motion across the screen is what the
+ *              preference is about.
+ *   removed    Iteration. Anything that repeats runs once and stops on its
+ *              final frame. §10.4 forbids infinite loops for everyone; here
+ *              even finite repeats collapse.
+ *   removed    Scroll-driven timelines. Progress tied to scroll is movement
+ *              by another name.
+ *   kept       Colour and opacity, shortened to --t-1. These carry state —
+ *              a focus ring, a hover, a rejection turning a border red — and
+ *              deleting them removes information rather than motion. §10.4
+ *              says gentle fades stay.
+ *
+ * Deliberately NOT the usual blanket `transition-duration: 0.01ms !important`
+ * on `*`. That is removal, it defeats `transitionend` listeners, and it is
+ * what produced the inconsistent legacy blocks this file replaces.
+ */
+@media (prefers-reduced-motion: reduce) {
+  @layer base {
+    .tv-enter,
+    .tv-reveal {
+      opacity: 1;
+      translate: 0 0;
+      animation: none;
+      transition: opacity var(--t-1) var(--e-out);
+    }
+
+    .tv-rule {
+      transition: none;
+    }
+  }
+
+  /*
+   * The global clamp. Unlayered on purpose — this is the one place in the V3
+   * stylesheets that is — because it has to reach legacy rules too, and
+   * unlayered declarations outrank every layered one (the same cascade fact
+   * recorded at the top of tokens.css, used deliberately here).
+   *
+   * --t-1 is 90ms, and the specific number is the decision. Zero would be
+   * removal, which §10.4 rules out. The four legacy blocks this replaces used
+   * 0.01ms and 1ms — both indistinguishable from zero, both leaving state
+   * changes to happen with no visible transition at all. 90ms is below the
+   * threshold at which movement reads as travel across the screen, and above
+   * the one at which a colour change reads as a jump cut. The final state is
+   * effectively immediate, and the fade §10.4 asks to keep is still a fade.
+   *
+   * Clamping the duration rather than filtering the property list is what
+   * makes this work on legacy CSS nobody has audited: it does not need to
+   * know which properties a given rule animates.
+   */
+  *,
+  *::before,
+  *::after {
+    /* The literal fallback is not decoration. A bare var() that fails to
+     * resolve makes the declaration invalid at computed-value time, and
+     * animation-duration then falls back to its initial 0s — silently turning
+     * this attenuation back into the removal it exists to avoid. */
+    animation-duration: var(--t-1, 90ms) !important;
+    animation-iteration-count: 1 !important;
+    /* Progress tied to scroll is movement by another name. */
+    animation-timeline: auto !important;
+    transition-duration: var(--t-1, 90ms) !important;
+    scroll-behavior: auto !important;
+  }
+}

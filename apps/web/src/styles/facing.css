@@ -34,18 +34,46 @@
     text-transform: uppercase;
   }
 
+  /*
+   * §4.1 — the four spreads, as CSS rather than as values written from the
+   * component.
+   *
+   * The ratio set is closed and known at build time, so nothing has to cross
+   * the JavaScript/CSS boundary to express it. That matters because `<flex>`
+   * is the one thing a custom property cannot be made safe for: `@property`
+   * has no `<flex>` syntax component, so a registered fallback is impossible,
+   * and an invalid flex substituted into `grid-template-columns` invalidates
+   * the whole declaration — which is exactly how this spread once collapsed
+   * into a single column.
+   *
+   * Keyed on `data-ratio`, an unknown value falls through to the default
+   * below. The failure mode is the wrong proportion, never no columns.
+   */
   .tv-facing-frame {
     position: relative;
     display: grid;
     grid-template-columns:
-      minmax(0, var(--facing-verso, 5fr))
+      minmax(0, 5fr)
       minmax(0, 0.6fr)
-      minmax(0, var(--facing-recto, 7fr));
+      minmax(0, 7fr);
     align-items: stretch;
     overflow: hidden;
     border: 1px solid var(--rule-paper-2);
     border-radius: var(--r-media);
     background: var(--paper-0);
+  }
+
+  /* hero is the default above: 5 / 7, source narrower than knowledge. */
+  [data-ratio="proof"] .tv-facing-frame {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 0.6fr) minmax(0, 5fr);
+  }
+
+  [data-ratio="knowledge"] .tv-facing-frame {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 0.6fr) minmax(0, 8fr);
+  }
+
+  [data-ratio="trust"] .tv-facing-frame {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 0.6fr) minmax(0, 6fr);
   }
 
   /* Verso — always the source. §4.4 forbids swapping the sides. */

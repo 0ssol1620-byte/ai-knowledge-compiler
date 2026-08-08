@@ -1,0 +1,84 @@
+/*
+ * Typed custom properties — DESIGN_MASTER_V3 §10.5.
+ *
+ * §10.5 names `transition + @property` as the way state transitions are built,
+ * because an unregistered custom property is a string: the browser cannot
+ * interpolate it, so `transition: --x 200ms` does nothing. Registering gives a
+ * property a type, and a type makes it animatable.
+ *
+ * The second reason is the one this repository learned the hard way, and it is
+ * about correctness rather than motion. An unregistered custom property that
+ * holds an invalid value poisons the whole declaration that reads it: the
+ * declaration becomes invalid at computed-value time and is dropped. That is
+ * exactly how FacingPages once collapsed to a single column — `--facing-verso`
+ * held a bare number, `grid-template-columns` read it where a <flex> was
+ * required, and the entire template disappeared rather than one track. A
+ * registered property cannot do that. An invalid value falls back to the
+ * registered initial value and the declaration survives.
+ *
+ * So the rule for this file: every custom property that crosses the
+ * JavaScript/CSS boundary gets registered here. Values written from a
+ * component are the ones nobody type-checks, and they are the ones that break
+ * layouts silently.
+ *
+ * `inherits` is set deliberately in each case rather than left to habit —
+ * a layout ratio should not leak into descendants, an animation progress
+ * usually should.
+ */
+
+/* ── What is deliberately absent: the FacingPages column ratio ────────────
+ *
+ * The first version of this file registered `--facing-verso` and
+ * `--facing-recto` as `<flex>`, to guard the bug described above. A browser
+ * test written against that registration failed, and the reason is worth
+ * recording so nobody adds it back:
+ *
+ *   `<flex>` is not one of the syntax components @property accepts. The
+ *   accepted set is length, number, percentage, length-percentage, color,
+ *   image, url, integer, angle, time, resolution, transform-function,
+ *   transform-list, custom-ident and string. A registration naming any other
+ *   type is invalid and is dropped whole — leaving the property unregistered,
+ *   which is the state the registration was supposed to fix.
+ *
+ * Nor can a flex be built from a registered number: `calc(var(--n) * 1fr)` is
+ * not valid in a grid track, which the same test confirmed.
+ *
+ * So a flex value cannot be passed safely through a custom property at all.
+ * The ratio moved into facing.css keyed on `data-ratio` instead, where the
+ * closed set of four spreads is expressed directly and no JavaScript-written
+ * value can invalidate the grid.
+ */
+
+/* ── Scene progress ───────────────────────────────────────────────────────
+ * 0 → 1. The unit that scroll reveal and the source→knowledge thread both
+ * animate. Inherits, so a scene can drive its own children from one value
+ * without every descendant subscribing separately.
+ */
+@property --tv-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* ── Rule draw ────────────────────────────────────────────────────────────
+ * The length of a drawn rule as a share of its container. §8 draws rules
+ * rather than fading them in: a rule that extends reads as a measurement
+ * being taken, which is the gesture the brand is built on.
+ */
+@property --tv-rule-draw {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+/* ── Material tint ────────────────────────────────────────────────────────
+ * Registered as <color> so PAPER↔INSTRUMENT crossings can be transitioned
+ * where a crossing is a state change rather than the §5.1 hard cut. The hard
+ * cut between bands stays a hard cut; this is for a surface that changes
+ * material in place, such as a panel that becomes the instrument.
+ */
+@property --tv-material {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}

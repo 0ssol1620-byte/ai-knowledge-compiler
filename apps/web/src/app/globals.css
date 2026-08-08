@@ -5821,16 +5821,6 @@ a {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .marketing-site *,
-  .app-frame * {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 .quick-convert-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
@@ -8487,21 +8477,6 @@ a {
 
   .webhook-endpoint-card > header {
     grid-template-columns: auto minmax(0, 1fr);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  .scan-line {
-    display: none;
   }
 }
 

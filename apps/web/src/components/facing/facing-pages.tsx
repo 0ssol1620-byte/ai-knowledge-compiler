@@ -83,15 +83,17 @@ export function FacingPages({
   return (
     <figure
       className={["tv-facing", className].filter(Boolean).join(" ")}
-      style={
-        {
-          // The unit belongs in the value: `var(--facing-verso)fr` is not
-          // valid CSS, and an invalid grid-template-columns silently drops the
-          // whole declaration, collapsing the spread into one column.
-          "--facing-verso": `${versoCols}fr`,
-          "--facing-recto": `${rectoCols}fr`,
-        } as React.CSSProperties
-      }
+      // The column ratio is not written from here. `data-ratio` selects it in
+      // facing.css instead, because a flex value is the one kind a custom
+      // property cannot be made safe for — @property has no <flex> syntax, so
+      // there is no registered fallback, and an invalid flex takes the whole
+      // grid-template-columns declaration with it. That is how this spread
+      // once collapsed into a single column. The ratios are a closed set, so
+      // nothing needs to cross the boundary at all.
+      //
+      // versoCols and rectoCols are still read below: the thread geometry
+      // needs the same proportion in frame space, and computing it here keeps
+      // the two definitions adjacent.
       data-ratio={ratio}
     >
       {meta && <div className="tv-facing-meta">{meta}</div>}

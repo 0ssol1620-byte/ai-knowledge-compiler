@@ -3144,17 +3144,6 @@ body.tv-menu-open {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tv-site *,
-  .tv-site *::before,
-  .tv-site *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
-}
-
 @media (forced-colors: active) {
   .tv-button,
   .tv-page-visual,
