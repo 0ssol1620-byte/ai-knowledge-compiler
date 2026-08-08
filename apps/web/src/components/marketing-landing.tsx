@@ -1,11 +1,11 @@
 import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
+import { AccuracySection } from "@/components/accuracy-section";
 import { HeroComp, HERO_COPY } from "@/components/facing/hero-comp";
 import { TavonelGlyph } from "@/components/tavonel-glyph";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
-import { homepageMetricRows } from "@/lib/benchmark-public";
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 
 const chapters = [
@@ -69,6 +69,24 @@ export function MarketingLanding() {
           )}
         </div>
 
+        <section className="tv-demo-section">
+          <div className="tv-section-intro">
+            <p>Public filing demo</p>
+            <h2>Do not take our word for it. Inspect the result.</h2>
+            <span>
+              The same DART sample connects the original page, Markdown,
+              knowledge package, graph, and proof panel.
+            </span>
+          </div>
+          <TavonelProofDemo />
+          <div className="tv-inline-actions">
+            <Link href="/demo/dart">Open full DART demo</Link>
+            <Link href="/signup">Try it with your document</Link>
+          </div>
+        </section>
+
+        <AccuracySection />
+
         <section id="transformation" className="tv-transformation">
           <header>
             <p>The compiler path</p>
@@ -89,21 +107,6 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="tv-demo-section">
-          <div className="tv-section-intro">
-            <p>Public filing demo</p>
-            <h2>Do not take our word for it. Inspect the result.</h2>
-            <span>
-              The same DART sample connects the original page, Markdown,
-              knowledge package, graph, and proof panel.
-            </span>
-          </div>
-          <TavonelProofDemo />
-          <div className="tv-inline-actions">
-            <Link href="/demo/dart">Open full DART demo</Link>
-            <Link href="/signup">Try it with your document</Link>
-          </div>
-        </section>
 
         <section className="tv-pillars">
           <header>
@@ -166,33 +169,6 @@ export function MarketingLanding() {
           </article>
         </section>
 
-        <section className="tv-benchmark">
-          <div>
-            <p>Benchmark discipline</p>
-            <h2>Accuracy should be demonstrated, not declared.</h2>
-            <span>
-              Dataset, sample count, route version, evaluator, and date travel
-              with every result. Unmeasured values remain unavailable.
-            </span>
-          </div>
-          <div className="tv-metric-table">
-            <div>
-              <span>Metric</span>
-              <span>Public status</span>
-              <span>Evidence</span>
-            </div>
-            {homepageMetricRows().map((row) => (
-              <div key={row.metric}>
-                <span>{row.metric}</span>
-                <span>{row.status}</span>
-                <span>{row.evidence}</span>
-              </div>
-            ))}
-          </div>
-          <Link href="/benchmarks" className="tv-text-action">
-            Explore benchmark methodology
-          </Link>
-        </section>
 
         <section className="tv-use-cases">
           <header>

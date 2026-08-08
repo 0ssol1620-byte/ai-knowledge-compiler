@@ -49,3 +49,222 @@
     }
   }
 }
+
+/*
+ * The accuracy section — the claims pack made visible.
+ *
+ * INSTRUMENT surface (§5.1): this is the measuring instrument, not the page it
+ * measured. The hard cut from the PAPER band above is the boundary §5.1 asks
+ * for, and it lands exactly where the site stops describing and starts
+ * reporting.
+ */
+@layer components {
+  .tv-accuracy {
+    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    background: var(--inst-0);
+    color: var(--inst-ink-0);
+  }
+
+  .tv-accuracy-eyebrow {
+    margin: 0 0 var(--s-3);
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    line-height: var(--lh-label);
+  }
+
+  .tv-accuracy-head h2 {
+    max-width: 20ch;
+    margin: 0 0 var(--s-7);
+    font-size: var(--fs-display-2);
+    font-weight: var(--w-display);
+    letter-spacing: var(--tracking-display-2);
+    line-height: var(--lh-display-2);
+  }
+
+  .tv-accuracy-headline {
+    display: grid;
+    gap: var(--s-6);
+    padding-bottom: var(--s-7);
+    border-bottom: 1px solid var(--rule-inst-2);
+  }
+
+  .tv-accuracy-figure strong {
+    display: block;
+    font-size: var(--fs-display-1);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--w-display);
+    letter-spacing: var(--tracking-display-1);
+    line-height: 1;
+  }
+
+  .tv-accuracy-figure span {
+    display: block;
+    margin-top: var(--s-2);
+    color: var(--inst-ink-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+  }
+
+  /*
+   * The must_say is not fine print. It is the sentence that keeps the figure
+   * from being read as a grade out of 100, so it sits at body size next to the
+   * number rather than beneath it in grey.
+   */
+  .tv-accuracy-context p {
+    max-width: var(--measure);
+    margin: 0 0 var(--s-3);
+    color: var(--inst-ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-accuracy-corpus {
+    color: var(--inst-ink-2) !important;
+    font-size: var(--fs-small) !important;
+  }
+
+  .tv-accuracy-table {
+    margin-top: var(--s-7);
+  }
+
+  .tv-accuracy-table h3 {
+    margin: 0 0 var(--s-2);
+    font-size: var(--fs-title-2);
+    font-weight: var(--w-title);
+    letter-spacing: var(--tracking-title-2);
+    line-height: var(--lh-title-2);
+  }
+
+  .tv-accuracy-spread {
+    max-width: var(--measure);
+    margin: 0 0 var(--s-5);
+    color: var(--inst-ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+  }
+
+  .tv-accuracy-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tv-accuracy-table th,
+  .tv-accuracy-table td {
+    padding: var(--s-3) var(--s-3) var(--s-3) 0;
+    border-bottom: 1px solid var(--rule-inst-1);
+    text-align: left;
+    font-weight: var(--w-body);
+  }
+
+  .tv-accuracy-table thead th {
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-accuracy-table tbody th {
+    color: var(--inst-ink-0);
+    font-weight: var(--w-medium);
+  }
+
+  .tv-accuracy-table td {
+    color: var(--inst-ink-1);
+    font-size: var(--fs-small);
+  }
+
+  /* The bar is the measurement drawn, so its width is the number itself. */
+  .tv-accuracy-cell {
+    position: relative;
+    min-width: 180px;
+  }
+
+  .tv-accuracy-bar {
+    position: absolute;
+    inset-block: 30%;
+    inset-inline-start: 0;
+    display: block;
+    background: color-mix(in oklab, var(--evidence-d) 34%, transparent);
+  }
+
+  .tv-accuracy-cell b {
+    position: relative;
+    font-size: var(--fs-body);
+    font-weight: var(--w-strong);
+  }
+
+  /*
+   * The worst row is marked, not buried. The pack forbids removing it; marking
+   * it is the opposite move — a reader scanning degraded documents should find
+   * their case immediately rather than after reading eight rows.
+   */
+  .tv-accuracy-table tr[data-worst] th,
+  .tv-accuracy-table tr[data-worst] td {
+    border-bottom-color: var(--review-d);
+  }
+
+  .tv-accuracy-table tr[data-worst] .tv-accuracy-bar {
+    background: color-mix(in oklab, var(--review-d) 40%, transparent);
+  }
+
+  .tv-accuracy-worst-note {
+    max-width: var(--measure);
+    margin: var(--s-5) 0 0;
+    padding-left: var(--s-4);
+    border-left: 2px solid var(--review-d);
+    color: var(--inst-ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-accuracy-evidence {
+    margin: var(--s-7) 0 0;
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    line-height: var(--lh-label);
+  }
+
+  .tv-accuracy-evidence span {
+    margin-right: var(--s-2);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  @media (min-width: 1024px) {
+    .tv-accuracy-headline {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: start;
+      gap: var(--s-8);
+    }
+  }
+}
+
+/*
+ * Anchor targets clear the fixed header.
+ *
+ * `.tv-header` is `position: fixed` at 68px, so a jump to any in-page anchor
+ * lands the heading underneath it — the section arrives already scrolled past
+ * its own title. Caught by taking a screenshot after scrollIntoViewIfNeeded and
+ * finding the h2 sliced in half by the nav.
+ *
+ * Applied to every marketing anchor rather than only the one that exposed it:
+ * the header does this to all of them equally, and a per-section fix would
+ * leave the next anchor to rediscover it.
+ *
+ * --topbar-height is deliberately not used here. That token is 48px and belongs
+ * to the product app's own bar, which is a different element on different
+ * routes.
+ */
+@layer components {
+  .tv-home [id],
+  .tv-marketing-page [id] {
+    scroll-margin-top: 84px;
+  }
+}
