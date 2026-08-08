@@ -868,6 +868,10 @@ class TrialUploadRequest(WireModel):
 
 class TrialUploadAccepted(WireModel):
     document_id: uuid.UUID
+    # The visitor names this upload again when it calls complete, so it has to
+    # come back here. Not derivable from document_id: a document is created
+    # once but the completion route is addressed per upload.
+    upload_id: uuid.UUID
     upload_url: str
     headers: dict[str, str] = Field(default_factory=dict)
     expires_at: datetime

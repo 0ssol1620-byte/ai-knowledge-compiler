@@ -43,6 +43,8 @@ export type TrialPreflight = {
   pageCount: number | null;
   pagesInspected: number;
   truncated: boolean;
+  /** Named refusal reason when the document was rejected. */
+  errorCode: string | null;
   expiresAt: string;
 };
 
@@ -118,7 +120,7 @@ export async function uploadTrialDocument(
   session: TrialSession,
   file: File,
   inspected: DroppedFile,
-): Promise<{ documentId: string }> {
+): Promise<{ documentId: string; preflight: TrialPreflight }> {
   const sha256 = inspected.sha256 || (await browserSha256(file));
 
   const initiated = await fetch(
@@ -139,7 +141,15 @@ export async function uploadTrialDocument(
   }
   const target = await initiated.json();
 
-  const stored = await fetch(target.upload_url, {
+  // In production this is an absolute presigned S3 URL and the bytes never
+  // touch the API. The development adapter returns a path on the API instead,
+  // and a relative URL would resolve against the web origin rather than the
+  // API's — so only the relative form gets a prefix.
+  const uploadUrl: string = target.upload_url.startsWith("/")
+    ? `${API_URL}${target.upload_url}`
+    : target.upload_url;
+
+  const stored = await fetch(uploadUrl, {
     method: "PUT",
     headers: target.headers ?? {},
     body: file,
@@ -152,7 +162,22 @@ export async function uploadTrialDocument(
     );
   }
 
-  return { documentId: target.document_id };
+  // Storing the bytes is not submitting them. Completion is what runs the
+  // security path, and until it is called the document sits in quarantine
+  // having been read by nothing.
+  const completed = await fetch(
+    `${API_URL}/v1/trial/sessions/${session.sessionId}` +
+      `/uploads/${target.upload_id}/complete`,
+    { method: "POST" },
+  );
+  if (!completed.ok) {
+    throw await readError(completed, "The document could not be checked.");
+  }
+
+  return {
+    documentId: target.document_id,
+    preflight: toPreflight(await completed.json()),
+  };
 }
 
 export async function readTrialPreflight(
@@ -164,13 +189,18 @@ export async function readTrialPreflight(
   if (!response.ok) {
     throw await readError(response, "Could not read the result.");
   }
-  const body = await response.json();
+  return toPreflight(await response.json());
+}
+
+/** One decoder, so completion and polling cannot disagree about a field. */
+function toPreflight(body: Record<string, unknown>): TrialPreflight {
   return {
-    status: body.status,
-    pageCount: body.page_count,
-    pagesInspected: body.pages_inspected,
-    truncated: body.truncated,
-    expiresAt: body.expires_at,
+    status: body.status as TrialPreflight["status"],
+    pageCount: (body.page_count as number | null) ?? null,
+    pagesInspected: (body.pages_inspected as number) ?? 0,
+    truncated: Boolean(body.truncated),
+    errorCode: (body.error_code as string | null) ?? null,
+    expiresAt: body.expires_at as string,
   };
 }
 

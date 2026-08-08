@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import hashlib
 import json
 import re
@@ -28,8 +27,6 @@ from akc_scheduler.webhooks import (
 from akc_security import (
     ALLOWED_EXTENSIONS,
     PLAN_LIMITS,
-    CdrRequest,
-    CdrResult,
     CdrStatus,
     InMemoryPdfSecretStore,
     PlanTier,
@@ -39,8 +36,6 @@ from akc_security import (
     ensure_portable_markdown_safe,
     redact_preview_png,
     sanitize_display_filename,
-    validate_cdr_result,
-    validate_upload_stream,
 )
 from akc_telemetry import (
     PROMETHEUS_CONTENT_TYPE,
@@ -132,10 +127,7 @@ from akc_api.free_tier import (
 from akc_api.idempotency import idempotent_mutation
 from akc_api.knowledge_api import router as knowledge_api_router
 from akc_api.malware import (
-    MalwareDetectedError,
-    MalwareScanError,
     malware_scanner_ready,
-    scan_quarantined_stream,
 )
 from akc_api.models import (
     AnalysisTask,
@@ -197,6 +189,10 @@ from akc_api.project_access import (
 )
 from akc_api.project_access_api import router as project_access_router
 from akc_api.project_access_models import ProjectMembership
+from akc_api.quarantine_screening import (
+    QuarantineUnavailable,
+    screen_quarantined_object,
+)
 from akc_api.routing_runtime import validate_registry_binding
 from akc_api.schemas import (
     AnalyzeResponse,
@@ -2542,203 +2538,111 @@ async def complete_upload(
     tenant = await session.get(Tenant, principal.tenant_id)
     if tenant is None:
         raise HTTPException(status_code=404, detail={"code": "TENANT_NOT_FOUND"})
-    try:
-        metadata = await request.app.state.object_store.head_quarantine(upload.object_key)
-    except (FileNotFoundError, OSError, KeyError) as exc:
+    async def _refuse_free_duplicate(digest: str) -> None:
+        """Free-tier duplicate check, run between validation and the AV scan.
+
+        Billing policy rather than screening, so it stays here rather than
+        moving into akc_api.quarantine_screening - but it keeps its position in
+        the sequence, because the reason it runs before the scan is to not
+        spend a scan on a file that is about to be refused anyway.
+        """
+        await lock_current_free_usage_day(
+            session,
+            tenant_id=principal.tenant_id,
+            plan_code=tenant.plan_code,
+        )
+        duplicate = await existing_free_source(
+            session,
+            tenant_id=principal.tenant_id,
+            plan_code=tenant.plan_code,
+            sha256=digest,
+        )
+        if duplicate is None or duplicate.document_id == document.id:
+            return
+        rejected_upload_id = upload.id
+        rejected_document_id = document.id
+        rejected_object_key = upload.object_key
+        await session.rollback()
+        await request.app.state.object_store.delete(
+            "quarantine",
+            rejected_object_key,
+        )
+        async with request.app.state.database.sessions() as denial_session:
+            await set_rls_context(
+                denial_session,
+                tenant_id=principal.tenant_id,
+                user_id=principal.user_id,
+            )
+            rejected_upload = await denial_session.scalar(
+                select(UploadSession)
+                .where(
+                    UploadSession.tenant_id == principal.tenant_id,
+                    UploadSession.id == rejected_upload_id,
+                )
+                .with_for_update()
+            )
+            rejected_document = await denial_session.scalar(
+                select(Document)
+                .where(
+                    Document.tenant_id == principal.tenant_id,
+                    Document.id == rejected_document_id,
+                )
+                .with_for_update()
+            )
+            if rejected_upload is not None:
+                rejected_upload.status = "aborted"
+            if rejected_document is not None and rejected_document.source_file_id is None:
+                rejected_document.status = "SECURITY_REJECTED"
+            await audit(
+                denial_session,
+                tenant_id=principal.tenant_id,
+                actor_id=principal.user_id,
+                action="abuse.duplicate_source_denied",
+                target_type="document",
+                target_id=str(rejected_document_id),
+            )
+            await denial_session.commit()
+        record_abuse_control_decision(
+            control="duplicate_hash",
+            result="duplicate",
+        )
         raise HTTPException(
             status_code=409,
-            detail={"code": "UPLOAD_OBJECT_NOT_FOUND"},
-        ) from exc
-    except (BotoCoreError, ClientError) as exc:
-        raise HTTPException(
-            status_code=503,
-            detail={"code": "OBJECT_STORE_UNAVAILABLE"},
-        ) from exc
-    if metadata.size_bytes != upload.expected_size:
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "code": "SIZE_MISMATCH",
-                "expected": upload.expected_size,
-                "actual": metadata.size_bytes,
-            },
+            detail={"code": "FREE_DUPLICATE_SOURCE"},
         )
-    if metadata.content_type and (
-        metadata.content_type.split(";", 1)[0].casefold()
-        != upload.expected_mime.split(";", 1)[0].casefold()
-    ):
-        raise HTTPException(status_code=422, detail={"code": "CONTENT_TYPE_MISMATCH"})
-    if metadata.checksum_sha256 and upload.upload_mode == "single":
-        expected_b64 = base64.b64encode(bytes.fromhex(upload.expected_sha256)).decode("ascii")
-        if not secrets.compare_digest(metadata.checksum_sha256, expected_b64):
-            raise HTTPException(status_code=422, detail={"code": "CHECKSUM_MISMATCH"})
 
-    validation_code: str | None = None
-    scan_status = ""
-    cdr_result: CdrResult | None = None
-    with tempfile.SpooledTemporaryFile(max_size=8 * 1024 * 1024, mode="w+b") as staged:
-        await request.app.state.object_store.download_quarantine(
-            upload.object_key,
-            staged,
-        )
-        validation = validate_upload_stream(
-            upload.safe_filename,
-            cast(BinaryIO, staged),
+    try:
+        verdict = await screen_quarantined_object(
+            object_store=request.app.state.object_store,
+            cdr_adapter=request.app.state.cdr_adapter,
+            settings=request.app.state.settings,
+            object_key=upload.object_key,
+            safe_filename=upload.safe_filename,
+            expected_size=upload.expected_size,
+            expected_mime=upload.expected_mime,
+            expected_sha256=upload.expected_sha256,
+            upload_mode=upload.upload_mode,
             tier=_plan_tier(tenant.plan_code),
-            claimed_content_type=upload.expected_mime,
+            after_validation=_refuse_free_duplicate,
         )
-        digest = (validation.sha256 or "").removeprefix("sha256:")
-        if not validation.accepted:
-            validation_code = validation.reason_code or "UNSAFE_FILE"
-        elif not secrets.compare_digest(digest, upload.expected_sha256):
-            validation_code = "CHECKSUM_MISMATCH"
-        if validation_code is None:
-            await lock_current_free_usage_day(
-                session,
-                tenant_id=principal.tenant_id,
-                plan_code=tenant.plan_code,
-            )
-            duplicate = await existing_free_source(
-                session,
-                tenant_id=principal.tenant_id,
-                plan_code=tenant.plan_code,
-                sha256=digest,
-            )
-            if duplicate is not None and duplicate.document_id != document.id:
-                rejected_upload_id = upload.id
-                rejected_document_id = document.id
-                rejected_object_key = upload.object_key
-                await session.rollback()
-                await request.app.state.object_store.delete(
-                    "quarantine",
-                    rejected_object_key,
-                )
-                async with request.app.state.database.sessions() as denial_session:
-                    await set_rls_context(
-                        denial_session,
-                        tenant_id=principal.tenant_id,
-                        user_id=principal.user_id,
-                    )
-                    rejected_upload = await denial_session.scalar(
-                        select(UploadSession)
-                        .where(
-                            UploadSession.tenant_id == principal.tenant_id,
-                            UploadSession.id == rejected_upload_id,
-                        )
-                        .with_for_update()
-                    )
-                    rejected_document = await denial_session.scalar(
-                        select(Document)
-                        .where(
-                            Document.tenant_id == principal.tenant_id,
-                            Document.id == rejected_document_id,
-                        )
-                        .with_for_update()
-                    )
-                    if rejected_upload is not None:
-                        rejected_upload.status = "aborted"
-                    if rejected_document is not None and rejected_document.source_file_id is None:
-                        rejected_document.status = "SECURITY_REJECTED"
-                    await audit(
-                        denial_session,
-                        tenant_id=principal.tenant_id,
-                        actor_id=principal.user_id,
-                        action="abuse.duplicate_source_denied",
-                        target_type="document",
-                        target_id=str(rejected_document_id),
-                    )
-                    await denial_session.commit()
-                record_abuse_control_decision(
-                    control="duplicate_hash",
-                    result="duplicate",
-                )
-                raise HTTPException(
-                    status_code=409,
-                    detail={"code": "FREE_DUPLICATE_SOURCE"},
-                )
-        if validation_code is None:
-            staged.seek(0)
-            try:
-                scan = await scan_quarantined_stream(
-                    cast(BinaryIO, staged),
-                    request.app.state.settings,
-                )
-                scan_status = scan.status
-            except MalwareDetectedError:
-                validation_code = "MALWARE_DETECTED"
-            except MalwareScanError as exc:
-                await audit(
-                    session,
-                    tenant_id=principal.tenant_id,
-                    actor_id=principal.user_id,
-                    action="document.security_scan_unavailable",
-                    target_type="document",
-                    target_id=str(document.id),
-                )
-                await session.commit()
-                raise HTTPException(
-                    status_code=503,
-                    detail={"code": "ANTIVIRUS_UNAVAILABLE"},
-                ) from exc
-        mime_type = upload.expected_mime.split(";", 1)[0].strip().casefold()
-        if (
-            validation_code is None
-            and request.app.state.settings.cdr_enabled
-            and mime_type in request.app.state.settings.cdr_supported_mimes
-        ):
-            staged.seek(0)
-            payload_bytes = staged.read(request.app.state.settings.cdr_max_output_bytes + 1)
-            if len(payload_bytes) > request.app.state.settings.cdr_max_output_bytes:
-                raise HTTPException(
-                    status_code=413,
-                    detail={"code": "CDR_SOURCE_TOO_LARGE"},
-                )
-            try:
-                cdr_result = await request.app.state.cdr_adapter.sanitize(
-                    CdrRequest(
-                        filename=upload.safe_filename,
-                        mime_type=mime_type,
-                        source_sha256=digest,
-                        payload=payload_bytes,
-                    )
-                )
-                cdr_result = validate_cdr_result(
-                    cdr_result,
-                    source_sha256=digest,
-                    max_output_bytes=request.app.state.settings.cdr_max_output_bytes,
-                )
-            except ValueError as exc:
-                await audit(
-                    session,
-                    tenant_id=principal.tenant_id,
-                    actor_id=principal.user_id,
-                    action="document.cdr_invalid_response",
-                    target_type="document",
-                    target_id=str(document.id),
-                )
-                await session.commit()
-                raise HTTPException(
-                    status_code=503,
-                    detail={"code": "CDR_INVALID_RESPONSE"},
-                ) from exc
-            if cdr_result.status is CdrStatus.UNAVAILABLE:
-                await audit(
-                    session,
-                    tenant_id=principal.tenant_id,
-                    actor_id=principal.user_id,
-                    action="document.cdr_unavailable",
-                    target_type="document",
-                    target_id=str(document.id),
-                )
-                await session.commit()
-                raise HTTPException(
-                    status_code=503,
-                    detail={"code": "CDR_UNAVAILABLE"},
-                )
-            if cdr_result.status is CdrStatus.UNSUPPORTED:
-                validation_code = "CDR_UNSUPPORTED"
-            elif cdr_result.status is CdrStatus.REJECTED:
-                validation_code = "CDR_REJECTED"
+    except QuarantineUnavailable as exc:
+        # Nothing was concluded about the file. The document keeps its current
+        # status - marking it SECURITY_REJECTED here would blame the upload for
+        # a scanner outage.
+        await audit(
+            session,
+            tenant_id=principal.tenant_id,
+            actor_id=principal.user_id,
+            action=exc.audit_action,
+            target_type="document",
+            target_id=str(document.id),
+        )
+        await session.commit()
+        raise HTTPException(status_code=503, detail={"code": exc.code}) from exc
+    validation_code = verdict.rejection_code
+    digest = verdict.digest
+    scan_status = verdict.scan_status
+    cdr_result = verdict.cdr_result
 
     if validation_code is not None:
         if initial_source_upload:
@@ -2760,7 +2664,7 @@ async def complete_upload(
         )
         await session.commit()
         raise HTTPException(status_code=422, detail={"code": validation_code})
-    extension = validation.extension
+    extension = verdict.extension
     existing = await session.scalar(
         select(SourceFile).where(
             SourceFile.tenant_id == principal.tenant_id,
@@ -2782,7 +2686,7 @@ async def complete_upload(
             request.app.state.object_store,
             object_key=source_key,
             expected_sha256=digest,
-            expected_size=metadata.size_bytes,
+            expected_size=verdict.size_bytes,
         ):
             await request.app.state.object_store.delete("source", source_key)
             try:
@@ -2805,7 +2709,7 @@ async def complete_upload(
                 request.app.state.object_store,
                 object_key=source_key,
                 expected_sha256=digest,
-                expected_size=metadata.size_bytes,
+                expected_size=verdict.size_bytes,
             ):
                 raise HTTPException(
                     status_code=503,
@@ -2835,7 +2739,7 @@ async def complete_upload(
             original_filename=upload.original_filename,
             safe_filename=upload.safe_filename,
             mime_type=upload.expected_mime,
-            size_bytes=metadata.size_bytes,
+            size_bytes=verdict.size_bytes,
             sha256=digest,
             storage_key=source_key,
             antivirus_status=scan_status,
@@ -2934,7 +2838,7 @@ async def complete_upload(
         source_sha256=digest,
         source_filename=upload.safe_filename,
         source_mime_type=upload.expected_mime,
-        source_size_bytes=metadata.size_bytes,
+        source_size_bytes=verdict.size_bytes,
         cir_object_key=None,
         cir_snapshot_sha256=None,
         archived_objects=[],

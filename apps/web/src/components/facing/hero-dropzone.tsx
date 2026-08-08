@@ -77,8 +77,16 @@ export function HeroDropzone({
       if (!TRIAL_INGEST_ENABLED || inspected.rejection) return;
       try {
         const opened = await createTrialSession();
-        await uploadTrialDocument(opened, file, inspected);
+        // Completion runs the security path inside the request, so the result
+        // is already final here. The poller below stays as the fallback for a
+        // completion that returns before the document settles.
+        const { preflight: settled } = await uploadTrialDocument(
+          opened,
+          file,
+          inspected,
+        );
         setSession(opened);
+        setPreflight(settled);
       } catch (error) {
         // The local report still stands — it was measured here. Only the
         // server half is missing, and the visitor is told which half.

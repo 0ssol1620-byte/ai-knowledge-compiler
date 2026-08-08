@@ -5049,6 +5049,11 @@
             "format": "uuid",
             "title": "Document Id"
           },
+          "upload_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Upload Id"
+          },
           "upload_url": {
             "type": "string",
             "title": "Upload Url"
@@ -5068,7 +5073,7 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "required": ["document_id", "upload_url", "expires_at"],
+        "required": ["document_id", "upload_id", "upload_url", "expires_at"],
         "title": "TrialUploadAccepted"
       },
       "TrialUploadRequest": {
@@ -10751,6 +10756,103 @@
               "type": "string",
               "format": "uuid",
               "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrialPreflight"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trial/sessions/{session_id}/uploads/{upload_id}/content": {
+      "put": {
+        "tags": ["trial"],
+        "summary": "Put Trial Upload Content",
+        "description": "Receive the bytes, for the development object store only.",
+        "operationId": "put_trial_upload_content_v1_trial_sessions__session_id__uploads__upload_id__content_put",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Upload Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trial/sessions/{session_id}/uploads/{upload_id}/complete": {
+      "post": {
+        "tags": ["trial"],
+        "summary": "Complete Trial Upload",
+        "description": "Screen the uploaded object and, if it passes, preflight it.",
+        "operationId": "complete_trial_upload_v1_trial_sessions__session_id__uploads__upload_id__complete_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Upload Id"
             }
           }
         ],

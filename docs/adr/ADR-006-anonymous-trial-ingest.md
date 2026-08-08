@@ -181,41 +181,77 @@ Landed and verified:
 ```
 migration 0023            system trial tenant, service user, trial_sessions, RLS, TTL index
 settings                  flag off by default, caps, two guarding validators
-schemas + OpenAPI v1      three paths, four schemas, published additively
+schemas + OpenAPI v1      five paths, four schemas, published additively
 abuse_controls.py         helpers extracted from main.py so this router can reuse them
-trial_api.py              the three endpoints, exercised end to end
+quarantine_screening.py   the ADR-004 gauntlet, called by both routes
+trial_api.py              five endpoints, driven end to end by real bytes
 trial_retention.py        expiry sweep, wired into the scheduler pass
-tests/security            17 boundary tests
+tests/security            23 boundary tests
 apps/web                  hero wired to both modes, privacy copy corrected
 ```
 
-**Not yet connected: the quarantine pipeline.** A completed trial upload does
-not currently advance past `UPLOADED`, so no scan runs and no preflight is
-produced. The UI reports this honestly — it shows "Queued for security
-scanning…" and never a page count it does not have — but the capability is not
-end to end, which is why `trial_ingest_enabled` staying `false` is load-bearing
-rather than merely cautious.
+### How the pipeline was connected
 
-What that step needs is deliberate work, not a small patch. The authenticated
-`POST /v1/uploads/{id}/complete` handler carries the whole pipeline in **675
-lines with 22 external dependencies** — object store, malware scanner, CDR,
-metadata recovery, audit, and the `SECURITY_SCANNING → SECURITY_VERIFIED →
-SECURITY_REJECTED` transitions. Trial ingest must run that exact path; this ADR
-says so and says why.
+The choice above was **extract**, and it turned out smaller than the 675-line
+figure suggested, because most of those lines are not screening. Screening is
+about the object — validate the bytes against the declared filename and MIME,
+compare the digest, scan, disarm. The rest is bookkeeping that differs per
+caller: which document row this belongs to, whose audit log records it, whether
+a duplicate is billable. Cutting at that seam produced
+`services/api/src/akc_api/quarantine_screening.py`, which knows nothing about
+principals, sessions, or audit rows, and which both routes now call.
 
-Two ways to get there, and the choice belongs with a reviewer rather than with
-whoever picks the task up:
+Two consequences of the seam are decisions, recorded here because a later reader
+will otherwise read them as omissions:
 
 ```
-extract    lift the pipeline into a shared function both routes call.
-           Right architecture, one implementation, and the largest
-           security-critical refactor in the repository.
-delegate   have the trial completion route call the existing handler with a
-           synthesized principal. Smaller diff, but it manufactures a principal
-           on an anonymous path, which is the property this ADR was careful to
-           avoid needing.
+QuarantineUnavailable   scanner and CDR outages raise rather than return a
+                        verdict. Nothing was concluded about the file, so it is
+                        neither promoted nor marked SECURITY_REJECTED. The
+                        exception carries the audit action name so the two
+                        callers cannot drift on what they record.
+after_validation        the free-tier duplicate check is billing policy, not
+                        screening. It stays with the authenticated route, but
+                        keeps its position in the sequence — after the digest,
+                        before the scan — because that ordering exists to avoid
+                        spending a scan on a file about to be refused anyway.
 ```
 
-The first is almost certainly correct. It was deliberately not attempted at the
-end of the session that wrote everything above: a hurried extraction of malware
-scanning and quarantine promotion is how a check quietly stops running.
+The authenticated route's 242-test suite passed unchanged before and after the
+extraction, which is the evidence that behaviour was preserved.
+
+### Where the trial stops, and how
+
+A trial document now runs the same gauntlet and then preflights, reaching
+`PREFLIGHTED`. The stop is enforced by not enqueueing anything: no processing
+job is created, so no worker can pick the document up and no GPU is reachable
+from an anonymous request. `test_completion_stops_at_preflighted` asserts the
+job, task, and invocation tables are empty afterwards.
+
+**Preflight runs inline rather than being queued.** This departs from the
+authenticated route and is deliberate. That route hands preflight to the
+document worker because the file it accepts can be hundreds of megabytes and
+hundreds of pages; a trial file cannot, because `trial_ingest_max_bytes` and
+`trial_ingest_max_pages` exist precisely to bound it. Preflight itself is page
+geometry and text statistics — no OCR, no model, no network. The alternative
+would make the first thing a visitor sees depend on worker infrastructure being
+up, and would create a queue entry from an unauthenticated request, which is the
+cost surface this ADR keeps behind a principal.
+
+`document.page_count` stores the document's real length, not the number of pages
+inspected. Storing the truncated figure would make `truncated` compute false
+forever and report a partial measurement as a whole one, which §25.7 forbids.
+
+### One defect this closed that reading would not have found
+
+The presigned URL handed to an anonymous visitor pointed at
+`PUT /v1/uploads/{id}/content`, which requires an authenticated editor. Outside
+production — where the store is S3 and the URL is a genuine presign — the trial
+flow could not upload at all, and the security path could not be exercised by a
+test. `PUT /v1/trial/sessions/{id}/uploads/{id}/content` now serves that case,
+authorized by trial session rather than by principal. `TrialUploadAccepted` also
+gained `upload_id`, without which a client had no way to name the upload it had
+just made.
+
+`trial_ingest_enabled` still defaults to `false`. It is now a rollout control
+rather than a guard against an incomplete capability.

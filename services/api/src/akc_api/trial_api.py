@@ -23,11 +23,19 @@ assumed:
 
 from __future__ import annotations
 
+import hashlib
+import tempfile
 import uuid
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, cast
+from typing import Annotated, BinaryIO, cast
 
-from akc_security import ALLOWED_EXTENSIONS, sanitize_display_filename
+from akc_security import (
+    ALLOWED_EXTENSIONS,
+    CdrStatus,
+    PlanTier,
+    sanitize_display_filename,
+)
 from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import func, select
@@ -36,7 +44,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from akc_api.abuse import RateLimitPolicy
 from akc_api.abuse_controls import client_subject, consume_rate_control
 from akc_api.database import get_session, set_rls_context
-from akc_api.models import Document, Project, TrialSession, UploadSession
+from akc_api.models import (
+    Document,
+    Page,
+    Project,
+    SourceFile,
+    TrialSession,
+    UploadSession,
+)
+from akc_api.quarantine_screening import (
+    SPOOL_MAX_BYTES,
+    QuarantineUnavailable,
+    QuarantineVerdict,
+    screen_quarantined_object,
+)
 from akc_api.schemas import (
     TrialPreflight,
     TrialSessionCreated,
@@ -44,6 +65,7 @@ from akc_api.schemas import (
     TrialUploadRequest,
 )
 from akc_api.settings import Settings
+from akc_api.storage import LocalObjectStore
 
 
 def require_trial_enabled(request: Request) -> Settings:
@@ -295,6 +317,12 @@ async def initiate_trial_upload(
             status_code=503, detail={"code": "OBJECT_STORE_UNAVAILABLE"}
         ) from exc
 
+    upload_url = target.url
+    if isinstance(request.app.state.object_store, LocalObjectStore):
+        # The adapter's URL points at an authenticated route. Anonymous
+        # visitors cannot use it, so the trial serves its own.
+        upload_url = f"/v1/trial/sessions/{trial.id}/uploads/{upload_id}/content"
+
     # The presign must not outlive the session it belongs to.
     expires_at = min(
         now + timedelta(seconds=settings.presigned_upload_ttl_seconds),
@@ -324,9 +352,491 @@ async def initiate_trial_upload(
 
     return TrialUploadAccepted(
         document_id=document.id,
-        upload_url=target.url,
+        upload_id=upload_id,
+        upload_url=upload_url,
         headers=target.headers,
         expires_at=expires_at,
+    )
+
+
+@router.put(
+    "/sessions/{session_id}/uploads/{upload_id}/content",
+    status_code=204,
+)
+async def put_trial_upload_content(
+    session_id: uuid.UUID,
+    upload_id: uuid.UUID,
+    request: Request,
+    response: Response,
+    session: SessionDep,
+    settings: SettingsDep,
+) -> None:
+    """Receive the bytes, for the development object store only.
+
+    In production ``create_upload_target`` returns a presigned S3 URL and the
+    visitor's browser writes straight to the bucket, so this route is never
+    reached. The local adapter instead returns a URL pointing back at the API,
+    and the one it returns requires an authenticated editor — which an
+    anonymous visitor is not. Without this route the trial flow is broken
+    outside production, and the security path below can never be exercised by
+    a test.
+
+    Authorization is by trial session rather than by principal: the session id
+    is the visitor's only credential, and the upload must belong to it.
+    """
+    response.headers["Cache-Control"] = "no-store"
+
+    if not isinstance(request.app.state.object_store, LocalObjectStore):
+        raise HTTPException(status_code=405, detail={"code": "DIRECT_UPLOAD_REQUIRED"})
+
+    now = _utcnow()
+    trial = await _load_session(session, session_id, now=now)
+    upload, document = await _load_upload(session, upload_id, trial=trial)
+    if upload.status != "initiated":
+        raise HTTPException(status_code=409, detail={"code": "UPLOAD_NOT_ACTIVE"})
+    if _as_utc(upload.expires_at) <= now:
+        raise HTTPException(status_code=409, detail={"code": "UPLOAD_EXPIRED"})
+
+    content_type = request.headers.get("Content-Type", "").split(";", 1)[0].casefold()
+    if content_type != upload.expected_mime.split(";", 1)[0].casefold():
+        raise HTTPException(status_code=422, detail={"code": "CONTENT_TYPE_MISMATCH"})
+
+    size = 0
+    digest = hashlib.sha256()
+    with tempfile.SpooledTemporaryFile(max_size=SPOOL_MAX_BYTES, mode="w+b") as staged:
+        async for chunk in request.stream():
+            size += len(chunk)
+            # Two ceilings, and the smaller one wins. The upload session's own
+            # expected size bounds this request; the trial cap bounds what a
+            # session could have been issued in the first place.
+            if size > min(upload.expected_size, settings.trial_ingest_max_bytes):
+                raise HTTPException(status_code=413, detail={"code": "FILE_TOO_LARGE"})
+            digest.update(chunk)
+            staged.write(chunk)
+        if size != upload.expected_size:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "SIZE_MISMATCH",
+                    "expected": upload.expected_size,
+                    "actual": size,
+                },
+            )
+        if digest.hexdigest() != upload.expected_sha256:
+            raise HTTPException(status_code=422, detail={"code": "CHECKSUM_MISMATCH"})
+        staged.seek(0)
+        await request.app.state.object_store.put_quarantine_stream(
+            upload.object_key,
+            cast(BinaryIO, staged),
+        )
+
+    upload.status = "uploaded"
+    # ADR-004's name for "bytes are in quarantine and nothing has read them".
+    document.status = "QUARANTINED"
+    await session.commit()
+
+
+@router.post(
+    "/sessions/{session_id}/uploads/{upload_id}/complete",
+    response_model=TrialPreflight,
+)
+async def complete_trial_upload(
+    session_id: uuid.UUID,
+    upload_id: uuid.UUID,
+    request: Request,
+    response: Response,
+    session: SessionDep,
+    settings: SettingsDep,
+) -> TrialPreflight:
+    """Screen the uploaded object and, if it passes, preflight it.
+
+    This is the same ADR-004 gauntlet the authenticated route runs — literally
+    the same function — so a trial document is not screened more cheaply than
+    a paid one. What differs is only the bookkeeping around it: the audit rows
+    are written under the system trial identity, and there is no free-tier
+    duplicate check because there is no plan to bill against.
+
+    The flow then stops at ``PREFLIGHTED``. That is the boundary ADR-006 draws,
+    and it is enforced here by simply not enqueueing anything: no processing
+    job is created, so no worker can pick this document up and no GPU can be
+    reached from an anonymous request.
+    """
+    response.headers["Cache-Control"] = "no-store"
+
+    now = _utcnow()
+    trial = await _load_session(session, session_id, now=now)
+    upload, document = await _load_upload(session, upload_id, trial=trial)
+
+    if upload.status == "completed":
+        # Idempotent: a retried completion reports where the document actually
+        # got to rather than screening the same bytes twice.
+        return _preflight_of(document, trial=trial, settings=settings)
+    if upload.status not in {"initiated", "uploaded"}:
+        # "initiated" covers a presigned S3 write the API never saw; "uploaded"
+        # is what the development adapter's content route leaves behind.
+        raise HTTPException(status_code=409, detail={"code": "TRIAL_UPLOAD_NOT_PENDING"})
+
+    document.status = "SECURITY_SCANNING"
+    await session.commit()
+
+    try:
+        verdict = await screen_quarantined_object(
+            object_store=request.app.state.object_store,
+            cdr_adapter=request.app.state.cdr_adapter,
+            settings=settings,
+            object_key=upload.object_key,
+            safe_filename=upload.safe_filename,
+            expected_size=upload.expected_size,
+            expected_mime=upload.expected_mime,
+            expected_sha256=upload.expected_sha256,
+            upload_mode=upload.upload_mode,
+            # The trial has no plan, so it gets the most restrictive limits the
+            # product defines rather than a tier invented for it.
+            tier=PlanTier.FREE,
+        )
+    except QuarantineUnavailable as exc:
+        await _audit_trial(session, action=exc.audit_action, document=document)
+        await session.commit()
+        raise HTTPException(status_code=503, detail={"code": exc.code}) from exc
+
+    if not verdict.accepted:
+        return await _reject_trial_upload(
+            session,
+            request=request,
+            upload=upload,
+            document=document,
+            trial=trial,
+            settings=settings,
+            code=verdict.rejection_code or "UNSAFE_FILE",
+        )
+
+    source = await _promote_trial_source(
+        session,
+        request=request,
+        upload=upload,
+        document=document,
+        verdict=verdict,
+        now=now,
+    )
+    await _preflight_trial_document(
+        session,
+        request=request,
+        document=document,
+        source=source,
+        settings=settings,
+    )
+    await session.commit()
+
+    with suppress(BotoCoreError, ClientError, OSError, KeyError):
+        await request.app.state.object_store.delete("quarantine", upload.object_key)
+
+    return _preflight_of(document, trial=trial, settings=settings)
+
+
+async def _load_upload(
+    session: AsyncSession,
+    upload_id: uuid.UUID,
+    *,
+    trial: TrialSession,
+) -> tuple[UploadSession, Document]:
+    """Resolve the upload and its document, both scoped to this session.
+
+    Scoped to ``trial.project_id`` rather than to the tenant alone: every trial
+    session shares one tenant, so tenant scoping by itself would let one
+    visitor's session id complete another visitor's upload.
+    """
+    upload = await session.scalar(
+        select(UploadSession).where(
+            UploadSession.id == upload_id,
+            UploadSession.tenant_id == TRIAL_TENANT_ID,
+            UploadSession.project_id == trial.project_id,
+        )
+    )
+    if upload is None:
+        raise HTTPException(status_code=404, detail={"code": "TRIAL_UPLOAD_NOT_FOUND"})
+    document = await session.scalar(
+        select(Document).where(
+            Document.id == upload.document_id,
+            Document.tenant_id == TRIAL_TENANT_ID,
+            Document.project_id == trial.project_id,
+        )
+    )
+    if document is None:
+        raise HTTPException(status_code=404, detail={"code": "TRIAL_UPLOAD_NOT_FOUND"})
+    return upload, document
+
+
+async def _audit_trial(
+    session: AsyncSession,
+    *,
+    action: str,
+    document: Document,
+    metadata: dict[str, object] | None = None,
+) -> None:
+    """Write an audit row under the system trial identity.
+
+    The trial has no principal, and inventing one would defeat the point of
+    ADR-006. The reserved service user is used as the actor instead: it exists,
+    it is inactive, and it cannot authenticate — so the row is attributable to
+    the capability rather than to a person.
+    """
+    from akc_api.services import audit
+
+    await audit(
+        session,
+        tenant_id=TRIAL_TENANT_ID,
+        actor_id=TRIAL_USER_ID,
+        action=action,
+        target_type="document",
+        target_id=str(document.id),
+        metadata=metadata,
+    )
+
+
+async def _reject_trial_upload(
+    session: AsyncSession,
+    *,
+    request: Request,
+    upload: UploadSession,
+    document: Document,
+    trial: TrialSession,
+    settings: Settings,
+    code: str,
+) -> TrialPreflight:
+    """Record a refusal and remove the object.
+
+    §11.2 R3: what fails verification stays visible. The document row survives
+    in ``SECURITY_REJECTED`` so the visitor is told what happened and why. The
+    bytes do not survive — they are deleted from quarantine and were never
+    promoted, so nothing that failed screening is readable afterwards.
+    """
+    document.status = "SECURITY_REJECTED"
+    upload.status = "aborted"
+    with suppress(BotoCoreError, ClientError, OSError, KeyError):
+        await request.app.state.object_store.delete("quarantine", upload.object_key)
+    await _audit_trial(
+        session,
+        action="document.security_rejected",
+        document=document,
+        metadata={"code": code, "trial": True},
+    )
+    await session.commit()
+    return _preflight_of(document, trial=trial, settings=settings, error_code=code)
+
+
+async def _promote_trial_source(
+    session: AsyncSession,
+    *,
+    request: Request,
+    upload: UploadSession,
+    document: Document,
+    verdict: QuarantineVerdict,
+    now: datetime,
+) -> SourceFile:
+    """Move the screened object out of quarantine and record its provenance."""
+    digest = verdict.digest
+    source_key = (
+        f"tenants/{TRIAL_TENANT_ID}/projects/{upload.project_id}/"
+        f"sources/sha256/{digest}/original.bin"
+    )
+    try:
+        await request.app.state.object_store.promote_source(upload.object_key, source_key)
+    except (BotoCoreError, ClientError, FileNotFoundError, OSError, KeyError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "SOURCE_PROMOTION_INTEGRITY_FAILED"},
+        ) from exc
+
+    cdr = verdict.cdr_result
+    sanitized_key: str | None = None
+    sanitized_sha256: str | None = None
+    sanitized_size: int | None = None
+    if cdr is not None and cdr.status is CdrStatus.SANITIZED:
+        assert cdr.sanitized_payload is not None
+        assert cdr.sanitized_sha256 is not None
+        sanitized_sha256 = cdr.sanitized_sha256
+        sanitized_size = len(cdr.sanitized_payload)
+        sanitized_key = (
+            f"tenants/{TRIAL_TENANT_ID}/projects/{upload.project_id}/"
+            f"derived/cdr/sha256/{sanitized_sha256}/sanitized.bin"
+        )
+        await request.app.state.object_store.put_derived(sanitized_key, cdr.sanitized_payload)
+
+    source = SourceFile(
+        id=uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            f"akc-source:{TRIAL_TENANT_ID}:{upload.project_id}:{digest}",
+        ),
+        tenant_id=TRIAL_TENANT_ID,
+        project_id=upload.project_id,
+        upload_id=upload.id,
+        original_filename=upload.original_filename,
+        safe_filename=upload.safe_filename,
+        mime_type=upload.expected_mime,
+        size_bytes=verdict.size_bytes,
+        sha256=digest,
+        storage_key=source_key,
+        antivirus_status=verdict.scan_status,
+        cdr_status=(cdr.status.value if cdr is not None else "not_requested"),
+        cdr_provider=(cdr.provider if cdr is not None else None),
+        cdr_revision=(cdr.revision if cdr is not None else None),
+        sanitized_storage_key=sanitized_key,
+        sanitized_sha256=sanitized_sha256,
+        sanitized_size_bytes=sanitized_size,
+        uploaded_by=TRIAL_USER_ID,
+    )
+    session.add(source)
+    # Same ordering requirement as the authenticated route: SQLite checks the
+    # composite foreign key immediately, so the source identity has to exist
+    # before the document points at it.
+    await session.flush()
+
+    upload.status = "completed"
+    upload.completed_at = now
+    document.source_file_id = source.id
+    document.status = "SECURITY_VERIFIED"
+    document.updated_at = now
+    await _audit_trial(
+        session,
+        action="document.security_verified",
+        document=document,
+        metadata={
+            "source_digest": request.app.state.identity_hasher.pseudonymize(
+                purpose="source-digest",
+                value=digest,
+            ),
+            "trial": True,
+        },
+    )
+    return source
+
+
+async def _preflight_trial_document(
+    session: AsyncSession,
+    *,
+    request: Request,
+    document: Document,
+    source: SourceFile,
+    settings: Settings,
+) -> None:
+    """Parse the document far enough to describe it, then stop.
+
+    Run inline rather than enqueued, which is a deliberate departure from the
+    authenticated route and worth stating plainly. The authenticated route
+    hands preflight to the document worker because the file it accepts can be
+    hundreds of megabytes and hundreds of pages. A trial file cannot: ADR-006
+    caps it at ``trial_ingest_max_bytes`` and ``trial_ingest_max_pages``, and
+    those caps exist precisely so this work is bounded. Preflight itself is
+    page geometry and text statistics — no OCR, no model, no network — so the
+    bounded version of it fits inside the request that asked for it.
+
+    The alternative was to enqueue a job and let the visitor poll. That makes
+    the first thing a visitor sees depend on worker infrastructure being up,
+    to save work that the caps already bound. It also creates a queue entry
+    from an unauthenticated request, which is the cost surface ADR-006 keeps
+    behind a principal.
+
+    A parse failure is not an error here. The document reaches ``FAILED`` and
+    the visitor is told the file could not be read, which is a true statement
+    about their file and a more useful one than a 500.
+    """
+    from akc_api.parsers import page_preflight, parse_document
+
+    document.status = "PREFLIGHTING"
+    await session.flush()
+
+    # Read the promoted object, not the quarantined one. They are the same
+    # bytes, but only one of them has passed screening, and reading the other
+    # would make that distinction meaningless.
+    try:
+        raw = await request.app.state.object_store.read_source(source.storage_key)
+    except (BotoCoreError, ClientError, FileNotFoundError, OSError, KeyError):
+        document.status = "FAILED"
+        await _audit_trial(
+            session,
+            action="document.preflight_failed",
+            document=document,
+            metadata={"code": "SOURCE_UNREADABLE", "trial": True},
+        )
+        return
+
+    try:
+        parsed = parse_document(source.safe_filename, raw, settings)
+    except Exception:  # any parser failure is the same outcome to the visitor
+        document.status = "FAILED"
+        await _audit_trial(
+            session,
+            action="document.preflight_failed",
+            document=document,
+            metadata={"code": "UNREADABLE_DOCUMENT", "trial": True},
+        )
+        return
+
+    pages = parsed.pages[: settings.trial_ingest_max_pages]
+    for parsed_page in pages:
+        session.add(
+            Page(
+                tenant_id=TRIAL_TENANT_ID,
+                document_id=document.id,
+                page_number=parsed_page.page_number,
+                width_pt=parsed_page.width_pt,
+                height_pt=parsed_page.height_pt,
+                status="PREFLIGHTED",
+                # No route is recorded. Routing decides how a page would be
+                # extracted, and the trial never extracts.
+                preflight_metrics=dict(
+                    page_preflight(
+                        parsed_page.text,
+                        image_coverage=parsed_page.image_coverage,
+                    )
+                ),
+            )
+        )
+    # The document's real length, not the number of pages inspected. Storing
+    # the truncated figure here would make `truncated` compute false forever
+    # and report a partial measurement as a whole one, which §25.7 forbids.
+    document.page_count = len(parsed.pages)
+    document.status = "PREFLIGHTED"
+    await _audit_trial(
+        session,
+        action="document.preflighted",
+        document=document,
+        metadata={
+            "pages": len(pages),
+            "pages_truncated": len(parsed.pages) > len(pages),
+            "trial": True,
+        },
+    )
+
+
+def _preflight_of(
+    document: Document,
+    *,
+    trial: TrialSession,
+    settings: Settings,
+    error_code: str | None = None,
+) -> TrialPreflight:
+    """The one place a document row becomes a trial preflight response.
+
+    Shared by the completion route and the polling route so the two cannot
+    disagree about what a given document state means — in particular about
+    ``truncated``, which is the §25.7 guard and is easy to get subtly wrong
+    twice.
+    """
+    page_count = document.page_count
+    cap = settings.trial_ingest_max_pages
+    return TrialPreflight(
+        session_id=trial.id,
+        document_id=document.id,
+        status=_public_status(document.status),
+        page_count=page_count,
+        pages_inspected=min(page_count, cap) if page_count is not None else 0,
+        truncated=page_count is not None and page_count > cap,
+        detected_language_codes=list(document.language_codes or []),
+        encrypted=None,
+        route_profile=None,
+        error_code=error_code,
+        expires_at=_as_utc(trial.expires_at),
     )
 
 
@@ -353,26 +863,7 @@ async def read_trial_preflight(
     if document is None:
         raise HTTPException(status_code=404, detail={"code": "TRIAL_DOCUMENT_NOT_FOUND"})
 
-    page_count = document.page_count
-    cap = settings.trial_ingest_max_pages
-    # §25.7 — a document longer than the cap is inspected in part, and a partial
-    # measurement is never reported as a whole one.
-    inspected = min(page_count, cap) if page_count is not None else 0
-    truncated = page_count is not None and page_count > cap
-
-    return TrialPreflight(
-        session_id=trial.id,
-        document_id=document.id,
-        status=_public_status(document.status),
-        page_count=page_count,
-        pages_inspected=inspected,
-        truncated=truncated,
-        detected_language_codes=list(document.language_codes or []),
-        encrypted=None,
-        route_profile=None,
-        error_code=None,
-        expires_at=_as_utc(trial.expires_at),
-    )
+    return _preflight_of(document, trial=trial, settings=settings)
 
 
 # Internal states are richer than the trial contract admits. Anything past
@@ -382,6 +873,7 @@ async def read_trial_preflight(
 _PUBLIC_STATUS = {
     "UPLOADING": "UPLOADED",
     "UPLOADED": "UPLOADED",
+    "QUARANTINED": "UPLOADED",
     "SECURITY_SCANNING": "SECURITY_SCANNING",
     "SECURITY_VERIFIED": "SECURITY_VERIFIED",
     "SECURITY_REJECTED": "SECURITY_REJECTED",

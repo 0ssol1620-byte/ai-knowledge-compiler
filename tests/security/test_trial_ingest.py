@@ -262,8 +262,14 @@ def test_no_compile_route_is_exposed_under_the_trial_prefix(
     assert paths == {
         "/v1/trial/sessions",
         "/v1/trial/sessions/{session_id}/uploads",
+        "/v1/trial/sessions/{session_id}/uploads/{upload_id}/content",
+        "/v1/trial/sessions/{session_id}/uploads/{upload_id}/complete",
         "/v1/trial/sessions/{session_id}",
     }
+    # An exact set rather than a prefix scan, so adding a route to this module
+    # fails here and has to be justified. The five above are: open a session,
+    # presign, write the bytes, screen them, read the result. Nothing in that
+    # list reaches extraction, knowledge, export, or a queue.
 
 
 # ── configuration cannot be loosened by mistake ─────────────────────────────
@@ -391,3 +397,132 @@ def test_sweep_leaves_live_sessions_alone(client: TestClient, tmp_path: Path) ->
     assert asyncio.run(run()) == 0
     asyncio.run(engine.dispose())
     assert client.get(f"/v1/trial/sessions/{session_id}").status_code in (200, 404)
+
+
+# --------------------------------------------------------------------------
+# Completion: the quarantine path, end to end.
+#
+# ADR-006 says a trial document runs the same ADR-004 gauntlet as a paid one
+# and stops at PREFLIGHTED. Both halves of that are only true if they are
+# exercised, so these drive real bytes through the real route rather than
+# asserting on the shape of the code.
+# --------------------------------------------------------------------------
+
+
+def _pdf(pages: int = 2) -> bytes:
+    from io import BytesIO
+
+    from pypdf import PdfWriter
+
+    writer = PdfWriter()
+    for _ in range(pages):
+        writer.add_blank_page(width=612, height=792)
+    buffer = BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue()
+
+
+def _submit(client: TestClient, payload: bytes, *, filename: str = "filing.pdf") -> dict:
+    """Session, presign, PUT, complete — the whole visitor journey."""
+    import hashlib
+
+    digest = hashlib.sha256(payload).hexdigest()
+    session_id = _new_session(client)
+    initiated = client.post(
+        f"/v1/trial/sessions/{session_id}/uploads",
+        json={
+            "filename": filename,
+            "size": len(payload),
+            "content_type": "application/pdf",
+            "sha256": digest,
+        },
+    )
+    assert initiated.status_code == 201, initiated.text
+    target = initiated.json()
+
+    put = client.put(target["upload_url"], content=payload, headers=target["headers"])
+    assert put.status_code == 204, put.text
+
+    completed = client.post(
+        f"/v1/trial/sessions/{session_id}/uploads/{target['upload_id']}/complete"
+    )
+    return {"session_id": session_id, "target": target, "response": completed}
+
+
+def test_clean_document_reaches_preflighted(client: TestClient) -> None:
+    result = _submit(client, _pdf(pages=2))
+    response = result["response"]
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["status"] == "PREFLIGHTED"
+    assert body["page_count"] == 2
+    assert body["pages_inspected"] == 2
+    assert body["truncated"] is False
+    assert body["error_code"] is None
+
+    # Polling must agree with what completion returned.
+    polled = client.get(f"/v1/trial/sessions/{result['session_id']}")
+    assert polled.status_code == 200
+    assert polled.json()["status"] == "PREFLIGHTED"
+
+
+def test_completion_stops_at_preflighted(client: TestClient) -> None:
+    """The cost surface stays behind a principal — nothing is enqueued."""
+    import sqlalchemy as sa
+
+    result = _submit(client, _pdf(pages=1))
+    assert result["response"].json()["status"] == "PREFLIGHTED"
+
+    engine = sa.create_engine(str(client.app.state.settings.database_url).replace(
+        "sqlite+aiosqlite", "sqlite"
+    ))
+    with engine.begin() as conn:
+        present = set(sa.inspect(engine).get_table_names())
+        for name in ("processing_jobs", "analysis_tasks", "gpu_invocations"):
+            if name not in present:
+                continue
+            # Built through the expression layer rather than interpolated, so
+            # the identifier is quoted by SQLAlchemy and this stays a query
+            # about table contents rather than a string-formatting exercise.
+            count = conn.execute(
+                sa.select(sa.func.count()).select_from(sa.table(name))
+            ).scalar()
+            assert count == 0, f"{name} has {count} rows; trial must not enqueue work"
+    engine.dispose()
+
+
+def test_unsafe_file_is_refused_and_stays_visible(client: TestClient) -> None:
+    """§11.2 R3 — the refusal is reported, and the bytes do not survive it."""
+    payload = b"MZ\x90\x00" + b"\x00" * 2048  # a PE header behind a .pdf name
+    result = _submit(client, payload)
+    response = result["response"]
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["status"] == "SECURITY_REJECTED"
+    assert body["error_code"]
+    assert body["page_count"] is None
+
+    polled = client.get(f"/v1/trial/sessions/{result['session_id']}")
+    assert polled.json()["status"] == "SECURITY_REJECTED"
+
+
+def test_completion_is_idempotent(client: TestClient) -> None:
+    result = _submit(client, _pdf(pages=1))
+    assert result["response"].json()["status"] == "PREFLIGHTED"
+    again = client.post(
+        f"/v1/trial/sessions/{result['session_id']}"
+        f"/uploads/{result['target']['upload_id']}/complete"
+    )
+    assert again.status_code == 200
+    assert again.json()["status"] == "PREFLIGHTED"
+
+
+def test_one_session_cannot_complete_another_sessions_upload(client: TestClient) -> None:
+    """Every trial session shares one tenant, so scoping must be by project."""
+    victim = _submit(client, _pdf(pages=1))
+    attacker_session = _new_session(client)
+    stolen = client.post(
+        f"/v1/trial/sessions/{attacker_session}"
+        f"/uploads/{victim['target']['upload_id']}/complete"
+    )
+    assert stolen.status_code == 404, stolen.text
