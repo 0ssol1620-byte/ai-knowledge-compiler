@@ -59,7 +59,9 @@ export function AccuracySection() {
         */}
         <div className="tv-accuracy-context">
           {accuracy.context.map((sentence) => (
-            <p key={sentence}>{sentence}</p>
+            <p key={sentence.text} lang={sentence.lang}>
+              {sentence.text}
+            </p>
           ))}
           <p className="tv-accuracy-corpus">
             Scored by the official evaluators over{" "}

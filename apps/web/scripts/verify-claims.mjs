@@ -21,7 +21,7 @@
  * together and the components take both. See the note there.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { globSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -81,7 +81,39 @@ for (const claim of pack.claims.filter((c) => c.status === "withheld")) {
   }
 }
 
-/* ── 3. the pack is generated output ─────────────────────────────────────── */
+/* ── 3. English context is available for what the site publishes ─────────── */
+// Not a failure: a report. Five approved claims ship a Korean must_say with no
+// must_say_en, so the page renders the Korean. That is better than dropping a
+// required sentence and worse than an English one, and the next regeneration
+// can close it.
+const missingEnglish = pack.claims
+  .filter((claim) => claim.status !== "withheld")
+  .filter((claim) => claim.must_say && !claim.must_say_en)
+  .map((claim) => claim.id);
+
+/* ── 4. the render copy matches the handed-over pack ─────────────────────── */
+// The backend session delivers to docs/evidence/. The web build cannot import
+// from outside src/, so a copy lives under src/data/claims/. Two copies of a
+// generated file is a drift risk, so the relationship is checked rather than
+// trusted: compared as parsed JSON, because the two are formatted differently
+// and only the content is the contract.
+const DELIVERED = path.resolve(ROOT, "../../docs/evidence/folynta-public-claims-pack.json");
+if (existsSync(DELIVERED)) {
+  const delivered = JSON.parse(readFileSync(DELIVERED, "utf8"));
+  if (JSON.stringify(delivered) !== JSON.stringify(pack)) {
+    failures.push(
+      "src/data/claims/public-claims-pack.json differs from the delivered " +
+        "docs/evidence/folynta-public-claims-pack.json. Copy the delivered " +
+        "file over the render copy; do not reconcile them by hand.",
+    );
+  } else {
+    console.log("  delivered pack matches the render copy");
+  }
+} else {
+  console.log("  (no docs/evidence copy present to compare against)");
+}
+
+/* ── 5. the pack is generated output ─────────────────────────────────────── */
 const expected = {
   schema: "folynta.public-claims-pack.v1",
   claim_count: pack.claims.length,
@@ -121,6 +153,15 @@ console.log(
       .join("  "),
 );
 console.log(`  scanned   ${SOURCES.length} source files\n`);
+
+if (missingEnglish.length > 0) {
+  console.log(
+    `  note: ${missingEnglish.length} published claim(s) carry a Korean ` +
+      `must_say with no must_say_en, so the page renders the Korean:`,
+  );
+  for (const id of missingEnglish) console.log(`        ${id}`);
+  console.log();
+}
 
 if (failures.length === 0) {
   console.log("verify-claims: passed\n");

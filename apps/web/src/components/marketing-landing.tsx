@@ -2,6 +2,8 @@ import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr
 import Link from "next/link";
 
 import { AccuracySection } from "@/components/accuracy-section";
+import { CampaignScale } from "@/components/campaign-scale";
+import { RecoverySection } from "@/components/recovery-section";
 import { TrialRunFilm } from "@/components/trial-run-film";
 import { HeroComp, HERO_COPY } from "@/components/facing/hero-comp";
 import { TavonelGlyph } from "@/components/tavonel-glyph";
@@ -89,6 +91,10 @@ export function MarketingLanding() {
         </section>
 
         <AccuracySection />
+
+        <RecoverySection />
+
+        <CampaignScale />
 
         <section id="transformation" className="tv-transformation">
           <header>

@@ -76,11 +76,17 @@ const BY_ID = new Map(claimsPack.claims.map((claim) => [claim.id, claim]));
  * the measurement does not exist or the hypothesis failed — and a build that
  * stops is the correct response to publishing an unmeasured figure.
  */
+export interface ClaimContext {
+  text: string;
+  /** BCP-47 tag, so the renderer can mark up and typeset it correctly. */
+  lang: "en" | "ko";
+}
+
 export interface ClaimFigure<T = unknown> {
   id: string;
   numbers: T;
   /** Renders beside the number. Never optional at the call site. */
-  context: string[];
+  context: ClaimContext[];
   evidence?: string;
   evidenceDigest?: string;
 }
@@ -97,13 +103,39 @@ export function claimFigure<T = unknown>(id: string): ClaimFigure<T> {
     );
   }
 
-  // A conditional claim's conditions are as mandatory as an approved claim's
-  // must_say — the pack's own instruction is that it may be used "only when the
-  // conditions are shown with it".
-  const context = [
-    ...(claim.must_say_en ? [claim.must_say_en] : []),
-    ...(claim.conditions ?? []),
+  /*
+   * Every mandatory sentence, in whatever language the pack supplies it.
+   *
+   * The first version of this read must_say_en only. Five approved claims ship
+   * a Korean must_say with no English twin — completion-rate, recovery-rate,
+   * both recovery counterfactuals, and compilation-guarantees — so their
+   * mandatory sentence silently vanished and the figures rendered bare. That is
+   * exactly the failure this module exists to prevent, and it shipped because
+   * the check tested for the English field rather than for the requirement.
+   *
+   * The Korean is surfaced rather than translated here. The pack is generated
+   * evidence and its constraint text is part of it; writing an English version
+   * in this file would be authoring the constraint instead of carrying it. The
+   * gap is reported upstream so the next regeneration can include must_say_en.
+   *
+   * A conditional claim's conditions are as mandatory as an approved claim's
+   * must_say — the pack's instruction is that it may be used "only when the
+   * conditions are shown with it".
+   */
+  const context: ClaimContext[] = [
+    ...(claim.must_say_en
+      ? [{ text: claim.must_say_en, lang: "en" as const }]
+      : claim.must_say
+        ? [{ text: claim.must_say, lang: "ko" as const }]
+        : []),
+    ...(claim.conditions ?? []).map((text) => ({ text, lang: "ko" as const })),
   ];
+
+  if ((claim.must_say || claim.conditions?.length) && context.length === 0) {
+    throw new Error(
+      `claims: "${id}" requires context that could not be resolved`,
+    );
+  }
 
   return {
     id: claim.id,

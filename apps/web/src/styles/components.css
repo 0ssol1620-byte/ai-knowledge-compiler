@@ -374,3 +374,317 @@
     }
   }
 }
+
+
+/* ---- The counterfactual and the campaign scale (handoff items 1, 3, 5) ---- */
+@layer components {
+  .tv-recovery {
+    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px);
+    background: var(--inst-1);
+    color: var(--inst-ink-0);
+  }
+
+  .tv-recovery-eyebrow,
+  .tv-campaign-eyebrow {
+    margin: 0 0 var(--s-3);
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    line-height: var(--lh-label);
+  }
+
+  .tv-recovery-head h2 {
+    max-width: 18ch;
+    margin: 0 0 var(--s-4);
+    font-size: var(--fs-display-2);
+    font-weight: var(--w-display);
+    letter-spacing: var(--tracking-display-2);
+    line-height: var(--lh-display-2);
+  }
+
+  .tv-recovery-lead {
+    max-width: var(--measure);
+    margin: 0 0 var(--s-7);
+    color: var(--inst-ink-1);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-lead);
+    text-wrap: pretty;
+  }
+
+  /* The pair is the argument, so both arms are the same size and differ only
+     in the number and one colour. */
+  .tv-recovery-pair {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .tv-recovery-arm {
+    padding: var(--s-5);
+    border: 1px solid var(--rule-inst-2);
+    border-radius: var(--r-inst);
+  }
+
+  .tv-recovery-arm span {
+    display: block;
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-recovery-arm strong {
+    display: block;
+    margin: var(--s-2) 0;
+    font-size: var(--fs-display-1);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--w-display);
+    letter-spacing: var(--tracking-display-1);
+    line-height: 1;
+  }
+
+  .tv-recovery-arm[data-arm="with"] strong {
+    color: var(--verified-d);
+  }
+
+  .tv-recovery-arm[data-arm="without"] strong {
+    color: var(--review-d);
+  }
+
+  .tv-recovery-arm small {
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    line-height: var(--lh-label);
+  }
+
+  .tv-recovery-context p {
+    max-width: var(--measure);
+    margin: var(--s-5) 0 0;
+    color: var(--inst-ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-recovery-corroboration {
+    margin-top: var(--s-7);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--rule-inst-2);
+  }
+
+  .tv-recovery-corroboration h3 {
+    margin: 0 0 var(--s-4);
+    font-size: var(--fs-title-2);
+    font-weight: var(--w-title);
+    line-height: var(--lh-title-2);
+  }
+
+  .tv-recovery-corroboration dl {
+    display: grid;
+    gap: 0;
+    margin: 0;
+  }
+
+  .tv-recovery-corroboration dl > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--rule-inst-1);
+  }
+
+  .tv-recovery-corroboration dt {
+    color: var(--inst-ink-1);
+    font-size: var(--fs-small);
+  }
+
+  .tv-recovery-corroboration dd {
+    margin: 0;
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tv-recovery-corroboration dd b {
+    color: var(--review-d);
+    font-weight: var(--w-strong);
+  }
+
+  .tv-recovery-direction {
+    max-width: var(--measure);
+    margin: var(--s-4) 0 0;
+    color: var(--inst-ink-2);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+  }
+
+  /* ---- campaign scale ---- */
+
+  .tv-campaign {
+    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px);
+    background: var(--inst-2);
+    color: var(--inst-ink-0);
+  }
+
+  .tv-campaign-head h2 {
+    max-width: 22ch;
+    margin: 0 0 var(--s-7);
+    font-size: var(--fs-title-1);
+    font-weight: var(--w-title);
+    letter-spacing: var(--tracking-title-1);
+    line-height: var(--lh-title-1);
+  }
+
+  .tv-campaign-rates {
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .tv-campaign-rates article span {
+    display: block;
+    color: var(--inst-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-campaign-rates article strong {
+    display: block;
+    margin: var(--s-2) 0 var(--s-3);
+    font-size: var(--fs-title-1);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--w-display);
+    letter-spacing: var(--tracking-title-1);
+  }
+
+  .tv-campaign-rates article p {
+    max-width: var(--measure);
+    margin: 0;
+    color: var(--inst-ink-1);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+    text-wrap: pretty;
+  }
+
+  .tv-campaign-pipeline {
+    margin-top: var(--s-8);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--rule-inst-2);
+  }
+
+  .tv-campaign-pipeline h3 {
+    margin: 0 0 var(--s-4);
+    font-size: var(--fs-title-2);
+    font-weight: var(--w-title);
+    line-height: var(--lh-title-2);
+  }
+
+  .tv-campaign-stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin: 0 0 var(--s-6);
+    padding: 0;
+    list-style: none;
+  }
+
+  .tv-campaign-stages li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    padding: var(--s-2) var(--s-4);
+    border: 1px solid var(--rule-inst-2);
+    border-radius: var(--r-inst);
+    color: var(--inst-ink-1);
+    font-size: var(--fs-small);
+  }
+
+  .tv-campaign-stages li span {
+    color: var(--evidence-d);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+  }
+
+  .tv-campaign-note {
+    max-width: var(--measure);
+    margin: 0 0 var(--s-4);
+    color: var(--inst-ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-campaign-guarantees ul {
+    display: grid;
+    gap: var(--s-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tv-campaign-guarantees li {
+    color: var(--inst-ink-1);
+    font-size: var(--fs-small);
+  }
+
+  .tv-campaign-guarantees b {
+    color: var(--verified-d);
+    font-size: var(--fs-lead);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--w-strong);
+  }
+
+  /*
+   * The reserved slot. Dashed, because a solid border would read as a finished
+   * component and this one is deliberately unfinished: it holds a place for a
+   * measurement that is still running.
+   */
+  .tv-campaign-pending {
+    margin-top: var(--s-8);
+    padding: var(--s-5);
+    border: 1px dashed var(--rule-inst-2);
+    border-radius: var(--r-inst);
+  }
+
+  .tv-campaign-pending span {
+    display: block;
+    margin-bottom: var(--s-3);
+    color: var(--review-d);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-campaign-pending p {
+    max-width: var(--measure);
+    margin: 0;
+    color: var(--inst-ink-1);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+    text-wrap: pretty;
+  }
+
+  .tv-campaign-unblocks {
+    margin-top: var(--s-3) !important;
+    color: var(--inst-ink-2) !important;
+    font-family: var(--font-mono);
+  }
+
+  @media (min-width: 1024px) {
+    .tv-recovery-pair,
+    .tv-campaign-rates {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--s-6);
+    }
+
+    .tv-recovery-corroboration dl {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--s-8);
+    }
+  }
+}

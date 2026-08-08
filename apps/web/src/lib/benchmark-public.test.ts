@@ -23,17 +23,44 @@ describe("the claims pack", () => {
   });
 
   it("carries the mandatory context with every figure it publishes", () => {
+    /*
+     * Asserted against the requirement, not against a field name. The first
+     * version of this counted `must_say_en ? 1 : 0` — the same expression the
+     * implementation used — so when five approved claims turned out to ship a
+     * Korean must_say with no English twin, the sentence vanished from the page
+     * and this test agreed that nothing was owed. A test that mirrors the
+     * implementation cannot catch the implementation.
+     */
     const published = claimsPack.claims.filter(
       (claim) => claim.status !== "withheld",
     );
     for (const claim of published) {
       const figure = claimFigure(claim.id);
-      // A claim that came with must_say or conditions must expose them; a
-      // component cannot render the number and silently drop the sentence.
-      const owed =
-        (claim.must_say_en ? 1 : 0) + (claim.conditions?.length ?? 0);
-      expect(figure.context).toHaveLength(owed);
+      const requiresContext =
+        Boolean(claim.must_say) ||
+        Boolean(claim.must_say_en) ||
+        (claim.conditions?.length ?? 0) > 0;
+      if (requiresContext) {
+        expect(
+          figure.context.length,
+          `${claim.id} requires context but exposes none`,
+        ).toBeGreaterThan(0);
+      }
+      for (const entry of figure.context) {
+        expect(entry.text.length).toBeGreaterThan(0);
+        expect(["en", "ko"]).toContain(entry.lang);
+      }
     }
+  });
+
+  it("falls back to the Korean must_say when no English twin exists", () => {
+    // Five approved claims are in this state. Surfacing the Korean is worse
+    // than an English sentence and far better than silence, which is what the
+    // page was doing.
+    const figure = claimFigure("recovery-contribution-olmocr");
+    expect(figure.context).toHaveLength(1);
+    expect(figure.context[0]!.lang).toBe("ko");
+    expect(figure.context[0]!.text).toContain("단일 변수");
   });
 
   it("gives conditional claims their conditions", () => {
