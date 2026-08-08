@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:live": "playwright test --config=playwright.live.config.ts",
     "interactions:check": "node scripts/verify-button-contracts.mjs",
+    "blueprint:check": "node scripts/verify-blueprint.mjs",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
     "lighthouse": "lhci autorun --config=./lighthouserc.json"
   },

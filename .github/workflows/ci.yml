@@ -75,6 +75,9 @@ jobs:
           node --check tests/load/k6-journey.js
       - run: pnpm lint
       - run: pnpm typecheck
+      # DESIGN_MASTER_V3 [확정] items that are checkable from source. The V3
+      # layer must be clean; the legacy sheets ratchet downward only.
+      - run: pnpm --filter @akc/web blueprint:check
       - run: pnpm test
       - run: pnpm build
 

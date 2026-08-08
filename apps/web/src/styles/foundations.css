@@ -133,7 +133,13 @@
     word-break: normal;
   }
 
-  @media (max-width: 480px) {
+  /*
+   * §20 [확정] allows three viewport boundaries — 1280, 1024, 768. This was
+   * 480, which that section lists among the sixteen to remove. 768 is the
+   * band where the layout goes vertical, and a Korean headline that has to
+   * break inside a word is a narrow-column problem, so the two coincide.
+   */
+  @media (max-width: 768px) {
     :lang(ko) h1 {
       word-break: normal;
     }

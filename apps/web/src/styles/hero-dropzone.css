@@ -191,7 +191,8 @@
     cursor: pointer;
   }
 
-  @media (max-width: 767px) {
+  /* §20 [확정] — 768, not 767. The boundary set is 1280 / 1024 / 768. */
+  @media (max-width: 768px) {
     .tv-dropzone-report dl > div {
       grid-template-columns: minmax(0, 1fr);
       gap: 0;

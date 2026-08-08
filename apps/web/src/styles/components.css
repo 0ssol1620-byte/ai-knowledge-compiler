@@ -26,11 +26,23 @@
   .overall-progress-stage strong {
     color: var(--text-secondary);
     font-family: var(--font-mono);
-    font-size: 10px;
+    /*
+     * §7.3 [확정] sets 12px as the floor for body and UI text, with no
+     * exemption for a numeric badge. This was 10px. The label is "3/7" at
+     * most, so the extra two pixels cost nothing the 48px footprint cannot
+     * absorb.
+     */
+    font-size: var(--fs-label);
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 1180px) {
+  /*
+   * §20 [확정] allows three viewport boundaries — 1280, 1024, 768. This was
+   * 1180, one of the sixteen widths that section exists to remove. 1024 rather
+   * than 1280: the badge shrinks when the pipeline bar gets tight, which is the
+   * two-pane band, not the wide desktop one.
+   */
+  @media (max-width: 1024px) {
     .overall-progress-stage {
       width: 41px;
       height: 41px;

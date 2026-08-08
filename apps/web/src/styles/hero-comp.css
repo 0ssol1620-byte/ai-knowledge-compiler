@@ -8,15 +8,52 @@
  */
 
 @layer components {
+  /*
+   * §20 [확정] — the responsive bands, expressed with min-width.
+   *
+   * §20 gives four bands and three boundaries:
+   *
+   *   >= 1280    facing spread, 5:7
+   *   1024-1279  facing spread held, but 6:6
+   *   768-1023   vertical: source above, result below
+   *   <= 767     vertical plus a Source/Result tab switch
+   *
+   * min-width rather than max-width, and the reason is exact rather than
+   * stylistic. The allowed boundary set is 1280 / 1024 / 768, and with
+   * max-width every boundary lands one pixel inside the wrong band —
+   * `max-width: 1024px` puts 1024 in the vertical band when §20 puts it in the
+   * 6:6 one. Expressing it the other way round would need 1023 and 1279, the
+   * exact widths §20 exists to remove. So the vertical layout is the base and
+   * the spread is the enhancement.
+   *
+   * This is a behaviour change and worth naming: the spread previously held
+   * down to 768, so 900px showed two columns where §20's table says vertical.
+   */
   .tv-hero-comp {
     display: grid;
-    grid-template-columns: 5fr 7fr; /* §6.4 — hero is the only 5:7 */
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    gap: var(--s-7);
-    min-height: min(88vh, 920px); /* §6.4 vertical rhythm */
-    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    gap: var(--s-6);
+    padding: var(--s-8) var(--s-5) var(--s-9);
     background: var(--paper-1);
     color: var(--ink-0);
+  }
+
+  /* 1024-1279 — the spread returns, at 6:6. */
+  @media (min-width: 1024px) {
+    .tv-hero-comp {
+      grid-template-columns: 6fr 6fr;
+      gap: var(--s-7);
+      min-height: min(88vh, 920px); /* §6.4 vertical rhythm */
+      padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    }
+  }
+
+  /* >= 1280 — §6.4 makes the hero the only 5:7 in the system. */
+  @media (min-width: 1280px) {
+    .tv-hero-comp {
+      grid-template-columns: 5fr 7fr;
+    }
   }
 
   /*
@@ -383,9 +420,12 @@
   /* ── variant C · Full-bleed verso ─────────────────── */
   /* The source page runs off the right edge; the output sits over it. */
 
-  .tv-hero-comp[data-variant="fullbleed"] {
-    grid-template-columns: 5fr 7fr;
-    padding-right: 0;
+  /* The bleed only means anything once there is a spread to bleed out of,
+     so the padding removal is scoped to the bands that have one. */
+  @media (min-width: 1024px) {
+    .tv-hero-comp[data-variant="fullbleed"] {
+      padding-right: 0;
+    }
   }
 
   .tv-hero-comp[data-variant="fullbleed"] .tv-facing-frame {
@@ -402,17 +442,11 @@
     backdrop-filter: blur(2px);
   }
 
-  /* ── 767 and below · recomposition, not a scaled desktop ── */
-
-  @media (max-width: 767px) {
-    .tv-hero-comp,
-    .tv-hero-comp[data-variant="fullbleed"] {
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--s-6);
-      min-height: 0;
-      padding: var(--s-8) var(--s-5) var(--s-9);
-    }
-
+  /* ── 768 and below · recomposition, not a scaled desktop ──
+   * The vertical layout is now the base, so this block carries only what is
+   * specific to the narrow band: a smaller display size and stacked actions.
+   */
+  @media (max-width: 768px) {
     .tv-hero-comp h1 {
       font-size: var(--fs-display-2);
       letter-spacing: var(--tracking-display-2);
