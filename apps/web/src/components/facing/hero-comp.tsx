@@ -85,7 +85,14 @@ export function HeroComp({
   live?: boolean;
 }) {
   return (
-    <section className="tv-hero-comp" data-variant={variant} data-live={live || undefined}>
+    <section
+      // tv-paper carries the §15.3 fibre. data-surface picks the amplitude for
+      // this step of the PAPER ramp — the hero sits on --paper-1, the verso.
+      className="tv-hero-comp tv-paper"
+      data-surface="verso"
+      data-variant={variant}
+      data-live={live || undefined}
+    >
       <div className="tv-hero-comp-copy">
         <p className="tv-hero-comp-eyebrow">The Knowledge Compiler</p>
         <h1>

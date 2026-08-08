@@ -11,6 +11,7 @@ import { wantedSans } from "./fonts";
 import "@/styles/tokens.css";
 import "@/styles/properties.css";
 import "@/styles/foundations.css";
+import "@/styles/paper.css";
 import "@/styles/motion.css";
 import "./globals.css";
 import "./product-shell.css";

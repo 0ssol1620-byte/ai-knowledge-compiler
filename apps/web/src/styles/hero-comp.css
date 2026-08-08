@@ -19,14 +19,46 @@
     color: var(--ink-0);
   }
 
+  /*
+   * §5.2 slop response 4 — the eyebrow leaves "uppercase label + dot + rule".
+   *
+   * The detector's rule is named Eyebrow Chrome, and the axis we carried was
+   * the uppercase tracked label in the accent colour. There was never a
+   * decorative dot or a trailing rule here, so this is not the full pattern —
+   * but the uppercase label is the part that does the signalling, and it is
+   * the part that every generated marketing page also has.
+   *
+   * §5.2's instruction is to earn it with specificity, so the change is in
+   * treatment rather than in words: the copy is G-F approved and stays exactly
+   * as it is. What goes is the chrome.
+   *
+   *   uppercase + 0.08em tracking  ->  sentence case, normal tracking
+   *   accent colour                ->  ink-2
+   *
+   * Sentence case in the mono face reads as a system label — what a compiler
+   * prints above its output — rather than as a marketing category tag. The
+   * accent leaves because an accent that appears on every eyebrow is chrome;
+   * §6.2 spends 255° on one thing at a time, and on this screen that thing is
+   * the CTA.
+   */
   .tv-hero-comp-eyebrow {
     margin: 0 0 var(--s-4);
-    color: var(--brand);
+    color: var(--ink-2);
     font-family: var(--font-mono);
     font-size: var(--fs-label);
     font-weight: var(--w-medium);
-    letter-spacing: var(--tracking-label);
+    letter-spacing: 0;
     line-height: var(--lh-label);
+  }
+
+  /*
+   * The treatment §5.2 asks us to leave, kept only so /design/slop can show
+   * the two beside each other for the approval this change needs. It is not
+   * reachable from any product route.
+   */
+  [data-treatment="chrome"] .tv-hero-comp-eyebrow {
+    color: var(--brand);
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
   }
 
@@ -415,5 +447,64 @@
       border-right: 1px solid var(--rule-paper-2);
       border-radius: var(--r-media);
     }
+  }
+}
+
+/*
+ * §5.2 review route chrome — /design/slop only. Deleted with the route once
+ * decision.md records the outcome.
+ */
+@layer components {
+  .tv-slop-review {
+    background: var(--paper-0);
+    color: var(--ink-0);
+  }
+
+  .tv-slop-review-head {
+    max-width: var(--measure);
+    padding: var(--s-8) clamp(var(--s-5), 5vw, 72px) var(--s-6);
+  }
+
+  .tv-slop-review-head h1 {
+    margin: 0 0 var(--s-3);
+    font-size: var(--fs-title-1);
+    font-weight: var(--w-title);
+    letter-spacing: var(--tracking-title-1);
+    line-height: var(--lh-title-1);
+  }
+
+  .tv-slop-review-head p {
+    margin: 0;
+    color: var(--ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-slop-review-label {
+    padding: var(--s-5) clamp(var(--s-5), 5vw, 72px) var(--s-3);
+    border-top: 1px solid var(--rule-paper-2);
+  }
+
+  .tv-slop-review-label h2 {
+    margin: 0 0 var(--s-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    line-height: var(--lh-small);
+  }
+
+  .tv-slop-review-label p {
+    margin: 0;
+    max-width: var(--measure);
+    color: var(--ink-2);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+    text-wrap: pretty;
+  }
+
+  /* The "before" pane is the flat fill: no fibre. */
+  .tv-slop-review-frame[data-treatment="chrome"] {
+    --tv-grain-strength: 0;
   }
 }
