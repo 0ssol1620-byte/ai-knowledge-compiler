@@ -45,6 +45,117 @@ def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+ARTIFACT_DIRECTORY = Path("docs") / "evidence" / "artifacts"
+GENERATED_PREFIX = ("benchmark", "reports", "generated")
+
+
+def _publish(repository: Path, source: Path) -> Path:
+    """Copy a cited artifact into the repository so a clone can verify it.
+
+    benchmark/reports/generated is gitignored, and eleven of the fourteen files
+    the pack cited lived there. Every hash verified on this machine and nowhere
+    else: anyone who cloned the repository -- the frontend agent on the other
+    machine, a patent examiner, a reviewer -- would find each citation pointing
+    at a file that does not exist. The summaries are small; the multi-megabyte
+    failure dumps they derive from stay out.
+    """
+    relative = source.relative_to(repository)
+    if relative.parts[: len(GENERATED_PREFIX)] != GENERATED_PREFIX:
+        return source
+    flattened = "__".join(relative.parts[len(GENERATED_PREFIX) :])
+    destination = repository / ARTIFACT_DIRECTORY / flattened
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    payload = source.read_bytes()
+    if not destination.is_file() or destination.read_bytes() != payload:
+        destination.write_bytes(payload)
+    return destination
+
+
+def _evidence(repository: Path, *paths: Path) -> dict[str, Any]:
+    """Bind a claim to the files it came from, path and hash together.
+
+    Writing the two as separate keys let nine of fifteen claims ship a path with
+    no hash, which is the same as shipping no evidence at all: the file can be
+    regenerated with different numbers and nothing notices. One helper that
+    always emits both, and a check below that refuses to build a pack without
+    them, is the difference between a chain of custody and a footnote.
+    """
+    resolved = [repository / path if not path.is_absolute() else path for path in paths]
+    missing = [str(path) for path in resolved if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"claim evidence does not exist: {', '.join(missing)}")
+    published = [_publish(repository, path) for path in resolved]
+    relative = [path.relative_to(repository).as_posix() for path in published]
+    sources = [path.relative_to(repository).as_posix() for path in resolved]
+    if len(published) == 1:
+        return {
+            "evidence": relative[0],
+            "evidence_sha256": _sha256(published[0]),
+            "evidence_source": sources[0],
+        }
+    return {
+        "evidence": relative,
+        "evidence_sha256": [_sha256(path) for path in published],
+        "evidence_source": sources,
+    }
+
+
+def _group_metric(payload: dict[str, Any], group: str, metric: str) -> float:
+    """Read a ParseBench metric from the summary instead of transcribing it.
+
+    The four ParseBench numbers on the site were typed in by hand. They happened
+    to be right, but a re-run of the evaluation would have left them silently
+    stale next to a hash that still verified.
+    """
+    for entry in payload["groups"]:
+        if entry["group"] == group:
+            return round(entry["aggregate_metrics"][metric], 4)
+    raise KeyError(f"ParseBench group {group!r} not present in the summary")
+
+
+def _check_evidence_is_bound(claims: list[dict[str, Any]]) -> None:
+    """Refuse to emit a claim that points at a file without hashing it."""
+    for claim in claims:
+        has_path = bool(claim.get("evidence"))
+        has_hash = bool(claim.get("evidence_sha256"))
+        if has_path != has_hash:
+            raise ValueError(
+                f"claim {claim['id']!r} carries evidence and hash inconsistently; "
+                "use _evidence() so the two cannot separate"
+            )
+        if claim["status"] in (APPROVED, CONDITIONAL) and not has_path:
+            raise ValueError(
+                f"claim {claim['id']!r} is publishable but cites no evidence"
+            )
+
+
+def _check_evidence_is_readable(repository: Path, claims: list[dict[str, Any]]) -> None:
+    """Refuse to emit a citation a clone of this repository cannot open.
+
+    A path that only resolves on the machine that generated it is not evidence.
+    """
+    import subprocess
+
+    for claim in claims:
+        cited = claim.get("evidence")
+        if not cited:
+            continue
+        for entry in cited if isinstance(cited, list) else [cited]:
+            path = repository / entry
+            if not path.is_file():
+                raise FileNotFoundError(f"claim {claim['id']!r} cites missing {entry}")
+            ignored = subprocess.run(
+                ["git", "check-ignore", "-q", entry],
+                cwd=repository,
+                capture_output=True,
+            )
+            if ignored.returncode == 0:
+                raise ValueError(
+                    f"claim {claim['id']!r} cites {entry}, which git ignores; "
+                    "publish it into docs/evidence/artifacts instead"
+                )
+
+
 def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
@@ -79,26 +190,42 @@ def build_claims(repository: Path) -> dict[str, Any]:
     blind = _load(blind_path)
     recovery = ledger["recovery_outcome"]
 
-    olm_with = _load(official / "olmocr-bench" / "evaluation-summary.json")
-    olm_without = _load(
-        generated / "folynta-counterfactual-no-recovery-olmocr-2026-08-08" / "evaluation-summary.json"
+    olm_with_path = official / "olmocr-bench" / "evaluation-summary.json"
+    # The roll-up carries both sides of the comparison and the caveats that go
+    # with it, so it is what the claim cites; the raw summary is what the
+    # numbers are read from, and the two agree.
+    olm_counterfactual_path = (
+        generated / "folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json"
     )
-    parse_with = _load(official / "parsebench" / "evaluation-summary.json")
-    parse_without = _load(
+    parse_with_path = official / "parsebench" / "evaluation-summary.json"
+    parse_without_path = (
         generated
         / "folynta-counterfactual-no-recovery-parsebench-2026-08-08"
         / "evaluation-summary.json"
     )
-    omni_with = _load(official / "omnidocbench" / "repeat-1" / "metric-result.json")
-    omni_without = _load(
+    omni_with_path = official / "omnidocbench" / "repeat-1" / "metric-result.json"
+    omni_without_path = (
         generated
         / "folynta-counterfactual-no-recovery-omnidocbench-2026-08-08"
         / "repeat-1"
         / "metric-result.json"
     )
+    leaderboard_path = generated / "folynta-published-leaderboard-context-2026-08-08.json"
+    cost_path = generated / "folynta-measured-gpu-cost-2026-08-08.json"
+
+    olm_with = _load(olm_with_path)
+    olm_without = _load(
+        generated / "folynta-counterfactual-no-recovery-olmocr-2026-08-08" / "evaluation-summary.json"
+    )
+    parse_with = _load(parse_with_path)
+    parse_without = _load(parse_without_path)
+    omni_with = _load(omni_with_path)
+    omni_without = _load(omni_without_path)
 
     def edit(payload: dict[str, Any], section: str) -> float:
         return payload[section]["all"]["Edit_dist"]["ALL_page_avg"]
+
+    group_metric = _group_metric
 
     claims: list[dict[str, Any]] = [
         {
@@ -114,8 +241,20 @@ def build_claims(repository: Path) -> dict[str, Any]:
                     for suite, counts in ledger["cases_by_suite"].items()
                 },
             },
-            "evidence": str(ledger_path.relative_to(repository).as_posix()),
-            "evidence_sha256": _sha256(ledger_path),
+            "must_say": (
+                "5,132은 평가한 문서 수이며 처리 용량이나 고객 처리량이 아닙니다. "
+                "세 벤치마크는 공개 데이터셋이고 각 벤치마크의 문서 수를 함께 표기하십시오."
+            ),
+            "must_say_en": (
+                "5,132 is the number of documents evaluated, not a capacity or a "
+                "customer throughput figure. Name the three public benchmarks and "
+                "their individual counts alongside the total."
+            ),
+            "forbidden": [
+                "5,132개 문서를 처리할 수 있습니다 (규모를 처리 용량으로 환언하는 표현)",
+                "고객 문서 5,132건 (공개 벤치마크를 고객 실적으로 제시하는 표현)",
+            ],
+            **_evidence(repository, ledger_path),
         },
         {
             "id": "completion-rate",
@@ -141,8 +280,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "정확도 100%에 가까움",
                 "완주율을 정확도로 환언하는 모든 표현",
             ],
-            "evidence": str(ledger_path.relative_to(repository).as_posix()),
-            "evidence_sha256": _sha256(ledger_path),
+            **_evidence(repository, ledger_path),
         },
         {
             "id": "recovery-rate",
@@ -171,8 +309,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "The denominator is the documents that actually failed, not the whole "
                 "corpus. Without the denominator this reads as the completion rate."
             ),
-            "evidence": str(ledger_path.relative_to(repository).as_posix()),
-            "evidence_sha256": _sha256(ledger_path),
+            **_evidence(repository, ledger_path),
         },
         {
             "id": "recovery-contribution-olmocr",
@@ -198,7 +335,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "A single-variable comparison: model, evaluator revision, corpus and "
                 "settings are identical, and only the recovery output was removed."
             ),
-            "evidence": "benchmark/reports/generated/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
+            **_evidence(repository, olm_counterfactual_path),
         },
         {
             "id": "recovery-contribution-parsebench",
@@ -208,12 +345,50 @@ def build_claims(repository: Path) -> dict[str, Any]:
             "numbers": {
                 "rule_failures_with": parse_with["rule_failure_count"],
                 "rule_failures_without": parse_without["rule_failure_count"],
-                "content_faithfulness_with": 0.8376,
-                "content_faithfulness_without": 0.5243,
-                "table_grits_with": 0.9017,
-                "table_grits_without": 0.5321,
+                "content_faithfulness_with": group_metric(
+                    parse_with, "text_content", "avg_content_faithfulness"
+                ),
+                "content_faithfulness_without": group_metric(
+                    parse_without, "text_content", "avg_content_faithfulness"
+                ),
+                "table_grits_with": group_metric(parse_with, "table", "avg_grits_con"),
+                "table_grits_without": group_metric(
+                    parse_without, "table", "avg_grits_con"
+                ),
+                # Carried deliberately: this is the one group where removing
+                # recovery does not look worse, and the reason has to travel
+                # with the claim.
+                "layout_micro_rule_pass_rate_with": group_metric(
+                    parse_with, "layout", "micro_layout_rule_pass_rate"
+                ),
+                "layout_micro_rule_pass_rate_without": group_metric(
+                    parse_without, "layout", "micro_layout_rule_pass_rate"
+                ),
+                "layout_rules_evaluated_with": group_metric(
+                    parse_with, "layout", "total_layout_rule_pass_rate_evaluated"
+                ),
+                "layout_rules_evaluated_without": group_metric(
+                    parse_without, "layout", "total_layout_rule_pass_rate_evaluated"
+                ),
             },
-            "evidence": "benchmark/reports/generated/folynta-counterfactual-no-recovery-parsebench-2026-08-08/evaluation-summary.json",
+            "must_say": (
+                "절대 위반 건수로 표기하십시오. 레이아웃 그룹의 통과율은 복구를 끄면 "
+                "오히려 올라가는데(0.757 → 0.770), 내용이 없는 문서는 채점할 요소 자체가 "
+                "없어 분모가 40,287에서 23,025로 줄기 때문입니다. 비율만 인용하면 "
+                "복구를 끄는 편이 나아 보입니다."
+            ),
+            "must_say_en": (
+                "Quote the absolute failure counts. The layout group's pass rate "
+                "actually rises when recovery is removed (0.757 to 0.770) because an "
+                "empty document has no elements to score, shrinking the denominator "
+                "from 40,287 to 23,025. A rate quoted alone makes no-recovery look "
+                "better."
+            ),
+            "forbidden": [
+                "레이아웃 통과율을 복구 효과의 근거로 인용하는 표현",
+                "규칙 위반 감소를 비율로만 제시하고 분모 변화를 생략하는 표현",
+            ],
+            **_evidence(repository, parse_with_path, parse_without_path),
         },
         {
             "id": "recovery-contribution-omnidocbench",
@@ -232,7 +407,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
             "must_say_en": (
                 "Lower edit distance is better; higher TEDS is better."
             ),
-            "evidence": "benchmark/reports/generated/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08/repeat-1/metric-result.json",
+            **_evidence(repository, omni_with_path, omni_without_path),
         },
         {
             "id": "benchmark-accuracy",
@@ -266,7 +441,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "정확도 100% / 무오류 / 완벽한 추출",
                 "80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성",
             ],
-            "evidence": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
+            **_evidence(repository, olm_with_path),
         },
         {
             "id": "customer-facing-fidelity",
@@ -295,7 +470,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "These are a different measure from the 80.6% check pass rate. If both "
                 "appear on one page, label what each one measures."
             ),
-            "evidence": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json",
+            **_evidence(repository, omni_with_path),
         },
         {
             "id": "accuracy-by-document-type",
@@ -330,7 +505,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "benchmark_slice 값(old_scans.jsonl 등)을 화면에 그대로 노출",
                 "저품질 스캔 행을 뺀 부분 표",
             ],
-            "evidence": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
+            **_evidence(repository, olm_with_path),
         },
         {
             "id": "product-pipeline",
@@ -370,7 +545,13 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "supportable evidence is the structural guarantees claim."
             ),
             "forbidden": ["이 단계들에 대한 정확도·품질 백분율 표기"],
-            "evidence": "packages/domain-packs/src/akc_domain_packs/blueprints.py; packages/exporters/src/akc_exporters/",
+            **_evidence(
+                repository,
+                repository / "packages/domain-packs/src/akc_domain_packs/blueprints.py",
+                repository / "packages/exporters/src/akc_exporters/vault.py",
+                repository / "packages/exporters/src/akc_exporters/knowledge_package.py",
+                compile_path,
+            ),
         },
         {
             "id": "compilation-guarantees",
@@ -397,8 +578,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "These guarantees describe the structure of the compiled output. They "
                 "are a separate measure from whether the extracted text is correct."
             ),
-            "evidence": str(compile_path.relative_to(repository).as_posix()),
-            "evidence_sha256": _sha256(compile_path),
+            **_evidence(repository, compile_path),
         },
         {
             "id": "leaderboard-position",
@@ -426,7 +606,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "우리가 <경쟁사>보다 N점 높습니다",
                 "업계 1위 / 최고 정확도",
             ],
-            "evidence": "benchmark/reports/generated/folynta-published-leaderboard-context-2026-08-08.json",
+            **_evidence(repository, leaderboard_path),
         },
         {
             "id": "cost-per-page",
@@ -444,7 +624,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "경쟁사의 소매가와 나란히 놓으면 성립하지 않는 비교가 됩니다.",
             ],
             "forbidden": ["경쟁사 대비 N배 저렴 (원가와 소매가를 비교하는 모든 표현)"],
-            "evidence": "benchmark/reports/generated/folynta-measured-gpu-cost-2026-08-08.json",
+            **_evidence(repository, cost_path),
         },
         {
             "id": "quality-retry-improvement",
@@ -471,10 +651,12 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "hypothesis_supported": blind["outcome"]["supported"],
                 "corpus_cases": blind["corpus_cases"],
             },
-            "evidence": str(blind_path.relative_to(repository).as_posix()),
-            "evidence_sha256": _sha256(blind_path),
+            **_evidence(repository, blind_path),
         },
     ]
+
+    _check_evidence_is_bound(claims)
+    _check_evidence_is_readable(repository, claims)
 
     return {
         "schema": "folynta.public-claims-pack.v1",

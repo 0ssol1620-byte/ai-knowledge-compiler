@@ -43,12 +43,18 @@ data/
 tmp/
 work/
 artifacts/
+# The claims pack cites measured results, and a citation that only resolves on
+# the machine that produced it is not evidence. The small summary receipts are
+# copied here deliberately so a clone can verify every published number; the
+# multi-megabyte failure dumps they derive from stay ignored above.
+!docs/evidence/artifacts/
 /reports/
 benchmark/reports/generated/
 benchmark/cache/
 benchmark/public-runs/
 benchmark/datasets/private/
 benchmark/datasets/acquired/
+benchmark/datasets/staged-public-core/
 *.db
 *.sqlite
 *.sqlite3
@@ -67,3 +73,11 @@ desktop.ini
 crash.log
 
 .vercel
+
+# Operator scratch from live campaign runs. These hold provider Pod ids and the
+# addresses assigned to them for a few hours; they are working notes, not
+# receipts, and the receipts under benchmark/datasets/private are the record.
+.local/
+.local-demo/
+.retry_pods.json
+.live_retry_workers.json
