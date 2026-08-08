@@ -1,18 +1,9 @@
-import {
-  ArrowRight,
-  CheckCircle,
-  FileText,
-  Graph,
-  LinkSimple,
-  LockKey,
-  SquaresFour,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
+import { HeroComp, HERO_COPY } from "@/components/facing/hero-comp";
 import { TavonelGlyph } from "@/components/tavonel-glyph";
-import { TavonelHeroScene } from "@/components/tavonel-hero";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
-import { TavonelPattern } from "@/components/tavonel-pattern";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 
@@ -47,92 +38,35 @@ export function MarketingLanding() {
   return (
     <TavonelMarketingShell>
       <main id="main-content" className="tv-home">
-        <section className="tv-home-hero">
-          <div className="tv-home-copy">
-            <p className="tv-context-label">The Knowledge Compiler for AI</p>
-            <h1>Your AI is only as good as the knowledge it receives.</h1>
-            <p className="tv-home-intro">
-              Turn documents into structured, verified, connected knowledge with
-              every important result linked back to its source.
-            </p>
-            <div className="tv-actions">
-              <Link href="/signup" className="tv-button tv-button-dark">
-                Build your knowledge
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-              <a href="#transformation" className="tv-text-action">
-                Watch the transformation
-              </a>
-            </div>
-            <p className="tv-trust-line">
-              Source-linked · Portable · Private by policy
-            </p>
-            <p className="tv-compiler-sequence">
-              Page → Structure → Evidence → Knowledge → Intelligence
-            </p>
-          </div>
-          <TavonelHeroScene />
-          <div className="tv-output-rail" aria-label="Supported outputs">
-            {[
-              "Portable Markdown",
-              "Obsidian Vault",
-              "RAG JSONL",
-              "Knowledge Graph",
-            ].map((output) => (
-              <span key={output}>{output}</span>
-            ))}
-          </div>
-        </section>
+        {/*
+          §9.2 option A, decided at G-C: the hero is an affordance, not a
+          scene. The visitor is not shown a picture of compiling — the left
+          page is a real document with its blocks at stored bbox coordinates,
+          and dropping a file replaces it with theirs.
 
-        <section className="tv-problem">
-          <TavonelPattern
-            name="coordinate-field"
-            className="tv-section-pattern tv-problem-pattern"
-          />
-          <div>
-            <h2>
-              Powerful models.
-              <br />
-              Weak context.
-            </h2>
-            <p>
-              Complex layouts, broken tables, repeated headers, page boundaries,
-              and summaries without sources leave AI with text but not usable
-              knowledge.
-            </p>
-          </div>
-          <div className="tv-before-after">
-            <article>
-              <span>Raw documents</span>
-              <div className="tv-fragments">
-                <i />
-                <i />
-                <i />
-                <i />
-              </div>
-              <p>Fragments · repeated headers · broken table · no links</p>
-            </article>
-            <div className="tv-compile-path" aria-hidden="true">
-              <FileText size={16} />
-              <span />
-              <SquaresFour size={16} />
-              <span />
-              <LinkSimple size={16} />
-              <span />
-              <Graph size={16} />
-            </div>
-            <article>
-              <span>Compiled knowledge</span>
-              <div className="tv-compiled">
-                <strong>Heading tree</strong>
-                <i>Table object</i>
-                <i>Source link</i>
-                <i>Note network</i>
-              </div>
-              <p>Structure · evidence · relationships · portable output</p>
-            </article>
-          </div>
-        </section>
+          What this replaced, and why. The previous hero paired the copy with
+          an abstract render that had to caption itself "no generated imagery"
+          — a hero image that has to deny being AI slop has already lost the
+          argument. Below it, a "Powerful models / Weak context" section
+          illustrated raw documents with four empty white rectangles and
+          compiled knowledge with four labelled empty cells. On a document
+          product, an empty box does not read as a fragmented document; it
+          reads as a failed image load. §21 [확정] requires marketing visuals
+          to be generated from real product components, and those were
+          hand-drawn empty divs.
+
+          The section is not replaced by a better diagram. It is deleted,
+          because the hero now makes its point by doing the thing.
+        */}
+        <HeroComp variant="frame" copy={HERO_COPY.d1} live />
+
+        <div className="tv-output-rail" aria-label="Supported outputs">
+          {["Portable Markdown", "Obsidian Vault", "RAG JSONL", "Knowledge Graph"].map(
+            (output) => (
+              <span key={output}>{output}</span>
+            ),
+          )}
+        </div>
 
         <section id="transformation" className="tv-transformation">
           <header>
@@ -348,37 +282,112 @@ export function MarketingLanding() {
   );
 }
 
+/**
+ * The four chapters, each showing the thing it claims — §21 [확정]: marketing
+ * visuals come from real product data, not from drawings of it.
+ *
+ * This replaced one component that rendered all four chapters identically:
+ * the same page of empty <i> bars, the same empty result box, the same
+ * connector, with only a corner glyph and one label changing. Three different
+ * claims illustrated by one picture is the clearest possible signal that
+ * there was nothing specific to show.
+ *
+ * Everything below comes from DART_PUBLIC_FIXTURE, the same public filing the
+ * proof explorer further down the page uses. Nothing here is invented: the
+ * figures, taxonomy tags, and source line numbers are the ones in the filing.
+ */
 function ChapterVisual({ index }: { index: string }) {
-  const glyph =
-    index === "01"
-      ? "block"
-      : index === "02"
-        ? "evidence"
-        : index === "03"
-          ? "node"
-          : "package";
+  const fixture = DART_PUBLIC_FIXTURE;
+  const revenue = fixture.rows[0]!;
 
   return (
-    <div className={`tv-chapter-visual tv-chapter-${index}`} aria-hidden="true">
-      <TavonelGlyph name={glyph} size={26} />
-      <div className="tv-visual-page">
-        <i />
-        <i />
-        <i />
-        <b />
+    <div className={`tv-chapter-visual tv-chapter-${index}`}>
+      <div className="tv-cv-source">
+        <span className="tv-cv-stamp">
+          {fixture.source} · {fixture.receiptNumber}
+        </span>
+
+        {index === "01" && (
+          <ol className="tv-cv-blocks">
+            <li data-block="heading">{fixture.statement}</li>
+            <li data-block="paragraph">
+              Consolidated figures for {fixture.currentPeriod}, presented in{" "}
+              {fixture.unit}.
+            </li>
+            <li data-block="table">
+              {fixture.rows.length} rows · {fixture.currentPeriod} vs{" "}
+              {fixture.priorPeriod}
+            </li>
+          </ol>
+        )}
+
+        {index === "02" && (
+          <table className="tv-cv-table">
+            <tbody>
+              {fixture.rows.slice(0, 3).map((row) => (
+                <tr key={row.taxonomy} data-cited={row === revenue || undefined}>
+                  <th scope="row">{row.label}</th>
+                  <td>{row.current}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {index === "03" && (
+          <ul className="tv-cv-entities">
+            <li>
+              {fixture.company} <em>issuer</em>
+            </li>
+            <li>
+              {fixture.stockCode} <em>listing</em>
+            </li>
+            <li>
+              {fixture.report} <em>filing</em>
+            </li>
+          </ul>
+        )}
+
+        {index === "04" && (
+          <p className="tv-cv-digest">
+            <span>archive sha256</span>
+            {fixture.archiveSha256.slice(0, 24)}…
+          </p>
+        )}
       </div>
-      <div className="tv-visual-result">
-        <strong>
-          {index === "02"
-            ? DART_PUBLIC_FIXTURE.rows[0].current
-            : index === "04"
-              ? "Export"
-              : "Knowledge"}
-        </strong>
-        <span />
-        <span />
+
+      <div className="tv-cv-thread" aria-hidden="true" />
+
+      <div className="tv-cv-knowledge">
+        {index === "01" && (
+          <>
+            <strong>3 typed blocks</strong>
+            <p>heading · paragraph · table</p>
+          </>
+        )}
+        {index === "02" && (
+          <>
+            <strong>{revenue.current}</strong>
+            <p>
+              {revenue.taxonomy}
+              <br />
+              source line {revenue.sourceLine}
+            </p>
+          </>
+        )}
+        {index === "03" && (
+          <>
+            <strong>3 entities</strong>
+            <p>issuer → listing → filing</p>
+          </>
+        )}
+        {index === "04" && (
+          <>
+            <strong>4 destinations</strong>
+            <p>Markdown · Vault · RAG JSONL · JSON-LD</p>
+          </>
+        )}
       </div>
-      <div className="tv-visual-link" />
     </div>
   );
 }
