@@ -24,7 +24,10 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Create a dedicated large Docker data volume
-        uses: easimon/maximize-build-space@c28619d8999a147d5e09c1199f84ff6af6ad5794
+        # v10 is the released tag. The previous pin sat two commits past it on
+        # the default branch, so no honest version comment could be written for
+        # it; the difference is two lines of memory formatting in action.yml.
+        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
         with:
           build-mount-path: /var/lib/docker
           build-mount-path-ownership: root:root
@@ -46,7 +49,7 @@ jobs:
           df -h / /var/lib/docker
 
       - name: Check out the exact source commit
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: 8fa646f4a2411a0dbc1fed7519a2e11fc45fede2
           persist-credentials: false
@@ -84,7 +87,7 @@ jobs:
           docker logout ghcr.io
 
       - name: Publish non-secret build receipts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ovisocr2-runtime-build-${{ github.run_id }}
           path: |

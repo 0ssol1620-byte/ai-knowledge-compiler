@@ -46,9 +46,31 @@ SCAN_EXCLUDED_PARTS = {
     "playwright-report",
     "test-results",
 }
+# Excluded by location rather than by directory name. These trees hold acquired
+# datasets and generated evaluation output -- tens of gigabytes that git already
+# ignores and that no commit can carry. Walking them turned a scan that takes
+# seconds in CI, where they do not exist, into one that had not finished after
+# an hour on a workstation that had run a benchmark campaign. A validator nobody
+# can afford to run is a validator that never runs.
+SCAN_EXCLUDED_PREFIXES = (
+    ("benchmark", "datasets"),
+    ("benchmark", "reports", "generated"),
+    ("benchmark", "corpus", "cache"),
+)
+
+
+def _is_excluded(relative: Path) -> bool:
+    parts = relative.parts
+    if SCAN_EXCLUDED_PARTS.intersection(parts):
+        return True
+    return any(parts[: len(prefix)] == prefix for prefix in SCAN_EXCLUDED_PREFIXES)
 ACTION_USE_PATTERN = re.compile(
     r"uses:\s*([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)"
-    r"@([0-9a-f]{40})\s+#\s+(v[0-9]+\.[0-9]+\.[0-9]+)\s*$"
+    # Not every action releases three-component tags. easimon/maximize-build-space
+    # ships "v10", and demanding "v10.0.0" would have forced either a comment
+    # naming a tag that does not exist or a pin to an untagged commit -- which is
+    # what the Ovis workflow had been carrying.
+    r"@([0-9a-f]{40})\s+#\s+(v[0-9]+(?:\.[0-9]+){0,2})\s*$"
 )
 FROZEN_MASTERPLAN_DIGESTS = {
     "AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md": (
@@ -148,16 +170,23 @@ def scan_public_fixtures(errors: list[str]) -> None:
             errors.append(f"public corpus file exceeds 5 MiB: {path.relative_to(ROOT)}")
 
 
-def scan_secrets(errors: list[str]) -> None:
+def scan_secrets(errors: list[str], *, root: Path = ROOT) -> None:
     scanner_path = Path(__file__).resolve()
-    for directory, child_directories, filenames in os.walk(ROOT):
-        child_directories[:] = [
-            name for name in child_directories if name not in SCAN_EXCLUDED_PARTS
-        ]
+    for directory, child_directories, filenames in os.walk(root):
         base = Path(directory)
+        child_directories[:] = [
+            name
+            for name in child_directories
+            if name not in SCAN_EXCLUDED_PARTS
+            and not _is_excluded((base / name).relative_to(root))
+        ]
         for filename in filenames:
             path = base / filename
-            if path == scanner_path or path.stat().st_size > 2 * 1024 * 1024:
+            try:
+                size = path.stat().st_size
+            except OSError:
+                continue
+            if path == scanner_path or size > 2 * 1024 * 1024:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
@@ -165,7 +194,7 @@ def scan_secrets(errors: list[str]) -> None:
                 continue
             for name, pattern in SECRET_PATTERNS.items():
                 if pattern.search(text):
-                    errors.append(f"possible {name} in {path.relative_to(ROOT)}")
+                    errors.append(f"possible {name} in {path.relative_to(root)}")
 
 
 BROWSER_SECRET_EXPORT_PATTERNS = (
@@ -201,7 +230,7 @@ def validate_serialized_documents(errors: list[str]) -> None:
             if not path.is_file():
                 continue
             relative = path.relative_to(ROOT)
-            if SCAN_EXCLUDED_PARTS.intersection(relative.parts):
+            if _is_excluded(relative):
                 continue
             try:
                 if path.suffix in {".json", ".jsonld"}:
