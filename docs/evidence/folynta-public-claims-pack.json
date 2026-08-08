@@ -34,6 +34,7 @@
       "headline_ko": "처리 완주율 99.98%",
       "id": "completion-rate",
       "must_say": "완주율은 출력이 생성된 비율이며 정확도가 아닙니다. 두 수치를 같은 문장에 쓸 때는 반드시 구분해 표기하십시오.",
+      "must_say_en": "This is the share of documents that produced output. It is not accuracy. Where both figures appear, label which is which.",
       "numbers": {
         "completion_fraction": 0.9998051441932969,
         "planned": 5132,
@@ -49,6 +50,7 @@
       "headline_ko": "실제로 실패한 문서 중 99.94%를 복구",
       "id": "recovery-rate",
       "must_say": "분모는 전체 코퍼스가 아니라 실제로 실패한 문서 수입니다. 분모를 밝히지 않으면 완주율과 혼동됩니다.",
+      "must_say_en": "The denominator is the documents that actually failed, not the whole corpus. Without the denominator this reads as the completion rate.",
       "numbers": {
         "attempted_but_never_recovered": 1,
         "needed_recovery": 1797,
@@ -65,6 +67,7 @@
       "headline_ko": "복구 레인을 끄면 동일 파이프라인의 공식 점수가 80.6에서 53.7로 떨어집니다",
       "id": "recovery-contribution-olmocr",
       "must_say": "모델, 평가기 리비전, 코퍼스, 설정을 고정하고 복구 산출물만 제거한 단일 변수 비교입니다.",
+      "must_say_en": "A single-variable comparison: model, evaluator revision, corpus and settings are identical, and only the recovery output was removed.",
       "numbers": {
         "benchmark": "olmOCR-Bench",
         "rule_failures_with": 1276,
@@ -103,6 +106,7 @@
       "headline_ko": "복구가 없으면 OmniDocBench 본문 편집거리가 4.5배로 악화됩니다",
       "id": "recovery-contribution-omnidocbench",
       "must_say": "편집거리는 낮을수록 좋고, TEDS는 높을수록 좋습니다.",
+      "must_say_en": "Lower edit distance is better; higher TEDS is better.",
       "numbers": {
         "reading_order_with": 0.1408,
         "reading_order_without": 0.3286,
@@ -283,6 +287,7 @@
       "headline_ko": "산출물의 구조적 보증: 재현 가능한 아키텍처, 미해결 링크 0건, 병합 시 무손실",
       "id": "compilation-guarantees",
       "must_say": "이 보증은 산출물의 구조에 관한 것이며 추출된 텍스트의 정확성과는 별개 지표입니다.",
+      "must_say_en": "These guarantees describe the structure of the compiled output. They are a separate measure from whether the extracted text is correct.",
       "numbers": {
         "architecture_repeats": 5,
         "blueprints": 7,
@@ -379,6 +384,6 @@
     "수치를 바꾸려면 이 파일이 아니라 근거 영수증을 다시 생성하십시오."
   ],
   "purpose": "웹사이트에 게시할 수 있는 주장과 게시할 수 없는 주장을 증거와 함께 구분합니다. 수치는 영수증에서 생성되며 손으로 수정해서는 안 됩니다.",
-  "receipt_sha256": "sha256:ecb69c75ad87bea376fe12792389d963d47d7b2eca11523f0f7fb44ea9d7ced6",
+  "receipt_sha256": "sha256:bb44bc46be9575d3a14a147ffc6b4f47ee85c5112a6f8203d10447094c18168b",
   "schema": "folynta.public-claims-pack.v1"
 }

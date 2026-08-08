@@ -57,6 +57,8 @@
 
 **반드시 함께 표기**: 완주율은 출력이 생성된 비율이며 정확도가 아닙니다. 두 수치를 같은 문장에 쓸 때는 반드시 구분해 표기하십시오.
 
+**Must accompany the number**: This is the share of documents that produced output. It is not accuracy. Where both figures appear, label which is which.
+
 - 금지 표현: 정확도 99.98%
 - 금지 표현: 정확도 100%에 가까움
 - 금지 표현: 완주율을 정확도로 환언하는 모든 표현
@@ -79,6 +81,8 @@
 ```
 
 **반드시 함께 표기**: 분모는 전체 코퍼스가 아니라 실제로 실패한 문서 수입니다. 분모를 밝히지 않으면 완주율과 혼동됩니다.
+
+**Must accompany the number**: The denominator is the documents that actually failed, not the whole corpus. Without the denominator this reads as the completion rate.
 
 
 근거: `benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json`
@@ -106,6 +110,8 @@
 ```
 
 **반드시 함께 표기**: 모델, 평가기 리비전, 코퍼스, 설정을 고정하고 복구 산출물만 제거한 단일 변수 비교입니다.
+
+**Must accompany the number**: A single-variable comparison: model, evaluator revision, corpus and settings are identical, and only the recovery output was removed.
 
 
 근거: `benchmark/reports/generated/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json`
@@ -144,6 +150,8 @@
 ```
 
 **반드시 함께 표기**: 편집거리는 낮을수록 좋고, TEDS는 높을수록 좋습니다.
+
+**Must accompany the number**: Lower edit distance is better; higher TEDS is better.
 
 
 근거: `benchmark/reports/generated/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08/repeat-1/metric-result.json`
@@ -341,6 +349,8 @@
 ```
 
 **반드시 함께 표기**: 이 보증은 산출물의 구조에 관한 것이며 추출된 텍스트의 정확성과는 별개 지표입니다.
+
+**Must accompany the number**: These guarantees describe the structure of the compiled output. They are a separate measure from whether the extracted text is correct.
 
 
 근거: `benchmark/reports/generated/folynta-knowledge-compilation-properties-2026-08-08.json`
