@@ -305,6 +305,37 @@ function DroppedReport({
 }
 
 /**
+ * Say what was actually wrong with the file, where the server named it.
+ *
+ * "Rejected" alone reads as an accusation and leaves the visitor with nothing
+ * to do. Most refusals are mundane — a renamed file, an empty one — and saying
+ * which is both more useful and more accurate. The reasons are already public
+ * in the sense that the visitor supplied the file; none of these tells them
+ * anything about the scanner they could not learn by trying twice.
+ */
+function rejectionWording(code: string | null): string {
+  switch (code) {
+    case "file_signature_mismatch":
+      return "This file's contents do not match its extension, so it was not accepted.";
+    case "claimed_mime_mismatch":
+      return "This file's type does not match what the browser reported, so it was not accepted.";
+    case "extension_not_allowed":
+    case "extension_blocked":
+      return "The compiler does not accept this file type.";
+    case "file_empty":
+      return "This file is empty.";
+    case "file_too_large":
+      return "This file is larger than the trial limit.";
+    case "MALWARE_DETECTED":
+      return "Security scanning found malware in this file.";
+    default:
+      // Including CDR refusals and anything added later: the state is true
+      // even when this build does not know the specific code.
+      return "Security scanning rejected this file.";
+  }
+}
+
+/**
  * What the server established, once it has. Every branch is a real state from
  * the ADR-004 quarantine path — none of them is a progress bar, and none
  * reports a figure the server has not sent (§25.7).
@@ -313,7 +344,7 @@ function PreflightNote({ preflight }: { preflight: TrialPreflight }) {
   if (preflight.status === "SECURITY_REJECTED") {
     return (
       <p className="tv-dropzone-note" data-state="review">
-        Security scanning rejected this file. Nothing was compiled from it.
+        {rejectionWording(preflight.errorCode)} Nothing was compiled from it.
       </p>
     );
   }
