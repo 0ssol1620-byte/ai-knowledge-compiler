@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowRight, FileArrowUp, ShieldCheck } from "@phosphor-icons/react";
+// The /dist/ssr entry, matching the rest of the marketing surface. The
+// client entry ships the icon runtime this component does not use.
+import {
+  ArrowRight,
+  FileArrowUp,
+  ShieldCheck,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 

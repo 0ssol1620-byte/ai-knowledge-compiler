@@ -1,5 +1,3 @@
-import { createSHA256 } from "hash-wasm";
-
 import {
   analyzeDocument,
   apiAbsoluteUrl,
@@ -397,6 +395,20 @@ export async function browserSha256(
   file: Blob,
   chunkSize = 4 * 1024 * 1024,
 ): Promise<string> {
+  /*
+   * hash-wasm is imported here rather than at module scope, and the reason is
+   * a budget rather than a preference.
+   *
+   * This module is reached from the marketing hero: the drop zone inspects a
+   * file the visitor chose, and inspecting means hashing. A top-level import
+   * put the WASM hasher into the homepage's initial bundle, where it is dead
+   * weight until someone actually drops something — and it pushed
+   * resource-summary:script.size past the §22 ratchet at 200 KB.
+   *
+   * Nothing about the hash changes. It is fetched on the first call and the
+   * module cache keeps it for every call after.
+   */
+  const { createSHA256 } = await import("hash-wasm");
   const hasher = await createSHA256();
   hasher.init();
   for (let offset = 0; offset < file.size; offset += chunkSize) {
