@@ -375,7 +375,15 @@ function PreflightNote({ preflight }: { preflight: TrialPreflight }) {
 
   return (
     <p className="tv-dropzone-note">
-      {preflight.pageCount === null ? (
+      {preflight.pageCount === null && preflight.truncated ? (
+        // The document is longer than the trial reads, and the parser stopped
+        // before counting it — so no number is offered here, because none was
+        // measured.
+        <>
+          This document is longer than the trial reads. Compiling covers the
+          whole of it.
+        </>
+      ) : preflight.pageCount === null ? (
         "Preflight complete."
       ) : preflight.truncated ? (
         <>

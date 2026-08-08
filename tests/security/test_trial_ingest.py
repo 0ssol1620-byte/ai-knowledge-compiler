@@ -526,3 +526,33 @@ def test_one_session_cannot_complete_another_sessions_upload(client: TestClient)
         f"/uploads/{victim['target']['upload_id']}/complete"
     )
     assert stolen.status_code == 404, stolen.text
+
+
+def test_document_longer_than_the_cap_is_bounded_not_sliced(client: TestClient) -> None:
+    """The page cap bounds the parse, it does not describe its output.
+
+    A slice applied after parsing would still let one anonymous request drive a
+    five-hundred-page text extraction. The parser is given the trial's own
+    limit instead, so it stops at the page tree — which is also why no page
+    count is reported: nothing counted them (§25.7).
+    """
+    result = _submit(client, _pdf(pages=14))
+    body = result["response"].json()
+    assert body["status"] == "PREFLIGHTED"
+    assert body["truncated"] is True
+    assert body["page_count"] is None
+    assert body["pages_inspected"] == 0
+
+    # Polling must reconstruct the same thing from the stored row alone.
+    polled = client.get(f"/v1/trial/sessions/{result['session_id']}").json()
+    assert polled["truncated"] is True
+    assert polled["page_count"] is None
+
+
+def test_document_at_the_cap_is_read_whole(client: TestClient) -> None:
+    result = _submit(client, _pdf(pages=10))
+    body = result["response"].json()
+    assert body["status"] == "PREFLIGHTED"
+    assert body["page_count"] == 10
+    assert body["pages_inspected"] == 10
+    assert body["truncated"] is False

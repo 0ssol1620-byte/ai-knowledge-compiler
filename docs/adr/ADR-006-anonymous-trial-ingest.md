@@ -232,15 +232,30 @@ job, task, and invocation tables are empty afterwards.
 authenticated route and is deliberate. That route hands preflight to the
 document worker because the file it accepts can be hundreds of megabytes and
 hundreds of pages; a trial file cannot, because `trial_ingest_max_bytes` and
-`trial_ingest_max_pages` exist precisely to bound it. Preflight itself is page
-geometry and text statistics — no OCR, no model, no network. The alternative
-would make the first thing a visitor sees depend on worker infrastructure being
-up, and would create a queue entry from an unauthenticated request, which is the
-cost surface this ADR keeps behind a principal.
+`trial_ingest_max_pages` bound it. Preflight itself is page geometry and text
+statistics — no OCR, no model, no network. The alternative would make the first
+thing a visitor sees depend on worker infrastructure being up, and would create
+a queue entry from an unauthenticated request, which is the cost surface this
+ADR keeps behind a principal.
 
-`document.page_count` stores the document's real length, not the number of pages
-inspected. Storing the truncated figure would make `truncated` compute false
-forever and report a partial measurement as a whole one, which §25.7 forbids.
+**The page cap is applied by the parser, not to its output.** The first version
+of this passed `settings` through unchanged and sliced the result to ten pages
+afterwards. `parse_document` reads `settings.max_pages`, which is the product
+limit of 500, so that version would have let one anonymous request drive a
+five-hundred-page text extraction and then discard 490 pages of it. The cap
+described the answer instead of bounding the work, and the paragraph above
+claiming the caps made this safe was not yet true. `parse_document` is now given
+`settings.model_copy(update={"max_pages": trial_ingest_max_pages})`, so it checks
+the page tree and stops before extracting anything.
+
+That choice has a visible consequence, and it is the honest one. A document
+longer than the cap reports `truncated: true` with **no page count**: the parser
+stopped before counting, so there is no measurement to publish (§25.7). The
+earlier behaviour reported "read 10 of 14" — friendlier, but only obtainable by
+doing the work the cap exists to prevent. The polling route reconstructs the
+same answer from the stored row: `PREFLIGHTED` with a null `page_count` is the
+over-cap case and cannot arise any other way, since every document the parser
+did read has a count.
 
 ### One defect this closed that reading would not have found
 

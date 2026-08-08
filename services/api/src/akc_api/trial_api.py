@@ -725,14 +725,22 @@ async def _preflight_trial_document(
     authenticated route and worth stating plainly. The authenticated route
     hands preflight to the document worker because the file it accepts can be
     hundreds of megabytes and hundreds of pages. A trial file cannot: ADR-006
-    caps it at ``trial_ingest_max_bytes`` and ``trial_ingest_max_pages``, and
-    those caps exist precisely so this work is bounded. Preflight itself is
-    page geometry and text statistics — no OCR, no model, no network — so the
-    bounded version of it fits inside the request that asked for it.
+    caps it at ``trial_ingest_max_bytes`` and ``trial_ingest_max_pages``.
+    Preflight itself is page geometry and text statistics — no OCR, no model,
+    no network — so the bounded version of it fits inside the request that
+    asked for it.
+
+    The page cap has to be applied *by the parser*, not to its output, and that
+    is the reason for the settings override below. ``parse_document`` reads
+    ``settings.max_pages``, which is the product limit of 500. Slicing its
+    result to ten afterwards would still have let one anonymous request drive a
+    five-hundred-page text extraction — the cap would have described the answer
+    rather than bounded the work. Passing the trial's own limit makes the
+    parser check the page tree and stop before extracting anything.
 
     The alternative was to enqueue a job and let the visitor poll. That makes
     the first thing a visitor sees depend on worker infrastructure being up,
-    to save work that the caps already bound. It also creates a queue entry
+    to save work the caps now genuinely bound. It also creates a queue entry
     from an unauthenticated request, which is the cost surface ADR-006 keeps
     behind a principal.
 
@@ -740,7 +748,7 @@ async def _preflight_trial_document(
     the visitor is told the file could not be read, which is a true statement
     about their file and a more useful one than a 500.
     """
-    from akc_api.parsers import page_preflight, parse_document
+    from akc_api.parsers import FileValidationError, page_preflight, parse_document
 
     document.status = "PREFLIGHTING"
     await session.flush()
@@ -760,8 +768,32 @@ async def _preflight_trial_document(
         )
         return
 
+    bounded = settings.model_copy(update={"max_pages": settings.trial_ingest_max_pages})
     try:
-        parsed = parse_document(source.safe_filename, raw, settings)
+        parsed = parse_document(source.safe_filename, raw, bounded)
+    except FileValidationError as exc:
+        if exc.code != "PAGE_LIMIT":
+            document.status = "FAILED"
+            await _audit_trial(
+                session,
+                action="document.preflight_failed",
+                document=document,
+                metadata={"code": "UNREADABLE_DOCUMENT", "trial": True},
+            )
+            return
+        # Longer than the trial reads. This is a real, reportable outcome, not
+        # a failure — but the page count is deliberately absent, because the
+        # parser stopped at the page tree and nothing counted them. §25.7:
+        # a figure that was not measured is not published.
+        document.page_count = None
+        document.status = "PREFLIGHTED"
+        await _audit_trial(
+            session,
+            action="document.preflighted",
+            document=document,
+            metadata={"pages": 0, "pages_truncated": True, "trial": True},
+        )
+        return
     except Exception:  # any parser failure is the same outcome to the visitor
         document.status = "FAILED"
         await _audit_trial(
@@ -772,7 +804,8 @@ async def _preflight_trial_document(
         )
         return
 
-    pages = parsed.pages[: settings.trial_ingest_max_pages]
+    # The parser already refused anything longer, so this is the whole document.
+    pages = parsed.pages
     for parsed_page in pages:
         session.add(
             Page(
@@ -792,9 +825,8 @@ async def _preflight_trial_document(
                 ),
             )
         )
-    # The document's real length, not the number of pages inspected. Storing
-    # the truncated figure here would make `truncated` compute false forever
-    # and report a partial measurement as a whole one, which §25.7 forbids.
+    # The whole document: the parser refused anything longer than the cap,
+    # so this is a complete count rather than a partial one.
     document.page_count = len(parsed.pages)
     document.status = "PREFLIGHTED"
     await _audit_trial(
@@ -803,7 +835,7 @@ async def _preflight_trial_document(
         document=document,
         metadata={
             "pages": len(pages),
-            "pages_truncated": len(parsed.pages) > len(pages),
+            "pages_truncated": False,
             "trial": True,
         },
     )
@@ -825,13 +857,18 @@ def _preflight_of(
     """
     page_count = document.page_count
     cap = settings.trial_ingest_max_pages
+    # A preflighted document with no page count is the over-cap case: the parser
+    # stopped at the page tree, so nothing was counted and nothing may be
+    # reported as if it had been (§25.7). The combination cannot arise any other
+    # way — every document the parser did read has a count.
+    over_cap = document.status == "PREFLIGHTED" and page_count is None
     return TrialPreflight(
         session_id=trial.id,
         document_id=document.id,
         status=_public_status(document.status),
         page_count=page_count,
         pages_inspected=min(page_count, cap) if page_count is not None else 0,
-        truncated=page_count is not None and page_count > cap,
+        truncated=over_cap or (page_count is not None and page_count > cap),
         detected_language_codes=list(document.language_codes or []),
         encrypted=None,
         route_profile=None,
