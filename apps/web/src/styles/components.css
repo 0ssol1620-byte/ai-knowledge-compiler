@@ -268,3 +268,109 @@
     scroll-margin-top: 84px;
   }
 }
+
+/*
+ * The recorded run. PAPER, because it is the document's side of the story —
+ * the instrument band comes after it with the accuracy numbers.
+ */
+@layer components {
+  .tv-film {
+    display: grid;
+    gap: var(--s-6);
+    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px);
+    background: var(--paper-1);
+    color: var(--ink-0);
+  }
+
+  .tv-film-eyebrow {
+    margin: 0 0 var(--s-3);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    line-height: var(--lh-label);
+  }
+
+  .tv-film-copy h2 {
+    max-width: 18ch;
+    margin: 0 0 var(--s-4);
+    font-size: var(--fs-display-2);
+    font-weight: var(--w-display);
+    letter-spacing: var(--tracking-display-2);
+    line-height: var(--lh-display-2);
+  }
+
+  .tv-film-lead {
+    max-width: var(--measure);
+    margin: 0;
+    color: var(--ink-1);
+    font-size: var(--fs-lead);
+    letter-spacing: var(--tracking-lead);
+    line-height: var(--lh-lead);
+    text-wrap: pretty;
+  }
+
+  .tv-film-frame {
+    position: relative;
+    margin: 0;
+  }
+
+  .tv-film-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-media);
+    background: var(--paper-0);
+  }
+
+  /*
+   * Covers the poster rather than floating in a corner: before it is pressed
+   * the still frame is the content, and the control should read as an
+   * invitation over it rather than as chrome beside it.
+   */
+  .tv-film-play {
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    translate: -50% -50%;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 44px;
+    padding: 0 var(--s-5);
+    border: 0;
+    border-radius: var(--r-paper-lg);
+    background: var(--ink-0);
+    color: var(--paper-0);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    cursor: pointer;
+    transition: background-color var(--t-2) var(--e-out);
+  }
+
+  .tv-film-play:hover {
+    background: var(--brand);
+  }
+
+  .tv-film-play:focus-visible {
+    outline: 0;
+    box-shadow: var(--depth-focus);
+  }
+
+  .tv-film-caption {
+    max-width: var(--measure);
+    margin-top: var(--s-4);
+    color: var(--ink-2);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 1024px) {
+    .tv-film {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: center;
+      gap: var(--s-8);
+    }
+  }
+}

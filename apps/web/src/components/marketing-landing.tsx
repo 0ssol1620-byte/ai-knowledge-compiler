@@ -2,6 +2,7 @@ import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr
 import Link from "next/link";
 
 import { AccuracySection } from "@/components/accuracy-section";
+import { TrialRunFilm } from "@/components/trial-run-film";
 import { HeroComp, HERO_COPY } from "@/components/facing/hero-comp";
 import { TavonelGlyph } from "@/components/tavonel-glyph";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
@@ -68,6 +69,8 @@ export function MarketingLanding() {
             ),
           )}
         </div>
+
+        <TrialRunFilm />
 
         <section className="tv-demo-section">
           <div className="tv-section-intro">
