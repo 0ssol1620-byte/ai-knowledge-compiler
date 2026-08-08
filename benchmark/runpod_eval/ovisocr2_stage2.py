@@ -22,6 +22,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from input_contract import adaptive_repeat_indices, select_inference_inputs
+
 SUPPORTED_IMAGES = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
 IMAGE_TAG_BLOCK = re.compile(r'^\s*<img src="images/bbox_\d+_\d+_\d+_\d+\.jpg"\s*/>\s*$')
 VENDOR_PROMPT = (
@@ -123,8 +125,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--artifact-manifest-sha256", required=True)
     parser.add_argument("--candidate-id", default="ovisocr2-0.9b-vllm-0.22.1")
-    parser.add_argument("--repeats", type=int, default=3, choices=(1, 3))
+    parser.add_argument("--repeats", type=int, default=1, choices=(1, 2, 3))
+    parser.add_argument("--repeat-start-index", type=int, default=1, choices=(1, 2, 3))
     parser.add_argument("--limit", type=int, default=18)
+    parser.add_argument(
+        "--evidence-class",
+        choices=("smoke", "public-core", "stratified-audit"),
+        default="smoke",
+    )
+    parser.add_argument("--expected-input-count", type=int)
+    parser.add_argument("--input-manifest", type=Path)
+    parser.add_argument("--parent-input-manifest", type=Path)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.8)
     return parser.parse_args()
@@ -134,13 +145,28 @@ def main() -> int:
     args = parse_args()
     if args.output_dir.exists():
         raise SystemExit(f"output directory already exists: {args.output_dir}")
-    images = [
-        path
-        for path in sorted(args.input_dir.rglob("*"))
-        if path.is_file() and path.suffix.casefold() in SUPPORTED_IMAGES
-    ][: args.limit]
-    if not images:
-        raise SystemExit("no supported images found")
+    try:
+        selection = select_inference_inputs(
+            input_dir=args.input_dir,
+            supported_extensions=SUPPORTED_IMAGES,
+            limit=args.limit,
+            evidence_class=args.evidence_class,
+            expected_input_count=args.expected_input_count,
+            input_manifest=args.input_manifest,
+            parent_input_manifest=args.parent_input_manifest,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    try:
+        repeat_indices = adaptive_repeat_indices(
+            evidence_class=args.evidence_class,
+            repeats=args.repeats,
+            repeat_start_index=args.repeat_start_index,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    all_images = selection.inventory
+    images = selection.selected
     args.output_dir.mkdir(parents=True)
 
     # vLLM's library entrypoint defaults to fork on Linux. CUDA cannot be
@@ -178,7 +204,7 @@ def main() -> int:
 
     started_at = time.time()
     runs: list[dict[str, Any]] = []
-    for repeat_index in range(1, args.repeats + 1):
+    for repeat_index in repeat_indices:
         markdown_root = args.output_dir / f"markdown-repeat-{repeat_index}"
         markdown_root.mkdir()
         repeat_started = time.perf_counter()
@@ -257,8 +283,15 @@ def main() -> int:
         "model_revision": args.model_revision,
         "artifact_manifest_sha256": args.artifact_manifest_sha256,
         "ground_truth_mounted": False,
+        "evidence_class": args.evidence_class,
+        "input_inventory_count": len(all_images),
         "input_count": len(images),
-        "repeat_count": args.repeats,
+        "complete_input_coverage": selection.complete_input_coverage,
+        "input_manifest_sha256": selection.input_manifest_sha256,
+        "benchmark_id": selection.benchmark_id,
+        "dataset_revision": selection.dataset_revision,
+        "repeat_count": len(repeat_indices),
+        "repeat_start_index": repeat_indices[0],
         "batch_size": args.batch_size,
         "model_load_seconds": model_load_seconds,
         "started_at_unix": started_at,

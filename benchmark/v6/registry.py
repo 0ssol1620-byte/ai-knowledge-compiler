@@ -17,6 +17,7 @@ _ALLOWED_EXECUTION_STATES = {
     "identity_pending",
     "artifact_manifest_and_runtime_pending",
     "artifact_manifest_runtime_and_license_pending",
+    "measured_partial_runtime_image_pending",
     "credential_and_policy_pending",
     "control_plane_only",
     *_EXECUTABLE_STATES,
@@ -31,6 +32,17 @@ _ALLOWED_KINDS = {
     "knowledge_compiler",
     "agent",
 }
+_ADAPTIVE_EXPANSION_REASONS = frozenset(
+    {"finalist", "prediction_drift", "score_drift", "runtime_failure"}
+)
+
+
+@dataclass(frozen=True, slots=True)
+class AdaptiveRepeatPolicy:
+    baseline_full_runs: int
+    stratified_audit_runs: int
+    maximum_successful_full_runs: int
+    expand_full_runs_for: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,10 +192,12 @@ class CandidateRegistry:
         schema_version: str,
         candidates: Mapping[str, CandidateSpec],
         required_ids: tuple[str, ...],
+        repeat_policy: AdaptiveRepeatPolicy,
     ) -> None:
         self.schema_version = schema_version
         self._candidates = MappingProxyType(dict(candidates))
         self.required_ids = required_ids
+        self.repeat_policy = repeat_policy
 
     @classmethod
     def load(cls, path: Path) -> CandidateRegistry:
@@ -193,6 +207,7 @@ class CandidateRegistry:
             raise ContractError(f"cannot load candidate registry: {exc}") from exc
         if not isinstance(raw, Mapping) or str(raw.get("schema_version", "")) != "6.0.0":
             raise ContractError("candidate registry schema_version must be 6.0.0")
+        repeat_policy = _parse_adaptive_repeat_policy(raw.get("promotion_policy"))
         rows = raw.get("candidates")
         if not isinstance(rows, list) or not rows:
             raise ContractError("candidate registry must contain candidates")
@@ -228,7 +243,12 @@ class CandidateRegistry:
             raise ContractError(
                 "every required Tier A/B/C candidate must appear in required_candidate_ids"
             )
-        return cls(schema_version="6.0.0", candidates=candidates, required_ids=required_ids)
+        return cls(
+            schema_version="6.0.0",
+            candidates=candidates,
+            required_ids=required_ids,
+            repeat_policy=repeat_policy,
+        )
 
     def get(self, candidate_id: str) -> CandidateSpec:
         try:
@@ -254,3 +274,29 @@ def _optional_string(value: object) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _parse_adaptive_repeat_policy(value: object) -> AdaptiveRepeatPolicy:
+    if not isinstance(value, Mapping):
+        raise ContractError("candidate registry promotion_policy is required")
+    if "exactly_three_public_core_repeats" in value:
+        raise ContractError("legacy unconditional exact-three repeat policy is forbidden")
+    if value.get("adaptive_public_core_repeats") is not True:
+        raise ContractError("adaptive public-core repeat policy must be enabled")
+    baseline = value.get("baseline_full_runs")
+    audits = value.get("stratified_audit_runs")
+    maximum = value.get("maximum_successful_full_runs")
+    reasons = value.get("expand_full_runs_for")
+    if (baseline, audits, maximum) != (1, 3, 3):
+        raise ContractError("adaptive repeat counts must be one full, three audits, max three")
+    if not isinstance(reasons, list) or set(reasons) != _ADAPTIVE_EXPANSION_REASONS:
+        raise ContractError("adaptive full-run expansion reasons are incomplete")
+    return AdaptiveRepeatPolicy(
+        baseline_full_runs=1,
+        stratified_audit_runs=3,
+        maximum_successful_full_runs=3,
+        expand_full_runs_for=tuple(str(reason) for reason in reasons),
+    )
+
+
+__all__ = ["AdaptiveRepeatPolicy", "CandidateRegistry", "CandidateSpec"]

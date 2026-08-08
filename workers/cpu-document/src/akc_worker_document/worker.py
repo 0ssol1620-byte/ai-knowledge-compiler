@@ -36,9 +36,12 @@ from akc_api.models import (
     CollectionProcessingTaskBinding,
     Document,
     DocumentVersion,
+    EstimateSample,
     OutboxEvent,
     Page,
     PageAsset,
+    PageFingerprint,
+    PreflightFeatureRecord,
     Project,
     ReviewItem,
     SourceFile,
@@ -88,7 +91,7 @@ from akc_security import (
 )
 from akc_telemetry import record_abuse_control_decision, record_page_terminal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from sqlalchemy import delete, exists, func, or_, select, text
+from sqlalchemy import delete, exists, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -1907,6 +1910,24 @@ class AnalysisWorker:
                 ).all()
             )
             if old_page_ids:
+                # Collection preflight evidence intentionally survives a later
+                # full analysis pass. The composite page foreign keys use
+                # ON DELETE SET NULL, which would also null the non-null tenant
+                # key on SQLite. Detach only the nullable page reference first
+                # so the immutable feature/sample receipts remain tenant-bound.
+                for evidence_model in (
+                    PageFingerprint,
+                    PreflightFeatureRecord,
+                    EstimateSample,
+                ):
+                    await session.execute(
+                        update(evidence_model)
+                        .where(
+                            evidence_model.tenant_id == claim.tenant_id,
+                            evidence_model.page_id.in_(old_page_ids),
+                        )
+                        .values(page_id=None)
+                    )
                 await session.execute(
                     delete(ReviewItem).where(
                         ReviewItem.tenant_id == claim.tenant_id,

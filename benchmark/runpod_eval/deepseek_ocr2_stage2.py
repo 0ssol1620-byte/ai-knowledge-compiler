@@ -19,6 +19,9 @@ import time
 from pathlib import Path
 from typing import Any
 
+from input_contract import adaptive_repeat_indices, select_inference_inputs
+from isolated_case_process import run_isolated_process
+
 SUPPORTED_IMAGES = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
 VENDOR_PROMPT = "<image>\n<|grounding|>Convert the document to markdown. "
 
@@ -85,43 +88,118 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-path", required=True)
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--artifact-manifest-sha256", required=True)
-    parser.add_argument("--repeats", type=int, default=3, choices=(1, 3))
+    parser.add_argument("--repeats", type=int, default=1, choices=(1, 2, 3))
+    parser.add_argument("--repeat-start-index", type=int, default=1, choices=(1, 2, 3))
     parser.add_argument("--limit", type=int, default=18)
+    parser.add_argument(
+        "--evidence-class",
+        choices=("smoke", "public-core", "public-core-shard", "stratified-audit"),
+        default="smoke",
+    )
+    parser.add_argument("--expected-input-count", type=int)
+    parser.add_argument("--input-manifest", type=Path)
+    parser.add_argument("--parent-input-manifest", type=Path)
     parser.add_argument("--base-size", type=int, default=1024)
     parser.add_argument("--image-size", type=int, default=768)
+    parser.add_argument("--case-timeout-seconds", type=int, default=900)
     return parser.parse_args()
 
 
-def main() -> int:
-    args = parse_args()
-    if args.output_dir.exists():
-        raise SystemExit(f"output directory already exists: {args.output_dir}")
-    images = [
-        path
-        for path in sorted(args.input_dir.rglob("*"))
-        if path.is_file() and path.suffix.casefold() in SUPPORTED_IMAGES
-    ][: args.limit]
-    if not images:
-        raise SystemExit("no supported images found")
-    args.output_dir.mkdir(parents=True)
+def _single_case(spec_path: Path) -> int:
+    """Load the frozen model and run one case in a killable child process."""
+
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    image = Path(str(spec["image"])).resolve()
+    output_root = Path(str(spec["output_root"])).resolve()
+    markdown_path = Path(str(spec["markdown_path"])).resolve()
+    response_path = Path(str(spec["response_path"])).resolve()
+    model_path = str(spec["model_path"])
+    if not image.is_file() or not model_path:
+        raise ValueError("isolated DeepSeek-OCR-2 case spec is invalid")
 
     import torch
     from transformers import AutoModel, AutoTokenizer
 
     load_started = time.perf_counter()
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     model = AutoModel.from_pretrained(
-        args.model_path,
+        model_path,
         _attn_implementation="flash_attention_2",
         trust_remote_code=True,
         use_safetensors=True,
     )
     model = model.eval().cuda().to(torch.bfloat16)
     model_load_seconds = time.perf_counter() - load_started
+    error: str | None = None
+    markdown = ""
+    output_root.mkdir(parents=True, exist_ok=True)
+    try:
+        result = model.infer(
+            tokenizer,
+            prompt=VENDOR_PROMPT,
+            image_file=str(image),
+            output_path=str(output_root),
+            base_size=int(spec["base_size"]),
+            image_size=int(spec["image_size"]),
+            crop_mode=True,
+            save_results=True,
+        )
+        markdown = resolve_markdown(result, output_root)
+        if not markdown:
+            error = "empty_markdown"
+    except Exception as exc:
+        error = f"{type(exc).__name__}: {exc}"
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    response_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path.write_text(markdown + ("\n" if markdown else ""), encoding="utf-8")
+    response_path.write_text(
+        canonical_json(
+            {
+                "error": error,
+                "model_load_seconds": model_load_seconds,
+                "markdown_characters": len(markdown),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return 0
+
+
+def main() -> int:
+    args = parse_args()
+    if args.case_timeout_seconds < 60:
+        raise SystemExit("--case-timeout-seconds must be at least 60")
+    if args.output_dir.exists():
+        raise SystemExit(f"output directory already exists: {args.output_dir}")
+    try:
+        selection = select_inference_inputs(
+            input_dir=args.input_dir,
+            supported_extensions=SUPPORTED_IMAGES,
+            limit=args.limit,
+            evidence_class=args.evidence_class,
+            expected_input_count=args.expected_input_count,
+            input_manifest=args.input_manifest,
+            parent_input_manifest=args.parent_input_manifest,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    try:
+        repeat_indices = adaptive_repeat_indices(
+            evidence_class=args.evidence_class,
+            repeats=args.repeats,
+            repeat_start_index=args.repeat_start_index,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    all_images = selection.inventory
+    images = selection.selected
+    args.output_dir.mkdir(parents=True)
 
     started_at = time.time()
     runs: list[dict[str, Any]] = []
-    for repeat_index in range(1, args.repeats + 1):
+    model_load_seconds = 0.0
+    for repeat_index in repeat_indices:
         repeat_root = args.output_dir / f"repeat-{repeat_index}"
         markdown_root = args.output_dir / f"markdown-repeat-{repeat_index}"
         repeat_root.mkdir()
@@ -133,32 +211,65 @@ def main() -> int:
             case_root.mkdir()
             case_started = time.perf_counter()
             error: str | None = None
-            markdown = ""
-            try:
-                result = model.infer(
-                    tokenizer,
-                    prompt=VENDOR_PROMPT,
-                    image_file=str(image),
-                    output_path=str(case_root),
-                    base_size=args.base_size,
-                    image_size=args.image_size,
-                    crop_mode=True,
-                    save_results=True,
+            markdown_path = markdown_root / f"{image.stem}.md"
+            response_path = case_root / "isolated-case-response.json"
+            spec_path = case_root / "isolated-case-spec.json"
+            spec_path.write_text(
+                canonical_json(
+                    {
+                        "image": str(image.resolve()),
+                        "output_root": str((case_root / "vendor-output").resolve()),
+                        "markdown_path": str(markdown_path.resolve()),
+                        "response_path": str(response_path.resolve()),
+                        "model_path": args.model_path,
+                        "base_size": args.base_size,
+                        "image_size": args.image_size,
+                    }
                 )
-                markdown = resolve_markdown(result, case_root)
-            except Exception as exc:  # preserve failures as evidence
-                error = f"{type(exc).__name__}: {exc}"
-            target = markdown_root / f"{image.stem}.md"
-            target.write_text(markdown + ("\n" if markdown else ""), encoding="utf-8")
+                + "\n",
+                encoding="utf-8",
+            )
+            completed = run_isolated_process(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--single-case-spec",
+                    str(spec_path),
+                ],
+                timeout_seconds=args.case_timeout_seconds,
+            )
+            (case_root / "child.stdout.log").write_text(
+                completed.stdout, encoding="utf-8"
+            )
+            (case_root / "child.stderr.log").write_text(
+                completed.stderr, encoding="utf-8"
+            )
+            if completed.timed_out:
+                error = f"case_timeout_{args.case_timeout_seconds}s"
+            elif completed.return_code != 0:
+                error = f"isolated_child_exit_{completed.return_code}"
+            if response_path.is_file():
+                response = json.loads(response_path.read_text(encoding="utf-8"))
+                child_error = response.get("error")
+                if error is None and child_error:
+                    error = str(child_error)
+                model_load_seconds += float(response.get("model_load_seconds", 0.0))
+            else:
+                error = error or "isolated_child_missing_response"
+            if not markdown_path.is_file():
+                markdown_path.write_text("", encoding="utf-8")
+            markdown = markdown_path.read_text(encoding="utf-8").rstrip()
             cases.append(
                 {
                     "case_id": image.stem,
                     "source_sha256": f"sha256:{sha256_file(image)}",
-                    "status": "completed" if markdown else "failed",
+                    "status": "completed" if markdown and error is None else "failed",
                     "error": error,
                     "latency_seconds": time.perf_counter() - case_started,
-                    "markdown_sha256": f"sha256:{sha256_file(target)}",
+                    "markdown_sha256": f"sha256:{sha256_file(markdown_path)}",
                     "markdown_characters": len(markdown),
+                    "isolation": "one-process-per-case",
+                    "case_timeout_seconds": args.case_timeout_seconds,
                 }
             )
         run = {
@@ -178,9 +289,18 @@ def main() -> int:
         "model_revision": args.model_revision,
         "artifact_manifest_sha256": args.artifact_manifest_sha256,
         "ground_truth_mounted": False,
+        "evidence_class": args.evidence_class,
+        "input_inventory_count": len(all_images),
         "input_count": len(images),
-        "repeat_count": args.repeats,
+        "complete_input_coverage": selection.complete_input_coverage,
+        "input_manifest_sha256": selection.input_manifest_sha256,
+        "benchmark_id": selection.benchmark_id,
+        "dataset_revision": selection.dataset_revision,
+        "repeat_count": len(repeat_indices),
+        "repeat_start_index": repeat_indices[0],
         "model_load_seconds": model_load_seconds,
+        "case_process_isolation": True,
+        "case_timeout_seconds": args.case_timeout_seconds,
         "started_at_unix": started_at,
         "completed_at_unix": time.time(),
         "environment": {
@@ -219,4 +339,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 3 and sys.argv[1] == "--single-case-spec":
+        raise SystemExit(_single_case(Path(sys.argv[2])))
     raise SystemExit(main())

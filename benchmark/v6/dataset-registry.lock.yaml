@@ -6,6 +6,11 @@ policy:
   prediction_freeze_before_evaluation: required
   immutable_dataset_manifest: required
   public_core_repetitions: 3
+  adaptive_repeat_policy:
+    initial_full_runs: 1
+    stratified_audit_runs: 3
+    escalation_full_runs: 3
+    escalation_triggers: [finalist, prediction_hash_drift, score_drift, runtime_failure]
   private_data_redistribution: forbidden
 
 public_core:
@@ -20,6 +25,7 @@ public_core:
     license_status: research_only_non_commercial
     redistribution: prohibited_without_separate_rights_review
     repetitions: 3
+    repeat_mode: adaptive_with_finalist_exact_three
   - id: parsebench
     required: true
     evaluator_repository: https://github.com/run-llama/ParseBench.git
@@ -31,6 +37,7 @@ public_core:
     license_status: approved_with_notice
     redistribution: license_permits_with_notice
     repetitions: 3
+    repeat_mode: adaptive_with_finalist_exact_three
   - id: olmocr-bench
     required: true
     evaluator_repository: https://github.com/jina-ai/olmocr-bench.git
@@ -42,6 +49,7 @@ public_core:
     license_status: review_required
     redistribution: prohibited_until_license_review
     repetitions: 3
+    repeat_mode: adaptive_with_finalist_exact_three
 
 robustness:
   - id: real5-omnidocbench

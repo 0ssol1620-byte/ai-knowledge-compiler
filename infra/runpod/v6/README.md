@@ -91,7 +91,9 @@ New-Item -ItemType Directory -Force -Path $EvidenceRoot
   --receipt-out "$EvidenceRoot\02-create-live.json" `
   create --spec 'D:\secure\endpoint-spec.json' --idempotency-key 'idem-<64hex>'
 
-# Exactly-three dispatch is resumable by rerunning the identical command.
+# Three-full dispatch is only the adaptive finalist/drift/failure expansion.
+# The manifest must include adaptive_expansion_reason and is resumable by
+# rerunning the identical command.
 .\.venv\Scripts\python.exe -m infra.runpod.v6 --execute `
   --receipt-out "$EvidenceRoot\03-exact-three-dispatch.json" `
   cohort-dispatch --manifest 'D:\secure\cohort-manifest.json'
@@ -117,9 +119,10 @@ New-Item -ItemType Directory -Force -Path $EvidenceRoot
   --deleted-endpoint-id '<endpoint-id>'
 ```
 
-The cohort manifest contains `schema_version`, `endpoint_id`, an absolute
-`ledger_path`, `expected_cost_usd`, exactly three `RepeatRun.to_dict()` records,
-and `inputs_by_run` keyed by those three run IDs. It contains no credential.
+The expansion cohort manifest contains `schema_version`, `endpoint_id`, an absolute
+`ledger_path`, `expected_cost_usd`, `adaptive_expansion_reason`, exactly three
+full `RepeatRun.to_dict()` records, and `inputs_by_run` keyed by those three run
+IDs. It contains no credential.
 The JSONL ledger is the authoritative resume source; status, accepted billing,
 provider billing, hard stops, delete intent/acknowledgement, and terminal
 provider-absence hashes are chained without overwriting failed attempts.

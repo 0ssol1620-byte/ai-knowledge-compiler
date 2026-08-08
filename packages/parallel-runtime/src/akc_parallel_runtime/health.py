@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import RLock
 from typing import ClassVar
 
@@ -113,6 +113,10 @@ class _WorkerRecord:
     semantics: list[SemanticObservation] = field(default_factory=list)
     attempts: list[tuple[str, str, AttemptStatus]] = field(default_factory=list)
     transitions: list[HealthTransition] = field(default_factory=list)
+    # When the infrastructure channel last produced a signal for this worker.
+    # Seeded at registration so a worker that is never observed at all is still
+    # measurable; see WorkerHealthRegistry.evaluate_liveness.
+    last_signal_at: datetime | None = None
 
     def snapshot(self) -> WorkerSnapshot:
         return WorkerSnapshot(
@@ -137,12 +141,25 @@ class WorkerHealthRegistry:
         WorkerState.TERMINATED: 4,
     }
 
-    def __init__(self, *, events: EventJournal | None = None, semantic_window: int = 20) -> None:
+    def __init__(
+        self,
+        *,
+        events: EventJournal | None = None,
+        semantic_window: int = 20,
+        signal_stale_after: timedelta = timedelta(minutes=5),
+        signal_silent_after: timedelta = timedelta(minutes=20),
+    ) -> None:
         if semantic_window < 3:
             raise ValueError("semantic health window must contain at least three attempts")
+        if signal_stale_after <= timedelta(0):
+            raise ValueError("stale signal threshold must be positive")
+        if signal_silent_after <= signal_stale_after:
+            raise ValueError("silent signal threshold must exceed the stale threshold")
         self._records: dict[str, _WorkerRecord] = {}
         self._events = events
         self._window = semantic_window
+        self._stale_after = signal_stale_after
+        self._silent_after = signal_silent_after
         self._lock = RLock()
 
     def register(
@@ -155,7 +172,12 @@ class WorkerHealthRegistry:
         warm: bool,
         cached_models: frozenset[str] = frozenset(),
         estimated_available_at: float = 0.0,
+        registered_at: datetime | None = None,
     ) -> WorkerSnapshot:
+        if registered_at is not None and (
+            registered_at.tzinfo is None or registered_at.utcoffset() is None
+        ):
+            raise ValueError("worker registration time must be timezone-aware")
         proposed = (
             model_revision,
             runtime_image_digest,
@@ -188,6 +210,7 @@ class WorkerHealthRegistry:
                 warm=warm,
                 cached_models=cached_models,
                 estimated_available_at=estimated_available_at,
+                last_signal_at=registered_at,
             )
             self._records[worker_id] = record
             return record.snapshot()
@@ -260,6 +283,11 @@ class WorkerHealthRegistry:
         with self._lock:
             record = self._records[worker_id]
             record.infrastructure.append(observation)
+            if (
+                record.last_signal_at is None
+                or observation.observed_at > record.last_signal_at
+            ):
+                record.last_signal_at = observation.observed_at
             if record.state in {WorkerState.QUARANTINED, WorkerState.TERMINATED}:
                 return record.snapshot()
             if not observation.model_identity_matches or not observation.checksum_matches:
@@ -296,6 +324,111 @@ class WorkerHealthRegistry:
                     reasons=tuple(drain_reasons),
                 )
             return record.snapshot()
+
+    def evaluate_liveness(self, now: datetime) -> tuple[HealthTransition, ...]:
+        """Demote workers whose infrastructure channel has gone quiet.
+
+        Every other transition in this registry is driven by an observation that
+        *arrived*. That leaves the one failure mode where nothing arrives at all:
+        if the probe transport hangs, the provider poll never produces an
+        observation, and a purely reactive registry cannot tell a silent worker
+        apart from one that simply has not been polled yet. A live campaign lost
+        five and a half hours to exactly that shape — the pods were healthy and
+        their work had finished, but the control channel was wedged and no
+        signal was ever emitted.
+
+        The caller supplies ``now`` and decides the sweep cadence, so the rule
+        stays deterministic and testable with no background timer. Silence is
+        measured from the last infrastructure observation, or from the
+        registration time for a worker that was never observed at all.
+        """
+        if now.tzinfo is None or now.utcoffset() is None:
+            raise ValueError("liveness evaluation time must be timezone-aware")
+        transitions: list[HealthTransition] = []
+        with self._lock:
+            for record in self._records.values():
+                if record.state in {WorkerState.QUARANTINED, WorkerState.TERMINATED}:
+                    continue
+                baseline = record.last_signal_at
+                if baseline is None:
+                    # Nothing to measure against: the caller never told the
+                    # registry when this worker started being observable.
+                    continue
+                silence = now - baseline
+                if silence >= self._silent_after:
+                    state = WorkerState.QUARANTINED
+                    reason = "infrastructure_signal_silent"
+                elif silence >= self._stale_after:
+                    state = WorkerState.DRAINING
+                    reason = "infrastructure_signal_stale"
+                else:
+                    continue
+                transition = self._transition(
+                    record,
+                    state=state,
+                    occurred_at=now,
+                    reasons=(reason,),
+                )
+                if transition is not None:
+                    transitions.append(transition)
+        return tuple(transitions)
+
+    def terminate(
+        self, worker_id: str, *, occurred_at: datetime, reason: str
+    ) -> HealthTransition | None:
+        """Record that a worker's underlying resource is permanently gone.
+
+        Quarantine says "stop trusting this worker"; it still assumes the worker
+        exists and can be inspected. Nothing expressed "the resource was
+        destroyed and is never coming back", so a Pod deleted out from under the
+        campaign — by a cost backstop, a provider reclaim, or an operator — left
+        a quarantined record that a reader could mistake for recoverable. The
+        distinction matters to the caller that has to decide between waiting and
+        acquiring a replacement.
+        """
+        if occurred_at.tzinfo is None or occurred_at.utcoffset() is None:
+            raise ValueError("termination time must be timezone-aware")
+        if not reason:
+            raise ValueError("termination requires a reason code")
+        with self._lock:
+            record = self._records[worker_id]
+            if record.state is WorkerState.TERMINATED:
+                return None
+            return self._transition(
+                record,
+                state=WorkerState.TERMINATED,
+                occurred_at=occurred_at,
+                reasons=(reason,),
+            )
+
+    def serving_workers(self) -> tuple[str, ...]:
+        """Workers that can still accept new work.
+
+        DRAINING is deliberately excluded: a draining worker finishes what it
+        holds and takes nothing new, so counting it as capacity would hide a
+        deficit until the last attempt completed.
+        """
+        with self._lock:
+            return tuple(
+                sorted(
+                    record.worker_id
+                    for record in self._records.values()
+                    if record.state in {WorkerState.HEALTHY, WorkerState.DEGRADED}
+                )
+            )
+
+    def unmonitored_workers(self) -> tuple[str, ...]:
+        """Workers whose silence cannot be measured because no baseline exists."""
+        with self._lock:
+            return tuple(
+                sorted(
+                    record.worker_id
+                    for record in self._records.values()
+                    if record.last_signal_at is None
+                    and record.state
+                    not in {WorkerState.QUARANTINED, WorkerState.TERMINATED}
+                )
+            )
 
     def record_semantic(
         self, worker_id: str, observation: SemanticObservation

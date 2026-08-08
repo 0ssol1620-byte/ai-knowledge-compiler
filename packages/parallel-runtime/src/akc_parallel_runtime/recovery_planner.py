@@ -4,38 +4,49 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from .models import RegionLevel
 from .recovery import PreprocessingVariant, RecoveryPlanner, RecoveryScope
 
 
 class FailureCode(StrEnum):
     PAGE_OMISSION = "P01"
-    PAGE_DUPLICATION = "P02"
-    READING_ORDER = "L01"
-    TABLE_SHAPE = "T01"
-    TABLE_COLUMN_SHIFT = "T02"
-    NUMERIC_MISMATCH = "N01"
-    NUMERIC_AUTHORITY_MISMATCH = "N02"
-    SOURCE_ANCHOR_MISSING = "E01"
-    INDEPENDENCE_MISSING = "E02"
-    KNOWLEDGE_ORPHAN = "K01"
-    KNOWLEDGE_EVIDENCE_MISSING = "K02"
-    KNOWLEDGE_CONTRADICTION = "K03"
+    BLOCK_OMISSION = "B01"
+    BOTTOM_ROW_OMISSION = "T01"
+    MIDDLE_ROW_OMISSION = "T02"
+    EXTRA_ROWS = "T03"
+    WRONG_TABLE = "T04"
+    COLUMN_SHIFT = "T05"
+    DIGIT_MUTATION = "N01"
+    SIGN_SCALE_ERROR = "N02"
+    READING_ORDER = "R01"
+    CROSS_PAGE_SPLIT = "C01"
+    FORMULA_CORRUPTION = "F01"
+    GROUNDING_MISMATCH = "G01"
+    HALLUCINATION = "H01"
+    REPETITION = "H02"
+    NOTE_SPLIT_ERROR = "K01"
+    WRONG_ENTITY_MERGE = "K02"
+    UNSUPPORTED_RELATION = "K03"
 
 
 _FAILURE_VARIANTS = {
-    FailureCode.PAGE_OMISSION: PreprocessingVariant.OVERLAPPING_TILE,
-    FailureCode.PAGE_DUPLICATION: PreprocessingVariant.CROP_MARGIN,
-    FailureCode.READING_ORDER: PreprocessingVariant.TILE,
-    FailureCode.TABLE_SHAPE: PreprocessingVariant.CELL_GEOMETRY,
-    FailureCode.TABLE_COLUMN_SHIFT: PreprocessingVariant.CELL_GEOMETRY,
-    FailureCode.NUMERIC_MISMATCH: PreprocessingVariant.OCR_EXACT,
-    FailureCode.NUMERIC_AUTHORITY_MISMATCH: PreprocessingVariant.AUTHORITY_MAPPING,
-    FailureCode.SOURCE_ANCHOR_MISSING: PreprocessingVariant.CROP_MARGIN,
-    FailureCode.INDEPENDENCE_MISSING: PreprocessingVariant.OCR_EXACT,
-    FailureCode.KNOWLEDGE_ORPHAN: PreprocessingVariant.TILE,
-    FailureCode.KNOWLEDGE_EVIDENCE_MISSING: PreprocessingVariant.CROP_MARGIN,
-    FailureCode.KNOWLEDGE_CONTRADICTION: PreprocessingVariant.OCR_EXACT,
+    FailureCode.PAGE_OMISSION: PreprocessingVariant.PAGE_RERENDER_ALT_PARSER,
+    FailureCode.BLOCK_OMISSION: PreprocessingVariant.REGION_CROP,
+    FailureCode.BOTTOM_ROW_OMISSION: PreprocessingVariant.OVERLAPPING_TILE,
+    FailureCode.MIDDLE_ROW_OMISSION: PreprocessingVariant.ROW_BAND_TILE,
+    FailureCode.EXTRA_ROWS: PreprocessingVariant.CANDIDATE_REJECT,
+    FailureCode.WRONG_TABLE: PreprocessingVariant.TARGET_SELECTION,
+    FailureCode.COLUMN_SHIFT: PreprocessingVariant.CELL_GEOMETRY,
+    FailureCode.DIGIT_MUTATION: PreprocessingVariant.NATIVE_AUTHORITY_RECONSTRUCTION,
+    FailureCode.SIGN_SCALE_ERROR: PreprocessingVariant.CANONICAL_NUMERIC,
+    FailureCode.READING_ORDER: PreprocessingVariant.LAYOUT_SPECIALIST,
+    FailureCode.CROSS_PAGE_SPLIT: PreprocessingVariant.PAGE_PAIR_STITCH,
+    FailureCode.FORMULA_CORRUPTION: PreprocessingVariant.FORMULA_SPECIALIST,
+    FailureCode.GROUNDING_MISMATCH: PreprocessingVariant.SOURCE_REMAP,
+    FailureCode.HALLUCINATION: PreprocessingVariant.CANDIDATE_REJECT,
+    FailureCode.REPETITION: PreprocessingVariant.CANDIDATE_REJECT,
+    FailureCode.NOTE_SPLIT_ERROR: PreprocessingVariant.NOTE_RECOMPILE,
+    FailureCode.WRONG_ENTITY_MERGE: PreprocessingVariant.ENTITY_SPLIT,
+    FailureCode.UNSUPPORTED_RELATION: PreprocessingVariant.RELATION_REMOVE,
 }
 
 
@@ -44,14 +55,12 @@ def plan_minimal_recovery(
 ) -> tuple[RecoveryScope, PreprocessingVariant]:
     if not failures:
         raise ValueError("recovery requires a registered failure code")
-    scope = RecoveryPlanner.smallest_scope(scopes)
+    scope = RecoveryPlanner.minimum_valid_scope(
+        frozenset(code.value for code in failures), scopes
+    )
     variants = tuple(_FAILURE_VARIANTS[code] for code in failures)
     authority = PreprocessingVariant.AUTHORITY_MAPPING
     variant = authority if authority in variants else sorted(variants, key=str)[0]
-    if FailureCode.PAGE_OMISSION in failures and scope.level is not RegionLevel.PAGE:
-        page_scope = next((item for item in scopes if item.level is RegionLevel.PAGE), None)
-        if page_scope is not None:
-            scope = page_scope
     return scope, variant
 
 

@@ -73,6 +73,7 @@ def _coordinator(
         base_root=tmp_path / "runs",
         benchmark_id="parsebench",
         environment=environment,
+        expansion_reason="finalist",
     )
     ledger = EvidenceLedger(
         ledger_path or (tmp_path / "evidence.jsonl"),
@@ -355,6 +356,7 @@ def test_exact_three_cli_writes_immutable_dry_run_receipt_and_ledger(
         base_root=tmp_path / "runs",
         benchmark_id="parsebench",
         environment=environment,
+        expansion_reason="finalist",
     )
     ledger_path = (tmp_path / "cli-ledger.jsonl").resolve()
     manifest_path = tmp_path / "cohort-manifest.json"
@@ -365,6 +367,7 @@ def test_exact_three_cli_writes_immutable_dry_run_receipt_and_ledger(
                 "endpoint_id": "ep-cohort",
                 "ledger_path": str(ledger_path),
                 "expected_cost_usd": "10",
+                "adaptive_expansion_reason": "finalist",
                 "runs": [run.to_dict() for run in runs],
                 "inputs_by_run": {
                     run.run_id: {"repeat_index": run.repeat_index} for run in runs

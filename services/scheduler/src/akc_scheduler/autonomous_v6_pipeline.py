@@ -41,7 +41,10 @@ from akc_parallel_runtime import (
     FinalizationResult,
     FinalizationUnit,
     Finalizer,
+    HealthTransition,
     HedgeController,
+    InfrastructureObservation,
+    LineageEdge,
     PageClass,
     PageDescriptor,
     ParsedBlock,
@@ -59,12 +62,14 @@ from akc_parallel_runtime import (
     RouteDecision,
     RouteRequest,
     RouterStage,
+    RoutingUnavailable,
     ShardOutput,
     ShardPlan,
     ValidationPolicy,
     ValidationResult,
     ValidatorPipeline,
     VerificationState,
+    WorkerHealthRegistry,
     WorkerSnapshot,
     canonical_sha256,
     evaluate_backpressure,
@@ -196,6 +201,7 @@ class V6PipelineJobSpec:
     max_recovery_attempts: int = 1
     speculative_dispatch: bool = True
     continuity_edges: tuple[ContinuityEdge, ...] = ()
+    lineage_edges: tuple[LineageEdge, ...] = ()
 
     def __post_init__(self) -> None:
         for name in (
@@ -342,6 +348,7 @@ class ProviderPoll:
     reason_codes: tuple[str, ...] = ()
     elapsed_seconds: float = 0.0
     predicted_p95_seconds: float = 1.0
+    observed_at: datetime | None = None
 
     def __post_init__(self) -> None:
         if self.state is ProviderPollState.COMPLETED and self.candidate is None:
@@ -350,6 +357,10 @@ class ProviderPoll:
             raise ValueError("only completed provider polls may carry a candidate")
         if self.elapsed_seconds < 0 or self.predicted_p95_seconds <= 0:
             raise ValueError("provider timing must be non-negative with positive p95")
+        if self.observed_at is not None and (
+            self.observed_at.tzinfo is None or self.observed_at.utcoffset() is None
+        ):
+            raise ValueError("provider observation time must be timezone-aware")
 
 
 class AutonomousV6RuntimePort(Protocol):
@@ -388,6 +399,15 @@ class AutonomousV6RuntimePort(Protocol):
     ) -> SubmissionReceipt: ...
 
     async def poll_output(self, receipt: SubmissionReceipt) -> ProviderPoll: ...
+
+    async def record_infrastructure_health(
+        self,
+        receipt: SubmissionReceipt,
+        observation: InfrastructureObservation,
+        transition: HealthTransition,
+        *,
+        operation_key: str,
+    ) -> None: ...
 
     async def reject_candidate(
         self,
@@ -431,6 +451,15 @@ class AutonomousV6RuntimePort(Protocol):
         *,
         logical_block_key: str,
         credit_amount: Decimal,
+        operation_key: str,
+    ) -> None: ...
+
+    async def schedule_selective_replay(
+        self,
+        spec: V6PipelineJobSpec,
+        receipt: SubmissionReceipt,
+        *,
+        impacted_object_ids: tuple[str, ...],
         operation_key: str,
     ) -> None: ...
 
@@ -489,8 +518,10 @@ class ShardCheckpoint:
     base_attempt_id: str | None = None
     base_prediction_sha256: str | None = None
     recovery_scopes: tuple[RecoveryScope, ...] = ()
+    recovery_scope_candidates: tuple[RecoveryScope, ...] = ()
     failure_codes: tuple[str, ...] = ()
     recovery_attempts: int = 0
+    recovery_family_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.shard_id or self.recovery_attempts < 0:
@@ -747,6 +778,7 @@ class AutonomousV6PipelineCoordinator:
         trusted_admission_verifier: TrustedAdmissionVerifier | None = None,
         clock: Callable[[], datetime] | None = None,
         shard_predictor: AdaptiveShardPredictor | None = None,
+        health_registry: WorkerHealthRegistry | None = None,
     ) -> None:
         self._store = store
         self._runtime = runtime
@@ -762,11 +794,22 @@ class AutonomousV6PipelineCoordinator:
         self._continuity = ContinuityMerger()
         self._finalizer = Finalizer()
         self._hedges = HedgeController()
+        self._health = health_registry or WorkerHealthRegistry()
         self._pools = EndpointPoolRegistry()
         for pool in inventory.pools:
             self._pools.register_pool(pool)
         for worker in inventory.pool_workers:
             self._pools.attach_worker(worker)
+        for worker in inventory.workers:
+            self._health.register(
+                worker_id=worker.worker_id,
+                model_revision=worker.model_revision,
+                runtime_image_digest=worker.runtime_image_digest,
+                capabilities=worker.capabilities,
+                warm=worker.warm,
+                cached_models=worker.cached_models,
+                estimated_available_at=worker.estimated_available_at,
+            )
         self._validate_inventory_identity()
 
     def _validate_inventory_identity(self) -> None:
@@ -860,6 +903,88 @@ class AutonomousV6PipelineCoordinator:
             workers=self._inventory.workers,
             estimates=self._inventory.estimate_map,
         )
+
+    def _recovery_decision(
+        self,
+        spec: V6PipelineJobSpec,
+        shard: ParseShard,
+        *,
+        excluded_families: frozenset[str],
+        excluded_workers: frozenset[str] = frozenset(),
+    ) -> RouteDecision:
+        request = replace(
+            self._route_request(spec, shard),
+            stage=RouterStage.RECOVERY,
+            prior_template_failure=True,
+            excluded_worker_ids=excluded_workers,
+            excluded_independent_families=excluded_families,
+        )
+        return self._router.route(
+            request,
+            recipes=self._inventory.recipes,
+            workers=tuple(
+                self._health.snapshot(worker.worker_id)
+                for worker in self._inventory.workers
+            ),
+            estimates=self._inventory.estimate_map,
+        )
+
+    async def _record_provider_health(
+        self,
+        spec: V6PipelineJobSpec,
+        receipt: SubmissionReceipt,
+        poll: ProviderPoll,
+    ) -> None:
+        reasons = tuple(code.casefold() for code in poll.reason_codes)
+
+        def reason_contains(*needles: str) -> bool:
+            return any(needle in code for code in reasons for needle in needles)
+
+        failed = poll.state is ProviderPollState.FAILED
+        observation = InfrastructureObservation(
+            observed_at=poll.observed_at or self._clock(),
+            ping=not (failed and reason_contains("connection", "network", "dns")),
+            process=not (failed and reason_contains("process", "runner", "worker_lost")),
+            gpu=not (failed and reason_contains("gpu", "cuda", "oom")),
+            ram=not (failed and reason_contains("ram", "memory", "oom")),
+            disk=not (failed and reason_contains("disk", "storage")),
+            model_loaded=not (failed and reason_contains("model_load", "model_missing")),
+            cuda_ready=not (failed and reason_contains("cuda", "gpu")),
+            request_response=not failed,
+            heartbeat=not (failed and reason_contains("heartbeat", "worker_lost")),
+            model_identity_matches=not reason_contains("model_identity_mismatch"),
+            checksum_matches=not reason_contains("model_checksum_mismatch", "checksum_mismatch"),
+            memory_slope_exceeded=reason_contains("memory_slope"),
+            latency_p99_spike=poll.state is ProviderPollState.STRAGGLER,
+        )
+        before = self._health.snapshot(receipt.worker_id).state
+        snapshot = self._health.record_infrastructure(receipt.worker_id, observation)
+        if snapshot.state is before:
+            return
+        transition = self._health.transitions(receipt.worker_id)[-1]
+        sink = getattr(self._runtime, "record_infrastructure_health", None)
+        if sink is not None:
+            await sink(
+                receipt,
+                observation,
+                transition,
+                operation_key=self._operation(
+                    spec,
+                    "worker-health",
+                    receipt.attempt_id,
+                    transition.to_state.value,
+                    observation.observed_at.isoformat(),
+                ),
+            )
+
+    def _recipe_family(self, recipe_id: str) -> str:
+        recipe = next(
+            (item for item in self._inventory.recipes if item.recipe_id == recipe_id),
+            None,
+        )
+        if recipe is None:
+            raise PipelineContractError("attempt references an unknown recipe")
+        return recipe.independent_family
 
     def _pool_for(self, route: RouteCandidate) -> str:
         pool_id = self._inventory.recipe_pool_map[route.recipe.recipe_id]
@@ -1257,6 +1382,8 @@ class AutonomousV6PipelineCoordinator:
         if not active:
             raise PipelineContractError("waiting shard has no active provider submission")
         polls = [(receipt, await self._runtime.poll_output(receipt)) for receipt in active]
+        for receipt, poll in polls:
+            await self._record_provider_health(spec, receipt, poll)
         completed = [
             (receipt, poll.candidate)
             for receipt, poll in polls
@@ -1445,12 +1572,63 @@ class AutonomousV6PipelineCoordinator:
                     }
                 )
             )
-            return replace(
+            return await self._retry_provider_failure(
+                spec,
+                shard,
                 current,
-                phase=ShardPhase.UNRESOLVED,
-                failure_codes=reasons,
+                tuple(receipt for receipt, _ in polls),
+                reasons,
             ), True
         return current, False
+
+    async def _retry_provider_failure(
+        self,
+        spec: V6PipelineJobSpec,
+        shard: ParseShard,
+        current: ShardCheckpoint,
+        failed_receipts: tuple[SubmissionReceipt, ...],
+        failure_codes: tuple[str, ...],
+    ) -> ShardCheckpoint:
+        if current.recovery_attempts >= spec.max_recovery_attempts:
+            return replace(current, phase=ShardPhase.UNRESOLVED, failure_codes=failure_codes)
+        excluded_workers = frozenset(receipt.worker_id for receipt in failed_receipts)
+        try:
+            decision = self._recovery_decision(
+                spec,
+                shard,
+                excluded_families=frozenset(current.recovery_family_ids),
+                excluded_workers=excluded_workers,
+            )
+        except RoutingUnavailable:
+            return replace(current, phase=ShardPhase.UNRESOLVED, failure_codes=failure_codes)
+        route = decision.primary
+        operation = self._operation(
+            spec,
+            "dispatch-provider-retry",
+            shard.shard_id,
+            current.recovery_attempts + 1,
+        )
+        receipt = await self._runtime.submit_attempt(
+            spec,
+            shard,
+            route,
+            attempt_kind=AttemptKind.RETRY,
+            parent_attempt_id=failed_receipts[0].attempt_id,
+            recovery_task=None,
+            operation_key=operation,
+        )
+        self._assert_submission_receipt(shard, route, AttemptKind.RETRY, operation, receipt)
+        families = tuple(
+            dict.fromkeys((*current.recovery_family_ids, route.recipe.independent_family))
+        )
+        return replace(
+            current,
+            phase=ShardPhase.WAITING,
+            submissions=(*current.submissions, receipt),
+            failure_codes=failure_codes,
+            recovery_attempts=current.recovery_attempts + 1,
+            recovery_family_ids=families,
+        )
 
     async def _recover_or_resolve(
         self,
@@ -1471,36 +1649,68 @@ class AutonomousV6PipelineCoordinator:
                 base_prediction_sha256=candidate.prediction_sha256,
                 failure_codes=failure_codes,
             )
-        scopes = candidate.recovery_scopes or tuple(
-            RecoveryScope(
-                level=_page_region_level(),
-                scope_id=f"page:{page_id}",
-                source_refs=(f"page://{page_id}",),
-            )
-            for page_id in shard.primary_page_ids
+        proposed_scopes = candidate.recovery_scopes or _default_recovery_scopes(
+            shard, failure_codes
         )
+        scope_candidates = _merge_recovery_scopes(
+            current.recovery_scope_candidates, proposed_scopes
+        )
+        scopes = scope_candidates
+        if current.recovery_attempts and current.recovery_scopes:
+            broader = self._recovery.next_broader_scope(
+                current.recovery_scopes[0], scope_candidates
+            )
+            if broader is None:
+                return replace(
+                    current,
+                    phase=ShardPhase.UNRESOLVED,
+                    base_attempt_id=receipt.attempt_id,
+                    base_prediction_sha256=candidate.prediction_sha256,
+                    failure_codes=failure_codes,
+                )
+            scopes = (broader,)
+        failed_family = self._recipe_family(receipt.recipe_id)
+        excluded_families = frozenset((*current.recovery_family_ids, failed_family))
+        try:
+            route_decision = self._recovery_decision(
+                spec,
+                shard,
+                excluded_families=excluded_families,
+            )
+        except RoutingUnavailable:
+            return replace(
+                current,
+                phase=ShardPhase.UNRESOLVED,
+                base_attempt_id=receipt.attempt_id,
+                base_prediction_sha256=candidate.prediction_sha256,
+                failure_codes=failure_codes,
+            )
+        route = route_decision.primary
         operation = self._operation(
             spec,
             "recovery-plan",
             shard.shard_id,
             current.recovery_attempts + 1,
         )
-        task = self._recovery.plan(
-            base_attempt_id=receipt.attempt_id,
-            base_prediction_sha256=candidate.prediction_sha256,
-            scopes=scopes,
-            failure_codes=frozenset(failure_codes),
-            parser_recipe=current.primary_recipe_id or receipt.recipe_id,
-            created_at=spec.orchestration_started_at,
-            idempotency_key=operation,
-        )
+        try:
+            task = self._recovery.plan(
+                base_attempt_id=receipt.attempt_id,
+                base_prediction_sha256=candidate.prediction_sha256,
+                scopes=scopes,
+                failure_codes=frozenset(failure_codes),
+                parser_recipe=route.recipe.recipe_id,
+                created_at=spec.orchestration_started_at,
+                idempotency_key=operation,
+            )
+        except ValueError:
+            return replace(
+                current,
+                phase=ShardPhase.UNRESOLVED,
+                base_attempt_id=receipt.attempt_id,
+                base_prediction_sha256=candidate.prediction_sha256,
+                failure_codes=(*failure_codes, "minimum_recovery_scope_unavailable"),
+            )
         await self._runtime.record_recovery(spec, shard, task, operation_key=operation)
-        route_decision = self._decision(spec, shard)
-        route = self._route_by_ids(
-            route_decision, current.primary_recipe_id, current.primary_worker_id
-        )
-        if route is None:
-            raise PipelineContractError("recovery lost the primary route")
         dispatch_operation = self._operation(
             spec,
             "dispatch-recovery",
@@ -1529,9 +1739,15 @@ class AutonomousV6PipelineCoordinator:
             submissions=(*current.submissions, recovery_receipt),
             base_attempt_id=receipt.attempt_id,
             base_prediction_sha256=candidate.prediction_sha256,
-            recovery_scopes=scopes,
+            recovery_scopes=(task.scope,),
+            recovery_scope_candidates=scope_candidates,
             failure_codes=failure_codes,
             recovery_attempts=current.recovery_attempts + 1,
+            recovery_family_ids=tuple(
+                dict.fromkeys(
+                    (*current.recovery_family_ids, failed_family, route.recipe.independent_family)
+                )
+            ),
         )
 
     async def _accept_recovery(
@@ -1555,7 +1771,7 @@ class AutonomousV6PipelineCoordinator:
             base_prediction_sha256=current.base_prediction_sha256,
             scopes=current.recovery_scopes,
             failure_codes=frozenset(current.failure_codes),
-            parser_recipe=current.primary_recipe_id or receipt.recipe_id,
+            parser_recipe=receipt.recipe_id,
             created_at=spec.orchestration_started_at,
             idempotency_key=operation,
         )
@@ -1564,6 +1780,16 @@ class AutonomousV6PipelineCoordinator:
             for _, receipts in candidate.observation.evidence
             for receipt_item in receipts
         )
+        base_receipt = next(
+            (
+                item
+                for item in current.submissions
+                if item.attempt_id == current.base_attempt_id
+            ),
+            None,
+        )
+        if base_receipt is None:
+            raise PipelineContractError("recovery checkpoint lost its base attempt receipt")
         recovery_candidate = RecoveryCandidate(
             task=task,
             repair_attempt_id=receipt.attempt_id,
@@ -1576,6 +1802,9 @@ class AutonomousV6PipelineCoordinator:
             ),
             validation=validation,
             source_evidence=source_evidence,
+            base_independent_family=self._recipe_family(base_receipt.recipe_id),
+            repair_independent_family=self._recipe_family(receipt.recipe_id),
+            lineage_edges=spec.lineage_edges,
         )
         decision = self._recovery.accept(recovery_candidate, completed_at=self._clock())
         if not decision.accepted:
@@ -1603,6 +1832,18 @@ class AutonomousV6PipelineCoordinator:
                 spec, "settle-recovery", shard.shard_id, decision.decision_sha256
             ),
         )
+        if decision.impacted_object_ids:
+            await self._runtime.schedule_selective_replay(
+                spec,
+                receipt,
+                impacted_object_ids=decision.impacted_object_ids,
+                operation_key=self._operation(
+                    spec,
+                    "selective-replay",
+                    shard.shard_id,
+                    decision.decision_sha256,
+                ),
+            )
         summary = AcceptedCandidateSummary(
             attempt_id=receipt.attempt_id,
             prediction_sha256=candidate.prediction_sha256,
@@ -1737,8 +1978,42 @@ class AutonomousV6PipelineCoordinator:
         )
 
 
-def _page_region_level() -> RegionLevel:
-    return RegionLevel.PAGE
+def _default_recovery_scopes(
+    shard: ParseShard, failure_codes: tuple[str, ...]
+) -> tuple[RecoveryScope, ...]:
+    if set(failure_codes) & {"C01", "cross_page_split"}:
+        if len(shard.primary_page_ids) < 2:
+            return ()
+        page_ids = tuple(str(page_id) for page_id in shard.primary_page_ids)
+        return (
+            RecoveryScope(
+                level=RegionLevel.PAGE_PAIR,
+                scope_id=f"page-pair:{':'.join(page_ids)}",
+                source_refs=tuple(f"page://{page_id}" for page_id in page_ids),
+            ),
+        )
+    return tuple(
+        RecoveryScope(
+            level=RegionLevel.PAGE,
+            scope_id=f"page:{page_id}",
+            source_refs=(f"page://{page_id}",),
+        )
+        for page_id in shard.primary_page_ids
+    )
+
+
+def _merge_recovery_scopes(
+    existing: tuple[RecoveryScope, ...], proposed: tuple[RecoveryScope, ...]
+) -> tuple[RecoveryScope, ...]:
+    by_id = {scope.scope_id: scope for scope in existing}
+    for scope in proposed:
+        previous = by_id.get(scope.scope_id)
+        if previous is not None and previous != scope:
+            raise PipelineContractError(
+                "recovery scope identity was reused with different evidence"
+            )
+        by_id[scope.scope_id] = scope
+    return tuple(by_id[scope_id] for scope_id in sorted(by_id))
 
 
 def _optional_string(value: object) -> str | None:
@@ -1848,8 +2123,15 @@ def _shard_checkpoint_from_dict(value: object) -> ShardCheckpoint:
         base_attempt_id=_optional_string(value.get("base_attempt_id")),
         base_prediction_sha256=_optional_string(value.get("base_prediction_sha256")),
         recovery_scopes=tuple(_scope_from_dict(item) for item in value["recovery_scopes"]),
+        recovery_scope_candidates=tuple(
+            _scope_from_dict(item)
+            for item in value.get("recovery_scope_candidates", value["recovery_scopes"])
+        ),
         failure_codes=tuple(str(item) for item in value["failure_codes"]),
         recovery_attempts=int(value["recovery_attempts"]),
+        recovery_family_ids=tuple(
+            str(item) for item in value.get("recovery_family_ids", ())
+        ),
     )
 
 

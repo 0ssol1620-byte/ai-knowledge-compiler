@@ -21,7 +21,7 @@ _PUBLIC_CORE_IDS = {"omnidocbench", "parsebench", "olmocr-bench"}
 _EXTERNAL_BLOCKERS = (
     "EXACT_MODEL_ARTIFACT_RUNTIME_IDENTITIES_PENDING",
     "MANDATORY_EXTERNAL_PUBLIC_PRIVATE_ROBUSTNESS_RUNS_NOT_EXECUTED",
-    "EXACT_THREE_SAME_ENVIRONMENT_REPEATS_NOT_EXECUTED",
+    "ADAPTIVE_REPEAT_GATE_AND_FINALIST_EXACT_THREE_NOT_EXECUTED",
     "ACTUAL_RUNPOD_COST_AND_SPEEDUP_NOT_MEASURED",
     "TEMPORARY_ENDPOINT_CLEANUP_RECEIPTS_MISSING",
     "SIGNED_EXTERNAL_EVIDENCE_MISSING",
@@ -115,6 +115,8 @@ def run_local_preflight(repo_root: Path) -> dict[str, object]:
         "model_pool_count": len(pools.pools),
         "public_core_suites": sorted(public_ids),
         "public_core_required_repetitions": 3,
+        "public_core_initial_full_runs": 1,
+        "public_core_stratified_audit_runs": 3,
         "schema_count": len(schema_paths),
         "external_blockers": list(_EXTERNAL_BLOCKERS),
         "artifact_hashes": {
@@ -186,6 +188,19 @@ def _validate_dataset_registry(
         raise ContractError("v6 dataset registry must forbid inference GT access")
     if policy.get("public_core_repetitions") != 3:
         raise ContractError("v6 dataset registry must require exactly three public repeats")
+    adaptive = policy.get("adaptive_repeat_policy")
+    if not isinstance(adaptive, Mapping) or dict(adaptive) != {
+        "initial_full_runs": 1,
+        "stratified_audit_runs": 3,
+        "escalation_full_runs": 3,
+        "escalation_triggers": [
+            "finalist",
+            "prediction_hash_drift",
+            "score_drift",
+            "runtime_failure",
+        ],
+    }:
+        raise ContractError("v6 adaptive repeat policy is missing or unsafe")
     locked_rows = dataset_registry.get("public_core")
     if not isinstance(locked_rows, list):
         raise ContractError("v6 dataset registry public_core is missing")
@@ -207,7 +222,11 @@ def _validate_dataset_registry(
             "dataset_manifest_sha256": dataset.get("manifest_sha256"),
         }
         actual = {key: locked.get(key) for key in expected}
-        if actual != expected or locked.get("repetitions") != 3:
+        if (
+            actual != expected
+            or locked.get("repetitions") != 3
+            or locked.get("repeat_mode") != "adaptive_with_finalist_exact_three"
+        ):
             raise ContractError(f"v6 dataset identity drift: {benchmark_id}")
 
 

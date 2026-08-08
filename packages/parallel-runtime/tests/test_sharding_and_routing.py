@@ -314,6 +314,30 @@ def test_router_does_not_speculate_without_independent_family() -> None:
     assert decision.secondary is None
 
 
+def test_recovery_route_excludes_failed_model_family_and_worker() -> None:
+    recipes = (recipe("failed", family="family-a"), recipe("recovery", family="family-b"))
+    workers = (worker("w1"), worker("w2"))
+    estimates = {
+        ("failed", "w1"): estimate(passed=0.99),
+        ("recovery", "w2"): estimate(passed=0.8),
+    }
+
+    decision = AdaptiveRouter().route(
+        request(
+            stage=RouterStage.RECOVERY,
+            prior_template_failure=True,
+            excluded_worker_ids=frozenset({"w1"}),
+            excluded_independent_families=frozenset({"family-a"}),
+        ),
+        recipes=recipes,
+        workers=workers,
+        estimates=estimates,
+    )
+
+    assert decision.primary.recipe.recipe_id == "recovery"
+    assert decision.primary.recipe.independent_family == "family-b"
+
+
 def test_router_requires_estimator_and_capability_evidence() -> None:
     with pytest.raises(RoutingUnavailable):
         AdaptiveRouter().route(

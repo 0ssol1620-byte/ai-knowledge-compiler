@@ -1,0 +1,1900 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-02T05:08:09.390293+00:00",
+  "source": {
+    "path": "D:\\FOLYNTA_COMPLETE_CREATIVE_PRODUCT_EXPERIENCE_RESET_MASTERPLAN_FINAL_KO_2026-08-02.md",
+    "sha256": "d039d901be44a921f5884761f47730a8503c4837ba9e81c94e45e09f3d4ec6fa",
+    "encoding": "utf-8",
+    "line_count": 3810
+  },
+  "semantics": {
+    "purpose": "coverage_index_only",
+    "completion_inference": "prohibited",
+    "external_gate_inference": "prohibited"
+  },
+  "counts": {
+    "headings": 351,
+    "checkboxes": 0,
+    "normative_lines": 30
+  },
+  "headings": [
+    {
+      "line": 33,
+      "level": 1,
+      "text": "FOLYNTA 완전 재구축 최종 마스터플랜"
+    },
+    {
+      "line": 46,
+      "level": 1,
+      "text": "0. 이 문서가 이전 문서와 다른 점"
+    },
+    {
+      "line": 87,
+      "level": 1,
+      "text": "1. 증거 기반과 해석 경계"
+    },
+    {
+      "line": 89,
+      "level": 2,
+      "text": "1.1 직접 확인한 현재 증거"
+    },
+    {
+      "line": 91,
+      "level": 3,
+      "text": "사용자 제공 화면"
+    },
+    {
+      "line": 99,
+      "level": 3,
+      "text": "첨부 완료 보고서"
+    },
+    {
+      "line": 108,
+      "level": 3,
+      "text": "GitHub"
+    },
+    {
+      "line": 120,
+      "level": 2,
+      "text": "1.2 추론"
+    },
+    {
+      "line": 131,
+      "level": 2,
+      "text": "1.3 외부 공식 자료 사용 원칙"
+    },
+    {
+      "line": 142,
+      "level": 1,
+      "text": "2. 즉시 효력이 발생하는 결정"
+    },
+    {
+      "line": 144,
+      "level": 2,
+      "text": "D-001 — PR #17 Merge 금지"
+    },
+    {
+      "line": 156,
+      "level": 2,
+      "text": "D-002 — 현재 시각 레이어 강등"
+    },
+    {
+      "line": 168,
+      "level": 2,
+      "text": "D-003 — Backend·모델·검증 보존"
+    },
+    {
+      "line": 181,
+      "level": 2,
+      "text": "D-004 — 세 장면 우선"
+    },
+    {
+      "line": 191,
+      "level": 2,
+      "text": "D-005 — Creative QA와 Engineering QA 분리"
+    },
+    {
+      "line": 205,
+      "level": 2,
+      "text": "D-006 — Visual baseline 갱신 금지"
+    },
+    {
+      "line": 217,
+      "level": 1,
+      "text": "3. 현재 상태의 정확한 판정"
+    },
+    {
+      "line": 238,
+      "level": 1,
+      "text": "4. 보존·재사용·폐기 매트릭스"
+    },
+    {
+      "line": 265,
+      "level": 1,
+      "text": "5. 전체 문제 레지스터"
+    },
+    {
+      "line": 344,
+      "level": 1,
+      "text": "6. 왜 계속 수정해도 품질이 오르지 않았는가"
+    },
+    {
+      "line": 346,
+      "level": 2,
+      "text": "6.1 Coverage-driven implementation"
+    },
+    {
+      "line": 366,
+      "level": 2,
+      "text": "6.2 Behavior-only reimplementation의 오해"
+    },
+    {
+      "line": 386,
+      "level": 2,
+      "text": "6.3 에이전트 자기 승인"
+    },
+    {
+      "line": 403,
+      "level": 2,
+      "text": "6.4 Giant PR"
+    },
+    {
+      "line": 413,
+      "level": 2,
+      "text": "6.5 Backend truth와 customer perception의 분리"
+    },
+    {
+      "line": 431,
+      "level": 1,
+      "text": "7. Creative Reset 운영 체계"
+    },
+    {
+      "line": 433,
+      "level": 2,
+      "text": "7.1 Branch 전략"
+    },
+    {
+      "line": 446,
+      "level": 2,
+      "text": "7.2 작은 PR 계획"
+    },
+    {
+      "line": 463,
+      "level": 2,
+      "text": "7.3 각 장면의 승인 순서"
+    },
+    {
+      "line": 479,
+      "level": 2,
+      "text": "7.4 Static keyframe 산출물"
+    },
+    {
+      "line": 495,
+      "level": 2,
+      "text": "7.5 독립 Creative Score"
+    },
+    {
+      "line": 517,
+      "level": 1,
+      "text": "8. 레퍼런스 실제 적용 계약"
+    },
+    {
+      "line": 519,
+      "level": 2,
+      "text": "8.1 원칙"
+    },
+    {
+      "line": 537,
+      "level": 2,
+      "text": "8.2 shadcn/ui — Product Foundation"
+    },
+    {
+      "line": 573,
+      "level": 2,
+      "text": "8.3 Aceternity UI — Narrative Interaction"
+    },
+    {
+      "line": 602,
+      "level": 2,
+      "text": "8.4 Magic UI — Data Flow"
+    },
+    {
+      "line": 621,
+      "level": 2,
+      "text": "8.5 21st.dev — Upload Choreography"
+    },
+    {
+      "line": 643,
+      "level": 2,
+      "text": "8.6 디렉터리 계약"
+    },
+    {
+      "line": 666,
+      "level": 1,
+      "text": "9. FOLYNTA Brand Identity 완전 재설계"
+    },
+    {
+      "line": 668,
+      "level": 2,
+      "text": "9.1 Symbol 문제"
+    },
+    {
+      "line": 672,
+      "level": 2,
+      "text": "9.2 Symbol 설계 논리"
+    },
+    {
+      "line": 688,
+      "level": 2,
+      "text": "9.3 제작 단계"
+    },
+    {
+      "line": 701,
+      "level": 2,
+      "text": "9.4 금지"
+    },
+    {
+      "line": 711,
+      "level": 2,
+      "text": "9.5 Deliverables"
+    },
+    {
+      "line": 728,
+      "level": 1,
+      "text": "10. Navigation 완전 재설계"
+    },
+    {
+      "line": 730,
+      "level": 2,
+      "text": "10.1 Desktop"
+    },
+    {
+      "line": 743,
+      "level": 2,
+      "text": "10.2 Mega menu"
+    },
+    {
+      "line": 745,
+      "level": 3,
+      "text": "Product"
+    },
+    {
+      "line": 754,
+      "level": 3,
+      "text": "Solutions"
+    },
+    {
+      "line": 762,
+      "level": 3,
+      "text": "Proof"
+    },
+    {
+      "line": 770,
+      "level": 2,
+      "text": "10.3 Interaction"
+    },
+    {
+      "line": 780,
+      "level": 2,
+      "text": "10.4 Mobile"
+    },
+    {
+      "line": 789,
+      "level": 2,
+      "text": "10.5 Header background"
+    },
+    {
+      "line": 797,
+      "level": 1,
+      "text": "11. Signature Experience 1 — Folio Synthesis Hero"
+    },
+    {
+      "line": 799,
+      "level": 2,
+      "text": "11.1 사용자 이해 목표"
+    },
+    {
+      "line": 813,
+      "level": 2,
+      "text": "11.2 Static direction 3안"
+    },
+    {
+      "line": 815,
+      "level": 3,
+      "text": "A. Editorial Folio Library"
+    },
+    {
+      "line": 822,
+      "level": 3,
+      "text": "B. Computational Archive"
+    },
+    {
+      "line": 830,
+      "level": 3,
+      "text": "C. Knowledge Monolith"
+    },
+    {
+      "line": 840,
+      "level": 2,
+      "text": "11.3 Source object 12종"
+    },
+    {
+      "line": 862,
+      "level": 2,
+      "text": "11.4 Storyboard"
+    },
+    {
+      "line": 875,
+      "level": 2,
+      "text": "11.5 Camera"
+    },
+    {
+      "line": 883,
+      "level": 2,
+      "text": "11.6 Material"
+    },
+    {
+      "line": 892,
+      "level": 2,
+      "text": "11.7 R3F Architecture"
+    },
+    {
+      "line": 911,
+      "level": 2,
+      "text": "11.8 Capability Gate"
+    },
+    {
+      "line": 922,
+      "level": 2,
+      "text": "11.9 Performance budget"
+    },
+    {
+      "line": 936,
+      "level": 2,
+      "text": "11.10 Hero Creative Gate"
+    },
+    {
+      "line": 948,
+      "level": 1,
+      "text": "12. Signature Experience 2 — Live Collection Processing Theater"
+    },
+    {
+      "line": 950,
+      "level": 2,
+      "text": "12.1 핵심 결정"
+    },
+    {
+      "line": 962,
+      "level": 2,
+      "text": "12.2 두 가지 View"
+    },
+    {
+      "line": 964,
+      "level": 3,
+      "text": "Scene View — 기본"
+    },
+    {
+      "line": 977,
+      "level": 3,
+      "text": "Technical View — 선택"
+    },
+    {
+      "line": 983,
+      "level": 2,
+      "text": "12.3 Desktop Composition"
+    },
+    {
+      "line": 996,
+      "level": 2,
+      "text": "12.4 Upload Scene"
+    },
+    {
+      "line": 1028,
+      "level": 2,
+      "text": "12.5 Classification Scene"
+    },
+    {
+      "line": 1044,
+      "level": 2,
+      "text": "12.6 ProcessingSceneModel"
+    },
+    {
+      "line": 1076,
+      "level": 2,
+      "text": "12.7 Event→Visual Mapping"
+    },
+    {
+      "line": 1101,
+      "level": 2,
+      "text": "12.8 Page Canvas"
+    },
+    {
+      "line": 1116,
+      "level": 2,
+      "text": "12.9 User-facing status language"
+    },
+    {
+      "line": 1133,
+      "level": 2,
+      "text": "12.10 Milestone Animated List"
+    },
+    {
+      "line": 1146,
+      "level": 2,
+      "text": "12.11 Knowledge Formation Rail"
+    },
+    {
+      "line": 1162,
+      "level": 2,
+      "text": "12.12 Demo와 Live"
+    },
+    {
+      "line": 1164,
+      "level": 3,
+      "text": "Live"
+    },
+    {
+      "line": 1171,
+      "level": 3,
+      "text": "Public demo"
+    },
+    {
+      "line": 1179,
+      "level": 2,
+      "text": "12.13 Mobile"
+    },
+    {
+      "line": 1194,
+      "level": 2,
+      "text": "12.14 Performance"
+    },
+    {
+      "line": 1205,
+      "level": 2,
+      "text": "12.15 Accessibility"
+    },
+    {
+      "line": 1215,
+      "level": 2,
+      "text": "12.16 Theater Acceptance"
+    },
+    {
+      "line": 1228,
+      "level": 1,
+      "text": "13. Signature Experience 3 — Source Proof"
+    },
+    {
+      "line": 1230,
+      "level": 2,
+      "text": "13.1 목표"
+    },
+    {
+      "line": 1242,
+      "level": 2,
+      "text": "13.2 Actual PDF First"
+    },
+    {
+      "line": 1252,
+      "level": 2,
+      "text": "13.3 Layout"
+    },
+    {
+      "line": 1270,
+      "level": 2,
+      "text": "13.4 Proof Link Contract"
+    },
+    {
+      "line": 1292,
+      "level": 2,
+      "text": "13.5 Interaction"
+    },
+    {
+      "line": 1303,
+      "level": 2,
+      "text": "13.6 Aceternity use"
+    },
+    {
+      "line": 1311,
+      "level": 2,
+      "text": "13.7 Tests"
+    },
+    {
+      "line": 1325,
+      "level": 2,
+      "text": "13.8 Marketing Proof"
+    },
+    {
+      "line": 1332,
+      "level": 1,
+      "text": "14. Transformation Story 재구축"
+    },
+    {
+      "line": 1334,
+      "level": 2,
+      "text": "14.1 현재 문제"
+    },
+    {
+      "line": 1339,
+      "level": 2,
+      "text": "14.2 새 구조"
+    },
+    {
+      "line": 1344,
+      "level": 3,
+      "text": "Understand"
+    },
+    {
+      "line": 1351,
+      "level": 3,
+      "text": "Verify"
+    },
+    {
+      "line": 1358,
+      "level": 3,
+      "text": "Connect"
+    },
+    {
+      "line": 1365,
+      "level": 3,
+      "text": "Activate"
+    },
+    {
+      "line": 1372,
+      "level": 2,
+      "text": "14.3 Continuity"
+    },
+    {
+      "line": 1377,
+      "level": 2,
+      "text": "14.4 Scroll"
+    },
+    {
+      "line": 1386,
+      "level": 2,
+      "text": "14.5 Acceptance"
+    },
+    {
+      "line": 1396,
+      "level": 1,
+      "text": "15. Knowledge System Scene"
+    },
+    {
+      "line": 1398,
+      "level": 2,
+      "text": "15.1 현재 문제"
+    },
+    {
+      "line": 1402,
+      "level": 2,
+      "text": "15.2 새 narrative"
+    },
+    {
+      "line": 1412,
+      "level": 2,
+      "text": "15.3 Composition"
+    },
+    {
+      "line": 1420,
+      "level": 2,
+      "text": "15.4 Data"
+    },
+    {
+      "line": 1425,
+      "level": 2,
+      "text": "15.5 Graph"
+    },
+    {
+      "line": 1435,
+      "level": 1,
+      "text": "16. Quality & Routing Scene"
+    },
+    {
+      "line": 1437,
+      "level": 2,
+      "text": "16.1 Homepage"
+    },
+    {
+      "line": 1456,
+      "level": 2,
+      "text": "16.2 `/benchmarks`"
+    },
+    {
+      "line": 1472,
+      "level": 1,
+      "text": "17. Security Scene"
+    },
+    {
+      "line": 1474,
+      "level": 2,
+      "text": "17.1 실제 architecture"
+    },
+    {
+      "line": 1496,
+      "level": 2,
+      "text": "17.2 UI"
+    },
+    {
+      "line": 1504,
+      "level": 2,
+      "text": "17.3 Claims"
+    },
+    {
+      "line": 1519,
+      "level": 1,
+      "text": "18. Marketing Homepage 최종 구성"
+    },
+    {
+      "line": 1533,
+      "level": 2,
+      "text": "18.1 섹션 밀도"
+    },
+    {
+      "line": 1541,
+      "level": 2,
+      "text": "18.2 CTA"
+    },
+    {
+      "line": 1553,
+      "level": 1,
+      "text": "19. 전체 Route 재설계 우선순위"
+    },
+    {
+      "line": 1555,
+      "level": 2,
+      "text": "P0 bespoke"
+    },
+    {
+      "line": 1569,
+      "level": 2,
+      "text": "P1 composed"
+    },
+    {
+      "line": 1583,
+      "level": 2,
+      "text": "P2 standard"
+    },
+    {
+      "line": 1595,
+      "level": 1,
+      "text": "20. Product App Design"
+    },
+    {
+      "line": 1597,
+      "level": 2,
+      "text": "20.1 App Shell"
+    },
+    {
+      "line": 1624,
+      "level": 2,
+      "text": "20.2 Intake"
+    },
+    {
+      "line": 1638,
+      "level": 2,
+      "text": "20.3 Processing"
+    },
+    {
+      "line": 1642,
+      "level": 2,
+      "text": "20.4 Integrity"
+    },
+    {
+      "line": 1651,
+      "level": 2,
+      "text": "20.5 Knowledge"
+    },
+    {
+      "line": 1659,
+      "level": 2,
+      "text": "20.6 Usage/Billing"
+    },
+    {
+      "line": 1668,
+      "level": 1,
+      "text": "21. Frontend Architecture Reset"
+    },
+    {
+      "line": 1670,
+      "level": 2,
+      "text": "21.1 Route Groups"
+    },
+    {
+      "line": 1684,
+      "level": 2,
+      "text": "21.2 CSS"
+    },
+    {
+      "line": 1704,
+      "level": 3,
+      "text": "Migration"
+    },
+    {
+      "line": 1716,
+      "level": 2,
+      "text": "21.3 CSP / Static Rendering ADR"
+    },
+    {
+      "line": 1722,
+      "level": 3,
+      "text": "Option A"
+    },
+    {
+      "line": 1727,
+      "level": 3,
+      "text": "Option B"
+    },
+    {
+      "line": 1732,
+      "level": 3,
+      "text": "Option C"
+    },
+    {
+      "line": 1739,
+      "level": 2,
+      "text": "21.4 Performance Gate"
+    },
+    {
+      "line": 1757,
+      "level": 1,
+      "text": "22. Backend/API Visual Support"
+    },
+    {
+      "line": 1759,
+      "level": 2,
+      "text": "22.1 보존"
+    },
+    {
+      "line": 1769,
+      "level": 2,
+      "text": "22.2 추가 API"
+    },
+    {
+      "line": 1771,
+      "level": 3,
+      "text": "Processing scene snapshot"
+    },
+    {
+      "line": 1787,
+      "level": 3,
+      "text": "Page preview"
+    },
+    {
+      "line": 1795,
+      "level": 3,
+      "text": "Proof crop"
+    },
+    {
+      "line": 1801,
+      "level": 3,
+      "text": "Knowledge delta"
+    },
+    {
+      "line": 1806,
+      "level": 2,
+      "text": "22.3 Security"
+    },
+    {
+      "line": 1815,
+      "level": 2,
+      "text": "22.4 Event Projection"
+    },
+    {
+      "line": 1832,
+      "level": 1,
+      "text": "23. Asset Production System"
+    },
+    {
+      "line": 1834,
+      "level": 2,
+      "text": "23.1 Truth Classes"
+    },
+    {
+      "line": 1848,
+      "level": 2,
+      "text": "23.2 Required assets"
+    },
+    {
+      "line": 1860,
+      "level": 2,
+      "text": "23.3 Micro loops"
+    },
+    {
+      "line": 1876,
+      "level": 1,
+      "text": "24. Typography"
+    },
+    {
+      "line": 1878,
+      "level": 2,
+      "text": "24.1 Requirements"
+    },
+    {
+      "line": 1887,
+      "level": 2,
+      "text": "24.2 Copy fix"
+    },
+    {
+      "line": 1905,
+      "level": 1,
+      "text": "25. Motion Grammar"
+    },
+    {
+      "line": 1930,
+      "level": 1,
+      "text": "26. Responsive"
+    },
+    {
+      "line": 1932,
+      "level": 2,
+      "text": "Desktop 1440+"
+    },
+    {
+      "line": 1938,
+      "level": 2,
+      "text": "1024"
+    },
+    {
+      "line": 1944,
+      "level": 2,
+      "text": "768"
+    },
+    {
+      "line": 1951,
+      "level": 2,
+      "text": "390"
+    },
+    {
+      "line": 1961,
+      "level": 1,
+      "text": "27. Accessibility"
+    },
+    {
+      "line": 1979,
+      "level": 1,
+      "text": "28. Creative QA vs Engineering QA"
+    },
+    {
+      "line": 1981,
+      "level": 2,
+      "text": "28.1 Creative QA"
+    },
+    {
+      "line": 1993,
+      "level": 2,
+      "text": "28.2 Engineering QA"
+    },
+    {
+      "line": 2005,
+      "level": 2,
+      "text": "28.3 Reference Delta Board"
+    },
+    {
+      "line": 2028,
+      "level": 2,
+      "text": "28.4 Baseline Policy"
+    },
+    {
+      "line": 2043,
+      "level": 1,
+      "text": "29. 테스트 전략"
+    },
+    {
+      "line": 2045,
+      "level": 2,
+      "text": "29.1 Visual"
+    },
+    {
+      "line": 2058,
+      "level": 2,
+      "text": "29.2 State"
+    },
+    {
+      "line": 2072,
+      "level": 2,
+      "text": "29.3 Performance"
+    },
+    {
+      "line": 2082,
+      "level": 2,
+      "text": "29.4 Brand"
+    },
+    {
+      "line": 2091,
+      "level": 1,
+      "text": "30. Exact File Migration Map"
+    },
+    {
+      "line": 2113,
+      "level": 1,
+      "text": "31. 구현 Wave"
+    },
+    {
+      "line": 2115,
+      "level": 2,
+      "text": "Wave 0 — Freeze"
+    },
+    {
+      "line": 2125,
+      "level": 2,
+      "text": "Wave 1 — Foundation"
+    },
+    {
+      "line": 2135,
+      "level": 2,
+      "text": "Wave 2 — Hero Static"
+    },
+    {
+      "line": 2143,
+      "level": 2,
+      "text": "Wave 3 — Hero Runtime"
+    },
+    {
+      "line": 2151,
+      "level": 2,
+      "text": "Wave 4 — Live Intake"
+    },
+    {
+      "line": 2159,
+      "level": 2,
+      "text": "Wave 5 — Processing Theater"
+    },
+    {
+      "line": 2168,
+      "level": 2,
+      "text": "Wave 6 — Proof"
+    },
+    {
+      "line": 2176,
+      "level": 2,
+      "text": "Wave 7 — Transformation/Knowledge"
+    },
+    {
+      "line": 2183,
+      "level": 2,
+      "text": "Wave 8 — Marketing"
+    },
+    {
+      "line": 2191,
+      "level": 2,
+      "text": "Wave 9 — CSS/Performance"
+    },
+    {
+      "line": 2199,
+      "level": 2,
+      "text": "Wave 10 — Product Routes"
+    },
+    {
+      "line": 2207,
+      "level": 2,
+      "text": "Wave 11 — Final Evidence"
+    },
+    {
+      "line": 2218,
+      "level": 1,
+      "text": "32. Release Gates"
+    },
+    {
+      "line": 2220,
+      "level": 2,
+      "text": "C0 — Truth"
+    },
+    {
+      "line": 2226,
+      "level": 2,
+      "text": "C1 — Brand"
+    },
+    {
+      "line": 2234,
+      "level": 2,
+      "text": "C2 — Hero"
+    },
+    {
+      "line": 2241,
+      "level": 2,
+      "text": "C3 — Theater"
+    },
+    {
+      "line": 2249,
+      "level": 2,
+      "text": "C4 — Proof"
+    },
+    {
+      "line": 2256,
+      "level": 2,
+      "text": "C5 — Transformation/Knowledge"
+    },
+    {
+      "line": 2262,
+      "level": 2,
+      "text": "C6 — Performance"
+    },
+    {
+      "line": 2269,
+      "level": 2,
+      "text": "C7 — Creative Final"
+    },
+    {
+      "line": 2276,
+      "level": 2,
+      "text": "C8 — Engineering"
+    },
+    {
+      "line": 2284,
+      "level": 2,
+      "text": "C9 — Production"
+    },
+    {
+      "line": 2299,
+      "level": 1,
+      "text": "33. Codex 실행 프롬프트"
+    },
+    {
+      "line": 2333,
+      "level": 1,
+      "text": "34. Work Packet Templates"
+    },
+    {
+      "line": 2335,
+      "level": 2,
+      "text": "34.1 Hero"
+    },
+    {
+      "line": 2355,
+      "level": 2,
+      "text": "34.2 Processing"
+    },
+    {
+      "line": 2378,
+      "level": 2,
+      "text": "34.3 Proof"
+    },
+    {
+      "line": 2399,
+      "level": 1,
+      "text": "35. 최종 Definition of Done"
+    },
+    {
+      "line": 2425,
+      "level": 1,
+      "text": "Appendix A — Homepage Wire Contract"
+    },
+    {
+      "line": 2472,
+      "level": 1,
+      "text": "Appendix B — 금지 패턴"
+    },
+    {
+      "line": 2492,
+      "level": 1,
+      "text": "Appendix C — Source Registry"
+    },
+    {
+      "line": 2494,
+      "level": 2,
+      "text": "Current evidence"
+    },
+    {
+      "line": 2501,
+      "level": 2,
+      "text": "Approved component references"
+    },
+    {
+      "line": 2508,
+      "level": 2,
+      "text": "Technical references"
+    },
+    {
+      "line": 2522,
+      "level": 1,
+      "text": "Appendix D — 최종 승인 보고서 형식"
+    },
+    {
+      "line": 2525,
+      "level": 1,
+      "text": "FOLYNTA Creative Reset Release Report"
+    },
+    {
+      "line": 2527,
+      "level": 2,
+      "text": "Release identity"
+    },
+    {
+      "line": 2534,
+      "level": 2,
+      "text": "Creative decisions"
+    },
+    {
+      "line": 2540,
+      "level": 2,
+      "text": "Independent review"
+    },
+    {
+      "line": 2546,
+      "level": 2,
+      "text": "Engineering"
+    },
+    {
+      "line": 2555,
+      "level": 2,
+      "text": "Truth"
+    },
+    {
+      "line": 2561,
+      "level": 2,
+      "text": "Decision"
+    },
+    {
+      "line": 2566,
+      "level": 1,
+      "text": "PART II — 실행자가 추측하지 않도록 하는 초상세 구현 사양"
+    },
+    {
+      "line": 2568,
+      "level": 1,
+      "text": "36. 현재 코드 파일별 감사"
+    },
+    {
+      "line": 2593,
+      "level": 2,
+      "text": "36.1 리팩터링 경계"
+    },
+    {
+      "line": 2617,
+      "level": 1,
+      "text": "37. Deployment Truth 복구"
+    },
+    {
+      "line": 2619,
+      "level": 2,
+      "text": "37.1 문제"
+    },
+    {
+      "line": 2624,
+      "level": 2,
+      "text": "37.2 Deployment Manifest"
+    },
+    {
+      "line": 2645,
+      "level": 2,
+      "text": "37.3 배포 순서"
+    },
+    {
+      "line": 2657,
+      "level": 2,
+      "text": "37.4 Live Gate"
+    },
+    {
+      "line": 2670,
+      "level": 1,
+      "text": "38. Component Provenance Manifest v2"
+    },
+    {
+      "line": 2699,
+      "level": 2,
+      "text": "38.1 CI rule"
+    },
+    {
+      "line": 2711,
+      "level": 2,
+      "text": "38.2 금지 decision"
+    },
+    {
+      "line": 2723,
+      "level": 1,
+      "text": "39. Design Token System"
+    },
+    {
+      "line": 2725,
+      "level": 2,
+      "text": "39.1 Color"
+    },
+    {
+      "line": 2754,
+      "level": 2,
+      "text": "39.2 Spacing"
+    },
+    {
+      "line": 2762,
+      "level": 2,
+      "text": "39.3 Radius"
+    },
+    {
+      "line": 2773,
+      "level": 2,
+      "text": "39.4 Elevation"
+    },
+    {
+      "line": 2784,
+      "level": 2,
+      "text": "39.5 Typography roles"
+    },
+    {
+      "line": 2800,
+      "level": 1,
+      "text": "40. FOLYNTA Semantic Glyph System"
+    },
+    {
+      "line": 2802,
+      "level": 2,
+      "text": "40.1 Glyphs"
+    },
+    {
+      "line": 2822,
+      "level": 2,
+      "text": "40.2 Grid"
+    },
+    {
+      "line": 2830,
+      "level": 2,
+      "text": "40.3 Functional Icons"
+    },
+    {
+      "line": 2837,
+      "level": 1,
+      "text": "41. Hero Asset Brief"
+    },
+    {
+      "line": 2863,
+      "level": 2,
+      "text": "41.1 Blender scene collection"
+    },
+    {
+      "line": 2878,
+      "level": 2,
+      "text": "41.2 GLB export validation"
+    },
+    {
+      "line": 2891,
+      "level": 1,
+      "text": "42. Processing Scene Event Contract 상세"
+    },
+    {
+      "line": 2893,
+      "level": 2,
+      "text": "42.1 Visual event envelope"
+    },
+    {
+      "line": 2924,
+      "level": 2,
+      "text": "42.2 Reducer pseudocode"
+    },
+    {
+      "line": 2958,
+      "level": 2,
+      "text": "42.3 Sequence gap"
+    },
+    {
+      "line": 2972,
+      "level": 2,
+      "text": "42.4 Visual state snapshot hash"
+    },
+    {
+      "line": 2979,
+      "level": 1,
+      "text": "43. Live Processing Layout 픽셀 계약"
+    },
+    {
+      "line": 2981,
+      "level": 2,
+      "text": "43.1 1440"
+    },
+    {
+      "line": 2992,
+      "level": 2,
+      "text": "43.2 1024"
+    },
+    {
+      "line": 3001,
+      "level": 2,
+      "text": "43.3 390"
+    },
+    {
+      "line": 3010,
+      "level": 2,
+      "text": "43.4 Density modes"
+    },
+    {
+      "line": 3020,
+      "level": 1,
+      "text": "44. Upload Choreography 상세"
+    },
+    {
+      "line": 3022,
+      "level": 2,
+      "text": "44.1 Drop"
+    },
+    {
+      "line": 3037,
+      "level": 2,
+      "text": "44.2 Hash"
+    },
+    {
+      "line": 3049,
+      "level": 2,
+      "text": "44.3 Upload"
+    },
+    {
+      "line": 3057,
+      "level": 2,
+      "text": "44.4 Preflight"
+    },
+    {
+      "line": 3062,
+      "level": 2,
+      "text": "44.5 Approval"
+    },
+    {
+      "line": 3076,
+      "level": 1,
+      "text": "45. Page Intelligence Canvas"
+    },
+    {
+      "line": 3078,
+      "level": 2,
+      "text": "45.1 Layers"
+    },
+    {
+      "line": 3090,
+      "level": 2,
+      "text": "45.2 Bbox color"
+    },
+    {
+      "line": 3099,
+      "level": 2,
+      "text": "45.3 Block transition"
+    },
+    {
+      "line": 3109,
+      "level": 1,
+      "text": "46. Table Reconstruction Micro-scene"
+    },
+    {
+      "line": 3111,
+      "level": 2,
+      "text": "46.1 Before"
+    },
+    {
+      "line": 3118,
+      "level": 2,
+      "text": "46.2 Process"
+    },
+    {
+      "line": 3125,
+      "level": 2,
+      "text": "46.3 After"
+    },
+    {
+      "line": 3135,
+      "level": 1,
+      "text": "47. Automatic Recovery Scene"
+    },
+    {
+      "line": 3152,
+      "level": 1,
+      "text": "48. Knowledge Architecture Formation"
+    },
+    {
+      "line": 3154,
+      "level": 2,
+      "text": "48.1 Tree delta"
+    },
+    {
+      "line": 3163,
+      "level": 2,
+      "text": "48.2 Graph delta"
+    },
+    {
+      "line": 3173,
+      "level": 2,
+      "text": "48.3 Package"
+    },
+    {
+      "line": 3184,
+      "level": 1,
+      "text": "49. Source Proof Coordinate Algorithm"
+    },
+    {
+      "line": 3186,
+      "level": 2,
+      "text": "49.1 Normalize"
+    },
+    {
+      "line": 3197,
+      "level": 2,
+      "text": "49.2 Render"
+    },
+    {
+      "line": 3206,
+      "level": 2,
+      "text": "49.3 Multi-span"
+    },
+    {
+      "line": 3211,
+      "level": 2,
+      "text": "49.4 Version"
+    },
+    {
+      "line": 3217,
+      "level": 1,
+      "text": "50. Homepage Copy System"
+    },
+    {
+      "line": 3219,
+      "level": 2,
+      "text": "Hero"
+    },
+    {
+      "line": 3232,
+      "level": 2,
+      "text": "Live Theater"
+    },
+    {
+      "line": 3238,
+      "level": 2,
+      "text": "Proof"
+    },
+    {
+      "line": 3244,
+      "level": 2,
+      "text": "Transformation"
+    },
+    {
+      "line": 3250,
+      "level": 2,
+      "text": "Final"
+    },
+    {
+      "line": 3261,
+      "level": 1,
+      "text": "51. P0 Route 상세 Brief"
+    },
+    {
+      "line": 3263,
+      "level": 2,
+      "text": "`/`"
+    },
+    {
+      "line": 3271,
+      "level": 2,
+      "text": "`/intake`"
+    },
+    {
+      "line": 3279,
+      "level": 2,
+      "text": "`/workspace`"
+    },
+    {
+      "line": 3286,
+      "level": 2,
+      "text": "`/integrity`"
+    },
+    {
+      "line": 3292,
+      "level": 2,
+      "text": "`/knowledge-bases`"
+    },
+    {
+      "line": 3298,
+      "level": 2,
+      "text": "`/product/verify`"
+    },
+    {
+      "line": 3304,
+      "level": 2,
+      "text": "`/benchmarks`"
+    },
+    {
+      "line": 3309,
+      "level": 2,
+      "text": "`/security`"
+    },
+    {
+      "line": 3314,
+      "level": 2,
+      "text": "`/pricing`"
+    },
+    {
+      "line": 3321,
+      "level": 1,
+      "text": "52. Navigation Content"
+    },
+    {
+      "line": 3323,
+      "level": 2,
+      "text": "Product panel"
+    },
+    {
+      "line": 3339,
+      "level": 2,
+      "text": "Proof panel"
+    },
+    {
+      "line": 3350,
+      "level": 1,
+      "text": "53. CSS Migration PR 상세"
+    },
+    {
+      "line": 3352,
+      "level": 2,
+      "text": "PR A"
+    },
+    {
+      "line": 3358,
+      "level": 2,
+      "text": "PR B"
+    },
+    {
+      "line": 3363,
+      "level": 2,
+      "text": "PR C"
+    },
+    {
+      "line": 3367,
+      "level": 2,
+      "text": "PR D"
+    },
+    {
+      "line": 3371,
+      "level": 2,
+      "text": "PR E"
+    },
+    {
+      "line": 3375,
+      "level": 2,
+      "text": "PR F"
+    },
+    {
+      "line": 3379,
+      "level": 2,
+      "text": "PR G"
+    },
+    {
+      "line": 3387,
+      "level": 1,
+      "text": "54. Performance Measurement"
+    },
+    {
+      "line": 3389,
+      "level": 2,
+      "text": "54.1 CI"
+    },
+    {
+      "line": 3398,
+      "level": 2,
+      "text": "54.2 Hard failures"
+    },
+    {
+      "line": 3407,
+      "level": 2,
+      "text": "54.3 Field"
+    },
+    {
+      "line": 3414,
+      "level": 1,
+      "text": "55. Creative User Test Script"
+    },
+    {
+      "line": 3416,
+      "level": 2,
+      "text": "Participants"
+    },
+    {
+      "line": 3420,
+      "level": 2,
+      "text": "Tasks"
+    },
+    {
+      "line": 3431,
+      "level": 2,
+      "text": "Success"
+    },
+    {
+      "line": 3441,
+      "level": 1,
+      "text": "56. Independent Review Checklist"
+    },
+    {
+      "line": 3458,
+      "level": 1,
+      "text": "57. PR Acceptance Detailed"
+    },
+    {
+      "line": 3460,
+      "level": 2,
+      "text": "CR-01"
+    },
+    {
+      "line": 3468,
+      "level": 2,
+      "text": "CR-02"
+    },
+    {
+      "line": 3476,
+      "level": 2,
+      "text": "CR-03"
+    },
+    {
+      "line": 3482,
+      "level": 2,
+      "text": "CR-04"
+    },
+    {
+      "line": 3489,
+      "level": 2,
+      "text": "CR-05"
+    },
+    {
+      "line": 3496,
+      "level": 2,
+      "text": "CR-06"
+    },
+    {
+      "line": 3503,
+      "level": 2,
+      "text": "CR-07"
+    },
+    {
+      "line": 3509,
+      "level": 2,
+      "text": "CR-08"
+    },
+    {
+      "line": 3515,
+      "level": 2,
+      "text": "CR-09"
+    },
+    {
+      "line": 3519,
+      "level": 2,
+      "text": "CR-10"
+    },
+    {
+      "line": 3527,
+      "level": 1,
+      "text": "58. Rollback Strategy"
+    },
+    {
+      "line": 3544,
+      "level": 1,
+      "text": "59. Feature Flags"
+    },
+    {
+      "line": 3558,
+      "level": 1,
+      "text": "60. Brand Migration Zero Gate"
+    },
+    {
+      "line": 3578,
+      "level": 1,
+      "text": "61. Visual Regression New Policy"
+    },
+    {
+      "line": 3580,
+      "level": 2,
+      "text": "Before"
+    },
+    {
+      "line": 3584,
+      "level": 2,
+      "text": "After approval"
+    },
+    {
+      "line": 3593,
+      "level": 2,
+      "text": "Threshold"
+    },
+    {
+      "line": 3599,
+      "level": 1,
+      "text": "62. QA Evidence Bundle"
+    },
+    {
+      "line": 3631,
+      "level": 1,
+      "text": "63. 책임자"
+    },
+    {
+      "line": 3650,
+      "level": 1,
+      "text": "64. 에이전트 Stop Conditions"
+    },
+    {
+      "line": 3668,
+      "level": 1,
+      "text": "65. 제품 데모 시나리오"
+    },
+    {
+      "line": 3691,
+      "level": 1,
+      "text": "66. 빈 상태"
+    },
+    {
+      "line": 3693,
+      "level": 2,
+      "text": "No files"
+    },
+    {
+      "line": 3700,
+      "level": 2,
+      "text": "No events"
+    },
+    {
+      "line": 3706,
+      "level": 2,
+      "text": "No knowledge"
+    },
+    {
+      "line": 3711,
+      "level": 2,
+      "text": "Unresolved"
+    },
+    {
+      "line": 3720,
+      "level": 1,
+      "text": "67. Error Design"
+    },
+    {
+      "line": 3734,
+      "level": 1,
+      "text": "68. 최종 Creative Reject 기준"
+    },
+    {
+      "line": 3755,
+      "level": 1,
+      "text": "69. 출시 직전 전수검사"
+    },
+    {
+      "line": 3757,
+      "level": 2,
+      "text": "Brand"
+    },
+    {
+      "line": 3767,
+      "level": 2,
+      "text": "Marketing"
+    },
+    {
+      "line": 3775,
+      "level": 2,
+      "text": "Product"
+    },
+    {
+      "line": 3784,
+      "level": 2,
+      "text": "Technical"
+    },
+    {
+      "line": 3792,
+      "level": 2,
+      "text": "Evidence"
+    },
+    {
+      "line": 3802,
+      "level": 1,
+      "text": "70. 이 문서의 최종 명령"
+    }
+  ],
+  "checkboxes": [],
+  "normative_lines": [
+    {
+      "line": 144,
+      "text": "## D-001 — PR #17 Merge 금지"
+    },
+    {
+      "line": 189,
+      "text": "세 장면이 독립 Creative Gate를 통과하지 못하면 다른 마케팅 route 확장을 금지한다."
+    },
+    {
+      "line": 205,
+      "text": "## D-006 — Visual baseline 갱신 금지"
+    },
+    {
+      "line": 275,
+      "text": "| CR-004 | Critical | 레퍼런스 미적용 | register가 behavior reimplemented/pattern only | 실제 source 사용 금지로 오해 | 공식 registry source 설치·pin·wrapper·side-by-side verification |"
+    },
+    {
+      "line": 283,
+      "text": "| HI-012 | High | Static keyframe Gate 부재 | 3D/코드를 먼저 구현 | composition 승인 workflow 없음 | 3 keyframes×2 viewport 승인 전 code 금지 |"
+    },
+    {
+      "line": 510,
+      "text": "- 90점 미만: 구현 금지."
+    },
+    {
+      "line": 511,
+      "text": "- Critical visual issue 1개: 구현 금지."
+    },
+    {
+      "line": 521,
+      "text": "“참고했다”는 문구를 금지한다. 아래 중 하나로 기록한다."
+    },
+    {
+      "line": 568,
+      "text": "- page에서 vendor direct import 금지."
+    },
+    {
+      "line": 592,
+      "text": "금지:"
+    },
+    {
+      "line": 638,
+      "text": "- preview media 사용 금지."
+    },
+    {
+      "line": 701,
+      "text": "## 9.4 금지"
+    },
+    {
+      "line": 793,
+      "text": "glass floating pill 금지."
+    },
+    {
+      "line": 878,
+      "text": "- aggressive orbit 금지."
+    },
+    {
+      "line": 1177,
+      "text": "- fake state 생성 금지."
+    },
+    {
+      "line": 1192,
+      "text": "horizontal tiny cards 금지."
+    },
+    {
+      "line": 1375,
+      "text": "scene마다 다른 fake illustration 사용 금지."
+    },
+    {
+      "line": 1549,
+      "text": "동일 의미의 CTA 반복 금지."
+    },
+    {
+      "line": 1557,
+      "text": "| Route | 목적 | 필수 장면 |"
+    },
+    {
+      "line": 1736,
+      "text": "보안 수준을 낮추는 임의 변경 금지."
+    },
+    {
+      "line": 1918,
+      "text": "금지:"
+    },
+    {
+      "line": 2322,
+      "text": "- The Processing Theater must project actual persisted events."
+    },
+    {
+      "line": 2323,
+      "text": "- The Proof scene must render an actual PDF page and exact bbox."
+    },
+    {
+      "line": 2324,
+      "text": "- The Hero must explain Folio→Structure→Evidence→Knowledge without its caption."
+    },
+    {
+      "line": 2472,
+      "text": "# Appendix B — 금지 패턴"
+    },
+    {
+      "line": 2711,
+      "text": "## 38.2 금지 decision"
+    },
+    {
+      "line": 2771,
+      "text": "- card wall 금지."
+    },
+    {
+      "line": 2782,
+      "text": "Hero에 큰 generic shadow 금지."
+    },
+    {
+      "line": 2826,
+      "text": "- square/rounded mixed 금지."
+    },
+    {
+      "line": 3410,
+      "text": "field evidence 없는 상태에서 CWV pass 주장 금지."
+    }
+  ]
+}

@@ -166,10 +166,12 @@ from .sharding import (
 from .topology import (
     EndpointPool,
     EndpointPoolRegistry,
+    PoolCapacityDeficit,
     PoolConflictError,
     PoolWorker,
     RuntimeStack,
     WorkerType,
+    evaluate_pool_capacity,
 )
 from .validation import (
     CandidateObservation,
@@ -237,6 +239,7 @@ __all__ = [
     "DriftDecision",
     "EndpointPool",
     "EndpointPoolRegistry",
+    "PoolCapacityDeficit",
     "EventConflictError",
     "EventJournal",
     "EvidenceReceipt",
@@ -319,6 +322,7 @@ __all__ = [
     "WorkerType",
     "aggregate_repeat",
     "can_scale_down",
+    "evaluate_pool_capacity",
     "canonical_json",
     "canonical_sha256",
     "decide_semantic_health",

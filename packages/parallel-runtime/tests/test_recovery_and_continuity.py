@@ -87,11 +87,19 @@ def test_recovery_chooses_smallest_source_localized_scope() -> None:
 @pytest.mark.parametrize(
     ("failure", "expected"),
     [
-        ("authority_numeric_mismatch", PreprocessingVariant.AUTHORITY_MAPPING),
+        (
+            "authority_numeric_mismatch",
+            PreprocessingVariant.NATIVE_AUTHORITY_RECONSTRUCTION,
+        ),
         ("numeric_character_ambiguity", PreprocessingVariant.OCR_EXACT),
         ("cropped_region", PreprocessingVariant.CROP_MARGIN),
         ("rotation_detected", PreprocessingVariant.ROTATE),
         ("photographed_low_quality", PreprocessingVariant.DEWARP),
+        ("page_coverage_mismatch", PreprocessingVariant.PAGE_RERENDER_ALT_PARSER),
+        ("table_cut_detected", PreprocessingVariant.OVERLAPPING_TILE),
+        ("repetition_detected", PreprocessingVariant.CANDIDATE_REJECT),
+        ("reading_order_invalid", PreprocessingVariant.LAYOUT_SPECIALIST),
+        ("bbox_invalid", PreprocessingVariant.SOURCE_REMAP),
     ],
 )
 def test_recovery_variant_is_failure_specific(
@@ -103,11 +111,11 @@ def test_recovery_variant_is_failure_specific(
     assert selected is expected
 
 
-def test_table_scope_defaults_to_cell_geometry_specialist() -> None:
+def test_row_omission_uses_overlap_recovery() -> None:
     selected = RecoveryPlanner.choose_variant(
         frozenset({"row_omission"}), scope(RegionLevel.TABLE, "table-1")
     )
-    assert selected is PreprocessingVariant.CELL_GEOMETRY
+    assert selected is PreprocessingVariant.OVERLAPPING_TILE
 
 
 def test_recovery_task_is_deterministic_idempotent_and_conflict_safe() -> None:
@@ -159,6 +167,8 @@ def test_recovery_acceptance_preserves_base_diff_evidence_and_lineage() -> None:
         diff_sha256=HASH_C,
         validation=validation(),
         source_evidence=(receipt(ValidationLevel.TRANSPORT),),
+        base_independent_family="primary-model",
+        repair_independent_family="independent-repair-model",
     )
     decision = planner.accept(
         candidate,
@@ -184,7 +194,9 @@ def test_recovery_acceptance_preserves_base_diff_evidence_and_lineage() -> None:
         )
 
 
-@pytest.mark.parametrize("failure_mode", ["invalid", "no_change", "no_evidence"])
+@pytest.mark.parametrize(
+    "failure_mode", ["invalid", "no_change", "no_evidence", "same_family"]
+)
 def test_recovery_rejects_weak_acceptance_evidence(failure_mode: str) -> None:
     planner = RecoveryPlanner()
     task = planner.plan(
@@ -207,10 +219,16 @@ def test_recovery_rejects_weak_acceptance_evidence(failure_mode: str) -> None:
             if failure_mode == "no_evidence"
             else (receipt(ValidationLevel.TRANSPORT),)
         ),
+        base_independent_family="primary-model",
+        repair_independent_family=(
+            "primary-model" if failure_mode == "same_family" else "repair-model"
+        ),
     )
     decision = planner.accept(candidate, completed_at=NOW)
     assert decision.accepted is False
     assert decision.state is VerificationState.UNRESOLVED
+    if failure_mode == "same_family":
+        assert "recovery_independent_family_missing" in decision.reason_codes
 
 
 def test_context_blocks_are_not_promoted_as_owned_output() -> None:

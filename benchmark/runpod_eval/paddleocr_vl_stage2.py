@@ -18,6 +18,9 @@ import time
 from pathlib import Path
 from typing import Any
 
+from input_contract import adaptive_repeat_indices, select_inference_inputs
+from isolated_case_process import run_isolated_process
+
 SUPPORTED_IMAGES = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
 
 
@@ -109,26 +112,100 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--vl-backend")
     parser.add_argument("--vl-server-url")
     parser.add_argument("--vl-max-concurrency", type=int, default=8)
-    parser.add_argument("--repeats", type=int, default=3, choices=(1, 3))
+    parser.add_argument("--repeats", type=int, default=1, choices=(1, 2, 3))
+    parser.add_argument("--repeat-start-index", type=int, default=1, choices=(1, 2, 3))
     parser.add_argument("--limit", type=int, default=20)
+    parser.add_argument(
+        "--evidence-class",
+        choices=("smoke", "public-core", "public-core-shard", "stratified-audit"),
+        default="smoke",
+    )
+    parser.add_argument("--expected-input-count", type=int)
+    parser.add_argument("--input-manifest", type=Path)
+    parser.add_argument("--parent-input-manifest", type=Path)
+    parser.add_argument("--case-timeout-seconds", type=int, default=600)
     return parser.parse_args()
+
+
+def _single_case(spec_path: Path) -> int:
+    """Run one PaddleOCR-VL case in a killable child process."""
+
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    image = Path(str(spec["image"])).resolve()
+    response_path = Path(str(spec["response_path"])).resolve()
+    markdown_path = Path(str(spec["markdown_path"])).resolve()
+    pipeline_options = spec["pipeline_options"]
+    if not image.is_file() or not isinstance(pipeline_options, dict):
+        raise ValueError("isolated PaddleOCR-VL case spec is invalid")
+
+    from paddleocr import PaddleOCRVL
+
+    init_started = time.perf_counter()
+    pipeline = PaddleOCRVL(**pipeline_options)
+    initialization_seconds = time.perf_counter() - init_started
+    error: str | None = None
+    pages: list[dict[str, Any]] = []
+    page_markdown: list[str] = []
+    try:
+        for item in pipeline.predict(str(image)):
+            page = jsonable_result(item)
+            pages.append(page)
+            page_markdown.append(markdown_result(item, page))
+    except Exception as exc:
+        error = f"{type(exc).__name__}: {exc}"
+    markdown_text = "\n\n".join(part for part in page_markdown if part)
+    if error is None and not markdown_text.strip():
+        error = "empty_markdown"
+    response_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    response_path.write_text(
+        canonical_json(
+            {
+                "error": error,
+                "initialization_seconds": initialization_seconds,
+                "pages": pages,
+                "page_markdown": page_markdown,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    markdown_path.write_text(
+        markdown_text.rstrip() + ("\n" if markdown_text else ""),
+        encoding="utf-8",
+    )
+    return 0
 
 
 def main() -> int:
     args = parse_args()
-    images = [
-        path
-        for path in sorted(args.input_dir.rglob("*"))
-        if path.is_file() and path.suffix.casefold() in SUPPORTED_IMAGES
-    ][: args.limit]
-    if not images:
-        raise SystemExit("no supported images found")
+    if args.case_timeout_seconds < 60:
+        raise SystemExit("--case-timeout-seconds must be at least 60")
+    try:
+        selection = select_inference_inputs(
+            input_dir=args.input_dir,
+            supported_extensions=SUPPORTED_IMAGES,
+            limit=args.limit,
+            evidence_class=args.evidence_class,
+            expected_input_count=args.expected_input_count,
+            input_manifest=args.input_manifest,
+            parent_input_manifest=args.parent_input_manifest,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    try:
+        repeat_indices = adaptive_repeat_indices(
+            evidence_class=args.evidence_class,
+            repeats=args.repeats,
+            repeat_start_index=args.repeat_start_index,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    all_images = selection.inventory
+    images = selection.selected
     args.output_dir.mkdir(parents=True, exist_ok=False)
 
-    from paddleocr import PaddleOCRVL
-
     started_at = time.time()
-    init_started = time.perf_counter()
     pipeline_options: dict[str, Any] = {
         "pipeline_version": "v1.6",
         "device": "gpu:0",
@@ -141,40 +218,89 @@ def main() -> int:
             vl_rec_server_url=args.vl_server_url,
             vl_rec_max_concurrency=args.vl_max_concurrency,
         )
-    pipeline = PaddleOCRVL(**pipeline_options)
-    init_seconds = time.perf_counter() - init_started
-
     runs: list[dict[str, Any]] = []
-    for repeat_index in range(1, args.repeats + 1):
+    initialization_seconds_total = 0.0
+    for repeat_index in repeat_indices:
         repeat_root = args.output_dir / f"repeat-{repeat_index}"
         repeat_root.mkdir()
         markdown_root = args.output_dir / f"markdown-repeat-{repeat_index}"
         markdown_root.mkdir()
         cases: list[dict[str, Any]] = []
         for image in images:
+            case_root = repeat_root / image.stem
+            case_root.mkdir()
             case_started = time.perf_counter()
             error: str | None = None
-            pages: list[dict[str, Any]] = []
-            page_markdown: list[str] = []
-            try:
-                print(
-                    json.dumps(
-                        {
-                            "event": "case_started",
-                            "repeat": repeat_index,
-                            "case_id": image.stem,
-                        },
-                        sort_keys=True,
-                    ),
-                    flush=True,
+            output_path = repeat_root / f"{image.stem}.json"
+            markdown_path = markdown_root / f"{image.stem}.md"
+            spec_path = case_root / "isolated-case-spec.json"
+            spec_path.write_text(
+                canonical_json(
+                    {
+                        "image": str(image.resolve()),
+                        "response_path": str(output_path.resolve()),
+                        "markdown_path": str(markdown_path.resolve()),
+                        "pipeline_options": pipeline_options,
+                    }
                 )
-                for item in pipeline.predict(str(image)):
-                    page = jsonable_result(item)
-                    pages.append(page)
-                    page_markdown.append(markdown_result(item, page))
-            except Exception as exc:  # failure is evidence and must remain in the run
-                error = f"{type(exc).__name__}: {exc}"
+                + "\n",
+                encoding="utf-8",
+            )
+            print(
+                json.dumps(
+                    {
+                        "event": "case_started",
+                        "repeat": repeat_index,
+                        "case_id": image.stem,
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
+            completed = run_isolated_process(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--single-case-spec",
+                    str(spec_path),
+                ],
+                timeout_seconds=args.case_timeout_seconds,
+            )
+            (case_root / "child.stdout.log").write_text(
+                completed.stdout, encoding="utf-8"
+            )
+            (case_root / "child.stderr.log").write_text(
+                completed.stderr, encoding="utf-8"
+            )
+            if completed.timed_out:
+                error = f"case_timeout_{args.case_timeout_seconds}s"
+            elif completed.return_code != 0:
+                error = f"isolated_child_exit_{completed.return_code}"
+            if output_path.is_file():
+                response = json.loads(output_path.read_text(encoding="utf-8"))
+                child_error = response.get("error")
+                if error is None and child_error:
+                    error = str(child_error)
+                initialization_seconds_total += float(
+                    response.get("initialization_seconds", 0.0)
+                )
+            else:
+                response = {
+                    "error": error or "isolated_child_missing_response",
+                    "initialization_seconds": 0.0,
+                    "pages": [],
+                    "page_markdown": [],
+                }
+                error = str(response["error"])
+                output_path.write_text(
+                    canonical_json(response) + "\n", encoding="utf-8"
+                )
+            if not markdown_path.is_file():
+                markdown_path.write_text("", encoding="utf-8")
             latency_seconds = time.perf_counter() - case_started
+            markdown_text = markdown_path.read_text(encoding="utf-8")
+            if error is None and not markdown_text.strip():
+                error = "empty_markdown"
             record = {
                 "case_id": image.stem,
                 "source_path": image.relative_to(args.input_dir).as_posix(),
@@ -182,19 +308,12 @@ def main() -> int:
                 "latency_seconds": latency_seconds,
                 "status": "completed" if error is None else "failed",
                 "error": error,
-                "pages": pages,
-                "page_markdown": page_markdown,
+                "isolation": "one-process-per-case",
+                "case_timeout_seconds": args.case_timeout_seconds,
             }
-            output_path = repeat_root / f"{image.stem}.json"
-            output_path.write_text(canonical_json(record) + "\n", encoding="utf-8")
-            markdown_text = "\n\n".join(part for part in page_markdown if part)
-            (markdown_root / f"{image.stem}.md").write_text(
-                markdown_text.rstrip() + ("\n" if markdown_text else ""),
-                encoding="utf-8",
-            )
             record["artifact_sha256"] = f"sha256:{sha256_file(output_path)}"
-            record.pop("pages")
-            record.pop("page_markdown")
+            record["markdown_sha256"] = f"sha256:{sha256_file(markdown_path)}"
+            record["markdown_characters"] = len(markdown_text)
             cases.append(record)
             print(
                 json.dumps(
@@ -228,11 +347,20 @@ def main() -> int:
         "pipeline_version": "v1.6",
         "inference_backend": args.vl_backend or "paddle_dynamic",
         "ground_truth_mounted": False,
+        "evidence_class": args.evidence_class,
+        "input_inventory_count": len(all_images),
         "input_count": len(images),
-        "repeat_count": args.repeats,
+        "complete_input_coverage": selection.complete_input_coverage,
+        "input_manifest_sha256": selection.input_manifest_sha256,
+        "benchmark_id": selection.benchmark_id,
+        "dataset_revision": selection.dataset_revision,
+        "repeat_count": len(repeat_indices),
+        "repeat_start_index": repeat_indices[0],
         "started_at_unix": started_at,
         "completed_at_unix": time.time(),
-        "initialization_seconds": init_seconds,
+        "initialization_seconds": initialization_seconds_total,
+        "case_process_isolation": True,
+        "case_timeout_seconds": args.case_timeout_seconds,
         "environment": {
             "python": sys.version,
             "platform": platform.platform(),
@@ -254,4 +382,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 3 and sys.argv[1] == "--single-case-spec":
+        raise SystemExit(_single_case(Path(sys.argv[2])))
     raise SystemExit(main())

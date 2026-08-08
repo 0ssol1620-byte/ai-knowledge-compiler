@@ -21,14 +21,27 @@ def main() -> int:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--identity", required=True)
+    parser.add_argument(
+        "--exclude-prefix",
+        action="append",
+        default=[],
+        help="Root-relative POSIX path prefix to exclude; may be repeated.",
+    )
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
     files = []
     for path in sorted(root.rglob("*")):
         if path.is_file():
+            relative_path = path.relative_to(root).as_posix()
+            if any(
+                relative_path == prefix.rstrip("/")
+                or relative_path.startswith(f"{prefix.rstrip('/')}/")
+                for prefix in args.exclude_prefix
+            ):
+                continue
             files.append(
                 {
-                    "path": path.relative_to(root).as_posix(),
+                    "path": relative_path,
                     "bytes": path.stat().st_size,
                     "sha256": sha256_file(path),
                 }

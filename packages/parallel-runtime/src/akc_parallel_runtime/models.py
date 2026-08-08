@@ -75,7 +75,9 @@ class RegionLevel(StrEnum):
     TABLE = "table"
     REGION = "region"
     PAGE = "page"
+    PAGE_PAIR = "page_pair"
     PAGE_GROUP = "page_group"
+    DOCUMENT = "document"
 
 
 class PageClass(StrEnum):

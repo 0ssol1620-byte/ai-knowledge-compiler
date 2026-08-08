@@ -467,3 +467,94 @@ def test_quarantine_influence_analysis_separates_pending_and_accepted() -> None:
     assert impact.pending_attempt_ids == ()
     assert impact.accepted_attempt_ids_for_analysis == ("a-running", "a-accepted")
     assert impact.shard_ids_to_replay == ("s1", "s2")
+
+
+def test_silent_infrastructure_channel_drains_then_quarantines() -> None:
+    # Every other transition needs an observation to arrive. This covers the
+    # case where none does, which is how a wedged control channel hid three
+    # healthy-but-unreachable workers for five and a half hours in a live run.
+    registry = WorkerHealthRegistry(
+        signal_stale_after=timedelta(minutes=5),
+        signal_silent_after=timedelta(minutes=20),
+    )
+    registry.register(
+        worker_id="worker-a",
+        model_revision="model@abc123",
+        runtime_image_digest="sha256:image-a",
+        capabilities=frozenset({"scan"}),
+        warm=True,
+        registered_at=NOW,
+    )
+
+    assert registry.evaluate_liveness(NOW + timedelta(minutes=4)) == ()
+    assert registry.snapshot("worker-a").state is WorkerState.HEALTHY
+
+    drained = registry.evaluate_liveness(NOW + timedelta(minutes=6))
+    assert [item.to_state for item in drained] == [WorkerState.DRAINING]
+    assert drained[0].reason_codes == ("infrastructure_signal_stale",)
+
+    quarantined = registry.evaluate_liveness(NOW + timedelta(minutes=25))
+    assert [item.to_state for item in quarantined] == [WorkerState.QUARANTINED]
+    assert quarantined[0].reason_codes == ("infrastructure_signal_silent",)
+
+
+def test_liveness_sweep_leaves_a_worker_that_keeps_signalling_alone() -> None:
+    registry = WorkerHealthRegistry(
+        signal_stale_after=timedelta(minutes=5),
+        signal_silent_after=timedelta(minutes=20),
+    )
+    register(registry)
+    for minute in (3, 6, 9, 12, 15, 18, 21, 24):
+        observed_at = NOW + timedelta(minutes=minute)
+        registry.record_infrastructure(
+            "worker-a",
+            InfrastructureObservation(
+                observed_at=observed_at,
+                ping=True,
+                process=True,
+                gpu=True,
+                ram=True,
+                disk=True,
+                model_loaded=True,
+                cuda_ready=True,
+                request_response=True,
+                heartbeat=True,
+                model_identity_matches=True,
+                checksum_matches=True,
+            ),
+        )
+        assert registry.evaluate_liveness(observed_at) == ()
+
+    assert registry.snapshot("worker-a").state is WorkerState.HEALTHY
+
+
+def test_worker_without_a_liveness_baseline_is_reported_not_silently_passed() -> None:
+    # register() without registered_at gives the sweep nothing to measure. That
+    # must surface as an explicitly unmonitored worker rather than as health.
+    registry = WorkerHealthRegistry()
+    register(registry)
+
+    assert registry.evaluate_liveness(NOW + timedelta(hours=6)) == ()
+    assert registry.unmonitored_workers() == ("worker-a",)
+
+    registry.record_infrastructure("worker-a", infrastructure())
+    assert registry.unmonitored_workers() == ()
+    silenced = registry.evaluate_liveness(NOW + timedelta(hours=6))
+    assert [item.to_state for item in silenced] == [WorkerState.QUARANTINED]
+
+
+def test_liveness_thresholds_must_be_ordered_and_positive() -> None:
+    with pytest.raises(ValueError, match="stale signal threshold must be positive"):
+        WorkerHealthRegistry(signal_stale_after=timedelta(0))
+    with pytest.raises(ValueError, match="silent signal threshold must exceed"):
+        WorkerHealthRegistry(
+            signal_stale_after=timedelta(minutes=10),
+            signal_silent_after=timedelta(minutes=10),
+        )
+
+
+def test_liveness_evaluation_requires_a_timezone_aware_clock() -> None:
+    registry = WorkerHealthRegistry()
+    register(registry)
+    with pytest.raises(ValueError, match="liveness evaluation time must be timezone-aware"):
+        registry.evaluate_liveness(NOW.replace(tzinfo=None))

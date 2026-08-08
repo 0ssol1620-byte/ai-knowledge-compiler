@@ -29,6 +29,9 @@ from akc_parallel_runtime import (
     EndpointPool,
     EvidenceReceipt,
     FinalizationResult,
+    HealthTransition,
+    InfrastructureObservation,
+    LineageEdge,
     PageClass,
     PageDescriptor,
     ParsedBlock,
@@ -37,7 +40,9 @@ from akc_parallel_runtime import (
     QualityEstimate,
     RecipeProfile,
     RecoveryDecision,
+    RecoveryScope,
     RecoveryTask,
+    RegionLevel,
     RouteCandidate,
     RouteDecision,
     RouteTier,
@@ -56,6 +61,7 @@ from akc_scheduler.autonomous_v6_pipeline import (
     AdmittedProviderCandidate,
     AutonomousV6PipelineCoordinator,
     PipelineCheckpoint,
+    PipelineContractError,
     PipelineExecutionMode,
     PipelineInventory,
     PipelinePhase,
@@ -65,6 +71,8 @@ from akc_scheduler.autonomous_v6_pipeline import (
     SqlAlchemyProcessingJobCheckpointStore,
     SubmissionReceipt,
     V6PipelineJobSpec,
+    _default_recovery_scopes,
+    _merge_recovery_scopes,
 )
 from akc_scheduler.trusted_v6_admission import (
     PersistedEd25519AdmissionVerifier,
@@ -82,6 +90,46 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+
+def test_cross_page_failure_defaults_to_one_page_pair_scope() -> None:
+    shard = ParseShard(
+        shard_id="shard-pair",
+        document_id="document-1",
+        document_version_id="version-1",
+        ordinal=0,
+        primary_page_ids=("1", "2"),
+        context_page_ids=(),
+        ordered_input_page_ids=("1", "2"),
+        expected_seconds=1,
+        required_worker_class="standard",
+        policy_version="v1",
+    )
+
+    scopes = _default_recovery_scopes(shard, ("C01",))
+
+    assert len(scopes) == 1
+    assert scopes[0].level is RegionLevel.PAGE_PAIR
+    assert scopes[0].source_refs == ("page://1", "page://2")
+
+
+def test_recovery_scope_ladder_is_preserved_and_identity_conflicts_fail() -> None:
+    cell = RecoveryScope(RegionLevel.CELL, "cell-1", ("source://cell-1",))
+    row = RecoveryScope(RegionLevel.ROW, "row-1", ("source://row-1",))
+    table = RecoveryScope(RegionLevel.TABLE, "table-1", ("source://table-1",))
+
+    merged = _merge_recovery_scopes((cell, row), (table,))
+
+    assert {scope.level for scope in merged} == {
+        RegionLevel.CELL,
+        RegionLevel.ROW,
+        RegionLevel.TABLE,
+    }
+    with pytest.raises(PipelineContractError, match="reused"):
+        _merge_recovery_scopes(
+            merged,
+            (RecoveryScope(RegionLevel.ROW, "row-1", ("source://different",)),),
+        )
+
 NOW = datetime(2026, 8, 1, 12, 0, tzinfo=UTC)
 RELEASE_MANIFEST_SHA256 = "9" * 64
 TRUSTED_KEY_ID = "structara-v6-admission-2026-08"
@@ -90,6 +138,9 @@ TRUSTED_KEY_ID = "structara-v6-admission-2026-08"
 class Scenario(StrEnum):
     SUCCESS = "success"
     SEMANTIC_FAILURE = "semantic_failure"
+    INFRASTRUCTURE_FAILURE = "infrastructure_failure"
+    RECOVERABLE_SEMANTIC_FAILURE = "recoverable_semantic_failure"
+    ESCALATING_SEMANTIC_FAILURE = "escalating_semantic_failure"
     STRAGGLER = "straggler"
     RESTART = "restart"
 
@@ -297,9 +348,14 @@ class FakeAutonomousRuntime:
         self.settlements: list[str] = []
         self.recovery_settlements: list[str] = []
         self.recovery_tasks: list[str] = []
+        self.recovery_task_details: list[RecoveryTask] = []
+        self.selective_replays: list[tuple[str, ...]] = []
         self.superseded: list[tuple[str, str]] = []
         self.continuity_results: list[ContinuityMergeResult] = []
         self.finalization_results: list[FinalizationResult] = []
+        self.infrastructure_health: list[
+            tuple[str, InfrastructureObservation, HealthTransition]
+        ] = []
 
     def _record(self, operation_key: str, value: object) -> None:
         digest = canonical_sha256(value)
@@ -380,11 +436,37 @@ class FakeAutonomousRuntime:
                 elapsed_seconds=13,
                 predicted_p95_seconds=10,
             )
-        valid = self.scenario is not Scenario.SEMANTIC_FAILURE
+        if (
+            self.scenario is Scenario.INFRASTRUCTURE_FAILURE
+            and receipt.attempt_kind is AttemptKind.PRIMARY
+        ):
+            return ProviderPoll(
+                state=ProviderPollState.FAILED,
+                reason_codes=("connection_timeout",),
+            )
+        valid = self.scenario not in {
+            Scenario.SEMANTIC_FAILURE,
+            Scenario.ESCALATING_SEMANTIC_FAILURE,
+        }
+        if self.scenario is Scenario.RECOVERABLE_SEMANTIC_FAILURE:
+            valid = receipt.attempt_kind is AttemptKind.RECOVERY
         return ProviderPoll(
             state=ProviderPollState.COMPLETED,
             candidate=self._candidate(receipt, valid=valid),
         )
+
+    async def record_infrastructure_health(
+        self,
+        receipt: SubmissionReceipt,
+        observation: InfrastructureObservation,
+        transition: HealthTransition,
+        *,
+        operation_key: str,
+    ) -> None:
+        self._record(operation_key, (receipt, observation, transition))
+        item = (receipt.attempt_id, observation, transition)
+        if item not in self.infrastructure_health:
+            self.infrastructure_health.append(item)
 
     def _candidate(
         self,
@@ -471,6 +553,27 @@ class FakeAutonomousRuntime:
             structure_fingerprint=canonical_sha256(("structure", text)),
             source_geometry_exact=True,
             downstream_consistent=True,
+            recovery_scopes=(
+                (
+                    RecoveryScope(
+                        RegionLevel.REGION,
+                        "region:page-1",
+                        ("page://page-1#region",),
+                    ),
+                    RecoveryScope(
+                        RegionLevel.PAGE,
+                        "page:page-1",
+                        ("page://page-1",),
+                    ),
+                    RecoveryScope(
+                        RegionLevel.DOCUMENT,
+                        "document:1",
+                        ("document://1",),
+                    ),
+                )
+                if self.scenario is Scenario.ESCALATING_SEMANTIC_FAILURE
+                else ()
+            ),
         )
         if self.admission_signer is not None:
             return self.admission_signer.seal(spec, shard, route, receipt, candidate)
@@ -531,6 +634,7 @@ class FakeAutonomousRuntime:
         self._record(operation_key, (spec.processing_job_id, shard.shard_id, task))
         if task.task_id not in self.recovery_tasks:
             self.recovery_tasks.append(task.task_id)
+            self.recovery_task_details.append(task)
 
     async def settle_recovery(
         self,
@@ -558,6 +662,18 @@ class FakeAutonomousRuntime:
         )
         if receipt.attempt_id not in self.recovery_settlements:
             self.recovery_settlements.append(receipt.attempt_id)
+
+    async def schedule_selective_replay(
+        self,
+        spec: V6PipelineJobSpec,
+        receipt: SubmissionReceipt,
+        *,
+        impacted_object_ids: tuple[str, ...],
+        operation_key: str,
+    ) -> None:
+        self._record(operation_key, (spec.processing_job_id, receipt, impacted_object_ids))
+        if impacted_object_ids not in self.selective_replays:
+            self.selective_replays.append(impacted_object_ids)
 
     async def supersede_duplicate(
         self,
@@ -634,6 +750,12 @@ def _inventory() -> PipelineInventory:
             serving_runtime="runpod-serverless",
         ),
         RuntimeStack(
+            runtime_image_digest="sha256:" + ("c" * 64),
+            framework="transformers",
+            cuda_version="13.0",
+            serving_runtime="runpod-serverless",
+        ),
+        RuntimeStack(
             runtime_image_digest="sha256:" + ("b" * 64),
             framework="transformers",
             cuda_version="13.0",
@@ -659,6 +781,15 @@ def _inventory() -> PipelineInventory:
             supported_languages=frozenset({"ko"}),
             independent_family="paddle-vl",
         ),
+        RecipeProfile(
+            recipe_id="deepseek-recovery",
+            model_revision="deepseek-ocr-2-c",
+            runtime_image_digest=stacks[2].runtime_image_digest,
+            tier=RouteTier.PRECISION,
+            capabilities=capabilities,
+            supported_languages=frozenset({"ko"}),
+            independent_family="deepseek-ocr",
+        ),
     )
     workers = (
         WorkerSnapshot(
@@ -682,6 +813,17 @@ def _inventory() -> PipelineInventory:
             cached_models=frozenset({recipes[1].model_revision}),
             estimated_available_at=0,
             semantic_score=96,
+        ),
+        WorkerSnapshot(
+            worker_id="worker-deepseek",
+            model_revision=recipes[2].model_revision,
+            runtime_image_digest=recipes[2].runtime_image_digest,
+            state=WorkerState.HEALTHY,
+            capabilities=capabilities,
+            warm=True,
+            cached_models=frozenset({recipes[2].model_revision}),
+            estimated_available_at=0,
+            semantic_score=90,
         ),
     )
     pools = tuple(
@@ -719,6 +861,20 @@ def _inventory() -> PipelineInventory:
                 oom_probability=0.001,
                 expected_latency_seconds=5,
                 expected_cost=1,
+            ),
+        ),
+        RouteEstimateBinding(
+            recipe_id=recipes[2].recipe_id,
+            worker_id=workers[2].worker_id,
+            estimate=QualityEstimate(
+                pass_hard_gate=0.80,
+                numeric_exact=0.85,
+                row_complete=0.85,
+                repetition_probability=0.04,
+                timeout_probability=0.04,
+                oom_probability=0.04,
+                expected_latency_seconds=12,
+                expected_cost=1.5,
             ),
         ),
         RouteEstimateBinding(
@@ -854,6 +1010,8 @@ async def test_semantic_failure_attempts_bounded_recovery_then_needs_review(
         AttemptKind.PRIMARY,
         AttemptKind.RECOVERY,
     ]
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+    assert runtime.submission_calls[1].recipe_id == "paddle-challenger"
     assert len(runtime.rejections) == 2
     assert not runtime.settlements
     assert not runtime.recovery_settlements
@@ -861,6 +1019,72 @@ async def test_semantic_failure_attempts_bounded_recovery_then_needs_review(
     job = await _job(sqlite_harness)
     assert job.status == "waiting_review"
     assert job.error is not None
+
+
+@pytest.mark.asyncio
+async def test_semantic_recovery_escalates_exactly_one_scope_per_attempt(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.ESCALATING_SEMANTIC_FAILURE)
+
+    result = await _coordinator(sqlite_harness, runtime).run(
+        _spec(sqlite_harness, max_recovery_attempts=2)
+    )
+
+    assert result.checkpoint.phase is PipelinePhase.NEEDS_REVIEW
+    assert [task.scope.level for task in runtime.recovery_task_details] == [
+        RegionLevel.REGION,
+        RegionLevel.PAGE,
+    ]
+    assert [item.recipe_id for item in runtime.submission_calls] == [
+        "mineru-primary",
+        "paddle-challenger",
+        "deepseek-recovery",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_infrastructure_failure_retries_on_another_worker_and_model_family(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.INFRASTRUCTURE_FAILURE)
+
+    result = await _coordinator(sqlite_harness, runtime).run(_spec(sqlite_harness))
+
+    assert result.checkpoint.phase is PipelinePhase.COMPLETED
+    assert [item.attempt_kind for item in runtime.submission_calls] == [
+        AttemptKind.PRIMARY,
+        AttemptKind.RETRY,
+    ]
+    assert runtime.submission_calls[0].worker_id != runtime.submission_calls[1].worker_id
+    assert runtime.submission_calls[0].recipe_id != runtime.submission_calls[1].recipe_id
+    assert len(runtime.infrastructure_health) == 1
+    failed_attempt_id, observation, transition = runtime.infrastructure_health[0]
+    assert failed_attempt_id == runtime.submission_calls[0].attempt_id
+    assert observation.request_response is False
+    assert transition.to_state is WorkerState.DRAINING
+    assert "infrastructure_probe_failed" in transition.reason_codes
+
+
+@pytest.mark.asyncio
+async def test_verified_recovery_schedules_only_impacted_lineage_descendants(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.RECOVERABLE_SEMANTIC_FAILURE)
+    spec = replace(
+        _spec(sqlite_harness),
+        lineage_edges=(
+            LineageEdge("page:page-1", "block:1"),
+            LineageEdge("block:1", "note:1"),
+            LineageEdge("unrelated:1", "note:other"),
+        ),
+    )
+
+    result = await _coordinator(sqlite_harness, runtime).run(spec)
+
+    assert result.checkpoint.phase is PipelinePhase.COMPLETED
+    assert runtime.recovery_settlements
+    assert runtime.selective_replays == [("block:1", "note:1")]
 
 
 @pytest.mark.asyncio
@@ -884,6 +1108,11 @@ async def test_straggler_launches_one_hedge_and_settles_only_the_winner(
     hedge = runtime.submission_calls[1]
     assert runtime.settlements == [hedge.attempt_id]
     assert runtime.superseded == [(runtime.submission_calls[0].attempt_id, hedge.attempt_id)]
+    assert len(runtime.infrastructure_health) == 1
+    _, observation, transition = runtime.infrastructure_health[0]
+    assert observation.latency_p99_spike is True
+    assert transition.to_state is WorkerState.DRAINING
+    assert "latency_p99_spike" in transition.reason_codes
 
 
 @pytest.mark.asyncio

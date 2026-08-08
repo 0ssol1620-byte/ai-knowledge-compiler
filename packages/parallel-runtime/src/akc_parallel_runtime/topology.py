@@ -118,11 +118,53 @@ class EndpointPoolRegistry:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class PoolCapacityDeficit:
+    pool_id: str
+    minimum_workers: int
+    serving_worker_count: int
+    unavailable_worker_ids: tuple[str, ...]
+    replacements_required: int
+
+    @property
+    def satisfied(self) -> bool:
+        return self.replacements_required == 0
+
+
+def evaluate_pool_capacity(
+    *,
+    pool: EndpointPool,
+    pool_workers: tuple[PoolWorker, ...],
+    serving_worker_ids: frozenset[str],
+) -> PoolCapacityDeficit:
+    """Report how many workers a pool is short of its own minimum.
+
+    The runtime consumes an inventory; it never provisions. That left no way for
+    it to say "I am below the floor this pool declares", so a worker lost to a
+    provider reclaim, a failed acquisition, or an external deletion simply
+    reduced throughput silently until the pool could not make progress. Turning
+    the shortfall into an explicit, testable value lets whatever owns
+    acquisition act on it without the runtime reaching for a provider API.
+    """
+    attached = tuple(worker.worker_id for worker in pool_workers)
+    serving = tuple(sorted(worker_id for worker_id in attached if worker_id in serving_worker_ids))
+    unavailable = tuple(sorted(set(attached) - set(serving)))
+    return PoolCapacityDeficit(
+        pool_id=pool.pool_id,
+        minimum_workers=pool.minimum_workers,
+        serving_worker_count=len(serving),
+        unavailable_worker_ids=unavailable,
+        replacements_required=max(0, pool.minimum_workers - len(serving)),
+    )
+
+
 __all__ = [
     "EndpointPool",
     "EndpointPoolRegistry",
+    "PoolCapacityDeficit",
     "PoolConflictError",
     "PoolWorker",
     "RuntimeStack",
     "WorkerType",
+    "evaluate_pool_capacity",
 ]

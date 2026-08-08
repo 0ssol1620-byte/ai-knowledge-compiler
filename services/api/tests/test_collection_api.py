@@ -941,7 +941,11 @@ async def test_collection_vertical_slice_is_idempotent_partial_and_fail_closed(
 
     events = await client.get(f"/v1/collections/{collection_id}/events")
     assert events.status_code == 200, events.text
-    event_types = [row["event_type"] for row in events.json()["events"]]
+    event_body = events.json()
+    utc_suffixes = ("Z", "+00:00")
+    assert event_body["snapshot"]["upload"]["expires_at"].endswith(utc_suffixes)
+    assert all(row["timestamp"].endswith(utc_suffixes) for row in event_body["events"])
+    event_types = [row["event_type"] for row in event_body["events"]]
     assert event_types.count("collection.created.v1") == 1
     assert event_types.count("architecture.plan.compiled.v1") == 1
     assert event_types.count("processing.source_events.bridged.v1") == 1
@@ -950,7 +954,7 @@ async def test_collection_vertical_slice_is_idempotent_partial_and_fail_closed(
     assert event_types.count("collection.export.completed.v1") == 2
     compile_events = [
         row
-        for row in events.json()["events"]
+        for row in event_body["events"]
         if row["event_type"]
         in {
             "note.created.v1",

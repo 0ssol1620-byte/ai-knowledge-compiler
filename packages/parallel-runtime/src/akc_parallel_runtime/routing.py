@@ -92,6 +92,9 @@ class RouteRequest:
     benchmark_critical: bool = False
     production_canary: bool = False
     prior_template_failure: bool = False
+    excluded_recipe_ids: frozenset[str] = frozenset()
+    excluded_worker_ids: frozenset[str] = frozenset()
+    excluded_independent_families: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         if not self.language:
@@ -271,6 +274,12 @@ class AdaptiveRouter:
     def _compatible(
         request: RouteRequest, recipe: RecipeProfile, worker: WorkerSnapshot
     ) -> bool:
+        if (
+            recipe.recipe_id in request.excluded_recipe_ids
+            or worker.worker_id in request.excluded_worker_ids
+            or recipe.independent_family in request.excluded_independent_families
+        ):
+            return False
         if worker.state not in {WorkerState.HEALTHY, WorkerState.DEGRADED}:
             return False
         if worker.model_revision != recipe.model_revision:

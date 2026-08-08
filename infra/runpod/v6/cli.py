@@ -351,7 +351,7 @@ def _load_coordinator(
     # Imports stay local so low-level client commands never pull the benchmark
     # coordinator (and its filesystem contracts) into their import path.
     from benchmark.v6.ledger import EvidenceLedger
-    from benchmark.v6.repeats import RepeatRun
+    from benchmark.v6.repeats import RepeatRun, RepeatScope
     from benchmark.v6.runpod_coordinator import ExactThreeRunPodCoordinator, make_run_tag
     from infra.runpod.v6.orchestration import SpendGuard, SpendPolicy
 
@@ -363,10 +363,19 @@ def _load_coordinator(
         "expected_cost_usd",
         "runs",
         "inputs_by_run",
+        "adaptive_expansion_reason",
     }
     unknown = set(manifest) - allowed
     if unknown or manifest.get("schema_version") != "6.0.0":
         raise ContractError(f"invalid cohort manifest fields: {sorted(unknown)}")
+    expansion_reason = manifest.get("adaptive_expansion_reason")
+    if expansion_reason not in {
+        "finalist",
+        "prediction_drift",
+        "score_drift",
+        "runtime_failure",
+    }:
+        raise ContractError("exact-three cohort requires an adaptive expansion reason")
     rows = manifest.get("runs")
     if not isinstance(rows, list):
         raise ContractError("cohort manifest runs must be an array")
@@ -382,6 +391,7 @@ def _load_coordinator(
         "log_root",
         "official_result_root",
         "critical_result_root",
+        "scope",
     }
     runs: list[RepeatRun] = []
     for row in rows:
@@ -415,6 +425,7 @@ def _load_coordinator(
                     critical_result_root=raw_paths["critical_result_root"].resolve(
                         strict=False
                     ),
+                    scope=RepeatScope(str(row["scope"])),
                 )
             )
         except (TypeError, ValueError) as exc:

@@ -69,6 +69,14 @@ class Settings(BaseSettings):
     s3_region: str = "ap-northeast-2"
     s3_access_key_id: str | None = None
     s3_secret_access_key: str | None = None
+    s3_source_access_key_id: str | None = None
+    s3_source_secret_access_key: str | None = None
+    s3_working_access_key_id: str | None = None
+    s3_working_secret_access_key: str | None = None
+    s3_derived_access_key_id: str | None = None
+    s3_derived_secret_access_key: str | None = None
+    s3_audit_access_key_id: str | None = None
+    s3_audit_secret_access_key: str | None = None
     s3_use_ambient_credentials: bool = True
     s3_deletion_mode: Literal["versioned", "unversioned-explicit"] = "versioned"
     s3_bucket_quarantine: str = "akc-intake-quarantine"
@@ -761,6 +769,14 @@ class Settings(BaseSettings):
                 raise ValueError("AKC_QWEN_KNOWLEDGE_SCHEMA_SHA256 must be exact")
         if bool(self.s3_access_key_id) != bool(self.s3_secret_access_key):
             raise ValueError("both S3 static credential fields must be set together")
+        role_credentials = (
+            (self.s3_source_access_key_id, self.s3_source_secret_access_key),
+            (self.s3_working_access_key_id, self.s3_working_secret_access_key),
+            (self.s3_derived_access_key_id, self.s3_derived_secret_access_key),
+            (self.s3_audit_access_key_id, self.s3_audit_secret_access_key),
+        )
+        if any(bool(access_key) != bool(secret_key) for access_key, secret_key in role_credentials):
+            raise ValueError("both fields for every S3 role credential must be set together")
         if (
             self.object_store_driver == "s3"
             and not self.s3_use_ambient_credentials
@@ -818,6 +834,9 @@ class Settings(BaseSettings):
                 raise ValueError("production requires the durable scheduler adapter")
             if self.object_store_driver != "s3":
                 raise ValueError("production requires S3-compatible object storage")
+            role_access_keys = [access_key for access_key, _ in role_credentials if access_key]
+            if len(role_access_keys) != 4 or len(set(role_access_keys)) != 4:
+                raise ValueError("production S3 requires four distinct role credentials")
             if self.multipart_upload_threshold_bytes >= self.max_upload_bytes:
                 raise ValueError(
                     "production multipart threshold must be below the product upload limit"

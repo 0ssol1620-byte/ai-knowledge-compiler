@@ -23,7 +23,7 @@ import uuid
 import zipfile
 from collections import Counter, defaultdict
 from collections.abc import Sequence
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import ROUND_UP, Decimal
 from pathlib import PurePosixPath
 from typing import Annotated, Any, Literal, cast
@@ -286,6 +286,25 @@ def _canonical_json(value: Any) -> bytes:
         )
         + "\n"
     ).encode("utf-8")
+
+
+def _wire_utc(value: datetime) -> datetime:
+    """Normalize a persisted application timestamp for the public wire contract."""
+
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+
+
+def _elapsed_seconds(started_at: datetime, completed_at: datetime) -> float:
+    """Return a non-negative duration across mixed database timezone semantics.
+
+    SQLite can deserialize an application UTC timestamp without its offset,
+    while PostgreSQL preserves it. A naive persistence-boundary value is
+    therefore interpreted as UTC before subtraction.
+    """
+
+    normalized_start = _wire_utc(started_at)
+    normalized_end = _wire_utc(completed_at)
+    return max(0.0, (normalized_end - normalized_start).total_seconds())
 
 
 def _sha256(value: bytes) -> str:
@@ -636,7 +655,7 @@ def _upload_summary(row: CollectionUploadSession) -> CollectionUploadSummary:
         failed_files=row.failed_files,
         duplicate_files=row.duplicate_files,
         source_manifest_hash=row.source_manifest_hash,
-        expires_at=row.expires_at,
+        expires_at=_wire_utc(row.expires_at),
     )
 
 
@@ -2552,7 +2571,7 @@ async def _stored_predictor_context(
         )
     ).all()
     queue_delays = [
-        max(0.0, (started_at - created_at).total_seconds())
+        _elapsed_seconds(created_at, started_at)
         for created_at, started_at in queue_rows
         if started_at is not None
     ]
@@ -4713,7 +4732,7 @@ async def get_collection_events(
             job_id=row.job_id,
             sequence=row.sequence,
             event_type=row.event_type,
-            timestamp=row.occurred_at,
+            timestamp=_wire_utc(row.occurred_at),
             payload=row.payload,
             schema_version="1.0",
         )
@@ -5274,7 +5293,7 @@ async def _completion_calibration_receipt(
     actual = processing_job.cost_actual if isinstance(processing_job.cost_actual, dict) else {}
     actual_credits = float(actual["consumed"]) if "consumed" in actual else None
     actual_duration = (
-        max(0.0, (processing_job.completed_at - processing_job.started_at).total_seconds())
+        _elapsed_seconds(processing_job.started_at, processing_job.completed_at)
         if processing_job.completed_at is not None and processing_job.started_at is not None
         else None
     )
@@ -8355,7 +8374,7 @@ async def _export_complete_knowledge_package(
         },
     )
     export_duration_seconds = (
-        max(0.0, (export.completed_at - export.created_at).total_seconds())
+        _elapsed_seconds(export.created_at, export.completed_at)
         if export.completed_at is not None
         else 0.0
     )
@@ -9736,6 +9755,7 @@ async def finalize_collection_processing(
         request,
         principal,
         session,
+        request.app.state.collection_metadata_codec,
         f"collection-finalizer:{event.id}:package",
     )
     return {

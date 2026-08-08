@@ -1,5 +1,5 @@
 schema_version: "6.0.0"
-registry_status: local_contract_complete_external_identity_pending
+registry_status: local_contract_complete_partial_measurements_external_identity_pending
 identity_resolution:
   resolved_at: "2026-08-01T00:00:00Z"
   method: official_github_and_huggingface_read_only
@@ -11,7 +11,11 @@ promotion_policy:
   exact_artifact_sha256_required: true
   exact_runtime_image_digest_required: true
   immutable_environment_identity_required: true
-  exactly_three_public_core_repeats: true
+  adaptive_public_core_repeats: true
+  baseline_full_runs: 1
+  stratified_audit_runs: 3
+  maximum_successful_full_runs: 3
+  expand_full_runs_for: [finalist, prediction_drift, score_drift, runtime_failure]
   signed_external_evidence_required: true
   public_scores_may_not_be_fabricated: true
   cost_may_not_skip_mandatory_tests: true
@@ -52,11 +56,12 @@ candidates:
     kind: parser
     role: deterministic_pipeline_baseline
     required: true
-    execution_state: artifact_manifest_and_runtime_pending
+    execution_state: measured_partial_runtime_image_pending
     promotion_eligible: false
-    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: null, runtime_recipe: null }
+    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: "sha256:fc2064a510e5f836b106356b07915935438f62b052d445050278165c20b5e766", runtime_recipe: "benchmark/runpod_eval/mineru_stage2.py" }
     license: { id: "AGPL-3.0-or-upstream-current", status: review_required, commercial_use: unknown }
     conditions: [exact_repository_revision, stable_wheel_sha256, isolated_pipeline_image, license_snapshot]
+    measured_evidence: { scope: "omnidocbench-demo-18x3", report: "benchmark/reports/MINERU_3_4_4_OMNIDOCBENCH_DEMO_EVALUATION_2026-08-01.md", promotion_scope: false }
 
   - id: mineru-3.4.4-hybrid-medium
     tier: A
@@ -85,33 +90,36 @@ candidates:
     kind: parser
     role: vlm_isolation_comparator
     required: true
-    execution_state: artifact_manifest_and_runtime_pending
+    execution_state: measured_partial_runtime_image_pending
     promotion_eligible: false
-    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: null, runtime_recipe: null }
+    identity: { repository: "opendatalab/MinerU", revision: "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7", artifact_sha256: "sha256:1611a8892cc0e7e287d31c4a1b5af87652f0f6e4a3f80276b92b4c71f982de84", runtime_recipe: "benchmark/runpod_eval/mineru_stage2.py" }
     license: { id: "AGPL-3.0-or-upstream-current", status: review_required, commercial_use: unknown }
     conditions: [exact_repository_revision, stable_wheel_sha256, isolated_vlm_image, license_snapshot]
+    measured_evidence: { scope: "omnidocbench-demo-18x3-c1", report: "benchmark/reports/MINERU_3_4_4_VLM_C1_OMNIDOCBENCH_DEMO_EVALUATION_2026-08-01.md", promotion_scope: false }
 
   - id: paddleocr-vl-1.6
     tier: A
     kind: parser
     role: compact_document_vlm_baseline
     required: true
-    execution_state: artifact_manifest_and_runtime_pending
+    execution_state: measured_partial_runtime_image_pending
     promotion_eligible: false
-    identity: { repository: "PaddlePaddle/PaddleOCR-VL-1.6", revision: "66317acc4c9fc17bd154591ce650735cd2855f3e", artifact_sha256: null, runtime_recipe: null, runtime_source_repository: "PaddlePaddle/PaddleOCR", runtime_source_revision: "2661c7c0ef5c613e8f93c6e93b2e052399f0f854" }
+    identity: { repository: "PaddlePaddle/PaddleOCR-VL-1.6", revision: "66317acc4c9fc17bd154591ce650735cd2855f3e", artifact_sha256: "sha256:40ca2a90af83f79a9adf2d5ddb7e32187e6956e45e5730119595be7305e06a53", runtime_recipe: "benchmark/runpod_eval/paddleocr_vl_stage2.py", runtime_source_repository: "PaddlePaddle/PaddleOCR", runtime_source_revision: "2661c7c0ef5c613e8f93c6e93b2e052399f0f854" }
     license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
     conditions: [model_file_manifest_sha256, native_and_transformers_recipes, hpi_separate_experiment, signed_image_digest]
+    measured_evidence: { scope: "omnidocbench-demo-18x3-fastdeploy-c8", report: "benchmark/reports/PADDLEOCR_VL_1_6_FASTDEPLOY_OMNIDOCBENCH_DEMO_EVALUATION_2026-08-01.md", promotion_scope: false }
 
   - id: deepseek-ocr-2
     tier: A
     kind: parser
     role: precision_grounded_challenger
     required: true
-    execution_state: artifact_manifest_and_runtime_pending
+    execution_state: measured_partial_runtime_image_pending
     promotion_eligible: false
-    identity: { repository: "deepseek-ai/DeepSeek-OCR-2", revision: "aaa02f3811945a91062062994c5c4a3f4c0af2b0", artifact_sha256: null, runtime_recipe: null }
+    identity: { repository: "deepseek-ai/DeepSeek-OCR-2", revision: "aaa02f3811945a91062062994c5c4a3f4c0af2b0", artifact_sha256: "sha256:ddb70c12791d2583344b73a065c8b4757e5827aa2fe608e763074c33bfab876c", runtime_recipe: "benchmark/runpod_eval/deepseek_ocr2_stage2.py" }
     license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
     conditions: [cuda_11_8_torch_2_6_vllm_0_8_5_recipe, model_file_manifest_sha256, signed_image_digest]
+    measured_evidence: { scope: "omnidocbench-demo-18x3-transformers", report: "benchmark/reports/DEEPSEEK_OCR_2_OMNIDOCBENCH_DEMO_EVALUATION_2026-08-01.md", promotion_scope: false }
 
   - id: infinity-parser2-pro
     tier: A
@@ -140,11 +148,16 @@ candidates:
     kind: parser
     role: sub_1b_end_to_end_challenger
     required: true
-    execution_state: artifact_manifest_and_runtime_pending
+    execution_state: measured_partial_runtime_image_pending
     promotion_eligible: false
-    identity: { repository: "ATH-MaaS/OvisOCR2", revision: "65c619d374b55d4152e85150fc1b003700bc1f0c", artifact_sha256: null, runtime_recipe: null }
+    identity: { repository: "ATH-MaaS/OvisOCR2", revision: "65c619d374b55d4152e85150fc1b003700bc1f0c", artifact_sha256: "sha256:847f485bc71908a70075fe6b0d76609f52bc7f1e730c03670c764da56da08c9a", runtime_recipe: "benchmark/runpod_eval/ovisocr2_stage2.py" }
     license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
     conditions: [model_file_manifest_sha256, isolated_runtime, signed_image_digest]
+    measured_evidence:
+      scope: "omnidocbench-demo-18x3-vllm-0.22.1-cu129 plus m1-a40-6x3"
+      report: "benchmark/reports/OVISOCR2_0_9B_VLLM_CU129_OMNIDOCBENCH_DEMO_EVALUATION_2026-08-01.md"
+      hardware_smoke_report: "benchmark/reports/FOLYNTA_OVISOCR2_M1_A40_CROSS_HARDWARE_EVALUATION_2026-08-02.md"
+      promotion_scope: false
 
   - id: hunyuanocr-1.5
     tier: B

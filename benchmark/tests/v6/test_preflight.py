@@ -27,6 +27,8 @@ def test_local_preflight_passes_contracts_but_rejects_production(repo_root: Path
     assert result["required_candidates_promotion_eligible"] == 0
     assert result["model_pool_count"] == 16
     assert result["public_core_required_repetitions"] == 3
+    assert result["public_core_initial_full_runs"] == 1
+    assert result["public_core_stratified_audit_runs"] == 3
     blockers = cast(list[str], result["external_blockers"])
     assert "SIGNED_EXTERNAL_EVIDENCE_MISSING" in blockers
 
