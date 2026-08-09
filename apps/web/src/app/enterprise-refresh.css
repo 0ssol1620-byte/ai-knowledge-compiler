@@ -786,11 +786,3 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .compiler-scene *,
-  .operations-board *,
-  .evidence-ledger * {
-    animation: none !important;
-    transition-duration: 0.01ms !important;
-  }
-}

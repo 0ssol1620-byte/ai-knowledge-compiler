@@ -943,81 +943,220 @@ body.tv-menu-open {
 
 .tv-chapter-visual {
   position: relative;
-  min-height: 520px;
-  border: 1px solid var(--tv-night-line);
-  background: var(--tv-midnight);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px minmax(0, 0.72fr);
+  align-items: center;
+  gap: 0;
+  min-height: 420px;
+  padding: 32px;
+  border: 1px solid var(--rule-inst-2);
+  background: var(--inst-1);
 }
 
-.tv-chapter-visual > svg {
-  position: absolute;
-  left: 24px;
-  top: 24px;
-  z-index: 2;
-  color: var(--tv-evidence);
+/* The source side. A real page carries real marks, so this one carries the
+   filing stamp it actually came from rather than a grey bar. */
+.tv-cv-source {
+  position: relative;
+  min-height: 260px;
+  padding: 24px 22px;
+  border: 1px solid var(--rule-paper-2);
+  background: var(--paper-0);
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.tv-visual-page,
-.tv-visual-result {
-  position: absolute;
-  top: 18%;
-  width: 34%;
-  height: 64%;
-  border: 1px solid #384359;
-  background: #f9f9f6;
-}
-
-.tv-visual-page {
-  left: 10%;
-  padding: 42px 32px;
-}
-
-.tv-visual-page i {
-  height: 7px;
+.tv-cv-stamp {
   display: block;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule-paper-2);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+/* 01 — typed blocks. The label is the product's own block type, printed in
+   the margin the way a proof reader marks up a page. */
+.tv-cv-blocks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tv-cv-blocks li {
+  position: relative;
   margin-bottom: 16px;
-  background: #d5d7d8;
+  padding-left: 88px;
 }
 
-.tv-visual-page i:first-child {
-  width: 72%;
-  height: 13px;
-  background: #20242b;
-}
-
-.tv-visual-page b {
-  height: 120px;
-  display: block;
-  margin-top: 40px;
-  border: 1px solid #d5d7d8;
-}
-
-.tv-visual-result {
-  right: 10%;
-  padding: 44px 30px;
-  background: #111827;
-  color: white;
-}
-
-.tv-visual-result strong {
-  display: block;
-  color: #dce3ff;
-  font-size: 22px;
-}
-
-.tv-visual-result span {
-  height: 1px;
-  display: block;
-  margin-top: 28px;
-  background: #3d475c;
-}
-
-.tv-visual-link {
+.tv-cv-blocks li::before {
+  content: attr(data-block);
   position: absolute;
-  width: 22%;
+  left: 0;
+  color: var(--evidence);
+  font-family: var(--font-mono);
+  font-size: 12px; /* §7.3 floor */
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tv-cv-blocks li[data-block="heading"] {
+  font-weight: 600;
+}
+
+/* 02 — the cited row is marked on the page, not merely mentioned beside it. */
+.tv-cv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-cv-table th,
+.tv-cv-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--rule-paper-1);
+  text-align: left;
+  font-weight: 400;
+}
+
+.tv-cv-table td {
+  text-align: right;
+}
+
+.tv-cv-table tr[data-cited] {
+  outline: 1px solid var(--evidence);
+  background: color-mix(in oklab, var(--evidence) 8%, transparent);
+}
+
+/* 03 — entities the compiler surfaced, with what each one is. */
+.tv-cv-entities {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tv-cv-entities li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-paper-1);
+}
+
+.tv-cv-entities em {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 12px; /* §7.3 floor */
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* 04 — the digest that makes the export reproducible. */
+.tv-cv-digest {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.tv-cv-digest span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink-3);
+  font-size: 12px; /* §7.3 floor */
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/*
+ * The thread. §8 draws it rather than fading it in — a rule that extends
+ * reads as a measurement being taken, which is the gesture the whole brand
+ * rests on. Drawn on scroll where the browser supports it, and simply present
+ * where it does not.
+ */
+.tv-cv-thread {
   height: 1px;
-  left: 39%;
-  top: 48%;
-  background: var(--tv-evidence);
+  background: linear-gradient(
+    to right,
+    var(--evidence) 0 var(--tv-rule-draw),
+    transparent var(--tv-rule-draw)
+  );
+}
+
+@supports (animation-timeline: view()) {
+  .tv-cv-thread {
+    animation: tv-cv-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 20% cover 45%;
+  }
+
+  @keyframes tv-cv-draw {
+    from {
+      --tv-rule-draw: 0%;
+    }
+    to {
+      --tv-rule-draw: 100%;
+    }
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  .tv-cv-thread {
+    --tv-rule-draw: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-cv-thread {
+    --tv-rule-draw: 100%;
+    animation: none;
+  }
+}
+
+/* The knowledge side. §5 keeps it on the instrument surface. */
+.tv-cv-knowledge {
+  padding: 24px 22px;
+  border: 1px solid var(--rule-inst-2);
+  background: var(--inst-2);
+  color: var(--inst-ink-0);
+}
+
+.tv-cv-knowledge strong {
+  display: block;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.tv-cv-knowledge p {
+  margin: 12px 0 0;
+  color: var(--inst-ink-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tv-chapter-visual {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .tv-cv-thread {
+    width: 1px;
+    height: 40px;
+    justify-self: center;
+    background: linear-gradient(
+      to bottom,
+      var(--evidence) 0 var(--tv-rule-draw),
+      transparent var(--tv-rule-draw)
+    );
+  }
 }
 
 .tv-demo-section,
@@ -3141,17 +3280,6 @@ body.tv-menu-open {
 
   .tv-route-cta {
     padding: 80px 20px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tv-site *,
-  .tv-site *::before,
-  .tv-site *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
   }
 }
 

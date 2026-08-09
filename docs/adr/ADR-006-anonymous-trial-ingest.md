@@ -1,7 +1,8 @@
 # ADR-006: Anonymous Trial Ingest
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-07
+- Accepted: 2026-08-08
 - Owners: Platform, Security, Product
 
 ## Context
@@ -172,3 +173,100 @@ feature flag        trial_ingest_enabled = false
   the documented error codes.
 - A retention test that objects are unreachable after the TTL.
 - `scripts/check.ps1`.
+
+## Implementation status
+
+Landed and verified:
+
+```
+migration 0023            system trial tenant, service user, trial_sessions, RLS, TTL index
+settings                  flag off by default, caps, two guarding validators
+schemas + OpenAPI v1      five paths, four schemas, published additively
+abuse_controls.py         helpers extracted from main.py so this router can reuse them
+quarantine_screening.py   the ADR-004 gauntlet, called by both routes
+trial_api.py              five endpoints, driven end to end by real bytes
+trial_retention.py        expiry sweep, wired into the scheduler pass
+tests/security            23 boundary tests
+apps/web                  hero wired to both modes, privacy copy corrected
+```
+
+### How the pipeline was connected
+
+The choice above was **extract**, and it turned out smaller than the 675-line
+figure suggested, because most of those lines are not screening. Screening is
+about the object — validate the bytes against the declared filename and MIME,
+compare the digest, scan, disarm. The rest is bookkeeping that differs per
+caller: which document row this belongs to, whose audit log records it, whether
+a duplicate is billable. Cutting at that seam produced
+`services/api/src/akc_api/quarantine_screening.py`, which knows nothing about
+principals, sessions, or audit rows, and which both routes now call.
+
+Two consequences of the seam are decisions, recorded here because a later reader
+will otherwise read them as omissions:
+
+```
+QuarantineUnavailable   scanner and CDR outages raise rather than return a
+                        verdict. Nothing was concluded about the file, so it is
+                        neither promoted nor marked SECURITY_REJECTED. The
+                        exception carries the audit action name so the two
+                        callers cannot drift on what they record.
+after_validation        the free-tier duplicate check is billing policy, not
+                        screening. It stays with the authenticated route, but
+                        keeps its position in the sequence — after the digest,
+                        before the scan — because that ordering exists to avoid
+                        spending a scan on a file about to be refused anyway.
+```
+
+The authenticated route's 242-test suite passed unchanged before and after the
+extraction, which is the evidence that behaviour was preserved.
+
+### Where the trial stops, and how
+
+A trial document now runs the same gauntlet and then preflights, reaching
+`PREFLIGHTED`. The stop is enforced by not enqueueing anything: no processing
+job is created, so no worker can pick the document up and no GPU is reachable
+from an anonymous request. `test_completion_stops_at_preflighted` asserts the
+job, task, and invocation tables are empty afterwards.
+
+**Preflight runs inline rather than being queued.** This departs from the
+authenticated route and is deliberate. That route hands preflight to the
+document worker because the file it accepts can be hundreds of megabytes and
+hundreds of pages; a trial file cannot, because `trial_ingest_max_bytes` and
+`trial_ingest_max_pages` bound it. Preflight itself is page geometry and text
+statistics — no OCR, no model, no network. The alternative would make the first
+thing a visitor sees depend on worker infrastructure being up, and would create
+a queue entry from an unauthenticated request, which is the cost surface this
+ADR keeps behind a principal.
+
+**The page cap is applied by the parser, not to its output.** The first version
+of this passed `settings` through unchanged and sliced the result to ten pages
+afterwards. `parse_document` reads `settings.max_pages`, which is the product
+limit of 500, so that version would have let one anonymous request drive a
+five-hundred-page text extraction and then discard 490 pages of it. The cap
+described the answer instead of bounding the work, and the paragraph above
+claiming the caps made this safe was not yet true. `parse_document` is now given
+`settings.model_copy(update={"max_pages": trial_ingest_max_pages})`, so it checks
+the page tree and stops before extracting anything.
+
+That choice has a visible consequence, and it is the honest one. A document
+longer than the cap reports `truncated: true` with **no page count**: the parser
+stopped before counting, so there is no measurement to publish (§25.7). The
+earlier behaviour reported "read 10 of 14" — friendlier, but only obtainable by
+doing the work the cap exists to prevent. The polling route reconstructs the
+same answer from the stored row: `PREFLIGHTED` with a null `page_count` is the
+over-cap case and cannot arise any other way, since every document the parser
+did read has a count.
+
+### One defect this closed that reading would not have found
+
+The presigned URL handed to an anonymous visitor pointed at
+`PUT /v1/uploads/{id}/content`, which requires an authenticated editor. Outside
+production — where the store is S3 and the URL is a genuine presign — the trial
+flow could not upload at all, and the security path could not be exercised by a
+test. `PUT /v1/trial/sessions/{id}/uploads/{id}/content` now serves that case,
+authorized by trial session rather than by principal. `TrialUploadAccepted` also
+gained `upload_id`, without which a client had no way to name the upload it had
+just made.
+
+`trial_ingest_enabled` still defaults to `false`. It is now a rollout control
+rather than a guard against an incomplete capability.

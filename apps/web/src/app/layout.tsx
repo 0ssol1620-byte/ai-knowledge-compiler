@@ -9,7 +9,10 @@ import { wantedSans } from "./fonts";
 // order, then the W0 component and foundation layers. §23.2 removes the legacy
 // sheets wave by wave from the top of that middle block.
 import "@/styles/tokens.css";
+import "@/styles/properties.css";
 import "@/styles/foundations.css";
+import "@/styles/paper.css";
+import "@/styles/motion.css";
 import "./globals.css";
 import "./product-shell.css";
 import "./enterprise-refresh.css";

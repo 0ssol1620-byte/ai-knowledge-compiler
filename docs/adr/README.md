@@ -19,13 +19,13 @@ decision.
 | C-09 the UI shows security scanning but the state machine skips it             | `SECURITY_SCANNING` and `SECURITY_VERIFIED` are mandatory before preflight.                                                 | [ADR-004](ADR-004-multi-tenant-security-retention.md)       |
 | C-10 `parse_fast_v1` is a product profile but missing from the initial recipes | `parse_fast_v1` is registered as a disabled-by-default HPD shadow recipe with a balanced fallback.                          | [ADR-003](ADR-003-provider-abstraction-model-policy.md)     |
 
-## Proposed records
+## Capability records
 
-Not yet accepted. They do not bind until they are.
+Decisions that open a capability rather than resolve a conflict.
 
 | Record | Decides |
 | --- | --- |
-| [ADR-006](ADR-006-anonymous-trial-ingest.md) | Whether the marketing hero may accept a document from an anonymous visitor, and under what caps. Preserves tenant scoping through a system trial tenant; does not shorten the ADR-004 quarantine path; stops at `PREFLIGHTED` so GPU spend stays closed; off by default. |
+| [ADR-006](ADR-006-anonymous-trial-ingest.md) | The marketing hero may accept a document from an anonymous visitor, under caps. Tenant scoping is preserved through a system trial tenant; the ADR-004 quarantine path is not shortened; the flow stops at `PREFLIGHTED` so GPU spend stays behind a principal; `trial_ingest_enabled` defaults to `false`. |
 
 ## Decision order
 

@@ -64,3 +64,16 @@ crash.log
 
 # Font build scratch environment (tools/fonts/build_fonts.py)
 .venv-fonts/
+
+# Agent skill installs. `.agents/skills/` and skills-lock.json are committed —
+# the reference material is useful to later waves and the lockfile pins what
+# was reviewed. `.claude/skills/` is not: the installer writes absolute
+# symlinks into it, so the entries are valid only on the machine that ran it.
+.claude/skills/
+
+# Vercel CLI state: project link and the OIDC token it writes locally.
+# The CLI also appends its own `.env*` rule here on link; it is dropped
+# because it lands after the `!.env.example` exception above and silently
+# re-ignores the one env file that is meant to be committed. Lines 2-4
+# already cover real env files.
+.vercel

@@ -1,3 +1,15 @@
+> **SUPERSEDED — do not implement from this file.**
+>
+> This records the Structara design system, which the TAVONEL rename replaced
+> on 2026-08-07. It is kept because `design-system/tavonel/decision.md` cites it
+> as the `st-` prefix baseline and because the rationale for what was rejected
+> here (bento grids, Inter as a visual signature, decorative motion) is still
+> the reason those things stay out. Nothing in it is current: the name, the
+> token prefix, the typeface, and the 3D scene have all changed.
+>
+> Current system: `design-system/tavonel/DESIGN_MASTER_V3.md`, with
+> `design-system/tavonel/decision.md` overriding it where they disagree.
+
 # Structara Design System
 
 This file records the approved implementation system. The generated UI/UX

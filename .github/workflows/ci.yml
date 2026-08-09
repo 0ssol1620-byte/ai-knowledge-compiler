@@ -75,6 +75,12 @@ jobs:
           node --check tests/load/k6-journey.js
       - run: pnpm lint
       - run: pnpm typecheck
+      # DESIGN_MASTER_V3 [확정] items that are checkable from source. The V3
+      # layer must be clean; the legacy sheets ratchet downward only.
+      - run: pnpm --filter @akc/web blueprint:check
+      # The public claims pack ships forbidden phrasings and two withheld
+      # claims. This fails if either reaches the site.
+      - run: pnpm --filter @akc/web claims:check
       - run: pnpm test
       - run: pnpm build
 
@@ -172,6 +178,11 @@ jobs:
           python -m uv run --locked --extra dev python infra/security/validate_deployment.py
           python -m uv run --locked --extra dev python scripts/generate_contract_types.py --check
           python -m uv run --locked --extra dev python scripts/check_openapi_compat.py
+      # One Alembic head. Two branches adding a revision off the same parent
+      # merge cleanly in git and then refuse to run, so this fails at the
+      # merge instead of at the deploy.
+      - name: Migration chain has a single head
+        run: python -m uv run --locked --extra dev python scripts/check_migration_chain.py
       - name: Run benchmark metric tests
         run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
       - name: Run GPU handler tests

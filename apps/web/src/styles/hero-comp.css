@@ -8,25 +8,94 @@
  */
 
 @layer components {
+  /*
+   * §20 [확정] — the responsive bands, expressed with min-width.
+   *
+   * §20 gives four bands and three boundaries:
+   *
+   *   >= 1280    facing spread, 5:7
+   *   1024-1279  facing spread held, but 6:6
+   *   768-1023   vertical: source above, result below
+   *   <= 767     vertical plus a Source/Result tab switch
+   *
+   * min-width rather than max-width, and the reason is exact rather than
+   * stylistic. The allowed boundary set is 1280 / 1024 / 768, and with
+   * max-width every boundary lands one pixel inside the wrong band —
+   * `max-width: 1024px` puts 1024 in the vertical band when §20 puts it in the
+   * 6:6 one. Expressing it the other way round would need 1023 and 1279, the
+   * exact widths §20 exists to remove. So the vertical layout is the base and
+   * the spread is the enhancement.
+   *
+   * This is a behaviour change and worth naming: the spread previously held
+   * down to 768, so 900px showed two columns where §20's table says vertical.
+   */
   .tv-hero-comp {
     display: grid;
-    grid-template-columns: 5fr 7fr; /* §6.4 — hero is the only 5:7 */
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    gap: var(--s-7);
-    min-height: min(88vh, 920px); /* §6.4 vertical rhythm */
-    padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    gap: var(--s-6);
+    padding: var(--s-8) var(--s-5) var(--s-9);
     background: var(--paper-1);
     color: var(--ink-0);
   }
 
+  /* 1024-1279 — the spread returns, at 6:6. */
+  @media (min-width: 1024px) {
+    .tv-hero-comp {
+      grid-template-columns: 6fr 6fr;
+      gap: var(--s-7);
+      min-height: min(88vh, 920px); /* §6.4 vertical rhythm */
+      padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    }
+  }
+
+  /* >= 1280 — §6.4 makes the hero the only 5:7 in the system. */
+  @media (min-width: 1280px) {
+    .tv-hero-comp {
+      grid-template-columns: 5fr 7fr;
+    }
+  }
+
+  /*
+   * §5.2 slop response 4 — the eyebrow leaves "uppercase label + dot + rule".
+   *
+   * The detector's rule is named Eyebrow Chrome, and the axis we carried was
+   * the uppercase tracked label in the accent colour. There was never a
+   * decorative dot or a trailing rule here, so this is not the full pattern —
+   * but the uppercase label is the part that does the signalling, and it is
+   * the part that every generated marketing page also has.
+   *
+   * §5.2's instruction is to earn it with specificity, so the change is in
+   * treatment rather than in words: the copy is G-F approved and stays exactly
+   * as it is. What goes is the chrome.
+   *
+   *   uppercase + 0.08em tracking  ->  sentence case, normal tracking
+   *   accent colour                ->  ink-2
+   *
+   * Sentence case in the mono face reads as a system label — what a compiler
+   * prints above its output — rather than as a marketing category tag. The
+   * accent leaves because an accent that appears on every eyebrow is chrome;
+   * §6.2 spends 255° on one thing at a time, and on this screen that thing is
+   * the CTA.
+   */
   .tv-hero-comp-eyebrow {
     margin: 0 0 var(--s-4);
-    color: var(--brand);
+    color: var(--ink-2);
     font-family: var(--font-mono);
     font-size: var(--fs-label);
     font-weight: var(--w-medium);
-    letter-spacing: var(--tracking-label);
+    letter-spacing: 0;
     line-height: var(--lh-label);
+  }
+
+  /*
+   * The treatment §5.2 asks us to leave, kept only so /design/slop can show
+   * the two beside each other for the approval this change needs. It is not
+   * reachable from any product route.
+   */
+  [data-treatment="chrome"] .tv-hero-comp-eyebrow {
+    color: var(--brand);
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
   }
 
@@ -351,9 +420,12 @@
   /* ── variant C · Full-bleed verso ─────────────────── */
   /* The source page runs off the right edge; the output sits over it. */
 
-  .tv-hero-comp[data-variant="fullbleed"] {
-    grid-template-columns: 5fr 7fr;
-    padding-right: 0;
+  /* The bleed only means anything once there is a spread to bleed out of,
+     so the padding removal is scoped to the bands that have one. */
+  @media (min-width: 1024px) {
+    .tv-hero-comp[data-variant="fullbleed"] {
+      padding-right: 0;
+    }
   }
 
   .tv-hero-comp[data-variant="fullbleed"] .tv-facing-frame {
@@ -370,17 +442,11 @@
     backdrop-filter: blur(2px);
   }
 
-  /* ── 767 and below · recomposition, not a scaled desktop ── */
-
-  @media (max-width: 767px) {
-    .tv-hero-comp,
-    .tv-hero-comp[data-variant="fullbleed"] {
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--s-6);
-      min-height: 0;
-      padding: var(--s-8) var(--s-5) var(--s-9);
-    }
-
+  /* ── 768 and below · recomposition, not a scaled desktop ──
+   * The vertical layout is now the base, so this block carries only what is
+   * specific to the narrow band: a smaller display size and stacked actions.
+   */
+  @media (max-width: 768px) {
     .tv-hero-comp h1 {
       font-size: var(--fs-display-2);
       letter-spacing: var(--tracking-display-2);
@@ -415,5 +481,64 @@
       border-right: 1px solid var(--rule-paper-2);
       border-radius: var(--r-media);
     }
+  }
+}
+
+/*
+ * §5.2 review route chrome — /design/slop only. Deleted with the route once
+ * decision.md records the outcome.
+ */
+@layer components {
+  .tv-slop-review {
+    background: var(--paper-0);
+    color: var(--ink-0);
+  }
+
+  .tv-slop-review-head {
+    max-width: var(--measure);
+    padding: var(--s-8) clamp(var(--s-5), 5vw, 72px) var(--s-6);
+  }
+
+  .tv-slop-review-head h1 {
+    margin: 0 0 var(--s-3);
+    font-size: var(--fs-title-1);
+    font-weight: var(--w-title);
+    letter-spacing: var(--tracking-title-1);
+    line-height: var(--lh-title-1);
+  }
+
+  .tv-slop-review-head p {
+    margin: 0;
+    color: var(--ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-slop-review-label {
+    padding: var(--s-5) clamp(var(--s-5), 5vw, 72px) var(--s-3);
+    border-top: 1px solid var(--rule-paper-2);
+  }
+
+  .tv-slop-review-label h2 {
+    margin: 0 0 var(--s-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    line-height: var(--lh-small);
+  }
+
+  .tv-slop-review-label p {
+    margin: 0;
+    max-width: var(--measure);
+    color: var(--ink-2);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+    text-wrap: pretty;
+  }
+
+  /* The "before" pane is the flat fill: no fibre. */
+  .tv-slop-review-frame[data-treatment="chrome"] {
+    --tv-grain-strength: 0;
   }
 }
