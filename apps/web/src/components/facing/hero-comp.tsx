@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { FacingPages } from "@/components/facing/facing-pages";
+import { HeroDropzone } from "@/components/facing/hero-dropzone";
 import { bboxStyle } from "@/lib/bbox";
 import type { ThreadAnchor } from "@/lib/facing/thread";
 
@@ -70,12 +73,19 @@ const ANCHORS: readonly ThreadAnchor[] = [
 export function HeroComp({
   variant,
   copy,
+  /**
+   * Comps render the CTAs as inert <span> so an unwired control never reaches
+   * the page (§14.3). The live hero passes `live` and gets real controls and a
+   * working drop zone.
+   */
+  live = false,
 }: {
   variant: HeroVariant;
   copy: HeroCopy;
+  live?: boolean;
 }) {
   return (
-    <section className="tv-hero-comp" data-variant={variant}>
+    <section className="tv-hero-comp" data-variant={variant} data-live={live || undefined}>
       <div className="tv-hero-comp-copy">
         <p className="tv-hero-comp-eyebrow">The Knowledge Compiler</p>
         <h1>
@@ -90,12 +100,33 @@ export function HeroComp({
 
         {/* §3.4 — exactly two CTAs, different labels, primary once. */}
         <div className="tv-hero-comp-actions">
-          <span className="tv-hero-comp-cta" data-kind="primary">
-            Start compiling
-          </span>
-          <span className="tv-hero-comp-cta" data-kind="secondary">
-            Inspect the proof
-          </span>
+          {live ? (
+            <>
+              <Link
+                href="/signup"
+                className="tv-hero-comp-cta"
+                data-kind="primary"
+              >
+                Start compiling
+              </Link>
+              <Link
+                href="/demo/dart"
+                className="tv-hero-comp-cta"
+                data-kind="secondary"
+              >
+                Inspect the proof
+              </Link>
+            </>
+          ) : (
+            <>
+              <span className="tv-hero-comp-cta" data-kind="primary">
+                Start compiling
+              </span>
+              <span className="tv-hero-comp-cta" data-kind="secondary">
+                Inspect the proof
+              </span>
+            </>
+          )}
         </div>
 
         <p className="tv-hero-comp-trust">
@@ -114,10 +145,15 @@ export function HeroComp({
               <span data-state="verified">Verified</span>
             </>
           }
-          caption="Drop a document here to compile your own — sample shown"
+          caption={
+            live
+              ? "Sample document, compiled. Drop your own below."
+              : "Drop a document here to compile your own — sample shown"
+          }
           verso={<VersoPage />}
           recto={<RectoOutput />}
         />
+        {live && <HeroDropzone />}
       </div>
     </section>
   );

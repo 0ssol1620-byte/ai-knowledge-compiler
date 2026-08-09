@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const VARIANTS: readonly HeroVariant[] = ["frame", "overlap", "fullbleed"];
 
 type Props = {
-  searchParams: Promise<{ variant?: string; copy?: string }>;
+  searchParams: Promise<{ variant?: string; copy?: string; live?: string }>;
 };
 
 export default async function HeroCompPage({ searchParams }: Props) {
@@ -37,7 +37,13 @@ export default async function HeroCompPage({ searchParams }: Props) {
 
   return (
     <main id="main-content">
-      <HeroComp variant={variant} copy={HERO_COPY[copyId]} />
+      <HeroComp
+        variant={variant}
+        copy={HERO_COPY[copyId]}
+        // ?live=1 renders the wired hero — real CTAs and a working drop zone —
+        // so W2 can be reviewed beside the comp it was approved from.
+        live={params.live === "1"}
+      />
     </main>
   );
 }

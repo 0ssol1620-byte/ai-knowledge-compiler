@@ -1,0 +1,209 @@
+/*
+ * Hero drop zone — DESIGN_MASTER_V3 §12.2 states ② and ③.
+ *
+ * §6.3 allows depth only on focus, hover, and overlays, so the resting state
+ * has none: the affordance is stated in words and an alpha hairline. §10.2
+ * caps UI transitions at 300ms and allows only transform and opacity.
+ */
+
+@layer components {
+  .tv-dropzone {
+    position: relative;
+    margin-top: var(--s-4);
+  }
+
+  .tv-dropzone-target {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0 var(--s-3);
+    min-height: 44px; /* §21 touch target */
+    padding: var(--s-4) var(--s-5);
+    border: 1px dashed var(--rule-paper-2);
+    border-radius: var(--r-paper-lg);
+    background: var(--paper-0);
+    cursor: pointer;
+    transition:
+      border-color var(--t-2) var(--e-out),
+      background-color var(--t-2) var(--e-out);
+  }
+
+  .tv-dropzone-target strong {
+    color: var(--ink-0);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+  }
+
+  .tv-dropzone-target span {
+    grid-column: 2;
+    color: var(--ink-2);
+    font-size: var(--fs-min);
+    line-height: 1.45;
+  }
+
+  .tv-dropzone-target svg {
+    color: var(--ink-3);
+    transition: color var(--t-2) var(--e-out);
+  }
+
+  /*
+   * ② — hover, keyboard focus, and an active drag all say the same thing, so
+   * they share one rule. Hover is gated to real pointers (§10.2).
+   */
+  .tv-dropzone-target:focus-within,
+  .tv-dropzone[data-dragging] .tv-dropzone-target {
+    border-color: var(--brand);
+    border-style: solid;
+    background: color-mix(in oklab, var(--brand) 4%, var(--paper-0));
+  }
+
+  .tv-dropzone-target:focus-within svg,
+  .tv-dropzone[data-dragging] .tv-dropzone-target svg {
+    color: var(--brand);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tv-dropzone-target:hover {
+      border-color: var(--ink-3);
+      background: var(--paper-1);
+    }
+  }
+
+  .tv-dropzone-target:focus-visible,
+  .tv-dropzone input:focus-visible + .tv-dropzone-target {
+    outline: none;
+    box-shadow: var(--depth-focus);
+  }
+
+  .tv-dropzone[data-reading] .tv-dropzone-target {
+    cursor: progress;
+  }
+
+  /* ── ③ · what the browser established ─────────────── */
+
+  .tv-dropzone-report {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-paper-lg);
+    background: var(--paper-0);
+  }
+
+  .tv-dropzone-privacy {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin: 0;
+    color: var(--verified);
+    font-size: var(--fs-min);
+    font-weight: var(--w-medium);
+  }
+
+  .tv-dropzone-report dl {
+    display: grid;
+    gap: var(--s-2);
+    margin: 0;
+  }
+
+  .tv-dropzone-report dl > div {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--s-3);
+  }
+
+  .tv-dropzone-report dt {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-dropzone-report dd {
+    overflow: hidden;
+    margin: 0;
+    color: var(--ink-1);
+    font-size: var(--fs-min);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tv-dropzone-report dd[data-numeric] {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tv-dropzone-note {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--fs-min);
+    line-height: 1.5;
+  }
+
+  /* §11.2 R2 — a review state is marked by more than colour. */
+  .tv-dropzone-note[data-state="review"] {
+    padding-left: var(--s-3);
+    border-left: 2px solid var(--review);
+    color: var(--review);
+  }
+
+  .tv-dropzone-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    margin-top: var(--s-1);
+  }
+
+  .tv-dropzone-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 40px;
+    padding: 0 var(--s-4);
+    border-radius: var(--r-paper-lg);
+    background: var(--brand);
+    color: var(--paper-0);
+    font-size: var(--fs-min);
+    font-weight: var(--w-strong);
+    transition: background-color var(--t-2) var(--e-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tv-dropzone-cta:hover {
+      background: var(--brand-hover);
+    }
+  }
+
+  .tv-dropzone-cta:active {
+    background: var(--brand-press);
+  }
+
+  .tv-dropzone-reset {
+    border: 0;
+    border-bottom: 1px solid var(--rule-paper-2);
+    background: none;
+    padding: 0 0 2px;
+    color: var(--ink-2);
+    font-size: var(--fs-min);
+    cursor: pointer;
+  }
+
+  @media (max-width: 767px) {
+    .tv-dropzone-report dl > div {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .tv-dropzone-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .tv-dropzone-cta {
+      justify-content: center;
+    }
+  }
+}
