@@ -32,8 +32,23 @@ def _sha256(path: Path) -> str:
 
 
 def build_official_commands(
-    *, repository_root: Path, merged_root: Path, output_root: Path
+    *,
+    repository_root: Path,
+    merged_root: Path,
+    output_root: Path,
+    parsebench_max_workers: int = 8,
+    omnidoc_workers: int = 4,
 ) -> tuple[EvaluationCommand, ...]:
+    """Build the three evaluator invocations.
+
+    The two worker counts are a machine knob, not part of the contract. Eight
+    ParseBench workers each load scipy, and on a 32 GB workstation that already
+    held a benchmark corpus the Windows page file could not commit them: every
+    one of the 568 chart evaluations failed with "DLL load failed ... the paging
+    file is too small", which the evaluator reports as "worker error" against an
+    unknown example. Lowering the count changes how long the run takes and
+    nothing about what it measures.
+    """
     runpod_eval = repository_root / "benchmark" / "runpod_eval"
     acquired = repository_root / "benchmark" / "datasets" / "acquired" / "public-core"
     checkouts = (
@@ -63,7 +78,7 @@ def build_official_commands(
                 "--output-root",
                 str(output_root / "parsebench"),
                 "--max-workers",
-                "8",
+                str(parsebench_max_workers),
             ),
             output_root=output_root / "parsebench",
         ),
@@ -91,7 +106,7 @@ def build_official_commands(
                 "--repeats",
                 "1",
                 "--workers",
-                "4",
+                str(omnidoc_workers),
             ),
             output_root=output_root / "omnidocbench",
         ),
@@ -131,6 +146,8 @@ def run_official_bundle(
     merged_root: Path,
     output_root: Path,
     failure_records: Path,
+    parsebench_max_workers: int = 8,
+    omnidoc_workers: int = 4,
 ) -> dict[str, Any]:
     merge_receipt_path = merged_root / "merge-receipt.json"
     merge_receipt = json.loads(merge_receipt_path.read_text(encoding="utf-8"))
@@ -147,6 +164,8 @@ def run_official_bundle(
         repository_root=repository_root,
         merged_root=merged_root,
         output_root=output_root,
+        parsebench_max_workers=parsebench_max_workers,
+        omnidoc_workers=omnidoc_workers,
     )
     evaluations: list[dict[str, Any]] = []
     environment = os.environ.copy()
@@ -217,6 +236,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--merged-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--failure-records", type=Path, required=True)
+    parser.add_argument("--parsebench-max-workers", type=int, default=8)
+    parser.add_argument("--omnidoc-workers", type=int, default=4)
     return parser.parse_args()
 
 
@@ -227,6 +248,8 @@ def main() -> int:
         merged_root=args.merged_root.resolve(),
         output_root=args.output_root.resolve(),
         failure_records=args.failure_records.resolve(),
+        parsebench_max_workers=args.parsebench_max_workers,
+        omnidoc_workers=args.omnidoc_workers,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
