@@ -128,6 +128,15 @@ from .reading_order import (
     infer_reading_order,
 )
 from .schema import all_json_schemas, json_schema
+from .semantic_diff import (
+    ChangeKind,
+    DiffLevel,
+    DocumentShape,
+    SemanticChange,
+    SemanticDiff,
+    UnitSnapshot,
+    diff_documents,
+)
 
 __all__ = [
     "ALLOWED_PAGE_TRANSITIONS",
@@ -151,6 +160,7 @@ __all__ = [
     "CanonicalKnowledgeModel",
     "CanonicalKnowledgeObject",
     "CanonicalTable",
+    "ChangeKind",
     "Claim",
     "CollectionEventEnvelope",
     "CollectionEventPayloadContract",
@@ -161,8 +171,10 @@ __all__ = [
     "ContentLayer",
     "ContractModel",
     "CrossPageRestoration",
+    "DiffLevel",
     "DocumentClassification",
     "DocumentContains",
+    "DocumentShape",
     "ErrorCode",
     "ErrorEnvelope",
     "EventType",
@@ -204,6 +216,8 @@ __all__ = [
     "RelationAssertion",
     "RepeatedMarginalAnnotation",
     "ReviewStatus",
+    "SemanticChange",
+    "SemanticDiff",
     "Sha256",
     "SourceMap",
     "SourceMapEntry",
@@ -211,6 +225,7 @@ __all__ = [
     "StableId",
     "TextNormalizationResult",
     "TocEntry",
+    "UnitSnapshot",
     "all_json_schemas",
     "analyze_document_structure",
     "build_heading_llm_candidate_payload",
@@ -219,6 +234,7 @@ __all__ = [
     "build_source_payload",
     "canonical_json",
     "detect_repeated_marginal_blocks",
+    "diff_documents",
     "document_version_id",
     "evidence_id",
     "infer_heading_hierarchy",

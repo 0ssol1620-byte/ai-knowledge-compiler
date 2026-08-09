@@ -93,3 +93,70 @@ rather than merged.
 This is the floor, not the building. Still absent: `valid_from` / `valid_to`,
 `recorded_at`, dependency edges, semantic diff, impact traversal, incremental
 recompilation. Those are masterplan PHASE 3–6 and each needs its own slice.
+
+---
+
+# Semantic diff
+
+Implements masterplan §12. `packages/cir-python/src/akc_cir/semantic_diff.py`.
+
+Turns "the bytes are different" into "the warranty clause went from two years to
+three". Everything downstream reads its output: dependency traversal (§15) walks
+out from the changed units, impact (§16.1) marks artifacts stale from that set,
+and selective recompile rebuilds exactly it.
+
+## Five levels, cumulative
+
+```
+L0 binary       did the bytes change at all
+L1 structural   headings, block counts, table shape, figure refs
+L2 evidence     which anchored regions were added, removed, moved
+L3 semantic     which knowledge units changed, and how
+L4 graph        entities, relationships, authority
+```
+
+Asking for L3 runs L0–L3. L0 on two identical digests is one comparison and
+returns immediately, which is what makes it cheap enough to run on every ingest.
+
+**A level below L0 never disagrees with it.** Identical bytes cannot produce a
+structural or semantic change, whatever the caller passes in.
+
+## The rule this module exists to hold
+
+An identity the resolver could not settle is **never reported as a
+modification**, and never as a remove-plus-add either.
+
+- Calling it modified asserts a continuity nobody established.
+- Calling it removed-plus-added destroys a history that may be real.
+
+It is reported as `identity_unresolved`, carrying the candidates and the
+resolver's reason. Those units do not appear in `changed_logical_ids`, because
+marking artifacts stale from an identity nobody settled spreads a guess across
+the dependency graph.
+
+A test caught this being violated on the first implementation: the unresolved
+path skipped the modification, but the candidates then fell through to the
+removal pass and were reported as deleted — the exact spelling the rule forbids.
+Candidates named in an unresolved decision are now excluded from removals too.
+
+## Distinctions the levels are there to preserve
+
+| situation | reported as | not |
+|---|---|---|
+| clause reworded, same meaning slot | `modified_claim` on one logical id | remove + add |
+| clause moved to another page | `evidence_moved` | `modified_claim` |
+| whitespace and casing differ | nothing | `modified_claim` |
+| same shape, different words | L3 only | `structure_changed` |
+| two candidates score alike | `identity_unresolved` | either of them |
+
+## Reproducibility
+
+`change_id` is a digest over the ordered change records. Two runs over the same
+pair of versions produce the same id, because an impact analysis that cannot be
+re-derived cannot be audited.
+
+## Not yet built
+
+The diff produces a change set. Nothing yet consumes it: dependency edges,
+impact traversal and selective recompile are masterplan PHASE 4–5 and do not
+exist.
