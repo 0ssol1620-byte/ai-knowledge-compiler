@@ -90,7 +90,7 @@ jobs:
           if [[ "$MODEL_CI_RUN_ID" != "0" ]]; then
             verify_run "Model CI" "$MODEL_CI_RUN_ID"
           fi
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.release_revision }}
           persist-credentials: false
@@ -101,7 +101,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$RELEASE_REVISION"
           git archive --format=tar HEAD > "${RUNNER_TEMP}/source.tar"
           sha256sum "${RUNNER_TEMP}/source.tar" > "${RUNNER_TEMP}/source.tar.sha256"
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
       - name: Sync immutable local gate tooling
@@ -119,7 +119,7 @@ jobs:
           .venv/bin/python infra/security/validate_deployment.py
           .venv/bin/python -m unittest discover -s benchmark/tests -v
           (cd workers/gpu-common && ../../.venv/bin/python -m unittest -v test_runtime.py)
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
       - name: Re-run locked web gates
@@ -177,7 +177,7 @@ jobs:
             }' > "${RUNNER_TEMP}/release-gate-evidence.json"
           sha256sum "${RUNNER_TEMP}/release-gate-evidence.json" \
             > "${RUNNER_TEMP}/release-gate-evidence.json.sha256"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ inputs.gate }}-${{ inputs.release_revision }}-evidence
           path: |
