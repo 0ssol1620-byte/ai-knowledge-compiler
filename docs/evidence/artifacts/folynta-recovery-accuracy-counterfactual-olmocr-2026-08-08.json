@@ -74,10 +74,11 @@
     }
   },
   "question": "How much of the official olmOCR-Bench score is attributable to the recovery lane?",
-  "receipt_sha256": "sha256:6dc88485172580f82bf541e4a7efef67e1bddc7cefc4c40fdf182aa70ed39a2c",
-  "relative_score_delta": 0.5009,
+  "receipt_sha256": "sha256:5d877230f9e530d6c298a038753700a46d9a0e5bde575b89a0c99aec320be025",
   "schema": "folynta.recovery-accuracy-counterfactual.v1",
   "score_inflation_allowed": false,
+  "score_share_lost_without_recovery": 0.3337,
+  "score_uplift_over_no_recovery": 0.5009,
   "with_recovery": {
     "confidence_interval_95": [
       0.7961746266338624,
@@ -85,7 +86,8 @@
     ],
     "overall_score": 0.8060068382873822,
     "rule_failure_count": 1276,
-    "summary_sha256": null
+    "summary": "evaluation-summary.json",
+    "summary_sha256": "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559"
   },
   "without_recovery": {
     "confidence_interval_95": [
@@ -94,6 +96,7 @@
     ],
     "overall_score": 0.5370292637934323,
     "rule_failure_count": 3818,
-    "summary_sha256": null
+    "summary": "evaluation-summary.json",
+    "summary_sha256": "sha256:f5e29283636a225c123d3add412b3e8c49a85f4aaf87da24236ec01936aa05c9"
   }
 }

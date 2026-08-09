@@ -72,7 +72,7 @@
     },
     {
       "evidence": "docs/evidence/artifacts/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
-      "evidence_sha256": "sha256:55a3557f59d43585cc2dee09912825d1646e23a274bbb6db7ebbb37f1b0d4c26",
+      "evidence_sha256": "sha256:1f5b6220c1fa569e8e33530d933a16eb7ad6b856c56e22f1744f8fa96efe33e0",
       "evidence_source": "benchmark/reports/generated/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
       "headline_en": "Disabling only the recovery lane drops the same pipeline from 80.6 to 53.7",
       "headline_ko": "복구 레인을 끄면 동일 파이프라인의 공식 점수가 80.6에서 53.7로 떨어집니다",
@@ -456,6 +456,6 @@
     "수치를 바꾸려면 이 파일이 아니라 근거 영수증을 다시 생성하십시오."
   ],
   "purpose": "웹사이트에 게시할 수 있는 주장과 게시할 수 없는 주장을 증거와 함께 구분합니다. 수치는 영수증에서 생성되며 손으로 수정해서는 안 됩니다.",
-  "receipt_sha256": "sha256:5dac2acfbdf6d5d3c4cedb41915e34de23d469326ad9c8ec81453c84d06da0c8",
+  "receipt_sha256": "sha256:82d5ec8bbf3ce22f143b071f3996e50c40743db22b050d25e6d4a9e84457c741",
   "schema": "folynta.public-claims-pack.v1"
 }
