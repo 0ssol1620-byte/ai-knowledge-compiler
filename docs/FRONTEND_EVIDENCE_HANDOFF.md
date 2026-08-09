@@ -18,11 +18,17 @@ Both are generated from the evidence receipts. **Do not edit the numbers in
 them.** If a figure looks wrong, say so and it will be regenerated from source
 rather than corrected by hand.
 
-Each claim names the receipt it came from under `evidence`. Those receipts live
-under `benchmark/reports/generated/`, which is git-ignored because it holds
-multi-gigabyte evaluation output. The paths are there so a figure can be traced
-on the machine that produced it; you will not have those files locally and do
-not need them to build the page.
+Each claim names the receipt it came from under `evidence`, and every one of
+those files is now **in the repository** at `docs/evidence/artifacts/`, with its
+`evidence_sha256` beside it. You have them locally and can verify any figure
+against the artifact it came from.
+
+That was not true before. The paths used to point into
+`benchmark/reports/generated/`, which is git-ignored: eleven of the fourteen
+cited files existed only on the machine that produced them, and nine claims
+carried a path with no hash at all. The generator now refuses to emit a claim
+that cites a file git ignores, or a path without a hash, so this cannot quietly
+regress. `evidence_source` records where each artifact was produced.
 
 Each claim carries a `status`:
 
@@ -56,6 +62,39 @@ number) and `forbidden` (phrasings that must not appear).
    no benchmark score, so do not attach an accuracy percentage to them; the
    supportable evidence is `compilation-guarantees`.
 
+## What changed since you last copied the pack
+
+Your copy at `apps/web/src/data/claims/public-claims-pack.json` is behind.
+`verify-claims.mjs` will fail on drift until you re-copy, which is the gate
+working. Re-copy from `docs/evidence/folynta-public-claims-pack.json`.
+
+**`must_say_en` was missing on seven claims, not five.** The live page currently
+renders Korean sentences on an English page in at least two places — under the
+recovery counterfactual and under the OmniDocBench row. All seven now carry
+English: `completion-rate`, `recovery-rate`, `compilation-guarantees`,
+`corpus-scale`, and all three `recovery-contribution-*`.
+
+**`recovery-contribution-parsebench` gained a constraint it did not have.**
+Removing the recovery lane makes the ParseBench *layout* pass rate go **up**,
+0.757 to 0.770, because a document with no content has no elements to score and
+the denominator falls from 40,287 to 23,025. Quoted as a rate, no-recovery looks
+better than recovery. The claim now carries that sentence in `must_say` and
+forbids citing the layout rate as evidence of recovery's effect. The page's
+current "the other two benchmarks agree" block quotes absolute failure counts
+and table GriTS, which is correct — this is to keep it that way.
+
+**`corpus-scale` gained one too.** 5,132 is documents evaluated, not capacity
+and not customer volume.
+
+**The olmOCR counterfactual artifact was regenerated.** It had two null hash
+fields, and one field named `relative_score_delta` holding 0.5009 — the gap
+measured against the *without-recovery* score. Against the with-recovery score
+it is 0.3337. Both are true and they say different things. The ambiguous field
+is gone, replaced by `score_share_lost_without_recovery` and
+`score_uplift_over_no_recovery`. **Neither figure was ever on the page** — the
+site quotes 80.6 and 53.7 directly — so no rendered number was wrong. Do not
+introduce either ratio without its denominator in the label.
+
 ## Hard rules
 
 - Never describe the 99.98% completion rate as accuracy. 72.3% of documents
@@ -80,3 +119,28 @@ One product change affects behaviour: vault link validation now ignores math
 spans, so a document containing notation such as `$[[s \otimes f]]$` is no
 longer refused for a link that was never a link. No API shape changed. The rest
 of the diff is benchmark tooling, evidence receipts and operational scripts.
+
+## On the merge order
+
+Your `docs/PARALLEL_SESSIONS.md` has #33 and #34 landing first, then one rebase
+here. That still holds and this branch is not rebasing before it.
+
+Two things you should know before that happens.
+
+**PR #24 conflicts with `main` in 37 files, 26 of them under `apps/web`.** They
+are not disagreements about your work. This branch predates the TAVONEL reset
+and still carries the whole previous website generation — it has no
+`design-system/tavonel` and no `apps/web/src/styles`, and it has components
+`main` has since dropped. Under the ownership split in PARALLEL_SESSIONS,
+`apps/web/` and `design-system/` are yours, so the rebase here takes `main`'s
+side wholesale for both. Nothing of yours is at risk in that resolution, and no
+review of those 26 files is needed from you.
+
+**`scripts/check_migration_chain.py` does not exist on this branch**, so the one
+guard that would catch the duplicate 0023 was not running here. There is now an
+equivalent at `tests/unit/test_migration_graph.py` that runs in the normal
+suite: it fails on a fork, a second head, a dangling parent, a cycle, or an
+unreachable revision. Verified against the real case — dropping a second `0023`
+with the same parent into `migrations/versions` fails three of its six checks
+and names both files. Keep whichever of the two you prefer after the merge;
+running both is harmless.
