@@ -1,4 +1,4 @@
-import { browserSha256 } from "@/lib/upload-client";
+import { browserSha256 } from "@/lib/browser-hash";
 import {
   QUICK_CONVERT_MAX_FILE_BYTES,
   QUICK_CONVERT_MAX_FILE_LABEL,
