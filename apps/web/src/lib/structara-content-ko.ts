@@ -1,4 +1,4 @@
-import type { StructaraPage, StructaraSection } from "@/lib/structara-content";
+import type { StructaraPage, StructaraSection } from "@/lib/tavonel-content";
 
 const page = (
   path: string,

@@ -1,4 +1,4 @@
-import { PUBLIC_PAGES, type StructaraPage } from "@/lib/structara-content";
+import { PUBLIC_PAGES, type StructaraPage } from "@/lib/tavonel-content";
 import { PUBLIC_PAGES_KO } from "@/lib/structara-content-ko";
 import type { StructaraLocale } from "@/lib/locale";
 

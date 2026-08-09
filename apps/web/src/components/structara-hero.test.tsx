@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { hasUsableWebGL2 } from "./structara-hero";
+import { hasUsableWebGL2 } from "./tavonel-hero";
 
 describe("hasUsableWebGL2", () => {
   it("releases a successfully created probe context", () => {

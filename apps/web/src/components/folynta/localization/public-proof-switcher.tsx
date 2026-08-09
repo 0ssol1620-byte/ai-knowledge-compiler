@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { StructaraProofDemo } from "@/components/structara-proof-demo";
+import { StructaraProofDemo } from "@/components/tavonel-proof-demo";
 import { StructaraSecProofDemo } from "@/components/structara-sec-proof-demo";
 import type { StructaraLocale } from "@/lib/locale";
 

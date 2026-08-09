@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { StructaraProofDemo } from "@/components/structara-proof-demo";
+import { StructaraProofDemo } from "@/components/tavonel-proof-demo";
 
 afterEach(cleanup);
 

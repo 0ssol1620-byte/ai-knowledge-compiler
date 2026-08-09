@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 import {
   StructaraGlyph,
   type StructaraGlyphName,
-} from "@/components/structara-glyph";
+} from "@/components/tavonel-glyph";
 
 const GLYPHS: StructaraGlyphName[] = [
   "page",

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { StructaraGlyph } from "@/components/structara-glyph";
+import { StructaraGlyph } from "@/components/tavonel-glyph";
 import type { StructaraLocale } from "@/lib/locale";
 
 const copy = {

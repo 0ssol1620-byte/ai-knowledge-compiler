@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { PUBLIC_PAGES } from "@/lib/structara-content";
+import { PUBLIC_PAGES } from "@/lib/tavonel-content";
 import { PUBLIC_PAGES_KO } from "@/lib/structara-content-ko";
 
 const HANGUL = /[가-힣]/;
