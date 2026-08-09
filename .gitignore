@@ -95,3 +95,6 @@ crash.log
 # because it lands after the `!.env.example` exception above and silently
 # re-ignores the one env file that is meant to be committed. Lines 2-4
 # already cover real env files.
+
+# pnpm install transcript, written when the registry is slow enough to need one
+.pnpm-install.log
