@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from benchmark.v6.public_failure_adapter import _IDENTIFIER
 from build_public_failure_records import (
     EvaluationSource,
     _safe,
     build_failure_records,
 )
+
+from benchmark.v6.public_failure_adapter import _IDENTIFIER
 
 HASH_A = "sha256:" + "a" * 64
 REVISION = "c" * 40

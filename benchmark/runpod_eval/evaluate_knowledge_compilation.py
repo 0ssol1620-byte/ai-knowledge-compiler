@@ -39,6 +39,7 @@ from akc_cir import (
     SourceRef,
     sha256_digest,
 )
+from akc_cir.exports import SourceMap
 from akc_domain_packs.blueprints import (
     ArchitectureProfile,
     builtin_blueprints,
@@ -51,7 +52,6 @@ from akc_exporters.vault import (
     plan_vault_merge,
     validate_internal_links,
 )
-from akc_cir.exports import SourceMap
 
 _HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
 _TABLE_ROW = re.compile(r"^\s*\|.*\|\s*$")
@@ -259,7 +259,7 @@ def measure_vault_compilation(
             cause, target = _classify_refusal(message)
             refusals.append({"case_id": case_id, "cause": cause, "target": target[:120]})
             continue
-        except Exception as error:  # noqa: BLE001 - an unexpected failure is a finding
+        except Exception as error:
             other_errors.append(
                 {"case_id": case_id, "error": f"{type(error).__name__}: {error}"[:300]}
             )

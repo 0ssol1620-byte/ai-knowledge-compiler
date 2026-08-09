@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 
 import pytest
-
 from build_recovery_counterfactual_candidate import (
     build_counterfactual,
     candidate_relative_path,
@@ -135,7 +134,8 @@ def test_only_the_rescued_documents_are_emptied(tmp_path: Path) -> None:
     assert (out / "multi_column/b_pg1_repeat1.md").read_text(encoding="utf-8") == "primary content"
     assert result["cases_emptied"] == 1
     # The real candidate set must be left untouched.
-    assert (candidate / "multi_column/a_pg1_repeat1.md").read_text(encoding="utf-8") == "rescued content"
+    rescued = candidate / "multi_column/a_pg1_repeat1.md"
+    assert rescued.read_text(encoding="utf-8") == "rescued content"
 
 
 def test_a_case_with_no_candidate_file_is_reported_not_counted(tmp_path: Path) -> None:

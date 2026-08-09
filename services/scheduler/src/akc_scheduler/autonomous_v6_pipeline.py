@@ -798,8 +798,10 @@ class AutonomousV6PipelineCoordinator:
         self._pools = EndpointPoolRegistry()
         for pool in inventory.pools:
             self._pools.register_pool(pool)
-        for worker in inventory.pool_workers:
-            self._pools.attach_worker(worker)
+        # Distinct names: the two loops iterate different types, and reusing one
+        # name made the second loop's WorkerSnapshot look like a PoolWorker.
+        for pool_worker in inventory.pool_workers:
+            self._pools.attach_worker(pool_worker)
         for worker in inventory.workers:
             self._health.register(
                 worker_id=worker.worker_id,

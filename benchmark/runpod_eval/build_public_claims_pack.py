@@ -144,10 +144,13 @@ def _check_evidence_is_readable(repository: Path, claims: list[dict[str, Any]]) 
             path = repository / entry
             if not path.is_file():
                 raise FileNotFoundError(f"claim {claim['id']!r} cites missing {entry}")
+            # Resolved through PATH on purpose: this runs on a developer
+            # machine and in CI, where git lives at different absolute paths.
             ignored = subprocess.run(
-                ["git", "check-ignore", "-q", entry],
+                ["git", "check-ignore", "-q", entry],  # noqa: S607
                 cwd=repository,
                 capture_output=True,
+                check=False,
             )
             if ignored.returncode == 0:
                 raise ValueError(
@@ -215,7 +218,9 @@ def build_claims(repository: Path) -> dict[str, Any]:
 
     olm_with = _load(olm_with_path)
     olm_without = _load(
-        generated / "folynta-counterfactual-no-recovery-olmocr-2026-08-08" / "evaluation-summary.json"
+        generated
+        / "folynta-counterfactual-no-recovery-olmocr-2026-08-08"
+        / "evaluation-summary.json"
     )
     parse_with = _load(parse_with_path)
     parse_without = _load(parse_without_path)
@@ -232,7 +237,10 @@ def build_claims(repository: Path) -> dict[str, Any]:
             "id": "corpus-scale",
             "status": APPROVED,
             "headline_ko": "공개 벤치마크 3종, 5,132개 문서를 공식 평가기로 측정",
-            "headline_en": "5,132 documents across three public benchmarks, scored by the official evaluators",
+            "headline_en": (
+                "5,132 documents across three public benchmarks, scored by the "
+                "official evaluators"
+            ),
             "numbers": {
                 "documents": ledger["planned_cases"],
                 "benchmarks": sorted(ledger["cases_by_suite"]),
@@ -314,13 +322,21 @@ def build_claims(repository: Path) -> dict[str, Any]:
         {
             "id": "recovery-contribution-olmocr",
             "status": APPROVED,
-            "headline_ko": "복구 레인을 끄면 동일 파이프라인의 공식 점수가 80.6에서 53.7로 떨어집니다",
-            "headline_en": "Disabling only the recovery lane drops the same pipeline from 80.6 to 53.7",
+            "headline_ko": (
+                "복구 레인을 끄면 동일 파이프라인의 공식 점수가 80.6에서 53.7로 "
+                "떨어집니다"
+            ),
+            "headline_en": (
+                "Disabling only the recovery lane drops the same pipeline from "
+                "80.6 to 53.7"
+            ),
             "numbers": {
                 "benchmark": "olmOCR-Bench",
                 "with_recovery": round(olm_with["overall_score"] * 100, 2),
                 "without_recovery": round(olm_without["overall_score"] * 100, 2),
-                "with_recovery_ci95": [round(x * 100, 2) for x in olm_with["confidence_interval_95"]],
+                "with_recovery_ci95": [
+                    round(x * 100, 2) for x in olm_with["confidence_interval_95"]
+                ],
                 "without_recovery_ci95": [
                     round(x * 100, 2) for x in olm_without["confidence_interval_95"]
                 ],
@@ -511,7 +527,10 @@ def build_claims(repository: Path) -> dict[str, Any]:
             "id": "product-pipeline",
             "status": APPROVED,
             "headline_ko": "추출에서 끝나지 않고 지식 아키텍처까지 컴파일합니다",
-            "headline_en": "The pipeline does not stop at extraction; it compiles a knowledge architecture",
+            "headline_en": (
+                "The pipeline does not stop at extraction; it compiles a "
+                "knowledge architecture"
+            ),
             "numbers": {
                 "stages": [
                     "사전 분류·난이도 판정",
@@ -556,8 +575,14 @@ def build_claims(repository: Path) -> dict[str, Any]:
         {
             "id": "compilation-guarantees",
             "status": APPROVED,
-            "headline_ko": "산출물의 구조적 보증: 재현 가능한 아키텍처, 미해결 링크 0건, 병합 시 무손실",
-            "headline_en": "Structural guarantees: reproducible architecture, no unresolved links, no silent loss on merge",
+            "headline_ko": (
+                "산출물의 구조적 보증: 재현 가능한 아키텍처, 미해결 링크 0건, "
+                "병합 시 무손실"
+            ),
+            "headline_en": (
+                "Structural guarantees: reproducible architecture, no unresolved "
+                "links, no silent loss on merge"
+            ),
             "numbers": {
                 "documents_exercised": compilation["vault_compilation"]["documents_offered"],
                 "blueprints": compilation["architecture_determinism"]["blueprints_measured"],
@@ -712,7 +737,8 @@ def render_markdown(pack: dict[str, Any]) -> str:
             lines += [f"### {claim['headline_ko']}", ""]
             lines += [f"`{claim['id']}` — {claim.get('headline_en','')}", ""]
             if claim.get("numbers"):
-                lines += ["```json", json.dumps(claim["numbers"], ensure_ascii=False, indent=2), "```", ""]
+                rendered = json.dumps(claim["numbers"], ensure_ascii=False, indent=2)
+                lines += ["```json", rendered, "```", ""]
             if claim.get("must_say"):
                 lines += [f"**반드시 함께 표기**: {claim['must_say']}", ""]
             if claim.get("must_say_en"):

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from supervise_recovery_campaign import (
     SupervisionBudget,
     SupervisionJournal,

@@ -26,12 +26,12 @@ import argparse
 import collections
 import hashlib
 import json
-import math
 import re
 import statistics
-from dataclasses import dataclass, asdict
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 # A degenerate decode loop repeats a long n-gram many times. Eight tokens is long
 # enough that ordinary prose does not trip it and short enough to catch a model
@@ -331,7 +331,8 @@ def evaluate(
     # "wrong" with "big". Density asks whether a flagged document is wrong per
     # unit of text, which is what a defect signal should predict.
     def _density(signal: BlindSignals) -> float:
-        return counts.get((signal.benchmark_id, signal.case_id), 0) / max(signal.char_count, 1) * 1000
+        hits = counts.get((signal.benchmark_id, signal.case_id), 0)
+        return hits / max(signal.char_count, 1) * 1000
 
     baseline_density = statistics.fmean([_density(s) for s in signals])
     baseline_failure_probability = (
@@ -486,7 +487,8 @@ def main() -> int:
         "method": [
             "Score every frozen prediction using signals computed from the prediction alone.",
             "Rank blind by that score; rank oracle by official failure count.",
-            "At a fixed re-inference budget, compare the official failure mass each ranking reaches.",
+            "At a fixed re-inference budget, compare the official failure mass "
+            "each ranking reaches.",
             "Report the blind-to-oracle ratio, not a threshold chosen after seeing the outcome.",
         ],
         "weights_fixed_before_evaluation": True,
@@ -505,7 +507,8 @@ def main() -> int:
         json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    print(json.dumps({k: v for k, v in receipt.items() if k != "method"}, ensure_ascii=False, indent=2, sort_keys=True))
+    summary = {k: v for k, v in receipt.items() if k != "method"}
+    print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 
 

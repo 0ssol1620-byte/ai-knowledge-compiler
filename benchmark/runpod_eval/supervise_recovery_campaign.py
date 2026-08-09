@@ -27,11 +27,11 @@ import argparse
 import hashlib
 import json
 import subprocess
-import sys
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 SUPERVISOR_SCHEMA = "folynta.campaign-recovery-supervision.v1"
 
@@ -250,7 +250,11 @@ def probe_worker(
     )
     try:
         completed = subprocess.run(
-            [
+            # ssh comes from PATH on purpose: the operator's client, with their
+            # agent and config, is what has to reach these hosts. Suppressed
+            # here rather than hidden behind a variable, so the rule keeps
+            # applying to every other call site in this file.
+            [  # noqa: S607
                 "ssh", "-n", "-i", str(key),
                 "-o", "BatchMode=yes",
                 "-o", "ConnectTimeout=15",
@@ -293,7 +297,8 @@ def supervise(
             replacement_hours=replacement_hours,
         )
         journal.record("observed", cycle=cycle, **{
-            k: plan[k] for k in ("serving_worker_count", "capacity_deficit", "documents_outstanding")
+            k: plan[k]
+            for k in ("serving_worker_count", "capacity_deficit", "documents_outstanding")
         })
 
         if plan["documents_outstanding"] == 0:
@@ -301,7 +306,11 @@ def supervise(
             return {"outcome": "completed", "cycles": cycle, "plan": plan}
 
         if plan["should_stop"]:
-            journal.record("stopped", cycle=cycle, reasons=plan["blocked_reasons"] or ["no_recoverable_worker"])
+            journal.record(
+                "stopped",
+                cycle=cycle,
+                reasons=plan["blocked_reasons"] or ["no_recoverable_worker"],
+            )
             return {"outcome": "stopped", "cycles": cycle, "plan": plan}
 
         wanted = plan["replacements_to_acquire"]
@@ -314,7 +323,11 @@ def supervise(
                 journal.record("stopped", cycle=cycle, reasons=["no_capacity_offered"])
                 return {"outcome": "stopped", "cycles": cycle, "plan": plan}
             resume()
-            journal.record("resumed", cycle=cycle, documents_outstanding=plan["documents_outstanding"])
+            journal.record(
+                "resumed",
+                cycle=cycle,
+                documents_outstanding=plan["documents_outstanding"],
+            )
 
         sleep(poll_seconds)
 
@@ -327,7 +340,11 @@ def _canonical_hash(payload: dict[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def build_receipt(result: dict[str, Any], journal: SupervisionJournal, budget: SupervisionBudget) -> dict[str, Any]:
+def build_receipt(
+    result: dict[str, Any],
+    journal: SupervisionJournal,
+    budget: SupervisionBudget,
+) -> dict[str, Any]:
     receipt = {
         "schema": SUPERVISOR_SCHEMA,
         "question": (
@@ -384,19 +401,24 @@ def main() -> int:
             for w in fleet["workers"]
         )
 
+    # --acquire-command and --resume-command are shell strings the operator
+    # types when launching this supervisor, and they are meant to be shell
+    # strings: provisioning a replacement worker is a pipeline, not one binary.
+    # The operator is the trust boundary here, the same as for a Makefile
+    # recipe. Nothing in these strings comes from a Pod, a probe, or a file.
     def acquire(count: int) -> int:
         if not args.acquire_command:
             return 0
         acquired = 0
         for _ in range(count):
-            completed = subprocess.run(args.acquire_command, shell=True, check=False)
+            completed = subprocess.run(args.acquire_command, shell=True, check=False)  # noqa: S602
             if completed.returncode == 0:
                 acquired += 1
         return acquired
 
     def resume() -> None:
         if args.resume_command:
-            subprocess.run(args.resume_command, shell=True, check=False)
+            subprocess.run(args.resume_command, shell=True, check=False)  # noqa: S602
 
     budget = SupervisionBudget(
         max_replacements=args.max_replacements,
@@ -417,7 +439,8 @@ def main() -> int:
         json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    print(json.dumps({k: v for k, v in receipt.items() if k != "journal"}, ensure_ascii=False, indent=2, sort_keys=True))
+    summary = {k: v for k, v in receipt.items() if k != "journal"}
+    print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["outcome"] == "completed" else 1
 
 

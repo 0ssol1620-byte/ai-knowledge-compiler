@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 import pytest
-
 from long_paths import (
     long_path,
     safe_copy,

@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from build_completion_ledger import (
     build_ledger,
     load_delivered,
@@ -101,7 +100,9 @@ def test_recovery_tree_closes_the_gap_and_is_credited(tmp_path: Path) -> None:
     _write(baseline, "parsebench", "parsebench-b", "")
     _write(recovery, "parsebench", "parsebench-b", "recovered content")
 
-    roster = load_roster(_plan(("parsebench", "parsebench-a", 0), ("parsebench", "parsebench-b", 0)))
+    roster = load_roster(
+        _plan(("parsebench", "parsebench-a", 0), ("parsebench", "parsebench-b", 0))
+    )
     ledger = build_ledger(
         roster,
         load_delivered([baseline, recovery]),
@@ -300,9 +301,11 @@ def test_retry_plan_attempting_an_unplanned_case_is_rejected(tmp_path: Path) -> 
 
 
 def test_retry_plan_argument_requires_label_and_path() -> None:
-    assert parse_retry_plan_args(["round-1=/tmp/a.json"]) == [("round-1", Path("/tmp/a.json"))]
+    # The path is never opened here; only the LABEL=PATH split is under test.
+    argument = "round-1=plans/a.json"
+    assert parse_retry_plan_args([argument]) == [("round-1", Path("plans/a.json"))]
     with pytest.raises(ValueError, match="LABEL=PATH"):
-        parse_retry_plan_args(["/tmp/a.json"])
+        parse_retry_plan_args(["plans/a.json"])
 
 
 def test_per_suite_counts_add_up(tmp_path: Path) -> None:

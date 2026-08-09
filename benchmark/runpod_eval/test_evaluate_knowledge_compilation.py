@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from evaluate_knowledge_compilation import (
     _classify_refusal,
     _looks_like_table,

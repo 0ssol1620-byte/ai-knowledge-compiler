@@ -19,7 +19,7 @@ import os
 import shutil
 from pathlib import Path
 
-__all__ = ["long_path", "safe_copy", "safe_link_or_copy", "safe_makedirs", "safe_exists"]
+__all__ = ["long_path", "safe_copy", "safe_exists", "safe_link_or_copy", "safe_makedirs"]
 
 
 def long_path(path: Path | str) -> str:

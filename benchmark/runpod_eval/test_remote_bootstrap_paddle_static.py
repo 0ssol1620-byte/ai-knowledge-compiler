@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 SCRIPT = Path(__file__).with_name("remote_bootstrap_paddle_recovery.sh")
 CONTROLLER = (
     Path(__file__).parents[1]

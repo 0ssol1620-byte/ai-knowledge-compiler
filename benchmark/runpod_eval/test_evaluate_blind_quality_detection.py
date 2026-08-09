@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pytest
-
 from pathlib import Path
 
+import pytest
 from evaluate_blind_quality_detection import (
     BlindSignals,
     _benchmark_of,
@@ -70,12 +69,15 @@ def test_unknown_benchmark_prefix_is_rejected() -> None:
 
 
 def test_repetition_ratio_ignores_ordinary_prose() -> None:
-    words = "the quick brown fox jumps over the lazy dog and then rests".split()
+    words = [
+        "the", "quick", "brown", "fox", "jumps", "over",
+        "the", "lazy", "dog", "and", "then", "rests",
+    ]
     assert repetition_ratio(words) == 0.0
 
 
 def test_repetition_ratio_detects_a_decode_loop() -> None:
-    loop = "row one two three four five six seven ".split() * 12
+    loop = ["row", "one", "two", "three", "four", "five", "six", "seven"] * 12
     assert repetition_ratio(loop) > 0.5
 
 
@@ -141,7 +143,7 @@ def test_html_header_cells_count_as_cells() -> None:
 
 def test_pipe_and_html_tables_are_both_inspected() -> None:
     text = "| a | b |\n| - | - |\n| 1 |\n\n<table><tr><td>x</td></tr></table>"
-    broken, ratio = table_shape(text.splitlines(), text)
+    broken, _ = table_shape(text.splitlines(), text)
     assert broken is True
 
 

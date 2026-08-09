@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 SCRIPT = (
     Path(__file__).parents[1]
     / ".."
@@ -16,7 +15,11 @@ def test_dedicated_recovery_provisioning_is_bounded_to_secure_4090_by_default() 
     assert "cloudType = 'SECURE'" in source
     assert "[string]$GpuTypeId = 'NVIDIA GeForce RTX 4090'" in source
     assert "gpuTypeIds = @($GpuTypeId)" in source
-    assert "[ValidateSet('NVIDIA GeForce RTX 4090', 'NVIDIA GeForce RTX 5090', 'NVIDIA A40')]" in source
+    allowed = (
+        "[ValidateSet('NVIDIA GeForce RTX 4090', 'NVIDIA GeForce RTX 5090', "
+        "'NVIDIA A40')]"
+    )
+    assert allowed in source
     assert "pod-create-retry" in source
     assert "if ($rate -le 0 -or $rate -gt 1.05)" in source
     assert "supportPublicIp = $true" in source
