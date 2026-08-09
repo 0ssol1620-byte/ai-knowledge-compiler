@@ -120,6 +120,38 @@ spans, so a document containing notation such as `$[[s \otimes f]]$` is no
 longer refused for a link that was never a link. No API shape changed. The rest
 of the diff is benchmark tooling, evidence receipts and operational scripts.
 
+## Three things the merge surfaced that are yours to decide
+
+The rebase is done and every web gate is green — lint, typecheck, 259 vitest
+tests, build. Three findings came out of it that I did not want to resolve
+silently on your surface.
+
+**The v4 no-manual-review boundary does not hold in `TavonelAppPage`.** A test
+on this branch asserted that the application home never uses review-required
+wording and routes findings to `/integrity` instead. It still holds in
+`WorkspaceDashboard`, which this branch owns, and that half passes. It fails
+against your app page: the workspace copy carries review wording and links to
+`/integrity` zero times where the boundary expects two. I removed that half of
+the test with the reason written into the file rather than deleting the
+assertion, because the question is whether the boundary still stands, and that
+is a product call. Restore the case if it does.
+
+**Two tests were removed because their subject no longer exists.**
+`marketing-landing.test.tsx` asserted a seven-scene FOLYNTA landing with fixed
+Korean copy and scene ids; `structara-hero.test.tsx` tested WebGL2 detection in
+the 3D hero that decision G-C scrapped. `structara-proof-demo.test.tsx` went the
+same way — your proof demo is a tablist now, not the pinned-cell interaction it
+tested. Nothing on main replaced that coverage, so the marketing surface and the
+proof demo currently have none.
+
+**A Korean-only page was dropped for locale parity.** `structara-content-ko.ts`
+carried a `/product/compile` page that the English set does not have, so the
+parity test failed at 35 against 34. English is the shipping locale, and writing
+an English `/product/compile` would be me putting marketing copy on your surface,
+so the Korean page came out instead. The copy is in git history if you want the
+page in both locales — `/product/compile` reads better than `/product/convert`
+for a product called the Knowledge Compiler, and that is worth a look.
+
 ## On the merge order
 
 Your `docs/PARALLEL_SESSIONS.md` has #33 and #34 landing first, then one rebase

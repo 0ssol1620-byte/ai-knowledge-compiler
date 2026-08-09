@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { StructaraProofDemo } from "@/components/tavonel-proof-demo";
+import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
 import { StructaraSecProofDemo } from "@/components/structara-sec-proof-demo";
 import type { StructaraLocale } from "@/lib/locale";
 
@@ -53,7 +53,7 @@ export function PublicProofSwitcher({ locale }: { locale: StructaraLocale }) {
         <p>{copy.disclosure}</p>
       </div>
       {market === "dart" ? (
-        <StructaraProofDemo locale={locale} />
+        <TavonelProofDemo />
       ) : (
         <StructaraSecProofDemo />
       )}

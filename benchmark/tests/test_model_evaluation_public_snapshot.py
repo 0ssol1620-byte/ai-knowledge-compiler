@@ -14,10 +14,24 @@ def test_measured_model_snapshot_is_schema_valid() -> None:
             encoding="utf-8"
         )
     )
+    # The measured snapshot lives in the evidence tree, not under apps/web.
+    #
+    # It used to be read from the file the site imports, which turned out to be
+    # two different artifacts wearing one name. The site's copy is a 1.0
+    # placeholder whose datasets carry text/numbers/tables/provenance; the
+    # measured run produces 1.1 with edit-distance and TEDS companions. They are
+    # not a version apart, they are a different shape, and the marketing page
+    # now reads its figures from the claims pack rather than from either.
+    #
+    # Publishing the measured one would mean rewriting the site's consumer and
+    # everything that renders it, which belongs to the design session. This
+    # validates the artifact we produce; the handoff carries the contract change.
     snapshot = json.loads(
-        (ROOT / "apps/web/src/data/benchmark-public-snapshot.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            ROOT
+            / "docs/evidence/artifacts"
+            / "folynta-measured-model-evaluation-snapshot-2026-08-02.json"
+        ).read_text(encoding="utf-8")
     )
     errors = list(
         Draft202012Validator(schema, format_checker=FormatChecker()).iter_errors(snapshot)

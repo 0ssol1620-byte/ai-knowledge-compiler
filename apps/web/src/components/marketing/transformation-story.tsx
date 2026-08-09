@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { StructaraGlyph } from "@/components/tavonel-glyph";
+import { TavonelGlyph } from "@/components/tavonel-glyph";
 import type { StructaraLocale } from "@/lib/locale";
 
 type Chapter = {
@@ -109,7 +109,7 @@ export function TransformationStory({
             </div>
             <span className="st-story-evidence" />
             <div>
-              <StructaraGlyph
+              <TavonelGlyph
                 name={
                   active === 0
                     ? "block"

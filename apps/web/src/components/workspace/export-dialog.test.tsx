@@ -86,7 +86,7 @@ describe("ExportDialog Vault merge preview", () => {
     ).toBeVisible();
     expect(screen.getByText("Notes/Overview.md")).toBeVisible();
     expect(
-      screen.getByRole("button", { name: "Download package after review" }),
+      screen.getByRole("button", { name: "Download validated package" }),
     ).toBeVisible();
   });
 });

@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { BrandMark } from "@/components/brand-mark";
 import {
-  StructaraGlyph,
-  type StructaraGlyphName,
+  TavonelGlyph,
+  type TavonelGlyphName,
 } from "@/components/tavonel-glyph";
 
-const GLYPHS: StructaraGlyphName[] = [
+const GLYPHS: TavonelGlyphName[] = [
   "page",
   "block",
   "table",
@@ -43,7 +43,7 @@ function BrandSystem({ compact = false }: { compact?: boolean }) {
             key={glyph}
             style={{ margin: 0, display: "grid", gap: ".5rem" }}
           >
-            <StructaraGlyph name={glyph} size={32} label={`${glyph} glyph`} />
+            <TavonelGlyph name={glyph} size={32} label={`${glyph} glyph`} />
             <figcaption>{glyph}</figcaption>
           </figure>
         ))}

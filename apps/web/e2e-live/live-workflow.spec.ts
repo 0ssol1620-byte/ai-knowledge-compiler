@@ -9,6 +9,14 @@ test("real API journey preserves provenance through export", async ({
   const email = `live-e2e-${unique}@example.test`;
   const filename = "e2e-source.txt";
 
+  await page.context().addCookies([
+    {
+      name: "akc_locale",
+      value: "en",
+      url: "http://127.0.0.1:3100",
+    },
+  ]);
+
   await page.goto("/login?mode=register");
   await page.getByLabel("Display name").fill("Live E2E Owner");
   await page.getByLabel("Email").fill(email);
@@ -79,10 +87,10 @@ test("real API journey preserves provenance through export", async ({
   await page.waitForURL(/\/workspace\?document=[0-9a-f-]+&estimate=1$/);
   await expect(
     page.getByRole("heading", {
-      name: "Review the estimate before processing",
+      name: "Confirm the estimate before processing",
     }),
   ).toBeVisible();
-  await expect(page.getByText("Native text")).toBeVisible();
+  await expect(page.getByText("Source structure")).toBeVisible();
   await expect(page.getByText("Not used")).toBeVisible();
 
   await page.getByRole("checkbox").check();
@@ -186,8 +194,10 @@ test("real API journey preserves provenance through export", async ({
   );
   expect(seedReview.ok()).toBe(true);
   await page.reload();
-  await page.getByRole("button", { name: /Review\s+1/ }).click();
-  const reviewDialog = page.getByRole("dialog", { name: "Review queue" });
+  await page.getByRole("button", { name: /Integrity\s+1/ }).click();
+  const reviewDialog = page.getByRole("dialog", {
+    name: "Integrity findings",
+  });
   await expect(reviewDialog).toBeVisible();
   await reviewDialog
     .getByRole("textbox", { name: "Direct replacement" })
@@ -205,7 +215,7 @@ test("real API journey preserves provenance through export", async ({
     reviewDialog.getByRole("button", { name: "Resolved" }),
   ).toBeVisible();
   await reviewDialog
-    .getByRole("button", { name: "Close review queue" })
+    .getByRole("button", { name: "Close integrity findings" })
     .click();
   await expect(reviewDialog).toBeHidden();
 

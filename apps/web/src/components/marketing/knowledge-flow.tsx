@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { StructaraGlyph } from "@/components/tavonel-glyph";
+import { TavonelGlyph } from "@/components/tavonel-glyph";
 import type { StructaraLocale } from "@/lib/locale";
 
 const copy = {
@@ -78,7 +78,7 @@ export function KnowledgeFlow({ locale }: { locale: StructaraLocale }) {
         </svg>
         <div className="st-flow-core">
           <span>{text.compiler}</span>
-          <StructaraGlyph name="verified" size={36} />
+          <TavonelGlyph name="verified" size={36} />
           {text.coreItems.map((item) => (
             <strong key={item}>{item}</strong>
           ))}
@@ -122,7 +122,7 @@ function FlowColumn({
       <span>{title}</span>
       {items.map((item) => (
         <div key={item}>
-          <StructaraGlyph name={glyph} size={18} />
+          <TavonelGlyph name={glyph} size={18} />
           <strong>{item}</strong>
         </div>
       ))}

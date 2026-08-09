@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.1",
+  "status": "available",
+  "generated_at": "2026-08-02T03:39:05+09:00",
+  "evaluator_version": "OmniDocBench@193627ae9e97d89188468ed1ee3b7a856ff76044",
+  "evidence_bundle_sha256": "sha256:daf40605df692107fec0db2e08afb05e7a940e1ca21db91d8eb3761a79f90af5",
+  "corpus_revision": "OmniDocBench official demo / 18 images / Apache-2.0",
+  "model_revision": "MinerU 3.4.4 pipeline@79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7 + PaddleOCR-VL 1.6 FastDeploy@sha256:83482fee6ec1a6bd7b822f32dcc3cb9a412419786b2ae6cc87320290132334a2 + MinerU 3.4.4 VLM c1@79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7 + DeepSeek-OCR-2@aaa02f3811945a91062062994c5c4a3f4c0af2b0 / artifact sha256:ddb70c12791d2583344b73a065c8b4757e5827aa2fe608e763074c33bfab876c + OvisOCR2@65c619d374b55d4152e85150fc1b003700bc1f0c / artifact sha256:847f485bc71908a70075fe6b0d76609f52bc7f1e730c03670c764da56da08c9a / vLLM 0.22.1+cu129",
+  "hardware_profile": "RunPod Secure Cloud / NVIDIA RTX 4090 24,564 MiB / $0.69 GPU-hour observed",
+  "datasets": [
+    {
+      "id": "mineru-3.4.4-pipeline",
+      "label": "MinerU 3.4.4 · Pipeline",
+      "source": "18 pages x 3 blind repeats",
+      "status": "available",
+      "document_count": 18,
+      "page_count": 18,
+      "metrics": {
+        "text_edit_companion": 0.9634931318267842,
+        "formula_edit_companion": 0.8465755251066622,
+        "table_teds": 0.8908027047142246,
+        "table_structure_teds": 0.9468253968253967,
+        "table_edit_companion": 0.5657134284141752,
+        "reading_order_companion": 0.9042993906964495,
+        "mean_latency_ms": 6958.91947183689,
+        "cost_per_page_usd": 0.001333792898768737,
+        "exact_repeat_ratio": 1.0
+      },
+      "evidence": {
+        "case_count": 54,
+        "hard_failure_count": 0,
+        "repeat_count": 3,
+        "evidence_summary_sha256": "sha256:039ad9a40be6e04fe69127e8a183abd29c3a0059cf40f6ec5b2d92a4a17e98f1",
+        "inference_run_summary_sha256": "sha256:a10f660307119715a8cd6ae237a8dd14cdcf29023a9ffe440624abf14f14d529",
+        "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207"
+      }
+    },
+    {
+      "id": "paddleocr-vl-1.6-fastdeploy-c8",
+      "label": "PaddleOCR-VL 1.6 · FastDeploy c8",
+      "source": "18 pages x 3 blind repeats",
+      "status": "available",
+      "document_count": 18,
+      "page_count": 18,
+      "metrics": {
+        "text_edit_companion": 0.961791144692022,
+        "formula_edit_companion": 0.8863819255705198,
+        "table_teds": 0.9060647206933243,
+        "table_structure_teds": 0.9383699633699635,
+        "table_edit_companion": 0.9481120692807817,
+        "reading_order_companion": 0.908729891702293,
+        "mean_latency_ms": 3524.9142754322816,
+        "cost_per_page_usd": 0.0006756085694578539,
+        "exact_repeat_ratio": 0.5555555555555556
+      },
+      "evidence": {
+        "case_count": 54,
+        "hard_failure_count": 0,
+        "repeat_count": 3,
+        "evidence_summary_sha256": "sha256:b309e6c59ce7c583b550c7645faa345cc2eeb4614df9b822199bfbc4d4f9a6eb",
+        "inference_run_summary_sha256": "sha256:40d5079ddc999ba4abf40707da255082ed87f7462244bf3f7496de90d4fd9c92",
+        "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207"
+      }
+    },
+    {
+      "id": "mineru-3.4.4-vlm-c1",
+      "label": "MinerU 3.4.4 · VLM c1",
+      "source": "18 pages x 3 blind repeats",
+      "status": "available",
+      "document_count": 18,
+      "page_count": 18,
+      "metrics": {
+        "text_edit_companion": 0.9657421536098182,
+        "formula_edit_companion": 0.877025063756846,
+        "table_teds": 0.9596961750183709,
+        "table_structure_teds": 0.9845238095238097,
+        "table_edit_companion": 0.977262872559239,
+        "reading_order_companion": 0.9233069000343376,
+        "mean_latency_ms": 34707.780641788195,
+        "cost_per_page_usd": 0.006652324623009405,
+        "exact_repeat_ratio": 1.0
+      },
+      "evidence": {
+        "case_count": 54,
+        "hard_failure_count": 0,
+        "repeat_count": 3,
+        "evidence_summary_sha256": "sha256:ac3ea843e96d333d8bddcb6cee4089e72ce6a69c0a80aa6ee7b753f83f2b5365",
+        "inference_run_summary_sha256": "sha256:ee5046059fae45bf40b2b42910a72e2718cfaebd7eb3ee3c887607a16ccfddf5",
+        "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207"
+      }
+    },
+    {
+      "id": "deepseek-ocr-2-3b-transformers",
+      "label": "DeepSeek-OCR-2 · Transformers",
+      "source": "18 pages x 3 blind repeats",
+      "status": "available",
+      "document_count": 18,
+      "page_count": 18,
+      "metrics": {
+        "text_edit_companion": 0.9675723663242827,
+        "formula_edit_companion": 0.8604622740952352,
+        "table_teds": 0.8718383327808755,
+        "table_structure_teds": 0.9124973876698016,
+        "table_edit_companion": 0.8925125177519453,
+        "reading_order_companion": 0.8997331806507874,
+        "mean_latency_ms": 47200.15398477619,
+        "cost_per_page_usd": 0.009046696180415434,
+        "exact_repeat_ratio": 1.0
+      },
+      "evidence": {
+        "case_count": 54,
+        "hard_failure_count": 0,
+        "repeat_count": 3,
+        "evidence_summary_sha256": "sha256:ff7ef2a6058e702c1f2122405fcb5525649e345eb18c0f4fac3d58a220848c2e",
+        "inference_run_summary_sha256": "sha256:23be642af7c7e06c67b5b12e6412dae62624b73d979ea2427a9a1c4ef64388e6",
+        "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207"
+      }
+    },
+    {
+      "id": "ovisocr2-0.9b-vllm-0.22.1-cu129",
+      "label": "OvisOCR2 0.9B · vLLM cu129",
+      "source": "18 pages x 3 blind repeats",
+      "status": "available",
+      "document_count": 18,
+      "page_count": 18,
+      "metrics": {
+        "text_edit_companion": 0.9020365042823337,
+        "formula_edit_companion": 0.8612477386134283,
+        "table_teds": 0.8940625477329579,
+        "table_structure_teds": 0.9383699633699635,
+        "table_edit_companion": 0.9403120099396404,
+        "reading_order_companion": 0.8574265005520042,
+        "mean_latency_ms": 6171.27132273486,
+        "cost_per_page_usd": 0.0011828270035241816,
+        "exact_repeat_ratio": 0.8888888888888888
+      },
+      "evidence": {
+        "case_count": 54,
+        "hard_failure_count": 0,
+        "repeat_count": 3,
+        "evidence_summary_sha256": "sha256:3ce8e385c087591de8ea5af270109356b7e551f48a7ae3d8b008c42b8b8d5c83",
+        "inference_run_summary_sha256": "sha256:2ae67f243591bff9bce35cbb9377bb27eb0565cc47b34c69599cd3c513459eb1",
+        "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207"
+      }
+    }
+  ]
+}

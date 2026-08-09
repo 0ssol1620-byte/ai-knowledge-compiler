@@ -98,3 +98,7 @@ crash.log
 
 # pnpm install transcript, written when the registry is slow enough to need one
 .pnpm-install.log
+
+# eslint/vitest JSON reports written during gate runs
+.eslint.json
+.vitest.json

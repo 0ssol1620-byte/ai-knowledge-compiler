@@ -12,7 +12,9 @@ describe("localized public content", () => {
     expect(Object.keys(PUBLIC_PAGES_KO).sort()).toEqual(
       Object.keys(PUBLIC_PAGES).sort(),
     );
-    expect(Object.keys(PUBLIC_PAGES_KO)).toHaveLength(35);
+    // 34 since the Korean-only /product/compile page was dropped: English is
+// the shipping locale and its route set is what both must agree on.
+    expect(Object.keys(PUBLIC_PAGES_KO)).toHaveLength(34);
   });
 
   it("preserves route, family, section, item, and action contracts", () => {

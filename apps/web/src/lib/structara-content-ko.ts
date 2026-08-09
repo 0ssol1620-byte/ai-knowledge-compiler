@@ -1,19 +1,19 @@
-import type { StructaraPage, StructaraSection } from "@/lib/tavonel-content";
+import type { TavonelPage, TavonelSection } from "@/lib/tavonel-content";
 
 const page = (
   path: string,
-  family: StructaraPage["family"],
+  family: TavonelPage["family"],
   label: string,
   title: string,
   intro: string,
   thesis: string,
-  sections: readonly StructaraSection[],
-  primaryAction: StructaraPage["primaryAction"] = {
+  sections: readonly TavonelSection[],
+  primaryAction: TavonelPage["primaryAction"] = {
     label: "지식 시스템 구축하기",
     href: "/signup",
   },
-  secondaryAction?: StructaraPage["secondaryAction"],
-): StructaraPage => ({
+  secondaryAction?: TavonelPage["secondaryAction"],
+): TavonelPage => ({
   path,
   family,
   label,
@@ -25,7 +25,7 @@ const page = (
   secondaryAction,
 });
 
-export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
+export const PUBLIC_PAGES_KO: Record<string, TavonelPage> =
   Object.fromEntries(
     [
       page(
@@ -62,36 +62,8 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
             items: ["Markdown", "Obsidian", "RAG와 JSON-LD"],
           },
         ],
-        { label: "컴파일 살펴보기", href: "/product/compile" },
+        { label: "변환 살펴보기", href: "/product/convert" },
         { label: "전체 데모 보기", href: "/demo/dart" },
-      ),
-      page(
-        "/product/compile",
-        "product",
-        "컴파일",
-        "원문 연결 결과는 지식 시스템의 시작입니다.",
-        "정확한 원본 위치를 보존하면서 네이티브 파일, 스캔, 표, 그림과 노트를 타입이 있는 검증 가능한 지식으로 컴파일합니다.",
-        "하나의 내구성 이벤트 계약으로 이해하고, 검증하고, 연결하고, 패키징합니다.",
-        [
-          {
-            title: "이해",
-            body: "읽기 순서, 계층, 표, 그림, 수식과 각주를 타입이 있는 블록으로 복원합니다.",
-          },
-          {
-            title: "검증",
-            body: "중요한 텍스트, 숫자와 셀을 원본 페이지, 블록, 분류 체계와 영수증에 연결합니다.",
-          },
-          {
-            title: "연결",
-            body: "저장된 컴파일러 이벤트로 노트, 엔티티, 관계와 콘텐츠 맵을 형성합니다.",
-          },
-          {
-            title: "패키징",
-            body: "동일한 검증 코어에서 Markdown, Vault, RAG JSONL, JSON-LD와 서명된 지식 패키지를 파생합니다.",
-          },
-        ],
-        { label: "컬렉션 컴파일하기", href: "/intake" },
-        { label: "공개 근거 확인하기", href: "/demo/dart" },
       ),
       page(
         "/product/convert",
@@ -437,7 +409,7 @@ export const PUBLIC_PAGES_KO: Record<string, StructaraPage> =
             body: "DART 사업보고서와 SEC 10-K, 사건 공시와 8-K를 비교합니다.",
           },
         ],
-        { label: "공시 Proof 열기", href: "/demo/sec" },
+        { label: "공시 Proof 열기", href: "/documents/sample-sec/processing" },
       ),
       page(
         "/demo/research-paper",
