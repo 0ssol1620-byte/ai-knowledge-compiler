@@ -1,0 +1,544 @@
+/*
+ * Hero static comps — DESIGN_MASTER_V3 §12.2, W1.
+ *
+ * Three variants share one grid and one frame; only the arrangement changes.
+ * §25.7 forbids cards in the hero, so nothing here is a card: no rounded
+ * container with a shadow, no repeated tile. Depth is the paper-1/paper-0
+ * luminance step and a single alpha hairline (§6.3).
+ */
+
+@layer components {
+  /*
+   * §20 [확정] — the responsive bands, expressed with min-width.
+   *
+   * §20 gives four bands and three boundaries:
+   *
+   *   >= 1280    facing spread, 5:7
+   *   1024-1279  facing spread held, but 6:6
+   *   768-1023   vertical: source above, result below
+   *   <= 767     vertical plus a Source/Result tab switch
+   *
+   * min-width rather than max-width, and the reason is exact rather than
+   * stylistic. The allowed boundary set is 1280 / 1024 / 768, and with
+   * max-width every boundary lands one pixel inside the wrong band —
+   * `max-width: 1024px` puts 1024 in the vertical band when §20 puts it in the
+   * 6:6 one. Expressing it the other way round would need 1023 and 1279, the
+   * exact widths §20 exists to remove. So the vertical layout is the base and
+   * the spread is the enhancement.
+   *
+   * This is a behaviour change and worth naming: the spread previously held
+   * down to 768, so 900px showed two columns where §20's table says vertical.
+   */
+  .tv-hero-comp {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: var(--s-6);
+    padding: var(--s-8) var(--s-5) var(--s-9);
+    background: var(--paper-1);
+    color: var(--ink-0);
+  }
+
+  /* 1024-1279 — the spread returns, at 6:6. */
+  @media (min-width: 1024px) {
+    .tv-hero-comp {
+      grid-template-columns: 6fr 6fr;
+      gap: var(--s-7);
+      min-height: min(88vh, 920px); /* §6.4 vertical rhythm */
+      padding: var(--s-9) clamp(var(--s-5), 5vw, 72px) var(--s-10);
+    }
+  }
+
+  /* >= 1280 — §6.4 makes the hero the only 5:7 in the system. */
+  @media (min-width: 1280px) {
+    .tv-hero-comp {
+      grid-template-columns: 5fr 7fr;
+    }
+  }
+
+  /*
+   * §5.2 slop response 4 — the eyebrow leaves "uppercase label + dot + rule".
+   *
+   * The detector's rule is named Eyebrow Chrome, and the axis we carried was
+   * the uppercase tracked label in the accent colour. There was never a
+   * decorative dot or a trailing rule here, so this is not the full pattern —
+   * but the uppercase label is the part that does the signalling, and it is
+   * the part that every generated marketing page also has.
+   *
+   * §5.2's instruction is to earn it with specificity, so the change is in
+   * treatment rather than in words: the copy is G-F approved and stays exactly
+   * as it is. What goes is the chrome.
+   *
+   *   uppercase + 0.08em tracking  ->  sentence case, normal tracking
+   *   accent colour                ->  ink-2
+   *
+   * Sentence case in the mono face reads as a system label — what a compiler
+   * prints above its output — rather than as a marketing category tag. The
+   * accent leaves because an accent that appears on every eyebrow is chrome;
+   * §6.2 spends 255° on one thing at a time, and on this screen that thing is
+   * the CTA.
+   */
+  .tv-hero-comp-eyebrow {
+    margin: 0 0 var(--s-4);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: var(--w-medium);
+    letter-spacing: 0;
+    line-height: var(--lh-label);
+  }
+
+  /*
+   * The treatment §5.2 asks us to leave, kept only so /design/slop can show
+   * the two beside each other for the approval this change needs. It is not
+   * reachable from any product route.
+   */
+  [data-treatment="chrome"] .tv-hero-comp-eyebrow {
+    color: var(--brand);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-hero-comp h1 {
+    margin: 0;
+    font-size: var(--fs-display-1);
+    font-weight: var(--w-display); /* 590 — §7.2 plan B non-integer stop */
+    letter-spacing: var(--tracking-display-1);
+    line-height: var(--lh-display-1);
+    /* No text-wrap: balance. §12.2 sets the line breaks by hand, per language. */
+  }
+
+  .tv-hero-comp-lead {
+    max-width: var(--measure);
+    margin: var(--s-5) 0 0;
+    color: var(--ink-1);
+    font-size: var(--fs-lead);
+    font-weight: var(--w-body);
+    letter-spacing: var(--tracking-lead);
+    line-height: var(--lh-lead);
+    text-wrap: pretty;
+  }
+
+  .tv-hero-comp-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+
+  /*
+   * Rendered as <span> on purpose: these comps are not wired, and §14.3 says a
+   * control that looks interactive must work. A button here would be a dead
+   * control. W2 turns the winning variant's spans into real controls.
+   */
+  .tv-hero-comp-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--s-5);
+    border-radius: var(--r-paper-lg);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    letter-spacing: -0.005em;
+  }
+
+  .tv-hero-comp-cta[data-kind="primary"] {
+    background: var(--brand);
+    color: var(--paper-0);
+  }
+
+  .tv-hero-comp-cta[data-kind="secondary"] {
+    border-bottom: 1px solid var(--rule-paper-2);
+    border-radius: 0;
+    padding: 0;
+    color: var(--ink-1);
+  }
+
+  .tv-hero-comp-trust {
+    margin: var(--s-6) 0 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--lh-label);
+    text-transform: uppercase;
+  }
+
+  .tv-hero-comp-stage {
+    position: relative;
+    min-width: 0;
+  }
+
+  /* ── the source side ──────────────────────────────── */
+
+  /*
+   * .paper-page is position: absolute; inset: 0, so it contributes no height
+   * and the panel would collapse. A page has a page's proportions, so the
+   * wrapper carries them and the source side sets the height of the spread —
+   * which is what a facing spread does.
+   */
+  .tv-hero-comp-page {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    width: 100%;
+  }
+
+  /*
+   * A page facsimile whose blocks sit at their stored bbox1000 coordinates, so
+   * a highlight over "Table 3" is over the table by construction rather than by
+   * luck. §5 makes the source side warm paper and the output side white, so
+   * the two are distinguishable in greyscale (§25.4 squint test).
+   */
+  .tv-hero-comp-paper {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    /* §5, §12.2 — the source side is warm paper, the knowledge side is white.
+       The luminance step is what gives §25.3 its two-peak histogram. */
+    background: var(--paper-1);
+    color: var(--ink-1);
+    /* A serif here is the document's voice, not the product's. Product UI type
+       is Wanted Sans; §7.5 keeps them apart. */
+    font-family: Georgia, "Times New Roman", serif;
+    container-type: inline-size;
+  }
+
+  .tv-hero-comp-paper-head {
+    position: absolute;
+    top: 3.2%;
+    right: 11%;
+    left: 11%;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding-bottom: 0.6%;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--rule-paper-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 2.1cqw;
+    letter-spacing: 0.06em;
+  }
+
+  .tv-hero-comp-block {
+    position: absolute;
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+    line-height: 1.35;
+  }
+
+  .tv-hero-comp-block[data-kind="title"] {
+    align-items: center;
+    font-size: 3.6cqw;
+    font-weight: 700;
+    line-height: 1.18;
+  }
+
+  .tv-hero-comp-block[data-kind="heading"] {
+    align-items: center;
+    font-size: 2.8cqw;
+    font-weight: 700;
+  }
+
+  .tv-hero-comp-block[data-kind="paragraph"] {
+    font-size: 2.4cqw;
+    text-align: justify;
+  }
+
+  .tv-hero-comp-block[data-kind="table"] {
+    flex-direction: column;
+    font-size: 2.1cqw;
+  }
+
+  .tv-hero-comp-block table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tv-hero-comp-block caption {
+    padding-bottom: 0.5em;
+    color: var(--ink-2);
+    text-align: left;
+  }
+
+  .tv-hero-comp-block th {
+    border-bottom: 1px solid var(--ink-3);
+    padding: 0.35em 0.4em 0.35em 0;
+    text-align: left;
+  }
+
+  .tv-hero-comp-block td {
+    border-bottom: 1px solid var(--rule-paper-2);
+    padding: 0.35em 0.4em 0.35em 0;
+  }
+
+  .tv-hero-comp-block th:not(:first-child),
+  .tv-hero-comp-block td:not(:first-child) {
+    text-align: right;
+  }
+
+  .tv-hero-comp-paper-number {
+    position: absolute;
+    bottom: 3.5%;
+    left: 50%;
+    color: var(--ink-3);
+    font-size: 2.1cqw;
+    translate: -50%;
+  }
+
+  /*
+   * The bounding boxes a thread starts from, drawn at the stored coordinates.
+   * Percentage geometry comes from bboxStyle(), so what is highlighted is what
+   * the server recorded — not a rectangle placed to look right.
+   */
+  .tv-hero-comp-bbox {
+    position: absolute;
+    border: 1px solid var(--evidence);
+    background: color-mix(in oklab, var(--evidence) 8%, transparent);
+    pointer-events: none;
+  }
+
+  .tv-hero-comp-bbox[data-state="review"] {
+    border-color: var(--review);
+    border-style: dashed;
+    background: color-mix(in oklab, var(--review) 8%, transparent);
+  }
+
+  /* ── the knowledge side ───────────────────────────── */
+
+  .tv-hero-comp-output {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+
+  .tv-hero-comp-row {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .tv-hero-comp-row strong {
+    color: var(--ink-0);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    letter-spacing: var(--tracking-title-2);
+    line-height: 1.35;
+  }
+
+  .tv-hero-comp-row[data-kind="title"] strong {
+    font-size: var(--fs-title-2);
+    line-height: var(--lh-title-2);
+  }
+
+  .tv-hero-comp-tag {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .tv-hero-comp-ref {
+    color: var(--evidence);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+
+  /* §11.2 R2 — state carried by more than colour. */
+  .tv-hero-comp-ref[data-state="review"] {
+    padding-left: var(--s-3);
+    border-left: 2px solid var(--review);
+    color: var(--review);
+  }
+
+  .tv-hero-comp-row table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-min);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tv-hero-comp-row th {
+    padding: var(--s-2) var(--s-2) var(--s-2) 0;
+    border-bottom: 1px solid var(--rule-paper-2);
+    color: var(--ink-2);
+    font-weight: var(--w-medium);
+    text-align: left;
+  }
+
+  .tv-hero-comp-row td {
+    padding: var(--s-2) var(--s-2) var(--s-2) 0;
+    border-bottom: 1px solid var(--rule-paper-1);
+    color: var(--ink-1);
+  }
+
+  .tv-hero-comp-row[data-state="review"] tbody tr:last-child td {
+    background: color-mix(in oklab, var(--review) 6%, transparent);
+  }
+
+  /* ── variant A · Frame ────────────────────────────── */
+  /* One frame, both pages inside it. The recommended direction in §12.2. */
+
+  /* ── variant B · Overlap ──────────────────────────── */
+  /* The knowledge side floats 12% over the source page. */
+
+  .tv-hero-comp[data-variant="overlap"] .tv-facing-frame {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .tv-hero-comp[data-variant="overlap"] .tv-facing-verso {
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-media);
+  }
+
+  .tv-hero-comp[data-variant="overlap"] .tv-facing-spine {
+    background: transparent;
+  }
+
+  .tv-hero-comp[data-variant="overlap"] .tv-facing-spine::before {
+    display: none;
+  }
+
+  .tv-hero-comp[data-variant="overlap"] .tv-facing-recto {
+    z-index: 2;
+    align-self: center;
+    margin-left: -12%;
+    border: 1px solid var(--rule-paper-2);
+    border-radius: var(--r-media);
+    /* The one place §6.3 allows depth on paper is an overlay, and a floating
+       panel is one. --depth-overlay, not a decorative card shadow. */
+    box-shadow: var(--depth-overlay);
+  }
+
+  /* ── variant C · Full-bleed verso ─────────────────── */
+  /* The source page runs off the right edge; the output sits over it. */
+
+  /* The bleed only means anything once there is a spread to bleed out of,
+     so the padding removal is scoped to the bands that have one. */
+  @media (min-width: 1024px) {
+    .tv-hero-comp[data-variant="fullbleed"] {
+      padding-right: 0;
+    }
+  }
+
+  .tv-hero-comp[data-variant="fullbleed"] .tv-facing-frame {
+    border-right: 0;
+    border-radius: var(--r-media) 0 0 var(--r-media);
+  }
+
+  .tv-hero-comp[data-variant="fullbleed"] .tv-facing-verso img {
+    object-position: top left;
+  }
+
+  .tv-hero-comp[data-variant="fullbleed"] .tv-facing-recto {
+    background: color-mix(in oklab, var(--paper-0) 92%, transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── 768 and below · recomposition, not a scaled desktop ──
+   * The vertical layout is now the base, so this block carries only what is
+   * specific to the narrow band: a smaller display size and stacked actions.
+   */
+  @media (max-width: 768px) {
+    .tv-hero-comp h1 {
+      font-size: var(--fs-display-2);
+      letter-spacing: var(--tracking-display-2);
+      line-height: var(--lh-display-2);
+    }
+
+    .tv-hero-comp-lead {
+      font-size: var(--fs-body);
+      line-height: var(--lh-body);
+    }
+
+    .tv-hero-comp-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .tv-hero-comp-cta {
+      justify-content: center;
+    }
+
+    /* Overlap and full-bleed collapse to the plain stack: overlapping panels
+       in a 390px column would bury the source page. */
+    .tv-hero-comp[data-variant="overlap"] .tv-facing-recto,
+    .tv-hero-comp[data-variant="fullbleed"] .tv-facing-recto {
+      margin-left: 0;
+      background: var(--paper-0);
+      backdrop-filter: none;
+      box-shadow: none;
+    }
+
+    .tv-hero-comp[data-variant="fullbleed"] .tv-facing-frame {
+      border-right: 1px solid var(--rule-paper-2);
+      border-radius: var(--r-media);
+    }
+  }
+}
+
+/*
+ * §5.2 review route chrome — /design/slop only. Deleted with the route once
+ * decision.md records the outcome.
+ */
+@layer components {
+  .tv-slop-review {
+    background: var(--paper-0);
+    color: var(--ink-0);
+  }
+
+  .tv-slop-review-head {
+    max-width: var(--measure);
+    padding: var(--s-8) clamp(var(--s-5), 5vw, 72px) var(--s-6);
+  }
+
+  .tv-slop-review-head h1 {
+    margin: 0 0 var(--s-3);
+    font-size: var(--fs-title-1);
+    font-weight: var(--w-title);
+    letter-spacing: var(--tracking-title-1);
+    line-height: var(--lh-title-1);
+  }
+
+  .tv-slop-review-head p {
+    margin: 0;
+    color: var(--ink-1);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    text-wrap: pretty;
+  }
+
+  .tv-slop-review-label {
+    padding: var(--s-5) clamp(var(--s-5), 5vw, 72px) var(--s-3);
+    border-top: 1px solid var(--rule-paper-2);
+  }
+
+  .tv-slop-review-label h2 {
+    margin: 0 0 var(--s-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    font-weight: var(--w-strong);
+    line-height: var(--lh-small);
+  }
+
+  .tv-slop-review-label p {
+    margin: 0;
+    max-width: var(--measure);
+    color: var(--ink-2);
+    font-size: var(--fs-small);
+    line-height: var(--lh-small);
+    text-wrap: pretty;
+  }
+
+  /* The "before" pane is the flat fill: no fibre. */
+  .tv-slop-review-frame[data-treatment="chrome"] {
+    --tv-grain-strength: 0;
+  }
+}

@@ -12,7 +12,6 @@ import {
   formatBenchmarkPercent,
   publicBenchmarkSnapshot,
 } from "@/lib/benchmark-public";
-import diagnostics from "@/data/benchmark-diagnostics.json";
 
 const statusLabel = {
   available: "Verified",
@@ -20,25 +19,18 @@ const statusLabel = {
   evidence_required: "Corpus required",
 } as const;
 
-export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
+export function BenchmarkLab() {
   const snapshot = publicBenchmarkSnapshot;
   const isAvailable = snapshot.status === "available";
-  const Wrapper = embedded ? "section" : "main";
-  const Heading = embedded ? "h2" : "h1";
 
   return (
-    <Wrapper
-      className="simple-page benchmark-lab-page"
-      id={embedded ? undefined : "main-content"}
-      data-embedded={embedded}
-      aria-label={embedded ? "Public benchmark evidence" : undefined}
-    >
+    <main className="simple-page benchmark-lab-page" id="main-content">
       <header className="benchmark-lab-heading">
         <div>
-          <Heading>Benchmark Lab</Heading>
+          <h1>Benchmark Lab</h1>
           <p>
-            Compare parser fidelity, runtime, cost, and repeat stability on the
-            same isolated corpus and evaluator.
+            Compare text, number, table, and provenance accuracy alongside
+            latency and per-page cost using the same corpus and evaluator.
           </p>
         </div>
         <span className="benchmark-release-state" data-ready={isAvailable}>
@@ -61,7 +53,7 @@ export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
           <MagnifyingGlass size={22} aria-hidden="true" />
           <div>
             <h2 id="benchmark-evidence-title">
-              No reproducibility metrics are ready for publication.
+              No performance metrics are ready for publication.
             </h2>
             <p>
               The DART adapter and evaluation contract are ready. Metrics remain
@@ -79,32 +71,26 @@ export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
       >
         <div className="benchmark-results-heading">
           <div>
-            <h2 id="benchmark-results-title">Measured parser evidence</h2>
-            <p>
-              Official demo subset, three blind repeats. Derived 1−edit values
-              are presentation companions, not renamed leaderboard metrics.
-            </p>
+            <h2 id="benchmark-results-title">Results by document type</h2>
+            <p>Unmeasured cells remain “Not measured.”</p>
           </div>
           <span>Evaluator {snapshot.evaluator_version}</span>
         </div>
         <div className="benchmark-table-frame">
           <table>
             <caption className="sr-only">
-              Reproducible parser results on the same corpus
+              Publishable benchmark results by document type
             </caption>
             <thead>
               <tr>
-                <th scope="col">Candidate</th>
+                <th scope="col">Document type</th>
                 <th scope="col">Status</th>
-                <th scope="col">Text 1−edit</th>
-                <th scope="col">Formula 1−edit</th>
-                <th scope="col">Table TEDS</th>
-                <th scope="col">Structure TEDS</th>
-                <th scope="col">Table 1−edit</th>
-                <th scope="col">Reading order 1−edit</th>
-                <th scope="col">Mean runtime</th>
+                <th scope="col">Text</th>
+                <th scope="col">Numbers</th>
+                <th scope="col">Tables</th>
+                <th scope="col">Provenance</th>
+                <th scope="col">p95 latency</th>
                 <th scope="col">Cost per page</th>
-                <th scope="col">Exact repeats</th>
               </tr>
             </thead>
             <tbody>
@@ -119,58 +105,21 @@ export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
                       {statusLabel[dataset.status]}
                     </span>
                   </td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.text_edit_companion)}</td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.formula_edit_companion)}</td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.table_teds)}</td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.table_structure_teds)}</td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.table_edit_companion)}</td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.reading_order_companion)}</td>
+                  <td>{formatBenchmarkPercent(dataset.metrics.text)}</td>
+                  <td>{formatBenchmarkPercent(dataset.metrics.numbers)}</td>
+                  <td>{formatBenchmarkPercent(dataset.metrics.tables)}</td>
+                  <td>{formatBenchmarkPercent(dataset.metrics.provenance)}</td>
                   <td>
-                    {formatBenchmarkLatency(dataset.metrics.mean_latency_ms)}
+                    {formatBenchmarkLatency(dataset.metrics.p95_latency_ms)}
                   </td>
                   <td>
                     {formatBenchmarkCost(dataset.metrics.cost_per_page_usd)}
                   </td>
-                  <td>{formatBenchmarkPercent(dataset.metrics.exact_repeat_ratio)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section
-        className="benchmark-diagnostics"
-        aria-labelledby="benchmark-diagnostics-title"
-      >
-        <div>
-          <span>Diagnostic lane · excluded from measured ranking</span>
-          <h2 id="benchmark-diagnostics-title">Failures stay visible.</h2>
-          <p>
-            A model enters the measured table only after inference and three
-            complete repeats. Pre-inference failures retain their frozen
-            revision and evidence, without borrowing vendor scores.
-          </p>
-        </div>
-        {diagnostics.diagnostics.map((diagnostic) => (
-          <article key={diagnostic.id}>
-            <header>
-              <div>
-                <strong>{diagnostic.label}</strong>
-                <span>{diagnostic.status}</span>
-              </div>
-              <b>{diagnostic.completed_inference_cases} scored cases</b>
-            </header>
-            <p>{diagnostic.summary}</p>
-            <dl>
-              <div><dt>Failure class</dt><dd>{diagnostic.failure_class}</dd></div>
-              <div><dt>Model revision</dt><dd><code>{diagnostic.model_revision.slice(0, 12)}</code></dd></div>
-              <div><dt>Artifact</dt><dd><code>{diagnostic.artifact_manifest_sha256.slice(0, 19)}…</code></dd></div>
-              <div><dt>Diagnostic evidence</dt><dd><code>{diagnostic.diagnostic_evidence_sha256.slice(0, 19)}…</code></dd></div>
-              <div><dt>Next gate</dt><dd>{diagnostic.next_gate}</dd></div>
-            </dl>
-          </article>
-        ))}
       </section>
 
       <section
@@ -198,13 +147,13 @@ export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
           <div>
             <dt>Evaluation</dt>
             <dd>
-              Text, formulas, tables, reading order, repeat stability, and failures
+              Text, numbers, tables, formulas, reading order, and provenance
             </dd>
           </div>
           <div>
             <dt>Execution</dt>
             <dd>
-              Model revision, artifact hash, GPU, service shape, and three repeats
+              Model revision, image digest, GPU, and cold/warm repetitions
             </dd>
           </div>
           <div>
@@ -223,11 +172,11 @@ export function BenchmarkLab({ embedded = false }: { embedded?: boolean }) {
       >
         <Database size={20} aria-hidden="true" />
         <p>
-          This release uses the Apache-2.0 OmniDocBench official demo subset.
-          Ground truth was absent from inference workers and introduced only in
-          the separately hashed evaluator lane. It is not a full leaderboard run.
+          OpenDART is used only to collect public source documents. A filing
+          does not automatically become ground truth, and user or customer
+          documents are never used for benchmarks.
         </p>
       </section>
-    </Wrapper>
+    </main>
   );
 }

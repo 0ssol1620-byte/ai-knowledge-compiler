@@ -161,7 +161,7 @@ export function AnalyticsLive() {
   ];
 
   return (
-    <div className={`simple-page analytics-page ${styles.root}`}>
+    <main className={`simple-page analytics-page ${styles.root}`}>
       <div className="analytics-title-row">
         <div>
           <h1>Product analytics</h1>
@@ -232,7 +232,7 @@ export function AnalyticsLive() {
             />
             <MetricPanel
               title="Quality"
-              description="Integrity findings, evidence linking, and user-reported errors"
+              description="Review, evidence linking, and user-reported errors"
               metrics={Object.values(data.quality)}
             />
             <MetricPanel
@@ -278,7 +278,7 @@ export function AnalyticsLive() {
         Contract {data.schema_version} · generated{" "}
         {new Date(data.generated_at).toLocaleString("ko-KR")}
       </p>
-    </div>
+    </main>
   );
 }
 
@@ -477,7 +477,7 @@ function AnalyticsState({
   retry?: () => void;
 }) {
   return (
-    <div className={`simple-page analytics-page ${styles.root}`}>
+    <main className={`simple-page analytics-page ${styles.root}`}>
       <h1>Product analytics</h1>
       <div
         className="panel honest-state"
@@ -498,7 +498,7 @@ function AnalyticsState({
           </button>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 

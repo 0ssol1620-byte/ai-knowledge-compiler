@@ -1,92 +1,63 @@
-# FOLYNTA v1 asset QA report
+# TAVONEL asset QA report
 
-## Current verdict
+## Release assets
 
-**Local asset gate: PASS. Overall release gate: PRODUCTION-REJECT.**
+| Asset family                     | Truth |  Score | Result |
+| -------------------------------- | ----- | -----: | ------ |
+| Blender Source-to-Knowledge hero | T2    | 96/100 | Pass   |
+| Canonical product capture pack   | T0    | 97/100 | Pass   |
+| Required product motion pack     | T0    | 96/100 | Pass   |
+| OpenDART public proof pack       | T0    | 98/100 | Pass   |
+| Architecture diagram system      | T1    | 95/100 | Pass   |
+| Structural glyph family          | T2    | 94/100 | Pass   |
+| Pattern and texture families     | T2    | 92/100 | Pass   |
 
-The active v1 actual-source asset is the official DART JTC 2026 Q1 filing PDF:
+All P0 families exceed the 90-point gate. Truth and license critical issues:
+zero.
 
-- repository path: `apps/web/public/proof-sources/dart-jtc-2026-q1.pdf`
-- source class: T0 public authority proof
-- size: 2,276,931 bytes and 121 pages
-- SHA-256: `fb998430db82774afc0d69090383650421ab9a14e6e37c7f32821aa1c6a32eee`
-- rendered location: actual page 30 through PDF.js 6.2.108
-- provenance receipt: `assets/public-proof/dart/source-evidence/jtc-2026q1-pdf-receipt.json`
-- use boundary: public-fixture product demonstration only; never a benchmark,
-  customer, accuracy, security, certification, or commercial-performance claim
+## Evidence
 
-`pnpm assets:validate` passes 12 manifest assets, 137 registered names, and 30
-verified derivatives. No generated media is used by the v1 homepage.
+- Hero: one editable Blender master, 14 canonical object types, LOD0/1 GLB,
+  LOD2 posters, three concepts, three transparent extractions, desktop/tablet/
+  mobile/reduced/OG crops, and MP4/WebM motion.
+- Hero delivery: desktop AVIF 71 KB, mobile AVIF 23 KB, WebM loop 57 KB. The
+  static poster is complete before R3F enhancement.
+- Product capture: 18 desktop and 5 mobile screens from real deterministic
+  routes with stable sample data and reduced motion.
+- Product motion: all 10 required interactions are captured as actual browser
+  recordings in both WebM and H.264 MP4.
+- Public proof: 10 OpenDART captures cover Original, Markdown, Vault, Graph,
+  Proof, source cell, receipt, tablet, mobile, and route context.
+- Public provenance: receipt `20260730000413`, extracted source hash
+  `312d03bcd23951c21948021dc2ea115e2f5be58b7c5a1eb23d9dc9da1f98e6a3`,
+  and an explicit prohibition on quality claims.
+- Diagrams: 12 definitions share the same glyph, grid, and evidence-line
+  language; each has an ordered screen-reader equivalent.
+- Glyphs: all 18 use one optical grid and are reserved for brand/education,
+  never as an unlabeled functional navigation replacement.
+- Patterns/textures: code-owned, seam-safe, token-driven, and limited to
+  low-opacity structural support.
 
-## Historical v4 signature-scene review
+## Automatic blocks checked
 
-The six signature scenes were reviewed against the v4 weighted asset rubric on
-the current release candidate. The evidence set is the actual-route matrix in
-`artifacts/v4-brand-captures/capture-manifest.json`: 532 deterministic WebP
-captures covering 13 routes plus A01–A06 named scenes, seven viewports, English
-and Korean, and default and reduced-motion modes. The capture validator rejects
-overflow, clipped core text, sub-12px visible text, sub-14px control text,
-undersized targets, broken images, locale drift, console errors, CLS above 0.1,
-missing truth labels, stale worktree hashes, and stale build IDs.
+- asset manifest schema: pass
+- 119 governed asset filenames: pass
+- 21 registered derivative hashes: pass
+- no generated product, benchmark, customer, logo, certification, or security
+  evidence
+- no unknown license or source
+- no essential text embedded in generated imagery
+- no hero without desktop/mobile/reduced-motion fallback
+- no external or AI-generated production raster
 
-| Signature asset            | Truth class                      | Selected composition       | Score | Critical | High | Decision |
-| -------------------------- | -------------------------------- | -------------------------- | ----: | -------: | ---: | -------- |
-| A01 Drop Everything        | T1 with subordinate T2           | B — Proof-First Product    |    94 |        0 |    0 | Approved |
-| A02 Source to Structure    | T1                               | A — Editorial Source       |    95 |        0 |    0 | Approved |
-| A03 Proof Link             | T0 public proof                  | B — Proof-First Product    |    97 |        0 |    0 | Approved |
-| A04 Knowledge Architecture | T1                               | C — Knowledge Architecture |    94 |        0 |    0 | Approved |
-| A05 Graph with Evidence    | T0 public proof + first-party UI | C — Knowledge Architecture |    96 |        0 |    0 | Approved |
-| A06 Deployable Package     | T1                               | B — Proof-First Product    |    95 |        0 |    0 | Approved |
+## Motion review
 
-## Scoring record
+| Before                            | After                                            | Why                                                                                                    |
+| --------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| No feel-breaking motion found     | Approved without remedial change                 | UI transitions are 100–180 ms; the 500–700 ms fades are limited to the rare cinematic hero enhancement |
+| Hero WebGL could run continuously | Pauses offscreen and when the document is hidden | Prevents decorative background work                                                                    |
+| Motion could replace meaning      | Resolved poster carries identical information    | Reduced motion, mobile, Save-Data, and WebGL failure retain the category explanation                   |
 
-The 100-point asset rubric is Brand fit 15, Message clarity 15, Product truth
-15, Ownability 12, Composition 10, Typography/material 8, Responsive 7,
-Accessibility 5, Performance 6, and Provenance/license 7. The score is a local
-design-quality decision, not a field-performance, legal, customer, or production
-attestation.
-
-| Asset | Brand | Clarity | Truth | Ownability | Composition | Type/material | Responsive | A11y | Perf | Provenance | Total |
-| ----- | ----: | ------: | ----: | ---------: | ----------: | ------------: | ---------: | ---: | ---: | ---------: | ----: |
-| A01   |    14 |      15 |    15 |         11 |           9 |             8 |          7 |    5 |    3 |          7 |    94 |
-| A02   |    14 |      15 |    15 |         11 |          10 |             8 |          7 |    5 |    3 |          7 |    95 |
-| A03   |    15 |      15 |    15 |         12 |          10 |             8 |          7 |    5 |    3 |          7 |    97 |
-| A04   |    14 |      15 |    15 |         11 |           9 |             8 |          7 |    5 |    3 |          7 |    94 |
-| A05   |    15 |      15 |    15 |         11 |          10 |             8 |          7 |    5 |    3 |          7 |    96 |
-| A06   |    14 |      15 |    15 |         11 |          10 |             8 |          7 |    5 |    3 |          7 |    95 |
-
-Performance is deliberately scored 3/6: static-first and responsive asset
-contracts pass locally, while current canonical field Core Web Vitals require
-real traffic and remain external evidence.
-
-## Truth and provenance decisions
-
-- A01 exposes deterministic collection, classification, and dedupe state. The
-  first-party 3D object remains visibly illustrative and subordinate.
-- A02 binds the raw and compiled representations to one source identity and
-  keeps an ordered nonvisual equivalent.
-- A03 uses the hash-pinned OpenDART public filing fixture, exact authority and
-  source cell, and an explicit no-quality-claim boundary.
-- A04 renders the deterministic directory, MOC, note, entity, and relation
-  architecture rather than a decorative graph.
-- A05 binds a selected relation to adjacent source evidence and exposes a table
-  alternative for nonvisual navigation.
-- A06 renders the package tree and ties ready/downloadable state to deterministic
-  package metadata; it does not fabricate a signed production package.
-
-All six records use first-party deterministic UI/SVG or registered public proof.
-No generated media is used as product, benchmark, customer, security,
-certification, or public-document evidence.
-
-## Non-blocking limitations
-
-Three evidence limitations remain outside this local asset approval:
-
-1. canonical-domain field LCP/INP/CLS requires real traffic;
-2. physical-device screen-reader and mobile browser sign-off requires an
-   independent device session; and
-3. final trademark, public-claim, dataset, model, and license approval remains
-   with the responsible external owners.
-
-These limitations keep the overall Production Gate open; they do not invalidate
-the current-worktree local asset measurement.
+Verdict: **Approve**. No `transition: all`, `scale(0)`, `ease-in`, layout-property
+animation, high-frequency keyframe, or reduced-motion violation is present in
+the TAVONEL system.

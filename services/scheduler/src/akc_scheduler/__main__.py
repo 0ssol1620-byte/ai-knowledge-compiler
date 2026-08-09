@@ -56,6 +56,28 @@ def _arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+
+async def _sweep_trial_sessions(
+    sessions: async_sessionmaker[AsyncSession],
+) -> int:
+    """Retire expired anonymous trial sessions — ADR-006.
+
+    Imported lazily and guarded: the scheduler must keep running its other
+    duties even where the API package is unavailable or the capability was
+    never deployed. A failure here is logged, not fatal — the sweep is
+    idempotent and the next pass retries.
+    """
+    try:
+        from akc_api.trial_retention import sweep_expired_trial_sessions
+    except ImportError:
+        return 0
+    try:
+        async with sessions() as session:
+            return await sweep_expired_trial_sessions(session)
+    except Exception:
+        logging.getLogger(__name__).exception("trial retention sweep failed")
+        return 0
+
 async def _run(*, once: bool, check: bool, mode: str) -> None:
     settings = SchedulerSettings()
     if settings.env == "production" and mode == "all":
@@ -239,17 +261,22 @@ async def _run(*, once: bool, check: bool, mode: str) -> None:
                 retained = await scheduler.cleanup_retained_rows()
             deleted = await deletion_worker.run_batch() if deletion_worker is not None else 0
             gpu_processed = await gpu_worker.run_batch() if gpu_worker is not None else 0
+            # ADR-006. The one-hour trial lifetime is the bound on anonymous
+            # storage, so it has to be swept on the same pass as every other
+            # retention duty rather than left to a cron nobody owns.
+            trial_retired = await _sweep_trial_sessions(sessions)
             if settings.metrics_enabled and (dispatch_enabled or webhook_enabled):
                 await refresh_scheduler_metrics(sessions, mode=mode)
             logging.getLogger(__name__).info(
                 "scheduler pass complete: dispatch=%d outbox=%d deliveries=%d "
-                "retention=%d deletion=%d gpu=%d",
+                "retention=%d deletion=%d gpu=%d trial=%d",
                 dispatched,
                 published,
                 delivered,
                 retained,
                 deleted,
                 gpu_processed,
+                trial_retired,
             )
         else:
             if settings.metrics_enabled:

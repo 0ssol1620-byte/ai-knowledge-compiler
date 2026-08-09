@@ -119,4 +119,9 @@ def test_v4_collection_postgresql_policies_are_tenant_project_intersections(
     assert "REVOKE UPDATE, DELETE ON collection_events FROM PUBLIC" in sql
     assert 'CREATE POLICY "collection_events_collection_update"' not in sql
     assert MIGRATION.revision == "0023_v4_collections"
-    assert MIGRATION.down_revision == "0022_cdr_derivative_lineage"
+    # Re-pointed when this branch merged main: 0023_trial_ingest was written off
+    # 0022 on a branch that could not see this one, and two revisions sharing a
+    # parent is what alembic reports as two heads. The chain guard in
+    # tests/unit/test_migration_graph.py is the one that enforces the shape;
+    # this assertion just pins the position of this revision in it.
+    assert MIGRATION.down_revision == "0023_trial_ingest"

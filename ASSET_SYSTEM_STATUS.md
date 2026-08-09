@@ -1,23 +1,16 @@
-# Structara asset system status
+# TAVONEL asset system status
 
 ## Governing document
 
-`D:\Structara_World_Class_Autonomous_Knowledge_Platform_FINAL_Completion_Masterplan_v4_KO_2026-07-31.md`
-is the current product and asset authority. The earlier asset-system masterplan
-remains a historical implementation source where it does not conflict with v4.
+`TAVONEL_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
+v2.1 is the current asset authority.
 
-Current v4 approval is fail-closed: A01–A06 have source and composition
-contracts, but current-worktree screenshots, weighted scores, and Critical/High
-finding counts are not yet attached. See `ASSET_REMEDIATION_LEDGER.yml`,
-`ART_DIRECTION_BOARD.md`, `VISUAL_QUALITY_GATES.yml`, and
-`ASSET_QA_REPORT.md`.
-
-## Inherited implementation inventory
+## Implemented P0 system
 
 - T0–T4 truth classification, source order, and automatic naming/hash gates
-- repository-owned `structara-asset-director` skill and focused references
+- repository-owned `tavonel-asset-director` skill and focused references
 - asset manifest, generated derivative registry, prompt index, source evidence,
-  licensing roots, and exact `STR-{...}-vNN` validator
+  licensing roots, and exact `TAV-{...}-vNN` validator
 - editable first-party Blender 4.5 LTS hero master
 - LOD0 and LOD1 GLBs plus responsive LOD2 posters
 - 14 canonical hero object types and one six-state, 12-second explanation
@@ -34,9 +27,6 @@ finding counts are not yet attached. See `ASSET_REMEDIATION_LEDGER.yml`,
 - explicit illustrative, deterministic-demo, public-source, and no-quality-claim
   labels
 - no external or AI-generated production raster asset
-
-This inventory records what exists; it does not by itself approve current v4
-craft, composition, responsive behavior, accessibility, or performance.
 
 ## Source strategy
 

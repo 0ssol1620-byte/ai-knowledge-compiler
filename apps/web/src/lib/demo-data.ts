@@ -136,13 +136,13 @@ export const demoReviews: ReviewItem[] = [
     severity: "high",
     category: "number_mismatch",
     message:
-      "The two candidate outputs disagree on the ratio. The source table remains unresolved.",
+      "The two candidate outputs disagree on the ratio. Review the source table.",
     page_id: "page_8",
     block_id: "blk_table",
     status: "open",
     candidates: [
-      { engine: "source-native", value: "1.1%" },
-      { engine: "visual-comparison", value: "1.7%" },
+      { engine: "native", value: "1.1%" },
+      { engine: "paddleocr-vl-1.6", value: "1.7%" },
     ],
   },
   {

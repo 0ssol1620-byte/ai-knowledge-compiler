@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { StructaraMarketingPage } from "@/components/structara-marketing-page";
-import { getRequestLocale } from "@/lib/locale-server";
-import { getPublicPage } from "@/lib/structara-content-localized";
+import { TavonelMarketingPage } from "@/components/tavonel-marketing-page";
+import { JsonLd } from "@/components/json-ld";
+import { PUBLIC_PAGES } from "@/lib/tavonel-content";
+import { pageGraph, SITE_BASE } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getRequestLocale();
-  const definition = getPublicPage(`/${slug.join("/")}`, locale);
+  const definition = PUBLIC_PAGES[`/${slug.join("/")}`];
   if (!definition) return {};
   return {
     title: definition.title,
@@ -24,10 +24,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function StructaraPublicRoute({ params }: Props) {
+export default async function TavonelPublicRoute({ params }: Props) {
   const { slug } = await params;
-  const locale = await getRequestLocale();
-  const definition = getPublicPage(`/${slug.join("/")}`, locale);
+  const definition = PUBLIC_PAGES[`/${slug.join("/")}`];
   if (!definition) notFound();
-  return <StructaraMarketingPage definition={definition} />;
+  return (
+    <>
+      <JsonLd nodes={pageGraph(definition, SITE_BASE)} />
+      <TavonelMarketingPage definition={definition} />
+    </>
+  );
 }

@@ -1,50 +1,36 @@
-id: STR-HOME-T2-HERO-001
-title: Books to Knowledge Plane
-source_master: tools/assets/build_structara_hero.py
-runtime: blender_glb_react_three_fiber
+id: TAV-HOME-T2-HERO-001
+title: Source to Knowledge
+source_master: apps/web/src/components/tavonel-webgl-scene.tsx
+runtime: react-three-fiber
 truth_class: T2
-seed: structara-books-to-plane-v1
 camera:
-  equivalent_mm: 56
-  field_of_view: 38
+  equivalent_mm: 58
+  field_of_view: 37
   perspective_degrees: 9
 lighting:
-  key: large_soft_warm
+  key: large_soft_neutral
   rim: subtle_cool_evidence
 materials:
   paper: warm_matte
   ink: near_black
   structure: neutral_grid
   evidence: controlled_cyan
-  quarantine: review_amber
 states:
-  - rest
-  - orient
-  - separate
-  - verify
-  - align
-  - compile
-  - reveal
-  - settled
+  - quiet_source
+  - semantic_detection
+  - block_separation
+  - proof_link
+  - knowledge_formation
+  - resolved_intelligence
 objects:
-  fictional_document_volumes: 12
-  verified_anchors: 3
-  evidence_paths: 3
-  quarantine_candidates: 2
-  knowledge_plane: 1
-animation:
-  frames: 144
-  fps: 12
-  duration_seconds: 12
-  meaning_by_second:
-    3: multiple_documents_oriented
-    6: source_verification_visible
-    8: one_knowledge_plane_compiled
-  repeats: 1
+  source_pages: 3
+  semantic_blocks: 4
+  evidence_frames: 1
+  knowledge_nodes: 12
+  relation_edges: 16
 fallbacks:
-  javascript_disabled: owned_avif_poster
-  webgl_unavailable: owned_avif_poster
-  webgl_context_lost: owned_avif_poster
-  save_data: owned_avif_poster
-  reduced_motion: owned_avif_poster
-  mobile: owned_avif_poster
+  javascript_disabled: server_css_poster
+  webgl_unavailable: server_css_poster
+  save_data: server_css_poster
+  reduced_motion: server_css_poster
+  mobile: server_css_poster

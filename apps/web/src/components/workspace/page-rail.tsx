@@ -19,7 +19,6 @@ import {
 } from "react";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 
-import { publicRouteLabel } from "@/lib/public-processing-labels";
 import type { PageStatus, PageSummary } from "@/lib/types";
 
 const statusIcon = {
@@ -68,12 +67,6 @@ export function PageRail({
   const railRef = useRef<HTMLElement>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
-  const previousLocationRef = useRef({
-    query,
-    qualityFilter,
-    selectedPageId,
-    statusFilter,
-  });
   const filterPanelId = useId();
   const resultCountId = useId();
 
@@ -92,8 +85,8 @@ export function PageRail({
         String(page.page_number),
         statusLabel(page.status),
         qualityLabel(page.quality_state),
-        publicRouteLabel(page.route_label),
-        publicRouteLabel(page.route_profile),
+        page.route_label,
+        page.route_profile,
       ]
         .join(" ")
         .toLocaleLowerCase();
@@ -104,26 +97,8 @@ export function PageRail({
     filteredPages.find((page) => page.id === rovingPageId)?.id ??
     filteredPages.find((page) => page.id === selectedPageId)?.id ??
     filteredPages[0]?.id;
-  const initialSelectedIndex = Math.max(
-    0,
-    filteredPages.findIndex((page) => page.id === selectedPageId),
-  );
 
   useEffect(() => {
-    const previous = previousLocationRef.current;
-    const locationChanged =
-      previous.query !== query ||
-      previous.qualityFilter !== qualityFilter ||
-      previous.selectedPageId !== selectedPageId ||
-      previous.statusFilter !== statusFilter;
-    previousLocationRef.current = {
-      query,
-      qualityFilter,
-      selectedPageId,
-      statusFilter,
-    };
-    if (!locationChanged) return;
-
     const selectedIndex = filteredPages.findIndex(
       (page) => page.id === selectedPageId,
     );
@@ -135,7 +110,7 @@ export function PageRail({
       });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [filteredPages, qualityFilter, query, selectedPageId, statusFilter]);
+  }, [filteredPages, selectedPageId]);
 
   function focusRenderedPage(pageId: string, attempt = 0) {
     window.requestAnimationFrame(() => {
@@ -244,7 +219,7 @@ export function PageRail({
               <option value="all">All quality states</option>
               <option value="verified">Verified</option>
               <option value="warning">Warning</option>
-              <option value="review">Unresolved</option>
+              <option value="review">Review required</option>
               <option value="failed">Failed</option>
             </select>
           </label>
@@ -290,10 +265,6 @@ export function PageRail({
           <Virtuoso
             ref={virtuosoRef}
             data={filteredPages}
-            initialTopMostItemIndex={{
-              align: "center",
-              index: initialSelectedIndex,
-            }}
             overscan={280}
             itemContent={(index, page) => {
               const StatusIcon = statusIcon[page.quality_state];
@@ -318,15 +289,9 @@ export function PageRail({
                   aria-current={active ? "page" : undefined}
                   aria-label={`Page ${page.page_number}, ${qualityLabel(
                     page.quality_state,
-                  )}, ${statusLabel(page.status)}, ${publicRouteLabel(page.route_label)}`}
+                  )}, ${statusLabel(page.status)}, ${page.route_label}`}
                 >
-                  <span
-                    className={clsx(
-                      "page-thumbnail",
-                      running && "is-processing",
-                    )}
-                    aria-hidden="true"
-                  >
+                  <span className="page-thumbnail" aria-hidden="true">
                     <span className="thumb-line wide" />
                     <span className="thumb-line" />
                     <span className="thumb-line medium" />
@@ -336,6 +301,7 @@ export function PageRail({
                       <i />
                       <i />
                     </span>
+                    {running && <span className="scan-line" />}
                   </span>
                   <span className="page-card-copy">
                     <span>
@@ -351,10 +317,10 @@ export function PageRail({
                     <span
                       className={clsx(
                         "route-badge",
-                        publicRouteLabel(page.route_label).toLowerCase(),
+                        page.route_label.toLowerCase(),
                       )}
                     >
-                      {publicRouteLabel(page.route_label)}
+                      {page.route_label}
                     </span>
                   </span>
                   {running && (
@@ -402,7 +368,7 @@ function statusLabel(status: PageSummary["status"]): string {
     normalizing: "Restoring structure",
     validating: "Validating result",
     completed: "Verified",
-    needs_review: "Unresolved",
+    needs_review: "Review required",
     retry_scheduled: "Retry scheduled",
     failed: "Processing failed",
   };
@@ -413,7 +379,7 @@ function qualityLabel(state: PageSummary["quality_state"]): string {
   return {
     verified: "Verified",
     warning: "Warning",
-    review: "Unresolved",
+    review: "Review required",
     failed: "Failed",
   }[state];
 }

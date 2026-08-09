@@ -32,7 +32,6 @@ export function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("x-folynta-pathname", request.nextUrl.pathname);
   // Next reads the request CSP and applies this nonce to framework scripts.
   requestHeaders.set("Content-Security-Policy", policy);
 

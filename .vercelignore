@@ -1,20 +1,46 @@
-.git
-.agents
-.akc-data*
-.chatgpt2codex
-.hypothesis
-.mypy_cache
-.pytest_cache
-.ruff_cache
-.venv
-node_modules
-**/node_modules
-**/.next
-**/__pycache__
-**/*.pyc
-**/*.sqlite*
-artifacts
-work
-apps/web/playwright-report
-apps/web/test-results
-apps/web/storybook-static
+# Vercel builds apps/web only. Everything below is either a different runtime,
+# a build input the web app never reads, or bulk that would only slow the
+# upload. Keeping this list explicit rather than inverting it, so a new
+# frontend directory is included by default rather than silently dropped.
+
+# Python control plane, workers, and their tests
+services/
+workers/
+packages/cir-python/
+packages/domain-packs/
+packages/exporters/
+packages/native-parsers/
+packages/quality/
+packages/retrieval/
+packages/router/
+packages/security/
+packages/telemetry/
+migrations/
+tests/
+benchmark/
+tools/
+.venv/
+.venv-fonts/
+
+# Infrastructure and ops
+infra/
+deploy/
+docker/
+*.Dockerfile
+Dockerfile*
+docker-compose*.yml
+
+# Documentation and design source. The masterplan and its decision record are
+# 3k lines of Markdown the runtime never reads.
+docs/
+design-system/
+work/
+.agents/
+
+# Local build and test output
+.next/
+apps/web/.next/
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/.lighthouseci/
+coverage/

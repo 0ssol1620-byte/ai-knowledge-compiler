@@ -90,7 +90,7 @@
       "services/api/tests/test_collection_integrity_decisions.py"
     ],
     "brand-design": [
-      "STRUCTARA_BRAND_DECISIONS.md",
+      "TAVONEL_BRAND_DECISIONS.md",
       "PAGE_MANIFEST.yml",
       "apps/web/src/app/globals.css",
       "apps/web/src/components/marketing-landing.tsx"

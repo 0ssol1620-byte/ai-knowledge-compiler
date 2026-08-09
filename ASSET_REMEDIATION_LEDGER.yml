@@ -101,7 +101,7 @@ existing_families:
       The product implementation changed during the v4 campaign. Previous captures are retained
       as history and must not be represented as current-worktree evidence.
     evidence_paths:
-      - apps/web/src/components/structara-app-page.tsx
+      - apps/web/src/components/tavonel-app-page.tsx
       - apps/web/e2e/workspace.spec.ts
     current_v4_approval: true
   - asset_id: STR-BRAND-T2-GLYPHS-001
@@ -110,7 +110,7 @@ existing_families:
       The first-party structural glyph language is ownable and remains restricted to brand and
       education support rather than unlabeled functional navigation.
     evidence_paths:
-      - apps/web/public/brand/structara-glyphs.svg
+      - apps/web/public/brand/tavonel-glyphs.svg
       - assets/brand/glyphs/README.md
     current_v4_approval: true
   - asset_id: STR-BRAND-T2-PATTERNS-001
@@ -119,7 +119,7 @@ existing_families:
       Keep only low-opacity structural support. Remove any instance that competes with product
       evidence or turns a page into repeated decoration.
     evidence_paths:
-      - apps/web/src/components/structara-pattern.tsx
+      - apps/web/src/components/tavonel-pattern.tsx
       - assets/brand/patterns/README.md
     current_v4_approval: true
   - asset_id: STR-BRAND-T2-TEXTURES-001
@@ -137,8 +137,8 @@ existing_families:
       Preserve selectable deterministic diagrams and ordered text equivalents. Revalidate the
       current security and product compositions in-page before approval.
     evidence_paths:
-      - apps/web/src/lib/structara-diagrams.ts
-      - apps/web/src/components/structara-diagram.tsx
+      - apps/web/src/lib/tavonel-diagrams.ts
+      - apps/web/src/components/tavonel-diagram.tsx
     current_v4_approval: true
   - asset_id: STR-PRODUCT-T0-CAPTURE-PACK-001
     decision: REBUILD
@@ -181,7 +181,10 @@ signature_assets:
       - dedupe_counts
     source_refs:
       - apps/web/src/components/marketing-landing.tsx
-      - apps/web/src/components/structara-hero.tsx
+      # structara-hero.tsx was replaced by tavonel-hero.tsx in the rename on
+      # main. The citation follows the file; the evidence it points at is the
+      # same hero surface.
+      - apps/web/src/components/tavonel-hero.tsx
       - apps/web/src/components/collection-intake.tsx
     composition_candidates: [A, B, C]
     provisional_composition: B
@@ -267,7 +270,7 @@ signature_assets:
       - archive_sha256
       - source_bbox_or_exact_cell
     source_refs:
-      - apps/web/src/components/structara-proof-demo.tsx
+      - apps/web/src/components/tavonel-proof-demo.tsx
       - apps/web/src/lib/dart-public-fixture.ts
       - assets/public-proof/dart/source-evidence/acquisition-receipt.json
       - assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
@@ -356,7 +359,7 @@ signature_assets:
       - source_refs
       - verification_state
     source_refs:
-      - apps/web/src/components/structara-proof-demo.tsx
+      - apps/web/src/components/tavonel-proof-demo.tsx
       - apps/web/src/components/knowledge-studio.tsx
       - assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
     composition_candidates: [A, B, C]
@@ -402,7 +405,7 @@ signature_assets:
       - round_trip_validation
     source_refs:
       - apps/web/src/components/marketing-landing.tsx
-      - apps/web/src/components/structara-app-page.tsx
+      - apps/web/src/components/tavonel-app-page.tsx
       - apps/web/src/components/workspace/export-dialog.tsx
       - packages/exporters/src/akc_exporters/knowledge_package.py
     composition_candidates: [A, B, C]
@@ -429,13 +432,13 @@ p0_asset_release:
   - { id: A02, name: hero_12_second_loop, truth_class: T1, status: approved, evidence: MOTION_MANIFEST.yml#hero_evidence_loop }
   - { id: A03, name: public_live_demo, truth_class: T0_T1, status: approved, evidence: LIVE_DEMO_CONTRACT.md }
   - { id: A04, name: raw_vs_compiled_actual_comparison, truth_class: T0_T1, status: approved, evidence: apps/web/src/components/marketing-landing.tsx }
-  - { id: A05, name: source_proof_master, truth_class: T0, status: approved, evidence: apps/web/src/components/structara-proof-demo.tsx }
+  - { id: A05, name: source_proof_master, truth_class: T0, status: approved, evidence: apps/web/src/components/tavonel-proof-demo.tsx }
   - { id: A06, name: intake_scene, truth_class: T0_T1, status: approved, evidence: apps/web/public/film/loop-01-intake-dedupe.webm }
   - { id: A07, name: processing_theater_scene, truth_class: T0, status: approved, evidence: apps/web/public/product/processing.webp }
   - { id: A08, name: knowledge_system_delivery, truth_class: T0, status: approved, evidence: apps/web/public/product/knowledge.webp }
   - { id: A09, name: dart_proof_pack, truth_class: T0, status: approved, evidence: assets/public-proof/dart/capture-manifest.json }
   - { id: A10, name: security_architecture, truth_class: T0_T1, status: approved, evidence: apps/web/e2e/visual-baselines/desktop/win32/visual-regression.spec.ts/security-architecture.png }
-  - { id: A11, name: structural_glyph_family_18, truth_class: T2, status: approved, evidence: apps/web/public/brand/structara-glyphs.svg }
+  - { id: A11, name: structural_glyph_family_18, truth_class: T2, status: approved, evidence: apps/web/public/brand/tavonel-glyphs.svg }
   - { id: A12, name: route_og_family, truth_class: T2, status: approved, evidence: apps/web/public/hero }
   - { id: A13, name: actual_product_screenshot_pack_18, truth_class: T0, status: approved, evidence: assets/product/screenshots/en/1440x900/capture-manifest.json }
   - { id: A14, name: micro_demo_loops_8, truth_class: T0_T1, status: approved, evidence: apps/web/public/film/manifest.json#loops }

@@ -80,10 +80,52 @@ jobs:
           node --check apps/web/scripts/capture-v4-brand-evidence.mjs
       - run: pnpm lint
       - run: pnpm typecheck
+      # DESIGN_MASTER_V3 [확정] items that are checkable from source. The V3
+      # layer must be clean; the legacy sheets ratchet downward only.
+      - run: pnpm --filter @akc/web blueprint:check
+      # The public claims pack ships forbidden phrasings and two withheld
+      # claims. This fails if either reaches the site.
+      - run: pnpm --filter @akc/web claims:check
       - run: pnpm test
       - run: pnpm --filter @akc/contracts build
       - run: pnpm --filter @akc/web storybook:build
       - run: pnpm build
+
+  # §22 — the performance budget is a declaration until something measures it.
+  # Runs against the production build so the numbers mean something.
+  lighthouse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Activate declared pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build the production bundle
+        run: pnpm --filter @akc/web build
+        env:
+          NEXT_PUBLIC_AKC_DEMO_MODE: "true"
+          NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000"
+      - name: Collect and assert Lighthouse budgets
+        run: pnpm --filter @akc/web lighthouse
+        env:
+          NEXT_PUBLIC_AKC_DEMO_MODE: "true"
+          NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: lighthouse-evidence
+          path: apps/web/.lighthouseci
+          if-no-files-found: ignore
+          retention-days: 14
 
   live-browser-e2e:
     runs-on: ubuntu-24.04
@@ -189,6 +231,11 @@ jobs:
           python -m uv run --locked --extra dev python infra/release/validate_v4_traceability.py
           python -m uv run --locked --extra dev python infra/release/validate_v4_brand_evidence.py
           python -m uv run --locked --extra dev python tests/load/validate_profiles.py
+      # One Alembic head. Two branches adding a revision off the same parent
+      # merge cleanly in git and then refuse to run, so this fails at the
+      # merge instead of at the deploy.
+      - name: Migration chain has a single head
+        run: python -m uv run --locked --extra dev python scripts/check_migration_chain.py
       - name: Run benchmark metric tests
         run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
       - name: Run GPU handler tests

@@ -14,13 +14,25 @@ import {
   UserCircle,
   Warning,
 } from "@phosphor-icons/react";
-import CodeMirror from "@uiw/react-codemirror";
 import clsx from "clsx";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { SafeMarkdown } from "@/components/safe-markdown";
 import { measuredQualityBreakdown } from "@/lib/quality-evidence";
 import type { BlockOrigin, CanonicalBlock, SourceRef } from "@/lib/types";
+
+// §22 — the editor was a static import, so CodeMirror shipped in the workspace
+// bundle for every reader who never edits a block. It is only mounted behind
+// the Edit affordance, so it loads there too.
+const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), {
+  ssr: false,
+  loading: () => (
+    <div className="block-editor-loading" role="status">
+      Loading editor…
+    </div>
+  ),
+});
 
 const originPresentation: Record<
   BlockOrigin,
@@ -31,28 +43,20 @@ const originPresentation: Record<
     className: "origin-native",
     icon: FileMagnifyingGlass,
   },
-  ocr_extracted: {
-    label: "Visual Extraction",
-    className: "origin-ocr",
-    icon: Eye,
-  },
+  ocr_extracted: { label: "OCR Extracted", className: "origin-ocr", icon: Eye },
   rule_reconstructed: {
     label: "Structure Rebuilt",
     className: "origin-structure",
     icon: Code,
   },
   ai_reconstructed: {
-    label: "Generated Reconstruction",
+    label: "AI Reconstructed",
     className: "origin-ai",
     icon: Sparkle,
   },
-  ai_summarized: {
-    label: "Generated Summary",
-    className: "origin-ai",
-    icon: Sparkle,
-  },
+  ai_summarized: { label: "AI Summary", className: "origin-ai", icon: Sparkle },
   ai_inferred: {
-    label: "Generated Inference",
+    label: "AI Inference",
     className: "origin-inference",
     icon: Warning,
   },
@@ -244,7 +248,7 @@ export function MarkdownWorkspace({
                 {block.quality_flags.length > 0 && (
                   <span className="warning-badge">
                     <Warning size={12} weight="fill" aria-hidden="true" />
-                    Unresolved
+                    Review
                   </span>
                 )}
               </button>
@@ -420,7 +424,8 @@ export function MarkdownWorkspace({
                       {block.quality_flags.length === 0 ? (
                         <>
                           <Check size={13} weight="bold" aria-hidden="true" />
-                          Source linked · no unresolved flags
+                          {measuredConfidenceLabel(block.confidence) ??
+                            "No review flags"}
                         </>
                       ) : (
                         <>
@@ -469,4 +474,19 @@ function evidenceKey(block: CanonicalBlock, source: SourceRef): string {
     source.page_number,
     source.bbox1000?.join(",") ?? "page",
   ].join(":");
+}
+
+function measuredConfidenceLabel(
+  value: number | undefined,
+): string | undefined {
+  if (
+    value === undefined ||
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > 100
+  ) {
+    return undefined;
+  }
+  const score = value <= 1 ? value * 100 : value;
+  return `Measured confidence ${score.toFixed(1)} / 100`;
 }

@@ -178,6 +178,37 @@ class Settings(BaseSettings):
     otel_exporter_otlp_endpoint: str | None = None
     otel_export_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     allow_public_registration: bool = True
+
+    # ADR-006 · anonymous trial ingest.
+    #
+    # Off by default, following url_ingestion_enabled: a capability whose blast
+    # radius is the public internet does not arrive switched on. Enabling it is
+    # a deployment decision that also requires the rate limiter and, in
+    # production, a CAPTCHA provider.
+    #
+    # The caps are settings rather than constants so an operator can tighten
+    # them without a release. They can only be tightened relative to the
+    # authenticated limits — see the validator below.
+    trial_ingest_enabled: bool = False
+    trial_ingest_max_bytes: int = Field(default=8 * 1024 * 1024, ge=64 * 1024)
+    trial_ingest_max_pages: int = Field(default=10, ge=1, le=50)
+    trial_ingest_ttl_seconds: int = Field(default=3600, ge=60, le=86_400)
+    trial_ingest_window_seconds: int = Field(default=3600, ge=60, le=86_400)
+
+    # Two budgets, not one. Creating a session and presigning an object are
+    # different operations with different costs, and sharing a counter meant a
+    # visitor who mis-picked a file twice was locked out of uploading at all.
+    trial_ingest_sessions_per_client: int = Field(default=5, ge=1, le=20)
+    trial_ingest_uploads_per_client: int = Field(default=10, ge=1, le=100)
+    # CAPTCHA escalates before the hard limit, so a human near the boundary is
+    # challenged rather than refused.
+    #
+    # Third session onward, not second: trying the hero with two documents is
+    # ordinary behaviour, and where no CAPTCHA provider is configured — which
+    # is the default outside production — escalation is a refusal rather than a
+    # challenge. The threshold has to leave room for a person.
+    trial_ingest_captcha_after: int = Field(default=3, ge=1, le=20)
+
     url_ingestion_enabled: bool = False
     url_encryption_key: str | None = None
     url_query_hmac_secret: str | None = None
@@ -813,6 +844,41 @@ class Settings(BaseSettings):
             raise ValueError("analysis_lease_seconds must exceed analysis_attempt_timeout_seconds")
         if self.analysis_max_source_bytes > self.max_upload_bytes:
             raise ValueError("analysis_max_source_bytes cannot exceed max_upload_bytes")
+        # ADR-006. These bind only where anonymous callers exist: the invariant
+        # is that a visitor with no account cannot exceed what a paying tenant
+        # can, which is vacuous while the capability is off. Checking it
+        # unconditionally rejected configurations that had nothing to do with
+        # trial ingest — a deployment that tightens analysis_max_source_bytes
+        # should not have to think about a disabled feature's defaults.
+        #
+        # A deployment that enables the flag later fails at boot with an
+        # actionable message, which is the right moment to find out.
+        if self.trial_ingest_enabled:
+            if self.trial_ingest_max_bytes > self.analysis_max_source_bytes:
+                raise ValueError(
+                    "trial_ingest_max_bytes cannot exceed analysis_max_source_bytes"
+                )
+            # RateLimitPolicy rejects a captcha threshold above the hard limit,
+            # and reaching that constructor would be a crash rather than a
+            # config error. Catch it where the message is actionable.
+            if self.trial_ingest_captcha_after > self.trial_ingest_sessions_per_client:
+                raise ValueError(
+                    "trial_ingest_captcha_after cannot exceed "
+                    "trial_ingest_sessions_per_client"
+                )
+        # Enabling anonymous ingest without a limiter would leave the endpoint
+        # with no bound at all. _consume_rate_control fails closed when the
+        # backend is unavailable, but an operator should not be able to ship the
+        # endpoint with no backend configured either.
+        if self.env == "production" and self.trial_ingest_enabled:
+            if not self.redis_url:
+                raise ValueError(
+                    "trial_ingest_enabled requires AKC_REDIS_URL in production"
+                )
+            if self.captcha_provider == "disabled":
+                raise ValueError(
+                    "trial_ingest_enabled requires a captcha provider in production"
+                )
         if self.analysis_backoff_max_seconds < self.analysis_backoff_base_seconds:
             raise ValueError(
                 "analysis_backoff_max_seconds must be at least analysis_backoff_base_seconds"

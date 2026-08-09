@@ -1,7 +1,7 @@
 version: 1
-reviewed_at: 2026-08-03
+reviewed_at: 2026-07-30
 assets:
-  - id: STR-HOME-T2-HERO-001
+  - id: TAV-HOME-T2-HERO-001
     title: Source to Knowledge Hero
     truth_class: T2
     status: approved
@@ -10,19 +10,15 @@ assets:
     master_path: assets/3d/master/hero-master.blend
     derivatives:
       - path: assets/3d/derivatives/hero-master.glb
-        sha256: "592d5e2142e8206435176f9b0ee613123bf35ba0fa4a9b77500d60719d97a36a"
+        sha256: "23829353487336e08f4db42e8461c39a089b2e41be354ed78d22dec571fadca2"
       - path: assets/3d/derivatives/hero-master-low.glb
-        sha256: "c2062309db4248cf0cb36e3306218bc1c8f842e0febf097f38c521200668bf70"
-      - path: apps/web/public/hero/hero-documents-master.glb
-        sha256: "592d5e2142e8206435176f9b0ee613123bf35ba0fa4a9b77500d60719d97a36a"
-      - path: apps/web/public/hero/hero-documents-tablet.glb
-        sha256: "c2062309db4248cf0cb36e3306218bc1c8f842e0febf097f38c521200668bf70"
-      - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
-        sha256: "d2b9a8b80e1db80634374e8f51c63c2f4b3307b740ded591fd47baa572cd04fa"
-      - path: apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
-        sha256: "15998f908a67d322afffaf6fa73cf3e8f9756b3abffd26d311161f381ff54f6d"
-      - path: apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
-        sha256: "e3c5e4a6fb8ef82ee6537cde200bda291995b3b425efdf2a2fe194d0174fdc3a"
+        sha256: "9368040b98cfc969f34097cfea7f5c8a05327656ef860dd5bba8b4285ac9e27a"
+      - path: apps/web/public/hero/TAV-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif
+        sha256: "65d8eeeade5a5765b8b78cb6cd6501b25394e639d88b2adca58afe59519eb5be"
+      - path: apps/web/public/hero/TAV-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif
+        sha256: "b986e3371929b7a6f7f9a01c8cf795c3dd5c94a2836efe76723be8a1cd938266"
+      - path: apps/web/public/hero/TAV-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm
+        sha256: "ec44cdec40ac85c52e34b78e1a9b765d8fea4860bdb0e5695a868629519e28ff"
     license:
       name: first-party
       evidence_path: assets/3d/ASSET_COMPLETION_REPORT.md
@@ -34,7 +30,7 @@ assets:
     alt_text_en: "Illustrative document pages become structured blocks and a small connected knowledge graph."
     alt_text_ko: "문서 페이지가 구조 블록과 작은 연결 지식 그래프로 변하는 상징적 장면"
 
-  - id: STR-PROOF-T0-DART-001
+  - id: TAV-PROOF-T0-DART-001
     title: DART Source Link Proof
     truth_class: T0
     status: approved
@@ -57,16 +53,16 @@ assets:
     alt_text_en: "A public JTC filing revenue cell links to its OpenDART receipt, taxonomy, source line, and archive hash."
     alt_text_ko: "JTC 공개 공시의 매출 셀이 OpenDART 접수번호, 분류체계, 원문 줄, 보관 해시로 연결되는 화면"
 
-  - id: STR-PRODUCT-T0-SCREEN-001
+  - id: TAV-PRODUCT-T0-SCREEN-001
     title: Canonical Product Workspace
     truth_class: T0
     status: implemented
     owner: product_truth
     source_type: actual-product
-    master_path: apps/web/src/components/structara-app-page.tsx
+    master_path: apps/web/src/components/tavonel-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "afb74117dfef40c7851bcd3effc4dd499b534c2749aa06f2d031093344ace7c8"
+        sha256: "d8593453a244915bdaadeb609fba263e45a59fee6a5fc21f942fa64bd1f27c88"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md
@@ -75,18 +71,18 @@ assets:
     usage:
       allowed: [product-marketing, documentation, sales]
       prohibited: [customer-claim]
-    alt_text_en: "The FOLYNTA sample workspace showing active processing, review, knowledge, and source coverage."
-    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 FOLYNTA 샘플 워크스페이스"
+    alt_text_en: "The TAVONEL sample workspace showing active processing, review, knowledge, and source coverage."
+    alt_text_ko: "처리·검토·지식·출처 커버리지를 보여주는 TAVONEL 샘플 워크스페이스"
 
-  - id: STR-BRAND-T2-GLYPHS-001
+  - id: TAV-BRAND-T2-GLYPHS-001
     title: Structural Glyph Family
     truth_class: T2
     status: implemented
     owner: creative_direction
     source_type: first-party-svg
-    master_path: apps/web/public/brand/structara-glyphs.svg
+    master_path: apps/web/public/brand/tavonel-glyphs.svg
     derivatives:
-      - path: apps/web/src/components/structara-glyph.tsx
+      - path: apps/web/src/components/tavonel-glyph.tsx
         sha256: "f483488b419d75c12a00d19ac86768e493fa176e97b43148ca155b7f6ca778ba"
     license:
       name: first-party
@@ -99,13 +95,13 @@ assets:
     alt_text_en: ""
     alt_text_ko: ""
 
-  - id: STR-BRAND-T2-PATTERNS-001
+  - id: TAV-BRAND-T2-PATTERNS-001
     title: Structural Pattern Family
     truth_class: T2
     status: implemented
     owner: creative_direction
     source_type: first-party-svg
-    master_path: apps/web/src/components/structara-pattern.tsx
+    master_path: apps/web/src/components/tavonel-pattern.tsx
     derivatives:
       - path: assets/brand/patterns/README.md
         sha256: "e1a6e3fe30536db2720fc48500a75088d01a60c0bc3f88167e0f8360ce50359e"
@@ -120,13 +116,13 @@ assets:
     alt_text_en: ""
     alt_text_ko: ""
 
-  - id: STR-BRAND-T2-TEXTURES-001
+  - id: TAV-BRAND-T2-TEXTURES-001
     title: Material Texture Family
     truth_class: T2
     status: implemented
     owner: creative_direction
     source_type: first-party-css
-    master_path: apps/web/public/styles/structara.css
+    master_path: apps/web/src/app/tavonel.css
     derivatives:
       - path: assets/brand/textures/README.md
         sha256: "95504651553b3b2581bd436809f8c3d02a16a9244c399554fe631c6a37c930b3"
@@ -141,15 +137,15 @@ assets:
     alt_text_en: ""
     alt_text_ko: ""
 
-  - id: STR-SYSTEM-T1-DIAGRAMS-001
+  - id: TAV-SYSTEM-T1-DIAGRAMS-001
     title: Architecture Diagram System
     truth_class: T1
     status: implemented
     owner: product_truth
     source_type: deterministic-svg-html
-    master_path: apps/web/src/lib/structara-diagrams.ts
+    master_path: apps/web/src/lib/tavonel-diagrams.ts
     derivatives:
-      - path: apps/web/src/components/structara-diagram.tsx
+      - path: apps/web/src/components/tavonel-diagram.tsx
         sha256: "3a036578fdd56547ac693b87c243dbfe5ec7b525e4c75853e6ba150f4f824b36"
     license:
       name: first-party
@@ -162,7 +158,7 @@ assets:
     alt_text_en: "A four-step system diagram with an ordered text equivalent."
     alt_text_ko: "순서화된 텍스트 대안이 있는 4단계 시스템 다이어그램"
 
-  - id: STR-PRODUCT-T0-CAPTURE-PACK-001
+  - id: TAV-PRODUCT-T0-CAPTURE-PACK-001
     title: Canonical Product Capture Pack
     truth_class: T0
     status: implemented
@@ -194,10 +190,10 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [customer-claim, fabricated-live-state]
-    alt_text_en: "Canonical FOLYNTA product views captured from the deterministic public demo workspace."
-    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 FOLYNTA 제품 화면"
+    alt_text_en: "Canonical TAVONEL product views captured from the deterministic public demo workspace."
+    alt_text_ko: "결정론적 공개 데모 워크스페이스에서 캡처한 TAVONEL 제품 화면"
 
-  - id: STR-PRODUCT-T0-MOTION-PACK-001
+  - id: TAV-PRODUCT-T0-MOTION-PACK-001
     title: Canonical Product Motion Pack
     truth_class: T0
     status: approved
@@ -215,84 +211,5 @@ assets:
     usage:
       allowed: [product-marketing, documentation, owner-approved-sales]
       prohibited: [latency-claim, customer-claim]
-    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic FOLYNTA demo workspace."
-    alt_text_ko: "결정론적 FOLYNTA 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"
-
-  - id: FOL-HOME-T1-CONCEPT-DIRECTIONS-001
-    title: FOLYNTA Hero Static Direction Set
-    truth_class: T1
-    status: implemented
-    owner: creative_direction
-    source_type: deterministic-first-party-svg
-    master_path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-A-EDITORIAL-LIBRARY.svg
-    derivatives:
-      - path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-A-EDITORIAL-LIBRARY.svg
-        sha256: "7f32fd07807085093aca9208fb09061977e6264957dc6e299848998cc1d60835"
-      - path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-B-COMPUTATIONAL-ARCHIVE.svg
-        sha256: "0c88430ff99997d8bb20cd798d36850525996f9b2a9d571f420def7f6e21dcc0"
-      - path: apps/web/public/hero/FOL-HOME-T1-CONCEPT-C-KNOWLEDGE-MONOLITH.svg
-        sha256: "c036911679d0f307f8d38b2f18842ee4bd804e829bcf0a2c6a1e38666235a67c"
-    license:
-      name: first-party
-      evidence_path: FOLYNTA_BRAND_DECISIONS.md
-    provenance:
-      generated_with_ai: false
-    usage:
-      allowed: [creative-review, homepage-support, reduced-motion-reference]
-      prohibited: [product-evidence, benchmark-evidence, customer-claim]
-    alt_text_en: "Three distinct deterministic directions show an editorial source library, a computational evidence archive, and a compiled knowledge plane."
-    alt_text_ko: "편집형 원천 라이브러리, 계산형 근거 아카이브, 컴파일된 지식 평면을 구분해 보여주는 세 가지 결정론적 방향"
-
-  - id: FOL-HOME-T1-FOLIO-SYNTHESIS-002
-    title: Folio Synthesis Public Hero
-    truth_class: T1
-    status: historical
-    owner: creative_direction
-    source_type: deterministic-first-party-html-css
-    master_path: apps/web/src/components/creative-review/folynta-creative-review.tsx
-    derivatives:
-      - path: apps/web/src/components/structara-hero.tsx
-        sha256: "2f6fb662a89bc130c89c17755ebfbfd7cd68feb1e7fda48c6f164f8fdbfe1bbc"
-      - path: docs/creative-reset/evidence/folio-1440x900.png
-        sha256: "2e29195d3ae3dcdc6a0fa566ebb4db61d2e99d59bff1067309239233571805ae"
-      - path: docs/creative-reset/evidence/folio-390x844.png
-        sha256: "92005e49e82a2222b3625f89641e5e87e09758e7497271e393035a42e75a8eac"
-    license:
-      name: first-party
-      evidence_path: FOLYNTA_BRAND_DECISIONS.md
-    provenance:
-      generated_with_ai: false
-      master_sha256: "07ee3a9782ac50a7bc161dda81c5a6505f112c56e3eb4d0eeb91c95ae1e26047"
-      authority_sha256: "fa8ce3a01499fcc558c6bfdf63200849667bc7d774f74bcba86d970e288e8bb5"
-    usage:
-      allowed: [public-homepage, marketing, creative-review, reduced-motion]
-      prohibited:
-        [product-evidence, benchmark-evidence, customer-claim, security-claim]
-    alt_text_en: "Twelve source classes compile into one verified folio and a source receipt."
-    alt_text_ko: "열두 가지 원문 유형이 하나의 검증된 folio와 원문 영수증으로 컴파일되는 장면"
-
-  - id: FOL-PROOF-T0-DART-PDF-20260803
-    title: JTC 2026 Q1 Actual DART Filing PDF
-    truth_class: T0
-    status: approved
-    owner: product_truth
-    source_type: public-dart-regulatory-filing
-    master_path: apps/web/public/proof-sources/dart-jtc-2026-q1.pdf
-    derivatives:
-      - path: assets/public-proof/dart/source-evidence/jtc-2026q1-pdf-receipt.json
-        sha256: "b386c4091648c951dda9bab440038868083ab11abf6444878edd335f9e29edac"
-    license:
-      name: attributed-public-regulatory-disclosure
-      evidence_path: assets/public-proof/dart/source-evidence/jtc-2026q1-pdf-receipt.json
-    provenance:
-      generated_with_ai: false
-      source_url: https://dart.fss.or.kr/pdf/download/pdf.do?rcp_no=20260730000413&dcm_no=11502479
-      sha256: "fb998430db82774afc0d69090383650421ab9a14e6e37c7f32821aa1c6a32eee"
-      size_bytes: 2276931
-      page_count: 121
-    usage:
-      allowed: [homepage-actual-source-proof, demo-dart, source-verification]
-      prohibited:
-        [benchmark-ground-truth, quality-claim, customer-claim, unattributed-redistribution]
-    alt_text_en: "Actual page 30 of the JTC 2026 first-quarter DART filing rendered from the official PDF bytes."
-    alt_text_ko: "DART 공식 PDF 바이트에서 렌더링한 JTC 2026년 1분기 공시 30페이지"
+    alt_text_en: "Ten condensed required interaction demonstrations recorded from the deterministic TAVONEL demo workspace."
+    alt_text_ko: "결정론적 TAVONEL 데모 워크스페이스에서 녹화한 10개 필수 인터랙션 시연"

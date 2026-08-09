@@ -9,7 +9,7 @@ export default function UsagePage() {
     <div className="simple-page usage-page">
       <h1>Usage and credits</h1>
       <p>
-        Inspect credits by processing method, storage, and purchases against the
+        Review credits by processing method, storage, and purchases against the
         verified ledger.
       </p>
       <BillingManagement />

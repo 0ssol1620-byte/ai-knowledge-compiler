@@ -1,11 +1,9 @@
 import type { MetadataRoute } from "next";
 
-import { PUBLIC_BRAND } from "@/lib/brand";
-
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: `${PUBLIC_BRAND.name} — ${PUBLIC_BRAND.category}`,
-    short_name: PUBLIC_BRAND.name,
+    name: "TAVONEL — The Knowledge Compiler for AI",
+    short_name: "TAVONEL",
     description:
       "Compile documents into structured, verified, connected, portable knowledge.",
     start_url: "/",

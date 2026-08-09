@@ -1,0 +1,108 @@
+# TAVONEL — The Knowledge Compiler
+
+> A traceable path from every source to knowledge.
+>
+> TAVONEL turns documents into structured, verified, connected knowledge that
+> people and AI systems can use, with every important result linked back to the
+> span of the source document it came from.
+
+TAVONEL is a working name pending trademark clearance.
+
+## What the category means here
+
+A knowledge compiler is not a parser and not a chat interface. It is one
+continuous pass from a source file to a knowledge artefact:
+
+    Page -> Structure -> Evidence -> Knowledge -> Intelligence
+
+- **Page** — the original document, unaltered and always reachable.
+- **Structure** — typed blocks: headings, paragraphs, tables, figures,
+  formulas, footnotes, with reading order preserved.
+- **Evidence** — every structured value carries a `SourceRef`: document, page,
+  bounding box. A value with no source reference is marked as such rather than
+  presented as verified.
+- **Knowledge** — entities and relations built from the structured blocks.
+- **Intelligence** — export formats that downstream retrieval and agent systems
+  consume.
+
+## Truthfulness boundary
+
+This file follows the same rule as the site: **anything not measured is
+labelled as not measured.**
+
+- No accuracy percentage, customer count, benchmark ranking, or latency figure
+  appears in this file, because none is currently published as a verified
+  measurement.
+- The `/benchmarks` route publishes the evaluation *method* and the axes
+  measured (text, numbers, tables, reading order, source coverage, latency,
+  cost). Treat any number you find there as scoped to the fixtures named on
+  that page, not as a general claim.
+- The `/demo/*` routes replay frozen fixtures — public filings and papers. They
+  are deterministic reproductions, not live processing.
+- Product screenshots on `/product*` are captures of the running application,
+  not mockups or generated images.
+
+Do not infer a comparative claim ("more accurate than X") from anything on this
+site. No such comparison has been published.
+
+## Site structure
+
+### Product
+- `/product` — the compiler as one workflow
+- `/product/convert` — ingest and structure
+- `/product/verify` — review and source-linked verification
+- `/product/knowledge` — entities and relations
+- `/product/graph` — the knowledge graph surface
+- `/product/connect` — export and integration
+
+### Solutions
+- `/solutions/individuals`
+- `/solutions/research`
+- `/solutions/teams`
+- `/solutions/developers`
+- `/solutions/enterprise`
+
+### Demonstrations (frozen fixtures)
+- `/demo` — index
+- `/demo/dart` — Korean DART regulatory filing
+- `/demo/sec` — SEC filing
+- `/demo/research-paper` — academic paper
+- `/demo/course-material` — course material
+
+### Evidence and terms
+- `/benchmarks` — evaluation method and measured axes
+- `/security` — security posture
+- `/pricing` — plan structure and a credit estimator
+
+### Editorial
+- `/research`
+- `/customers`
+- `/company/about`
+- `/company/principles`
+- `/company/careers`
+- `/company/contact`
+- `/developers/changelog`
+
+### Developer documentation
+- `/developers`
+- `/developers/docs`
+- `/developers/api`
+- `/developers/sdk`
+
+### Legal
+- `/legal/privacy`
+- `/legal/terms`
+- `/legal/subprocessors`
+- `/legal/third-party-notices`
+
+## Machine-readable metadata
+
+- `/sitemap.xml` — full route list
+- `/robots.txt`
+- JSON-LD (`schema.org`) is embedded per route: `SoftwareApplication` on
+  product routes, `Dataset` on `/benchmarks` and `/demo/*`, `TechArticle` on
+  editorial and developer documentation.
+
+## Contact
+
+`/company/contact`

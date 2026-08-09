@@ -3,7 +3,10 @@ name = "akc-gpu-runtime"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "cryptography>=48.0.1,<50",
+  # >=50 is required: CVE-2026-69247 is HIGH and fixed in 50.0.0. The old <50
+  # cap held all four GPU worker images on 49.0.0 and failed their trivy gate.
+  # This lock is separate from the root one — fixing the root does not reach it.
+  "cryptography>=50,<51",
   "jsonschema[format]==4.23.0",
   "PyYAML==6.0.2",
   "runpod==1.11.0"

@@ -1,104 +1,142 @@
-# FOLYNTA v1 cinematic frontend visual QA report
+# TAVONEL visual QA report
 
-Review date: 2026-08-03
+## Release baseline
 
-Build ID: `fInuyY5S3_esZDbQXJ7SW`
+The 2026-07-31 remediation treats TAVONEL as one connected, source-verifiable
+system: English-default marketing, authentication, onboarding, product,
+document, knowledge, enterprise, administration, pricing, public proof, and
+developer surfaces. The release baseline is a repository release candidate, not
+a production go-live claim.
 
-Python regression: `1517 passed`, total coverage `88.27%`
+## Current critical findings
 
-Authority: `D:\FOLYNTA_NEAR_PERFECT_BACKEND_AND_CINEMATIC_WORLD_CLASS_FRONTEND_MASTERPLAN_FINAL_v1_KO_2026-08-03.md`
+None in the executed local scope.
 
-Authority SHA-256: `adc06f84ae9a6d7f455b8fcfec4d7afc8b9f83132b4f5baaaaee87254ae925c7`
+## Trust and interaction findings fixed
 
-## Verdict
+- Next.js no longer builds with `ignoreBuildErrors: true`; the production build
+  now executes its TypeScript phase.
+- Quick Convert previously displayed 50 MB while accepting 256 MB. UI and client
+  policy now share a 50 MB-per-file, 30-file contract.
+- Quick Convert no longer promises folder upload because no directory input is
+  implemented on that surface.
+- External-processing copy now states the real policy boundary: private-first,
+  with explicit workspace consent required before external providers are used.
+- The JTC DART demonstration previously placed an absolute rectangle near a
+  table cell. The detached overlay is removed and the exact revenue value cell
+  is the selected evidence target.
+- Generic app header CTAs previously rendered as buttons without handlers. Every
+  `/app/*` header CTA now resolves to an internal route and is covered by route
+  mapping and browser regression tests.
+- Fixed product fixtures previously exposed filters, tabs, version actions,
+  outline controls, graph nodes, and review actions as enabled buttons without a
+  mutation contract. These controls are now explicitly disabled and explain
+  that an authorized connected workspace is required.
+- Demo administration and settings pages now identify themselves as
+  illustrative snapshots. Write-looking controls are disabled in demo mode;
+  live mode still renders the live components.
+- Custom Next.js verification output directories are ignored by Git and ESLint,
+  preventing generated bundles from polluting source lint results.
 
-**Repository visual, interaction, accessibility, and lab-performance gates: PASS.**
+## Current automated release evidence
 
-**Overall release gate: PRODUCTION-REJECT.**
+Executed with Node.js 22.14.0 and pnpm 11.9.0:
 
-Storybook static build and the connected live browser journey both pass. The
-live journey covers registration, email verification, document upload,
-analysis, compilation, SSE replay, provenance navigation, export, and purge.
+- ESLint with zero warnings: pass
+- strict TypeScript: pass
+- Next.js 16.2.12 production build: pass
+  - optimized compilation: pass
+  - internal TypeScript phase: pass
+  - page-data collection: pass
+  - static-page generation: pass
+  - build-trace collection: pass
+- Vitest: 21 files and 72 tests passed
+- Playwright: 24 passed and 4 intentional project-scope skips
+- TypeScript-AST interaction gate: 0 enabled dead buttons
+- all registered public routes on desktop: successful response, one H1, unique
+  title, and no horizontal overflow
+- all registered app/document routes on desktop: successful response, one H1,
+  route information architecture, no horizontal overflow, and valid app header
+  action destinations where applicable
+- Quick Convert contract: desktop and mobile pass
+- JTC exact revenue-cell evidence: desktop and mobile pass
+- demo administration/settings non-writable boundary: desktop and mobile pass
+- shell actions, fixed Knowledge/Review/API/Processing studios, and unconfigured
+  SSO/recovery boundaries: desktop and mobile pass
+- representative mobile auth, onboarding, product, and document surfaces: pass
+- reduced motion: pass
+- Axe representative WCAG A/AA suite: no violations
+- asset manifest: 9 assets verified
+- deterministic asset names: 119 files verified
+- cryptographic derivative hashes: 21 verified
+- canonical contracts TypeScript check: pass
 
-The local release candidate implements the seven-act clean-room homepage and
-passes every repository-owned visual gate. This does not substitute for the
-masterplan's private Q1/Q2 labels, Q3 100,000-page field shadow, three-repeat
-public benchmark, production-provider drills, independent beta, or legal and
-commercial approvals.
+## Viewport evidence
 
-## Final evidence
+The current Playwright run covers Desktop Chrome and the iPhone 13 device
+profile. The repository also retains the earlier 1440 × 900, 1024 × 768, and
+390 × 844 manual evidence described by the preceding baseline. Those exact
+manual captures were not regenerated in this remediation, so they are retained
+as prior evidence rather than presented as a new measurement.
 
-| Gate                       | Result                                                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Responsive evidence        | 16/16 captures passed: KO/EN × default/reduced motion × 1920, 1440, 1024, 390                                                |
-| Seven-scene contract       | Exact ordered scene IDs `01-product-film` through `07-final`                                                                 |
-| Actual-source proof        | Official 2,276,931-byte DART PDF, page 30/121, rendered by PDF.js 6.2.108                                                    |
-| PDF SHA-256                | `fb998430db82774afc0d69090383650421ab9a14e6e37c7f32821aa1c6a32eee`                                                           |
-| Browser matrix             | 9/9 passed: Chromium at 360/390/768/1024/1280/1440/1920, Firefox 1440, WebKit 1440                                           |
-| Accessibility matrix       | 7 passed, 1 intentional mobile duplicate skip; forced colors, 200% desktop text, 12px visible-text floor, 14px control floor |
-| Visual regression          | 11/11 approved route baselines passed                                                                                        |
-| Console and page errors    | 0 / 0 across all 16 captures                                                                                                 |
-| Horizontal overflow        | Maximum 0px                                                                                                                  |
-| Actual PDF canvas          | Minimum captured width 487px                                                                                                 |
-| ESLint / strict TypeScript | PASS / PASS                                                                                                                  |
-| Production build           | PASS, Next.js 16.2.12 standalone                                                                                             |
+The current browser run verifies:
 
-Evidence locations:
+- marketing ↔ product round trip
+- complete public/app route crawls on desktop
+- representative product and document flows on mobile
+- Quick Convert at desktop and mobile sizes
+- DART proof at desktop and mobile sizes
+- demo administration/settings boundaries at desktop and mobile sizes
+- reduced motion
+- CSP nonce and hardened headers
+- representative Axe checks
 
-- `artifacts/folynta-v1-visual-qa/report.json`
-- `artifacts/folynta-v1-visual-qa/{ko,en}/{default,reduced}/{viewport}/home.webp`
-- `artifacts/lighthouse/folynta-v1-mobile.json`
-- `artifacts/lighthouse/folynta-v1-desktop.json`
-- `apps/web/e2e/visual-baselines/desktop/win32/visual-regression.spec.ts/`
+## Proof-system assessment
 
-## Lighthouse 12.8.2 lab results
+The canonical UI coordinate space remains integer `bbox1000`, normalized to the
+post-rotation page. The source viewer applies the same rectangle to the preview
+and overlay layer, with zoom and rotation applied to their common parent. The
+DART marketing proof does not claim to be a PDF-coordinate overlay; it now marks
+the exact deterministic XBRL-derived revenue cell in the rendered source table
+and links it to receipt, taxonomy, source line, unit, and archive hash.
 
-| Profile          | Performance | Accessibility | Best practices | SEO |     LCP | CLS |  TBT | Initial script transfer |
-| ---------------- | ----------: | ------------: | -------------: | --: | ------: | --: | ---: | ----------------------: |
-| Simulated mobile |          97 |           100 |            100 | 100 | 2,407ms |   0 | 96ms |           208,870 bytes |
-| Desktop          |         100 |           100 |            100 | 100 |   601ms |   0 |  0ms |           208,870 bytes |
+## Claim and benchmark boundary
 
-The masterplan budgets are met: mobile performance ≥90, accessibility 100,
-best practices ≥95, SEO ≥95, LCP ≤2.5s, CLS ≤0.1, TBT ≤200ms, and initial
-script transfer below 220KB. These are local standalone lab measurements, not
-canonical-domain field p75 Core Web Vitals.
+- The public benchmark snapshot remains `unavailable`; unmeasured values render
+  as unavailable rather than zero or an invented score.
+- The DART fixture is public-source product evidence, not a benchmark quality
+  result.
+- Customer logos, quotes, certifications, security attestations, benchmark
+  victories, and commercial prices remain absent unless registered evidence is
+  available.
+- Training-pool language is limited to explicit opt-in and approved workspace
+  policy; the blocked absolute training claim is not published as product copy.
 
-## Scene review
+## Performance evidence boundary
 
-| Scene                  | Product-truth and composition decision                                                        | Result |
-| ---------------------- | --------------------------------------------------------------------------------------------- | ------ |
-| 01 Product Film        | Static-first verified folio; no WebGL hero or generated proof                                 | PASS   |
-| 02 Intake              | Local manifest, file classes, dedupe and excluded state before processing                     | PASS   |
-| 03 Recovery Theater    | Detected → recovered → verified; Basic/Technical; no timer progress                           | PASS   |
-| 04 Actual Source       | DART defaults in KO, SEC defaults in EN; actual PDF versus truthful Inline XBRL HTML boundary | PASS   |
-| 05 Knowledge Formation | One receipt projects into vault, atomic note, relation and exports                            | PASS   |
-| 06 Trust               | Verified, recovered-and-verified, unresolved and excluded remain distinct                     | PASS   |
-| 07 Final               | One restrained document-upload CTA and truth-bound supporting copy                            | PASS   |
+The retained Lighthouse artifact from the preceding baseline reports
+Performance 93, Accessibility 100, Best Practices 96, SEO 100, LCP 3.2 s, TBT
+40 ms, CLS 0, and no console errors under its recorded simulated-mobile lab
+conditions. Lighthouse was not rerun in this remediation. Production p75 LCP,
+INP, and CLS require a canonical deployment and real traffic.
 
-## Motion review
+The root layout intentionally remains dynamically rendered because a
+per-request CSP nonce is applied by `src/proxy.ts`. Static conversion without a
+replacement nonce design is not an acceptable performance optimization.
 
-| Before                                       | After                                                                             | Why                                                                           |
-| -------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Built-in `ease` on color and border feedback | `cubic-bezier(0.23, 1, 0.32, 1)` with 140–180ms explicit-property transitions     | Strong ease-out feels responsive and never animates unrelated properties      |
-| Potential first-load PDF work below the fold | Intersection-gated PDF.js and source-byte load with a stable intrinsic region     | Keeps product proof real while protecting initial render and layout stability |
-| Historical decorative or timer-like motion   | Finite press/state feedback only; no loops, springs, fake progress, or WebGL hero | Every motion now explains state or input feedback                             |
+## Remaining owner or deployment gates
 
-Verdict: **Approve.** No feel-breaking regression, high-frequency animation,
-`transition: all`, `scale(0)`, `ease-in`, layout-property animation, ungated
-hover motion, or reduced-motion information loss remains. Active feedback is
-interruptible CSS transition motion and stays below 300ms.
+- legal/domain clearance for `TAVONEL`
+- final licensed wordmark and owner design-source synchronization
+- approved commercial price book
+- consented customer or participant evidence
+- rights-cleared benchmark corpus and real model/hardware/cost/canary evidence
+- production IdP, payment, email, and optional external-provider configuration
+- deployed header scan, operational drills, canonical-domain RUM, and field Core
+  Web Vitals
 
-## External gates that remain open
+## Release conclusion
 
-- private Q1: 1,500 pages and at least 10,000 labeled facts
-- private Q2: 5,000 pages and at least 30,000 labeled facts
-- Q3 field shadow: 100,000 pages
-- three-repeat rights-cleared public benchmark artifacts
-- production RunPod billing/concurrency/fault evidence
-- production R2 role, lifecycle, deletion and restoration evidence
-- production Postgres RLS, backup and restoration drill evidence
-- independent private-beta and assistive-technology evidence
-- legal, domain, licensing, claim, and commercial approval
-
-Until those artifacts exist, `PRODUCTION-REJECT` is mandatory even though the
-repository-owned frontend gates pass.
+The locally executable visual, trust, interaction, accessibility, contract, and
+asset gates pass. Production release still depends on the external gates above.
+No status label should be interpreted as replacing those missing artifacts.

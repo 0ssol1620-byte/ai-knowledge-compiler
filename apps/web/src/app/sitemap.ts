@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { PUBLIC_PAGES } from "@/lib/structara-content";
+import { PUBLIC_PAGES } from "@/lib/tavonel-content";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";

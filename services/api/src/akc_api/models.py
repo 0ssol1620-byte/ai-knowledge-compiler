@@ -4392,3 +4392,52 @@ class CollectionEvent(Base):
         Index("collection_events_job_idx", "tenant_id", "job_id", "sequence"),
         Index("collection_events_retention_idx", "occurred_at", "id"),
     )
+
+
+class TrialSession(Base):
+    """An anonymous visitor's one-shot preflight — ADR-006.
+
+    Owned by the reserved system trial tenant seeded in migration 0023, so the
+    tenant-scoping invariant in CONTRIBUTING.md holds without exception and the
+    row-level policy on this table is the same shape as every other tenant
+    table. There is no user: the session identifier is the only credential, it
+    grants read access to exactly one project, and it stops existing at
+    ``expires_at``.
+
+    ``client_subject`` is the pseudonym the existing IdentityHasher produces,
+    never a raw address, so this row and the rate limiter agree on who a caller
+    is without either of them storing an IP.
+    """
+
+    __tablename__ = "trial_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tenants.id", ondelete="CASCADE")
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    client_subject: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    # Set when a visitor signs up inside the window and the session is moved
+    # into their tenant. Adoption re-runs authorization; it does not relocate
+    # objects across tenant prefixes.
+    adopted_tenant_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    deletion_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id"],
+            ["projects.tenant_id", "projects.id"],
+            ondelete="CASCADE",
+        ),
+        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("project_id"),
+        CheckConstraint("expires_at > created_at", name="trial_sessions_ttl_forward"),
+        Index(
+            "trial_sessions_expiry_idx",
+            "expires_at",
+            postgresql_where=text("deletion_requested_at IS NULL"),
+        ),
+        Index("trial_sessions_client_idx", "client_subject", "created_at"),
+    )

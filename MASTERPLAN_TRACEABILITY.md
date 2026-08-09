@@ -1,10 +1,7 @@
-# Structara masterplan traceability
+# TAVONEL masterplan traceability
 
 Authority:
-`D:\Structara_World_Class_Brand_Product_Completion_Masterplan_FINAL_v2_Public_Benchmark_KO_2026-07-31.md`
-
-The earlier ultra-premium brand and asset masterplan remains an inherited
-design authority where it does not conflict with this v2 completion contract.
+`D:\TAVONEL_Ultra_Premium_Brand_Website_All_Pages_Design_Masterplan_FINAL_Codex_GPT-5.6-Sol_ASSET-SYSTEM_KO_2026-07-30.md`
 
 This is the release ledger for every top-level numbered requirement. “Implemented”
 means the repository contains the required system or surface. “Owner gate” means
@@ -16,11 +13,11 @@ reports and may not be inferred from this table alone.
 
 |   § | Status      | Primary evidence                                                                                    |
 | --: | ----------- | --------------------------------------------------------------------------------------------------- |
-|   0 | Owner gate  | `STRUCTARA_BRAND_DECISIONS.md`; working-name legal/domain clearance remains owner-controlled        |
-|   1 | Implemented | brand positioning, promise, surface split in `STRUCTARA_BRAND_DECISIONS.md` and `structara.css`     |
+|   0 | Owner gate  | `TAVONEL_BRAND_DECISIONS.md`; working-name legal/domain clearance remains owner-controlled        |
+|   1 | Implemented | brand positioning, promise, surface split in `TAVONEL_BRAND_DECISIONS.md` and `tavonel.css`     |
 |   2 | Implemented | `REFERENCE_LEDGER.md`; reference decisions translated, not copied                                   |
 |   3 | Implemented | brand platform in the repository brand skill and marketing copy                                     |
-|   4 | Implemented | English-default and Korean-ready copy system in `structara-content.ts`                              |
+|   4 | Implemented | English-default and Korean-ready copy system in `tavonel-content.ts`                              |
 |   5 | Implemented | color, type, grid, glyph, and logo direction in tokens, CSS, and brand assets                       |
 |   6 | Implemented | Blender/R3F hero, product loops, motion tokens, reduced-motion fallback                             |
 |   7 | Implemented | public and authenticated IA in `PAGE_MANIFEST.yml`                                                  |
@@ -114,7 +111,7 @@ reports and may not be inferred from this table alone.
 |  90 | Implemented | repository brand/asset skills plus UI, craft, browser, and web-quality workflows |
 |  91 | Implemented | authority order in `AGENTS.md`                                                   |
 |  92 | Implemented | pinned local skills, package scripts, validation commands                        |
-|  93 | Implemented | `.agents/skills/structara-brand-experience`                                      |
+|  93 | Implemented | `.agents/skills/tavonel-brand-experience`                                      |
 |  94 | Implemented | root `AGENTS.md`                                                                 |
 |  95 | Implemented | brand decisions, page manifest, reference ledger, option rules                   |
 |  96 | Implemented | audit → research → prototype → build → polish → QA → release workflow            |
@@ -150,7 +147,7 @@ reports and may not be inferred from this table alone.
 | 121 | Implemented | 12 architecture diagrams, benchmark/limitation surfaces, graph visual tiers                                                              |
 | 122 | Implemented | asset repository, exact naming validator, manifest, prompt index                                                                         |
 | 123 | Implemented | AVIF/WebP/MP4/WebM delivery, art direction, byte/dimension/hash registry                                                                 |
-| 124 | Implemented | `.agents/skills/structara-asset-director`                                                                                                |
+| 124 | Implemented | `.agents/skills/tavonel-asset-director`                                                                                                |
 | 125 | Implemented | need audit through in-context approval workflow and completion report                                                                    |
 | 126 | Implemented | prompt pack remains governed; no generated output bypasses contact-sheet approval                                                        |
 | 127 | Verified    | automatic blocks and 90/100 asset rubric re-scored after browser QA                                                                      |
@@ -169,17 +166,17 @@ production-only evidence.
 | Production builds must fail on TypeScript errors              | Verified | `apps/web/next.config.ts`; final isolated Next.js production build completed its internal TypeScript phase                                                                             |
 | Upload copy and enforcement must use one contract             | Verified | `apps/web/src/lib/upload-policy.ts`; `upload-policy.test.ts`; `upload-panel.tsx`; desktop/mobile Playwright contract test                                                              |
 | External processing must reflect explicit consent             | Verified | `quick-convert/page.tsx`; `upload-panel.tsx`; desktop/mobile Playwright copy assertion                                                                                                 |
-| DART proof must select the exact evidence target              | Verified | `structara-proof-demo.tsx`; detached `.st-source-box` removed; exact revenue cell asserted in desktop/mobile Playwright                                                                |
+| DART proof must select the exact evidence target              | Verified | `tavonel-proof-demo.tsx`; detached `.tv-source-box` removed; exact revenue cell asserted in desktop/mobile Playwright                                                                |
 | Visible primary controls must operate or be honest            | Verified | `app-action.ts`; 15 route-mapping tests; all `/app/*` header actions browser-validated; fixed fixture controls explicitly disabled; TypeScript-AST gate reports 0 enabled dead buttons |
 | Demo operations must not imply durable writes                 | Verified | demo branches in `admin/page.tsx` and `settings/page.tsx`; desktop/mobile non-writable-control assertions                                                                              |
 | Claims and benchmark values must fail closed                  | Verified | `CLAIM_REGISTER.yml`; unavailable public benchmark snapshot; DART fixture labeled no-quality-claim                                                                                     |
 | Release status must distinguish local completion from go-live | Verified | `IMPLEMENTATION_STATUS.md`; `VISUAL_QA_REPORT.md`; `PAGE_MANIFEST.yml` status semantics                                                                                                |
 | Asset evidence must remain hash-pinned                        | Verified | asset manifest, 119-name validation, and 21-derivative hash validation pass                                                                                                            |
-| Final repository gates                                        | Verified | ESLint; strict TypeScript; 22 files/109 Vitest; 52/14 production Playwright; 9 visual; 9 browser matrix; 1 live API E2E; 0 enabled dead buttons; contracts; assets; production build     |
+| Final repository gates                                        | Verified | ESLint; strict TypeScript; 21/72 Vitest; 24/4 Playwright; 0 enabled dead buttons; contracts; assets; production build                                                                  |
 
 ## Owner-controlled completion inputs
 
-- legal and domain clearance for the working name “Structara”
+- legal and domain clearance for the working name “TAVONEL”
 - final licensed wordmark, if a licensed typeface or custom mark is chosen
 - access to the owner’s final Figma workspace for source synchronization
 - real participant/customer approval for research, logos, testimonials, or case studies
@@ -188,29 +185,3 @@ production-only evidence.
   selected
 
 None of these gates prevents local product, public demo, QA, or review.
-
-## 2026-07-31 v2 Public Benchmark addendum
-
-This addendum supersedes any earlier wording that could be read as a parser or
-router production-promotion claim. Repository readiness and Full Public Core
-evidence are separate gates.
-
-| v2 requirement                           | Status             | Repository evidence                                                                                                     |
-| ---------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| OmniDocBench v1.7 immutable lock         | Verified           | `benchmark/benchmark-registry.lock.yaml`; exact evaluator commit, dataset revision, 1,662-file manifest digest          |
-| ParseBench five-dimension immutable lock | Verified           | exact evaluator commit, dataset revision, 2,113-file manifest digest, all five dimensions registered                    |
-| olmOCR-Bench all-category immutable lock | Verified           | exact evaluator commit, dataset revision, 1,418-file manifest digest, all categories registered                         |
-| Registry drift detection                 | Verified           | `benchmark/public_suite.py verify-registry --online`; GitHub commit and Hugging Face full manifest verification         |
-| GT-free prediction adapters              | Verified           | CIR-only adapters and adapter golden tests; no GT argument exists on the inference-side command                         |
-| Immutable prediction and GT isolation    | Verified           | per-file/archive hashes, read-only freeze, disjoint-root and environment audit, post-freeze rehash                      |
-| Official and Structara-critical split    | Implemented        | official outputs remain evaluator-owned; separate numeric/sign/unit/row/page/evidence/omission/false-verified hard gate |
-| Candidate/incumbent environment parity   | Verified           | compare refuses dataset, evaluator, benchmark, or environment hash mismatch                                             |
-| Three-run reproducibility                | Verified           | exactly three identical-environment runs and bounded metric span required                                               |
-| Signed report                            | Owner gate         | report hash is deterministic; external private signing key and completed full run are required                          |
-| Tier-0 evaluator readiness               | Verified           | ParseBench 198 tests; OmniDocBench compatibility smoke 5 passed/1 deselected; olmOCR evaluator smoke passed             |
-| Tier-2 Full Public Core                  | Open external gate | no RunPod endpoint and no full candidate/incumbent three-repeat outputs; `EG-15` remains open                           |
-| Production promotion                     | Rejected           | Full Public Core, private Finance/Knowledge/Robustness gates, license approval, and independent go/no-go are absent     |
-
-Detailed evidence and the exact claims boundary are recorded in
-`docs/release/PUBLIC_BENCHMARK_READINESS_REPORT_2026-07-31.md` and
-`benchmark/reports/public-core-tier0-status-2026-07-31.json`.

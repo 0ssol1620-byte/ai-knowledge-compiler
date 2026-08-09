@@ -1,379 +1,280 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-02T02:46:27.525148+00:00",
+  "generatedAt": "2026-07-30T15:19:40.920959+00:00",
   "generator": "tools/assets/build_derivatives.py",
-  "namingConvention": "^STR-[A-Z0-9-]+-T[0-4]-[A-Z0-9-]+-(?:EN|KO|MULTI)-[A-Z0-9-]+-\\d+x\\d+-v\\d{2}\\.(?:avif|mp4|webm|webp)$",
+  "namingConvention": "^TAV-[A-Z0-9-]+-T[0-4]-[A-Z0-9-]+-(?:EN|KO|MULTI)-[A-Z0-9-]+-\\d+x\\d+-v\\d{2}\\.(?:avif|mp4|webm|webp)$",
   "assets": [
     {
       "path": "assets/3d/master/hero-master.blend",
-      "bytes": 1207132,
-      "sha256": "fb3c494d1b20b5cad78d58233c1cbffcc6308ce3a0a091b4d91d34b4764cbfab",
+      "bytes": 1003806,
+      "sha256": "5b9e640e49eaf73963fd41efbb7aeaf4bf530d764250765f95cabd2a1fd14f18",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-master.glb",
-      "bytes": 1106436,
-      "sha256": "592d5e2142e8206435176f9b0ee613123bf35ba0fa4a9b77500d60719d97a36a",
+      "bytes": 455836,
+      "sha256": "23829353487336e08f4db42e8461c39a089b2e41be354ed78d22dec571fadca2",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-master-low.glb",
-      "bytes": 634628,
-      "sha256": "c2062309db4248cf0cb36e3306218bc1c8f842e0febf097f38c521200668bf70",
+      "bytes": 281676,
+      "sha256": "9368040b98cfc969f34097cfea7f5c8a05327656ef860dd5bba8b4285ac9e27a",
       "dimensions": null,
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-composition-a.png",
-      "bytes": 940841,
-      "sha256": "42d4a5a98c4e0465c3855f486d1e11cbce137c024ac8fcf644f90bec39b28496",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "bytes": 941587,
+      "sha256": "0f52733bc4e6b4c53d36846f415fc19c98bfad072cc482c99ad5a102311dea49",
+      "dimensions": [1200, 750],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-composition-b.png",
-      "bytes": 933147,
-      "sha256": "d34d481d0c9d214c2e41db8e1cf503fc492355fde34af5ad7eb8d0bfd5828db2",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "bytes": 943644,
+      "sha256": "0c7666f813e61d96e4d052b66ae764fd2c78969fc031a5ef85ef83e1e48ac5e1",
+      "dimensions": [1200, 750],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-composition-c.png",
-      "bytes": 963740,
-      "sha256": "6cf3d9b4bbb7d97e84d1b3acf53bc700a13c074d70f40fad537ca10e6ca4aa6b",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "bytes": 953770,
+      "sha256": "fba762432b610dd1aaf7d66b05459c9acac66beebd870ee63addff212fe5dda2",
+      "dimensions": [1200, 750],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-mobile-1080x1440.png",
-      "bytes": 1551590,
-      "sha256": "31e42d8874b1253ae211e352256d41eb8d97d31a95f8c59ac882424d07432ccc",
-      "dimensions": [
-        1080,
-        1440
-      ],
+      "bytes": 1535540,
+      "sha256": "ab5ace7145a041a51d0957dcf32421e169c3d795a72a198e4a9b00d51001608f",
+      "dimensions": [1080, 1440],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-object-evidence-blocks-transparent.png",
-      "bytes": 534200,
-      "sha256": "354f17cb6410b75510aac60055090fdf14a7b30d385a15bc51d70d40b7de55a0",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "bytes": 587466,
+      "sha256": "a4ebfaffcfcb60289f742da75a65634a5da93974380ec31b52c3d72c7ea9febc",
+      "dimensions": [1600, 1000],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-object-knowledge-graph-transparent.png",
-      "bytes": 1043535,
-      "sha256": "5c34cc59e0a65ea45ba3f13fcab6f2bd20cf5d583fcbd2959f9e15c341abc5dd",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "bytes": 580774,
+      "sha256": "cf66d0cb9370b28ed906d79d1f375cd608533437f1c36849b4672c0560bb572d",
+      "dimensions": [1600, 1000],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-object-source-pages-transparent.png",
-      "bytes": 873127,
-      "sha256": "1aeb6cea8697d2ea65376058e9e9d33213c355a8a2897d03fd6d2f08d27b2be2",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "bytes": 779246,
+      "sha256": "66f1d800caef3c4ecc52bb4a377dcae1af964dc3b82a4d7a9b41d662904ac9cc",
+      "dimensions": [1600, 1000],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-og-1200x630.png",
-      "bytes": 813413,
-      "sha256": "61e81a20d315f4d870941b197461a5fcb26452ef75e3a3f8b36aa2c1de7e405f",
-      "dimensions": [
-        1200,
-        630
-      ],
+      "bytes": 803166,
+      "sha256": "97583de720d4cd33ef57fa5ff51cb55c1628da36844ac1c883d1f47ad1976cd0",
+      "dimensions": [1200, 630],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-poster-2880x1800.png",
-      "bytes": 5281086,
-      "sha256": "1b56bff4113b716934a85836d0f00468df3fec02c8adc78319009b8fb5eb1bd1",
-      "dimensions": [
-        2880,
-        1800
-      ],
+      "bytes": 5146181,
+      "sha256": "f2e34644480648b3547f8419ccf49073c48b4ca58e1d9d8613d5a5aab8c4d79d",
+      "dimensions": [2880, 1800],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-reduced-motion.png",
-      "bytes": 955848,
-      "sha256": "f23ca70ef674da0560789ba3337aae3e773b4ae2dbed8225e37b51fb51d3fe3b",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "bytes": 938903,
+      "sha256": "ad0f7f3f7a17ec6b47d61fde2a9ff59a89b47e7737f177bd84200fecfa071857",
+      "dimensions": [1200, 750],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-tablet-1600x1200.png",
-      "bytes": 1944055,
-      "sha256": "942da2395b8e2f11196a6a7f433e220131a09dab1a78785b3db70711c4568e56",
-      "dimensions": [
-        1600,
-        1200
-      ],
+      "bytes": 1918957,
+      "sha256": "b2bbe7701300a3a4b04dd675b9b2880fac0e73792209e89c4958d7cc3efbc2f6",
+      "dimensions": [1600, 1200],
       "role": "source"
     },
     {
       "path": "assets/3d/derivatives/hero-loop-12s.mp4",
-      "bytes": 365138,
-      "sha256": "25e10040bf6ddf978efd61909727ccd9cfa6ef7a0a01e19e243645ba720042ba",
+      "bytes": 306567,
+      "sha256": "c37976121672cb69e107e2fee400f3ebdecdf74b396707cce8384531dcdf013f",
       "dimensions": null,
       "role": "source"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01.avif",
-      "bytes": 18505,
-      "sha256": "b1c4f036010f7c6d67e4f07dccded2193e68c9b6a01a2314023fece68ee1b01d",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01.avif",
+      "bytes": 23668,
+      "sha256": "533517852eba24018f717e63173fba689e6b7760809e6cf1ffe46417a278f50f",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01.webp",
-      "bytes": 17644,
-      "sha256": "5b3b5c728b74c3bf600d78929081edd9936463a8c349504c2d47dcdf8ac4398d",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-CONCEPT-A-1200x750-v01.webp",
+      "bytes": 18040,
+      "sha256": "81dacb646e45653c9c8a215407fdaec8a587e50edbb852f831c80ab187667dad",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01.avif",
-      "bytes": 16220,
-      "sha256": "3ffd38a2fe21f0a14ffeb510d174b1e0c9a1f3286fb4d860d59877bfbaf98584",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01.avif",
+      "bytes": 24562,
+      "sha256": "6358c6d0f6b11718e33548fd17e8973f6cdb9a65f2be95a642ede4c81efa5f70",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01.webp",
-      "bytes": 14372,
-      "sha256": "a13fd35d82cb471f86b8954aa612895079f68876605d1dac519f13f0f4fbc120",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-CONCEPT-B-1200x750-v01.webp",
+      "bytes": 18872,
+      "sha256": "4a3b4a0e34bfb8de102ec2e3fbd95a5c8cd8c5bd7019b7bdd593c8da18d44878",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01.avif",
-      "bytes": 19673,
-      "sha256": "aff7c2537c13677ca1604498f287c6d0809a95adcec376d6c01f85da8650ec45",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01.avif",
+      "bytes": 25122,
+      "sha256": "b62be322d851f2b7d2b41784c9798eee81a89dc742e6b936c50df0ae0419779c",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01.webp",
-      "bytes": 17658,
-      "sha256": "34240e7c106ce998008fce54845defd50c6985e35426df625d0a7ac2beaa19da",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-CONCEPT-C-1200x750-v01.webp",
+      "bytes": 20248,
+      "sha256": "90226a53662195f9d4cd8841be2713baa948f71b8ad49cf187d3e7847396aa13",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif",
-      "bytes": 53280,
-      "sha256": "d2b9a8b80e1db80634374e8f51c63c2f4b3307b740ded591fd47baa572cd04fa",
-      "dimensions": [
-        2880,
-        1800
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.avif",
+      "bytes": 71160,
+      "sha256": "65d8eeeade5a5765b8b78cb6cd6501b25394e639d88b2adca58afe59519eb5be",
+      "dimensions": [2880, 1800],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.webp",
-      "bytes": 46248,
-      "sha256": "1ce00a0d77ef95b129daaa30f08a16251ccc47c38b520523ba7d46e6f00f5e2a",
-      "dimensions": [
-        2880,
-        1800
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-DESKTOP-2880x1800-v01.webp",
+      "bytes": 58330,
+      "sha256": "a3a65b14c5ebb67b99896c9657e7b801577a9985c4c9903b9dfef03e8f179437",
+      "dimensions": [2880, 1800],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif",
-      "bytes": 19689,
-      "sha256": "15998f908a67d322afffaf6fa73cf3e8f9756b3abffd26d311161f381ff54f6d",
-      "dimensions": [
-        1080,
-        1440
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.avif",
+      "bytes": 22859,
+      "sha256": "b986e3371929b7a6f7f9a01c8cf795c3dd5c94a2836efe76723be8a1cd938266",
+      "dimensions": [1080, 1440],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.webp",
-      "bytes": 16746,
-      "sha256": "d50c0f62d86458ded1d9badfa54d3caf7226bd7aae0d172660b56f27421daf90",
-      "dimensions": [
-        1080,
-        1440
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-MOBILE-1080x1440-v01.webp",
+      "bytes": 19026,
+      "sha256": "3171c8be5e7150ba69812faaf077a1283b03e30a52e26868aa0c7c7120685ce1",
+      "dimensions": [1080, 1440],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-OG-1200x630-v01.avif",
-      "bytes": 17115,
-      "sha256": "1df6e778c6275fa6553e7ba81b7733debac70b9691df7a913eb55ac993abe6c2",
-      "dimensions": [
-        1200,
-        630
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-OG-1200x630-v01.avif",
+      "bytes": 22836,
+      "sha256": "0f6133d6f2ccf3f4e0481453807b6a44a15016feb67661caf774ceb9b2a0ab5d",
+      "dimensions": [1200, 630],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-OG-1200x630-v01.webp",
-      "bytes": 13608,
-      "sha256": "6c62c54df5d60aa3c598e32456f048fe68882dbf2bec611e6e93851c72da0699",
-      "dimensions": [
-        1200,
-        630
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-OG-1200x630-v01.webp",
+      "bytes": 16502,
+      "sha256": "8bb52b55551cc940f251206de24733cfb0afac1031037d1e4efefe01149104da",
+      "dimensions": [1200, 630],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-REDUCED-1200x750-v01.avif",
-      "bytes": 18184,
-      "sha256": "59b32b1b45f144207a1ac8a29b12a8dc29664f030431de641fe7e79460757add",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-REDUCED-1200x750-v01.avif",
+      "bytes": 22628,
+      "sha256": "ee4e73fe0eafc36e1faf4939b1536cfcdcc6dbd1a1af7903d488f11b87e6a08b",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-REDUCED-1200x750-v01.webp",
-      "bytes": 15020,
-      "sha256": "5009d0ccadff7c9e077700ce536376234c5f71422590a7ba5402b0d693463509",
-      "dimensions": [
-        1200,
-        750
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-REDUCED-1200x750-v01.webp",
+      "bytes": 16870,
+      "sha256": "7adf4ac65b9535dc156b16143f6207e0d89a3cd90d2d4005369509a4add07f1f",
+      "dimensions": [1200, 750],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-TABLET-1600x1200-v01.avif",
-      "bytes": 25908,
-      "sha256": "d39680b78cb838001fa9e282b19bdd3cb2d7815c8a42226ad2e2979c29138cc0",
-      "dimensions": [
-        1600,
-        1200
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-TABLET-1600x1200-v01.avif",
+      "bytes": 33271,
+      "sha256": "e942f267311f0249f7b83048275c2d9b562c6112f518d201ff2962ed46cd9884",
+      "dimensions": [1600, 1200],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-EN-TABLET-1600x1200-v01.webp",
-      "bytes": 22000,
-      "sha256": "485895f7de4b243976cc6a9db115aed68b384b7a62310c1c7dc9c61b55a8b6c6",
-      "dimensions": [
-        1600,
-        1200
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-EN-TABLET-1600x1200-v01.webp",
+      "bytes": 25876,
+      "sha256": "5e7fecf108059fcd430d48131e3cc72cc64c251d9eac139e247683c6caa6cce5",
+      "dimensions": [1600, 1200],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.mp4",
-      "bytes": 365138,
-      "sha256": "25e10040bf6ddf978efd61909727ccd9cfa6ef7a0a01e19e243645ba720042ba",
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-MULTI-LOOP-960x600-v01.mp4",
+      "bytes": 306567,
+      "sha256": "c37976121672cb69e107e2fee400f3ebdecdf74b396707cce8384531dcdf013f",
       "dimensions": null,
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm",
-      "bytes": 143265,
-      "sha256": "e3c5e4a6fb8ef82ee6537cde200bda291995b3b425efdf2a2fe194d0174fdc3a",
+      "path": "apps/web/public/hero/TAV-HOME-T2-HERO-MULTI-LOOP-960x600-v01.webm",
+      "bytes": 56671,
+      "sha256": "ec44cdec40ac85c52e34b78e1a9b765d8fea4860bdb0e5695a868629519e28ff",
       "dimensions": null,
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-OBJECT-EN-EVIDENCE-1600x1000-v01.avif",
-      "bytes": 29208,
-      "sha256": "f1b1154aa19943b54d55c6f25c376c747c3a6529bff183d8ab52419ccc3286f9",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-OBJECT-EN-EVIDENCE-1600x1000-v01.avif",
+      "bytes": 27835,
+      "sha256": "5df128e2ac16f73dbe9898814b571a504bad606ad4be9919b093e5cae322c2d0",
+      "dimensions": [1600, 1000],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-OBJECT-EN-EVIDENCE-1600x1000-v01.webp",
-      "bytes": 33008,
-      "sha256": "215cc5807098318e14020d526184525572592b9aa22487f8e6db4de907bfb142",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-OBJECT-EN-EVIDENCE-1600x1000-v01.webp",
+      "bytes": 31582,
+      "sha256": "1dc76032ad3a4bb93fd81f4925ee78389567fa3d034066520ae35d07e2fd32bb",
+      "dimensions": [1600, 1000],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-OBJECT-EN-GRAPH-1600x1000-v01.avif",
-      "bytes": 13831,
-      "sha256": "a1552a0f36a85a5935144ba112038dd26f50fcac08e61b42a2fc7f7ac37e9444",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-OBJECT-EN-GRAPH-1600x1000-v01.avif",
+      "bytes": 40588,
+      "sha256": "67cff4549659eb0b8b23dd4712de2f3f9cbfd9e5286d1412a82529a0133c07ba",
+      "dimensions": [1600, 1000],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-OBJECT-EN-GRAPH-1600x1000-v01.webp",
-      "bytes": 15766,
-      "sha256": "00457141075ccffe13318d96cacbf9e17b8b1c25b3d3fa25b357e7fa14fc5f6d",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-OBJECT-EN-GRAPH-1600x1000-v01.webp",
+      "bytes": 45136,
+      "sha256": "7dcb6627fc59bdc8a5a9eead652d641916eb3409d5ced7292d1db77c1b978a5e",
+      "dimensions": [1600, 1000],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-OBJECT-EN-SOURCE-1600x1000-v01.avif",
-      "bytes": 27548,
-      "sha256": "fee1b433ce56fa09e6b857a52cd7c519015a707558fe4e12cf6afc446d1d7893",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-OBJECT-EN-SOURCE-1600x1000-v01.avif",
+      "bytes": 27871,
+      "sha256": "211b45cb4a10151e015b0c62f8bb2f6736281efcd807b483dbbddff9dee2b162",
+      "dimensions": [1600, 1000],
       "role": "web-derivative"
     },
     {
-      "path": "apps/web/public/hero/STR-HOME-T2-OBJECT-EN-SOURCE-1600x1000-v01.webp",
-      "bytes": 31796,
-      "sha256": "c6c84720ea715d3538897b1ed827a9504af6d4dc99e7613886b173994f1a5168",
-      "dimensions": [
-        1600,
-        1000
-      ],
+      "path": "apps/web/public/hero/TAV-HOME-T2-OBJECT-EN-SOURCE-1600x1000-v01.webp",
+      "bytes": 29282,
+      "sha256": "50e1569737f2cd2e662cf0d18284761232f94324ca452a69b7b46e4bc15add0b",
+      "dimensions": [1600, 1000],
       "role": "web-derivative"
     }
   ]

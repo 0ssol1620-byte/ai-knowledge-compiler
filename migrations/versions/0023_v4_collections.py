@@ -44,7 +44,12 @@ from alembic import op
 from sqlalchemy import inspect
 
 revision = "0023_v4_collections"
-down_revision = "0022_cdr_derivative_lineage"
+# Re-pointed at 0023_trial_ingest on the merge with main. Both revisions were
+# written off 0022 on branches that could not see each other, which git merges
+# without a word and alembic then refuses as two heads. This branch rebased, so
+# it takes the later position; the file keeps its 0023 name because nine
+# revisions, 0024 through 0032, name it as their parent.
+down_revision = "0023_trial_ingest"
 branch_labels = None
 depends_on = None
 

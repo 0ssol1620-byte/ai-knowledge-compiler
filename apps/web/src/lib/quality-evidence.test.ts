@@ -34,21 +34,4 @@ describe("measuredQualityBreakdown", () => {
     });
     expect(measuredQualityBreakdown(undefined)).toEqual({ metrics: [] });
   });
-
-  it("does not surface standalone OCR confidence as customer quality evidence", () => {
-    expect(
-      measuredQualityBreakdown({
-        ocr_confidence: 0.99,
-        native_ocr_agreement: 0.92,
-      }),
-    ).toEqual({
-      metrics: [
-        {
-          key: "native_ocr_agreement",
-          label: "Source / visual-route agreement",
-          score: 92,
-        },
-      ],
-    });
-  });
 });

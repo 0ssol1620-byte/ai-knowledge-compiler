@@ -1,3 +1,16 @@
+> **SUPERSEDED — do not implement from this file.**
+>
+> This records the FOLYNTA design system, the generation between Structara and
+> TAVONEL. It arrived on the backend branch and is kept for the same reason
+> `design-system/structara/` is: it is where the brand contract below was first
+> written down, including the rule that the display name never reaches database
+> keys, object roots, event types or export schema IDs — which is still true and
+> still load-bearing. Nothing else in it is current.
+>
+> Current system: `design-system/tavonel/DESIGN_MASTER_V3.md`, with
+> `design-system/tavonel/decision.md` overriding it where they disagree.
+> Drop this file if the design session would rather not carry it.
+
 # FOLYNTA Design System — Authority Override
 
 > Source of truth: `FOLYNTA_World_Class_Category_Leading_Enterprise_Product_ULTRA_DETAILED_Integrated_Masterplan_FINAL_KO_2026-08-02.md` (SHA-256 `ed169695892277a184b467d850cb32ba007e6ced7b8b0ddd6f04a4bc6508386b`).

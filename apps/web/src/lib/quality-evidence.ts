@@ -19,8 +19,9 @@ const metricLabels: Record<string, string> = {
   repetition_safety: "Repetition safety",
   language_consistency: "Language consistency",
   markdown_validity: "Markdown schema validity",
-  native_ocr_agreement: "Source / visual-route agreement",
-  review_count: "Integrity finding count",
+  native_ocr_agreement: "Native / OCR agreement",
+  ocr_confidence: "Calibrated OCR confidence",
+  review_count: "Review count",
 };
 
 function finiteScore(value: unknown): number | undefined {

@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 
 export default function ForgotPasswordPage() {
   return (
-    <main id="main-content" className="st-auth-simple">
+    <main id="main-content" className="tv-auth-simple">
       <Link href="/">
         <BrandMark />
       </Link>
@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
         </label>
         <button
           type="button"
-          className="st-app-primary"
+          className="tv-app-primary"
           disabled
           title="Recovery requires the production email service."
           data-auth-external-gate

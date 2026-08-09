@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
-import { StructaraMarketingPage } from "@/components/structara-marketing-page";
-import { getRequestLocale } from "@/lib/locale-server";
-import { getPublicPage } from "@/lib/structara-content-localized";
+import { TavonelMarketingPage } from "@/components/tavonel-marketing-page";
+import { JsonLd } from "@/components/json-ld";
+import { PUBLIC_PAGES } from "@/lib/tavonel-content";
+import { pageGraph, SITE_BASE } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "Document benchmarks",
@@ -10,13 +11,12 @@ export const metadata: Metadata = {
     "Versioned evaluation for text, numbers, tables, reading order, source coverage, latency, and cost.",
 };
 
-export default async function BenchmarksPage() {
-  const locale = await getRequestLocale();
-  const definition = getPublicPage("/benchmarks", locale);
-
-  if (!definition) {
-    throw new Error("Missing localized /benchmarks page definition");
-  }
-
-  return <StructaraMarketingPage definition={definition} />;
+export default function BenchmarksPage() {
+  const definition = PUBLIC_PAGES["/benchmarks"]!;
+  return (
+    <>
+      <JsonLd nodes={pageGraph(definition, SITE_BASE)} />
+      <TavonelMarketingPage definition={definition} />
+    </>
+  );
 }

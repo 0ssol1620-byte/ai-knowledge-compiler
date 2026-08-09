@@ -1,21 +1,9 @@
-import type { Metadata, Route } from "next";
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import {
-  type CompatibilityQuery,
-  integrityCompatibilityTarget,
-} from "@/lib/integrity-compatibility";
-import { getRequestLocale } from "@/lib/locale-server";
+import { ReviewStudio } from "@/components/review-studio";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
-  return { title: locale === "ko" ? "무결성 콘솔" : "Integrity Console" };
-}
+export const metadata: Metadata = { title: "Review Studio" };
 
-export default async function ReviewCompatibilityPage({
-  searchParams,
-}: {
-  searchParams: Promise<CompatibilityQuery>;
-}) {
-  redirect(integrityCompatibilityTarget(await searchParams) as Route);
+export default function ReviewPage() {
+  return <ReviewStudio />;
 }

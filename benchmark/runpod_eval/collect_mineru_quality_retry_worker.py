@@ -39,7 +39,11 @@ def collect_quality_worker(
     remote_root = "/workspace/folynta/results/mineru-quality-r1"
     remote_archive = f"/workspace/folynta/results/{worker_name}-mineru-quality-r1.tar.gz"
     suite_checks = "\n".join(f'test -f "$root/{suite}/run-summary.json"' for suite in suites)
-    remote_script = f"""set -euo pipefail
+    # Raw: the shell needs literal backslashes for its line continuations and
+    # its escaped parentheses, and Python 3.12 warns on every one of them
+    # otherwise. The warning is the only thing that changes; the emitted script
+    # is byte-identical.
+    remote_script = rf"""set -euo pipefail
 root={remote_root}
 test -f "$root/worker-state.jsonl"
 {suite_checks}

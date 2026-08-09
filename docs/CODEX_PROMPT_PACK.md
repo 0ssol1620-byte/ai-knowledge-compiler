@@ -1,11 +1,11 @@
-# Structara Codex prompt pack
+# TAVONEL Codex prompt pack
 
 These short prompts preserve the repository authority order. They never replace
 the root `AGENTS.md` or the active skill.
 
 ## Route implementation
 
-> Read the root AGENTS, Structara brand skill, active PAGE_MANIFEST route, brand
+> Read the root AGENTS, TAVONEL brand skill, active PAGE_MANIFEST route, brand
 > decisions, relevant masterplan section, and existing browser evidence. Define
 > one route message, implement semantic static content first, add real
 > interaction and source-linked data, then validate 1920, 1440, 1024, 390,
@@ -21,7 +21,7 @@ the root `AGENTS.md` or the active skill.
 
 ## Asset production
 
-> Read Structara Asset Director. Classify T0–T4, prefer actual product/public
+> Read TAVONEL Asset Director. Classify T0–T4, prefer actual product/public
 > evidence, code/SVG, then first-party 3D. Never generate proof. Produce master,
 > responsive derivatives, provenance, hashes, alt decision, in-context captures,
 > byte budget, and an asset completion report.
