@@ -62,17 +62,17 @@ dev = [
   # instancing for apps/web. brotli is what writes woff2.
   "fonttools[woff]>=4.55,<5",
   "hypothesis>=6.138,<7",
-  "mypy>=1.17,<2",
+  "mypy>=1.17,<3",
   "pip-audit>=2.9,<3",
   "pytest>=9.0.3,<10",
   "pytest-asyncio>=1.1,<2",
-  "pytest-cov>=6.2,<7",
+  "pytest-cov>=6.2,<8",
   "respx>=0.22,<1",
   "ruff>=0.12,<1",
   "types-bleach>=6.2,<7",
   "types-openpyxl>=3.1,<4",
   "types-pyyaml>=6.0,<7",
-  "uv==0.12.0"
+  "uv==0.12.2"
 ]
 
 [tool.hatch.build.targets.wheel]
