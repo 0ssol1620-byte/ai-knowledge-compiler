@@ -20,6 +20,14 @@ from .collection_events import (
     CollectionEventType,
     validate_collection_event_payload,
 )
+from .dependency import (
+    DependencyEdge,
+    DependencyGraph,
+    EdgeType,
+    ImpactPath,
+    ImpactReport,
+    Propagation,
+)
 from .errors import ErrorCode, ErrorEnvelope
 from .events import (
     ALLOWED_PAGE_TRANSITIONS,
@@ -127,6 +135,14 @@ from .reading_order import (
     infer_heading_hierarchy,
     infer_reading_order,
 )
+from .recompilation import (
+    ArtifactState,
+    EquivalenceReport,
+    RecompilationPlan,
+    RecompilationTarget,
+    plan_recompilation,
+    verify_equivalence,
+)
 from .schema import all_json_schemas, json_schema
 from .semantic_diff import (
     ChangeKind,
@@ -136,6 +152,13 @@ from .semantic_diff import (
     SemanticDiff,
     UnitSnapshot,
     diff_documents,
+)
+from .temporal import (
+    AsOfAnswer,
+    TemporalFact,
+    TemporalPolicy,
+    TemporalSource,
+    TemporalTimeline,
 )
 
 __all__ = [
@@ -150,6 +173,8 @@ __all__ = [
     "KNOWLEDGE_SYSTEM_PROMPT",
     "NORMALIZATION_VERSION",
     "READING_ORDER_VERSION",
+    "ArtifactState",
+    "AsOfAnswer",
     "AssertionStatus",
     "BBox1000",
     "BlockOrigin",
@@ -171,10 +196,14 @@ __all__ = [
     "ContentLayer",
     "ContractModel",
     "CrossPageRestoration",
+    "DependencyEdge",
+    "DependencyGraph",
     "DiffLevel",
     "DocumentClassification",
     "DocumentContains",
     "DocumentShape",
+    "EdgeType",
+    "EquivalenceReport",
     "ErrorCode",
     "ErrorEnvelope",
     "EventType",
@@ -185,6 +214,8 @@ __all__ = [
     "Frontmatter",
     "HeadingInferenceRecord",
     "HeadingInferenceResult",
+    "ImpactPath",
+    "ImpactReport",
     "KnowledgeBundle",
     "KnowledgeNote",
     "KnowledgeObjectKind",
@@ -202,6 +233,7 @@ __all__ = [
     "PageState",
     "ProcessingEvent",
     "ProcessingStage",
+    "Propagation",
     "PublicAuthorityReceipt",
     "PublicProofAnchor",
     "PublicProofFixture",
@@ -212,6 +244,8 @@ __all__ = [
     "RagChunk",
     "ReadingOrderRecord",
     "ReadingOrderResult",
+    "RecompilationPlan",
+    "RecompilationTarget",
     "RelatedNoteCandidate",
     "RelationAssertion",
     "RepeatedMarginalAnnotation",
@@ -223,6 +257,10 @@ __all__ = [
     "SourceMapEntry",
     "SourceRef",
     "StableId",
+    "TemporalFact",
+    "TemporalPolicy",
+    "TemporalSource",
+    "TemporalTimeline",
     "TextNormalizationResult",
     "TocEntry",
     "UnitSnapshot",
@@ -245,6 +283,7 @@ __all__ = [
     "normalize_block_text",
     "normalize_text_for_identity",
     "page_transition_allowed",
+    "plan_recompilation",
     "prompt_version_sha256",
     "resolve_public_proof_market",
     "restore_cross_page_continuity",
@@ -252,4 +291,5 @@ __all__ = [
     "source_id",
     "validate_collection_event_payload",
     "validate_public_proof_binding",
+    "verify_equivalence",
 ]

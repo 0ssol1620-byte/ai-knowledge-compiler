@@ -160,3 +160,111 @@ re-derived cannot be audited.
 The diff produces a change set. Nothing yet consumes it: dependency edges,
 impact traversal and selective recompile are masterplan PHASE 4–5 and do not
 exist.
+
+---
+
+# Dependency graph and impact (§15, §16.1)
+
+`packages/cir-python/src/akc_cir/dependency.py`.
+
+**Edge direction is declared, not inferred.** An edge is written the way the
+sentence reads — `A DEPENDS_ON B` — but impact does not travel the way the arrow
+points. A chunk that depends on a clause goes stale when the clause changes, so
+staleness runs backwards along `DEPENDS_ON` and forwards along `CONSUMED_BY`.
+Each type states its own direction, because getting it backwards produces a
+blast radius that is confidently wrong.
+
+```
+DERIVED_FROM · DEPENDS_ON            upstream    (target changes → source stale)
+SUPPORTS · CONSUMED_BY · EXPORTS_TO
+INVALIDATES                          downstream  (source changes → target stale)
+REFERENCES · SUPERSEDES              inert       (never propagates)
+```
+
+`REFERENCES` is inert on purpose: a document mentioning another does not become
+wrong when the other changes, and treating a mention as a dependence makes every
+blast radius the size of the corpus. `SUPERSEDES` records history.
+
+**Every affected node carries the path that reached it.** Marking an artifact
+stale is a bill for compute and a claim that someone's answer was wrong, so the
+report shows `clause 4.2 [DEPENDS_ON] → chunk 88 [CONSUMED_BY] → workflow 3`
+rather than a number. Breadth-first, so the recorded path is the shortest one.
+
+Cycles terminate and are reported — a graph with a dependence loop cannot be
+recompiled in any order, and that is worth surfacing rather than hanging on.
+Edges carry `valid_from` / `valid_to`, so an edge retired last month does not
+propagate staleness in a query about today.
+
+# Incremental recompilation (§16)
+
+`packages/cir-python/src/akc_cir/recompilation.py`.
+
+Three states, and the middle one carries the weight:
+
+```
+STALE       a change reached it
+UNRESOLVED  a change may have reached it, but identity was not settled
+CURRENT     nothing reached it
+```
+
+**UNRESOLVED never silently becomes CURRENT.** The diff declined to settle an
+identity; skipping the artifact would turn that honest refusal into a claim that
+it is still valid. Unresolved artifacts are rebuilt — they may not need it, and
+rebuilding one costs compute, but not rebuilding one that did need it ships a
+stale answer. The asymmetry decides.
+
+`verify_equivalence` is §44 PHASE 5's exit criterion made executable: the union
+of what a selective run rebuilt and what it carried over must equal a full
+rebuild, artifact for artifact and hash for hash. The failure it exists to catch
+is the quiet one — an artifact the plan called current whose content a full
+rebuild would have changed. That is a corpus that looks compiled and is wrong,
+and nothing downstream sees it. A test drops one edge from the graph and asserts
+the check fails rather than passing.
+
+# Temporal model (§13)
+
+`packages/cir-python/src/akc_cir/temporal.py`.
+
+Two clocks, because two questions that look identical are not:
+
+```
+what was the policy on 3 January?              valid time
+what did the AI believe it was on 3 January?   system time
+```
+
+A policy backdated to January but recorded in March is correct under the first
+and absent under the second. An agent that answered in February was not wrong —
+it answered from what was recorded then. Collapsing the axes makes a stale answer
+indistinguishable from a dishonest one.
+
+**§8.1 governs what may be stored.** A fact whose validity the document never
+stated carries `temporal_source=UNKNOWN`, and an as-of query will not silently
+treat unknown as always-true. `TemporalPolicy` makes the caller choose, and the
+answer records which policy produced it and which facts it affected — the same
+shape as the claims pack's rule that every rate carries its denominator.
+
+`contradictions()` implements §17.1's temporal-contradiction category: two facts
+for one logical id whose validity windows overlap and whose values differ. Two
+*undated* facts are missing dates, not a contradiction, and a retracted fact does
+not contradict its replacement.
+
+`replay_context` is §19's input reconstruction, pinning both axes to one moment.
+§19 is explicit that this reconstructs the input context and never claims to
+reconstruct a model's reasoning.
+
+# The four composed
+
+`tests/unit/test_knowledge_cicd_pipeline.py` asserts the seams, not just the
+layers. A worked change — warranty two years to three:
+
+```
+identity     one clause id, stable across both versions
+diff         one modified_claim, no remove-plus-add
+impact       2 rag chunks, 1 export, 1 agent workflow
+plan         rebuild 4 of 6, 33% of the work avoided
+equivalence  selective result == full rebuild, nothing stale left behind
+temporal     Feb reads "two years", Jun reads "three years", no contradiction
+```
+
+Dropping one edge from the graph makes the equivalence check fail, which is the
+test that the check is doing anything.
