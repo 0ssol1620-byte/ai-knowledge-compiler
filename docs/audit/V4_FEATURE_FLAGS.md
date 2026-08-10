@@ -1,7 +1,7 @@
-# V4 Feature Flag Registry
+# V4 / V5 Feature Flag Registry
 
-*Masterplan v4.0 PHASE 0 deliverable ("feature flag framework"). Written
-2026-08-10.*
+*Masterplan v4.0 PHASE 0 deliverable ("feature flag framework"), extended
+2026-08-11 with v5.0 PART 22's keys.*
 
 ## The framework already exists
 
@@ -24,28 +24,57 @@ a surface for everyone.
 Three keys already exist for shipped features and are not touched here:
 `ontology_export`, `existing_vault_merge`, `chart_description`.
 
-## The fifteen v4 keys
+## The thirteen surviving v4 keys
 
 Registered as documentation now; rows are created by the phase that needs them,
-defaulting to absent (= off).
+defaulting to absent (= off). Phases are **v5's** numbering
+(`docs/audit/V5_MIGRATION_MATRIX.md`), which is what governs now.
 
 | Key | Owning phase | Gates | Off means |
 |---|---|---|---|
-| `V4_CONTRACTS` | 1 | v4 canonical DTO/event serialisation | current CIR contracts unchanged |
+| `V4_CONTRACTS` | 1 | v4/v5 canonical DTO/event serialisation | current CIR contracts unchanged |
 | `V4_INGEST` | 2 | R2 multipart upload session path | existing upload path stays live |
 | `V4_PREFLIGHT` | 2 | per-format preflight + quarantine | no preflight; current admission |
 | `V4_PROFILER` | 3 | page/document profiler | profiler runs shadow-only or not at all |
 | `V4_MODEL_REGISTRY` | 3 | registry-gated adapter selection | current provider selection |
-| `V4_SHADOW_ROUTER` | 4 | v4 router computes a decision **without executing it** | legacy routing only |
-| `V4_ROUTE_EXECUTION` | 5 | the v4 route decision actually executes | shadow decisions are recorded, not obeyed |
-| `V4_BENCHMARK_OS` | 7 | benchmark suite orchestration | campaign harness only |
-| `V4_RETRIEVAL` | 11 | permission-first retrieval | existing hybrid retrieval |
-| `V4_ASK` | 11 | grounded answer surface | absent |
-| `V4_HEALTH_SCAN` | 12 | Knowledge Health Scan | absent |
-| `V4_CINEMATIC_LANDING` | 13 | cinematic landing narrative | current landing |
-| `V4_CONNECTOR_DRIVE` | 14 | Google Drive connector | absent |
-| `V4_PUBLIC_API` | 14 | public REST surface | internal API only |
-| `V4_MCP_READ` | 15 | read-only MCP server | absent |
+| `V4_BENCHMARK_OS` | 17 | full 5,132 + DART/SEC research campaign | Arena and campaign harness only |
+| `V4_RETRIEVAL` | 12 | permission-first retrieval | existing hybrid retrieval |
+| `V4_ASK` | 12 | grounded answer surface | absent |
+| `V4_HEALTH_SCAN` | 13 | Knowledge Health Scan | absent |
+| `V4_CINEMATIC_LANDING` | 14 | cinematic landing narrative | current landing |
+| `V4_CONNECTOR_DRIVE` | 15 | Google Drive connector | absent |
+| `V4_PUBLIC_API` | 15 | public REST surface | internal API only |
+| `V4_MCP_READ` | 16 | read-only MCP server | absent |
+
+**`V4_SHADOW_ROUTER` and `V4_ROUTE_EXECUTION` are withdrawn.** v5 replaces them
+with `V5_ROUTER_SHADOW` / `V5_ROUTER_CANARY` and moves the router from Phase 4 to
+Phase 6, behind the Arena. Neither v4 key ever had a row, so nothing is stranded
+and no deprecation path is owed.
+
+## The eleven v5 keys
+
+| Key | Owning phase | Gates | Off means |
+|---|---|---|---|
+| `V5_ARENA` | 4 | Arena harness — case selection, run execution, scoring | no Arena runs |
+| `V5_ARENA_BATCH` | 4 | batch/bulk execution lane (Track B) | interactive only |
+| `V5_DPM` | 5 | Document Performance Map construction | no map |
+| `V5_ORACLE_DATASET` | 5 | Router Oracle Dataset emission | no oracle rows |
+| `V5_ROUTER_SHADOW` | 6 | router computes a decision **nothing acts on** | legacy routing only |
+| `V5_ROUTER_CANARY` | 6+ | the v5 decision actually executes, by cohort | shadow decisions recorded, not obeyed |
+| `V5_API_PROVIDER_OPENAI` | 4 | OpenAI candidates in the Arena | family excluded |
+| `V5_API_PROVIDER_ANTHROPIC` | 4 | Anthropic candidates | family excluded |
+| `V5_API_PROVIDER_GEMINI` | 4 | Gemini candidates | family excluded |
+| `V5_LOCAL_PADDLE` | 4 | PaddleOCR-VL-1.6 candidate | candidate excluded |
+| `V5_LOCAL_DEEPSEEK_OCR2` | 4 | DeepSeek-OCR-2 candidate | candidate excluded |
+
+The three `V5_API_PROVIDER_*` keys have no credential behind them today
+(`docs/audit/V5_COST_BUDGET.md` C-7). Leaving them off is correct until a key
+exists — but note that an Arena run with all three off is a **local-only**
+comparison, which cannot answer the question the Arena exists to answer. The flag
+makes the exclusion visible; it does not make it valid.
+
+`V5_ROUTER_SHADOW` and `V5_ROUTER_CANARY` stay two flags for the reason the v4
+pair did: shadow and execution must not share a switch.
 
 ## F-1 — `rollout_percent = 0` meant *everyone* — **FIXED 2026-08-10**
 

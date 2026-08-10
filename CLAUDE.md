@@ -1,34 +1,50 @@
 # TAVONEL — Project Constitution
 
-North Star: `docs/north-star/TAVONEL_MASTERPLAN_v4.0.md`
-(sha256 `c996c372ca4702af1f11a67da61fee90c54c332b9238a89f0e1df7942d1b5e5a`).
+North Star: `docs/north-star/TAVONEL_MASTERPLAN_v5.0.md`
+(sha256 `35e6bcec1ed5bab30b86478d8d44e20e66d71adb1bcf9f921804cf99f06b19b7`).
 
 Superseded but preserved:
 
+- `docs/north-star/TAVONEL_MASTERPLAN_v4.0.md`
+  (sha256 `c996c372ca4702af1f11a67da61fee90c54c332b9238a89f0e1df7942d1b5e5a`)
 - `docs/north-star/TAVONEL_MASTERPLAN_v3.1.md`
   (sha256 `cd69a8634520cc9f3a9be5e8ac3059c1fe2e445bea39e7ab9a99d81d28ba39fb`)
 - `docs/north-star/TAVONEL_FINAL_NORTH_STAR_MASTERPLAN.md`
   (sha256 `6876ea389c41ad6b7b2dec47505a18138116531d51d514cab60204458e276619`)
 
-**Precedence, when two documents disagree** — v4.0's own ordering:
+**Precedence, when two documents disagree** — v5.0's own ordering:
 
-    v4 execution boundary / definition of done / phase gates
-      >  v4 normative architecture, security, evidence, migration rules
+    v5 execution boundary / Model Arena / definition of done / phase gates
+      >  v5 normative architecture, security, evidence, migration rules
       >  hash-verified evidence, artifact hashes, benchmark receipts
       >  docs/architecture/v31-phase-gap-matrix.md (current state, not future design)
-      >  v3.1 detail that v4 does not contradict
-      >  v2/v1 and earlier design documents
+      >  v4.0 detail that v5 does not contradict
+      >  v3.1 and earlier
 
-Three consequences that have already bitten:
+**v5 supersedes v4 on phase order, router, model evaluation and benchmark.**
+Everything else v4 said still governs — v5 is narrower than it looks, and reading
+it as a full replacement discards the architecture, security, evidence and GTM
+detail it deliberately keeps.
 
-- **v4's PHASE 0–18 governs implementation order.** v3.1's N41 Phase 0–17 and
-  §44's PHASE 0–11 are both history now. Phase numbers are dependency order, not
-  priority.
-- **A v3.1 number that v4 restates differently is v4's number** — the same rule
+Four consequences:
+
+- **v5's PHASE 0–20 governs implementation order.** v4's PHASE 0–18 is history.
+  Phase numbers are dependency order, not priority.
+- **The Model Arena comes before the active Router.** v4 put the shadow router at
+  Phase 4; v5 puts the Arena at Phase 4–5 and the shadow router at Phase 6.
+  Routing policy is *learned from same-condition evidence*, not assumed.
+- **A v4 number that v5 restates differently is v5's number** — the same rule
   that moved the identity merge bar from 0.72 to 0.92. Code written to the older
   number was not wrong when it was written.
 - **`v31-phase-gap-matrix.md` is a current-state baseline, never a design.** It
   says what exists. It does not say what to build.
+
+**The Arena is an experiment to discover the architecture, not to prove it.** If
+API-only beats the hybrid on trusted output, cost and operational simplicity,
+the architecture changes through an ADR. Never infer a model's capability from
+its vendor or its name — pin the exact model ID, revision, input mode, prompt,
+schema and price snapshot in a receipt, or the capability does not exist. Never
+compare another benchmark's vendor score as if it were a same-condition result.
 
 Verified evidence figures, artifact hashes and the historical `FOLYNTA` label are
 **not** rewritten by any masterplan revision.

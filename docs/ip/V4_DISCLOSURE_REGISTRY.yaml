@@ -231,13 +231,13 @@ ip_items:
     review_before_publish: true
     owner: founder
 
-  - technology: "Document Performance Map and Router Outcome Dataset"
+  - technology: "Document Performance Map and Router Oracle Dataset"
     summary: "Accumulated per-document-class performance and route outcomes. The data moat, not a method."
-    masterplan_ref: "PART 16, PART 19.3"
+    masterplan_ref: "v5 PART 8, PART 10.2; v4 PART 16, PART 19.3"
     implementation:
       current: "none"
       status: MISSING
-      note: "Phase 7."
+      note: "v5 Phase 5. v4 placed this at Phase 7 as a benchmark artifact; v5 promotes it to core moat and puts it BEFORE the active router."
     patent_candidate: false
     filing_status: NOT_APPLICABLE
     founder_decision_required: false
@@ -247,12 +247,53 @@ ip_items:
       - "the entire dataset"
       - "per-class performance tables"
       - "failure corpus"
+      - "Router Oracle rows: permitted paths, per-path outcomes, cheapest-trusted / highest-quality / business-risk-optimal selections"
     allowed_claims:
       - "TAVONEL gets better at your document types as it processes them."
     forbidden_details:
       - "any row, aggregate or distribution from the dataset"
       - "customer-derived performance data in any form"
     invariant: "Never expose route features, scores, thresholds, prompts or this dataset in a public DTO or a client bundle."
+    review_before_publish: true
+    owner: founder
+
+  - technology: "TAVONEL Model Arena / Evaluation OS"
+    summary: "A same-condition, multi-family evaluation harness that measures which intelligence family wins on which document slice, at what real cost, with what reproducibility — and produces the Router Oracle Dataset."
+    masterplan_ref: "v5 PART 8, PART 9, PART 31 — NEW CORE in v5.0"
+    implementation:
+      current: "none"
+      status: MISSING
+      note: "v5 Phase 4-5. Corpus inventory in docs/audit/V5_ARENA_CORPUS.md; spend gates and blockers in docs/audit/V5_COST_BUDGET.md."
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: HIGH_LEVEL
+    trade_secret_components:
+      - "the corpus manifest and its case selection"
+      - "provider-optimized prompts, schemas and image-resolution settings (Track P)"
+      - "the normalization layer's conversion rules"
+      - "per-model per-slice results and the Pareto analysis"
+      - "cost matrices and price snapshots"
+      - "the 100-page prompt calibration set"
+    allowed_claims:
+      - "TAVONEL measures models against each other on the same documents, under the same conditions, and publishes what it measured."
+      - "The evaluation is designed to be able to disprove TAVONEL's own architecture."
+    forbidden_details:
+      - "any prompt, schema or setting used with a provider"
+      - "any per-model score before a same-condition campaign is published with receipts"
+      - "the corpus composition at page level"
+    non_claims:
+      - "Nothing has been measured yet. No Arena result may be stated, implied or previewed until a campaign produces receipts."
+      - "A vendor's published score is quoted, never presented as a TAVONEL same-condition result."
+      - "Track I (standardized page-image) and Track N (provider-native input) results are never merged into one number."
+    third_party_risk:
+      note: >-
+        Evaluating named third-party models publicly carries contractual and
+        reputational exposure that patent policy does not cover. Provider terms of
+        service can restrict publishing benchmark results. Review before any
+        comparative publication, and check each provider's terms at run time
+        rather than assuming.
+      blocks: "any public model-vs-model comparison"
     review_before_publish: true
     owner: founder
 
@@ -290,6 +331,7 @@ publication_freeze:
     - "Document-Semantic Lineage and Incremental Recompilation"
     - "Versioned World State with Atomic Publish"
     - "Authority, Applicability and Temporal Resolution"
+    - "TAVONEL Model Arena / Evaluation OS"
   not_frozen:
     - "Evidence-Level Provenance"
     - "TAVONEL brand and category assets"
@@ -316,5 +358,22 @@ founder_decisions_pending:
     blocks: "nothing technical; affects launch copy risk"
   - id: IP-4
     question: "Does any design-partner or pilot contract grant rights over derived performance data?"
-    blocks: "PHASE 16 pilot contract, and the Document Performance Map moat"
-    note: "PART 19.11. If a pilot contract lets a customer claim the outcome data, the data moat is not a moat."
+    blocks: "the paid-pilot contract, and the Document Performance Map moat"
+    note: "v4 PART 19.11. If a pilot contract lets a customer claim the outcome data, the data moat is not a moat."
+  - id: IP-5
+    question: "May TAVONEL publish named model-vs-model comparisons, and under whose terms?"
+    blocks: "any public Arena result"
+    note: >-
+      v5 makes the Model Arena core and the campaign will name OpenAI, Anthropic,
+      Google, DeepSeek, PaddleOCR and MinerU. Some provider terms of service
+      restrict publishing benchmark results. This is a contractual question, not a
+      patent one, and it has to be answered before results exist rather than after.
+  - id: IP-6
+    question: "Is the Arena corpus itself publishable, or trade secret?"
+    blocks: "research publication (v5 Phase 17) and reproducibility claims"
+    note: >-
+      The two pull in opposite directions. A reproducible published benchmark
+      needs its corpus disclosed; the corpus manifest and case selection are
+      listed as trade secret above. DART and SEC filings are public documents, but
+      the *selection* is the intellectual work. Decide which half is published
+      before the campaign, because publishing after the fact cannot be undone.

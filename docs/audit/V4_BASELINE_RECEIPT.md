@@ -317,9 +317,61 @@ infra/supply-chain/verified-pins.json      pre-existing; S-1/S-3 recorded agains
 ```
 
 B-2 is resolved, so Phase 1 is unblocked. It was the gating item because Phase 1
-locks the v4 contract language, and a claims pack without receipts is precisely
-the contract v4 exists to enforce.
+locks the contract language, and a claims pack without receipts is precisely the
+contract this exists to enforce.
 
 **B-1 remains open** and is not a Phase 1 blocker: it is design conformance in
-legacy stylesheets that Phase 13 replaces. It must not be closed by raising the
-ratchet.
+legacy stylesheets that the cinematic-landing phase replaces. It must not be
+closed by raising the ratchet.
+
+---
+
+## 10. v5.0 PHASE 0 — closed on the same measurements
+
+*Added 2026-08-11. `docs/north-star/TAVONEL_MASTERPLAN_v5.0.md`, sha256
+`35e6bcec1ed5bab30b86478d8d44e20e66d71adb1bcf9f921804cf99f06b19b7`.*
+
+v5 arrived a day after v4 and supersedes it on **phase order, router, model
+evaluation and benchmark** only. Its PHASE 0 asks for the same things v4's did,
+and the measurements above satisfy them without re-running — the tree moved from
+`5999baf` to `9b5edd9` in between, and the deltas are the B-2/F-1 repairs, which
+are re-verified in §4.
+
+| v5 PHASE 0 item | Where |
+|---|---|
+| repo / tests / deploy / evidence inventory | §2, §3 |
+| v3.1 protected baseline tag | `v3.1-baseline` → `5999baf` |
+| v4/v5 migration matrix | `V4_MIGRATION_MATRIX.md`, `V5_MIGRATION_MATRIX.md` |
+| current claim hashes | §6 — 14/14 |
+| model / licence / container inventory | `V4_LICENSE_AND_SUPPLY_CHAIN.md` |
+
+v5 PART 34's FIRST ACTIONS additionally require Arena-corpus and cost-budget
+audit files:
+
+```text
+docs/audit/V5_MIGRATION_MATRIX.md   what v5 changes; C-6, C-7, C-8
+docs/audit/V5_ARENA_CORPUS.md       1,000-page corpus state and construction plan
+docs/audit/V5_COST_BUDGET.md        stage-gated spend, blockers, founder decisions
+```
+
+**Exit — "historical evidence immutable and green baseline known": MET.**
+
+### What v5 changes about what comes next
+
+- **Phase 1's scope grew.** Arena schemas (APPENDIX A, PART 3.4) join the
+  contract lock. A Phase 1 plan written against v4 is incomplete without them.
+- **The router moved from Phase 4 to Phase 6**, behind the Model Arena at 4–5.
+  Routing policy is learned from same-condition evidence, not assumed.
+- **Benchmark OS moved from Phase 7 to Phase 17.**
+
+### New blocker, carried to `V5_COST_BUDGET.md`
+
+**C-7 — no OpenAI, Anthropic or Google credential is available.** The three
+General Multimodal families cannot be evaluated. Local families (MinerU,
+PaddleOCR-VL, DeepSeek-OCR-2) are unblocked via RunPod and HuggingFace, and
+corpus construction is unblocked via the DART key and public EDGAR.
+
+Running the Arena local-only would not be a partial answer — it would be a
+biased one, toward the architecture already built. v5 PART 0.5 explicitly admits
+the conclusion that an API-only architecture wins, and an evaluation that cannot
+reach that conclusion is not the evaluation v5 specifies.
