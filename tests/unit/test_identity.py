@@ -10,12 +10,19 @@ from __future__ import annotations
 import pytest
 from akc_cir.identity import (
     IDENTITY_SCHEME_VERSION,
+    IDENTITY_SIGNAL_WEIGHTS,
+    MERGE_THRESHOLD,
+    NEW_IDENTITY_THRESHOLD,
     LogicalIdentityDecision,
     LogicalIdentityResolver,
     LogicalMatch,
+    LogicalRelation,
     LogicalUnitFingerprint,
+    MissingReason,
+    assign_one_to_one,
     document_version_id,
     evidence_id,
+    generate_candidates,
     logical_id_seed,
     normalize_bbox1000,
     normalize_text_for_identity,
@@ -182,6 +189,9 @@ def test_identity_normalization_folds_only_what_should_not_matter() -> None:
 # --------------------------------------------------------------------------
 
 
+SRC = "src_acme_warranty"
+
+
 def _unit(
     logical_id: str,
     *,
@@ -189,12 +199,20 @@ def _unit(
     anchor: str = "4.2 Exceptions",
     text: str = "The warranty covers parts and labour for two years from delivery.",
     neighbours: tuple[str, ...] = ("4.1 Scope", "4.3 Claims"),
+    lineage: str = SRC,
+    identifier: str = "4.2",
+    version_distance: int = 1,
+    style: str = "body 10pt indent-0",
 ) -> LogicalUnitFingerprint:
     return LogicalUnitFingerprint.of(
         logical_id=logical_id,
         document_path=path,
         anchor=anchor,
         text=text,
+        source_lineage=lineage,
+        version_distance=version_distance,
+        explicit_identifier=identifier,
+        geometry_style=style,
         neighbour_anchors=neighbours,
     )
 
@@ -224,6 +242,8 @@ def test_an_unrelated_clause_starts_a_new_identity() -> None:
         anchor="9.1 Carrier selection",
         text="Shipments are tendered to the carrier with the earliest pickup window.",
         neighbours=("9.0 Overview", "9.2 Rates"),
+        identifier="9.1",
+        style="body 10pt indent-1",
     )
 
     decision = resolver.resolve(incoming, previous, seed_logical_id="ku_seed")
@@ -246,20 +266,21 @@ def test_two_near_identical_candidates_are_refused_rather_than_picked() -> None:
     assert "arbitrarily" in decision.reason
 
 
-def test_a_middling_score_is_ambiguous_not_a_merge() -> None:
-    resolver = LogicalIdentityResolver(merge_threshold=0.95, new_threshold=0.05)
+def test_a_middling_score_lands_in_the_review_band_not_a_merge() -> None:
+    resolver = LogicalIdentityResolver()
     previous = [_unit("ku_warranty")]
     incoming = _unit(
         "ku_pending",
         anchor="4.2 Exclusions",
-        text="Coverage excludes consumable parts and cosmetic damage.",
+        text="Coverage excludes consumable parts and cosmetic damage entirely.",
+        neighbours=("4.1 Scope", "4.4 Remedies"),
     )
 
     decision = resolver.resolve(incoming, previous)
 
     assert decision.match is LogicalMatch.AMBIGUOUS
     assert decision.logical_id is None
-    assert "between" in decision.reason
+    assert "review band" in decision.reason
 
 
 def test_a_decision_always_explains_itself() -> None:
@@ -267,8 +288,200 @@ def test_a_decision_always_explains_itself() -> None:
     decision = resolver.resolve(_unit("ku_pending"), [_unit("ku_warranty")])
 
     assert decision.reason
-    assert set(decision.signals) == {"path", "anchor", "content", "neighbours"}
+    assert set(decision.signals) == set(IDENTITY_SIGNAL_WEIGHTS)
     assert all(0.0 <= value <= 1.0 for value in decision.signals.values())
+
+
+# --------------------------------------------------------------------------
+# §N15.4 — the bar sits at 0.92 because a false merge costs more than a split
+# --------------------------------------------------------------------------
+
+
+def test_the_bootstrap_bands_are_the_ones_the_masterplan_fixed() -> None:
+    assert MERGE_THRESHOLD == 0.92
+    assert NEW_IDENTITY_THRESHOLD == 0.75
+
+
+def test_the_weights_are_the_ones_the_masterplan_fixed() -> None:
+    assert IDENTITY_SIGNAL_WEIGHTS == {
+        "source_continuity": 0.25,
+        "structural_path": 0.20,
+        "explicit_identifier": 0.15,
+        "semantic": 0.15,
+        "previous_neighbor": 0.10,
+        "next_neighbor": 0.10,
+        "geometry_style": 0.05,
+    }
+
+
+def test_a_candidate_from_another_source_does_not_continue_this_one() -> None:
+    resolver = LogicalIdentityResolver()
+    foreign = _unit("ku_other_doc", lineage="src_other_tenant_doc")
+
+    decision = resolver.resolve(_unit("ku_pending"), [foreign])
+
+    assert decision.match is not LogicalMatch.MATCHED
+    assert decision.signals["source_continuity"] == 0.0
+
+
+def test_an_older_version_is_a_weaker_ancestor_than_the_last_one() -> None:
+    resolver = LogicalIdentityResolver()
+    recent = resolver.resolve(_unit("ku_p"), [_unit("ku_w", version_distance=1)])
+    older = resolver.resolve(_unit("ku_p"), [_unit("ku_w", version_distance=4)])
+
+    assert older.signals["source_continuity"] < recent.signals["source_continuity"]
+
+
+# --------------------------------------------------------------------------
+# §N4.4 — a missing signal is missing, and zero-filling it breaks merging
+# --------------------------------------------------------------------------
+
+
+def test_a_clause_with_no_number_can_still_merge() -> None:
+    """The regression that motivated renormalising over available weight.
+
+    Most prose carries no clause identifier. Scoring that signal zero caps such
+    a unit at 0.85 -- under the 0.92 bar, forever -- so nothing would ever merge
+    and every paragraph would look new in every version.
+    """
+    resolver = LogicalIdentityResolver()
+    previous = [_unit("ku_para", identifier="", anchor="", neighbours=())]
+    incoming = _unit(
+        "ku_pending",
+        identifier="",
+        anchor="",
+        neighbours=(),
+        text="The warranty covers parts and labour for three years from delivery.",
+    )
+
+    decision = resolver.resolve(incoming, previous)
+
+    assert decision.match is LogicalMatch.MATCHED
+    assert "explicit_identifier" in decision.missing
+    assert "explicit_identifier" not in decision.signals
+
+
+def test_an_absent_signal_records_why_rather_than_scoring_zero() -> None:
+    resolver = LogicalIdentityResolver()
+    decision = resolver.resolve(
+        _unit("ku_pending", identifier=""), [_unit("ku_warranty", identifier="")]
+    )
+
+    assert decision.missing["explicit_identifier"] == MissingReason.NOT_APPLICABLE.value
+
+
+def test_a_missing_critical_signal_abstains_however_well_the_rest_score() -> None:
+    """§N5.5 -- critical features missing is a mandatory abstention.
+
+    Renormalising the remaining signals to 1.0 would manufacture a confident
+    score out of a thin one, which is worse than saying nothing.
+    """
+    resolver = LogicalIdentityResolver()
+    previous = [_unit("ku_warranty", lineage="")]
+    incoming = _unit("ku_pending", lineage="")
+
+    decision = resolver.resolve(incoming, previous)
+
+    assert decision.match is LogicalMatch.AMBIGUOUS
+    assert "source_continuity" in decision.missing
+    assert "critical signal" in decision.reason
+
+
+# --------------------------------------------------------------------------
+# §N15.3 — one old unit to one new unit
+# --------------------------------------------------------------------------
+
+
+def test_two_new_units_cannot_both_continue_the_same_old_one() -> None:
+    """Independent resolution forks a history without anyone deciding to fork it."""
+    previous = [_unit("ku_warranty"), _unit("ku_shipping", path=("Shipping",),
+                                            anchor="9.1", identifier="9.1",
+                                            text="Shipments go to the earliest carrier.",
+                                            neighbours=("9.0", "9.2"))]
+    incoming = [
+        _unit("ku_a", text="The warranty covers parts and labour for three years."),
+        _unit("ku_b", text="The warranty covers parts and labour for four years."),
+    ]
+
+    decisions = assign_one_to_one(incoming, previous)
+
+    claimed = [d.logical_id for d in decisions if d.match is LogicalMatch.MATCHED]
+    assert len(claimed) == len(set(claimed))
+
+
+def test_the_matching_never_promotes_a_weak_pair_just_because_it_was_left_over() -> None:
+    previous = [_unit("ku_warranty")]
+    incoming = [
+        _unit("ku_a", text="The warranty covers parts and labour for three years."),
+        _unit(
+            "ku_b",
+            path=("Shipping", "Carriers"),
+            anchor="9.1 Carrier selection",
+            identifier="9.1",
+            text="Shipments are tendered to the carrier with the earliest window.",
+            neighbours=("9.0 Overview", "9.2 Rates"),
+            style="body 9pt indent-2",
+        ),
+    ]
+
+    decisions = assign_one_to_one(incoming, previous)
+
+    assert LogicalMatch.MATCHED not in {
+        d.match for d in decisions if d.logical_id == "ku_b"
+    }
+
+
+def test_an_empty_window_is_not_an_error() -> None:
+    assert assign_one_to_one([], [_unit("ku_warranty")]) == []
+    assert all(
+        d.match is LogicalMatch.NEW for d in assign_one_to_one([_unit("ku_a")], [])
+    )
+
+
+# --------------------------------------------------------------------------
+# §N15.1 — candidates are restricted, never all-pairs
+# --------------------------------------------------------------------------
+
+
+def test_candidate_generation_drops_another_source_entirely() -> None:
+    incoming = _unit("ku_pending")
+    candidates = generate_candidates(
+        incoming, [_unit("ku_same"), _unit("ku_foreign", lineage="src_elsewhere")]
+    )
+
+    assert [c.logical_id for c in candidates] == ["ku_same"]
+
+
+def test_candidate_generation_bounds_the_window() -> None:
+    incoming = _unit("ku_pending")
+    previous = [_unit(f"ku_{index}") for index in range(50)]
+
+    assert len(generate_candidates(incoming, previous, window=8)) == 8
+
+
+# --------------------------------------------------------------------------
+# §N15.3 relations
+# --------------------------------------------------------------------------
+
+
+def test_a_clause_that_stayed_put_is_a_same_as_version() -> None:
+    decision = LogicalIdentityResolver().resolve(
+        _unit("ku_pending", text="The warranty covers parts for three years."),
+        [_unit("ku_warranty", text="The warranty covers parts for two years.")],
+    )
+
+    assert decision.match is LogicalMatch.MATCHED
+    assert decision.relation is LogicalRelation.SAME_AS_VERSION
+
+
+def test_a_clause_that_changed_section_is_recorded_as_moved() -> None:
+    decision = LogicalIdentityResolver().resolve(
+        _unit("ku_pending", path=("Warranty", "Coverage", "Parts")),
+        [_unit("ku_warranty", path=("Warranty", "Coverage"))],
+    )
+
+    if decision.match is LogicalMatch.MATCHED:
+        assert decision.relation is LogicalRelation.MOVED_FROM
 
 
 def test_the_first_version_of_a_document_has_nothing_to_continue() -> None:

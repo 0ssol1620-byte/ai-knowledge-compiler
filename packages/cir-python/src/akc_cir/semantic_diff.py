@@ -30,13 +30,14 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 
 from .identity import (
     LogicalIdentityResolver,
     LogicalMatch,
     LogicalUnitFingerprint,
+    assign_one_to_one,
     normalize_text_for_identity,
 )
 
@@ -49,6 +50,13 @@ __all__ = [
     "UnitSnapshot",
     "diff_documents",
 ]
+
+#: Stands in for the source id when a caller diffs two versions without naming
+#: the source. Both sides get the same value, so §N15.2's continuity signal is
+#: available and reads "these are two versions of one document" -- which is what
+#: calling `diff_documents` asserts. It is not a measured value dressed up as
+#: one: a real source id should be passed whenever the caller has it.
+_DIFF_SCOPE_LINEAGE = "<diff-scope>"
 
 
 class DiffLevel(StrEnum):
@@ -107,13 +115,20 @@ class UnitSnapshot:
     entities: frozenset[str] = frozenset()
     relationships: frozenset[tuple[str, str, str]] = frozenset()
     authority: str | None = None
+    #: §N15.2 signal inputs. Empty means the document did not provide one, which
+    #: the resolver treats as an absent signal rather than a mismatched value.
+    explicit_identifier: str = ""
+    geometry_style: str = ""
 
-    def fingerprint(self) -> LogicalUnitFingerprint:
+    def fingerprint(self, *, source_lineage: str = "") -> LogicalUnitFingerprint:
         return LogicalUnitFingerprint.of(
             logical_id=self.logical_id,
             document_path=self.document_path,
             anchor=self.anchor,
             text=self.text,
+            source_lineage=source_lineage,
+            explicit_identifier=self.explicit_identifier,
+            geometry_style=self.geometry_style,
             neighbour_anchors=self.neighbour_anchors,
         )
 
@@ -301,12 +316,22 @@ def diff_documents(
     before_units: Sequence[UnitSnapshot] = (),
     after_units: Sequence[UnitSnapshot] = (),
     resolver: LogicalIdentityResolver | None = None,
+    source: str = "",
 ) -> SemanticDiff:
     """Compare two document versions up to the requested level.
 
     Levels are cumulative: asking for L3 runs L0 through L3. Asking for L0 on
     two identical digests is one comparison and returns immediately, which is
     what makes it cheap enough to run on every ingest.
+
+    `source` is the source id both versions belong to. It feeds §N15.2's
+    `source_continuity` signal, which is one of the critical signals the resolver
+    abstains without. Passing it is not §N4.4 zero-filling: calling this function
+    at all asserts that the two digests are versions of one document, so the
+    lineage is structural rather than measured. When it is omitted a scope
+    sentinel stands in, which keeps the signal available and honest about where
+    it came from -- but a caller that diffs two genuinely unrelated documents
+    while omitting it will get `SAME_AS_VERSION` relations it has not earned.
     """
     content_changed = before_sha256 != after_sha256
     wanted = _LEVEL_ORDER[level]
@@ -342,12 +367,20 @@ def diff_documents(
         # spelling asserts a deletion the resolver explicitly declined to make.
         unsettled: set[str] = set()
 
-        for incoming in after_units:
-            decision = engine.resolve(
-                incoming.fingerprint(),
-                [unit.fingerprint() for unit in previous],
-                seed_logical_id=incoming.logical_id,
-            )
+        # §N15.3 -- one old unit to one new unit, decided over the whole window
+        # rather than per unit. Resolving each incoming independently lets two
+        # new units both claim the same old one; each looks locally reasonable
+        # and the result is a history that forked without anyone deciding to.
+        lineage = source or _DIFF_SCOPE_LINEAGE
+        decisions = assign_one_to_one(
+            [unit.fingerprint(source_lineage=lineage) for unit in after_units],
+            [unit.fingerprint(source_lineage=lineage) for unit in previous],
+            resolver=engine,
+        )
+
+        for incoming, decision in zip(after_units, decisions, strict=True):
+            if decision.match is LogicalMatch.NEW and decision.logical_id is None:
+                decision = replace(decision, logical_id=incoming.logical_id)
 
             if decision.match is LogicalMatch.AMBIGUOUS:
                 # The rule this module exists to hold. Not a modification, not a
