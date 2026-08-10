@@ -26,9 +26,9 @@ where a threshold is a guess, the module says so in its own output.
 | 6 | Inspector / failure taxonomy / recovery | **Built** | `akc_cir.inspection`, `akc_cir.recovery_policy` |
 | 7 | Document Reconciler | **Built** | `akc_cir.reconciler` |
 | 8 | IR / provenance / stable identity | **Built** | `akc_cir.identity` (N15-conformant) |
-| 9 | Entity / authority / temporal / epistemic / security | **Partial** | authority (N17) and temporal (N18) built; **entity resolution (N16) absent**; injection labels (N19) built; review queue absent |
+| 9 | Entity / authority / temporal / epistemic / security | **Partial** | entity (N16), authority (N17), temporal (N18) and injection labels (N19) built; **review queue absent** |
 | 10 | Diff / dependency / impact | **Built** | `akc_cir.semantic_diff`, `akc_cir.dependency` |
-| 11 | Selective recompile / world state | **Partial** | `akc_cir.recompilation` built; **atomic world-state publish (N22.3) absent** |
+| 11 | Selective recompile / world state | **Built** | `akc_cir.recompilation`, `akc_cir.world_state` |
 | 12 | Retrieval / API / MCP | **Not built** | N23 permission-first retrieval, N24 MCP contract absent |
 | 13 | Health Scan / commercial core | **Not built** | N37, X11 billing absent |
 | 14 | Product UI / website / cinematic / evidence | **Partial** | product surfaces and evidence page exist; §26–30 cinematic hero not built |
