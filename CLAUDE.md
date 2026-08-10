@@ -1,30 +1,41 @@
 # TAVONEL — Project Constitution
 
-North Star: `docs/north-star/TAVONEL_MASTERPLAN_v3.1.md`
-(sha256 `cd69a8634520cc9f3a9be5e8ac3059c1fe2e445bea39e7ab9a99d81d28ba39fb`).
+North Star: `docs/north-star/TAVONEL_MASTERPLAN_v4.0.md`
+(sha256 `c996c372ca4702af1f11a67da61fee90c54c332b9238a89f0e1df7942d1b5e5a`).
 
-Superseded but preserved: `docs/north-star/TAVONEL_FINAL_NORTH_STAR_MASTERPLAN.md`
-(sha256 `6876ea389c41ad6b7b2dec47505a18138116531d51d514cab60204458e276619`).
-It survives inside v3.1 as PART C.
+Superseded but preserved:
 
-**Precedence, when two sections disagree** — v3.1's own ordering:
+- `docs/north-star/TAVONEL_MASTERPLAN_v3.1.md`
+  (sha256 `cd69a8634520cc9f3a9be5e8ac3059c1fe2e445bea39e7ab9a99d81d28ba39fb`)
+- `docs/north-star/TAVONEL_FINAL_NORTH_STAR_MASTERPLAN.md`
+  (sha256 `6876ea389c41ad6b7b2dec47505a18138116531d51d514cab60204458e276619`)
 
-    PART B2 (v3.1 closure)  >  PART B (v3.0 methodbook)
-                            >  PART A (v2.0 canon)  >  PART C (v1.0 product/GTM)
-                            >  hash-verified evidence in the repo
-                            >  existing implementation
+**Precedence, when two documents disagree** — v4.0's own ordering:
 
-Two consequences that have already bitten. **§44's PHASE 0–11 is PART C**, so
-`N41`'s Phase 0–17 governs the implementation order — the earlier numbering is
-history, not a plan. And a number in PART C that PART B restates differently is
-PART B's number: the identity merge bar moved from 0.72 to 0.92 on exactly this
-rule, and the code that had 0.72 was not wrong when it was written.
+    v4 execution boundary / definition of done / phase gates
+      >  v4 normative architecture, security, evidence, migration rules
+      >  hash-verified evidence, artifact hashes, benchmark receipts
+      >  docs/architecture/v31-phase-gap-matrix.md (current state, not future design)
+      >  v3.1 detail that v4 does not contradict
+      >  v2/v1 and earlier design documents
+
+Three consequences that have already bitten:
+
+- **v4's PHASE 0–18 governs implementation order.** v3.1's N41 Phase 0–17 and
+  §44's PHASE 0–11 are both history now. Phase numbers are dependency order, not
+  priority.
+- **A v3.1 number that v4 restates differently is v4's number** — the same rule
+  that moved the identity merge bar from 0.72 to 0.92. Code written to the older
+  number was not wrong when it was written.
+- **`v31-phase-gap-matrix.md` is a current-state baseline, never a design.** It
+  says what exists. It does not say what to build.
 
 Verified evidence figures, artifact hashes and the historical `FOLYNTA` label are
 **not** rewritten by any masterplan revision.
 
 This file is short on purpose. It carries only the rules that bind. Detailed
-design lives under `docs/architecture/` and `design-system/tavonel/`.
+design lives under `docs/architecture/`, `docs/audit/` and
+`design-system/tavonel/`.
 
 Every change answers one question first:
 
@@ -43,12 +54,47 @@ Compile fragmented organizational knowledge into trusted, temporal, traceable
 context for AI and agents.
 
 **Never regress into:** a PDF converter, a generic RAG builder, a generic graph
-viewer.
+viewer, an OCR API wrapper, an "upload PDF → chat" service.
 
 **The moat is the combination, not any one feature:** evidence provenance ·
 stable identity · document-semantic lineage · temporal integrity · dependency
 graph · incremental recompilation · fail-closed validation · interoperable
 outputs.
+
+**The v4 objective function is Minimum Cost to Trusted Output.** Not the best
+model, not the cheapest output, not the highest average benchmark. The question
+for every routing, recovery and execution decision is: *what is the least
+expensive path that reaches the required trust level?* Models are replaceable
+workers. The router, the failure classification, the identity, the lineage and
+the evidence are the product.
+
+---
+
+## Protected Core
+
+These are not replaced without a same-condition no-regression benchmark. Not
+rewritten "more cleanly", not refactored across a version boundary, not swapped
+for a library:
+
+`akc_cir.inspection` · `akc_cir.recovery_policy` · `akc_cir.reconciler` ·
+`akc_cir.identity` · `akc_cir.semantic_diff` · `akc_cir.dependency` ·
+`akc_cir.recompilation` · `akc_cir.world_state` · tested entity/authority/temporal
+logic · every evidence artifact and claim receipt.
+
+**Every replacement anywhere goes through the same ladder:**
+
+    compatibility contract → shadow → benchmark → canary → rollout → deprecate
+
+No big-bang rewrite. The legacy path stays authoritative until a benchmark says
+the new one is not worse.
+
+**"Built" is not "proven".** Almost everything in this repository is
+`IMPLEMENTED_NOT_PROVEN`: tests show the code does what its author intended, and
+nothing shows the threshold is right. No threshold here is calibrated —
+`CalibrationTable.calibrated` is `False` and refuses to be set true without
+naming a corpus. Do not present an uncalibrated threshold as a measured result.
+Status vocabulary and the current per-module classification live in
+`docs/audit/V4_MIGRATION_MATRIX.md`.
 
 ---
 
@@ -88,6 +134,37 @@ break reproducibility. Public copy says TAVONEL.
   rather than look successful. A vault with an unresolved link is not emitted.
 - Never invent data to satisfy a schema: no fabricated bbox, no inferred date
   stored as fact, no claim without a source.
+
+### Runtime invariants
+
+- **Object storage is immutable artifact truth. PostgreSQL is workflow,
+  identity, permission and publish truth.** Neither substitutes for the other.
+- **Delivery is at-least-once, so every consumer is idempotent.** A worker ACKs
+  only after its output is durable and a receipt is committed — never before.
+- **Every document is hostile data.** Parsing models get no tools, no broad
+  credentials and no outbound network.
+- **Never route on a scalar blind quality score.** The campaign published that
+  hypothesis as *not supported*; the inspector deliberately has none.
+- **Separate operational failure from semantic failure.** A pod that died and a
+  model that was wrong are different problems with different recoveries.
+- **Never infer capability from a model's name.** Vision, language and format
+  support come from registry capability evidence or they do not exist.
+- **Never auto-resolve an authoritative conflict on insufficient evidence**, and
+  never expose partial world state as ACTIVE.
+- **Never let an ACL revoke wait for a background reindex.**
+- **Never expose route features, scores, thresholds, prompts, the cost matrix or
+  the Router Outcome Dataset** in a public DTO or a client bundle. Public and
+  internal DTOs are separate types, not the same type with a filter.
+- **No Kubernetes, Kafka, Neo4j or custom foundation model** without a measured
+  bottleneck and an ADR.
+
+### Stop the line
+
+Halt new feature work and fix, in this order, before anything else ships:
+cross-tenant leak · unsupported claim published · source or evidence hash
+mismatch · world-state partial publish · permission revoke past SLO · runaway
+GPU/API spend · historical evidence overwritten · unlicensed component in
+production · catastrophic benchmark regression.
 
 ---
 
@@ -132,3 +209,23 @@ No paid 3D dependency. No GetLayers or Spline scene as a required dependency.
 
 The session that implements does not approve its own result. Blind category
 tests and forced comparison judgements are made by a person.
+
+An implementation agent cannot approve its own production-critical work. Every
+phase runs implementer → deterministic CI → independent reviewer → evidence and
+security audit → release. A phase is done only when code exists, tests *and
+failure paths* pass, telemetry exists, security and tenant checks pass, evidence
+is produced where relevant, docs and ADR are updated, rollback is tested, the
+phase report names what is still missing, and the repository is green.
+**Code presence is not completion.**
+
+## What is not an agent's call
+
+Ask the founder; do not decide and do not infer from the masterplan:
+
+- patent filing and research publication timing (`docs/ip/V4_DISCLOSURE_REGISTRY.yaml`)
+- what a public claim says, and whether evidence supports it
+- customer data consent, pilot contract terms, pricing
+- irreversible production or destructive actions
+- missing secrets and payment credentials
+
+Everything else the v4 document already decided. Do not re-ask it.

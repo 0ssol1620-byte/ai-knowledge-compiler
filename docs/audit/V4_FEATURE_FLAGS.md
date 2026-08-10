@@ -1,0 +1,93 @@
+# V4 Feature Flag Registry
+
+*Masterplan v4.0 PHASE 0 deliverable ("feature flag framework"). Written
+2026-08-10.*
+
+## The framework already exists
+
+`services/api/src/akc_api/feature_flags.py` with the `FeatureFlag` table. It
+gives PART 20.4 everything it asks for, and PHASE 0 adds no code:
+
+| PART 20.4 requirement | Where it is satisfied |
+|---|---|
+| tenant / workspace scope | `FeatureFlag.tenant_id`, nullable for a global default; a tenant row outranks the global row |
+| cohort rollout | `cohort_enabled()` — SHA-256 of `tenant:subject:key`, bucketed 0–99, so a subject's bucket is stable across deploys and independent per flag |
+| kill switch | `enabled = False` short-circuits before any percentage arithmetic |
+| audit | rows are ordinary DB rows under the existing audit path |
+| fail closed | no row → `False`; an unknown key in `conditions` → `False` |
+
+The condition vocabulary is bounded to `tenant_ids`, `user_ids`,
+`document_types`. Anything else fails the flag closed rather than being ignored —
+which is the behaviour that matters when a typo would otherwise silently enable
+a surface for everyone.
+
+Three keys already exist for shipped features and are not touched here:
+`ontology_export`, `existing_vault_merge`, `chart_description`.
+
+## The fifteen v4 keys
+
+Registered as documentation now; rows are created by the phase that needs them,
+defaulting to absent (= off).
+
+| Key | Owning phase | Gates | Off means |
+|---|---|---|---|
+| `V4_CONTRACTS` | 1 | v4 canonical DTO/event serialisation | current CIR contracts unchanged |
+| `V4_INGEST` | 2 | R2 multipart upload session path | existing upload path stays live |
+| `V4_PREFLIGHT` | 2 | per-format preflight + quarantine | no preflight; current admission |
+| `V4_PROFILER` | 3 | page/document profiler | profiler runs shadow-only or not at all |
+| `V4_MODEL_REGISTRY` | 3 | registry-gated adapter selection | current provider selection |
+| `V4_SHADOW_ROUTER` | 4 | v4 router computes a decision **without executing it** | legacy routing only |
+| `V4_ROUTE_EXECUTION` | 5 | the v4 route decision actually executes | shadow decisions are recorded, not obeyed |
+| `V4_BENCHMARK_OS` | 7 | benchmark suite orchestration | campaign harness only |
+| `V4_RETRIEVAL` | 11 | permission-first retrieval | existing hybrid retrieval |
+| `V4_ASK` | 11 | grounded answer surface | absent |
+| `V4_HEALTH_SCAN` | 12 | Knowledge Health Scan | absent |
+| `V4_CINEMATIC_LANDING` | 13 | cinematic landing narrative | current landing |
+| `V4_CONNECTOR_DRIVE` | 14 | Google Drive connector | absent |
+| `V4_PUBLIC_API` | 14 | public REST surface | internal API only |
+| `V4_MCP_READ` | 15 | read-only MCP server | absent |
+
+## F-1 — `rollout_percent = 0` currently means *everyone*, and that blocks Phase 4
+
+`cohort_enabled()` short-circuits on `percent in {0, 100}` and returns `True`
+([feature_flags.py:30-31](../../services/api/src/akc_api/feature_flags.py#L30)).
+On an `enabled = True` row, zero percent therefore enables the flag for the whole
+tenant. Reproduced at this baseline:
+
+```text
+enabled=True, rollout_percent=  0 -> True     <-- expected False
+enabled=True, rollout_percent=  1 -> False
+enabled=True, rollout_percent=  5 -> False
+enabled=True, rollout_percent= 25 -> False
+enabled=True, rollout_percent= 50 -> False
+enabled=True, rollout_percent=100 -> True
+enabled=False, rollout_percent=100 -> False
+```
+
+The author's intent is readable — treat `percent` as a restriction that only
+applies strictly between the endpoints — and no shipped flag is harmed, because
+all three live keys are driven by `enabled`. The existing test
+(`test_feature_flags.py:92-114`) pairs a global `enabled=True, percent=0` row
+with a tenant `enabled=False` row and asserts `False`, which proves the tenant
+row wins and never exercises `percent=0` alone.
+
+It matters for v4 specifically. **PART 31 makes `0` the first rung of the router
+rollout: `0→5→25→50→100`.** A `V4_SHADOW_ROUTER` row created at 0 to mean
+"recorded for nobody yet" would route everybody. The one case the ladder exists
+to make safe is the one case that is inverted.
+
+Not fixed here — PHASE 0 changes no behaviour. **Owed before the first
+`V4_*` flag row is created (Phase 1), and hard-blocking for Phase 4.** The fix is
+one line plus a test that asserts each rung of the ladder, including 0.
+
+## Two rules that are easy to get wrong
+
+**`V4_SHADOW_ROUTER` and `V4_ROUTE_EXECUTION` are two flags on purpose.** Shadow
+mode means the v4 router computes and records a decision that nothing acts on.
+Collapsing them into one flag makes "start shadow" and "start executing"
+the same switch, which is the failure PART 8.10 and the rollout ladder exist to
+prevent.
+
+**Percentages roll out; they do not roll back on their own.** A flag at 25% that
+starts failing needs `enabled = False`. Until F-1 is fixed, setting
+`rollout_percent = 0` is not a rollback — it is a full rollout.

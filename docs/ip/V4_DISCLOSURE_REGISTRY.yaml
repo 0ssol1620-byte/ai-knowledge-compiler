@@ -1,0 +1,320 @@
+# TAVONEL V4 — IP Disclosure Registry
+#
+# Masterplan v4.0 PHASE 0 deliverable ("IP Disclosure Registry skeleton").
+# Schema: v4.0 PART 19.1. Patent/trade-secret split: PART 19.2.
+#
+# WHAT THIS FILE IS
+#   The gate between what TAVONEL may say in public and what stays inside.
+#   Before any page, paper, talk, README, demo, PR description or benchmark
+#   report describes one of these technologies, the entry's `public_level` and
+#   `forbidden_details` decide what may appear.
+#
+# WHAT THIS FILE IS NOT
+#   Legal advice, and not a filing decision. Every `filing_status` below is
+#   NOT_FILED and every `owner` is the founder. PART 31 lists patent and
+#   publication decisions among the few things an implementation agent must not
+#   decide. They are marked `founder_decision_required: true` and stay that way
+#   until a person changes them.
+#
+# PUBLIC LEVELS (PART 19.1)
+#   VALUE_ONLY    outcome only; no mechanism
+#   HIGH_LEVEL    named capability and why it matters; no algorithm
+#   PATENT_LEVEL  system/method structure as a filing would describe it
+#   FULL_PUBLIC   no restriction
+#
+# THE STANDING RULE (PART 19.2)
+#   Structure may become public. The recipe may not. Features, weights,
+#   thresholds, cost matrices, prompts, calibration data and outcome datasets
+#   are trade secret in every entry below, without exception.
+
+registry_version: "1.0.0"
+schema: "tavonel.ip-disclosure-registry.v1"
+generated_at: "2026-08-10"
+baseline_commit: "5999baf8175288f34fb476b4e0b880037239c60c"
+source_of_truth: "docs/north-star/TAVONEL_MASTERPLAN_v4.0.md"
+source_sha256: "c996c372ca4702af1f11a67da61fee90c54c332b9238a89f0e1df7942d1b5e5a"
+
+global_rules:
+  - "No entry may be published above its public_level without a founder decision recorded here."
+  - "Publishing a numerical claim requires a receipt under docs/evidence/artifacts/ bound by sha256."
+  - "The FOLYNTA campaign artifact names, hashes and evaluator revisions are immutable."
+  - "A filed application may publish at ~18 months. Anything that must stay secret after filing belongs in trade_secret_components, not in the claims."
+  - "Korean grace-period provisions do not protect foreign novelty. File before disclosing, not after."
+  - "review_before_publish: true on an entry means a human reads the copy, not that an agent self-certifies it."
+
+ip_items:
+
+  - technology: "Adaptive Economic Router"
+    summary: "Selects an execution path by minimum expected cost to reach a required trust level, rather than by best average model quality."
+    masterplan_ref: "PART 8"
+    implementation:
+      current: "packages/parallel-runtime/src/akc_parallel_runtime/routing.py, packages/router/"
+      status: PARTIAL
+      note: "Legacy routing exists. The v4 objective function and route receipt do not."
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: VALUE_ONLY
+    trade_secret_components:
+      - "route feature vector and its extraction"
+      - "cost matrix and provider price snapshots"
+      - "trust-level thresholds and abstention bounds"
+      - "expected-incremental-value computation"
+      - "correlated-failure penalty terms"
+      - "Router Outcome Dataset"
+    allowed_claims:
+      - "TAVONEL chooses how each page is processed instead of sending everything to one model."
+      - "The choice targets the cost of a trustworthy result, not the cheapest result."
+    forbidden_details:
+      - "any threshold value"
+      - "any feature name or weight"
+      - "the per-provider cost table"
+      - "the route-class taxonomy"
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Failure Classification and Recovery Ladder"
+    summary: "Separates operational failure from semantic/model failure and escalates along a bounded ladder, with abstention as a terminal state."
+    masterplan_ref: "PART 10"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/inspection.py, recovery_policy.py"
+      status: IMPLEMENTED_NOT_PROVEN
+      note: "PROTECTED CORE. 99.94% recovery over 1,796/1,797 recovery-required documents is measured; the thresholds are not calibrated."
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: HIGH_LEVEL
+    trade_secret_components:
+      - "failure taxonomy decision boundaries"
+      - "escalation ladder ordering and stop conditions"
+      - "numeric-protection rules"
+      - "recovery policy tables"
+    allowed_claims:
+      - "TAVONEL detects that a document failed rather than returning a confident wrong answer."
+      - "Recovery recovered 1,796 of the 1,797 documents that required it."
+    forbidden_details:
+      - "the taxonomy's internal decision rules"
+      - "escalation ordering"
+      - "any confidence or agreement threshold"
+    non_claims:
+      - "Never call 99.98% completion 'accuracy'. It is the share of documents that produced output."
+      - "The 99.94% figure never appears without its 1,797 denominator."
+      - "Blind quality detection is published as NOT SUPPORTED and stays published."
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Cross-Page Document Reconciliation"
+    summary: "Resolves conflicting per-page results into one document-level result with provenance for the resolution."
+    masterplan_ref: "PART 10.10"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/reconciler.py"
+      status: IMPLEMENTED_NOT_PROVEN
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: HIGH_LEVEL
+    trade_secret_components:
+      - "conflict scoring"
+      - "consensus weighting (consensus is not treated as truth)"
+      - "cross-page provenance heuristics"
+    allowed_claims:
+      - "A document is one result, not a pile of independently parsed pages."
+    forbidden_details: ["scoring functions", "weighting"]
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Stable Semantic Identity"
+    summary: "Assigns a knowledge unit an identity that survives rewording, renumbering and document revision, so history is continuous."
+    masterplan_ref: "PART 11.4"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/identity.py"
+      status: IMPLEMENTED_NOT_PROVEN
+      note: "PROTECTED CORE. Merge bar 0.92, new-identity floor 0.75. NOT CALIBRATED — CalibrationTable.calibrated is False."
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: HIGH_LEVEL
+    trade_secret_components:
+      - "the seven identity signals and their renormalisation"
+      - "merge and new-identity thresholds"
+      - "one-to-one assignment algorithm"
+      - "abstention rule for an absent critical signal"
+    allowed_claims:
+      - "When a clause is reworded, TAVONEL knows it is the same clause."
+    forbidden_details:
+      - "0.92, 0.75, or any other threshold"
+      - "the signal list"
+    non_claims:
+      - "No threshold here is calibrated against a corpus. Do not present identity accuracy as measured."
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Document-Semantic Lineage and Incremental Recompilation"
+    summary: "Typed dependency edges plus semantic diff determine the dirty set, so a source change recompiles only what it actually affects."
+    masterplan_ref: "PART 12"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/semantic_diff.py, dependency.py, recompilation.py"
+      status: IMPLEMENTED_NOT_PROVEN
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: HIGH_LEVEL
+    trade_secret_components:
+      - "dependency edge typing and scoring"
+      - "impact algorithm and explosion guard"
+      - "dirty-set construction"
+    allowed_claims:
+      - "Change one source and TAVONEL recompiles what depends on it, not the whole corpus."
+    forbidden_details: ["edge scoring", "explosion-guard bounds"]
+    pending_evidence: "Recompile Reduction has no measurement yet. Do not publish a percentage."
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Versioned World State with Atomic Publish"
+    summary: "A workspace's knowledge is a versioned world state published atomically; partial state is never ACTIVE and rollback is a pointer swap."
+    masterplan_ref: "PART 12.9-12.10"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/world_state.py"
+      status: IMPLEMENTED_NOT_PROVEN
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: PATENT_LEVEL
+    disclosure_note: "PATENT_LEVEL here means the structure may be described at that depth ONLY after filing. Until filing_status leaves NOT_FILED, treat as HIGH_LEVEL."
+    trade_secret_components:
+      - "publish gate conditions"
+      - "freshness SLO internals"
+    allowed_claims:
+      - "You can ask what this AI knew at a given moment, and get one consistent answer."
+    forbidden_details: ["gate conditions", "internal state machine"]
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Evidence-Level Provenance"
+    summary: "Every compiled unit binds to document, page, table, cell and bbox, and a vault with an unresolved link is not emitted."
+    masterplan_ref: "PART 11.3"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/, packages/exporters/"
+      status: IMPLEMENTED_NOT_PROVEN
+    patent_candidate: false
+    filing_status: NOT_FILED
+    founder_decision_required: false
+    public_level: FULL_PUBLIC
+    rationale: "Provenance is a customer-facing promise and a trust argument. Showing it is the point. The moat is the combination, not this piece."
+    trade_secret_components: []
+    allowed_claims:
+      - "Every answer traces to a document, page, table, cell and bounding box."
+    forbidden_details: []
+    invariant: "Never fabricate a bbox to satisfy a schema."
+    review_before_publish: false
+    owner: founder
+
+  - technology: "Authority, Applicability and Temporal Resolution"
+    summary: "Which statement governs, for whom, and as of when — with conflicts surfaced rather than auto-resolved."
+    masterplan_ref: "PART 11.7-11.9"
+    implementation:
+      current: "packages/cir-python/src/akc_cir/authority.py, temporal.py, trust.py"
+      status: PARTIAL
+      note: "Review queue absent."
+    patent_candidate: true
+    filing_status: NOT_FILED
+    founder_decision_required: true
+    public_level: HIGH_LEVEL
+    trade_secret_components:
+      - "authority ranking rules"
+      - "applicability DSL evaluation order"
+      - "bi-temporal resolution policy"
+    allowed_claims:
+      - "When two documents disagree, TAVONEL says which one governs — or says it cannot tell."
+    forbidden_details: ["ranking rules", "DSL internals"]
+    invariant: "Never auto-resolve an authoritative conflict when evidence is insufficient."
+    review_before_publish: true
+    owner: founder
+
+  - technology: "Document Performance Map and Router Outcome Dataset"
+    summary: "Accumulated per-document-class performance and route outcomes. The data moat, not a method."
+    masterplan_ref: "PART 16, PART 19.3"
+    implementation:
+      current: "none"
+      status: MISSING
+      note: "Phase 7."
+    patent_candidate: false
+    filing_status: NOT_APPLICABLE
+    founder_decision_required: false
+    public_level: VALUE_ONLY
+    protection: TRADE_SECRET_AND_DATA_MOAT
+    trade_secret_components:
+      - "the entire dataset"
+      - "per-class performance tables"
+      - "failure corpus"
+    allowed_claims:
+      - "TAVONEL gets better at your document types as it processes them."
+    forbidden_details:
+      - "any row, aggregate or distribution from the dataset"
+      - "customer-derived performance data in any form"
+    invariant: "Never expose route features, scores, thresholds, prompts or this dataset in a public DTO or a client bundle."
+    review_before_publish: true
+    owner: founder
+
+  - technology: "TAVONEL brand and category assets"
+    summary: "The TAVONEL mark and 'The Knowledge Compiler' category positioning."
+    masterplan_ref: "PART 19.3"
+    implementation:
+      current: "TAVONEL_BRAND_DECISIONS.md, design-system/tavonel/"
+      status: PARTIAL
+    patent_candidate: false
+    filing_status: NOT_FILED
+    trademark_candidate: true
+    founder_decision_required: true
+    public_level: FULL_PUBLIC
+    trade_secret_components: []
+    allowed_claims: ["TAVONEL is the Knowledge Compiler for AI."]
+    forbidden_details: []
+    note: "FOLYNTA remains the internal campaign name. Artifact filenames, hashes and receipts keep their FOLYNTA names; renaming breaks reproducibility. Public copy says TAVONEL."
+    review_before_publish: false
+    owner: founder
+
+# ---------------------------------------------------------------------------
+# Publication freeze list (PHASE 0: "patent/publication freeze list")
+#
+# Nothing below may be described publicly at any depth until the founder records
+# a filing decision above. This includes conference talks, blog posts, arXiv
+# preprints, open-source releases, and public repository descriptions.
+# ---------------------------------------------------------------------------
+publication_freeze:
+  frozen_until_founder_decision:
+    - "Adaptive Economic Router"
+    - "Failure Classification and Recovery Ladder"
+    - "Cross-Page Document Reconciliation"
+    - "Stable Semantic Identity"
+    - "Document-Semantic Lineage and Incremental Recompilation"
+    - "Versioned World State with Atomic Publish"
+    - "Authority, Applicability and Temporal Resolution"
+  not_frozen:
+    - "Evidence-Level Provenance"
+    - "TAVONEL brand and category assets"
+    - "FOLYNTA campaign results already published under docs/evidence/"
+  already_public_and_immutable:
+    - "docs/evidence/FOLYNTA_CAMPAIGN_RESULTS.md"
+    - "docs/evidence/folynta-public-claims-pack.json"
+    - "docs/evidence/artifacts/** (14 artifacts, all sha256-verified 2026-08-10)"
+
+# ---------------------------------------------------------------------------
+# Open questions for the founder. An implementation agent must not answer these.
+# ---------------------------------------------------------------------------
+founder_decisions_pending:
+  - id: IP-1
+    question: "Which of the seven frozen technologies get a patent application, and in what order?"
+    blocks: "any public description above VALUE_ONLY for those items"
+    note: "PART 19.2 says a patent attorney and a prior-art search set the actual claim scope. This registry does not."
+  - id: IP-2
+    question: "Is a research publication planned before or after filing?"
+    blocks: "PHASE 17 research publication"
+    note: "Publishing first forfeits foreign novelty. This is the decision the grace period does not save."
+  - id: IP-3
+    question: "Is the TAVONEL trademark application filed, and in which jurisdictions?"
+    blocks: "nothing technical; affects launch copy risk"
+  - id: IP-4
+    question: "Does any design-partner or pilot contract grant rights over derived performance data?"
+    blocks: "PHASE 16 pilot contract, and the Document Performance Map moat"
+    note: "PART 19.11. If a pilot contract lets a customer claim the outcome data, the data moat is not a moat."
