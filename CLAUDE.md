@@ -1,7 +1,27 @@
 # TAVONEL — Project Constitution
 
-North Star: `docs/north-star/TAVONEL_FINAL_NORTH_STAR_MASTERPLAN.md`
+North Star: `docs/north-star/TAVONEL_MASTERPLAN_v3.1.md`
+(sha256 `cd69a8634520cc9f3a9be5e8ac3059c1fe2e445bea39e7ab9a99d81d28ba39fb`).
+
+Superseded but preserved: `docs/north-star/TAVONEL_FINAL_NORTH_STAR_MASTERPLAN.md`
 (sha256 `6876ea389c41ad6b7b2dec47505a18138116531d51d514cab60204458e276619`).
+It survives inside v3.1 as PART C.
+
+**Precedence, when two sections disagree** — v3.1's own ordering:
+
+    PART B2 (v3.1 closure)  >  PART B (v3.0 methodbook)
+                            >  PART A (v2.0 canon)  >  PART C (v1.0 product/GTM)
+                            >  hash-verified evidence in the repo
+                            >  existing implementation
+
+Two consequences that have already bitten. **§44's PHASE 0–11 is PART C**, so
+`N41`'s Phase 0–17 governs the implementation order — the earlier numbering is
+history, not a plan. And a number in PART C that PART B restates differently is
+PART B's number: the identity merge bar moved from 0.72 to 0.92 on exactly this
+rule, and the code that had 0.72 was not wrong when it was written.
+
+Verified evidence figures, artifact hashes and the historical `FOLYNTA` label are
+**not** rewritten by any masterplan revision.
 
 This file is short on purpose. It carries only the rules that bind. Detailed
 design lives under `docs/architecture/` and `design-system/tavonel/`.
