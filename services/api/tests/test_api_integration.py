@@ -654,7 +654,10 @@ async def test_native_vertical_slice_export_edit_and_verified_purge(api) -> None
                     tenant_id=uuid.UUID(registration["tenant_id"]),
                     key=key,
                     enabled=True,
-                    rollout_percent=0,
+                    # This slice needs both features on. It read 0 while 0 and
+                    # 100 shared a branch and both meant "everybody"; 100 is
+                    # what it was always asking for.
+                    rollout_percent=100,
                 )
             )
     project_response = await client.post(

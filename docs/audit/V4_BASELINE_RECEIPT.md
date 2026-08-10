@@ -12,11 +12,22 @@ position  53 commits ahead of origin/main, 0 behind
 host      win32 · Python 3.13.0 · Node 22.14.0 · pnpm 11.9.0 (corepack)
 ```
 
-**Verdict: the repository is NOT green.** Python is entirely green. The web
-application's code is green. **Two CI gates fail**, both pre-existing, both
-characterised below. PHASE 0's exit gate accepts "existing green tests **or
-documented known failures**" — these are documented, and neither is repaired
-here, because PHASE 0 changes no behaviour.
+**Verdict at the `v3.1-baseline` tag: the repository was NOT green.** Python was
+entirely green and the web application's code was green, but **two CI gates
+failed**, both pre-existing. PHASE 0's exit gate accepts "existing green tests
+**or documented known failures**", so the gate passed on the documentation
+alone.
+
+**Both were then repaired on the owner's decision, after the gate closed.** The
+repairs are recorded in §4 with their verification, and are a separate act from
+the measurement above — the tag still stands at the failing state so the
+before/after is checkable.
+
+| Gate | At tag | Now |
+|---|---|---|
+| `claims:check` (B-2) | FAIL | **PASS** |
+| `blueprint:check` (B-1) | FAIL | FAIL — still open, Phase 13 |
+| flag rollout ladder (F-1) | inverted at 0% | **FIXED** |
 
 ---
 
@@ -118,7 +129,7 @@ replacement at Phase 13, not a correctness or safety defect. It must not be
 resolved by raising the ratchet — `CLAUDE.md`'s rule that a ratchet is never
 raised to make a build pass applies here in its plainest form.
 
-### B-2 — `claims:check`: the site's claims data is stale and has lost its receipts
+### B-2 — `claims:check`: the site's claims data was stale and had lost its receipts — **FIXED 2026-08-10**
 
 This is the finding that matters.
 
@@ -157,14 +168,40 @@ written in `786c387` and missed three later improvements to the delivered pack
 (`708e361`, `1699ebc`, `cf53916`).
 
 Severity: **high**. PART 22.3 lists "unsupported claim published" as a
-stop-the-line condition. Nothing is published — the CI gate is doing its job and
-blocking it — but the branch currently carries site data that would render claims
-without receipts. The remedy is prescribed by the verifier itself: *copy the
-delivered file over the render copy; do not reconcile them by hand.*
+stop-the-line condition. Nothing was published — the CI gate did its job and
+blocked it — but the branch carried site data that would render claims without
+receipts.
 
-**Not applied here.** It changes what the marketing site renders, and published
-claims are founder truth under PART 31, not an agent's call. It is a single file
-copy and should be the first thing done after this gate.
+#### Fix, on the owner's decision
+
+The delivered pack was copied over the render copy, as the verifier prescribes:
+*copy the delivered file over the render copy; do not reconcile them by hand.*
+Both files now hash to
+`ff6f9f6b17b7845c545c1c76c0c9ef7396bc329c92bc1152c0108aae69d3065e`.
+
+**The copy alone would have been wrong.** Three delivered claims carry `evidence`
+as an *array* — a counterfactual cites two receipts, the with-recovery run and
+the without — while `Claim.evidence` was declared `string`, and
+`accuracy-section.tsx` called `.split("/")` on it. TypeScript did not catch this,
+because the pack enters through `pack as unknown as ClaimsPack`. It happens that
+the one rendered claim (`benchmark-accuracy`) is a string, so the site would not
+have crashed today; the next component to render `product-pipeline`'s evidence
+would have. `evidence` and `evidence_sha256` are now `string | string[]`,
+`ClaimFigure` normalises both to arrays, and the render site lists them.
+
+One test failed, correctly. `benchmark-public.test.ts` asserted the Korean
+`must_say` fallback against `recovery-contribution-olmocr` — but the five claims
+that lacked an English twin were an artefact of the *stale copy*, and the
+delivered pack supplies `must_say_en` for all fifteen. The fallback did not
+regress; it stopped having a live example. It keeps a test — a bare figure
+reaching the page is what it prevents — now driven through an exported
+`claimContext()` against a real claim with its English twin removed, plus an
+invariant that every published `must_say` has a `must_say_en` so the next
+regeneration cannot quietly drop one.
+
+Verified: `claims:check` **passed** ("delivered pack matches the render copy",
+receipt `82d5ec8b…`, and the five-Korean-claims warning is gone); web typecheck,
+lint and **260 tests** pass.
 
 ---
 
@@ -175,7 +212,7 @@ Detail in `docs/audit/V4_LICENSE_AND_SUPPLY_CHAIN.md` and
 
 | ID | Finding | Severity | Due |
 |---|---|---|---|
-| F-1 | `rollout_percent = 0` on an enabled flag enables it for **everyone** — and 0 is the first rung of v4's `0→5→25→50→100` router ladder | **High** | before the first `V4_*` flag row (Phase 1); hard-blocks Phase 4 |
+| F-1 | `rollout_percent = 0` on an enabled flag enabled it for **everyone** — and 0 is the first rung of v4's `0→5→25→50→100` router ladder | **High** | **FIXED 2026-08-10** |
 | S-1 | `vllm/vllm-openai` digest used but absent from `verified-pins.json` | Medium | before any RunPod v6 image promotion |
 | S-2 | Web builds and deploys on Node 24; CI tests on Node 22 | Medium | Phase 1 CI revision |
 | S-5 | No image signing or cosign policy (SBOM and scanning exist) | Medium | Phase 17 |
@@ -184,10 +221,13 @@ Detail in `docs/audit/V4_LICENSE_AND_SUPPLY_CHAIN.md` and
 | S-4 | `DEPENDENCY_LICENSES.md` stale on the 2026-08-09 3D reversal | Low | Phase 13 |
 | — | `ruff` clean only within CI's path; `tools/` has 2 errors | Low | Phase 1 |
 
-F-1 is worth restating because it inverts a safety mechanism: a
+F-1 is worth restating because it inverted a safety mechanism: a
 `V4_SHADOW_ROUTER` row created at `rollout_percent = 0` to mean *"recorded for
-nobody yet"* would route **every** request through the new router. Reproduced at
-this baseline; see `docs/audit/V4_FEATURE_FLAGS.md`.
+nobody yet"* would have routed **every** request through the new router.
+`FeatureFlag.rollout_percent` defaults to `0`, so every freshly created enabled
+row was affected. Fixed, with the rollout ladder now under test at each rung.
+One caller had come to depend on the old semantics — a test fixture that set 0
+in order to turn a feature *on*. Detail in `docs/audit/V4_FEATURE_FLAGS.md`.
 
 ---
 
@@ -276,6 +316,10 @@ CLAUDE.md                                  re-headed on v4.0
 infra/supply-chain/verified-pins.json      pre-existing; S-1/S-3 recorded against it
 ```
 
-**Phase 1 must not start until B-2 is resolved**, because Phase 1 locks the v4
-contract language and a claims pack without receipts is precisely the contract
-v4 exists to enforce.
+B-2 is resolved, so Phase 1 is unblocked. It was the gating item because Phase 1
+locks the v4 contract language, and a claims pack without receipts is precisely
+the contract v4 exists to enforce.
+
+**B-1 remains open** and is not a Phase 1 blocker: it is design conformance in
+legacy stylesheets that Phase 13 replaces. It must not be closed by raising the
+ratchet.

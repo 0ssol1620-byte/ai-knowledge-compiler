@@ -47,12 +47,11 @@ defaulting to absent (= off).
 | `V4_PUBLIC_API` | 14 | public REST surface | internal API only |
 | `V4_MCP_READ` | 15 | read-only MCP server | absent |
 
-## F-1 — `rollout_percent = 0` currently means *everyone*, and that blocks Phase 4
+## F-1 — `rollout_percent = 0` meant *everyone* — **FIXED 2026-08-10**
 
-`cohort_enabled()` short-circuits on `percent in {0, 100}` and returns `True`
-([feature_flags.py:30-31](../../services/api/src/akc_api/feature_flags.py#L30)).
-On an `enabled = True` row, zero percent therefore enables the flag for the whole
-tenant. Reproduced at this baseline:
+`cohort_enabled()` short-circuited on `percent in {0, 100}` and returned `True`.
+On an `enabled = True` row, zero percent therefore enabled the flag for the whole
+tenant. Reproduced at the `v3.1-baseline` tag:
 
 ```text
 enabled=True, rollout_percent=  0 -> True     <-- expected False
@@ -64,21 +63,39 @@ enabled=True, rollout_percent=100 -> True
 enabled=False, rollout_percent=100 -> False
 ```
 
-The author's intent is readable — treat `percent` as a restriction that only
-applies strictly between the endpoints — and no shipped flag is harmed, because
-all three live keys are driven by `enabled`. The existing test
-(`test_feature_flags.py:92-114`) pairs a global `enabled=True, percent=0` row
-with a tenant `enabled=False` row and asserts `False`, which proves the tenant
-row wins and never exercises `percent=0` alone.
+The author's intent was readable — treat `percent` as a restriction that only
+applies strictly between the endpoints. The existing test
+(`test_feature_flags.py`) paired a global `enabled=True, percent=0` row with a
+tenant `enabled=False` row and asserted `False`, which proves the tenant row wins
+and never exercised `percent=0` alone.
 
-It matters for v4 specifically. **PART 31 makes `0` the first rung of the router
+It mattered for v4 specifically. **PART 31 makes `0` the first rung of the router
 rollout: `0→5→25→50→100`.** A `V4_SHADOW_ROUTER` row created at 0 to mean
-"recorded for nobody yet" would route everybody. The one case the ladder exists
-to make safe is the one case that is inverted.
+"recorded for nobody yet" would have routed everybody. The one rung the ladder
+exists to make safe was the one that was inverted. `FeatureFlag.rollout_percent`
+defaults to `0`, so every freshly created enabled row was affected.
 
-Not fixed here — PHASE 0 changes no behaviour. **Owed before the first
-`V4_*` flag row is created (Phase 1), and hard-blocking for Phase 4.** The fix is
-one line plus a test that asserts each rung of the ladder, including 0.
+### Fix
+
+`percent <= 0 → False`, `percent >= 100 → True`, bucket comparison in between.
+The endpoints no longer share a branch, and out-of-range values resolve by the
+same rule instead of falling through to the bucket arithmetic.
+
+Three tests were added: zero reaches nobody across 200 tenants; the ladder is
+monotonic over a 400-subject sample at every rung, empty at 0 and complete at
+100; out-of-range percentages do not widen a cohort.
+
+**One caller depended on the old behaviour.**
+`services/api/tests/test_api_integration.py` enabled `ontology_export` and
+`existing_vault_merge` with `rollout_percent=0` in order to turn them *on* for
+its vertical slice — correct only while 0 and 100 shared a branch. The fixture
+now says `100`, which is what it was always asking for.
+`product_analytics.py` was already writing `100 if enabled else 0`, so the fix
+makes that path mean what it reads as.
+
+Verified: `test_feature_flags.py` 17 passed; `test_api_integration.py`,
+`test_analysis_isolation.py` and `tests/unit/test_page_attempt_runtime.py`
+53 passed.
 
 ## Two rules that are easy to get wrong
 
@@ -89,5 +106,6 @@ the same switch, which is the failure PART 8.10 and the rollout ladder exist to
 prevent.
 
 **Percentages roll out; they do not roll back on their own.** A flag at 25% that
-starts failing needs `enabled = False`. Until F-1 is fixed, setting
-`rollout_percent = 0` is not a rollback — it is a full rollout.
+starts failing can be withdrawn either way now — `enabled = False` is the kill
+switch, and `rollout_percent = 0` empties the cohort. Prefer the kill switch: it
+survives a later percentage edit by someone who has not read this file.
