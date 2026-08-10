@@ -368,6 +368,18 @@ founder_decisions_pending:
       Google, DeepSeek, PaddleOCR and MinerU. Some provider terms of service
       restrict publishing benchmark results. This is a contractual question, not a
       patent one, and it has to be answered before results exist rather than after.
+  - id: IP-7
+    question: "May customer-derived documents enter the Arena corpus?"
+    status: DECIDED
+    decided_on: "2026-08-11"
+    decision: "No. Public sources only — public benchmarks, DART/SEC filings, synthetic and controlled fixtures. No exception, no consent path."
+    consequence: >-
+      Stricter than v5 PART 3.5, which forbids only *automatic* inclusion. This
+      removes the consent workflow, the consent receipt, and any retention or
+      deletion obligation attached to Arena rows. The Failure Zoo draws on the
+      campaign's own public-corpus failures and controlled mutations. Reversing
+      this needs a new migration, a new ADR, and a founder decision that
+      overturns this one.
   - id: IP-6
     question: "Is the Arena corpus itself publishable, or trade secret?"
     blocks: "research publication (v5 Phase 17) and reproducibility claims"

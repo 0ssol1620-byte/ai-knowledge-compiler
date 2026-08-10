@@ -174,6 +174,32 @@ A customer document that fails in production is exactly the page an engineer
 wants in the Failure Zoo. Putting it there automatically is a consent violation
 and a leakage source at once.
 
+### Founder decision, 2026-08-11: **public sources only, no exception**
+
+v5 PART 3.5 forbids *automatic* inclusion and leaves a consented path open. The
+founder closed it: **customer-derived material may not enter the Arena corpus at
+all.**
+
+The Arena draws on public benchmarks, DART and SEC filings, and synthetic or
+controlled fixtures. Nothing else.
+
+The Failure Zoo is affected most, and deliberately. Its 200 pages come from the
+campaign's own 1,797 recovery-required documents — public-corpus documents that
+failed — and from controlled mutations, never from a customer workspace.
+
+This is stricter than the masterplan requires, and it simplifies rather than
+complicates: there is no consent path to build, no consent receipt to verify, no
+retention or deletion obligation attached to Arena rows, and no argument to have
+later about whether a particular document qualified. The schema can encode
+"public only" as a closed set instead of encoding a consent workflow.
+
+**Consequence for Phase 1 schema work.** `arena_cases.origin` stays a closed
+seven-value set with no customer/production member, and `source_artifact_id`
+must reference an Arena-owned artifact registry rather than the tenant artifact
+space — a `CHECK` on a label is not provenance, so the constraint has to live in
+the reference graph. Reopening this needs a new migration *and* a new ADR *and* a
+founder decision that reverses this one.
+
 ---
 
 ## Status
