@@ -1211,8 +1211,16 @@ async def _equivalence_pass(
             [{"status": "queued", "available_at": now - timedelta(minutes=1)}
              for _ in range(8)],
         )
+        # The limit is a stop against an infinite loop, so it has to exceed what
+        # one caller may legitimately take: under contention nothing stops a
+        # single caller draining every row, and it then needs one more attempt
+        # to see the empty queue that ends its loop. At limit=6 over 8 rows this
+        # raised intermittently depending on how the callers interleaved.
         batches = await asyncio.gather(
-            *(_drain_broker(connection, limit=6) for connection in callers)
+            *(
+                _drain_broker(connection, limit=len(contended) + 4)
+                for connection in callers
+            )
         )
         broker_grants = [claim for batch in batches for claim in batch]
         report.require(

@@ -359,6 +359,14 @@ jobs:
         run: >-
           python -m uv run --locked --extra dev
           python infra/postgres/shadow_validate_dual_plane.py
+      - name: Prove the written broker claim path against a real transaction
+        # Separate from the shadow suite on purpose. That suite proves the
+        # adaptation *would* preserve behaviour; this runs the real worker with
+        # use_claim_broker on and proves the written path does. It never touches
+        # BYPASSRLS — canary B is a separate change and a separate signal.
+        run: >-
+          python -m uv run --locked --extra dev
+          python infra/postgres/verify_claim_via_broker.py
       - name: Publish the CI privilege receipt
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

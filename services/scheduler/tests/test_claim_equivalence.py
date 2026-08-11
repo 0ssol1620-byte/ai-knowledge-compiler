@@ -246,12 +246,67 @@ def test_the_commit_is_the_last_thing_the_shared_body_does() -> None:
     assert returns[0].lineno > commits[0].lineno
 
 
-def test_wiring_has_not_started() -> None:
-    """run_one still calls BEFORE. This fails the moment wiring lands.
+def test_the_broker_path_is_opt_in_and_off_by_default() -> None:
+    """Canary A is a choice, not a deployment.
 
-    Deliberate: the evidence set is not complete, so the switch must not happen
-    quietly. Delete this test in the same change that flips the call.
+    This replaces `test_wiring_has_not_started`, which failed the moment the
+    call was flipped — as its own comment instructed. What is worth holding now
+    is not "the broker path is unreachable" but "reaching it takes a deliberate
+    act": `run_one` can call either, and the default is the shipped ORM path.
     """
 
-    assert "_claim_via_broker" not in _calls(_method("run_one"))
-    assert "_claim" in _calls(_method("run_one"))
+    from akc_scheduler.gpu_jobs import GpuWorkerPolicy
+
+    assert GpuWorkerPolicy().use_claim_broker is False
+
+    calls = _calls(_method("run_one"))
+    assert "_claim_via_broker" in calls
+    assert "_claim" in calls
+
+
+def test_the_after_path_reuses_the_shared_body_rather_than_copying_it() -> None:
+    """The whole point of the extraction, asserted against the written AFTER."""
+
+    after = _calls(_method("_claim_via_broker"))
+
+    assert "_claim_from_row" in after
+    for marker in ("_terminal_local", "append_gpu_event", "commit", "_fence_reason"):
+        assert marker not in after, (
+            f"_claim_via_broker implements {marker} itself. Both paths must reach "
+            "the one shared body; a second copy is how they drift apart."
+        )
+
+
+def test_the_after_path_cannot_mint_a_lease_either() -> None:
+    """The invariant holds on the side that actually receives a broker token."""
+
+    assert "uuid4" not in _calls(_method("_claim_via_broker"))
+
+
+def test_an_unreadable_claimed_row_raises_rather_than_reading_as_idle() -> None:
+    """Entry-condition equivalence, on the AFTER side.
+
+    BEFORE enters the shared body iff its select found a row. AFTER must not
+    acquire a second way of returning `None`: if the broker granted a claim and
+    the scoped reread cannot see it, that is a binding fault, and reporting it
+    as "no work" would be indistinguishable from an idle queue — the failure
+    mode Gate 1 exists to make visible.
+    """
+
+    body = _method("_claim_via_broker")
+    guards = [node for node in ast.walk(body) if isinstance(node, ast.If)]
+    returning_none = [
+        guard
+        for guard in guards
+        if any(
+            isinstance(statement, ast.Return)
+            and isinstance(statement.value, ast.Constant)
+            and statement.value.value is None
+            for statement in guard.body
+        )
+    ]
+    assert len(returning_none) == 1, (
+        "AFTER has more than one way to report an empty poll. Only 'the broker "
+        "granted nothing' may do that."
+    )
+    assert any(isinstance(node, ast.Raise) for node in ast.walk(body))

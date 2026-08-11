@@ -58,8 +58,13 @@ from akc_api.visual_gpu import (
     validate_visual_result,
     visual_attestation,
 )
-from akc_security.claim_broker import ClaimStarvationDetector, claim_backlog
-from akc_security.tenant_context import enter_tenant_context
+from akc_security.claim_broker import (
+    ClaimBrokerContractViolation,
+    ClaimStarvationDetector,
+    claim_backlog,
+    claim_via_broker,
+)
+from akc_security.tenant_context import enter_claim_context, enter_tenant_context
 from akc_telemetry import (
     observe_parallel_provider_job,
     observe_provider_cold_start,
@@ -92,6 +97,10 @@ logger = logging.getLogger(__name__)
 
 _CLAIM_QUEUE = "gpu_provider_invocations"
 _CLAIM_BROKER = "akc_claim_gpu_invocation"
+# The identity the broker hands the lease to. Ownership here is "who was given
+# the token", not a column comparison — no lease-bearing table in this schema
+# carries claimed_by, worker_id or any other ownership column.
+_CLAIM_WORKER_ID = "akc_gpu_worker"
 _TERMINAL_PROVIDER_FAILURES = frozenset(
     {
         "GPU_PROVIDER_JOB_FAILED",
@@ -140,6 +149,12 @@ class GpuWorkerPolicy:
     backoff_jitter_ratio: float = 0.2
     max_cancel_attempts: int = 8
     max_output_bytes: int = 12 * 1024 * 1024
+    # CANARY A. Off by default: the shipped path stays the ORM claim until a
+    # staging canary says otherwise. Deliberately separate from removing
+    # BYPASSRLS, which is canary B — changing the claim path and arming
+    # row-level security together would make "the new claim path is broken" and
+    # "RLS is starving the worker" the same symptom.
+    use_claim_broker: bool = False
 
     def __post_init__(self) -> None:
         finite_positive = (
@@ -913,6 +928,63 @@ class GpuInvocationWorker:
                 token=uuid.uuid4(),
                 lease_expires_at=now
                 + timedelta(seconds=self._policy.lease_seconds),
+                now=now,
+            )
+
+    async def _claim_via_broker(self) -> _Claim | None:
+        """AFTER — founder decision F-1, Option B.
+
+        Broker → five identifiers → claim context → tenant/claim-scoped reread →
+        the same ``_claim_from_row`` BEFORE uses. The worker never reads the
+        queue: it asks for a claim and is told an id, a tenant, a project, a
+        lease token and an expiry.
+
+        Three things this does not do, each on purpose:
+
+        * **It does not mint a lease.** The broker already stamped one on the
+          row inside its own statement; the token comes back here and is passed
+          through. A second stamp would write a token different from the one the
+          claim binding compares against, and the row would vanish from its own
+          transaction — silently.
+        * **It does not re-decide anything.** Every state transition, both
+          terminal branches and the commit belong to ``_claim_from_row``. A
+          second copy of that choreography is how two paths drift apart without
+          anyone noticing.
+        * **It does not treat a missing row as an empty queue.** If the broker
+          granted a claim and the scoped reread cannot see it, that is a fault
+          in the binding, not an idle queue. Returning ``None`` there would look
+          exactly like "no work", which is the failure mode Gate 1 exists to
+          make visible, so it raises instead.
+        """
+
+        now = self._clock()
+        async with self._sessions() as session:
+            granted = await claim_via_broker(
+                session,
+                function=_CLAIM_BROKER,
+                worker_id=_CLAIM_WORKER_ID,
+                lease_seconds=int(self._policy.lease_seconds),
+            )
+            if granted is None:
+                return None
+            await enter_claim_context(
+                session, claim=granted, worker_id=_CLAIM_WORKER_ID, now=now
+            )
+            invocation = await session.scalar(
+                select(GpuProviderInvocation).where(
+                    GpuProviderInvocation.tenant_id == granted.tenant_id,
+                    GpuProviderInvocation.id == granted.claim_id,
+                )
+            )
+            if invocation is None:
+                raise ClaimBrokerContractViolation(
+                    f"claim_broker_row_unreadable:{_CLAIM_QUEUE}:{granted.claim_id}"
+                )
+            return await self._claim_from_row(
+                session,
+                invocation,
+                token=granted.lease_token,
+                lease_expires_at=granted.lease_expires_at,
                 now=now,
             )
 
@@ -1832,7 +1904,13 @@ class GpuInvocationWorker:
         )
 
     async def run_one(self) -> bool:
-        claim = await self._claim()
+        # Canary A selects the path. Both end in the same _claim_from_row, so
+        # what differs is only how the row was found and who stamped its lease.
+        claim = await (
+            self._claim_via_broker()
+            if self._policy.use_claim_broker
+            else self._claim()
+        )
         await self._observe_poll(claimed=claim is not None)
         if claim is None:
             return False
