@@ -15,13 +15,20 @@ Reuses ``scripts/generate_privilege_receipt.py`` rather than re-deriving the
 catalog queries — that script is the single definition of what a privilege
 receipt contains.
 
-Three things this asserts, in order of what they are worth:
+Five things this asserts, in order of what they are worth:
 
 1. Every tenant-scoped table has RLS, FORCE RLS and at least one policy.
 2. The policies actually isolate: a role holding exactly the union of the real
    worker grants, with no BYPASSRLS and no ownership, cannot read, write or
    guess its way into another tenant's rows.
 3. The five append-only ledgers hold no UPDATE/DELETE grant or policy.
+4. The control-plane boundary is exactly the approved one. A migration that
+   grants a control-plane role an eighth table fails here with its name, which
+   is the whole reason ``control_plane_registry.py`` exists.
+5. No granted operation is silently default-deny. A ``RESTRICTIVE`` policy
+   grants nothing, so a role holding SELECT on a table whose every policy is
+   restrictive sees zero rows and no error — the failure mode that would make
+   arming day look like a data-loss incident.
 
 What it deliberately does *not* claim is recorded in ``PENDING_INVARIANTS``.
 """
@@ -45,6 +52,14 @@ import asyncpg  # type: ignore[import-untyped]
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from control_plane_registry import (  # noqa: E402
+    CONTROL_PLANE_ROLE,
+    CONTROL_PLANE_SENSITIVE_COLUMNS,
+    CONTROL_PLANE_TABLES,
+    HUMAN_PLANE_LOGIN_ROLE,
+    HUMAN_PLANE_ROLE,
+    LEASE_TABLES,
+)
 from generate_privilege_receipt import (  # noqa: E402
     APPEND_ONLY,
     GLOBAL_CONTROL,
@@ -69,17 +84,20 @@ WORKER_ROLES = (
 PENDING_INVARIANTS = (
     (
         "worker roles are NOBYPASSRLS",
-        "blocked: the project-access policies added by 0015 reference memberships "
-        "and project_memberships, which no worker role may read. Removing BYPASSRLS "
-        "makes every worker query against those tables fail with "
-        "'permission denied for table memberships'. See docs/audit/"
-        "V5_WORKER_PRIVILEGE_BOUNDARY.md.",
+        "no longer blocked by the schema — 0034 moved every membership-referencing "
+        "policy to the human plane, and the shadow run in "
+        "infra/postgres/shadow_validate_dual_plane.py shows the scheduler's "
+        "cross-tenant sweep succeeding without a grant on memberships. What remains "
+        "is application work: the claim sites do not yet call enter_claim_context, "
+        "so removing BYPASSRLS today would take the lease-bearing tables to zero "
+        "rows. The sequence is docs/audit/V5_WORKER_AUTHZ_ARMING.md.",
     ),
     (
         "cross-tenant isolation proven as the real worker roles",
-        "blocked by the same item: while the worker roles hold BYPASSRLS they see "
-        "every tenant by definition, so isolation is proven against a role holding "
-        "their exact grant surface without BYPASSRLS instead.",
+        "still blocked by the same attribute: while the worker roles hold BYPASSRLS "
+        "they see every tenant by definition, so isolation is proven here against a "
+        "role holding their exact grant surface without it, and against the real "
+        "roles only in the throwaway cluster the shadow harness builds.",
     ),
 )
 
@@ -291,6 +309,210 @@ def _report_bypassrls(receipt: dict[str, Any]) -> list[str]:
     return holders
 
 
+def _verify_control_plane_boundary(receipt: dict[str, Any]) -> None:
+    """Item 4: the cross-tenant surface is the approved one, and no wider.
+
+    Two directions, and both matter. A table granted to a control-plane role but
+    not listed is an unreviewed widening. A listed table the catalog does not
+    grant means the registry is describing a schema that no longer exists, which
+    is how a boundary document quietly stops being about anything.
+    """
+
+    granted = {
+        table["table"]
+        for table in receipt["tables"]
+        if CONTROL_PLANE_ROLE in table["grants"]
+    }
+    approved = set(CONTROL_PLANE_TABLES)
+    if unapproved := sorted(granted - approved):
+        raise GateFailure(
+            f"{CONTROL_PLANE_ROLE} is granted tables outside the Control Plane "
+            f"Authorization Boundary: {', '.join(unapproved)}. Admitting one is a "
+            "founder decision — record it in infra/postgres/control_plane_registry.py "
+            "with the reason, and say why it holds no tenant data-plane content."
+        )
+    if stale := sorted(approved - granted):
+        raise GateFailure(
+            "the control-plane registry lists tables the catalog does not grant: "
+            + ", ".join(stale)
+        )
+
+    policed = {
+        table["table"]
+        for table in receipt["tables"]
+        for policy in table["policies"]
+        if "_control_plane_" in policy["name"]
+    }
+    if unpoliced := sorted(approved - policed):
+        raise GateFailure(
+            "control-plane tables with no purpose-gated policy: " + ", ".join(unpoliced)
+        )
+    borrowed = sorted(
+        f"{table['table']}.{policy['name']} -> {role}"
+        for table in receipt["tables"]
+        for policy in table["policies"]
+        if "_control_plane_" in policy["name"]
+        for role in policy["roles"]
+        if role != CONTROL_PLANE_ROLE
+    )
+    if borrowed:
+        raise GateFailure(
+            "a control-plane policy admits a role other than "
+            f"{CONTROL_PLANE_ROLE}: {', '.join(borrowed)}"
+        )
+    print(
+        f"  control-plane boundary: {len(approved)} approved tables, "
+        f"{len(policed)} purpose-gated, no role but {CONTROL_PLANE_ROLE}"
+    )
+
+
+_PERMISSIVE_COVERAGE_GAPS = """
+SELECT pg_get_userbyid(acl.grantee) AS grantee,
+       c.relname AS table_name,
+       acl.privilege_type AS privilege
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+CROSS JOIN LATERAL aclexplode(c.relacl) AS acl
+JOIN (VALUES ('SELECT', 'r'), ('INSERT', 'a'), ('UPDATE', 'w'), ('DELETE', 'd'))
+     AS w(privilege, polcmd) ON w.privilege = acl.privilege_type
+WHERE n.nspname = 'public'
+  AND c.relkind IN ('r', 'p')
+  AND c.relrowsecurity
+  AND pg_get_userbyid(acl.grantee) LIKE 'akc\\_%' ESCAPE '\\'
+  -- The isolation probe is a disposable superset of the worker surface, built
+  -- and dropped by this same run. A leftover from a crashed run would otherwise
+  -- report gaps that belong to no role that exists.
+  AND pg_get_userbyid(acl.grantee) <> $1
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_policy p
+    WHERE p.polrelid = c.oid
+      AND p.polpermissive
+      AND p.polcmd IN ('*', w.polcmd)
+      AND (p.polroles = '{0}'::oid[] OR acl.grantee = ANY (p.polroles))
+  )
+ORDER BY 1, 2, 3
+"""
+
+_SENSITIVE_COLUMNS_PRESENT = """
+SELECT c.relname AS table_name, a.attname AS column_name
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+JOIN pg_attribute a ON a.attrelid = c.oid
+WHERE n.nspname = 'public' AND a.attnum > 0 AND NOT a.attisdropped
+"""
+
+
+async def _verify_permissive_coverage(
+    admin: asyncpg.Connection[asyncpg.Record],
+) -> None:
+    """Item 5: nothing is granted that no permissive policy would admit.
+
+    This is the quiet one. A ``RESTRICTIVE`` policy only subtracts, so a role
+    granted SELECT on a table carrying nothing but restrictive policies gets
+    zero rows and no error — indistinguishable from an empty table until
+    somebody notices the pipeline stopped. Two such pairs existed before
+    ``0034`` and were invisible only because ``BYPASSRLS`` was masking them.
+    """
+
+    gaps = await admin.fetch(_PERMISSIVE_COVERAGE_GAPS, PROBE_ROLE)
+    if gaps:
+        listed = ", ".join(
+            f"{row['grantee']} {row['table_name']}.{row['privilege']}" for row in gaps
+        )
+        raise GateFailure(
+            "granted operations with no permissive policy to admit them — these "
+            f"return zero rows rather than an error: {listed}"
+        )
+    print("  every granted operation has a permissive policy behind it")
+
+
+async def _verify_claim_binding(
+    admin: asyncpg.Connection[asyncpg.Record], receipt: dict[str, Any]
+) -> None:
+    """The lease-bearing tables all carry their restrictive claim binding.
+
+    Derived from the catalog rather than the registry, then compared: a table
+    that gains a lease and no binding is exactly the gap this is for.
+    """
+
+    columns: dict[str, set[str]] = {}
+    for row in await admin.fetch(_SENSITIVE_COLUMNS_PRESENT):
+        columns.setdefault(str(row["table_name"]), set()).add(str(row["column_name"]))
+    derived = {
+        name
+        for name, present in columns.items()
+        if {"lease_token", "lease_expires_at"} <= present
+    }
+    if derived != set(LEASE_TABLES):
+        raise GateFailure(
+            f"lease-bearing tables changed: catalog {sorted(derived)} vs registry "
+            f"{sorted(LEASE_TABLES)}"
+        )
+    bound = {
+        table["table"]
+        for table in receipt["tables"]
+        for policy in table["policies"]
+        if policy["name"].endswith("_claim_binding") and policy["kind"] == "RESTRICTIVE"
+    }
+    if unbound := sorted(derived - bound):
+        raise GateFailure(
+            "lease-bearing tables with no restrictive claim binding: "
+            + ", ".join(unbound)
+        )
+    missing = sorted(
+        f"{table}.{column}"
+        for table, expected in CONTROL_PLANE_SENSITIVE_COLUMNS.items()
+        for column in expected
+        if column not in columns.get(table, set())
+    )
+    if missing:
+        raise GateFailure(
+            "the control-plane sensitive-column record names columns the catalog "
+            "no longer has, so V5_CONTROL_PLANE_BOUNDARY.md is describing a schema "
+            f"that moved: {', '.join(missing)}"
+        )
+    print(f"  lease-bearing tables with a restrictive claim binding: {len(bound)}")
+
+
+def _verify_plane_roles(receipt: dict[str, Any]) -> None:
+    """The human plane is a plane: separate login, no inheritance, no bypass."""
+
+    roles = {role["rolname"]: role for role in receipt["roles"]}
+    for name in (HUMAN_PLANE_ROLE, HUMAN_PLANE_LOGIN_ROLE):
+        role = roles.get(name)
+        if role is None:
+            raise GateFailure(f"{name} does not exist; 0034 did not run")
+        unsafe = sorted(
+            attribute
+            for attribute in ("rolsuper", "rolbypassrls", "rolcreaterole", "rolcreatedb")
+            if role[attribute]
+        )
+        if unsafe:
+            raise GateFailure(f"{name} holds {', '.join(unsafe)}")
+        if role["rolinherit"]:
+            # An INHERIT login principal would carry the plane's rights without
+            # SET ROLE, which is the separation this exists to make.
+            raise GateFailure(f"{name} is INHERIT; the plane must be assumed, not held")
+    memberships = {
+        (member["member"], member["grantee_of"]) for member in receipt["role_memberships"]
+    }
+    if (HUMAN_PLANE_LOGIN_ROLE, HUMAN_PLANE_ROLE) not in memberships:
+        raise GateFailure(
+            f"{HUMAN_PLANE_LOGIN_ROLE} cannot assume {HUMAN_PLANE_ROLE}"
+        )
+    if inherited := sorted(
+        grantee for member, grantee in memberships if member == HUMAN_PLANE_ROLE
+    ):
+        raise GateFailure(
+            f"{HUMAN_PLANE_ROLE} is a member of {', '.join(inherited)}; the plane "
+            "must be a leaf"
+        )
+    print(
+        f"  {HUMAN_PLANE_LOGIN_ROLE} authenticates and assumes {HUMAN_PLANE_ROLE}, "
+        "which holds no bypass and no memberships"
+    )
+
+
 async def _seed_tenant(
     admin: asyncpg.Connection[asyncpg.Record], label: str
 ) -> dict[str, uuid.UUID]:
@@ -500,6 +722,10 @@ async def run(admin_url: str) -> dict[str, Any]:
         _verify_tenant_rls(receipt)
         await _verify_append_only(admin, receipt)
         _verify_runtime_roles_are_not_owners(receipt)
+        _verify_plane_roles(receipt)
+        _verify_control_plane_boundary(receipt)
+        await _verify_permissive_coverage(admin)
+        await _verify_claim_binding(admin, receipt)
         _report_bypassrls(receipt)
         await _verify_isolation(admin, parts, receipt)
     finally:

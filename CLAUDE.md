@@ -12,14 +12,33 @@ Superseded but preserved:
 - `docs/north-star/TAVONEL_FINAL_NORTH_STAR_MASTERPLAN.md`
   (sha256 `6876ea389c41ad6b7b2dec47505a18138116531d51d514cab60204458e276619`)
 
-**Precedence, when two documents disagree** — v5.0's own ordering:
+**Precedence, when two documents disagree** — v5.0's own ordering, with the
+FTO blueprint's LEGAL-HOLD rules above all of it:
 
-    v5 execution boundary / Model Arena / definition of done / phase gates
+    LEGAL-HOLD / DO NOT COPY / DESIGN-AROUND
+      >  v5 execution boundary / Model Arena / definition of done / phase gates
       >  v5 normative architecture, security, evidence, migration rules
       >  hash-verified evidence, artifact hashes, benchmark receipts
       >  docs/architecture/v31-phase-gap-matrix.md (current state, not future design)
       >  v4.0 detail that v5 does not contradict
       >  v3.1 and earlier
+
+**`docs/north-star/TAVONEL_FTO_ABSORPTION_BLUEPRINT_v1.0.md`**
+(sha256 `ba286c2216805077e5a9c39546b7fee191d8e3670d6f3b8363d18010e044e94b`)
+puts its own legal holds above the masterplan, and that ordering is adopted. The
+binding half is extracted to `docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml`; the rest
+of the blueprint proposes future workstreams and binds nothing yet.
+
+Three rules from it that are easy to get wrong:
+
+- **An OSS licence is not patent freedom to operate.** A permissive licence is
+  copyright permission from that contributor. It settles nothing about a third
+  party's patents.
+- **Readable is not reusable.** A public repository with no LICENSE grants no
+  commercial reuse right. Its paper may be read; its code may not be copied,
+  translated, ported or vendored.
+- **Code, model weights, dataset and hosted-API terms are four separate
+  licences.** Clearing one clears none of the others.
 
 **v5 supersedes v4 on phase order, router, model evaluation and benchmark.**
 Everything else v4 said still governs — v5 is narrower than it looks, and reading

@@ -332,11 +332,24 @@ jobs:
         # Cluster-provenance fields (the bootstrap superuser's name) differ
         # between the receipt's origin cluster and CI, so the comparison is over
         # the schema-determined portion rather than the whole file.
+        #
+        # The baseline is the 0034 receipt. `privilege-receipt.json` stays as the
+        # 0033 measurement it was — other documents cite it by sha256, and
+        # rewriting historical evidence to make a build green is the one thing
+        # a receipt may never do.
         run: >-
           python -m uv run --locked --extra dev
           python scripts/compare_privilege_receipt.py
-          docs/audit/receipts/privilege-receipt.json
+          docs/audit/receipts/privilege-receipt-0034.json
           artifacts/privilege-receipt-ci.json
+      - name: Shadow-validate the dual-plane authorization boundary
+        # Removes BYPASSRLS from two worker roles *in the disposable CI service
+        # container*, measures what the policies then do, and restores it. The
+        # repository ships no change that removes the attribute; this is the only
+        # way to observe policies that a bypassing role makes unobservable.
+        run: >-
+          python -m uv run --locked --extra dev
+          python infra/postgres/shadow_validate_dual_plane.py
       - name: Publish the CI privilege receipt
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
