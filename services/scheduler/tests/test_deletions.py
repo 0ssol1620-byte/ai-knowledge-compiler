@@ -56,6 +56,7 @@ from akc_scheduler.deletions import (
     retention_claim_statement,
 )
 from akc_scheduler.settings import SchedulerSettings
+from akc_security.tenant_context import TenantContextMismatch, TenantContextMissing
 from sqlalchemy import func, select
 from sqlalchemy.dialects import postgresql, sqlite
 
@@ -1217,3 +1218,105 @@ async def test_postgres_deletion_capability_is_fail_closed_and_scope_aware() -> 
         "feature_flags",
     ):
         assert required_scope in query
+
+
+async def test_purge_refuses_when_the_request_tenant_disagrees_with_the_claim(
+    harness: Harness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A request that changes tenant mid-attempt must not delete anything.
+
+    This is the failure the deletion path is most exposed to once BYPASSRLS is
+    removed: an unbound or wrongly-bound transaction would compare
+    ``tenant_id`` against the wrong value, delete zero rows, and still record a
+    purge. The guard has to raise instead.
+    """
+
+    seed = await _seed_document(harness)
+    assert seed.request_id is not None
+
+    # Hand the purge a tenant that is not the claimed request's tenant.
+    original_claim = deletion_domain._claim_request
+
+    async def claim_with_foreign_tenant(
+        *args: Any, **kwargs: Any
+    ) -> tuple[uuid.UUID, int, uuid.UUID] | None:
+        claimed = await original_claim(*args, **kwargs)
+        if claimed is None:
+            return None
+        token, attempt, _tenant = claimed
+        return token, attempt, uuid.uuid4()
+
+    monkeypatch.setattr(deletion_domain, "_claim_request", claim_with_foreign_tenant)
+
+    # A tenant disagreement is an integrity violation, not a retryable
+    # operational failure, so it propagates instead of being recorded as a
+    # retry. Loud beats a zero-row purge that looks successful.
+    with pytest.raises(TenantContextMismatch):
+        await process_deletion_request(
+            harness.database.sessions,
+            object_store=harness.store,
+            request_id=seed.request_id,
+        )
+
+    async with harness.database.sessions() as session:
+        request = await session.get(DeletionRequest, seed.request_id)
+        receipt = await session.get(DeletionReceipt, seed.request_id)
+        document = await session.get(Document, seed.document_id)
+    assert request is not None and request.state != "purged"
+    assert receipt is None
+    assert document is not None, "a tenant mismatch must not delete domain rows"
+
+
+async def test_missing_tenant_context_fails_closed_before_any_delete(
+    harness: Harness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No tenant means no purge — never a silent zero-row 'success'."""
+
+    seed = await _seed_document(harness)
+    assert seed.request_id is not None
+    original_claim = deletion_domain._claim_request
+
+    async def claim_without_tenant(*args: Any, **kwargs: Any) -> Any:
+        claimed = await original_claim(*args, **kwargs)
+        if claimed is None:
+            return None
+        token, attempt, _tenant = claimed
+        return token, attempt, None
+
+    monkeypatch.setattr(deletion_domain, "_claim_request", claim_without_tenant)
+
+    with pytest.raises(TenantContextMissing):
+        await process_deletion_request(
+            harness.database.sessions,
+            object_store=harness.store,
+            request_id=seed.request_id,
+        )
+
+    async with harness.database.sessions() as session:
+        receipt = await session.get(DeletionReceipt, seed.request_id)
+        document = await session.get(Document, seed.document_id)
+    assert receipt is None
+    assert document is not None, "a missing tenant must not delete domain rows"
+
+
+def test_every_sessionmaker_site_in_the_deletion_module_binds_a_tenant() -> None:
+    """Structural guard: a new unbound session here is the defect class itself.
+
+    The audit that found this counted sessions by hand. This makes the count
+    fail on its own the next time somebody adds one.
+    """
+
+    import re
+
+    source = Path(deletion_domain.__file__).read_text(encoding="utf-8").splitlines()
+    opens = [i for i, line in enumerate(source) if re.search(r"async with sessions\(\)", line)]
+    contexts = [i for i, line in enumerate(source) if "enter_tenant_context(" in line]
+    assert opens, "expected the deletion module to open worker sessions"
+    unbound = []
+    for start in opens:
+        end = min([o for o in opens if o > start], default=len(source))
+        if not any(start < c < end for c in contexts):
+            unbound.append(start + 1)
+    assert not unbound, f"session opened without a tenant context at line(s): {unbound}"

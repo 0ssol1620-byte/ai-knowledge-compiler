@@ -8,6 +8,20 @@ Deletion is deliberately split into three durable phases:
    retry without logging keys or document content.
 3. Only after every object is terminally absent does one transaction remove
    domain rows and append the immutable receipt and audit evidence.
+
+Every function here that a worker calls receives an ``async_sessionmaker`` and
+opens its *own* session, so the tenant context a caller set on some other
+session does not reach it. Each one therefore binds its own transaction with
+``enter_tenant_context`` before it touches tenant data — this is the most
+destructive path in the repository, and an unbound transaction here would let a
+``tenant_id = NULL`` comparison evaluate silently false and record a purge that
+deleted nothing.
+
+**One read is deliberately unbound.** The ``deletion_requests`` row is fetched by
+primary key before its tenant is known — the same shape as a queue claim, which
+has no tenant until a row is read. Binding happens immediately after that read
+and before any tenant table is touched. Scoping the claim read itself is the
+open problem recorded in ``docs/audit/V5_WORKER_PRIVILEGE_BOUNDARY.md`` §2.
 """
 
 from __future__ import annotations
@@ -21,6 +35,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Literal, cast
 
+from akc_security.tenant_context import enter_tenant_context
 from akc_telemetry import record_deletion_attempt, record_deletion_object_result
 from akc_url_fetcher.models import UrlFetchTask
 from sqlalchemy import func, select
@@ -975,14 +990,23 @@ async def cancel_deletion_work(
     sessions: async_sessionmaker[AsyncSession],
     *,
     request_id: uuid.UUID,
+    tenant_id: uuid.UUID,
     clock: Callable[[], datetime] = utcnow,
 ) -> None:
-    """Idempotently fence active analysis/compile work and release reserves."""
+    """Idempotently fence active analysis/compile work and release reserves.
+
+    ``tenant_id`` is the tenant established when the request was claimed. It is
+    checked against the row read here, so a request that changed tenants between
+    claim and cancellation refuses rather than fencing the wrong tenant's work.
+    """
 
     async with sessions() as session, session.begin():
         request = await session.get(DeletionRequest, request_id)
         if request is None:
             raise RuntimeError("deletion_request_missing")
+        await enter_tenant_context(
+            session, tenant_id=tenant_id, expected_tenant_id=request.tenant_id
+        )
         job_ids = _manifest_ids(request, "processing_jobs")
         jobs: list[ProcessingJob] = []
         if job_ids:
@@ -1036,6 +1060,7 @@ async def _gpu_cancellation_pending(
     sessions: async_sessionmaker[AsyncSession],
     *,
     request_id: uuid.UUID,
+    tenant_id: uuid.UUID,
     now: datetime,
 ) -> bool:
     """Keep storage intact while a provider can still write through a grant."""
@@ -1044,6 +1069,9 @@ async def _gpu_cancellation_pending(
         request = await session.get(DeletionRequest, request_id)
         if request is None:
             raise RuntimeError("deletion_request_missing")
+        await enter_tenant_context(
+            session, tenant_id=tenant_id, expected_tenant_id=request.tenant_id
+        )
         invocation_ids = _manifest_ids(request, "gpu_provider_invocations")
         if not invocation_ids:
             return False
@@ -1100,6 +1128,9 @@ async def _claim_request(
         request = await session.scalar(statement)
         if request is None or request.state == "purged":
             return None
+        # First read of the request row is unbound by necessity (see module
+        # docstring); every write below belongs to exactly one tenant.
+        await enter_tenant_context(session, tenant_id=request.tenant_id)
         lease_expires_at = _aware(request.lease_expires_at)
         if request.lease_token is not None and lease_expires_at and lease_expires_at > now:
             return None
@@ -1137,6 +1168,7 @@ async def _record_object_result(
     *,
     request_id: uuid.UUID,
     object_id: uuid.UUID,
+    tenant_id: uuid.UUID,
     lease_token: uuid.UUID,
     lease_seconds: float,
     error_code: str | None,
@@ -1149,6 +1181,9 @@ async def _record_object_result(
         request = await session.scalar(request_statement)
         if request is None or request.lease_token != lease_token:
             return False
+        await enter_tenant_context(
+            session, tenant_id=tenant_id, expected_tenant_id=request.tenant_id
+        )
         row_statement = select(DeletionObject).where(
             DeletionObject.id == object_id,
             DeletionObject.deletion_request_id == request_id,
@@ -1178,6 +1213,7 @@ async def _finalize_database_purge(
     sessions: async_sessionmaker[AsyncSession],
     *,
     request_id: uuid.UUID,
+    tenant_id: uuid.UUID,
     lease_token: uuid.UUID,
     attempt_number: int,
     now: datetime,
@@ -1189,6 +1225,12 @@ async def _finalize_database_purge(
         request = await session.scalar(statement)
         if request is None:
             raise RuntimeError("deletion_request_missing")
+        # Everything below this line is an irreversible DELETE. Bind before the
+        # first one, and refuse outright if the row's tenant is not the tenant
+        # this attempt was claimed for.
+        await enter_tenant_context(
+            session, tenant_id=tenant_id, expected_tenant_id=request.tenant_id
+        )
         existing = await get_deletion_receipt(
             session,
             tenant_id=request.tenant_id,
@@ -1379,6 +1421,7 @@ async def _record_attempt_failure(
     sessions: async_sessionmaker[AsyncSession],
     *,
     request_id: uuid.UUID,
+    tenant_id: uuid.UUID,
     lease_token: uuid.UUID,
     attempt_number: int,
     failure_hashes: list[str],
@@ -1395,6 +1438,9 @@ async def _record_attempt_failure(
             raise RuntimeError("deletion_request_missing")
         if request.lease_token != lease_token:
             return "retry"
+        await enter_tenant_context(
+            session, tenant_id=tenant_id, expected_tenant_id=request.tenant_id
+        )
         terminal = request.attempts >= max_attempts
         state: Literal["retry", "dead_letter"] = "dead_letter" if terminal else "retry"
         request.state = state
@@ -1459,6 +1505,9 @@ async def process_deletion_request(
         async with sessions() as session:
             request = await session.get(DeletionRequest, request_id)
             if request is not None and request.state == "purged":
+                # No claim, so no tenant was established earlier; the row's own
+                # tenant is all there is to bind to before reading its receipt.
+                await enter_tenant_context(session, tenant_id=request.tenant_id)
                 receipt = await get_deletion_receipt(
                     session,
                     tenant_id=request.tenant_id,
@@ -1472,17 +1521,19 @@ async def process_deletion_request(
         record_deletion_attempt("busy")
         return DeletionProcessResult(request_id=request_id, state="busy")
 
-    lease_token, attempt_number, _tenant_id = claimed
+    lease_token, attempt_number, tenant_id = claimed
     try:
         await cancel_deletion_work(
             sessions,
             request_id=request_id,
+            tenant_id=tenant_id,
             clock=clock,
         )
     except Exception as exc:
         state = await _record_attempt_failure(
             sessions,
             request_id=request_id,
+            tenant_id=tenant_id,
             lease_token=lease_token,
             attempt_number=attempt_number,
             failure_hashes=[],
@@ -1495,11 +1546,13 @@ async def process_deletion_request(
     if await _gpu_cancellation_pending(
         sessions,
         request_id=request_id,
+        tenant_id=tenant_id,
         now=clock(),
     ):
         state = await _record_attempt_failure(
             sessions,
             request_id=request_id,
+            tenant_id=tenant_id,
             lease_token=lease_token,
             attempt_number=attempt_number,
             failure_hashes=[],
@@ -1512,6 +1565,7 @@ async def process_deletion_request(
     failures: list[str] = []
     error_codes: list[str] = []
     async with sessions() as session:
+        await enter_tenant_context(session, tenant_id=tenant_id)
         objects = list(
             (
                 await session.scalars(
@@ -1549,6 +1603,7 @@ async def process_deletion_request(
             sessions,
             request_id=request_id,
             object_id=row.id,
+            tenant_id=tenant_id,
             lease_token=lease_token,
             lease_seconds=lease_seconds,
             error_code=error_code,
@@ -1571,6 +1626,7 @@ async def process_deletion_request(
         state = await _record_attempt_failure(
             sessions,
             request_id=request_id,
+            tenant_id=tenant_id,
             lease_token=lease_token,
             attempt_number=attempt_number,
             failure_hashes=failures,
@@ -1585,6 +1641,7 @@ async def process_deletion_request(
         receipt = await _finalize_database_purge(
             sessions,
             request_id=request_id,
+            tenant_id=tenant_id,
             lease_token=lease_token,
             attempt_number=attempt_number,
             now=clock(),
@@ -1593,6 +1650,7 @@ async def process_deletion_request(
         state = await _record_attempt_failure(
             sessions,
             request_id=request_id,
+            tenant_id=tenant_id,
             lease_token=lease_token,
             attempt_number=attempt_number,
             failure_hashes=[],

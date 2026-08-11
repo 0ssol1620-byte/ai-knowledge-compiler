@@ -20,6 +20,17 @@ Policy expressions are compared after replacing the owner's name, so an
 identical policy does not read as changed merely because it was created by a
 differently named owner.
 
+**What this cannot see: column-level grants.** The receipt records
+``pg_class.relacl`` and not ``pg_attribute.attacl``, so a migration that adds or
+removes a per-column privilege — ``GRANT UPDATE (status) ON …`` — produces an
+identical receipt and passes here. Do not read a pass as "no privilege changed";
+read it as "no table-level privilege, policy, RLS flag or role attribute
+changed". The column dimension is asserted against the live catalog instead, by
+``infra/postgres/schema_security_gate.py``: ``_verify_append_only`` reads
+``attacl`` directly for the five ledgers, and ``worker_column_surface`` replays
+the real column grants onto the isolation probe role. Closing the gap here would
+mean widening the receipt schema past ``tavonel.privilege-receipt.v1``.
+
     python scripts/compare_privilege_receipt.py <expected.json> <actual.json>
 
 Exits non-zero and prints every difference when the schema-determined portion

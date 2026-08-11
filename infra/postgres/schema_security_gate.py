@@ -188,8 +188,34 @@ def _verify_tenant_rls(receipt: dict[str, Any]) -> None:
     print(f"  tenant-scoped tables with FORCE RLS and >=1 policy: {len(scoped)}/{len(scoped)}")
 
 
-def _verify_append_only(receipt: dict[str, Any]) -> None:
-    """Item 3: the evidence ledgers are still append-only."""
+_APPEND_ONLY_COLUMN_GRANTS = """
+SELECT c.relname AS table_name,
+       a.attname AS column_name,
+       pg_get_userbyid(acl.grantee) AS grantee,
+       acl.privilege_type AS privilege
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+JOIN pg_attribute a ON a.attrelid = c.oid
+CROSS JOIN LATERAL aclexplode(a.attacl) AS acl
+WHERE n.nspname = 'public'
+  AND c.relname = ANY($1::text[])
+  AND acl.grantee <> c.relowner
+ORDER BY 1, 2, 3
+"""
+
+
+async def _verify_append_only(
+    admin: asyncpg.Connection[asyncpg.Record], receipt: dict[str, Any]
+) -> None:
+    """Item 3: the evidence ledgers are still append-only.
+
+    Table ACLs are not sufficient on their own. PostgreSQL lets UPDATE be
+    granted per column, which is how ``outbox_events.published_at`` is writable
+    while the table is not — so a single ``GRANT UPDATE(col)`` on a ledger would
+    make it mutable while ``pg_class.relacl`` still looked clean. The privilege
+    receipt records only table ACLs, so this reads ``pg_attribute.attacl``
+    straight from the catalog rather than trusting the receipt for it.
+    """
 
     violations: list[str] = []
     for table in receipt["tables"]:
@@ -204,9 +230,17 @@ def _verify_append_only(receipt: dict[str, Any]) -> None:
             bad = sorted({p.rstrip("*") for p in privileges} & {"UPDATE", "DELETE", "TRUNCATE"})
             if bad:
                 violations.append(f"{table['table']}: grants {'+'.join(bad)} to {grantee}")
+    for row in await admin.fetch(_APPEND_ONLY_COLUMN_GRANTS, sorted(APPEND_ONLY)):
+        violations.append(
+            f"{row['table_name']}: grants {row['privilege']} "
+            f"({row['column_name']}) to {row['grantee']}"
+        )
     if violations:
         raise GateFailure("append-only ledgers were widened: " + "; ".join(violations))
-    print(f"  append-only ledgers with no UPDATE/DELETE grant or policy: {len(APPEND_ONLY)}")
+    print(
+        f"  append-only ledgers with no UPDATE/DELETE grant or policy: {len(APPEND_ONLY)} "
+        "(table and column ACLs)"
+    )
 
 
 def _verify_runtime_roles_are_not_owners(receipt: dict[str, Any]) -> None:
@@ -457,7 +491,7 @@ async def run(admin_url: str) -> dict[str, Any]:
         receipt["findings"] = findings(receipt)
         print(f"catalog: {receipt['table_count']} tables at {receipt['alembic_revision']}")
         _verify_tenant_rls(receipt)
-        _verify_append_only(receipt)
+        await _verify_append_only(admin, receipt)
         _verify_runtime_roles_are_not_owners(receipt)
         _report_bypassrls(receipt)
         await _verify_isolation(admin, parts, receipt)

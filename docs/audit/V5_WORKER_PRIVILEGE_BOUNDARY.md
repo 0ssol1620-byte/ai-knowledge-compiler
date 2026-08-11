@@ -24,7 +24,7 @@ RESTRICTIVE SELECT USING (
 )
 ```
 
-**63 of 112 tables carry such a policy. 30 of those are granted to worker roles.
+**63 of 112 tables carry such a policy. 27 of those are granted to worker roles.
 No worker role holds any grant on `memberships` or `project_memberships`.**
 
 PostgreSQL evaluates a policy's subqueries as the querying role. So with
@@ -99,10 +99,30 @@ survey of API call sites before anyone writes it.
 `packages/security/src/akc_security/tenant_context.py` sets `app.tenant_id` with
 `set_config(..., is_local => true)` so it dies with the transaction and cannot
 leak across a pooled connection. It fails closed on a missing tenant and on a
-tenant that disagrees with the claimed job row. Applied at the post-claim
-boundary in the url fetcher, deletion consumer, dispatch loop, GPU control
-plane, cpu-document worker and the v6 checkpoint store. Inert while `BYPASSRLS`
-holds — which is the point of doing it first.
+tenant that disagrees with the claimed job row. Inert while `BYPASSRLS` holds —
+which is the point of doing it first.
+
+Applied at the post-claim boundary in the url fetcher, the deletion consumer
+*and the deletion execution path it delegates to*, the dispatch loop, the GPU
+control plane, the cpu-document worker and the v6 checkpoint store.
+
+**The first version of this document overstated that.** It claimed the deletion
+consumer was covered on the strength of
+`services/scheduler/src/akc_scheduler/deletions.py` alone. That binds the
+*polling* session, which commits and closes before
+`process_deletion_request()` runs; the eight sessions in
+`services/api/src/akc_api/deletions.py` are opened from an
+`async_sessionmaker` and inherit nothing. The irreversible `DELETE`s at
+`_finalize_database_purge` were the least bound code in the repository while the
+commit message said the opposite. Found by audit, not by me. All eight now bind
+before touching tenant data, and
+`test_every_sessionmaker_site_in_the_deletion_module_binds_a_tenant` fails the
+build if a ninth is added without one.
+
+Two categories remain deliberately unbound, and neither is an oversight: the
+cross-tenant batch transactions in §2, and the primary-key read of a job or
+request row that happens *before* its tenant is known. Binding follows that read
+immediately, before any tenant table is touched.
 
 **One-table repair (step 3).** `0033_backfill_checkpoint_tenant_rls` gives
 `collection_metadata_backfill_checkpoints` `ENABLE`/`FORCE ROW LEVEL SECURITY`
@@ -133,6 +153,25 @@ definition.
 | 7 | append-only UPDATE/DELETE | denied for all 5 ledgers |
 | 8 | worker roles `rolbypassrls = false` | **not met — 7/7 still hold it** |
 | 9 | runtime role is not table owner | holds for all 7 |
+
+## What the receipt does not record
+
+`docs/audit/receipts/privilege-receipt.json` carries table ACLs
+(`pg_class.relacl`) and **not** column ACLs (`pg_attribute.attacl`). Two
+consequences worth stating plainly:
+
+- §2's "no role holds UPDATE" is a statement about table-level grants. The
+  workers do hold column-level UPDATE — 201 grants — which is how
+  `outbox_events.published_at` is writable while the table is not.
+- `scripts/compare_privilege_receipt.py` therefore cannot detect a change to a
+  column grant. A pass means no table-level privilege, policy, RLS flag or role
+  attribute moved; it does not mean no privilege moved.
+
+The column dimension is asserted against the live catalog instead:
+`_verify_append_only` reads `attacl` directly for the five ledgers, so a
+`GRANT UPDATE (col)` on an evidence ledger fails CI even though the receipt
+would look unchanged; and `worker_column_surface` replays the real column grants
+onto the isolation probe role.
 
 ## Remaining exceptions
 
