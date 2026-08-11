@@ -8,13 +8,14 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 from akc_api.models import OutboxEvent, ProcessingJob, WebhookDelivery
+from akc_security.claim_broker import ClaimHealth, ClaimObservation
 from akc_telemetry import (
     set_dead_letter_count,
     set_deletion_oldest_pending,
     set_queue_gauges,
 )
 from akc_telemetry.metrics import REGISTRY
-from prometheus_client import Counter
+from prometheus_client import Counter, Gauge
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -31,6 +32,75 @@ def record_dispatch_tenant_busy_deferral() -> None:
     """Record a fairness deferral without any tenant or job label."""
 
     DISPATCH_TENANT_BUSY_DEFERRALS.inc()
+
+
+# ARMING GATE 1. A worker that cannot see its queue reads zero rows and raises
+# nothing, which is exactly what an idle queue does. These five series are what
+# tell them apart, and none of them is derivable from the worker's own reads —
+# the two backlogs come from the privileged probes beside each claim broker.
+CLAIM_POLL_ATTEMPTS = Counter(
+    "akc_claim_poll_attempts_total",
+    "Claim polls attempted, by queue.",
+    labelnames=("queue",),
+    registry=REGISTRY,
+)
+CLAIM_POLL_GRANTS = Counter(
+    "akc_claim_poll_grants_total",
+    "Claim polls that returned work, by queue.",
+    labelnames=("queue",),
+    registry=REGISTRY,
+)
+CLAIM_POLL_BACKLOG = Gauge(
+    "akc_claim_poll_backlog",
+    "Pending rows in the queue, leased or not, as the claim broker sees them.",
+    labelnames=("queue",),
+    registry=REGISTRY,
+)
+CLAIM_POLL_CLAIMABLE = Gauge(
+    "akc_claim_poll_claimable",
+    "Pending rows nothing currently holds, as the claim broker sees them.",
+    labelnames=("queue",),
+    registry=REGISTRY,
+)
+CLAIM_POLL_ZERO_RUN = Gauge(
+    "akc_claim_poll_consecutive_zero_polls",
+    "Consecutive polls this worker got nothing from, by queue.",
+    labelnames=("queue",),
+    registry=REGISTRY,
+)
+CLAIM_POLL_STARVATION = Gauge(
+    "akc_claim_poll_starved",
+    "1 when claimable work exists and this worker keeps getting none of it.",
+    labelnames=("queue",),
+    registry=REGISTRY,
+)
+
+
+def record_claim_poll(queue: str, observation: ClaimObservation) -> None:
+    """Publish one classified poll.
+
+    The alert fires on ``akc_claim_poll_starved == 1`` and on nothing else. In
+    particular it does not fire on an idle queue however long it stays idle, nor
+    on a queue whose every row is legitimately leased — both of those are empty
+    polls too, and a detector that pages on them gets muted, which is worse than
+    having none.
+    """
+
+    CLAIM_POLL_ATTEMPTS.labels(queue=queue).inc()
+    if observation.health is ClaimHealth.HEALTHY:
+        CLAIM_POLL_GRANTS.labels(queue=queue).inc()
+    CLAIM_POLL_BACKLOG.labels(queue=queue).set(observation.backlog_depth)
+    CLAIM_POLL_CLAIMABLE.labels(queue=queue).set(observation.claimable_depth)
+    CLAIM_POLL_ZERO_RUN.labels(queue=queue).set(observation.consecutive_zero_polls)
+    CLAIM_POLL_STARVATION.labels(queue=queue).set(1 if observation.alert else 0)
+    if observation.alert:
+        logger.error(
+            "claim starvation: queue=%s backlog=%d claimable=%d consecutive_zero_polls=%d",
+            queue,
+            observation.backlog_depth,
+            observation.claimable_depth,
+            observation.consecutive_zero_polls,
+        )
 
 
 def _age_seconds(value: datetime | None, *, now: datetime) -> float:

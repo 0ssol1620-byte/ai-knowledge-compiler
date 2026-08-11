@@ -1,9 +1,11 @@
 # Worker Authorization — Decision Package
 
-*Written 2026-08-11 at the design checkpoint the founder called. `0034_dual_plane_authorization`
-has landed and is inert. **No further implementation is in flight.** This document
-settles the design as nine decisions, says who decides each, and specifies the
-migration and shadow-validation plan that would execute them.*
+*Written 2026-08-11 at the design checkpoint the founder called; updated the same
+day when the founder approved it and settled F-1 and F-2. `0034` and `0035` have
+landed and both are inert — **no worker role's `BYPASSRLS` has been removed, and
+two hard gates now stand between this state and the first removal.** This document
+settles the design as nine decisions, says who decided each, and carries the
+migration and shadow-validation plan.*
 
 **Supersedes the judgement in `V5_WORKER_AUTHZ_ARMING.md`.** That document listed
 six prerequisites and routed most of them upward. Five of the six were technical
@@ -28,25 +30,26 @@ later.
 |---|---|---|---|
 | 1 | Human Authorization Plane | implementer | **done** — landed in 0034 |
 | 2 | Service / Worker Authorization Plane | implementer | **done** — landed in 0034 |
-| 3 | Control-plane queue claim mechanism | **founder** | **open** — two mechanisms, different exposure |
+| 3 | Control-plane queue claim mechanism | founder | **decided F-1** — Option B, built in `0035`, seven proofs green |
 | 4 | Tenant Data Plane access conditions | implementer | **decided** — landed, with a stated limit |
-| 5 | Atomic claim ownership | implementer | **decided** — design settled, not built |
-| 6 | Context injection points, order, fail-closed set | implementer | **decided** — module built, wiring not |
+| 5 | Atomic claim ownership | implementer | **done** — the broker stamps and returns in one statement |
+| 6 | Context injection points, order, fail-closed set | implementer | **decided** — modules built, claim-site wiring not (§13.7) |
 | 7 | Scheduler's residual 7-table cross-tenant surface | founder (already given) | **closed** — approved, conditions met |
-| 8 | Compromised-worker threat model | implementer states it; **founder** approves the public claim | **open** — disclosure only |
+| 8 | Compromised-worker threat model | implementer states it; founder approves the public claim | **decided F-2** — approved wording in §8, verbatim |
 | 9 | API role creation timing | implementer | **done** — created inert in 0034 |
 
-**Two founder items, and one is not a design question.** Item 3 is a genuine
-risk-acceptance choice between two mechanisms. Item 8 is a disclosure decision:
-`CLAUDE.md` puts "what a public claim says, and whether evidence supports it"
-outside an agent's authority, and the isolation language is exactly that. Nothing
-else here needs a person.
+**Two founder items, both now settled.** Item 3 was a genuine risk-acceptance
+choice between two mechanisms; the founder chose the narrower one (F-1). Item 8 was
+a disclosure decision — `CLAUDE.md` puts "what a public claim says, and whether
+evidence supports it" outside an agent's authority — and the approved wording is in
+§8 verbatim (F-2). **Nothing open needs a person.** What blocks arming now is two
+engineering gates, in §10.
 
 **Reclassified out of the founder queue**, with the reason each is engineering:
 
 | Was | Now | Why |
 |---|---|---|
-| A-1 claim-site wiring | implementer | reversible code change, covered by tests |
+| A-1 claim-site wiring | implementer | reversible code change, covered by tests — still outstanding, §13.7 |
 | A-2 control-plane declarations | implementer | same |
 | A-3 `akc_api_runtime` credential | **operator action**, not a decision | the decision (role exists, inert, assumed by `SET ROLE`) is made; issuing a secret is provisioning |
 | A-4 column-level grant narrowing | implementer | reversible, no risk accepted — see §7 |
@@ -113,7 +116,7 @@ named.
 
 ---
 
-## 3. Control-plane queue claim — **FOUNDER DECISION, open**
+## 3. Control-plane queue claim — **decided (F-1), built**
 
 ### The problem, measured
 
@@ -174,41 +177,73 @@ Option B arguably lands **inside** the standard already approved rather than
 extending it. It also makes the claim atomic and ownership provable in one step
 (§5).
 
-### Recommendation
+### Decision — F-1, founder, 2026-08-11: **Option B**
 
-**Option B.** The exposure difference is the whole argument: Option A lets a
-compromised worker read every tenant's queue contents by declaring a purpose;
-Option B lets it learn that a job exists and obtain a lease for one. The
-`SECURITY DEFINER` risk is real but bounded, has precedent here, and is inspectable
-in a way "the worker can read everything during discovery" is not.
+The exposure difference is the whole argument: Option A lets a compromised worker
+read every tenant's queue contents by declaring a purpose it was going to declare
+anyway; Option B lets it learn that a job exists and obtain a lease for one.
 
 `V5_WORKER_AUTHZ_SPIKE.md` recorded that a definer-function layer was "not forced"
 as a general architecture. That finding stands — this is not a general layer, it is
 one function per queue doing one thing.
 
-**This design is unvalidated.** No claim broker exists. The shadow cases below are
-what would settle it, and they must run before any disarm migration.
+**Built in `0035_claim_broker`, and no longer a design.** Two brokers exist —
+`akc_claim_url_fetch_task` and `akc_claim_gpu_invocation` — owned by
+`akc_claim_broker`, a `NOLOGIN NOINHERIT NOBYPASSRLS` role that reaches the queues
+through purpose-gated permissive policies of its own. The workers hold `EXECUTE`
+and no cross-tenant read at all.
 
-### Migration plan
+`analysis_tasks` and `deletion_requests` deliberately have no broker: nothing
+polls them cross-tenant. `akc_dispatch_worker` and `akc_deletion_worker` remain
+unbrokered because they poll `outbox_events`, which carries no lease to bind and
+whose control-plane policies name `akc_scheduler` alone — admitting two more roles
+there is a separate decision. All four facts are recorded in
+`control_plane_registry.py` and asserted against the catalog by CI, so the
+uncovered paths cannot be forgotten on arming day.
+
+### Migration plan — landed
 
 | Revision | Contents | Downgrade |
 |---|---|---|
-| `0035_claim_broker` | one `SECURITY DEFINER` function per lease-bearing queue, owner a non-login role, `GRANT EXECUTE` to that queue's worker role only; registry updated to record the function surface | `DROP FUNCTION` (four), `REVOKE`; the registry entry is removed in the same revision |
+| `0035_claim_broker` | `akc_claim_broker` role; purpose-gated permissive policies for it on the two queues and on `audit_events`; one `SECURITY DEFINER` claim function and one depth probe per queue, `EXECUTE` revoked from `PUBLIC` and granted to that queue's worker role only | drops the four functions, the five policies and the role; round-tripped |
 
-Additive. Lands inert — while `BYPASSRLS` holds, no worker needs the function.
-Blocked on the founder decision above.
+Additive and inert: nothing calls the functions while the workers' existing claim
+paths run.
 
-### Shadow-validation plan
+### What the design gives up, stated
 
-| Case | Proves |
+The lease is now the only thing excluding a second claimer. The ORM predicate it
+replaces treats a `queued` row as claimable *regardless of its lease*, which is
+safe there because the caller immediately takes an advisory lock and holds the
+row's transaction open. The broker stamps and returns in one statement and has
+neither, so that disjunct is dropped and the broker's predicate is **stricter**
+than the one it replaces. **This was found by the concurrency proof, not by
+reading**: with the disjunct present, four concurrent callers were granted 16
+claims over 12 rows.
+
+### Shadow validation — all green
+
+| Case | Result |
 |---|---|
-| `broker:claims-one-row-atomically` | two concurrent callers receive different `claim_id`s, never the same row |
-| `broker:returns-identifiers-only` | the result set has exactly the five columns; no URL, parameter or manifest column is reachable through it |
-| `broker:no-cross-tenant-select-remains` | after the grant, `SELECT … FROM url_fetch_tasks` with a declared purpose still returns 0 rows — the worker gained a claim path, not a read path |
-| `broker:stamps-a-lease-the-caller-can-bind` | the returned `lease_token` satisfies the `_claim_binding` policy immediately afterwards |
-| `broker:refuses-an-undeclared-purpose` | calling without `app.control_plane` set returns no row |
-| `broker:cannot-be-redefined-by-its-caller` | the worker role cannot `CREATE OR REPLACE` or `ALTER … OWNER` the function |
-| `broker:search-path-is-pinned` | `SET search_path` is present on the function definition in `pg_proc` |
+| `broker:claims-one-row-atomically` | 4 concurrent callers x 4 attempts granted **10 claims over 10 distinct rows**, 0 left claimable — no row handed to two callers, none lost |
+| `broker:returned-token-is-the-row-token` | every returned token is the token now on its row; the claim and its receipt cannot diverge |
+| `broker:returns-identifiers-only` | the result is exactly the five columns |
+| `broker:no-cross-tenant-select-remains-{undeclared,declared}` | holding `EXECUTE`, a direct `SELECT` still reads nothing — the worker gained a claim path, not a read path |
+| `broker:stamps-a-lease-the-caller-can-bind` | binding the returned identifiers makes exactly the claimed row visible |
+| `broker:a-forged-token-still-binds-nothing` | the claim id alone does not satisfy the binding |
+| `broker:refuses-an-undeclared-purpose-{undeclared,unapproved}`, `broker:refuses-when-a-tenant-is-bound` | three refusals |
+| `broker:cannot-{replace,own,drop,unpin,become}` | the caller cannot redefine, take, drop, unpin or become the thing that grants it access |
+| `broker:cannot-execute-another-queues-broker` | holding one queue's broker grants nothing on another's |
+| `broker:execute-is-not-public` | a role outside the grant is refused — PostgreSQL grants `EXECUTE` to `PUBLIC` by default and this proves the revoke held |
+| `broker:search-path-is-pinned` | `pg_proc.proconfig` reads `search_path=pg_catalog, public` |
+| `broker:definer-owner-is-not-privileged` | the owner holds neither `BYPASSRLS` nor `LOGIN` |
+| `broker:lease-is-clamped` | a 100,000,000-second request came back as 1:00:00 |
+| `broker:every-grant-is-audited` | 10 audit rows for 10 grants, naming the session principal |
+| `broker:depth-probe-{sees-what-the-worker-cannot,is-purpose-gated-too}` | depth 3 against a worker read of 0, and 0 once a tenant is bound |
+
+**Three of these passed vacuously on the first run** — the clamp and both depth
+cases ran against a queue the concurrency proof had just drained, so they measured
+nothing and said so. They now seed their own rows.
 
 ---
 
@@ -423,21 +458,27 @@ into one. This is a test, not a policy, and it is mine to decide.
 4. **Nothing here is an exfiltration control.** These are read-authorization
    boundaries. A worker legitimately processing a document can copy it.
 
-**The sentence that must never be written:** *"a fully compromised worker cannot
-reach another tenant."* It is false.
+### F-2 — approved public wording, founder, 2026-08-11
 
-**The sentence that is true:** *"a worker cannot reach a tenant outside the job it
-currently holds, and cannot obtain a job by forging one."*
+**This is the approved claim, verbatim. It is the whole of what may be said.**
 
-### The founder decision here
+> Workers do not receive blanket cross-tenant data access. A worker must obtain a
+> valid job claim before entering a tenant data plane, and forged tenant, project,
+> claim, or lease context is rejected. Worker pools may legitimately process jobs
+> from multiple tenants over time.
 
-Not the architecture — the architecture is what it is, and per-tenant worker pools
-would be a funded workstream, not a migration. **The decision is what may be said
-publicly about tenant isolation for workers.** `CLAUDE.md` places public claim
-language outside an agent's authority, and the gap between statements 1 and 2 above
-is exactly the kind of gap marketing copy closes by accident. Cheap to decide, and
-it should be decided before any security page, pilot questionnaire or SOC-style
-narrative repeats it.
+**Forbidden, in any document, comment, commit message or external copy:**
+
+- "A fully compromised worker cannot reach another tenant." — false; see items 1
+  and 2 above.
+- "job-isolated" — the data-plane boundary is tenant isolation, not job-row
+  isolation. §4 records why.
+- "only the rows belonging to its job" — same reason. True of the four
+  lease-bearing tables, false of `documents`, `pages` and `blocks`.
+
+The three forbidden phrases are not stylistic preferences. Each of them asserts a
+property this system does not have, and each is a plausible thing to write after
+reading the words "claim binding" without reading §4.
 
 ### Migration and shadow-validation plan
 
@@ -490,20 +531,47 @@ without leaving a credential behind.
 Nothing below is started. Each disarm step is one `ALTER ROLE`, so each rollback is
 one `ALTER ROLE`.
 
-| Order | Revision / PR | Contents | Gated on |
-|---|---|---|---|
-| 1 | PR | `enter_control_plane_context` at the five scan sites; AST test | — |
-| 2 | PR | scheduler selects narrowed; payload emit contract | — |
-| 3 | `0035_claim_broker` | four `SECURITY DEFINER` claim functions, `EXECUTE` per role, registry updated | **founder §3** |
-| 4 | PR | `enter_claim_context` at the four claim sites, via the broker; AST test | 0035 |
-| 5 | `0036_control_plane_column_grants` | scheduler grants narrowed to columns | PR 2 |
-| 6 | `0037_disarm_payment_worker` | `NOBYPASSRLS` — no service exists; the free rehearsal | — |
-| 7 | `0038_disarm_scheduler` | `NOBYPASSRLS` | 1, 5 |
-| 8 | `0039_disarm_url_fetcher` | `NOBYPASSRLS` | 3, 4 |
-| 9 | `0040_disarm_gpu_worker` | `NOBYPASSRLS` | 3, 4 |
-| 10 | `0041_disarm_analysis_worker` | `NOBYPASSRLS` | 3, 4 |
-| 11 | `0042_disarm_dispatch_worker` | `NOBYPASSRLS` | 3, 4 — 33 tables, last but one |
-| 12 | `0043_disarm_deletion_worker` | `NOBYPASSRLS` | 3, 4 — irreversible purges, last |
+| Order | Revision / PR | Contents | Gated on | Status |
+|---|---|---|---|---|
+| 1 | `0035_claim_broker` | two `SECURITY DEFINER` claim functions and two depth probes, `EXECUTE` per role, broker role and its policies | founder F-1 | **done** |
+| 2 | PR | `claim_via_broker` + `ClaimStarvationDetector` in `akc_security` | 0035 | **done** |
+| 3 | PR | `enter_control_plane_context` at the five scan sites; AST test | — | not started |
+| 4 | PR | url fetcher and GPU claim sites call the broker; AST test | 0035 | **not started — see §13.7** |
+| 5 | PR | zero-row starvation metric wired into each poll loop | 2, 4 | not started |
+| 6 | PR | scheduler selects narrowed; payload emit contract | — | not started |
+| 7 | `0036_control_plane_column_grants` | scheduler grants narrowed to columns | 6 | not started |
+| — | **GATE 1** | zero-row starvation detection live in staging: backlog, claimable depth, successful claims and consecutive zero polls all observable, and an alert that fires on starvation and never on an idle queue | 2, 5 | **blocking** |
+| — | **GATE 2** | CI green on `pgvector/pgvector:pg17` with the **unmodified** migration tree: `alembic upgrade head` → privilege receipt → comparison → shadow validation | wired in `ci.yml` | **blocking** |
+| 8 | `0037_disarm_payment_worker` | `NOBYPASSRLS` — no service exists; the free rehearsal | Gates 1, 2 | not started |
+| 9 | `0038_disarm_scheduler` | `NOBYPASSRLS` | 3, 7 | not started |
+| 10 | `0039_disarm_url_fetcher` | `NOBYPASSRLS` | 4, 5 | not started |
+| 11 | `0040_disarm_gpu_worker` | `NOBYPASSRLS` | 4, 5 | not started |
+| 12 | `0041_disarm_analysis_worker` | `NOBYPASSRLS` | 4, 5 | not started |
+| 13 | `0042_disarm_dispatch_worker` | `NOBYPASSRLS` | 4, 5, and a decision on `outbox_events` | not started |
+| 14 | `0043_disarm_deletion_worker` | `NOBYPASSRLS` | same, plus irreversible purges — last | not started |
+
+**Both gates are hard preconditions on step 8, not advisory.**
+
+**Gate 1 — zero-row starvation detection.** An armed worker that cannot see its
+queue raises nothing; it reads zero rows, which is what an idle queue also reads.
+The detector compares *claimable depth* — from the broker's `…_depth` probe, which
+is subject to the same purpose gate and returns a count and no rows — against this
+worker's *consecutive empty polls*, and classifies: `HEALTHY` (claimed something),
+`IDLE` (no backlog, never alerts), `CONTENDED` (backlog, lost a race, below
+threshold), `STARVED` (backlog and a run of empty polls — the only state that
+pages). `broker:depth-probe-sees-what-the-worker-cannot` proves the signature
+exists at the database: depth 3 while the worker's own read sees 0. The logic and
+its negative test are built; **wiring it into the poll loops is step 5 and is not
+done**, so Gate 1 is not green.
+
+**Gate 2 — unmodified pgvector reproduction.** Every measurement in this package
+was taken on a throwaway cluster where `0024` had to be rewritten *outside the
+repository* to substitute `vector(1024)` with `real[]`, because pgvector is not
+installed on the machine. The substitution cannot affect ownership, policies, ACLs
+or role attributes — but "cannot affect" is an argument, not a measurement. The CI
+`postgres-gate` job runs the unmodified tree against `pgvector/pgvector:pg17` and
+now carries the shadow validation as its last step; it is labelled as Gate 2 in
+`ci.yml` so the reason survives the next person to edit it.
 
 **Canary between each disarm.** Flip in staging, run that role's real workload, hold
 one full retention cycle. Watch two signatures, which are different faults:
@@ -526,14 +594,15 @@ must keep doing so: **inert** as the real roles with `BYPASSRLS` as shipped;
 **armed** with the attribute removed *in a throwaway cluster only*, restored at the
 end and asserted restored; **human plane**, which needs no shadow.
 
-| Section | Now | After §3 | After §7 |
-|---|---:|---:|---:|
-| inert | 4 | 4 | 4 |
-| control plane | 8 | 8 | 10 |
-| worker plane / claim | 16 | 24 | 24 |
-| human plane | 14 | 14 | 14 |
-| residual (threat model) | 0 | 2 | 2 |
-| **total** | **42** | **52** | **54** |
+| Section | Now | After §7 |
+|---|---:|---:|
+| inert | 4 | 4 |
+| control plane | 8 | 10 |
+| worker plane / claim | 16 | 16 |
+| **claim broker (F-1)** | **23** | 23 |
+| human plane | 14 | 14 |
+| residual (threat model) | 0 | 2 |
+| **total** | **65** | **69** |
 
 **A rule this harness earned the hard way.** `claim:no-lateral-set-role` failed on
 its first run because the harness logged in once and granted itself both worker
@@ -543,37 +612,37 @@ identity uses the real one-login-per-worker principals.
 
 ---
 
-## 12. What needs a founder decision
+## 12. Founder decisions — both settled
 
-**Two items. Both cheap to decide. One blocks work; the other blocks a sentence.**
+**F-1, 2026-08-11 — the queue claim mechanism: Option B.** The claim broker.
+Workers receive no cross-tenant queue `SELECT`. The return surface is fixed at
+five identifiers and enforced in three places: the migration emits it, the schema
+security gate reads it back from `pg_proc` and fails if it grew, and
+`claim_via_broker` refuses a result set that is not exactly those five columns at
+run time. Built in `0035`, twenty-three shadow cases green.
 
-### F-1 — the queue claim mechanism (blocks steps 8–12)
+**F-2, 2026-08-11 — the public isolation claim.** The approved wording is in §8,
+verbatim, together with the three forbidden phrases. Nothing in this repository
+may say more than the approved paragraph.
 
-Option A (purpose-gated cross-tenant `SELECT` on each queue) or Option B (claim
-broker returning identifiers only). **Recommended: B.** The difference is what a
-compromised worker sees while discovering: every tenant's queue contents, or that a
-job exists. B costs one `SECURITY DEFINER` function per queue, has precedent in
-`0015`, and plausibly lands inside the standard already approved rather than
-widening it.
+### Open founder items
 
-Whichever is chosen, the conditions attached to the scheduler's boundary attach
-here too: tables re-derived from the live catalog, column-level examination
-recorded, purposes limited to the closed set, CI failing on an unregistered
-addition.
-
-### F-2 — the public isolation claim (blocks no engineering)
-
-Approve the language in §8. The true sentence and the false sentence are both
-written there. This is a disclosure decision under `CLAUDE.md`'s "what a public
-claim says", not a design question, and it should be settled before the isolation
-posture appears on a security page or in a pilot questionnaire.
+**None.** The remaining work is engineering and operations.
 
 **Not founder decisions, for the record:** claim-site wiring, control-plane
 declarations, column-grant narrowing, the payload contract, the `claimed_by`
-decision, the injection order, and the disarm ordering. Those are engineering, they
-are decided above, and the reasoning is written down so it can be argued with.
+decision, the injection order, the starvation threshold, and the disarm ordering.
+Those are engineering, they are decided above, and the reasoning is written down
+so it can be argued with.
 
 **An operator action, not a decision:** issuing the `akc_api_runtime` credential.
+
+**A decision that will arrive later:** admitting `akc_dispatch_worker` and
+`akc_deletion_worker` to the `outbox_events` control-plane boundary, which steps
+13 and 14 need and which nothing else does. It is the same shape as F-1 and
+carries the same conditions. It is recorded in `control_plane_registry.py` under
+`UNBROKERED_CROSS_TENANT_CLAIMS` so it cannot be skipped by whoever reaches those
+steps first.
 
 ---
 
@@ -581,24 +650,28 @@ are decided above, and the reasoning is written down so it can be argued with.
 
 Stated as uncertainty rather than smoothed into the plan.
 
-1. **The claim broker is a design, not a measurement.** Nothing in §3 Option B has
-   been built or run. The seven cases in §3 are what would settle it, and one of
-   them — atomicity under concurrency — is the kind of thing that looks obviously
-   correct and is not.
+1. **~~The claim broker is a design, not a measurement.~~** Settled. Built in
+   `0035` and proven by twenty-three cases, including the concurrency one — which
+   **failed on its first run and found a real defect**: the predicate inherited
+   from the ORM kept a `queued` row claimable after its lease was stamped, so four
+   concurrent callers were granted 16 claims over 12 rows. The broker's predicate
+   is now stricter than the one it replaces, and §3 says why.
 2. **Three of the four lease tables have not had their columns confirmed.**
    `url_fetch_tasks` has no `claimed_by` (checked). `analysis_tasks`,
    `deletion_requests` and `gpu_provider_invocations` were not checked for one, and
-   §5's reasoning assumes they are the same shape.
-3. **The zero-rows failure mode has no detector.** It is the mode most likely to
-   occur during arming and the only one that raises nothing. Building it is in
-   scope for whoever executes step 6 and is not built.
-4. **`0034` has never run against pgvector.** Every measurement here comes from a
+   §5's reasoning assumes they are the same shape. Lower stakes than it was: the
+   broker hands the lease to exactly one caller, so for the two brokered queues
+   ownership no longer rests on a comparison at all.
+3. **The starvation detector is built but not wired.** The logic, its negative
+   tests and the database-side signature all exist; no poll loop calls it.
+   **Gate 1 is therefore not green** and no `BYPASSRLS` may be removed.
+4. **Nothing has run against pgvector.** Every measurement here comes from a
    throwaway cluster where `0024` was rewritten outside the repository to substitute
    `vector(1024)` with `real[]` and omit the `hnsw` index, per the precedent in
    `V5_PRIVILEGE_RECEIPT_FINDINGS.md`. The substitution cannot affect ownership,
-   policies, ACLs or role attributes — but the CI run against
-   `pgvector/pgvector:pg17` is the first unmodified reproduction, and it has not
-   happened yet.
+   policies, ACLs or role attributes — but that is an argument, not a measurement.
+   **Gate 2 is therefore not green.** The CI job is wired and labelled; this
+   session could not run it.
 5. **The payload finding is a code reading with a known blind spot.** Four
    construction sites are non-literal and two of those are pass-throughs whose
    content is decided by callers. "No site writes document content into an event"
@@ -607,17 +680,34 @@ Stated as uncertainty rather than smoothed into the plan.
    `BYPASSRLS` from two roles for the length of one run in a disposable cluster. It
    has never been removed from a role serving real traffic, and the canary procedure
    in §10 is written, not exercised.
+7. **The claim sites do not call the broker.** The one deliverable of this pass
+   that was not completed, and the reason is specific rather than time. The broker
+   returns five identifiers; the url fetcher's `_claim` works from a fully
+   populated ORM row and, in the same transaction, checks the document and project
+   for `deletion_requested_at`, takes an advisory lock, increments `attempt_count`,
+   moves the task to `running` and the document to `URL_FETCHING`, and can exit
+   through a cancellation path that dead-letters without claiming. Rewiring means
+   re-deriving all of that on the far side of the broker call — a restructure of a
+   path with cancellation semantics, in the same family of code where an earlier
+   commit in this repository claimed coverage it did not have. It is arming work,
+   not inert work, and it is step 4 of §10.
 
 ---
 
 ## Provenance
 
-Every number in this document was measured in the session that produced `0034`, on
-a throwaway PostgreSQL 17.2 cluster (port 55441, own data directory, destroyed
-after; the machine's `postgresql-x64-17` service and its `akc` database untouched).
+Every number in this document was measured on a throwaway PostgreSQL 17.2 cluster
+(port 55441, own data directory, destroyed after; the machine's
+`postgresql-x64-17` service and its `akc` database untouched).
 
-- Receipt: `docs/audit/receipts/privilege-receipt-0034.json`, `receipt_sha256`
-  `c1cfc06dc7c05b9d37ca0311c4d071a5dc8b98a593c99bbbe55eae4b58927545`.
+- Receipt at `0035`: `docs/audit/receipts/privilege-receipt-0035.json`,
+  `receipt_sha256`
+  `92feefed7344e203e7bc11272d3f1303c7fb04de54e0ffebbb0bc109507d0de6`. This is the
+  baseline CI compares against.
+- Receipt at `0034`: `docs/audit/receipts/privilege-receipt-0034.json`,
+  `receipt_sha256`
+  `c1cfc06dc7c05b9d37ca0311c4d071a5dc8b98a593c99bbbe55eae4b58927545`. Kept as the
+  measurement it was.
 - The 0033 receipt `docs/audit/receipts/privilege-receipt.json`
   (`eeb750ad…`) is unchanged and remains what other documents cite.
 - Detail: `V5_CONTROL_PLANE_BOUNDARY.md` (boundary, column examination, threat

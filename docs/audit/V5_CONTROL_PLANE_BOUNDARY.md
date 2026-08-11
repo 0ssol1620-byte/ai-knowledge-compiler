@@ -1,11 +1,11 @@
 # Control Plane Authorization Boundary
 
-*Measured 2026-08-11 against a throwaway PostgreSQL 17.2 cluster with all 34
-migrations applied. Receipt: `docs/audit/receipts/privilege-receipt-0034.json`
+*Measured 2026-08-11 against a throwaway PostgreSQL 17.2 cluster with all 35
+migrations applied. Receipt: `docs/audit/receipts/privilege-receipt-0035.json`
 (internal `receipt_sha256`
-`c1cfc06dc7c05b9d37ca0311c4d071a5dc8b98a593c99bbbe55eae4b58927545`). The 0033
-receipt `docs/audit/receipts/privilege-receipt.json` is unchanged and remains
-the measurement other documents cite.*
+`92feefed7344e203e7bc11272d3f1303c7fb04de54e0ffebbb0bc109507d0de6`). The 0033
+and 0034 receipts are unchanged and remain the measurements other documents
+cite.*
 
 This is not a security exception. An exception is a thing you carve out of a
 rule and then stop looking at. This is a **boundary**: a named set of tables, a
@@ -221,10 +221,17 @@ would justify it.
 
 ---
 
-## 5a. The gap this work opened, measured
+## 5a. The gap this work opened, and how F-1 closed most of it
 
-**Only `akc_scheduler` has a bounded cross-tenant capability. The other six
-worker roles have none — so once armed they cannot poll their queues at all.**
+> **Updated 2026-08-11.** The founder settled this as **F-1, Option B**: a claim
+> broker rather than a cross-tenant `SELECT`. `0035_claim_broker` landed it for
+> `url_fetch_tasks` and `gpu_provider_invocations`. The measurement below is
+> preserved as what prompted the decision, and it still describes
+> `akc_dispatch_worker` and `akc_deletion_worker`, which remain uncovered.
+
+**As measured, before F-1: only `akc_scheduler` had a bounded cross-tenant
+capability. The other six worker roles had none — so once armed they could not
+poll their queues at all.**
 
 ```
 armed akc_url_fetcher, SELECT FROM url_fetch_tasks:
@@ -240,19 +247,27 @@ requires a tenant — and a queue poll has none. The same holds for
 `akc_deletion_worker` reading `outbox_events`, whose control-plane policies name
 `akc_scheduler` and nobody else.
 
-This is fail-closed and it is not finished. Three ways to read it, and only the
-third is correct:
+This was fail-closed, and it was not a defect in `0034`: before `0034` those
+roles could not poll either — `BYPASSRLS` was doing it, and removing it was
+always going to expose this. Nor was it mine to fix by widening the boundary,
+which is the decision `control_plane_registry.py` exists to force.
 
-- *"A defect in 0034"* — no. Before 0034 those roles could not poll either;
-  `BYPASSRLS` was doing it, and removing it was always going to expose this.
-- *"Fix it here"* — no. Admitting six more roles to a cross-tenant capability is
-  the founder decision that `control_plane_registry.py` exists to force. The
-  decision on the table was the scheduler's boundary. Widening it unilaterally
-  because it was convenient would be the exact move the registry is built to
-  prevent.
-- *"A named prerequisite for step 8"* — yes. It is **A-6** in
-  `V5_WORKER_AUTHZ_ARMING.md`, and the three cases above are in the shadow
-  harness so the gap stays measured rather than remembered.
+**What F-1 chose.** Not a cross-tenant `SELECT` on each queue, which would have
+let a compromised worker read every tenant's URLs, parameters and manifests by
+declaring a purpose it was going to declare anyway. Instead a `SECURITY DEFINER`
+broker per queue that claims one row and returns five identifiers — claim id,
+tenant, project, lease token, lease expiry — owned by `akc_claim_broker`, a
+`NOLOGIN NOBYPASSRLS` role that reaches the queues through purpose-gated
+policies of its own. The workers hold `EXECUTE` and still no cross-tenant read:
+`broker:no-cross-tenant-select-remains-declared` proves the grant added a claim
+path and not a read path.
+
+**What is still open.** `akc_dispatch_worker` and `akc_deletion_worker` poll
+`outbox_events`, which carries no lease to bind and whose control-plane policies
+name `akc_scheduler` alone. Admitting them is the same shape of decision as F-1
+and is recorded in `control_plane_registry.py` under
+`UNBROKERED_CROSS_TENANT_CLAIMS`, with the three measured cases still in the
+shadow harness so the gap stays measured rather than remembered.
 
 ---
 
@@ -314,7 +329,7 @@ document: "a fully compromised worker cannot reach another tenant" is **false**.
 
 ## 8. Measured
 
-`infra/postgres/shadow_validate_dual_plane.py`, 42 cases, all passing. The
+`infra/postgres/shadow_validate_dual_plane.py`, 65 cases, all passing. The
 inert pass runs as the real worker roles with `BYPASSRLS` exactly as it ships.
 The armed pass removes the attribute **in the throwaway cluster only**, measures,
 and restores it; the run fails if restoration did not happen. The human-plane
@@ -324,6 +339,7 @@ pass needs no shadow — `akc_api_plane` has never had `BYPASSRLS`.
 inert — BYPASSRLS as shipped                                    4 cases
 armed — control plane                                           8 cases
 armed — worker plane claim binding                             16 cases
+claim broker (F-1)                                             23 cases
 human plane                                                    14 cases
 ```
 

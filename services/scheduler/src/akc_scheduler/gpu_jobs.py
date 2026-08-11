@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import hashlib
 import json
+import logging
 import math
 import random
 import uuid
@@ -57,6 +58,7 @@ from akc_api.visual_gpu import (
     validate_visual_result,
     visual_attestation,
 )
+from akc_security.claim_broker import ClaimStarvationDetector, claim_backlog
 from akc_security.tenant_context import enter_tenant_context
 from akc_telemetry import (
     observe_parallel_provider_job,
@@ -68,9 +70,11 @@ from akc_telemetry import (
     record_unsupported_claim,
 )
 from sqlalchemy import or_, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from akc_scheduler.retry_policy import classify_retry_error, decide_retry
+from akc_scheduler.telemetry import record_claim_poll
 
 Clock = Callable[[], datetime]
 RandomSource = Callable[[], float]
@@ -84,6 +88,10 @@ _ACTIVE_STATES = (
     "cancelling",
 )
 _TERMINAL_STATES = frozenset({"completed", "failed", "dead_letter", "cancelled"})
+logger = logging.getLogger(__name__)
+
+_CLAIM_QUEUE = "gpu_provider_invocations"
+_CLAIM_BROKER = "akc_claim_gpu_invocation"
 _TERMINAL_PROVIDER_FAILURES = frozenset(
     {
         "GPU_PROVIDER_JOB_FAILED",
@@ -393,6 +401,7 @@ class GpuInvocationWorker:
         self._policy = policy
         self._clock = clock
         self._random = random_source
+        self._starvation = ClaimStarvationDetector()
         self._stopping = False
 
     def request_stop(self) -> None:
@@ -1754,8 +1763,44 @@ class GpuInvocationWorker:
             await session.commit()
         record_provider_request(claim.provider_key, result="failed")
 
+    async def _observe_poll(self, *, claimed: bool) -> None:
+        """ARMING GATE 1 — classify this poll and publish the five series.
+
+        Only reached on PostgreSQL: the probes are ``SECURITY DEFINER`` functions
+        added by 0035/0036, and the SQLite test adapter has neither. Reporting
+        only, never a decision — a detector that changed what the worker does
+        would be a new failure mode rather than a view of an existing one.
+
+        The probe pair is queried only when the poll came back empty. That is the
+        one case that needs disambiguating, and it keeps a healthy worker's hot
+        path to exactly the query it already made.
+        """
+
+        if self._engine.dialect.name != "postgresql":
+            return
+        backlog = claimable = 0
+        try:
+            if not claimed:
+                async with self._sessions() as session:
+                    backlog, claimable = await claim_backlog(
+                        session, function=_CLAIM_BROKER
+                    )
+        except SQLAlchemyError:
+            # An observability probe must not be able to stop the worker it
+            # observes. A failed probe is reported as an unknown backlog, which
+            # classifies as idle rather than as starvation — the quiet direction.
+            logger.warning("claim backlog probe failed", exc_info=True)
+            return
+        record_claim_poll(
+            _CLAIM_QUEUE,
+            self._starvation.observe(
+                claimed=claimed, backlog_depth=backlog, claimable_depth=claimable
+            ),
+        )
+
     async def run_one(self) -> bool:
         claim = await self._claim()
+        await self._observe_poll(claimed=claim is not None)
         if claim is None:
             return False
         if claim.action == "local_terminal":

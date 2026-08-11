@@ -268,6 +268,9 @@ async def _seed_claimable(
 
 async def _purge(admin: asyncpg.Connection[asyncpg.Record], fixture: Fixture) -> None:
     for statement in (
+        # audit_events holds a RESTRICT foreign key to tenants, so the broker's
+        # claim receipts have to go before the tenant does.
+        "DELETE FROM audit_events WHERE tenant_id = $1",
         "DELETE FROM collections WHERE tenant_id = $1",
         "DELETE FROM outbox_events WHERE tenant_id = $1",
         "DELETE FROM url_fetch_tasks WHERE tenant_id = $1",
@@ -380,8 +383,14 @@ async def _human_plane_pass(
         )
 
         member = {"app.tenant_id": str(alpha.tenant), "app.user_id": str(alpha.user)}
+        # By id, not by count: other passes seed rows into these tenants, and an
+        # assertion that drifts with the fixture is an assertion nobody trusts.
+        fixture_documents = [alpha.document, alpha.stale_document]
         seen = await _visible(
-            plane, "SELECT count(*) FROM documents", member
+            plane,
+            "SELECT count(*) FROM documents WHERE id = ANY($1::uuid[])",
+            member,
+            fixture_documents,
         )
         report.require(
             "human:member-sees-own-tenant",
@@ -390,7 +399,10 @@ async def _human_plane_pass(
         )
 
         seen = await _visible(
-            plane, "SELECT count(*) FROM documents", {"app.tenant_id": str(alpha.tenant)}
+            plane,
+            "SELECT count(*) FROM documents WHERE id = ANY($1::uuid[])",
+            {"app.tenant_id": str(alpha.tenant)},
+            fixture_documents,
         )
         report.require(
             "human:no-user-no-rows",
@@ -700,7 +712,7 @@ async def _claim_repeatedly(
             await connection.execute(
                 "SELECT set_config('app.control_plane', 'claim', true)"
             )
-            row = await connection.fetchrow(f"SELECT * FROM {BROKER}(300)")
+            row = await connection.fetchrow(f"SELECT * FROM {BROKER}(300)")  # noqa: S608 - module constant
         if row is not None:
             granted.append(row)
     return granted
@@ -772,7 +784,7 @@ async def _broker_pass(
             async with caller.transaction():
                 for name, value in settings.items():
                     await caller.execute("SELECT set_config($1, $2, true)", name, value)
-                row = await caller.fetchrow(f"SELECT * FROM {BROKER}(300)")
+                row = await caller.fetchrow(f"SELECT * FROM {BROKER}(300)")  # noqa: S608 - module constant
             report.require(
                 f"broker:refuses-an-undeclared-purpose-{label}",
                 row is None,
@@ -785,7 +797,7 @@ async def _broker_pass(
             await caller.execute(
                 "SELECT set_config('app.tenant_id', $1, true)", str(alpha.tenant)
             )
-            row = await caller.fetchrow(f"SELECT * FROM {BROKER}(300)")
+            row = await caller.fetchrow(f"SELECT * FROM {BROKER}(300)")  # noqa: S608 - module constant
         report.require(
             "broker:refuses-when-a-tenant-is-bound",
             row is None,
@@ -798,12 +810,19 @@ async def _broker_pass(
         )
         granted = [row for batch in batches for row in batch]
         claim_ids = [row["claim_id"] for row in granted]
+        claimable = await admin.fetchval(
+            "SELECT count(*) FROM url_fetch_tasks WHERE tenant_id = ANY($1::uuid[]) "
+            "  AND status IN ('queued','retry','running') AND available_at <= now() "
+            "  AND (lease_expires_at IS NULL OR lease_expires_at <= now())",
+            [alpha.tenant, beta.tenant],
+        )
         report.require(
             "broker:claims-one-row-atomically",
-            len(granted) == len(seeded) and len(set(claim_ids)) == len(granted),
-            f"{len(callers)} concurrent callers x 4 attempts over {len(seeded)} "
-            f"claimable rows granted {len(granted)} claims, all distinct — no row "
-            "was handed to two callers and none was lost",
+            len(set(claim_ids)) == len(granted) and len(granted) == len(seeded) + 2,
+            f"{len(callers)} concurrent callers x 4 attempts granted {len(granted)} "
+            f"claims over {len(set(claim_ids))} distinct rows "
+            f"({len(seeded)} seeded here plus 2 expired-lease rows from the "
+            f"fixture); {claimable} remain claimable",
         )
         mismatched = await admin.fetchval(
             "SELECT count(*) FROM url_fetch_tasks t "
@@ -907,7 +926,11 @@ async def _broker_pass(
         )
         try:
             await other.execute("SET ROLE akc_scheduler")
-            failure = await _denied(other, f"SELECT * FROM {BROKER}(300)", {})
+            failure = await _denied(
+                other,
+                f"SELECT * FROM {BROKER}(300)",  # noqa: S608 - module constant
+                {},
+            )
             report.require(
                 "broker:execute-is-not-public",
                 failure == "InsufficientPrivilegeError",
@@ -919,19 +942,23 @@ async def _broker_pass(
             await other.close()
             await admin.execute(f"ALTER ROLE {scheduler_login} PASSWORD NULL")
 
-        # The lease clamp, and the audit row.
+        # The lease clamp. Needs a claimable row of its own — the concurrency
+        # proof above drains the queue, and a clamp case that finds nothing
+        # passes without measuring anything.
+        await _seed_claimable(admin, alpha, 1)
         async with caller.transaction():
             await caller.execute(
                 "SELECT set_config('app.control_plane', 'claim', true)"
             )
             clamped = await caller.fetchrow(
-                f"SELECT *, (lease_expires_at - now()) AS window FROM {BROKER}(100000000)"
+                f"SELECT *, (lease_expires_at - now()) AS window FROM {BROKER}(100000000)"  # noqa: S608
             )
         report.require(
             "broker:lease-is-clamped",
-            clamped is None or clamped["window"] <= timedelta(seconds=3600),
-            "an absurd lease request is clamped to the ceiling rather than parking "
-            f"a row indefinitely ({'no row claimable' if clamped is None else clamped['window']})",
+            clamped is not None and clamped["window"] <= timedelta(seconds=3600),
+            "a 100,000,000-second lease request came back as "
+            f"{None if clamped is None else clamped['window']} — clamped to the "
+            "ceiling rather than parking a row indefinitely",
         )
         audited = await admin.fetchval(
             "SELECT count(*) FROM audit_events "
@@ -951,9 +978,22 @@ async def _broker_pass(
             f"principal ({principal})",
         )
 
-        # Gate 1 substrate: the starvation signature, at the database.
-        depth = await caller.fetchval(
-            "SELECT set_config('app.control_plane', 'claim', true)"
+        # Gate 1 substrate: the starvation signature, at the database. Backlog has
+        # to actually exist or this measures an idle queue and calls it a proof.
+        await _seed_claimable(admin, alpha, 3)
+        async with caller.transaction():
+            await caller.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            backlog = await caller.fetchval(f"SELECT {BROKER}_backlog()")
+            claimable = await caller.fetchval(f"SELECT {BROKER}_depth()")
+        report.require(
+            "broker:backlog-exceeds-claimable-when-rows-are-leased",
+            int(backlog) > int(claimable) >= 3,
+            f"backlog {backlog} against claimable {claimable} — the difference is "
+            "the rows other callers still hold, and it is the distinction one "
+            "probe cannot make: a fully leased queue and a queue this worker "
+            "cannot see both report zero claimable",
         )
         async with caller.transaction():
             await caller.execute(
@@ -963,9 +1003,24 @@ async def _broker_pass(
             visible = await caller.fetchval("SELECT count(*) FROM url_fetch_tasks")
         report.require(
             "broker:depth-probe-sees-what-the-worker-cannot",
-            int(depth) >= 0 and int(visible) == 0,
+            int(depth) >= 3 and int(visible) == 0,
             f"claimable depth {depth} while the worker's own read sees {visible} — "
-            "this difference is what tells RLS starvation from an idle queue",
+            "backlog with no visibility is the starvation signature, and it is "
+            "what tells RLS starvation from an idle queue",
+        )
+        async with caller.transaction():
+            await caller.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            await caller.execute(
+                "SELECT set_config('app.tenant_id', $1, true)", str(alpha.tenant)
+            )
+            bound_depth = await caller.fetchval(f"SELECT {BROKER}_depth()")
+        report.require(
+            "broker:depth-probe-is-purpose-gated-too",
+            int(bound_depth) == 0,
+            "the depth probe is not a back door: with a tenant bound it reports 0, "
+            "the same gate the broker itself uses",
         )
     finally:
         for connection in callers:

@@ -333,20 +333,29 @@ jobs:
         # between the receipt's origin cluster and CI, so the comparison is over
         # the schema-determined portion rather than the whole file.
         #
-        # The baseline is the 0034 receipt. `privilege-receipt.json` stays as the
-        # 0033 measurement it was — other documents cite it by sha256, and
+        # The baseline is the 0036 receipt. The 0033-0035 receipts stay as
+        # the measurements they were — other documents cite them by sha256, and
         # rewriting historical evidence to make a build green is the one thing
         # a receipt may never do.
         run: >-
           python -m uv run --locked --extra dev
           python scripts/compare_privilege_receipt.py
-          docs/audit/receipts/privilege-receipt-0034.json
+          docs/audit/receipts/privilege-receipt-0036.json
           artifacts/privilege-receipt-ci.json
       - name: Shadow-validate the dual-plane authorization boundary
-        # Removes BYPASSRLS from two worker roles *in the disposable CI service
-        # container*, measures what the policies then do, and restores it. The
-        # repository ships no change that removes the attribute; this is the only
-        # way to observe policies that a bypassing role makes unobservable.
+        # ARMING GATE 2. Everything above this line ran `alembic upgrade head`
+        # against pgvector/pgvector:pg17 with the *unmodified* migration tree —
+        # which every measurement taken on a developer machine did not, because
+        # pgvector is not installed there and 0024 had to be rewritten outside
+        # the repository to apply. This job is the first reproduction that owes
+        # nothing to that substitution, and no worker role's BYPASSRLS may be
+        # removed until it is green.
+        #
+        # This step itself removes BYPASSRLS from two worker roles *in the
+        # disposable CI service container*, measures what the policies then do,
+        # and restores it — failing if restoration did not happen. The repository
+        # ships no change that removes the attribute; this is the only way to
+        # observe policies that a bypassing role makes unobservable.
         run: >-
           python -m uv run --locked --extra dev
           python infra/postgres/shadow_validate_dual_plane.py

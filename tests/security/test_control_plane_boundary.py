@@ -18,10 +18,12 @@ import re
 from pathlib import Path
 from types import ModuleType
 
+from akc_security.claim_broker import BROKER_RETURN_COLUMNS
 from akc_security.tenant_context import CONTROL_PLANE_PURPOSES
 
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "migrations/versions/0034_dual_plane_authorization.py"
+BROKER_MIGRATION = ROOT / "migrations/versions/0035_claim_broker.py"
 REGISTRY = ROOT / "infra/postgres/control_plane_registry.py"
 
 
@@ -35,10 +37,10 @@ def _registry() -> ModuleType:
     return module
 
 
-def _migration_constant(name: str) -> list[str]:
-    source = MIGRATION.read_text(encoding="utf-8")
+def _migration_constant(name: str, path: Path = MIGRATION) -> list[str]:
+    source = path.read_text(encoding="utf-8")
     match = re.search(rf"^{name} = \(([^)]*)\)", source, re.MULTILINE)
-    assert match is not None, f"{name} not found in {MIGRATION.name}"
+    assert match is not None, f"{name} not found in {path.name}"
     return re.findall(r'"([^"]+)"', match.group(1))
 
 
@@ -86,6 +88,50 @@ def test_the_sensitive_column_record_covers_every_approved_table() -> None:
     tables: dict[str, str] = registry.CONTROL_PLANE_TABLES
     sensitive: dict[str, tuple[str, ...]] = registry.CONTROL_PLANE_SENSITIVE_COLUMNS
     assert set(sensitive) == set(tables)
+
+
+def test_the_broker_registry_and_the_broker_migration_agree() -> None:
+    """0035 carries its own copy of the decision, as a migration must.
+
+    A migration that imported the registry would change meaning whenever the
+    registry was edited, which is the one thing a migration may never do. The
+    cost of that correctness is two copies, so they are compared here.
+    """
+
+    registry = _registry()
+    source = BROKER_MIGRATION.read_text(encoding="utf-8")
+    brokers: dict[str, tuple[str, str]] = registry.CLAIM_BROKERS
+    for queue, (function, role) in brokers.items():
+        assert f'"{queue}": (' in source, f"{queue} is not brokered by the migration"
+        assert f'"{function}",' in source, f"{function} disagrees"
+        assert f'"{role}",' in source, f"{role} disagrees"
+    without = set(registry.LEASE_TABLES_WITHOUT_BROKER)
+    assert set(
+        _migration_constant("LEASE_TABLES_WITHOUT_BROKER", BROKER_MIGRATION)
+    ) == without
+    assert set(brokers) | without == set(registry.LEASE_TABLES)
+
+
+def test_the_broker_return_surface_is_stated_identically_everywhere() -> None:
+    """Founder decision F-1 fixed five columns. Three files say so."""
+
+    registry = _registry()
+    assert BROKER_RETURN_COLUMNS == registry.CLAIM_BROKER_RETURN_COLUMNS
+    source = BROKER_MIGRATION.read_text(encoding="utf-8")
+    for column in BROKER_RETURN_COLUMNS:
+        assert f"{column} uuid" in source or f"{column} timestamptz" in source, (
+            f"{column} is not in the migration's RETURNS TABLE"
+        )
+
+
+def test_the_unbrokered_claims_are_recorded_with_reasons() -> None:
+    """The paths still blocked at arming cannot be forgotten by being unwritten."""
+
+    registry = _registry()
+    unbrokered: dict[str, str] = registry.UNBROKERED_CROSS_TENANT_CLAIMS
+    assert set(unbrokered) == {"akc_dispatch_worker", "akc_deletion_worker"}
+    for role, reason in unbrokered.items():
+        assert "outbox_events" in reason, f"{role}'s reason does not name the queue"
 
 
 def test_the_lease_tables_are_the_ones_the_migration_expects() -> None:

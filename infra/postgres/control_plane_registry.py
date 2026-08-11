@@ -137,8 +137,12 @@ CLAIM_BROKER_RETURN_COLUMNS: Final = (
 #: so a queue that gains a lease forces a decision instead of being forgotten.
 LEASE_TABLES_WITHOUT_BROKER: Final[dict[str, str]] = {
     "analysis_tasks": (
-        "no worker service polls it — the analysis task is claimed inside the "
-        "API request path, which already knows its tenant"
+        "the claim does not fit the broker shape: workers/cpu-document polls it "
+        "cross-tenant, but its unit of claim is an (outbox_event, analysis_task) "
+        "pair and its row lock is on the *event*, so a broker returning one "
+        "claim_id from analysis_tasks would describe half of it. Corrected "
+        "2026-08-12 — the earlier reason here said nothing polls it, which the "
+        "claim-site survey disproved. See V5_CLAIM_SITE_BEHAVIOR_MATRIX.md section 4"
     ),
     "deletion_requests": (
         "claimed by primary key after an outbox event names its tenant, so the "
@@ -156,8 +160,9 @@ LEASE_TABLES_WITHOUT_BROKER: Final[dict[str, str]] = {
 #: candidates across tenants and admits one, so it is not "take one row".
 UNBROKERED_CROSS_TENANT_CLAIMS: Final[dict[str, str]] = {
     "akc_dispatch_worker": (
-        "scheduler.py dispatch_claim_statement ranks candidates across tenants "
-        "before admitting one; not a single-row claim"
+        "scheduler.py dispatch_claim_statement polls outbox_events and ranks "
+        "candidates across tenants before admitting one; not a single-row claim, "
+        "so it does not fit the broker shape"
     ),
     "akc_deletion_worker": (
         "deletions.py deletion_claim_statement is a single-row claim on "

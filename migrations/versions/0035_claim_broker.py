@@ -1,4 +1,4 @@
-"""Give each polled queue a claim broker, so workers stop needing to read it.
+"""Give each polled lease-bearing queue a claim broker, so workers stop reading it.
 
 Founder decision F-1 (2026-08-11), Option B. The problem it solves was measured
 before it was designed: with ``BYPASSRLS`` removed, ``akc_url_fetcher`` reads
@@ -9,10 +9,13 @@ cross-tenant ``SELECT`` on its own queue. That works, and it means a compromised
 worker can read every tenant's URLs, parameters and manifests by declaring a
 purpose it was going to declare anyway.
 
-**What lands instead.** One ``SECURITY DEFINER`` function per polled queue,
-owned by ``akc_claim_broker``, which claims a row and returns exactly five
-identifiers — claim id, tenant, project, lease token, lease expiry. The worker
-holds ``EXECUTE`` and **no cross-tenant read at all**. It then binds the claim
+**What lands instead, and what does not.** One ``SECURITY DEFINER`` function per
+polled *lease-bearing* queue — ``url_fetch_tasks`` and
+``gpu_provider_invocations`` — owned by ``akc_claim_broker``, which claims a row
+and returns exactly five identifiers: claim id, tenant, project, lease token and
+lease expiry. The worker holds ``EXECUTE`` and **no cross-tenant read at all**,
+which ``broker:no-cross-tenant-select-remains-declared`` measures rather than
+assumes. It then binds the claim
 and re-reads the row under ordinary tenant scope, where the ``0034`` claim
 binding already constrains it to that one row.
 
@@ -20,6 +23,17 @@ The cross-tenant capability does not disappear; it moves into one non-login role
 that can only be reached through a function whose return surface is five UUIDs
 and a timestamp. That is the entire trade, and it is smaller than the one the
 alternative asked for.
+
+**Two cross-tenant claim paths are deliberately not covered here.**
+``akc_dispatch_worker`` and ``akc_deletion_worker`` poll ``outbox_events``, which
+carries no lease token to bind and whose control-plane policies name
+``akc_scheduler`` alone; the dispatch claim additionally ranks candidates across
+tenants before admitting one, so it is not "take one row". Admitting those two
+roles is a separate decision of the same shape as F-1, recorded in
+``infra/postgres/control_plane_registry.py`` under
+``UNBROKERED_CROSS_TENANT_CLAIMS`` so arming cannot walk past it.
+``analysis_tasks`` and ``deletion_requests`` carry leases but nothing polls them
+cross-tenant, and ``_assert_surface`` fails if that stops being true.
 
 **Why the function is safe to own the capability.**
 
@@ -42,9 +56,13 @@ alternative asked for.
   declared purpose and the session principal, in the same statement, so a claim
   that happened and a claim that was audited cannot diverge.
 
-Inert. No role's ``BYPASSRLS`` changes here, and while it holds, nothing calls
-these functions — the workers' existing claim paths still run and
-``AKC_CLAIM_BROKER_ENABLED`` defaults to false.
+Inert, and inert for a plain reason: **no caller exists.** No role's
+``BYPASSRLS`` changes here, and the claim sites still poll their queues through
+the ORM. Rewiring them is arming work — the broker hands back five identifiers,
+so a claim site has to re-derive on the far side of the call everything it
+currently reads off a populated row, including its cancellation checks — and it
+is tracked as step 4 of ``docs/audit/V5_WORKER_AUTHZ_DECISION_PACKAGE.md`` §10.
+``akc_security.claim_broker`` is the client those sites will use.
 
 Revision ID: 0035_claim_broker
 Revises: 0034_dual_plane_authorization
@@ -67,19 +85,27 @@ CONTROL_PLANE_PURPOSES = ("claim", "job_discovery", "lease", "retention", "sched
 
 # queue -> (function, the one role that may execute it, claimable predicate).
 #
-# The predicates reproduce the ORM claim statements they replace, and the two are
-# asserted equal by services/url-fetcher and scheduler tests rather than trusted
-# to stay in step by reading.
+# The predicates come from the ORM claim statements they replace —
 #   url_fetch_tasks           services/url-fetcher/.../worker.py url_fetch_claim_statement
 #   gpu_provider_invocations  services/scheduler/.../gpu_jobs.py GpuJobRuntime._claim
+# — with **one deliberate difference, and it is not cosmetic.**
+#
+# The ORM predicate for url_fetch_tasks treats a row as claimable when its status
+# is 'queued' or 'retry' *regardless of its lease*. That is safe there because the
+# caller immediately takes `pg_try_advisory_lock(url_fetch_advisory_lock_key(id))`
+# and holds the row's transaction open; the lease is not what excludes a second
+# claimer. The broker has neither — it stamps and returns in one statement — so
+# the lease has to be the exclusion, and the disjunct is dropped.
+#
+# This was found by the concurrency proof, not by reading: with the disjunct
+# present, four concurrent callers were granted 16 claims over 12 rows.
 BROKERS: dict[str, tuple[str, str, str]] = {
     "url_fetch_tasks": (
         "akc_claim_url_fetch_task",
         "akc_url_fetcher",
         "candidate.status IN ('queued', 'retry', 'running') "
         "AND candidate.available_at <= pg_catalog.now() "
-        "AND (candidate.status IN ('queued', 'retry') "
-        "OR candidate.lease_expires_at IS NULL "
+        "AND (candidate.lease_expires_at IS NULL "
         "OR candidate.lease_expires_at <= pg_catalog.now())",
     ),
     "gpu_provider_invocations": (

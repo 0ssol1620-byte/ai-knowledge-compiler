@@ -53,12 +53,16 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from control_plane_registry import (  # noqa: E402
+    CLAIM_BROKER_RETURN_COLUMNS,
+    CLAIM_BROKER_ROLE,
+    CLAIM_BROKERS,
     CONTROL_PLANE_ROLE,
     CONTROL_PLANE_SENSITIVE_COLUMNS,
     CONTROL_PLANE_TABLES,
     HUMAN_PLANE_LOGIN_ROLE,
     HUMAN_PLANE_ROLE,
     LEASE_TABLES,
+    LEASE_TABLES_WITHOUT_BROKER,
 )
 from generate_privilege_receipt import (  # noqa: E402
     APPEND_ONLY,
@@ -85,12 +89,14 @@ PENDING_INVARIANTS = (
     (
         "worker roles are NOBYPASSRLS",
         "no longer blocked by the schema — 0034 moved every membership-referencing "
-        "policy to the human plane, and the shadow run in "
-        "infra/postgres/shadow_validate_dual_plane.py shows the scheduler's "
-        "cross-tenant sweep succeeding without a grant on memberships. What remains "
-        "is application work: the claim sites do not yet call enter_claim_context, "
-        "so removing BYPASSRLS today would take the lease-bearing tables to zero "
-        "rows. The sequence is docs/audit/V5_WORKER_AUTHZ_ARMING.md.",
+        "policy to the human plane and 0035 gave the polled queues a claim broker, "
+        "both shadow-proven. Two gates now stand in front of the first removal, "
+        "and neither is green: GATE 1, zero-row starvation detection wired into "
+        "the poll loops (the logic exists, no loop calls it); GATE 2, a CI run "
+        "against pgvector/pgvector:pg17 with the unmodified migration tree. The "
+        "claim sites also do not yet call the broker, so removing BYPASSRLS today "
+        "would take the lease-bearing tables to zero rows — silently. The sequence "
+        "is docs/audit/V5_WORKER_AUTHZ_DECISION_PACKAGE.md section 10.",
     ),
     (
         "cross-tenant isolation proven as the real worker roles",
@@ -474,6 +480,115 @@ async def _verify_claim_binding(
     print(f"  lease-bearing tables with a restrictive claim binding: {len(bound)}")
 
 
+_BROKER_FUNCTIONS = """
+SELECT p.proname AS name,
+       pg_get_userbyid(p.proowner) AS owner,
+       p.prosecdef AS security_definer,
+       coalesce(array_to_string(p.proconfig, ','), '') AS config,
+       coalesce(
+         (SELECT array_agg(a.attname ORDER BY a.ordinality)
+          FROM unnest(p.proargnames, p.proargmodes)
+               WITH ORDINALITY AS a(attname, mode, ordinality)
+          WHERE a.mode = 't'), ARRAY[]::text[]) AS out_columns,
+       coalesce(
+         (SELECT array_agg(acl.grantee_name ORDER BY acl.grantee_name)
+          FROM (
+            SELECT CASE WHEN g.grantee = 0 THEN 'PUBLIC'
+                        ELSE pg_get_userbyid(g.grantee) END AS grantee_name
+            FROM aclexplode(p.proacl) AS g
+            WHERE g.privilege_type = 'EXECUTE'
+          ) AS acl), ARRAY[]::text[]) AS executors
+FROM pg_proc p
+JOIN pg_namespace n ON n.oid = p.pronamespace
+WHERE n.nspname = 'public' AND p.proname = ANY($1::text[])
+ORDER BY 1
+"""
+
+
+async def _verify_claim_brokers(
+    admin: asyncpg.Connection[asyncpg.Record], receipt: dict[str, Any]
+) -> None:
+    """The brokers are the only cross-tenant claim path, and are shaped as agreed.
+
+    Founder decision F-1 chose a ``SECURITY DEFINER`` broker over granting each
+    worker a cross-tenant ``SELECT`` on its queue, on the strength of one
+    property: the broker returns five identifiers rather than rows. If that
+    surface grows, the decision it was made on no longer holds — so it is
+    checked here rather than trusted to review.
+    """
+
+    if set(CLAIM_BROKERS) | set(LEASE_TABLES_WITHOUT_BROKER) != set(LEASE_TABLES):
+        raise GateFailure(
+            "the claim-broker registry does not cover the lease surface: "
+            f"{sorted(set(CLAIM_BROKERS) | set(LEASE_TABLES_WITHOUT_BROKER))} "
+            f"vs {sorted(LEASE_TABLES)}"
+        )
+    expected = {function for function, _role in CLAIM_BROKERS.values()}
+    rows = {
+        str(row["name"]): row
+        for row in await admin.fetch(_BROKER_FUNCTIONS, sorted(expected))
+    }
+    if missing := sorted(expected - set(rows)):
+        raise GateFailure("claim brokers absent from the catalog: " + ", ".join(missing))
+
+    for queue, (function, role) in sorted(CLAIM_BROKERS.items()):
+        row = rows[function]
+        if str(row["owner"]) != CLAIM_BROKER_ROLE or not row["security_definer"]:
+            raise GateFailure(
+                f"{function} is owned by {row['owner']} "
+                f"(security_definer={row['security_definer']}); expected "
+                f"{CLAIM_BROKER_ROLE} and SECURITY DEFINER"
+            )
+        if "search_path=pg_catalog, public" not in str(row["config"]):
+            raise GateFailure(
+                f"{function} has no pinned search_path ({row['config']!r}); a "
+                "definer function without one can be aimed at a caller's schema"
+            )
+        surface = tuple(row["out_columns"])
+        if surface != CLAIM_BROKER_RETURN_COLUMNS:
+            raise GateFailure(
+                f"{function} returns {surface} — founder decision F-1 fixed the "
+                f"surface at {CLAIM_BROKER_RETURN_COLUMNS}, and the decision to "
+                "prefer a broker over a cross-tenant SELECT rests on it"
+            )
+        executors = sorted(row["executors"])
+        if "PUBLIC" in executors:
+            raise GateFailure(
+                f"{function} is executable by PUBLIC — PostgreSQL grants that by "
+                "default and the migration must revoke it"
+            )
+        if role not in executors:
+            raise GateFailure(f"{function} is not executable by {role} ({executors})")
+        if extra := sorted(set(executors) - {role, CLAIM_BROKER_ROLE}):
+            raise GateFailure(
+                f"{function} is executable by roles outside its queue: {extra}"
+            )
+        del queue
+
+    broker_role = next(
+        (role for role in receipt["roles"] if role["rolname"] == CLAIM_BROKER_ROLE),
+        None,
+    )
+    if broker_role is None:
+        raise GateFailure(f"{CLAIM_BROKER_ROLE} does not exist; 0035 did not run")
+    unsafe = sorted(
+        attribute
+        for attribute in ("rolsuper", "rolbypassrls", "rolcanlogin", "rolcreaterole")
+        if broker_role[attribute]
+    )
+    if unsafe:
+        raise GateFailure(
+            f"{CLAIM_BROKER_ROLE} holds {', '.join(unsafe)} — a definer function "
+            "owned by a bypassing or loginable role is a blanket exemption with a "
+            "function in front of it"
+        )
+    print(
+        f"  claim brokers: {len(expected)} definer functions returning "
+        f"{len(CLAIM_BROKER_RETURN_COLUMNS)} identifiers, pinned search_path, "
+        f"no PUBLIC execute; {CLAIM_BROKER_ROLE} holds no bypass and cannot log in"
+    )
+
+
 def _verify_plane_roles(receipt: dict[str, Any]) -> None:
     """The human plane is a plane: separate login, no inheritance, no bypass."""
 
@@ -726,6 +841,7 @@ async def run(admin_url: str) -> dict[str, Any]:
         _verify_control_plane_boundary(receipt)
         await _verify_permissive_coverage(admin)
         await _verify_claim_binding(admin, receipt)
+        await _verify_claim_brokers(admin, receipt)
         _report_bypassrls(receipt)
         await _verify_isolation(admin, parts, receipt)
     finally:
