@@ -2,13 +2,13 @@
   "check": "receipt digests against a clean git checkout",
   "commit": "e804a47f8164a5f57e500a2895d569db4715314c",
   "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
-  "experiment": "EXP-0101",
+  "experiment": "DIAG-B-01",
   "failures": [],
-  "receipts_matched": 27,
-  "receipts_total": 27,
+  "receipts_matched": 9,
+  "receipts_total": 9,
   "verdict": "GREEN",
   "why": "verify_receipts.py hashes the working tree, which is what passed while 17 of 25 receipts described CRLF bytes that no checkout of this repository produces. This mode hashes what a clone materialises instead: git applies .gitattributes on checkout, so these are the bytes another machine receives.",
   "zstd_authority": "the decompressed raw sha256 in raw-evidence-manifest.json remains authoritative for packed artifacts; git stores them untouched under the *.zst binary rule",
-  "zstd_round_trip_matched": 4,
-  "zstd_round_trip_total": 4
+  "zstd_round_trip_matched": 0,
+  "zstd_round_trip_total": 0
 }
