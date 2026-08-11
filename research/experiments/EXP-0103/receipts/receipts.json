@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "bytes": "1140",
+      "path": "manifest.json",
+      "sha256": "sha256:4a92bac83cec9ab6d0d4ac5a450363e3e082a3b19271e0a82e4dd0dc1bd992d3"
+    },
+    {
+      "bytes": "3894",
+      "path": "metrics/fixture-readiness.json",
+      "sha256": "sha256:52e24131256f420d965f0d3eb45ea599aa4775cc232c9204fa36981815b26047"
+    },
+    {
+      "bytes": "1236369",
+      "path": "raw/retrieval-fixture.json",
+      "sha256": "sha256:99571e573ad6967dff6546108bb74dbdbb3229497664ff7b7802eeff8e7f468f"
+    },
+    {
+      "bytes": "10744",
+      "path": "scripts/build_fixture.py",
+      "sha256": "sha256:68162652c16425fc35813d03c9a97ac4aacd37235ce0ca874f597b70cecd6de8"
+    }
+  ],
+  "experiment": "EXP-0103",
+  "note": "Fixture receipts. No number in this directory is a measurement of a retrieval system; they are counts of what the fixture contains."
+}

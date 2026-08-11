@@ -1,0 +1,12 @@
+{
+  "artifacts_indexed": 25,
+  "corpus_manifest_matches_frozen": true,
+  "corpus_manifest_sha256": "sha256:dfac798adda27e2e95a9b14e288ef5222f00328baf719423b587700c3eec3d73",
+  "experiment": "EXP-0101",
+  "gate": "4 reproducibility",
+  "reason": [
+    "every arm's summary recomputed identically from the frozen inputs"
+  ],
+  "recomputed_metrics": true,
+  "verdict": "PASS"
+}

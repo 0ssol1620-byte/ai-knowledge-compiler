@@ -1,0 +1,20 @@
+{
+  "config_sha256": "sha256:b4ed52e0ca975fd44b91cd5c3b8f93f052ae11b18c9196167c9a6e78b486acf8",
+  "contract": "docs/research/ABSORPTION_EXPERIMENT_CONTRACTS_BATCH1.md, Contract C",
+  "corpus_manifest_sha256": "sha256:ef0770be9959fd97d4879cd284f9281ccf66d3010b9a499862d94a65a14aef64",
+  "dataset_contract": "docs/research/EXP-0103_STRUCTURED_FILING_DATASET_CONTRACT.md",
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "experiment": "EXP-0103",
+  "git_commit": "52189e229729069447c56fc3fa9fe49fed87535b",
+  "model_registry_ids": [],
+  "prompt_receipt_sha256": [],
+  "role": "DEVELOPMENT_AND_CALIBRATION - not the evidence fixture",
+  "scope_this_round": "fixture only",
+  "seeds": "sha256 over seed strings; no PRNG",
+  "split_definition": "None yet. Contract C 0.9 holdout hygiene applies the moment a threshold is fitted; nothing is fitted here, so no holdout has been spent and the whole fixture is still available as one.",
+  "unpopulated_directories": {
+    "figures": "no measurement to plot",
+    "normalized": "nothing to normalise until retrieval runs",
+    "tables": "no measurement to tabulate"
+  }
+}

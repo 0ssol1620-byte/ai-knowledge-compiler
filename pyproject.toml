@@ -109,6 +109,10 @@ norecursedirs = [
 ]
 pythonpath = [
   ".",
+  # `packages/absorption` is deliberately absent from the wheel packages above:
+  # it holds shadow-only absorption challengers that are linted, typed and
+  # tested with the rest of the tree and must never ship. See its README.
+  "packages/absorption/src",
   "packages/cir-python/src",
   "packages/router/src",
   "packages/quality/src",

@@ -1,0 +1,78 @@
+{
+  "counts": {
+    "critical_queries": 113,
+    "forbidden_unit_assertions": 3501,
+    "queries": 216,
+    "queries_by_intent": {
+      "CHANGE": 11,
+      "ENTITY": 0,
+      "EXACT_EVIDENCE": 38,
+      "FACT": 75,
+      "HISTORICAL": 16,
+      "IMPACT": 0,
+      "PROCEDURE": 33,
+      "RELATION": 0,
+      "TABLE": 43
+    },
+    "superseded_units": 303,
+    "tenants": 4,
+    "unauthorized_probes": 72,
+    "units": 1167,
+    "units_by_granularity": {
+      "CLAIM": 317,
+      "PARAGRAPH": 0,
+      "SECTION": 216,
+      "TABLE_CELL": 317,
+      "TABLE_ROW": 317
+    },
+    "version_sensitive_queries": 84
+  },
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "experiment": "EXP-0103",
+  "external_validity_warning": "The units are generated, not filings. Lexical overlap between a query and its gold evidence is therefore cleaner than any real corpus, and an adaptive-k cutoff estimated from this score distribution should not be assumed to transfer.",
+  "fixture_version": "amgr-1",
+  "manifest_sha256": "sha256:ef0770be9959fd97d4879cd284f9281ccf66d3010b9a499862d94a65a14aef64",
+  "not_built": {
+    "context_token_and_latency_metrics": "require a running retriever; none is implemented here",
+    "downstream_qa_accuracy": "requires one frozen LLM and an API credential; credential-gated",
+    "sec_xbrl_and_opendart_truth": "queries_from_structured_facts is implemented and exercised by a unit test, and NO filing extract exists in this repository, so nothing has been run through it. Contract C's first dataset arm is unbuilt.",
+    "unexercised_granularities": [
+      "PARAGRAPH"
+    ],
+    "unexercised_intents": [
+      "ENTITY",
+      "IMPACT",
+      "RELATION"
+    ],
+    "unexercised_note": "ENTITY, RELATION and IMPACT need an entity or dependency graph over the units, and PARAGRAPH needs prose units that are neither a claim nor a section. Neither exists in this fixture, so those intent classes are declared and untested rather than covered.",
+    "visual_page_lane": "excluded from this batch by Contract C"
+  },
+  "ready": {
+    "critical_evidence_recall": "critical queries flagged",
+    "granularity_selection": "every fact is stated at cell, row and claim granularity, so choosing the wrong one is observable",
+    "recall_at_budget": "gold evidence exists for every query",
+    "unauthorized_candidate_rate": "72 probes, each naming units the asker must never be offered, crossed over every ordered tenant pair",
+    "version_correct_recall": "84 queries have a superseded alternative"
+  },
+  "retrieval_start_gate": {
+    "blocking_precondition": "INTAKE-0103",
+    "reason": "Founder directive 2026-08-12: close the missing dataset arm first. Order is SEC XBRL extraction -> OpenDART extraction -> query/gold generation -> cross-tenant probe validation -> frozen manifest -> CURRENT vs baseline vs challenger.",
+    "status": "BLOCKED"
+  },
+  "role": {
+    "evidence_fixture": "The public structured-filing arm is the holdout and the evidence. It is unbuilt. See docs/research/EXP-0103_STRUCTURED_FILING_DATASET_CONTRACT.md.",
+    "may_be_used_for": [
+      "building the retriever",
+      "choosing K_MIN / K_MAX and the cutoff estimator",
+      "debugging and unit tests"
+    ],
+    "may_not_be_used_for": [
+      "any reported result",
+      "any comparison between CURRENT, baseline and challenger",
+      "any public number"
+    ],
+    "this_fixture": "DEVELOPMENT_AND_CALIBRATION",
+    "why": "These units are generated, so a query's lexical overlap with its own gold evidence is cleaner than any real corpus. Calibrating here and reporting here would produce a number nobody can defend. Contract 0.9 also applies to the holdout: fitting a threshold after seeing its labels burns it."
+  },
+  "status": "FIXTURE_ONLY - no retrieval executed, no Contract C metric measured"
+}
