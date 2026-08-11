@@ -1,6 +1,6 @@
 {
   "check": "receipt digests against a clean git checkout",
-  "commit": "90768554403afe9c3fb856655d6a160c5fd893ce",
+  "commit": "82ca6c4facf2a2e0858ee6673d6ae3f0aa66efbc",
   "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
   "experiment": "EXP-0101",
   "failures": [],
