@@ -77,19 +77,39 @@ entries this batch feeds (`ABS-A-01`, `ABS-B-01/02/03`). The registry is
 governance: IP items, publication freeze, founder decisions. **Do not operate a
 duplicate.** The registry references the ledger; it does not mirror it.
 
-When a challenger beats its baseline with statistical significance — **whether or
-not it is promoted** — an entry is completed in the ledger:
+**The entry opens when the experiment is designed, not when it wins.** That is
+the correction that makes the rest work: `why_changed` must exist before any
+result, so there has to be somewhere to put it before there is a result. The
+ledger opens the entry at design time; this contract does not define a second
+place.
+
+| Moment | What happens |
+|---|---|
+| Experiment designed | Ledger entry opened. `prior_technology_used`, `what_changed`, `why_changed`, `claim_elements_touched`, `sources_read`, `classification`, `gate_status` filled. `why_written_before_result: true`. |
+| Experiment runs | Receipt fields bound. |
+| Challenger wins significantly | `measurable_technical_effect` completed — **whether or not it is promoted**. |
+| Challenger does not win | Entry completed with the null result. **Not deleted.** |
+
+Field set, matching the ledger's names:
 
 ```yaml
-prior_art_used:        [register id + version]
+prior_technology_used:   [register id + version]
+classification:          # BLUE | GREEN | YELLOW | ORANGE | RED
+gate_status:             # CLAIM_CHART_DONE | DESIGN_AROUND_REVIEWED |
+                         # IMPLEMENTATION_PERMITTED | BLOCKED
+claim_elements_touched:  # e.g. [A2, A10] — a record that cannot name the
+                         # element it supports cannot be filed against one
+sources_read:            # provenance trail; the register's binding_now requires it
 what_changed:
-why_changed:                      # technical reason — see immutability below
+why_changed:                      # immutable — see below
+why_written_before_result: true
 measurable_technical_effect:      # metric + denominator + CI
-experiment_receipt_ref:
-git_commit_sha:
-model_registry_ids:               # + revisions
-config_sha256: []
-corpus_manifest_sha256:
+receipt_binding:
+  experiment_receipt_ref:
+  git_commit_sha:
+  model_registry_ids:             # + revisions
+  config_sha256: []
+  corpus_manifest_sha256:
 ```
 
 **`why_changed` is immutable once the experiment is designed.** It is written
