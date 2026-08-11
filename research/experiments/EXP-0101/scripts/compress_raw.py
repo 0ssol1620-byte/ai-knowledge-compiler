@@ -137,6 +137,8 @@ def _write_manifest(entries: list[dict[str, object]]) -> None:
         )
         + "\n",
         encoding="utf-8",
+        # LF explicitly -- see the note in run_experiment._write_json.
+        newline="\n",
     )
 
 

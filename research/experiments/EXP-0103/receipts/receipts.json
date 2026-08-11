@@ -1,24 +1,24 @@
 {
   "artifacts": [
     {
-      "bytes": "1140",
+      "bytes": "1120",
       "path": "manifest.json",
-      "sha256": "sha256:4a92bac83cec9ab6d0d4ac5a450363e3e082a3b19271e0a82e4dd0dc1bd992d3"
+      "sha256": "sha256:b125361679740338bde3f16c96acd30cd06a832e7aebf71125820b245616d6d6"
     },
     {
-      "bytes": "3894",
+      "bytes": "3816",
       "path": "metrics/fixture-readiness.json",
-      "sha256": "sha256:52e24131256f420d965f0d3eb45ea599aa4775cc232c9204fa36981815b26047"
+      "sha256": "sha256:7837a5a9b96e9edc56d630cf9fbff7b838920416be44cf7580bebcdaca988612"
     },
     {
-      "bytes": "1236369",
+      "bytes": "1211087",
       "path": "raw/retrieval-fixture.json",
-      "sha256": "sha256:99571e573ad6967dff6546108bb74dbdbb3229497664ff7b7802eeff8e7f468f"
+      "sha256": "sha256:dd091d1ee022d2d99350fe9b4931603c2281497c202f360e56ad9bd7237ff82c"
     },
     {
-      "bytes": "10744",
+      "bytes": "10848",
       "path": "scripts/build_fixture.py",
-      "sha256": "sha256:68162652c16425fc35813d03c9a97ac4aacd37235ce0ca874f597b70cecd6de8"
+      "sha256": "sha256:a6c1d995c0d5b9e08a8e7a51111fe1458d35908162429fb357b4381fb56ff897"
     }
   ],
   "experiment": "EXP-0103",

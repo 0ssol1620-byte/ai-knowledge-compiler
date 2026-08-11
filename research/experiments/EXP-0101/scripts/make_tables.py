@@ -79,7 +79,8 @@ def _write(name: str, body: str) -> None:
     lines = body.split("\n")
     # After the H1, before anything a reader would quote.
     body = "\n".join([lines[0], "", _DISCLOSURE, *lines[1:]])
-    path.write_text(body, encoding="utf-8")
+    # LF explicitly -- see the note in run_experiment._write_json.
+    path.write_text(body, encoding="utf-8", newline="\n")
 
 
 def headline(summary: dict[str, Any]) -> None:

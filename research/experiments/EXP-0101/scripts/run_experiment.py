@@ -64,6 +64,12 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
+        # LF explicitly. `.gitattributes` normalises every text file to LF on
+        # commit, so an artifact written with the platform's line endings has a
+        # sha256 that describes a file no checkout of this repository produces:
+        # the digest passes on the machine that wrote it and fails on a fresh
+        # clone. That is the worst shape a receipt can take.
+        newline="\n",
     )
 
 

@@ -54,7 +54,8 @@ def _stamp(width: int, height: int) -> str:
 def _write(name: str, body: str) -> None:
     path = EXPERIMENT / "figures" / name
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(body, encoding="utf-8")
+    # LF explicitly -- see the note in run_experiment._write_json.
+    path.write_text(body, encoding="utf-8", newline="\n")
 
 
 def grouped_bars(

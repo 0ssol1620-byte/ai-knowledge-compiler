@@ -41,6 +41,8 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
+        # LF explicitly -- see the note in EXP-0101's run_experiment._write_json.
+        newline="\n",
     )
 
 
