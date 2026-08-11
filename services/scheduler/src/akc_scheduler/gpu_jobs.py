@@ -57,6 +57,7 @@ from akc_api.visual_gpu import (
     validate_visual_result,
     visual_attestation,
 )
+from akc_security.tenant_context import enter_tenant_context
 from akc_telemetry import (
     observe_parallel_provider_job,
     observe_provider_cold_start,
@@ -893,6 +894,8 @@ class GpuInvocationWorker:
             )
             if invocation is None:
                 return None
+            # The scan above spans tenants; this invocation does not.
+            await enter_tenant_context(session, tenant_id=invocation.tenant_id)
             fence = await self._fence_reason(session, invocation)
             if fence is not None:
                 invocation.cancellation_reason = fence
@@ -1057,6 +1060,9 @@ class GpuInvocationWorker:
         *,
         require_lease: bool = True,
     ) -> GpuProviderInvocation | None:
+        # Every post-claim GPU write funnels through here, so this is where the
+        # transaction gets bound to the claimed invocation's tenant.
+        await enter_tenant_context(session, tenant_id=claim.tenant_id)
         invocation = await session.scalar(
             select(GpuProviderInvocation)
             .where(
@@ -1067,6 +1073,8 @@ class GpuInvocationWorker:
         )
         if invocation is None:
             return None
+        if invocation.tenant_id != claim.tenant_id:
+            raise RuntimeError("gpu_invocation_tenant_mismatch")
         if require_lease and invocation.lease_token != claim.lease_token:
             return None
         return invocation

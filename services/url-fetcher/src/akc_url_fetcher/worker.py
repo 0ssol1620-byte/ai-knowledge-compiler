@@ -25,6 +25,7 @@ from akc_api.models import (
 )
 from akc_api.storage import ObjectStore
 from akc_api.telemetry import track_audit_write
+from akc_security.tenant_context import enter_tenant_context
 from sqlalchemy import func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker
 
@@ -303,6 +304,10 @@ class UrlFetchWorker:
             if task is None:
                 await session.commit()
                 return None, None
+            # The poll above spans every tenant by necessity — a queue has no
+            # tenant until a row is read. From here the transaction belongs to
+            # exactly one, so bind it before anything is written.
+            await enter_tenant_context(session, tenant_id=task.tenant_id)
             if task.attempt_count >= task.max_attempts:
                 await self._terminal_without_claim(
                     session,
@@ -561,6 +566,7 @@ class UrlFetchWorker:
             ) as session,
             session.begin(),
         ):
+            await enter_tenant_context(session, tenant_id=claim.tenant_id)
             task = await session.scalar(
                 select(UrlFetchTask)
                 .where(
@@ -733,6 +739,7 @@ class UrlFetchWorker:
             ) as session,
             session.begin(),
         ):
+            await enter_tenant_context(session, tenant_id=claim.tenant_id)
             task = await session.scalar(
                 select(UrlFetchTask)
                 .where(

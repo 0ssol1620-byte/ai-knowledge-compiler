@@ -1,10 +1,6 @@
 {
-  "alembic_revision": "0032_accepted_block_invalidations",
+  "alembic_revision": "0033_backfill_checkpoint_tenant_rls",
   "findings": [
-    {
-      "finding": "tenant_id column but RLS not enabled",
-      "table": "collection_metadata_backfill_checkpoints"
-    },
     {
       "finding": "role akc_analysis_worker has BYPASSRLS",
       "table": "-"
@@ -34,7 +30,7 @@
       "table": "-"
     }
   ],
-  "receipt_sha256": "10f4556e3dbaafcbe4b42bf25f62e3c0ea9abda72ed24877b9e6193b28e3b58f",
+  "receipt_sha256": "eeb750adf9398593258808f1bf25127c87775c3da0a8c4491ad32a9bfe0d8250",
   "role_memberships": [
     {
       "grantee_of": "pg_read_all_settings",
@@ -1198,11 +1194,52 @@
       "global_control": false,
       "grants": {},
       "owner": "pgowner",
-      "policies": [],
-      "policy_count": 0,
+      "policies": [
+        {
+          "command": "DELETE",
+          "kind": "RESTRICTIVE",
+          "name": "collection_metadata_backfill_checkpoints_tenant_delete",
+          "roles": [
+            "PUBLIC"
+          ],
+          "using": "(tenant_id = (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid)",
+          "with_check": null
+        },
+        {
+          "command": "INSERT",
+          "kind": "RESTRICTIVE",
+          "name": "collection_metadata_backfill_checkpoints_tenant_insert",
+          "roles": [
+            "PUBLIC"
+          ],
+          "using": null,
+          "with_check": "(tenant_id = (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid)"
+        },
+        {
+          "command": "SELECT",
+          "kind": "RESTRICTIVE",
+          "name": "collection_metadata_backfill_checkpoints_tenant_select",
+          "roles": [
+            "PUBLIC"
+          ],
+          "using": "(tenant_id = (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid)",
+          "with_check": null
+        },
+        {
+          "command": "UPDATE",
+          "kind": "RESTRICTIVE",
+          "name": "collection_metadata_backfill_checkpoints_tenant_update",
+          "roles": [
+            "PUBLIC"
+          ],
+          "using": "(tenant_id = (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid)",
+          "with_check": "(tenant_id = (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid)"
+        }
+      ],
+      "policy_count": 4,
       "project_id": false,
-      "rls_enabled": false,
-      "rls_forced": false,
+      "rls_enabled": true,
+      "rls_forced": true,
       "table": "collection_metadata_backfill_checkpoints",
       "tenant_id": true,
       "workspace_id": false

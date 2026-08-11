@@ -28,6 +28,7 @@ from akc_api.models import (
 from akc_api.providers import KnowledgeProviderSettings
 from akc_api.services import credit_entry, emit_event, run_compile_job
 from akc_api.storage import ObjectStore
+from akc_security.tenant_context import enter_tenant_context
 from sqlalchemy import Select, and_, func, or_, select, text
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -450,10 +451,12 @@ class DurableScheduler:
         *,
         session: AsyncSession,
         event_id: uuid.UUID,
+        tenant_id: uuid.UUID,
         error: Exception,
     ) -> None:
         now = self._clock()
         async with session.begin():
+            await enter_tenant_context(session, tenant_id=tenant_id)
             statement = select(OutboxEvent).where(OutboxEvent.id == event_id)
             if self._dialect_name(session) == "postgresql":
                 statement = statement.with_for_update()
@@ -668,6 +671,9 @@ class DurableScheduler:
                     job_id = admission.job_id
                     event_id = event.id
                     tenant_id = event.tenant_id
+                    # Admission ranks candidates across tenants; exactly one is
+                    # admitted. Bind the rest of the transaction to its tenant.
+                    await enter_tenant_context(session, tenant_id=tenant_id)
                     if job_id is None:
                         return True
 
@@ -784,9 +790,11 @@ class DurableScheduler:
                         if session.in_transaction():
                             await session.rollback()
                         assert event_id is not None
+                        assert tenant_id is not None
                         await self._record_dispatch_adapter_failure(
                             session=session,
                             event_id=event_id,
+                            tenant_id=tenant_id,
                             error=exc,
                         )
                         logger.exception(
@@ -796,7 +804,9 @@ class DurableScheduler:
                         return True
 
                 assert event_id is not None
+                assert tenant_id is not None
                 async with session.begin():
+                    await enter_tenant_context(session, tenant_id=tenant_id)
                     statement = select(OutboxEvent).where(OutboxEvent.id == event_id)
                     if dialect == "postgresql":
                         statement = statement.with_for_update()

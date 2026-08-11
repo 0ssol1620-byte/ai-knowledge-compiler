@@ -5,6 +5,13 @@
 `docs/audit/receipts/privilege-receipt.json`. Generator:
 `scripts/generate_privilege_receipt.py`.*
 
+> **Superseded in part, kept as the measurement it was.** The numbers below are
+> the state at `0032`. `0033_backfill_checkpoint_tenant_rls` closed finding 1,
+> so the current receipt reads 106 tables with RLS and 7 findings rather than
+> 105 and 8. §4's conclusion that "Stage B is nearly free" was drawn from the
+> simple tenant tables and **does not hold** for the project-scoped ones —
+> see `docs/audit/V5_WORKER_PRIVILEGE_BOUNDARY.md`.
+
 **The catalog corrects the survey it was meant to confirm, in the direction that
 makes the work smaller.** The RLS posture is already close to what Stage A was
 going to build. One table is genuinely unprotected. The `GRANT ON ALL TABLES`

@@ -75,6 +75,7 @@ from akc_parallel_runtime import (
     evaluate_backpressure,
     require_sha256,
 )
+from akc_security.tenant_context import enter_tenant_context
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -668,6 +669,7 @@ class SqlAlchemyProcessingJobCheckpointStore:
 
     async def load(self, *, tenant_id: str, job_id: str) -> PipelineCheckpoint | None:
         async with self._sessions() as session:
+            await enter_tenant_context(session, tenant_id=self._uuid(tenant_id))
             job = await session.scalar(
                 select(ProcessingJob).where(
                     ProcessingJob.tenant_id == self._uuid(tenant_id),
@@ -700,6 +702,7 @@ class SqlAlchemyProcessingJobCheckpointStore:
         if occurred_at.tzinfo is None or occurred_at.utcoffset() is None:
             raise ValueError("checkpoint time must be timezone-aware")
         async with self._sessions() as session, session.begin():
+            await enter_tenant_context(session, tenant_id=self._uuid(tenant_id))
             job = await session.scalar(
                 select(ProcessingJob)
                 .where(

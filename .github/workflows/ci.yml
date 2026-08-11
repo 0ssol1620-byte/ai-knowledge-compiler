@@ -320,6 +320,30 @@ jobs:
         run: python -m uv run --locked --extra dev python -m alembic current --check-heads
       - name: Verify tenant RLS and mutually isolated worker roles
         run: python -m uv run --locked --extra dev python infra/postgres/verify_postgres_gate.py
+      - name: Verify the catalog-derived schema security gate
+        # Reproduces the privilege receipt against pgvector/pgvector:pg17 with
+        # the unmodified migration tree, then asserts tenant isolation as a role
+        # holding the real worker grant surface.
+        run: >-
+          python -m uv run --locked --extra dev
+          python infra/postgres/schema_security_gate.py
+          --receipt-out artifacts/privilege-receipt-ci.json
+      - name: Require the committed privilege receipt to match this catalog
+        # Cluster-provenance fields (the bootstrap superuser's name) differ
+        # between the receipt's origin cluster and CI, so the comparison is over
+        # the schema-determined portion rather than the whole file.
+        run: >-
+          python -m uv run --locked --extra dev
+          python scripts/compare_privilege_receipt.py
+          docs/audit/receipts/privilege-receipt.json
+          artifacts/privilege-receipt-ci.json
+      - name: Publish the CI privilege receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: privilege-receipt-ci
+          path: artifacts/privilege-receipt-ci.json
+          if-no-files-found: warn
 
   worker-syntax:
     runs-on: ubuntu-24.04

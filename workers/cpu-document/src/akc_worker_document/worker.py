@@ -89,6 +89,7 @@ from akc_security import (
     detect_prompt_injection,
     detect_sensitive_data,
 )
+from akc_security.tenant_context import enter_tenant_context
 from akc_telemetry import record_abuse_control_decision, record_page_terminal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import delete, exists, func, or_, select, text, update
@@ -1116,6 +1117,9 @@ class AnalysisWorker:
             if event is None:
                 await session.commit()
                 return None, None
+            # The outbox poll spans tenants; this event does not. The task's own
+            # tenant is checked against it below and dead-letters on mismatch.
+            await enter_tenant_context(session, tenant_id=event.tenant_id)
             task = await session.scalar(
                 select(AnalysisTask).where(AnalysisTask.id == event.aggregate_id).with_for_update()
             )
@@ -1810,6 +1814,7 @@ class AnalysisWorker:
     ) -> None:
         now = utcnow()
         async with self._sessions.begin() as session:
+            await enter_tenant_context(session, tenant_id=claim.tenant_id)
             task = await session.scalar(
                 select(AnalysisTask)
                 .where(
@@ -2642,6 +2647,7 @@ class AnalysisWorker:
     ) -> None:
         now = utcnow()
         async with self._sessions.begin() as session:
+            await enter_tenant_context(session, tenant_id=claim.tenant_id)
             task = await session.scalar(
                 select(AnalysisTask)
                 .where(
