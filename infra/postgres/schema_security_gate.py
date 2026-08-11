@@ -200,6 +200,13 @@ CROSS JOIN LATERAL aclexplode(a.attacl) AS acl
 WHERE n.nspname = 'public'
   AND c.relname = ANY($1::text[])
   AND acl.grantee <> c.relowner
+  -- Only mutation widens an append-only ledger. PostgreSQL grants SELECT,
+  -- INSERT, UPDATE and REFERENCES at column level; DELETE and TRUNCATE exist
+  -- only on the table, so UPDATE is the whole column-level violation set.
+  -- Without this filter the gate reports a legitimate column SELECT grant as
+  -- "widened", which is safe but wrong, and would block an analytics role for
+  -- a reason the message does not describe.
+  AND acl.privilege_type = 'UPDATE'
 ORDER BY 1, 2, 3
 """
 

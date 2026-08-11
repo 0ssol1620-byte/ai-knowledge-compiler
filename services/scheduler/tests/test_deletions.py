@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import copy
 import uuid
@@ -1306,17 +1307,43 @@ def test_every_sessionmaker_site_in_the_deletion_module_binds_a_tenant() -> None
 
     The audit that found this counted sessions by hand. This makes the count
     fail on its own the next time somebody adds one.
+
+    Walks the AST rather than matching text. The first version searched for
+    ``async with sessions()`` on a single line, which meant a site written as
+
+        async with (
+            sessions() as session,
+            session.begin(),
+        ):
+
+    was not recognised as opening a session at all — so an unbound one in that
+    shape passed silently. That is the formatting black gives any site whose
+    line grows too long, so the guard would have failed exactly when a rename
+    made it matter.
     """
 
-    import re
+    tree = ast.parse(Path(deletion_domain.__file__).read_text(encoding="utf-8"))
 
-    source = Path(deletion_domain.__file__).read_text(encoding="utf-8").splitlines()
-    opens = [i for i, line in enumerate(source) if re.search(r"async with sessions\(\)", line)]
-    contexts = [i for i, line in enumerate(source) if "enter_tenant_context(" in line]
+    def opens_a_session(node: ast.AsyncWith) -> bool:
+        for item in node.items:
+            call = item.context_expr
+            if (
+                isinstance(call, ast.Call)
+                and isinstance(call.func, ast.Name)
+                and call.func.id == "sessions"
+            ):
+                return True
+        return False
+
+    def binds_a_tenant(node: ast.AST) -> bool:
+        return any(
+            isinstance(inner, ast.Call)
+            and isinstance(inner.func, ast.Name)
+            and inner.func.id == "enter_tenant_context"
+            for inner in ast.walk(node)
+        )
+
+    opens = [n for n in ast.walk(tree) if isinstance(n, ast.AsyncWith) and opens_a_session(n)]
     assert opens, "expected the deletion module to open worker sessions"
-    unbound = []
-    for start in opens:
-        end = min([o for o in opens if o > start], default=len(source))
-        if not any(start < c < end for c in contexts):
-            unbound.append(start + 1)
+    unbound = sorted(n.lineno for n in opens if not binds_a_tenant(n))
     assert not unbound, f"session opened without a tenant context at line(s): {unbound}"
