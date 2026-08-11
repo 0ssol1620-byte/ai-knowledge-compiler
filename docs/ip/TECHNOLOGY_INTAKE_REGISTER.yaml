@@ -48,9 +48,14 @@ red:
     status: DESIGN_AROUND
     touches: "Adaptive Economic Router; Patent Family A"
     note: >-
-      The IP track's own reading found claim 1 recites latency/precision/recall
-      rather than confidence, and that the "if not met" conditional is claim 4 —
-      so claim 1 is broader than the blueprint's summary implies, not narrower.
+      The blueprint's one-line summary of this family understates its scope, so
+      the design-around is drawn wider than that summary would suggest. The
+      reading behind that conclusion is claim-level analysis and belongs in the
+      counsel packet, not in version control — extract it with
+      research/scripts/export_privileged_packet.py.
+      Redacted forward on 2026-08-11 by founder instruction; the earlier wording
+      remains at c8de965 and history is not rewritten. See
+      docs/audit/receipts/ip-privilege-exposure-0001.json.
 
   - id: tech_palantir_universal_data_pipeline
     reference: "Palantir Universal Data Pipeline family"
