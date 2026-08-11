@@ -1,5 +1,12 @@
 # Arming the worker authorization boundary — steps 6 to 9
 
+> **Superseded by `V5_WORKER_AUTHZ_DECISION_PACKAGE.md`.** That document is the
+> settled plan. Five of the six prerequisites listed here were routed to the
+> founder and should not have been — they are engineering decisions, and they are
+> made there with reasons. Only the queue-claim mechanism (A-6 below) survives as
+> a founder decision. Kept for the reasoning behind the disarm ordering, which the
+> package carries forward unchanged.
+
 **Nothing in this document has been executed.** It is the written-down sequence
 for removing `BYPASSRLS`, prepared while the schema work of steps 1–5 was fresh,
 so that the arming session starts from a plan rather than from archaeology.

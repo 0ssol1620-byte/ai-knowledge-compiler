@@ -100,6 +100,71 @@ LEASE_TABLES: Final = frozenset(
     }
 )
 
+#: The role that owns the claim brokers. It holds the cross-tenant capability the
+#: workers no longer need: bounded to the queue tables, purpose-gated, reachable
+#: only by executing a function that returns five identifiers.
+#:
+#: It is ``NOBYPASSRLS`` like everything else here. A ``SECURITY DEFINER``
+#: function owned by a bypassing role would be a blanket exemption wearing a
+#: function's clothes; this one is subject to its own policies.
+CLAIM_BROKER_ROLE: Final = "akc_claim_broker"
+
+#: queue table -> (broker function, the one role that may execute it).
+#:
+#: Founder decision F-1 (2026-08-11) chose the broker over granting workers a
+#: cross-tenant ``SELECT`` on their queues. The difference is what a compromised
+#: worker sees while discovering: every tenant's queue contents, or that a job
+#: exists. The broker's return surface is fixed at five identifiers and the
+#: schema security gate fails if it grows.
+CLAIM_BROKERS: Final[dict[str, tuple[str, str]]] = {
+    "gpu_provider_invocations": ("akc_claim_gpu_invocation", "akc_gpu_worker"),
+    "url_fetch_tasks": ("akc_claim_url_fetch_task", "akc_url_fetcher"),
+}
+
+#: The exact columns a broker may return. More than this is a design violation,
+#: not a convenience — the whole argument for the broker is that discovery
+#: reveals identifiers rather than rows.
+CLAIM_BROKER_RETURN_COLUMNS: Final = (
+    "claim_id",
+    "tenant_id",
+    "project_id",
+    "lease_token",
+    "lease_expires_at",
+)
+
+#: Lease-bearing tables that deliberately have no broker, with the reason. The
+#: gate asserts this set and ``CLAIM_BROKERS`` together cover ``LEASE_TABLES``,
+#: so a queue that gains a lease forces a decision instead of being forgotten.
+LEASE_TABLES_WITHOUT_BROKER: Final[dict[str, str]] = {
+    "analysis_tasks": (
+        "no worker service polls it — the analysis task is claimed inside the "
+        "API request path, which already knows its tenant"
+    ),
+    "deletion_requests": (
+        "claimed by primary key after an outbox event names its tenant, so the "
+        "cross-tenant poll is on outbox_events and not here"
+    ),
+}
+
+#: Cross-tenant claim paths that are *not* covered by a broker and are therefore
+#: still blocked at arming. Recorded so the arming order cannot quietly skip them.
+#:
+#: Both poll ``outbox_events``, which is inside the scheduler's approved boundary
+#: but whose control-plane policies name ``akc_scheduler`` and nobody else.
+#: Admitting two more roles to that boundary is a separate founder decision, and
+#: the dispatch claim additionally does not fit the broker shape: it ranks
+#: candidates across tenants and admits one, so it is not "take one row".
+UNBROKERED_CROSS_TENANT_CLAIMS: Final[dict[str, str]] = {
+    "akc_dispatch_worker": (
+        "scheduler.py dispatch_claim_statement ranks candidates across tenants "
+        "before admitting one; not a single-row claim"
+    ),
+    "akc_deletion_worker": (
+        "deletions.py deletion_claim_statement is a single-row claim on "
+        "outbox_events, which carries no lease token to bind"
+    ),
+}
+
 #: The human authorization plane's runtime role. Policies target it directly.
 #: Every runtime login role in this repository is ``NOINHERIT`` and reaches its
 #: identity through ``SET ROLE``, and ``pg_policy.polroles`` does not reach a
