@@ -41,7 +41,22 @@ from pathlib import Path
 import zstandard
 
 ROOT = Path(__file__).resolve().parents[4]
+
+#: Defaults to the experiment this script sits in; `--experiment PATH` points it
+#: at another. One implementation rather than a copy per experiment: two copies
+#: of a check drift, and a drifted verifier is how the defect this script exists
+#: to catch got past the first one.
 EXPERIMENT = Path(__file__).resolve().parents[1]
+
+
+def _select_experiment(argv: list[str]) -> None:
+    global EXPERIMENT, RELATIVE, REPORT
+    if "--experiment" in argv:
+        EXPERIMENT = (ROOT / argv[argv.index("--experiment") + 1]).resolve()
+    RELATIVE = EXPERIMENT.relative_to(ROOT).as_posix()
+    REPORT = EXPERIMENT / "receipts" / "committed-bytes-verification.json"
+
+
 RELATIVE = EXPERIMENT.relative_to(ROOT).as_posix()
 REPORT = EXPERIMENT / "receipts" / "committed-bytes-verification.json"
 
@@ -161,7 +176,7 @@ def verify_index() -> int:
 def verify_worktree() -> int:
     """Check out HEAD somewhere clean and verify there. The definitive mode."""
     head = _git("rev-parse", "HEAD").decode().strip()
-    with tempfile.TemporaryDirectory(prefix="exp0101-verify-") as temporary:
+    with tempfile.TemporaryDirectory(prefix=f"{EXPERIMENT.name}-verify-") as temporary:
         checkout = Path(temporary) / "checkout"
         _git("worktree", "add", "--detach", str(checkout), head)
         try:
@@ -183,7 +198,7 @@ def verify_worktree() -> int:
 
     _write_report(
         {
-            "experiment": "EXP-0101",
+            "experiment": EXPERIMENT.name,
             "check": "receipt digests against a clean git checkout",
             "why": (
                 "verify_receipts.py hashes the working tree, which is what passed "
@@ -211,6 +226,7 @@ def verify_worktree() -> int:
 
 
 def main(argv: list[str]) -> int:
+    _select_experiment(argv)
     if "--worktree" in argv:
         return verify_worktree()
     return verify_index()

@@ -1,0 +1,79 @@
+{
+  "clause_split_merge": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.19814814814814813,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  },
+  "date_effective_period": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.1111111111111111,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  },
+  "exception_add_remove": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.1111111111111111,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  },
+  "figure_replacement": {
+    "actual": 1.0,
+    "c2_and_c3": 0.16666666666666666,
+    "c2_stable_evidence_ids": 0.16666666666666666,
+    "c3_semantic_channel_only": 0.16666666666666666,
+    "c4_no_document_rollup": 0.11764705882352941
+  },
+  "may_to_must": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.1111111111111111,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  },
+  "ocr_degradation_only": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.1111111111111111,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  },
+  "pure_layout_move": {
+    "actual": 1.0,
+    "c2_and_c3": 0.0,
+    "c2_stable_evidence_ids": 0.6666666666666666,
+    "c3_semantic_channel_only": 0.0,
+    "c4_no_document_rollup": 0.0
+  },
+  "section_reordering": {
+    "actual": 1.0,
+    "c2_and_c3": 0.2222222222222222,
+    "c2_stable_evidence_ids": 0.8333333333333334,
+    "c3_semantic_channel_only": 0.2222222222222222,
+    "c4_no_document_rollup": 0.17647058823529413
+  },
+  "table_cell_numeric_change": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.1111111111111111,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  },
+  "table_row_move": {
+    "actual": 1.0,
+    "c2_and_c3": 0.2222222222222222,
+    "c2_stable_evidence_ids": 0.2222222222222222,
+    "c3_semantic_channel_only": 0.2222222222222222,
+    "c4_no_document_rollup": 0.17647058823529413
+  },
+  "typo_only": {
+    "actual": 1.0,
+    "c2_and_c3": 0.1111111111111111,
+    "c2_stable_evidence_ids": 0.1111111111111111,
+    "c3_semantic_channel_only": 0.1111111111111111,
+    "c4_no_document_rollup": 0.058823529411764705
+  }
+}

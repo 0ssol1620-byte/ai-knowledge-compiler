@@ -1,0 +1,108 @@
+{
+  "c1_design_question": {
+    "answer": "No, not without a new derivation and a scheme version bump.",
+    "cause": "C1_evidence_identity_design",
+    "cost_of_changing": "IDENTITY_SCHEME_VERSION is 1 and every derived id was computed under it. identity.py:65 says an id computed under one scheme must never be silently compared against another, so this is a migration, not an edit.",
+    "not_concluded": "Whether the design should change. That depends on the shares C2, C3 and C4 carry, which is what the counterfactuals measure.",
+    "question": "Can an evidence identity that is stable under re-render be expressed under the current scheme at all?",
+    "why": "evidence_id() requires a dv_ prefixed document version (identity.py:164) and includes it in the digest (identity.py:177). The id is therefore a location *within one version* by construction, which is a coherent design -- it is what makes an evidence id unambiguous -- and it is also why an unchanged unit gets a new one."
+  },
+  "cases": 660,
+  "changed_set_attribution": {
+    "evidence_moved_only": 10320,
+    "multiple": 379,
+    "total": 10759,
+    "unit_added_only": 60
+  },
+  "counterfactuals": {
+    "actual": {
+      "artifacts_left_stale": 0,
+      "causes": [],
+      "changed_ids_total": 10759,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 1.0,
+      "rebuild_fraction_ci95": [
+        1.0,
+        1.0
+      ]
+    },
+    "c2_and_c3": {
+      "artifacts_left_stale": 0,
+      "causes": [
+        "C2_version_scoped_evidence_id",
+        "C3_semantic_evidence_conflation"
+      ],
+      "changed_ids_total": 439,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 0.12626262626262624,
+      "rebuild_fraction_ci95": [
+        0.12171717171717303,
+        0.13072390572390713
+      ]
+    },
+    "c2_stable_evidence_ids": {
+      "artifacts_left_stale": 0,
+      "causes": [
+        "C2_version_scoped_evidence_id"
+      ],
+      "changed_ids_total": 1853,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 0.25033670033670036,
+      "rebuild_fraction_ci95": [
+        0.2320707070707088,
+        0.2686868686868704
+      ]
+    },
+    "c3_semantic_channel_only": {
+      "artifacts_left_stale": 0,
+      "causes": [
+        "C3_semantic_evidence_conflation"
+      ],
+      "changed_ids_total": 439,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 0.12626262626262624,
+      "rebuild_fraction_ci95": [
+        0.12171717171717303,
+        0.13072390572390713
+      ]
+    },
+    "c4_no_document_rollup": {
+      "artifacts_left_stale": 480,
+      "causes": [
+        "C4_dependency_invalidation_rule"
+      ],
+      "changed_ids_total": 439,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 180,
+        "population": "all cases",
+        "value": 0.2727272727272727
+      },
+      "mean_rebuild_fraction": 0.08021390374331551,
+      "rebuild_fraction_ci95": [
+        0.0762032085561505,
+        0.08422459893048223
+      ]
+    }
+  }
+}

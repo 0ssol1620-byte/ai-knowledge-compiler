@@ -5,7 +5,7 @@
   "dataset_contract": "docs/research/EXP-0103_STRUCTURED_FILING_DATASET_CONTRACT.md",
   "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
   "experiment": "EXP-0103",
-  "git_commit": "84b343a17656135669d5967638e04e8bab725b39",
+  "git_commit": "b4e2fbbf883522b22f97d173d16870b0077d87b5",
   "model_registry_ids": [],
   "prompt_receipt_sha256": [],
   "role": "DEVELOPMENT_AND_CALIBRATION - not the evidence fixture",

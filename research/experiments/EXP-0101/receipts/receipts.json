@@ -66,6 +66,11 @@
       "sha256": "sha256:0bc62179463139f1baba3843495e7f6cc6344fdd56ad9adeece5a81b8da4112b"
     },
     {
+      "bytes": "841",
+      "path": "receipts/committed-bytes-verification.json",
+      "sha256": "sha256:287003fa2da00f1d81970b5c7b4c8a286a84a00e281957dc7f3dfe19c67bb28f"
+    },
+    {
       "bytes": "8463",
       "path": "receipts/ledger-ABS-B-01-opened.md",
       "sha256": "sha256:1042bd743462e28c68cfc67ef2b8f53d07e524d49261b3d0833c374100be00ba"
@@ -99,6 +104,11 @@
       "bytes": "14285",
       "path": "scripts/run_experiment.py",
       "sha256": "sha256:7d3f184cce89b0f916f56c82773418521046db9172ae3a662415a6b8dd77cb0f"
+    },
+    {
+      "bytes": "8864",
+      "path": "scripts/verify_committed_bytes.py",
+      "sha256": "sha256:5db8af5d13434ba6d4f1ca4d43d6393161b69e05ff47c9a6564bbd6e390447b1"
     },
     {
       "bytes": "6081",
