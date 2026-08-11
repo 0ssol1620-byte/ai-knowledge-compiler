@@ -881,6 +881,8 @@ class GpuInvocationWorker:
         return child
 
     async def _claim(self) -> _Claim | None:
+        """BEFORE — the shipped path. ORM selection, self-minted lease."""
+
         now = self._clock()
         async with self._sessions() as session:
             invocation = await session.scalar(
@@ -905,114 +907,145 @@ class GpuInvocationWorker:
                 return None
             # The scan above spans tenants; this invocation does not.
             await enter_tenant_context(session, tenant_id=invocation.tenant_id)
-            fence = await self._fence_reason(session, invocation)
-            if fence is not None:
-                invocation.cancellation_reason = fence
-                invocation.status = "cancel_requested"
+            return await self._claim_from_row(
+                session,
+                invocation,
+                token=uuid.uuid4(),
+                lease_expires_at=now
+                + timedelta(seconds=self._policy.lease_seconds),
+                now=now,
+            )
 
-            token = uuid.uuid4()
-            invocation.lease_token = token
-            invocation.lease_expires_at = now + timedelta(seconds=self._policy.lease_seconds)
-            invocation.updated_at = now
-            action: Literal["submit", "poll", "cancel", "local_terminal"]
-            if invocation.status in {"cancel_requested", "cancelling"}:
-                if invocation.provider_job_id is None:
-                    await self._terminal_local(
-                        session,
-                        invocation,
-                        status="cancelled",
-                        code=(
-                            "GPU_INVOCATION_"
-                            f"{(invocation.cancellation_reason or 'CANCELLED').upper()}"
-                        ),
-                        now=now,
-                    )
-                    action = "local_terminal"
-                elif invocation.cancel_attempt_count >= self._policy.max_cancel_attempts:
-                    await self._terminal_local(
-                        session,
-                        invocation,
-                        status="dead_letter",
-                        code="GPU_PROVIDER_CANCEL_UNCONFIRMED",
-                        now=now,
-                    )
-                    action = "local_terminal"
-                else:
-                    invocation.status = "cancelling"
-                    invocation.cancel_attempt_count += 1
-                    action = "cancel"
-            elif (
-                invocation.provider_job_id is not None
-                and _aware(invocation.provider_deadline_at) is not None
-                and cast(datetime, _aware(invocation.provider_deadline_at)) <= now
-            ):
-                invocation.status = "cancelling"
-                invocation.cancellation_reason = "timeout"
-                invocation.cancel_attempt_count += 1
-                action = "cancel"
-            elif invocation.provider_job_id is not None:
-                invocation.status = "running"
-                action = "poll"
-            elif invocation.attempt_count >= invocation.max_attempts:
+    async def _claim_from_row(
+        self,
+        session: AsyncSession,
+        invocation: GpuProviderInvocation,
+        *,
+        token: uuid.UUID,
+        lease_expires_at: datetime,
+        now: datetime,
+    ) -> _Claim:
+        """Everything after the row is chosen. Shared by both claim paths.
+
+        The broker adaptation changes *how a row is selected and leased* and
+        nothing else. One body of code is what makes that true by construction
+        rather than by comparison: the fence, the five action branches, both
+        terminal paths, the attempt counters, the event append and the commit
+        boundary have one implementation and two callers.
+        """
+
+        fence = await self._fence_reason(session, invocation)
+        if fence is not None:
+            invocation.cancellation_reason = fence
+            invocation.status = "cancel_requested"
+
+        # Assigned, not minted: BEFORE generates the token just above, AFTER
+        # passes back the one the broker already wrote to this row. Writing the
+        # same value is a no-op, which is what stops the two paths from ever
+        # stamping two different leases on one claim.
+        invocation.lease_token = token
+        invocation.lease_expires_at = lease_expires_at
+        invocation.updated_at = now
+        action: Literal["submit", "poll", "cancel", "local_terminal"]
+        if invocation.status in {"cancel_requested", "cancelling"}:
+            if invocation.provider_job_id is None:
+                await self._terminal_local(
+                    session,
+                    invocation,
+                    status="cancelled",
+                    code=(
+                        "GPU_INVOCATION_"
+                        f"{(invocation.cancellation_reason or 'CANCELLED').upper()}"
+                    ),
+                    now=now,
+                )
+                action = "local_terminal"
+            elif invocation.cancel_attempt_count >= self._policy.max_cancel_attempts:
                 await self._terminal_local(
                     session,
                     invocation,
                     status="dead_letter",
-                    code=invocation.last_error_code or "GPU_PROVIDER_ATTEMPTS_EXHAUSTED",
+                    code="GPU_PROVIDER_CANCEL_UNCONFIRMED",
                     now=now,
                 )
                 action = "local_terminal"
             else:
-                invocation.attempt_count += 1
-                invocation.status = "submitting"
-                invocation.started_at = invocation.started_at or now
-                invocation.last_error_code = None
-                attempt = GpuProviderAttempt(
-                    tenant_id=invocation.tenant_id,
-                    invocation_id=invocation.id,
-                    attempt_number=invocation.attempt_count,
-                    status="submitting",
-                    request_manifest_sha256=invocation.request_manifest_sha256,
-                )
-                session.add(attempt)
-                await append_gpu_event(
-                    session,
-                    invocation,
-                    event_type="gpu.invocation.submitting.v1",
-                    payload={
-                        "attempt": invocation.attempt_count,
-                        "endpoint_id": invocation.endpoint_id,
-                        "provider_key": invocation.provider_key,
-                    },
-                    occurred_at=now,
-                )
-                action = "submit"
-            await session.commit()
-            return _Claim(
-                invocation_id=invocation.id,
-                tenant_id=invocation.tenant_id,
-                job_id=invocation.job_id,
-                document_id=invocation.document_id,
-                document_version_id=invocation.document_version_id,
-                page_id=invocation.page_id,
-                provider_key=invocation.provider_key,
-                endpoint_id=invocation.endpoint_id,
-                idempotency_key=invocation.idempotency_key,
-                input_bucket=cast(Literal["source", "derived"], invocation.input_bucket),
-                input_object_key=invocation.input_object_key,
-                input_sha256=invocation.input_sha256,
-                output_object_key=invocation.output_object_key,
-                options=dict(invocation.options),
-                model_revision=invocation.model_revision,
-                runtime_image_digest=invocation.runtime_image_digest,
-                adapter_version=invocation.adapter_version,
-                attempt_number=invocation.attempt_count,
-                lease_token=token,
-                provider_job_id=invocation.provider_job_id,
-                provider_status=invocation.provider_status,
-                action=action,
-                cancellation_reason=invocation.cancellation_reason,
+                invocation.status = "cancelling"
+                invocation.cancel_attempt_count += 1
+                action = "cancel"
+        elif (
+            invocation.provider_job_id is not None
+            and _aware(invocation.provider_deadline_at) is not None
+            and cast(datetime, _aware(invocation.provider_deadline_at)) <= now
+        ):
+            invocation.status = "cancelling"
+            invocation.cancellation_reason = "timeout"
+            invocation.cancel_attempt_count += 1
+            action = "cancel"
+        elif invocation.provider_job_id is not None:
+            invocation.status = "running"
+            action = "poll"
+        elif invocation.attempt_count >= invocation.max_attempts:
+            await self._terminal_local(
+                session,
+                invocation,
+                status="dead_letter",
+                code=invocation.last_error_code or "GPU_PROVIDER_ATTEMPTS_EXHAUSTED",
+                now=now,
             )
+            action = "local_terminal"
+        else:
+            invocation.attempt_count += 1
+            invocation.status = "submitting"
+            invocation.started_at = invocation.started_at or now
+            invocation.last_error_code = None
+            attempt = GpuProviderAttempt(
+                tenant_id=invocation.tenant_id,
+                invocation_id=invocation.id,
+                attempt_number=invocation.attempt_count,
+                status="submitting",
+                request_manifest_sha256=invocation.request_manifest_sha256,
+            )
+            session.add(attempt)
+            await append_gpu_event(
+                session,
+                invocation,
+                event_type="gpu.invocation.submitting.v1",
+                payload={
+                    "attempt": invocation.attempt_count,
+                    "endpoint_id": invocation.endpoint_id,
+                    "provider_key": invocation.provider_key,
+                },
+                occurred_at=now,
+            )
+            action = "submit"
+        await session.commit()
+        return _Claim(
+            invocation_id=invocation.id,
+            tenant_id=invocation.tenant_id,
+            job_id=invocation.job_id,
+            document_id=invocation.document_id,
+            document_version_id=invocation.document_version_id,
+            page_id=invocation.page_id,
+            provider_key=invocation.provider_key,
+            endpoint_id=invocation.endpoint_id,
+            idempotency_key=invocation.idempotency_key,
+            input_bucket=cast(Literal["source", "derived"], invocation.input_bucket),
+            input_object_key=invocation.input_object_key,
+            input_sha256=invocation.input_sha256,
+            output_object_key=invocation.output_object_key,
+            options=dict(invocation.options),
+            model_revision=invocation.model_revision,
+            runtime_image_digest=invocation.runtime_image_digest,
+            adapter_version=invocation.adapter_version,
+            attempt_number=invocation.attempt_count,
+            lease_token=token,
+            provider_job_id=invocation.provider_job_id,
+            provider_status=invocation.provider_status,
+            action=action,
+            cancellation_reason=invocation.cancellation_reason,
+        )
+
 
     async def _request(self, claim: _Claim) -> GpuJobRequest:
         input_target, output_target = await asyncio.gather(

@@ -656,16 +656,30 @@ Stated as uncertainty rather than smoothed into the plan.
    from the ORM kept a `queued` row claimable after its lease was stamped, so four
    concurrent callers were granted 16 claims over 12 rows. The broker's predicate
    is now stricter than the one it replaces, and §3 says why.
-2. **Three of the four lease tables have not had their columns confirmed.**
-   `url_fetch_tasks` has no `claimed_by` (checked). `analysis_tasks`,
-   `deletion_requests` and `gpu_provider_invocations` were not checked for one, and
-   §5's reasoning assumes they are the same shape. Lower stakes than it was: the
-   broker hands the lease to exactly one caller, so for the two brokered queues
-   ownership no longer rests on a comparison at all.
-3. **The starvation detector is built but not wired.** The logic, its negative
-   tests and the database-side signature all exist; no poll loop calls it.
-   **Gate 1 is therefore not green** and no `BYPASSRLS` may be removed.
-4. **Nothing has run against pgvector.** Every measurement here comes from a
+2. **~~Three of the four lease tables have not had their columns confirmed.~~**
+   Settled 2026-08-12. All four were checked, and **none** of `analysis_tasks`,
+   `deletion_requests`, `gpu_provider_invocations` or `url_fetch_tasks` carries
+   `claimed_by`, `worker_id`, `claimed_at`, `owner_id` or `locked_by`. **The lease
+   token is the sole ownership record on every lease-bearing table**, so §5's
+   conclusion now rests on measurement rather than on one sample. Lower stakes
+   again for the two brokered queues: the broker hands the lease to exactly one
+   caller, so ownership there is not a comparison at all.
+3. **~~The starvation detector is built but not wired.~~** Wired 2026-08-12
+   into `GpuInvocationWorker.run_one` → `_observe_poll` → `claim_backlog` →
+   `ClaimStarvationDetector` → `record_claim_poll`, publishing five series plus
+   `akc_claim_poll_starved`. `0036_claim_backlog_probe` added the second count the
+   discrimination needs. **Gate 1 is now split** — see §10: **1A (detector
+   correctness and discrimination) is GREEN**; **1B (real workload observation)
+   is PENDING** and is required before production activation, not before staging.
+4. **~~Nothing has run against pgvector.~~** **Gate 2 is GREEN**, CI run
+   `31517256771`, job `postgres-rls-and-role-boundaries`, on
+   `pgvector/pgvector:pg17@sha256:d2ef61f4…`: the unmodified migration tree
+   applied to head, the receipt was generated, the committed receipt matched the
+   catalog CI built independently, and the shadow suite passed. `0035` and `0036`
+   apply unmodified on real pgvector. The paragraph that stood here is kept below
+   because the reasoning it records is still the reason the gate existed.
+
+   *Superseded:* **Nothing has run against pgvector.** Every measurement here comes from a
    throwaway cluster where `0024` was rewritten outside the repository to substitute
    `vector(1024)` with `real[]` and omit the `hnsw` index, per the precedent in
    `V5_PRIVILEGE_RECEIPT_FINDINGS.md`. The substitution cannot affect ownership,

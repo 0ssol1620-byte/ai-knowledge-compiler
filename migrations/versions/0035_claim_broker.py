@@ -32,8 +32,15 @@ tenants before admitting one, so it is not "take one row". Admitting those two
 roles is a separate decision of the same shape as F-1, recorded in
 ``infra/postgres/control_plane_registry.py`` under
 ``UNBROKERED_CROSS_TENANT_CLAIMS`` so arming cannot walk past it.
-``analysis_tasks`` and ``deletion_requests`` carry leases but nothing polls them
-cross-tenant, and ``_assert_surface`` fails if that stops being true.
+``analysis_tasks`` and ``deletion_requests`` carry leases and get no broker, for
+two different reasons. ``deletion_requests`` is claimed by primary key after an
+outbox event names its tenant, so there is no cross-tenant poll. **``analysis_tasks``
+does have a cross-tenant poll** — an earlier version of this comment said it did
+not, and the claim-site survey of 2026-08-12 disproved that. Its unit of claim is
+an ``(outbox_event, analysis_task)`` pair and its row lock is on the *event*, so a
+broker returning one ``claim_id`` from one table describes half of it: a shape
+mismatch, not an absence of polling. ``_assert_surface`` fails if either stops
+being a lease-bearing table this migration has decided about.
 
 **Why the function is safe to own the capability.**
 

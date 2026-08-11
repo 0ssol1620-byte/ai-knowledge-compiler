@@ -257,6 +257,28 @@ is not a substitute for them.
 | 8 | both terminal states | `GPU_PROVIDER_CANCEL_UNCONFIRMED` and `GPU_PROVIDER_ATTEMPTS_EXHAUSTED` reached under the same conditions | **not written** |
 | 9 | rollback and visibility on failure | a raised exception rolls back the lease stamp too — the broker's `UPDATE` runs inside the caller's transaction, so this should hold by construction and must be shown, not assumed | **not written** |
 
+**Prerequisite removed 2026-08-12.** Eight of these compared BEFORE against an
+AFTER that did not exist as code, so they could not have been written. The
+post-selection half of `_claim` is now extracted to `_claim_from_row(session,
+invocation, *, token, lease_expires_at, now)`, verified behaviour-preserving by
+the 15 existing GPU tests. Two consequences:
+
+- **The AFTER path is one small method away** — broker → `enter_claim_context` →
+  tenant-scoped reread → `_claim_from_row`. It is not written, and `run_one`
+  still calls `_claim`.
+- **Proofs 6, 7, 8 and 9 change character.** The fence, five action branches,
+  both terminal paths, attempt counters, event append and commit boundary are now
+  *one body of code with two callers*, so equivalence there becomes structural
+  rather than comparative. They still need tests — a shared implementation proves
+  both callers run the same code, not that both reach it under the same
+  conditions.
+- **Proof 4 is designed out rather than tested in.** `_claim_from_row` takes the
+  token as a parameter and assigns it; AFTER passes the broker's own value back,
+  so a second stamp is not something the code can do.
+
+Proofs 1, 2, 3 and 5 — eligibility, ordering, concurrency, lease expiry — remain
+genuinely comparative and are the ones that found the last defect.
+
 **No branch has yet been found that an equivalence test cannot account for.**
 That is a statement about the matrix, not about the tests: the five action
 branches, two terminal paths and the fence are all reachable and all have
@@ -267,44 +289,58 @@ report the branch.
 
 ## 6. Status of the two gates
 
-**Gate 1 — zero-row starvation detection: instrumented, discriminating pair
-proven; still RED pending a production observation.**
+**Gate 1A — detector correctness and discrimination: GREEN** (2026-08-12).
 
 The detector is wired into the real poll path — `GpuInvocationWorker.run_one` →
-`_observe_poll` → `claim_backlog` → `ClaimStarvationDetector` → `record_claim_poll`
-— and publishes five series: poll attempts, grants, total backlog, claimable
-backlog and the consecutive-zero run, plus `akc_claim_poll_starved`.
-
+`_observe_poll` → `claim_backlog` → `ClaimStarvationDetector` →
+`record_claim_poll` — publishing five series plus `akc_claim_poll_starved`.
 Both halves of the discriminating pair are exercised against that path
-(`services/scheduler/tests/test_claim_starvation_gate.py`, 7 tests):
+(`services/scheduler/tests/test_claim_starvation_gate.py`):
 
-- **positive** — backlog 12, claimable 12, three consecutive empty polls →
-  `akc_claim_poll_starved == 1`, and **not** on the first two;
-- **negative** — backlog 400, claimable 0, fifty consecutive empty polls →
-  silent throughout. This is the case one counter cannot see, and a detector that
-  paged here would be turned off.
+- backlog 12 / claimable 12 / 3 consecutive zero polls → alert, and **not** on
+  the first two;
+- backlog 400 / claimable 0 / 50 consecutive zero polls → silent throughout.
 
-The two counts come from separate privileged probes, and that they genuinely
-differ is measured on a live catalog:
-`broker:backlog-exceeds-claimable-when-rows-are-leased` reports backlog 16
-against claimable 3.
+That the two counts genuinely differ is measured on a live catalog:
+`broker:backlog-exceeds-claimable-when-rows-are-leased`, total 16 against
+claimable 3.
 
-**Still RED**, because the directive requires the detector verified on a
-production-equivalent path and nothing has run it against real traffic. What
-remains is an observation, not code.
+**Gate 1B — real workload observation: PENDING.** An operational-confidence gate,
+not a code gate. Nothing has run this against real traffic. **Required before
+production activation; not required before a staging canary.**
 
-**Gate 2 — unmodified pgvector reproduction: RED, and not runnable here.**
+**Gate 2 — unmodified pgvector reproduction: GREEN** (2026-08-12). CI run
+`31517256771`, job `postgres-rls-and-role-boundaries`, image
+`pgvector/pgvector:pg17@sha256:d2ef61f4…`. The unmodified migration tree applied
+to head, the privilege receipt was generated, the committed receipt matched a
+catalog CI built independently, and the dual-plane shadow suite passed. `0035`
+and `0036` apply unmodified on real pgvector.
 
-```
-docker: command not found
-pgvector NOT installed in local PG17
-no vector.dll
-```
+*Other CI jobs are red for pre-existing reasons — the same failure set appears in
+the pre-push run `31378252332`. That is separate debt and is not Gate 2.*
 
-There is no Docker on this machine and pgvector is not installed in the local
-PostgreSQL 17. **Gate 2 cannot be produced from this workstation by any means I
-have** — the CI job is the only path, and I cannot run CI. The workflow is wired
-and labelled; a wired workflow is explicitly not a receipt, and I am not claiming
-one.
+---
+
+## 6a. What opens the first canary
+
+| Gate | Status | Required for |
+|---|---|---|
+| **1A** detector correctness and discrimination | **GREEN** | staging canary |
+| **2** unmodified pgvector reproduction | **GREEN** | staging canary |
+| **GPU nine-point equivalence** | **RED** — see §5a | staging canary |
+| **1B** real workload observation | **PENDING** | production rollout |
+
+**The first staging `NOBYPASSRLS` canary opens on 1A + 2 + nine-point
+equivalence.** Two of the three are green; the equivalence proofs are not, so the
+canary does not open. **Gate 2 being green disarms nothing on its own.**
+
+`BYPASSRLS` remains 7/7.
+
+### Superseded — Gate 2 as it stood before CI ran
+
+Kept because it records why the gate existed. From this workstation there was no
+Docker and no pgvector in the local PostgreSQL 17, so every measurement came from
+a cluster where `0024` had been rewritten outside the repository. CI was the only
+path to the receipt, and "wired" was explicitly not "green".
 
 `BYPASSRLS` remains 7/7. No disarm migration exists.
