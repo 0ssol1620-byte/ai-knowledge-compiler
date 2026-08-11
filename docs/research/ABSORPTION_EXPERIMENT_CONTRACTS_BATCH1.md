@@ -83,27 +83,30 @@ result, so there has to be somewhere to put it before there is a result. The
 ledger opens the entry at design time; this contract does not define a second
 place.
 
-| Moment | What happens |
-|---|---|
-| Experiment designed | Ledger entry opened. `prior_technology_used`, `what_changed`, `why_changed`, `claim_elements_touched`, `sources_read`, `classification`, `gate_status` filled. `why_written_before_result: true`. |
-| Experiment runs | Receipt fields bound. |
-| Challenger wins significantly | `measurable_technical_effect` completed — **whether or not it is promoted**. |
-| Challenger does not win | Entry completed with the null result. **Not deleted.** |
-
-Field set, matching the ledger's names:
+**Frozen before the experiment starts** — five fields, written when nothing is
+known about the outcome:
 
 ```yaml
-prior_technology_used:   [register id + version]
-classification:          # BLUE | GREEN | YELLOW | ORANGE | RED
-gate_status:             # CLAIM_CHART_DONE | DESIGN_AROUND_REVIEWED |
-                         # IMPLEMENTATION_PERMITTED | BLOCKED
-claim_elements_touched:  # e.g. [A2, A10] — a record that cannot name the
-                         # element it supports cannot be filed against one
-sources_read:            # provenance trail; the register's binding_now requires it
+prior_art_used:          [register id + version]
 what_changed:
-why_changed:                      # immutable — see below
-why_written_before_result: true
-measurable_technical_effect:      # metric + denominator + CI
+why_changed:                      # technical reason
+expected_technical_effect:        # what we predict, before measuring
+design_rationale:                 # why this design and not the alternatives
+```
+
+Plus the bookkeeping the gate needs: `classification` (BLUE…RED),
+`gate_status`, `claim_elements_touched` — a record that cannot name the element
+it supports cannot be filed against one — and `sources_read`, the provenance
+trail the intake register's binding rules require.
+
+**Appended after results. Never overwritten:**
+
+```yaml
+measured_effect:
+ci_and_denominator:
+result_status:                    # improved | no effect | worse | inconclusive
+promotion_decision:
+patent_relevance:
 receipt_binding:
   experiment_receipt_ref:
   git_commit_sha:
@@ -111,6 +114,16 @@ receipt_binding:
   config_sha256: []
   corpus_manifest_sha256:
 ```
+
+| Moment | What happens |
+|---|---|
+| Before the experiment starts | Entry opened; the five fields frozen. |
+| Experiment runs | Receipt fields bound. |
+| Result arrives | Result block appended — **improvement, null result or regression alike**. |
+
+**Failed, void and no-improvement results are never deleted.** A ledger holding
+only successes is one an examiner is right to distrust, and "no effect" answers a
+question the next experiment would otherwise re-ask.
 
 **`why_changed` is immutable once the experiment is designed.** It is written
 before any result exists, and `why_written_before_result` records that. If the

@@ -226,6 +226,46 @@ async def _seed(admin: asyncpg.Connection[asyncpg.Record], label: str) -> Fixtur
     return fixture
 
 
+async def _seed_claimable(
+    admin: asyncpg.Connection[asyncpg.Record], fixture: Fixture, count: int
+) -> list[uuid.UUID]:
+    """Extra url_fetch_tasks a broker may claim, for the concurrency proof.
+
+    ``url_fetch_tasks`` is unique on (tenant, document), so each needs its own
+    document row.
+    """
+
+    now = datetime.now(UTC)
+    tasks: list[uuid.UUID] = []
+    for index in range(count):
+        document = uuid.uuid4()
+        task = uuid.uuid4()
+        await admin.execute(
+            """
+            INSERT INTO documents (
+                id, tenant_id, project_id, title, document_type, language_codes,
+                active_version, cir_schema_version, status, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, 'report', '[]', 1, '1.0', 'ready', $5, $5)
+            """,
+            document, fixture.tenant, fixture.project, f"claimable {index}", now,
+        )
+        await admin.execute(
+            """
+            INSERT INTO url_fetch_tasks (
+                id, tenant_id, project_id, document_id, requested_by,
+                encrypted_url, canonical_url, status, attempt_count, max_attempts,
+                available_at, created_at, updated_at
+            ) VALUES (
+                $1, $2, $3, $4, $5, '\\x00', 'https://shadow.invalid/', 'queued',
+                0, 3, $6, $6, $6
+            )
+            """,
+            task, fixture.tenant, fixture.project, document, fixture.user, now,
+        )
+        tasks.append(task)
+    return tasks
+
+
 async def _purge(admin: asyncpg.Connection[asyncpg.Record], fixture: Fixture) -> None:
     for statement in (
         "DELETE FROM collections WHERE tenant_id = $1",
@@ -633,6 +673,311 @@ async def _armed_pass(
             await admin.execute(f"ALTER ROLE {login} PASSWORD NULL")
 
 
+BROKER = "akc_claim_url_fetch_task"
+BROKER_ROLE = "akc_claim_broker"
+BROKER_RETURN_COLUMNS = (
+    "claim_id",
+    "tenant_id",
+    "project_id",
+    "lease_token",
+    "lease_expires_at",
+)
+
+
+async def _claim_repeatedly(
+    connection: asyncpg.Connection[asyncpg.Record], times: int
+) -> list[asyncpg.Record]:
+    """One caller's claims, in sequence.
+
+    The concurrency is *between* connections — a single asyncpg connection
+    refuses overlapping operations, and a harness that ran them on one would be
+    measuring nothing.
+    """
+
+    granted: list[asyncpg.Record] = []
+    for _ in range(times):
+        async with connection.transaction():
+            await connection.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            row = await connection.fetchrow(f"SELECT * FROM {BROKER}(300)")
+        if row is not None:
+            granted.append(row)
+    return granted
+
+
+async def _broker_pass(
+    admin: asyncpg.Connection[asyncpg.Record],
+    parts: dict[str, Any],
+    alpha: Fixture,
+    beta: Fixture,
+    report: Report,
+) -> None:
+    """The seven proofs founder decision F-1 attached to Option B, plus escalation.
+
+    Until every one of these passes the broker is a design, not a mechanism.
+    """
+
+    print("\nclaim broker — F-1 Option B")
+    password = secrets.token_urlsafe(32)
+    login = "akc_url_fetcher_runtime"
+    await admin.execute(f"ALTER ROLE {login} PASSWORD '{password}'")
+    await admin.execute("ALTER ROLE akc_url_fetcher NOBYPASSRLS")
+    seeded = [
+        *await _seed_claimable(admin, alpha, 4),
+        *await _seed_claimable(admin, beta, 4),
+    ]
+    callers: list[asyncpg.Connection[asyncpg.Record]] = []
+    try:
+        for _ in range(4):
+            connection = await asyncpg.connect(user=login, password=password, **parts)
+            await connection.execute("SET ROLE akc_url_fetcher")
+            callers.append(connection)
+        caller = callers[0]
+
+        # 7 — the catalog, before anything is called.
+        config = await admin.fetchval(
+            "SELECT array_to_string(p.proconfig, ',') FROM pg_proc p "
+            "JOIN pg_namespace n ON n.oid = p.pronamespace "
+            "WHERE n.nspname = 'public' AND p.proname = $1",
+            BROKER,
+        )
+        report.require(
+            "broker:search-path-is-pinned",
+            str(config) == "search_path=pg_catalog, public",
+            f"the catalog reports {config!r}, so a caller cannot shadow a function name",
+        )
+        owner, secdef = await admin.fetchrow(  # type: ignore[misc]
+            "SELECT pg_get_userbyid(p.proowner) AS owner, p.prosecdef AS secdef "
+            "FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace "
+            "WHERE n.nspname = 'public' AND p.proname = $1",
+            BROKER,
+        )
+        broker_bypass = await admin.fetchval(
+            "SELECT rolbypassrls OR rolcanlogin FROM pg_roles WHERE rolname = $1",
+            BROKER_ROLE,
+        )
+        report.require(
+            "broker:definer-owner-is-not-privileged",
+            str(owner) == BROKER_ROLE and bool(secdef) and not bool(broker_bypass),
+            f"owned by {owner}, SECURITY DEFINER, and that role holds neither "
+            "BYPASSRLS nor LOGIN",
+        )
+
+        # 5 — refusal before anything else, so a later pass cannot be a leftover.
+        for label, settings in (
+            ("undeclared", {}),
+            ("unapproved", {"app.control_plane": "exfiltrate"}),
+        ):
+            async with caller.transaction():
+                for name, value in settings.items():
+                    await caller.execute("SELECT set_config($1, $2, true)", name, value)
+                row = await caller.fetchrow(f"SELECT * FROM {BROKER}(300)")
+            report.require(
+                f"broker:refuses-an-undeclared-purpose-{label}",
+                row is None,
+                f"a {label} purpose claims nothing",
+            )
+        async with caller.transaction():
+            await caller.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            await caller.execute(
+                "SELECT set_config('app.tenant_id', $1, true)", str(alpha.tenant)
+            )
+            row = await caller.fetchrow(f"SELECT * FROM {BROKER}(300)")
+        report.require(
+            "broker:refuses-when-a-tenant-is-bound",
+            row is None,
+            "a transaction already doing one tenant's work cannot claim across tenants",
+        )
+
+        # 1 — atomicity. The case flagged as "looks obviously correct and is not".
+        batches = await asyncio.gather(
+            *(_claim_repeatedly(connection, 4) for connection in callers)
+        )
+        granted = [row for batch in batches for row in batch]
+        claim_ids = [row["claim_id"] for row in granted]
+        report.require(
+            "broker:claims-one-row-atomically",
+            len(granted) == len(seeded) and len(set(claim_ids)) == len(granted),
+            f"{len(callers)} concurrent callers x 4 attempts over {len(seeded)} "
+            f"claimable rows granted {len(granted)} claims, all distinct — no row "
+            "was handed to two callers and none was lost",
+        )
+        mismatched = await admin.fetchval(
+            "SELECT count(*) FROM url_fetch_tasks t "
+            "JOIN unnest($1::uuid[], $2::uuid[]) AS g(claim_id, lease_token) "
+            "  ON g.claim_id = t.id "
+            "WHERE t.lease_token IS DISTINCT FROM g.lease_token",
+            claim_ids,
+            [row["lease_token"] for row in granted],
+        )
+        report.require(
+            "broker:returned-token-is-the-row-token",
+            int(mismatched) == 0,
+            "every returned lease token is the token now on its row — the claim "
+            "and the receipt cannot diverge",
+        )
+
+        # 2 — the return surface.
+        sample = granted[0]
+        report.require(
+            "broker:returns-identifiers-only",
+            tuple(sample.keys()) == BROKER_RETURN_COLUMNS,
+            f"the result is exactly {', '.join(BROKER_RETURN_COLUMNS)} — no URL, "
+            "parameter or manifest column is reachable through it",
+        )
+
+        # 3 — the grant added a claim path, not a read path.
+        for label, settings in (
+            ("undeclared", {}),
+            ("declared", {"app.control_plane": "claim"}),
+        ):
+            seen = await _visible(
+                caller,
+                "SELECT count(*) FROM url_fetch_tasks WHERE tenant_id = ANY($1::uuid[])",
+                settings,
+                [alpha.tenant, beta.tenant],
+            )
+            report.require(
+                f"broker:no-cross-tenant-select-remains-{label}",
+                int(seen) == 0,
+                f"holding EXECUTE, a {label} direct SELECT still reads nothing",
+            )
+
+        # 4 — the lease the broker stamped is one the caller can bind.
+        bound = {
+            "app.tenant_id": str(sample["tenant_id"]),
+            "app.project_id": str(sample["project_id"]),
+            "app.claim_id": str(sample["claim_id"]),
+            "app.lease_token": str(sample["lease_token"]),
+        }
+        seen = await _visible(caller, "SELECT count(*) FROM url_fetch_tasks", bound)
+        report.require(
+            "broker:stamps-a-lease-the-caller-can-bind",
+            int(seen) == 1,
+            "binding the returned identifiers makes exactly the claimed row visible",
+        )
+        seen = await _visible(
+            caller,
+            "SELECT count(*) FROM url_fetch_tasks",
+            {**bound, "app.lease_token": str(uuid.uuid4())},
+        )
+        report.require(
+            "broker:a-forged-token-still-binds-nothing",
+            int(seen) == 0,
+            "the claim binding is not satisfied by holding the claim id alone",
+        )
+
+        # 6 — the caller cannot redefine or take the thing that grants it access.
+        for label, statement in (
+            ("replace", f"CREATE OR REPLACE FUNCTION public.{BROKER}(integer) "
+                        "RETURNS TABLE (claim_id uuid, tenant_id uuid, project_id uuid, "
+                        "lease_token uuid, lease_expires_at timestamptz) LANGUAGE sql "
+                        "AS $$ SELECT NULL::uuid, NULL::uuid, NULL::uuid, NULL::uuid, "
+                        "NULL::timestamptz $$"),
+            ("own", f"ALTER FUNCTION public.{BROKER}(integer) OWNER TO CURRENT_USER"),
+            ("drop", f"DROP FUNCTION public.{BROKER}(integer)"),
+            ("unpin", f"ALTER FUNCTION public.{BROKER}(integer) RESET search_path"),
+            ("become", f"SET ROLE {BROKER_ROLE}"),
+        ):
+            failure = await _denied(caller, statement, {})
+            report.require(
+                f"broker:cannot-{label}",
+                failure is not None,
+                f"the caller cannot {label} the broker ({failure})",
+            )
+        failure = await _denied(caller, "SELECT * FROM akc_claim_gpu_invocation(300)", {})
+        report.require(
+            "broker:cannot-execute-another-queues-broker",
+            failure == "InsufficientPrivilegeError",
+            f"holding one queue's broker grants nothing on another's ({failure})",
+        )
+
+        # Escalation: a role with no grant. akc_scheduler has its own boundary
+        # and must not inherit this one.
+        scheduler_login = "akc_scheduler_runtime"
+        scheduler_password = secrets.token_urlsafe(32)
+        await admin.execute(
+            f"ALTER ROLE {scheduler_login} PASSWORD '{scheduler_password}'"
+        )
+        other = await asyncpg.connect(
+            user=scheduler_login, password=scheduler_password, **parts
+        )
+        try:
+            await other.execute("SET ROLE akc_scheduler")
+            failure = await _denied(other, f"SELECT * FROM {BROKER}(300)", {})
+            report.require(
+                "broker:execute-is-not-public",
+                failure == "InsufficientPrivilegeError",
+                f"a role outside the grant cannot call the broker ({failure}) — "
+                "PostgreSQL grants EXECUTE to PUBLIC by default and this proves "
+                "the revoke held",
+            )
+        finally:
+            await other.close()
+            await admin.execute(f"ALTER ROLE {scheduler_login} PASSWORD NULL")
+
+        # The lease clamp, and the audit row.
+        async with caller.transaction():
+            await caller.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            clamped = await caller.fetchrow(
+                f"SELECT *, (lease_expires_at - now()) AS window FROM {BROKER}(100000000)"
+            )
+        report.require(
+            "broker:lease-is-clamped",
+            clamped is None or clamped["window"] <= timedelta(seconds=3600),
+            "an absurd lease request is clamped to the ceiling rather than parking "
+            f"a row indefinitely ({'no row claimable' if clamped is None else clamped['window']})",
+        )
+        audited = await admin.fetchval(
+            "SELECT count(*) FROM audit_events "
+            "WHERE action = 'worker.claim.granted' AND target_type = 'url_fetch_tasks' "
+            "  AND target_id = ANY($1::text[])",
+            [str(value) for value in claim_ids],
+        )
+        principal = await admin.fetchval(
+            "SELECT metadata::jsonb ->> 'principal' FROM audit_events "
+            "WHERE action = 'worker.claim.granted' AND target_id = $1",
+            str(sample["claim_id"]),
+        )
+        report.require(
+            "broker:every-grant-is-audited",
+            int(audited) == len(granted) and str(principal) == login,
+            f"{audited} audit rows for {len(granted)} grants, naming the session "
+            f"principal ({principal})",
+        )
+
+        # Gate 1 substrate: the starvation signature, at the database.
+        depth = await caller.fetchval(
+            "SELECT set_config('app.control_plane', 'claim', true)"
+        )
+        async with caller.transaction():
+            await caller.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            depth = await caller.fetchval(f"SELECT {BROKER}_depth()")
+            visible = await caller.fetchval("SELECT count(*) FROM url_fetch_tasks")
+        report.require(
+            "broker:depth-probe-sees-what-the-worker-cannot",
+            int(depth) >= 0 and int(visible) == 0,
+            f"claimable depth {depth} while the worker's own read sees {visible} — "
+            "this difference is what tells RLS starvation from an idle queue",
+        )
+    finally:
+        for connection in callers:
+            await connection.close()
+        await admin.execute("ALTER ROLE akc_url_fetcher BYPASSRLS")
+        await admin.execute(f"ALTER ROLE {login} PASSWORD NULL")
+        await admin.execute(
+            "DELETE FROM audit_events WHERE tenant_id = ANY($1::uuid[])",
+            [alpha.tenant, beta.tenant],
+        )
+
+
 async def run(url: str) -> Report:
     report = Report()
     admin = await asyncpg.connect(url)
@@ -643,6 +988,7 @@ async def run(url: str) -> Report:
         beta = await _seed(admin, "beta")
         await _inert_pass(admin, alpha, beta, report)
         await _armed_pass(admin, _parts(url), alpha, beta, report)
+        await _broker_pass(admin, _parts(url), alpha, beta, report)
         # Last: it revokes alpha's membership to prove revocation is immediate.
         await _human_plane_pass(admin, _parts(url), alpha, beta, report)
     finally:
