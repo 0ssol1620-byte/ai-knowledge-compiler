@@ -239,51 +239,104 @@ the broker concept extends to a two-table claim at all.
 
 ---
 
-## 5a. The nine 1:1 proofs the canary needs — required, and NOT written
+## 5a. GPU equivalence evidence — three kinds, proved three ways
 
-Directive addendum, 2026-08-12. Wiring does not start until each of these is an
-executable test that passes. The matrix above is the specification for them; it
-is not a substitute for them.
+*Reshaped 2026-08-12 on the coordinator's direction. The earlier version of this
+section listed nine proofs as one undifferentiated set. Writing nine independent
+tests would have exercised the same code repeatedly to satisfy a count; what
+follows classifies the evidence by what each dimension actually is, and proves
+each in the way that fits it.*
 
-| # | Proof | What it must show | Status |
-|---|---|---|---|
-| 1 | which rows are claimable | broker predicate and ORM predicate select the same row from the same seeded population | **not written** |
-| 2 | ordering / prioritization | `available_at, created_at, id` yields the same first row under both | **not written** |
-| 3 | concurrency | N concurrent callers over M rows grant M distinct claims — proven for the broker (`broker:claims-one-row-atomically`), **not yet compared against BEFORE** | partial |
-| 4 | lease token generation | exactly one token per claim, and the site does not stamp a second (§2 risk 1) | **not written** |
-| 5 | lease expiration | a row whose lease has run out is claimable again at the same instant under both | **not written** |
-| 6 | attempt / state transition | `attempt_count`, `cancel_attempt_count`, `status`, `started_at`, `last_error_code`, `updated_at` end identical across all five action branches | **not written** |
-| 7 | commit point | one commit, at the same place, with `GpuProviderAttempt` and the event append inside it | **not written** |
-| 8 | both terminal states | `GPU_PROVIDER_CANCEL_UNCONFIRMED` and `GPU_PROVIDER_ATTEMPTS_EXHAUSTED` reached under the same conditions | **not written** |
-| 9 | rollback and visibility on failure | a raised exception rolls back the lease stamp too — the broker's `UPDATE` runs inside the caller's transaction, so this should hold by construction and must be shown, not assumed | **not written** |
+### A. COMPARATIVE — BEFORE against the broker, one seeded population
 
-**Prerequisite removed 2026-08-12.** Eight of these compared BEFORE against an
-AFTER that did not exist as code, so they could not have been written. The
-post-selection half of `_claim` is now extracted to `_claim_from_row(session,
-invocation, *, token, lease_expires_at, now)`, verified behaviour-preserving by
-the 15 existing GPU tests. Two consequences:
+Real runs, live catalog, in `infra/postgres/shadow_validate_dual_plane.py`
+(`_equivalence_pass`). BEFORE is `GpuInvocationWorker._claim`'s ORM predicate
+written as SQL; AFTER is `akc_claim_gpu_invocation` actually claiming. The
+population seeds every reason a row is or is not claimable: four claimable, plus
+terminal status, not-yet-due, and live-lease rows that neither side may take.
 
-- **The AFTER path is one small method away** — broker → `enter_claim_context` →
-  tenant-scoped reread → `_claim_from_row`. It is not written, and `run_one`
-  still calls `_claim`.
-- **Proofs 6, 7, 8 and 9 change character.** The fence, five action branches,
-  both terminal paths, attempt counters, event append and commit boundary are now
-  *one body of code with two callers*, so equivalence there becomes structural
-  rather than comparative. They still need tests — a shared implementation proves
-  both callers run the same code, not that both reach it under the same
-  conditions.
-- **Proof 4 is designed out rather than tested in.** `_claim_from_row` takes the
-  token as a parameter and assigns it; AFTER passes the broker's own value back,
-  so a second stamp is not something the code can do.
+Draining the broker proves eligibility and ordering together — each claim removes
+exactly one row from the claimable set, so the grant *sequence* equals the
+BEFORE-ordered eligible list only if both agree on both.
 
-Proofs 1, 2, 3 and 5 — eligibility, ordering, concurrency, lease expiry — remain
-genuinely comparative and are the ones that found the last defect.
+| Proof | Result |
+|---|---|
+| `equivalence:claim-eligibility` | BEFORE finds 4 claimable of 8 seeded; the broker granted exactly that set | **GREEN** |
+| `equivalence:ordering` | grant sequence is BEFORE's `(available_at, created_at, id)` order, row for row | **GREEN** |
+| `equivalence:lease-expiry` | a live-leased row is claimable by neither; past its expiry it is claimable by both, and is the only such row | **GREEN** |
+| `equivalence:concurrency` | 4 concurrent callers drained 8 contended rows into 8 grants, all distinct, none lost | **GREEN** |
 
-**No branch has yet been found that an equivalence test cannot account for.**
-That is a statement about the matrix, not about the tests: the five action
-branches, two terminal paths and the fence are all reachable and all have
-observable end states. If writing them surfaces one, the rule is to stop and
-report the branch.
+These are the four that stay genuinely comparative, and they are where the last
+real defect was found — the first concurrency run granted 16 claims over 12 rows.
+
+### B. INVARIANT — the double lease stamp is MADE IMPOSSIBLE
+
+**Recorded as made impossible, not as verified.** Nothing observed a double stamp
+and concluded it cannot happen. `_claim_from_row` takes `token` as a keyword-only
+parameter and assigns it; the body has nothing to mint a second token with, so
+AFTER passing the broker's own value back is a no-op rather than a second write.
+
+The distinction matters to whoever reads this later: a verified property can
+regress silently, an impossible one cannot regress without the shape changing.
+So the shape is pinned by negative regression tests in
+`services/scheduler/tests/test_claim_equivalence.py`:
+
+| Test | Holds |
+|---|---|
+| `test_the_shared_body_cannot_mint_a_lease_token` | no `uuid4` call anywhere in `_claim_from_row` | **GREEN** |
+| `test_the_token_and_lease_arrive_as_parameters` | `token` and `lease_expires_at` are keyword-only parameters | **GREEN** |
+| `test_the_before_path_mints_exactly_one_token_and_hands_it_over` | BEFORE mints once and passes it in | **GREEN** |
+
+Reintroducing minting inside the shared body would let AFTER stamp a token
+different from the one already on the row, and because the claim binding compares
+`lease_token` against `app.lease_token`, the row would vanish from its own
+transaction mid-flight. That failure is silent, which is why the defence is shape
+rather than vigilance.
+
+### C. SHARED BODY + REACHABILITY
+
+Body equivalence comes from one implementation with two callers. **That is not
+sufficient on its own** — a shared body proves both callers run the same code, not
+that both *reach* it under the same conditions, and an extra condition on one side
+would be an equivalence break no amount of sharing detects. Both halves are
+proved separately.
+
+**Body — one implementation:**
+
+| Test | Holds |
+|---|---|
+| `test_the_claim_choreography_has_exactly_one_implementation` | `_terminal_local`, `append_gpu_event`, `commit` and `_fence_reason` appear in `_claim_from_row` and **not** in `_claim` (per-marker, so a failure names the duplicate) | **GREEN** |
+| `test_every_state_transition_lives_in_the_shared_body` | `status`, `attempt_count`, `cancel_attempt_count`, `lease_token`, `lease_expires_at`, `started_at`, `last_error_code` are written only in the shared body; `_claim` writes nothing of its own | **GREEN** |
+| `test_the_shared_body_reaches_both_terminal_states` | both `GPU_PROVIDER_CANCEL_UNCONFIRMED` and `GPU_PROVIDER_ATTEMPTS_EXHAUSTED` live there | **GREEN** |
+| `test_the_commit_is_the_last_thing_the_shared_body_does` | exactly one `commit`, exactly one `return`, return after commit | **GREEN** |
+
+Rollback and visibility follow from the commit boundary rather than needing their
+own exercise: every write sits above one commit in one transaction, and the
+broker's `UPDATE` runs inside that same transaction because a `SECURITY DEFINER`
+function joins its caller's. An exception anywhere above takes the lease stamp
+with it.
+
+**Reachability — the half the refactor does not give for free:**
+
+| Test | Holds |
+|---|---|
+| `test_entry_into_the_shared_body_is_gated_only_by_finding_a_row` | `_claim` has **exactly one** conditional before the handover, and it is `if invocation is None: return`. Every additional condition would be one the broker path must reproduce, and an unreproduced one is a silent break | **GREEN** |
+
+The structural half says the entry gate is only "did a row turn up". The
+behavioural half — that both sides find *the same* row over the same population —
+is category A, `equivalence:claim-eligibility` and `equivalence:ordering`.
+
+### What this set does not yet cover
+
+`_claim_via_broker` does not exist. The evidence above establishes that the
+adaptation *would* be behaviour-preserving: same rows, same order, same
+exactly-once property, same body, same entry gate, and a second stamp that cannot
+be expressed. It does not establish that a written AFTER path is correct, because
+there is no written AFTER path.
+
+**GPU equivalence is GREEN for the evidence set the coordinator defined.** Wiring
+has not started.
+
 
 ---
 
@@ -327,12 +380,17 @@ the pre-push run `31378252332`. That is separate debt and is not Gate 2.*
 |---|---|---|
 | **1A** detector correctness and discrimination | **GREEN** | staging canary |
 | **2** unmodified pgvector reproduction | **GREEN** | staging canary |
-| **GPU nine-point equivalence** | **RED** — see §5a | staging canary |
+| **GPU equivalence** (A comparative · B invariant · C shared-body + reachability) | **GREEN** — see §5a | staging canary |
 | **1B** real workload observation | **PENDING** | production rollout |
 
-**The first staging `NOBYPASSRLS` canary opens on 1A + 2 + nine-point
-equivalence.** Two of the three are green; the equivalence proofs are not, so the
-canary does not open. **Gate 2 being green disarms nothing on its own.**
+**The first staging `NOBYPASSRLS` canary opens on 1A + 2 + GPU equivalence.** All
+three are now green. **That does not disarm anything by itself** — opening the
+canary is a deliberate act, it needs the `_claim_via_broker` path that does not
+yet exist, and it needs a disarm migration that has not been written.
+
+What the evidence establishes is that the adaptation *would* preserve behaviour.
+What it does not establish is that a written AFTER path is correct, because there
+is none. Production rollout additionally requires Gate 1B.
 
 `BYPASSRLS` remains 7/7.
 

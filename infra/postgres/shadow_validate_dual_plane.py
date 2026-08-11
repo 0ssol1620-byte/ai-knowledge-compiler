@@ -1033,6 +1033,209 @@ async def _broker_pass(
         )
 
 
+GPU_BROKER = "akc_claim_gpu_invocation"
+
+# The ORM predicate from GpuInvocationWorker._claim, written as SQL. This is the
+# BEFORE side of the comparative evidence: if it and the broker disagree about
+# which rows are claimable, or in what order, then the adaptation is not
+# behaviour preserving and the disagreement is the finding.
+_BEFORE_ELIGIBLE = """
+SELECT id FROM gpu_provider_invocations
+WHERE tenant_id = ANY($1::uuid[])
+  AND status IN ('queued', 'submitting', 'submitted', 'running', 'retry',
+                 'cancel_requested', 'cancelling')
+  AND available_at <= now()
+  AND (lease_expires_at IS NULL OR lease_expires_at <= now())
+ORDER BY available_at, created_at, id
+"""
+
+
+async def _seed_invocations(
+    admin: asyncpg.Connection[asyncpg.Record],
+    fixture: Fixture,
+    rows: list[dict[str, Any]],
+) -> list[uuid.UUID]:
+    """Seed gpu_provider_invocations with an explicitly shaped population."""
+
+    now = datetime.now(UTC)
+    created: list[uuid.UUID] = []
+    for index, row in enumerate(rows):
+        invocation = uuid.uuid4()
+        await admin.execute(
+            """
+            INSERT INTO gpu_provider_invocations (
+                id, tenant_id, job_id, project_id, document_id,
+                document_version_id, provider, provider_key, endpoint_id,
+                idempotency_key, request_manifest_sha256, status, input_bucket,
+                input_object_key, input_sha256, output_object_key, options,
+                model_revision, runtime_image_digest, adapter_version,
+                transition_policy, transition_attempt, attempt_count,
+                cancel_attempt_count, max_attempts, available_at,
+                lease_expires_at, lease_token, event_sequence, created_at,
+                updated_at
+            ) VALUES (
+                $1, $2, $3, $4, $5, 'v1', 'runpod', 'parser', 'ep-1',
+                $6, repeat('a', 64), $7, 'source', 'in/key', repeat('b', 64),
+                -- model_revision is length-checked 40..64 and
+                -- runtime_image_digest exactly 71, so both are built rather
+                -- than written as short placeholders.
+                'out/key', '{}', repeat('d', 48),
+                'sha256:' || repeat('c', 64), 'ad-1',
+                '{}', 0, 0, 0, 3, $8, $9, $10, 0, $11, $11
+            )
+            """,
+            invocation, fixture.tenant, fixture.job, fixture.project,
+            fixture.document, "idem-" + invocation.hex, row["status"],
+            row["available_at"], row.get("lease_expires_at"),
+            row.get("lease_token"),
+            now - timedelta(seconds=100 - index),
+        )
+        created.append(invocation)
+    return created
+
+
+async def _drain_broker(
+    connection: asyncpg.Connection[asyncpg.Record], limit: int = 40
+) -> list[uuid.UUID]:
+    """Claim until the broker has nothing left, preserving grant order."""
+
+    granted: list[uuid.UUID] = []
+    for _ in range(limit):
+        async with connection.transaction():
+            await connection.execute(
+                "SELECT set_config('app.control_plane', 'claim', true)"
+            )
+            row = await connection.fetchrow(
+                f"SELECT * FROM {GPU_BROKER}(300)"  # noqa: S608 - module constant
+            )
+        if row is None:
+            return granted
+        granted.append(row["claim_id"])
+    raise ShadowFailure("broker did not drain; the claimable set is not shrinking")
+
+
+async def _equivalence_pass(
+    admin: asyncpg.Connection[asyncpg.Record],
+    parts: dict[str, Any],
+    alpha: Fixture,
+    beta: Fixture,
+    report: Report,
+) -> None:
+    """COMPARATIVE evidence: BEFORE against the broker over one population.
+
+    The four dimensions that stay genuinely comparative — eligibility, ordering,
+    concurrency and lease expiry. The other two categories are structural and
+    are asserted in services/scheduler/tests/test_claim_equivalence.py.
+
+    Draining the broker proves eligibility and ordering together: each claim
+    removes exactly one row from the claimable set, so the grant *sequence*
+    equals the BEFORE-ordered eligible list only if both agree on both.
+    """
+
+    print("\nGPU claim equivalence - BEFORE vs broker")
+    now = datetime.now(UTC)
+    tenants = [alpha.tenant, beta.tenant]
+    password = secrets.token_urlsafe(32)
+    login = "akc_scheduler_runtime"
+    await admin.execute("ALTER ROLE " + login + " PASSWORD '" + password + "'")
+    await admin.execute("GRANT akc_gpu_worker TO " + login)
+    callers: list[asyncpg.Connection[asyncpg.Record]] = []
+    try:
+        for _ in range(4):
+            connection = await asyncpg.connect(user=login, password=password, **parts)
+            await connection.execute("SET ROLE akc_gpu_worker")
+            callers.append(connection)
+        caller = callers[0]
+
+        future = now + timedelta(hours=1)
+        past = now - timedelta(hours=1)
+        # Every reason a row is or is not claimable, in one population.
+        population = [
+            {"status": "queued", "available_at": now - timedelta(minutes=5)},
+            {"status": "running", "available_at": now - timedelta(minutes=4)},
+            {"status": "retry", "available_at": now - timedelta(minutes=3),
+             "lease_expires_at": past, "lease_token": uuid.uuid4()},
+            {"status": "cancelling", "available_at": now - timedelta(minutes=2)},
+            {"status": "completed", "available_at": past},
+            {"status": "dead_letter", "available_at": past},
+            {"status": "queued", "available_at": future},
+            {"status": "running", "available_at": past,
+             "lease_expires_at": future, "lease_token": uuid.uuid4()},
+        ]
+        await _seed_invocations(admin, alpha, population)
+
+        expected = [row["id"] for row in await admin.fetch(_BEFORE_ELIGIBLE, tenants)]
+        granted = await _drain_broker(caller)
+
+        report.require(
+            "equivalence:claim-eligibility",
+            set(granted) == set(expected) and len(expected) == 4,
+            "BEFORE finds " + str(len(expected)) + " claimable of "
+            + str(len(population)) + " seeded; the broker granted exactly the "
+            "same set - terminal status, not-yet-due and live-lease rows are "
+            "excluded by both",
+        )
+        report.require(
+            "equivalence:ordering",
+            granted == expected,
+            "the broker's grant sequence is BEFORE's (available_at, created_at, "
+            "id) order, row for row",
+        )
+
+        expiring = await _seed_invocations(
+            admin, alpha,
+            [{"status": "running", "available_at": now - timedelta(minutes=1),
+              "lease_expires_at": now + timedelta(hours=1),
+              "lease_token": uuid.uuid4()}],
+        )
+        before_live = [r["id"] for r in await admin.fetch(_BEFORE_ELIGIBLE, tenants)]
+        granted_live = await _drain_broker(caller)
+        await admin.execute(
+            "UPDATE gpu_provider_invocations SET lease_expires_at = $2 WHERE id = $1",
+            expiring[0], now - timedelta(seconds=1),
+        )
+        before_expired = [r["id"] for r in await admin.fetch(_BEFORE_ELIGIBLE, tenants)]
+        granted_expired = await _drain_broker(caller)
+        report.require(
+            "equivalence:lease-expiry",
+            expiring[0] not in before_live
+            and expiring[0] not in granted_live
+            and before_expired == [expiring[0]]
+            and granted_expired == [expiring[0]],
+            "a row with a live lease is claimable by neither; once its lease is "
+            "past it is claimable by both, and it is the only such row",
+        )
+
+        contended = await _seed_invocations(
+            admin, alpha,
+            [{"status": "queued", "available_at": now - timedelta(minutes=1)}
+             for _ in range(8)],
+        )
+        batches = await asyncio.gather(
+            *(_drain_broker(connection, limit=6) for connection in callers)
+        )
+        broker_grants = [claim for batch in batches for claim in batch]
+        report.require(
+            "equivalence:concurrency",
+            sorted(broker_grants) == sorted(contended)
+            and len(set(broker_grants)) == len(broker_grants),
+            str(len(callers)) + " concurrent callers drained "
+            + str(len(contended)) + " contended rows into "
+            + str(len(broker_grants)) + " grants, all distinct and none lost - "
+            "the exactly-once property BEFORE gets from FOR UPDATE SKIP LOCKED, "
+            "which the broker's subquery also uses",
+        )
+    finally:
+        for connection in callers:
+            await connection.close()
+        await admin.execute("REVOKE akc_gpu_worker FROM " + login)
+        await admin.execute("ALTER ROLE " + login + " PASSWORD NULL")
+        for tenant in tenants:
+            await admin.execute(
+                "DELETE FROM gpu_provider_invocations WHERE tenant_id = $1", tenant
+            )
+
+
 async def run(url: str) -> Report:
     report = Report()
     admin = await asyncpg.connect(url)
@@ -1044,6 +1247,7 @@ async def run(url: str) -> Report:
         await _inert_pass(admin, alpha, beta, report)
         await _armed_pass(admin, _parts(url), alpha, beta, report)
         await _broker_pass(admin, _parts(url), alpha, beta, report)
+        await _equivalence_pass(admin, _parts(url), alpha, beta, report)
         # Last: it revokes alpha's membership to prove revocation is immediate.
         await _human_plane_pass(admin, _parts(url), alpha, beta, report)
     finally:
