@@ -1,22 +1,39 @@
 # Claim-site behaviour matrix — BEFORE / AFTER
 
-*Written 2026-08-12, before any wiring. Directive 1 requires a 1:1 behaviour
-matrix per claim site and a hard stop if any protected behaviour is left
-unexplained.*
+*Started 2026-08-12 as a pre-wiring matrix; reconciled the same day against the
+code that now exists. The matrix below is still the specification — what changed
+is that the AFTER path it specifies has been written and proved.*
 
-**Outcome: wiring is not started.** Two findings gate it, and only one is a true
-stop:
+## 0. Current state
 
-- **§5.1, resolved by me** — the clock divergence, which I first wrote up as a
-  founder decision and then corrected. It is a test seam, not a production
-  behaviour, and the resolution is recorded there.
-- **§5.3, a real stop** — `analysis_tasks` claims an `(outbox_event,
-  analysis_task)` pair and locks the *event*. The broker contract describes one
-  row from one table, so that site cannot be adapted without changing the
-  contract. It is the last site in the disarm order, so it blocks nothing yet.
+| | |
+|---|---|
+| GPU equivalence (comparative · invariant · shared-body + reachability) | **GREEN** |
+| `_claim_via_broker` | **IMPLEMENTED** — `gpu_jobs.py`, reusing `_claim_from_row` |
+| Written-AFTER integration proof | **GREEN** — 21 cases, `infra/postgres/verify_claim_via_broker.py` |
+| Canary A, broker path with `BYPASSRLS` **ON** | **GREEN** |
+| `GpuWorkerPolicy.use_claim_broker` | **default `false`** — the shipped path is still the ORM claim |
+| Worker roles disarmed | **none. `BYPASSRLS` is 7/7** |
+| Canary B, GPU worker at `NOBYPASSRLS` | **NOT STARTED** — no disarm migration exists |
+| Gate 1B, real workload observation | **PENDING** |
 
-No site has been wired. The canary is chosen and its matrix is complete; the
-equivalence tests §5.1 describes are not written.
+`analysis_tasks` remains out of scope for the broker contract: it claims an
+`(outbox_event, analysis_task)` pair and locks the *event*, so one `claim_id`
+from one table describes half of it (§4, §5.3). It is last in the disarm order
+and blocks nothing.
+
+### Superseded — the outcome as it stood before wiring
+
+> **Outcome: wiring is not started.** Two findings gate it, and only one is a
+> true stop: §5.1, the clock divergence, which I first wrote up as a founder
+> decision and then corrected — it is a test seam, not a production behaviour;
+> and §5.3, `analysis_tasks`, a real stop. No site has been wired. The canary is
+> chosen and its matrix is complete; the equivalence tests §5.1 describes are not
+> written.
+
+Both have since been answered: the equivalence evidence is green in three
+categories (§5a) and the GPU canary is wired behind an off-by-default flag.
+§5.3 stands unchanged.
 
 ---
 
@@ -99,7 +116,7 @@ than one sample.
 | **Transaction boundary** | One session, one `commit()` at the end; on the submit branch it also inserts a `GpuProviderAttempt` and appends a `gpu.invocation.submitting.v1` event inside the same transaction |
 | **Return** | `_Claim` with **20 fields**, including `input_object_key`, `input_sha256`, `options`, `model_revision`, `runtime_image_digest`, `adapter_version`, `provider_job_id`, and the decided `action` |
 
-### AFTER (proposed, not written)
+### AFTER — implemented as `GpuInvocationWorker._claim_via_broker`
 
 | Dimension | Behaviour |
 |---|---|
@@ -326,16 +343,31 @@ The structural half says the entry gate is only "did a row turn up". The
 behavioural half — that both sides find *the same* row over the same population —
 is category A, `equivalence:claim-eligibility` and `equivalence:ordering`.
 
-### What this set does not yet cover
+### What this set covers, and what the written-AFTER proof adds
 
-`_claim_via_broker` does not exist. The evidence above establishes that the
-adaptation *would* be behaviour-preserving: same rows, same order, same
+**GPU equivalence is GREEN for all three categories.** What that establishes is
+that the adaptation *would* be behaviour-preserving: same rows, same order, same
 exactly-once property, same body, same entry gate, and a second stamp that cannot
-be expressed. It does not establish that a written AFTER path is correct, because
-there is no written AFTER path.
+be expressed.
 
-**GPU equivalence is GREEN for the evidence set the coordinator defined.** Wiring
-has not started.
+It does **not** establish that a written AFTER path is correct — a distinction
+worth keeping, because equivalence evidence and implementation evidence are
+different things and only the second one ships. That gap is closed separately by
+`infra/postgres/verify_claim_via_broker.py`, which runs the real worker against a
+real PostgreSQL transaction with `use_claim_broker` on: 21 cases covering token
+pass-through, no second stamp, context binding and clearing, scoped reread,
+rollback, all five action branches, both terminal states, and Canary A telemetry.
+
+`_claim_via_broker` is implemented. The GPU claim path is wired behind
+`GpuWorkerPolicy.use_claim_broker`, **default `false`**, so reaching it is a
+deliberate act rather than a deployment.
+
+#### Superseded — this section before the AFTER path was written
+
+> `_claim_via_broker` does not exist. […] It does not establish that a written
+> AFTER path is correct, because there is no written AFTER path. **GPU
+> equivalence is GREEN for the evidence set the coordinator defined.** Wiring has
+> not started.
 
 
 ---
@@ -381,18 +413,36 @@ the pre-push run `31378252332`. That is separate debt and is not Gate 2.*
 | **1A** detector correctness and discrimination | **GREEN** | staging canary |
 | **2** unmodified pgvector reproduction | **GREEN** | staging canary |
 | **GPU equivalence** (A comparative · B invariant · C shared-body + reachability) | **GREEN** — see §5a | staging canary |
+| **Canary A** broker path with `BYPASSRLS` **ON** | **GREEN** | canary B |
+| **Written-AFTER integration proof** | **GREEN** — 21 cases | canary B |
 | **1B** real workload observation | **PENDING** | production rollout |
 
 **The first staging `NOBYPASSRLS` canary opens on 1A + 2 + GPU equivalence.** All
-three are now green. **That does not disarm anything by itself** — opening the
-canary is a deliberate act, it needs the `_claim_via_broker` path that does not
-yet exist, and it needs a disarm migration that has not been written.
+three are green, and Canary A and the written-AFTER proof are green on top of
+them. **That still disarms nothing by itself.** What remains before Canary B, in
+order:
 
-What the evidence establishes is that the adaptation *would* preserve behaviour.
-What it does not establish is that a written AFTER path is correct, because there
-is none. Production rollout additionally requires Gate 1B.
+1. push the AFTER-path commit, and re-run on real `pgvector/pgvector:pg17` in
+   GitHub Actions — the written-AFTER proof must be green there, not only
+   locally;
+2. write a **staging-only disarm migration for the GPU worker alone**, at a
+   revision reconciled against the current head (`0036_claim_backlog_probe`)
+   rather than against the numbering the older plan documents assumed;
+3. run Canary B in staging with the broker path on and the GPU worker at
+   `NOBYPASSRLS`. **The other six worker roles are untouched.**
 
-`BYPASSRLS` remains 7/7.
+Expanding beyond the GPU worker is forbidden until Canary B is green. Production
+rollout additionally requires Gate 1B.
+
+**`BYPASSRLS` remains 7/7. No disarm migration exists.**
+
+#### Superseded — this section before the AFTER path was written
+
+> **That does not disarm anything by itself** — opening the canary is a
+> deliberate act, it needs the `_claim_via_broker` path that does not yet exist,
+> and it needs a disarm migration that has not been written. What the evidence
+> establishes is that the adaptation *would* preserve behaviour. What it does not
+> establish is that a written AFTER path is correct, because there is none.
 
 ### Superseded — Gate 2 as it stood before CI ran
 
