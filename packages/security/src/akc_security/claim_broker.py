@@ -37,18 +37,21 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 from akc_security.tenant_context import (
     TenantContextError,
     TenantContextMissing,
+    WorkerCallback,
     WorkerClaim,
     enter_control_plane_context,
 )
 
 __all__ = [
     "BROKER_RETURN_COLUMNS",
+    "CALLBACK_RESOLVER_RETURN_COLUMNS",
     "ClaimBrokerContractViolation",
     "ClaimHealth",
     "ClaimObservation",
     "ClaimStarvationDetector",
     "claim_backlog",
     "claim_via_broker",
+    "resolve_callback_target",
 ]
 
 #: The exact result surface. Fixed by founder decision F-1 (2026-08-11) and
@@ -61,10 +64,20 @@ BROKER_RETURN_COLUMNS: Final = (
     "lease_expires_at",
 )
 
+#: The callback resolver's surface. Three identifiers, no lease: a callback has
+#: none, and a resolver that returned one would be minting the thing the claim
+#: binding exists to compare against.
+CALLBACK_RESOLVER_RETURN_COLUMNS: Final = (
+    "callback_id",
+    "tenant_id",
+    "project_id",
+)
+
 # A function name is interpolated into SQL — an identifier cannot be bound as a
 # parameter. So it is not taken from the caller as free text: it must match the
 # shape the migration emits, and nothing else is executed.
 _BROKER_NAME_PREFIX = "akc_claim_"
+_RESOLVER_NAME_PREFIX = "akc_resolve_"
 _BROKER_NAME_CHARS = frozenset("abcdefghijklmnopqrstuvwxyz0123456789_")
 
 
@@ -112,8 +125,8 @@ class ClaimObservation:
         return self.health is ClaimHealth.STARVED
 
 
-def _validate_function(function: str) -> str:
-    if not function.startswith(_BROKER_NAME_PREFIX):
+def _validate_function(function: str, *, prefix: str = _BROKER_NAME_PREFIX) -> str:
+    if not function.startswith(prefix):
         raise TenantContextMissing(f"claim_broker_name_rejected:{function}")
     if not function or set(function) - _BROKER_NAME_CHARS:
         raise TenantContextMissing(f"claim_broker_name_rejected:{function}")
@@ -178,6 +191,48 @@ def _as_datetime(value: object) -> datetime:
     if isinstance(value, datetime):
         return value
     raise ClaimBrokerContractViolation(f"claim_broker_lease_expiry_unusable:{value!r}")
+
+
+async def resolve_callback_target(
+    handle: AsyncSession | AsyncConnection,
+    *,
+    function: str,
+    invocation_id: uuid.UUID,
+    purpose: str = "job_discovery",
+) -> WorkerCallback | None:
+    """Ask which tenant a callback's row belongs to, or learn it is not one.
+
+    A provider callback names a row and nothing else, and a row's tenant is
+    exactly what a tenant-scoped session cannot look up. The same shape that
+    solved that for claims solves it here — a definer function owned by
+    ``akc_claim_broker`` with a fixed return surface — with two differences that
+    follow from a callback not being a claim: it stamps no lease, so it returns
+    none, and it is read-only, so calling it twice changes nothing.
+
+    ``None`` means the row is not a callback target: it does not exist, or the
+    provider was never given it. Both are the same answer to the caller, and
+    neither is an error — an unknown callback is a thing to decline, not to
+    crash on.
+    """
+
+    _validate_function(function, prefix=_RESOLVER_NAME_PREFIX)
+    await enter_control_plane_context(handle, purpose=purpose)
+    result = await handle.execute(
+        text(f"SELECT * FROM {function}(:invocation_id)"),  # noqa: S608 - validated identifier
+        {"invocation_id": str(invocation_id)},
+    )
+    row = result.mappings().first()
+    if row is None:
+        return None
+    if tuple(row.keys()) != CALLBACK_RESOLVER_RETURN_COLUMNS:
+        raise ClaimBrokerContractViolation(
+            f"callback_resolver_surface_changed:{function}:{','.join(row.keys())}"
+        )
+    return WorkerCallback(
+        callback_id=uuid.UUID(str(row["callback_id"])),
+        tenant_id=uuid.UUID(str(row["tenant_id"])),
+        project_id=_coerce_optional(row["project_id"]),
+    )
 
 
 async def claim_backlog(

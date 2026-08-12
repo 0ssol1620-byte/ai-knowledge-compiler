@@ -30,7 +30,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlsplit
 
-from akc_scheduler.gpu_jobs import GpuInvocationWorker, GpuWorkerPolicy
+from akc_scheduler.gpu_jobs import GpuInvocationWorker, GpuWorkerPolicy, _Claim
 from akc_security.claim_broker import ClaimBrokerContractViolation
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -303,6 +303,118 @@ async def run(url: str) -> Report:
             )
             await session.rollback()
             del third
+
+        # --- the post-claim binding, which BYPASSRLS makes invisible ---------
+        #
+        # These cases assert what the worker *binds*, not what the database then
+        # admits: the role still holds BYPASSRLS here, so no policy is in force
+        # and a visibility assertion would pass for the wrong reason.
+        # infra/postgres/verify_gpu_nobypassrls.py is where the same paths are
+        # measured against a role that cannot bypass anything.
+        async with sessions() as session, session.begin():
+            await _seed(session, tenant, project, job, document)
+        bound_claim = await worker._claim_via_broker()
+        assert bound_claim is not None
+        # Whichever row the broker chose. Earlier sections leave claimable rows
+        # behind, and asserting a particular one would be asserting the queue
+        # order this file already proves elsewhere.
+        async with sessions() as session:
+            row = (
+                await session.execute(
+                    text(
+                        "SELECT project_id, lease_token, lease_expires_at FROM"
+                        " gpu_provider_invocations WHERE id = :id"
+                    ),
+                    {"id": bound_claim.invocation_id},
+                )
+            ).one()
+        report.require(
+            "after:claim-carries-project-and-lease-expiry",
+            bound_claim.project_id == row.project_id
+            and bound_claim.lease_token == row.lease_token
+            and bound_claim.lease_expires_at == row.lease_expires_at,
+            "_Claim carries the row's project and lease expiry, not a caller's "
+            f"idea of them ({bound_claim.project_id}, {bound_claim.lease_expires_at})",
+        )
+
+        async with sessions() as session:
+            locked = await worker._locked_invocation(session, bound_claim)
+            bound = {
+                name: await _guc(session, name)
+                for name in (
+                    "app.tenant_id", "app.project_id", "app.claim_id",
+                    "app.lease_token", "app.callback_id", "app.control_plane",
+                )
+            }
+        report.require(
+            "after:locked-invocation-binds-the-whole-claim",
+            locked is not None
+            and bound["app.tenant_id"] == str(bound_claim.tenant_id)
+            and bound["app.project_id"] == str(bound_claim.project_id)
+            and bound["app.claim_id"] == str(bound_claim.invocation_id)
+            and bound["app.lease_token"] == str(bound_claim.lease_token)
+            and bound["app.callback_id"] is None
+            and bound["app.control_plane"] is None,
+            "the funnel every post-claim read and write goes through binds all "
+            "four identifiers the claim policy compares, and clears the two "
+            "settings that would open a second plane",
+        )
+
+        async with sessions() as session, session.begin():
+            callback_target = await _seed(
+                session, tenant, project, job, document,
+                status="running", provider_job_id="prov-callback",
+            )
+            unsent_target = await _seed(session, tenant, project, job, document)
+        async with sessions() as session:
+            resolved = await worker._callback_target(session, callback_target)
+        async with sessions() as session:
+            unsent = await worker._callback_target(session, unsent_target)
+        report.require(
+            "after:callback-resolver-answers-only-for-a-dispatched-row",
+            resolved is not None
+            and resolved.callback_id == callback_target
+            and resolved.tenant_id == tenant
+            and resolved.project_id == project
+            and unsent is None,
+            "the resolver names the tenant of a row the provider was given, and "
+            "declines a row it was not - three identifiers, no lease",
+        )
+
+        async with sessions() as session:
+            callback_claim = _Claim(
+                invocation_id=callback_target, tenant_id=tenant, project_id=project,
+                job_id=job, document_id=document, document_version_id="v1",
+                page_id=None, provider_key="parser", endpoint_id="ep-1",
+                idempotency_key="idem", input_bucket="source",
+                input_object_key="in/key", input_sha256="b" * 64,
+                output_object_key="out/key", options={}, model_revision="d" * 48,
+                runtime_image_digest="sha256:" + "c" * 64, adapter_version="ad-1",
+                attempt_number=0, lease_token=None, lease_expires_at=None,
+                provider_job_id="prov-callback", provider_status=None,
+                action="poll", cancellation_reason=None,
+            )
+            found = await worker._locked_invocation(
+                session, callback_claim, require_lease=False
+            )
+            callback_bound = {
+                name: await _guc(session, name)
+                for name in (
+                    "app.tenant_id", "app.project_id", "app.callback_id",
+                    "app.claim_id", "app.lease_token",
+                )
+            }
+        report.require(
+            "after:callback-binding-carries-no-invented-lease",
+            found is not None
+            and callback_bound["app.callback_id"] == str(callback_target)
+            and callback_bound["app.claim_id"] is None
+            and callback_bound["app.lease_token"] is None,
+            "the lease-independent path binds tenant, project and row and leaves "
+            "the claim and lease settings empty. It used to build a _Claim with "
+            "`invocation.lease_token or uuid.uuid4()`, which minted a token "
+            "whenever the row had none - which is every ordinary callback",
+        )
 
         # --- rollback: an exception before commit takes the lease with it ----
         async with sessions() as session, session.begin():

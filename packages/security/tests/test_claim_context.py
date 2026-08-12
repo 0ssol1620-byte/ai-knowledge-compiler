@@ -89,7 +89,10 @@ async def test_a_live_claim_sets_every_guc_the_policies_read() -> None:
         "app.claim_id": str(claim.claim_id),
         "app.lease_token": str(claim.lease_token),
         # Cleared, not left: a transaction doing one tenant's work must not
-        # still hold the cross-tenant reach it discovered the work with.
+        # still hold the cross-tenant reach it discovered the work with, and a
+        # claim must not keep a callback binding that admits rows on weaker
+        # terms than the claim itself.
+        "app.callback_id": "",
         "app.control_plane": "",
     }
     for statement, _ in handle.statements:

@@ -40,10 +40,17 @@ documented in ``docs/audit/V5_CONTROL_PLANE_BOUNDARY.md``:
   project, lease token and lease expiry that the worker actually holds. It
   refuses on any disagreement, so a worker cannot reach a tenant it did not
   claim, reuse another job's lease, or act on a lease that has run out.
+* ``enter_callback_context`` binds a transaction to one *callback*: the tenant,
+  project and row a provider callback is about. A callback carries no lease —
+  the worker released it when it handed the job to the provider — so binding one
+  would mean inventing a lease token, and an invented token is a forged claim.
+  This is the narrower boundary that says so: one row, no lease, no claim.
 
-The two are mutually exclusive by construction. Binding a tenant clears the
+The three are mutually exclusive by construction. Binding a tenant clears the
 control-plane declaration, so a transaction that discovered work across tenants
-loses that reach the moment it starts doing the work.
+loses that reach the moment it starts doing the work; binding a callback clears
+the claim and the lease, so a callback cannot borrow a claim's authority and a
+claim cannot quietly widen into the lease-free callback shape.
 """
 
 from __future__ import annotations
@@ -62,11 +69,14 @@ __all__ = [
     "TenantContextError",
     "TenantContextMismatch",
     "TenantContextMissing",
+    "WorkerCallback",
+    "WorkerCallbackContext",
     "WorkerClaim",
     "WorkerClaimContext",
     "WorkerClaimOwnerMismatch",
     "WorkerLeaseExpired",
     "WorkerTenantContext",
+    "enter_callback_context",
     "enter_claim_context",
     "enter_control_plane_context",
     "enter_tenant_context",
@@ -76,6 +86,7 @@ _TENANT_GUC = "app.tenant_id"
 _PROJECT_GUC = "app.project_id"
 _CLAIM_GUC = "app.claim_id"
 _LEASE_GUC = "app.lease_token"
+_CALLBACK_GUC = "app.callback_id"
 _CONTROL_PLANE_GUC = "app.control_plane"
 
 #: The only reasons a transaction may read across tenants. The database repeats
@@ -159,6 +170,31 @@ class WorkerClaimContext:
 
     backend: str
     claim: WorkerClaim
+    applied: bool
+
+
+@dataclass(frozen=True, slots=True)
+class WorkerCallback:
+    """One row a provider callback is about, as resolved rather than asserted.
+
+    There is no lease and no ``claimed_by`` here, and their absence is the
+    point. A callback arrives after the worker released the lease, so the only
+    honest answer to "which lease authorises this" is *none* — the authority is
+    the row's identity plus whatever authenticated the callback at the HTTP
+    boundary, and this binding narrows the database to that one row.
+    """
+
+    callback_id: uuid.UUID
+    tenant_id: uuid.UUID
+    project_id: uuid.UUID | None
+
+
+@dataclass(frozen=True, slots=True)
+class WorkerCallbackContext:
+    """What the callback binding applied."""
+
+    backend: str
+    callback: WorkerCallback
     applied: bool
 
 
@@ -374,6 +410,7 @@ async def enter_claim_context(
         (_PROJECT_GUC, "" if project_id is None else str(project_id)),
         (_CLAIM_GUC, str(claim_id)),
         (_LEASE_GUC, str(lease_token)),
+        (_CALLBACK_GUC, ""),
         (_CONTROL_PLANE_GUC, ""),
     ):
         await handle.execute(
@@ -381,3 +418,54 @@ async def enter_claim_context(
             {"name": name, "value": value},
         )
     return WorkerClaimContext(backend=backend, claim=normalised, applied=True)
+
+
+async def enter_callback_context(
+    handle: AsyncSession | AsyncConnection,
+    *,
+    callback: WorkerCallback,
+    expected_callback_id: object = None,
+) -> WorkerCallbackContext:
+    """Bind the transaction to one callback row, or refuse.
+
+    The lease-bound sibling of this function refuses when the lease has run out.
+    There is no equivalent test here, and inventing one would be worse than
+    having none: a callback that arrives after the lease was released is the
+    *normal* case, so any lease this function checked would have to be
+    manufactured, and ``_require_match`` exists precisely to stop manufactured
+    identifiers from passing as read ones.
+
+    What is checked instead is what a callback actually has: a tenant and a row,
+    both well formed, and agreement with whatever the caller was told. The claim
+    and lease settings are cleared rather than left alone, so a transaction that
+    held a claim cannot slide into the lease-free shape while keeping the
+    claim's reach.
+    """
+
+    tenant = _coerce(callback.tenant_id, field="tenant_id")
+    callback_id = _coerce(callback.callback_id, field="callback_id")
+    project_id = _coerce_optional(callback.project_id, field="project_id")
+    _require_match(expected_callback_id, callback_id, field="callback_id")
+
+    backend = _backend(handle)
+    normalised = WorkerCallback(
+        callback_id=callback_id, tenant_id=tenant, project_id=project_id
+    )
+    if backend != "postgresql":
+        return WorkerCallbackContext(
+            backend=backend, callback=normalised, applied=False
+        )
+
+    for name, value in (
+        (_TENANT_GUC, str(tenant)),
+        (_PROJECT_GUC, "" if project_id is None else str(project_id)),
+        (_CALLBACK_GUC, str(callback_id)),
+        (_CLAIM_GUC, ""),
+        (_LEASE_GUC, ""),
+        (_CONTROL_PLANE_GUC, ""),
+    ):
+        await handle.execute(
+            text("SELECT set_config(:name, :value, true)"),
+            {"name": name, "value": value},
+        )
+    return WorkerCallbackContext(backend=backend, callback=normalised, applied=True)

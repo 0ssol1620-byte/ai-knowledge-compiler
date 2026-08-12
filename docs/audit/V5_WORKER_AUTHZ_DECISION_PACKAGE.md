@@ -537,11 +537,14 @@ one `ALTER ROLE`.
 | 2 | PR | `claim_via_broker` + `ClaimStarvationDetector` in `akc_security` | 0035 | **done** |
 | 3 | PR | `_claim_via_broker` + written-AFTER integration proof | 0035, 0036 | **done** |
 | 4 | `0036_claim_backlog_probe` | the second backlog probe Gate 1A needs | 0035 | **done** |
-| 5 | `0037_canary_b_disarm_gpu_worker` | `NOBYPASSRLS` on the **GPU worker alone**, opt-in via `AKC_CANARY_B_DISARM_GPU=1`, no-op otherwise | Gates 1A, 2 | **written, not run** |
+| 5 | `0037_gpu_post_claim_authorization` | the claim binding admits a lease *release*; the callback plane and its resolver. **No role attribute changes.** Replaced `0037_canary_b_disarm_gpu_worker`, whose behaviour depended on `AKC_CANARY_B_DISARM_GPU` — one revision, two privilege states, and a no-op application that would never re-run | Gates 1A, 2 | **done** |
+| 5b | `infra/postgres/canary_b_disarm.py` | the disarm, as an operation: assert 7 armed, disarm one, assert 6, run the complete proof, write a receipt, roll back unless `--leave-disarmed` | 5 | **rehearsed, not run** |
 | — | **GATE 1A** detector correctness and discrimination | wired into `run_one`; discriminating pair proved | 2, 3 | **GREEN** |
 | — | **GATE 2** unmodified pgvector reproduction | CI run `31560809644` on `pgvector/pgvector:pg17`, all steps success including the written-AFTER proof | `ci.yml` | **GREEN** |
-| — | **BLOCKER** | `_locked_invocation` binds tenant only, so every post-claim statement reads 0 rows once the GPU worker is disarmed. Measured: tenant-only 0 rows, full claim context 1 row | — | **blocks canary B** |
-| 6 | PR | `_Claim` carries `project_id` and `lease_expires_at`; `_locked_invocation` binds the claim | 5 | **not started — required before canary B** |
+| — | ~~**BLOCKER**~~ | `_locked_invocation` bound tenant only, so every post-claim statement read 0 rows once the GPU worker was disarmed. Cleared by step 6 | — | **cleared** |
+| 6 | PR | `_Claim` carries `project_id` and `lease_expires_at`; `_locked_invocation` binds the claim; `admit_callback` gets its own lease-independent boundary; the lease is released by clearing its expiry and keeping its token. Full access-site matrix in `V5_GPU_ACCESS_SITE_MATRIX.md`, 33 proof cases in `infra/postgres/verify_gpu_nobypassrls.py` | 5 | **done** |
+| — | **GAP-1** | `akc_gpu_worker` holds no `INSERT` on `gpu_provider_invocations`, so `_create_transition` cannot write its child row. Fails identically with `BYPASSRLS` on — pre-existing, not caused by canary B, and not fixed here | — | **open, does not block canary B** |
+| — | **GAP-2** | `_lineage_state` cannot read a parent invocation under the claim binding. Unreachable while GAP-1 stands | GAP-1 | **open** |
 | 7 | **CANARY B** | staging only: broker path on + GPU worker `NOBYPASSRLS`. Rollback prepared: `infra/postgres/canary_b_rollback.py` | 5, 6 | not started |
 | 8 | PR | `enter_control_plane_context` at the five scan sites; AST test | — | not started |
 | 9 | PR | url fetcher claim site calls the broker | 0035 | not started |

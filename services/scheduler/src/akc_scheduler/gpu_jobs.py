@@ -63,8 +63,15 @@ from akc_security.claim_broker import (
     ClaimStarvationDetector,
     claim_backlog,
     claim_via_broker,
+    resolve_callback_target,
 )
-from akc_security.tenant_context import enter_claim_context, enter_tenant_context
+from akc_security.tenant_context import (
+    WorkerCallback,
+    WorkerClaim,
+    enter_callback_context,
+    enter_claim_context,
+    enter_tenant_context,
+)
 from akc_telemetry import (
     observe_parallel_provider_job,
     observe_provider_cold_start,
@@ -97,6 +104,9 @@ logger = logging.getLogger(__name__)
 
 _CLAIM_QUEUE = "gpu_provider_invocations"
 _CLAIM_BROKER = "akc_claim_gpu_invocation"
+# The callback path's counterpart to the claim broker. Same shape, no lease: it
+# answers "whose row is this" for a row the provider was actually given.
+_CALLBACK_RESOLVER = "akc_resolve_gpu_callback"
 # The identity the broker hands the lease to. Ownership here is "who was given
 # the token", not a column comparison — no lease-bearing table in this schema
 # carries claimed_by, worker_id or any other ownership column.
@@ -185,8 +195,23 @@ class GpuWorkerPolicy:
 
 @dataclass(frozen=True, slots=True)
 class _Claim:
+    """What the worker holds after a row is claimed, and how far it authorises.
+
+    ``project_id``, ``lease_token`` and ``lease_expires_at`` are here because the
+    database compares against all three: the ``0034`` claim binding admits a row
+    only to a session that names the tenant, the project, the row and the live
+    lease. Carrying four of the five and binding the tenant alone is what made
+    every post-claim read return nothing.
+
+    The lease pair is optional, and only for the callback path — a callback
+    arrives after the lease was released, so there is no token to carry.
+    ``None`` there is the truth; the alternative is to mint one, and a minted
+    token is a claim the worker does not hold.
+    """
+
     invocation_id: uuid.UUID
     tenant_id: uuid.UUID
+    project_id: uuid.UUID | None
     job_id: uuid.UUID
     document_id: uuid.UUID
     document_version_id: str
@@ -203,7 +228,8 @@ class _Claim:
     runtime_image_digest: str
     adapter_version: str
     attempt_number: int
-    lease_token: uuid.UUID
+    lease_token: uuid.UUID | None
+    lease_expires_at: datetime | None
     provider_job_id: str | None
     provider_status: str | None
     action: Literal["submit", "poll", "cancel", "local_terminal"]
@@ -236,6 +262,34 @@ class _TransitionPlan:
 
 class GpuResultConflict(RuntimeError):
     """A terminal replay disagrees with already admitted immutable evidence."""
+
+
+def _release_lease(invocation: GpuProviderInvocation) -> None:
+    """Give the claim up, keeping the token that proves whose release it was.
+
+    Every path that finishes with a row ends here, and it used to write
+    ``lease_token = None`` beside the expiry. Under row-level security that row
+    is unwritable: PostgreSQL applies the claim policy to the *new* row as well
+    as the old one, and a row with no token satisfies no claim — measured as
+    ``ERROR 42501 new row violates row-level security policy`` on a NOBYPASSRLS
+    cluster, from a session holding a valid claim on that very row.
+
+    The fix that suggests itself is to let the policy admit a token-less row.
+    That was measured too, and it is worse than it looks: admitting
+    ``lease_token IS NULL`` means any row in the tenant whose lease is free
+    becomes readable **and writable** to a worker that knows its id, because the
+    only thing left in the predicate is an identifier. The lease token is the
+    secret; dropping it from the row drops the secret from the check.
+
+    So the token stays and the expiry goes. ``lease_expires_at IS NULL`` is
+    already what "not leased" means everywhere in this schema, so the row is
+    claimable again immediately and a re-claim overwrites the token. Clearing the
+    expiry rather than back-dating it also keeps a *released* lease distinct from
+    a *lapsed* one, which matters: a worker whose lease lapsed has been
+    superseded and must not be able to reach its old row.
+    """
+
+    invocation.lease_expires_at = None
 
 
 def _utcnow() -> datetime:
@@ -478,8 +532,7 @@ class GpuInvocationWorker:
     ) -> None:
         invocation.status = status
         invocation.last_error_code = code
-        invocation.lease_token = None
-        invocation.lease_expires_at = None
+        _release_lease(invocation)
         invocation.completed_at = now
         invocation.updated_at = now
         await append_gpu_event(
@@ -806,8 +859,7 @@ class GpuInvocationWorker:
         invocation.status = "failed"
         invocation.last_error_code = error.code
         invocation.completed_at = now
-        invocation.lease_token = None
-        invocation.lease_expires_at = None
+        _release_lease(invocation)
         invocation.updated_at = now
         if attempt is not None:
             attempt.status = "failed"
@@ -980,6 +1032,14 @@ class GpuInvocationWorker:
                 raise ClaimBrokerContractViolation(
                     f"claim_broker_row_unreadable:{_CLAIM_QUEUE}:{granted.claim_id}"
                 )
+            if invocation.project_id != granted.project_id:
+                # The context was bound to the broker's project a moment ago and
+                # the claim is about to carry the row's. While the worker still
+                # holds BYPASSRLS nothing downstream would notice them differ.
+                raise ClaimBrokerContractViolation(
+                    f"claim_broker_project_mismatch:{granted.claim_id}:"
+                    f"{granted.project_id}!={invocation.project_id}"
+                )
             return await self._claim_from_row(
                 session,
                 invocation,
@@ -1095,6 +1155,11 @@ class GpuInvocationWorker:
         return _Claim(
             invocation_id=invocation.id,
             tenant_id=invocation.tenant_id,
+            # Read off the claimed row rather than passed in, on both paths. The
+            # broker also returns a project; taking the row's makes a
+            # disagreement between the two a mismatch the claim binding refuses
+            # rather than a value one caller silently preferred.
+            project_id=invocation.project_id,
             job_id=invocation.job_id,
             document_id=invocation.document_id,
             document_version_id=invocation.document_version_id,
@@ -1112,6 +1177,7 @@ class GpuInvocationWorker:
             adapter_version=invocation.adapter_version,
             attempt_number=invocation.attempt_count,
             lease_token=token,
+            lease_expires_at=lease_expires_at,
             provider_job_id=invocation.provider_job_id,
             provider_status=invocation.provider_status,
             action=action,
@@ -1174,9 +1240,46 @@ class GpuInvocationWorker:
         *,
         require_lease: bool = True,
     ) -> GpuProviderInvocation | None:
-        # Every post-claim GPU write funnels through here, so this is where the
-        # transaction gets bound to the claimed invocation's tenant.
-        await enter_tenant_context(session, tenant_id=claim.tenant_id)
+        """Bind the transaction, then read the one row it is allowed to touch.
+
+        Every post-claim GPU read and write funnels through here, so this is the
+        one place the binding has to be right. It used to bind the tenant alone,
+        which the ``0034`` claim policy reads as ordinary tenant-scoped access
+        and admits no rows for — measured at zero rows against a NOBYPASSRLS
+        cluster while the same session with the full claim bound saw one.
+
+        ``require_lease`` selects which of two boundaries applies, and they are
+        not the same authority. With a lease the worker holds a claim and binds
+        it. Without one the caller is a provider callback, which has no lease to
+        bind and gets the narrower callback binding instead — never a claim
+        binding with an invented token in it.
+        """
+
+        if require_lease:
+            await enter_claim_context(
+                session,
+                claim=WorkerClaim(
+                    claim_id=claim.invocation_id,
+                    tenant_id=claim.tenant_id,
+                    project_id=claim.project_id,
+                    # Checked rather than defaulted: a lease-bound caller with no
+                    # lease is a defect in the caller, and _coerce says so.
+                    lease_token=cast(uuid.UUID, claim.lease_token),
+                    lease_expires_at=cast(datetime, claim.lease_expires_at),
+                    claimed_by=_CLAIM_WORKER_ID,
+                ),
+                worker_id=_CLAIM_WORKER_ID,
+                now=self._clock(),
+            )
+        else:
+            await enter_callback_context(
+                session,
+                callback=WorkerCallback(
+                    callback_id=claim.invocation_id,
+                    tenant_id=claim.tenant_id,
+                    project_id=claim.project_id,
+                ),
+            )
         invocation = await session.scalar(
             select(GpuProviderInvocation)
             .where(
@@ -1235,8 +1338,7 @@ class GpuInvocationWorker:
             invocation.object_grant_expires_at = now + timedelta(
                 seconds=self._policy.presign_ttl_seconds
             )
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.available_at = now + timedelta(seconds=self._policy.poll_interval_seconds)
             invocation.status = "cancel_requested" if fence else "submitted"
             invocation.cancellation_reason = fence
@@ -1280,8 +1382,7 @@ class GpuInvocationWorker:
             )
             invocation.cancellation_reason = fence
             invocation.available_at = now + timedelta(seconds=self._policy.poll_interval_seconds)
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             await append_gpu_event(
                 session,
@@ -1478,8 +1579,7 @@ class GpuInvocationWorker:
                 invocation.status = "cancel_requested"
                 invocation.cancellation_reason = fence
                 invocation.available_at = now
-                invocation.lease_token = None
-                invocation.lease_expires_at = None
+                _release_lease(invocation)
                 await append_gpu_event(
                     session,
                     invocation,
@@ -1540,8 +1640,7 @@ class GpuInvocationWorker:
             invocation.last_error_code = None
             invocation.completed_at = now
             invocation.updated_at = now
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             attempt.status = "completed"
             attempt.provider_response_sha256 = result.raw_provider_response_sha256
             attempt.result_manifest_sha256 = manifest_sha
@@ -1625,8 +1724,7 @@ class GpuInvocationWorker:
                 attempt.retryable = error.retryable or retry_decision.category == "gpu_oom"
                 attempt.last_polled_at = now
             invocation.last_error_code = error.code
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             transition_requested = retry_decision.strategy in {
                 "reduce_or_escalate",
@@ -1747,8 +1845,7 @@ class GpuInvocationWorker:
             invocation.provider_job_id = None
             invocation.provider_status = "CANCELLED"
             invocation.provider_deadline_at = None
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             if timed_out and invocation.attempt_count < invocation.max_attempts:
                 invocation.status = "retry"
@@ -1821,8 +1918,7 @@ class GpuInvocationWorker:
             if invocation is None or invocation.status in _TERMINAL_STATES:
                 return
             invocation.last_error_code = error.code
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             if (
                 error.retryable
@@ -1969,6 +2065,45 @@ class GpuInvocationWorker:
             )
         return True
 
+    async def _callback_target(
+        self,
+        session: AsyncSession,
+        invocation_id: uuid.UUID,
+    ) -> WorkerCallback | None:
+        """Find out whose row a callback names, by the route the backend needs.
+
+        On PostgreSQL that is the definer resolver: the session is about to be
+        tenant-scoped, and a tenant-scoped session cannot read the column that
+        says which tenant. On the SQLite test adapter there are no GUCs, no
+        policies and no definer functions, so the lookup is the direct read it
+        always was — the same reasoning that makes ``enter_*_context`` report
+        ``applied=False`` there rather than pretend.
+        """
+
+        if self._engine.dialect.name == "postgresql":
+            return await resolve_callback_target(
+                session,
+                function=_CALLBACK_RESOLVER,
+                invocation_id=invocation_id,
+            )
+        row = (
+            await session.execute(
+                select(
+                    GpuProviderInvocation.id,
+                    GpuProviderInvocation.tenant_id,
+                    GpuProviderInvocation.project_id,
+                ).where(
+                    GpuProviderInvocation.id == invocation_id,
+                    GpuProviderInvocation.provider_job_id.is_not(None),
+                )
+            )
+        ).one_or_none()
+        if row is None:
+            return None
+        return WorkerCallback(
+            callback_id=row.id, tenant_id=row.tenant_id, project_id=row.project_id
+        )
+
     async def admit_callback(
         self,
         *,
@@ -1982,6 +2117,19 @@ class GpuInvocationWorker:
         The HTTP boundary must validate the callback signature before invoking
         this method. This method revalidates object evidence and tenant/job
         fences; it never trusts inline callback output.
+
+        **This runs as ``akc_gpu_worker``**, the same database role and the same
+        engine as the claim loop — ``create_gpu_engine`` pins the role on every
+        connection, and there is one worker. So the callback is inside canary B's
+        blast radius, and the read below used to name no tenant at all: under
+        row-level security it returns nothing, and a callback that finds nothing
+        looks exactly like a callback for a row that was already deleted.
+
+        The tenant is resolved rather than assumed. A callback names a row and a
+        signature; a row's tenant is precisely what a tenant-scoped session
+        cannot look up, which is the same problem the claim broker solved, so it
+        is solved the same way and the resolver returns no lease because a
+        callback has none.
         """
 
         if (
@@ -1992,8 +2140,15 @@ class GpuInvocationWorker:
         ):
             raise ValueError("invalid provider callback identity")
         async with self._sessions() as session:
+            target = await self._callback_target(session, invocation_id)
+            if target is None:
+                return False
+            await enter_callback_context(session, callback=target)
             invocation = await session.scalar(
-                select(GpuProviderInvocation).where(GpuProviderInvocation.id == invocation_id)
+                select(GpuProviderInvocation).where(
+                    GpuProviderInvocation.tenant_id == target.tenant_id,
+                    GpuProviderInvocation.id == invocation_id,
+                )
             )
             if invocation is None:
                 return False
@@ -2005,6 +2160,7 @@ class GpuInvocationWorker:
             claim = _Claim(
                 invocation_id=invocation.id,
                 tenant_id=invocation.tenant_id,
+                project_id=invocation.project_id,
                 job_id=invocation.job_id,
                 document_id=invocation.document_id,
                 document_version_id=invocation.document_version_id,
@@ -2021,7 +2177,12 @@ class GpuInvocationWorker:
                 runtime_image_digest=invocation.runtime_image_digest,
                 adapter_version=invocation.adapter_version,
                 attempt_number=invocation.attempt_count,
-                lease_token=invocation.lease_token or uuid.uuid4(),
+                # No lease, stated as no lease. This read `invocation.lease_token
+                # or uuid.uuid4()`, which manufactured a token whenever the row
+                # had none — which is every ordinary callback, because the lease
+                # is released when the job is handed to the provider.
+                lease_token=None,
+                lease_expires_at=None,
                 provider_job_id=invocation.provider_job_id,
                 provider_status=invocation.provider_status,
                 action="poll",
