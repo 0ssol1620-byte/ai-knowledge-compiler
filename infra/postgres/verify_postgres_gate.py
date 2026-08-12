@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
-import secrets
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -28,70 +27,31 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 
 ROOT = Path(__file__).resolve().parents[2]
-APP_ROLE = "akc_ci_app_runtime"
-TENANT_TABLES = frozenset(
-    {
-        "api_keys",
-        "audit_events",
-        "block_revisions",
-        "blocks",
-        "credit_accounts",
-        "credit_ledger",
-        "deletion_receipts",
-        "document_versions",
-        "documents",
-        "entities",
-        "exports",
-        "feature_flags",
-        "idempotency_records",
-        "job_events",
-        "knowledge_notes",
-        "memberships",
-        "outbox_events",
-        "page_assets",
-        "pages",
-        "processing_jobs",
-        "project_memberships",
-        "projects",
-        "relations",
-        "review_items",
-        "source_files",
-        "team_invitation_deliveries",
-        "team_invitations",
-        "tenants",
-        "upload_sessions",
-        "webhook_deliveries",
-        "webhook_endpoints",
-    }
-)
 
-PROJECT_SCOPED_TABLES = frozenset(
+# The tenant-table inventory and the cross-tenant isolation probe used to live
+# here as two hardcoded frozensets and a disposable role granted
+# ``SELECT, INSERT, UPDATE, DELETE ON ALL TABLES`` — a role broader than any
+# role that actually runs, so isolation was proven against a strawman. Both now
+# live in ``schema_security_gate.py``, which reads the catalog: every table
+# carrying ``tenant_id`` is in scope automatically, and the probe reproduces the
+# real per-worker grant surface.
+#
+# What stays here is what that gate does not cover: role membership topology,
+# the scheduler/dispatch capability contracts, and dispatch advisory fairness.
+
+# Tables that carry project_id yet are deliberately not project-scoped. Named
+# with the reason so the set cannot grow by accident: anything else with a
+# project_id column and no project_memberships policy fails the gate.
+PROJECT_SCOPE_EXCEPTIONS = frozenset(
     {
-        "analysis_tasks",
-        "block_revisions",
-        "blocks",
-        "document_semantic_classifications",
-        "document_versions",
-        "documents",
-        "entities",
-        "exports",
-        "gpu_invocation_events",
-        "gpu_provider_attempts",
-        "gpu_provider_invocations",
-        "job_events",
-        "knowledge_notes",
-        "page_assets",
-        "page_attempt_transition_events",
-        "page_attempts",
-        "pages",
-        "processing_jobs",
+        # The membership table itself. A policy consulting project_memberships
+        # to decide access to project_memberships would recurse.
         "project_memberships",
-        "projects",
-        "relations",
-        "review_items",
-        "source_files",
-        "upload_sessions",
-        "url_fetch_tasks",
+        # Pre-existing gap, not introduced here: trial_sessions carries
+        # project_id but holds only a tenant-isolation policy. Recorded in
+        # docs/audit/V5_WORKER_PRIVILEGE_BOUNDARY.md rather than closed here,
+        # because changing its policy is a scope decision, not a repair.
+        "trial_sessions",
     }
 )
 
@@ -155,54 +115,68 @@ async def _verify_schema(admin: asyncpg.Connection[asyncpg.Record]) -> None:
             f"database heads {sorted(current_heads)} != source heads {sorted(expected_heads)}"
         )
 
-    rows = await admin.fetch(
-        """
-        SELECT
-            class.relname,
-            class.relrowsecurity,
-            class.relforcerowsecurity,
-            count(policy.policyname) AS policy_count
-        FROM pg_class AS class
-        JOIN pg_namespace AS namespace ON namespace.oid = class.relnamespace
-        LEFT JOIN pg_policies AS policy
-          ON policy.schemaname = namespace.nspname
-         AND policy.tablename = class.relname
-        WHERE namespace.nspname = 'public'
-          AND class.relname = ANY($1::text[])
-        GROUP BY class.relname, class.relrowsecurity, class.relforcerowsecurity
-        """,
-        sorted(TENANT_TABLES),
-    )
-    observed = {str(row["relname"]): row for row in rows}
-    if set(observed) != TENANT_TABLES:
-        raise AssertionError(f"missing tenant RLS tables: {sorted(TENANT_TABLES - set(observed))}")
-    unsafe = sorted(
-        name
-        for name, row in observed.items()
-        if not row["relrowsecurity"]
-        or not row["relforcerowsecurity"]
-        or int(row["policy_count"]) < 1
-    )
-    if unsafe:
-        raise AssertionError(f"RLS is not forced with a policy on: {unsafe}")
-
+    # Tenant-table RLS coverage is asserted from the catalog by
+    # schema_security_gate.py. What remains here is the project-scope policy
+    # *shape*, which that gate does not model: the inventory is every table the
+    # catalog shows carrying a project policy, so a new one is covered on
+    # arrival rather than when someone remembers to edit a list.
     project_policy_rows = await admin.fetch(
         """
         SELECT tablename, policyname, permissive, cmd
         FROM pg_policies
         WHERE schemaname = 'public'
-          AND tablename = ANY($1::text[])
           AND policyname LIKE '%_project_%'
-        """,
-        sorted(PROJECT_SCOPED_TABLES),
+        """
     )
     project_policies: dict[str, dict[str, asyncpg.Record]] = {}
     for row in project_policy_rows:
         project_policies.setdefault(str(row["tablename"]), {})[str(row["cmd"]).upper()] = row
-    missing_project_tables = PROJECT_SCOPED_TABLES - set(project_policies)
-    if missing_project_tables:
-        raise AssertionError(f"missing project RLS policies: {sorted(missing_project_tables)}")
-    for table in PROJECT_SCOPED_TABLES:
+    project_scoped_tables = frozenset(project_policies)
+    if not project_scoped_tables:
+        raise AssertionError("no project-scoped RLS policies found; the catalog query is wrong")
+    # Completeness in the other direction: a table with project_id whose
+    # policies never consult project_memberships is not project-scoped, whatever
+    # its policies are named. Matching on the expression rather than the policy
+    # name is what makes this catch a table added under a new convention.
+    enforced = {
+        str(row["relname"])
+        for row in await admin.fetch(
+            """
+            SELECT DISTINCT class.relname
+            FROM pg_class AS class
+            JOIN pg_namespace AS namespace ON namespace.oid = class.relnamespace
+            JOIN pg_policy AS policy ON policy.polrelid = class.oid
+            WHERE namespace.nspname = 'public'
+              AND (
+                COALESCE(pg_get_expr(policy.polqual, policy.polrelid), '')
+                || COALESCE(pg_get_expr(policy.polwithcheck, policy.polrelid), '')
+              ) LIKE '%project_memberships%'
+            """
+        )
+    }
+    with_project_column = {
+        str(row["relname"])
+        for row in await admin.fetch(
+            """
+            SELECT DISTINCT class.relname
+            FROM pg_class AS class
+            JOIN pg_namespace AS namespace ON namespace.oid = class.relnamespace
+            JOIN pg_attribute AS attribute ON attribute.attrelid = class.oid
+            WHERE namespace.nspname = 'public'
+              AND class.relkind IN ('r', 'p')
+              AND attribute.attnum > 0
+              AND NOT attribute.attisdropped
+              AND attribute.attname = 'project_id'
+            """
+        )
+    }
+    unguarded = sorted(with_project_column - enforced - PROJECT_SCOPE_EXCEPTIONS)
+    if unguarded:
+        raise AssertionError(
+            "tables carry project_id but no policy consults project_memberships: "
+            f"{unguarded}"
+        )
+    for table in project_scoped_tables:
         commands = project_policies[table]
         if set(commands) != {"SELECT", "INSERT", "UPDATE", "DELETE"}:
             raise AssertionError(
@@ -429,114 +403,12 @@ async def _verify_dispatch_advisory_fairness(parts: ConnectionParts) -> None:
             await second.close()
 
 
-async def _verify_tenant_isolation(
-    admin: asyncpg.Connection[asyncpg.Record],
-    parts: ConnectionParts,
-) -> None:
-    password = secrets.token_urlsafe(32)
-    tenant_a = uuid.uuid4()
-    tenant_b = uuid.uuid4()
-    tenant_c = uuid.uuid4()
-    now = datetime.now(UTC)
-    app: asyncpg.Connection[asyncpg.Record] | None = None
-    await admin.execute(f"DROP ROLE IF EXISTS {APP_ROLE}")
-    await admin.execute(
-        f"""
-        CREATE ROLE {APP_ROLE}
-          LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE
-          NOREPLICATION NOBYPASSRLS PASSWORD '{password}'
-        """
-    )
-    await admin.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
-    await admin.execute(
-        f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {APP_ROLE}"
-    )
-    try:
-        for tenant_id, suffix in ((tenant_a, "a"), (tenant_b, "b")):
-            await admin.execute(
-                """
-                INSERT INTO tenants (
-                    id, slug, name, plan_code, region, data_retention_days,
-                    private_mode, external_transfer_allowed, training_opt_in,
-                    preview_pii_masking, created_at, updated_at
-                ) VALUES (
-                    $1, $2, $3, 'free', 'ap-northeast', 7,
-                    true, false, false, true, $4, $4
-                )
-                """,
-                tenant_id,
-                f"ci-rls-{suffix}-{tenant_id.hex}",
-                f"CI tenant {suffix}",
-                now,
-            )
-        app = await asyncpg.connect(
-            user=APP_ROLE,
-            password=password,
-            **parts,
-        )
-        if await app.fetchval("SELECT count(*) FROM tenants") != 0:
-            raise AssertionError("tenant rows are visible without an RLS context")
-        for expected, forbidden in ((tenant_a, tenant_b), (tenant_b, tenant_a)):
-            transaction = app.transaction()
-            await transaction.start()
-            try:
-                await app.execute(
-                    "SELECT set_config('app.tenant_id', $1, true)",
-                    str(expected),
-                )
-                visible = {row["id"] for row in await app.fetch("SELECT id FROM tenants")}
-                if visible != {expected} or forbidden in visible:
-                    raise AssertionError("cross-tenant read escaped the RLS policy")
-            finally:
-                await transaction.rollback()
-
-        transaction = app.transaction()
-        await transaction.start()
-        try:
-            await app.execute(
-                "SELECT set_config('app.tenant_id', $1, true)",
-                str(tenant_a),
-            )
-            try:
-                await app.execute(
-                    """
-                    INSERT INTO tenants (
-                        id, slug, name, plan_code, region, data_retention_days,
-                        private_mode, external_transfer_allowed, training_opt_in,
-                        preview_pii_masking, created_at, updated_at
-                    ) VALUES (
-                        $1, $2, 'cross-tenant', 'free', 'ap-northeast', 7,
-                        true, false, false, true, $3, $3
-                    )
-                    """,
-                    tenant_c,
-                    f"ci-rls-c-{tenant_c.hex}",
-                    now,
-                )
-            except asyncpg.InsufficientPrivilegeError:
-                pass
-            else:
-                raise AssertionError("cross-tenant write escaped the RLS WITH CHECK")
-        finally:
-            await transaction.rollback()
-    finally:
-        if app is not None:
-            await app.close()
-        await admin.execute(
-            "DELETE FROM tenants WHERE id = ANY($1::uuid[])",
-            [tenant_a, tenant_b],
-        )
-        await admin.execute(f"DROP OWNED BY {APP_ROLE}")
-        await admin.execute(f"DROP ROLE {APP_ROLE}")
-
-
 async def _verify(admin_url: str) -> None:
     parts = _connection_parts(admin_url)
     admin = await asyncpg.connect(admin_url)
     try:
         await _verify_schema(admin)
         await _verify_role_membership(admin)
-        await _verify_tenant_isolation(admin, parts)
     finally:
         await admin.close()
     await _verify_scheduler_capabilities(parts)

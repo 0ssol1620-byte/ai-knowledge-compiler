@@ -7,9 +7,11 @@ import {
   inspectDroppedFile,
 } from "@/lib/facing/dropped-file";
 
-// The digest itself is upload-client's browserSha256, already covered there.
-// These tests are about what the hero is allowed to claim.
-vi.mock("@/lib/upload-client", () => ({
+// The digest itself is browser-hash's browserSha256, already covered in
+// upload-client.test.ts. These tests are about what the hero is allowed to
+// claim. The mock follows the function: it moved out of upload-client so the
+// marketing page would stop shipping the API client with it.
+vi.mock("@/lib/browser-hash", () => ({
   browserSha256: vi.fn(async () => "a".repeat(64)),
 }));
 

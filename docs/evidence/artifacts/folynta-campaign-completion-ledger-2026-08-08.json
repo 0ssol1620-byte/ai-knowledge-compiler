@@ -1,0 +1,104 @@
+{
+  "campaign_plan_sha256": "sha256:dfb1d5dc15571c3b60ce5ef2598cf6501d1d7a800df2f6b800dc72ca27cad480",
+  "cases_by_suite": {
+    "olmocr-bench": {
+      "planned": 1403,
+      "resolved": 1403,
+      "unresolved": 0
+    },
+    "omnidocbench": {
+      "planned": 1651,
+      "resolved": 1651,
+      "unresolved": 0
+    },
+    "parsebench": {
+      "planned": 2078,
+      "resolved": 2077,
+      "unresolved": 1
+    }
+  },
+  "completion_fraction": 0.9998051441932969,
+  "counterfactual": "Without the operational recovery lane, 1794 of 5132 cases would carry no output at all. Those documents would be absent from the corpus rather than merely lower quality.",
+  "delivered_by_baseline_run": 3337,
+  "delivered_by_operational_recovery": 1794,
+  "delivered_by_tree": {
+    "collected-full": 3337,
+    "collected-operational-recovery-round2": 2,
+    "collected-operational-retry-2026-08-05": 1777,
+    "preofficial-operational-deepseek-collection-r1": 1,
+    "preofficial-operational-paddle-collection-r1": 14
+  },
+  "method": [
+    "Read the authoritative case roster from the campaign shard plan.",
+    "Treat a case as delivered only when a non-empty prediction exists.",
+    "Merge the baseline tree with every operational recovery tree, deduplicating cases.",
+    "Report the residue as unresolved, itemised with its source path and assigned worker.",
+    "Score each retry round against the cases it was asked to rescue, so recovery effectiveness is measured on broken cases rather than on the whole corpus."
+  ],
+  "planned_cases": 5132,
+  "prediction_roots": [
+    "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-full",
+    "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-live-completed",
+    "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-operational-retry-2026-08-05",
+    "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-operational-recovery-round2",
+    "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\preofficial-operational-paddle-collection-r1",
+    "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\preofficial-operational-deepseek-collection-r1"
+  ],
+  "question": "Of the cases the campaign committed to processing, how many produced output, and how many did the operational recovery lane save?",
+  "receipt_sha256": "sha256:58e30bf6d9e46213901dc6e897d2fa3a365104a6fa586ecb6a720aafbf4fb201",
+  "recovery_outcome": {
+    "attempted_but_never_recovered_detail": [
+      {
+        "assigned_worker_index": 2,
+        "benchmark_id": "parsebench",
+        "case_id": "parsebench-6bfc2bea236bfb1e44aca3bf",
+        "document_id": "parsebench:docs/text/text_sparse__blank",
+        "shard_id": "shard-0003-of-0004",
+        "source_relative_path": "inputs/parsebench-6bfc2bea236bfb1e44aca3bf.png"
+      }
+    ],
+    "cases_attempted_but_never_recovered": 1,
+    "cases_recovered": 1796,
+    "cases_requiring_more_than_one_round": 11,
+    "cases_that_needed_recovery": 1797,
+    "cases_unresolved_and_never_attempted": 0,
+    "denominator_note": "The denominator is the retry plan, not the corpus. It counts only cases a round was asked to rescue, so the rate describes recovery effectiveness on broken cases rather than campaign completion.",
+    "per_round": [
+      {
+        "cases_attempted": 1788,
+        "cases_recovered": 1787,
+        "cases_still_missing": 1,
+        "label": "round-1-prefetch",
+        "plan_sha256": "sha256:a76483a0bee6767f6d239f3894cc80d212b5bf461fc469f3c7e54a506471d71c",
+        "recovery_rate": 0.9994407158836689,
+        "round": 1
+      },
+      {
+        "cases_attempted": 20,
+        "cases_recovered": 19,
+        "cases_still_missing": 1,
+        "label": "round-2",
+        "plan_sha256": "sha256:ed47db76cdd0d094dc05309d7d84f22f00570bbae43001dd7bdaa207e9447ee3",
+        "recovery_rate": 0.95,
+        "round": 2
+      }
+    ],
+    "recovery_rate_on_cases_that_needed_it": 0.9994435169727324,
+    "unresolved_and_never_attempted_detail": []
+  },
+  "recovery_share_of_corpus": 0.3495713172252533,
+  "resolved_cases": 5131,
+  "schema": "folynta.campaign-completion-ledger.v1",
+  "score_inflation_allowed": false,
+  "unresolved_case_detail": [
+    {
+      "assigned_worker_index": 2,
+      "benchmark_id": "parsebench",
+      "case_id": "parsebench-6bfc2bea236bfb1e44aca3bf",
+      "document_id": "parsebench:docs/text/text_sparse__blank",
+      "shard_id": "shard-0003-of-0004",
+      "source_relative_path": "inputs/parsebench-6bfc2bea236bfb1e44aca3bf.png"
+    }
+  ],
+  "unresolved_cases": 1
+}

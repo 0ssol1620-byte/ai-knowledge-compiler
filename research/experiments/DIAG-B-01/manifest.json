@@ -1,0 +1,14 @@
+{
+  "cases": 660,
+  "claim_state": "selective recompilation: NOT YET DEMONSTRATED",
+  "contract": "docs/research/DIAGNOSTIC_CONTRACT_DIAG_B_01.md",
+  "corpus_manifest_sha256": "sha256:dfac798adda27e2e95a9b14e288ef5222f00328baf719423b587700c3eec3d73",
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "experiment": "DIAG-B-01",
+  "explains": "EXP-0101 mean_rebuild_fraction = 1.0000",
+  "git_commit": "b4e2fbbf883522b22f97d173d16870b0077d87b5",
+  "model_registry_ids": [],
+  "read_only": "No akc_cir module is modified. Every counterfactual constructs inputs outside Protected Core and calls its public entry points.",
+  "runtime_seconds": 36.1,
+  "seed_documents": 60
+}

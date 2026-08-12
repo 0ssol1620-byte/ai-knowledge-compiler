@@ -1,0 +1,10 @@
+blueprint: course-materials
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  course: Collection
+  module: Entity
+  lesson: Document
+  concept: OntologyTerm
+  assessment: Asset
+  learning_objective: Claim

@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { homepageMetricRows } from "./benchmark-public";
-import { claimFigure, claimsPack, documentTypeRows } from "./claims";
+import {
+  claimContext,
+  claimFigure,
+  claimsPack,
+  documentTypeRows,
+} from "./claims";
 
 /**
  * What the site is allowed to say, checked against the pack that says it.
@@ -53,14 +58,52 @@ describe("the claims pack", () => {
     }
   });
 
-  it("falls back to the Korean must_say when no English twin exists", () => {
-    // Five approved claims are in this state. Surfacing the Korean is worse
-    // than an English sentence and far better than silence, which is what the
-    // page was doing.
+  it("prefers the English must_say now that the pack supplies one everywhere", () => {
+    /*
+     * This asserted the Korean fallback against recovery-contribution-olmocr,
+     * because five approved claims shipped a Korean must_say with no English
+     * twin. That was true of the *stale render copy*, not of the delivered
+     * pack — the copy had missed three later regenerations, and restoring it
+     * brought must_say_en for all fifteen. The fallback did not regress; it
+     * stopped having a real example.
+     */
     const figure = claimFigure("recovery-contribution-olmocr");
     expect(figure.context).toHaveLength(1);
-    expect(figure.context[0]!.lang).toBe("ko");
-    expect(figure.context[0]!.text).toContain("단일 변수");
+    expect(figure.context[0]!.lang).toBe("en");
+    expect(figure.context[0]!.text.length).toBeGreaterThan(0);
+
+    const published = claimsPack.claims.filter(
+      (claim) => claim.status !== "withheld",
+    );
+    for (const claim of published) {
+      if (!claim.must_say) continue;
+      expect(
+        claim.must_say_en,
+        `${claim.id} carries a Korean must_say with no English twin; the page ` +
+          `will render the Korean. Regenerate the pack rather than translating here.`,
+      ).toBeTruthy();
+    }
+  });
+
+  it("still surfaces a Korean must_say rather than nothing", () => {
+    /*
+     * The fallback is the reason a bare figure cannot reach the page, so it
+     * keeps a test even with no claim currently exercising it. Driven through
+     * the real resolver against a real claim stripped of its English twin —
+     * waiting for a regeneration to drop one is waiting until after the
+     * regression ships.
+     */
+    const korean = claimsPack.claims.find(
+      (claim) => claim.status !== "withheld" && claim.must_say,
+    );
+    expect(korean, "the pack ships no must_say at all").toBeTruthy();
+
+    const { must_say_en: _dropped, ...withoutEnglish } = korean!;
+    const context = claimContext(withoutEnglish);
+
+    expect(context[0]!.lang).toBe("ko");
+    expect(context[0]!.text).toBe(korean!.must_say);
+    expect(claimContext(korean!)[0]!.lang).toBe("en");
   });
 
   it("gives conditional claims their conditions", () => {

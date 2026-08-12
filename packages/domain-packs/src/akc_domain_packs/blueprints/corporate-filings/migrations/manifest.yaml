@@ -1,0 +1,6 @@
+blueprint: corporate-filings
+kind: migration-manifest
+version: 1.0.0
+migrations:
+  - {id: initial, from_version: null, to_version: 1.0.0, compatibility: additive}
+rollback_policy: restore_previous_signed_package

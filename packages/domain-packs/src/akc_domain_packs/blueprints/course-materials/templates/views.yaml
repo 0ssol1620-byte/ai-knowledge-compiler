@@ -1,0 +1,9 @@
+blueprint: course-materials
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Courses, primary_type: Course, sort: stable_title}
+  - {name: Modules, primary_type: Module, sort: source_order}
+  - {name: Concepts, primary_type: Concept, sort: stable_title}
+  - {name: Learning Paths, primary_type: LearningObjective, sort: source_order}
+  - {name: Assessments, primary_type: Assessment, sort: source_order}

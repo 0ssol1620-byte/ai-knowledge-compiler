@@ -5,11 +5,18 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from akc_domain_packs import (
+    ArchitecturePlan,
+    ArchitectureProfile,
+    BlueprintModule,
+    BlueprintRegistry,
     DomainPack,
     DomainPackRegistry,
     SchemaPolicyError,
     UserSchemaReceipt,
+    builtin_blueprint_modules,
+    builtin_blueprints,
     builtin_domain_packs,
+    plan_architecture,
     validate_user_schema,
 )
 from fastapi import APIRouter, Depends, HTTPException
@@ -41,6 +48,43 @@ async def get_domain_pack(pack_id: str, _principal: PrincipalDep) -> DomainPack:
         raise HTTPException(
             status_code=404,
             detail={"code": "DOMAIN_PACK_NOT_FOUND"},
+        ) from exc
+
+
+@router.get("/knowledge-blueprints", response_model=BlueprintRegistry)
+async def list_knowledge_blueprints(_principal: PrincipalDep) -> BlueprintRegistry:
+    """Return only modules that passed the complete declarative asset validator."""
+
+    return builtin_blueprints()
+
+
+@router.get("/knowledge-blueprints/{blueprint_id}", response_model=BlueprintModule)
+async def get_knowledge_blueprint(
+    blueprint_id: str,
+    _principal: PrincipalDep,
+) -> BlueprintModule:
+    for module in builtin_blueprint_modules():
+        if module.blueprint.id == blueprint_id:
+            return module
+    raise HTTPException(
+        status_code=404,
+        detail={"code": "KNOWLEDGE_BLUEPRINT_NOT_FOUND"},
+    )
+
+
+@router.post("/knowledge-blueprints/plan", response_model=ArchitecturePlan)
+async def create_architecture_plan(
+    payload: ArchitectureProfile,
+    _principal: EditorDep,
+) -> ArchitecturePlan:
+    """Create a deterministic plan tied to the validated module digest."""
+
+    try:
+        return plan_architecture(payload)
+    except LookupError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"code": "KNOWLEDGE_BLUEPRINT_NOT_FOUND"},
         ) from exc
 
 

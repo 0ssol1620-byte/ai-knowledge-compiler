@@ -1,0 +1,50 @@
+{
+  "arms": [
+    "current",
+    "baseline",
+    "challenger",
+    "challenger_no_spatial",
+    "challenger_no_type_reasoning",
+    "challenger_no_content"
+  ],
+  "canonical_finding": "receipts/canonical-finding.json",
+  "cases": 660,
+  "claim_discipline": {
+    "current_state": "NOT YET DEMONSTRATED",
+    "gates": "Family B section 5; the IP track is holding for it",
+    "note": "The machinery is IMPLEMENTED. This experiment measured mean rebuild fraction 1.0000 for every arm routed through akc_cir.semantic_diff. The cause is not settled and must not be written down as settled before DIAG-B-01 runs.",
+    "permitted_states": [
+      "IMPLEMENTED - the mechanism exists in code",
+      "DEMONSTRATED - a narrow recompilation benefit is proven",
+      "NOT YET DEMONSTRATED - neither shown end to end"
+    ],
+    "subject": "selective recompilation"
+  },
+  "config_sha256": "sha256:9e05b44c5d8bae22a4855bead5be0ca83aa83d95b69744b86238891ae11dcb14",
+  "contract": "docs/research/ABSORPTION_EXPERIMENT_CONTRACTS_BATCH1.md, Contract A",
+  "corpus_manifest_sha256": "sha256:dfac798adda27e2e95a9b14e288ef5222f00328baf719423b587700c3eec3d73",
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "experiment": "EXP-0101",
+  "flags": {
+    "ABSORB_ALIGNMENT_DIFF": "set to 1 by the harness only"
+  },
+  "git_commit": "52189e229729069447c56fc3fa9fe49fed87535b",
+  "model_registry_ids": [],
+  "model_registry_note": "None. No model is called anywhere in this experiment. The contract's Resources line allows an embedding provider for the semantic signal and this run does not use one: the content signals are lexical, numeric and structural. The consequence is recorded in the result block - the semantic ceiling here is lexical, and an embedding arm is unmeasured.",
+  "prompt_receipt_sha256": [],
+  "raw_evidence": "raw/ is stored compressed; receipts/raw-evidence-manifest.json carries the raw and compressed digests and scripts/compress_raw.py --restore rebuilds the originals. Nothing was discarded.",
+  "registered_gap": "docs/research/DIAGNOSTIC_CONTRACT_DIAG_B_01.md",
+  "result_status": "exploratory / internal - see receipts/clean-room-provenance.json",
+  "runtime_seconds": 218.2,
+  "seed_documents": 60,
+  "seeds": {
+    "bootstrap": 4996831954481459456,
+    "fixture": "sha256 over seed strings; no PRNG"
+  },
+  "split_definition": "No train/test split. Every arm is deterministic and nothing is fitted, so there is nothing to hold out. No threshold or weight was chosen using this fixture; contract 0.9 is therefore not engaged and no holdout was spent.",
+  "successor_contract": "docs/research/ABSORPTION_EXPERIMENT_CONTRACT_A2.md",
+  "unpopulated_directories": {
+    "figures": "written by scripts/make_figures.py",
+    "tables": "written by scripts/make_tables.py"
+  }
+}

@@ -1,0 +1,11 @@
+blueprint: legal-contracts
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  agreement: Document
+  party: Entity
+  clause: Block
+  obligation: Claim
+  right: Claim
+  definition: OntologyTerm
+  governing_law: Claim

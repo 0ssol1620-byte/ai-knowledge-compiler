@@ -1,0 +1,52 @@
+#!/bin/sh
+# Keep RED-family claim-level analysis out of version control.
+#
+# docs/ip/.gitignore stops the ordinary accident -- `git add -A` sweeping up a
+# claim chart. This hook covers the two cases a .gitignore cannot: `git add -f`,
+# and claim-level text inside a file that is allowed to be tracked.
+#
+# WHY THE GUARD IS LOOKED UP IN TWO PLACES
+#   Worktrees check out different branches, and a branch that predates the guard
+#   has no scripts/ip_privilege_guard.py -- which is precisely the branch the
+#   privileged files sit on today. Hooks live in the git COMMON directory and so
+#   are shared by every worktree, so a copy of the guard goes there too. The
+#   tracked copy wins when present; the common-dir copy is what makes the hook
+#   mean anything on a branch that has not merged it yet.
+#
+# A missing guard is a failed commit, not a permitted one. Fail closed -- a
+# control that disappears quietly is worse than no control, because the absence
+# looks like a pass.
+#
+# Install (per clone; hooks are not themselves version controlled):
+#   git config core.hooksPath .githooks
+# or, to protect every worktree regardless of the branch checked out:
+#   cp .githooks/pre-commit "$(git rev-parse --git-common-dir)/hooks/pre-commit"
+#   cp scripts/ip_privilege_guard.py "$(git rev-parse --git-common-dir)/ip-privilege-guard.py"
+
+set -e
+
+TOPLEVEL=$(git rev-parse --show-toplevel)
+COMMON=$(git rev-parse --git-common-dir)
+case "$COMMON" in
+  /*|[A-Za-z]:*) ;;
+  *) COMMON="$TOPLEVEL/$COMMON" ;;
+esac
+
+GUARD="$TOPLEVEL/scripts/ip_privilege_guard.py"
+[ -f "$GUARD" ] || GUARD="$COMMON/ip-privilege-guard.py"
+
+if [ ! -f "$GUARD" ]; then
+  echo "pre-commit: IP privilege guard not found." >&2
+  echo "  looked in scripts/ip_privilege_guard.py and $COMMON/ip-privilege-guard.py" >&2
+  echo "  Refusing the commit: an absent guard is not a passing guard." >&2
+  exit 1
+fi
+
+PY=python
+command -v "$PY" >/dev/null 2>&1 || PY=python3
+command -v "$PY" >/dev/null 2>&1 || {
+  echo "pre-commit: no python interpreter; cannot run the IP privilege guard." >&2
+  exit 1
+}
+
+exec "$PY" "$GUARD" --staged

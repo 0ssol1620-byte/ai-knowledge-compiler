@@ -1,0 +1,147 @@
+{
+  "multiple_comparison": "Holm-Bonferroni over every arm x slice reported here",
+  "reference_arm": "current",
+  "test": "exact two-sided McNemar, paired at document-pair level",
+  "tests": {
+    "baseline::critical_detection": {
+      "arm_better": 0,
+      "current_better": 0,
+      "discordant": 0,
+      "p_exact": 1.0,
+      "p_holm_bonferroni": 1.0
+    },
+    "baseline::layout_false_invalidation": {
+      "arm_better": 155,
+      "current_better": 0,
+      "discordant": 155,
+      "p_exact": 4.3790577010150533e-47,
+      "p_holm_bonferroni": 8.758115402030107e-46
+    },
+    "baseline::layout_false_positive": {
+      "arm_better": 17,
+      "current_better": 25,
+      "discordant": 42,
+      "p_exact": 0.27995623852893914,
+      "p_holm_bonferroni": 1.0
+    },
+    "baseline::semantic_judgement": {
+      "arm_better": 17,
+      "current_better": 25,
+      "discordant": 42,
+      "p_exact": 0.27995623852893914,
+      "p_holm_bonferroni": 1.0
+    },
+    "challenger::critical_detection": {
+      "arm_better": 0,
+      "current_better": 60,
+      "discordant": 60,
+      "p_exact": 1.734723475976807e-18,
+      "p_holm_bonferroni": 2.6020852139652106e-17
+    },
+    "challenger::layout_false_invalidation": {
+      "arm_better": 5,
+      "current_better": 0,
+      "discordant": 5,
+      "p_exact": 0.0625,
+      "p_holm_bonferroni": 0.4375
+    },
+    "challenger::layout_false_positive": {
+      "arm_better": 17,
+      "current_better": 0,
+      "discordant": 17,
+      "p_exact": 1.52587890625e-05,
+      "p_holm_bonferroni": 0.0001678466796875
+    },
+    "challenger::semantic_judgement": {
+      "arm_better": 17,
+      "current_better": 120,
+      "discordant": 137,
+      "p_exact": 2.80897156840249e-20,
+      "p_holm_bonferroni": 4.494354509443984e-19
+    },
+    "challenger_no_content::critical_detection": {
+      "arm_better": 0,
+      "current_better": 0,
+      "discordant": 0,
+      "p_exact": 1.0,
+      "p_holm_bonferroni": 1.0
+    },
+    "challenger_no_content::layout_false_invalidation": {
+      "arm_better": 35,
+      "current_better": 0,
+      "discordant": 35,
+      "p_exact": 5.820766091346741e-11,
+      "p_holm_bonferroni": 7.566995918750763e-10
+    },
+    "challenger_no_content::layout_false_positive": {
+      "arm_better": 16,
+      "current_better": 6,
+      "discordant": 22,
+      "p_exact": 0.052478790283203125,
+      "p_holm_bonferroni": 0.419830322265625
+    },
+    "challenger_no_content::semantic_judgement": {
+      "arm_better": 16,
+      "current_better": 66,
+      "discordant": 82,
+      "p_exact": 2.2519795913934164e-08,
+      "p_holm_bonferroni": 2.7023755096720995e-07
+    },
+    "challenger_no_spatial::critical_detection": {
+      "arm_better": 0,
+      "current_better": 79,
+      "discordant": 79,
+      "p_exact": 3.308722450212111e-24,
+      "p_holm_bonferroni": 5.955700410381799e-23
+    },
+    "challenger_no_spatial::layout_false_invalidation": {
+      "arm_better": 3,
+      "current_better": 0,
+      "discordant": 3,
+      "p_exact": 0.25,
+      "p_holm_bonferroni": 1.0
+    },
+    "challenger_no_spatial::layout_false_positive": {
+      "arm_better": 17,
+      "current_better": 0,
+      "discordant": 17,
+      "p_exact": 1.52587890625e-05,
+      "p_holm_bonferroni": 0.0001678466796875
+    },
+    "challenger_no_spatial::semantic_judgement": {
+      "arm_better": 17,
+      "current_better": 139,
+      "discordant": 156,
+      "p_exact": 5.437186265830896e-25,
+      "p_holm_bonferroni": 1.0330653905078703e-23
+    },
+    "challenger_no_type_reasoning::critical_detection": {
+      "arm_better": 0,
+      "current_better": 60,
+      "discordant": 60,
+      "p_exact": 1.734723475976807e-18,
+      "p_holm_bonferroni": 2.6020852139652106e-17
+    },
+    "challenger_no_type_reasoning::layout_false_invalidation": {
+      "arm_better": 0,
+      "current_better": 0,
+      "discordant": 0,
+      "p_exact": 1.0,
+      "p_holm_bonferroni": 1.0
+    },
+    "challenger_no_type_reasoning::layout_false_positive": {
+      "arm_better": 12,
+      "current_better": 0,
+      "discordant": 12,
+      "p_exact": 0.00048828125,
+      "p_holm_bonferroni": 0.00439453125
+    },
+    "challenger_no_type_reasoning::semantic_judgement": {
+      "arm_better": 12,
+      "current_better": 120,
+      "discordant": 132,
+      "p_exact": 1.4215758416907585e-23,
+      "p_holm_bonferroni": 2.4166789308742894e-22
+    }
+  }
+}

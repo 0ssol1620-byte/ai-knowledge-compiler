@@ -1,0 +1,8 @@
+blueprint: technical-documentation
+kind: validation-rules
+version: 1.0.0
+rules:
+  - {id: source_coverage, severity: critical, minimum: 1.0}
+  - {id: version_scope, severity: critical, minimum: 1.0}
+  - {id: procedure_order, severity: high, minimum: 1.0}
+  - {id: warning_preservation, severity: high, minimum: 1.0}

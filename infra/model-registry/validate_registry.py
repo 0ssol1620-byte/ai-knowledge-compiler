@@ -11,6 +11,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 HEX_REVISION = re.compile(r"^[0-9a-f]{40,64}$")
+SHA256_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 FLOATING = {"", "main", "master", "latest", "head"}
 LICENSE_FIELDS = {
     "weight_license",
@@ -19,6 +20,25 @@ LICENSE_FIELDS = {
     "runtime_license",
     "license_snapshot_sha256",
 }
+PRODUCTION_VALIDATION_STATUSES = {"champion", "canary", "fallback", "shadow"}
+
+
+def release_is_attested(release: dict[str, Any]) -> bool:
+    revision = release.get("upstream_revision")
+    licenses = release.get("licenses") or {}
+    runtime = release.get("runtime") or {}
+    status = (release.get("internal_validation") or {}).get("status")
+    return bool(
+        isinstance(revision, str)
+        and HEX_REVISION.fullmatch(revision)
+        and isinstance(licenses.get("license_snapshot_sha256"), str)
+        and SHA256_DIGEST.fullmatch(licenses["license_snapshot_sha256"])
+        and isinstance(runtime.get("version"), str)
+        and runtime["version"]
+        and isinstance(runtime.get("image_digest"), str)
+        and SHA256_DIGEST.fullmatch(runtime["image_digest"])
+        and status in PRODUCTION_VALIDATION_STATUSES
+    )
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -65,12 +85,41 @@ def validate(strict: bool = False) -> list[str]:
         missing = LICENSE_FIELDS.difference(licenses)
         if missing:
             errors.append(f"{prefix}: missing license fields {sorted(missing)}")
+        license_snapshot = licenses.get("license_snapshot_sha256")
+        if license_snapshot is not None and not (
+            isinstance(license_snapshot, str) and SHA256_DIGEST.fullmatch(license_snapshot)
+        ):
+            errors.append(f"{prefix}: license snapshot must be a sha256 digest or null")
         if traffic < 0 or traffic > 100:
             errors.append(f"{prefix}: rollout traffic must be 0..100")
+        if traffic > 0 and not release_is_attested(release):
+            errors.append(f"{prefix}: traffic requires full license/runtime/internal attestation")
+
+        if key == "gemma4_12b_challenger":
+            discovery = release.get("public_discovery") or {}
+            if release.get("upstream_id") != "google/gemma-4-12B":
+                errors.append(f"{prefix}: exact public Gemma repository is required")
+            if release.get("upstream_revision") != "023679ed352de9bb66cc873c9009ce3482585c08":
+                errors.append(f"{prefix}: reviewed public Gemma revision changed")
+            if licenses.get("weight_license") != "Apache-2.0":
+                errors.append(f"{prefix}: reviewed public Gemma license metadata changed")
+            if discovery.get("checkpoint_downloaded") is not False:
+                errors.append(f"{prefix}: unverified checkpoint must remain undownloaded")
+            if discovery.get("license_snapshot_captured") is not False:
+                errors.append(f"{prefix}: uncaptured license snapshot must remain explicit")
+            if traffic != 0:
+                errors.append(f"{prefix}: unverified Gemma challenger traffic must stay zero")
 
     recipes = recipe_data.get("recipes") or {}
     if "parse_fast_v1" not in recipes:
         errors.append("recipes: parse_fast_v1 is required")
+    gemma_recipe = recipes.get("knowledge_gemma_challenger_v1") or {}
+    if gemma_recipe.get("model") != "gemma4_12b_challenger":
+        errors.append("recipes.knowledge_gemma_challenger_v1: exact model binding required")
+    if gemma_recipe.get("enabled") is not False:
+        errors.append("recipes.knowledge_gemma_challenger_v1: must remain disabled")
+    if gemma_recipe.get("fallback") != "unresolved":
+        errors.append("recipes.knowledge_gemma_challenger_v1: fallback must fail closed")
     if (recipe_data.get("defaults") or {}).get("allow_external") is not False:
         errors.append("defaults.allow_external must be false")
     for name, recipe in recipes.items():
@@ -88,20 +137,27 @@ def validate(strict: bool = False) -> list[str]:
             provider = recipe.get(provider_field)
             if provider not in {None, "native"} and provider not in by_key:
                 errors.append(f"recipes.{name}: unknown {provider_field} provider {provider}")
+            if (
+                recipe.get("enabled") is True
+                and provider not in {None, "native"}
+                and provider in by_key
+                and not release_is_attested(by_key[provider])
+            ):
+                errors.append(f"recipes.{name}: enabled {provider_field} lacks attestation")
         fallback = recipe.get("fallback")
-        if fallback not in {None, "review"} and fallback not in recipes:
+        if fallback not in {None, "unresolved"} and fallback not in recipes:
             errors.append(f"recipes.{name}: unknown fallback {fallback}")
 
     for start in recipes:
         seen: set[str] = set()
         current: str | None = start
-        while current in recipes:
+        while current is not None and current in recipes:
             if current in seen:
                 errors.append(f"recipes.{start}: fallback cycle through {current}")
                 break
             seen.add(current)
             fallback = recipes[current].get("fallback")
-            current = fallback if isinstance(fallback, str) else None
+            current = fallback if isinstance(fallback, str) and fallback != "unresolved" else None
     return sorted(set(errors))
 
 

@@ -1,0 +1,9 @@
+blueprint: corporate-filings
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  company: Entity
+  filing: Document
+  risk: Claim
+  metric: Evidence
+  reporting_period: OntologyTerm

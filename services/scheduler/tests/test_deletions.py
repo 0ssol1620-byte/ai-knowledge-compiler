@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import copy
 import uuid
@@ -56,6 +57,7 @@ from akc_scheduler.deletions import (
     retention_claim_statement,
 )
 from akc_scheduler.settings import SchedulerSettings
+from akc_security.tenant_context import TenantContextMismatch, TenantContextMissing
 from sqlalchemy import func, select
 from sqlalchemy.dialects import postgresql, sqlite
 
@@ -712,6 +714,27 @@ async def test_partial_failure_retries_preserve_manifest_cancel_work_and_release
     assert all(not path.is_file() for path in harness.settings.object_root.rglob("*"))
 
 
+async def test_deletion_cancels_paused_processing_job_and_releases_reservation(
+    harness: Harness,
+) -> None:
+    seed = await _seed_document(harness, job_status="paused")
+    async with harness.database.sessions() as session:
+        job = await session.get(ProcessingJob, seed.job_id)
+        account = await session.get(CreditAccount, seed.tenant_id)
+        release_count = int(
+            await session.scalar(
+                select(func.count(CreditLedger.id)).where(
+                    CreditLedger.tenant_id == seed.tenant_id,
+                    CreditLedger.operation_key == f"job:{seed.job_id}:deletion-release",
+                )
+            )
+            or 0
+        )
+    assert job is not None and job.status == "cancelled"
+    assert account is not None and Decimal(account.reserved) == 0
+    assert release_count == 1
+
+
 async def test_s3_partial_version_delete_never_issues_receipt(
     harness: Harness,
 ) -> None:
@@ -1196,3 +1219,131 @@ async def test_postgres_deletion_capability_is_fail_closed_and_scope_aware() -> 
         "feature_flags",
     ):
         assert required_scope in query
+
+
+async def test_purge_refuses_when_the_request_tenant_disagrees_with_the_claim(
+    harness: Harness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A request that changes tenant mid-attempt must not delete anything.
+
+    This is the failure the deletion path is most exposed to once BYPASSRLS is
+    removed: an unbound or wrongly-bound transaction would compare
+    ``tenant_id`` against the wrong value, delete zero rows, and still record a
+    purge. The guard has to raise instead.
+    """
+
+    seed = await _seed_document(harness)
+    assert seed.request_id is not None
+
+    # Hand the purge a tenant that is not the claimed request's tenant.
+    original_claim = deletion_domain._claim_request
+
+    async def claim_with_foreign_tenant(
+        *args: Any, **kwargs: Any
+    ) -> tuple[uuid.UUID, int, uuid.UUID] | None:
+        claimed = await original_claim(*args, **kwargs)
+        if claimed is None:
+            return None
+        token, attempt, _tenant = claimed
+        return token, attempt, uuid.uuid4()
+
+    monkeypatch.setattr(deletion_domain, "_claim_request", claim_with_foreign_tenant)
+
+    # A tenant disagreement is an integrity violation, not a retryable
+    # operational failure, so it propagates instead of being recorded as a
+    # retry. Loud beats a zero-row purge that looks successful.
+    with pytest.raises(TenantContextMismatch):
+        await process_deletion_request(
+            harness.database.sessions,
+            object_store=harness.store,
+            request_id=seed.request_id,
+        )
+
+    async with harness.database.sessions() as session:
+        request = await session.get(DeletionRequest, seed.request_id)
+        receipt = await session.get(DeletionReceipt, seed.request_id)
+        document = await session.get(Document, seed.document_id)
+    assert request is not None and request.state != "purged"
+    assert receipt is None
+    assert document is not None, "a tenant mismatch must not delete domain rows"
+
+
+async def test_missing_tenant_context_fails_closed_before_any_delete(
+    harness: Harness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No tenant means no purge — never a silent zero-row 'success'."""
+
+    seed = await _seed_document(harness)
+    assert seed.request_id is not None
+    original_claim = deletion_domain._claim_request
+
+    async def claim_without_tenant(*args: Any, **kwargs: Any) -> Any:
+        claimed = await original_claim(*args, **kwargs)
+        if claimed is None:
+            return None
+        token, attempt, _tenant = claimed
+        return token, attempt, None
+
+    monkeypatch.setattr(deletion_domain, "_claim_request", claim_without_tenant)
+
+    with pytest.raises(TenantContextMissing):
+        await process_deletion_request(
+            harness.database.sessions,
+            object_store=harness.store,
+            request_id=seed.request_id,
+        )
+
+    async with harness.database.sessions() as session:
+        receipt = await session.get(DeletionReceipt, seed.request_id)
+        document = await session.get(Document, seed.document_id)
+    assert receipt is None
+    assert document is not None, "a missing tenant must not delete domain rows"
+
+
+def test_every_sessionmaker_site_in_the_deletion_module_binds_a_tenant() -> None:
+    """Structural guard: a new unbound session here is the defect class itself.
+
+    The audit that found this counted sessions by hand. This makes the count
+    fail on its own the next time somebody adds one.
+
+    Walks the AST rather than matching text. The first version searched for
+    ``async with sessions()`` on a single line, which meant a site written as
+
+        async with (
+            sessions() as session,
+            session.begin(),
+        ):
+
+    was not recognised as opening a session at all — so an unbound one in that
+    shape passed silently. That is the formatting black gives any site whose
+    line grows too long, so the guard would have failed exactly when a rename
+    made it matter.
+    """
+
+    tree = ast.parse(Path(deletion_domain.__file__).read_text(encoding="utf-8"))
+
+    def opens_a_session(node: ast.AsyncWith) -> bool:
+        for item in node.items:
+            call = item.context_expr
+            if (
+                isinstance(call, ast.Call)
+                and isinstance(call.func, ast.Name)
+                and call.func.id == "sessions"
+            ):
+                return True
+        return False
+
+    def binds_a_tenant(node: ast.AST) -> bool:
+        return any(
+            isinstance(inner, ast.Call)
+            and isinstance(inner.func, ast.Name)
+            and inner.func.id == "enter_tenant_context"
+            for inner in ast.walk(node)
+        )
+
+    opens = [n for n in ast.walk(tree) if isinstance(n, ast.AsyncWith) and opens_a_session(n)]
+    assert opens, "expected the deletion module to open worker sessions"
+    unbound = sorted(n.lineno for n in opens if not binds_a_tenant(n))
+    assert not unbound, f"session opened without a tenant context at line(s): {unbound}"

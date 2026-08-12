@@ -38,6 +38,83 @@ def test_feature_cohorts_are_stable_for_a_tenant(percent: int) -> None:
     )
 
 
+def test_zero_percent_reaches_nobody() -> None:
+    """0 is the first rung of the rollout ladder, not a synonym for 100.
+
+    `cohort_enabled` folded 0 in with 100 and returned True for both, so an
+    enabled flag at zero percent opened to the whole tenant. The v4 router
+    starts shadow rollout at 0 precisely so that nothing is routed yet, which
+    made the one setting that exists to be safe the one that was not. The
+    column defaults to 0, so every freshly created enabled row was affected.
+    """
+
+    key = "V4_SHADOW_ROUTER"
+    for _ in range(200):
+        assert (
+            cohort_enabled(
+                tenant_id=uuid.uuid4(),
+                key=key,
+                enabled=True,
+                percent=0,
+            )
+            is False
+        )
+
+
+@pytest.mark.parametrize("percent", [0, 5, 25, 50, 100])
+def test_rollout_ladder_is_monotonic(percent: int) -> None:
+    """Each rung admits at least as many subjects as the rung below it.
+
+    Sampled over a fixed subject set rather than asserted per subject: the
+    bucket is a hash, so the guarantee is that widening the percentage never
+    withdraws a subject that a narrower one admitted.
+    """
+
+    tenant_id = uuid.uuid4()
+    subjects = [uuid.uuid4() for _ in range(400)]
+    key = "V4_SHADOW_ROUTER"
+
+    def admitted(at: int) -> set[uuid.UUID]:
+        return {
+            subject
+            for subject in subjects
+            if cohort_enabled(
+                tenant_id=tenant_id,
+                subject_id=subject,
+                key=key,
+                enabled=True,
+                percent=at,
+            )
+        }
+
+    ladder = [0, 5, 25, 50, 100]
+    below = ladder[: ladder.index(percent)]
+    here = admitted(percent)
+    for lower in below:
+        assert admitted(lower) <= here, f"{lower}% admitted a subject {percent}% did not"
+    if percent == 0:
+        assert here == set()
+    if percent == 100:
+        assert here == set(subjects)
+
+
+@pytest.mark.parametrize("percent", [-1, 101, 1000])
+def test_out_of_range_percent_does_not_widen_the_cohort(percent: int) -> None:
+    """The column has a 0..100 constraint; the resolver must not depend on it.
+
+    A negative percentage reaches nobody and an over-100 one reaches everyone,
+    rather than falling through the bucket comparison to an arbitrary answer.
+    """
+
+    result = cohort_enabled(
+        tenant_id=uuid.uuid4(),
+        key="V4_SHADOW_ROUTER",
+        enabled=True,
+        percent=percent,
+    )
+    assert result is (percent > 100)
+
+
 def test_feature_conditions_are_bounded_and_fail_closed() -> None:
     tenant_id = uuid.uuid4()
     user_id = uuid.uuid4()

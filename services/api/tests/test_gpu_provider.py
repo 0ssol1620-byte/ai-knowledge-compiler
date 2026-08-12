@@ -56,6 +56,31 @@ def _decode_part(value: str) -> dict[str, Any]:
     return parsed
 
 
+def _completed_response(**provider_fields: object) -> dict[str, Any]:
+    response: dict[str, Any] = {
+        "id": "provider-job-1",
+        "status": "COMPLETED",
+        "output": {
+            "ok": True,
+            "job_id": "job-123",
+            "tenant_id": "tenant-123",
+            "provider": "paddleocr_vl_1_6",
+            "model_revision": REVISION,
+            "runtime_image_digest": IMAGE_DIGEST,
+            "adapter_version": ADAPTER_VERSION,
+            "idempotency_key": "idem-123",
+            "result_id": "sha256:" + "c" * 64,
+            "output_object_key": "tenants/tenant-123/derived/result.json",
+            "output_sha256": "sha256:" + "d" * 64,
+            "output_bytes": 100,
+            "metrics": {},
+            "warnings": [],
+        },
+    }
+    response.update(provider_fields)
+    return response
+
+
 def test_worker_token_is_signed_and_narrowly_scoped() -> None:
     token = create_worker_token(
         secret=SECRET,
@@ -114,6 +139,8 @@ async def test_submit_and_poll_validate_scope_revision_and_output() -> None:
             json={
                 "id": "provider-job-1",
                 "status": "COMPLETED",
+                "delayTime": 250,
+                "executionTime": 1500.5,
                 "output": {
                     "ok": True,
                     "job_id": "job-123",
@@ -160,6 +187,42 @@ async def test_submit_and_poll_validate_scope_revision_and_output() -> None:
     assert "callback_token" in submit_payload["input"]
     assert result.result_id == "sha256:" + "c" * 64
     assert result.raw_provider_response_sha256.startswith("sha256:")
+    assert result.provider_queue_delay_ms == 250
+    assert result.provider_execution_time_ms == 1500.5
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("invalid_duration", [True, -1, "100", 604_800_001])
+async def test_poll_rejects_invalid_provider_owned_duration(
+    invalid_duration: object,
+) -> None:
+    async def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json=_completed_response(delayTime=invalid_duration),
+        )
+
+    http_client = httpx.AsyncClient(
+        base_url="https://api.runpod.ai",
+        transport=httpx.MockTransport(handler),
+    )
+    client = RunpodGpuClient(
+        api_key="runpod-test-key",
+        worker_hmac_secret=SECRET,
+        allowed_input_hosts=frozenset({"objects.example"}),
+        allowed_output_hosts=frozenset({"objects.example"}),
+        client=http_client,
+    )
+    submitted = SubmittedGpuJob(
+        provider_job_id="provider-job-1",
+        endpoint_id="parser-balanced",
+        status="COMPLETED",
+    )
+    try:
+        with pytest.raises(GpuProviderError, match="GPU_PROVIDER_INVALID_RESULT"):
+            await client.poll(_job(), submitted, timeout_seconds=10)
+    finally:
+        await http_client.aclose()
 
 
 @pytest.mark.asyncio

@@ -19,6 +19,7 @@ from akc_api.deletions import (
 )
 from akc_api.models import DeletionRequest, Document, OutboxEvent, Project, Tenant, utcnow
 from akc_api.storage import ObjectStore
+from akc_security.tenant_context import enter_tenant_context
 from akc_telemetry import set_deletion_oldest_pending
 from sqlalchemy import Select, func, select, text
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker
@@ -218,10 +219,12 @@ class DeletionWorker:
         self,
         *,
         event_id: uuid.UUID,
+        tenant_id: uuid.UUID,
         result: DeletionProcessResult | None,
         error_code: str | None,
     ) -> None:
         async with self._sessions() as session, session.begin():
+            await enter_tenant_context(session, tenant_id=tenant_id)
             statement = select(OutboxEvent).where(OutboxEvent.id == event_id)
             if session.bind is not None and session.bind.dialect.name == "postgresql":
                 statement = statement.with_for_update()
@@ -245,6 +248,7 @@ class DeletionWorker:
         async with self._engine.connect() as connection:
             event_id: uuid.UUID | None = None
             request_id: uuid.UUID | None = None
+            tenant_id: uuid.UUID | None = None
             lock_key: int | None = None
             try:
                 async with AsyncSession(
@@ -262,6 +266,9 @@ class DeletionWorker:
                         await session.commit()
                         return False
                     event_id = event.id
+                    # The outbox poll spans tenants; this event does not.
+                    await enter_tenant_context(session, tenant_id=event.tenant_id)
+                    tenant_id = event.tenant_id
                     request = await self._resolve_request(session, event)
                     if request is None:
                         event.attempts += 1
@@ -270,6 +277,13 @@ class DeletionWorker:
                         await session.commit()
                         return True
                     request_id = request.id
+                    # A request that resolves to a different tenant than the
+                    # event that carried it is a spoofed or corrupted payload.
+                    await enter_tenant_context(
+                        session,
+                        tenant_id=tenant_id,
+                        expected_tenant_id=request.tenant_id,
+                    )
                     if connection.dialect.name == "postgresql":
                         lock_key = deletion_advisory_lock_key(request.id)
                         acquired = bool(
@@ -292,6 +306,7 @@ class DeletionWorker:
 
                 assert event_id is not None
                 assert request_id is not None
+                assert tenant_id is not None
                 result: DeletionProcessResult | None = None
                 error_code: str | None = None
                 try:
@@ -311,6 +326,7 @@ class DeletionWorker:
                     logger.exception("deletion attempt failed")
                 await self._record_result(
                     event_id=event_id,
+                    tenant_id=tenant_id,
                     result=result,
                     error_code=error_code,
                 )

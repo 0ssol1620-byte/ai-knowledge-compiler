@@ -1,0 +1,89 @@
+{
+  "experiment": "EXP-0101",
+  "contract": "docs/research/ABSORPTION_EXPERIMENT_CONTRACTS_BATCH1.md, Contract A",
+  "intake_id": "tech_xversion_diff",
+  "classification": "YELLOW",
+  "status": "CLEAN_ROOM_ONLY",
+  "recorded_at": "2026-08-11",
+  "statement": "The prior-art baseline arm in packages/absorption/src/akc_absorption/baseline_xversion.py was written from requirement-level descriptions only. No source of tech_xversion_diff was read, copied, translated, ported or vendored by its author, and no source snippet of that project appears in this repository.",
+  "sources_read": [
+    {
+      "path": "docs/research/ABSORPTION_EXPERIMENT_CONTRACTS_BATCH1.md",
+      "sections": ["0.1-0.10", "Contract A"],
+      "kind": "internal contract"
+    },
+    {
+      "path": "docs/north-star/TAVONEL_FTO_ABSORPTION_BLUEPRINT_v1.0.md",
+      "sections": ["8.1-8.7", "9.1-9.8"],
+      "kind": "internal design document"
+    },
+    {
+      "path": "docs/north-star/TAVONEL_MASTERPLAN_v5.0.md",
+      "sections": ["8.7"],
+      "kind": "internal design document"
+    },
+    {
+      "path": "docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml",
+      "sections": ["clean_room_only entries", "binding_now"],
+      "kind": "internal register"
+    },
+    {
+      "path": "packages/cir-python/src/akc_cir/identity.py",
+      "sections": ["whole file"],
+      "kind": "own repository source"
+    },
+    {
+      "path": "packages/cir-python/src/akc_cir/semantic_diff.py",
+      "sections": ["whole file"],
+      "kind": "own repository source"
+    },
+    {
+      "path": "packages/cir-python/src/akc_cir/dependency.py",
+      "sections": ["DependencyGraph, impact_of"],
+      "kind": "own repository source"
+    },
+    {
+      "path": "packages/cir-python/src/akc_cir/recompilation.py",
+      "sections": ["plan_recompilation, verify_equivalence"],
+      "kind": "own repository source"
+    }
+  ],
+  "sources_not_read": [
+    "any tech_xversion_diff repository, release archive, or code excerpt",
+    "any arXivEdits reference implementation",
+    "any tech_smartchunk source"
+  ],
+  "role_separation": {
+    "note": "Contract §15.3 separates the summariser from the implementer and requires a provenance record of what each read. In this session those two roles were held by ONE agent, which is a departure from §15.3 and is recorded here rather than glossed. It is defensible only because the summary this implementation was written from is an internal document (blueprint §9.2-§9.5) rather than a fresh reading of the prior art: no upstream source entered the session at all, so there was no contaminating text for a separation to protect against.",
+    "summariser": "not separately staffed - see note",
+    "implementer": "implementer-opus, this session",
+    "independent_implementation_witness": "NOT ESTABLISHED. If a witness is required later, it must be an agent or person who has not read this session's transcript."
+  },
+  "founder_decision": {
+    "id": "FTO-3-adjacent",
+    "question": "Whether a single-agent summariser/implementer for a CLEAN_ROOM_ONLY baseline is acceptable, or whether the baseline arm must be re-implemented under a separated role before its numbers are used outside this repository.",
+    "decided_at": "2026-08-12",
+    "decision": "Keep the provenance, restrict the use. The internal result is NOT discarded.",
+    "resolution": "EXP-0101 stands as an exploratory, internal result. Its baseline numbers and comparisons may be used for internal research and for deciding what to build next. They may NOT be used externally until the reimplementation below is done."
+  },
+  "external_use_precondition": {
+    "status": "OWED - not started",
+    "applies_to": [
+      "a paper",
+      "a patent specification's comparative evidence",
+      "the public Evidence page",
+      "an external presentation"
+    ],
+    "requirement": "A role-separated clean-room reimplementation of the tech_xversion_diff baseline arm must be performed once more before any of this baseline's numbers or comparisons leave the repository.",
+    "chain": [
+      "paper",
+      "requirements-only summary, written by a summariser who does not implement",
+      "separate implementer, who reads only that summary",
+      "independent implementation"
+    ],
+    "hard_constraint": "The new implementer must NOT be shown packages/absorption/src/akc_absorption/baseline_xversion.py, nor any other file from this session's implementation, nor this session's transcript.",
+    "on_completion": "The second reproduction becomes the externally usable canonical result. EXP-0101 remains the exploratory/internal one.",
+    "on_disagreement": "If the two implementations disagree, KEEP BOTH and analyse why. Do not delete the first. A disagreement between two independent clean-room implementations is itself evidence about how underdetermined the published requirements are."
+  },
+  "disclosure_marking": "NOT CLEARED FOR EXTERNAL DISCLOSURE"
+}

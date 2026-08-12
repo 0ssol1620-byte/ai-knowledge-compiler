@@ -1,0 +1,115 @@
+{
+  "gate": "INTAKE-0103",
+  "contract": "docs/research/EXP-0103_STRUCTURED_FILING_DATASET_CONTRACT.md",
+  "status": "OPEN - extraction code may not be written",
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "updated": "2026-08-12",
+  "rule": "Anything still UNVERIFIED when this gate closes is named as unverified in the fixture manifest. Writing it down a second time does not promote it.",
+
+  "blocker": {
+    "statement": "fact-to-rendered-evidence binding still requires empirical validation",
+    "note": "This replaces an earlier and wronger statement of the blocker as 'SEC primary sources are unavailable'. Unreachability from one environment is not a property of the source, and describing it as one turned a local network condition into a permanent-sounding fact. The access questions are settled; what is unsettled is whether a structured fact can be bound to a location in the rendered filing, and at what coverage."
+  },
+
+  "sec": {
+    "access": "ESTABLISHED - founder-verified directly",
+    "verified": {
+      "endpoints": ["companyconcept", "companyfacts", "frames"],
+      "authentication": "none - no API key is required",
+      "required_header": "a declared User-Agent",
+      "automated_access_limit": "10 requests per second",
+      "reuse": "public EDGAR filing content may be reused",
+      "inline_xbrl": "Inline XBRL embeds machine-readable facts directly inside the human-readable filing document"
+    },
+    "still_to_measure": "Whether those embedded facts can be matched to a visible location reliably enough to serve as gold evidence, and at what coverage. That is empirical and is not answered by any documentation."
+  },
+
+  "working_hypothesis": {
+    "truth": "a fact from CompanyFacts / the structured API",
+    "evidence_surface": "the accession-linked Inline XBRL document",
+    "binding": "iXBRL DOM fact matching",
+    "explicit_non_assumption": "The official API is NOT assumed to return a rendered page or a span location. The binding is something to be measured on real filings, not read off an endpoint."
+  },
+
+  "measurement_plan": {
+    "note": "Run on real filing samples before any extractor is written. Each step yields a rate with a denominator, not a yes or no.",
+    "steps": [
+      "API fact -> accession",
+      "accession -> iXBRL document",
+      "taxonomy concept / context / unit / value / period matching",
+      "visible DOM fact location",
+      "duplicate and ambiguous mapping rate",
+      "hidden-facts rate"
+    ],
+    "fallback": "If anchor coverage is insufficient, fall back to located spans: only an exact, unambiguous single match becomes gold; ambiguous and unmatched facts are excluded and counted; the exclusion rate is published.",
+    "forbidden": "Storing an inferred gold evidence location. A guessed anchor is worse than an excluded one, because an exclusion is visible in the denominator and a guess is indistinguishable from evidence."
+  },
+
+  "opendart": {
+    "status": "PARTIALLY ESTABLISHED",
+    "verified": [
+      {
+        "endpoint": "GET https://opendart.fss.or.kr/api/fnlttSinglAcnt.json",
+        "api_id": "2019016",
+        "returns": "single company, key accounts",
+        "params": ["crtfc_key", "corp_code", "bsns_year", "reprt_code"],
+        "fields": ["rcept_no", "bsns_year", "stock_code", "reprt_code", "account_nm", "fs_div", "fs_nm", "sj_div", "sj_nm", "thstrm_*", "frmtrm_*", "bfefrmtrm_*", "ord", "currency"]
+      },
+      {
+        "endpoint": "GET https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json",
+        "api_id": "2019020",
+        "returns": "single company, FULL financial statements - the multi-account endpoint the contract asked whether existed",
+        "params": ["crtfc_key", "corp_code", "bsns_year", "reprt_code", "fs_div (OFS|CFS)"],
+        "fields": ["rcept_no", "reprt_code", "bsns_year", "corp_code", "sj_div (BS|IS|CIS|CF|SCE)", "sj_nm", "account_id", "account_nm", "thstrm_amount", "frmtrm_amount", "currency"],
+        "why_it_matters": "account_id is the taxonomy element identifier, so a fact arrives already keyed to a concept. That is half of what a gold label needs; the other half is where in the document it is stated."
+      },
+      {
+        "endpoint": "GET https://opendart.fss.or.kr/api/fnlttMultiAcnt.json",
+        "api_id": "2019017",
+        "returns": "multiple companies, key accounts only - despite the name, not full accounts for one company"
+      },
+      {
+        "endpoint": "GET https://opendart.fss.or.kr/api/fnlttXbrl.xml",
+        "api_id": "2019019",
+        "returns": "the raw XBRL for one filing, as a ZIP",
+        "params": ["crtfc_key", "rcept_no", "reprt_code"]
+      },
+      {
+        "endpoint": "GET https://opendart.fss.or.kr/api/xbrlTaxonomy.json",
+        "api_id": "2020001",
+        "returns": "taxonomy metadata - account id, Korean and English labels, data type, IFRS paragraph references. No company figures."
+      },
+      {
+        "endpoint": "GET https://opendart.fss.or.kr/api/document.xml",
+        "api_id": "2019003",
+        "returns": "the original filing as a ZIP, not structured JSON"
+      }
+    ],
+    "request_limit": {
+      "canonical_wording": "General documented threshold is approximately 20,000 requests; the effective limit may vary by account/configuration.",
+      "do_not_record": "A fixed 10,000/day or 20,000/day. The official terms page states that a limit exists without naming it, and the FAQ answer renders in a JavaScript modal that could not be fetched. Treating either circulating figure as exact would put a number in the fixture's request budget that nobody has read from the source."
+    },
+    "terms": "FSS holds copyright in the API; the filing belongs to its submitter; FSS does not warrant accuracy; statistical, promotional and academic research use is a permitted exception. No explicit redistribution prohibition was found."
+  },
+
+  "crux_fact_to_document_location": {
+    "question": "Can a structured fact be bound to its evidence location in the rendered filing, and at what coverage?",
+    "united_states": {
+      "mechanism": "Inline XBRL embeds machine-readable facts inside the human-readable document, so the binding is expected to be recoverable by parsing the iXBRL DOM.",
+      "status": "UNMEASURED - this is the blocker, and it is empirical",
+      "note": "Do not assume an official endpoint supplies the location. The mechanism existing and the binding being reliable at usable coverage are different claims."
+    },
+    "korea": {
+      "answer": "No official mapping documented",
+      "basis": "None of fnlttSinglAcntAll, fnlttMultiAcnt, fnlttXbrl or xbrlTaxonomy documents any field linking an XBRL element to a position in the filed document: no HTML element id, no rendering link, no page or coordinate.",
+      "confidence": "high but not exhaustive",
+      "remaining_cheap_check": "Download the document.xml ZIP for one real filing and inspect its internal HTML/XBRL for element ids. Needs an OpenDART key and nothing else. This is the last inexpensive place a Korean anchor could be hiding."
+    }
+  },
+
+  "next_action": {
+    "unblocked": "Run the six measurement steps above on real SEC filing samples. No API key is needed; a declared User-Agent is, and automated access stays at or under 10 requests per second.",
+    "cheap_and_pending": "Inspect one OpenDART document.xml ZIP once a key exists.",
+    "not_permitted_yet": "Any extraction code. INTAKE-0103 is OPEN until the binding is measured."
+  }
+}

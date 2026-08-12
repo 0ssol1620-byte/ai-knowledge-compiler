@@ -2,19 +2,26 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
+from decimal import Decimal
 
 import pytest
 from akc_retrieval import (
     InMemoryVectorStore,
     MediaKind,
+    NumericAnswerState,
+    NumericAuthorityFact,
+    NumericFactKey,
     ProviderAttestationError,
     RerankRequest,
     RerankResult,
+    RetrievalFilters,
     RetrievalQuery,
     RetrievalService,
     RetrievalUnavailable,
     VectorCandidate,
     VectorRecord,
+    VerificationState,
+    verify_numeric_answer,
 )
 
 TENANT = uuid.uuid4()
@@ -84,6 +91,11 @@ class _Reranker:
     provider_id = "qwen3_reranker_0_6b"
 
     async def rerank(self, request: RerankRequest) -> RerankResult:
+        assert set(request.candidate_scores) == set(request.candidate_ids)
+        assert all(
+            score.vector_score <= 1 and score.bm25_score >= 0
+            for score in request.candidate_scores.values()
+        )
         ordered = tuple(reversed(request.candidate_ids[: request.top_k]))
         return RerankResult(
             provider_id=self.provider_id,
@@ -124,6 +136,19 @@ async def test_disabled_or_unverified_lane_fails_closed() -> None:
     )
     with pytest.raises(RetrievalUnavailable):
         await service.search(_query(), query_fingerprint="h1_" + ("c" * 64))
+
+
+def test_in_memory_store_cannot_be_wired_in_production_mode() -> None:
+    with pytest.raises(RetrievalUnavailable, match="development-only"):
+        RetrievalService(
+            vector_store=InMemoryVectorStore(dimension=32),
+            reranker=None,
+            expected_reranker_id=None,
+            expected_reranker_revision=None,
+            feature_enabled=True,
+            provider_ready=True,
+            production_mode=True,
+        )
 
 
 class _LeakyStore:
@@ -173,3 +198,108 @@ async def test_reranker_revision_mismatch_is_rejected() -> None:
 def test_content_and_secret_metadata_are_rejected() -> None:
     with pytest.raises(ValueError, match="secret"):
         _record("unsafe", metadata={"content": "document body"})
+
+
+async def test_structured_filters_run_before_vector_ranking() -> None:
+    store = InMemoryVectorStore(dimension=32)
+    collection_id = uuid.uuid4()
+    verified: dict[str, str | int | float | bool | None] = {
+        "collection_id": str(collection_id),
+        "document_id": "doc-a",
+        "statement": "INCOME_STATEMENT",
+        "concept": "Revenue",
+        "period_start": "2025-01-01",
+        "period_end": "2025-12-31",
+        "unit": "KRW",
+        "currency": "KRW",
+        "verification_state": "authority_verified",
+    }
+    store.upsert(
+        [
+            _record("exact", first=0.5, metadata=verified),
+            _record(
+                "wrong-collection",
+                first=100.0,
+                metadata={**verified, "collection_id": str(uuid.uuid4())},
+            ),
+            _record("wrong-period", first=100.0, metadata={**verified, "period_end": "2024-12-31"}),
+            _record(
+                "unresolved",
+                first=100.0,
+                metadata={**verified, "verification_state": "unresolved"},
+            ),
+        ]
+    )
+    query = _query().model_copy(
+        update={
+            "filters": RetrievalFilters(
+                collection_ids=frozenset({collection_id}),
+                document_ids=frozenset({"doc-a"}),
+                statement="INCOME_STATEMENT",
+                concept="Revenue",
+                period_start="2025-01-01",
+                period_end="2025-12-31",
+                unit="KRW",
+                currency="KRW",
+                verification_states=frozenset({VerificationState.AUTHORITY_VERIFIED}),
+            )
+        }
+    )
+    assert [item.record.stable_id for item in await store.search(query)] == ["exact"]
+
+
+def _fact_key() -> NumericFactKey:
+    return NumericFactKey(
+        entity_id="corp-001",
+        statement="INCOME_STATEMENT",
+        concept="Revenue",
+        period_start="2025-01-01",
+        period_end="2025-12-31",
+        unit="KRW",
+        currency="KRW",
+        scale=1_000_000,
+        dimensions_hash="c" * 64,
+    )
+
+
+def test_numeric_answer_requires_exact_authority_value_context_and_source() -> None:
+    fact = NumericAuthorityFact(
+        stable_id="fact-001",
+        key=_fact_key(),
+        value=Decimal("1234"),
+        source_block_ids=("block-001",),
+        source_hash="d" * 64,
+        authority_type="xbrl",
+        verification_state=VerificationState.AUTHORITY_VERIFIED,
+    )
+    result = verify_numeric_answer("1,234,000,000", expected_key=_fact_key(), facts=[fact])
+    assert result.state == NumericAnswerState.VERIFIED
+    assert result.emit_answer
+    assert result.authority_fact_id == "fact-001"
+
+    mismatch = verify_numeric_answer("1,234", expected_key=_fact_key(), facts=[fact])
+    assert mismatch.state == NumericAnswerState.UNRESOLVED
+    assert not mismatch.emit_answer
+    assert mismatch.reason_codes == ("numeric_value_mismatch",)
+
+
+def test_numeric_answer_fails_closed_on_missing_or_conflicting_authority() -> None:
+    missing = verify_numeric_answer("100", expected_key=_fact_key(), facts=[])
+    assert missing.state == NumericAnswerState.UNRESOLVED
+    assert not missing.emit_answer
+
+    facts = [
+        NumericAuthorityFact(
+            stable_id=f"fact-{value}",
+            key=_fact_key(),
+            value=Decimal(value),
+            source_block_ids=(f"block-{value}",),
+            source_hash="e" * 64,
+            authority_type="official_api",
+            verification_state=VerificationState.AUTHORITY_VERIFIED,
+        )
+        for value in ("100", "101")
+    ]
+    ambiguous = verify_numeric_answer("100000000", expected_key=_fact_key(), facts=facts)
+    assert ambiguous.state == NumericAnswerState.UNRESOLVED
+    assert ambiguous.reason_codes == ("authority_fact_ambiguous",)

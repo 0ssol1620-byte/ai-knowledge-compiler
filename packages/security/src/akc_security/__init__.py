@@ -38,9 +38,11 @@ from .pdf_secrets import (
     RedisPdfSecretStore,
 )
 from .preview_redaction import (
+    CroppedPreview,
     NormalizedBox,
     RedactedPreview,
     UnsafePreviewError,
+    crop_preview_png,
     redact_preview_png,
 )
 from .prompt_injection import (
@@ -74,6 +76,7 @@ __all__ = [
     "CdrRequest",
     "CdrResult",
     "CdrStatus",
+    "CroppedPreview",
     "FileValidationResult",
     "InMemoryPdfSecretStore",
     "InjectionRisk",
@@ -99,6 +102,7 @@ __all__ = [
     "UnsafeUrlError",
     "UploadLimits",
     "UrlValidationResult",
+    "crop_preview_png",
     "detect_prompt_injection",
     "detect_sensitive_data",
     "ensure_portable_markdown_safe",

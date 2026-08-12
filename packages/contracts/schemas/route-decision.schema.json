@@ -24,7 +24,10 @@
         "hpd_fast",
         "unlimited_long",
         "mistral_fallback",
-        "manual_review"
+        "region_recovery",
+        "authority_reconstruction",
+        "unresolved",
+        "quarantine"
       ]
     },
     "routeProfile": {

@@ -1,0 +1,141 @@
+{
+  "artifacts": [
+    {
+      "bytes": "4767",
+      "path": "figures/critical-vs-layout.svg",
+      "sha256": "sha256:cb45e1a45f4186537e718d389d93aee38149d97f845fae4dedf418f9e7777121"
+    },
+    {
+      "bytes": "4753",
+      "path": "figures/layout-split.svg",
+      "sha256": "sha256:1bdd4dd1108d8f88d2e670bdd028718a9dc6cbc0a19d3df4a651e925aa8ed117"
+    },
+    {
+      "bytes": "11184",
+      "path": "figures/per-class-recall.svg",
+      "sha256": "sha256:acd8c3b55359b6ab5ed783d07e456d1431413b5bd2bdafe9863c0c440a7d8e31"
+    },
+    {
+      "bytes": "2790",
+      "path": "manifest.json",
+      "sha256": "sha256:dbe94d8c501c60d4091089c4c1aa21a242e9ebbdd413f172cf575ba8024af68b"
+    },
+    {
+      "bytes": "191224",
+      "path": "metrics/per-mutation-class.json",
+      "sha256": "sha256:a89398fe3c7525f48812aec882653652d39c313d7850dc1367c42389a8da5298"
+    },
+    {
+      "bytes": "4384",
+      "path": "metrics/statistics.json",
+      "sha256": "sha256:9b439e4d5cd889d16981255a08ff5dda65fc753ed33f2e428762bf91425619b7"
+    },
+    {
+      "bytes": "19844",
+      "path": "metrics/summary.json",
+      "sha256": "sha256:d883dffe6c7598b4dcaa411eaee5d5248333f0a18a4403b9bc0cca21d6b5b811"
+    },
+    {
+      "bytes": "17421",
+      "path": "normalized/case-scores.jsonl.zst",
+      "sha256": "sha256:8ca5767c13822cc1ee1934f3c1209ee5d63e01326fe2f1b7428c8746e9ddab31"
+    },
+    {
+      "bytes": "90093",
+      "path": "raw/arm-outcomes.jsonl.zst",
+      "sha256": "sha256:1c1fca9005f2c59172a25ff64eaecc87e2f648fa125ab4b8e8129d95b1c2b808"
+    },
+    {
+      "bytes": "95907",
+      "path": "raw/knowledge-evolution-suite.json.zst",
+      "sha256": "sha256:8d9873f585ffcee4fb68b4c6408b340ec415e6cdd4275d5d2e11a5028305b772"
+    },
+    {
+      "bytes": "1518",
+      "path": "raw/sample-case.json.zst",
+      "sha256": "sha256:1a01dcfc701438a166f88d3f25b5d8f8f571b39e144883aa86e2db429f617e45"
+    },
+    {
+      "bytes": "6405",
+      "path": "receipts/canonical-finding.json",
+      "sha256": "sha256:b3b2ae60d74599283bc9c3b14f1b6b3e44e6a3ee5142638622379a1c6afe9383"
+    },
+    {
+      "bytes": "4929",
+      "path": "receipts/clean-room-provenance.json",
+      "sha256": "sha256:0bc62179463139f1baba3843495e7f6cc6344fdd56ad9adeece5a81b8da4112b"
+    },
+    {
+      "bytes": "841",
+      "path": "receipts/committed-bytes-verification.json",
+      "sha256": "sha256:287003fa2da00f1d81970b5c7b4c8a286a84a00e281957dc7f3dfe19c67bb28f"
+    },
+    {
+      "bytes": "8463",
+      "path": "receipts/ledger-ABS-B-01-opened.md",
+      "sha256": "sha256:1042bd743462e28c68cfc67ef2b8f53d07e524d49261b3d0833c374100be00ba"
+    },
+    {
+      "bytes": "17674",
+      "path": "receipts/ledger-ABS-B-01-result.md",
+      "sha256": "sha256:3363302a34cc7346f2ecf1ff24ec940bc8a48eb6ef075d8b59c9dc4b2ad8b139"
+    },
+    {
+      "bytes": "2554",
+      "path": "receipts/raw-evidence-manifest.json",
+      "sha256": "sha256:c4322b20127b5da1cd4689766f001405bed327f24cb683b3429a0cc4695ac8a4"
+    },
+    {
+      "bytes": "11611",
+      "path": "scripts/compress_raw.py",
+      "sha256": "sha256:61d9b7d0900ceb2222d771fba52b1906ea691cfc4722c41140d22e08951ffaf1"
+    },
+    {
+      "bytes": "8678",
+      "path": "scripts/make_figures.py",
+      "sha256": "sha256:d51b77644e9ac338d4a125199bd98eb6aab4e484b75a2e713f2dec9029310f1b"
+    },
+    {
+      "bytes": "13492",
+      "path": "scripts/make_tables.py",
+      "sha256": "sha256:ac8b051d1784e860cb1844a55c7150a7091c64f30bc1d2b9c74774cae6f83088"
+    },
+    {
+      "bytes": "14285",
+      "path": "scripts/run_experiment.py",
+      "sha256": "sha256:7d3f184cce89b0f916f56c82773418521046db9172ae3a662415a6b8dd77cb0f"
+    },
+    {
+      "bytes": "8864",
+      "path": "scripts/verify_committed_bytes.py",
+      "sha256": "sha256:5db8af5d13434ba6d4f1ca4d43d6393161b69e05ff47c9a6564bbd6e390447b1"
+    },
+    {
+      "bytes": "6081",
+      "path": "scripts/verify_receipts.py",
+      "sha256": "sha256:d5d6f16c979a8370db0a4aff2e3b510dce506d54a923208596e0415651b2e7a3"
+    },
+    {
+      "bytes": "3519",
+      "path": "tables/gate-adjudication.md",
+      "sha256": "sha256:93c2a854197135e26d202073e5886104b25f3a7560f1495c29b223ec19f87824"
+    },
+    {
+      "bytes": "4020",
+      "path": "tables/headline-metrics.md",
+      "sha256": "sha256:34697056fe1052bec381f1c437a83e04d8da2ad8a6f7523813dee5230aed42ff"
+    },
+    {
+      "bytes": "6599",
+      "path": "tables/per-mutation-class.md",
+      "sha256": "sha256:4a80bbd9135f1a0f1c45d5c9440a135f108f12a4a728766ba8430e8dc069ebe2"
+    },
+    {
+      "bytes": "2405",
+      "path": "tables/statistics.md",
+      "sha256": "sha256:1b1f65a8553df0057f575606a73c4c4ddc416640cff72d52c31560ecbae962c4"
+    }
+  ],
+  "experiment": "EXP-0101",
+  "note": "A number not bound to a receipt does not exist. Written by scripts/verify_receipts.py, which runs after the tables and figures and therefore covers them."
+}

@@ -1,0 +1,7 @@
+blueprint: legal-contracts
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: amendment_precedence, fixture: amended_agreement, expected: pass}
+  - {id: ambiguous_defined_term, fixture: duplicate_definition, expected: unresolved}
+  - {id: missing_clause_authority, fixture: inferred_obligation, expected: quarantine}

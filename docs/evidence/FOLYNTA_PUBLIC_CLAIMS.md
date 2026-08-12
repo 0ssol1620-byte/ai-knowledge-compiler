@@ -39,8 +39,14 @@
 }
 ```
 
+**반드시 함께 표기**: 5,132은 평가한 문서 수이며 처리 용량이나 고객 처리량이 아닙니다. 세 벤치마크는 공개 데이터셋이고 각 벤치마크의 문서 수를 함께 표기하십시오.
 
-근거: `benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json`
+**Must accompany the number**: 5,132 is the number of documents evaluated, not a capacity or a customer throughput figure. Name the three public benchmarks and their individual counts alongside the total.
+
+- 금지 표현: 5,132개 문서를 처리할 수 있습니다 (규모를 처리 용량으로 환언하는 표현)
+- 금지 표현: 고객 문서 5,132건 (공개 벤치마크를 고객 실적으로 제시하는 표현)
+
+근거: `docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json`
 
 ### 처리 완주율 99.98%
 
@@ -57,11 +63,13 @@
 
 **반드시 함께 표기**: 완주율은 출력이 생성된 비율이며 정확도가 아닙니다. 두 수치를 같은 문장에 쓸 때는 반드시 구분해 표기하십시오.
 
+**Must accompany the number**: This is the share of documents that produced output. It is not accuracy. Where both figures appear, label which is which.
+
 - 금지 표현: 정확도 99.98%
 - 금지 표현: 정확도 100%에 가까움
 - 금지 표현: 완주율을 정확도로 환언하는 모든 표현
 
-근거: `benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json`
+근거: `docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json`
 
 ### 실제로 실패한 문서 중 99.94%를 복구
 
@@ -80,8 +88,10 @@
 
 **반드시 함께 표기**: 분모는 전체 코퍼스가 아니라 실제로 실패한 문서 수입니다. 분모를 밝히지 않으면 완주율과 혼동됩니다.
 
+**Must accompany the number**: The denominator is the documents that actually failed, not the whole corpus. Without the denominator this reads as the completion rate.
 
-근거: `benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json`
+
+근거: `docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json`
 
 ### 복구 레인을 끄면 동일 파이프라인의 공식 점수가 80.6에서 53.7로 떨어집니다
 
@@ -107,8 +117,10 @@
 
 **반드시 함께 표기**: 모델, 평가기 리비전, 코퍼스, 설정을 고정하고 복구 산출물만 제거한 단일 변수 비교입니다.
 
+**Must accompany the number**: A single-variable comparison: model, evaluator revision, corpus and settings are identical, and only the recovery output was removed.
 
-근거: `benchmark/reports/generated/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json`
+
+근거: `docs/evidence/artifacts/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json`
 
 ### 복구가 없으면 ParseBench 규칙 위반이 2.1배로 늘어납니다
 
@@ -121,12 +133,22 @@
   "content_faithfulness_with": 0.8376,
   "content_faithfulness_without": 0.5243,
   "table_grits_with": 0.9017,
-  "table_grits_without": 0.5321
+  "table_grits_without": 0.5321,
+  "layout_micro_rule_pass_rate_with": 0.7566,
+  "layout_micro_rule_pass_rate_without": 0.7704,
+  "layout_rules_evaluated_with": 40287.0,
+  "layout_rules_evaluated_without": 23025.0
 }
 ```
 
+**반드시 함께 표기**: 절대 위반 건수로 표기하십시오. 레이아웃 그룹의 통과율은 복구를 끄면 오히려 올라가는데(0.757 → 0.770), 내용이 없는 문서는 채점할 요소 자체가 없어 분모가 40,287에서 23,025로 줄기 때문입니다. 비율만 인용하면 복구를 끄는 편이 나아 보입니다.
 
-근거: `benchmark/reports/generated/folynta-counterfactual-no-recovery-parsebench-2026-08-08/evaluation-summary.json`
+**Must accompany the number**: Quote the absolute failure counts. The layout group's pass rate actually rises when recovery is removed (0.757 to 0.770) because an empty document has no elements to score, shrinking the denominator from 40,287 to 23,025. A rate quoted alone makes no-recovery look better.
+
+- 금지 표현: 레이아웃 통과율을 복구 효과의 근거로 인용하는 표현
+- 금지 표현: 규칙 위반 감소를 비율로만 제시하고 분모 변화를 생략하는 표현
+
+근거: `['docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__parsebench__evaluation-summary.json', 'docs/evidence/artifacts/folynta-counterfactual-no-recovery-parsebench-2026-08-08__evaluation-summary.json']`
 
 ### 복구가 없으면 OmniDocBench 본문 편집거리가 4.5배로 악화됩니다
 
@@ -145,8 +167,10 @@
 
 **반드시 함께 표기**: 편집거리는 낮을수록 좋고, TEDS는 높을수록 좋습니다.
 
+**Must accompany the number**: Lower edit distance is better; higher TEDS is better.
 
-근거: `benchmark/reports/generated/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08/repeat-1/metric-result.json`
+
+근거: `['docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json', 'docs/evidence/artifacts/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08__repeat-1__metric-result.json']`
 
 ### 공식 벤치마크 정확도 80.6%
 
@@ -173,7 +197,7 @@
 - 금지 표현: 정확도 100% / 무오류 / 완벽한 추출
 - 금지 표현: 80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성
 
-근거: `benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json`
+근거: `docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json`
 
 ### 본문 문자 일치율 94.2%, 표 구조 정확도 95.5%
 
@@ -193,7 +217,7 @@
 **Must accompany the number**: These are a different measure from the 80.6% check pass rate. If both appear on one page, label what each one measures.
 
 
-근거: `benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json`
+근거: `docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json`
 
 ### 문서 유형별 정확도를 공개합니다
 
@@ -275,7 +299,7 @@
 - 금지 표현: benchmark_slice 값(old_scans.jsonl 등)을 화면에 그대로 노출
 - 금지 표현: 저품질 스캔 행을 뺀 부분 표
 
-근거: `benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json`
+근거: `docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json`
 
 ### 추출에서 끝나지 않고 지식 아키텍처까지 컴파일합니다
 
@@ -323,7 +347,7 @@
 
 - 금지 표현: 이 단계들에 대한 정확도·품질 백분율 표기
 
-근거: `packages/domain-packs/src/akc_domain_packs/blueprints.py; packages/exporters/src/akc_exporters/`
+근거: `['packages/domain-packs/src/akc_domain_packs/blueprints.py', 'packages/exporters/src/akc_exporters/vault.py', 'packages/exporters/src/akc_exporters/knowledge_package.py', 'docs/evidence/artifacts/folynta-knowledge-compilation-properties-2026-08-08.json']`
 
 ### 산출물의 구조적 보증: 재현 가능한 아키텍처, 미해결 링크 0건, 병합 시 무손실
 
@@ -342,8 +366,10 @@
 
 **반드시 함께 표기**: 이 보증은 산출물의 구조에 관한 것이며 추출된 텍스트의 정확성과는 별개 지표입니다.
 
+**Must accompany the number**: These guarantees describe the structure of the compiled output. They are a separate measure from whether the extracted text is correct.
 
-근거: `benchmark/reports/generated/folynta-knowledge-compilation-properties-2026-08-08.json`
+
+근거: `docs/evidence/artifacts/folynta-knowledge-compilation-properties-2026-08-08.json`
 
 
 ## 조건부 게시 (2건)
@@ -371,7 +397,7 @@
 - 금지 표현: 우리가 <경쟁사>보다 N점 높습니다
 - 금지 표현: 업계 1위 / 최고 정확도
 
-근거: `benchmark/reports/generated/folynta-published-leaderboard-context-2026-08-08.json`
+근거: `docs/evidence/artifacts/folynta-published-leaderboard-context-2026-08-08.json`
 
 ### 1,000페이지당 GPU 원가 $1.23
 
@@ -389,7 +415,7 @@
 - 조건: 경쟁사의 소매가와 나란히 놓으면 성립하지 않는 비교가 됩니다.
 - 금지 표현: 경쟁사 대비 N배 저렴 (원가와 소매가를 비교하는 모든 표현)
 
-근거: `benchmark/reports/generated/folynta-measured-gpu-cost-2026-08-08.json`
+근거: `docs/evidence/artifacts/folynta-measured-gpu-cost-2026-08-08.json`
 
 
 ## 게시 불가 (2건)
@@ -416,5 +442,5 @@
 **게시 불가 사유**: 구현하고 같은 코퍼스에서 측정한 결과, 무작위 선택보다 낮은 실패 질량을 회수했고 예측 길이만으로 정렬하는 무탐지 기준선보다도 낮았습니다. 제품 기능으로 광고할 근거가 없습니다.
 
 
-근거: `benchmark/reports/generated/folynta-blind-quality-detection-2026-08-08.json`
+근거: `docs/evidence/artifacts/folynta-blind-quality-detection-2026-08-08.json`
 

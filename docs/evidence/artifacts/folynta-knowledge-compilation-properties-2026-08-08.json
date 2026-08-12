@@ -1,0 +1,261 @@
+{
+  "architecture_determinism": {
+    "all_plans_stable_across_repeats": true,
+    "blueprints_measured": 7,
+    "distinct_blueprints_produce_distinct_plans": true,
+    "per_blueprint": [
+      {
+        "blueprint": "corporate-filings",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Companies",
+          "Filings",
+          "Risks",
+          "Metrics",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "stable-id-title",
+        "plan_sha256": "sha256:891fd10b03706f606979c13b76bc7f0755107e4c76435d95a6aa74a7c206891b",
+        "stable_across_repeats": true
+      },
+      {
+        "blueprint": "course-materials",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Courses",
+          "Modules",
+          "Concepts",
+          "Assessments",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "stable-title",
+        "plan_sha256": "sha256:d20f87f2c6b6aaa947db4caaef449138cda38a621ae889cfb6928980a906ed53",
+        "stable_across_repeats": true
+      },
+      {
+        "blueprint": "generic-mixed-corpus",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Documents",
+          "Topics",
+          "Entities",
+          "Claims",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "stable-title",
+        "plan_sha256": "sha256:51cd758f133e446d6cbdadb031bbf0c612360a2e3a1678af39be5bd61983e2d1",
+        "stable_across_repeats": true
+      },
+      {
+        "blueprint": "legal-contracts",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Contracts",
+          "Parties",
+          "Obligations",
+          "Dates",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "stable-id-title",
+        "plan_sha256": "sha256:ec2eba3dfafa27bb9ead221b8c1df7172de97069996dce3888ee36280abc0a78",
+        "stable_across_repeats": true
+      },
+      {
+        "blueprint": "personal-knowledge",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Projects",
+          "People",
+          "Topics",
+          "Timeline",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "date-title",
+        "plan_sha256": "sha256:6b7c9b5727352d5a2b590414d508c7578246a0d54621fcd3722b43c3beb3a764",
+        "stable_across_repeats": true
+      },
+      {
+        "blueprint": "research-library",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Papers",
+          "Topics",
+          "Methods",
+          "Findings",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "stable-title",
+        "plan_sha256": "sha256:db1499a68a09c96995f762f610ffd8d032657f5b203b86670ff6737690a8729d",
+        "stable_across_repeats": true
+      },
+      {
+        "blueprint": "technical-documentation",
+        "folder_depth": 3,
+        "folder_paths": [
+          "Sources",
+          "Products",
+          "Components",
+          "Procedures",
+          "Requirements",
+          "MOCs",
+          "Evidence",
+          "Packages"
+        ],
+        "naming_policy": "stable-id-title",
+        "plan_sha256": "sha256:5c1da5513f014c6812f807eef329b20deff3dd3e7edc3d899106918b69988e65",
+        "stable_across_repeats": true
+      }
+    ],
+    "repeats_per_blueprint": 5,
+    "unstable_blueprints": []
+  },
+  "claims_supported": {
+    "a_vault_with_a_broken_link_cannot_be_emitted": true,
+    "architecture_is_reproducible": true,
+    "blueprint_choice_is_meaningful": true,
+    "emitted_vault_has_no_unresolved_internal_links": true,
+    "merge_never_loses_a_file_silently": true
+  },
+  "documents_sampled_from": [
+    "benchmark\\datasets\\private\\runpod-2026-08-04\\collected-full",
+    "benchmark\\datasets\\private\\runpod-2026-08-04\\collected-operational-retry-2026-08-05",
+    "benchmark\\datasets\\private\\runpod-2026-08-04\\preofficial-operational-paddle-collection-r1"
+  ],
+  "interpretation_boundary": "These are structural guarantees about the compiled output. They say nothing about whether the extracted text is correct, which the public benchmark results measure separately.",
+  "merge_safety": {
+    "any_policy_loses_a_file_silently": false,
+    "existing_vault_files": 601,
+    "incoming_files": 902,
+    "per_policy": {
+      "error": {
+        "conflicts": 301,
+        "existing_files_dropped_without_conflict": 0,
+        "existing_files_overwritten_without_conflict": 0,
+        "output_files": 1202,
+        "safe_to_apply": false
+      },
+      "keep_existing": {
+        "conflicts": 301,
+        "existing_files_dropped_without_conflict": 0,
+        "existing_files_overwritten_without_conflict": 0,
+        "output_files": 1202,
+        "safe_to_apply": true
+      },
+      "rename_incoming": {
+        "conflicts": 301,
+        "existing_files_dropped_without_conflict": 0,
+        "existing_files_overwritten_without_conflict": 0,
+        "output_files": 1503,
+        "safe_to_apply": true
+      },
+      "replace_same_source": {
+        "conflicts": 301,
+        "existing_files_dropped_without_conflict": 0,
+        "existing_files_overwritten_without_conflict": 0,
+        "output_files": 1202,
+        "safe_to_apply": false
+      },
+      "update_managed": {
+        "conflicts": 301,
+        "existing_files_dropped_without_conflict": 0,
+        "existing_files_overwritten_without_conflict": 0,
+        "output_files": 1202,
+        "safe_to_apply": false
+      }
+    },
+    "user_edited_files": 301
+  },
+  "question": "The public benchmarks score extraction only. What can be established about the compilation stages that follow it?",
+  "receipt_sha256": "sha256:14e88042e7bb138e623c566e258818aada4f54d84ec902d72b18b765779b9061",
+  "schema": "folynta.knowledge-compilation-properties.v1",
+  "score_inflation_allowed": false,
+  "vault_compilation": {
+    "broken_internal_links_in_emitted_vault": 0,
+    "candidate_defect": {
+      "description": "A LaTeX fragment that matches the markdown link grammar is treated as a dangling link, which refuses a document that has no real broken reference.",
+      "documents_affected": 0
+    },
+    "documents_compiled": 596,
+    "documents_failed_for_other_reasons": 0,
+    "documents_offered": 1000,
+    "documents_refused_for_broken_links": 404,
+    "fail_closed": true,
+    "other_error_samples": [],
+    "refusal_samples": [
+      {
+        "case_id": "olmocr-bench-014662299acbba5346391c99",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/2e4faf0cddd8a7009e10cc491296078a1697dfcd4a6f473ebd195e7e202b1195.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-03e9a6d7c45afbeb8a2534a0",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/788a02063ed3bc4d2161a0664492f02d4072f5e6246de30f3d0d31ad39fb9b00.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-057623d5865bdc9a2ced03c0",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/3753d7c5f6b7758dd18c9d4b4fabc29cefe4e67f200cb5d9e548472b2434e1ce.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-05a75fb2c426691c620e1724",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/a43bddd813c51e5e33a937ba4f81b57ec15e8bf999586dc8189ba76e1ef7bfdb.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-06f486f51c4f364891965ef5",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/1f56aa1ed4dd81004475116336f97727d7bc4b32db96bf003ffe453c7b928330.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-0848d32716934addd7ce0759",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/8de3c8c98793b756bfcdd72b673584c1a69f6cca41bd6b75917b64033a9bc37f.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-084bc12f091105b2c2d9f7ed",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/4e3b50387d52cd5501b4e220291dbc118d2bff5dc178490d5fd3d9647caa226d.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-0a7787bff6a2a9d1ec3822f6",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/4eca435b203f3554437daff67dcd169ddbeb088ad9c57892edcb61c225e905bc.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-0a9095036d3708928df8dd7e",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/e9afaa6415b228edf25ff665272c698983f41ee8298be91d832b4d792d7f1cd2.jpg"
+      },
+      {
+        "case_id": "olmocr-bench-1423491d46f7bd713591d177",
+        "cause": "referenced figure asset was not supplied",
+        "target": "images/5612429a974377da8b213e5d72ed5e4a72859d6258dd93eddcb29365efad7e04.jpg"
+      }
+    ],
+    "refusals_by_cause": {
+      "other unresolved target": 2,
+      "referenced figure asset was not supplied": 402
+    },
+    "vault_files_emitted": 1202
+  },
+  "why_not_an_accuracy_score": "No public benchmark scores whether a corpus was organised well, and inventing one would be marking our own homework. The compilation stages are deterministic, so their properties are provable instead: reproducible architecture, no unresolved links, no silent data loss."
+}

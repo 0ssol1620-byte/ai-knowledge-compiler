@@ -43,7 +43,10 @@ class Route(StrEnum):
     HPD_FAST = "hpd_fast"
     UNLIMITED_LONG = "unlimited_long"
     MISTRAL_FALLBACK = "mistral_fallback"
-    MANUAL_REVIEW = "manual_review"
+    REGION_RECOVERY = "region_recovery"
+    AUTHORITY_RECONSTRUCTION = "authority_reconstruction"
+    UNRESOLVED = "unresolved"
+    QUARANTINE = "quarantine"
 
 
 class FeatureFlags(ContractModel):
@@ -51,6 +54,9 @@ class FeatureFlags(ContractModel):
     paddle_fast_enabled: bool = False
     unlimited_long_enabled: bool = False
     external_fallback_enabled: bool = False
+    region_recovery_enabled: bool = False
+    authority_verification_enabled: bool = False
+    differential_verification_enabled: bool = False
 
 
 class DataPolicy(ContractModel):
@@ -75,8 +81,9 @@ class RouterContext(ContractModel):
             raise ValueError("private mode cannot allow external model APIs")
         if self.data_policy.private_processing and self.data_policy.external_api_allowed:
             raise ValueError("private processing cannot allow external model APIs")
-        if Route.MANUAL_REVIEW in self.ready_routes:
-            raise ValueError("manual review is not a provider route")
+        terminal_routes = {Route.UNRESOLVED, Route.QUARANTINE}
+        if self.ready_routes.intersection(terminal_routes):
+            raise ValueError("terminal isolation states are not provider routes")
         if self.mode == ProcessingMode.PRIVATE and Route.MISTRAL_FALLBACK in self.ready_routes:
             raise ValueError("private mode cannot mark an external provider ready")
         return self
@@ -98,7 +105,9 @@ class EscalationAction(StrEnum):
     ACCEPT = "accept"
     RETRY = "retry"
     ESCALATE = "escalate"
-    REVIEW = "review"
+    VERIFY_AUTHORITY = "verify_authority"
+    UNRESOLVED = "unresolved"
+    QUARANTINE = "quarantine"
     FAIL = "fail"
     DISCARD_CHALLENGER = "discard_challenger"
 
@@ -113,6 +122,13 @@ class QualitySignal(ContractModel):
     critical_numeric_mismatch: bool = False
     critical_table_error: bool = False
     engine_specific_failure: bool = False
+    security_quarantine_required: bool = False
+    source_integrity_failure: bool = False
+    unsupported_content: bool = False
+    region_recoverable: bool = False
+    authority_match: bool | None = None
+    independent_signal_agreement: bool | None = None
+    source_evidence_complete: bool = True
     agreement_text: Annotated[float, Field(ge=0.0, le=1.0)] | None = None
     agreement_numeric: Annotated[float, Field(ge=0.0, le=1.0)] | None = None
     base_result_passed: bool = False

@@ -1,0 +1,13 @@
+id: legal-contracts
+version: 1.0.0
+display_name: Legal Contracts
+domains: [legal, contracts, compliance]
+object_types: [contract, party, clause, obligation, date]
+root_views: [Contracts, Parties, Obligations, Dates]
+moc_templates: [Contracts, Parties, Obligations]
+folder_depth: 3
+naming_policy: stable-id-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, clause_exactness, party_identity, relation_evidence]
+export_profiles: [obsidian, ontology, neo4j, rag]

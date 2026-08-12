@@ -73,6 +73,11 @@ jobs:
         run: |
           node --check tests/load/k6-health.js
           node --check tests/load/k6-journey.js
+          node --check tests/load/k6-collection-manifest.js
+          node --check tests/load/k6-preflight-30000.js
+          node --check tests/load/resume-10gib.mjs
+          node --check tests/load/browser-scale-probe.mjs
+          node --check apps/web/scripts/capture-v4-brand-evidence.mjs
       - run: pnpm lint
       - run: pnpm typecheck
       # DESIGN_MASTER_V3 [확정] items that are checkable from source. The V3
@@ -82,6 +87,8 @@ jobs:
       # claims. This fails if either reaches the site.
       - run: pnpm --filter @akc/web claims:check
       - run: pnpm test
+      - run: pnpm --filter @akc/contracts build
+      - run: pnpm --filter @akc/web storybook:build
       - run: pnpm build
 
   # §22 — the performance budget is a declaration until something measures it.
@@ -156,6 +163,42 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  visual-and-browser-matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Install the immutable web environment
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Install the pinned release browser matrix
+        run: pnpm --filter @akc/web exec playwright install --with-deps chromium firefox webkit
+      - name: Compare approved visual baselines
+        run: pnpm --filter @akc/web test:e2e:visual
+      - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
+        run: pnpm --filter @akc/web test:e2e:matrix
+      - name: Run forced-colors and 200-percent accessibility contracts
+        run: >-
+          pnpm --filter @akc/web exec playwright test
+          e2e/accessibility-matrix.spec.ts --project=desktop --project=mobile
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: visual-and-browser-matrix-evidence
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            apps/web/e2e/visual-baselines
+          if-no-files-found: error
+          retention-days: 14
+
   contracts:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -172,12 +215,22 @@ jobs:
           python -m uv sync --locked --extra dev
       - name: Validate model registry
         run: python -m uv run --locked --extra dev python infra/model-registry/validate_registry.py
+      - name: Verify pinned public benchmark metadata
+        run: >-
+          python -m uv run --locked --extra dev python benchmark/public_suite.py
+          verify-registry --online
       - name: Validate repository policy and schemas
         run: |
           python -m uv run --locked --extra dev python infra/security/validate_repository.py
           python -m uv run --locked --extra dev python infra/security/validate_deployment.py
           python -m uv run --locked --extra dev python scripts/generate_contract_types.py --check
           python -m uv run --locked --extra dev python scripts/check_openapi_compat.py
+      - name: Validate v4 release traceability
+        run: |
+          python -m uv run --locked --extra dev python infra/release/validate_v4_subsections.py
+          python -m uv run --locked --extra dev python infra/release/validate_v4_traceability.py
+          python -m uv run --locked --extra dev python infra/release/validate_v4_brand_evidence.py
+          python -m uv run --locked --extra dev python tests/load/validate_profiles.py
       # One Alembic head. Two branches adding a revision off the same parent
       # merge cleanly in git and then refuse to run, so this fails at the
       # merge instead of at the deploy.
@@ -267,6 +320,60 @@ jobs:
         run: python -m uv run --locked --extra dev python -m alembic current --check-heads
       - name: Verify tenant RLS and mutually isolated worker roles
         run: python -m uv run --locked --extra dev python infra/postgres/verify_postgres_gate.py
+      - name: Verify the catalog-derived schema security gate
+        # Reproduces the privilege receipt against pgvector/pgvector:pg17 with
+        # the unmodified migration tree, then asserts tenant isolation as a role
+        # holding the real worker grant surface.
+        run: >-
+          python -m uv run --locked --extra dev
+          python infra/postgres/schema_security_gate.py
+          --receipt-out artifacts/privilege-receipt-ci.json
+      - name: Require the committed privilege receipt to match this catalog
+        # Cluster-provenance fields (the bootstrap superuser's name) differ
+        # between the receipt's origin cluster and CI, so the comparison is over
+        # the schema-determined portion rather than the whole file.
+        #
+        # The baseline is the 0036 receipt. The 0033-0035 receipts stay as
+        # the measurements they were — other documents cite them by sha256, and
+        # rewriting historical evidence to make a build green is the one thing
+        # a receipt may never do.
+        run: >-
+          python -m uv run --locked --extra dev
+          python scripts/compare_privilege_receipt.py
+          docs/audit/receipts/privilege-receipt-0036.json
+          artifacts/privilege-receipt-ci.json
+      - name: Shadow-validate the dual-plane authorization boundary
+        # ARMING GATE 2. Everything above this line ran `alembic upgrade head`
+        # against pgvector/pgvector:pg17 with the *unmodified* migration tree —
+        # which every measurement taken on a developer machine did not, because
+        # pgvector is not installed there and 0024 had to be rewritten outside
+        # the repository to apply. This job is the first reproduction that owes
+        # nothing to that substitution, and no worker role's BYPASSRLS may be
+        # removed until it is green.
+        #
+        # This step itself removes BYPASSRLS from two worker roles *in the
+        # disposable CI service container*, measures what the policies then do,
+        # and restores it — failing if restoration did not happen. The repository
+        # ships no change that removes the attribute; this is the only way to
+        # observe policies that a bypassing role makes unobservable.
+        run: >-
+          python -m uv run --locked --extra dev
+          python infra/postgres/shadow_validate_dual_plane.py
+      - name: Prove the written broker claim path against a real transaction
+        # Separate from the shadow suite on purpose. That suite proves the
+        # adaptation *would* preserve behaviour; this runs the real worker with
+        # use_claim_broker on and proves the written path does. It never touches
+        # BYPASSRLS — canary B is a separate change and a separate signal.
+        run: >-
+          python -m uv run --locked --extra dev
+          python infra/postgres/verify_claim_via_broker.py
+      - name: Publish the CI privilege receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: privilege-receipt-ci
+          path: artifacts/privilege-receipt-ci.json
+          if-no-files-found: warn
 
   worker-syntax:
     runs-on: ubuntu-24.04

@@ -1,0 +1,740 @@
+{
+  "baseline": {
+    "alignment_f1": 1.0,
+    "alignment_precision": {
+      "denominator": 11220,
+      "numerator": 11220,
+      "population": "pairs the arm asserted",
+      "value": 1.0
+    },
+    "alignment_recall": {
+      "denominator": 11220,
+      "numerator": 11220,
+      "population": "gold aligned pairs",
+      "value": 1.0
+    },
+    "cases": 660,
+    "confidence_intervals": {
+      "critical_change_recall": [
+        1.0,
+        1.0
+      ],
+      "layout_only_false_invalidation_rate": [
+        0.06666666666666667,
+        0.14166666666666666
+      ],
+      "layout_only_false_positive_rate": [
+        0.06666666666666667,
+        0.14166666666666666
+      ],
+      "selective_full_equivalence": [
+        0.9287878787878788,
+        0.9636363636363636
+      ],
+      "semantic_change_recall": [
+        1.0,
+        1.0
+      ]
+    },
+    "critical_change_labelled_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_change_recall": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_change_surfaced_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_false_merges": {
+      "denominator": 4080,
+      "numerator": 0,
+      "population": "gold identity pairs in high-risk cases",
+      "value": 0.0
+    },
+    "critical_numeric_change_recall": {
+      "denominator": 60,
+      "numerator": 60,
+      "population": "injected numeric mutations",
+      "value": 1.0
+    },
+    "downstream_impact_recall": {
+      "denominator": 780,
+      "numerator": 780,
+      "population": "gold impacted artifacts",
+      "value": 1.0
+    },
+    "identity_false_merges": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "identity_false_splits": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "layout_only_false_invalidation_rate": {
+      "denominator": 240,
+      "numerator": 25,
+      "population": "pure-layout mutation cases",
+      "value": 0.10416666666666667
+    },
+    "layout_only_false_positive_rate": {
+      "denominator": 240,
+      "numerator": 25,
+      "population": "pure-layout mutation cases",
+      "value": 0.10416666666666667
+    },
+    "layout_only_unresolved_rate": {
+      "denominator": 240,
+      "numerator": 0,
+      "population": "pure-layout mutation cases",
+      "value": 0.0
+    },
+    "mean_rebuild_fraction": 0.07996632996632996,
+    "selective_full_equivalence": {
+      "denominator": 660,
+      "numerator": 625,
+      "population": "all cases",
+      "value": 0.946969696969697
+    },
+    "semantic_change_precision": {
+      "denominator": 445,
+      "numerator": 360,
+      "population": "cases where the arm reported a semantic change",
+      "value": 0.8089887640449438
+    },
+    "semantic_change_recall": {
+      "denominator": 360,
+      "numerator": 360,
+      "population": "injected mutations that change meaning",
+      "value": 1.0
+    }
+  },
+  "challenger": {
+    "alignment_f1": 0.9727626459143969,
+    "alignment_precision": {
+      "denominator": 10625,
+      "numerator": 10625,
+      "population": "pairs the arm asserted",
+      "value": 1.0
+    },
+    "alignment_recall": {
+      "denominator": 11220,
+      "numerator": 10625,
+      "population": "gold aligned pairs",
+      "value": 0.946969696969697
+    },
+    "cases": 660,
+    "confidence_intervals": {
+      "critical_change_recall": [
+        0.6958333333333333,
+        0.8041666666666667
+      ],
+      "layout_only_false_invalidation_rate": [
+        0.6708333333333333,
+        0.7833333333333333
+      ],
+      "layout_only_false_positive_rate": [
+        0.0,
+        0.0
+      ],
+      "selective_full_equivalence": [
+        1.0,
+        1.0
+      ],
+      "semantic_change_recall": [
+        0.6166666666666667,
+        0.7138888888888889
+      ]
+    },
+    "critical_change_labelled_rate": {
+      "denominator": 240,
+      "numerator": 180,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.75
+    },
+    "critical_change_recall": {
+      "denominator": 240,
+      "numerator": 180,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.75
+    },
+    "critical_change_surfaced_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_false_merges": {
+      "denominator": 4080,
+      "numerator": 0,
+      "population": "gold identity pairs in high-risk cases",
+      "value": 0.0
+    },
+    "critical_numeric_change_recall": {
+      "denominator": 60,
+      "numerator": 0,
+      "population": "injected numeric mutations",
+      "value": 0.0
+    },
+    "downstream_impact_recall": {
+      "denominator": 780,
+      "numerator": 408,
+      "population": "gold impacted artifacts",
+      "value": 0.5230769230769231
+    },
+    "identity_false_merges": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "identity_false_splits": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "layout_only_false_invalidation_rate": {
+      "denominator": 240,
+      "numerator": 175,
+      "population": "pure-layout mutation cases",
+      "value": 0.7291666666666666
+    },
+    "layout_only_false_positive_rate": {
+      "denominator": 240,
+      "numerator": 0,
+      "population": "pure-layout mutation cases",
+      "value": 0.0
+    },
+    "layout_only_unresolved_rate": {
+      "denominator": 240,
+      "numerator": 175,
+      "population": "pure-layout mutation cases",
+      "value": 0.7291666666666666
+    },
+    "mean_rebuild_fraction": 1.0,
+    "selective_full_equivalence": {
+      "denominator": 660,
+      "numerator": 660,
+      "population": "all cases",
+      "value": 1.0
+    },
+    "semantic_change_precision": {
+      "denominator": 300,
+      "numerator": 240,
+      "population": "cases where the arm reported a semantic change",
+      "value": 0.8
+    },
+    "semantic_change_recall": {
+      "denominator": 360,
+      "numerator": 240,
+      "population": "injected mutations that change meaning",
+      "value": 0.6666666666666666
+    }
+  },
+  "challenger_no_content": {
+    "alignment_f1": 0.9735483576225502,
+    "alignment_precision": {
+      "denominator": 10669,
+      "numerator": 10655,
+      "population": "pairs the arm asserted",
+      "value": 0.9986877870465836
+    },
+    "alignment_recall": {
+      "denominator": 11220,
+      "numerator": 10655,
+      "population": "gold aligned pairs",
+      "value": 0.9496434937611408
+    },
+    "cases": 660,
+    "confidence_intervals": {
+      "critical_change_recall": [
+        1.0,
+        1.0
+      ],
+      "layout_only_false_invalidation_rate": [
+        0.5416666666666666,
+        0.6666666666666666
+      ],
+      "layout_only_false_positive_rate": [
+        0.008333333333333333,
+        0.05416666666666667
+      ],
+      "selective_full_equivalence": [
+        1.0,
+        1.0
+      ],
+      "semantic_change_recall": [
+        0.7944444444444444,
+        0.8722222222222222
+      ]
+    },
+    "critical_change_labelled_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_change_recall": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_change_surfaced_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_false_merges": {
+      "denominator": 4080,
+      "numerator": 0,
+      "population": "gold identity pairs in high-risk cases",
+      "value": 0.0
+    },
+    "critical_numeric_change_recall": {
+      "denominator": 60,
+      "numerator": 60,
+      "population": "injected numeric mutations",
+      "value": 1.0
+    },
+    "downstream_impact_recall": {
+      "denominator": 780,
+      "numerator": 528,
+      "population": "gold impacted artifacts",
+      "value": 0.676923076923077
+    },
+    "identity_false_merges": {
+      "denominator": 11220,
+      "numerator": 14,
+      "population": "gold identity pairs",
+      "value": 0.0012477718360071302
+    },
+    "identity_false_splits": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "layout_only_false_invalidation_rate": {
+      "denominator": 240,
+      "numerator": 145,
+      "population": "pure-layout mutation cases",
+      "value": 0.6041666666666666
+    },
+    "layout_only_false_positive_rate": {
+      "denominator": 240,
+      "numerator": 7,
+      "population": "pure-layout mutation cases",
+      "value": 0.029166666666666667
+    },
+    "layout_only_unresolved_rate": {
+      "denominator": 240,
+      "numerator": 145,
+      "population": "pure-layout mutation cases",
+      "value": 0.6041666666666666
+    },
+    "mean_rebuild_fraction": 1.0,
+    "selective_full_equivalence": {
+      "denominator": 660,
+      "numerator": 660,
+      "population": "all cases",
+      "value": 1.0
+    },
+    "semantic_change_precision": {
+      "denominator": 367,
+      "numerator": 300,
+      "population": "cases where the arm reported a semantic change",
+      "value": 0.8174386920980926
+    },
+    "semantic_change_recall": {
+      "denominator": 360,
+      "numerator": 300,
+      "population": "injected mutations that change meaning",
+      "value": 0.8333333333333334
+    }
+  },
+  "challenger_no_spatial": {
+    "alignment_f1": 0.9717741935483871,
+    "alignment_precision": {
+      "denominator": 10604,
+      "numerator": 10604,
+      "population": "pairs the arm asserted",
+      "value": 1.0
+    },
+    "alignment_recall": {
+      "denominator": 11220,
+      "numerator": 10604,
+      "population": "gold aligned pairs",
+      "value": 0.9450980392156862
+    },
+    "cases": 660,
+    "confidence_intervals": {
+      "critical_change_recall": [
+        0.6125,
+        0.7291666666666666
+      ],
+      "layout_only_false_invalidation_rate": [
+        0.6791666666666667,
+        0.7916666666666666
+      ],
+      "layout_only_false_positive_rate": [
+        0.0,
+        0.0
+      ],
+      "selective_full_equivalence": [
+        1.0,
+        1.0
+      ],
+      "semantic_change_recall": [
+        0.5638888888888889,
+        0.6638888888888889
+      ]
+    },
+    "critical_change_labelled_rate": {
+      "denominator": 240,
+      "numerator": 161,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.6708333333333333
+    },
+    "critical_change_recall": {
+      "denominator": 240,
+      "numerator": 161,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.6708333333333333
+    },
+    "critical_change_surfaced_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_false_merges": {
+      "denominator": 4080,
+      "numerator": 0,
+      "population": "gold identity pairs in high-risk cases",
+      "value": 0.0
+    },
+    "critical_numeric_change_recall": {
+      "denominator": 60,
+      "numerator": 0,
+      "population": "injected numeric mutations",
+      "value": 0.0
+    },
+    "downstream_impact_recall": {
+      "denominator": 780,
+      "numerator": 370,
+      "population": "gold impacted artifacts",
+      "value": 0.47435897435897434
+    },
+    "identity_false_merges": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "identity_false_splits": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "layout_only_false_invalidation_rate": {
+      "denominator": 240,
+      "numerator": 177,
+      "population": "pure-layout mutation cases",
+      "value": 0.7375
+    },
+    "layout_only_false_positive_rate": {
+      "denominator": 240,
+      "numerator": 0,
+      "population": "pure-layout mutation cases",
+      "value": 0.0
+    },
+    "layout_only_unresolved_rate": {
+      "denominator": 240,
+      "numerator": 177,
+      "population": "pure-layout mutation cases",
+      "value": 0.7375
+    },
+    "mean_rebuild_fraction": 1.0,
+    "selective_full_equivalence": {
+      "denominator": 660,
+      "numerator": 660,
+      "population": "all cases",
+      "value": 1.0
+    },
+    "semantic_change_precision": {
+      "denominator": 281,
+      "numerator": 221,
+      "population": "cases where the arm reported a semantic change",
+      "value": 0.7864768683274022
+    },
+    "semantic_change_recall": {
+      "denominator": 360,
+      "numerator": 221,
+      "population": "injected mutations that change meaning",
+      "value": 0.6138888888888889
+    }
+  },
+  "challenger_no_type_reasoning": {
+    "alignment_f1": 0.9727626459143969,
+    "alignment_precision": {
+      "denominator": 10625,
+      "numerator": 10625,
+      "population": "pairs the arm asserted",
+      "value": 1.0
+    },
+    "alignment_recall": {
+      "denominator": 11220,
+      "numerator": 10625,
+      "population": "gold aligned pairs",
+      "value": 0.946969696969697
+    },
+    "cases": 660,
+    "confidence_intervals": {
+      "critical_change_recall": [
+        0.6958333333333333,
+        0.8041666666666667
+      ],
+      "layout_only_false_invalidation_rate": [
+        0.6958333333333333,
+        0.8041666666666667
+      ],
+      "layout_only_false_positive_rate": [
+        0.004166666666666667,
+        0.041666666666666664
+      ],
+      "selective_full_equivalence": [
+        1.0,
+        1.0
+      ],
+      "semantic_change_recall": [
+        0.6166666666666667,
+        0.7138888888888889
+      ]
+    },
+    "critical_change_labelled_rate": {
+      "denominator": 240,
+      "numerator": 0,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.0
+    },
+    "critical_change_recall": {
+      "denominator": 240,
+      "numerator": 180,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.75
+    },
+    "critical_change_surfaced_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_false_merges": {
+      "denominator": 4080,
+      "numerator": 0,
+      "population": "gold identity pairs in high-risk cases",
+      "value": 0.0
+    },
+    "critical_numeric_change_recall": {
+      "denominator": 60,
+      "numerator": 0,
+      "population": "injected numeric mutations",
+      "value": 0.0
+    },
+    "downstream_impact_recall": {
+      "denominator": 780,
+      "numerator": 408,
+      "population": "gold impacted artifacts",
+      "value": 0.5230769230769231
+    },
+    "identity_false_merges": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "identity_false_splits": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "layout_only_false_invalidation_rate": {
+      "denominator": 240,
+      "numerator": 180,
+      "population": "pure-layout mutation cases",
+      "value": 0.75
+    },
+    "layout_only_false_positive_rate": {
+      "denominator": 240,
+      "numerator": 5,
+      "population": "pure-layout mutation cases",
+      "value": 0.020833333333333332
+    },
+    "layout_only_unresolved_rate": {
+      "denominator": 240,
+      "numerator": 175,
+      "population": "pure-layout mutation cases",
+      "value": 0.7291666666666666
+    },
+    "mean_rebuild_fraction": 1.0,
+    "selective_full_equivalence": {
+      "denominator": 660,
+      "numerator": 660,
+      "population": "all cases",
+      "value": 1.0
+    },
+    "semantic_change_precision": {
+      "denominator": 305,
+      "numerator": 240,
+      "population": "cases where the arm reported a semantic change",
+      "value": 0.7868852459016393
+    },
+    "semantic_change_recall": {
+      "denominator": 360,
+      "numerator": 240,
+      "population": "injected mutations that change meaning",
+      "value": 0.6666666666666666
+    }
+  },
+  "current": {
+    "alignment_f1": 0.9758656873032528,
+    "alignment_precision": {
+      "denominator": 10699,
+      "numerator": 10695,
+      "population": "pairs the arm asserted",
+      "value": 0.9996261332834845
+    },
+    "alignment_recall": {
+      "denominator": 11220,
+      "numerator": 10695,
+      "population": "gold aligned pairs",
+      "value": 0.9532085561497327
+    },
+    "cases": 660,
+    "confidence_intervals": {
+      "critical_change_recall": [
+        1.0,
+        1.0
+      ],
+      "layout_only_false_invalidation_rate": [
+        0.6958333333333333,
+        0.8041666666666667
+      ],
+      "layout_only_false_positive_rate": [
+        0.041666666666666664,
+        0.10416666666666667
+      ],
+      "selective_full_equivalence": [
+        1.0,
+        1.0
+      ],
+      "semantic_change_recall": [
+        1.0,
+        1.0
+      ]
+    },
+    "critical_change_labelled_rate": {
+      "denominator": 240,
+      "numerator": 0,
+      "population": "controlled high-risk mutation cases",
+      "value": 0.0
+    },
+    "critical_change_recall": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_change_surfaced_rate": {
+      "denominator": 240,
+      "numerator": 240,
+      "population": "controlled high-risk mutation cases",
+      "value": 1.0
+    },
+    "critical_false_merges": {
+      "denominator": 4080,
+      "numerator": 0,
+      "population": "gold identity pairs in high-risk cases",
+      "value": 0.0
+    },
+    "critical_numeric_change_recall": {
+      "denominator": 60,
+      "numerator": 60,
+      "population": "injected numeric mutations",
+      "value": 1.0
+    },
+    "downstream_impact_recall": {
+      "denominator": 780,
+      "numerator": 648,
+      "population": "gold impacted artifacts",
+      "value": 0.8307692307692308
+    },
+    "identity_false_merges": {
+      "denominator": 11220,
+      "numerator": 4,
+      "population": "gold identity pairs",
+      "value": 0.00035650623885918
+    },
+    "identity_false_splits": {
+      "denominator": 11220,
+      "numerator": 0,
+      "population": "gold identity pairs",
+      "value": 0.0
+    },
+    "layout_only_false_invalidation_rate": {
+      "denominator": 240,
+      "numerator": 180,
+      "population": "pure-layout mutation cases",
+      "value": 0.75
+    },
+    "layout_only_false_positive_rate": {
+      "denominator": 240,
+      "numerator": 17,
+      "population": "pure-layout mutation cases",
+      "value": 0.07083333333333333
+    },
+    "layout_only_unresolved_rate": {
+      "denominator": 240,
+      "numerator": 165,
+      "population": "pure-layout mutation cases",
+      "value": 0.6875
+    },
+    "mean_rebuild_fraction": 1.0,
+    "selective_full_equivalence": {
+      "denominator": 660,
+      "numerator": 660,
+      "population": "all cases",
+      "value": 1.0
+    },
+    "semantic_change_precision": {
+      "denominator": 437,
+      "numerator": 360,
+      "population": "cases where the arm reported a semantic change",
+      "value": 0.8237986270022883
+    },
+    "semantic_change_recall": {
+      "denominator": 360,
+      "numerator": 360,
+      "population": "injected mutations that change meaning",
+      "value": 1.0
+    }
+  }
+}

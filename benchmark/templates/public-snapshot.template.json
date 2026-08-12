@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "status": "unavailable",
+  "generated_at": null,
+  "evaluator_version": "22.4-22.8-v1.0.0",
+  "evidence_bundle_sha256": null,
+  "corpus_revision": null,
+  "model_revision": null,
+  "hardware_profile": null,
+  "datasets": [
+    {
+      "id": "ko-dart",
+      "label": "Korean DART annual report",
+      "source": "OpenDART",
+      "status": "source_adapter_ready",
+      "document_count": null,
+      "page_count": null,
+      "metrics": {
+        "text": null,
+        "numbers": null,
+        "tables": null,
+        "provenance": null,
+        "p95_latency_ms": null,
+        "cost_per_page_usd": null
+      }
+    },
+    {
+      "id": "en-sec",
+      "label": "English SEC filing",
+      "source": "SEC EDGAR",
+      "status": "evidence_required",
+      "document_count": null,
+      "page_count": null,
+      "metrics": {
+        "text": null,
+        "numbers": null,
+        "tables": null,
+        "provenance": null,
+        "p95_latency_ms": null,
+        "cost_per_page_usd": null
+      }
+    },
+    {
+      "id": "ko-scan",
+      "label": "Korean scanned document",
+      "source": "Rights-cleared corpus",
+      "status": "evidence_required",
+      "document_count": null,
+      "page_count": null,
+      "metrics": {
+        "text": null,
+        "numbers": null,
+        "tables": null,
+        "provenance": null,
+        "p95_latency_ms": null,
+        "cost_per_page_usd": null
+      }
+    },
+    {
+      "id": "lecture-deck",
+      "label": "Course slides",
+      "source": "Rights-cleared corpus",
+      "status": "evidence_required",
+      "document_count": null,
+      "page_count": null,
+      "metrics": {
+        "text": null,
+        "numbers": null,
+        "tables": null,
+        "provenance": null,
+        "p95_latency_ms": null,
+        "cost_per_page_usd": null
+      }
+    }
+  ]
+}

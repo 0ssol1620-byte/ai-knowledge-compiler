@@ -259,6 +259,54 @@
       "requirement": "Concurrent exports remain isolated and bounded.",
       "profile": "export_burst_100",
       "acceptance": "No cross-tenant object access, duplicate charge, or orphaned export."
+    },
+    {
+      "id": "OP-LOAD-006",
+      "name": "five-thousand-file collection manifest",
+      "class": "external_scale",
+      "requirement": "A disposable collection admits exactly 5,000 synthetic file records without request-thread file processing.",
+      "profile": "collection_manifest_5000",
+      "acceptance": "The exact 5,000-file manifest is content-addressed, bounded, and deleted after the observation."
+    },
+    {
+      "id": "OP-LOAD-007",
+      "name": "ten-GiB interrupted collection resume",
+      "class": "external_scale",
+      "requirement": "A ten-file 10 GiB synthetic collection pauses after 5 GiB and resumes in a new client process.",
+      "profile": "collection_resume_10gib",
+      "acceptance": "Exactly 10 GiB completes after token rotation with no duplicate document or orphaned multipart upload."
+    },
+    {
+      "id": "OP-LOAD-008",
+      "name": "thirty-thousand-page preflight",
+      "class": "external_scale",
+      "requirement": "An attested synthetic collection with exactly 30,000 known pages completes fast and precise preflight within the v4 budgets.",
+      "profile": "preflight_30000_pages",
+      "acceptance": "Fast estimate is at most 120 seconds, precise estimate is at most 900 seconds, and 30,000 pages are observed."
+    },
+    {
+      "id": "OP-LOAD-009",
+      "name": "one-thousand-page processing UI",
+      "class": "external_scale",
+      "requirement": "The real processing workspace exposes an attested 1,000-page dataset through the readiness evidence interface.",
+      "profile": "processing_ui_1000_pages",
+      "acceptance": "Readiness, heap, DOM, and long-task thresholds pass without rendering an unbounded page list."
+    },
+    {
+      "id": "OP-LOAD-010",
+      "name": "ten-thousand-block workspace",
+      "class": "external_scale",
+      "requirement": "The real workspace exposes an attested 10,000-block dataset through the readiness evidence interface.",
+      "profile": "workspace_10000_blocks",
+      "acceptance": "Readiness, heap, DOM, and long-task thresholds pass without rendering all blocks at once."
+    },
+    {
+      "id": "OP-LOAD-011",
+      "name": "five-thousand-node graph",
+      "class": "external_scale",
+      "requirement": "The real graph workspace exposes an attested 5,000-node dataset through the readiness evidence interface.",
+      "profile": "graph_5000_nodes",
+      "acceptance": "Readiness, heap, DOM, and long-task thresholds pass with bounded rendered graph state."
     }
   ]
 }

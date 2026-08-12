@@ -1,0 +1,8 @@
+blueprint: technical-documentation
+kind: ontology
+version: 1.0.0
+classes: [Product, Component, Procedure, Interface, Concept, FailureMode]
+relations:
+  - {type: contains_component, source: Product, target: Component, authority: structured_derived}
+  - {type: exposes_interface, source: Component, target: Interface, authority: source_explicit}
+  - {type: mitigates_failure, source: Procedure, target: FailureMode, authority: source_explicit}

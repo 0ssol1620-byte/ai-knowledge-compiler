@@ -1,0 +1,9 @@
+blueprint: technical-documentation
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Products, primary_type: Product, sort: stable_title}
+  - {name: Components, primary_type: Component, sort: stable_title}
+  - {name: Procedures, primary_type: Procedure, sort: source_order}
+  - {name: Interfaces, primary_type: Interface, sort: stable_title}
+  - {name: Troubleshooting, primary_type: FailureMode, sort: stable_title}

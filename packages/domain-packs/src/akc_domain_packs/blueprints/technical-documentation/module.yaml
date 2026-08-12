@@ -1,0 +1,13 @@
+id: technical-documentation
+version: 1.0.0
+display_name: Technical Documentation
+domains: [technical, software, engineering]
+object_types: [product, component, procedure, requirement, issue]
+root_views: [Products, Components, Procedures, Requirements]
+moc_templates: [Products, Procedures, Requirements]
+folder_depth: 3
+naming_policy: stable-id-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, procedure_order, version_identity, relation_evidence]
+export_profiles: [obsidian, ontology, neo4j, rag]

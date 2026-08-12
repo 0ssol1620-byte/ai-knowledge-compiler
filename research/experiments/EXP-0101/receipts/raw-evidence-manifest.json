@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "artifact_uri": "research/experiments/EXP-0101/normalized/case-scores.jsonl.zst",
+      "compressed_bytes": 17421,
+      "compressed_sha256": "sha256:8ca5767c13822cc1ee1934f3c1209ee5d63e01326fe2f1b7428c8746e9ddab31",
+      "name": "normalized/case-scores.jsonl",
+      "raw_bytes": 1965817,
+      "raw_sha256": "sha256:7e1f04793265fb09c5e06c04113e8b01bc2bb06b4925373d57225933169ed4b6",
+      "record_count": 3960,
+      "schema_version": "exp0101/case-score/1"
+    },
+    {
+      "artifact_uri": "research/experiments/EXP-0101/raw/arm-outcomes.jsonl.zst",
+      "compressed_bytes": 90093,
+      "compressed_sha256": "sha256:1c1fca9005f2c59172a25ff64eaecc87e2f648fa125ab4b8e8129d95b1c2b808",
+      "name": "raw/arm-outcomes.jsonl",
+      "raw_bytes": 11103351,
+      "raw_sha256": "sha256:fe455ac1ed3db65ecd14839ff122eec9d7a178e47acf0fb40a8ba49a3c86d5da",
+      "record_count": 3960,
+      "schema_version": "exp0101/arm-outcome/1"
+    },
+    {
+      "artifact_uri": "research/experiments/EXP-0101/raw/knowledge-evolution-suite.json.zst",
+      "compressed_bytes": 95907,
+      "compressed_sha256": "sha256:8d9873f585ffcee4fb68b4c6408b340ec415e6cdd4275d5d2e11a5028305b772",
+      "name": "raw/knowledge-evolution-suite.json",
+      "raw_bytes": 2732947,
+      "raw_sha256": "sha256:029a5edceeb31377001e9eed3d76bf2e2c64164409d0717c6c2ad67bbe27fade",
+      "record_count": 660,
+      "schema_version": "exp0101/knowledge-evolution-suite/kes-1"
+    },
+    {
+      "artifact_uri": "research/experiments/EXP-0101/raw/sample-case.json.zst",
+      "compressed_bytes": 1518,
+      "compressed_sha256": "sha256:1a01dcfc701438a166f88d3f25b5d8f8f571b39e144883aa86e2db429f617e45",
+      "name": "raw/sample-case.json",
+      "raw_bytes": 10646,
+      "raw_sha256": "sha256:377063a8eb522a889bb37ed3e84207544d557b767245d2367fa4f128791ba54e",
+      "record_count": 1,
+      "schema_version": "exp0101/sample-case/1"
+    }
+  ],
+  "authority": "raw_sha256 defines the evidence. compressed_sha256 detects a corrupted or swapped stored artifact and does not define it: a different zstd build may produce different bytes for the same input. Verify by decompressing and hashing.",
+  "codec": {
+    "frame_checksum": true,
+    "level": 19,
+    "library": "python-zstandard",
+    "library_version": "0.25.0",
+    "name": "zstd"
+  },
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "experiment_id": "EXP-0101",
+  "restore": "research/experiments/EXP-0101/scripts/compress_raw.py --restore",
+  "schema_version": "raw-evidence-manifest/2"
+}

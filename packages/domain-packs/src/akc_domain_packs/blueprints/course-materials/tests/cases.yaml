@@ -1,0 +1,7 @@
+blueprint: course-materials
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: prerequisite_order, fixture: sequenced_lessons, expected: pass}
+  - {id: implicit_objective, fixture: inferred_objective, expected: unresolved}
+  - {id: fabricated_answer, fixture: absent_solution, expected: quarantine}

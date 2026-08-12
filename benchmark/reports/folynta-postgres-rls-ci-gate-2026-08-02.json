@@ -1,0 +1,23 @@
+{
+  "schema": "folynta.postgres-rls-ci-gate.v1",
+  "generated_at": "2026-08-02T09:31:06Z",
+  "provider": "github_actions",
+  "repository": "0ssol1620-byte/ai-knowledge-compiler",
+  "workflow": "CI",
+  "run_id": 30741895129,
+  "job_id": 91480674194,
+  "head_sha": "a6bf0a282d61d77ad9e11dbf6dd3f469533ac34f",
+  "run_url": "https://github.com/0ssol1620-byte/ai-knowledge-compiler/actions/runs/30741895129/job/91480674194",
+  "status": "PASS",
+  "database": "PostgreSQL 17 disposable CI service",
+  "checks": [
+    "prepared disposable least-privilege login roles",
+    "upgraded the real PostgreSQL schema to migration head",
+    "required every source migration head to be current",
+    "verified FORCE RLS and tenant cross-read and cross-write denial",
+    "verified owner and BYPASSRLS boundaries",
+    "verified transaction and connection-pool tenant context",
+    "verified mutually isolated worker-role capabilities"
+  ],
+  "claim_boundary": "This proves the repository migration and RLS contract on an actual PostgreSQL 17 engine in CI. It does not prove that a production database deployment is current or correctly configured."
+}

@@ -1,10 +1,18 @@
 claims:
   - id: claim-category
-    text_en: "The Knowledge Compiler for AI."
+    text_en: "FOLYNTA. The Knowledge Compiler."
     status: approved
     evidence:
       - feature: canonical_document_pipeline
       - contract: canonical-document.schema.json
+    owner: product
+    limitations: "Public display authority only; legal and domain clearance remain pending."
+  - id: claim-tagline
+    text_en: "From every page, a system of knowledge."
+    status: approved
+    evidence:
+      - decision: FOLYNTA_BRAND_DECISIONS.md#d-001--public-brand-contract
+      - implementation: apps/web/src/lib/brand.ts
     owner: product
   - id: claim-source-traceability
     text_en: "Every output returns to its source."

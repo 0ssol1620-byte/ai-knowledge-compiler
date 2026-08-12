@@ -21,6 +21,7 @@
     "actions/setup-python@v5.6.0": "a26af69be951a213d495a4c3e4e4022e16d87065",
     "actions/upload-artifact@v4.6.2": "ea165f8d65b6e75b540449e92b4886f43607fa02",
     "anchore/sbom-action@v0.17.9": "df80a981bc6edbc4e220a492d3cbe9f5547a6e75",
+    "easimon/maximize-build-space@v10": "fc881a613ad2a34aca9c9624518214ebc21dfc0c",
     "aquasecurity/trivy-action@v0.36.0": "ed142fd0673e97e23eac54620cfb913e5ce36c25",
     "github/codeql-action@v3.37.3": "4187e74d05793876e9989daffde9c3e66b4acd07",
     "hashicorp/setup-terraform@v3.1.2": "b9cd54a3c349d3f38e8881555d616ced269862dd"

@@ -36,6 +36,7 @@ from .markdown import MarkdownArtifact, source_map_json
 _SOURCE_HASH = re.compile(r"^source_sha256:\s*[\"']?([^\"'\s]+)", re.MULTILINE)
 _MARKDOWN_LINK = re.compile(r"!?\[[^\]]*]\(([^)\s]+)(?:\s+['\"][^'\"]*['\"])?\)")
 _WIKILINK = re.compile(r"\[\[([^|\]]+)(?:\|[^\]]*)?]]")
+_MATH_SPAN = re.compile(r"\$\$.*?\$\$|(?<!\\)\$[^$\n]+?(?<!\\)\$", re.S)
 _EXTERNAL_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*:", re.IGNORECASE)
 _MANAGED_START = re.compile(
     r"^<!-- AKC:managed:start hash=(sha256:[0-9a-f]{64}) -->\n",
@@ -545,6 +546,21 @@ def _resolve_internal_target(
         return None, "unsafe_relative_path"
 
 
+def _mask_math_spans(text: str) -> str:
+    """Blank out math so notation is not mistaken for a link.
+
+    Obsidian does not resolve wikilinks inside math, and extracted papers
+    routinely contain notation such as ``$[[s \\otimes f]]$``. Scanning that as a
+    link invents a target that was never a reference, and because a Vault
+    carrying an unresolved link is refused outright, one bracketed formula is
+    enough to block a document that has nothing broken in it.
+
+    Each span is replaced by filler of identical length so that every offset
+    outside the span is unchanged.
+    """
+    return _MATH_SPAN.sub(lambda match: " " * (match.end() - match.start()), text)
+
+
 def validate_internal_links(files: Mapping[str, bytes]) -> tuple[BrokenVaultLink, ...]:
     normalized: dict[str, str] = {}
     for path in sorted(files):
@@ -570,9 +586,10 @@ def validate_internal_links(files: Mapping[str, bytes]) -> tuple[BrokenVaultLink
                 )
             )
             continue
-        targets = [(match.group(1), False) for match in _MARKDOWN_LINK.finditer(text)] + [
-            (match.group(1), True) for match in _WIKILINK.finditer(text)
-        ]
+        scannable = _mask_math_spans(text)
+        targets = [
+            (match.group(1), False) for match in _MARKDOWN_LINK.finditer(scannable)
+        ] + [(match.group(1), True) for match in _WIKILINK.finditer(scannable)]
         for target, wikilink in targets:
             resolved, reason = _resolve_internal_target(
                 safe_source,

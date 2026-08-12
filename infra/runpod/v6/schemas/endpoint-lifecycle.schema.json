@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:akc:schema:runpod:v6:endpoint-lifecycle",
+  "title": "FOLYNTA temporary endpoint cleanup receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "endpoint_id", "run_id", "pool_id", "created_at", "state", "events", "receipt_sha256"],
+  "properties": {
+    "schema_version": { "const": "6.0.0" },
+    "endpoint_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "pool_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "state": { "enum": ["absent", "provisioning", "warming", "ready", "draining", "evidence_pending", "delete_requested", "deleted", "cleanup_failed", "orphaned"] },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "from_state", "to_state", "occurred_at", "reason", "facts_sha256"],
+        "properties": {
+          "sequence": { "type": "integer", "minimum": 1 },
+          "from_state": { "type": "string" },
+          "to_state": { "type": "string" },
+          "occurred_at": { "type": "string", "format": "date-time", "pattern": "Z$" },
+          "reason": { "type": "string", "minLength": 1 },
+          "facts_sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "receipt_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}

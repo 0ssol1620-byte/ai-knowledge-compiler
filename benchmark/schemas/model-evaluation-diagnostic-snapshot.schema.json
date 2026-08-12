@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.structara.com/benchmark/model-evaluation-diagnostic-snapshot.schema.json",
+  "title": "Structara non-promoted model diagnostic snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "diagnostics"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "diagnostics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "status",
+          "failure_class",
+          "completed_inference_cases",
+          "model_revision",
+          "artifact_manifest_sha256",
+          "diagnostic_evidence_sha256",
+          "evidence_path",
+          "summary",
+          "next_gate"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+          "label": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "minLength": 1 },
+          "failure_class": { "type": "string", "minLength": 1 },
+          "completed_inference_cases": { "const": 0 },
+          "model_revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "artifact_manifest_sha256": { "$ref": "#/$defs/digest" },
+          "diagnostic_evidence_sha256": { "$ref": "#/$defs/digest" },
+          "evidence_path": { "type": "string", "pattern": "^benchmark/reports/.+\\.md$" },
+          "summary": { "type": "string", "minLength": 1 },
+          "next_gate": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}

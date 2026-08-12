@@ -28,6 +28,34 @@ class FakePresignClient:
         return f"https://objects.example/{operation}?signature=redacted"
 
 
+def test_s3_role_clients_are_partitioned_by_bucket_purpose() -> None:
+    store = S3ObjectStore.__new__(S3ObjectStore)
+    fallback = cast(Any, object())
+    source = cast(Any, object())
+    working = cast(Any, object())
+    derived = cast(Any, object())
+    audit = cast(Any, object())
+    store.client = fallback
+    store._role_clients = {
+        "source": source,
+        "working": working,
+        "derived": derived,
+        "audit": audit,
+    }
+
+    assert store._client("quarantine") is source
+    assert store._client("source") is source
+    assert store._client("working") is working
+    assert store._client("derived") is derived
+    assert store._client("exports") is derived
+    assert store._client("audit") is audit
+
+
+def test_s3_role_credential_pairs_fail_closed() -> None:
+    with pytest.raises(ValueError, match="every S3 role credential"):
+        Settings(s3_source_access_key_id="source-access-only")
+
+
 async def test_local_store_cannot_issue_remote_gpu_grants(tmp_path: Path) -> None:
     store = LocalObjectStore(Settings(data_dir=tmp_path))
 

@@ -8,6 +8,7 @@ feature_flags:
   hpd_fast_route: false
   unlimited_long_doc: false
   knowledge_qwen9b: false
+  knowledge_gemma4_12b_challenger: false
   external_mistral_fallback: false
   external_precision_api: false
   url_ingest_enabled: false
@@ -43,7 +44,7 @@ recipes:
     lane: parser
     parser: paddleocr_vl_1_6
     verifier: selective_second_parser
-    fallback: review
+    fallback: unresolved
     optional_external_fallback: mistral_ocr_4
     external_consent_required: true
     allow_external: false
@@ -61,7 +62,7 @@ recipes:
     lane: parser
     parser: paddleocr_vl_1_6
     verifier: deterministic
-    fallback: review
+    fallback: unresolved
     allow_external: false
     egress_policy: self_hosted_only
     enabled: false
@@ -70,7 +71,7 @@ recipes:
     model: qwen3_5_4b
     schema: akmp_knowledge_1
     evidence_validator: required
-    fallback: review
+    fallback: unresolved
     allow_external: false
     enabled: false
   knowledge_precision_v1:
@@ -83,10 +84,21 @@ recipes:
     fallback: knowledge_standard_v1
     allow_external: false
     enabled: false
+  knowledge_gemma_challenger_v1:
+    lane: knowledge
+    model: gemma4_12b_challenger
+    challenger_role: independent
+    schema: akmp_knowledge_1
+    evidence_validator: required
+    required_feature_flag: knowledge_gemma4_12b_challenger
+    fallback: unresolved
+    allow_external: false
+    enabled: false
+    activation_blocker: gemma4_12b_license_runtime_and_private_benchmark_attestation
   retrieval_standard_v1:
     lane: retrieval
     embedding: qwen3_embedding_0_6b
     reranker: qwen3_reranker_0_6b
-    fallback: review
+    fallback: unresolved
     allow_external: false
     enabled: false

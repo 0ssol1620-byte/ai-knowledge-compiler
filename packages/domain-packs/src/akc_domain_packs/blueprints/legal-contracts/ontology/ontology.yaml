@@ -1,0 +1,8 @@
+blueprint: legal-contracts
+kind: ontology
+version: 1.0.0
+classes: [Agreement, Party, Clause, Obligation, Right, Definition, GoverningLaw]
+relations:
+  - {type: has_party, source: Agreement, target: Party, authority: source_explicit}
+  - {type: imposes_obligation, source: Clause, target: Obligation, authority: source_explicit}
+  - {type: grants_right, source: Clause, target: Right, authority: source_explicit}

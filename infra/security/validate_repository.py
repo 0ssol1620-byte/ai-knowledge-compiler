@@ -14,6 +14,8 @@ import yaml
 from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 FORBIDDEN_PUBLIC_SUFFIXES = {".exe", ".dll", ".scr", ".com", ".ps1", ".bat"}
 SECRET_PATTERNS = {
     "private_key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
@@ -38,13 +40,37 @@ SCAN_EXCLUDED_PARTS = {
     ".akc-data-test",
     "__pycache__",
     "coverage",
+    "cache",
+    "public-runs",
     "work",
     "playwright-report",
     "test-results",
 }
+# Excluded by location rather than by directory name. These trees hold acquired
+# datasets and generated evaluation output -- tens of gigabytes that git already
+# ignores and that no commit can carry. Walking them turned a scan that takes
+# seconds in CI, where they do not exist, into one that had not finished after
+# an hour on a workstation that had run a benchmark campaign. A validator nobody
+# can afford to run is a validator that never runs.
+SCAN_EXCLUDED_PREFIXES = (
+    ("benchmark", "datasets"),
+    ("benchmark", "reports", "generated"),
+    ("benchmark", "corpus", "cache"),
+)
+
+
+def _is_excluded(relative: Path) -> bool:
+    parts = relative.parts
+    if SCAN_EXCLUDED_PARTS.intersection(parts):
+        return True
+    return any(parts[: len(prefix)] == prefix for prefix in SCAN_EXCLUDED_PREFIXES)
 ACTION_USE_PATTERN = re.compile(
     r"uses:\s*([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)"
-    r"@([0-9a-f]{40})\s+#\s+(v[0-9]+\.[0-9]+\.[0-9]+)\s*$"
+    # Not every action releases three-component tags. easimon/maximize-build-space
+    # ships "v10", and demanding "v10.0.0" would have forced either a comment
+    # naming a tag that does not exist or a pin to an untagged commit -- which is
+    # what the Ovis workflow had been carrying.
+    r"@([0-9a-f]{40})\s+#\s+(v[0-9]+(?:\.[0-9]+){0,2})\s*$"
 )
 FROZEN_MASTERPLAN_DIGESTS = {
     "AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md": (
@@ -104,6 +130,16 @@ def validate_synthetic_ground_truth(errors: list[str]) -> None:
                 errors.append(f"{path.relative_to(ROOT)}:{line_number}: must be synthetic")
 
 
+def validate_public_benchmark_registry(errors: list[str]) -> None:
+    from benchmark.public_suite import PublicSuiteError, verify_registry
+
+    path = ROOT / "benchmark/benchmark-registry.lock.yaml"
+    try:
+        verify_registry(registry_path=path, online=False)
+    except (OSError, ValueError, yaml.YAMLError, PublicSuiteError) as exc:
+        errors.append(f"public benchmark registry is invalid: {exc}")
+
+
 def validate_feature_defaults(errors: list[str]) -> None:
     recipes = load_yaml("infra/model-registry/recipes.yaml")
     if recipes.get("defaults", {}).get("allow_external") is not False:
@@ -134,16 +170,23 @@ def scan_public_fixtures(errors: list[str]) -> None:
             errors.append(f"public corpus file exceeds 5 MiB: {path.relative_to(ROOT)}")
 
 
-def scan_secrets(errors: list[str]) -> None:
+def scan_secrets(errors: list[str], *, root: Path = ROOT) -> None:
     scanner_path = Path(__file__).resolve()
-    for directory, child_directories, filenames in os.walk(ROOT):
-        child_directories[:] = [
-            name for name in child_directories if name not in SCAN_EXCLUDED_PARTS
-        ]
+    for directory, child_directories, filenames in os.walk(root):
         base = Path(directory)
+        child_directories[:] = [
+            name
+            for name in child_directories
+            if name not in SCAN_EXCLUDED_PARTS
+            and not _is_excluded((base / name).relative_to(root))
+        ]
         for filename in filenames:
             path = base / filename
-            if path == scanner_path or path.stat().st_size > 2 * 1024 * 1024:
+            try:
+                size = path.stat().st_size
+            except OSError:
+                continue
+            if path == scanner_path or size > 2 * 1024 * 1024:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
@@ -151,7 +194,31 @@ def scan_secrets(errors: list[str]) -> None:
                 continue
             for name, pattern in SECRET_PATTERNS.items():
                 if pattern.search(text):
-                    errors.append(f"possible {name} in {path.relative_to(ROOT)}")
+                    errors.append(f"possible {name} in {path.relative_to(root)}")
+
+
+BROWSER_SECRET_EXPORT_PATTERNS = (
+    re.compile(r"NEXT_PUBLIC_[A-Z0-9_]*(?:SECRET|PASSWORD|PRIVATE_KEY|ACCESS_TOKEN)"),
+    re.compile(
+        r"process\.env\.(?:OIDC_CLIENT_SECRET|GOOGLE_CLIENT_SECRET|"
+        r"AKC_JWT_SECRET|S3_SECRET_ACCESS_KEY)"
+    ),
+)
+
+
+def scan_browser_secret_exports(errors: list[str], *, root: Path = ROOT) -> None:
+    browser_source = root / "apps/web/src"
+    if not browser_source.exists():
+        return
+    for path in browser_source.rglob("*"):
+        if not path.is_file() or path.suffix not in {".js", ".jsx", ".ts", ".tsx"}:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        if any(pattern.search(text) for pattern in BROWSER_SECRET_EXPORT_PATTERNS):
+            errors.append(f"browser secret export marker in {path.relative_to(root)}")
 
 
 def validate_serialized_documents(errors: list[str]) -> None:
@@ -163,6 +230,8 @@ def validate_serialized_documents(errors: list[str]) -> None:
             if not path.is_file():
                 continue
             relative = path.relative_to(ROOT)
+            if _is_excluded(relative):
+                continue
             try:
                 if path.suffix in {".json", ".jsonld"}:
                     value = json.loads(path.read_text(encoding="utf-8"))
@@ -379,9 +448,11 @@ def main() -> int:
     validate_source_registry(errors)
     validate_conflict_decisions(errors)
     validate_synthetic_ground_truth(errors)
+    validate_public_benchmark_registry(errors)
     validate_feature_defaults(errors)
     scan_public_fixtures(errors)
     scan_secrets(errors)
+    scan_browser_secret_exports(errors)
     validate_serialized_documents(errors)
     validate_compose_contract(errors)
     validate_supply_chain_pins(errors)
