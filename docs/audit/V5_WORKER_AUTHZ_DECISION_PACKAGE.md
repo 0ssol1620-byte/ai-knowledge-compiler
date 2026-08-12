@@ -416,7 +416,7 @@ into one. This is a test, not a policy, and it is mine to decide.
 | Revision | Contents | Downgrade |
 |---|---|---|
 | *(PR, no migration)* | scheduler selects narrowed to the columns it uses; payload emit contract | revert |
-| `0036_control_plane_column_grants` | `REVOKE SELECT ON <table>` then `GRANT SELECT (cols)` for the seven; excludes the three sensitive families where the scheduler does not need them | re-`GRANT SELECT` at table level |
+| `0038_control_plane_column_grants` | `REVOKE SELECT ON <table>` then `GRANT SELECT (cols)` for the seven; excludes the three sensitive families where the scheduler does not need them | re-`GRANT SELECT` at table level |
 
 ### Shadow-validation plan
 
@@ -535,22 +535,34 @@ one `ALTER ROLE`.
 |---|---|---|---|---|
 | 1 | `0035_claim_broker` | two `SECURITY DEFINER` claim functions and two depth probes, `EXECUTE` per role, broker role and its policies | founder F-1 | **done** |
 | 2 | PR | `claim_via_broker` + `ClaimStarvationDetector` in `akc_security` | 0035 | **done** |
-| 3 | PR | `enter_control_plane_context` at the five scan sites; AST test | — | not started |
-| 4 | PR | url fetcher and GPU claim sites call the broker; AST test | 0035 | **not started — see §13.7** |
-| 5 | PR | zero-row starvation metric wired into each poll loop | 2, 4 | not started |
-| 6 | PR | scheduler selects narrowed; payload emit contract | — | not started |
-| 7 | `0036_control_plane_column_grants` | scheduler grants narrowed to columns | 6 | not started |
-| — | **GATE 1** | zero-row starvation detection live in staging: backlog, claimable depth, successful claims and consecutive zero polls all observable, and an alert that fires on starvation and never on an idle queue | 2, 5 | **blocking** |
-| — | **GATE 2** | CI green on `pgvector/pgvector:pg17` with the **unmodified** migration tree: `alembic upgrade head` → privilege receipt → comparison → shadow validation | wired in `ci.yml` | **blocking** |
-| 8 | `0037_disarm_payment_worker` | `NOBYPASSRLS` — no service exists; the free rehearsal | Gates 1, 2 | not started |
-| 9 | `0038_disarm_scheduler` | `NOBYPASSRLS` | 3, 7 | not started |
-| 10 | `0039_disarm_url_fetcher` | `NOBYPASSRLS` | 4, 5 | not started |
-| 11 | `0040_disarm_gpu_worker` | `NOBYPASSRLS` | 4, 5 | not started |
-| 12 | `0041_disarm_analysis_worker` | `NOBYPASSRLS` | 4, 5 | not started |
-| 13 | `0042_disarm_dispatch_worker` | `NOBYPASSRLS` | 4, 5, and a decision on `outbox_events` | not started |
-| 14 | `0043_disarm_deletion_worker` | `NOBYPASSRLS` | same, plus irreversible purges — last | not started |
+| 3 | PR | `_claim_via_broker` + written-AFTER integration proof | 0035, 0036 | **done** |
+| 4 | `0036_claim_backlog_probe` | the second backlog probe Gate 1A needs | 0035 | **done** |
+| 5 | `0037_canary_b_disarm_gpu_worker` | `NOBYPASSRLS` on the **GPU worker alone**, opt-in via `AKC_CANARY_B_DISARM_GPU=1`, no-op otherwise | Gates 1A, 2 | **written, not run** |
+| — | **GATE 1A** detector correctness and discrimination | wired into `run_one`; discriminating pair proved | 2, 3 | **GREEN** |
+| — | **GATE 2** unmodified pgvector reproduction | CI run `31560809644` on `pgvector/pgvector:pg17`, all steps success including the written-AFTER proof | `ci.yml` | **GREEN** |
+| — | **BLOCKER** | `_locked_invocation` binds tenant only, so every post-claim statement reads 0 rows once the GPU worker is disarmed. Measured: tenant-only 0 rows, full claim context 1 row | — | **blocks canary B** |
+| 6 | PR | `_Claim` carries `project_id` and `lease_expires_at`; `_locked_invocation` binds the claim | 5 | **not started — required before canary B** |
+| 7 | **CANARY B** | staging only: broker path on + GPU worker `NOBYPASSRLS`. Rollback prepared: `infra/postgres/canary_b_rollback.py` | 5, 6 | not started |
+| 8 | PR | `enter_control_plane_context` at the five scan sites; AST test | — | not started |
+| 9 | PR | url fetcher claim site calls the broker | 0035 | not started |
+| 10 | PR | scheduler selects narrowed; payload emit contract | — | not started |
+| 11 | `0038_control_plane_column_grants` | scheduler grants narrowed to columns | 10 | not started |
+| — | **GATE 1B** real workload observation | required before production activation, not before staging | canary B | **PENDING** |
+| 12 | `0039_disarm_payment_worker` | `NOBYPASSRLS` — no service exists; the free rehearsal | canary B green | not started |
+| 13 | `0040_disarm_scheduler` | `NOBYPASSRLS` | 8, 11 | not started |
+| 14 | `0041_disarm_url_fetcher` | `NOBYPASSRLS` | 9 | not started |
+| 15 | `0042_disarm_analysis_worker` | `NOBYPASSRLS` | §4 contract decision | not started |
+| 16 | `0043_disarm_dispatch_worker` | `NOBYPASSRLS` | a decision on `outbox_events` | not started |
+| 17 | `0044_disarm_deletion_worker` | `NOBYPASSRLS` | same, plus irreversible purges — last | not started |
 
-**Both gates are hard preconditions on step 8, not advisory.**
+**The numbering above was reconciled against the live chain on 2026-08-12.** The
+earlier version of this table assumed `0036_control_plane_column_grants` and
+`0037_disarm_payment_worker`; `0036` went to `0036_claim_backlog_probe` and the
+GPU worker — not the payment worker — is the first disarm, because it is the site
+whose equivalence evidence is green. Plan numbering is a guess until a migration
+exists; the chain is the authority.
+
+**Both gates are hard preconditions on any disarm, not advisory.**
 
 **Gate 1 — zero-row starvation detection.** An armed worker that cannot see its
 queue raises nothing; it reads zero rows, which is what an idle queue also reads.

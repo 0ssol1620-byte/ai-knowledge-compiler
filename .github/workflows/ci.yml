@@ -333,14 +333,14 @@ jobs:
         # between the receipt's origin cluster and CI, so the comparison is over
         # the schema-determined portion rather than the whole file.
         #
-        # The baseline is the 0036 receipt. The 0033-0035 receipts stay as
+        # The baseline is the 0037 receipt. The 0033-0036 receipts stay as
         # the measurements they were — other documents cite them by sha256, and
         # rewriting historical evidence to make a build green is the one thing
         # a receipt may never do.
         run: >-
           python -m uv run --locked --extra dev
           python scripts/compare_privilege_receipt.py
-          docs/audit/receipts/privilege-receipt-0036.json
+          docs/audit/receipts/privilege-receipt-0037.json
           artifacts/privilege-receipt-ci.json
       - name: Shadow-validate the dual-plane authorization boundary
         # ARMING GATE 2. Everything above this line ran `alembic upgrade head`
