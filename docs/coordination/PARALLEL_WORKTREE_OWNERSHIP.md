@@ -68,13 +68,16 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 - **Merge dependency:** P1 completion depends on I0 landing first.
 
 ### 4. Commercial Shell
-- **Status:** dispatching now — C0 bounded inventory → C1 honest route-local implementation.
-- **Owned paths:** to be scoped by C0 audit; expected `/login`, `/signup`, `/pricing`, `/billing` (or canonical existing route), `/account`.
-- **Read-only shared paths:** same frozen list as Product App.
-- **Proposed shared changes:** none yet.
-- **Dependencies added:** none yet. Same new-dependency rule as Product App.
-- **Integration requirements:** TBD.
-- **Merge dependency:** none yet.
+- **Status:** `C0 COMPLETE / C1 READY` — commit `fdce8e7` on `agent/tavonel-commercial-shell`. Not merged, not pushed.
+- **C0 findings:** real login/signup/session infra already wired (`POST /v1/auth/login|register`, `GET /v1/auth/session`); real provider-optional payment/credit ledger (`payments.py`) whose UI already renders an honest "no verified payment provider" state instead of fabricating checkout; real `plan_code` tenant gating with no priced self-serve catalog; real `/v1/api-keys` backend with previously zero frontend surface; real `/v1/auth/logout` previously never called from the frontend. `/login`, `/signup` verified real, untouched. `/pricing` verified real but lives on the cinematic marketing stack — left untouched, out of this track's scope.
+- **C1 built:** `/account` (server-confirmed profile, real sign-out, owner/admin-gated API key management — new frontend on an already-real backend; explicitly states profile/password editing is unsupported rather than faking a save) and `/billing` (calm wrapper on the pre-existing honest `BillingManagement` component).
+- **Verification:** `tsc --noEmit` clean; `vitest run` 79/79 pass (23 files, 7 new); `lint` fails on a pre-existing environment error reproducible on unmodified `main` too (not introduced by this change, flagged not hidden); live browser check not completed (an already-running preview server belonged to a different worktree — left untouched per no-cross-worktree-touch rule).
+- **Owned paths:** `apps/web/src/app/account/`, `apps/web/src/app/billing/`, `apps/web/src/components/account-page.tsx`, `apps/web/src/components/api-key-management.tsx`.
+- **Read-only shared paths:** same frozen list as Product App — confirmed zero diff on `package.json`/lockfile/app-shell/root-layout/global CSS.
+- **Proposed shared changes:** `docs/commercial/PROPOSED_SHARED_CHANGES.md` — wire `/account` and `/billing` into `app-shell.tsx`'s `secondaryNavigation` (frozen this round); resolve `/usage` vs `/billing` overlap (product decision, not implementation); decide whether `/pricing` should eventually move off the cinematic marketing stack to the calm register.
+- **Dependencies added:** none.
+- **Integration requirements:** nav wiring for `/account`/`/billing`, deferred to Surface Integration's later (not-yet-scoped) navigation phase.
+- **Merge dependency:** none blocking — ready whenever a merge round is authorized.
 
 ### 5. Research/Absorption
 - **Status:** continuing independently. Last closed: FIX-B-01 four-item disposition (commit `9c329e6`), all four items closed and independently verified.
@@ -104,3 +107,5 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 
 - 2026-08-13 — file created. Product App and Commercial Shell worktrees added (base `main` @ `7ac5098`). Dispatching P0/C0 now.
 - 2026-08-13 — Product App P0 complete (`feabbd9`), found `ProductEvent`/`LiveEventAdapter`/`WorldProjection` absent from `main` lineage, correctly stopped rather than inventing them. Founder confirmed via provenance that this is a promotion gap, not a missing-contract situation — the validated foundation exists off `main` in the V5/V2 lineage. Surface Integration worktree opened narrowly for `INTEGRATION I0` (contract promotion only, not full nav/layout integration). Product App's ownership of the three contract files reclassified `BLOCKED / READ-ONLY` → `CONSUMER — NO OWNERSHIP`.
+- 2026-08-13 — Commercial Shell C0/C1 complete (`fdce8e7`), independently verified: no frozen files touched, no fabricated payment/entitlement state, 79/79 tests pass. Ready pending a merge round.
+- 2026-08-13 — Surface Integration I0 in progress found a genuine semantic conflict (not yet resolved): `main`'s real backend event module is `akc_cir.events.EventType`, but the V5 `LiveEventAdapter`/tests target `akc_cir.collection_events.CollectionEventType` (introduced in `d7a6b30`, not an ancestor of `main`). Agent resumed with instructions to report this as a founder-decision point rather than resolve it unilaterally.
