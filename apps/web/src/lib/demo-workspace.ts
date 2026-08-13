@@ -571,8 +571,12 @@ function build(entries: readonly { atMs: number; draft: Draft }[]): ScheduledEve
       sequence: index + 1,
       occurred_at: new Date(EPOCH + entry.atMs).toISOString(),
     // Ordered above, so sequence and occurred_at never disagree.
-      collection_id: DEMO_COLLECTION_ID,
+      // Pure fixture data, not impersonating either real backend plane — the
+      // legacy top-level `collection_id` is intentionally not set here.
+      // `parseProductEvent`'s I2 normalization strips it for any non-
+      // `"collection"` scope, so setting it would only be overwritten.
       mode: "demo",
+      scope: { kind: "demo" },
       ...entry.draft,
     } as ProductEvent,
   }));
