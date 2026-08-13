@@ -4,11 +4,11 @@ import {
   ArrowLeft,
   Bell,
   BracketsCurly,
-  CaretDown,
   CreditCard,
   Flask,
   FolderOpen,
   GearSix,
+  Globe,
   House,
   Lightning,
   Lifebuoy,
@@ -24,6 +24,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { AccountMenu } from "@/components/account-menu";
 import { BrandMark } from "@/components/brand-mark";
 import { apiRequest, ApiError } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
@@ -31,6 +32,7 @@ import { normalizeSessionResponse, type SessionProfile } from "@/lib/session";
 
 const navigation = [
   { href: "/app/home", label: "Home", icon: House },
+  { href: "/app/world", label: "World", icon: Globe },
   { href: "/app/projects", label: "Projects", icon: FolderOpen },
   { href: "/quick-convert", label: "Documents", icon: Lightning },
   { href: "/app/knowledge-bases", label: "Knowledge", icon: TreeStructure },
@@ -38,9 +40,14 @@ const navigation = [
   { href: "/app/exports", label: "Exports", icon: Flask },
 ] as const;
 
+// SOURCE/CHANGE/ASK (Product App's per-object routes, e.g.
+// /app/world/[entityId]/{source,change,ask}) are not primary nav
+// destinations here — they only make sense once an object is selected
+// inside WORLD, so they are reached from within the WORLD surface itself,
+// not from this list.
 const secondaryNavigation = [
   { href: "/app/api", label: "API", icon: BracketsCurly },
-  { href: "/app/usage", label: "Usage", icon: CreditCard },
+  { href: "/billing", label: "Billing", icon: CreditCard },
   { href: "/app/settings/security", label: "Security", icon: ShieldCheck },
   { href: "/settings", label: "Settings", icon: GearSix },
 ] as const;
@@ -251,7 +258,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" aria-label="Primary navigation">
           {navigation.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
@@ -366,21 +373,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Bell size={19} />
             </Link>
-            <Link
-              className="account-button"
-              href="/settings"
-              aria-label="Open account settings"
-              data-shell-action="account"
-            >
-              <span className="avatar" aria-hidden="true">
-                {userInitials}
-              </span>
-              <span className="account-copy">
-                <strong>{workspaceName ?? "Workspace"}</strong>
-                <small>{userRole ?? "Member"}</small>
-              </span>
-              <CaretDown size={14} aria-hidden="true" />
-            </Link>
+            <AccountMenu
+              workspaceName={workspaceName}
+              userRole={userRole}
+              userInitials={userInitials}
+            />
           </div>
         </header>
         <main id="main-content" className="main-content" tabIndex={-1}>
