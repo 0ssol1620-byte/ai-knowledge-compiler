@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import type { Route } from "next";
 import type { ReactNode } from "react";
 
 import { findWorldObject } from "@/lib/world-view-model";
@@ -54,7 +55,7 @@ export default function WorldObjectLayout({
               return (
                 <Link
                   key={tab.label}
-                  href={href}
+                  href={href as Route}
                   className={active ? "active" : undefined}
                   aria-current={active ? "page" : undefined}
                 >
