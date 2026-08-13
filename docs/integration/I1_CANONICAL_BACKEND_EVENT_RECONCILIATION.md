@@ -1,6 +1,11 @@
 # INTEGRATION I1 — Canonical Backend Event Model Reconciliation
 
-Status: **research only, no code changed.** Written in the Surface Integration
+Status: **RECONCILED — migration-ancestry finding corrected by M0
+(2026-08-13, see the "M0 CORRECTION" block after section 1 and the note in
+section 9); the canonical backend event model question (job plane vs.
+collection plane vs. both) remains open and is unaffected by that
+correction — that's a separate architectural question I1 still stands on.**
+Originally: research only, no code changed. Written in the Surface Integration
 worktree per the I1 dispatch that followed I0
 (`docs/integration/I0_SHARED_WORLD_CONTRACT_PROMOTION.md`). Every claim below
 is tagged `observed` / `proven` / `inferred` / `proposed`.
@@ -76,6 +81,46 @@ which the Security branch also does not have) -- that is a fact about
 migration ancestry, not a statement about whether Security's work is correct;
 flagged for the Security track and the founder, not resolved here (see
 section 11).
+
+> ## M0 CORRECTION (2026-08-13) — SUPERSEDES THE MIGRATION-ANCESTRY FINDING ABOVE
+>
+> **What I1 originally observed (quoted above, unmodified):** that the
+> Security track's migration chain descends from `collection_events`/V4, not
+> from `main`'s real head, and that this ancestry was therefore unresolved.
+>
+> **Why that observation was wrong:** it was read from a stale checkout of
+> the Security worktree, taken before the Security branch's own reconciling
+> merge had been accounted for in this document.
+>
+> **M0's proven current state** (`docs/integration/M0_MAINLINE_MIGRATION_RECONCILIATION.md`,
+> independently re-verified by the orchestrator against the live Security
+> worktree on 2026-08-13 — `0023_v4_collections`'s `down_revision` confirmed
+> to read `0023_trial_ingest`, not `0022_cdr_derivative_lineage`; `185d04b`
+> confirmed a real ancestor of the Security branch's current HEAD;
+> `test_migration_graph.py` confirmed passing 6/6 on that branch right now):
+> - `origin/main` merged PR #34 (`185d04b`, "trial-ingest") on 2026-08-09 09:42.
+> - Three hours later, the Security branch merged that into itself at commit
+>   `709a15f` ("merge: reconcile with main after #33 and #34 landed") and
+>   explicitly re-pointed `0023_v4_collections`'s `down_revision` from
+>   `0022_cdr_derivative_lineage` onto `0023_trial_ingest` — producing one
+>   linear, single-head, single-base migration chain.
+> - `tests/unit/test_migration_graph.py` was added in that same merge and
+>   passes cleanly against the reconciled chain (6/6).
+> - `v5-cinematic`/`cinematic-v2` fork from *inside* Security's post-reconcile
+>   line (2026-08-11, `5d59bf6`), not the other way around.
+> - The tracks actually behind the reconciled mainline are **Product App,
+>   Commercial Shell, and Surface Integration** — all three still pinned to
+>   `7ac5098` with migrations ending at `0022`, none carrying the guard test.
+>
+> **Conclusion:** the unresolved-ancestry claim quoted above is
+> **SUPERSEDED / FACTUALLY CORRECTED**. Security's migration lineage is
+> already reconciled and verified single-head. This does not change I1's
+> separate, still-open finding about which backend *event model* is
+> canonical (§B/§E below) — migration-lineage reconciliation and
+> event-model canonicality are two different questions; only the former is
+> resolved by this correction. It also does not change Security's own gate
+> state: `BYPASSRLS 7/7` / `Gate 1B PENDING` / `Canary B BLOCKED` are
+> unaffected by this correction in either direction.
 
 ---
 
@@ -299,15 +344,17 @@ that the "reused" label was optimistic even on its home branch.
   `0037_gpu_post_claim_authorization`) sit **on top of** the
   `collection_events` lineage (down_revision chain confirmed:
   `0034 -> 0033_backfill_checkpoint_tenant_rls -> ... -> 0023_v4_collections
-  -> d7a6b30`). This is a structural fact, not a recommendation: it means
-  the Security track's claim-broker/`GpuInvocationWorker` schema has never
-  been exercised against `main`'s actual migration head, and `main`'s
-  actual migration head (`0023_trial_ingest`, `origin/main` only) has
-  never been exercised against the Security track's schema either. Whether
-  that matters for `BYPASSRLS 7/7` / `Gate 1B PENDING` / `Canary B BLOCKED`
-  is explicitly outside this document's scope and outside this document's
-  judgment -- flagged for the Security track and the founder, not assessed
-  here.
+  -> d7a6b30`). **`⚠` SUPERSEDED — see the "M0 CORRECTION" block after
+  section 1.** At the time this paragraph was written, `0023_v4_collections`
+  still chained back to `d7a6b30`; M0 established that the Security branch
+  had already re-pointed that same revision's `down_revision` onto
+  `0023_trial_ingest` (commit `709a15f`, 2026-08-09, three hours before this
+  research session began) and added a passing `test_migration_graph.py`
+  guard. The "never been exercised against `main`'s actual migration head"
+  claim in this paragraph is factually incorrect as of that merge; do not
+  treat it as current. `BYPASSRLS 7/7` / `Gate 1B PENDING` / `Canary B
+  BLOCKED` remain unaffected either way — that part of this paragraph still
+  holds.
 - Per the same evidence, promoting `collection_events` to `main` would not
   be a small, isolated change: it drags in the entire `0023`-`0033`
   migration chain (11 migrations, 11+ tables), not just
