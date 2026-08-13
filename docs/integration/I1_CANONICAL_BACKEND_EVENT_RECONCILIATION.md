@@ -527,3 +527,147 @@ force the answer toward one of the four if the evidence doesn't support it.
   `services/api` and `services/scheduler` to build a real per-type payload
   catalogue would materially strengthen section 6a and is recommended
   before anyone writes a `LiveEventAdapter` against `EventType`.
+
+---
+
+## 14. 2026-08-13 addendum — strengthened payload/transport/producer evidence, and a question neither this document nor I2 has answered
+
+This section follows this document's own precedent (see the "M0 CORRECTION"
+block after section 1) for appending dated findings without deleting or
+rewriting prior text. Everything below is new investigation done after
+section 13 was written; it does not revisit or contradict I1's core
+job-plane/collection-plane coexistence finding (§B, `proven`) or the
+M0 migration-ancestry correction. It follows directly the item §13 already
+flagged as a recommended follow-up (per-type payload catalogue before
+writing a `LiveEventAdapter`).
+
+### 14.1 Real emit-site payloads, both planes, same event-type name — `observed`
+
+`page.route.selected.v1` is emitted by both planes with genuinely different
+shapes (not merely field-name drift — a structural mismatch with what
+`ProductEvent` requires):
+
+- Job plane, `services/api/src/akc_api/services.py:3898-3919`:
+  ```python
+  event_type="page.route.selected.v1",
+  payload={
+      "page_id": ..., "route": route.value, "policy_version": route_policy_version,
+      "route_profile": route_profile, "processing_mode": ...,
+      "sensitive_data_detected": ..., "reasons": list(route_reasons),
+      "estimated_credits": ...,
+      **({"attempt_id": ..., "attempt_number": ...} if page_attempt else {}),
+  }
+  ```
+- Collection plane, `services/api/src/akc_api/collection_api.py:6595-6609`
+  (batch-level summary, not per-page):
+  ```python
+  event_type="page.route.selected.v1",
+  payload={
+      "collection_id": ..., "processing_job_id": ..., "page_count": len(pages),
+      "route_counts": dict(sorted(route_counts.items())),
+      "route_policy_versions": sorted({...}),
+  }
+  ```
+
+`ProductEvent`'s schema (`apps/web/src/lib/product-event.ts:251-258`)
+requires a `lane` field (required enum) for this event type, plus optional
+`attempt`/`reason`/`page_count`. **`lane` does not exist in either real
+backend payload** — the job plane calls the same concept `route` (a
+different field name, and the enum's actual member set was not
+cross-checked against `ROUTE_LANES` this session); the collection plane has
+no per-event `route`/`lane` at all, only an aggregated `route_counts` dict
+across the whole batch. I1 §6a/§6b previously marked this mapping
+"unproven" in both directions; it is now `proven` non-conformant in both
+directions, strengthening (not weakening) I1's existing "payload divergence"
+finding — this closes the specific gap §13's last bullet asked for, for
+this one event type. The other 7 "reused" `CollectionEventType` members were
+**not** traced line-by-line this round (3 of 8 checked total across this
+document's history: `page.route.selected.v1`, `region.route.selected.v1`,
+`numeric.authority.verified.v1`) — still open.
+
+### 14.2 Transport reachability — `observed`
+
+Both SSE/poll routes are unconditionally mounted, not feature-flagged or
+dead code: `services/api/src/akc_api/main.py:9066-9083` mounts both
+`collection_router` (from `collection_api.py`) and the job-plane router with
+plain `app.include_router(...)` calls, no `settings.enable_*` gate found
+(grepped `collection_api.py` in full for feature-flag conditionals — none).
+`/jobs/{job_id}/events` (`main.py:4862`) and
+`/collections/{id}/events/stream` (`collection_api.py:5012`) are both real,
+registered, reachable routes.
+
+### 14.3 New finding, not covered by I1 §1-§13 or by I2: both planes already have production consumers that bypass `ProductEvent` entirely — `observed`
+
+- **Job plane**: `apps/web/src/lib/event-reducer.ts` in the Product App
+  worktree (`D:\CodexProjects\ai-knowledge-compiler-product-app`) is a
+  self-contained `LiveJobState` reducer that consumes `JobEvent` directly —
+  unrelated to `WorldProjection`/`ProductEvent`. It has its own test file
+  (`event-reducer.test.ts`, 208 lines) and is actually mounted:
+  `processing-workspace-live.tsx` uses it, and `ProcessingWorkspace` is
+  rendered at two real Next.js routes, `app/workspace/page.tsx` and
+  `app/documents/[id]/[view]/page.tsx` (both confirmed to exist on disk).
+- **Collection plane**: on the Security/v5-cinematic lineage,
+  `apps/web/src/components/v6/event-model.ts` (`V6VersionedEvent`, own test
+  file `event-model.test.ts`, 220 lines) adapts `collection-runtime-client.ts`'s
+  `CollectionEvent` via `v6-collection-events.ts`
+  (`collectionEventsToV6`), consumed by the same
+  `processing-workspace-live.tsx` / `collection-processing-theater.tsx`
+  pairing, mounted at the same two routes.
+
+**This means both backend planes already have a working, tested,
+production-routed consumer path that does not go through `ProductEvent` at
+all.** `ProductEvent`/`WorldProjection` is a *third*, newer integration
+layer being built alongside two that already work. Neither this document
+(through section 13) nor `I2_PRODUCT_EVENT_NORMALIZATION_CONTRACT.md`
+identifies what real product surface actually *requires* `ProductEvent` —
+i.e., why `event-reducer.ts` and `v6/event-model.ts` are insufficient and a
+converging third layer is needed. This is `observed` as a gap in the
+existing research, not `proven` as evidence that `ProductEvent` is
+unnecessary — it may be needed for the cinematic renderer specifically, or
+for a future unified product surface neither existing reducer serves, but
+that consumer has not been identified in code by any research pass so far.
+
+### 14.4 Additional producers not enumerated in §2 — `observed`
+
+- Job plane: `services/api/src/akc_api/batch_api.py` also calls
+  `emit_event()` (2 sites: `job.created.v1`, `credit.reserved.v1`);
+  `main.py` itself calls `emit_event()` directly at 5 sites (not only via
+  service-layer functions).
+- Collection plane: `services/api/src/akc_api/collection_processing.py`
+  also calls `_emit_collection_event()` (1 site).
+- Re-confirmed, consistent with §2: the Product App worktree (`main`
+  lineage) has no `collection_api.py` at all — its job-plane producers are
+  `batch_api.py`, `services.py`, `main.py`, `scheduler.py` only.
+
+### 14.5 Effect on the recommended architecture (§12) — `inferred`
+
+This new evidence does not weaken or strengthen §B's coexistence finding.
+It does add a precondition to §12's option-3 recommendation (two
+plane-specific adapters converging into one `ProductEvent`) that neither
+this document nor I2 currently satisfies: **before implementing that
+convergence, identify the actual consumer that needs it.** If no such
+consumer exists yet beyond a hypothetical future one, that's a legitimate
+reason to build it — but it should be stated as "for future consumer X," not
+left implicit. This is flagged for the founder/orchestrator to resolve, not
+decided here.
+
+### 14.6 What this addendum still does not resolve
+
+- Which real product surface (existing or planned) actually needs
+  `ProductEvent`/`WorldProjection`, given two working bypasses already
+  exist.
+- The remaining 5 of 8 "reused" `CollectionEventType` members' real
+  emit-site payloads.
+- Whether `event-reducer.test.ts` / `v6/event-model.test.ts` actually pass
+  (file/assertion contents were read, not executed, this round).
+- Whether anything changed on `origin/main` past `185d04b` relevant to the
+  job-plane consumer path — only the local Product App worktree (`9e52a7d`)
+  was checked.
+- `job.event_sequence` vs. `collection.event_sequence` clock/transaction
+  independence (carried forward from I2 §6, still unverified).
+
+**Status: I1's core coexistence finding stands (`READY`/`RECONCILED` per the
+M0 correction above). The canonical-boundary implementation question is
+`STILL OPEN` — strengthened evidence, but a new precondition (identify
+`ProductEvent`'s actual required consumer) surfaced that neither I1 nor I2
+previously named.**
