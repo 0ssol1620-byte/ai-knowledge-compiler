@@ -19,23 +19,97 @@ const secondaryNavigation = [
 ] as const;
 ```
 
-Proposal: add `{ href: "/account", label: "Account", icon: UserCircle }` and
-`{ href: "/billing", label: "Billing", icon: CreditCard }` (or fold Billing
-into the existing Usage entry once product decides whether `/usage` and
-`/billing` should merge — see item 2).
+Proposal, now that item 2 below has resolved the `/usage`/`/billing`
+overlap (`/usage` redirects to `/billing`): replace the `/app/usage` entry
+rather than add a second one alongside it, and add `/account`:
+
+```ts
+const secondaryNavigation = [
+  { href: "/app/api", label: "API", icon: BracketsCurly },
+  { href: "/billing", label: "Billing", icon: CreditCard },
+  { href: "/app/settings/security", label: "Security", icon: ShieldCheck },
+  { href: "/settings", label: "Settings", icon: GearSix },
+] as const;
+```
+
+`UserCircle` does not need to be added to the icon import for this array —
+`/account` is reachable through the account menu (item 1a below), not
+through `secondaryNavigation`, so no redundant sidebar entry is proposed
+for it. (`UserCircle` is used by the new `AccountMenu` component itself,
+which imports it locally.)
 
 **Why deferred:** `app-shell.tsx` is on the explicit freeze list
 (global navigation).
 
-## 2. Resolve the `/usage` vs `/billing` overlap
+## 1a. Replace the topbar account link with the new `AccountMenu` dropdown
 
-`apps/web/src/app/usage/page.tsx` already renders the same
-`BillingManagement` component this change puts at `/billing`. Both are real
-and both work; they are not in conflict, but having two routes for the same
-capability is a product decision, not an implementation one. Options: keep
-both (usage = credit consumption context, billing = payment context — they
-could diverge in content later), redirect one to the other, or merge.
-Not decided in this round; flagging for Surface Integration.
+**Founder decision (this round):** the topbar "account-button" — currently a
+plain `Link` to `/settings` with a decorative, non-functional `CaretDown` —
+becomes a real dropdown with Account, Billing, and Sign out. Built this
+round as a standalone component so it is testable and reviewable in
+isolation:
+
+- `apps/web/src/components/account-menu.tsx` — `AccountMenu` component.
+  Props: `workspaceName`, `userRole`, `userInitials` — the exact three
+  values `app-shell.tsx` already computes locally (lines 222–226) and
+  currently passes inline into the `account-button` markup.
+- `apps/web/src/components/account-menu.module.css` — scoped styles for the
+  dropdown panel; reuses the existing global `.account-button`, `.avatar`,
+  `.account-copy` classes for the trigger so it matches current chrome
+  without touching `globals.css`.
+- `apps/web/src/lib/use-logout.ts` — the sign-out mutation extracted out of
+  `account-page.tsx` (same `POST /v1/auth/logout` → `clearSession()` →
+  `router.replace("/login")` → `router.refresh()` sequence, now shared
+  rather than duplicated). `account-page.tsx` was refactored to use this
+  hook; behavior unchanged (its existing test still passes unmodified).
+
+**Exact wiring for `app-shell.tsx` (not applied this round):**
+
+```tsx
+// import, alongside the other component imports:
+import { AccountMenu } from "@/components/account-menu";
+
+// replace lines 369–383 (the <Link className="account-button" href="/settings" ...>...</Link> block) with:
+<AccountMenu
+  workspaceName={workspaceName}
+  userRole={userRole}
+  userInitials={userInitials}
+/>
+```
+
+No other change to `app-shell.tsx` is required for this — `AccountMenu` is
+self-contained (owns its own open/close state, outside-click and Escape
+handling) and renders its own trigger markup with the same
+`account-button`/`avatar`/`account-copy` classes and `data-shell-action`
+attribute the current `Link` used, so no CSS or test relying on that
+attribute needs to change.
+
+**Why built as a standalone component instead of edited directly into
+`app-shell.tsx`:** `app-shell.tsx` is on the explicit freeze list for this
+track (see `COMMERCIAL_SHELL_CURRENT_STATE.md` and
+`COMMERCIAL_SHELL_INTEGRATION_REQUIREMENTS.md §3`), and that freeze has held
+for every file in this doc so far. The founder's decision approves the
+*design* of the dropdown (Account/Billing/Sign out, replacing the dead
+`CaretDown`) — it is not, on its own, an explicit instruction to unfreeze
+`app-shell.tsx` for direct edits. Rather than guess, this round ships the
+new component fully built and tested, with the one-line integration above
+ready for whichever session owns `app-shell.tsx` to apply.
+
+## 2. `/usage` vs `/billing` overlap — resolved
+
+**Founder decision (this round): `/billing` is canonical.**
+`apps/web/src/app/usage/page.tsx` now does `redirect("/billing")` (Next.js
+`redirect()` from `next/navigation`) instead of rendering
+`BillingManagement` directly. The route file, and the `/usage` concept, are
+kept — not deleted — because the founder wants `/usage` available again as a
+distinct usage-analytics surface once that capability exists; today it has
+no content that differs from `/billing`, so a redirect is the honest state
+rather than a duplicate page. Test: `apps/web/src/app/usage/page.test.tsx`.
+
+This is implemented already (not deferred) — listed here only so item 1's
+nav proposal below reflects it: once `/billing` is added to
+`secondaryNavigation`, `/app/usage`'s existing entry should be removed
+rather than kept alongside a route that now just bounces to it.
 
 ## 3. `/pricing` register mismatch
 

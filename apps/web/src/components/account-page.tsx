@@ -7,13 +7,13 @@ import {
   UserCircle,
   Warning,
 } from "@phosphor-icons/react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 import { ApiKeyManagement } from "@/components/api-key-management";
 import { apiRequest } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { normalizeSessionResponse } from "@/lib/session";
+import { useLogout } from "@/lib/use-logout";
 
 /**
  * Real account surface: server-confirmed profile, real sign-out, and real
@@ -22,8 +22,6 @@ import { normalizeSessionResponse } from "@/lib/session";
  * honest-state note below rather than a disabled form pretending to work.
  */
 export function AccountPage() {
-  const router = useRouter();
-  const clearSession = useAuthStore((state) => state.clearSession);
   const roles = useAuthStore((state) => state.roles);
 
   const session = useQuery({
@@ -32,14 +30,7 @@ export function AccountPage() {
       normalizeSessionResponse(await apiRequest<unknown>("/v1/auth/session")),
   });
 
-  const logout = useMutation({
-    mutationFn: () => apiRequest("/v1/auth/logout", { method: "POST" }),
-    onSuccess: () => {
-      clearSession();
-      router.replace("/login");
-      router.refresh();
-    },
-  });
+  const logout = useLogout();
 
   const canManageKeys = roles.some((role) =>
     ["owner", "admin"].includes(role.toLowerCase()),

@@ -1,18 +1,14 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { BillingManagement } from "@/components/billing-management";
-
-export const metadata: Metadata = { title: "Usage & billing" };
-
-export default function UsagePage() {
-  return (
-    <div className="simple-page usage-page">
-      <h1>Usage and credits</h1>
-      <p>
-        Review credits by processing method, storage, and purchases against the
-        verified ledger.
-      </p>
-      <BillingManagement />
-    </div>
-  );
+/**
+ * Founder decision: /billing is the canonical route for the billing/credits
+ * surface. /usage rendered the identical BillingManagement component with
+ * no distinct content — see docs/commercial/COMMERCIAL_SHELL_CURRENT_STATE.md.
+ *
+ * The /usage concept is deliberately kept, not deleted: the founder wants it
+ * available again as a distinct usage-analytics surface once that capability
+ * exists. Until then it is a live redirect, not a dead route.
+ */
+export default function UsagePage(): never {
+  redirect("/billing");
 }
