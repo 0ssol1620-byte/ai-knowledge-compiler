@@ -91,8 +91,14 @@ test.describe("WORLD -> SOURCE -> CHANGE -> ASK -> WORLD, one object", () => {
     await expect(page.locator(".world-ask-sources")).toContainText("2026 warranty policy");
     await expect(page.locator(".sample-world-badge")).toBeVisible();
 
-    // Back to WORLD without losing the compiled state.
-    await page.getByRole("link", { name: "World", exact: true }).click();
+    // Back to WORLD without losing the compiled state. Scoped to
+    // #main-content: the shared app shell's sidebar also has a "World" nav
+    // entry (added by the Surface Integration shared-shell pass), so an
+    // unscoped locator now matches two links on this page.
+    await page
+      .locator("#main-content")
+      .getByRole("link", { name: "World", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/app\/world$/);
     await expect(page.getByText(/\d+ objects? · \d+ relations?/)).toBeVisible();
     await expect(
