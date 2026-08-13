@@ -23,6 +23,10 @@ const valid = {
   event_type: "recovery.completed.v1",
   sequence: 4,
   occurred_at: "2026-08-11T09:00:04.160Z",
+  // I2: scope is the mandatory discriminator; `collection_id` is the legacy
+  // top-level field, kept for one additive-rollout release and mirrored from
+  // `scope.collection_id` by `parseProductEvent`'s normalization step.
+  scope: { kind: "collection", collection_id: "col_sample_0001" },
   collection_id: "col_sample_0001",
   mode: "demo",
   document_id: "d_policy_2026",

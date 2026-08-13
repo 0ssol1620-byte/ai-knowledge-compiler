@@ -12,6 +12,7 @@ import {
   type DemoWorldState,
 } from "@/lib/demo-workspace";
 import { useProductWorld } from "@/lib/product-world-context";
+import { scopeKey } from "@/lib/world-projection";
 import { askEligible } from "@/lib/world-view-model";
 
 /**
@@ -49,7 +50,8 @@ export default function WorldObjectAskPage() {
     setAsking(true);
     const schedule = continueSchedule(
       buildAskStream(currentWorld),
-      projection.lastSequence,
+      // The fixture stream is always demo-scope (I2 §5) — see world-projection.ts.
+      projection.lastSequenceByScope[scopeKey({ kind: "demo" })] ?? 0,
     );
     const speed = 3;
     const source = new DemoFixtureEventSource(schedule, { speed });

@@ -27,9 +27,9 @@ export interface AccountMenuProps {
  * /account (see account-page.tsx), so a dedicated nav entry for it would be
  * a redundant second click to the same page.
  *
- * Not wired into app-shell.tsx in this pass — app-shell.tsx is on the
- * shared-file freeze list for this track. See
- * docs/commercial/PROPOSED_SHARED_CHANGES.md for the exact wiring.
+ * Built in the Commercial Shell track (docs/commercial/PROPOSED_SHARED_CHANGES.md
+ * §1a) and wired into app-shell.tsx by the Surface Integration shared-shell
+ * pass, per that doc's exact wiring instructions.
  */
 export function AccountMenu({
   workspaceName,

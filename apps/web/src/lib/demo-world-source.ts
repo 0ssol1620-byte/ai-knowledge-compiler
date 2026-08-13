@@ -33,8 +33,9 @@ export function createSampleWorldSource(): ProductEventSource {
  * Every `build()`-produced schedule in demo-workspace.ts (`buildChangeStream`,
  * `buildAskStream`) numbers its own events `sequence: 1, 2, 3, …` because it
  * is written to be replayed standalone. `reduceProductEvent`'s at-least-once
- * guard drops anything at or below the projection's current `lastSequence`
- * — which the WORLD compile stream has already pushed well past 1 by the
+ * guard drops anything at or below the projection's current cursor for that
+ * event's scope (`lastSequenceByScope`, I2 §5) — which the WORLD compile
+ * stream (demo scope) has already pushed well past 1 by the
  * time a visitor reaches CHANGE or ASK. Feeding an un-renumbered
  * `buildChangeStream()`/`buildAskStream()` schedule into the same shared
  * projection this app uses would have every one of its events silently

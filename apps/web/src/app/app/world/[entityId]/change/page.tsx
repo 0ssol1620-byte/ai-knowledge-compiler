@@ -13,6 +13,7 @@ import {
   type DemoWorldState,
 } from "@/lib/demo-workspace";
 import { useProductWorld } from "@/lib/product-world-context";
+import { scopeKey } from "@/lib/world-projection";
 import {
   appendHistoryEntry,
   changeEligible,
@@ -73,7 +74,8 @@ export default function WorldObjectChangePage() {
     const speed = 4;
     const schedule = continueSchedule(
       buildChangeStream(currentWorld, target),
-      projection.lastSequence,
+      // The fixture stream is always demo-scope (I2 §5) — see world-projection.ts.
+      projection.lastSequenceByScope[scopeKey({ kind: "demo" })] ?? 0,
     );
     const source = new DemoFixtureEventSource(schedule, { speed });
     const detach = attachSource(source);

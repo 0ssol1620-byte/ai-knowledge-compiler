@@ -64,8 +64,16 @@ export interface LaneEvent {
 }
 
 export interface WorldProjection {
-  /** Highest `sequence` applied. Live sources use it as a resume cursor. */
-  lastSequence: number;
+  /**
+   * I2 §5/§10 — highest `sequence` applied, per plane+identity, keyed by
+   * `` `${scope.kind}:${identity}` `` (e.g. `"job:job-abc"`,
+   * `"collection:coll-xyz"`, `"demo:*"`). Job-plane and collection-plane
+   * `sequence` are different counter spaces (per-job vs. per-collection
+   * monotonic) and are not comparable, so a single global counter would let
+   * one plane's numbering mask the other's replays. Live sources resume each
+   * scope from its own cursor.
+   */
+  lastSequenceByScope: Record<string, number>;
   mode: "demo" | "live" | "idle";
   discovery: DiscoveryProjection;
   lanes: LaneEvent[];
@@ -129,7 +137,7 @@ export interface WorldProjection {
 }
 
 export const EMPTY_PROJECTION: WorldProjection = {
-  lastSequence: 0,
+  lastSequenceByScope: {},
   mode: "idle",
   discovery: {
     filesDiscovered: 0,
@@ -159,18 +167,42 @@ function laneKey(event: ProductEvent, kind: LaneEvent["kind"]): string {
   return `${kind}-${event.sequence}`;
 }
 
+/**
+ * I2 §5 — the cursor key for an event's scope: `` `${kind}:${identity}` ``.
+ * Every `"demo"` event shares one cursor (`"demo:*"`) rather than one per
+ * `fixture_id` — I2 §5's own example, and fixture replay does not need
+ * finer-grained idempotency than "this fixture stream" today.
+ */
+export function scopeKey(scope: ProductEvent["scope"]): string {
+  switch (scope.kind) {
+    case "job":
+      return `job:${scope.job_id}`;
+    case "collection":
+      return `collection:${scope.collection_id}`;
+    case "demo":
+      return "demo:*";
+  }
+}
+
 export function reduceProductEvent(
   state: WorldProjection,
   event: ProductEvent,
 ): WorldProjection {
+  const key = scopeKey(event.scope);
+  const cursor = state.lastSequenceByScope[key] ?? 0;
+
   // At-least-once delivery means a replayed event must be a no-op, not a
   // double count. Dropping anything at or below the cursor is the cheapest
-  // correct rule and matches how event-reducer.ts guards the job stream.
-  if (event.sequence <= state.lastSequence) return state;
+  // correct rule and matches how event-reducer.ts guards the job stream —
+  // scoped per plane+identity so a job-scope and a collection-scope event
+  // that happen to share a numeric `sequence` are never mistaken for
+  // duplicates of each other (I2 §5, the central design problem this file
+  // implements).
+  if (event.sequence <= cursor) return state;
 
   const next: WorldProjection = {
     ...state,
-    lastSequence: event.sequence,
+    lastSequenceByScope: { ...state.lastSequenceByScope, [key]: event.sequence },
     mode: event.mode,
   };
 

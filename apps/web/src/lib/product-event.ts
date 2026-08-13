@@ -152,12 +152,64 @@ export const sourceRefLiteSchema = z.object({
 });
 export type SourceRefLite = z.infer<typeof sourceRefLiteSchema>;
 
+/**
+ * I2 — the discriminated plane an event belongs to.
+ *
+ * `mode` (below) says whether an event is replayed fixture data or came off a
+ * live backend; `scope.kind` is the orthogonal axis and says which backend
+ * plane's identity shape the event follows (I1: job plane and collection
+ * plane are different abstraction levels, not variants of one thing).
+ *
+ * Each kind's mandatory identity is the one the corresponding backend plane
+ * actually has: `job_id` is real on `JobEvent`/`ProcessingEvent`,
+ * `collection_id` is real on `CollectionEvent`. Neither plane may borrow the
+ * other's required identity — a job-scope event has no `collection_id`
+ * because the job plane structurally has none, not because it was omitted.
+ * `"demo"` exists so fixture-originated events that are pure display data
+ * (not impersonating either real plane) never have to fabricate an identity
+ * to pass validation — see `CLAUDE.md`'s "never invent data" rule.
+ */
+const jobScopeSchema = z.object({
+  kind: z.literal("job"),
+  job_id: z.string().min(1),
+  document_id: z.string().min(1).optional(),
+  page_number: z.number().int().positive().optional(),
+});
+
+const collectionScopeSchema = z.object({
+  kind: z.literal("collection"),
+  collection_id: z.string().min(1),
+  job_id: z.string().min(1).optional(),
+});
+
+const demoScopeSchema = z.object({
+  kind: z.literal("demo"),
+  fixture_id: z.string().min(1).optional(),
+});
+
+export const eventScopeSchema = z.discriminatedUnion("kind", [
+  jobScopeSchema,
+  collectionScopeSchema,
+  demoScopeSchema,
+]);
+export type EventScope = z.infer<typeof eventScopeSchema>;
+
 const envelope = {
   schema_version: z.literal(PRODUCT_EVENT_SCHEMA_VERSION),
   event_id: z.string().min(1),
   sequence: z.number().int().positive(),
   occurred_at: z.string().min(1),
-  collection_id: z.string().min(1),
+  scope: eventScopeSchema,
+  /**
+   * Legacy, kept for one additive-rollout release (I2 §11). No current
+   * consumer reads this top-level field (post-M0 validation, proven) — it
+   * exists only so code that has not migrated to `scope` yet keeps working.
+   * `parseProductEvent` is the single normalization boundary that keeps it
+   * honest: mirrored from `scope.collection_id` for a `"collection"`-scope
+   * event, and genuinely absent — never fabricated — for every other scope.
+   * Do not read this field going forward; read `scope` instead.
+   */
+  collection_id: z.string().min(1).optional(),
   /**
    * PART 17.4: "Sample mode와 real mode를 명시적으로 구분한다."
    *
@@ -562,13 +614,42 @@ export interface ProductEventSource {
 }
 
 /**
+ * I2 §11 — the one place the legacy top-level `collection_id` is mirrored or
+ * scrubbed, so every caller of `parseProductEvent` sees the same rule instead
+ * of each adapter re-implementing it.
+ *
+ * `"collection"` scope: mirror `scope.collection_id` onto the legacy field —
+ * the value is always derived from `scope`, never taken from whatever the raw
+ * frame happened to carry, so a mismatched or stale top-level value can never
+ * survive normalization.
+ *
+ * `"job"` / `"demo"` scope: the legacy field is deleted outright, not set to
+ * `undefined`. The job plane structurally has no `collection_id` (I1 §6a);
+ * emitting the key at all — even as `undefined` — would leave room for a
+ * `"collection_id" in event` check to read `true` for an identity nothing
+ * ever asserted.
+ */
+function normalizeScope(event: ProductEvent): ProductEvent {
+  if (event.scope.kind === "collection") {
+    return { ...event, collection_id: event.scope.collection_id };
+  }
+  if ("collection_id" in event) {
+    const { collection_id: _drop, ...rest } = event;
+    return rest as ProductEvent;
+  }
+  return event;
+}
+
+/**
  * Parse one wire event.
  *
  * Returns `undefined` for anything that fails, and the caller drops it. A
  * malformed event on a public landing page must not blank the screen, and it
- * must not be rendered half-parsed either.
+ * must not be rendered half-parsed either. Every event that parses
+ * successfully has also been through `normalizeScope` — this function is
+ * `ProductEvent`'s single normalization boundary, not just its validator.
  */
 export function parseProductEvent(value: unknown): ProductEvent | undefined {
   const result = productEventSchema.safeParse(value);
-  return result.success ? result.data : undefined;
+  return result.success ? normalizeScope(result.data) : undefined;
 }
