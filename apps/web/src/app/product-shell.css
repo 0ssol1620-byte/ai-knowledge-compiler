@@ -1775,3 +1775,61 @@
 .world-ask-trace {
   counter-reset: trace;
 }
+
+.world-ask-revision {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.world-simulated-note {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.world-change-history {
+  margin-top: 18px;
+}
+
+.world-change-history h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.world-change-history ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.world-change-history li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.world-change-history li[data-current="true"] {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
+
+.world-change-history-revision {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}

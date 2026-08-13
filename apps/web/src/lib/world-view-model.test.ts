@@ -8,6 +8,7 @@ import {
 } from "@/lib/demo-workspace";
 import { reduceProductEvents } from "@/lib/world-projection";
 import {
+  appendHistoryEntry,
   askEligible,
   changeEligible,
   findWorldObject,
@@ -74,6 +75,35 @@ describe("relatedObjects", () => {
 
   it("returns an empty list for an object with no relations", () => {
     expect(relatedObjects("e_does_not_exist")).toEqual([]);
+  });
+});
+
+describe("appendHistoryEntry", () => {
+  it("records the first revision it observes", () => {
+    const history = appendHistoryEntry([], { revision: 1 }, "2 years");
+    expect(history).toEqual([{ revision: 1, term: "2 years" }]);
+  });
+
+  it("appends a new revision without touching earlier entries", () => {
+    const before = [{ revision: 1, term: "2 years" }];
+    const after = appendHistoryEntry(before, { revision: 2 }, "5 years");
+    expect(after).toEqual([
+      { revision: 1, term: "2 years" },
+      { revision: 2, term: "5 years" },
+    ]);
+    // the input array is not mutated
+    expect(before).toEqual([{ revision: 1, term: "2 years" }]);
+  });
+
+  it("is a no-op for a revision already recorded", () => {
+    const before = [{ revision: 1, term: "2 years" }];
+    const after = appendHistoryEntry(before, { revision: 1 }, "2 years");
+    expect(after).toEqual(before);
+    expect(after).not.toBe(before);
+  });
+
+  it("is a no-op when there is no active world state yet", () => {
+    expect(appendHistoryEntry([], undefined, "2 years")).toEqual([]);
   });
 });
 

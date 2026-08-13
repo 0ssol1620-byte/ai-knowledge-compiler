@@ -66,6 +66,16 @@ export default function WorldObjectAskPage() {
   return (
     <div className="world-ask-panel">
       <p className="world-ask-question">{DEMO_QUESTION}</p>
+      {projection.worldState && (
+        <p className="world-ask-revision">
+          Answering from the current state of this object — world revision{" "}
+          {projection.worldState.revision}
+        </p>
+      )}
+      <p className="world-simulated-note">
+        This runs a simulated query against the sample world — no live model
+        call is made and no real workspace is queried.
+      </p>
       <button type="button" onClick={ask} disabled={asking}>
         {asking ? "Resolving…" : "Ask"}
       </button>

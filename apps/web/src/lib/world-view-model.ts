@@ -150,3 +150,33 @@ export function changeEligible(entityId: string): boolean {
 export function askEligible(entityId: string): boolean {
   return SPINE_ENTITY_IDS.includes(entityId);
 }
+
+/** One entry in the CHANGE view's session-local revision history. */
+export interface ChangeHistoryEntry {
+  revision: number;
+  term: string;
+}
+
+/**
+ * Append a revision to the CHANGE view's history, if it is new.
+ *
+ * This is deliberately *observed* history, not recorded/fetched history: it
+ * only ever grows by watching `projection.worldState` actually change to a
+ * revision the caller has not already recorded, one entry per revision, never
+ * reordered or backfilled. A world state this component was never mounted to
+ * see (a revision reached before the CHANGE tab was opened this session)
+ * stays honestly absent instead of being guessed — the list is what happened
+ * while someone was watching, not a fabricated full history the sample
+ * fixture cannot actually source.
+ */
+export function appendHistoryEntry(
+  history: readonly ChangeHistoryEntry[],
+  worldState: { revision: number } | undefined,
+  term: string,
+): ChangeHistoryEntry[] {
+  if (!worldState) return [...history];
+  if (history.some((entry) => entry.revision === worldState.revision)) {
+    return [...history];
+  }
+  return [...history, { revision: worldState.revision, term }];
+}
