@@ -198,8 +198,21 @@ path, not a completed migration.
 
 - Changing `collection_id` from required to scope-conditional is a
   **breaking change** for any code that reads `event.collection_id` directly
-  at the top level. Whether Product App's current components do this was
-  **not verified this session** (see Unresolved, below).
+  at the top level. ~~Whether Product App's current components do this was
+  not verified this session~~ **UPDATE (post-M0 validation pass,
+  2026-08-13): verified — `proven`, not `inferred`.** A full grep of the
+  Product App worktree (schema/producer/consumer files and all four P1 view
+  pages) found `collection_id` referenced only at its own schema definition
+  (`product-event.ts:160`) and inside the demo fixture's own
+  event-construction code (`demo-workspace.ts`, a **producer**, not a
+  consumer). `reduceProductEvent` — the only place `ProductEvent` fields are
+  actually consumed to build state — never reads `event.collection_id`, and
+  none of the four view pages or their layouts reference it at all. This
+  **confirms `no consumer`**, not merely "optional consumer" — no code in
+  Product App today would break if `collection_id` moved into the
+  discriminated `scope` field. The additive-rollout strategy below remains
+  prudent for future consumers but is not load-bearing for Product App's
+  current compatibility.
 - Proposed strategy: **additive rollout**. Keep the existing top-level
   `collection_id` field, mark it deprecated, and introduce `scope`
   alongside it. Adapters mirror the value onto both `scope.collection_id`
@@ -239,10 +252,10 @@ inspected this session (see Unresolved).
 
 ## Unresolved / not verified this session
 
-- Whether Product App's `demo-workspace.ts` or its components reference
-  `ProductEvent.collection_id` at the top level anywhere — not grepped this
-  session; directly determines how severe the §11 breaking change actually
-  is.
+- ~~Whether Product App's `demo-workspace.ts` or its components reference
+  `ProductEvent.collection_id` at the top level anywhere~~ **RESOLVED by a
+  post-M0 validation pass (2026-08-13): no consumer anywhere in Product App.
+  See the updated §11 above.**
 - The real emit-site payload for `EventType.PAGE_ROUTE_SELECTED` /
   `CollectionEventType.PAGE_ROUTE_SELECTED` — inherited as "unproven" from
   I1, not re-verified here.
@@ -251,6 +264,24 @@ inspected this session (see Unresolved).
   caution) — not directly compared in code this session.
 - The exact `packages/contracts` codegen script/mechanism (name, invocation)
   — neither I1 nor this document opened it directly.
+
+## Post-M0 validation pass (2026-08-13)
+
+`M0_MAINLINE_MIGRATION_RECONCILIATION.md` landed after this document was
+first written. A short validation pass confirmed, by reading M0 in full,
+that M0 is entirely about Alembic migration-ancestry reconciliation and does
+not examine `CollectionEvent`'s column list, the job/collection event-plane
+split, or `ProductEvent`'s envelope shape — that remains I1's territory,
+which M0 explicitly does not re-derive or contradict. **M0 does not change
+this document's `scope` field design or its producer/persistence picture.**
+
+One stale-citation note surfaced by the same pass, not a correction to this
+document's content: this document cites I1's `collection_events`/
+`CollectionEventType` findings (§Grounding, §8), and I1 in turn originally
+described the Security branch's migration ancestry as unresolved — a claim
+M0 later proved stale (see I1's own "M0 CORRECTION" block). This document
+does not repeat that specific stale claim, so no correction is needed here,
+but future revisions citing I1 should cite its corrected state.
 
 ## Note on section labeling
 
