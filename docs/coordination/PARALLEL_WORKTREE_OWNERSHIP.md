@@ -391,6 +391,24 @@ architecture session, not a routing decision made here:
   absent-code wall and reported it rather than guessing. Determine later
   whether this session's routing was under B1.2 or B1.3-RC.
 
+- **Incident: self-background-then-wait recurrence, I4 track (2026-08-14).**
+  Task: I4 common-core integration rehearsal. The agent's Python-side work
+  (mypy, `pytest` 439/439, four zero-diff checks) completed correctly and
+  synchronously. It then started `pnpm install` as a background task,
+  attached a Monitor tool to poll it, and ended its turn stating it would
+  "proceed automatically once the monitor reports completion." A
+  task-notification fired with status `completed` shortly after — the
+  agent's session had ended with no live background children, meaning the
+  Monitor did not actually resume it. Orchestrator independently confirmed
+  `apps/web/node_modules` still did not exist in the I4 worktree — the
+  install had not actually finished/landed when the agent's turn ended.
+  This is the identical failure pattern the I3 track hit three times
+  earlier in this same session, now recurring a fourth time on a different
+  track. Resumed once via `SendMessage` with explicit foreground-only
+  instructions, per standing policy (resume once, do not repeat
+  automatically). Not modifying AERO routing/model architecture from this
+  session — recorded for the separate future AERO architecture session.
+
 ---
 
 ## Change log
