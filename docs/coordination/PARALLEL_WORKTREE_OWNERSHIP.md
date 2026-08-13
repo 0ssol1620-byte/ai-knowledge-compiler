@@ -57,6 +57,9 @@ incomplete and must not be relayed to the founder as verified.
 | 11 | E0 — ASK/Evidence Architecture | `D:\CodexProjects\ai-knowledge-compiler-e0` | `agent/tavonel-e0-ask-evidence` | `origin/main` @ `185d04b` |
 | 12 | M1 — Protected Core / Product Lineage Reconciliation | `D:\CodexProjects\ai-knowledge-compiler-m1` | `agent/tavonel-m1-lineage-reconciliation` | `origin/main` @ `185d04b` |
 | 13 | C0 — Cinematic V2 Phase-1 Remediation | `D:\CodexProjects\ai-knowledge-compiler-cinematic-v2-phase1` | `agent/tavonel-cinematic-v2-phase1-remediation` | Cinematic V2 frozen `5a01055` (frozen branch itself untouched) |
+| 14 | P1 — Protected Core Promotion Candidate | `D:\CodexProjects\ai-knowledge-compiler-protected-core-promotion` | `agent/tavonel-protected-core-promotion` | I3 baseline `0d5fbc8` |
+| 15 | M2 — Collection-Plane Atomic Promotion Rehearsal | `D:\CodexProjects\ai-knowledge-compiler-collection-plane-rehearsal` | `agent/tavonel-collection-plane-rehearsal` | I3 baseline `0d5fbc8` |
+| 16 | C1 — Cinematic V2 Phase-1 Choreography Remediation | `D:\CodexProjects\ai-knowledge-compiler-cinematic-v2-choreography` | `agent/tavonel-cinematic-v2-choreography` | C0 remediation HEAD `42dc4ee` (C0 worktree itself untouched) |
 
 **Not active** — `Cinematic V5`, `D:\CodexProjects\ai-knowledge-compiler-v5-cinematic`, `agent/tavonel-v5-cinematic`. Historical/foundation evidence only.
 
@@ -290,6 +293,33 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 - **Acceptance suite must be rewritten** — it missed the exact failure the founder observed. New discriminating real-browser E2E gate required: narrative-visibility (later states not all visible at initial state), camera-movement (transform delta across multiple scroll positions, substantial not trivial), frame discrimination (pre-swarm/swarm/decomposition/universe/pullback frames not pixel-equivalent), Canvas-active proof (real WebGL, not source-only), graph-reveal proof, and a static-failure regression fixture reproducing the founder-observed static page — **the new gate must fail against that fixture, or the gate itself is still invalid.**
 - **Status language:** even with all tests green, report only `PHASE 1 REAL-BROWSER REMEDIATION READY / FOUNDER VISUAL REVIEW REQUIRED` — never "visual PASS." Only explicit founder `GO` unfreezes Acts 4–9.
 - **Not authorized:** any edit to the frozen `5a01055` branch itself, Phase 2 work, Canary B.
+
+---
+
+### 14. P1 — Protected Core Promotion Candidate
+- **Status:** `RUNNING`, dispatched 2026-08-14. Not yet reported.
+- **Worktree:** `D:\CodexProjects\ai-knowledge-compiler-protected-core-promotion`. **Branch:** `agent/tavonel-protected-core-promotion`. **Base:** I3 baseline `0d5fbc8`.
+- **Objective:** extract the 10 domain-neutral Protected Core modules (`authority`, `temporal`, `dependency`, `world_state`, `identity`, `inspection`, `recompilation`, `reconciler`, `recovery_policy`, `semantic_diff`) from `agent/folynta-trust-integration-v1` into this worktree via ref-scoped `git show` reads (no checkout, no whole-commit cherry-pick of the mixed `d7a6b30`), with full provenance recorded per module, byte-identical extraction verified, and behavior proven via the extracted test suite run in this worktree.
+- **Owned paths:** `packages/cir-python/src/akc_cir/` (the 10 named modules and their tests) in this worktree only.
+- **Forbidden:** any Security-only import, `packages/absorption` dependency, migrations, RLS/role/`BYPASSRLS` changes, `collection_events.py`/other P2-P3 files, any other worktree, merge, push.
+- **Status language:** `P1 PROTECTED CORE PROMOTION CANDIDATE READY`.
+
+### 15. M2 — Collection-Plane Atomic Promotion Rehearsal
+- **Status:** `RUNNING`, dispatched 2026-08-14. Not yet reported. **L1 stays `BLOCKED` until this resolves.**
+- **Worktree:** `D:\CodexProjects\ai-knowledge-compiler-collection-plane-rehearsal`. **Branch:** `agent/tavonel-collection-plane-rehearsal`. **Base:** I3 baseline `0d5fbc8`.
+- **Objective:** reconstruct the P2 collection-plane as one coherent bundle (Collection model fields, `collection_events.py`, `collection_api.py`, `collection_schemas.py`, migrations `0023`-`0032`, their embedded RLS, the generated frontend contract) — local rehearsal only, testing whether it's genuinely separable from Security hardening `0033`-`0037`, not file-by-file cherry-picking until it compiles.
+- **Owned paths:** collection-plane files as scoped above, in this worktree only.
+- **Forbidden:** any `0033`-`0037` semantics, `BYPASSRLS`/role/dual-plane/claim-broker changes, Canary B, any other worktree, merge, push.
+- **Status language:** exactly one of `M2 ATOMIC PROMOTION REHEARSAL PASS / FOUNDER DECISION REQUIRED` or `M2 BLOCKED — COLLECTION PLANE NOT SEPARABLE FROM SECURITY HARDENING`.
+
+### 16. C1 — Cinematic V2 Phase-1 Choreography Remediation
+- **Status:** `RUNNING`, dispatched 2026-08-14. Not yet reported.
+- **Worktree:** `D:\CodexProjects\ai-knowledge-compiler-cinematic-v2-choreography`. **Branch:** `agent/tavonel-cinematic-v2-choreography`. **Base:** C0 remediation HEAD `42dc4ee` (the C0 worktree itself is untouched by this track).
+- **Trigger:** founder re-inspected C0's `42dc4ee` directly and found two remaining defects: (1) the review route still defaults to reduced-motion on a host whose OS reports it, exposing a "Play full motion"/"Hold key frames" toggle instead of defaulting to FULL MOTION; (2) the C02 choreography itself is founder-rejected — the camera recedes to near-parked (~550-650 units) while semantic decomposition is still supposed to be legible up close, the inverse of the intended shot, plus a real (spring-concealed) C01→C02 pose discontinuity of ~84 units.
+- **Objective:** (a) an explicit review-mode-only full-motion override for `/cinematic-v2` (no global `matchMedia` hack, reduced-motion path preserved for its real future public-route purpose), remove "Hold key frames" as a product-facing concept (test-fixture-only if kept); (b) re-choreograph C02 into three explicit phases (DECOMPOSE CLOSE → SEMANTIC SETTLE → WORLD REVEAL) so decomposition is legible before the major recession, with C01→C02 continuity real by construction, not spring-concealed; (c) Director Bible updated atomically with the code; (d) new relational choreography-invariant tests (not aesthetic-constant tests) with real captured telemetry/screenshots at each keyframe.
+- **Owned paths:** `apps/web/src/components/cinematic-v2/`, `apps/web/src/lib/cinematic/`, `apps/web/src/app/cinematic-v2/`, `docs/design/` (Director Bible), in this worktree only.
+- **Forbidden:** Acts 4-9, Product App changes, backend changes, Cinematic Phase 2, the frozen `5a01055` branch, the C0 worktree, merge, push.
+- **Status language:** `PHASE 1 CHOREOGRAPHY REMEDIATION READY / FOUNDER VISUAL REVIEW REQUIRED` — never a visual PASS; only founder re-inspection + explicit `GO` unfreezes Acts 4-9.
 
 ---
 
