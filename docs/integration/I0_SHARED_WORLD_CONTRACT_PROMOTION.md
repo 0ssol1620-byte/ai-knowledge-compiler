@@ -257,15 +257,36 @@ Mapped to the 9 required proof items:
 ## 6. What was and was not committed
 
 Per the coordinator's correction, this promotion does **not** claim
-`INTEGRATION I0 READY`. The files listed in §2 are staged in this worktree
-but a promotion commit has **not** been created, because `LiveEventAdapter`
-— one of the three files this task exists to promote — cannot be honestly
-proven against real `main` backend behavior, and committing it as though
-this were resolved would misrepresent that. `ProductEvent` and
-`WorldProjection` (and their non-adapter tests) do pass cleanly on their own,
-but they were promoted as one unit with `LiveEventAdapter` per the dispatch,
-and splitting the commit was not something this task was authorized to
-decide unilaterally either.
+`INTEGRATION I0 READY`, and does not commit `LiveEventAdapter` as though the
+conflict in §3 were resolved. One commit was made on this branch,
+`eb26ba7` ("feat(integration): promote ProductEvent and WorldProjection as
+shared contract"), containing only the subset that is genuinely, honestly
+proven independent of the conflict:
+
+- `apps/web/src/lib/product-event.ts` + `product-event.test.ts` (13/13 pass,
+  no `@akc/contracts` dependency)
+- `apps/web/src/lib/world-projection.ts` + `world-projection.test.ts`
+  (29/29 pass, including at-least-once idempotency; no `@akc/contracts`
+  dependency)
+- `apps/web/src/lib/demo-event-source.ts` + `demo-workspace.ts` (fixtures
+  `world-projection.test.ts` exercises; self-contained, no `@akc/contracts`
+  or presentation dependency)
+- this document
+
+**Left uncommitted, present in the worktree only, as untracked files:**
+
+- `apps/web/src/lib/live-event-adapter.ts`
+- `apps/web/src/lib/live-event-adapter.test.ts`
+- `apps/web/src/lib/product-event.contract.test.ts`
+
+These three are exactly the files whose tests require
+`COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS` / `CollectionEventType` from
+`@akc/contracts`, i.e. exactly the files blocked by §3. The
+`"@akc/contracts": "workspace:*"` dependency edit that was temporarily added
+to `apps/web/package.json` to prove this (and the resulting `pnpm-lock.yaml`
+change) was **reverted** before committing, since the committed subset does
+not need it — re-add it only once §3 is resolved and `LiveEventAdapter` is
+ready to be promoted for real.
 
 ## 7. Open question for the founder
 
