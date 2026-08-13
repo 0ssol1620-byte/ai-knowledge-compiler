@@ -58,14 +58,14 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 - **Merge dependency:** blocked on founder GO for Phase 2, then final independent audit.
 
 ### 3. Product App
-- **Status:** `P0 COMPLETE (commit feabbd9) / P1 BLOCKED pending Surface Integration I0`. P0 correctly identified that `ProductEvent`/`LiveEventAdapter`/`WorldProjection` do not exist anywhere on `main` lineage and stopped rather than inventing or duplicating them — this is now resolved as a promotion task (see Surface Integration below), not a Product App scoping error.
-- **Owned paths:** to be scoped further once P1 resumes; expected `apps/web/src/app/app/` or equivalent existing `/app` route tree, plus any new route-local components under a scoped subdirectory.
+- **Status:** `P1 ACTIVE — consumes I0-A, SAMPLE MODE`. P0 (`feabbd9`) correctly identified the missing contract and stopped rather than inventing it. Rebasing onto the I0-A foundation (`eb26ba7`/`14a05bf`) now, then resuming P1 immediately in sample/demo mode — does not wait on I1.
+- **Owned paths:** to be scoped further as P1 lands; expected `apps/web/src/app/app/` or equivalent existing `/app` route tree, plus any new route-local components under a scoped subdirectory.
 - **Read-only shared paths (frozen this round, per founder decision):** root `package.json`, `pnpm-lock.yaml`, global/root layout, global `app-shell`, global navigation, global design-token definitions, global auth middleware, global CSP/security policy. May inspect, document, propose diffs — must not edit directly.
-- **`product-event.ts` / `live-event-adapter.ts` / `world-projection.ts` — reclassified from `BLOCKED / READ-ONLY` to `CONSUMER — NO OWNERSHIP`.** Owned by Surface Integration once I0 lands; Product App consumes via rebase onto the I0 foundation commit, never by hand-copying the files.
-- **Proposed shared changes:** none yet — to be produced by P0/P1 and recorded here once real.
+- **`product-event.ts` / `world-projection.ts` — `CONSUMER — NO OWNERSHIP`**, sourced from Surface Integration I0-A (`READY`) via rebase, never hand-copied. **`live-event-adapter.ts` — not consumed yet**; I0-B is `BLOCKED`, and Product App must build its `EventSource` abstraction (`DemoFixtureEventSource` now, `LiveProductEventSource` swappable in later without a workspace rewrite) so the live-adapter gap doesn't block P1.
+- **Proposed shared changes:** none yet — to be produced by P1 and recorded here once real.
 - **Dependencies added:** none yet. New-dependency rule: justify vs. existing stack, license-check, document, avoid duplicate-adding the same package Commercial Shell might also need (defer to Integration track if both need it and neither is blocked without it).
-- **Integration requirements:** blocked on Surface Integration I0 (shared world contract promotion). Once I0 lands, Product App rebases onto it (preserving `feabbd9`) and P1 resumes automatically.
-- **Merge dependency:** P1 completion depends on I0 landing first.
+- **Integration requirements:** every P1 surface fed by `DemoFixtureEventSource` must be explicitly labeled `SAMPLE WORLD` (or equivalent) — never implying customer data, live processing, or real-time backend support. When I1 resolves the canonical backend event boundary and I0-B unblocks, Product App swaps in `LiveProductEventSource` behind the same `EventSource` abstraction.
+- **Merge dependency:** none blocking P1 itself; live-mode wiring depends on I0-B/I1.
 
 ### 4. Commercial Shell
 - **Status:** `C0 COMPLETE / C1 READY` — commit `fdce8e7` on `agent/tavonel-commercial-shell`. Not merged, not pushed.
@@ -91,15 +91,29 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 - **Standing constraints:** focus on technical embodiments becoming clearer through product implementation; do not expose trade-secret implementation detail in public-facing artifacts; keep inventor/conception records factual; AI is not an inventor; no infringement admissions in repository materials.
 
 ### 7. Surface Integration
-- **Status:** opened narrowly, `INTEGRATION I0 — SHARED WORLD CONTRACT PROMOTION` dispatching now. Navigation/root-layout/app-shell integration (the originally-planned broader scope) is explicitly deferred to a later phase — not part of I0.
-- **Owned paths:** `apps/web/src/lib/product-event.ts`, `apps/web/src/lib/live-event-adapter.ts`, `apps/web/src/lib/world-projection.ts`, and their contract/unit tests, once promoted.
-- **Source provenance (founder-verified):** `ProductEvent` entered in V5 foundation commit `270875e`; `LiveEventAdapter`/`WorldProjection` introduced there, received correctness/boundary fixes in `f042563`. Cinematic V2 inherited them as KEEP contracts with **zero diff** from V2 base `3d2cb8c` through current cinematic HEAD (independently confirmed: `git diff 3d2cb8c HEAD -- <those three files>` in the cinematic-v2 worktree is empty).
-- **Promotion method:** one clean I0 foundation commit bringing across only the neutral chain (the three files + tests), never the full `270875e` commit or any cinematic presentation code (`CameraDirector`, `VisualCue`, GSAP/R3F components, `event-labels.ts`).
-- **Read-only shared paths:** none beyond the promoted files themselves — I0 does not touch navigation/layout/app-shell.
-- **Proposed shared changes:** the promotion itself, tracked in I0's own commit; any semantic conflict between the V5/V2 contract and current backend/main behavior is grounds to stop and report rather than silently reconcile.
-- **Dependencies added:** TBD — report presentation-only deps (GSAP/R3F/etc.) must NOT be dragged in as a side effect of promoting the contract layer.
-- **Integration requirements:** Product App rebases onto the I0 commit once landed (never hand-copies the files). Cinematic V2 stays untouched — its copies already match the promoted baseline; ancestry reconciliation is deferred.
-- **Merge dependency:** none yet — local commit only, no merge/push.
+- **I0 split into two independent sub-results, per founder decision, because the conflict found revealed two decisions that should not couple:**
+
+**I0-A — SHARED READ-MODEL FOUNDATION — `READY`**
+- **Owned paths:** `apps/web/src/lib/product-event.ts`, `apps/web/src/lib/world-projection.ts`, their tests, `demo-event-source.ts`, `demo-workspace.ts` (explicitly synthetic-fixture category, not contract semantics).
+- **Commits:** `eb26ba7` (promotion), `14a05bf` (doc-accuracy follow-up). `ProductEvent` 13/13 tests, `WorldProjection` 29/29 tests, both pass clean.
+- **Source provenance (founder-verified):** `ProductEvent` entered in V5 foundation commit `270875e`; `WorldProjection` introduced there, received correctness/boundary fixes in `f042563`. Cinematic V2 inherited them as KEEP contracts with **zero diff** from V2 base `3d2cb8c` through current cinematic HEAD.
+- Sufficient on its own for Product App P1 to proceed honestly in SAMPLE mode.
+
+**I0-B — LIVE BACKEND ADAPTER — `BLOCKED — canonical backend event model unresolved`**
+- **Scope:** `live-event-adapter.ts`, `live-event-adapter.test.ts`, `product-event.contract.test.ts` — deliberately left **uncommitted, untracked** in the Integration worktree. Not promoted, not shimmed.
+- **Why:** written against `akc_cir.collection_events.CollectionEventType` (introduced in `d7a6b30`), which is **not an ancestor of `main`** (independently verified: `git merge-base --is-ancestor d7a6b30 7ac5098` → not-an-ancestor). `main`'s actual event producer is a different, differently-keyed module (`akc_cir.events.EventType`), and `main`'s generated `@akc/contracts` has no `CollectionEventType` export at all. 8/8 real-payload mapping tests fail with `TypeError` against `main` — the agent correctly declined to commit this as working.
+- **Resolution gate:** blocked on I1 (below). Neither "promote `collection_events` to `main`" nor "rewrite the adapter against `events.EventType`" was authorized — both were explicitly rejected as premature until I1 determines which model (or which combination) is actually canonical.
+
+**INTEGRATION I1 — CANONICAL BACKEND EVENT MODEL — `ACTIVE`**
+- Research/reconciliation task, not an implementation rewrite. Compares `main`'s `akc_cir.events.EventType`, `akc_cir.collection_events.CollectionEventType`/`d7a6b30`, current Security-branch event-producing code, real API/SSE endpoints, generated `@akc/contracts`, DB event tables/migrations, frontend consumers, worker/broker producers, and real-payload-shape tests — tracing `producer → persistence → transport → generated contract → adapter consumer` for each candidate, and explicitly considering the possibility that both models are legitimate but describe different planes (in which case `ProductEvent` should normalize above both, not replace one with the other).
+- Read-only access to the Security branch permitted; must not change Security's state or migrations. `BYPASSRLS 7/7` / `Gate 1B PENDING` / `Canary B BLOCKED` remain unchanged and unrelated to this reconciliation.
+- **Required artifact:** `docs/integration/I1_CANONICAL_BACKEND_EVENT_RECONCILIATION.md` — lineage graph, producer/transport/persistence inventories, generated-contract comparison, payload field matrix, `ProductEvent` coverage matrix, fixture-vs-backend event matrix, security/tenant-correlation implications, migration/coexistence implications, and a recommended final architecture with every claim tagged `observed`/`proven`/`inferred`/`proposed`.
+- **Implementation gate:** the final `LiveEventAdapter` (single adapter, dual upstream adapters, or a new normalization layer) is not implemented until I1 concludes. Whatever is chosen must retain fail-closed-on-unknown-events, no fabricated fields, tenant/collection/job correlation, positive page-number semantics, and at-least-once idempotency.
+
+- **Read-only shared paths:** none beyond the promoted I0-A files — no navigation/layout/app-shell touched by either I0 or I1.
+- **Dependencies added:** none. Presentation-only deps (GSAP/R3F/etc.) confirmed not dragged into the shared layer.
+- **Integration requirements:** Product App rebases onto I0-A now (never hand-copies files). I0-B/I1 output feeds Product App's later `LiveProductEventSource` swap.
+- **Merge dependency:** none yet — local commits only, no merge/push. No backend migration. No adapter shim created merely to make tests green.
 
 ---
 
@@ -109,3 +123,4 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 - 2026-08-13 — Product App P0 complete (`feabbd9`), found `ProductEvent`/`LiveEventAdapter`/`WorldProjection` absent from `main` lineage, correctly stopped rather than inventing them. Founder confirmed via provenance that this is a promotion gap, not a missing-contract situation — the validated foundation exists off `main` in the V5/V2 lineage. Surface Integration worktree opened narrowly for `INTEGRATION I0` (contract promotion only, not full nav/layout integration). Product App's ownership of the three contract files reclassified `BLOCKED / READ-ONLY` → `CONSUMER — NO OWNERSHIP`.
 - 2026-08-13 — Commercial Shell C0/C1 complete (`fdce8e7`), independently verified: no frozen files touched, no fabricated payment/entitlement state, 79/79 tests pass. Ready pending a merge round.
 - 2026-08-13 — Surface Integration I0 in progress found a genuine semantic conflict (not yet resolved): `main`'s real backend event module is `akc_cir.events.EventType`, but the V5 `LiveEventAdapter`/tests target `akc_cir.collection_events.CollectionEventType` (introduced in `d7a6b30`, not an ancestor of `main`). Agent resumed with instructions to report this as a founder-decision point rather than resolve it unilaterally.
+- 2026-08-13 — Founder split I0 into I0-A (`READY`, `ProductEvent`/`WorldProjection`, commits `eb26ba7`/`14a05bf`) and I0-B (`BLOCKED`, live adapter, gated on new I1 reconciliation task). Product App resumes P1 immediately on I0-A in SAMPLE mode via a swappable `EventSource` abstraction — does not wait on I1. Commercial Shell stays `C1 READY`, holds for integration. I1 dispatched as a research/reconciliation task, not an implementation rewrite.
