@@ -24,7 +24,7 @@ read-only historical/foundation evidence, frozen unless explicitly reopened.
 | 1 | Security | `D:\CodexProjects\ai-knowledge-compiler` | `agent/folynta-trust-integration-v1` | — |
 | 2 | Cinematic V2 | `D:\CodexProjects\ai-knowledge-compiler-cinematic-v2` | `agent/tavonel-cinematic-v2` | `agent/tavonel-v5-cinematic` |
 | 3 | Product App | `D:\CodexProjects\ai-knowledge-compiler-product-app` | `agent/tavonel-product-app` | `main` |
-| 4 | Commercial Shell | `D:\CodexProjects\ai-knowledge-compiler-commercial-shell` | `agent/tavonel-commercial-shell` | `main` |
+| 4 | Commercial Shell | `D:\CodexProjects\ai-knowledge-compiler-commercial-shell` | `agent/tavonel-commercial-shell` | `origin/main` @ `185d04b` (caught up from `7ac5098`, 2026-08-13, HEAD `291cf81`) |
 | 5 | Research/Absorption | `D:\CodexProjects\ai-knowledge-compiler-research` | `agent/tavonel-absorption-research` | — |
 | 6 | IP Research | `D:\CodexProjects\ai-knowledge-compiler-ip-research` | `agent/tavonel-ip-research` | — |
 | 7 | Surface Integration | `D:\CodexProjects\ai-knowledge-compiler-surface-integration` | `agent/tavonel-surface-integration` | `origin/main` @ `185d04b` (caught up from `7ac5098`, 2026-08-13, HEAD `d4c415a`) |
@@ -68,7 +68,7 @@ navigation/root-layout/app-shell integration is explicitly deferred to a later p
 - **Merge dependency:** none blocking P1 itself; live-mode wiring depends on I0-B/I1.
 
 ### 4. Commercial Shell
-- **Status:** `C0 COMPLETE / C1 READY` — commit `fdce8e7` on `agent/tavonel-commercial-shell`. Not merged, not pushed.
+- **Status:** `C1 READY` on `291cf81` (rebased from `fdce8e7` onto `origin/main`@`185d04b`, 2026-08-13, zero conflicts, content byte-identical). Not merged, not pushed. Tests now 114/114 (up from 79/79 — legitimately from mainline commits landed between the old and new base, not from any change to this track's own diff). Pre-existing lint environment failure (`minimatch`/`@eslint/config-array`) unchanged, not this track's to fix.
 - **C0 findings:** real login/signup/session infra already wired (`POST /v1/auth/login|register`, `GET /v1/auth/session`); real provider-optional payment/credit ledger (`payments.py`) whose UI already renders an honest "no verified payment provider" state instead of fabricating checkout; real `plan_code` tenant gating with no priced self-serve catalog; real `/v1/api-keys` backend with previously zero frontend surface; real `/v1/auth/logout` previously never called from the frontend. `/login`, `/signup` verified real, untouched. `/pricing` verified real but lives on the cinematic marketing stack — left untouched, out of this track's scope.
 - **C1 built:** `/account` (server-confirmed profile, real sign-out, owner/admin-gated API key management — new frontend on an already-real backend; explicitly states profile/password editing is unsupported rather than faking a save) and `/billing` (calm wrapper on the pre-existing honest `BillingManagement` component).
 - **Verification:** `tsc --noEmit` clean; `vitest run` 79/79 pass (23 files, 7 new); `lint` fails on a pre-existing environment error reproducible on unmodified `main` too (not introduced by this change, flagged not hidden); live browser check not completed (an already-running preview server belonged to a different worktree — left untouched per no-cross-worktree-touch rule).
