@@ -1454,6 +1454,14 @@
   min-width: 240px;
 }
 
+/* Same treatment as .topbar-search: the input's own outline is suppressed
+   below, so keyboard focus needs a visible indicator on the wrapper instead
+   — otherwise tabbing to this field leaves no focus indicator at all. */
+.world-search:focus-within {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus) 14%, transparent);
+}
+
 .world-search input {
   border: 0;
   outline: none;
