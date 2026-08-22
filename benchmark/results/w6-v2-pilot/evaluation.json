@@ -1,0 +1,31 @@
+{
+  "verdict": "BLOCKED_ACQUISITION",
+  "metrics": {},
+  "grades": [],
+  "diagnosis": {
+    "verdict": "BLOCKED_ACQUISITION",
+    "gate": {
+      "usable": 31,
+      "required_minimum": 40
+    },
+    "attempt_1": {
+      "artifact": "acquisition-report.attempt1-blocked.json",
+      "usable": 0,
+      "failure_classes": {
+        "http_403": 60
+      },
+      "cause": "Wikimedia default-UA policy -> http_403 on every request"
+    },
+    "attempt_2_final": {
+      "artifact": "acquisition-report.json",
+      "usable": 31,
+      "failure_classes": {
+        "http_429": 29
+      },
+      "observed_pattern": "the first ~12 titles in frozen order fetched successfully; from 'Great Barrier Reef' onward every request returned http_429 across both endpoints (6 attempts each: 3 per endpoint x 2 endpoints)",
+      "root_cause": "sequential fetching without inter-request pacing exceeded the MediaWiki action-API rate limit; the preregistered retry backoff (2s/4s) does not honour Retry-After and is shorter than the enforcement window",
+      "recommended_remedy_not_executed": "pace requests (e.g., >=3s gap or honour Retry-After with exponential backoff); re-run may reuse the 31 cached documents already on disk"
+    },
+    "honesty_note": "third acquisition run deliberately NOT executed per operator instruction; cached documents remain valid inputs for any future authorised re-run"
+  }
+}

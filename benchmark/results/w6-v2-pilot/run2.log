@@ -1,0 +1,5 @@
+[freeze] preregistration sha256=e649df72baddee19... snapshot written
+[acquire] counts={'ok': 30, 'failed': 29, 'cache_hit': 1} usable=31
+[gate] BLOCKED_ACQUISITION candidate: usable=31 < 40
+[done] verdict=BLOCKED_ACQUISITION
+PILOT_EXIT=0

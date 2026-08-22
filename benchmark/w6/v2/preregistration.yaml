@@ -1,0 +1,231 @@
+# W6 Benchmark v2 — PILOT PREREGISTRATION (frozen before results)
+#
+# This file is written and hash-frozen BEFORE any result artifact exists.
+# Nothing in here is a measurement. Every threshold below is an entry gate or a
+# decision rule, never a claim. Per repo discipline (see
+# docs/research/PREREGISTRATION_G3_HARM_HOLDOUT.md pattern): once results land,
+# this file must not be edited — deviations are recorded in the run report, not
+# patched in here.
+
+experiment_id: W6-V2-PILOT
+protocol_version: 2
+title: "Raw documents vs Basic RAG vs TAVONEL compiled world - protocol-valid pilot harness and small-scale run"
+frozen_at: "2026-08-23T00:00:00+09:00"
+git_commit_at_freeze: "9e9d69a"          # HEAD of integration/g0-consolidation the branch was cut from
+worktree_branch: agent/tavonel-w6-v2
+disclosure: INTERNAL_ONLY_NOT_A_CLAIM
+role: PILOT - harness validation and directional signal only. No promotion, no external claim, no significance statement may cite this run.
+
+history_context:
+  v1: "INVALID (protocol flaws; do not build on it)"
+  v2: "protocol adjudicated valid but NEVER RUN - this harness is its first implementation"
+  v3: "6,987-title corpus freeze - see DEVIATION-01: the frozen list itself is not recoverable from this repository"
+  v5: "final experiment incomplete - acquisition step died at a 900s timeout with no per-fetch timeout, retry, cache, or failure ledger"
+
+# ---------------------------------------------------------------------------
+# DEVIATIONS declared at freeze time (before any result exists)
+# ---------------------------------------------------------------------------
+deviations:
+  - id: DEVIATION-01
+    statement: >
+      The v3 freeze list of 6,987 titles could not be located in the repository
+      (searched: benchmark/, docs/, research/, scripts/, tools/, and all local
+      linked worktrees; no dataset/title/freeze artifact with ~6,987 entries
+      found). The pilot therefore freezes its own fresh 60-item source list
+      below, in fixed order, BEFORE acquisition. Any future full run must first
+      re-derive or re-freeze the v3 list; this pilot's list is not a substitute
+      for it.
+  - id: DEVIATION-02
+    statement: >
+      The 'TAVONEL compiled world' arm uses a pilot-grade compiler implemented
+      in this harness (LLM extraction into typed elements with provenance ids),
+      not the production services/api collection pipeline. It exercises the
+      compile-then-retrieve shape, not the product's exact algorithms.
+
+# ---------------------------------------------------------------------------
+# Corpus / acquisition (phase 1)
+# ---------------------------------------------------------------------------
+source_registry:
+  kind: wikipedia_rest_extracts
+  rationale: "public, license-compatible for internal experimentation, deterministic per-title fetch"
+  endpoints:
+    - "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&formatversion=2&titles={title}"
+    - "https://en.m.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&formatversion=2&titles={title}"
+  per_fetch_timeout_seconds: 30
+  max_attempts_per_item: 3
+  retry_backoff_seconds: [2, 4]
+  phase_deadline_seconds: 1200
+  cache_dir: "benchmark/results/w6-v2-pilot/cache"
+  usable_document_min_chars: 2000
+  blocked_threshold_usable_documents: 40
+  pilot_size: 60
+  failure_ledger: "every failed/deadline-exceeded item is written to acquisition-report.json with url, error class, attempts"
+
+frozen_source_list_head_60:
+  order_matters: true
+  items:
+    - Mars
+    - Great Wall of China
+    - Photosynthesis
+    - Mount Everest
+    - Black hole
+    - Amazon rainforest
+    - Wright Flyer
+    - Panama Canal
+    - Human brain
+    - Periodic table
+    - Great Barrier Reef
+    - Taj Mahal
+    - Internet
+    - Voyager 1
+    - Sahara
+    - Nobel Prize in Physics
+    - DNA
+    - Industrial Revolution
+    - Antarctica
+    - Hubble Space Telescope
+    - Coffee
+    - Silk Road
+    - Quantum mechanics
+    - Roman Empire
+    - Great Depression
+    - Solar System
+    - Immune system
+    - Eiffel Tower
+    - Manhattan Project
+    - Suez Canal
+    - Horse
+    - Telescope
+    - Electricity
+    - French Revolution
+    - Printing press
+    - Ernest Shackleton
+    - Transistor
+    - Antibiotics
+    - Kyoto
+    - Meiji Restoration
+    - Apollo program
+    - Chernobyl disaster
+    - Human Genome Project
+    - Pi
+    - Great Fire of London
+    - Rosetta Stone
+    - Dead Sea Scrolls
+    - Hoover Dam
+    - Golden Gate Bridge
+    - Caffeine
+    - Penicillin
+    - Steam engine
+    - Berlin Wall
+    - Library of Alexandria
+    - New Horizons
+    - CRISPR
+    - Large Hadron Collider
+    - James Webb Space Telescope
+    - Olympus Mons
+    - Mariana Trench
+
+# ---------------------------------------------------------------------------
+# Model pin (identical for question generation, compilation, answering, judging)
+# ---------------------------------------------------------------------------
+model:
+  temperature: 0
+  primary: "openai/gpt-4o-mini"
+  fallback_order:
+    - "google/gemini-2.0-flash-001"
+    - "meta-llama/llama-3.3-70b-instruct"
+  single_model_rule: "all four phases MUST run on the one model id recorded at probe time; mixing models voids the run"
+  max_tokens:
+    question_generation: 350
+    compilation: 900
+    answering: 300
+    judging: 320
+  credential_source: >
+    OPENROUTER_API_KEY environment variable if set; otherwise parsed from
+    D:/Github_API.txt line labelled Openrouter. The secret must never appear in
+    stdout, logs, reports, or commits.
+
+# ---------------------------------------------------------------------------
+# Questions (phase 2, frozen before any arm runs)
+# ---------------------------------------------------------------------------
+question_generation:
+  count: "1 per usable document (pilot n = number of usable docs, capped at 60)"
+  constraints:
+    - "answerable from that single document alone"
+    - "must target a specific verifiable fact (number, date, name, or measurement)"
+    - "must not be answerable from general knowledge alone without the document"
+  output_schema: "{question, gold_answer, gold_value_exact, key_facts[]}"
+  frozen_artifact: "benchmark/results/w6-v2-pilot/questions.frozen.json (hash recorded before arms start)"
+
+# ---------------------------------------------------------------------------
+# Arms (phase 3) - identical frozen model, identical questions
+# ---------------------------------------------------------------------------
+arms:
+  raw:
+    description: "full plaintext of the question's own source document"
+    context_budget_chars: 6000
+  rag:
+    description: "basic RAG over ALL usable documents' chunks; hashed bag-of-words embeddings, cosine top-5"
+    chunk_chars: 900
+    chunk_overlap_chars: 120
+    embedding: "deterministic hashed bag-of-words, dim 4096, L2-normalised (offline, reproducible)"
+    top_k: 5
+  tavonel:
+    description: >
+      compiled world: per-document LLM extraction into typed elements
+      (definition | entity | metric | date_event | relation) carrying
+      source_id provenance; retrieval scores elements lexically against the
+      question, top-8 elements plus their source snippets.
+    element_types: [definition, entity, metric, date_event, relation]
+
+answer_contract:
+  rules:
+    - "answer in at most 80 words"
+    - "end with a final line 'Sources: <comma-separated source ids>'"
+  provenance_note: "provenance hit-rate is informational only; it does not enter correctness"
+
+# ---------------------------------------------------------------------------
+# Grading (phase 4)
+# ---------------------------------------------------------------------------
+grading:
+  normalisation: "lowercase, strip punctuation and leading articles, collapse whitespace, strip thousand separators in numbers"
+  critical_match: "normalised gold_value_exact appears in the normalised answer"
+  judge: >
+    one judge call per question scores ALL THREE arm answers independently,
+    returning {arm: {score: 0|1, reason}}; score 1 iff the answer states the
+    gold key fact correctly and contradicts no key fact; otherwise 0.
+  correct_definition: "critical_match OR judge_score == 1"
+
+metrics:
+  primary: "accuracy per arm = mean(correct) over identical frozen questions"
+  secondary: [critical_only_rate, provenance_hit_rate, mean_latency_seconds, api_failure_rate]
+
+execution_integrity:
+  arm_invalid_if_api_failure_rate_above: 0.20
+  failures_recorded_not_silent: true
+
+decision_rules:
+  directional_signal: "acc(A) - acc(B) >= 0.10"
+  inconclusive: "pairwise difference < 0.10 (explicitly expected at pilot n; no p-values will be claimed)"
+  verdicts:
+    - BLOCKED_ACQUISITION
+    - INVALID_EXECUTION
+    - INCONCLUSIVE_PILOT
+    - TAVONEL_POSITIVE_SIGNAL
+    - RAG_LEADS_SIGNAL
+    - RAW_LEADS_SIGNAL
+  honesty_clause: >
+    failures, interruptions, uncertain effect sizes and wide confidence
+    intervals are recorded verbatim in SUMMARY.md. Deleting or smoothing them
+    is forbidden. A BLOCKED verdict with a cause diagnosis is a legitimate
+    deliverable of this pilot.
+
+reporting:
+  results_dir: "benchmark/results/w6-v2-pilot"
+  artifacts:
+    - preregistration.snapshot.json
+    - acquisition-report.json
+    - questions.frozen.json
+    - runs/raw.jsonl / runs/rag.jsonl / runs/tavonel.jsonl
+    - evaluation.json
+    - SUMMARY.md
