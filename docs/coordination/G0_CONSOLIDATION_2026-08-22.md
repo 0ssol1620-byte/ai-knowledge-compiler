@@ -1,6 +1,6 @@
 # G0 — Repository Reconciliation (integration/g0-consolidation)
 
-Date: 2026-08-22 KST · Executor: Hermes agent session · Status: **G0 MERGE COMPLETE / VERIFICATION IN PROGRESS**
+Date: 2026-08-22 KST · Executor: Hermes agent session · Status: **G0 COMPLETE / ALL LOCAL GATES PASS — PUSH PENDING FOUNDER APPROVAL**
 
 This is the G0 "capability → authoritative worktree → HEAD" reconciliation the
 2026-08-22 master blueprint (§29.2 Repository governance, §35 Phase 0, §36 P0-1/2)
@@ -96,8 +96,8 @@ backend/schema names were already canonical and untouched.
 | pytest `tests/unit` | **553 passed** in 90.8s (I4's 439 + Security-lineage suites) |
 | pytest `tests/contract/test_collection_event_contract.py` | **324 passed** — confirms `discovered_files` is the canonical backend name |
 | web typecheck (`tsc --noEmit`) | **pass** (exit 0) |
-| web vitest | **1 real regression found and fixed** — see §4.1 |
-| web production build | (pending) |
+| web vitest | **65 files / 364 tests / 0 failed** (after the §4.1 fix; was 361 with 1 failed) |
+| web production build | **pass** (exit 0, Next.js 16.2.12, full route table generated) |
 
 ### 4.1 `app-shell.test.tsx` — a merge regression, and a test that was never really passing
 
