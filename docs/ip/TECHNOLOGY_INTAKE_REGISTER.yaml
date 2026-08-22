@@ -1,0 +1,164 @@
+# TAVONEL — Technology Intake Register
+#
+# The binding half of docs/north-star/TAVONEL_FTO_ABSORPTION_BLUEPRINT_v1.0.md
+# (sha256 ba286c2216805077e5a9c39546b7fee191d8e3670d6f3b8363d18010e044e94b),
+# §1.4, §2 and §15.
+#
+# WHY THIS FILE EXISTS SEPARATELY FROM THE BLUEPRINT
+#   The blueprint is 2,395 lines and mostly proposes future work. The rules
+#   below bind *now*, on work already in flight, and a rule nobody can find is
+#   not a rule. This file is the checkable form.
+#
+# PRECEDENCE (blueprint §0.4) — LEGAL-HOLD, DO NOT COPY and DESIGN-AROUND
+# outrank everything, including the v5 protected core and repository evidence.
+#
+# THE PRINCIPLE THAT IS EASIEST TO GET WRONG (§2.1)
+#   An OSS licence is not patent freedom to operate. A permissive licence grants
+#   copyright permission from that contributor; it settles nothing about a third
+#   party's patents. And a public GitHub repository with no LICENSE grants no
+#   commercial reuse right at all — readable is not reusable.
+
+register_version: "1.0.0"
+schema: "tavonel.technology-intake-register.v1"
+generated_at: "2026-08-11"
+source: "docs/north-star/TAVONEL_FTO_ABSORPTION_BLUEPRINT_v1.0.md"
+source_sha256: "ba286c2216805077e5a9c39546b7fee191d8e3670d6f3b8363d18010e044e94b"
+
+# ---------------------------------------------------------------------------
+# Classification vocabulary (§2)
+# ---------------------------------------------------------------------------
+classifications:
+  BLUE:   { meaning: "public standard",            allows: "adapter / export / validation", requires: "version pin + conformance tests" }
+  GREEN:  { meaning: "clear permissive OSS",       allows: "dependency / fork / adapter",   requires: "exact commit + licence + NOTICE + SBOM + model licence" }
+  YELLOW: { meaning: "paper public, code licence absent or unclear", allows: "clean-room reimplementation, baseline reproduction", requires: "NO CODE COPY, ADR, independent-implementation evidence" }
+  ORANGE: { meaning: "code and model/data terms differ", allows: "code use; weights/data need separate approval", requires: "commercial terms + data policy + model licence review" }
+  RED:    { meaning: "active patent or high FTO risk", allows: "design-around and comparative analysis only", requires: "counsel claim chart before any commercial core path" }
+  GRAY:   { meaning: "complexity exceeds current scope", allows: "hold", requires: "measured bottleneck or paid demand" }
+
+# ---------------------------------------------------------------------------
+# RED — design around. Do not implement, and do not market, as our own
+# independent invention. (§1.4)
+# ---------------------------------------------------------------------------
+red:
+  - id: tech_ibm_sequential_inference
+    reference: "IBM US11605028B2"
+    avoid: >-
+      The broad sequential-inference shape: first model → QoS comparison →
+      conditional execution of a second model. Avoid expressions that read onto it.
+    status: DESIGN_AROUND
+    touches: "Adaptive Economic Router; Patent Family A"
+    note: >-
+      The blueprint's one-line summary of this family understates its scope, so
+      the design-around is drawn wider than that summary would suggest. The
+      reading behind that conclusion is claim-level analysis and belongs in the
+      counsel packet, not in version control — extract it with
+      research/scripts/export_privileged_packet.py.
+      Redacted forward on 2026-08-11 by founder instruction; the earlier wording
+      remains at c8de965 and history is not rewritten. See
+      docs/audit/receipts/ip-privilege-exposure-0001.json.
+
+  - id: tech_palantir_universal_data_pipeline
+    reference: "Palantir Universal Data Pipeline family"
+    avoid: >-
+      Generic versioned dataset / build catalog / stale dependency / selective
+      rebuild, implemented or marketed as our independent invention.
+    status: DESIGN_AROUND
+    touches: "Recompilation; World State; Patent Family B"
+
+  - id: tech_palantir_propagated_deletion
+    reference: "Palantir propagated-deletion family"
+    avoid: "Generic source change → derivation graph → downstream rebuild claims."
+    status: DESIGN_AROUND
+    touches: "Dependency; Impact; Patent Family B"
+
+  - id: tech_oracle_dynamic_lineage
+    reference: "Oracle dynamic lineage family"
+    avoid: "Claiming generic provenance + temporal lineage as an independent invention."
+    status: DESIGN_AROUND
+    touches: "Evidence provenance; Patent Family B"
+
+# ---------------------------------------------------------------------------
+# YELLOW — the paper may be read; the code may not be copied, translated,
+# ported or vendored. Requirements and evaluation baselines only. (§1.4, §15.5)
+# ---------------------------------------------------------------------------
+yellow:
+  - { id: tech_repodoc,        reference: "RepoDoc repository",                          status: CLEAN_ROOM_ONLY }
+  - { id: tech_versionrag,     reference: "VersionRAG repository",                       status: CLEAN_ROOM_ONLY, note: "until an explicit licence is confirmed" }
+  - { id: tech_smartchunk,     reference: "SmartChunk implementation",                    status: CLEAN_ROOM_ONLY, note: "until a reusable code licence is confirmed" }
+  - { id: tech_xversion_diff,  reference: "Heterogeneous Cross-Version Differencing impl", status: CLEAN_ROOM_ONLY }
+  - { id: tech_memlineage,     reference: "MemLineage / StateAuditor implementation",     status: CLEAN_ROOM_ONLY }
+
+# ---------------------------------------------------------------------------
+# What binds the tracks currently in flight
+# ---------------------------------------------------------------------------
+binding_now:
+  - track: "IP & Research"
+    rules:
+      - "Family A must not read onto IBM US11605028B2's sequential-inference shape."
+      - "Family B must not claim generic versioned rebuild, propagated deletion, or temporal lineage — all three are RED."
+      - "Any baseline reproduced from a YELLOW paper is clean-room: requirement-level summary only, no source snippets passed to the implementer (§15.3)."
+      - "Record which sources each agent read. §15.3 step 5 requires the provenance trail, not just the outcome."
+    convergence: >-
+      The IP track reached the same narrowing independently, before this
+      blueprint was absorbed — it recommended not claiming parser routing,
+      cost-aware routing, multi-engine ensembling, dependency-graph selective
+      rebuild, cross-version alignment, or atomicity. Two independent routes to
+      the same answer is the strongest signal available here.
+
+  - track: "Security"
+    rules:
+      - "Nothing in the blueprint's RED or YELLOW list touches the dual-plane authorization work."
+      - "Cedar / OpenFGA / OPA are P3 and explicitly gated on measured need. Do not adopt a policy engine."
+
+  - track: "Cinematic"
+    rules:
+      - "No external visual dependency enters without a GREEN classification and an SBOM entry."
+      - "Marketing language must align with the design-around (§15.4 step 7): do not describe selective recompilation or lineage in terms that read onto a RED family."
+
+# ---------------------------------------------------------------------------
+# Not opened. The blueprint proposes nine workstreams (A–I) and a P0–P3
+# roadmap. Those are a future track and are NOT in scope today — the founder
+# has three tracks running and asked that no fourth large track be opened.
+# Recorded so the proposal is not lost.
+# ---------------------------------------------------------------------------
+proposed_not_started:
+  workstreams:
+    - "A — Dual-Layer Economic Router"
+    - "B — Risk-Controlled Evidence Acquisition"
+    - "C — Multi-Representation Retrieval"
+    - "D — Alignment-First Semantic Diff"
+    - "E — Version-Aware Knowledge Retrieval"
+    - "F — Provenance Interoperability and Tamper Evidence"
+    - "G — Bidirectional Impact and Content-Addressed Recompilation"
+    - "H — State-to-Draft Freshness Auditor"
+    - "I — Authorization and Governance Absorption"
+  p0_cheap_wins:
+    - "Technology intake registry"      # this file is its first instalment
+    - "Licence / SBOM gate"
+    - "CompilationActionKey schema"
+    - "R2 CAS / action-cache prototype"
+    - "PROV-O export mapping"
+    - "SHACL export validator"
+    - "Access-path conformance matrix"
+    - "RouteLLM / AdaParse baseline adapters — Arena only"
+    - "Adaptive-k retrieval baseline"
+  note: >-
+    Several P0 items are genuinely cheap and align with work already underway —
+    the licence/SBOM gate sits beside the existing supply-chain pins, and the
+    Arena baseline adapters are protocol preparation the Model Arena needs
+    anyway. They remain unstarted pending a founder decision on sequencing.
+
+# ---------------------------------------------------------------------------
+founder_decisions_pending:
+  - id: FTO-1
+    question: "Does counsel review the four RED families before Model Arena, or before commercial launch?"
+    note: >-
+      §15.4 step 6 puts counsel review before commercial activation. The Arena is
+      research, not commerce, so the blueprint permits comparative analysis now —
+      but Family A's claim scope depends on the IBM reading, and the IP track has
+      already found the blueprint's summary of that patent to be imprecise.
+  - id: FTO-2
+    question: "Are any of the nine workstreams to be opened, and in what order?"
+    blocks: "nothing today"
+  - id: FTO-3
+    question: "Who owns the intake record for each new dependency going forward (§15.1 requires an owner)?"

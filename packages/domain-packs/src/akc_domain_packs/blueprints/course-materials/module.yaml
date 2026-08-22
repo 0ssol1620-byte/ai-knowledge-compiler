@@ -1,0 +1,13 @@
+id: course-materials
+version: 1.0.0
+display_name: Course Materials
+domains: [education, course, learning]
+object_types: [course, module, lesson, concept, assessment]
+root_views: [Courses, Modules, Concepts, Assessments]
+moc_templates: [Courses, Concepts, Assessments]
+folder_depth: 3
+naming_policy: stable-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, prerequisite_evidence, lesson_order, relation_evidence]
+export_profiles: [obsidian, ontology, neo4j, rag]

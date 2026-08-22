@@ -28,6 +28,18 @@ spec:
             or absent(akc_url_fetch_dead_letter_tasks)
             or absent(akc_product_analytics_snapshots_total)
             or absent(akc_product_analytics_events_total)
+            or absent(akc_parallel_shards_terminal_total)
+            or absent(akc_parallel_attempts_terminal_total)
+            or absent(akc_parallel_validations_total)
+            or absent(akc_parallel_worker_health_transitions_total)
+            or absent(akc_parallel_recovery_terminal_total)
+            or absent(akc_parallel_continuity_outcomes_total)
+            or absent(akc_parallel_accepted_blocks_total)
+            or absent(akc_parallel_nonbillable_attempts_total)
+            or absent(akc_parallel_duplicate_credit_suppressions_total)
+            or absent(akc_parallel_provider_queue_delay_seconds_bucket)
+            or absent(akc_parallel_provider_execution_duration_seconds_bucket)
+            or absent(akc_parallel_provider_cost_usd_total)
           for: 5m
           labels: { severity: sev1, team: platform }
           annotations:
@@ -187,6 +199,100 @@ spec:
           annotations:
             summary: Provider returned a revision different from the registry
             runbook_url: docs/runbooks/model-supply-chain.md
+    - name: akc.parallel-v6
+      interval: 30s
+      rules:
+        - alert: AKCParallelAttemptTerminalFailureBurst
+          expr: |
+            sum(increase(
+              akc_parallel_attempts_terminal_total{
+                status=~"terminal_failed|quarantined"
+              }[10m]
+            )) > 5
+          for: 5m
+          labels: { severity: sev1, team: model-platform }
+          annotations:
+            summary: Parallel parse attempts are terminally failing or quarantining
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelValidationFailureBurst
+          expr: sum(increase(akc_parallel_validations_total{outcome="failed"}[10m])) > 10
+          for: 5m
+          labels: { severity: sev1, team: quality }
+          annotations:
+            summary: Parallel validator failures exceeded the initial operational threshold
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelSemanticHealthFailure
+          expr: |
+            sum(increase(
+              akc_parallel_worker_health_transitions_total{
+                projection="semantic", current="failing"
+              }[5m]
+            )) > 0
+          for: 0m
+          labels: { severity: sev1, team: model-platform }
+          annotations:
+            summary: A parallel worker entered semantic failure independently of infrastructure health
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelRecoveryUnresolved
+          expr: |
+            sum(increase(
+              akc_parallel_recovery_terminal_total{outcome=~"unresolved|failed"}[10m]
+            )) > 0
+          for: 5m
+          labels: { severity: sev2, team: quality }
+          annotations:
+            summary: Selective parallel recovery ended unresolved or failed
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelContinuityUnresolved
+          expr: |
+            sum(increase(
+              akc_parallel_continuity_outcomes_total{outcome=~"unresolved|failed"}[10m]
+            )) > 0
+          for: 5m
+          labels: { severity: sev2, team: quality }
+          annotations:
+            summary: Document continuity merge ended unresolved or failed
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelDuplicateCreditSuppressed
+          expr: increase(akc_parallel_duplicate_credit_suppressions_total[5m]) > 0
+          for: 0m
+          labels: { severity: sev2, team: billing }
+          annotations:
+            summary: Exactly-once billing suppressed a duplicate parallel credit claim
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelProviderQueueP95High
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le, provider) (
+                rate(akc_parallel_provider_queue_delay_seconds_bucket[15m])
+              )
+            ) > 60
+          for: 15m
+          labels: { severity: sev2, team: model-platform }
+          annotations:
+            summary: Parallel provider queue-delay p95 exceeds 60 seconds
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelProviderExecutionP95High
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le, provider) (
+                rate(akc_parallel_provider_execution_duration_seconds_bucket[15m])
+              )
+            ) > 300
+          for: 15m
+          labels: { severity: sev2, team: model-platform }
+          annotations:
+            summary: Parallel provider execution p95 exceeds five minutes
+            runbook_url: docs/runbooks/parallel-v6-observability.md
+        - alert: AKCParallelProviderCostBudgetExceeded
+          expr: sum(increase(akc_parallel_provider_cost_usd_total[1h])) > 100
+          for: 0m
+          labels: { severity: sev2, team: finops }
+          annotations:
+            summary: Hourly provider-reported parallel runtime cost exceeded the environment threshold
+            runbook_url: docs/runbooks/parallel-v6-observability.md
     - name: akc.product-analytics
       interval: 1m
       rules:

@@ -46,8 +46,18 @@ export interface Claim {
   must_say_en?: string;
   forbidden?: string[];
   conditions?: string[];
-  evidence?: string;
-  evidence_sha256?: string;
+  /**
+   * One artifact path, or several.
+   *
+   * A counterfactual claim cites two receipts — the with-recovery run and the
+   * without — so `recovery-contribution-parsebench`, `-omnidocbench` and
+   * `product-pipeline` arrive as arrays. This was declared `string` while the
+   * render copy of the pack was stale and carried single paths; the delivered
+   * pack has been the wider shape since the receipts were made verifiable from
+   * a clone. `evidence_sha256` is positional against it.
+   */
+  evidence?: string | string[];
+  evidence_sha256?: string | string[];
   why_withheld?: string;
   unblocks_when?: string;
 }
@@ -87,8 +97,51 @@ export interface ClaimFigure<T = unknown> {
   numbers: T;
   /** Renders beside the number. Never optional at the call site. */
   context: ClaimContext[];
-  evidence?: string;
-  evidenceDigest?: string;
+  /** Always a list, even for the common single-receipt claim. */
+  evidence: string[];
+  /** Positional against `evidence`; empty when the pack supplies no digest. */
+  evidenceDigest: string[];
+}
+
+/** The pack writes one path as a string and several as an array. */
+function asList(value: string | string[] | undefined): string[] {
+  if (value === undefined) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+/**
+ * Every mandatory sentence a claim carries, in whatever language it supplies.
+ *
+ * The first version of this read `must_say_en` only. Claims that ship a Korean
+ * `must_say` with no English twin therefore lost their mandatory sentence and
+ * the figures rendered bare — exactly the failure this module exists to prevent,
+ * and it shipped because the check tested for the English field rather than for
+ * the requirement. The delivered pack now supplies `must_say_en` for all
+ * fifteen, but the fallback stays: a future regeneration can drop one, and
+ * surfacing the Korean is worse than an English sentence and far better than
+ * silence.
+ *
+ * The Korean is surfaced rather than translated here. The pack is generated
+ * evidence and its constraint text is part of it; writing an English version in
+ * this file would be authoring the constraint instead of carrying it.
+ *
+ * A conditional claim's conditions are as mandatory as an approved claim's
+ * `must_say` — the pack's instruction is that it may be used "only when the
+ * conditions are shown with it".
+ *
+ * Exported so the fallback can be driven directly. It has no live example in the
+ * pack today, and a test that waits for one is a test that only runs after the
+ * regression ships.
+ */
+export function claimContext(claim: Claim): ClaimContext[] {
+  return [
+    ...(claim.must_say_en
+      ? [{ text: claim.must_say_en, lang: "en" as const }]
+      : claim.must_say
+        ? [{ text: claim.must_say, lang: "ko" as const }]
+        : []),
+    ...(claim.conditions ?? []).map((text) => ({ text, lang: "ko" as const })),
+  ];
 }
 
 export function claimFigure<T = unknown>(id: string): ClaimFigure<T> {
@@ -103,33 +156,7 @@ export function claimFigure<T = unknown>(id: string): ClaimFigure<T> {
     );
   }
 
-  /*
-   * Every mandatory sentence, in whatever language the pack supplies it.
-   *
-   * The first version of this read must_say_en only. Five approved claims ship
-   * a Korean must_say with no English twin — completion-rate, recovery-rate,
-   * both recovery counterfactuals, and compilation-guarantees — so their
-   * mandatory sentence silently vanished and the figures rendered bare. That is
-   * exactly the failure this module exists to prevent, and it shipped because
-   * the check tested for the English field rather than for the requirement.
-   *
-   * The Korean is surfaced rather than translated here. The pack is generated
-   * evidence and its constraint text is part of it; writing an English version
-   * in this file would be authoring the constraint instead of carrying it. The
-   * gap is reported upstream so the next regeneration can include must_say_en.
-   *
-   * A conditional claim's conditions are as mandatory as an approved claim's
-   * must_say — the pack's instruction is that it may be used "only when the
-   * conditions are shown with it".
-   */
-  const context: ClaimContext[] = [
-    ...(claim.must_say_en
-      ? [{ text: claim.must_say_en, lang: "en" as const }]
-      : claim.must_say
-        ? [{ text: claim.must_say, lang: "ko" as const }]
-        : []),
-    ...(claim.conditions ?? []).map((text) => ({ text, lang: "ko" as const })),
-  ];
+  const context = claimContext(claim);
 
   if ((claim.must_say || claim.conditions?.length) && context.length === 0) {
     throw new Error(
@@ -141,8 +168,8 @@ export function claimFigure<T = unknown>(id: string): ClaimFigure<T> {
     id: claim.id,
     numbers: claim.numbers as T,
     context,
-    evidence: claim.evidence,
-    evidenceDigest: claim.evidence_sha256,
+    evidence: asList(claim.evidence),
+    evidenceDigest: asList(claim.evidence_sha256),
   };
 }
 

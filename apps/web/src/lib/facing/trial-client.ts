@@ -1,4 +1,4 @@
-import { browserSha256 } from "@/lib/upload-client";
+import { browserSha256 } from "@/lib/browser-hash";
 
 import type { DroppedFile } from "./dropped-file";
 

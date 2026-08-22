@@ -26,6 +26,7 @@ PASSWORD_HASHER = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=4)
 ALGORITHM = "HS256"
 _EVENT_READ_PATH = re.compile(r"^/v1/jobs/[0-9a-fA-F-]{36}/events(?:/replay)?$")
 _EXPORT_READ_PATH = re.compile(r"^/v1/exports/[0-9a-fA-F-]{36}(?:/download)?$")
+_COLLECTION_RETRIEVAL_READ_PATH = re.compile(r"^/v1/collections/[0-9a-fA-F-]{36}/retrieval/search$")
 
 
 @dataclass(frozen=True)
@@ -139,6 +140,8 @@ async def _principal_from_api_key(raw_key: str, session: AsyncSession) -> Princi
 
 
 def _required_api_key_scopes(request: Request) -> frozenset[str]:
+    if request.method == "POST" and _COLLECTION_RETRIEVAL_READ_PATH.fullmatch(request.url.path):
+        return frozenset({"api:read"})
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         return frozenset({"api:write"})
     path = request.url.path

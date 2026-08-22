@@ -1,0 +1,990 @@
+{
+  "schema": "folynta.recovery-campaign-input.v1",
+  "evidence_class": "synthetic_contract_only",
+  "claim_boundary": "Deterministic synthetic 18-fault masterplan taxonomy contract. It is not public-core, private-holdout, model-accuracy, or production evidence.",
+  "candidate_id": "fault-injection-golden",
+  "benchmark_id": "recovery-fault-injection-golden",
+  "finalist": false,
+  "score_tolerance": 0,
+  "maximum_accuracy_loss_vs_full_replay": 0,
+  "failure_labels": [
+    {
+      "item_id": "fault-p01",
+      "failure_codes": [
+        "P01"
+      ],
+      "scope_level": "page",
+      "scope_id": "page-1",
+      "should_recover": true,
+      "should_escalate": true
+    },
+    {
+      "item_id": "fault-b01",
+      "failure_codes": [
+        "B01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-t01",
+      "failure_codes": [
+        "T01"
+      ],
+      "scope_level": "row",
+      "scope_id": "row-bottom",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-t02",
+      "failure_codes": [
+        "T02"
+      ],
+      "scope_level": "row",
+      "scope_id": "row-middle",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-t03",
+      "failure_codes": [
+        "T03"
+      ],
+      "scope_level": "table",
+      "scope_id": "table-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-t04",
+      "failure_codes": [
+        "T04"
+      ],
+      "scope_level": "table",
+      "scope_id": "table-2",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-t05",
+      "failure_codes": [
+        "T05"
+      ],
+      "scope_level": "cell",
+      "scope_id": "cell-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-n01",
+      "failure_codes": [
+        "N01"
+      ],
+      "scope_level": "cell",
+      "scope_id": "cell-2",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-n02",
+      "failure_codes": [
+        "N02"
+      ],
+      "scope_level": "cell",
+      "scope_id": "cell-3",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-r01",
+      "failure_codes": [
+        "R01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-2",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-c01",
+      "failure_codes": [
+        "C01"
+      ],
+      "scope_level": "page_pair",
+      "scope_id": "page-pair-1-2",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-f01",
+      "failure_codes": [
+        "F01"
+      ],
+      "scope_level": "region",
+      "scope_id": "formula-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-g01",
+      "failure_codes": [
+        "G01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-3",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-h01",
+      "failure_codes": [
+        "H01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-4",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-h02",
+      "failure_codes": [
+        "H02"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-5",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-k01",
+      "failure_codes": [
+        "K01"
+      ],
+      "scope_level": "region",
+      "scope_id": "note-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-k02",
+      "failure_codes": [
+        "K02"
+      ],
+      "scope_level": "region",
+      "scope_id": "entity-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "fault-k03",
+      "failure_codes": [
+        "K03"
+      ],
+      "scope_level": "region",
+      "scope_id": "relation-1",
+      "should_recover": true,
+      "should_escalate": false
+    },
+    {
+      "item_id": "healthy-control",
+      "failure_codes": [],
+      "scope_level": null,
+      "scope_id": null,
+      "should_recover": false,
+      "should_escalate": false
+    }
+  ],
+  "failure_predictions": [
+    {
+      "item_id": "fault-p01",
+      "failure_codes": [
+        "P01"
+      ],
+      "scope_level": "page",
+      "scope_id": "page-1",
+      "request_recovery": true,
+      "escalate": true
+    },
+    {
+      "item_id": "fault-b01",
+      "failure_codes": [
+        "B01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-t01",
+      "failure_codes": [
+        "T01"
+      ],
+      "scope_level": "row",
+      "scope_id": "row-bottom",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-t02",
+      "failure_codes": [
+        "T02"
+      ],
+      "scope_level": "row",
+      "scope_id": "row-middle",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-t03",
+      "failure_codes": [
+        "T03"
+      ],
+      "scope_level": "table",
+      "scope_id": "table-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-t04",
+      "failure_codes": [
+        "T04"
+      ],
+      "scope_level": "table",
+      "scope_id": "table-2",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-t05",
+      "failure_codes": [
+        "T05"
+      ],
+      "scope_level": "cell",
+      "scope_id": "cell-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-n01",
+      "failure_codes": [
+        "N01"
+      ],
+      "scope_level": "cell",
+      "scope_id": "cell-2",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-n02",
+      "failure_codes": [
+        "N02"
+      ],
+      "scope_level": "cell",
+      "scope_id": "cell-3",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-r01",
+      "failure_codes": [
+        "R01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-2",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-c01",
+      "failure_codes": [
+        "C01"
+      ],
+      "scope_level": "page_pair",
+      "scope_id": "page-pair-1-2",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-f01",
+      "failure_codes": [
+        "F01"
+      ],
+      "scope_level": "region",
+      "scope_id": "formula-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-g01",
+      "failure_codes": [
+        "G01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-3",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-h01",
+      "failure_codes": [
+        "H01"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-4",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-h02",
+      "failure_codes": [
+        "H02"
+      ],
+      "scope_level": "region",
+      "scope_id": "region-5",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-k01",
+      "failure_codes": [
+        "K01"
+      ],
+      "scope_level": "region",
+      "scope_id": "note-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-k02",
+      "failure_codes": [
+        "K02"
+      ],
+      "scope_level": "region",
+      "scope_id": "entity-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "fault-k03",
+      "failure_codes": [
+        "K03"
+      ],
+      "scope_level": "region",
+      "scope_id": "relation-1",
+      "request_recovery": true,
+      "escalate": false
+    },
+    {
+      "item_id": "healthy-control",
+      "failure_codes": [],
+      "scope_level": null,
+      "scope_id": null,
+      "request_recovery": false,
+      "escalate": false
+    }
+  ],
+  "recovery_cases": [
+    {
+      "item_id": "fault-p01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-b01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-t01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-t02",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-t03",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-t04",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-t05",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-n01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-n02",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-r01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-c01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-f01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-g01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-h01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-h02",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-k01",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-k02",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "fault-k03",
+      "initial_correct": false,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": true,
+      "recovery_verified": true,
+      "critical_failure": false,
+      "selective_latency_seconds": 1,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0.1,
+      "full_replay_cost": 1
+    },
+    {
+      "item_id": "healthy-control",
+      "initial_correct": true,
+      "selective_final_correct": true,
+      "full_replay_correct": true,
+      "recovery_attempted": false,
+      "recovery_verified": false,
+      "critical_failure": false,
+      "selective_latency_seconds": 0,
+      "full_replay_latency_seconds": 10,
+      "selective_cost": 0,
+      "full_replay_cost": 1
+    }
+  ],
+  "repeat_observations": [
+    {
+      "run_id": "full-1",
+      "candidate_id": "fault-injection-golden",
+      "benchmark_id": "recovery-fault-injection-golden",
+      "environment_sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope": "full",
+      "prediction_hashes": [
+        [
+          "fault-p01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-b01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t04",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t05",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-r01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-c01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-f01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-g01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "healthy-control",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ]
+      ],
+      "score": 1,
+      "failure_count": 0
+    },
+    {
+      "run_id": "audit-1",
+      "candidate_id": "fault-injection-golden",
+      "benchmark_id": "recovery-fault-injection-golden",
+      "environment_sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope": "stratified_audit",
+      "prediction_hashes": [
+        [
+          "fault-p01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-b01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t04",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t05",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-r01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-c01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-f01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-g01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "healthy-control",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ]
+      ],
+      "score": 1,
+      "failure_count": 0
+    },
+    {
+      "run_id": "audit-2",
+      "candidate_id": "fault-injection-golden",
+      "benchmark_id": "recovery-fault-injection-golden",
+      "environment_sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope": "stratified_audit",
+      "prediction_hashes": [
+        [
+          "fault-p01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-b01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t04",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t05",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-r01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-c01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-f01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-g01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "healthy-control",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ]
+      ],
+      "score": 1,
+      "failure_count": 0
+    },
+    {
+      "run_id": "audit-3",
+      "candidate_id": "fault-injection-golden",
+      "benchmark_id": "recovery-fault-injection-golden",
+      "environment_sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope": "stratified_audit",
+      "prediction_hashes": [
+        [
+          "fault-p01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-b01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t04",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-t05",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-n02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-r01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-c01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-f01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-g01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-h02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k01",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k02",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "fault-k03",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        [
+          "healthy-control",
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        ]
+      ],
+      "score": 1,
+      "failure_count": 0
+    }
+  ]
+}
+

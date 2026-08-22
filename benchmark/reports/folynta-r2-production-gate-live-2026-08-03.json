@@ -1,0 +1,366 @@
+{
+  "account_id": "b74ca1a71497588b939c11b7614ff39d",
+  "endpoint_host": "b74ca1a71497588b939c11b7614ff39d.r2.cloudflarestorage.com",
+  "gate": {
+    "findings": [
+      "credential_can_list_objects_across_multiple_buckets"
+    ],
+    "mutation_performed": false,
+    "status": "PARTIAL"
+  },
+  "generated_at": "2026-08-03T07:15:17.316041+00:00",
+  "profiles": [
+    {
+      "access_key_fingerprint": "9ae605122c08c170",
+      "bucket_api": {
+        "bucket_names": [
+          "structara-prod-audit",
+          "structara-prod-derived",
+          "structara-prod-originals",
+          "structara-prod-working"
+        ],
+        "error_codes": [],
+        "http_status": 200,
+        "success": true
+      },
+      "buckets": [
+        {
+          "cors": {
+            "etag_exposed": false,
+            "methods": [],
+            "origin_count": 0,
+            "rule_count": 0,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [
+              "10059"
+            ],
+            "http_status": 404,
+            "success": false
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 2
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-audit",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        },
+        {
+          "cors": {
+            "etag_exposed": true,
+            "methods": [
+              "GET",
+              "HEAD"
+            ],
+            "origin_count": 1,
+            "rule_count": 1,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 2
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-derived",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        },
+        {
+          "cors": {
+            "etag_exposed": true,
+            "methods": [
+              "HEAD",
+              "PUT"
+            ],
+            "origin_count": 1,
+            "rule_count": 1,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 1
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-originals",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        },
+        {
+          "cors": {
+            "etag_exposed": false,
+            "methods": [],
+            "origin_count": 0,
+            "rule_count": 0,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [
+              "10059"
+            ],
+            "http_status": 404,
+            "success": false
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 1
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-working",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        }
+      ],
+      "profile": "account_api_token",
+      "readable_bucket_count": 4,
+      "s3_list_buckets": {
+        "allowed": true,
+        "bucket_names": [
+          "structara-prod-audit",
+          "structara-prod-derived",
+          "structara-prod-originals",
+          "structara-prod-working"
+        ],
+        "error_code": null
+      },
+      "token_verify": {
+        "error_codes": [],
+        "http_status": 200,
+        "success": true
+      }
+    },
+    {
+      "access_key_fingerprint": "45a3f539ca2e95ab",
+      "bucket_api": {
+        "bucket_names": [
+          "structara-prod-audit",
+          "structara-prod-derived",
+          "structara-prod-originals",
+          "structara-prod-working"
+        ],
+        "error_codes": [],
+        "http_status": 200,
+        "success": true
+      },
+      "buckets": [
+        {
+          "cors": {
+            "etag_exposed": false,
+            "methods": [],
+            "origin_count": 0,
+            "rule_count": 0,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [
+              "10059"
+            ],
+            "http_status": 404,
+            "success": false
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 2
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-audit",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        },
+        {
+          "cors": {
+            "etag_exposed": true,
+            "methods": [
+              "GET",
+              "HEAD"
+            ],
+            "origin_count": 1,
+            "rule_count": 1,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 2
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-derived",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        },
+        {
+          "cors": {
+            "etag_exposed": true,
+            "methods": [
+              "HEAD",
+              "PUT"
+            ],
+            "origin_count": 1,
+            "rule_count": 1,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 1
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-originals",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        },
+        {
+          "cors": {
+            "etag_exposed": false,
+            "methods": [],
+            "origin_count": 0,
+            "rule_count": 0,
+            "wildcard_origin": false
+          },
+          "cors_api": {
+            "error_codes": [
+              "10059"
+            ],
+            "http_status": 404,
+            "success": false
+          },
+          "lifecycle": {
+            "abort_incomplete_multipart": true,
+            "enabled_rule_count": 1
+          },
+          "lifecycle_api": {
+            "error_codes": [],
+            "http_status": 200,
+            "success": true
+          },
+          "name": "structara-prod-working",
+          "s3_multipart_list": {
+            "allowed": true,
+            "error_code": null,
+            "incomplete_uploads_observed_at_least": 0
+          },
+          "s3_object_list": {
+            "allowed": true,
+            "error_code": null
+          }
+        }
+      ],
+      "profile": "user_api_token",
+      "readable_bucket_count": 4,
+      "s3_list_buckets": {
+        "allowed": true,
+        "bucket_names": [
+          "structara-prod-audit",
+          "structara-prod-derived",
+          "structara-prod-originals",
+          "structara-prod-working"
+        ],
+        "error_code": null
+      },
+      "token_verify": {
+        "error_codes": [],
+        "http_status": 200,
+        "success": true
+      }
+    }
+  ],
+  "read_only": true,
+  "schema": "folynta.r2-production-gate-receipt.v1"
+}

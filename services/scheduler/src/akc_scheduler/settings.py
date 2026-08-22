@@ -6,6 +6,7 @@ import re
 from itertools import pairwise
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
 from cryptography.fernet import Fernet
 from pydantic import Field, SecretStr, model_validator
@@ -65,6 +66,11 @@ class SchedulerSettings(BaseSettings):
     dispatch_backoff_jitter_ratio: float = Field(default=0.2, ge=0, le=1)
     dispatch_fairness_scan_tenants: int = Field(default=64, ge=1, le=1000)
     dispatch_tenant_busy_delay_seconds: float = Field(default=1.0, gt=0, le=60)
+    dispatch_paused_delay_seconds: float = Field(default=15.0, gt=0, le=300)
+    collection_finalizer_enabled: bool = False
+    collection_finalizer_api_url: str = "http://127.0.0.1:8000/v1/internal/collections/finalize"
+    collection_finalizer_hmac_secret: SecretStr = SecretStr("")
+    collection_finalizer_timeout_seconds: float = Field(default=300.0, gt=0, le=1800)
     deletion_max_attempts: int = Field(default=20, ge=1, le=100)
     deletion_lease_seconds: float = Field(default=300.0, gt=0, le=3600)
     deletion_attempt_timeout_seconds: float = Field(default=240.0, gt=0, le=3500)
@@ -293,8 +299,31 @@ class SchedulerSettings(BaseSettings):
         ) or self.qwen_knowledge_schema_sha256 == "sha256:" + ("0" * 64):
             raise ValueError("AKC_QWEN_KNOWLEDGE_SCHEMA_SHA256 must be exact")
 
+    def validate_collection_finalizer(self) -> None:
+        if not self.collection_finalizer_enabled:
+            return
+        secret = self.collection_finalizer_hmac_secret.get_secret_value().encode("utf-8")
+        if len(secret) < 32:
+            raise ValueError("collection finalizer HMAC secret must contain at least 32 bytes")
+        endpoint = urlsplit(self.collection_finalizer_api_url)
+        local_or_cluster_http = endpoint.scheme == "http" and (
+            endpoint.hostname in {"127.0.0.1", "localhost", "akc-api"}
+            or bool(endpoint.hostname and endpoint.hostname.endswith(".svc"))
+        )
+        if (
+            (endpoint.scheme != "https" and not local_or_cluster_http)
+            or not endpoint.hostname
+            or endpoint.username
+            or endpoint.password
+            or endpoint.query
+            or endpoint.fragment
+            or endpoint.path != "/v1/internal/collections/finalize"
+        ):
+            raise ValueError("collection finalizer API URL is not an exact trusted endpoint")
+
     @model_validator(mode="after")
     def enforce_safe_scheduler_configuration(self) -> SchedulerSettings:
+        self.validate_collection_finalizer()
         if not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", self.scheduler_database_role):
             raise ValueError("AKC_SCHEDULER_DATABASE_ROLE is invalid")
         if not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", self.dispatch_database_role):

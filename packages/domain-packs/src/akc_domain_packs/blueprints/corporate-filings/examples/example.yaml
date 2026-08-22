@@ -1,0 +1,7 @@
+blueprint: corporate-filings
+kind: verified-example
+version: 1.0.0
+input: {document_type: annual_filing, reporting_period: FY2025}
+expected:
+  object_kinds: [Company, Filing, Risk, Metric, ReportingPeriod]
+  required_authority: [source_ref, page, region]

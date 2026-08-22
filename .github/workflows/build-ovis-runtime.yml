@@ -1,0 +1,97 @@
+name: Build OvisOCR2 immutable runtime
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/folynta-trust-integration-v1
+    paths:
+      - .github/workflows/build-ovis-runtime.yml
+      - infra/runpod/v6/images/ovisocr2-m1/Dockerfile
+      - benchmark/runpod_eval/bootstrap_ovisocr2_m1.sh
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-ovisocr2-immutable-runtime
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Create a dedicated large Docker data volume
+        # v10 is the released tag. The previous pin sat two commits past it on
+        # the default branch, so no honest version comment could be written for
+        # it; the difference is two lines of memory formatting in action.yml.
+        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
+        with:
+          build-mount-path: /var/lib/docker
+          build-mount-path-ownership: root:root
+          root-reserve-mb: 8192
+          temp-reserve-mb: 100
+          swap-size-mb: 2048
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+
+      - name: Restart Docker on the large volume
+        run: |
+          set -euo pipefail
+          sudo systemctl restart docker
+          available_kb="$(df --output=avail /var/lib/docker | tail -1)"
+          test "$available_kb" -ge 57671680
+          df -h / /var/lib/docker
+
+      - name: Check out the exact source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: 8fa646f4a2411a0dbc1fed7519a2e11fc45fede2
+          persist-credentials: false
+
+      - name: Authenticate to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Build and push the immutable amd64 runtime
+        env:
+          IMAGE: ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:8fa646f4a2411a0dbc1fed7519a2e11fc45fede2
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --platform linux/amd64 \
+            --file infra/runpod/v6/images/ovisocr2-m1/Dockerfile \
+            --tag "$IMAGE" \
+            --metadata-file "${RUNNER_TEMP}/ovis-build-metadata.json" \
+            --provenance=false \
+            --push \
+            .
+          digest="$(jq -r '."containerimage.digest"' "${RUNNER_TEMP}/ovis-build-metadata.json")"
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          printf '%s\n' "$digest" | tee "${RUNNER_TEMP}/ovis-image-digest.txt"
+
+      - name: Verify the published manifest
+        env:
+          IMAGE: ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:8fa646f4a2411a0dbc1fed7519a2e11fc45fede2
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect "$IMAGE"
+          docker logout ghcr.io
+
+      - name: Publish non-secret build receipts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ovisocr2-runtime-build-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/ovis-build-metadata.json
+            ${{ runner.temp }}/ovis-image-digest.txt
+          retention-days: 30
+          if-no-files-found: error

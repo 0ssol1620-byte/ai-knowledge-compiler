@@ -1,0 +1,10 @@
+blueprint: technical-documentation
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  product: Entity
+  component: Entity
+  procedure: Claim
+  interface: OntologyTerm
+  concept: OntologyTerm
+  failure_mode: Claim

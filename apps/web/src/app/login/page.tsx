@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AuthPage } from "@/components/auth-page";
+import { getRequestLocale } from "@/lib/locale-server";
 
 interface LoginPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -10,8 +11,17 @@ export async function generateMetadata({
   searchParams,
 }: LoginPageProps): Promise<Metadata> {
   const params = await searchParams;
+  const locale = await getRequestLocale();
+  const registering = first(params.mode) === "register";
   return {
-    title: first(params.mode) === "register" ? "Create a workspace" : "Sign in",
+    title:
+      locale === "ko"
+        ? registering
+          ? "워크스페이스 만들기"
+          : "로그인"
+        : registering
+          ? "Create a workspace"
+          : "Sign in",
   };
 }
 

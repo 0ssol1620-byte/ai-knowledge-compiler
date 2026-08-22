@@ -5,6 +5,9 @@ metadata:
 data:
   AKC_ENV: production
   AKC_LOG_LEVEL: INFO
+  # Every release overlay must replace this with its exact immutable Git SHA.
+  # The API refuses to boot in production while this placeholder remains.
+  AKC_DEPLOYMENT_REVISION: replace-with-40-character-git-sha
   AKC_DATA_DIR: /tmp/akc
   AKC_WEB_ORIGINS: https://akc.example.invalid
   AKC_SESSION_COOKIE_NAME: akc_session
@@ -97,6 +100,21 @@ data:
   AKC_QWEN_PROMPT_REVISION: "sha256:43ed1d6e77c01e250ffdfaaa6a8eeb1535817ba5b9ef1b59187b6b4b4bbd7c21"
   AKC_QWEN_KNOWLEDGE_SCHEMA_SHA256: "sha256:9ea7e6d7270b1dc7111afe7ca634ca0562a6607cba1b48bfcafb5df6cfa8ed4f"
   AKC_QWEN_MAX_ATTEMPTS: "3"
+  # Collection ingestion remains fail-closed until the staged ciphertext
+  # migration/backfill is verified and both metadata keys exist in the Secret.
+  AKC_COLLECTION_METADATA_ENCRYPTION_ENABLED: "false"
+  AKC_COLLECTION_METADATA_ACTIVE_KEY_ID: replace-with-active-metadata-key-id
+  AKC_COLLECTION_METADATA_BLIND_INDEX_KEY_ID: replace-with-stable-path-index-key-id
+  # An overlay may enable this only after replacing every provider placeholder,
+  # materializing both required keys in akc-runtime-secrets, and admitting
+  # narrow TLS egress to the approved endpoint.
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED: "false"
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_ENDPOINT_URL: https://replace-with-approved-embedding-provider.invalid/v1/embed
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_PROVIDER_ID: replace-with-attested-provider-id
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_MODEL_ID: replace-with-pinned-model-id
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_MODEL_REVISION: replace-with-40-to-64-character-model-revision
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS: "20"
+  AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_CONCURRENCY: "4"
   AKC_DEFAULT_RETENTION_DAYS: "7"
   AKC_EVENT_RETENTION_DAYS: "7"
   AKC_CLAMAV_ENABLED: "true"

@@ -1,0 +1,7 @@
+blueprint: generic-mixed-corpus
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: native_boundary_preserved, fixture: mixed_bundle, expected: pass}
+  - {id: ambiguous_document_type, fixture: unknown_binary, expected: unresolved}
+  - {id: unsupported_cross_relation, fixture: coincident_terms, expected: quarantine}

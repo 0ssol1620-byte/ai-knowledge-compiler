@@ -24,6 +24,56 @@ class MediaKind(StrEnum):
     FORMULA = "formula"
 
 
+class VerificationState(StrEnum):
+    VERIFIED = "verified"
+    AUTHORITY_VERIFIED = "authority_verified"
+    AUTO_REPAIRED = "auto_repaired"
+    VERIFIED_WITH_WARNING = "verified_with_warning"
+
+
+class RetrievalFilters(WireModel):
+    """Machine-grounded selectors applied before semantic ranking."""
+
+    collection_ids: frozenset[uuid.UUID] = frozenset()
+    document_ids: frozenset[str] = frozenset()
+    statement: str | None = None
+    concept: str | None = None
+    period_start: str | None = None
+    period_end: str | None = None
+    instant: str | None = None
+    current_prior: str | None = None
+    consolidation: str | None = None
+    unit: str | None = None
+    currency: str | None = None
+    entity_id: str | None = None
+    source_type: str | None = None
+    verification_states: frozenset[VerificationState] = frozenset()
+
+    @field_validator("document_ids")
+    @classmethod
+    def validate_documents(cls, value: frozenset[str]) -> frozenset[str]:
+        if len(value) > 100 or any(not item or len(item) > 240 for item in value):
+            raise ValueError("document filters must contain at most 100 stable ids")
+        return value
+
+    @field_validator("collection_ids")
+    @classmethod
+    def validate_collections(cls, value: frozenset[uuid.UUID]) -> frozenset[uuid.UUID]:
+        if len(value) > 100:
+            raise ValueError("collection filters must contain at most 100 ids")
+        return value
+
+    @model_validator(mode="after")
+    def validate_period(self) -> RetrievalFilters:
+        if self.instant is not None and (
+            self.period_start is not None or self.period_end is not None
+        ):
+            raise ValueError("instant and duration period filters are mutually exclusive")
+        if (self.period_start is None) != (self.period_end is None):
+            raise ValueError("duration filters require both period_start and period_end")
+        return self
+
+
 type Vector = tuple[float, ...]
 
 
@@ -81,7 +131,10 @@ class RetrievalQuery(WireModel):
     tenant_id: uuid.UUID
     project_ids: tuple[uuid.UUID, ...]
     vector: Vector
+    lexical_query: Annotated[str, Field(max_length=2_000)] = ""
+    graph_seed_ids: tuple[Annotated[str, Field(min_length=1, max_length=240)], ...] = ()
     media_kinds: frozenset[MediaKind] = frozenset(MediaKind)
+    filters: RetrievalFilters = RetrievalFilters()
     candidate_k: Annotated[int, Field(ge=30, le=100)] = 50
     top_k: Annotated[int, Field(ge=5, le=15)] = 10
 
@@ -100,6 +153,13 @@ class RetrievalQuery(WireModel):
             raise ValueError("project ids must be unique and contain 1..50 entries")
         return value
 
+    @field_validator("graph_seed_ids")
+    @classmethod
+    def validate_graph_seeds(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if len(value) > 100 or len(value) != len(set(value)):
+            raise ValueError("graph seed ids must be unique and contain at most 100 entries")
+        return value
+
     @model_validator(mode="after")
     def validate_window(self) -> RetrievalQuery:
         if self.top_k > self.candidate_k:
@@ -112,12 +172,23 @@ class RetrievalQuery(WireModel):
 class VectorCandidate(WireModel):
     record: VectorRecord
     vector_score: Annotated[float, Field(ge=-1, le=1)]
+    bm25_score: Annotated[float, Field(ge=0, le=1)] = 0.0
+    graph_score: Annotated[float, Field(ge=0, le=1)] = 0.0
+    hybrid_score: Annotated[float, Field(ge=0, le=1)] | None = None
+
+
+class RetrievalScoreBreakdown(WireModel):
+    vector_score: Annotated[float, Field(ge=-1, le=1)]
+    bm25_score: Annotated[float, Field(ge=0, le=1)]
+    graph_score: Annotated[float, Field(ge=0, le=1)]
+    hybrid_score: Annotated[float, Field(ge=0, le=1)] | None
 
 
 class RerankRequest(WireModel):
     tenant_id: uuid.UUID
     query_fingerprint: Annotated[str, Field(pattern=r"^h1_[0-9a-f]{64}$")]
     candidate_ids: tuple[str, ...]
+    candidate_scores: dict[str, RetrievalScoreBreakdown]
     top_k: Annotated[int, Field(ge=5, le=15)]
 
     @field_validator("candidate_ids")
@@ -126,6 +197,12 @@ class RerankRequest(WireModel):
         if not 5 <= len(value) <= 100 or len(value) != len(set(value)):
             raise ValueError("candidate ids must be unique and contain 5..100 entries")
         return value
+
+    @model_validator(mode="after")
+    def validate_candidate_scores(self) -> RerankRequest:
+        if set(self.candidate_scores) != set(self.candidate_ids):
+            raise ValueError("candidate scores must exactly cover candidate ids")
+        return self
 
 
 class RerankResult(WireModel):
@@ -148,6 +225,9 @@ class EvidenceHit(WireModel):
     media_kind: MediaKind
     score: float
     vector_score: float
+    bm25_score: Annotated[float, Field(ge=0, le=1)] = 0.0
+    graph_score: Annotated[float, Field(ge=0, le=1)] = 0.0
+    hybrid_score: Annotated[float, Field(ge=0, le=1)] | None = None
     evidence_block_ids: tuple[uuid.UUID, ...]
     source_hash: str
     metadata: dict[str, Any]

@@ -2,11 +2,18 @@
   "claim_count": 15,
   "claims": [
     {
-      "evidence": "benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json",
       "evidence_sha256": "sha256:3dcaf2ae6ef143e9ef37e0efa347b14bcc14fb50207d0ae9eab873a160d61f0d",
+      "evidence_source": "benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json",
+      "forbidden": [
+        "5,132개 문서를 처리할 수 있습니다 (규모를 처리 용량으로 환언하는 표현)",
+        "고객 문서 5,132건 (공개 벤치마크를 고객 실적으로 제시하는 표현)"
+      ],
       "headline_en": "5,132 documents across three public benchmarks, scored by the official evaluators",
       "headline_ko": "공개 벤치마크 3종, 5,132개 문서를 공식 평가기로 측정",
       "id": "corpus-scale",
+      "must_say": "5,132은 평가한 문서 수이며 처리 용량이나 고객 처리량이 아닙니다. 세 벤치마크는 공개 데이터셋이고 각 벤치마크의 문서 수를 함께 표기하십시오.",
+      "must_say_en": "5,132 is the number of documents evaluated, not a capacity or a customer throughput figure. Name the three public benchmarks and their individual counts alongside the total.",
       "numbers": {
         "benchmarks": [
           "olmocr-bench",
@@ -23,8 +30,9 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json",
       "evidence_sha256": "sha256:3dcaf2ae6ef143e9ef37e0efa347b14bcc14fb50207d0ae9eab873a160d61f0d",
+      "evidence_source": "benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json",
       "forbidden": [
         "정확도 99.98%",
         "정확도 100%에 가까움",
@@ -34,6 +42,7 @@
       "headline_ko": "처리 완주율 99.98%",
       "id": "completion-rate",
       "must_say": "완주율은 출력이 생성된 비율이며 정확도가 아닙니다. 두 수치를 같은 문장에 쓸 때는 반드시 구분해 표기하십시오.",
+      "must_say_en": "This is the share of documents that produced output. It is not accuracy. Where both figures appear, label which is which.",
       "numbers": {
         "completion_fraction": 0.9998051441932969,
         "planned": 5132,
@@ -43,12 +52,14 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json",
       "evidence_sha256": "sha256:3dcaf2ae6ef143e9ef37e0efa347b14bcc14fb50207d0ae9eab873a160d61f0d",
+      "evidence_source": "benchmark/reports/generated/folynta-campaign-completion-ledger-2026-08-08.json",
       "headline_en": "99.94% of documents that actually failed were recovered",
       "headline_ko": "실제로 실패한 문서 중 99.94%를 복구",
       "id": "recovery-rate",
       "must_say": "분모는 전체 코퍼스가 아니라 실제로 실패한 문서 수입니다. 분모를 밝히지 않으면 완주율과 혼동됩니다.",
+      "must_say_en": "The denominator is the documents that actually failed, not the whole corpus. Without the denominator this reads as the completion rate.",
       "numbers": {
         "attempted_but_never_recovered": 1,
         "needed_recovery": 1797,
@@ -60,11 +71,14 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
+      "evidence_sha256": "sha256:1f5b6220c1fa569e8e33530d933a16eb7ad6b856c56e22f1744f8fa96efe33e0",
+      "evidence_source": "benchmark/reports/generated/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
       "headline_en": "Disabling only the recovery lane drops the same pipeline from 80.6 to 53.7",
       "headline_ko": "복구 레인을 끄면 동일 파이프라인의 공식 점수가 80.6에서 53.7로 떨어집니다",
       "id": "recovery-contribution-olmocr",
       "must_say": "모델, 평가기 리비전, 코퍼스, 설정을 고정하고 복구 산출물만 제거한 단일 변수 비교입니다.",
+      "must_say_en": "A single-variable comparison: model, evaluator revision, corpus and settings are identical, and only the recovery output was removed.",
       "numbers": {
         "benchmark": "olmOCR-Bench",
         "rule_failures_with": 1276,
@@ -83,13 +97,34 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-counterfactual-no-recovery-parsebench-2026-08-08/evaluation-summary.json",
+      "evidence": [
+        "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__parsebench__evaluation-summary.json",
+        "docs/evidence/artifacts/folynta-counterfactual-no-recovery-parsebench-2026-08-08__evaluation-summary.json"
+      ],
+      "evidence_sha256": [
+        "sha256:22cf5bf183ef875338de8442a6d3c5c3dca89ae52346b7f36a07b9332471a228",
+        "sha256:f21b8d20051c342cd25a7fc3d312ce847746e2965b1da09b1899a48e516dfdb0"
+      ],
+      "evidence_source": [
+        "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/parsebench/evaluation-summary.json",
+        "benchmark/reports/generated/folynta-counterfactual-no-recovery-parsebench-2026-08-08/evaluation-summary.json"
+      ],
+      "forbidden": [
+        "레이아웃 통과율을 복구 효과의 근거로 인용하는 표현",
+        "규칙 위반 감소를 비율로만 제시하고 분모 변화를 생략하는 표현"
+      ],
       "headline_en": "Without recovery, ParseBench rule failures more than double",
       "headline_ko": "복구가 없으면 ParseBench 규칙 위반이 2.1배로 늘어납니다",
       "id": "recovery-contribution-parsebench",
+      "must_say": "절대 위반 건수로 표기하십시오. 레이아웃 그룹의 통과율은 복구를 끄면 오히려 올라가는데(0.757 → 0.770), 내용이 없는 문서는 채점할 요소 자체가 없어 분모가 40,287에서 23,025로 줄기 때문입니다. 비율만 인용하면 복구를 끄는 편이 나아 보입니다.",
+      "must_say_en": "Quote the absolute failure counts. The layout group's pass rate actually rises when recovery is removed (0.757 to 0.770) because an empty document has no elements to score, shrinking the denominator from 40,287 to 23,025. A rate quoted alone makes no-recovery look better.",
       "numbers": {
         "content_faithfulness_with": 0.8376,
         "content_faithfulness_without": 0.5243,
+        "layout_micro_rule_pass_rate_with": 0.7566,
+        "layout_micro_rule_pass_rate_without": 0.7704,
+        "layout_rules_evaluated_with": 40287.0,
+        "layout_rules_evaluated_without": 23025.0,
         "rule_failures_with": 39413,
         "rule_failures_without": 82163,
         "table_grits_with": 0.9017,
@@ -98,11 +133,23 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08/repeat-1/metric-result.json",
+      "evidence": [
+        "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json",
+        "docs/evidence/artifacts/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08__repeat-1__metric-result.json"
+      ],
+      "evidence_sha256": [
+        "sha256:bab2df526db11fbcd87b1a026a223d8b8a7ce03ba1b4f99a9899b4c34f4c731a",
+        "sha256:83181525448986e54ceee018c652f9e2911d92a44c9474b38cdd647c3cf8666b"
+      ],
+      "evidence_source": [
+        "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json",
+        "benchmark/reports/generated/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08/repeat-1/metric-result.json"
+      ],
       "headline_en": "Without recovery, OmniDocBench text edit distance degrades 4.5x",
       "headline_ko": "복구가 없으면 OmniDocBench 본문 편집거리가 4.5배로 악화됩니다",
       "id": "recovery-contribution-omnidocbench",
       "must_say": "편집거리는 낮을수록 좋고, TEDS는 높을수록 좋습니다.",
+      "must_say_en": "Lower edit distance is better; higher TEDS is better.",
       "numbers": {
         "reading_order_with": 0.1408,
         "reading_order_without": 0.3286,
@@ -114,7 +161,9 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
+      "evidence": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json",
+      "evidence_sha256": "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559",
+      "evidence_source": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
       "forbidden": [
         "정확도 100% / 무오류 / 완벽한 추출",
         "80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성"
@@ -138,7 +187,9 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json",
+      "evidence": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json",
+      "evidence_sha256": "sha256:bab2df526db11fbcd87b1a026a223d8b8a7ce03ba1b4f99a9899b4c34f4c731a",
+      "evidence_source": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json",
       "headline_en": "94.2% character-level text fidelity, 95.5% table structure accuracy",
       "headline_ko": "본문 문자 일치율 94.2%, 표 구조 정확도 95.5%",
       "id": "customer-facing-fidelity",
@@ -153,7 +204,9 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
+      "evidence": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json",
+      "evidence_sha256": "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559",
+      "evidence_source": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
       "forbidden": [
         "benchmark_slice 값(old_scans.jsonl 등)을 화면에 그대로 노출",
         "저품질 스캔 행을 뺀 부분 표"
@@ -232,7 +285,24 @@
       "status": "approved"
     },
     {
-      "evidence": "packages/domain-packs/src/akc_domain_packs/blueprints.py; packages/exporters/src/akc_exporters/",
+      "evidence": [
+        "packages/domain-packs/src/akc_domain_packs/blueprints.py",
+        "packages/exporters/src/akc_exporters/vault.py",
+        "packages/exporters/src/akc_exporters/knowledge_package.py",
+        "docs/evidence/artifacts/folynta-knowledge-compilation-properties-2026-08-08.json"
+      ],
+      "evidence_sha256": [
+        "sha256:67ea05f394faae5f6dc97d5be94ca75d8635cfd9552658bf6579cf7391fb8588",
+        "sha256:e28da7971c3d59d5811bef5e96dfebcee1db6099bd983eec2d2ed70bbc801d72",
+        "sha256:84a07ab3c323be9d2cc6f148998df4cc5433154bc4ffda0fc06c01a014342fa0",
+        "sha256:936b859c484fb54a8bdff3175d89d2fd47d695d48ec93b99fcfd93ac53ee2e25"
+      ],
+      "evidence_source": [
+        "packages/domain-packs/src/akc_domain_packs/blueprints.py",
+        "packages/exporters/src/akc_exporters/vault.py",
+        "packages/exporters/src/akc_exporters/knowledge_package.py",
+        "benchmark/reports/generated/folynta-knowledge-compilation-properties-2026-08-08.json"
+      ],
       "forbidden": [
         "이 단계들에 대한 정확도·품질 백분율 표기"
       ],
@@ -277,12 +347,14 @@
       "status": "approved"
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-knowledge-compilation-properties-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-knowledge-compilation-properties-2026-08-08.json",
       "evidence_sha256": "sha256:936b859c484fb54a8bdff3175d89d2fd47d695d48ec93b99fcfd93ac53ee2e25",
+      "evidence_source": "benchmark/reports/generated/folynta-knowledge-compilation-properties-2026-08-08.json",
       "headline_en": "Structural guarantees: reproducible architecture, no unresolved links, no silent loss on merge",
       "headline_ko": "산출물의 구조적 보증: 재현 가능한 아키텍처, 미해결 링크 0건, 병합 시 무손실",
       "id": "compilation-guarantees",
       "must_say": "이 보증은 산출물의 구조에 관한 것이며 추출된 텍스트의 정확성과는 별개 지표입니다.",
+      "must_say_en": "These guarantees describe the structure of the compiled output. They are a separate measure from whether the extracted text is correct.",
       "numbers": {
         "architecture_repeats": 5,
         "blueprints": 7,
@@ -299,7 +371,9 @@
         "우리가 실행한 기반 모델의 버전이 리더보드에 실린 행과 다릅니다. 특정 경쟁 제품을 몇 점 이겼다는 문장은 사용할 수 없습니다.",
         "평가기 체크아웃이 공식 저장소의 포크이며 Windows 경로 정규화 패치가 적용돼 있습니다. 채점 로직은 변경되지 않았습니다."
       ],
-      "evidence": "benchmark/reports/generated/folynta-published-leaderboard-context-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-published-leaderboard-context-2026-08-08.json",
+      "evidence_sha256": "sha256:5ca45e22fb737840860da3a8d202937b88a4c8ff18ef405cf2da50110ca65d84",
+      "evidence_source": "benchmark/reports/generated/folynta-published-leaderboard-context-2026-08-08.json",
       "forbidden": [
         "우리가 <경쟁사>보다 N점 높습니다",
         "업계 1위 / 최고 정확도"
@@ -324,7 +398,9 @@
         "이것은 GPU 원가이며 판매 가격이 아닙니다. 엔지니어링, 오케스트레이션, 스토리지, 전송, 지원, 마진이 포함돼 있지 않습니다.",
         "경쟁사의 소매가와 나란히 놓으면 성립하지 않는 비교가 됩니다."
       ],
-      "evidence": "benchmark/reports/generated/folynta-measured-gpu-cost-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-measured-gpu-cost-2026-08-08.json",
+      "evidence_sha256": "sha256:c2fa1241e6939f59559429bd873a009fe6b14a98d3c7dcebb87c47f40425c88d",
+      "evidence_source": "benchmark/reports/generated/folynta-measured-gpu-cost-2026-08-08.json",
       "forbidden": [
         "경쟁사 대비 N배 저렴 (원가와 소매가를 비교하는 모든 표현)"
       ],
@@ -347,8 +423,9 @@
       "why_withheld": "재시도와 무회귀 수용 게이트가 아직 실행되지 않았습니다. 측정 전에는 어떤 개선 수치도 웹사이트에 실을 수 없습니다."
     },
     {
-      "evidence": "benchmark/reports/generated/folynta-blind-quality-detection-2026-08-08.json",
+      "evidence": "docs/evidence/artifacts/folynta-blind-quality-detection-2026-08-08.json",
       "evidence_sha256": "sha256:287532aece64e8973bb95fe244c5cb41dc93517b683f24c7262ac547add6b3e7",
+      "evidence_source": "benchmark/reports/generated/folynta-blind-quality-detection-2026-08-08.json",
       "headline_en": "(rejected) selecting low-quality documents without ground truth",
       "headline_ko": "(기각됨) 정답지 없이 저품질 문서를 자동 선별",
       "id": "blind-quality-detection",
@@ -379,6 +456,6 @@
     "수치를 바꾸려면 이 파일이 아니라 근거 영수증을 다시 생성하십시오."
   ],
   "purpose": "웹사이트에 게시할 수 있는 주장과 게시할 수 없는 주장을 증거와 함께 구분합니다. 수치는 영수증에서 생성되며 손으로 수정해서는 안 됩니다.",
-  "receipt_sha256": "sha256:ecb69c75ad87bea376fe12792389d963d47d7b2eca11523f0f7fb44ea9d7ced6",
+  "receipt_sha256": "sha256:82d5ec8bbf3ce22f143b071f3996e50c40743db22b050d25e6d4a9e84457c741",
   "schema": "folynta.public-claims-pack.v1"
 }

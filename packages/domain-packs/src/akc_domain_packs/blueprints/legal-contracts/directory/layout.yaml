@@ -1,0 +1,7 @@
+blueprint: legal-contracts
+kind: directory-layout
+version: 1.0.0
+roots: [Sources, Agreements, Parties, Clauses, Obligations, Definitions, Dates, MOCs, Evidence, Packages]
+maximum_depth: 4
+naming_policy: stable-id-title
+preserve_existing_folders: true

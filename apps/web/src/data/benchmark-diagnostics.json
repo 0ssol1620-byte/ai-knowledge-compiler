@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "diagnostics": [
+    {
+      "id": "ovisocr2-0.9b-vllm-0.22.1",
+      "label": "OvisOCR2 · vLLM 0.22.1",
+      "status": "blocked before inference",
+      "failure_class": "CUDA runtime / host-driver incompatibility",
+      "completed_inference_cases": 0,
+      "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+      "artifact_manifest_sha256": "sha256:847f485bc71908a70075fe6b0d76609f52bc7f1e730c03670c764da56da08c9a",
+      "diagnostic_evidence_sha256": "sha256:9fb70ad1961356875979220026193e24153b57f36dd4fccd5721676b7b49bfe6",
+      "evidence_path": "benchmark/reports/OVISOCR2_RUNPOD_STAGE1_DIAGNOSTIC_2026-08-01.md",
+      "summary": "The frozen model and official vLLM runtime reached CUDA initialization, then stopped because the runtime selected Torch 2.11 / CUDA 13 while the RTX 4090 pod host exposed CUDA 12.8 driver compatibility.",
+      "next_gate": "Resolved under the separate ovisocr2-0.9b-vllm-0.22.1-cu129 identity after a fresh Stage 1 and all three formal repeats; this failed PyPI runtime remains unscored."
+    }
+  ]
+}

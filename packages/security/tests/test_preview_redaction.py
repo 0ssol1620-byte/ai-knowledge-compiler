@@ -4,7 +4,11 @@ import hashlib
 import io
 
 import pytest
-from akc_security.preview_redaction import UnsafePreviewError, redact_preview_png
+from akc_security.preview_redaction import (
+    UnsafePreviewError,
+    crop_preview_png,
+    redact_preview_png,
+)
 from PIL import Image
 
 
@@ -56,3 +60,20 @@ def test_region_count_is_bounded() -> None:
     boxes = [(0, 0, 1, 1)] * 3
     with pytest.raises(UnsafePreviewError, match="region count"):
         redact_preview_png(_png(), boxes, maximum_regions=2)
+
+
+def test_proof_crop_uses_bbox1000_with_bounded_padding() -> None:
+    result = crop_preview_png(
+        _png(width=100, height=200),
+        (250, 250, 750, 750),
+        padding1000=0,
+    )
+
+    assert (result.width, result.height) == (50, 100)
+    assert result.sha256 == hashlib.sha256(result.png_bytes).hexdigest()
+
+
+@pytest.mark.parametrize("box", [(-1, 0, 2, 2), (0, 0, 1001, 2), (5, 5, 5, 9)])
+def test_proof_crop_rejects_invalid_boxes(box: tuple[int, int, int, int]) -> None:
+    with pytest.raises(UnsafePreviewError):
+        crop_preview_png(_png(), box)

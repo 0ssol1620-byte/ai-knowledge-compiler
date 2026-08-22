@@ -1,0 +1,15 @@
+{
+  "name": "folynta-ovis-m1-vllm-0-22-1-cu129-a6000",
+  "image_name": "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05",
+  "gpu_type": "NVIDIA RTX A6000",
+  "public_key_env": "FOLYNTA_RUNPOD_PUBLIC_KEY",
+  "container_disk_gb": 120,
+  "volume_gb": 20,
+  "allowed_cuda_versions": ["12.8", "12.9"],
+  "docker_entrypoint": [],
+  "docker_start_cmd": [],
+  "qualification_state": "BUILD_REQUIRED",
+  "baked_image_source": "infra/runpod/v6/images/ovisocr2-m1/Dockerfile",
+  "baked_runtime_receipt_sha256": null,
+  "vllm_cuda_compatibility": true
+}

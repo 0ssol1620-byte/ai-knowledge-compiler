@@ -1,0 +1,27 @@
+# Privileged IP work product — fail-closed allowlist.
+#
+# Everything in this directory is ignored unless named below. That direction is
+# deliberate: a denylist protects the files somebody remembered to list, and the
+# risk here is the claim chart nobody thought to add. A new privileged file
+# dropped into this directory is ignored by default and has to be argued into
+# version control, which is the correct order for this material.
+#
+# WHAT MAY BE TRACKED (founder instruction, 2026-08-11): register ID, status and
+# design-around gate. Not claim-level analysis of a RED family — no claim
+# numbers, no "reads onto", no infringement or anticipation reading. That
+# material is extracted to a counsel packet by
+# research/scripts/export_privileged_packet.py and kept outside the repository.
+#
+# Path exclusion is only half the control. Claim-level text can also appear
+# inside an allowlisted file — it already did once, in the register's own
+# `note:` field — so scripts/ip_privilege_guard.py scans content as well, and
+# the pre-commit hook runs it. Neither control replaces the other.
+#
+# This file cannot un-ignore anything inside a subdirectory: git will not
+# descend into an excluded directory to find a negation. There are no
+# subdirectories here today. Adding one means adding its own rule.
+
+*
+!.gitignore
+!TECHNOLOGY_INTAKE_REGISTER.yaml
+!V4_DISCLOSURE_REGISTRY.yaml

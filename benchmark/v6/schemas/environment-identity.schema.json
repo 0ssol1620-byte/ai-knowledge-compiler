@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.example/schemas/v6/environment-identity.schema.json",
+  "title": "Structara v6 immutable benchmark environment identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "application_commit",
+    "source_tree_sha256",
+    "candidate_id",
+    "model_repository",
+    "model_revision",
+    "model_manifest_sha256",
+    "runtime_image_digest",
+    "gpu_class",
+    "gpu_count",
+    "driver_version",
+    "cuda_version",
+    "framework_versions",
+    "prompt_sha256",
+    "decoding_sha256",
+    "dataset_id",
+    "dataset_revision",
+    "dataset_manifest_sha256",
+    "evaluator_repository",
+    "evaluator_commit",
+    "evaluator_manifest_sha256",
+    "network_policy_sha256",
+    "ground_truth_mounted_for_inference"
+  ],
+  "properties": {
+    "application_commit": { "$ref": "#/$defs/commit" },
+    "source_tree_sha256": { "$ref": "#/$defs/sha256" },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "model_repository": { "type": "string", "minLength": 1 },
+    "model_revision": { "$ref": "#/$defs/commit" },
+    "model_manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "runtime_image_digest": { "$ref": "#/$defs/sha256" },
+    "gpu_class": { "type": "string", "minLength": 1 },
+    "gpu_count": { "type": "integer", "minimum": 1 },
+    "driver_version": { "type": "string", "minLength": 1 },
+    "cuda_version": { "type": "string", "minLength": 1 },
+    "framework_versions": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "prompt_sha256": { "$ref": "#/$defs/sha256" },
+    "decoding_sha256": { "$ref": "#/$defs/sha256" },
+    "dataset_id": { "type": "string", "minLength": 1 },
+    "dataset_revision": { "type": "string", "minLength": 1 },
+    "dataset_manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "evaluator_repository": { "type": "string", "minLength": 1 },
+    "evaluator_commit": { "$ref": "#/$defs/commit" },
+    "evaluator_manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "network_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "ground_truth_mounted_for_inference": { "const": false }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" }
+  }
+}

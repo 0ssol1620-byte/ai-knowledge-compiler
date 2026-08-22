@@ -8,3 +8,13 @@ misconfigurations:
       literal fail-closed boolean false. All credentials are supplied through
       required Kubernetes Secret references.
     expired_at: 2026-12-31
+  - id: DS-0002
+    paths:
+      - infra/runpod/v6/images/ovisocr2-m1/Dockerfile
+    statement: >-
+      Bounded runtime exception: this dedicated RunPod SSH gateway must start
+      sshd as root to bind port 22 and create a least-privilege authenticated
+      session. Public-key authentication is mandatory, password login is
+      disabled, and the image performs no package installation or model
+      download after startup.
+    expired_at: 2026-12-31

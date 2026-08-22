@@ -10,7 +10,7 @@ import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO, Literal, Protocol
+from typing import BinaryIO, Literal, Protocol, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -99,6 +99,8 @@ class ObjectStoreSettings(Protocol):
 
 
 class ObjectStore(Protocol):
+    async def healthcheck(self) -> None: ...
+
     async def create_gpu_input_target(
         self,
         *,
@@ -208,6 +210,19 @@ class LocalObjectStore:
         # where nested tenant/project UUID prefixes otherwise exceed MAX_PATH.
         digest = hashlib.sha256(object_key.encode("utf-8")).hexdigest()
         return self.root / bucket / digest[:2] / digest
+
+    async def healthcheck(self) -> None:
+        """Prove that every local development bucket is currently accessible."""
+
+        buckets = ("quarantine", "source", "working", "derived", "exports", "audit")
+
+        def check() -> None:
+            if not self.root.is_dir():
+                raise OSError("object store root is unavailable")
+            if any(not (self.root / bucket).is_dir() for bucket in buckets):
+                raise OSError("object store bucket is unavailable")
+
+        await asyncio.to_thread(check)
 
     async def create_gpu_input_target(
         self,
@@ -394,6 +409,66 @@ class S3ObjectStore:
             aws_access_key_id=settings.s3_access_key_id,
             aws_secret_access_key=settings.s3_secret_access_key,
         )
+        role_pairs = {
+            "source": (
+                getattr(settings, "s3_source_access_key_id", None),
+                getattr(settings, "s3_source_secret_access_key", None),
+            ),
+            "working": (
+                getattr(settings, "s3_working_access_key_id", None),
+                getattr(settings, "s3_working_secret_access_key", None),
+            ),
+            "derived": (
+                getattr(settings, "s3_derived_access_key_id", None),
+                getattr(settings, "s3_derived_secret_access_key", None),
+            ),
+            "audit": (
+                getattr(settings, "s3_audit_access_key_id", None),
+                getattr(settings, "s3_audit_secret_access_key", None),
+            ),
+        }
+        self._role_clients: dict[str, S3Client] = {
+            role: boto3.client(
+                "s3",
+                endpoint_url=settings.s3_endpoint_url,
+                region_name=settings.s3_region,
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
+            )
+            for role, (access_key, secret_key) in role_pairs.items()
+            if access_key and secret_key
+        }
+
+    def _client(self, bucket: str) -> S3Client:
+        role = {
+            "quarantine": "source",
+            "source": "source",
+            "working": "working",
+            "derived": "derived",
+            "exports": "derived",
+            "audit": "audit",
+        }[bucket]
+        role_clients = cast(dict[str, S3Client], getattr(self, "_role_clients", {}))
+        return role_clients.get(role, self.client)
+
+    async def healthcheck(self) -> None:
+        """HEAD every configured bucket; configuration alone is not health."""
+
+        buckets = {
+            "quarantine": self.settings.s3_bucket_quarantine,
+            "source": self.settings.s3_bucket_source,
+            "working": self.settings.s3_bucket_working,
+            "derived": self.settings.s3_bucket_derived,
+            "exports": self.settings.s3_bucket_exports,
+            "audit": self.settings.s3_bucket_audit,
+        }
+        if len(set(buckets.values())) != 6:
+            raise RuntimeError("object store bucket identities must be distinct")
+        for logical_bucket, bucket_name in sorted(buckets.items()):
+            await asyncio.to_thread(
+                self._client(logical_bucket).head_bucket,
+                Bucket=bucket_name,
+            )
 
     async def create_gpu_input_target(
         self,
@@ -405,7 +480,7 @@ class S3ObjectStore:
         if not 1 <= expires <= 1800:
             raise ValueError("GPU input grant lifetime must be 1..1800 seconds")
         url = await asyncio.to_thread(
-            self.client.generate_presigned_url,
+            self._client(bucket).generate_presigned_url,
             "get_object",
             Params={
                 "Bucket": self._bucket_name(bucket),
@@ -424,7 +499,7 @@ class S3ObjectStore:
         if not 1 <= expires <= 1800:
             raise ValueError("GPU output grant lifetime must be 1..1800 seconds")
         url = await asyncio.to_thread(
-            self.client.generate_presigned_url,
+            self._client("derived").generate_presigned_url,
             "put_object",
             Params={
                 "Bucket": self.settings.s3_bucket_derived,
@@ -450,7 +525,7 @@ class S3ObjectStore:
         del upload_id
         checksum = base64.b64encode(bytes.fromhex(expected_sha256)).decode("ascii")
         url = await asyncio.to_thread(
-            self.client.generate_presigned_url,
+            self._client("quarantine").generate_presigned_url,
             "put_object",
             Params={
                 "Bucket": self.settings.s3_bucket_quarantine,
@@ -476,7 +551,7 @@ class S3ObjectStore:
         expected_sha256: str,
     ) -> MultipartSession:
         response = await asyncio.to_thread(
-            self.client.create_multipart_upload,
+            self._client("quarantine").create_multipart_upload,
             Bucket=self.settings.s3_bucket_quarantine,
             Key=object_key,
             ContentType=content_type,
@@ -496,7 +571,7 @@ class S3ObjectStore:
         expires: int,
     ) -> MultipartPartTarget:
         url = await asyncio.to_thread(
-            self.client.generate_presigned_url,
+            self._client("quarantine").generate_presigned_url,
             "upload_part",
             Params={
                 "Bucket": self.settings.s3_bucket_quarantine,
@@ -523,7 +598,7 @@ class S3ObjectStore:
         while True:
             try:
                 response: ListPartsOutputTypeDef = await asyncio.to_thread(
-                    self.client.list_parts,
+                    self._client("quarantine").list_parts,
                     Bucket=self.settings.s3_bucket_quarantine,
                     Key=object_key,
                     UploadId=provider_upload_id,
@@ -559,7 +634,7 @@ class S3ObjectStore:
     ) -> None:
         try:
             await asyncio.to_thread(
-                self.client.complete_multipart_upload,
+                self._client("quarantine").complete_multipart_upload,
                 Bucket=self.settings.s3_bucket_quarantine,
                 Key=object_key,
                 UploadId=provider_upload_id,
@@ -586,7 +661,7 @@ class S3ObjectStore:
     ) -> None:
         try:
             await asyncio.to_thread(
-                self.client.abort_multipart_upload,
+                self._client("quarantine").abort_multipart_upload,
                 Bucket=self.settings.s3_bucket_quarantine,
                 Key=object_key,
                 UploadId=provider_upload_id,
@@ -601,7 +676,7 @@ class S3ObjectStore:
     async def put_quarantine_stream(self, object_key: str, stream: BinaryIO) -> None:
         stream.seek(0)
         await asyncio.to_thread(
-            self.client.upload_fileobj,
+            self._client("quarantine").upload_fileobj,
             stream,
             self.settings.s3_bucket_quarantine,
             object_key,
@@ -609,7 +684,7 @@ class S3ObjectStore:
 
     async def read_quarantine(self, object_key: str) -> bytes:
         response = await asyncio.to_thread(
-            self.client.get_object,
+            self._client("quarantine").get_object,
             Bucket=self.settings.s3_bucket_quarantine,
             Key=object_key,
         )
@@ -617,7 +692,7 @@ class S3ObjectStore:
 
     async def download_quarantine(self, object_key: str, stream: BinaryIO) -> None:
         await asyncio.to_thread(
-            self.client.download_fileobj,
+            self._client("quarantine").download_fileobj,
             self.settings.s3_bucket_quarantine,
             object_key,
             stream,
@@ -626,7 +701,7 @@ class S3ObjectStore:
 
     async def head_quarantine(self, object_key: str) -> ObjectMetadata:
         response = await asyncio.to_thread(
-            self.client.head_object,
+            self._client("quarantine").head_object,
             Bucket=self.settings.s3_bucket_quarantine,
             Key=object_key,
         )
@@ -640,7 +715,7 @@ class S3ObjectStore:
     async def promote_source(self, quarantine_key: str, source_key: str) -> None:
         try:
             await asyncio.to_thread(
-                self.client.head_object,
+                self._client("source").head_object,
                 Bucket=self.settings.s3_bucket_source,
                 Key=source_key,
             )
@@ -654,7 +729,7 @@ class S3ObjectStore:
             # bytes before it removes any retained quarantine object.
             return
         await asyncio.to_thread(
-            self.client.copy_object,
+            self._client("source").copy_object,
             Bucket=self.settings.s3_bucket_source,
             Key=source_key,
             CopySource={
@@ -665,7 +740,7 @@ class S3ObjectStore:
 
     async def read_source(self, source_key: str) -> bytes:
         response = await asyncio.to_thread(
-            self.client.get_object,
+            self._client("source").get_object,
             Bucket=self.settings.s3_bucket_source,
             Key=source_key,
         )
@@ -673,7 +748,7 @@ class S3ObjectStore:
 
     async def download_source(self, source_key: str, stream: BinaryIO) -> None:
         await asyncio.to_thread(
-            self.client.download_fileobj,
+            self._client("source").download_fileobj,
             self.settings.s3_bucket_source,
             source_key,
             stream,
@@ -682,7 +757,7 @@ class S3ObjectStore:
 
     async def put_derived(self, object_key: str, data: bytes) -> None:
         await asyncio.to_thread(
-            self.client.put_object,
+            self._client("derived").put_object,
             Bucket=self.settings.s3_bucket_derived,
             Key=object_key,
             Body=data,
@@ -692,7 +767,7 @@ class S3ObjectStore:
 
     async def read_derived(self, object_key: str) -> bytes:
         response = await asyncio.to_thread(
-            self.client.get_object,
+            self._client("derived").get_object,
             Bucket=self.settings.s3_bucket_derived,
             Key=object_key,
         )
@@ -700,7 +775,7 @@ class S3ObjectStore:
 
     async def put_export(self, object_key: str, data: bytes) -> None:
         await asyncio.to_thread(
-            self.client.put_object,
+            self._client("exports").put_object,
             Bucket=self.settings.s3_bucket_exports,
             Key=object_key,
             Body=data,
@@ -709,7 +784,7 @@ class S3ObjectStore:
 
     async def read_export(self, object_key: str) -> bytes:
         response = await asyncio.to_thread(
-            self.client.get_object,
+            self._client("exports").get_object,
             Bucket=self.settings.s3_bucket_exports,
             Key=object_key,
         )
@@ -728,6 +803,7 @@ class S3ObjectStore:
     async def _list_exact_object_versions(
         self,
         *,
+        client: S3Client,
         bucket_name: str,
         object_key: str,
     ) -> list[ObjectIdentifierTypeDef]:
@@ -740,14 +816,14 @@ class S3ObjectStore:
         while True:
             if key_marker is None:
                 response = await asyncio.to_thread(
-                    self.client.list_object_versions,
+                    client.list_object_versions,
                     Bucket=bucket_name,
                     Prefix=object_key,
                     MaxKeys=1000,
                 )
             else:
                 response = await asyncio.to_thread(
-                    self.client.list_object_versions,
+                    client.list_object_versions,
                     Bucket=bucket_name,
                     Prefix=object_key,
                     KeyMarker=key_marker,
@@ -784,16 +860,18 @@ class S3ObjectStore:
     async def _delete_versioned_key(
         self,
         *,
+        client: S3Client,
         bucket_name: str,
         object_key: str,
     ) -> bool:
         identities = await self._list_exact_object_versions(
+            client=client,
             bucket_name=bucket_name,
             object_key=object_key,
         )
         for offset in range(0, len(identities), 1000):
             response: DeleteObjectsOutputTypeDef = await asyncio.to_thread(
-                self.client.delete_objects,
+                client.delete_objects,
                 Bucket=bucket_name,
                 Delete={
                     "Objects": identities[offset : offset + 1000],
@@ -807,6 +885,7 @@ class S3ObjectStore:
                     "object_store_partial_version_delete:" + ",".join(codes)
                 )
         remaining = await self._list_exact_object_versions(
+            client=client,
             bucket_name=bucket_name,
             object_key=object_key,
         )
@@ -817,11 +896,12 @@ class S3ObjectStore:
     async def _delete_explicitly_unversioned_key(
         self,
         *,
+        client: S3Client,
         bucket_name: str,
         object_key: str,
     ) -> bool:
         await asyncio.to_thread(
-            self.client.delete_object,
+            client.delete_object,
             Bucket=bucket_name,
             Key=object_key,
         )
@@ -830,14 +910,14 @@ class S3ObjectStore:
         while True:
             if continuation_token is None:
                 response = await asyncio.to_thread(
-                    self.client.list_objects_v2,
+                    client.list_objects_v2,
                     Bucket=bucket_name,
                     Prefix=object_key,
                     MaxKeys=1000,
                 )
             else:
                 response = await asyncio.to_thread(
-                    self.client.list_objects_v2,
+                    client.list_objects_v2,
                     Bucket=bucket_name,
                     Prefix=object_key,
                     ContinuationToken=continuation_token,
@@ -856,13 +936,16 @@ class S3ObjectStore:
 
     async def delete(self, bucket: str, object_key: str) -> bool:
         bucket_name = self._bucket_name(bucket)
+        client = self._client(bucket)
         if self.settings.s3_deletion_mode == "versioned":
             return await self._delete_versioned_key(
+                client=client,
                 bucket_name=bucket_name,
                 object_key=object_key,
             )
         if self.settings.s3_deletion_mode == "unversioned-explicit":
             return await self._delete_explicitly_unversioned_key(
+                client=client,
                 bucket_name=bucket_name,
                 object_key=object_key,
             )

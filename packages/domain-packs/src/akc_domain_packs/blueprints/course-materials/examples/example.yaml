@@ -1,0 +1,7 @@
+blueprint: course-materials
+kind: verified-example
+version: 1.0.0
+input: {document_type: lecture_bundle, sequence: weekly}
+expected:
+  object_kinds: [Course, Module, Lesson, Concept, Assessment, LearningObjective]
+  required_authority: [source_ref, lesson_order, page]

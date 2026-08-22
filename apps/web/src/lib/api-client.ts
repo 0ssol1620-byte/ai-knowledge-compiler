@@ -3,6 +3,12 @@ import { z } from "zod";
 
 import type { JobEvent, JobEventType, PreflightEstimate } from "@/lib/types";
 
+// The application ships with a nonce-only CSP. Zod's optional JIT path probes
+// `Function(...)`, which Firefox correctly reports as a blocked eval even
+// though Zod catches the exception. The interpreter path is deterministic and
+// keeps all supported browsers free of CSP violations.
+z.config({ jitless: true });
+
 const API_URL = process.env.NEXT_PUBLIC_AKC_API_URL ?? "http://localhost:8000";
 
 export function apiAbsoluteUrl(path: string): string {

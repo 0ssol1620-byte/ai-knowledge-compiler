@@ -1,0 +1,95 @@
+{
+  "comparability_limits": [
+    {
+      "detail": "The published MinerU row is 2.5.4; we ran 3.4.4. Any gap against that row reflects the newer model as well as our runtime and must not be attributed to the runtime.",
+      "direction": "favours us, not attributable",
+      "issue": "model version differs"
+    },
+    {
+      "detail": "Our evaluator checkout is jina-ai/olmocr-bench at cfa88c1e, a single-commit copy adding lxml, plus a local 7-line change normalising Windows path separators during file discovery. Neither alters scoring logic, but the checkout is not AllenAI's own.",
+      "direction": "unknown, believed neutral",
+      "issue": "evaluator provenance"
+    },
+    {
+      "detail": "The published table reflects the state around olmOCR v0.4.0 (October 2025); systems listed may have improved since.",
+      "direction": "unknown",
+      "issue": "leaderboard vintage"
+    }
+  ],
+  "dataset_identity": {
+    "dataset_repository": "allenai/olmOCR-bench",
+    "dataset_revision": "54a96a6fb6a2bd3b297e59869491db4d3625b711",
+    "same_public_documents_as_published_runs": true
+  },
+  "defensible_statement": "On the same public dataset and an unmodified scoring path, the pipeline scores 80.6. Disabling only the recovery lane drops the identical pipeline to 53.7, below every system on the published board. The recovery lane, not the base model, is what places the pipeline in the competitive range.",
+  "our_measurement": {
+    "confidence_interval_95_percent": [
+      79.62,
+      81.57
+    ],
+    "evaluator_revision": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c",
+    "input_count": 1403,
+    "overall_percent": 80.6,
+    "system": "MinerU 3.4.4 + FOLYNTA recovery runtime",
+    "test_count": 8413
+  },
+  "our_measurement_without_recovery": {
+    "confidence_interval_95_percent": [
+      52.62,
+      54.93
+    ],
+    "overall_percent": 53.7,
+    "system": "MinerU 3.4.4, recovery lane disabled"
+  },
+  "published_leaderboard": {
+    "retrieved_utc": "2026-08-08",
+    "rows": [
+      {
+        "overall": 83.1,
+        "pm": 0.9,
+        "system": "Chandra OCR 0.1.0"
+      },
+      {
+        "overall": 82.4,
+        "pm": 1.1,
+        "system": "olmOCR v0.4.0"
+      },
+      {
+        "overall": 82.5,
+        "pm": null,
+        "system": "Infinity-Parser 7B"
+      },
+      {
+        "overall": 80.0,
+        "pm": 1.0,
+        "system": "PaddleOCR-VL"
+      },
+      {
+        "overall": 76.1,
+        "pm": 1.1,
+        "system": "Marker 1.10.1"
+      },
+      {
+        "overall": 75.7,
+        "pm": 1.0,
+        "system": "DeepSeek-OCR"
+      },
+      {
+        "overall": 75.2,
+        "pm": 1.1,
+        "system": "MinerU 2.5.4"
+      },
+      {
+        "overall": 72.0,
+        "pm": 1.1,
+        "system": "Mistral OCR API"
+      }
+    ],
+    "source": "https://github.com/allenai/olmocr"
+  },
+  "purpose": "Place our measured olmOCR-Bench score beside published systems, with every difference that prevents a like-for-like reading stated explicitly.",
+  "receipt_sha256": "sha256:165fe43f2e9a20797146b2ed100955981d83ee4914cc2471a63f2506f7f0d6f7",
+  "schema": "folynta.published-leaderboard-context.v1",
+  "score_inflation_allowed": false,
+  "statement_not_supported": "'We beat MinerU by 5.4 points.' The published MinerU row is version 2.5.4 and we ran 3.4.4, so that gap is confounded by model version."
+}

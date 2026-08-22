@@ -24,6 +24,11 @@ Required API keys:
 | `AKC_PAYMENT_MERCHANT_ID`                  | non-secret merchant identifier, injected with the enabled payment overlay    |
 | `AKC_PAYMENT_WEBHOOK_SECRET`               | dedicated 32-byte minimum secret for signed provider events                  |
 | `AKC_WEBHOOK_ENCRYPTION_KEY`               | Fernet key used only to encrypt endpoint signing secrets                     |
+| `AKC_COLLECTION_SEMANTIC_RETRIEVAL_ROW_HMAC_SECRET` | independent random key of at least 32 decoded bytes for retrieval-row attestations; raw UTF-8 or `base64:` encoding |
+| `AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_API_KEY` | provider credential scoped only to the pinned collection embedding endpoint |
+| `AKC_COLLECTION_FINALIZER_HMAC_SECRET` | independent random key of at least 32 bytes for durable collection-finalizer receipts |
+| `AKC_COLLECTION_METADATA_KEYRING` | Secret JSON object of key ID to `base64:` encoded 32-byte AES-256 key; active plus decrypt-only rotation keys |
+| `AKC_COLLECTION_METADATA_BLIND_INDEX_KEY` | independent 32-byte minimum HMAC key for tenant/collection/source-root-bound relative-path indexes |
 
 When an overlay enables public registration it must also set
 `AKC_EMAIL_VERIFICATION_PROVIDER=resend` and
@@ -42,6 +47,23 @@ endpoint-host allowlists, and inject `AKC_OIDC_CLIENT_SECRET`,
 `AKC_OIDC_TRANSACTION_ENCRYPTION_KEY`, and `AKC_OIDC_STATE_HMAC_SECRET`.
 Provider tenant, redirect, claims, and key rotation remain an external release
 gate; local mock-JWKS tests are not production IdP evidence.
+
+The committed base also keeps
+`AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED=false`. An enabled overlay must
+inject both collection-retrieval keys above from `akc-runtime-secrets`; neither
+key may appear in `akc-runtime` or any other ConfigMap. The overlay must also
+replace the endpoint, provider ID, model ID, and 40-64 character hexadecimal
+model revision placeholders as one reviewed release unit. Provider reachability,
+database migration state, row-key rotation, and a real attested 1024-dimensional
+embedding canary remain external release evidence.
+
+The committed base also keeps `AKC_COLLECTION_METADATA_ENCRYPTION_ENABLED=false`.
+Before enabling it, run the staged metadata backfill and collision validator,
+then set the active encryption and blind-index key IDs in `akc-runtime` and
+inject both corresponding values above through `akc-runtime-secrets`. Never
+remove a decrypt-only key until every row has been re-encrypted and verified.
+Blind-index key replacement requires a write-fenced full reindex; rotating only
+some rows would break path uniqueness and is forbidden.
 
 ## `akc-scheduler-secrets`
 
@@ -65,6 +87,7 @@ Required dispatch-worker keys:
 | Key                      | Requirement                                                                                     |
 | ------------------------ | ----------------------------------------------------------------------------------------------- |
 | `AKC_DATABASE_URL`       | Dedicated `akc_dispatch_runtime` PostgreSQL login URL; never the API or webhook-scheduler login |
+| `AKC_COLLECTION_FINALIZER_HMAC_SECRET` | Same dedicated 32-byte minimum finalizer key delivered independently to API and dispatch workloads |
 | Object-store credentials | Prefer an ambient workload identity scoped to required source and derived object prefixes       |
 
 The dispatch login must be `NOINHERIT`, be granted only the

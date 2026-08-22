@@ -1,0 +1,7 @@
+blueprint: technical-documentation
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: ordered_steps_preserved, fixture: numbered_procedure, expected: pass}
+  - {id: version_unspecified, fixture: mixed_versions, expected: unresolved}
+  - {id: unsafe_warning_loss, fixture: omitted_warning, expected: quarantine}

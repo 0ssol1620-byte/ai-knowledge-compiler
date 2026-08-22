@@ -190,6 +190,42 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: dispatch-worker-to-api-finalizer
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: akc-dispatch-worker
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-api
+      ports:
+        - protocol: TCP
+          port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-from-dispatch-finalizer
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: akc-api
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: akc-dispatch-worker
+      ports:
+        - protocol: TCP
+          port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: monitoring-to-dispatch-worker
 spec:
   podSelector:

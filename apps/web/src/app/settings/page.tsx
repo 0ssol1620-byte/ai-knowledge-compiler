@@ -174,7 +174,7 @@ function DemoSettingsPage() {
               <div>
                 <h2>Workspace</h2>
                 <p>
-                  Separate project, review, and billing permissions by role.
+                  Separate project, integrity-decision, and billing permissions by role.
                 </p>
               </div>
               <button

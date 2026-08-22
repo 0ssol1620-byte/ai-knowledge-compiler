@@ -1,0 +1,7 @@
+blueprint: generic-mixed-corpus
+kind: directory-layout
+version: 1.0.0
+roots: [Sources, Topics, Entities, Claims, Evidence, Assets, MOCs, Packages]
+maximum_depth: 3
+naming_policy: stable-id-title
+preserve_existing_folders: true

@@ -7,6 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@akc/contracts": fileURLToPath(
+        new URL(
+          "../../packages/contracts/src/generated-contracts.ts",
+          import.meta.url,
+        ),
+      ),
     },
   },
   test: {

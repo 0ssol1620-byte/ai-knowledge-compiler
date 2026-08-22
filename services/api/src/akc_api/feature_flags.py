@@ -27,7 +27,13 @@ def cohort_enabled(
 ) -> bool:
     if not enabled:
         return False
-    if percent in {0, 100}:
+    # 0 means nobody, not everybody. It is the first rung of the v4 rollout
+    # ladder 0 -> 5 -> 25 -> 50 -> 100, where a flag is created switched on so
+    # its row exists and its cohort is empty until it is deliberately widened.
+    # Folding 0 in with 100 made that rung open the gate to the whole tenant.
+    if percent <= 0:
+        return False
+    if percent >= 100:
         return True
     rollout_subject = subject_id or tenant_id
     bucket = (

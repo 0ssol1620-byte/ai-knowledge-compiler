@@ -14,6 +14,7 @@ from .models import (
     RerankRequest,
     RerankResult,
     RetrievalQuery,
+    RetrievalScoreBreakdown,
     Vector,
     VectorCandidate,
     VectorRecord,
@@ -99,11 +100,44 @@ class InMemoryVectorStore:
             if record.tenant_id == query.tenant_id
             and record.project_id in allowed_projects
             and record.media_kind in query.media_kinds
+            and _matches_filters(record, query)
         ]
         return sorted(
             candidates,
             key=lambda candidate: (-candidate.vector_score, candidate.record.stable_id),
         )[: query.candidate_k]
+
+
+def _matches_filters(record: VectorRecord, query: RetrievalQuery) -> bool:
+    filters = query.filters
+    metadata = record.metadata
+    if filters.collection_ids and str(metadata.get("collection_id")) not in {
+        str(collection_id) for collection_id in filters.collection_ids
+    }:
+        return False
+    if filters.document_ids and str(metadata.get("document_id")) not in filters.document_ids:
+        return False
+    exact_fields = {
+        "statement": filters.statement,
+        "concept": filters.concept,
+        "period_start": filters.period_start,
+        "period_end": filters.period_end,
+        "instant": filters.instant,
+        "current_prior": filters.current_prior,
+        "consolidation": filters.consolidation,
+        "unit": filters.unit,
+        "currency": filters.currency,
+        "entity_id": filters.entity_id,
+        "source_type": filters.source_type,
+    }
+    if any(
+        expected is not None and str(metadata.get(name)) != expected
+        for name, expected in exact_fields.items()
+    ):
+        return False
+    return not filters.verification_states or str(metadata.get("verification_state")) in {
+        state.value for state in filters.verification_states
+    }
 
 
 class RetrievalService:
@@ -118,7 +152,10 @@ class RetrievalService:
         expected_reranker_revision: str | None,
         feature_enabled: bool,
         provider_ready: bool,
+        production_mode: bool = False,
     ) -> None:
+        if production_mode and bool(getattr(vector_store, "development_only", False)):
+            raise RetrievalUnavailable("development-only vector store cannot serve production")
         self._vector_store = vector_store
         self._reranker = reranker
         self._expected_reranker_id = expected_reranker_id
@@ -153,6 +190,15 @@ class RetrievalService:
                     tenant_id=query.tenant_id,
                     query_fingerprint=query_fingerprint,
                     candidate_ids=tuple(candidate.record.stable_id for candidate in candidates),
+                    candidate_scores={
+                        candidate.record.stable_id: RetrievalScoreBreakdown(
+                            vector_score=candidate.vector_score,
+                            bm25_score=candidate.bm25_score,
+                            graph_score=candidate.graph_score,
+                            hybrid_score=candidate.hybrid_score,
+                        )
+                        for candidate in candidates
+                    },
                     top_k=query.top_k,
                 )
             )
@@ -181,9 +227,14 @@ class RetrievalService:
                 media_kind=candidate.record.media_kind,
                 score=rerank_scores.get(
                     candidate.record.stable_id,
-                    candidate.vector_score,
+                    candidate.hybrid_score
+                    if candidate.hybrid_score is not None
+                    else candidate.vector_score,
                 ),
                 vector_score=candidate.vector_score,
+                bm25_score=candidate.bm25_score,
+                graph_score=candidate.graph_score,
+                hybrid_score=candidate.hybrid_score,
                 evidence_block_ids=candidate.record.evidence_block_ids,
                 source_hash=candidate.record.source_hash,
                 metadata=dict(candidate.record.metadata),

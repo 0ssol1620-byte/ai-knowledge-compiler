@@ -1,0 +1,9 @@
+blueprint: generic-mixed-corpus
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Sources, primary_type: Document, sort: source_order}
+  - {name: Topics, primary_type: Topic, sort: stable_title}
+  - {name: Entities, primary_type: Entity, sort: stable_title}
+  - {name: Claims, primary_type: Claim, sort: source_order}
+  - {name: Evidence, primary_type: Evidence, sort: source_order}

@@ -1,0 +1,8 @@
+blueprint: legal-contracts
+kind: validation-rules
+version: 1.0.0
+rules:
+  - {id: source_coverage, severity: critical, minimum: 1.0}
+  - {id: clause_reference, severity: critical, minimum: 1.0}
+  - {id: defined_term_fidelity, severity: high, minimum: 1.0}
+  - {id: amendment_precedence, severity: critical, minimum: 1.0}

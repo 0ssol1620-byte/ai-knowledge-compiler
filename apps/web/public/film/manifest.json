@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0.0",
+  "title": "Evidence in Motion",
+  "truth_class": "measured-product-composite",
+  "measurement_scope": "OmniDocBench official demo 18 pages × 3 repeats × 5 candidates",
+  "formal_inference_case_count": 270,
+  "evidence_bundle_sha256": "sha256:daf40605df692107fec0db2e08afb05e7a940e1ca21db91d8eb3761a79f90af5",
+  "disclosure": "Product sequences are condensed; benchmark values are measured and independently hashed.",
+  "ending_hold_seconds": 12,
+  "film": {
+    "webm": "structara-evidence-in-motion-60s.webm",
+    "mp4": "structara-evidence-in-motion-60s.mp4",
+    "poster": "structara-evidence-in-motion-poster.webp",
+    "captions": "structara-evidence-in-motion.en.vtt"
+  },
+  "loops": [
+    {
+      "id": "intake-dedupe",
+      "route": "/film?scene=0&static=1",
+      "file": "loop-01-intake-dedupe.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "adaptive-estimate",
+      "route": "/film?scene=1&static=1",
+      "file": "loop-02-adaptive-estimate.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "page-block-detection",
+      "route": "/film?scene=2&static=1",
+      "file": "loop-03-page-block-detection.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "cross-page-table",
+      "route": "/film?scene=3&static=1",
+      "file": "loop-04-cross-page-table.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "numeric-proof",
+      "route": "/film?scene=3&static=1",
+      "file": "loop-05-numeric-proof.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "auto-repair",
+      "route": "/film?scene=3&static=1",
+      "file": "loop-06-auto-repair.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "knowledge-relations",
+      "route": "/film?scene=5&static=1",
+      "file": "loop-07-knowledge-relations.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    },
+    {
+      "id": "export-ready",
+      "route": "/film?scene=7&static=1",
+      "file": "loop-08-export-ready.webm",
+      "disclosure": "Sequence condensed for demonstration"
+    }
+  ],
+  "sha256": {
+    "loop-01-intake-dedupe.webm": "6c0aba73d198d9258d0367865d931853a0a4cb94430068cca23b1856913d4a76",
+    "loop-02-adaptive-estimate.webm": "0a1af63a37be2f69838369b3f2f3b71f2e66afe6939f8d62b70056518bee466f",
+    "loop-03-page-block-detection.webm": "bfd8e17f8a7918a308452b8c6ab1d125e574d59ec6adbc983e2fb8d7818ed00c",
+    "loop-04-cross-page-table.webm": "a4887550b20cf40207a57065dd27fd806442ba00ae7e5371ad4d4912169bef57",
+    "loop-05-numeric-proof.webm": "9a98f77f882c743c5194e08f8e0fe035a6ed3196554fc969d995fe879269e411",
+    "loop-06-auto-repair.webm": "c0d298eb9d6dfcb15ccfdf0d31c32f2b616e45e7bb9511993294ac3edf7f9258",
+    "loop-07-knowledge-relations.webm": "b48b5d0ec650a803df47a2860a92cd6cb24a88ab93f4c13b9b8812a4992ec479",
+    "loop-08-export-ready.webm": "c4fb0ea0c6c4ffd1e182d7c527f7764386f8979dee3acf65f73b28009b39e0c2",
+    "structara-evidence-in-motion-60s.mp4": "579501dcdbe84ce993e9da0f101cce25b9243849a8ef3e94c48e2123316b4499",
+    "structara-evidence-in-motion-60s.webm": "28035beb57d2acb14c100a23476bceab07ba784592588f5b5e5a69909a2b6e78",
+    "structara-evidence-in-motion-poster.webp": "1e8b64ac36d513ba4475d8f647c1ce37ac71de59930c02c5de37b860e23c8f5a",
+    "structara-evidence-in-motion.en.vtt": "b4daac5878a3b24b031bdc2767494d0b15ca6ad6f69efd50ae06fdfc2b612acf"
+  }
+}

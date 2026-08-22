@@ -1,0 +1,13 @@
+id: corporate-filings
+version: 1.0.0
+display_name: Corporate Filings
+domains: [finance, corporate, filings]
+object_types: [company, filing, statement, metric, risk]
+root_views: [Companies, Filings, Risks, Metrics]
+moc_templates: [Companies, Risks, Metrics]
+folder_depth: 3
+naming_policy: stable-id-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, numeric_authority, period_unit, relation_evidence]
+export_profiles: [obsidian, ontology, neo4j, rag]

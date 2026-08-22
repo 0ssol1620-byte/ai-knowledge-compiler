@@ -18,7 +18,13 @@ from akc_telemetry import (
     contains_obvious_secret,
     create_telemetry_runtime,
     install_fastapi_observability,
+    observe_collection_estimate_calibration,
+    observe_collection_export,
+    observe_collection_retry_ratio,
     record_abuse_control_decision,
+    record_collection_credits_refunded,
+    record_collection_gpu_seconds,
+    record_collection_knowledge_tokens,
     record_product_analytics_event,
     record_product_analytics_snapshot,
     redact_telemetry,
@@ -166,6 +172,39 @@ def test_product_analytics_metrics_are_strictly_low_cardinality() -> None:
     assert event_samples
 
 
+def test_collection_estimation_and_cost_metrics_have_no_customer_labels() -> None:
+    customer_identifier = "owner@example.com"
+    observe_collection_estimate_calibration(
+        credit_error_ratio=0.10,
+        duration_error_ratio=0.20,
+        route_mix_error_ratio=0.05,
+    )
+    observe_collection_retry_ratio(0.01)
+    record_collection_gpu_seconds(4.5)
+    record_collection_knowledge_tokens(stage=customer_identifier, tokens=120)
+    observe_collection_export(
+        profile=customer_identifier,
+        duration_seconds=3.2,
+        storage_amplification_ratio=1.4,
+    )
+    record_collection_credits_refunded("2.5")
+
+    payload = render_prometheus().decode("utf-8")
+    for series in (
+        "akc_collection_estimate_credit_error_ratio",
+        "akc_collection_estimate_duration_error_ratio",
+        "akc_collection_route_mix_error_ratio",
+        "akc_collection_retry_ratio",
+        "akc_collection_gpu_seconds_total",
+        "akc_collection_knowledge_tokens_total",
+        "akc_collection_export_duration_seconds",
+        "akc_collection_storage_amplification_ratio",
+        "akc_collection_credits_refunded_total",
+    ):
+        assert series in payload
+    assert customer_identifier not in payload
+
+
 def _counter_value(counter: Any, sample_name: str) -> float:
     for family in counter.collect():
         for sample in family.samples:
@@ -235,12 +274,21 @@ def test_otel_configuration_rejects_credentials_and_is_required_in_production() 
     with pytest.raises(ValueError, match="production requires OpenTelemetry export"):
         Settings(
             env="production",
+            deployment_revision="a" * 40,
             database_url="postgresql+asyncpg://akc:password@db.internal/akc",
             jwt_secret="a" * 48,
             local_background_tasks=False,
             object_store_driver="s3",
             s3_endpoint_url=None,
             s3_use_ambient_credentials=True,
+            s3_source_access_key_id="source-access",
+            s3_source_secret_access_key="source-secret",
+            s3_working_access_key_id="working-access",
+            s3_working_secret_access_key="working-secret",
+            s3_derived_access_key_id="derived-access",
+            s3_derived_secret_access_key="derived-secret",
+            s3_audit_access_key_id="audit-access",
+            s3_audit_secret_access_key="audit-secret",
             external_ocr_enabled=False,
             private_mode=True,
             clamav_enabled=True,

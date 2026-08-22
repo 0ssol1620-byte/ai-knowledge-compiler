@@ -1,0 +1,456 @@
+{
+  "schema_version": "6.0.0",
+  "manifest_kind": "structara_v6_release_candidate_truth",
+  "assessed_at": "2026-08-01T21:10:00+09:00",
+  "masterplan": {
+    "name": "Structara_FINAL_Parallel_Pod_Adaptive_Routing_Autonomous_Verification_Masterplan_v6_KO_2026-08-01.md",
+    "document_id": "STRUCTARA-PARALLEL-POD-ADAPTIVE-ROUTING-AUTONOMOUS-VERIFICATION-V6-KO-20260801",
+    "version": "6.0.0",
+    "required_sections": "0-47",
+    "production_claim_status": "blocked-until-all-mandatory-gates-pass"
+  },
+  "release_status": "production_reject",
+  "promotion_authorized": false,
+  "champion_selection_authorized": false,
+  "claim_boundary": "Local implementation, a crash-resumable autonomous scheduler saga, post-acceptance invalidation/refund recovery, and an actual RunPod hello-world control smoke are recorded. They do not constitute OCR/parser/compiler model evaluation, Public Core completion, model speedup/cost evidence, or a production Champion decision.",
+  "repository": {
+    "github_repository": "0ssol1620-byte/ai-knowledge-compiler",
+    "branch": "agent/structara-ultra-premium-rebuild",
+    "tracking_ref": "origin/agent/structara-ultra-premium-rebuild",
+    "baseline_commit_sha": "ed8741e5272b486b5f953b778963f32e524a78ea",
+    "baseline_commit_committed_at": "2026-07-31T21:18:24+09:00",
+    "release_commit_sha": null,
+    "worktree_clean_at_assessment": false,
+    "snapshot_note": "Local release-candidate regression is recorded below, but concurrent v4/v6 changes and this tracked manifest were still uncommitted. A tracked manifest cannot contain its own not-yet-created final commit SHA without a post-commit attestation; clean hosted CI and deployment fields therefore remain explicitly pending."
+  },
+  "implementation": {
+    "parallel_runtime": {
+      "status": "implemented_local",
+      "package": "packages/parallel-runtime",
+      "module_count": 19,
+      "capabilities": [
+        "model_isolated_pools",
+        "deterministic_adaptive_sharding",
+        "context_only_overlap_ownership",
+        "hierarchical_adaptive_routing",
+        "cascade_speculation_hedge_straggler",
+        "immutable_attempt_lineage",
+        "dual_worker_health",
+        "l0_l6_validation",
+        "authority_first_arbitration",
+        "smallest_scope_recovery",
+        "document_continuity_merge",
+        "fail_closed_finalization",
+        "exactly_once_credits",
+        "deterministic_benchmark_repeats"
+      ]
+    },
+    "durable_persistence": {
+      "status": "implemented_local",
+      "migrations": [
+        "migrations/versions/0031_parallel_pod_runtime.py",
+        "migrations/versions/0032_accepted_block_invalidations.py"
+      ],
+      "table_count": 10,
+      "tables": [
+        "parse_shards",
+        "parse_attempts",
+        "attempt_validations",
+        "worker_health",
+        "semantic_health_events",
+        "continuity_edges",
+        "accepted_blocks",
+        "recovery_tasks",
+        "arbitration_decisions",
+        "accepted_block_invalidations"
+      ],
+      "postgresql_contracts": [
+        "tenant_rls",
+        "append_only_evidence_triggers",
+        "terminal_and_output_attempt_immutability",
+        "akc_dispatch_worker_least_privilege",
+        "akc_gpu_worker_least_privilege",
+        "job_version_generation_bound_foreign_keys",
+        "content_bound_single_refund_invalidation_trigger"
+      ],
+      "managed_postgresql_runtime_proof": false
+    },
+    "event_contract": {
+      "status": "implemented_local",
+      "schema_version": "1.0.0",
+      "event_count": 16,
+      "events": [
+        "shard.planned.v1",
+        "shard.dispatched.v1",
+        "attempt.started.v1",
+        "attempt.output.received.v1",
+        "attempt.validation.failed.v1",
+        "attempt.accepted.v1",
+        "attempt.rejected.v1",
+        "attempt.hedged.v1",
+        "worker.semantic.degraded.v1",
+        "worker.draining.v1",
+        "worker.quarantined.v1",
+        "recovery.region.requested.v1",
+        "recovery.completed.v1",
+        "continuity.merge.started.v1",
+        "continuity.merge.completed.v1",
+        "document.finalized.v1"
+      ]
+    },
+    "api_scheduler_ui": {
+      "status": "implemented_local",
+      "durable_orchestrator": "services/api/src/akc_api/parallel_orchestrator.py",
+      "transactional_store": "services/api/src/akc_api/parallel_runtime_store.py",
+      "gpu_option_contract": "services/api/src/akc_api/gpu_jobs.py",
+      "scheduler_admission": "services/scheduler/src/akc_scheduler/parallel_v6_admission.py",
+      "autonomous_scheduler_saga": "services/scheduler/src/akc_scheduler/autonomous_v6_pipeline.py",
+      "trusted_admission_verifier": "services/scheduler/src/akc_scheduler/trusted_v6_admission.py",
+      "autonomous_scheduler_contracts": [
+        "processing_job_progress_digest_cas_checkpoint",
+        "deterministic_content_bound_operation_keys",
+        "persisted_ed25519_exact_context_admission",
+        "bounded_recovery_and_straggler_hedge",
+        "crash_safe_resume_without_duplicate_submit_or_charge",
+        "continuity_and_finalization_fail_closed",
+        "post_finalization_state_retraction_and_generation_recovery",
+        "job_version_history_isolated_snapshot"
+      ],
+      "snapshot_route": "GET /v1/collections/{collection_id}/parallel/documents/{document_id}",
+      "snapshot_scope_contract": "Explicit processing_job_id plus document_version_id, or a single unambiguous active/latest materialized scope; wrong, incomplete, ambiguous, and unmaterialized active scopes fail closed.",
+      "web_component": "apps/web/src/components/v6/parallel-processing-theater.tsx",
+      "production_real_job_sse_proof": false
+    }
+  },
+  "benchmark_preflight": {
+    "observed_at": "2026-08-01T19:50:00+09:00",
+    "local_contract_gate": "pass",
+    "production_gate": "reject",
+    "production_evidence": false,
+    "candidate_count": 45,
+    "required_candidate_count": 28,
+    "model_revisions_pinned_count": 20,
+    "required_model_revisions_pinned_count": 18,
+    "required_candidates_promotion_eligible": 0,
+    "model_pool_count": 16,
+    "public_core_suites": [
+      "omnidocbench",
+      "parsebench",
+      "olmocr-bench"
+    ],
+    "public_core_required_repetitions": 3,
+    "external_runs_completed_by_preflight": 0,
+    "preflight_sha256": "sha256:cd72b31c86d798fc7fe2d611b4cf011e248762a302e338e8b7dc659dcf86b43c",
+    "artifact_hashes": {
+      "candidate_registry": "sha256:de0b9b45ef1a4b506de027193cb207a85e37126f2540d5c5ff7cbf6eec413dbc",
+      "champion_matrix_template": "sha256:4b43aef927b61f803c9455230c1defc17e1080fa5fd1e5aced26757c48e7ae40",
+      "pool_registry": "sha256:3b0d22495d96fccf3db6d103559037ecac6cd897257cfd430d9c9a000dc7e2f2",
+      "public_benchmark_registry": "sha256:4b536485a0ce8304b906e3206fcc60d8d438a21c0202a3c58f6e728ac4f96cbe",
+      "v6_dataset_registry": "sha256:676b7c2c4c8e137c0137e0ea878d1a7814e1cb2bed8c9c36e88e16de16d86993"
+    }
+  },
+  "runpod_control_smoke": {
+    "status": "passed_control_plane_only",
+    "actual_provider_execution": true,
+    "quality_or_champion_evidence": false,
+    "cohort_id": "cohort-control-20260801",
+    "run_tag": "v6-control-smoke-20260801-01",
+    "endpoint_id": "gjg2egc4wwvuts",
+    "endpoint_terminal_state": "provider_absent",
+    "image": "runpod/serverless-hello-world@sha256:4da901aa929597f5f545753882530176dc63c5dead7b126ba6eec9a67b7bac7b",
+    "gpu_pool_requested": "AMPERE_16",
+    "worker_minimum": 0,
+    "worker_maximum": 4,
+    "required_repeat_count": 3,
+    "acknowledged_primary_dispatch_count": 3,
+    "all_terminal_status": "COMPLETED",
+    "plan_sha256": "sha256:43d96f8961532841143a43b7cfdd29cd49925adac0c152937c7edf7bea2a80d2",
+    "environment_sha256": "sha256:33cad48c7a4693cb6a9326839993e9d1978a9849e25b59a6d6a2159724519df7",
+    "jobs": [
+      {
+        "repeat_index": 1,
+        "delay_time_ms": 5077,
+        "execution_time_ms": 149,
+        "output_sha256": "sha256:07cf55095ef805a89c07bf3d4764b07352a8f4b2cc3df166e89d2193131536bd"
+      },
+      {
+        "repeat_index": 2,
+        "delay_time_ms": 4967,
+        "execution_time_ms": 139,
+        "output_sha256": "sha256:07cf55095ef805a89c07bf3d4764b07352a8f4b2cc3df166e89d2193131536bd"
+      },
+      {
+        "repeat_index": 3,
+        "delay_time_ms": 4921,
+        "execution_time_ms": 153,
+        "output_sha256": "sha256:07cf55095ef805a89c07bf3d4764b07352a8f4b2cc3df166e89d2193131536bd"
+      }
+    ],
+    "provider_billing_precleanup": {
+      "record_count": 0,
+      "provider_total_field_usd": "0",
+      "response_sha256": "sha256:db549895f1596e12b6a6abd24082166bed147d46e4c41209f3c3fff340013a57",
+      "actual_cost_final": false,
+      "note": "Zero records may reflect provider billing latency. This is not a free-service or final zero-cost claim."
+    },
+    "provider_billing_followup": {
+      "local_artifact": "artifacts/v6-runpod-smoke/06-provider-cost-followup.json",
+      "tracked_in_git": false,
+      "record_count": 0,
+      "provider_total_field_usd": "0",
+      "user_charge_usd": null,
+      "receipt_sha256": "sha256:5df2e2354ae1f7310c49e69dcec862bd6e874ae68a6d84cf8d780bf154ccd499",
+      "receipt_source_field": "response_sha256",
+      "actual_cost_final": false,
+      "production_cost_evidence_sufficient": false,
+      "note": "The follow-up still returned no billing records. Provider accounting latency or unsettled billing cannot be excluded, so this is not a free-service or final zero-cost claim and does not close MP6."
+    },
+    "cleanup": {
+      "observation": "GET_404_NOT_FOUND",
+      "observed_at": "2026-08-01T07:10:45.825363Z",
+      "receipt_sha256": "sha256:d968ac2e2702a40db4ecb5c95b5866c043f2d7c2ae40a32f6783efa149e4abbb"
+    },
+    "orphan_audit": {
+      "passed": true,
+      "active_endpoint_count": 0,
+      "tagged_endpoint_count": 0,
+      "orphan_endpoint_count": 0,
+      "observed_at": "2026-08-01T07:11:11.507213Z",
+      "receipt_sha256": "sha256:a875a4c897ddbd88e36cfea8545619c8f4e96c539708d7e05d2eaa9892898671"
+    },
+    "raw_evidence": {
+      "local_path": "artifacts/v6-runpod-smoke",
+      "tracked_in_git": false,
+      "external_immutable_store_uri": null,
+      "release_signature": null
+    }
+  },
+  "local_validation": {
+    "status": "final_local_release_regression_passed_commit_binding_pending",
+    "runs": [
+      {
+        "scope": "packages/parallel-runtime/tests",
+        "result": "passed",
+        "passed": 144,
+        "snapshot_kind": "final"
+      },
+      {
+        "scope": "benchmark/tests/v6",
+        "result": "passed",
+        "passed": 53,
+        "snapshot_kind": "final"
+      },
+      {
+        "scope": "P0/P1 closure: orchestrator, runtime store, migrations, job/version snapshot isolation, autonomous scheduler, and GPU admission",
+        "result": "passed",
+        "passed": 45,
+        "snapshot_kind": "final"
+      },
+      {
+        "scope": "autonomous scheduler SQLite saga",
+        "result": "passed",
+        "passed": 14,
+        "snapshot_kind": "final",
+        "scenarios": [
+          "success",
+          "semantic_failure_bounded_recovery",
+          "straggler_hedge_winner_only_settlement",
+          "post_submit_crash_resume_exactly_once",
+          "production_test_evidence_rejected",
+          "persisted_ed25519_exact_binding_accepted",
+          "enum_and_digest_spoof_rejected",
+          "structural_fake_verifier_rejected",
+          "payload_candidate_attempt_job_release_replay_rejected",
+          "unpinned_key_rejected"
+        ]
+      },
+      {
+        "scope": "v6 web focused",
+        "result": "passed",
+        "passed": 18,
+        "snapshot_kind": "final"
+      },
+      {
+        "scope": "RunPod v2 client and exact-three coordinator subset",
+        "result": "passed",
+        "passed": 14,
+        "snapshot_kind": "final",
+        "note": "This subset is included in the 53-test benchmark/v6 suite."
+      },
+      {
+        "scope": "SQLite Alembic 0001-to-head-check-down-0031-up-head-check",
+        "result": "passed",
+        "snapshot_kind": "final",
+        "evidence_boundary": "SQLite structural migration proof, not managed PostgreSQL production evidence."
+      }
+    ],
+    "full_repository_regression": {
+      "status": "local_pass_commit_binding_pending",
+      "release_commit_sha": null,
+      "self_reference_boundary": "This tracked manifest is part of the release commit, so its final commit SHA must be bound by a post-commit attestation or deployment receipt rather than guessed in this pre-commit file.",
+      "commands_and_results": [
+        {
+          "scope": "full Python suite",
+          "result": "passed",
+          "passed": 1440,
+          "duration_seconds": 554.13
+        },
+        {
+          "scope": "web Vitest",
+          "command": "pnpm --filter @akc/web test",
+          "result": "passed",
+          "files_passed": 42,
+          "passed": 200,
+          "duration_seconds": 192.71,
+          "safe_markdown_tests_included": 2,
+          "authoritative_local_result": true
+        },
+        {
+          "scope": "deterministic E2E",
+          "result": "passed",
+          "passed": 71,
+          "intentional_skipped": 15,
+          "duration_minutes": 2.3,
+          "server_mode": "optimized standalone demo build"
+        },
+        {
+          "scope": "browser matrix",
+          "result": "passed",
+          "passed": 9,
+          "total": 9,
+          "projects": [
+            "chromium-360",
+            "chromium-390",
+            "chromium-768",
+            "chromium-1024",
+            "chromium-1280",
+            "chromium-1440",
+            "chromium-1920",
+            "firefox",
+            "webkit"
+          ],
+          "webkit_final_reverification": "passed"
+        },
+        {
+          "scope": "v4 brand evidence",
+          "result": "passed",
+          "capture_count": 532,
+          "blocking_finding_count": 0
+        },
+        {
+          "scope": "768px reduced-motion CLS repetition",
+          "result": "passed",
+          "first_repeat_count": 12,
+          "confirmation_repeat_count": 6,
+          "total_repeat_count": 18,
+          "nonzero_cls_count": 0,
+          "observed_cls": 0
+        },
+        {
+          "scope": "Next.js production build",
+          "result": "passed",
+          "status": "green"
+        },
+        {
+          "scope": "Storybook production build",
+          "result": "passed",
+          "status": "green"
+        },
+        {
+          "scope": "dependency and repository security",
+          "result": "passed",
+          "checks": [
+            "pip_audit_no_known_vulnerabilities",
+            "pnpm_audit_no_known_vulnerabilities",
+            "gpu_worker_bandit_green",
+            "repository_policy_validation",
+            "deployment_contract_validation"
+          ]
+        }
+      ]
+    },
+    "hosted_ci": {
+      "status": "pending_release_commit",
+      "workflow_runs": []
+    }
+  },
+  "gates": {
+    "G0": "blocked_external",
+    "G1": "blocked_external",
+    "G2": "blocked_external",
+    "G3": "blocked_external",
+    "G4": "blocked_external",
+    "G5": "blocked_external",
+    "G6": "blocked_external",
+    "G7": "blocked_external",
+    "G8": "partial_control_smoke_only",
+    "G9": "reject",
+    "MP0": "implemented_local",
+    "MP1": "partial_control_exact_three_no_model_speedup",
+    "MP2": "partial_local_drills_only",
+    "MP3": "partial_local_drills_only",
+    "MP4": "implemented_local",
+    "MP5": "partial_local_fixtures_only",
+    "MP6": "partial_cleanup_proven_final_model_cost_missing"
+  },
+  "champion_matrix": {
+    "path": "benchmark/v6/champion-matrix.yaml",
+    "status": "production_reject_external_runs_not_executed",
+    "page_class_count": 8,
+    "resolved_primary_count": 0,
+    "unresolved_primary_count": 8,
+    "majority_vote_as_authority": "forbidden"
+  },
+  "deployment": {
+    "provider": "vercel",
+    "project": "structara-knowledge-compiler",
+    "target": "production",
+    "canonical_url": "https://structara-knowledge-compiler.vercel.app",
+    "release_deploy_status": "pending_post_commit_publish_and_live_attestation",
+    "deployment_id": null,
+    "immutable_url": null,
+    "deployed_commit_sha": null,
+    "commit_sha_exposed": false,
+    "latest_release_commit_confirmed_deployed": false,
+    "live_verification": null,
+    "note": "Local regression is green. The release commit, push, Vercel deployment, and live SHA attestation occur after this pre-commit manifest is written. Deployment success does not change the external model benchmark production gate."
+  },
+  "evidence_documents": [
+    "V6_MASTERPLAN_TRACEABILITY.md",
+    "benchmark/v6/REQUIREMENTS_TRACEABILITY.md",
+    "docs/runbooks/v6-parallel-runtime.md",
+    "docs/release/STRUCTARA_V6_COMPLETION_REPORT_2026-08-01.md",
+    "docs/release/V6_DEPLOYMENT_MANIFEST.json"
+  ],
+  "external_blockers": [
+    "EXACT_MODEL_ARTIFACT_RUNTIME_IDENTITIES_PENDING",
+    "MANDATORY_EXTERNAL_PUBLIC_PRIVATE_ROBUSTNESS_RUNS_NOT_EXECUTED",
+    "EXACT_THREE_SAME_ENVIRONMENT_PUBLIC_CORE_REPEATS_NOT_EXECUTED",
+    "ACTUAL_MODEL_RUNPOD_COST_AND_SPEEDUP_NOT_MEASURED",
+    "REAL_PROVIDER_FAILURE_AND_SEMANTIC_HEALTH_DRILLS_NOT_EXECUTED",
+    "PACKAGE_RETRIEVAL_AND_LIVE_PRODUCT_EXTERNAL_EVIDENCE_PENDING",
+    "SIGNED_EXTERNAL_EVIDENCE_MISSING",
+    "LICENSE_DECISIONS_PENDING",
+    "CHAMPION_MATRIX_UNRESOLVED",
+    "FINAL_RELEASE_COMMIT_CI_DEPLOYMENT_ATTESTATION_PENDING"
+  ],
+  "update_required_after_final_release": [
+    "Bind repository.release_commit_sha with a post-commit attestation; do not guess or self-reference the SHA in this tracked pre-commit manifest.",
+    "Bind the authoritative 42-file, 200-test web Vitest result to the post-commit attestation with its command timestamp and report hash.",
+    "Attach hosted CI workflow URLs and conclusions for the release SHA.",
+    "Fill deployment ID, immutable URL, deployed SHA, health payload, route probes, and live verification time.",
+    "Move ignored RunPod receipts to an immutable external evidence store and attach URI/hash/signature if they are used for release evidence.",
+    "Reconcile provider billing against a settled billing window or final invoice; both current empty record sets are insufficient and must never be presented as confirmed zero cost."
+  ],
+  "decision": {
+    "verdict": "Production Reject",
+    "local_v6_implementation": "implemented_for_recorded_scope",
+    "runpod_control_lifecycle": "passed",
+    "runpod_orphan_endpoint_count": 0,
+    "mandatory_model_benchmark_completion": false,
+    "actual_model_cost_speedup_completion": false,
+    "signed_external_evidence_completion": false,
+    "production_champion": null,
+    "next_state_requires": "Close every G0-G8 and MP0-MP6 external condition against one immutable release identity, then produce signed actual evidence before G9 or any Champion primary can be promoted."
+  }
+}

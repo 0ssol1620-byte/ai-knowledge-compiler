@@ -1,0 +1,7 @@
+blueprint: research-library
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: finding_keeps_citation, fixture: evidence_supported, expected: pass}
+  - {id: ambiguous_author, fixture: homonym, expected: unresolved}
+  - {id: absent_citation_target, fixture: broken_reference, expected: quarantine}

@@ -20,6 +20,11 @@ def test_all_six_product_domain_packs_are_versioned_and_unique() -> None:
         "archive_book_pack",
     }
     assert all(pack.quality_rules for pack in registry.packs)
+    assert all(
+        rule.severity != "review_required" or rule.autonomous_outcome == "unresolved"
+        for pack in registry.packs
+        for rule in pack.quality_rules
+    )
     assert registry.get("legal_contract_pack").forbidden_claims
 
 

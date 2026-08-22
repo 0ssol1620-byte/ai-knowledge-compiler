@@ -77,7 +77,7 @@ function DemoAdminPage() {
                 <code>job_28c9…</code>
               </td>
               <td>PROVIDER_TIMEOUT</td>
-              <td>native → paddle</td>
+              <td>source-native → visual precision</td>
               <td>2 / 3</td>
               <td>
                 <button

@@ -71,6 +71,7 @@ _ALLOWED_OPTION_KEYS = frozenset(
         "page_index0",
         "page_range",
         "page_width_px",
+        "parallel_v6",
         "preprocessing_transform_sha256",
         "prompt_revision",
         "quality_profile",
@@ -81,6 +82,29 @@ _ALLOWED_OPTION_KEYS = frozenset(
         "tile_size",
         "top_p",
         "unwarp",
+    }
+)
+
+_PARALLEL_V6_SCHEMA_VERSION = "parallel-v6-output-admission-1.0"
+_PARALLEL_V6_ISSUER = "akc-api"
+_PARALLEL_V6_ENVELOPE_FIELDS = frozenset(
+    {
+        "schema_version",
+        "issuer",
+        "tenant_id",
+        "collection_id",
+        "processing_job_id",
+        "document_id",
+        "document_version_id",
+        "shard_id",
+        "attempt_id",
+        "expected_input_sha256",
+        "expected_shard_input_sha256",
+        "expected_request_sha256",
+        "expected_output_object_key",
+        "expected_model_revision",
+        "expected_runtime_image_digest",
+        "expected_adapter_version",
     }
 )
 
@@ -285,7 +309,7 @@ class GpuInvocationSpec:
             raise ValueError("GPU input and output object keys must differ")
         if not 1 <= self.max_attempts <= 10:
             raise ValueError("max_attempts must be 1..10")
-        _validate_options(self.options)
+        _validate_options(self.options, spec=self)
         if (
             self.transition_policy is not None
             and self.transition_policy.source_provider_key != self.provider_key
@@ -381,12 +405,15 @@ def _validate_object_key(value: str, *, tenant_id: uuid.UUID) -> None:
         raise ValueError("object key crosses tenant scope")
 
 
-def _validate_options(options: dict[str, Any]) -> None:
+def _validate_options(options: dict[str, Any], *, spec: GpuInvocationSpec) -> None:
     if set(options) - _ALLOWED_OPTION_KEYS:
         raise ValueError("unknown or content-bearing GPU option")
     if len(_canonical_json(options)) > 16 * 1024:
         raise ValueError("GPU options too large")
     for key, value in options.items():
+        if key == "parallel_v6":
+            _validate_parallel_v6_envelope(value, spec=spec)
+            continue
         values = value if isinstance(value, list) else [value]
         if isinstance(value, (dict, bytes, bytearray)) or len(values) > 64:
             raise ValueError(f"invalid GPU option: {key}")
@@ -404,6 +431,74 @@ def _validate_options(options: dict[str, Any]) -> None:
             if isinstance(item, str) and 0 < len(item) <= 160:
                 continue
             raise ValueError(f"invalid GPU option: {key}")
+
+
+def _validate_parallel_v6_envelope(value: object, *, spec: GpuInvocationSpec) -> None:
+    if not isinstance(value, dict) or set(value) != _PARALLEL_V6_ENVELOPE_FIELDS:
+        raise ValueError("invalid parallel_v6 GPU option")
+    if (
+        value.get("schema_version") != _PARALLEL_V6_SCHEMA_VERSION
+        or value.get("issuer") != _PARALLEL_V6_ISSUER
+    ):
+        raise ValueError("invalid parallel_v6 GPU option")
+
+    for key in (
+        "tenant_id",
+        "collection_id",
+        "processing_job_id",
+        "document_id",
+        "shard_id",
+        "attempt_id",
+    ):
+        raw = value.get(key)
+        if not isinstance(raw, str):
+            raise ValueError("invalid parallel_v6 GPU option")
+        try:
+            parsed = uuid.UUID(raw)
+        except ValueError as exc:
+            raise ValueError("invalid parallel_v6 GPU option") from exc
+        if str(parsed) != raw:
+            raise ValueError("invalid parallel_v6 GPU option")
+
+    for key in (
+        "expected_input_sha256",
+        "expected_shard_input_sha256",
+        "expected_request_sha256",
+    ):
+        raw = value.get(key)
+        if not isinstance(raw, str) or _SHA256.fullmatch(raw) is None:
+            raise ValueError("invalid parallel_v6 GPU option")
+
+    expected = {
+        "tenant_id": str(spec.tenant_id),
+        "processing_job_id": str(spec.job_id),
+        "document_id": str(spec.document_id),
+        "document_version_id": spec.document_version_id,
+        "expected_input_sha256": spec.input_sha256,
+        "expected_output_object_key": spec.output_object_key,
+        "expected_model_revision": spec.model_revision,
+        "expected_runtime_image_digest": spec.runtime_image_digest,
+        "expected_adapter_version": spec.adapter_version,
+    }
+    if any(value.get(key) != expected_value for key, expected_value in expected.items()):
+        raise ValueError("parallel_v6 GPU option scope mismatch")
+
+    for key in (
+        "document_version_id",
+        "expected_output_object_key",
+        "expected_model_revision",
+        "expected_runtime_image_digest",
+        "expected_adapter_version",
+    ):
+        raw = value.get(key)
+        if (
+            not isinstance(raw, str)
+            or not raw
+            or len(raw) > 500
+            or any(ord(character) < 32 for character in raw)
+        ):
+            raise ValueError("invalid parallel_v6 GPU option")
+    _validate_object_key(spec.output_object_key, tenant_id=spec.tenant_id)
 
 
 async def append_gpu_event(

@@ -7,6 +7,7 @@ from logging.config import fileConfig
 
 from akc_api.database import Base
 from akc_api.models import *  # noqa: F403
+from akc_api.parallel_models import *  # noqa: F403
 from akc_api.project_access_models import *  # noqa: F403
 from akc_api.team_models import *  # noqa: F403
 from akc_url_fetcher.models import *  # noqa: F403

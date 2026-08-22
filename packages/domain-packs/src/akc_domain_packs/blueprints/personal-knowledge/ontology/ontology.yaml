@@ -1,0 +1,8 @@
+blueprint: personal-knowledge
+kind: ontology
+version: 1.0.0
+classes: [Note, Project, Person, Topic, Decision, Task]
+relations:
+  - {type: belongs_to_project, source: Note, target: Project, authority: structured_derived}
+  - {type: mentions_person, source: Note, target: Person, authority: source_explicit}
+  - {type: records_decision, source: Note, target: Decision, authority: source_explicit}

@@ -60,6 +60,10 @@ Refresh/reconnect, retry, deletion, and deterministic export are demonstrated.
 - Champion recipe and rollback target approved.
 - Numeric, page-loss, repetition, provenance, tenant, license, and external
   policy hard-fails are zero.
+- OmniDocBench, ParseBench, and olmOCR-Bench Full Public Core runs use the
+  locked registry, GT-free immutable prediction archives, official evaluators,
+  Structara critical evaluation, three same-environment repetitions, and a
+  signed report. Adapter or evaluator smoke tests do not close this gate.
 
 ## Gate 3 - Private beta
 

@@ -1,0 +1,45 @@
+{
+  "schema_version": "2.0.0",
+  "claim_class": "internal_reproducibility_evidence",
+  "corpus": "OmniDocBench official demo / 18 images / Apache-2.0",
+  "ground_truth_sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207",
+  "evaluator": "OmniDocBench@193627ae9e97d89188468ed1ee3b7a856ff76044",
+  "ground_truth_mounted_on_inference_workers": false,
+  "candidates": [
+    {
+      "id": "mineru-3.4.4-pipeline",
+      "model_identity": "MinerU 3.4.4 pipeline@79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "evidence_summary_sha256": "sha256:039ad9a40be6e04fe69127e8a183abd29c3a0059cf40f6ec5b2d92a4a17e98f1",
+      "inference_run_summary_sha256": "sha256:a10f660307119715a8cd6ae237a8dd14cdcf29023a9ffe440624abf14f14d529"
+    },
+    {
+      "id": "paddleocr-vl-1.6-fastdeploy-c8",
+      "model_identity": "PaddleOCR-VL 1.6 FastDeploy@sha256:83482fee6ec1a6bd7b822f32dcc3cb9a412419786b2ae6cc87320290132334a2",
+      "evidence_summary_sha256": "sha256:b309e6c59ce7c583b550c7645faa345cc2eeb4614df9b822199bfbc4d4f9a6eb",
+      "inference_run_summary_sha256": "sha256:40d5079ddc999ba4abf40707da255082ed87f7462244bf3f7496de90d4fd9c92"
+    },
+    {
+      "id": "mineru-3.4.4-vlm-c1",
+      "model_identity": "MinerU 3.4.4 VLM c1@79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "evidence_summary_sha256": "sha256:ac3ea843e96d333d8bddcb6cee4089e72ce6a69c0a80aa6ee7b753f83f2b5365",
+      "inference_run_summary_sha256": "sha256:ee5046059fae45bf40b2b42910a72e2718cfaebd7eb3ee3c887607a16ccfddf5"
+    },
+    {
+      "id": "deepseek-ocr-2-3b-transformers",
+      "model_identity": "DeepSeek-OCR-2@aaa02f3811945a91062062994c5c4a3f4c0af2b0 / artifact sha256:ddb70c12791d2583344b73a065c8b4757e5827aa2fe608e763074c33bfab876c",
+      "evidence_summary_sha256": "sha256:ff7ef2a6058e702c1f2122405fcb5525649e345eb18c0f4fac3d58a220848c2e",
+      "inference_run_summary_sha256": "sha256:23be642af7c7e06c67b5b12e6412dae62624b73d979ea2427a9a1c4ef64388e6"
+    },
+    {
+      "id": "ovisocr2-0.9b-vllm-0.22.1-cu129",
+      "model_identity": "OvisOCR2@65c619d374b55d4152e85150fc1b003700bc1f0c / artifact sha256:847f485bc71908a70075fe6b0d76609f52bc7f1e730c03670c764da56da08c9a / vLLM 0.22.1+cu129",
+      "evidence_summary_sha256": "sha256:3ce8e385c087591de8ea5af270109356b7e551f48a7ae3d8b008c42b8b8d5c83",
+      "inference_run_summary_sha256": "sha256:2ae67f243591bff9bce35cbb9377bb27eb0565cc47b34c69599cd3c513459eb1"
+    }
+  ],
+  "unavailable_metrics": [
+    "cdm",
+    "overall"
+  ],
+  "publication_boundary": "Official partial metrics on the demo subset; not a full leaderboard result."
+}

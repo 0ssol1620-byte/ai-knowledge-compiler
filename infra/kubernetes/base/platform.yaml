@@ -222,6 +222,11 @@ spec:
               value: 0.0.0.0
             - name: NEXT_TELEMETRY_DISABLED
               value: "1"
+            - name: AKC_DEPLOYMENT_REVISION
+              valueFrom:
+                configMapKeyRef:
+                  name: akc-runtime
+                  key: AKC_DEPLOYMENT_REVISION
           startupProbe:
             httpGet:
               path: /login

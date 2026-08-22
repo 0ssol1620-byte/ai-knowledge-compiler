@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+authority_sha256: 4e1c6465d0445f1363509b535b2ededd2c7f8bc85f41bf3f025b41a912ebc2d8
+policy:
+  ground_truth_on_inference_worker: forbidden
+  minimum_promotion_repeats: 3
+  unavailable_metric_as_zero: forbidden
+  learned_authority_without_calibration: forbidden
+experiments:
+  - { id: E01, name: static_preflight_rule_baseline, owner: router, state: implemented }
+  - { id: E02, name: hierarchical_multilabel_shadow, owner: router, state: calibration_required }
+  - { id: E03, name: out_of_distribution_abstention, owner: router, state: implemented }
+  - { id: E04, name: document_family_cluster_identity, owner: router, state: implemented }
+  - { id: E05, name: page_execution_cluster_sampling, owner: router, state: implemented }
+  - { id: E06, name: adaptive_sampling_extrema, owner: router, state: implemented }
+  - { id: E07, name: beta_binomial_sequential_stop, owner: router, state: implemented }
+  - { id: E08, name: pcu_credit_calibration, owner: parallel_runtime, state: continuous_evaluation }
+  - { id: E09, name: monte_carlo_schedule_p50_p95, owner: router, state: implemented }
+  - { id: E10, name: risk_constrained_selective_router, owner: router, state: implemented }
+  - { id: E11, name: learned_router_shadow_promotion, owner: router, state: calibration_required }
+  - { id: E12, name: continuity_aware_shard_sizing, owner: parallel_runtime, state: implemented }
+  - { id: E13, name: hedged_execution_tail_latency, owner: parallel_runtime, state: implemented }
+  - { id: E14, name: parser_portfolio_stage_gate, owner: benchmark, state: formal_demo_portfolio_complete_continuous_evaluation }
+  - { id: E15, name: validation_evidence_levels_0_10, owner: quality, state: implemented }
+  - { id: E16, name: hard_gate_and_evidence_sufficiency, owner: quality, state: implemented }
+  - { id: E17, name: risk_coverage_selective_verification, owner: quality, state: implemented }
+  - { id: E18, name: semantic_health_stratified_beta, owner: parallel_runtime, state: implemented }
+  - { id: E19, name: semantic_health_ewma_cusum, owner: parallel_runtime, state: implemented }
+  - { id: E20, name: quarantine_impact_scope_precision, owner: parallel_runtime, state: implemented }
+  - { id: E21, name: cross_page_table_continuity, owner: cir, state: implemented }
+  - { id: E22, name: knowledge_claim_provenance, owner: knowledge, state: implemented }
+  - { id: E23, name: fellegi_sunter_entity_resolution, owner: retrieval, state: implemented }
+  - { id: E24, name: retrieval_answer_verification, owner: retrieval, state: implemented }

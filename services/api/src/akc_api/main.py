@@ -32,6 +32,7 @@ from akc_security import (
     PlanTier,
     RedisPdfSecretStore,
     UnsafePreviewError,
+    crop_preview_png,
     detect_sensitive_data,
     ensure_portable_markdown_safe,
     redact_preview_png,
@@ -59,6 +60,7 @@ from fastapi import (
     Form,
     Header,
     HTTPException,
+    Path,
     Query,
     Request,
     Response,
@@ -98,6 +100,13 @@ from akc_api.auth_security import MfaSecurity, OidcClient, OidcTransactionCipher
 from akc_api.batch_api import router as batch_router
 from akc_api.block_merge import three_way_merge
 from akc_api.cdr import build_cdr_adapter
+from akc_api.collection_api import router as collection_router
+from akc_api.collection_integrity_decisions import router as collection_integrity_router
+from akc_api.collection_metadata import build_collection_metadata_codec
+from akc_api.collection_retrieval_api import router as collection_retrieval_router
+from akc_api.collection_retrieval_runtime import (
+    build_collection_semantic_retrieval_runtime,
+)
 from akc_api.database import Database, get_session, set_rls_context
 from akc_api.deletions import (
     DeletionTargetType,
@@ -134,6 +143,7 @@ from akc_api.models import (
     ApiKey,
     Block,
     BlockRevision,
+    CollectionRegion,
     CreditAccount,
     CreditLedger,
     DeletionReceipt,
@@ -160,16 +170,19 @@ from akc_api.models import (
     Tenant,
     UploadSession,
     User,
+    VerificationRecord,
     WebhookDelivery,
     WebhookEndpoint,
     utcnow,
 )
+from akc_api.openapi_contract import install_v4_openapi_contract
 from akc_api.page_attempts import (
     TERMINAL_PAGE_STATES,
     create_page_attempt,
     latest_attempts_for_pages,
     next_attempt_number,
 )
+from akc_api.parallel_api import router as parallel_runtime_router
 from akc_api.payment_routes import router as payment_router
 from akc_api.payments import build_payment_provider
 from akc_api.pdf_passwords import router as pdf_password_router
@@ -283,6 +296,7 @@ from akc_api.storage import (
 from akc_api.team_api import TeamInvitationTokenCodec
 from akc_api.team_api import router as team_router
 from akc_api.trial_api import router as trial_api_router
+from akc_api.trust_api import router as trust_router
 from akc_api.vault_merge import (
     DEFAULT_VAULT_ZIP_LIMITS,
 )
@@ -417,7 +431,9 @@ async def _supersede_document_work(
                 .where(
                     ProcessingJob.tenant_id == tenant_id,
                     ProcessingJob.document_id == document_id,
-                    ProcessingJob.status.in_(("queued", "running", "waiting_review")),
+                    ProcessingJob.status.in_(
+                        ("queued", "running", "paused", "waiting_review")
+                    ),
                 )
                 .with_for_update()
             )
@@ -4187,7 +4203,7 @@ async def _archived_job_snapshot_payload(
     page_payload: list[dict[str, Any]] = []
     for page in pages:
         page_id = str(page.get("id"))
-        route = str(page.get("route") or "manual_review")
+        route = str(page.get("route") or "unresolved")
         latest_attempt = latest_attempts.get(page_id)
         quality_value = page.get("quality_metrics")
         quality_metrics = quality_value if isinstance(quality_value, dict) else {}
@@ -4208,7 +4224,8 @@ async def _archived_job_snapshot_payload(
                     "paddle_fast": "Fast",
                     "hpd_fast": "Fast",
                     "mistral_fallback": "Fallback",
-                    "manual_review": "Fallback",
+                    "unresolved": "Unresolved",
+                    "quarantine": "Quarantined",
                 }.get(route, "Fallback"),
                 "quality_state": quality_state,
                 "attempt": (
@@ -4343,7 +4360,8 @@ async def _archived_job_snapshot_payload(
             ),
             "native_pages": sum(page.get("route") == "native" for page in pages),
             "ocr_pages": sum(
-                page.get("route") not in {None, "native", "manual_review"} for page in pages
+                page.get("route") not in {None, "native", "unresolved", "quarantine"}
+                for page in pages
             ),
             "tables_rebuilt": sum(block.get("type") == "table" for block in blocks),
             "knowledge_notes": sum(note.get("is_active", True) is not False for note in notes),
@@ -4351,8 +4369,8 @@ async def _archived_job_snapshot_payload(
             "elapsed_seconds": max(0.0, (finished - started).total_seconds()),
             "blocks": len(blocks),
             "route_totals": {
-                route: sum(str(page.get("route") or "manual_review") == route for page in pages)
-                for route in sorted({str(page.get("route") or "manual_review") for page in pages})
+                route: sum(str(page.get("route") or "unresolved") == route for page in pages)
+                for route in sorted({str(page.get("route") or "unresolved") for page in pages})
             },
             "block_type_totals": _snapshot_block_type_totals(blocks),
             "removed_header_footer": _snapshot_removed_marginals(blocks),
@@ -4589,7 +4607,7 @@ async def _job_snapshot_payload(
 
     page_payload = []
     for page in pages:
-        route = page.route or "manual_review"
+        route = page.route or "unresolved"
         latest_attempt = latest_page_attempts.get(page.id)
         quality_state = str(page.quality_metrics.get("state", "review"))
         if quality_state not in {"verified", "warning", "review", "failed"}:
@@ -4606,7 +4624,8 @@ async def _job_snapshot_payload(
                     "paddle_fast": "Fast",
                     "hpd_fast": "Fast",
                     "mistral_fallback": "Fallback",
-                    "manual_review": "Fallback",
+                    "unresolved": "Unresolved",
+                    "quarantine": "Quarantined",
                 }.get(route, "Fallback"),
                 "quality_state": quality_state,
                 "attempt": (
@@ -4701,7 +4720,9 @@ async def _job_snapshot_payload(
         "summary": {
             "completed_pages": sum(page.status == "COMPLETED" for page in pages),
             "native_pages": sum(page.route == "native" for page in pages),
-            "ocr_pages": sum(page.route not in {None, "native", "manual_review"} for page in pages),
+            "ocr_pages": sum(
+                page.route not in {None, "native", "unresolved", "quarantine"} for page in pages
+            ),
             "tables_rebuilt": sum(block.block_type == "table" for block in blocks),
             "knowledge_notes": await session.scalar(
                 select(func.count(KnowledgeNote.id)).where(
@@ -4720,8 +4741,8 @@ async def _job_snapshot_payload(
             ),
             "blocks": len(blocks),
             "route_totals": {
-                route: sum((page.route or "manual_review") == route for page in pages)
-                for route in sorted({page.route or "manual_review" for page in pages})
+                route: sum((page.route or "unresolved") == route for page in pages)
+                for route in sorted({page.route or "unresolved" for page in pages})
             },
             "block_type_totals": _snapshot_block_type_totals(serialized_blocks),
             "removed_header_footer": _snapshot_removed_marginals(serialized_blocks),
@@ -5179,6 +5200,111 @@ async def get_page_preview(
             "Content-Security-Policy": "default-src 'none'; sandbox",
             "X-AKC-Preview-Redaction": redaction_state,
             "X-AKC-Masked-Regions": str(masked_region_count),
+        },
+    )
+
+
+@router.get("/document-versions/{document_version_id}/pages/{page_number}/preview")
+async def get_document_version_page_preview(
+    document_version_id: uuid.UUID,
+    page_number: Annotated[int, Path(ge=1)],
+    request: Request,
+    principal: PrincipalDep,
+    session: SessionDep,
+) -> Response:
+    """Resolve an active document version to its authenticated page preview."""
+
+    version = await session.scalar(
+        select(DocumentVersion).where(
+            DocumentVersion.tenant_id == principal.tenant_id,
+            DocumentVersion.id == document_version_id,
+        )
+    )
+    if version is None:
+        raise HTTPException(status_code=404, detail={"code": "DOCUMENT_VERSION_NOT_FOUND"})
+    document = await _tenant_document(
+        session,
+        principal.tenant_id,
+        version.document_id,
+        principal=principal,
+        capability="read",
+    )
+    if document.active_version != version.version or version.status == "archived":
+        raise HTTPException(
+            status_code=409,
+            detail={"code": "VERSION_PREVIEW_NOT_AVAILABLE"},
+        )
+    page = await session.scalar(
+        select(Page).where(
+            Page.tenant_id == principal.tenant_id,
+            Page.document_id == document.id,
+            Page.page_number == page_number,
+        )
+    )
+    if page is None:
+        raise HTTPException(status_code=404, detail={"code": "PAGE_NOT_FOUND"})
+    return await get_page_preview(page.id, request, principal, session)
+
+
+@router.get("/proofs/{proof_id}/crop")
+async def get_proof_crop(
+    proof_id: uuid.UUID,
+    request: Request,
+    principal: PrincipalDep,
+    session: SessionDep,
+) -> Response:
+    """Return a privacy-preserving crop from an actual verification lineage."""
+
+    proof = await session.scalar(
+        select(VerificationRecord).where(
+            VerificationRecord.tenant_id == principal.tenant_id,
+            VerificationRecord.id == proof_id,
+        )
+    )
+    if proof is None:
+        raise HTTPException(status_code=404, detail={"code": "PROOF_NOT_FOUND"})
+    if proof.region_id is None:
+        raise HTTPException(status_code=409, detail={"code": "PROOF_REGION_NOT_AVAILABLE"})
+    region = await session.scalar(
+        select(CollectionRegion).where(
+            CollectionRegion.tenant_id == principal.tenant_id,
+            CollectionRegion.collection_id == proof.collection_id,
+            CollectionRegion.id == proof.region_id,
+        )
+    )
+    if region is None or region.page_id is None:
+        raise HTTPException(status_code=409, detail={"code": "PROOF_PAGE_NOT_AVAILABLE"})
+    bbox = region.bbox1000
+    if (
+        bbox is None
+        or len(bbox) != 4
+        or any(not isinstance(value, int) or isinstance(value, bool) for value in bbox)
+    ):
+        raise HTTPException(status_code=409, detail={"code": "PROOF_BBOX_NOT_AVAILABLE"})
+    preview = await get_page_preview(region.page_id, request, principal, session)
+    try:
+        crop = crop_preview_png(
+            bytes(preview.body),
+            (bbox[0], bbox[1], bbox[2], bbox[3]),
+        )
+    except UnsafePreviewError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "PROOF_CROP_INTEGRITY_FAILURE"},
+        ) from exc
+    return Response(
+        content=crop.png_bytes,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "private, no-store, max-age=0",
+            "ETag": f'"sha256-{crop.sha256}"',
+            "Content-Security-Policy": "default-src 'none'; sandbox",
+            "X-AKC-Proof-Id": str(proof.id),
+            "X-AKC-Page-Id": str(region.page_id),
+            "X-AKC-Source-Preview-Redaction": preview.headers.get(
+                "x-akc-preview-redaction",
+                "unknown",
+            ),
         },
     )
 
@@ -7055,7 +7181,9 @@ async def dashboard(principal: PrincipalDep, session: SessionDep) -> dict[str, A
                 select(func.count(ProcessingJob.id)).where(
                     ProcessingJob.tenant_id == principal.tenant_id,
                     ProcessingJob.project_id.in_(project_ids),
-                    ProcessingJob.status.in_(("queued", "running", "waiting_review")),
+                    ProcessingJob.status.in_(
+                        ("queued", "running", "paused", "waiting_review")
+                    ),
                 )
             )
             or 0
@@ -7210,7 +7338,9 @@ async def dashboard(principal: PrincipalDep, session: SessionDep) -> dict[str, A
             select(func.count(ProcessingJob.id)).where(
                 ProcessingJob.tenant_id == principal.tenant_id,
                 ProcessingJob.project_id == project.id,
-                ProcessingJob.status.in_(("queued", "running", "waiting_review")),
+                ProcessingJob.status.in_(
+                    ("queued", "running", "paused", "waiting_review")
+                ),
             )
         )
         ready_count = await session.scalar(
@@ -7908,18 +8038,27 @@ async def admin_health(
         else 0.0
     )
     settings: Settings = request.app.state.settings
-    antivirus_state = (
-        "ok"
-        if settings.clamav_enabled
-        else "development_only"
-        if settings.env in {"development", "test"} and settings.allow_development_antivirus_bypass
-        else "blocked"
+    object_store_state = "ok"
+    try:
+        await request.app.state.object_store.healthcheck()
+    except Exception:
+        object_store_state = "unavailable"
+    if settings.clamav_enabled:
+        antivirus_state = "ok" if await malware_scanner_ready(settings) else "unavailable"
+    elif settings.env in {"development", "test"} and settings.allow_development_antivirus_bypass:
+        antivirus_state = "development_only"
+    else:
+        antivirus_state = "blocked"
+    scheduler_state = "embedded_development" if settings.local_background_tasks else "not_observed"
+    unhealthy_dependency = (
+        object_store_state != "ok"
+        or antivirus_state in {"blocked", "unavailable"}
+        or scheduler_state == "not_observed"
     )
-    status_value = (
-        "degraded" if failed_rows or dead_letters or antivirus_state == "blocked" else "ok"
-    )
+    status_value = "degraded" if failed_rows or dead_letters or unhealthy_dependency else "ok"
     return {
         "status": status_value,
+        "revision": settings.deployment_revision,
         "generated_at": utcnow(),
         "oldest_queue_age_seconds": oldest_age,
         "queued_jobs": len(queued_rows),
@@ -7929,16 +8068,27 @@ async def admin_health(
         "dependencies": {
             "database": {"status": "ok", "detail": "query verified"},
             "object_store": {
-                "status": "configured",
+                "status": object_store_state,
                 "detail": settings.object_store_driver,
+                "evidence": "live adapter healthcheck",
             },
-            "antivirus": {"status": antivirus_state},
+            "antivirus": {
+                "status": antivirus_state,
+                "evidence": (
+                    "live provider readiness"
+                    if settings.clamav_enabled
+                    else "explicit non-production bypass"
+                    if antivirus_state == "development_only"
+                    else "provider disabled"
+                ),
+            },
             "scheduler": {
-                "status": (
-                    "embedded-development"
+                "status": scheduler_state,
+                "evidence": (
+                    "process configuration"
                     if settings.local_background_tasks
-                    else "durable-required"
-                )
+                    else "no durable heartbeat source configured"
+                ),
             },
         },
         "interventions": [
@@ -8587,6 +8737,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     oidc_transaction_cipher = (
         OidcTransactionCipher(runtime_settings) if runtime_settings.oidc_enabled else None
     )
+    collection_retrieval_runtime = build_collection_semantic_retrieval_runtime(
+        runtime_settings,
+        database,
+    )
+    collection_metadata_codec = build_collection_metadata_codec(runtime_settings)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -8598,31 +8753,35 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             yield
         finally:
             try:
-                await pdf_secret_store.close()
+                if collection_retrieval_runtime is not None:
+                    await collection_retrieval_runtime.aclose()
             finally:
                 try:
-                    await payment_provider.aclose()
+                    await pdf_secret_store.close()
                 finally:
                     try:
-                        await verification_delivery_provider.aclose()
+                        await payment_provider.aclose()
                     finally:
                         try:
-                            await captcha_provider.aclose()
+                            await verification_delivery_provider.aclose()
                         finally:
                             try:
-                                await rate_limiter.aclose()
+                                await captcha_provider.aclose()
                             finally:
                                 try:
-                                    await database.dispose()
+                                    await rate_limiter.aclose()
                                 finally:
                                     try:
-                                        if oidc_client is not None:
-                                            await oidc_client.aclose()
+                                        await database.dispose()
                                     finally:
                                         try:
-                                            await cdr_adapter.aclose()
+                                            if oidc_client is not None:
+                                                await oidc_client.aclose()
                                         finally:
-                                            telemetry_runtime.shutdown()
+                                            try:
+                                                await cdr_adapter.aclose()
+                                            finally:
+                                                telemetry_runtime.shutdown()
 
     app = FastAPI(
         title="AI Knowledge Compiler API",
@@ -8650,6 +8809,33 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.mfa_security = mfa_security
     app.state.oidc_client = oidc_client
     app.state.oidc_transaction_cipher = oidc_transaction_cipher
+    app.state.collection_metadata_codec = collection_metadata_codec
+    app.state.collection_semantic_retrieval_indexer = (
+        collection_retrieval_runtime.indexer if collection_retrieval_runtime is not None else None
+    )
+    app.state.collection_semantic_retrieval_batch_factory = (
+        collection_retrieval_runtime.build_batch
+        if collection_retrieval_runtime is not None
+        else None
+    )
+    app.state.collection_semantic_retrieval_store = (
+        collection_retrieval_runtime.store if collection_retrieval_runtime is not None else None
+    )
+    app.state.collection_semantic_query_embedding_provider = (
+        collection_retrieval_runtime.embedding_provider
+        if collection_retrieval_runtime is not None
+        else None
+    )
+    app.state.collection_semantic_query_embedding_model_id = (
+        collection_retrieval_runtime.embedding_provider.model_id
+        if collection_retrieval_runtime is not None
+        else None
+    )
+    app.state.collection_semantic_query_embedding_model_revision = (
+        collection_retrieval_runtime.embedding_provider.model_revision
+        if collection_retrieval_runtime is not None
+        else None
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=runtime_settings.allowed_origins,
@@ -8726,11 +8912,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
 
     @app.get("/health/live", include_in_schema=False)
-    async def health_live() -> dict[str, str]:
-        return {"status": "ok"}
+    async def health_live() -> dict[str, str | None]:
+        return {
+            "status": "ok",
+            "revision": runtime_settings.deployment_revision,
+        }
 
     @app.get("/health/ready", include_in_schema=False)
-    async def health_ready() -> dict[str, str]:
+    async def health_ready() -> dict[str, str | None]:
         try:
             await rate_limiter.healthcheck()
         except RateLimitBackendUnavailable as exc:
@@ -8750,7 +8939,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 status_code=503,
                 detail={"code": "CDR_UNAVAILABLE"},
             )
-        return {"status": "ready"}
+        return {
+            "status": "ready",
+            "revision": runtime_settings.deployment_revision,
+        }
 
     @app.get("/metrics", include_in_schema=False)
     async def metrics() -> Response:
@@ -8881,9 +9073,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(project_access_router)
     app.include_router(product_analytics_event_router)
     app.include_router(domain_api_router)
+    app.include_router(collection_router)
+    app.include_router(collection_integrity_router)
+    app.include_router(collection_retrieval_router)
+    app.include_router(parallel_runtime_router)
+    app.include_router(trust_router)
     # ADR-006. The only unauthenticated write surface; every handler in it
     # returns 404 while trial_ingest_enabled is false.
     app.include_router(trial_api_router)
+    # Last: the contract installer reads the routes that are registered.
+    install_v4_openapi_contract(app)
     return app
 
 

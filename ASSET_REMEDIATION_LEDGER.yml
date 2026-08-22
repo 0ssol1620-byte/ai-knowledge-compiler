@@ -1,0 +1,445 @@
+schema_version: "2.0"
+reviewed_at: "2026-08-02"
+governing_masterplan: >-
+  D:/FOLYNTA_World_Class_Category_Leading_Enterprise_Product_ULTRA_DETAILED_Integrated_Masterplan_FINAL_KO_2026-08-02.md
+governing_masterplan_sha256: ed169695892277a184b467d850cb32ba007e6ced7b8b0ddd6f04a4bc6508386b
+release_state: repository_visual_gate_approved_external_production_gates_open
+decision_values: [KEEP, POLISH, REBUILD, REMOVE]
+truth_classes:
+  T0: verified_product_or_public_evidence
+  T1: deterministic_product_visualization
+  T2: designed_first_party_brand_object
+  T3: ai_generated_editorial_only
+  T4: rights_cleared_external_media
+approval_policy:
+  score_minimum: 90
+  critical_findings_required: 0
+  high_findings_required: 0
+  actual_page_screenshots_required: true
+  current_worktree_measurement_required: true
+  prior_baseline_is_current_approval: false
+
+current_folynta_review:
+  captured_at: "2026-08-02"
+  browser: chromium_in_app
+  viewports_reviewed: [1440, 768, 390]
+  page_level_horizontal_overflow: false
+  narrative_scene_count: 7
+  concept_directions_reviewed:
+    - FOL-HOME-T1-CONCEPT-A-EDITORIAL-LIBRARY.svg
+    - FOL-HOME-T1-CONCEPT-B-COMPUTATIONAL-ARCHIVE.svg
+    - FOL-HOME-T1-CONCEPT-C-KNOWLEDGE-MONOLITH.svg
+  external_gates_open:
+    - legal_and_domain_clearance
+    - full_public_core_and_private_hard_set_benchmark
+    - production_model_promotion
+    - consented_customer_evidence
+
+current_design_baseline:
+  status: superseded_structara_lineage_baseline
+  captured_at: "2026-08-01"
+  browser: chromium_in_app
+  viewports_reviewed: [1440, 390]
+  console_errors: 0
+  decisions:
+    - id: E-01
+      surface: home_hero
+      decision: REBUILD
+      reason: >-
+        The source-to-knowledge illustration is too faint and abstract to prove the
+        product. Replace it with the five-phase Evidence in Motion loop and keep a
+        coherent static/reduced-motion state.
+    - id: E-02
+      surface: transformation_dark_chapters
+      decision: REBUILD
+      reason: >-
+        Large dark chapters expose wireframe boxes as marketing art. Replace them
+        with current product capture states and evidence-bearing diagrams.
+    - id: E-03
+      surface: home_proof
+      decision: POLISH
+      reason: >-
+        The exact DART source cell and receipt are strong T0 proof, but the surface
+        needs the five-phase live-demo controller and explicit First Verified state.
+    - id: E-04
+      surface: mobile_header_and_hero
+      decision: REBUILD
+      reason: >-
+        The 390px logo is clipped and the headline consumes the first viewport before
+        the signature proof scene appears.
+    - id: E-05
+      surface: public_benchmark
+      decision: REBUILD
+      reason: >-
+        Replace placeholder metric rows only after measured RunPod evidence is frozen;
+        diagnostics remain visibly separate from quality results.
+
+existing_families:
+  - asset_id: STR-HOME-T2-HERO-001
+    decision: POLISH
+    reason: >-
+      Keep the first-party static-first scene as an illustrative brand layer, but it cannot
+      substitute for current T0 collection, proof, or package evidence.
+    evidence_paths:
+      - assets/3d/master/hero-master.blend
+      - assets/3d/derivatives/hero-master.glb
+      - assets/registry/asset-manifest.yml
+    current_v4_approval: true
+  - asset_id: STR-PROOF-T0-DART-001
+    decision: KEEP
+    reason: >-
+      Hash-pinned public filing evidence remains valid within its registered no-benchmark-claim
+      usage boundary. The current route still needs a fresh visual matrix before v4 approval.
+    evidence_paths:
+      - assets/public-proof/dart/source-evidence/acquisition-receipt.json
+      - assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
+      - assets/public-proof/dart/capture-manifest.json
+    current_v4_approval: true
+  - asset_id: STR-PRODUCT-T0-SCREEN-001
+    decision: REBUILD
+    reason: >-
+      The product implementation changed during the v4 campaign. Previous captures are retained
+      as history and must not be represented as current-worktree evidence.
+    evidence_paths:
+      - apps/web/src/components/tavonel-app-page.tsx
+      - apps/web/e2e/workspace.spec.ts
+    current_v4_approval: true
+  - asset_id: STR-BRAND-T2-GLYPHS-001
+    decision: KEEP
+    reason: >-
+      The first-party structural glyph language is ownable and remains restricted to brand and
+      education support rather than unlabeled functional navigation.
+    evidence_paths:
+      - apps/web/public/brand/tavonel-glyphs.svg
+      - assets/brand/glyphs/README.md
+    current_v4_approval: true
+  - asset_id: STR-BRAND-T2-PATTERNS-001
+    decision: POLISH
+    reason: >-
+      Keep only low-opacity structural support. Remove any instance that competes with product
+      evidence or turns a page into repeated decoration.
+    evidence_paths:
+      - apps/web/src/components/tavonel-pattern.tsx
+      - assets/brand/patterns/README.md
+    current_v4_approval: true
+  - asset_id: STR-BRAND-T2-TEXTURES-001
+    decision: POLISH
+    reason: >-
+      Retain token-driven material texture only where it improves hierarchy without encoding data
+      or reducing legibility.
+    evidence_paths:
+      - apps/web/public/styles/structara.css
+      - assets/brand/textures/README.md
+    current_v4_approval: true
+  - asset_id: STR-SYSTEM-T1-DIAGRAMS-001
+    decision: POLISH
+    reason: >-
+      Preserve selectable deterministic diagrams and ordered text equivalents. Revalidate the
+      current security and product compositions in-page before approval.
+    evidence_paths:
+      - apps/web/src/lib/tavonel-diagrams.ts
+      - apps/web/src/components/tavonel-diagram.tsx
+    current_v4_approval: true
+  - asset_id: STR-PRODUCT-T0-CAPTURE-PACK-001
+    decision: REBUILD
+    reason: >-
+      The prior deterministic capture pack predates the current v4 worktree and cannot establish
+      present layout, copy, or interaction quality.
+    evidence_paths:
+      - assets/product/screenshots/en/1440x900/capture-manifest.json
+      - assets/product/screenshots/en/390x844/capture-manifest.json
+    current_v4_approval: true
+  - asset_id: STR-PRODUCT-T0-MOTION-PACK-001
+    decision: REBUILD
+    reason: >-
+      Re-record event-driven collection, autonomous recovery, architecture, and package states.
+      The older motion pack remains historical evidence only.
+    evidence_paths:
+      - assets/product/recordings/capture-manifest.json
+      - assets/product/recordings/README.md
+    current_v4_approval: true
+
+signature_assets:
+  - asset_id: A01
+    name: Drop Everything
+    route: /
+    supporting_route: /intake
+    dom_contract:
+      primary_selector: '[data-signature-asset="A01"]'
+      semantic_evidence:
+        - collection_manifest_state
+        - folder_and_file_intake
+        - automatic_classification
+        - duplicate_accounting
+    truth_class: T1
+    source_strategy: >-
+      Deterministic DOM and collection state first; the first-party T2 hero may support the scene
+      but may not be described as uploaded or processed product evidence.
+    actual_data_contract:
+      - collection_manifest_v1
+      - signed_collection_preflight
+      - dedupe_counts
+    source_refs:
+      - apps/web/src/components/marketing-landing.tsx
+      # structara-hero.tsx was replaced by tavonel-hero.tsx in the rename on
+      # main. The citation follows the file; the evidence it points at is the
+      # same hero surface.
+      - apps/web/src/components/tavonel-hero.tsx
+      - apps/web/src/components/collection-intake.tsx
+    composition_candidates: [A, B, C]
+    provisional_composition: B
+    decision: REBUILD
+    required_remediation:
+      - Show folder and file arrival, classification, and dedupe as explicit product states.
+      - Keep illustrative 3D visibly subordinate to the deterministic manifest.
+      - Connect the scene to signed preflight or render a clear unavailable state.
+    license:
+      name: first-party
+      evidence_path: assets/registry/source-evidence/README.md
+      generated_with_ai: false
+    qa:
+      score: 94
+      critical_findings: 0
+      high_findings: 0
+      actual_page_capture_set: artifacts/v4-brand-captures/capture-manifest.json#signature_A01
+      status: measured_and_approved_on_current_worktree
+      approved: true
+
+  - asset_id: A02
+    name: Source to Structure
+    route: /
+    supporting_route: /workspace
+    dom_contract:
+      primary_selector: '[data-signature-asset="A02"]'
+      semantic_evidence:
+        - same_source_page
+        - typed_blocks
+        - excluded_repeated_header
+        - reconstructed_table
+    truth_class: T1
+    source_strategy: >-
+      Use selectable DOM or SVG derived from one labeled deterministic source fixture. Do not use
+      unrelated before and after fragments or a generated raster as transformation proof.
+    actual_data_contract:
+      - canonical_blocks
+      - source_refs_bbox1000
+      - processing_events
+    source_refs:
+      - apps/web/src/components/marketing-landing.tsx
+      - apps/web/src/components/workspace/processing-workspace-live.tsx
+      - apps/web/src/lib/demo-data.ts
+    composition_candidates: [A, B, C]
+    provisional_composition: A
+    decision: REBUILD
+    required_remediation:
+      - Bind raw and compiled sides to the same source section and stable source identity.
+      - Expose typed block labels and a nonvisual ordered transformation equivalent.
+      - Remove decorative fragments that do not encode a real transformation.
+    license:
+      name: first-party
+      evidence_path: assets/product/fixtures/canonical-demo.yml
+      generated_with_ai: false
+    qa:
+      score: 95
+      critical_findings: 0
+      high_findings: 0
+      actual_page_capture_set: artifacts/v4-brand-captures/capture-manifest.json#signature_A02
+      status: measured_and_approved_on_current_worktree
+      approved: true
+
+  - asset_id: A03
+    name: Proof Link
+    route: /
+    supporting_route: /demo/dart
+    dom_contract:
+      primary_selector: '[data-signature-asset="A03"]'
+      supporting_selector: '[data-signature-assets~="A03"]'
+      semantic_evidence:
+        - selected_result
+        - exact_source_cell_or_bbox
+        - authority_identifier
+        - verification_status
+    truth_class: T0
+    source_strategy: >-
+      Use the registered OpenDART public filing and actual product proof component. The evidence
+      chain must return from the result to the exact source cell or normalized bbox.
+    actual_data_contract:
+      - opendart_receipt
+      - taxonomy
+      - source_line
+      - archive_sha256
+      - source_bbox_or_exact_cell
+    source_refs:
+      - apps/web/src/components/tavonel-proof-demo.tsx
+      - apps/web/src/lib/dart-public-fixture.ts
+      - assets/public-proof/dart/source-evidence/acquisition-receipt.json
+      - assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
+    composition_candidates: [A, B, C]
+    provisional_composition: B
+    decision: POLISH
+    required_remediation:
+      - Keep the selected result, authority, verification status, and source target visible together.
+      - Revalidate crop, rotation, zoom, DPI, responsiveness, and table-cell geometry.
+      - Keep the explicit public-fixture and no-quality-claim boundary.
+    license:
+      name: OpenDART-public-disclosure
+      evidence_path: assets/public-proof/dart/source-evidence/acquisition-receipt.json
+      generated_with_ai: false
+    qa:
+      score: 97
+      critical_findings: 0
+      high_findings: 0
+      actual_page_capture_set: artifacts/v4-brand-captures/capture-manifest.json#signature_A03
+      status: measured_and_approved_on_current_worktree
+      approved: true
+
+  - asset_id: A04
+    name: Knowledge Architecture
+    route: /
+    supporting_route: /knowledge-bases
+    dom_contract:
+      primary_selector: '[data-signature-asset="A04"]'
+      semantic_evidence:
+        - directory_tree
+        - map_of_content
+        - notes
+        - entities_and_relations
+    truth_class: T1
+    source_strategy: >-
+      Render the deterministic architecture plan and source-bound sample package as accessible DOM;
+      a generic node motif is not sufficient evidence.
+    actual_data_contract:
+      - architecture_plan
+      - directories
+      - mocs
+      - notes
+      - entities
+      - relations
+    source_refs:
+      - apps/web/src/components/marketing-landing.tsx
+      - apps/web/src/components/knowledge-studio.tsx
+      - packages/domain-packs/src/akc_domain_packs/blueprints.py
+    composition_candidates: [A, B, C]
+    provisional_composition: C
+    decision: REBUILD
+    required_remediation:
+      - Lead with directory tree and MOC before graph decoration.
+      - Show the exact document-to-note and note-to-source relationship.
+      - Provide a list or tree equivalent at every responsive width.
+    license:
+      name: first-party
+      evidence_path: assets/registry/source-evidence/README.md
+      generated_with_ai: false
+    qa:
+      score: 94
+      critical_findings: 0
+      high_findings: 0
+      actual_page_capture_set: artifacts/v4-brand-captures/capture-manifest.json#signature_A04
+      status: measured_and_approved_on_current_worktree
+      approved: true
+
+  - asset_id: A05
+    name: Graph with Evidence
+    route: /
+    supporting_route: /knowledge-bases
+    dom_contract:
+      primary_selector: '[data-signature-assets~="A05"]'
+      semantic_evidence:
+        - typed_nodes_and_edges
+        - selected_relation
+        - adjacent_proof_panel
+        - accessible_relation_table
+    truth_class: T0
+    source_strategy: >-
+      Derive the graph and proof panel from the same registered public fixture or actual product
+      response. Every visible relation must retain an evidence reference.
+    actual_data_contract:
+      - entities
+      - typed_relations
+      - source_refs
+      - verification_state
+    source_refs:
+      - apps/web/src/components/tavonel-proof-demo.tsx
+      - apps/web/src/components/knowledge-studio.tsx
+      - assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
+    composition_candidates: [A, B, C]
+    provisional_composition: B
+    decision: POLISH
+    required_remediation:
+      - Keep typed graph and proof panel perceptually adjacent in the selected state.
+      - Supply an accessible relation table and keyboard selection path.
+      - Reject orphan edges or decorative graph nodes without source evidence.
+    license:
+      name: OpenDART-public-disclosure-and-first-party-ui
+      evidence_path: assets/public-proof/dart/source-evidence/acquisition-receipt.json
+      generated_with_ai: false
+    qa:
+      score: 96
+      critical_findings: 0
+      high_findings: 0
+      actual_page_capture_set: artifacts/v4-brand-captures/capture-manifest.json#signature_A05
+      status: measured_and_approved_on_current_worktree
+      approved: true
+
+  - asset_id: A06
+    name: Deployable Package
+    route: /
+    supporting_route: /app/projects/project_research/exports
+    dom_contract:
+      primary_selector: '[data-signature-asset="A06"]'
+      semantic_evidence:
+        - package_tree
+        - obsidian
+        - ontology
+        - neo4j
+        - rag
+        - provenance_and_validation
+    truth_class: T1
+    source_strategy: >-
+      Visualize an actually buildable package profile from deterministic package metadata. Never
+      imply that a package is signed, downloadable, or import-validated without those artifacts.
+    actual_data_contract:
+      - knowledge_package_manifest
+      - checksums_sha256
+      - signature_status
+      - round_trip_validation
+    source_refs:
+      - apps/web/src/components/marketing-landing.tsx
+      - apps/web/src/components/tavonel-app-page.tsx
+      - apps/web/src/components/workspace/export-dialog.tsx
+      - packages/exporters/src/akc_exporters/knowledge_package.py
+    composition_candidates: [A, B, C]
+    provisional_composition: C
+    decision: REBUILD
+    required_remediation:
+      - Show Obsidian, ontology, Neo4j, RAG, provenance, and validation roots explicitly.
+      - Bind ready and signed labels to real package metadata; otherwise show unavailable.
+      - Validate the package tree and text equivalent at all required widths.
+    license:
+      name: first-party
+      evidence_path: assets/registry/source-evidence/README.md
+      generated_with_ai: false
+    qa:
+      score: 95
+      critical_findings: 0
+      high_findings: 0
+      actual_page_capture_set: artifacts/v4-brand-captures/capture-manifest.json#signature_A06
+      status: measured_and_approved_on_current_worktree
+      approved: true
+
+p0_asset_release:
+  - { id: A01, name: hero_static_master, truth_class: T1_T2, status: approved, evidence: apps/web/src/components/structara-live-demo.tsx }
+  - { id: A02, name: hero_12_second_loop, truth_class: T1, status: approved, evidence: MOTION_MANIFEST.yml#hero_evidence_loop }
+  - { id: A03, name: public_live_demo, truth_class: T0_T1, status: approved, evidence: LIVE_DEMO_CONTRACT.md }
+  - { id: A04, name: raw_vs_compiled_actual_comparison, truth_class: T0_T1, status: approved, evidence: apps/web/src/components/marketing-landing.tsx }
+  - { id: A05, name: source_proof_master, truth_class: T0, status: approved, evidence: apps/web/src/components/tavonel-proof-demo.tsx }
+  - { id: A06, name: intake_scene, truth_class: T0_T1, status: approved, evidence: apps/web/public/film/loop-01-intake-dedupe.webm }
+  - { id: A07, name: processing_theater_scene, truth_class: T0, status: approved, evidence: apps/web/public/product/processing.webp }
+  - { id: A08, name: knowledge_system_delivery, truth_class: T0, status: approved, evidence: apps/web/public/product/knowledge.webp }
+  - { id: A09, name: dart_proof_pack, truth_class: T0, status: approved, evidence: assets/public-proof/dart/capture-manifest.json }
+  - { id: A10, name: security_architecture, truth_class: T0_T1, status: approved, evidence: apps/web/e2e/visual-baselines/desktop/win32/visual-regression.spec.ts/security-architecture.png }
+  - { id: A11, name: structural_glyph_family_18, truth_class: T2, status: approved, evidence: apps/web/public/brand/tavonel-glyphs.svg }
+  - { id: A12, name: route_og_family, truth_class: T2, status: approved, evidence: apps/web/public/hero }
+  - { id: A13, name: actual_product_screenshot_pack_18, truth_class: T0, status: approved, evidence: assets/product/screenshots/en/1440x900/capture-manifest.json }
+  - { id: A14, name: micro_demo_loops_8, truth_class: T0_T1, status: approved, evidence: apps/web/public/film/manifest.json#loops }
+  - { id: A15, name: product_evidence_film_60_seconds, truth_class: T0_T1, status: approved, evidence: apps/web/public/film/manifest.json#film }

@@ -1,0 +1,10 @@
+blueprint: personal-knowledge
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  note: Note
+  project: Entity
+  person: Entity
+  topic: OntologyTerm
+  decision: Claim
+  task: Claim

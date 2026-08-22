@@ -113,7 +113,8 @@ def test_external_fallback_requires_capability_and_consent() -> None:
         max_attempts=3,
         context=RouterContext(feature_flags=FeatureFlags(external_fallback_enabled=True)),
     )
-    assert no_consent.action == EscalationAction.REVIEW
+    assert no_consent.action == EscalationAction.UNRESOLVED
+    assert no_consent.route == Route.UNRESOLVED
     consent = RouterContext(
         feature_flags=FeatureFlags(external_fallback_enabled=True),
         data_policy=DataPolicy(external_api_allowed=True),
@@ -137,7 +138,7 @@ def test_private_mode_cannot_enable_external_api() -> None:
         )
 
 
-def test_critical_numeric_mismatch_always_reviews() -> None:
+def test_critical_numeric_mismatch_never_silently_passes() -> None:
     decision = decide_escalation(
         current_route=Route.NATIVE,
         signal=QualitySignal(
@@ -149,7 +150,21 @@ def test_critical_numeric_mismatch_always_reviews() -> None:
         max_attempts=2,
         context=RouterContext(risk_tier=RiskTier.HIGH),
     )
-    assert decision.action == EscalationAction.REVIEW
+    assert decision.action == EscalationAction.UNRESOLVED
+    assert decision.route == Route.UNRESOLVED
+
+    authority = decide_escalation(
+        current_route=Route.NATIVE,
+        signal=QualitySignal(critical_numeric_mismatch=True),
+        attempt_number=1,
+        max_attempts=2,
+        context=RouterContext(
+            risk_tier=RiskTier.HIGH,
+            feature_flags=FeatureFlags(authority_verification_enabled=True),
+        ),
+    )
+    assert authority.action == EscalationAction.VERIFY_AUTHORITY
+    assert authority.route == Route.AUTHORITY_RECONSTRUCTION
 
 
 def test_quality_pass_cannot_bypass_score_threshold_or_provider_failure() -> None:
@@ -174,11 +189,23 @@ def test_quality_pass_cannot_bypass_score_threshold_or_provider_failure() -> Non
     assert warning_pass.reason_codes == ("quality_gate_passed_with_warnings",)
 
 
-def test_unready_route_fails_closed_to_manual_review() -> None:
+def test_unready_route_fails_closed_to_unresolved() -> None:
     context = RouterContext(ready_routes=frozenset({Route.NATIVE}))
     decision = select_first_route(context, page_metrics())
-    assert decision.route == Route.MANUAL_REVIEW
-    assert "fail_closed_manual_review" in decision.reason_codes
+    assert decision.route == Route.UNRESOLVED
+    assert "fail_closed_unresolved" in decision.reason_codes
+
+
+def test_security_signal_is_quarantined_without_human_dependency() -> None:
+    decision = decide_escalation(
+        current_route=Route.PADDLE_VL,
+        signal=QualitySignal(security_quarantine_required=True),
+        attempt_number=1,
+        max_attempts=3,
+        context=RouterContext(ready_routes=frozenset({Route.NATIVE, Route.PADDLE_VL})),
+    )
+    assert decision.action == EscalationAction.QUARANTINE
+    assert decision.route == Route.QUARANTINE
 
 
 def test_unicode_script_detection_does_not_guess_language() -> None:

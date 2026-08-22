@@ -1,0 +1,7 @@
+blueprint: personal-knowledge
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: chronology_preserved, fixture: daily_notes, expected: pass}
+  - {id: person_homonym, fixture: duplicate_name, expected: unresolved}
+  - {id: cross_scope_relation, fixture: private_public_mix, expected: quarantine}

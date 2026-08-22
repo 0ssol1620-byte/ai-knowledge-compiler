@@ -159,3 +159,24 @@ jobs:
           path: ${{ runner.temp }}/akc-${{ matrix.image.name }}.spdx.json
           retention-days: 30
           if-no-files-found: error
+
+  ip-privilege-guard:
+    # RED-family claim-level analysis is prepared for external counsel and does
+    # not enter version control. docs/ip/.gitignore and the pre-commit hook are
+    # the local controls; both are per-clone and neither survives `--no-verify`,
+    # so this job is the one control that cannot be skipped by the person making
+    # the commit.
+    name: IP privilege guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+      - name: Scan the tracked tree
+        run: python scripts/ip_privilege_guard.py
+      - name: Guard's own tests
+        run: python -m pytest tests/security/test_ip_privilege_guard.py -q

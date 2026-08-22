@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "captured_at": "2026-08-02T05:10:00Z",
+  "policy": {
+    "source_required": true,
+    "behavior_reference_only": false,
+    "adaptation_required": "FOLYNTA tokens, accessibility, truthful data, reduced motion, finite motion",
+    "demo_data_prohibited": "fake progress, fake latency, fake product, fake benchmark"
+  },
+  "sources": [
+    {
+      "provider": "shadcn/ui",
+      "repository": "https://github.com/shadcn-ui/ui",
+      "revision": "cb2bcd88d93b2f9bddb030e9136f1f8773e7eac4",
+      "license": "MIT",
+      "registry": "https://ui.shadcn.com",
+      "items": [
+        { "name": "resizable", "source_sha256": "bc63958467aa00557c551bb0d96a5ae4c965c1e1ba2380e595949d933b132f7c" },
+        { "name": "tabs", "source_sha256": "865d0194331b9b2be36723fa79d3575dc83078b4cb941cafee87cb72fc2cff46" },
+        { "name": "scroll-area", "source_sha256": "8bd9d986b2844c9a87de825c6de4787b6739b36c3dc9a05ccf3eb107160e4043" },
+        { "name": "separator", "source_sha256": "6da346505c8629a4668420d2a5ca48891383bbe0b0ceb14163537c671879427e" },
+        { "name": "tooltip", "source_sha256": "a0784eb77831a799fad7991df4f1b666f876201565a80175e1aa68733574a2e4" }
+      ]
+    },
+    {
+      "provider": "Aceternity UI",
+      "registry": "https://ui.aceternity.com",
+      "license": "Aceternity License",
+      "license_url": "https://ui.aceternity.com/licence",
+      "author": "Manu Arora <hi@manuarora.in>",
+      "items": [
+        { "name": "sticky-scroll-reveal", "source_sha256": "93dc4f8da9225f1df23bcf7e2567c1267062340ea00f91e0d8ed3573f711bce5" },
+        { "name": "compare", "source_sha256": "fd0801ffcb425cf02693aa7c9db752050d3e2aac2766a2bd8a0f4cb64fc16c08" },
+        { "name": "lens", "source_sha256": "873148d3feed8f2241ab707d2a5a37d1f5ee1113f81b08919f1ff0e5dbf8e662" },
+        { "name": "file-upload", "source_sha256": "04c24106950be495496e801ef5093529c935c5fa12d03d30f9a009f0d8adc622" }
+      ],
+      "distribution_note": "Private application source and deployed end product; do not republish as a component library or marketplace template."
+    },
+    {
+      "provider": "Magic UI",
+      "repository": "https://github.com/magicuidesign/magicui",
+      "revision": "0bd8b9fe0e15c4697c8d22dee1d35d88b5152c25",
+      "license": "MIT",
+      "registry": "https://magicui.design",
+      "items": [
+        { "name": "animated-beam", "source_sha256": "6afa2ee1d01694a428eb8517d48deebe5c6b532dc0ee871800bb9d92aae43e79" },
+        { "name": "file-tree", "source_sha256": "ffc123a907fa76f9bcc4a2bc42fab53473021343399f91e9954e3923b0f07416" },
+        { "name": "animated-list", "source_sha256": "9363c5afa61d7aab1919b4500f7325cc8871b35103d5dd60a2a1625fe5e7dc58" },
+        { "name": "hero-video-dialog", "source_sha256": "8a7a25227054b5b747e77efe12aacf3e4fff4410a55e4bcd8fda6c5bcf71b670" }
+      ]
+    },
+    {
+      "provider": "21st.dev / Ruixen UI",
+      "page": "https://21st.dev/%40ruixen.ui/components/stacked-cards-upload",
+      "component": "Stacked Cards Upload",
+      "author": "Ruixen UI",
+      "published": "2025-09-24",
+      "catalog_claim": "open-source community component",
+      "source_state": "AUTHENTICATION-REQUIRED",
+      "adoption_state": "REVIEWED-NOT-VENDORED",
+      "reason": "The public page exposes the usage source, but the registry source currently requires authentication. The demo's fake timer progress is explicitly prohibited; only actual upload events may drive the adapted product surface."
+    }
+  ]
+}

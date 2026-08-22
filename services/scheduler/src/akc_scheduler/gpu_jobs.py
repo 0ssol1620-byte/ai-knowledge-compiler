@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import hashlib
 import json
+import logging
 import math
 import random
 import uuid
@@ -57,17 +58,35 @@ from akc_api.visual_gpu import (
     validate_visual_result,
     visual_attestation,
 )
+from akc_security.claim_broker import (
+    ClaimBrokerContractViolation,
+    ClaimStarvationDetector,
+    claim_backlog,
+    claim_via_broker,
+    resolve_callback_target,
+)
+from akc_security.tenant_context import (
+    WorkerCallback,
+    WorkerClaim,
+    enter_callback_context,
+    enter_claim_context,
+    enter_tenant_context,
+)
 from akc_telemetry import (
+    observe_parallel_provider_job,
     observe_provider_cold_start,
+    record_collection_gpu_seconds,
     record_provider_cost,
     record_provider_request,
     record_provider_revision_mismatch,
     record_unsupported_claim,
 )
 from sqlalchemy import or_, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from akc_scheduler.retry_policy import classify_retry_error, decide_retry
+from akc_scheduler.telemetry import record_claim_poll
 
 Clock = Callable[[], datetime]
 RandomSource = Callable[[], float]
@@ -81,6 +100,17 @@ _ACTIVE_STATES = (
     "cancelling",
 )
 _TERMINAL_STATES = frozenset({"completed", "failed", "dead_letter", "cancelled"})
+logger = logging.getLogger(__name__)
+
+_CLAIM_QUEUE = "gpu_provider_invocations"
+_CLAIM_BROKER = "akc_claim_gpu_invocation"
+# The callback path's counterpart to the claim broker. Same shape, no lease: it
+# answers "whose row is this" for a row the provider was actually given.
+_CALLBACK_RESOLVER = "akc_resolve_gpu_callback"
+# The identity the broker hands the lease to. Ownership here is "who was given
+# the token", not a column comparison — no lease-bearing table in this schema
+# carries claimed_by, worker_id or any other ownership column.
+_CLAIM_WORKER_ID = "akc_gpu_worker"
 _TERMINAL_PROVIDER_FAILURES = frozenset(
     {
         "GPU_PROVIDER_JOB_FAILED",
@@ -129,6 +159,12 @@ class GpuWorkerPolicy:
     backoff_jitter_ratio: float = 0.2
     max_cancel_attempts: int = 8
     max_output_bytes: int = 12 * 1024 * 1024
+    # CANARY A. Off by default: the shipped path stays the ORM claim until a
+    # staging canary says otherwise. Deliberately separate from removing
+    # BYPASSRLS, which is canary B — changing the claim path and arming
+    # row-level security together would make "the new claim path is broken" and
+    # "RLS is starving the worker" the same symptom.
+    use_claim_broker: bool = False
 
     def __post_init__(self) -> None:
         finite_positive = (
@@ -159,8 +195,23 @@ class GpuWorkerPolicy:
 
 @dataclass(frozen=True, slots=True)
 class _Claim:
+    """What the worker holds after a row is claimed, and how far it authorises.
+
+    ``project_id``, ``lease_token`` and ``lease_expires_at`` are here because the
+    database compares against all three: the ``0034`` claim binding admits a row
+    only to a session that names the tenant, the project, the row and the live
+    lease. Carrying four of the five and binding the tenant alone is what made
+    every post-claim read return nothing.
+
+    The lease pair is optional, and only for the callback path — a callback
+    arrives after the lease was released, so there is no token to carry.
+    ``None`` there is the truth; the alternative is to mint one, and a minted
+    token is a claim the worker does not hold.
+    """
+
     invocation_id: uuid.UUID
     tenant_id: uuid.UUID
+    project_id: uuid.UUID | None
     job_id: uuid.UUID
     document_id: uuid.UUID
     document_version_id: str
@@ -177,7 +228,8 @@ class _Claim:
     runtime_image_digest: str
     adapter_version: str
     attempt_number: int
-    lease_token: uuid.UUID
+    lease_token: uuid.UUID | None
+    lease_expires_at: datetime | None
     provider_job_id: str | None
     provider_status: str | None
     action: Literal["submit", "poll", "cancel", "local_terminal"]
@@ -210,6 +262,34 @@ class _TransitionPlan:
 
 class GpuResultConflict(RuntimeError):
     """A terminal replay disagrees with already admitted immutable evidence."""
+
+
+def _release_lease(invocation: GpuProviderInvocation) -> None:
+    """Give the claim up, keeping the token that proves whose release it was.
+
+    Every path that finishes with a row ends here, and it used to write
+    ``lease_token = None`` beside the expiry. Under row-level security that row
+    is unwritable: PostgreSQL applies the claim policy to the *new* row as well
+    as the old one, and a row with no token satisfies no claim — measured as
+    ``ERROR 42501 new row violates row-level security policy`` on a NOBYPASSRLS
+    cluster, from a session holding a valid claim on that very row.
+
+    The fix that suggests itself is to let the policy admit a token-less row.
+    That was measured too, and it is worse than it looks: admitting
+    ``lease_token IS NULL`` means any row in the tenant whose lease is free
+    becomes readable **and writable** to a worker that knows its id, because the
+    only thing left in the predicate is an identifier. The lease token is the
+    secret; dropping it from the row drops the secret from the check.
+
+    So the token stays and the expiry goes. ``lease_expires_at IS NULL`` is
+    already what "not leased" means everywhere in this schema, so the row is
+    claimable again immediately and a re-claim overwrites the token. Clearing the
+    expiry rather than back-dating it also keeps a *released* lease distinct from
+    a *lapsed* one, which matters: a worker whose lease lapsed has been
+    superseded and must not be able to reach its old row.
+    """
+
+    invocation.lease_expires_at = None
 
 
 def _utcnow() -> datetime:
@@ -390,6 +470,7 @@ class GpuInvocationWorker:
         self._policy = policy
         self._clock = clock
         self._random = random_source
+        self._starvation = ClaimStarvationDetector()
         self._stopping = False
 
     def request_stop(self) -> None:
@@ -451,8 +532,7 @@ class GpuInvocationWorker:
     ) -> None:
         invocation.status = status
         invocation.last_error_code = code
-        invocation.lease_token = None
-        invocation.lease_expires_at = None
+        _release_lease(invocation)
         invocation.completed_at = now
         invocation.updated_at = now
         await append_gpu_event(
@@ -779,8 +859,7 @@ class GpuInvocationWorker:
         invocation.status = "failed"
         invocation.last_error_code = error.code
         invocation.completed_at = now
-        invocation.lease_token = None
-        invocation.lease_expires_at = None
+        _release_lease(invocation)
         invocation.updated_at = now
         if attempt is not None:
             attempt.status = "failed"
@@ -869,6 +948,8 @@ class GpuInvocationWorker:
         return child
 
     async def _claim(self) -> _Claim | None:
+        """BEFORE — the shipped path. ORM selection, self-minted lease."""
+
         now = self._clock()
         async with self._sessions() as session:
             invocation = await session.scalar(
@@ -891,114 +972,218 @@ class GpuInvocationWorker:
             )
             if invocation is None:
                 return None
-            fence = await self._fence_reason(session, invocation)
-            if fence is not None:
-                invocation.cancellation_reason = fence
-                invocation.status = "cancel_requested"
+            # The scan above spans tenants; this invocation does not.
+            await enter_tenant_context(session, tenant_id=invocation.tenant_id)
+            return await self._claim_from_row(
+                session,
+                invocation,
+                token=uuid.uuid4(),
+                lease_expires_at=now
+                + timedelta(seconds=self._policy.lease_seconds),
+                now=now,
+            )
 
-            token = uuid.uuid4()
-            invocation.lease_token = token
-            invocation.lease_expires_at = now + timedelta(seconds=self._policy.lease_seconds)
-            invocation.updated_at = now
-            action: Literal["submit", "poll", "cancel", "local_terminal"]
-            if invocation.status in {"cancel_requested", "cancelling"}:
-                if invocation.provider_job_id is None:
-                    await self._terminal_local(
-                        session,
-                        invocation,
-                        status="cancelled",
-                        code=(
-                            "GPU_INVOCATION_"
-                            f"{(invocation.cancellation_reason or 'CANCELLED').upper()}"
-                        ),
-                        now=now,
-                    )
-                    action = "local_terminal"
-                elif invocation.cancel_attempt_count >= self._policy.max_cancel_attempts:
-                    await self._terminal_local(
-                        session,
-                        invocation,
-                        status="dead_letter",
-                        code="GPU_PROVIDER_CANCEL_UNCONFIRMED",
-                        now=now,
-                    )
-                    action = "local_terminal"
-                else:
-                    invocation.status = "cancelling"
-                    invocation.cancel_attempt_count += 1
-                    action = "cancel"
-            elif (
-                invocation.provider_job_id is not None
-                and _aware(invocation.provider_deadline_at) is not None
-                and cast(datetime, _aware(invocation.provider_deadline_at)) <= now
-            ):
-                invocation.status = "cancelling"
-                invocation.cancellation_reason = "timeout"
-                invocation.cancel_attempt_count += 1
-                action = "cancel"
-            elif invocation.provider_job_id is not None:
-                invocation.status = "running"
-                action = "poll"
-            elif invocation.attempt_count >= invocation.max_attempts:
+    async def _claim_via_broker(self) -> _Claim | None:
+        """AFTER — founder decision F-1, Option B.
+
+        Broker → five identifiers → claim context → tenant/claim-scoped reread →
+        the same ``_claim_from_row`` BEFORE uses. The worker never reads the
+        queue: it asks for a claim and is told an id, a tenant, a project, a
+        lease token and an expiry.
+
+        Three things this does not do, each on purpose:
+
+        * **It does not mint a lease.** The broker already stamped one on the
+          row inside its own statement; the token comes back here and is passed
+          through. A second stamp would write a token different from the one the
+          claim binding compares against, and the row would vanish from its own
+          transaction — silently.
+        * **It does not re-decide anything.** Every state transition, both
+          terminal branches and the commit belong to ``_claim_from_row``. A
+          second copy of that choreography is how two paths drift apart without
+          anyone noticing.
+        * **It does not treat a missing row as an empty queue.** If the broker
+          granted a claim and the scoped reread cannot see it, that is a fault
+          in the binding, not an idle queue. Returning ``None`` there would look
+          exactly like "no work", which is the failure mode Gate 1 exists to
+          make visible, so it raises instead.
+        """
+
+        now = self._clock()
+        async with self._sessions() as session:
+            granted = await claim_via_broker(
+                session,
+                function=_CLAIM_BROKER,
+                worker_id=_CLAIM_WORKER_ID,
+                lease_seconds=int(self._policy.lease_seconds),
+            )
+            if granted is None:
+                return None
+            await enter_claim_context(
+                session, claim=granted, worker_id=_CLAIM_WORKER_ID, now=now
+            )
+            invocation = await session.scalar(
+                select(GpuProviderInvocation).where(
+                    GpuProviderInvocation.tenant_id == granted.tenant_id,
+                    GpuProviderInvocation.id == granted.claim_id,
+                )
+            )
+            if invocation is None:
+                raise ClaimBrokerContractViolation(
+                    f"claim_broker_row_unreadable:{_CLAIM_QUEUE}:{granted.claim_id}"
+                )
+            if invocation.project_id != granted.project_id:
+                # The context was bound to the broker's project a moment ago and
+                # the claim is about to carry the row's. While the worker still
+                # holds BYPASSRLS nothing downstream would notice them differ.
+                raise ClaimBrokerContractViolation(
+                    f"claim_broker_project_mismatch:{granted.claim_id}:"
+                    f"{granted.project_id}!={invocation.project_id}"
+                )
+            return await self._claim_from_row(
+                session,
+                invocation,
+                token=granted.lease_token,
+                lease_expires_at=granted.lease_expires_at,
+                now=now,
+            )
+
+    async def _claim_from_row(
+        self,
+        session: AsyncSession,
+        invocation: GpuProviderInvocation,
+        *,
+        token: uuid.UUID,
+        lease_expires_at: datetime,
+        now: datetime,
+    ) -> _Claim:
+        """Everything after the row is chosen. Shared by both claim paths.
+
+        The broker adaptation changes *how a row is selected and leased* and
+        nothing else. One body of code is what makes that true by construction
+        rather than by comparison: the fence, the five action branches, both
+        terminal paths, the attempt counters, the event append and the commit
+        boundary have one implementation and two callers.
+        """
+
+        fence = await self._fence_reason(session, invocation)
+        if fence is not None:
+            invocation.cancellation_reason = fence
+            invocation.status = "cancel_requested"
+
+        # Assigned, not minted: BEFORE generates the token just above, AFTER
+        # passes back the one the broker already wrote to this row. Writing the
+        # same value is a no-op, which is what stops the two paths from ever
+        # stamping two different leases on one claim.
+        invocation.lease_token = token
+        invocation.lease_expires_at = lease_expires_at
+        invocation.updated_at = now
+        action: Literal["submit", "poll", "cancel", "local_terminal"]
+        if invocation.status in {"cancel_requested", "cancelling"}:
+            if invocation.provider_job_id is None:
+                await self._terminal_local(
+                    session,
+                    invocation,
+                    status="cancelled",
+                    code=(
+                        "GPU_INVOCATION_"
+                        f"{(invocation.cancellation_reason or 'CANCELLED').upper()}"
+                    ),
+                    now=now,
+                )
+                action = "local_terminal"
+            elif invocation.cancel_attempt_count >= self._policy.max_cancel_attempts:
                 await self._terminal_local(
                     session,
                     invocation,
                     status="dead_letter",
-                    code=invocation.last_error_code or "GPU_PROVIDER_ATTEMPTS_EXHAUSTED",
+                    code="GPU_PROVIDER_CANCEL_UNCONFIRMED",
                     now=now,
                 )
                 action = "local_terminal"
             else:
-                invocation.attempt_count += 1
-                invocation.status = "submitting"
-                invocation.started_at = invocation.started_at or now
-                invocation.last_error_code = None
-                attempt = GpuProviderAttempt(
-                    tenant_id=invocation.tenant_id,
-                    invocation_id=invocation.id,
-                    attempt_number=invocation.attempt_count,
-                    status="submitting",
-                    request_manifest_sha256=invocation.request_manifest_sha256,
-                )
-                session.add(attempt)
-                await append_gpu_event(
-                    session,
-                    invocation,
-                    event_type="gpu.invocation.submitting.v1",
-                    payload={
-                        "attempt": invocation.attempt_count,
-                        "endpoint_id": invocation.endpoint_id,
-                        "provider_key": invocation.provider_key,
-                    },
-                    occurred_at=now,
-                )
-                action = "submit"
-            await session.commit()
-            return _Claim(
-                invocation_id=invocation.id,
-                tenant_id=invocation.tenant_id,
-                job_id=invocation.job_id,
-                document_id=invocation.document_id,
-                document_version_id=invocation.document_version_id,
-                page_id=invocation.page_id,
-                provider_key=invocation.provider_key,
-                endpoint_id=invocation.endpoint_id,
-                idempotency_key=invocation.idempotency_key,
-                input_bucket=cast(Literal["source", "derived"], invocation.input_bucket),
-                input_object_key=invocation.input_object_key,
-                input_sha256=invocation.input_sha256,
-                output_object_key=invocation.output_object_key,
-                options=dict(invocation.options),
-                model_revision=invocation.model_revision,
-                runtime_image_digest=invocation.runtime_image_digest,
-                adapter_version=invocation.adapter_version,
-                attempt_number=invocation.attempt_count,
-                lease_token=token,
-                provider_job_id=invocation.provider_job_id,
-                provider_status=invocation.provider_status,
-                action=action,
-                cancellation_reason=invocation.cancellation_reason,
+                invocation.status = "cancelling"
+                invocation.cancel_attempt_count += 1
+                action = "cancel"
+        elif (
+            invocation.provider_job_id is not None
+            and _aware(invocation.provider_deadline_at) is not None
+            and cast(datetime, _aware(invocation.provider_deadline_at)) <= now
+        ):
+            invocation.status = "cancelling"
+            invocation.cancellation_reason = "timeout"
+            invocation.cancel_attempt_count += 1
+            action = "cancel"
+        elif invocation.provider_job_id is not None:
+            invocation.status = "running"
+            action = "poll"
+        elif invocation.attempt_count >= invocation.max_attempts:
+            await self._terminal_local(
+                session,
+                invocation,
+                status="dead_letter",
+                code=invocation.last_error_code or "GPU_PROVIDER_ATTEMPTS_EXHAUSTED",
+                now=now,
             )
+            action = "local_terminal"
+        else:
+            invocation.attempt_count += 1
+            invocation.status = "submitting"
+            invocation.started_at = invocation.started_at or now
+            invocation.last_error_code = None
+            attempt = GpuProviderAttempt(
+                tenant_id=invocation.tenant_id,
+                invocation_id=invocation.id,
+                attempt_number=invocation.attempt_count,
+                status="submitting",
+                request_manifest_sha256=invocation.request_manifest_sha256,
+            )
+            session.add(attempt)
+            await append_gpu_event(
+                session,
+                invocation,
+                event_type="gpu.invocation.submitting.v1",
+                payload={
+                    "attempt": invocation.attempt_count,
+                    "endpoint_id": invocation.endpoint_id,
+                    "provider_key": invocation.provider_key,
+                },
+                occurred_at=now,
+            )
+            action = "submit"
+        await session.commit()
+        return _Claim(
+            invocation_id=invocation.id,
+            tenant_id=invocation.tenant_id,
+            # Read off the claimed row rather than passed in, on both paths. The
+            # broker also returns a project; taking the row's makes a
+            # disagreement between the two a mismatch the claim binding refuses
+            # rather than a value one caller silently preferred.
+            project_id=invocation.project_id,
+            job_id=invocation.job_id,
+            document_id=invocation.document_id,
+            document_version_id=invocation.document_version_id,
+            page_id=invocation.page_id,
+            provider_key=invocation.provider_key,
+            endpoint_id=invocation.endpoint_id,
+            idempotency_key=invocation.idempotency_key,
+            input_bucket=cast(Literal["source", "derived"], invocation.input_bucket),
+            input_object_key=invocation.input_object_key,
+            input_sha256=invocation.input_sha256,
+            output_object_key=invocation.output_object_key,
+            options=dict(invocation.options),
+            model_revision=invocation.model_revision,
+            runtime_image_digest=invocation.runtime_image_digest,
+            adapter_version=invocation.adapter_version,
+            attempt_number=invocation.attempt_count,
+            lease_token=token,
+            lease_expires_at=lease_expires_at,
+            provider_job_id=invocation.provider_job_id,
+            provider_status=invocation.provider_status,
+            action=action,
+            cancellation_reason=invocation.cancellation_reason,
+        )
+
 
     async def _request(self, claim: _Claim) -> GpuJobRequest:
         input_target, output_target = await asyncio.gather(
@@ -1055,6 +1240,46 @@ class GpuInvocationWorker:
         *,
         require_lease: bool = True,
     ) -> GpuProviderInvocation | None:
+        """Bind the transaction, then read the one row it is allowed to touch.
+
+        Every post-claim GPU read and write funnels through here, so this is the
+        one place the binding has to be right. It used to bind the tenant alone,
+        which the ``0034`` claim policy reads as ordinary tenant-scoped access
+        and admits no rows for — measured at zero rows against a NOBYPASSRLS
+        cluster while the same session with the full claim bound saw one.
+
+        ``require_lease`` selects which of two boundaries applies, and they are
+        not the same authority. With a lease the worker holds a claim and binds
+        it. Without one the caller is a provider callback, which has no lease to
+        bind and gets the narrower callback binding instead — never a claim
+        binding with an invented token in it.
+        """
+
+        if require_lease:
+            await enter_claim_context(
+                session,
+                claim=WorkerClaim(
+                    claim_id=claim.invocation_id,
+                    tenant_id=claim.tenant_id,
+                    project_id=claim.project_id,
+                    # Checked rather than defaulted: a lease-bound caller with no
+                    # lease is a defect in the caller, and _coerce says so.
+                    lease_token=cast(uuid.UUID, claim.lease_token),
+                    lease_expires_at=cast(datetime, claim.lease_expires_at),
+                    claimed_by=_CLAIM_WORKER_ID,
+                ),
+                worker_id=_CLAIM_WORKER_ID,
+                now=self._clock(),
+            )
+        else:
+            await enter_callback_context(
+                session,
+                callback=WorkerCallback(
+                    callback_id=claim.invocation_id,
+                    tenant_id=claim.tenant_id,
+                    project_id=claim.project_id,
+                ),
+            )
         invocation = await session.scalar(
             select(GpuProviderInvocation)
             .where(
@@ -1065,6 +1290,8 @@ class GpuInvocationWorker:
         )
         if invocation is None:
             return None
+        if invocation.tenant_id != claim.tenant_id:
+            raise RuntimeError("gpu_invocation_tenant_mismatch")
         if require_lease and invocation.lease_token != claim.lease_token:
             return None
         return invocation
@@ -1111,8 +1338,7 @@ class GpuInvocationWorker:
             invocation.object_grant_expires_at = now + timedelta(
                 seconds=self._policy.presign_ttl_seconds
             )
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.available_at = now + timedelta(seconds=self._policy.poll_interval_seconds)
             invocation.status = "cancel_requested" if fence else "submitted"
             invocation.cancellation_reason = fence
@@ -1156,8 +1382,7 @@ class GpuInvocationWorker:
             )
             invocation.cancellation_reason = fence
             invocation.available_at = now + timedelta(seconds=self._policy.poll_interval_seconds)
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             await append_gpu_event(
                 session,
@@ -1354,8 +1579,7 @@ class GpuInvocationWorker:
                 invocation.status = "cancel_requested"
                 invocation.cancellation_reason = fence
                 invocation.available_at = now
-                invocation.lease_token = None
-                invocation.lease_expires_at = None
+                _release_lease(invocation)
                 await append_gpu_event(
                     session,
                     invocation,
@@ -1368,6 +1592,44 @@ class GpuInvocationWorker:
             attempt = await self._attempt(session, claim)
             if attempt is None:
                 raise RuntimeError("gpu_attempt_missing")
+            # Establish the outer write transaction before the orchestrator's
+            # savepoint.  This is semantically redundant on PostgreSQL, but it
+            # also prevents SQLite from treating a first-write SAVEPOINT as an
+            # independently committed transaction during deterministic tests.
+            invocation.updated_at = now
+            await session.flush()
+            if "parallel_v6" in claim.options:
+                # Keep the optional parallel runtime out of the scheduler/API
+                # import graph and every legacy GPU completion path.
+                from akc_scheduler.parallel_v6_admission import (
+                    ParallelV6AdmissionError,
+                    admit_parallel_v6_output,
+                )
+
+                try:
+                    await admit_parallel_v6_output(
+                        session,
+                        options=claim.options,
+                        provider_invocation_id=claim.invocation_id,
+                        tenant_id=claim.tenant_id,
+                        job_id=claim.job_id,
+                        document_id=claim.document_id,
+                        document_version_id=claim.document_version_id,
+                        provider_job_id=claim.provider_job_id,
+                        provider_key=claim.provider_key,
+                        endpoint_id=claim.endpoint_id,
+                        input_sha256=claim.input_sha256,
+                        output_object_key=claim.output_object_key,
+                        model_revision=claim.model_revision,
+                        runtime_image_digest=claim.runtime_image_digest,
+                        adapter_version=claim.adapter_version,
+                        result=result,
+                        output_payload=output_payload,
+                        completion_source=source,
+                        completed_at=now,
+                    )
+                except ParallelV6AdmissionError as exc:
+                    raise GpuProviderError(exc.code, retryable=False) from exc
             invocation.status = "completed"
             invocation.provider_status = "COMPLETED"
             invocation.result_manifest = manifest
@@ -1378,8 +1640,7 @@ class GpuInvocationWorker:
             invocation.last_error_code = None
             invocation.completed_at = now
             invocation.updated_at = now
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             attempt.status = "completed"
             attempt.provider_response_sha256 = result.raw_provider_response_sha256
             attempt.result_manifest_sha256 = manifest_sha
@@ -1411,6 +1672,23 @@ class GpuInvocationWorker:
         ):
             with contextlib.suppress(InvalidOperation):
                 record_provider_cost(claim.provider_key, Decimal(str(estimated_cost)))
+        gpu_seconds = metrics.get("gpu_seconds")
+        if isinstance(gpu_seconds, (int, float, str)) and not isinstance(gpu_seconds, bool):
+            record_collection_gpu_seconds(gpu_seconds)
+        if "parallel_v6" in claim.options:
+            observe_parallel_provider_job(
+                provider="runpod",
+                queue_delay_seconds=(
+                    None
+                    if result.provider_queue_delay_ms is None
+                    else result.provider_queue_delay_ms / 1000
+                ),
+                execution_seconds=(
+                    None
+                    if result.provider_execution_time_ms is None
+                    else result.provider_execution_time_ms / 1000
+                ),
+            )
         record_provider_request(claim.provider_key, result="success")
         return True
 
@@ -1446,8 +1724,7 @@ class GpuInvocationWorker:
                 attempt.retryable = error.retryable or retry_decision.category == "gpu_oom"
                 attempt.last_polled_at = now
             invocation.last_error_code = error.code
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             transition_requested = retry_decision.strategy in {
                 "reduce_or_escalate",
@@ -1532,7 +1809,7 @@ class GpuInvocationWorker:
                         "attempt": invocation.attempt_count,
                         "code": error.code,
                         "next_action": (
-                            "manual_review"
+                            "unresolved"
                             if transition_requested
                             and (
                                 transition_unavailable
@@ -1568,8 +1845,7 @@ class GpuInvocationWorker:
             invocation.provider_job_id = None
             invocation.provider_status = "CANCELLED"
             invocation.provider_deadline_at = None
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             if timed_out and invocation.attempt_count < invocation.max_attempts:
                 invocation.status = "retry"
@@ -1642,8 +1918,7 @@ class GpuInvocationWorker:
             if invocation is None or invocation.status in _TERMINAL_STATES:
                 return
             invocation.last_error_code = error.code
-            invocation.lease_token = None
-            invocation.lease_expires_at = None
+            _release_lease(invocation)
             invocation.updated_at = now
             if (
                 error.retryable
@@ -1689,8 +1964,50 @@ class GpuInvocationWorker:
             await session.commit()
         record_provider_request(claim.provider_key, result="failed")
 
+    async def _observe_poll(self, *, claimed: bool) -> None:
+        """ARMING GATE 1 — classify this poll and publish the five series.
+
+        Only reached on PostgreSQL: the probes are ``SECURITY DEFINER`` functions
+        added by 0035/0036, and the SQLite test adapter has neither. Reporting
+        only, never a decision — a detector that changed what the worker does
+        would be a new failure mode rather than a view of an existing one.
+
+        The probe pair is queried only when the poll came back empty. That is the
+        one case that needs disambiguating, and it keeps a healthy worker's hot
+        path to exactly the query it already made.
+        """
+
+        if self._engine.dialect.name != "postgresql":
+            return
+        backlog = claimable = 0
+        try:
+            if not claimed:
+                async with self._sessions() as session:
+                    backlog, claimable = await claim_backlog(
+                        session, function=_CLAIM_BROKER
+                    )
+        except SQLAlchemyError:
+            # An observability probe must not be able to stop the worker it
+            # observes. A failed probe is reported as an unknown backlog, which
+            # classifies as idle rather than as starvation — the quiet direction.
+            logger.warning("claim backlog probe failed", exc_info=True)
+            return
+        record_claim_poll(
+            _CLAIM_QUEUE,
+            self._starvation.observe(
+                claimed=claimed, backlog_depth=backlog, claimable_depth=claimable
+            ),
+        )
+
     async def run_one(self) -> bool:
-        claim = await self._claim()
+        # Canary A selects the path. Both end in the same _claim_from_row, so
+        # what differs is only how the row was found and who stamped its lease.
+        claim = await (
+            self._claim_via_broker()
+            if self._policy.use_claim_broker
+            else self._claim()
+        )
+        await self._observe_poll(claimed=claim is not None)
         if claim is None:
             return False
         if claim.action == "local_terminal":
@@ -1748,6 +2065,45 @@ class GpuInvocationWorker:
             )
         return True
 
+    async def _callback_target(
+        self,
+        session: AsyncSession,
+        invocation_id: uuid.UUID,
+    ) -> WorkerCallback | None:
+        """Find out whose row a callback names, by the route the backend needs.
+
+        On PostgreSQL that is the definer resolver: the session is about to be
+        tenant-scoped, and a tenant-scoped session cannot read the column that
+        says which tenant. On the SQLite test adapter there are no GUCs, no
+        policies and no definer functions, so the lookup is the direct read it
+        always was — the same reasoning that makes ``enter_*_context`` report
+        ``applied=False`` there rather than pretend.
+        """
+
+        if self._engine.dialect.name == "postgresql":
+            return await resolve_callback_target(
+                session,
+                function=_CALLBACK_RESOLVER,
+                invocation_id=invocation_id,
+            )
+        row = (
+            await session.execute(
+                select(
+                    GpuProviderInvocation.id,
+                    GpuProviderInvocation.tenant_id,
+                    GpuProviderInvocation.project_id,
+                ).where(
+                    GpuProviderInvocation.id == invocation_id,
+                    GpuProviderInvocation.provider_job_id.is_not(None),
+                )
+            )
+        ).one_or_none()
+        if row is None:
+            return None
+        return WorkerCallback(
+            callback_id=row.id, tenant_id=row.tenant_id, project_id=row.project_id
+        )
+
     async def admit_callback(
         self,
         *,
@@ -1761,6 +2117,19 @@ class GpuInvocationWorker:
         The HTTP boundary must validate the callback signature before invoking
         this method. This method revalidates object evidence and tenant/job
         fences; it never trusts inline callback output.
+
+        **This runs as ``akc_gpu_worker``**, the same database role and the same
+        engine as the claim loop — ``create_gpu_engine`` pins the role on every
+        connection, and there is one worker. So the callback is inside canary B's
+        blast radius, and the read below used to name no tenant at all: under
+        row-level security it returns nothing, and a callback that finds nothing
+        looks exactly like a callback for a row that was already deleted.
+
+        The tenant is resolved rather than assumed. A callback names a row and a
+        signature; a row's tenant is precisely what a tenant-scoped session
+        cannot look up, which is the same problem the claim broker solved, so it
+        is solved the same way and the resolver returns no lease because a
+        callback has none.
         """
 
         if (
@@ -1771,8 +2140,15 @@ class GpuInvocationWorker:
         ):
             raise ValueError("invalid provider callback identity")
         async with self._sessions() as session:
+            target = await self._callback_target(session, invocation_id)
+            if target is None:
+                return False
+            await enter_callback_context(session, callback=target)
             invocation = await session.scalar(
-                select(GpuProviderInvocation).where(GpuProviderInvocation.id == invocation_id)
+                select(GpuProviderInvocation).where(
+                    GpuProviderInvocation.tenant_id == target.tenant_id,
+                    GpuProviderInvocation.id == invocation_id,
+                )
             )
             if invocation is None:
                 return False
@@ -1784,6 +2160,7 @@ class GpuInvocationWorker:
             claim = _Claim(
                 invocation_id=invocation.id,
                 tenant_id=invocation.tenant_id,
+                project_id=invocation.project_id,
                 job_id=invocation.job_id,
                 document_id=invocation.document_id,
                 document_version_id=invocation.document_version_id,
@@ -1800,7 +2177,12 @@ class GpuInvocationWorker:
                 runtime_image_digest=invocation.runtime_image_digest,
                 adapter_version=invocation.adapter_version,
                 attempt_number=invocation.attempt_count,
-                lease_token=invocation.lease_token or uuid.uuid4(),
+                # No lease, stated as no lease. This read `invocation.lease_token
+                # or uuid.uuid4()`, which manufactured a token whenever the row
+                # had none — which is every ordinary callback, because the lease
+                # is released when the job is handed to the provider.
+                lease_token=None,
+                lease_expires_at=None,
                 provider_job_id=invocation.provider_job_id,
                 provider_status=invocation.provider_status,
                 action="poll",

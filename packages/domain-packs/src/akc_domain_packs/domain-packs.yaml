@@ -11,10 +11,12 @@ packs:
       - id: definition_evidence
         description: Definitions require direct source evidence.
         severity: review_required
+        autonomous_outcome: unresolved
         evaluator: evidence_coverage
       - id: numeric_fidelity
         description: Dates, numbers, and units must match the source.
         severity: hard_fail
+        autonomous_outcome: hard_fail
         evaluator: numeric_exactness
     forbidden_claims: [unsourced_answer]
   - id: research_pack
@@ -29,10 +31,12 @@ packs:
       - id: claim_evidence
         description: Every research claim requires evidence.
         severity: hard_fail
+        autonomous_outcome: hard_fail
         evaluator: evidence_coverage
-      - id: conflict_review
-        description: Conflicting findings require human review.
+      - id: conflict_resolution
+        description: Conflicting findings remain isolated until objective evidence resolves them.
         severity: review_required
+        autonomous_outcome: unresolved
         evaluator: conflict_detection
     forbidden_claims: [invented_citation, hidden_limitation]
   - id: work_project_pack
@@ -46,10 +50,12 @@ packs:
       - id: owner_source
         description: Owners and deadlines require explicit evidence.
         severity: review_required
+        autonomous_outcome: unresolved
         evaluator: evidence_coverage
       - id: deadline_fidelity
         description: Deadline dates must match the source.
         severity: hard_fail
+        autonomous_outcome: hard_fail
         evaluator: date_unit_exactness
     forbidden_claims: [invented_owner, invented_deadline]
   - id: legal_contract_pack
@@ -63,10 +69,12 @@ packs:
       - id: clause_verbatim
         description: Clause text and defined terms preserve source wording.
         severity: hard_fail
+        autonomous_outcome: hard_fail
         evaluator: text_fidelity
-      - id: legal_review
-        description: Inferences and ambiguous obligations require human review.
+      - id: legal_ambiguity_gate
+        description: Inferences and ambiguous obligations remain unresolved without source authority.
         severity: review_required
+        autonomous_outcome: unresolved
         evaluator: origin_policy
     forbidden_claims:
       [legal_advice, enforceability_conclusion, invented_obligation]
@@ -81,10 +89,12 @@ packs:
       - id: command_verbatim
         description: Commands and version strings preserve exact source text.
         severity: hard_fail
+        autonomous_outcome: hard_fail
         evaluator: code_fidelity
       - id: warning_evidence
         description: Safety warnings retain evidence and order.
         severity: review_required
+        autonomous_outcome: unresolved
         evaluator: evidence_coverage
     forbidden_claims: [invented_command, unsupported_fix]
   - id: archive_book_pack
@@ -98,9 +108,11 @@ packs:
       - id: chronology_fidelity
         description: Dates and sequence remain faithful to the source.
         severity: hard_fail
+        autonomous_outcome: hard_fail
         evaluator: date_unit_exactness
       - id: name_evidence
         description: Named entities retain source evidence.
         severity: review_required
+        autonomous_outcome: unresolved
         evaluator: evidence_coverage
     forbidden_claims: [invented_event, modernized_quote]

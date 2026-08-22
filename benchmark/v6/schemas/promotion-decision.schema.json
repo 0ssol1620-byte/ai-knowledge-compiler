@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.example/schemas/v6/promotion-decision.schema.json",
+  "title": "Structara v6 fail-closed promotion decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_id",
+    "requested_target",
+    "decision",
+    "gate_g9",
+    "blockers",
+    "failed_gates",
+    "pending_gates",
+    "evidence_sha256",
+    "decision_sha256"
+  ],
+  "properties": {
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "requested_target": { "enum": ["shadow", "canary", "production"] },
+    "decision": { "enum": ["reject", "shadow", "canary", "production"] },
+    "gate_g9": { "enum": ["pass", "fail", "blocked", "not_run"] },
+    "blockers": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "failed_gates": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/gate" } },
+    "pending_gates": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/gate" } },
+    "evidence_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+    "decision_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "gate": { "type": "string", "pattern": "^(G[0-8]|MP[0-6])$" }
+  }
+}

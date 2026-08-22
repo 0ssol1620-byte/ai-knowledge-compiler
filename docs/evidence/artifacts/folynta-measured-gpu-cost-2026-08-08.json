@@ -1,0 +1,109 @@
+{
+  "gpu_class": "NVIDIA GeForce RTX 4090",
+  "healthy_worker_only": {
+    "documents": 1226,
+    "note": "A worker that ran without stalling, which is the rate a healthy fleet sustains.",
+    "pages_per_pod_hour": 600,
+    "pod_hours": 2.04,
+    "usd_per_1000_pages": 1.23,
+    "worker": "worker-01"
+  },
+  "hourly_rate_usd": 0.74,
+  "not_a_price": "This is raw GPU cost. It excludes engineering, orchestration, storage, egress, support and margin, and must not be compared against a competitor's retail price.",
+  "per_run": [
+    {
+      "benchmark": "olmocr-bench",
+      "documents": 353,
+      "elapsed_seconds": 19637.231231212616,
+      "seconds_per_document": 55.63,
+      "worker": "worker-00"
+    },
+    {
+      "benchmark": "omnidocbench",
+      "documents": 405,
+      "elapsed_seconds": 25122.138837575912,
+      "seconds_per_document": 62.03,
+      "worker": "worker-00"
+    },
+    {
+      "benchmark": "parsebench",
+      "documents": 540,
+      "elapsed_seconds": 6298.8965928554535,
+      "seconds_per_document": 11.66,
+      "worker": "worker-00"
+    },
+    {
+      "benchmark": "olmocr-bench",
+      "documents": 345,
+      "elapsed_seconds": 2216.155923604965,
+      "seconds_per_document": 6.42,
+      "worker": "worker-01"
+    },
+    {
+      "benchmark": "omnidocbench",
+      "documents": 403,
+      "elapsed_seconds": 2940.1862502098083,
+      "seconds_per_document": 7.3,
+      "worker": "worker-01"
+    },
+    {
+      "benchmark": "parsebench",
+      "documents": 478,
+      "elapsed_seconds": 2195.9176800251007,
+      "seconds_per_document": 4.59,
+      "worker": "worker-01"
+    },
+    {
+      "benchmark": "olmocr-bench",
+      "documents": 336,
+      "elapsed_seconds": 3454.6312448978424,
+      "seconds_per_document": 10.28,
+      "worker": "worker-02"
+    },
+    {
+      "benchmark": "omnidocbench",
+      "documents": 453,
+      "elapsed_seconds": 15273.891383647919,
+      "seconds_per_document": 33.72,
+      "worker": "worker-02"
+    },
+    {
+      "benchmark": "parsebench",
+      "documents": 526,
+      "elapsed_seconds": 6535.96449971199,
+      "seconds_per_document": 12.43,
+      "worker": "worker-02"
+    },
+    {
+      "benchmark": "olmocr-bench",
+      "documents": 369,
+      "elapsed_seconds": 21464.088237524033,
+      "seconds_per_document": 58.17,
+      "worker": "worker-03"
+    },
+    {
+      "benchmark": "omnidocbench",
+      "documents": 390,
+      "elapsed_seconds": 21282.443150043488,
+      "seconds_per_document": 54.57,
+      "worker": "worker-03"
+    },
+    {
+      "benchmark": "parsebench",
+      "documents": 534,
+      "elapsed_seconds": 21276.949696540833,
+      "seconds_per_document": 39.84,
+      "worker": "worker-03"
+    }
+  ],
+  "question": "What did one page of extraction actually cost in GPU time?",
+  "receipt_sha256": "sha256:331a5a9032d57afc9c5140ac344e95ba73d20bd028ec434157073a68480b6b56",
+  "schema": "folynta.measured-gpu-cost.v1",
+  "score_inflation_allowed": false,
+  "whole_campaign": {
+    "documents": 5132,
+    "note": "Includes every stall, retry and failed worker the campaign hit.",
+    "pod_hours": 41.03,
+    "usd_per_1000_pages": 5.92
+  }
+}

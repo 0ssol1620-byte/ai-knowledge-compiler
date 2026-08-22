@@ -32,6 +32,8 @@
         "page.quality.updated.v1",
         "page.retry.scheduled.v1",
         "page.completed.v1",
+        "page.unresolved.v1",
+        "page.quarantined.v1",
         "page.needs_review.v1",
         "page.failed.v1",
         "document.knowledge.note_created.v1",
@@ -41,6 +43,7 @@
         "export.completed.v1",
         "job.completed.v1",
         "job.failed.v1",
+        "job.cancelled.v1",
         "credit.reserved.v1",
         "credit.consumed.v1",
         "credit.released.v1"

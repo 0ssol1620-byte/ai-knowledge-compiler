@@ -311,3 +311,58 @@ def test_export_path_heading_and_long_chunk_are_bounded(
     chunks = adaptive_chunks(document, language="ko")
     assert len(chunks) >= 3
     assert all(chunk.token_count <= 1200 for chunk in chunks)
+
+
+def test_math_notation_is_not_mistaken_for_a_wikilink() -> None:
+    """Bracketed notation inside math must not be read as a link target.
+
+    Extracted papers contain notation such as ``$[[s \\otimes f]]$``. Treating it
+    as a wikilink invents a broken reference, and because a Vault with an
+    unresolved link is refused outright, one formula would block a document that
+    has nothing broken in it.
+    """
+    from akc_exporters.vault import validate_internal_links
+
+    files = {
+        "note.md": (
+            "# Paper\n\n"
+            r"The isomorphism sends class $[[s \otimes f]]$ to $F(f)(s)$." + "\n"
+        ).encode("utf-8"),
+    }
+    assert validate_internal_links(files) == ()
+
+
+def test_display_math_is_also_excluded_from_link_scanning() -> None:
+    from akc_exporters.vault import validate_internal_links
+
+    files = {
+        "note.md": ("# Paper\n\n$$\n" + r"[[A \otimes B]]" + "\n$$\n").encode("utf-8"),
+    }
+    assert validate_internal_links(files) == ()
+
+
+def test_a_genuine_wikilink_outside_math_is_still_reported() -> None:
+    from akc_exporters.vault import validate_internal_links
+
+    files = {
+        "note.md": (
+            "# Paper\n\nSee [[Missing Note]] and " + r"$[[x \otimes y]]$." + "\n"
+        ).encode("utf-8"),
+    }
+    broken = validate_internal_links(files)
+    # The real dangling link is still caught; only the formula is spared.
+    assert len(broken) == 1
+    assert broken[0].target == "Missing Note"
+
+
+def test_escaped_dollar_does_not_open_a_math_span() -> None:
+    from akc_exporters.vault import validate_internal_links
+
+    files = {
+        "note.md": (
+            "# Prices\n\n" + r"Costs \$5 then [[Missing Note]] then \$9." + "\n"
+        ).encode("utf-8"),
+    }
+    broken = validate_internal_links(files)
+    assert len(broken) == 1
+    assert broken[0].target == "Missing Note"

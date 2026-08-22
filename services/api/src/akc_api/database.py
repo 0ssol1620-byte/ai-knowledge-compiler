@@ -100,6 +100,7 @@ class Database:
         from akc_url_fetcher import models as _url_models  # noqa: F401
 
         from akc_api import models as _models  # noqa: F401
+        from akc_api import parallel_models as _parallel_models  # noqa: F401
         from akc_api import project_access_models as _project_access_models  # noqa: F401
         from akc_api import team_models as _team_models  # noqa: F401
 

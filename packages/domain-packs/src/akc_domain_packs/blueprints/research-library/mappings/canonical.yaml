@@ -1,0 +1,10 @@
+blueprint: research-library
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  paper: Document
+  author: Entity
+  method: OntologyTerm
+  dataset: Asset
+  finding: Claim
+  citation: Evidence

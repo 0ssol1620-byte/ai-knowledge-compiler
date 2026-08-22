@@ -1,44 +1,270 @@
 {
-  "schema_version": "1.0.0",
+  "$schema": "scale-profile.schema.json",
+  "schema_version": "2.0.0",
+  "catalog_id": "akc-v4-nonproduction-readiness",
+  "masterplan_revision": "Structara v4 KO 2026-07-31",
   "safety": {
+    "required_confirmation_env": "AKC_LOAD_CONFIRM",
     "required_confirmation": "NONPRODUCTION_LOAD_ONLY",
     "remote_https_required": true,
     "exact_origin_allowlist_required": true,
     "customer_data_permitted": false,
-    "automatic_production_execution": false
+    "synthetic_fixtures_only": true,
+    "automatic_production_execution": false,
+    "production_evidence_permitted": false,
+    "default_execution": "disabled"
   },
   "profiles": {
+    "collection_manifest_5000": {
+      "requirement_refs": ["Wave 1.8", "44.2 5,000 file selection", "44.6 5,000 files"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
+      "runner": "k6",
+      "script": "tests/load/k6-collection-manifest.js",
+      "command": ["k6", "run", "tests/load/k6-collection-manifest.js"],
+      "dimensions": {
+        "files": 5000,
+        "bytes_per_manifest_entry": 1024,
+        "manifest_bytes": 5120000
+      },
+      "required_fixture_env": ["AKC_TEST_TOKEN", "AKC_TEST_PROJECT_ID", "AKC_RUN_ID"],
+      "thresholds": {
+        "manifest_plan_p95_ms": 30000,
+        "http_failure_rate": 0.01
+      },
+      "required_evidence_metrics": [
+        "manifest_files_observed",
+        "manifest_plan_p95_ms",
+        "api_peak_rss_bytes",
+        "cleanup_completed"
+      ],
+      "cleanup": "delete_disposable_collection"
+    },
+    "collection_resume_10gib": {
+      "requirement_refs": ["Wave 1.9", "44.2 10GB interruption", "48 Ingestion"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
+      "runner": "node",
+      "script": "tests/load/resume-10gib.mjs",
+      "commands": {
+        "interrupt": ["node", "tests/load/resume-10gib.mjs", "--phase", "interrupt"],
+        "resume": ["node", "tests/load/resume-10gib.mjs", "--phase", "resume"]
+      },
+      "dimensions": {
+        "files": 10,
+        "bytes_per_file": 1073741824,
+        "total_bytes": 10737418240,
+        "interrupt_after_bytes": 5368709120,
+        "browser_restart_boundary": true
+      },
+      "required_fixture_env": [
+        "AKC_TEST_TOKEN",
+        "AKC_TEST_PROJECT_ID",
+        "AKC_RUN_ID",
+        "AKC_10GIB_FIXTURE_MANIFEST",
+        "AKC_10GIB_STATE_PATH",
+        "AKC_10GIB_OBSERVATION_PATH",
+        "AKC_ALLOWED_UPLOAD_ORIGINS",
+        "AKC_CLEANUP_ON_SUCCESS"
+      ],
+      "thresholds": {
+        "completed_bytes": 10737418240,
+        "duplicate_documents": 0,
+        "orphaned_multipart_uploads": 0
+      },
+      "required_evidence_metrics": [
+        "interrupted_after_bytes",
+        "resumed_completed_bytes",
+        "browser_resume_token_rotated",
+        "duplicate_documents",
+        "orphaned_multipart_uploads",
+        "cleanup_completed"
+      ],
+      "cleanup": "delete_disposable_collection_and_fixture"
+    },
+    "preflight_30000_pages": {
+      "requirement_refs": ["7.6", "44.6 30,000 pages preflight"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
+      "runner": "k6",
+      "script": "tests/load/k6-preflight-30000.js",
+      "command": ["k6", "run", "tests/load/k6-preflight-30000.js"],
+      "dimensions": {
+        "known_pages": 30000,
+        "iterations": 1
+      },
+      "required_fixture_env": [
+        "AKC_TEST_TOKEN",
+        "AKC_TEST_COLLECTION_ID",
+        "AKC_RUN_ID",
+        "AKC_PREFLIGHT_FIXTURE_ATTESTATION"
+      ],
+      "thresholds": {
+        "fast_estimate_max_seconds": 120,
+        "precise_estimate_max_seconds": 900
+      },
+      "required_evidence_metrics": [
+        "known_pages_observed",
+        "fast_estimate_seconds",
+        "precise_estimate_seconds",
+        "api_peak_rss_bytes",
+        "database_peak_connections"
+      ],
+      "cleanup": "release_preprovisioned_fixture_per_attestation"
+    },
+    "processing_ui_1000_pages": {
+      "requirement_refs": ["32.2 1,000-page memory test", "44.6 1,000 page processing UI"],
+      "execution_class": "external_browser_scale",
+      "mutates_target": false,
+      "runner": "node",
+      "script": "tests/load/browser-scale-probe.mjs",
+      "command": ["node", "tests/load/browser-scale-probe.mjs", "--profile", "processing_ui_1000_pages"],
+      "dimensions": {
+        "pages": 1000
+      },
+      "required_fixture_env": [
+        "AKC_BROWSER_FIXTURE_ATTESTATION",
+        "AKC_BROWSER_STORAGE_STATE",
+        "AKC_BROWSER_OBSERVATION_PATH"
+      ],
+      "thresholds": {
+        "ready_p95_ms": 10000,
+        "heap_peak_bytes": 536870912,
+        "dom_nodes_max": 5000,
+        "long_task_p95_ms": 200
+      },
+      "required_evidence_metrics": [
+        "pages_observed",
+        "ready_ms",
+        "heap_peak_bytes",
+        "dom_nodes_peak",
+        "long_task_p95_ms"
+      ],
+      "cleanup": "read_only_browser_context"
+    },
+    "workspace_10000_blocks": {
+      "requirement_refs": ["32.2 10,000 blocks", "44.6 10,000 blocks"],
+      "execution_class": "external_browser_scale",
+      "mutates_target": false,
+      "runner": "node",
+      "script": "tests/load/browser-scale-probe.mjs",
+      "command": ["node", "tests/load/browser-scale-probe.mjs", "--profile", "workspace_10000_blocks"],
+      "dimensions": {
+        "blocks": 10000
+      },
+      "required_fixture_env": [
+        "AKC_BROWSER_FIXTURE_ATTESTATION",
+        "AKC_BROWSER_STORAGE_STATE",
+        "AKC_BROWSER_OBSERVATION_PATH"
+      ],
+      "thresholds": {
+        "ready_p95_ms": 10000,
+        "heap_peak_bytes": 536870912,
+        "dom_nodes_max": 5000,
+        "long_task_p95_ms": 200
+      },
+      "required_evidence_metrics": [
+        "blocks_observed",
+        "ready_ms",
+        "heap_peak_bytes",
+        "dom_nodes_peak",
+        "long_task_p95_ms"
+      ],
+      "cleanup": "read_only_browser_context"
+    },
+    "graph_5000_nodes": {
+      "requirement_refs": ["32.2 5,000 nodes", "44.6 5,000 graph nodes"],
+      "execution_class": "external_browser_scale",
+      "mutates_target": false,
+      "runner": "node",
+      "script": "tests/load/browser-scale-probe.mjs",
+      "command": ["node", "tests/load/browser-scale-probe.mjs", "--profile", "graph_5000_nodes"],
+      "dimensions": {
+        "graph_nodes": 5000
+      },
+      "required_fixture_env": [
+        "AKC_BROWSER_FIXTURE_ATTESTATION",
+        "AKC_BROWSER_STORAGE_STATE",
+        "AKC_BROWSER_OBSERVATION_PATH"
+      ],
+      "thresholds": {
+        "ready_p95_ms": 10000,
+        "heap_peak_bytes": 536870912,
+        "dom_nodes_max": 5000,
+        "long_task_p95_ms": 200
+      },
+      "required_evidence_metrics": [
+        "graph_nodes_observed",
+        "ready_ms",
+        "heap_peak_bytes",
+        "dom_nodes_peak",
+        "long_task_p95_ms"
+      ],
+      "cleanup": "read_only_browser_context"
+    },
     "sse_1000": {
+      "requirement_refs": ["44.6 1,000 SSE clients"],
+      "execution_class": "external_scale",
+      "mutates_target": false,
       "runner": "k6",
       "script": "tests/load/k6-sse.js",
-      "virtual_users": 1000,
-      "duration_seconds": 300,
+      "command": ["k6", "run", "tests/load/k6-sse.js"],
+      "dimensions": {
+        "virtual_users": 1000,
+        "duration_seconds": 300
+      },
       "required_fixture_env": ["AKC_TEST_JOB_ID"],
       "thresholds": {
         "connection_success_rate": 0.995,
         "reconnect_p95_ms": 5000
-      }
+      },
+      "required_evidence_metrics": [
+        "connection_success_rate",
+        "reconnect_p95_ms",
+        "duplicate_events"
+      ],
+      "cleanup": "read_only_existing_job"
     },
     "upload_100": {
+      "requirement_refs": ["44.6 100 uploads"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
       "runner": "k6",
       "script": "tests/load/k6-journey.js",
-      "virtual_users": 100,
-      "iterations": 100,
-      "required_fixture_env": [
-        "AKC_TEST_EMAIL",
-        "AKC_TEST_PASSWORD",
-        "AKC_TEST_PROJECT_ID"
-      ],
+      "command": ["k6", "run", "tests/load/k6-journey.js"],
+      "runner_env": {
+        "AKC_VUS": "100",
+        "AKC_ITERATIONS": "100",
+        "AKC_SYNTHETIC_CONFIRM": "NONPRODUCTION_SYNTHETIC_ONLY"
+      },
+      "dimensions": {
+        "virtual_users": 100,
+        "iterations": 100
+      },
+      "required_fixture_env": ["AKC_TEST_EMAIL", "AKC_TEST_PASSWORD", "AKC_TEST_PROJECT_ID"],
       "thresholds": {
         "http_failure_rate": 0.01
-      }
+      },
+      "required_evidence_metrics": [
+        "http_failure_rate",
+        "orphaned_uploads",
+        "duplicate_documents",
+        "cleanup_completed"
+      ],
+      "cleanup": "journey_finally_deletes_documents"
     },
     "enqueue_10000_pages": {
+      "requirement_refs": ["existing operational 10,000-page enqueue"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
       "runner": "k6",
       "script": "tests/load/k6-enqueue.js",
-      "virtual_users": 1,
-      "iterations": 1,
-      "fixture_pages": 10000,
+      "command": ["k6", "run", "tests/load/k6-enqueue.js"],
+      "dimensions": {
+        "virtual_users": 1,
+        "iterations": 1,
+        "fixture_pages": 10000
+      },
       "required_fixture_env": [
         "AKC_TEST_EMAIL",
         "AKC_TEST_PASSWORD",
@@ -47,13 +273,26 @@
       ],
       "thresholds": {
         "enqueue_p95_ms": 2000
-      }
+      },
+      "required_evidence_metrics": [
+        "fixture_pages_observed",
+        "enqueue_p95_ms",
+        "request_thread_processing_detected"
+      ],
+      "cleanup": "delete_disposable_document"
     },
     "mixed_tenant_fairness": {
+      "requirement_refs": ["Wave 10.3", "existing dispatch fairness gate"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
       "runner": "k6",
       "script": "tests/load/k6-fairness.js",
-      "virtual_users": 20,
-      "duration_seconds": 900,
+      "command": ["k6", "run", "tests/load/k6-fairness.js"],
+      "dimensions": {
+        "virtual_users": 20,
+        "duration_seconds": 900,
+        "tenants": 2
+      },
       "required_fixture_env": [
         "AKC_SMALL_TENANT_TOKEN",
         "AKC_LARGE_TENANT_TOKEN",
@@ -62,17 +301,38 @@
       ],
       "thresholds": {
         "small_job_wait_p95_ms": 30000
-      }
+      },
+      "required_evidence_metrics": [
+        "small_job_wait_p95_ms",
+        "tenant_share_max",
+        "attempts_consumed_while_deferred",
+        "oldest_job_age_recovered"
+      ],
+      "cleanup": "delete_disposable_jobs"
     },
     "export_burst_100": {
+      "requirement_refs": ["existing export burst gate"],
+      "execution_class": "external_scale",
+      "mutates_target": true,
       "runner": "k6",
       "script": "tests/load/k6-export.js",
-      "virtual_users": 100,
-      "iterations": 100,
+      "command": ["k6", "run", "tests/load/k6-export.js"],
+      "dimensions": {
+        "virtual_users": 100,
+        "iterations": 100
+      },
       "required_fixture_env": ["AKC_TEST_TOKEN", "AKC_TEST_JOB_ID"],
       "thresholds": {
         "http_failure_rate": 0.01
-      }
+      },
+      "required_evidence_metrics": [
+        "http_failure_rate",
+        "cross_tenant_accesses",
+        "duplicate_charges",
+        "orphaned_exports",
+        "cleanup_completed"
+      ],
+      "cleanup": "delete_disposable_exports"
     }
   }
 }

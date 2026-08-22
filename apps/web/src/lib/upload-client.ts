@@ -1,3 +1,5 @@
+import { browserQuickFingerprint, browserSha256 } from "@/lib/browser-hash";
+import { MultipartTransferError } from "@/lib/transfer-errors";
 import {
   analyzeDocument,
   apiAbsoluteUrl,
@@ -60,11 +62,21 @@ interface ResumeRecord {
   documentId: string;
 }
 
-export class MultipartTransferError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "MultipartTransferError";
-  }
+interface UploadCompleted {
+  upload_id: string;
+  source_file_id: string;
+  document_id: string;
+  document_version: number;
+  status: string;
+}
+
+export interface UploadedSourceFile {
+  uploadId: string;
+  sourceFileId: string;
+  documentId: string;
+  documentVersion: number;
+  status: string;
+  sha256: string;
 }
 
 export class PdfPasswordRequiredError extends ApiError {
@@ -83,8 +95,40 @@ export async function uploadAndAnalyze(
   file: File,
   projectId?: string,
 ): Promise<{ documentId: string; estimate: PreflightEstimate }> {
+  const uploaded = await uploadSourceFile(file, projectId);
+  try {
+    const estimate = await analyzeDocument(uploaded.documentId);
+    return { documentId: uploaded.documentId, estimate };
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      ["PDF_PASSWORD_REQUIRED", "PDF_PASSWORD_EXPIRED"].includes(error.code)
+    ) {
+      throw new PdfPasswordRequiredError(uploaded.documentId);
+    }
+    throw error;
+  }
+}
+
+export async function uploadSourceFile(
+  file: File,
+  projectId?: string,
+  precomputedSha256?: string,
+  options: { signal?: AbortSignal } = {},
+): Promise<UploadedSourceFile> {
+  options.signal?.throwIfAborted();
   const contentType = file.type || "application/octet-stream";
-  const sha256 = await browserSha256(file);
+  const sha256 =
+    precomputedSha256 ??
+    (await browserSha256(file, 8 * 1024 * 1024, options.signal));
+  if (!/^[0-9a-f]{64}$/i.test(sha256)) {
+    throw new ApiError(
+      "The source hash is invalid.",
+      422,
+      "INVALID_LOCAL_SHA256",
+      false,
+    );
+  }
   const cacheKey = resumeCacheKey(sha256, file.size, contentType, projectId);
   const initiated = await resumeOrInitiate({
     cacheKey,
@@ -92,6 +136,7 @@ export async function uploadAndAnalyze(
     contentType,
     sha256,
     projectId,
+    signal: options.signal,
   });
 
   let preserveForResume = false;
@@ -112,6 +157,7 @@ export async function uploadAndAnalyze(
           file,
           uploadId: initiated.upload_id,
           plan,
+          signal: options.signal,
         });
       } catch (error) {
         preserveForResume =
@@ -120,31 +166,30 @@ export async function uploadAndAnalyze(
         throw error;
       }
     } else {
-      await uploadSingleFile(file, initiated);
+      await uploadSingleFile(file, initiated, options.signal);
     }
 
-    await apiRequest(`/v1/uploads/${initiated.upload_id}/complete`, {
-      method: "POST",
-      idempotencyKey: crypto.randomUUID(),
-      body: JSON.stringify({ sha256, parts: completedParts }),
-    });
+    const completed = await apiRequest<UploadCompleted>(
+      `/v1/uploads/${initiated.upload_id}/complete`,
+      {
+        method: "POST",
+        idempotencyKey: crypto.randomUUID(),
+        body: JSON.stringify({ sha256, parts: completedParts }),
+        signal: options.signal,
+      },
+    );
     removeResumeRecord(cacheKey);
-    try {
-      const estimate = await analyzeDocument(initiated.document_id);
-      return { documentId: initiated.document_id, estimate };
-    } catch (error) {
-      if (
-        error instanceof ApiError &&
-        ["PDF_PASSWORD_REQUIRED", "PDF_PASSWORD_EXPIRED"].includes(error.code)
-      ) {
-        throw new PdfPasswordRequiredError(initiated.document_id);
-      }
-      throw error;
-    }
+    return {
+      uploadId: completed.upload_id,
+      sourceFileId: completed.source_file_id,
+      documentId: completed.document_id,
+      documentVersion: completed.document_version,
+      status: completed.status,
+      sha256: sha256.toLowerCase(),
+    };
   } catch (error) {
-    if (error instanceof PdfPasswordRequiredError) {
-      removeResumeRecord(cacheKey);
-      throw error;
+    if (error instanceof DOMException && error.name === "AbortError") {
+      preserveForResume = true;
     }
     if (
       initiated.method === "MULTIPART" &&
@@ -167,6 +212,7 @@ export async function uploadAndAnalyze(
 async function uploadSingleFile(
   file: File,
   initiated: UploadInitiation,
+  signal?: AbortSignal,
 ): Promise<void> {
   if (!initiated.upload_url) {
     throw new ApiError(
@@ -183,6 +229,7 @@ async function uploadSingleFile(
     credentials: initiated.upload_url.startsWith("/") ? "include" : "omit",
     cache: "no-store",
     referrerPolicy: "no-referrer",
+    signal,
   });
   if (!uploadResponse.ok) {
     throw new ApiError(
@@ -200,16 +247,18 @@ export async function uploadMultipartFile(input: {
   plan: MultipartUploadPlan;
   fetchImpl?: typeof fetch;
   wait?: (milliseconds: number) => Promise<void>;
+  signal?: AbortSignal;
 }): Promise<CompletedUploadPart[]> {
   const fetchImpl = input.fetchImpl ?? fetch;
   const wait = input.wait ?? waitMilliseconds;
   validateMultipartPlan(input.file.size, input.plan);
 
+  input.signal?.throwIfAborted();
   const uploaded = await apiRequest<{
     upload_id: string;
     parts: UploadedPart[];
     assembly_completed: boolean;
-  }>(input.plan.list_parts_url);
+  }>(input.plan.list_parts_url, { signal: input.signal });
   if (uploaded.assembly_completed) return [];
   const completed = new Map<number, CompletedUploadPart>();
   for (const part of uploaded.parts) {
@@ -241,9 +290,8 @@ export async function uploadMultipartFile(input: {
     const targetByPart = new Map(
       targets.map((target) => [target.part_number, target]),
     );
-    const results = await mapWithConcurrency(
+    const results = await mapWithAdaptiveConcurrency(
       batch,
-      input.plan.max_concurrency,
       async (partNumber) => {
         const target = targetByPart.get(partNumber);
         if (!target) {
@@ -266,7 +314,13 @@ export async function uploadMultipartFile(input: {
           signPartsUrl: input.plan.sign_parts_url,
           fetchImpl,
           wait,
+          signal: input.signal,
         });
+      },
+      {
+        kind: "part",
+        maximum: input.plan.max_concurrency,
+        signal: input.signal,
       },
     );
     for (const part of results) completed.set(part.part_number, part);
@@ -293,9 +347,11 @@ async function uploadPartWithRetry(input: {
   signPartsUrl: string;
   fetchImpl: typeof fetch;
   wait: (milliseconds: number) => Promise<void>;
+  signal?: AbortSignal;
 }): Promise<CompletedUploadPart> {
   let target = input.initialTarget;
   for (let attempt = 0; attempt <= input.maxRetries; attempt += 1) {
+    input.signal?.throwIfAborted();
     try {
       const response = await input.fetchImpl(target.upload_url, {
         method: "PUT",
@@ -304,6 +360,7 @@ async function uploadPartWithRetry(input: {
         credentials: "omit",
         cache: "no-store",
         referrerPolicy: "no-referrer",
+        signal: input.signal,
       });
       if (response.ok) {
         const etag = response.headers.get("ETag");
@@ -391,33 +448,160 @@ export async function mapWithConcurrency<T, R>(
   return results;
 }
 
-export async function browserSha256(
-  file: Blob,
-  chunkSize = 4 * 1024 * 1024,
-): Promise<string> {
-  /*
-   * hash-wasm is imported here rather than at module scope, and the reason is
-   * a budget rather than a preference.
-   *
-   * This module is reached from the marketing hero: the drop zone inspects a
-   * file the visitor chose, and inspecting means hashing. A top-level import
-   * put the WASM hasher into the homepage's initial bundle, where it is dead
-   * weight until someone actually drops something — and it pushed
-   * resource-summary:script.size past the §22 ratchet at 200 KB.
-   *
-   * Nothing about the hash changes. It is fetched on the first call and the
-   * module cache keeps it for every call after.
-   */
-  const { createSHA256 } = await import("hash-wasm");
-  const hasher = await createSHA256();
-  hasher.init();
-  for (let offset = 0; offset < file.size; offset += chunkSize) {
-    const bytes = new Uint8Array(
-      await file.slice(offset, offset + chunkSize).arrayBuffer(),
-    );
-    hasher.update(bytes);
+export type AdaptiveTransferKind = "file" | "part";
+
+type BrowserCapacity = {
+  visible: boolean;
+  deviceMemory?: number;
+  effectiveType?: string;
+  downlink?: number;
+  saveData?: boolean;
+};
+
+export function adaptiveTransferConcurrency(
+  kind: AdaptiveTransferKind,
+  capacity: BrowserCapacity = browserCapacity(),
+): number {
+  if (!capacity.visible) return 0;
+  const minimum = kind === "file" ? 3 : 2;
+  let concurrency = kind === "file" ? 6 : 5;
+  if ((capacity.deviceMemory ?? 8) <= 2) concurrency = minimum;
+  else if ((capacity.deviceMemory ?? 8) <= 4) concurrency = Math.min(4, concurrency);
+  if (capacity.saveData || ["slow-2g", "2g"].includes(capacity.effectiveType ?? "")) {
+    concurrency = minimum;
+  } else if (capacity.effectiveType === "3g") {
+    concurrency = Math.min(concurrency, minimum + 1);
   }
-  return hasher.digest("hex");
+  if (
+    capacity.visible &&
+    (capacity.deviceMemory ?? 0) >= 8 &&
+    (capacity.downlink ?? 0) >= 20
+  ) {
+    concurrency = 8;
+  }
+  return Math.max(minimum, Math.min(8, concurrency));
+}
+
+export async function mapWithAdaptiveConcurrency<T, R>(
+  values: readonly T[],
+  callback: (value: T) => Promise<R>,
+  options: {
+    kind: AdaptiveTransferKind;
+    maximum?: number;
+    capacity?: () => BrowserCapacity;
+    signal?: AbortSignal;
+  },
+): Promise<R[]> {
+  if (values.length === 0) return [];
+  const results = new Array<R>(values.length);
+  const capacity = options.capacity ?? browserCapacity;
+  const maximum = Math.max(1, Math.min(8, options.maximum ?? 8));
+  let cursor = 0;
+  let running = 0;
+  let completed = 0;
+  let settled = false;
+
+  return new Promise<R[]>((resolve, reject) => {
+    const cleanup = () => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", schedule);
+      }
+      options.signal?.removeEventListener("abort", abort);
+    };
+    const finishFailure = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+    const runOne = (index: number) => {
+      running += 1;
+      void callback(values[index]!)
+        .then((result) => {
+          results[index] = result;
+          completed += 1;
+        })
+        .catch(finishFailure)
+        .finally(() => {
+          running -= 1;
+          if (settled) return;
+          if (completed === values.length) {
+            settled = true;
+            cleanup();
+            resolve(results);
+            return;
+          }
+          schedule();
+        });
+    };
+    function schedule() {
+      if (settled) return;
+      if (options.signal?.aborted) {
+        finishFailure(options.signal.reason ?? new DOMException("Aborted", "AbortError"));
+        return;
+      }
+      const target = Math.min(
+        maximum,
+        adaptiveTransferConcurrency(options.kind, capacity()),
+      );
+      while (running < target && cursor < values.length) {
+        const index = cursor;
+        cursor += 1;
+        runOne(index);
+      }
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", schedule);
+    }
+    const abort = () =>
+      finishFailure(options.signal?.reason ?? new DOMException("Aborted", "AbortError"));
+    options.signal?.addEventListener("abort", abort, { once: true });
+    schedule();
+  });
+}
+
+export function weightedFairFileOrder<T extends { size: number }>(
+  values: readonly T[],
+): T[] {
+  const buckets: T[][] = [[], [], []];
+  for (const value of values) {
+    const index = value.size <= 4 * 1024 * 1024 ? 0 : value.size <= 64 * 1024 * 1024 ? 1 : 2;
+    buckets[index]!.push(value);
+  }
+  const order = [0, 1, 0, 2] as const;
+  const result: T[] = [];
+  while (buckets.some((bucket) => bucket.length > 0)) {
+    let progressed = false;
+    for (const bucketIndex of order) {
+      const value = buckets[bucketIndex]!.shift();
+      if (!value) continue;
+      result.push(value);
+      progressed = true;
+    }
+    if (!progressed) break;
+  }
+  return result;
+}
+
+
+function browserCapacity(): BrowserCapacity {
+  const navigatorWithCapacity = globalThis.navigator as
+    | (Navigator & {
+        deviceMemory?: number;
+        connection?: {
+          effectiveType?: string;
+          downlink?: number;
+          saveData?: boolean;
+        };
+      })
+    | undefined;
+  return {
+    visible: typeof document === "undefined" || document.visibilityState === "visible",
+    deviceMemory: navigatorWithCapacity?.deviceMemory,
+    effectiveType: navigatorWithCapacity?.connection?.effectiveType,
+    downlink: navigatorWithCapacity?.connection?.downlink,
+    saveData: navigatorWithCapacity?.connection?.saveData,
+  };
 }
 
 export function normalizeEtag(value: string): string {
@@ -469,12 +653,14 @@ async function resumeOrInitiate(input: {
   contentType: string;
   sha256: string;
   projectId?: string;
+  signal?: AbortSignal;
 }): Promise<UploadInitiation> {
   const record = loadResumeRecord(input.cacheKey);
   if (record) {
     try {
       const status = await apiRequest<UploadSessionStatus>(
         `/v1/uploads/${record.uploadId}`,
+        { signal: input.signal },
       );
       if (
         status.method === "MULTIPART" &&
@@ -510,6 +696,7 @@ async function resumeOrInitiate(input: {
       sha256: input.sha256,
       project_id: input.projectId,
     }),
+    signal: input.signal,
   });
   if (initiated.method === "MULTIPART") {
     saveResumeRecord(input.cacheKey, {
@@ -570,3 +757,8 @@ function isRetryableUploadStatus(status: number): boolean {
 function waitMilliseconds(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
+
+// Re-exported so existing importers keep working. The definitions live in
+// browser-hash.ts, which pulls in no API client.
+export { browserQuickFingerprint, browserSha256 };
+export { MultipartTransferError };

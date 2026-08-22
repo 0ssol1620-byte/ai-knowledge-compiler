@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_kind": "v4_deployment_truth_snapshot",
+  "assessed_at": "2026-07-31T22:39:58+09:00",
+  "masterplan": {
+    "name": "Structara_World_Class_Autonomous_Knowledge_Platform_FINAL_Completion_Masterplan_v4_KO_2026-07-31.md",
+    "required_sections": "0-48",
+    "required_waves": "0-11"
+  },
+  "release_status": "production_reject",
+  "promotion_authorized": false,
+  "repository": {
+    "github_repository": "0ssol1620-byte/ai-knowledge-compiler",
+    "branch": "agent/structara-ultra-premium-rebuild",
+    "tracking_ref": "origin/agent/structara-ultra-premium-rebuild",
+    "latest_commit_sha": "ed8741e5272b486b5f953b778963f32e524a78ea",
+    "latest_commit_committed_at": "2026-07-31T21:18:24+09:00",
+    "worktree_clean": false,
+    "observed_changed_path_count": 37,
+    "snapshot_note": "Concurrent implementation changes were present; this is an audit snapshot, not a clean release manifest."
+  },
+  "deployment": {
+    "provider": "vercel",
+    "project": "structara-knowledge-compiler",
+    "deployment_id": "dpl_2ucfqSmbUX1nN8yTmYgoKKRRaS1G",
+    "target": "production",
+    "state": "ready",
+    "immutable_url": "https://structara-knowledge-compiler-qxilup57q.vercel.app",
+    "canonical_url": "https://structara-knowledge-compiler.vercel.app",
+    "created_at": "2026-07-31T21:15:59+09:00",
+    "deployed_commit_sha": null,
+    "commit_sha_exposed": false,
+    "latest_commit_confirmed_deployed": false,
+    "deployment_predates_latest_commit": true,
+    "deployed_latest_match": false,
+    "comparison_policy": "Fail closed because the deployment predates the latest commit and neither Vercel inspect nor the live health payload exposes a commit SHA.",
+    "verification_commands": [
+      "vercel inspect dpl_2ucfqSmbUX1nN8yTmYgoKKRRaS1G",
+      "GET https://structara-knowledge-compiler.vercel.app/api/health"
+    ]
+  },
+  "live_probe": {
+    "checked_at": "2026-07-31T22:39:51+09:00",
+    "base_url": "https://structara-knowledge-compiler.vercel.app",
+    "health_payload": {
+      "status": "ok",
+      "service": "akc-web",
+      "generated_at": "2026-07-31T13:39:51.657Z",
+      "commit_sha": null
+    },
+    "routes": [
+      {
+        "path": "/",
+        "status_code": 200
+      },
+      {
+        "path": "/api/health",
+        "status_code": 200
+      },
+      {
+        "path": "/admin",
+        "status_code": 200,
+        "evidence_boundary": "Illustrative/demo web surface, not proof of a deployed production control plane."
+      },
+      {
+        "path": "/benchmarks",
+        "status_code": 200,
+        "evidence_boundary": "Public methodology surface, not proof of completed benchmark runs."
+      },
+      {
+        "path": "/v1/health/live",
+        "status_code": 404
+      },
+      {
+        "path": "/v1/health/ready",
+        "status_code": 404
+      },
+      {
+        "path": "/v1/admin/health",
+        "status_code": 404
+      }
+    ]
+  },
+  "hosted_ci": {
+    "checked_at": "2026-07-31T22:42:00+09:00",
+    "branch": "agent/structara-ultra-premium-rebuild",
+    "latest_observed_run_sha": "7ac5098b9f285ba68d4a38bbd919d04c3f995b7e",
+    "latest_commit_sha_covered": false,
+    "observed_workflows": [
+      {
+        "name": "CI",
+        "run_id": 30603879119,
+        "conclusion": "success"
+      },
+      {
+        "name": "Security",
+        "run_id": 30603879126,
+        "conclusion": "success"
+      },
+      {
+        "name": "Model CI",
+        "run_id": 30603879125,
+        "conclusion": "success"
+      }
+    ]
+  },
+  "open_external_gates": [
+    {
+      "id": "EG-DEPLOYMENT-REVISION",
+      "status": "open",
+      "reason": "Latest branch SHA is not proven deployed and live health does not expose revision."
+    },
+    {
+      "id": "EG-PUBLIC-BENCHMARK",
+      "status": "open",
+      "reason": "No complete three-run Public Core, private hard-set evidence, or signed report."
+    },
+    {
+      "id": "EG-IDENTITY-EMAIL-PAYMENT",
+      "status": "open",
+      "reason": "Production IdP, email delivery, and merchant connectors are not evidenced."
+    },
+    {
+      "id": "EG-SECURITY-LOAD-RESTORE",
+      "status": "open",
+      "reason": "Independent security, target-scale load, timed restore, and alert-delivery evidence are absent."
+    },
+    {
+      "id": "EG-LEGAL-BRAND-LICENSE",
+      "status": "open",
+      "reason": "Legal, brand, dataset, model, runtime, and public-claim clearance remains external."
+    },
+    {
+      "id": "EG-CANARY-ROLLBACK",
+      "status": "open",
+      "reason": "No same-revision production canary and one-change rollback rehearsal is attached."
+    }
+  ],
+  "decision": {
+    "verdict": "Production Reject",
+    "blocking_condition_count": 8,
+    "next_state_requires": "All blocked and external-evidence-required items in V4_MASTERPLAN_TRACEABILITY.md must be closed against one immutable release revision."
+  }
+}

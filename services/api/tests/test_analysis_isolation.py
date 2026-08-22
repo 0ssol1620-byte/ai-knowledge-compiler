@@ -10,6 +10,7 @@ import subprocess
 import sys
 import uuid
 from collections.abc import AsyncIterator
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -19,9 +20,16 @@ import pytest_asyncio
 from akc_api.main import create_app
 from akc_api.models import (
     AnalysisTask,
+    ArchitecturePlan,
     Block,
+    BlueprintModule,
+    Collection,
+    CollectionFile,
+    CollectionProcessingTaskBinding,
+    CollectionSourceRoot,
     CreditLedger,
     Document,
+    DocumentVersion,
     FeatureFlag,
     GpuProviderInvocation,
     ModelRegistry,
@@ -31,10 +39,13 @@ from akc_api.models import (
     ProcessingJob,
     Project,
     ReviewItem,
+    RouteAttempt,
+    SourceFile,
     Tenant,
+    User,
     utcnow,
 )
-from akc_api.services import run_compile_job
+from akc_api.services import credit_entry, run_compile_job
 from akc_api.settings import Settings
 from akc_api.visual_gpu import validate_visual_result, visual_attestation
 from akc_worker_document.settings import AnalysisWorkerSettings
@@ -72,6 +83,7 @@ async def analysis_api(
         analysis_backoff_max_seconds=0.02,
         clamav_enabled=False,
         allow_development_antivirus_bypass=True,
+        collection_metadata_encryption_enabled=True,
         test_support_key=_TEST_SUPPORT_KEY,
     )
     app = create_app(settings)
@@ -253,6 +265,12 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
 
     async with app.state.database.sessions() as session:
         task = await session.get(AnalysisTask, task_id)
+        version = await session.scalar(
+            select(DocumentVersion).where(
+                DocumentVersion.document_id == uuid.UUID(document_id),
+                DocumentVersion.version == 1,
+            )
+        )
         pages = list(
             await session.scalars(select(Page).where(Page.document_id == uuid.UUID(document_id)))
         )
@@ -265,6 +283,7 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
             else []
         )
     assert task is not None
+    assert version is not None
     assert task.status == "completed"
     assert task.attempt_count == 1
     assert len(pages) == len(blocks) == 1
@@ -286,6 +305,11 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
     assert preview.content.startswith(b"\x89PNG\r\n\x1a\n")
     assert preview.headers["cache-control"].startswith("private")
     assert preview.headers["etag"].startswith('"sha256-')
+    version_preview = await client.get(
+        f"/v1/document-versions/{version.id}/pages/1/preview"
+    )
+    assert version_preview.status_code == 200
+    assert version_preview.content == preview.content
 
     await _register(
         client,
@@ -303,6 +327,891 @@ async def test_single_worker_concurrency_persists_one_result_and_tenant_safe_pre
     )
     assert login.status_code == 200
     assert (await client.get(f"/v1/pages/{pages[0].id}/preview")).status_code == 200
+
+
+async def test_shared_task_pause_is_binding_scoped_and_reuse_is_never_double_billed(
+    analysis_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, settings = analysis_api
+    registration = await _register(
+        client,
+        email="shared-collection-owner@example.com",
+        tenant_name="Shared Collection Runtime",
+    )
+    tenant_id = uuid.UUID(registration["tenant_id"])
+    project_id = uuid.UUID(await _create_project(client))
+    document_id = uuid.UUID(
+        await _upload(
+            client,
+            project_id=str(project_id),
+            filename="shared-result.txt",
+            content_type="text/plain",
+            content=b"One extraction result reused by two collection jobs.",
+        )
+    )
+    task_id = await _enqueue(client, str(document_id))
+    resume_token = uuid.uuid4().hex + uuid.uuid4().hex
+    binding_ids: list[uuid.UUID] = []
+    collection_ids: list[uuid.UUID] = []
+    job_ids: list[uuid.UUID] = []
+
+    async with app.state.database.sessions.begin() as session:
+        user = await session.get(User, uuid.UUID(registration["user_id"]))
+        task = await session.get(AnalysisTask, task_id)
+        source = await session.get(SourceFile, task.source_file_id if task else uuid.uuid4())
+        assert user is not None and task is not None and source is not None
+        for index in range(2):
+            collection_id = uuid.uuid4()
+            root_id = uuid.uuid4()
+            collection_file_id = uuid.uuid4()
+            job_id = uuid.uuid4()
+            plan_id = uuid.uuid4()
+            collection = Collection(
+                id=collection_id,
+                tenant_id=tenant_id,
+                project_id=project_id,
+                name=f"Shared collection {index}",
+                status="PROCESSING" if index == 0 else "PAUSED",
+                paused_from=None if index == 0 else "PROCESSING",
+                profile={},
+                manifest_revision=1,
+                created_by=user.id,
+            )
+            root_name = app.state.collection_metadata_codec.encrypt_source_root_display_name(
+                f"Shared root {index}",
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                source_root_id=root_id,
+            )
+            root = CollectionSourceRoot(
+                id=root_id,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                display_name_ciphertext=root_name.ciphertext,
+                metadata_key_id=root_name.key_id,
+                source_fingerprint=hashlib.sha256(f"root:{index}".encode()).hexdigest(),
+                created_by=user.id,
+            )
+            relative_path = f"shared/{index}.txt"
+            file_path = app.state.collection_metadata_codec.encrypt_file_relative_path(
+                relative_path,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                source_root_id=root_id,
+                file_id=collection_file_id,
+            )
+            file_name = app.state.collection_metadata_codec.encrypt_file_display_name(
+                f"{index}.txt",
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                source_root_id=root_id,
+                file_id=collection_file_id,
+            )
+            blind_index = app.state.collection_metadata_codec.relative_path_blind_index(
+                relative_path,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                source_root_id=root_id,
+            )
+            collection_file = CollectionFile(
+                id=collection_file_id,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                source_root_id=root_id,
+                source_file_id=source.id,
+                relative_path_ciphertext=file_path.ciphertext,
+                display_name_ciphertext=file_name.ciphertext,
+                metadata_key_id=file_path.key_id,
+                relative_path_blind_index=blind_index.digest,
+                relative_path_blind_index_key_id=blind_index.key_id,
+                size_bytes=source.size_bytes,
+                expected_mime="text/plain",
+                detected_mime="text/plain",
+                sha256=source.sha256,
+                status="verified",
+            )
+            job = ProcessingJob(
+                id=job_id,
+                tenant_id=tenant_id,
+                project_id=project_id,
+                document_id=None,
+                job_type="collection_processing",
+                status="running" if index == 0 else "paused",
+                requested_options={
+                    "architecture_plan_id": str(plan_id),
+                    "immutable_plan_sha256": "a" * 64,
+                    "approved_preflight_sha256": "b" * 64,
+                    "approved_estimate_sha256": "c" * 64,
+                    "resume_token_hash": hashlib.sha256(resume_token.encode()).hexdigest(),
+                    "resume_version": 1,
+                },
+                progress={
+                    "stage": "processing" if index == 0 else "paused",
+                    "total_tasks": 1,
+                    "completed_tasks": 0,
+                    "failed_tasks": 0,
+                    "terminal_result_ids": [],
+                },
+                cost_estimate={
+                    "hard_cap": "0.000000",
+                    "overage_policy": "stop_at_cap",
+                },
+                cost_actual={
+                    "reserved": "0.000000",
+                    "consumed": "0.000000",
+                    "refunded": "0.000000",
+                    "released": "0.000000",
+                    "billable_pages": 0,
+                    "unbillable_pages": 0,
+                },
+                started_at=utcnow(),
+            )
+            plan = ArchitecturePlan(
+                id=plan_id,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                processing_job_id=job_id,
+                plan_version=1,
+                status="planned",
+                input_integrity_sha256="a" * 64,
+                plan={"execution_scope": "collection_processing_runtime"},
+                created_by=user.id,
+            )
+            binding = CollectionProcessingTaskBinding(
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                processing_job_id=job_id,
+                analysis_task_id=task.id,
+                collection_file_id=collection_file_id,
+                document_id=document_id,
+                billing_disposition="reuse_unbillable",
+                billing_owner_job_id=None,
+                billing_basis_sha256=hashlib.sha256(b"shared-result").hexdigest(),
+                status="active" if index == 0 else "paused",
+            )
+            session.add(collection)
+            await session.flush()
+            session.add(root)
+            await session.flush()
+            session.add_all((collection_file, job))
+            await session.flush()
+            session.add_all((plan, binding))
+            await session.flush()
+            binding_ids.append(binding.id)
+            collection_ids.append(collection_id)
+            job_ids.append(job_id)
+
+    worker = _worker(app, settings)
+    assert await worker.run_once(task_id=task_id) is True
+
+    async with app.state.database.sessions() as session:
+        first_binding = await session.get(CollectionProcessingTaskBinding, binding_ids[0])
+        paused_binding = await session.get(CollectionProcessingTaskBinding, binding_ids[1])
+        first_collection = await session.get(Collection, collection_ids[0])
+        paused_collection = await session.get(Collection, collection_ids[1])
+        first_routes = list(
+            await session.scalars(
+                select(RouteAttempt).where(RouteAttempt.collection_id == collection_ids[0])
+            )
+        )
+        paused_routes = list(
+            await session.scalars(
+                select(RouteAttempt).where(RouteAttempt.collection_id == collection_ids[1])
+            )
+        )
+    assert first_binding is not None and first_binding.status == "settled"
+    assert paused_binding is not None and paused_binding.status == "paused"
+    assert first_collection is not None and first_collection.status == "VERIFYING_OUTPUT"
+    assert paused_collection is not None and paused_collection.status == "PAUSED"
+    assert first_routes and all(route.actual_credits == 0 for route in first_routes)
+    assert paused_routes == []
+
+    dashboard = await client.get("/v1/dashboard")
+    assert dashboard.status_code == 200, dashboard.text
+    assert dashboard.json()["active_jobs"] == 2
+
+    resumed = await client.post(
+        f"/v1/collections/{collection_ids[1]}/processing/control",
+        headers={"Idempotency-Key": "resume-shared-binding"},
+        json={"action": "resume", "processing_resume_token": resume_token},
+    )
+    assert resumed.status_code == 200, resumed.text
+    assert resumed.json()["processing_job_id"] == str(job_ids[1])
+    assert resumed.json()["credits_consumed"] == "0.000000"
+
+    async with app.state.database.sessions() as session:
+        resumed_binding = await session.get(CollectionProcessingTaskBinding, binding_ids[1])
+        resumed_collection = await session.get(Collection, collection_ids[1])
+        resumed_routes = list(
+            await session.scalars(
+                select(RouteAttempt).where(RouteAttempt.collection_id == collection_ids[1])
+            )
+        )
+        consumes = int(
+            await session.scalar(
+                select(func.count(CreditLedger.id)).where(
+                    CreditLedger.job_id.in_(job_ids),
+                    CreditLedger.entry_type == "consume",
+                )
+            )
+            or 0
+        )
+    assert resumed_binding is not None and resumed_binding.status == "settled"
+    assert resumed_collection is not None
+    assert resumed_collection.status == "VERIFYING_OUTPUT"
+    assert resumed_routes and all(route.actual_credits == 0 for route in resumed_routes)
+    assert consumes == 0
+
+
+async def test_credit_failure_retry_versions_plan_and_reconciles_ledger_once(
+    analysis_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, settings = analysis_api
+    registration = await _register(
+        client,
+        email="collection-retry-owner@example.com",
+        tenant_name="Collection Retry Runtime",
+    )
+    tenant_id = uuid.UUID(registration["tenant_id"])
+    user_id = uuid.UUID(registration["user_id"])
+    project_id = uuid.UUID(await _create_project(client))
+    document_id = uuid.UUID(
+        await _upload(
+            client,
+            project_id=str(project_id),
+            filename="retry-result.txt",
+            content_type="text/plain",
+            content=b"A completed extraction result that exceeded its collection hard cap.",
+        )
+    )
+    task_id = await _enqueue(client, str(document_id))
+    worker = _worker(app, settings)
+    assert await worker.run_once(task_id=task_id) is True
+
+    collection_id = uuid.uuid4()
+    collection_file_id = uuid.uuid4()
+    plan_id = uuid.uuid4()
+    job_id = uuid.uuid4()
+    module_keys = (
+        "source_index",
+        "document_catalog",
+        "knowledge_notes",
+        "entities",
+        "relations",
+        "integrity",
+        "export_manifest",
+    )
+    async with app.state.database.sessions.begin() as session:
+        task = await session.get(AnalysisTask, task_id)
+        source = await session.get(SourceFile, task.source_file_id if task else uuid.uuid4())
+        page = await session.scalar(
+            select(Page).where(Page.tenant_id == tenant_id, Page.document_id == document_id)
+        )
+        assert task is not None and source is not None and page is not None
+        page.status = "COMPLETED"
+        page.route = "native"
+        page.preflight_metrics = {
+            **(page.preflight_metrics or {}),
+            "actual_credits": "0.750000",
+        }
+        root_id = uuid.uuid4()
+        root_name = app.state.collection_metadata_codec.encrypt_source_root_display_name(
+            "Retry root",
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            source_root_id=root_id,
+        )
+        root = CollectionSourceRoot(
+            id=root_id,
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            display_name_ciphertext=root_name.ciphertext,
+            metadata_key_id=root_name.key_id,
+            source_fingerprint=hashlib.sha256(b"retry-root").hexdigest(),
+            created_by=user_id,
+        )
+        collection = Collection(
+            id=collection_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            name="Retry collection",
+            status="FAILED_RETRYABLE",
+            status_reason="CREDIT_HARD_CAP_REACHED",
+            profile={},
+            manifest_revision=1,
+            created_by=user_id,
+        )
+        session.add(collection)
+        await session.flush()
+        session.add(root)
+        await session.flush()
+        relative_path = "retry/result.txt"
+        file_path = app.state.collection_metadata_codec.encrypt_file_relative_path(
+            relative_path,
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            source_root_id=root.id,
+            file_id=collection_file_id,
+        )
+        file_name = app.state.collection_metadata_codec.encrypt_file_display_name(
+            "result.txt",
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            source_root_id=root.id,
+            file_id=collection_file_id,
+        )
+        blind_index = app.state.collection_metadata_codec.relative_path_blind_index(
+            relative_path,
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            source_root_id=root.id,
+        )
+        collection_file = CollectionFile(
+            id=collection_file_id,
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            source_root_id=root.id,
+            source_file_id=source.id,
+            relative_path_ciphertext=file_path.ciphertext,
+            display_name_ciphertext=file_name.ciphertext,
+            metadata_key_id=file_path.key_id,
+            relative_path_blind_index=blind_index.digest,
+            relative_path_blind_index_key_id=blind_index.key_id,
+            size_bytes=source.size_bytes,
+            expected_mime="text/plain",
+            detected_mime="text/plain",
+            sha256=source.sha256,
+            status="verified",
+        )
+        module_ids = {key: uuid.uuid4() for key in module_keys}
+        output_modules = [
+            {"id": str(module_ids[key]), "module_key": key, "module_version": "1.0"}
+            for key in module_keys
+        ]
+        plan_payload = {
+            "schema_version": "1.0",
+            "execution_scope": "collection_processing_runtime",
+            "collection_id": str(collection_id),
+            "project_id": str(project_id),
+            "processing_job_id": str(job_id),
+            "credit_hard_cap": "0.500000",
+            "reserve_ceiling": "0.500000",
+            "approved_collection_reserve_ceiling": "1.000000",
+            "overage_policy": "stop_at_cap",
+            "knowledge_blueprint_id": "generic-mixed-corpus",
+            "knowledge_blueprint_registry_sha256": "sha256:" + "d" * 64,
+            "knowledge_blueprint_module_sha256": "sha256:" + "e" * 64,
+            "approved_preflight_sha256": "b" * 64,
+            "approved_estimate_sha256": "c" * 64,
+            "output_modules": output_modules,
+            "analysis_task_ids": [str(task.id)],
+        }
+        plan_sha = hashlib.sha256(
+            (json.dumps(plan_payload, separators=(",", ":"), sort_keys=True) + "\n").encode()
+        ).hexdigest()
+        plan_payload["immutable_plan_sha256"] = plan_sha
+        job = ProcessingJob(
+            id=job_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            document_id=None,
+            job_type="collection_processing",
+            status="failed",
+            requested_options={
+                **plan_payload,
+                "architecture_plan_id": str(plan_id),
+                "initiating_user_id": str(user_id),
+                "resume_token_hash": hashlib.sha256(b"superseded-resume-token").hexdigest(),
+                "resume_version": 1,
+            },
+            progress={
+                "stage": "failed",
+                "total_tasks": 1,
+                "completed_tasks": 1,
+                "failed_tasks": 0,
+                "terminal_result_ids": [str(page.id)],
+            },
+            cost_estimate={
+                "reserve_ceiling": "0.500000",
+                "approved_collection_reserve_ceiling": "1.000000",
+                "hard_cap": "0.500000",
+                "overage_policy": "stop_at_cap",
+            },
+            cost_actual={
+                "reserved": "0.500000",
+                "consumed": "0.000000",
+                "refunded": "0.000000",
+                "released": "0.500000",
+                "billable_pages": 0,
+                "unbillable_pages": 1,
+            },
+            error={"code": "CREDIT_HARD_CAP_REACHED"},
+            started_at=utcnow(),
+            completed_at=utcnow(),
+        )
+        session.add_all((collection_file, job))
+        await session.flush()
+        plan = ArchitecturePlan(
+            id=plan_id,
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            processing_job_id=job_id,
+            plan_version=1,
+            status="planned",
+            input_integrity_sha256=plan_sha,
+            plan=plan_payload,
+            created_by=user_id,
+        )
+        binding = CollectionProcessingTaskBinding(
+            tenant_id=tenant_id,
+            collection_id=collection_id,
+            processing_job_id=job_id,
+            analysis_task_id=task.id,
+            collection_file_id=collection_file_id,
+            document_id=document_id,
+            billing_disposition="new_billable",
+            billing_owner_job_id=job_id,
+            billing_basis_sha256=hashlib.sha256(b"retry-billing-basis").hexdigest(),
+            status="settled",
+            settled_at=utcnow(),
+        )
+        session.add(plan)
+        await session.flush()
+        session.add_all(
+            [
+                BlueprintModule(
+                    id=module_ids[key],
+                    tenant_id=tenant_id,
+                    collection_id=collection_id,
+                    architecture_plan_id=plan.id,
+                    module_key=key,
+                    module_version="1.0",
+                    status="planned",
+                    config_json={},
+                    output_summary={},
+                )
+                for key in module_keys
+            ]
+            + [
+                binding,
+                RouteAttempt(
+                    tenant_id=tenant_id,
+                    collection_id=collection_id,
+                    collection_file_id=collection_file_id,
+                    page_id=page.id,
+                    attempt_number=1,
+                    route=str(page.route or "native"),
+                    status="unresolved",
+                    reason_codes=["CREDIT_HARD_CAP_REACHED"],
+                    estimated_credits=Decimal("0.750000"),
+                    actual_credits=Decimal("0.000000"),
+                    completed_at=utcnow(),
+                ),
+            ]
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:reserve",
+            entry_type="reserve",
+            credits=Decimal("0.500000"),
+            job_id=job_id,
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:release",
+            entry_type="release",
+            credits=Decimal("0.500000"),
+            job_id=job_id,
+        )
+
+    retry_headers = {"Idempotency-Key": "retry-credit-terminal"}
+    retried = await client.post(
+        f"/v1/collections/{collection_id}/processing/retry",
+        headers=retry_headers,
+        json={"credit_hard_cap": "1.000000"},
+    )
+    replayed = await client.post(
+        f"/v1/collections/{collection_id}/processing/retry",
+        headers=retry_headers,
+        json={"credit_hard_cap": "1.000000"},
+    )
+    assert retried.status_code == replayed.status_code == 200, retried.text
+    assert retried.json() == replayed.json()
+    body = retried.json()
+    assert body["collection_status"] == "VERIFYING_OUTPUT"
+    assert body["processing_status"] == "running"
+    assert body["credit_hard_cap"] == "1.000000"
+    assert body["processing_resume_token"] is not None
+
+    async with app.state.database.sessions() as session:
+        plans = list(
+            await session.scalars(
+                select(ArchitecturePlan)
+                .where(ArchitecturePlan.collection_id == collection_id)
+                .order_by(ArchitecturePlan.plan_version)
+            )
+        )
+        binding = await session.scalar(
+            select(CollectionProcessingTaskBinding).where(
+                CollectionProcessingTaskBinding.processing_job_id == job_id
+            )
+        )
+        route_attempts = list(
+            await session.scalars(
+                select(RouteAttempt).where(RouteAttempt.collection_id == collection_id)
+            )
+        )
+        ledgers = list(
+            await session.scalars(
+                select(CreditLedger)
+                .where(CreditLedger.job_id == job_id)
+                .order_by(CreditLedger.created_at, CreditLedger.id)
+            )
+        )
+        finalizer_events = list(
+            await session.scalars(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == job_id,
+                    OutboxEvent.event_type == "collection.semantic.compile.requested.v1",
+                )
+            )
+        )
+    assert [plan.status for plan in plans] == ["stale", "planned"]
+    assert plans[1].plan["retry_of_architecture_plan_id"] == str(plans[0].id)
+    assert plans[1].plan["credit_hard_cap"] == "1.000000"
+    assert binding is not None and binding.status == "settled"
+    assert len(route_attempts) == 1
+    assert route_attempts[0].status == "verified"
+    assert route_attempts[0].actual_credits == Decimal("0.750000")
+    assert [ledger.entry_type for ledger in ledgers].count("consume") == 1
+    assert sum(
+        (ledger.credits for ledger in ledgers if ledger.entry_type == "consume"),
+        Decimal("0"),
+    ) == Decimal("0.750000")
+    assert len(finalizer_events) == 1
+    assert finalizer_events[0].payload["architecture_plan_id"] == str(plans[1].id)
+
+
+async def test_package_failure_retry_reconsumes_refund_and_redrives_once(
+    analysis_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, _settings = analysis_api
+    registration = await _register(
+        client,
+        email="package-retry-owner@example.com",
+        tenant_name="Package Retry Runtime",
+    )
+    tenant_id = uuid.UUID(registration["tenant_id"])
+    user_id = uuid.UUID(registration["user_id"])
+    project_id = uuid.UUID(await _create_project(client))
+    collection_id = uuid.uuid4()
+    job_id = uuid.uuid4()
+    plan_id = uuid.uuid4()
+    async with app.state.database.sessions.begin() as session:
+        collection = Collection(
+            id=collection_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            name="Package retry collection",
+            status="FAILED_RETRYABLE",
+            status_reason="COLLECTION_PACKAGE_STORAGE_FAILED",
+            profile={},
+            manifest_revision=1,
+            created_by=user_id,
+        )
+        job = ProcessingJob(
+            id=job_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            document_id=None,
+            job_type="collection_processing",
+            status="failed",
+            requested_options={
+                "execution_scope": "collection_processing_runtime",
+                "architecture_plan_id": str(plan_id),
+                "immutable_plan_sha256": "a" * 64,
+                "approved_preflight_sha256": "b" * 64,
+                "approved_estimate_sha256": "c" * 64,
+                "initiating_user_id": str(user_id),
+            },
+            progress={
+                "stage": "package_failed",
+                "package_attempt": 0,
+                "total_tasks": 0,
+                "completed_tasks": 0,
+                "failed_tasks": 0,
+            },
+            cost_estimate={
+                "reserve_ceiling": "1.000000",
+                "hard_cap": "1.000000",
+                "overage_policy": "stop_at_cap",
+            },
+            cost_actual={
+                "reserved": "1.500000",
+                "consumed": "1.000000",
+                "refunded": "1.000000",
+                "released": "0.000000",
+                "billable_pages": 1,
+                "unbillable_pages": 0,
+            },
+            error={"code": "COLLECTION_PACKAGE_STORAGE_FAILED"},
+            started_at=utcnow(),
+            completed_at=utcnow(),
+        )
+        session.add_all((collection, job))
+        await session.flush()
+        session.add(
+            ArchitecturePlan(
+                id=plan_id,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                processing_job_id=job_id,
+                plan_version=1,
+                status="compiled",
+                input_integrity_sha256="a" * 64,
+                plan={"execution_scope": "collection_processing_runtime"},
+                created_by=user_id,
+            )
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:reserve",
+            entry_type="reserve",
+            credits=Decimal("1.500000"),
+            job_id=job_id,
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:page:original:consume",
+            entry_type="consume",
+            credits=Decimal("1.000000"),
+            job_id=job_id,
+            metadata={"from_reserved": True},
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:package-refund",
+            entry_type="refund",
+            credits=Decimal("1.000000"),
+            job_id=job_id,
+        )
+
+    headers = {"Idempotency-Key": "retry-package-terminal"}
+    retried = await client.post(
+        f"/v1/collections/{collection_id}/processing/retry",
+        headers=headers,
+        json={},
+    )
+    replayed = await client.post(
+        f"/v1/collections/{collection_id}/processing/retry",
+        headers=headers,
+        json={},
+    )
+    assert retried.status_code == replayed.status_code == 200, retried.text
+    assert retried.json() == replayed.json()
+    assert retried.json()["collection_status"] == "PACKAGING"
+    assert retried.json()["processing_status"] == "running"
+    assert retried.json()["credits_consumed"] == "2.000000"
+    assert retried.json()["credits_refunded"] == "1.000000"
+
+    async with app.state.database.sessions() as session:
+        job = await session.get(ProcessingJob, job_id)
+        ledgers = list(
+            await session.scalars(
+                select(CreditLedger)
+                .where(CreditLedger.job_id == job_id)
+                .order_by(CreditLedger.created_at, CreditLedger.id)
+            )
+        )
+        finalizer_events = list(
+            await session.scalars(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == job_id,
+                    OutboxEvent.event_type == "collection.semantic.compile.requested.v1",
+                )
+            )
+        )
+    assert job is not None and job.progress["stage"] == "ready_for_packaging"
+    assert job.progress["package_attempt"] == 1
+    assert job.cost_actual["retry_reconsumed"] == "1.000000"
+    assert sum(ledger.entry_type == "consume" for ledger in ledgers) == 2
+    assert sum(ledger.entry_type == "refund" for ledger in ledgers) == 1
+    assert len(finalizer_events) == 1
+
+    deleted = await client.delete(
+        f"/v1/collections/{collection_id}",
+        headers={"Idempotency-Key": "delete-package-retry-before-finalizer"},
+    )
+    assert deleted.status_code == 200, deleted.text
+    async with app.state.database.sessions() as session:
+        cancelled_job = await session.get(ProcessingJob, job_id)
+        cancelled_event = await session.get(OutboxEvent, finalizer_events[0].id)
+        cancellation_releases = list(
+            await session.scalars(
+                select(CreditLedger).where(
+                    CreditLedger.job_id == job_id,
+                    CreditLedger.entry_type == "release",
+                )
+            )
+        )
+    assert cancelled_job is not None and cancelled_job.status == "cancelled"
+    assert cancelled_job.progress["cancelled_finalizer_events"] == 1
+    assert cancelled_job.cost_actual["released"] == "0.500000"
+    assert cancelled_event is not None and cancelled_event.dead_lettered_at is not None
+    assert len(cancellation_releases) == 1
+    assert cancellation_releases[0].credits == Decimal("0.500000")
+
+
+async def test_semantic_finalizer_dead_letter_is_customer_redrivable_once(
+    analysis_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, _settings = analysis_api
+    registration = await _register(
+        client,
+        email="finalizer-retry-owner@example.com",
+        tenant_name="Finalizer Retry Runtime",
+    )
+    tenant_id = uuid.UUID(registration["tenant_id"])
+    user_id = uuid.UUID(registration["user_id"])
+    project_id = uuid.UUID(await _create_project(client))
+    collection_id = uuid.uuid4()
+    job_id = uuid.uuid4()
+    plan_id = uuid.uuid4()
+    async with app.state.database.sessions.begin() as session:
+        collection = Collection(
+            id=collection_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            name="Finalizer retry collection",
+            status="UNRESOLVED",
+            status_reason="COLLECTION_FINALIZER_ATTEMPTS_EXHAUSTED",
+            profile={},
+            manifest_revision=1,
+            created_by=user_id,
+        )
+        job = ProcessingJob(
+            id=job_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            document_id=None,
+            job_type="collection_processing",
+            status="failed",
+            requested_options={
+                "execution_scope": "collection_processing_runtime",
+                "architecture_plan_id": str(plan_id),
+                "immutable_plan_sha256": "a" * 64,
+                "approved_preflight_sha256": "b" * 64,
+                "approved_estimate_sha256": "c" * 64,
+                "initiating_user_id": str(user_id),
+            },
+            progress={
+                "stage": "semantic_finalizer_failed",
+                "total_tasks": 0,
+                "completed_tasks": 0,
+                "failed_tasks": 0,
+            },
+            cost_estimate={
+                "reserve_ceiling": "1.000000",
+                "hard_cap": "1.000000",
+                "overage_policy": "stop_at_cap",
+            },
+            cost_actual={
+                "reserved": "1.000000",
+                "consumed": "1.000000",
+                "refunded": "1.000000",
+                "released": "0.000000",
+                "billable_pages": 1,
+                "unbillable_pages": 0,
+            },
+            error={
+                "code": "COLLECTION_FINALIZER_ATTEMPTS_EXHAUSTED",
+                "retryable": True,
+            },
+            started_at=utcnow(),
+            completed_at=utcnow(),
+        )
+        session.add_all((collection, job))
+        await session.flush()
+        session.add(
+            ArchitecturePlan(
+                id=plan_id,
+                tenant_id=tenant_id,
+                collection_id=collection_id,
+                processing_job_id=job_id,
+                plan_version=1,
+                status="planned",
+                input_integrity_sha256="a" * 64,
+                plan={"execution_scope": "collection_processing_runtime"},
+                created_by=user_id,
+            )
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:reserve",
+            entry_type="reserve",
+            credits=Decimal("1.000000"),
+            job_id=job_id,
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:page:original:consume",
+            entry_type="consume",
+            credits=Decimal("1.000000"),
+            job_id=job_id,
+            metadata={"from_reserved": True},
+        )
+        await credit_entry(
+            session,
+            tenant_id=tenant_id,
+            operation_key=f"collection:{job_id}:semantic-refund",
+            entry_type="refund",
+            credits=Decimal("1.000000"),
+            job_id=job_id,
+        )
+
+    headers = {"Idempotency-Key": "retry-finalizer-dead-letter"}
+    retried = await client.post(
+        f"/v1/collections/{collection_id}/processing/retry",
+        headers=headers,
+        json={},
+    )
+    replayed = await client.post(
+        f"/v1/collections/{collection_id}/processing/retry",
+        headers=headers,
+        json={},
+    )
+    assert retried.status_code == replayed.status_code == 200, retried.text
+    assert retried.json() == replayed.json()
+    assert retried.json()["collection_status"] == "VERIFYING_OUTPUT"
+    assert retried.json()["processing_status"] == "running"
+
+    async with app.state.database.sessions() as session:
+        job = await session.get(ProcessingJob, job_id)
+        events = list(
+            await session.scalars(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == job_id,
+                    OutboxEvent.event_type == "collection.semantic.compile.requested.v1",
+                )
+            )
+        )
+        ledgers = list(
+            await session.scalars(select(CreditLedger).where(CreditLedger.job_id == job_id))
+        )
+    assert job is not None and job.progress["stage"] == "semantic_compile_queued"
+    assert job.progress["finalizer_retry_attempt"] == 1
+    assert job.cost_actual["retry_reconsumed"] == "1.000000"
+    assert len(events) == 1
+    assert events[0].payload["actor_user_id"] == str(user_id)
+    assert sum(ledger.entry_type == "consume" for ledger in ledgers) == 2
+    assert sum(ledger.entry_type == "refund" for ledger in ledgers) == 1
 
 
 def _scanned_fixture(kind: str) -> tuple[str, str, bytes]:
@@ -618,9 +1527,7 @@ async def test_sensitive_preview_is_masked_by_default_and_opt_out_is_explicit(
     }
     assert "mistral_fallback" not in page.preflight_metrics["ready_routes"]
     assert block.warnings == ["sensitive_api_key_detected", "sensitive_email_detected"]
-    assert secret_review is not None
-    assert secret_review.evidence["counts"] == {"api_key": 1, "email": 1}
-    assert "github_pat_" not in str(secret_review.evidence)
+    assert secret_review is None
     masked = await client.get(f"/v1/pages/{page.id}/preview")
     assert masked.status_code == 200
     assert masked.headers["x-akc-preview-redaction"] == "masked"

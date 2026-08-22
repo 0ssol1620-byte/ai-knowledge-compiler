@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "claim_class": "internal_runtime_diagnostic",
+  "candidate_id": "paddleocr-vl-1.6",
+  "requested_model_revision": "66317acc4c9fc17bd154591ce650735cd2855f3e",
+  "artifact_manifest_sha256": "sha256:83482fee6ec1a6bd7b822f32dcc3cb9a412419786b2ae6cc87320290132334a2",
+  "artifact_file_count": 78,
+  "artifact_bytes": 2062485934,
+  "environment": {
+    "provider": "runpod_secure_cloud",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_memory_mib": 24564,
+    "driver": "570.158.01",
+    "python": "3.11.10",
+    "paddlepaddle_gpu": "3.2.1",
+    "paddleocr": "3.7.0",
+    "hourly_price_usd": 0.69
+  },
+  "control": {
+    "operation": "4096x4096 paddle GPU matrix multiplication",
+    "seconds": 0.08955526351928711,
+    "place": "gpu:0",
+    "result": "passed"
+  },
+  "probes": [
+    {
+      "id": "dynamic-full-pipeline-omnidoc-demo",
+      "input_sha256": "sha256:c395358f7b52298b01e242028caa9ef039636cdda71d082d9fb47ce1b1e8eb4e",
+      "layout_detection": true,
+      "use_queues": true,
+      "result": "timeout",
+      "observed_seconds_lower_bound": 420,
+      "gpu_utilization_observed_percent": 0,
+      "failure_evidence": "main thread blocked on queue_vlm.get; VLM worker did not terminate in time; orphan process was explicitly terminated"
+    },
+    {
+      "id": "dynamic-direct-official-demo",
+      "input_sha256": "sha256:f2881cb90a65311bc11f3666ebd41662a62cff71164e126c9c931efcd55a478f",
+      "layout_detection": false,
+      "use_queues": false,
+      "initialization_seconds": 2.929580694064498,
+      "timeout_seconds": 180,
+      "terminated_at": "2026-08-01T13:54:06Z",
+      "result": "timeout",
+      "failure_evidence": "SIGTERM interrupted phi::EmbeddingKernel<bfloat16, GPUContext>; no prediction artifact was emitted"
+    }
+  ],
+  "quality_scores": null,
+  "promotion_eligible": false,
+  "next_action": "repeat through PaddleX's documented vLLM service backend; preserve this default-backend failure as reliability and cost evidence"
+}

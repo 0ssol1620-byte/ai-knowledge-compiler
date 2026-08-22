@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   FileArrowUp,
+  FileText,
   FolderOpen,
   HardDrives,
   ShieldCheck,
@@ -34,7 +35,7 @@ const statusConfig = {
   draft: { label: "Draft", icon: FolderOpen, tone: "neutral" },
   processing: { label: "Processing", icon: Clock, tone: "blue" },
   ready: { label: "Verified", icon: CheckCircle, tone: "green" },
-  attention: { label: "Review required", icon: WarningCircle, tone: "amber" },
+  attention: { label: "Integrity isolated", icon: WarningCircle, tone: "amber" },
 } as const;
 
 export function WorkspaceDashboard({
@@ -68,15 +69,19 @@ export function WorkspaceDashboard({
           </div>
           <p>
             {attentionCount > 0
-              ? `${formatNumber(attentionCount)} items need review. ${formatNumber(snapshot.active_jobs)} job is active.`
-              : "No failed jobs or open reviews. The workspace is ready for a new document."}
+              ? `${formatNumber(attentionCount)} integrity items are isolated. ${formatNumber(snapshot.active_jobs)} job is active.`
+              : "No failed jobs or unresolved findings. The workspace is ready for a new document."}
           </p>
         </div>
         <div className="dashboard-actions">
           <CreateProjectButton variant="secondary" />
-          <Link href="/quick-convert" className="primary-button">
-            <FileArrowUp size={17} aria-hidden="true" />
+          <Link href="/quick-convert" className="secondary-button">
+            <FileText size={17} aria-hidden="true" />
             Upload document
+          </Link>
+          <Link href="/intake" className="primary-button">
+            <FileArrowUp size={17} aria-hidden="true" />
+            Intake collection
           </Link>
         </div>
       </header>
@@ -88,25 +93,25 @@ export function WorkspaceDashboard({
               <span>Priority queue</span>
               <h2>
                 {attentionCount > 0
-                  ? `${formatNumber(attentionCount)} findings need a decision`
-                  : "The review queue is clear"}
+                  ? `${formatNumber(attentionCount)} findings are isolated`
+                  : "The integrity ledger is clear"}
               </h2>
             </div>
             <strong>{formatNumber(attentionCount)}</strong>
           </div>
           <p>
             {attentionCount > 0
-              ? "Open the highest-impact finding, compare the source and candidate result, then approve or correct it without leaving Review Studio."
+              ? "Automatic repair and authority checks run first. Unresolved or quarantined findings remain visible here without blocking verified outputs."
               : "New parser findings and failed files will appear here in impact order."}
           </p>
           <div className="operations-priority-meta">
             <span>
               <WarningCircle size={15} aria-hidden="true" />
-              {formatNumber(snapshot.review_required)} open reviews
+              {formatNumber(snapshot.review_required)} unresolved or quarantined
             </span>
             <span>{formatNumber(snapshot.failed_jobs)} failed files</span>
-            <Link href="/review">
-              Open review queue
+            <Link href="/integrity">
+              Open Integrity Console
               <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
@@ -218,7 +223,7 @@ export function WorkspaceDashboard({
             <FolderOpen size={24} aria-hidden="true" />
             <h3>No projects yet</h3>
             <p>
-              Create a project to keep documents, reviews, and exports together.
+              Create a project to keep documents, integrity evidence, and exports together.
             </p>
             <CreateProjectButton />
           </div>
@@ -226,7 +231,7 @@ export function WorkspaceDashboard({
           <div className="dashboard-table-scroll">
             <table className="dashboard-project-table">
               <caption className="sr-only">
-                Recent projects with documents, status, activity, reviews,
+                Recent projects with documents, status, activity, integrity findings,
                 output, and owner
               </caption>
               <thead>
@@ -235,7 +240,7 @@ export function WorkspaceDashboard({
                   <th scope="col">Docs</th>
                   <th scope="col">Status</th>
                   <th scope="col">Updated</th>
-                  <th scope="col">Review</th>
+                  <th scope="col">Integrity</th>
                   <th scope="col">Output</th>
                   <th scope="col">Owner</th>
                 </tr>
@@ -281,13 +286,13 @@ export function WorkspaceDashboard({
                       <td>
                         {project.review_count > 0 ? (
                           <Link
-                            href={`/review?project=${project.id}`}
+                            href={`/integrity?project=${project.id}`}
                             className="dashboard-review-link"
                           >
                             {formatNumber(project.review_count)}
                           </Link>
                         ) : (
-                          "None"
+                          "Clear"
                         )}
                       </td>
                       <td>
@@ -316,7 +321,7 @@ export function WorkspaceDashboard({
           Source retention, external providers, and processing region are
           checked again before upload.
         </p>
-        <Link href="/settings">Review security policy</Link>
+        <Link href="/settings">Open security policy</Link>
       </section>
     </div>
   );

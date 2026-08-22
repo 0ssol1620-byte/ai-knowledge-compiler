@@ -1,0 +1,70 @@
+{
+  "finding_id": "FIND-ABS-B-01-A",
+  "experiment": "EXP-0101",
+  "ledger_entry": "ABS-B-01",
+  "status": "ESTABLISHED_INTERNAL",
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "recorded_at": "2026-08-12",
+  "recorded_by": "founder directive following EXP-0101 review",
+  "finding": "Content compatibility must not participate in logical identity resolution.",
+  "canonical_rule": {
+    "recorded_at": "2026-08-12",
+    "note": "The finding above is preserved as first recorded. This is the same rule in the form adopted as canonical, which separates the three questions the pipeline asks rather than naming only the signal that must not cross.",
+    "three_questions": [
+      "Alignment asks which elements correspond.",
+      "Identity asks whether this is still the same logical thing.",
+      "Diff asks what changed about it."
+    ],
+    "rule": "Content may be used at the alignment stage for candidate pairing. It must not enter the logical identity score."
+  },
+  "reasoning": [
+    "A logical claim's wording changing is normal. It is the ordinary case, not an anomaly: identity.py:183 seeds a logical id from source and structural path and deliberately excludes content, 'so that a clause keeps its identity when its wording changes -- which is the entire point.'",
+    "If content change itself severs identity, then the changes that matter most - numeric edits, modal-verb promotions, effective-date shifts - are exactly the ones that push a pair below the merge bar.",
+    "A pair that falls below the bar is reported as IDENTITY_UNRESOLVED, which semantic_diff.py:195 correctly excludes from changed_logical_ids. The abstention is right; the input to it was wrong.",
+    "The result is that the real change is never reported as a change. The system does not say the wrong thing - it says nothing, about the thing it most needed to say."
+  ],
+  "evidence": {
+    "primary": "critical_numeric_change_recall = 0.0000 (0/60) for the challenger, against 1.0000 (60/60) for CURRENT and for the prior-art baseline",
+    "mechanism": "a single changed table cell moves the pair score from 0.9412 to 0.9006, under the 0.92 merge bar (identity.py:253), because align_content contributes 0.4 where the core semantic signal contributes 0.667",
+    "isolation": "removing align_content and changing nothing else restores critical_change_recall to 1.0000 and critical_numeric_change_recall to 1.0000 (arm challenger_no_content)",
+    "significance": "exact two-sided McNemar against CURRENT, 0 discordant in the challenger's favour against 60 in CURRENT's, Holm-adjusted p = 2.602e-17",
+    "denominators": {
+      "critical_numeric_change_recall": "60 injected numeric mutations",
+      "critical_change_recall": "240 controlled high-risk mutation cases",
+      "cases_total": 660
+    },
+    "artifacts": [
+      "metrics/summary.json",
+      "metrics/per-mutation-class.json",
+      "metrics/statistics.json",
+      "tables/headline-metrics.md",
+      "tables/statistics.md"
+    ]
+  },
+  "corollary": {
+    "finding_id": "FIND-ABS-B-01-A1",
+    "status": "ADOPTED_AS_CANONICAL",
+    "finding": "A signal named `structural` or `context` is treated as content-derived - and therefore banned from the identity stage - if its value is produced by reading text, a content hash, a token set, an embedding, or any content-derived digest. The name does not matter; what it reads does.",
+    "first_recorded_as": "A signal is content-derived if it resolves anything by content, whatever the signal is named. Renaming does not exempt it.",
+    "test_obligation": "The content-derivation test is applied per signal and is part of Contract A v2's definition of done, not a follow-up. A signal that fails it is a difference signal, whatever it is called.",
+    "established_by": "align_structural in packages/absorption/src/akc_absorption/alignment.py resolves a caption's figure binding and then compares the BOUND ELEMENT'S CONTENT HASH. It is named structural and behaves as content.",
+    "evidence": "figure_replacement recall over 20 seeded cases: challenger with all signals 0/20; minus align_content only 0/20; minus align_structural only 0/20; minus BOTH 20/20. Removing either one alone recovers nothing, which is what distinguishes this from two independent faults.",
+    "consequence": "The instruction to keep 'structural compatibility' in the identity stage is only safe once structural compatibility is redefined to compare bindings rather than the content of what is bound. Carrying the current implementation forward into EXP-0101B would reproduce the figure-replacement failure while appearing to comply with the restructure.",
+    "corrected_definition": "Structural compatibility answers: does this element still occupy the same structural slot, and does its binding still point at the element occupying the counterpart slot? It must not consult the bound element's text, content hash, or any digest thereof."
+  },
+  "retained": {
+    "capability": "typed element reasoning",
+    "statement": "Type-specific difference reasoning is retained as a valid challenger capability. It is independent of the identity integration that failed.",
+    "evidence": "critical_change_labelled_rate is 0.0000 for CURRENT over 240 high-risk cases - CURRENT has one label for every modification (semantic_diff.py:422) and cannot name which kind it was - against 1.0000 for the challenger_no_content arm. The entire layout-only gain also comes from this half: the challenger_no_type_reasoning ablation has zero discordant cases against CURRENT on layout false invalidation."
+  },
+  "consequence": {
+    "supersedes": "Contract A's instruction to feed all of blueprint 9.3's signals into the seven-signal identity scorer as additional signals",
+    "successor_contract": "docs/research/ABSORPTION_EXPERIMENT_CONTRACT_A2.md (EXP-0101B)",
+    "restructure": "Content compatibility moves from the identity stage to the difference stage. It is not evidence that identity broke; it is the signal for judging what changed within the same identity."
+  },
+  "not_established": [
+    "That the revised pipeline outperforms CURRENT. EXP-0101B has not been run.",
+    "That this transfers beyond the generated fixture. No DART/SEC amendment pair and no Office-to-PDF export pair was used.",
+    "That an embedding-based content signal would behave the same way. No embedding provider was called in EXP-0101."
+  ]
+}

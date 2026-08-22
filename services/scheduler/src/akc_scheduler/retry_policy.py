@@ -46,7 +46,7 @@ class RetryDecision:
         if self.should_retry:
             return self.strategy
         if self.strategy == "retry":
-            return "manual_review"
+            return "unresolved"
         return self.strategy
 
 

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "FOL-PROOF-T0-DART-PDF-20260803",
+  "classification": "T0",
+  "title": "JTC quarterly filing 2026 Q1 actual PDF",
+  "authority": "Financial Supervisory Service DART",
+  "issuer": "JTC Inc.",
+  "receipt_number": "20260730000413",
+  "document_number": "11502479",
+  "source_page_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260730000413",
+  "download_url": "https://dart.fss.or.kr/pdf/download/pdf.do?rcp_no=20260730000413&dcm_no=11502479",
+  "retrieved_at": "2026-08-03T00:00:00+09:00",
+  "retrieval_purpose": "Evidence-only actual-source rendering in the FOLYNTA public product proof scene",
+  "commercial_use_evidence": "Official public regulatory disclosure; displayed only as attributed source evidence, not as licensed marketing media or benchmark ground truth.",
+  "allowed_use": [
+    "homepage-actual-source-proof",
+    "demo-dart",
+    "source-verification"
+  ],
+  "prohibited_use": [
+    "benchmark-ground-truth",
+    "quality-claim",
+    "customer-claim",
+    "unattributed-redistribution"
+  ],
+  "repository_path": "apps/web/public/proof-sources/dart-jtc-2026-q1.pdf",
+  "sha256": "fb998430db82774afc0d69090383650421ab9a14e6e37c7f32821aa1c6a32eee",
+  "size_bytes": 2276931,
+  "page_count": 121,
+  "rendered_page": 30,
+  "generated_with_ai": false,
+  "notes": "The page is rendered from the acquired PDF bytes with PDF.js. No DOM reconstruction is labeled Original."
+}

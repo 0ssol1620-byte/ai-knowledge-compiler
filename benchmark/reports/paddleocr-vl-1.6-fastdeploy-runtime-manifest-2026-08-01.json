@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "claim_class": "reproducible_runtime_manifest",
+  "candidate_id": "paddleocr-vl-1.6-fastdeploy-c8",
+  "provider": "runpod_secure_cloud",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_memory_mib": 24564,
+    "driver": "570.158.01",
+    "observed_hourly_price_usd": 0.69
+  },
+  "software": {
+    "python": "3.11.10",
+    "paddlepaddle_gpu": "3.2.1",
+    "paddleocr": "3.7.0",
+    "paddlex": "3.7.2",
+    "fastdeploy_gpu": "2.3.0",
+    "paddleformers": "1.2.0"
+  },
+  "model_artifacts": {
+    "file_count": 78,
+    "bytes": 2062485934,
+    "manifest_sha256": "sha256:83482fee6ec1a6bd7b822f32dcc3cb9a412419786b2ae6cc87320290132334a2"
+  },
+  "compatibility_patch": {
+    "reason": "FastDeploy 2.3.0 imports paddleformers.trl.llm_utils, while PaddleFormers 1.2.0 exposes the required function from paddleformers.cli.utils.llm_utils.",
+    "scope": "single import path in fastdeploy/input/text_processor.py",
+    "original_file_sha256": "sha256:b50570cb2c13f29f2a7f8803d6bdb3368111e906152425f9666d0ca4818a396d",
+    "patched_file_sha256": "sha256:3be4e76c7e0fedd11c77eb5a704763a8c46ed0fd2ae1cf851e25aa08b7808fa9",
+    "upstream_paddleformers_revision_checked": "571d9b1d93901ba65ee3f651c1d7486973ab3e12"
+  },
+  "service": {
+    "backend": "fastdeploy-server",
+    "listen_address": "127.0.0.1",
+    "port": 8118,
+    "metrics_port": 18119,
+    "worker_count": 4,
+    "client_max_concurrency": 8,
+    "backend_config_sha256": "sha256:fed9decbd9184b331141512bbb129df6a4aebcffa39c42ef31bf5c826189668e"
+  },
+  "formal_run": {
+    "input_pages": 18,
+    "repeat_count": 3,
+    "completed": 54,
+    "failed": 0,
+    "timed_out": 0,
+    "ground_truth_mounted_on_worker": false,
+    "run_summary_sha256": "sha256:40d5079ddc999ba4abf40707da255082ed87f7462244bf3f7496de90d4fd9c92",
+    "evidence_bundle_sha256": "sha256:337570a4b572e869ef7e91b36df14a99593180fcf50af57d93ce4ae5feeb7316"
+  },
+  "excluded_diagnostics": [
+    "Paddle dynamic backend timeout probes",
+    "single-concurrency FastDeploy timing probe"
+  ]
+}

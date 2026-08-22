@@ -27,23 +27,24 @@ _OCR_ROUTES = frozenset(
         Route.HPD_FAST,
         Route.UNLIMITED_LONG,
         Route.MISTRAL_FALLBACK,
+        Route.REGION_RECOVERY,
     }
 )
 
 
-def _manual_review_for_unavailable(
+def _unresolved_for_unavailable(
     *,
     context: RouterContext,
     attempted_route: Route,
     reason_codes: tuple[str, ...],
 ) -> RouteDecision:
     return RouteDecision(
-        route=Route.MANUAL_REVIEW,
+        route=Route.UNRESOLVED,
         route_profile=MODE_PROFILE[context.mode],
         reason_codes=(
             *reason_codes,
             f"route_unavailable:{attempted_route.value}",
-            "fail_closed_manual_review",
+            "fail_closed_unresolved",
         ),
         expected_credits=0.0,
         requires_visual_parse=False,
@@ -58,9 +59,11 @@ def _require_ready_route(
     *,
     context: RouterContext,
 ) -> RouteDecision:
-    if decision.route == Route.MANUAL_REVIEW or decision.route in context.ready_routes:
+    if decision.route in {Route.UNRESOLVED, Route.QUARANTINE}:
         return decision
-    return _manual_review_for_unavailable(
+    if decision.route in context.ready_routes:
+        return decision
+    return _unresolved_for_unavailable(
         context=context,
         attempted_route=decision.route,
         reason_codes=decision.reason_codes,
@@ -74,7 +77,7 @@ def estimate_route_credits(
     page: PageMetrics,
 ) -> float:
     """Apply the later-priority v2 credit schedule deterministically."""
-    if route == Route.MANUAL_REVIEW:
+    if route in {Route.UNRESOLVED, Route.QUARANTINE, Route.AUTHORITY_RECONSTRUCTION}:
         return 0.0
     credits = 0.25 if route == Route.NATIVE else 1.0 if route in _OCR_ROUTES else 0.0
     complex_page = preflight_difficulty(page) >= 50 or native_requires_visual_cross_check(page)
@@ -192,36 +195,82 @@ def decide_escalation(
     if attempt_number < 1 or max_attempts < 1:
         raise ValueError("attempt counts start at one")
 
-    if signal.unreadable:
+    if signal.security_quarantine_required or signal.source_integrity_failure:
         return EscalationDecision(
-            action=EscalationAction.FAIL,
-            reason_codes=("unreadable_source",),
-            attempt_number=attempt_number,
-            policy_version=context.policy_version,
-        )
-
-    if signal.critical_numeric_mismatch or signal.critical_table_error:
-        return EscalationDecision(
-            action=EscalationAction.REVIEW,
-            route=Route.MANUAL_REVIEW,
+            action=EscalationAction.QUARANTINE,
+            route=Route.QUARANTINE,
             reason_codes=(
-                "critical_numeric_mismatch"
-                if signal.critical_numeric_mismatch
-                else "critical_table_error",
+                "security_quarantine_required"
+                if signal.security_quarantine_required
+                else "source_integrity_failure",
             ),
             attempt_number=attempt_number,
             policy_version=context.policy_version,
         )
 
-    if context.risk_tier == RiskTier.HIGH and signal.agreement_numeric != 1.0:
+    if signal.unreadable or signal.unsupported_content:
         return EscalationDecision(
-            action=EscalationAction.REVIEW,
-            route=Route.MANUAL_REVIEW,
+            action=EscalationAction.QUARANTINE,
+            route=Route.QUARANTINE,
+            reason_codes=("unreadable_source" if signal.unreadable else "unsupported_content",),
+            attempt_number=attempt_number,
+            policy_version=context.policy_version,
+        )
+
+    if signal.critical_numeric_mismatch or signal.critical_table_error:
+        reason = (
+            "critical_numeric_mismatch"
+            if signal.critical_numeric_mismatch
+            else "critical_table_error"
+        )
+        if signal.authority_match is True:
+            return EscalationDecision(
+                action=EscalationAction.VERIFY_AUTHORITY,
+                route=Route.AUTHORITY_RECONSTRUCTION,
+                reason_codes=(reason, "authority_exact_reconstruction"),
+                attempt_number=attempt_number,
+                policy_version=context.policy_version,
+            )
+        if context.feature_flags.authority_verification_enabled:
+            return EscalationDecision(
+                action=EscalationAction.VERIFY_AUTHORITY,
+                route=Route.AUTHORITY_RECONSTRUCTION,
+                reason_codes=(reason, "authority_check_required"),
+                attempt_number=attempt_number,
+                policy_version=context.policy_version,
+            )
+        return EscalationDecision(
+            action=EscalationAction.UNRESOLVED,
+            route=Route.UNRESOLVED,
+            reason_codes=(reason, "authority_unavailable"),
+            attempt_number=attempt_number,
+            policy_version=context.policy_version,
+        )
+
+    if context.risk_tier == RiskTier.HIGH and signal.agreement_numeric != 1.0:
+        if context.feature_flags.authority_verification_enabled:
+            return EscalationDecision(
+                action=EscalationAction.VERIFY_AUTHORITY,
+                route=Route.AUTHORITY_RECONSTRUCTION,
+                reason_codes=(
+                    "high_risk_numeric_exact_match_required",
+                    "numeric_agreement_missing"
+                    if signal.agreement_numeric is None
+                    else "numeric_agreement_below_one",
+                    "authority_check_required",
+                ),
+                attempt_number=attempt_number,
+                policy_version=context.policy_version,
+            )
+        return EscalationDecision(
+            action=EscalationAction.UNRESOLVED,
+            route=Route.UNRESOLVED,
             reason_codes=(
                 "high_risk_numeric_exact_match_required",
                 "numeric_agreement_missing"
                 if signal.agreement_numeric is None
                 else "numeric_agreement_below_one",
+                "authority_unavailable",
             ),
             attempt_number=attempt_number,
             policy_version=context.policy_version,
@@ -240,11 +289,11 @@ def decide_escalation(
 
     if current_route not in context.ready_routes:
         return EscalationDecision(
-            action=EscalationAction.REVIEW,
-            route=Route.MANUAL_REVIEW,
+            action=EscalationAction.UNRESOLVED,
+            route=Route.UNRESOLVED,
             reason_codes=(
                 f"route_unavailable:{current_route.value}",
-                "fail_closed_manual_review",
+                "fail_closed_unresolved",
             ),
             attempt_number=attempt_number,
             policy_version=context.policy_version,
@@ -289,12 +338,12 @@ def decide_escalation(
     if current_route in {Route.NATIVE, Route.HPD_FAST, Route.PADDLE_FAST}:
         if Route.PADDLE_VL not in context.ready_routes:
             return EscalationDecision(
-                action=EscalationAction.REVIEW,
-                route=Route.MANUAL_REVIEW,
+                action=EscalationAction.UNRESOLVED,
+                route=Route.UNRESOLVED,
                 reason_codes=(
                     "primary_route_quality_failed",
                     "paddle_precision_unavailable",
-                    "fail_closed_manual_review",
+                    "fail_closed_unresolved",
                 ),
                 attempt_number=attempt_number,
                 policy_version=context.policy_version,
@@ -316,10 +365,32 @@ def decide_escalation(
             policy_version=context.policy_version,
         )
 
+    if (
+        signal.region_recoverable
+        and context.feature_flags.region_recovery_enabled
+        and Route.REGION_RECOVERY in context.ready_routes
+    ):
+        return EscalationDecision(
+            action=EscalationAction.ESCALATE,
+            route=Route.REGION_RECOVERY,
+            reason_codes=("failed_region_isolated", "region_recovery_enqueued"),
+            attempt_number=1,
+            policy_version=context.policy_version,
+        )
+
+    if context.feature_flags.authority_verification_enabled:
+        return EscalationDecision(
+            action=EscalationAction.VERIFY_AUTHORITY,
+            route=Route.AUTHORITY_RECONSTRUCTION,
+            reason_codes=("quality_gate_failed", "authority_check_required"),
+            attempt_number=attempt_number,
+            policy_version=context.policy_version,
+        )
+
     return EscalationDecision(
-        action=EscalationAction.REVIEW,
-        route=Route.MANUAL_REVIEW,
-        reason_codes=("quality_gate_failed", "no_safe_automatic_fallback"),
+        action=EscalationAction.UNRESOLVED,
+        route=Route.UNRESOLVED,
+        reason_codes=("quality_gate_failed", "automatic_recovery_exhausted"),
         attempt_number=attempt_number,
         policy_version=context.policy_version,
     )

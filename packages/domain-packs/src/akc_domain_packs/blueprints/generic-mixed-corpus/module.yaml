@@ -1,0 +1,13 @@
+id: generic-mixed-corpus
+version: 1.0.0
+display_name: Generic Mixed Corpus
+domains: [general, mixed, unknown]
+object_types: [document, note, entity, relation, claim]
+root_views: [Documents, Topics, Entities, Claims]
+moc_templates: [Topics, Entities, Claims]
+folder_depth: 3
+naming_policy: stable-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, claim_evidence, entity_identity, relation_evidence]
+export_profiles: [obsidian, ontology, neo4j, rag]

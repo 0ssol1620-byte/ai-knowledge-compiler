@@ -6,6 +6,244 @@ export type GeneratedJsonValue =
   | ReadonlyArray<GeneratedJsonValue>
   | Readonly<{ [key: string]: GeneratedJsonValue }>;
 
+export const COLLECTION_EVENT_TYPES = [
+  "collection.created.v1",
+  "collection.discovery.progress.v1",
+  "collection.source.created.v1",
+  "collection.files.planned.v1",
+  "file.discovered.v1",
+  "file.hash.progress.v1",
+  "file.upload.progress.v1",
+  "file.upload.resumed.v1",
+  "file.upload.completed.v1",
+  "file.duplicate.detected.v1",
+  "file.security.passed.v1",
+  "collection.upload.completed.v1",
+  "collection.ingested.v1",
+  "collection.paused.v1",
+  "collection.resumed.v1",
+  "preflight.started.v1",
+  "preflight.cluster.created.v1",
+  "estimate.fast.ready.v1",
+  "estimate.sample.updated.v1",
+  "estimate.final.ready.v1",
+  "collection.preflight.completed.v1",
+  "credits.reserved.v1",
+  "processing.started.v1",
+  "processing.source_events.bridged.v1",
+  "page.rendered.v1",
+  "page.route.selected.v1",
+  "region.detected.v1",
+  "region.route.selected.v1",
+  "block.completed.v1",
+  "table.reconstructed.v1",
+  "numeric.authority.verified.v1",
+  "verification.failed.v1",
+  "repair.started.v1",
+  "repair.completed.v1",
+  "output.quarantined.v1",
+  "integrity.decision.recorded.v1",
+  "integrity.action.state_changed.v1",
+  "note.created.v1",
+  "entity.resolved.v1",
+  "relation.created.v1",
+  "architecture.plan.created.v1",
+  "architecture.folder.created.v1",
+  "architecture.moc.created.v1",
+  "architecture.plan.compiled.v1",
+  "export.started.v1",
+  "export.ready.v1",
+  "package.validated.v1",
+  "package.signed.v1",
+  "credits.consumed.v1",
+  "credits.refunded.v1",
+  "credits.released.v1",
+  "processing.paused.v1",
+  "processing.resumed.v1",
+  "processing.result.reused.v1",
+  "processing.completed.v1",
+  "processing.failed.v1",
+  "collection.export.completed.v1",
+  "collection.completed.v1",
+  "collection.deletion.requested.v1",
+  "collection.purged.v1",
+  "shard.planned.v1",
+  "shard.dispatched.v1",
+  "attempt.started.v1",
+  "attempt.output.received.v1",
+  "attempt.validation.failed.v1",
+  "attempt.accepted.v1",
+  "attempt.rejected.v1",
+  "attempt.hedged.v1",
+  "worker.semantic.degraded.v1",
+  "worker.draining.v1",
+  "worker.quarantined.v1",
+  "recovery.region.requested.v1",
+  "recovery.completed.v1",
+  "continuity.merge.started.v1",
+  "continuity.merge.completed.v1",
+  "document.finalized.v1",
+] as const;
+export type CollectionEventType = (typeof COLLECTION_EVENT_TYPES)[number];
+
+export const COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS = {
+  "collection.created.v1": { collection_id: "string", project_id: "string", status: "string" },
+  "collection.discovery.progress.v1": { collection_id: "string", source_root_id: "string", discovered_files: "integer", discovered_bytes: "integer", manifest_revision: "integer" },
+  "collection.source.created.v1": { collection_id: "string", source_root_id: "string", source_type: "string", status: "string" },
+  "collection.files.planned.v1": { collection_id: "string", source_root_id: "string", manifest_revision: "integer", manifest_sha256: "string", total_files: "integer", total_bytes: "integer", completed_files: "integer", active_files: "integer", failed_files: "integer", duplicate_files: "integer", status: "string" },
+  "file.discovered.v1": { collection_id: "string", source_root_id: "string", discovered_files: "integer", discovered_bytes: "integer", manifest_revision: "integer" },
+  "file.hash.progress.v1": { collection_id: "string", hashed_files: "integer", hash_algorithm: "string", quick_fingerprint_files: "integer", manifest_revision: "integer" },
+  "file.upload.progress.v1": { collection_id: "string", upload_session_id: "string", completed_files: "integer", active_files: "integer", failed_files: "integer", duplicate_files: "integer" },
+  "file.upload.resumed.v1": { collection_id: "string", upload_session_id: "string", resume_version: "integer" },
+  "file.upload.completed.v1": { collection_id: "string", accepted_receipts: "integer", verified_receipts: "integer", failed_receipts: "integer", duplicate_reuses: "integer", manifest_revision: "integer" },
+  "file.duplicate.detected.v1": { collection_id: "string", duplicate_files: "integer", processing_credits: "integer" },
+  "file.security.passed.v1": { collection_id: "string", verified_files: "integer" },
+  "collection.upload.completed.v1": { collection_id: "string", upload_session_id: "string", manifest_revision: "integer", manifest_sha256: "string", accepted_receipts: "integer", completed_files: "integer", active_files: "integer", failed_files: "integer", duplicate_files: "integer", status: "string" },
+  "collection.ingested.v1": { collection_id: "string", verified_files: "integer", unavailable_files: "integer", manifest_sha256: "string", status: "string" },
+  "collection.paused.v1": { collection_id: "string", paused_from: "string", status: "string" },
+  "collection.resumed.v1": { collection_id: "string", resumed_to: "string", status: "string" },
+  "preflight.started.v1": { collection_id: "string", manifest_revision: "integer", manifest_sha256: "string", status: "string" },
+  "preflight.cluster.created.v1": { collection_id: "string", preflight_id: "string", cluster_count: "integer", member_files: "integer", feature_records: "integer" },
+  "estimate.fast.ready.v1": { collection_id: "string", preflight_id: "string", estimate_run_id: "string", basis: "string", predictor_revision: "string", credit_p50: "string", credit_p95: "string", reserve_ceiling: "string", confidence: "string" },
+  "estimate.sample.updated.v1": { collection_id: "string", preflight_id: "string", estimate_run_id: "string", sampled_pages: "integer", sample_tiers: "array", predictor_revision: "string" },
+  "estimate.final.ready.v1": { collection_id: "string", preflight_id: "string", estimate_run_id: "string", basis: "string", estimate_status: "string", credit_p50: "string", credit_p95: "string", reserve_ceiling: "string", confidence: "string", predictor_revision: "string" },
+  "collection.preflight.completed.v1": { collection_id: "string", preflight_id: "string", manifest_revision: "integer", manifest_sha256: "string", preflight_sha256: "string", cluster_count: "integer", verified_files: "integer", unavailable_files: "integer", known_pages: "integer", estimate_status: "string", status: "string" },
+  "credits.reserved.v1": { collection_id: "string", processing_job_id: "string", credits: "string" },
+  "processing.started.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", task_count: "integer" },
+  "processing.source_events.bridged.v1": { collection_id: "string", processing_job_id: "string", processing_jobs: "integer", source_event_count: "integer", source_event_type_counts: "object" },
+  "page.rendered.v1": { collection_id: "string", processing_job_id: "string", rendered_page_count: "integer", rendered_asset_count: "integer", asset_type_counts: "object", asset_set_sha256: "string" },
+  "page.route.selected.v1": { collection_id: "string", processing_job_id: "string", page_count: "integer", route_counts: "object", route_policy_versions: "array" },
+  "region.detected.v1": { collection_id: "string", processing_job_id: "string", region_count: "integer", region_type_counts: "object", evidence: "string" },
+  "region.route.selected.v1": { collection_id: "string", processing_job_id: "string", region_attempt_count: "integer", route_counts: "object" },
+  "block.completed.v1": { collection_id: "string", processing_job_id: "string", block_count: "integer", block_type_counts: "object", evidence_bound: "boolean" },
+  "table.reconstructed.v1": { collection_id: "string", processing_job_id: "string", table_count: "integer", source: "string" },
+  "numeric.authority.verified.v1": { collection_id: "string", processing_job_id: "string", matched_authority_mapping_count: "integer" },
+  "verification.failed.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", state: "string", reason_codes: "array" },
+  "repair.started.v1": { collection_id: "string", processing_job_id: "string", repair_id: "string", target_type: "string", target_id: "string", repair_stage: "string" },
+  "repair.completed.v1": { collection_id: "string", processing_job_id: "string", repair_id: "string", target_type: "string", target_id: "string", repair_stage: "string", result_status: "string" },
+  "output.quarantined.v1": { collection_id: "string", processing_job_id: "string", isolated_review_count: "integer", isolation_status_counts: "object", billing: "string" },
+  "integrity.decision.recorded.v1": { collection_id: "string", decision_id: "string", target_type: "string", target_id: "string", action: "string", reason_code: "string", result_status: "string", evidence_reference_kind: "string" },
+  "integrity.action.state_changed.v1": { collection_id: "string", decision_id: "string", execution_id: "string", target_type: "string", target_id: "string", action: "string", status: "string", execution_receipt_sha256: "string" },
+  "note.created.v1": { collection_id: "string", processing_job_id: "string", note_count: "integer", evidence_bound: "boolean" },
+  "entity.resolved.v1": { collection_id: "string", processing_job_id: "string", entity_count: "integer", scope: "string" },
+  "relation.created.v1": { collection_id: "string", processing_job_id: "string", relation_count: "integer", evidence_bound: "boolean" },
+  "architecture.plan.created.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", plan_version: "integer", integrity_sha256: "string", module_count: "integer" },
+  "architecture.folder.created.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", folder_count: "integer", declarative: "boolean" },
+  "architecture.moc.created.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", moc_count: "integer", linked_note_count: "integer" },
+  "architecture.plan.compiled.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", plan_version: "integer", integrity_sha256: "string", verified_files: "integer", documents: "integer", pages: "integer", knowledge_notes: "integer", entities: "integer", relations: "integer", autonomously_isolated_legacy_reviews: "integer", credits_consumed: "string", status: "string" },
+  "export.started.v1": { collection_id: "string", processing_job_id: "string|null", export_id: "string", package_manifest_id: "string", profile: "string", completion_scope: "string", status: "string" },
+  "export.ready.v1": { collection_id: "string", processing_job_id: "string|null", export_id: "string", package_manifest_id: "string", package_sha256: "string", manifest_sha256: "string", size_bytes: "integer", file_count: "integer", signature_status: "string" },
+  "package.validated.v1": { collection_id: "string", processing_job_id: "string|null", export_id: "string", package_manifest_id: "string", package_validation_id: "string", validator_version: "string", validation_status: "string", evidence_sha256: "string", external_signer_required: "boolean" },
+  "package.signed.v1": { collection_id: "string", export_id: "string", package_manifest_id: "string", signature_sha256: "string", signer_key_id: "string", signature_status: "string" },
+  "credits.consumed.v1": { collection_id: "string", processing_job_id: "string", credits: "string" },
+  "credits.refunded.v1": { collection_id: "string", processing_job_id: "string", credits: "string", reason: "string" },
+  "credits.released.v1": { collection_id: "string", processing_job_id: "string", credits: "string", reason: "string" },
+  "processing.paused.v1": { collection_id: "string", processing_job_id: "string", queued_tasks_deferred: "integer" },
+  "processing.resumed.v1": { collection_id: "string", processing_job_id: "string" },
+  "processing.result.reused.v1": { collection_id: "string", processing_job_id: "string", analysis_task_id: "string", billing_owner_job_id: "string|null", billing_basis_sha256: "string", reused_pages: "integer", credits: "string" },
+  "processing.completed.v1": { collection_id: "string", processing_job_id: "string", architecture_plan_id: "string", package_manifest_id: "string", export_id: "string", package_sha256: "string" },
+  "processing.failed.v1": { collection_id: "string", processing_job_id: "string", error_code: "string" },
+  "collection.export.completed.v1": { collection_id: "string", export_id: "string", package_manifest_id: "string", profile: "string", package_sha256: "string", manifest_sha256: "string", size_bytes: "integer", file_count: "integer", signature_status: "string", completion_scope: "string", status: "string" },
+  "collection.completed.v1": { collection_id: "string", processing_job_id: "string|null", export_id: "string", package_manifest_id: "string", profile: "string", signature_status: "string", status: "string" },
+  "collection.deletion.requested.v1": { collection_id: "string", status: "string" },
+  "collection.purged.v1": { collection_id: "string", purged_package_objects: "integer", shared_source_objects_retained: "boolean", status: "string" },
+  "shard.planned.v1": { collection_id: "string", document_id: "string", shard_id: "string", shard_kind: "string", page_start: "integer", page_end: "integer", route_class: "string", shard_state: "string" },
+  "shard.dispatched.v1": { collection_id: "string", document_id: "string", shard_id: "string", attempt_id: "string", pool_key: "string", route_class: "string", shard_state: "string" },
+  "attempt.started.v1": { collection_id: "string", document_id: "string", shard_id: "string", attempt_id: "string", attempt_number: "integer", attempt_kind: "string", pool_key: "string", model_id: "string", attempt_state: "string" },
+  "attempt.output.received.v1": { collection_id: "string", document_id: "string", shard_id: "string", attempt_id: "string", output_sha256: "string", gpu_milliseconds: "integer", attempt_state: "string" },
+  "attempt.validation.failed.v1": { collection_id: "string", document_id: "string", shard_id: "string", attempt_id: "string", validation_id: "string", validation_level: "integer", validator_key: "string", reason_codes: "array", hard_fail: "boolean", attempt_state: "string" },
+  "attempt.accepted.v1": { collection_id: "string", document_id: "string", shard_id: "string", attempt_id: "string", final_state: "string", authority_tier: "string", billable: "boolean", cost_usd: "string" },
+  "attempt.rejected.v1": { collection_id: "string", document_id: "string", shard_id: "string", attempt_id: "string", failure_domain: "string", reason_codes: "array", attempt_state: "string" },
+  "attempt.hedged.v1": { collection_id: "string", document_id: "string", shard_id: "string", source_attempt_id: "string", hedge_attempt_id: "string", predicted_p95_milliseconds: "integer", elapsed_milliseconds: "integer", billing_disposition: "string" },
+  "worker.semantic.degraded.v1": { collection_id: "string", worker_health_id: "string", worker_id: "string", pool_key: "string", semantic_score: "string", worker_state: "string", reason_codes: "array" },
+  "worker.draining.v1": { collection_id: "string", worker_health_id: "string", worker_id: "string", pool_key: "string", worker_state: "string", reason_codes: "array" },
+  "worker.quarantined.v1": { collection_id: "string", worker_health_id: "string", worker_id: "string", pool_key: "string", worker_state: "string", impacted_attempt_count: "integer", reason_codes: "array" },
+  "recovery.region.requested.v1": { collection_id: "string", document_id: "string", shard_id: "string", source_attempt_id: "string", recovery_task_id: "string", recovery_level: "string", reason_codes: "array", recovery_state: "string" },
+  "recovery.completed.v1": { collection_id: "string", document_id: "string", shard_id: "string", recovery_task_id: "string", result_attempt_id: "string", recovery_level: "string", final_state: "string" },
+  "continuity.merge.started.v1": { collection_id: "string", document_id: "string", merge_revision: "string", candidate_edge_count: "integer", accepted_block_count: "integer" },
+  "continuity.merge.completed.v1": { collection_id: "string", document_id: "string", merge_revision: "string", accepted_edge_count: "integer", deduplicated_block_count: "integer", source_coverage_count: "integer", unresolved_count: "integer", continuity_sha256: "string" },
+  "document.finalized.v1": { collection_id: "string", document_id: "string", final_state: "string", verified_block_count: "integer", unresolved_count: "integer", quarantined_count: "integer", manifest_sha256: "string", billable_credits: "string" },
+} as const;
+
+export const COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS = {
+  "collection.created.v1": {  },
+  "collection.discovery.progress.v1": {  },
+  "collection.source.created.v1": {  },
+  "collection.files.planned.v1": {  },
+  "file.discovered.v1": {  },
+  "file.hash.progress.v1": {  },
+  "file.upload.progress.v1": { manifest_revision: "integer" },
+  "file.upload.resumed.v1": { manifest_revision: "integer" },
+  "file.upload.completed.v1": {  },
+  "file.duplicate.detected.v1": {  },
+  "file.security.passed.v1": { source_files: "integer", unavailable_files: "integer", antivirus_status_counts: "object", cdr_status_counts: "object" },
+  "collection.upload.completed.v1": {  },
+  "collection.ingested.v1": {  },
+  "collection.paused.v1": { upload_session_id: "string", processing_job_id: "string", resume_version: "integer" },
+  "collection.resumed.v1": { upload_session_id: "string", processing_job_id: "string", resume_version: "integer" },
+  "preflight.started.v1": {  },
+  "preflight.cluster.created.v1": {  },
+  "estimate.fast.ready.v1": {  },
+  "estimate.sample.updated.v1": {  },
+  "estimate.final.ready.v1": {  },
+  "collection.preflight.completed.v1": {  },
+  "credits.reserved.v1": { hard_cap: "string", reason: "string" },
+  "processing.started.v1": { immutable_plan_sha256: "string", documents: "integer", pages: "integer", processing_jobs: "integer", execution_scope: "string", credits_consumed: "integer", status: "string" },
+  "processing.source_events.bridged.v1": {  },
+  "page.rendered.v1": {  },
+  "page.route.selected.v1": {  },
+  "region.detected.v1": {  },
+  "region.route.selected.v1": {  },
+  "block.completed.v1": {  },
+  "table.reconstructed.v1": {  },
+  "numeric.authority.verified.v1": {  },
+  "verification.failed.v1": {  },
+  "repair.started.v1": {  },
+  "repair.completed.v1": {  },
+  "output.quarantined.v1": {  },
+  "integrity.decision.recorded.v1": {  },
+  "integrity.action.state_changed.v1": { processing_job_id: "string", analysis_task_id: "string", registry_model_id: "string", result_code: "string" },
+  "note.created.v1": {  },
+  "entity.resolved.v1": {  },
+  "relation.created.v1": {  },
+  "architecture.plan.created.v1": {  },
+  "architecture.folder.created.v1": {  },
+  "architecture.moc.created.v1": {  },
+  "architecture.plan.compiled.v1": {  },
+  "export.started.v1": {  },
+  "export.ready.v1": {  },
+  "package.validated.v1": {  },
+  "package.signed.v1": { processing_job_id: "string|null" },
+  "credits.consumed.v1": { billable_pages: "integer" },
+  "credits.refunded.v1": {  },
+  "credits.released.v1": { cancelled_from: "string" },
+  "processing.paused.v1": {  },
+  "processing.resumed.v1": { architecture_plan_id: "string", resume_version: "integer", stage: "string", package_attempt: "integer", finalizer_retry_attempt: "integer", retry_attempt: "integer", hard_cap: "string" },
+  "processing.result.reused.v1": {  },
+  "processing.completed.v1": {  },
+  "processing.failed.v1": { completed_tasks: "integer", failed_tasks: "integer", billable_pages: "integer", unbillable_pages: "integer", partial: "boolean" },
+  "collection.export.completed.v1": { processing_job_id: "string|null" },
+  "collection.completed.v1": {  },
+  "collection.deletion.requested.v1": {  },
+  "collection.purged.v1": {  },
+  "shard.planned.v1": {  },
+  "shard.dispatched.v1": {  },
+  "attempt.started.v1": { worker_id: "string|null" },
+  "attempt.output.received.v1": {  },
+  "attempt.validation.failed.v1": {  },
+  "attempt.accepted.v1": {  },
+  "attempt.rejected.v1": {  },
+  "attempt.hedged.v1": {  },
+  "worker.semantic.degraded.v1": {  },
+  "worker.draining.v1": {  },
+  "worker.quarantined.v1": {  },
+  "recovery.region.requested.v1": {  },
+  "recovery.completed.v1": {  },
+  "continuity.merge.started.v1": {  },
+  "continuity.merge.completed.v1": {  },
+  "document.finalized.v1": {  },
+} as const;
+
 export namespace CanonicalDocumentContract {
   export type BBox1000 = readonly [number, number, number, number];
   export type BlockOrigin = "native_extracted" | "ocr_extracted" | "rule_reconstructed" | "ai_reconstructed" | "ai_summarized" | "ai_inferred" | "user_edited";
@@ -20,6 +258,27 @@ export namespace CanonicalDocumentContract {
 }
 export type CanonicalDocumentGenerated = CanonicalDocumentContract.Root;
 
+export namespace CanonicalKnowledgeModelContract {
+  export type BBox1000 = readonly [number, number, number, number];
+  export type CanonicalKnowledgeObject = { readonly stableId: string; readonly tenantId: string; readonly collectionId: string; readonly kind: KnowledgeObjectKind; readonly sourceRefs: ReadonlyArray<SourceRef>; readonly origin: KnowledgeOrigin; readonly verificationState: KnowledgeVerificationState; readonly createdByActivity: string; readonly version: number; readonly hash: string; readonly links?: ReadonlyArray<string>; readonly payload?: {  } & Readonly<Record<string, GeneratedJsonValue>>; };
+  export type KnowledgeObjectKind = "collection" | "document" | "document_version" | "page" | "region" | "block" | "table" | "figure" | "note" | "entity" | "relation" | "claim" | "evidence" | "asset" | "ontology_term" | "export_artifact" | "validation_record";
+  export type KnowledgeOrigin = "source_explicit" | "structured_derived" | "rule_derived" | "model_inferred" | "native_extracted" | "visual_extracted" | "authority_reconstructed";
+  export type KnowledgeVerificationState = "verified" | "authority_verified" | "auto_repaired" | "verified_with_warning" | "unresolved" | "quarantined" | "rejected";
+  export type SourceRef = { readonly documentId: string; readonly documentVersionId: string; readonly pageIndex0: number; readonly pageNumber1: number; readonly bbox1000?: BBox1000 | null; readonly nativeObjectId?: string | null; readonly imageAssetId?: string | null; readonly timeStartMs?: number | null; readonly timeEndMs?: number | null; };
+  export type Root = { readonly schemaVersion?: string; readonly tenantId: string; readonly collectionId: string; readonly objects: ReadonlyArray<CanonicalKnowledgeObject>; };
+}
+export type CanonicalKnowledgeModelGenerated = CanonicalKnowledgeModelContract.Root;
+
+export namespace CanonicalKnowledgeObjectContract {
+  export type BBox1000 = readonly [number, number, number, number];
+  export type KnowledgeObjectKind = "collection" | "document" | "document_version" | "page" | "region" | "block" | "table" | "figure" | "note" | "entity" | "relation" | "claim" | "evidence" | "asset" | "ontology_term" | "export_artifact" | "validation_record";
+  export type KnowledgeOrigin = "source_explicit" | "structured_derived" | "rule_derived" | "model_inferred" | "native_extracted" | "visual_extracted" | "authority_reconstructed";
+  export type KnowledgeVerificationState = "verified" | "authority_verified" | "auto_repaired" | "verified_with_warning" | "unresolved" | "quarantined" | "rejected";
+  export type SourceRef = { readonly documentId: string; readonly documentVersionId: string; readonly pageIndex0: number; readonly pageNumber1: number; readonly bbox1000?: BBox1000 | null; readonly nativeObjectId?: string | null; readonly imageAssetId?: string | null; readonly timeStartMs?: number | null; readonly timeEndMs?: number | null; };
+  export type Root = { readonly stableId: string; readonly tenantId: string; readonly collectionId: string; readonly kind: KnowledgeObjectKind; readonly sourceRefs: ReadonlyArray<SourceRef>; readonly origin: KnowledgeOrigin; readonly verificationState: KnowledgeVerificationState; readonly createdByActivity: string; readonly version: number; readonly hash: string; readonly links?: ReadonlyArray<string>; readonly payload?: {  } & Readonly<Record<string, GeneratedJsonValue>>; };
+}
+export type CanonicalKnowledgeObjectGenerated = CanonicalKnowledgeObjectContract.Root;
+
 export namespace CanonicalTableContract {
   export type BBox1000 = readonly [number, number, number, number];
   export type BlockOrigin = "native_extracted" | "ocr_extracted" | "rule_reconstructed" | "ai_reconstructed" | "ai_summarized" | "ai_inferred" | "user_edited";
@@ -28,6 +287,12 @@ export namespace CanonicalTableContract {
   export type Root = { readonly id: string; readonly rowCount: number; readonly columnCount: number; readonly headerRowCount?: number; readonly cells: ReadonlyArray<CanonicalCell>; readonly caption?: string | null; readonly sourceRefs: ReadonlyArray<SourceRef>; readonly qualityFlags?: ReadonlyArray<string>; };
 }
 export type CanonicalTableGenerated = CanonicalTableContract.Root;
+
+export namespace CollectionEventContract {
+  export type CollectionEventType = "collection.created.v1" | "collection.discovery.progress.v1" | "collection.source.created.v1" | "collection.files.planned.v1" | "file.discovered.v1" | "file.hash.progress.v1" | "file.upload.progress.v1" | "file.upload.resumed.v1" | "file.upload.completed.v1" | "file.duplicate.detected.v1" | "file.security.passed.v1" | "collection.upload.completed.v1" | "collection.ingested.v1" | "collection.paused.v1" | "collection.resumed.v1" | "preflight.started.v1" | "preflight.cluster.created.v1" | "estimate.fast.ready.v1" | "estimate.sample.updated.v1" | "estimate.final.ready.v1" | "collection.preflight.completed.v1" | "credits.reserved.v1" | "processing.started.v1" | "processing.source_events.bridged.v1" | "page.rendered.v1" | "page.route.selected.v1" | "region.detected.v1" | "region.route.selected.v1" | "block.completed.v1" | "table.reconstructed.v1" | "numeric.authority.verified.v1" | "verification.failed.v1" | "repair.started.v1" | "repair.completed.v1" | "output.quarantined.v1" | "integrity.decision.recorded.v1" | "integrity.action.state_changed.v1" | "note.created.v1" | "entity.resolved.v1" | "relation.created.v1" | "architecture.plan.created.v1" | "architecture.folder.created.v1" | "architecture.moc.created.v1" | "architecture.plan.compiled.v1" | "export.started.v1" | "export.ready.v1" | "package.validated.v1" | "package.signed.v1" | "credits.consumed.v1" | "credits.refunded.v1" | "credits.released.v1" | "processing.paused.v1" | "processing.resumed.v1" | "processing.result.reused.v1" | "processing.completed.v1" | "processing.failed.v1" | "collection.export.completed.v1" | "collection.completed.v1" | "collection.deletion.requested.v1" | "collection.purged.v1" | "shard.planned.v1" | "shard.dispatched.v1" | "attempt.started.v1" | "attempt.output.received.v1" | "attempt.validation.failed.v1" | "attempt.accepted.v1" | "attempt.rejected.v1" | "attempt.hedged.v1" | "worker.semantic.degraded.v1" | "worker.draining.v1" | "worker.quarantined.v1" | "recovery.region.requested.v1" | "recovery.completed.v1" | "continuity.merge.started.v1" | "continuity.merge.completed.v1" | "document.finalized.v1";
+  export type Root = { readonly event_id: string; readonly collection_id: string; readonly job_id: string | null; readonly sequence: number; readonly event_type: CollectionEventType; readonly timestamp: string; readonly payload: {  } & Readonly<Record<string, GeneratedJsonValue>>; readonly schema_version: "1.0"; };
+}
+export type CollectionEventGenerated = CollectionEventContract.Root;
 
 export namespace DocumentClassificationContract {
   export type DocumentContains = { readonly tables?: boolean; readonly formulas?: boolean; readonly figures?: boolean; readonly citations?: boolean; readonly personalData?: boolean; };
@@ -74,7 +339,7 @@ export namespace KnowledgeNoteContract {
 export type KnowledgeNoteGenerated = KnowledgeNoteContract.Root;
 
 export namespace ProcessingEventContract {
-  export type EventType = "job.created.v1" | "job.stage.started.v1" | "job.stage.progress.v1" | "job.stage.completed.v1" | "page.preflight.completed.v1" | "page.route.selected.v1" | "page.processing.started.v1" | "page.layout.detected.v1" | "page.block.completed.v1" | "page.markdown.updated.v1" | "page.quality.updated.v1" | "page.retry.scheduled.v1" | "page.completed.v1" | "page.needs_review.v1" | "page.failed.v1" | "document.knowledge.note_created.v1" | "document.knowledge.link_created.v1" | "document.validation.completed.v1" | "export.started.v1" | "export.completed.v1" | "job.completed.v1" | "job.failed.v1" | "job.cancelled.v1" | "credit.reserved.v1" | "credit.consumed.v1" | "credit.released.v1";
+  export type EventType = "job.created.v1" | "job.stage.started.v1" | "job.stage.progress.v1" | "job.stage.completed.v1" | "page.preflight.completed.v1" | "page.route.selected.v1" | "page.processing.started.v1" | "page.layout.detected.v1" | "page.block.completed.v1" | "page.markdown.updated.v1" | "page.quality.updated.v1" | "page.retry.scheduled.v1" | "page.completed.v1" | "page.unresolved.v1" | "page.quarantined.v1" | "page.needs_review.v1" | "page.failed.v1" | "document.knowledge.note_created.v1" | "document.knowledge.link_created.v1" | "document.validation.completed.v1" | "export.started.v1" | "export.completed.v1" | "job.completed.v1" | "job.failed.v1" | "job.cancelled.v1" | "credit.reserved.v1" | "credit.consumed.v1" | "credit.released.v1";
   export type Root = { readonly schema_version?: "1.0"; readonly event_id: string; readonly event_type: EventType; readonly sequence: number; readonly occurred_at: string; readonly project_id: string; readonly job_id: string; readonly tenant_id?: string | null; readonly document_id?: string | null; readonly document_version_id?: string | null; readonly page_id?: string | null; readonly payload?: {  } & Readonly<Record<string, GeneratedJsonValue>>; };
 }
 export type ProcessingEventGenerated = ProcessingEventContract.Root;

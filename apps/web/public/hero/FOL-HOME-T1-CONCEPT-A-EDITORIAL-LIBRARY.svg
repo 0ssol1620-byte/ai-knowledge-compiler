@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-labelledby="title desc">
+  <title id="title">Editorial Library</title>
+  <desc id="desc">Twelve distinct source folios arranged like a restrained editorial archive, with three evidence lines moving toward a verified index.</desc>
+  <rect width="1200" height="750" fill="#F5F3EE"/>
+  <g stroke="#DEDFDC"><path d="M80 112H1120M80 638H1120"/><path d="M80 112V638M1120 112V638"/></g>
+  <text x="80" y="78" fill="#2444B8" font-family="Segoe UI, sans-serif" font-size="14" letter-spacing="2">A · EDITORIAL LIBRARY</text>
+  <text x="1120" y="78" fill="#69707C" font-family="Segoe UI, sans-serif" font-size="12" text-anchor="end">12 SOURCE FOLIOS</text>
+  <g font-family="Segoe UI, sans-serif">
+    <g transform="translate(120 152)"><rect width="170" height="190" fill="#101216"/><rect x="20" y="24" width="44" height="5" fill="#2AA8BD"/><path d="M20 65H138M20 83H124M20 101H145" stroke="#FCFCFA" stroke-width="5"/><text x="20" y="164" fill="#FCFCFA" font-size="12">ANNUAL REPORT</text></g>
+    <g transform="translate(310 152)"><rect width="170" height="190" fill="#FCFCFA" stroke="#DEDFDC"/><circle cx="28" cy="31" r="8" fill="#315BE8"/><path d="M20 65H138M20 83H124M20 101H145" stroke="#34383F" stroke-width="5"/><text x="20" y="164" fill="#34383F" font-size="12">RESEARCH PAPER</text></g>
+    <g transform="translate(500 152)"><rect width="170" height="190" fill="#34383F"/><path d="M20 44H72" stroke="#2AA8BD" stroke-width="5"/><path d="M20 72H138M20 90H124M20 108H145" stroke="#FCFCFA" stroke-width="5"/><text x="20" y="164" fill="#FCFCFA" font-size="12">TECHNICAL MANUAL</text></g>
+    <g transform="translate(690 152)"><rect width="170" height="190" fill="#FCFCFA" stroke="#DEDFDC"/><path d="M20 44H102" stroke="#B36B13" stroke-width="5"/><path d="M20 72H138M20 90H124M20 108H145" stroke="#34383F" stroke-width="5"/><text x="20" y="164" fill="#34383F" font-size="12">CONTRACT</text></g>
+    <g transform="translate(880 152)"><rect width="170" height="190" fill="#315BE8"/><path d="M20 44H90M20 72H138M20 90H124M20 108H145" stroke="#FCFCFA" stroke-width="5"/><text x="20" y="164" fill="#FCFCFA" font-size="12">PUBLIC FILING</text></g>
+    <g transform="translate(120 368)"><rect width="170" height="125" fill="#FCFCFA" stroke="#DEDFDC"/><text x="18" y="28" fill="#69707C" font-size="11">TABLE</text><path d="M18 48H152M18 72H152M66 48V96M112 48V96" stroke="#34383F"/><text x="18" y="112" fill="#34383F" font-size="11">SPREADSHEET</text></g>
+    <g transform="translate(310 368)"><rect width="170" height="125" fill="#101216"/><text x="18" y="28" fill="#2AA8BD" font-size="11">FORMULA</text><text x="18" y="75" fill="#FCFCFA" font-size="23">Σ xᵢ / n</text><text x="18" y="112" fill="#FCFCFA" font-size="11">DATASET</text></g>
+    <g transform="translate(500 368)"><rect width="170" height="125" fill="#FCFCFA" stroke="#DEDFDC"/><text x="18" y="28" fill="#69707C" font-size="11">FIGURE</text><path d="M20 92L58 60 91 78 145 40" fill="none" stroke="#315BE8" stroke-width="4"/><text x="18" y="112" fill="#34383F" font-size="11">PRESENTATION</text></g>
+    <g transform="translate(690 368)"><rect width="170" height="125" fill="#FCFCFA" stroke="#DEDFDC"/><text x="18" y="28" fill="#69707C" font-size="11">SCAN</text><path d="M20 50H146M20 67H130M20 84H140" stroke="#34383F" stroke-width="4"/><text x="18" y="112" fill="#34383F" font-size="11">ARCHIVE</text></g>
+    <g transform="translate(880 368)"><rect width="170" height="125" fill="#FCFCFA" stroke="#DEDFDC"/><text x="18" y="28" fill="#69707C" font-size="11">NOTES</text><path d="M20 50H146M20 67H130M20 84H140" stroke="#34383F" stroke-width="4"/><text x="18" y="112" fill="#34383F" font-size="11">KNOWLEDGE</text></g>
+  </g>
+  <g fill="none" stroke="#2AA8BD" stroke-width="3"><path d="M205 520C300 590 468 574 560 540"/><path d="M395 520C465 552 514 558 560 540"/><path d="M965 520C830 590 665 570 640 540"/></g>
+  <rect x="560" y="512" width="80" height="56" fill="#FCFCFA" stroke="#138067" stroke-width="2"/>
+  <path d="M581 540l13 13 27-30" fill="none" stroke="#138067" stroke-width="5"/>
+  <text x="600" y="610" fill="#34383F" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="middle" letter-spacing="1.5">SOURCE → INDEX → VERIFIED KNOWLEDGE</text>
+</svg>

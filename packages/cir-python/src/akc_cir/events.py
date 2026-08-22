@@ -35,6 +35,10 @@ class PageState(StrEnum):
     NORMALIZING = "NORMALIZING"
     VALIDATING = "VALIDATING"
     COMPLETED = "COMPLETED"
+    UNRESOLVED = "UNRESOLVED"
+    QUARANTINED = "QUARANTINED"
+    # Legacy terminal state retained for reading pre-v4 rows only. New routing
+    # must end in UNRESOLVED or QUARANTINED instead of requiring a person.
     NEEDS_REVIEW = "NEEDS_REVIEW"
     RETRY_SCHEDULED = "RETRY_SCHEDULED"
     FAILED = "FAILED"
@@ -59,6 +63,8 @@ ALLOWED_PAGE_TRANSITIONS: dict[PageState, frozenset[PageState]] = {
     PageState.VALIDATING: frozenset(
         {
             PageState.COMPLETED,
+            PageState.UNRESOLVED,
+            PageState.QUARANTINED,
             PageState.NEEDS_REVIEW,
             PageState.RETRY_SCHEDULED,
             PageState.FAILED,
@@ -68,6 +74,8 @@ ALLOWED_PAGE_TRANSITIONS: dict[PageState, frozenset[PageState]] = {
         {PageState.OCR_QUEUED, PageState.OCR_RUNNING, PageState.FAILED}
     ),
     PageState.COMPLETED: frozenset(),
+    PageState.UNRESOLVED: frozenset(),
+    PageState.QUARANTINED: frozenset(),
     PageState.NEEDS_REVIEW: frozenset(),
     PageState.FAILED: frozenset(),
 }
@@ -91,6 +99,8 @@ class EventType(StrEnum):
     PAGE_QUALITY_UPDATED = "page.quality.updated.v1"
     PAGE_RETRY_SCHEDULED = "page.retry.scheduled.v1"
     PAGE_COMPLETED = "page.completed.v1"
+    PAGE_UNRESOLVED = "page.unresolved.v1"
+    PAGE_QUARANTINED = "page.quarantined.v1"
     PAGE_NEEDS_REVIEW = "page.needs_review.v1"
     PAGE_FAILED = "page.failed.v1"
     DOCUMENT_KNOWLEDGE_NOTE_CREATED = "document.knowledge.note_created.v1"

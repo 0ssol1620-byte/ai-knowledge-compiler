@@ -1,0 +1,7 @@
+blueprint: corporate-filings
+kind: directory-layout
+version: 1.0.0
+roots: [Sources, Companies, Filings, Risks, Metrics, MOCs, Evidence, Packages]
+maximum_depth: 3
+naming_policy: stable-title
+preserve_existing_folders: true

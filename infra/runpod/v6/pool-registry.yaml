@@ -1,0 +1,227 @@
+schema_version: "6.0.0"
+mode: contract_only_no_endpoint_created
+defaults:
+  queue_based: true
+  provider_retry_count: 0
+  min_workers: 0
+  flashboot: true
+  auto_scale_down: true
+  delete_temporary_endpoint_after_evidence: true
+  allow_inline_input: false
+  callback_auth_required: true
+  ground_truth_mount: forbidden
+  customer_data_on_model_cache_volume: forbidden
+  idempotency_required: true
+  orphan_audit_required: true
+  cost_is_mandatory_test_blocker: false
+  runaway_hard_stop_multiplier: 3
+  secret_values_in_registry: forbidden
+
+pools:
+  - id: parser-mineru-3-4-4
+    model_family: mineru
+    candidate_ids: [mineru-3.4.4-pipeline, mineru-3.4.4-hybrid-medium, mineru-3.4.4-hybrid-high, mineru-3.4.4-vlm]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000, A100_80GB]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: mineru-3-4-4
+
+  - id: parser-paddleocr-vl-1-6
+    model_family: paddleocr-vl
+    candidate_ids: [paddleocr-vl-1.6]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: paddleocr-vl-1-6
+
+  - id: parser-deepseek-ocr-2
+    model_family: deepseek-ocr
+    candidate_ids: [deepseek-ocr-2]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB]
+    min_workers: 0
+    max_workers: 6
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: deepseek-ocr-2
+
+  - id: parser-infinity-parser2
+    model_family: infinity-parser2
+    candidate_ids: [infinity-parser2-pro, infinity-parser2-flash]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB, H100_80GB]
+    min_workers: 0
+    max_workers: 6
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: infinity-parser2
+
+  - id: parser-ovisocr2
+    model_family: ovisocr2
+    candidate_ids: [ovisocr2]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: ovisocr2
+
+  - id: parser-hunyuanocr-1-5
+    model_family: hunyuanocr
+    candidate_ids: [hunyuanocr-1.5]
+    enabled: false
+    identity_state: pending_exact_image_digest_and_license
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 6
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: hunyuanocr-1-5
+
+  - id: parser-monkeyocrv2
+    model_family: monkeyocrv2
+    candidate_ids: [monkeyocrv2-b-parsing]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 6
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: monkeyocrv2-b-parsing
+
+  - id: parser-glm-ocr
+    model_family: glm-ocr
+    candidate_ids: [glm-ocr]
+    enabled: false
+    identity_state: pending_exact_image_digest_and_framework_commits
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 6
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: glm-ocr
+
+  - id: parser-qianfan-ocr
+    model_family: qianfan-ocr
+    candidate_ids: [qianfan-ocr]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB]
+    min_workers: 0
+    max_workers: 4
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: qianfan-ocr
+
+  - id: parser-chandra-ocr-2
+    model_family: chandra-ocr
+    candidate_ids: [chandra-ocr-2]
+    enabled: false
+    identity_state: pending_exact_image_digest_and_license
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB, H100_80GB]
+    min_workers: 0
+    max_workers: 4
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: chandra-ocr-2
+
+  - id: parser-olmocr2
+    model_family: olmocr2
+    candidate_ids: [olmocr-2-7b-1025-fp8]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB, H100_80GB]
+    min_workers: 0
+    max_workers: 4
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: olmocr-2-7b-1025-fp8
+
+  - id: parser-lightonocr2
+    model_family: lightonocr2
+    candidate_ids: [lightonocr-2-1b]
+    enabled: false
+    identity_state: pending_official_checkpoint_license_and_image
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 4
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: lightonocr-2-1b
+
+  - id: parser-dots-ocr-1-5
+    model_family: dots-ocr
+    candidate_ids: [dots-ocr-1.5]
+    enabled: false
+    identity_state: pending_official_checkpoint_license_and_image
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 4
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: dots-ocr-1-5
+
+  - id: knowledge-qwen3-5
+    model_family: qwen3-5
+    candidate_ids: [qwen3.5-9b]
+    enabled: false
+    identity_state: pending_official_checkpoint_and_image
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 5
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: qwen3-5-9b
+
+  - id: knowledge-qwen3-6
+    model_family: qwen3-6
+    candidate_ids: [qwen3.6-27b]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A100_80GB, H100_80GB]
+    min_workers: 0
+    max_workers: 3
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: qwen3-6-27b
+
+  - id: knowledge-gemma4
+    model_family: gemma4
+    candidate_ids: [gemma-4-12b-it]
+    enabled: false
+    identity_state: pending_exact_image_digest_and_license_receipt
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB]
+    min_workers: 0
+    max_workers: 4
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: gemma-4-12b-it

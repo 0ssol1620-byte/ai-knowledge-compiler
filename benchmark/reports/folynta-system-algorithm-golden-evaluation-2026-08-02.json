@@ -1,0 +1,437 @@
+{
+  "claim_boundary": "PASS proves deterministic golden-contract behavior only; it does not prove real-distribution or private-holdout accuracy.",
+  "corpus_type": "frozen_golden_contract_fixtures",
+  "gate": "PASS",
+  "generated_at": "2026-08-03T10:18:38.925744+00:00",
+  "metrics": {
+    "credit_accounting": {
+      "available_credits": "0.000000",
+      "conservation_invariant": true,
+      "consumed_credits": "5.000000",
+      "duplicate_attempts": 32,
+      "duplicate_charge_credits": "0.000000",
+      "logical_work_items": 3,
+      "rejected_charge_credits": "0.000000",
+      "released_credits": "5.000000"
+    },
+    "failure_diagnosis": {
+      "accuracy": 1.0,
+      "correct": 24,
+      "fixtures": 24,
+      "outcomes": [
+        {
+          "actual": "healthy",
+          "expected": "healthy",
+          "fixture": "healthy"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "unknown_fail_closed"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "container_crash"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "oom"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "health_503"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "connection_timeout"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "cuda_error"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "model_checksum_mismatch"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "model_identity_mismatch"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "disk_cache_error"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "malformed_protocol"
+        },
+        {
+          "actual": "infrastructure_failed",
+          "expected": "infrastructure_failed",
+          "fixture": "dependency_import_failure"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "numeric_mutation"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "row_omission"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "repetition"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "blank_page"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "table_column_shift"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "caption_omission"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "reading_order_error"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "source_coverage_incomplete"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "hallucinated_row"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "false_verified"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "false_bbox"
+        },
+        {
+          "actual": "semantic_failed",
+          "expected": "semantic_failed",
+          "fixture": "truncated_output"
+        }
+      ]
+    },
+    "page_classification": {
+      "accuracy": 1.0,
+      "correct": 12,
+      "fixtures": 12,
+      "outcomes": [
+        {
+          "actual": "HANDWRITTEN",
+          "expected": "HANDWRITTEN",
+          "fixture": "handwritten"
+        },
+        {
+          "actual": "ROTATED_OR_WARPED",
+          "expected": "ROTATED_OR_WARPED",
+          "fixture": "rotated"
+        },
+        {
+          "actual": "TABLE_HEAVY",
+          "expected": "TABLE_HEAVY",
+          "fixture": "table"
+        },
+        {
+          "actual": "FORMULA_HEAVY",
+          "expected": "FORMULA_HEAVY",
+          "fixture": "formula"
+        },
+        {
+          "actual": "CHART_HEAVY",
+          "expected": "CHART_HEAVY",
+          "fixture": "chart"
+        },
+        {
+          "actual": "PHOTO_DOCUMENT",
+          "expected": "PHOTO_DOCUMENT",
+          "fixture": "photo"
+        },
+        {
+          "actual": "NATIVE_CLEAN",
+          "expected": "NATIVE_CLEAN",
+          "fixture": "native_clean"
+        },
+        {
+          "actual": "NATIVE_COMPLEX",
+          "expected": "NATIVE_COMPLEX",
+          "fixture": "native_complex"
+        },
+        {
+          "actual": "MIXED",
+          "expected": "MIXED",
+          "fixture": "mixed"
+        },
+        {
+          "actual": "SCAN_TEXT",
+          "expected": "SCAN_TEXT",
+          "fixture": "scan_text"
+        },
+        {
+          "actual": "SCAN_COMPLEX",
+          "expected": "SCAN_COMPLEX",
+          "fixture": "scan_complex"
+        },
+        {
+          "actual": "UNKNOWN",
+          "expected": "UNKNOWN",
+          "fixture": "unknown"
+        }
+      ]
+    },
+    "quality_anomaly_detection": {
+      "f1": 1.0,
+      "false_negative": 0,
+      "false_positive": 0,
+      "fixtures": 6,
+      "outcomes": [
+        {
+          "actual": [],
+          "expected": [],
+          "fixture": "healthy"
+        },
+        {
+          "actual": [
+            "text.empty"
+          ],
+          "expected": [
+            "text.empty"
+          ],
+          "fixture": "empty"
+        },
+        {
+          "actual": [
+            "text.replacement_characters"
+          ],
+          "expected": [
+            "text.replacement_characters"
+          ],
+          "fixture": "replacement"
+        },
+        {
+          "actual": [
+            "text.control_characters"
+          ],
+          "expected": [
+            "text.control_characters"
+          ],
+          "fixture": "control"
+        },
+        {
+          "actual": [
+            "text.repetition"
+          ],
+          "expected": [
+            "text.repetition"
+          ],
+          "fixture": "repetition"
+        },
+        {
+          "actual": [
+            "text.length_anomaly"
+          ],
+          "expected": [
+            "text.length_anomaly"
+          ],
+          "fixture": "length"
+        }
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "true_positive": 5
+    },
+    "recovery_selection": {
+      "correct": 18,
+      "fixtures": 18,
+      "minimum_scope_selected": "cell",
+      "outcomes": [
+        {
+          "actual": "page_rerender_alternate_parser",
+          "expected": "page_rerender_alternate_parser",
+          "fixture": "P01"
+        },
+        {
+          "actual": "region_crop",
+          "expected": "region_crop",
+          "fixture": "B01"
+        },
+        {
+          "actual": "overlapping_tile",
+          "expected": "overlapping_tile",
+          "fixture": "T01"
+        },
+        {
+          "actual": "row_band_tile",
+          "expected": "row_band_tile",
+          "fixture": "T02"
+        },
+        {
+          "actual": "candidate_reject",
+          "expected": "candidate_reject",
+          "fixture": "T03"
+        },
+        {
+          "actual": "target_selection",
+          "expected": "target_selection",
+          "fixture": "T04"
+        },
+        {
+          "actual": "cell_geometry_specialist",
+          "expected": "cell_geometry_specialist",
+          "fixture": "T05"
+        },
+        {
+          "actual": "native_authority_reconstruction",
+          "expected": "native_authority_reconstruction",
+          "fixture": "N01"
+        },
+        {
+          "actual": "canonical_numeric_recovery",
+          "expected": "canonical_numeric_recovery",
+          "fixture": "N02"
+        },
+        {
+          "actual": "layout_specialist",
+          "expected": "layout_specialist",
+          "fixture": "R01"
+        },
+        {
+          "actual": "page_pair_stitch",
+          "expected": "page_pair_stitch",
+          "fixture": "C01"
+        },
+        {
+          "actual": "formula_specialist",
+          "expected": "formula_specialist",
+          "fixture": "F01"
+        },
+        {
+          "actual": "source_remap",
+          "expected": "source_remap",
+          "fixture": "G01"
+        },
+        {
+          "actual": "candidate_reject",
+          "expected": "candidate_reject",
+          "fixture": "H01"
+        },
+        {
+          "actual": "candidate_reject",
+          "expected": "candidate_reject",
+          "fixture": "H02"
+        },
+        {
+          "actual": "note_recompile",
+          "expected": "note_recompile",
+          "fixture": "K01"
+        },
+        {
+          "actual": "entity_split",
+          "expected": "entity_split",
+          "fixture": "K02"
+        },
+        {
+          "actual": "relation_remove",
+          "expected": "relation_remove",
+          "fixture": "K03"
+        }
+      ],
+      "selection_accuracy": 1.0
+    },
+    "routing_and_escalation": {
+      "correct": 10,
+      "decision_accuracy": 1.0,
+      "fixtures": 10,
+      "outcomes": [
+        {
+          "actual": "native",
+          "expected": "native",
+          "fixture": "native"
+        },
+        {
+          "actual": "paddle_vl",
+          "expected": "paddle_vl",
+          "fixture": "scan"
+        },
+        {
+          "actual": "hpd_fast",
+          "expected": "hpd_fast",
+          "fixture": "speed_hpd"
+        },
+        {
+          "actual": "unresolved",
+          "expected": "unresolved",
+          "fixture": "unready"
+        },
+        {
+          "actual": "unresolved",
+          "expected": "unresolved",
+          "fixture": "numeric_unresolved"
+        },
+        {
+          "actual": "verify_authority",
+          "expected": "verify_authority",
+          "fixture": "numeric_authority"
+        },
+        {
+          "actual": "retry",
+          "expected": "retry",
+          "fixture": "retry"
+        },
+        {
+          "actual": "escalate",
+          "expected": "escalate",
+          "fixture": "external_consent"
+        },
+        {
+          "actual": "quarantine",
+          "expected": "quarantine",
+          "fixture": "security"
+        },
+        {
+          "actual": "accept",
+          "expected": "accept",
+          "fixture": "accept"
+        }
+      ]
+    }
+  },
+  "schema": "folynta.system-algorithm-golden-evaluation.v1",
+  "source_hashes": {
+    "packages/parallel-runtime/src/akc_parallel_runtime/credits.py": "b2b7e1ff0e71410c2b5c1114f5408c6cafb9af6b3c641ae3babf3eda5e75d1ba",
+    "packages/parallel-runtime/src/akc_parallel_runtime/failures.py": "c591f7b82b2e264c07fbd7235e53954dde0c32b3c77b618c2358bd15a61a886c",
+    "packages/parallel-runtime/src/akc_parallel_runtime/recovery.py": "3d842215ebfeaeb4d4c6cf379cd37d7565d8f1bcb841d88fd55c030c2b705bde",
+    "packages/quality/src/akc_quality/anomalies.py": "e54c7e096f2c093f0b3e7e4e4b0fa88fb8770d787c971e52ad2268ec2160bae6",
+    "packages/router/src/akc_router/engine.py": "0808e1294f91aa74ca83fbda1d0478460f2c1549a50c2c88726ce0b5f80036d9",
+    "packages/router/src/akc_router/preflight.py": "d2848dee6bad0f604eedb68c0643ffdc1fbd5a060d48e2c86b5c2fcbdeb29ca3"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.example/schemas/v6/signed-evidence.schema.json",
+  "title": "Structara v6 signed evidence envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "algorithm", "key_id", "signed_at", "payload_sha256", "payload", "signature"],
+  "properties": {
+    "schema_version": { "const": "6.0.0" },
+    "algorithm": { "const": "Ed25519" },
+    "key_id": { "type": "string", "minLength": 1 },
+    "signed_at": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "payload_sha256": { "$ref": "#/$defs/sha256" },
+    "signature": { "type": "string", "contentEncoding": "base64", "minLength": 88, "maxLength": 88 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "evidence_mode",
+        "production_evidence",
+        "candidate_id",
+        "incumbent_candidate_id",
+        "requested_target",
+        "release_commit",
+        "source_tree_sha256",
+        "candidate_registry_sha256",
+        "public_core_registry_sha256",
+        "required_benchmark_ids",
+        "gate_results",
+        "critical_failure_count",
+        "run_records",
+        "failure_bundles",
+        "endpoint_cleanup",
+        "actual_cost_report",
+        "champion_matrix_sha256",
+        "mandatory_test_omissions"
+      ],
+      "properties": {
+        "schema_version": { "const": "6.0.0" },
+        "evidence_mode": { "enum": ["external_actual", "local_contract_only"] },
+        "production_evidence": { "type": "boolean" },
+        "candidate_id": { "type": "string", "minLength": 1 },
+        "incumbent_candidate_id": { "type": "string", "minLength": 1 },
+        "requested_target": { "enum": ["shadow", "canary", "production"] },
+        "release_commit": { "$ref": "#/$defs/commit" },
+        "source_tree_sha256": { "$ref": "#/$defs/sha256" },
+        "candidate_registry_sha256": { "$ref": "#/$defs/sha256" },
+        "public_core_registry_sha256": { "$ref": "#/$defs/sha256" },
+        "required_benchmark_ids": {
+          "const": ["olmocr-bench", "omnidocbench", "parsebench"]
+        },
+        "gate_results": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "MP0", "MP1", "MP2", "MP3", "MP4", "MP5", "MP6"],
+          "properties": {
+            "G0": { "$ref": "#/$defs/gateStatus" },
+            "G1": { "$ref": "#/$defs/gateStatus" },
+            "G2": { "$ref": "#/$defs/gateStatus" },
+            "G3": { "$ref": "#/$defs/gateStatus" },
+            "G4": { "$ref": "#/$defs/gateStatus" },
+            "G5": { "$ref": "#/$defs/gateStatus" },
+            "G6": { "$ref": "#/$defs/gateStatus" },
+            "G7": { "$ref": "#/$defs/gateStatus" },
+            "G8": { "$ref": "#/$defs/gateStatus" },
+            "MP0": { "$ref": "#/$defs/gateStatus" },
+            "MP1": { "$ref": "#/$defs/gateStatus" },
+            "MP2": { "$ref": "#/$defs/gateStatus" },
+            "MP3": { "$ref": "#/$defs/gateStatus" },
+            "MP4": { "$ref": "#/$defs/gateStatus" },
+            "MP5": { "$ref": "#/$defs/gateStatus" },
+            "MP6": { "$ref": "#/$defs/gateStatus" }
+          }
+        },
+        "critical_failure_count": { "type": "integer", "minimum": 0 },
+        "run_records": { "type": "array", "minItems": 18, "items": { "type": "object" } },
+        "failure_bundles": { "type": "array", "items": { "type": "object" } },
+        "endpoint_cleanup": { "type": "array", "items": { "type": "object" } },
+        "actual_cost_report": { "type": "object" },
+        "champion_matrix_sha256": { "$ref": "#/$defs/sha256" },
+        "mandatory_test_omissions": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
+    "gateStatus": { "enum": ["pass", "fail", "blocked", "not_run"] }
+  }
+}

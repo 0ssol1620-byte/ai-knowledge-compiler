@@ -8,13 +8,37 @@ import {
 export type PublicBenchmarkStatus =
   "available" | "source_adapter_ready" | "evidence_required";
 
+/*
+ * Two generations of this snapshot exist and they are not a version apart.
+ *
+ * 1.0 was written before anything had been measured: every dataset carried
+ * text / numbers / tables / provenance / p95_latency_ms, all null. 1.1 is what
+ * the OmniDocBench run actually emits, and its fields are the metrics that run
+ * computes -- edit-distance companions, TEDS, mean latency.
+ *
+ * The two are not renames of each other. p95 latency and mean latency are
+ * different statistics, and nothing measured a provenance score, so mapping one
+ * set onto the other would be inventing numbers. The measured fields are
+ * required; the 1.0 fields stay optional and nullable, which is exactly what
+ * they always were, so a component still reading them renders "Not measured"
+ * rather than a figure nobody produced.
+ */
 export interface PublicBenchmarkMetrics {
-  text: number | null;
-  numbers: number | null;
-  tables: number | null;
-  provenance: number | null;
-  p95_latency_ms: number | null;
+  text_edit_companion: number | null;
+  formula_edit_companion: number | null;
+  table_teds: number | null;
+  table_structure_teds: number | null;
+  table_edit_companion: number | null;
+  reading_order_companion: number | null;
+  mean_latency_ms: number | null;
   cost_per_page_usd: number | null;
+  exact_repeat_ratio: number | null;
+  /** 1.0 only, and never populated. */
+  text?: number | null;
+  numbers?: number | null;
+  tables?: number | null;
+  provenance?: number | null;
+  p95_latency_ms?: number | null;
 }
 
 export interface PublicBenchmarkDataset {
@@ -28,13 +52,15 @@ export interface PublicBenchmarkDataset {
   evidence?: {
     case_count: number;
     hard_failure_count: number;
-    score_records_sha256: string;
-    corpus_manifest_sha256: string;
+    repeat_count: number;
+    evidence_summary_sha256: string;
+    inference_run_summary_sha256: string;
+    ground_truth_sha256: string;
   };
 }
 
 export interface PublicBenchmarkSnapshot {
-  schema_version: "1.0";
+  schema_version: "1.1";
   status: "available" | "unavailable";
   generated_at: string | null;
   evaluator_version: string;
@@ -47,29 +73,29 @@ export interface PublicBenchmarkSnapshot {
 
 export const publicBenchmarkSnapshot = snapshot as PublicBenchmarkSnapshot;
 
-export function formatBenchmarkPercent(value: number | null): string {
-  if (value === null) return "Not measured";
+export function formatBenchmarkPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "Not measured";
   return new Intl.NumberFormat("en-US", {
     style: "percent",
     maximumFractionDigits: 1,
   }).format(value);
 }
 
-export function formatBenchmarkLatency(value: number | null): string {
-  if (value === null) return "Not measured";
+export function formatBenchmarkLatency(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "Not measured";
+  if (value >= 1_000) return `${(value / 1_000).toFixed(3)} s`;
   return `${new Intl.NumberFormat("en-US").format(Math.round(value))} ms`;
 }
 
-export function formatBenchmarkCost(value: number | null): string {
-  if (value === null) return "Not measured";
+export function formatBenchmarkCost(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "Not measured";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 4,
+    minimumFractionDigits: value < 0.01 ? 6 : 4,
+    maximumFractionDigits: value < 0.01 ? 6 : 4,
   }).format(value);
 }
-
 
 /**
  * The homepage metric table, from the public claims pack.

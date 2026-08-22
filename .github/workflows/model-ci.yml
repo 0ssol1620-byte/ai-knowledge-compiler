@@ -72,6 +72,11 @@ jobs:
         run: ../../.venv/bin/python -m unittest -v test_runtime.py
       - name: Production adapter contract tests
         run: .venv/bin/python -m pytest -q tests/test_gpu_production_adapters.py
+      - name: RunPod baked-runtime qualification contracts
+        run: |
+          .venv/bin/python -m pytest -q \
+            benchmark/tests/v6/test_runpod_pod_client.py \
+            benchmark/tests/v6/test_ovis_runtime_image.py
 
   local-images:
     runs-on: ubuntu-24.04

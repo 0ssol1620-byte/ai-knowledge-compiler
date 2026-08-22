@@ -19,6 +19,7 @@ import type {
   ReviewResolution,
   ReviewScopePreview,
 } from "@/lib/types";
+import { publicCandidateLabel } from "@/lib/public-processing-labels";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 const severityOrder: Record<ReviewItem["severity"], number> = {
@@ -87,7 +88,7 @@ export function ReviewDrawer({
         setError(
           reason instanceof Error
             ? reason.message
-            : "The review decision could not be saved.",
+            : "The integrity decision could not be saved.",
         );
       })
       .finally(() => setPendingId(undefined));
@@ -157,7 +158,7 @@ export function ReviewDrawer({
             <Warning size={17} weight="fill" aria-hidden="true" />
           </span>
           <div>
-            <strong id={titleId}>Review queue</strong>
+            <strong id={titleId}>Integrity findings</strong>
             <span>{openCount} items need a decision</span>
           </div>
         </div>
@@ -166,7 +167,7 @@ export function ReviewDrawer({
           className="icon-button compact"
           type="button"
           onClick={onClose}
-          aria-label="Close review queue"
+          aria-label="Close integrity findings"
         >
           <X size={17} aria-hidden="true" />
         </button>
@@ -192,24 +193,29 @@ export function ReviewDrawer({
               <p>{item.message}</p>
               {item.candidates && item.candidates.length > 0 && (
                 <div className="candidate-compare" aria-label="A/B candidates">
-                  {item.candidates.map((candidate) => (
-                    <button
-                      type="button"
-                      key={candidate.engine}
-                      disabled={isResolved || isPending || !onResolve}
-                      onClick={() =>
-                        resolve(item, {
-                          action: "replace",
-                          value: candidate.value,
-                          note: `Selected candidate ${candidate.engine}`,
-                        })
-                      }
-                    >
-                      <span>{candidate.engine}</span>
-                      <strong>{candidate.value}</strong>
-                      <small>Use this value</small>
-                    </button>
-                  ))}
+                  {item.candidates.map((candidate) => {
+                    const candidateLabel = publicCandidateLabel(
+                      candidate.engine,
+                    );
+                    return (
+                      <button
+                        type="button"
+                        key={candidate.engine}
+                        disabled={isResolved || isPending || !onResolve}
+                        onClick={() =>
+                          resolve(item, {
+                            action: "replace",
+                            value: candidate.value,
+                            note: `Selected ${candidateLabel}`,
+                          })
+                        }
+                      >
+                        <span>{candidateLabel}</span>
+                        <strong>{candidate.value}</strong>
+                        <small>Use this value</small>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
               {item.block_id && onResolve && (
@@ -240,7 +246,7 @@ export function ReviewDrawer({
                       resolve(item, {
                         action: "replace",
                         value: directEdit,
-                        note: "Direct edit from review queue",
+                        note: "Direct edit from legacy integrity findings",
                       })
                     }
                   >
@@ -349,7 +355,7 @@ export function ReviewDrawer({
                   onClick={() =>
                     resolve(item, {
                       action: "adopt_source",
-                      note: "Adopted immutable source text from review queue",
+                      note: "Adopted immutable source text from legacy integrity findings",
                     })
                   }
                 >
@@ -363,7 +369,7 @@ export function ReviewDrawer({
                   onClick={() =>
                     resolve(item, {
                       action: "reject",
-                      note: "Ignored from review queue",
+                      note: "Ignored from legacy integrity findings",
                     })
                   }
                 >
@@ -377,7 +383,7 @@ export function ReviewDrawer({
                   onClick={() =>
                     resolve(item, {
                       action: "accept",
-                      note: "Approved from review queue",
+                      note: "Approved from legacy integrity findings",
                     })
                   }
                 >

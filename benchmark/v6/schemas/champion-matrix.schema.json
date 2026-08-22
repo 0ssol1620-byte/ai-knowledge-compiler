@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://structara.example/schemas/v6/champion-matrix.schema.json",
+  "title": "Structara v6 page-class champion matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "champions", "matrix_sha256"],
+  "properties": {
+    "schema_version": { "const": "6.0.0" },
+    "matrix_sha256": { "$ref": "#/$defs/sha256" },
+    "champions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "native_pdf",
+        "normal_scan",
+        "korean_financial_table",
+        "english_filing",
+        "photographed_document",
+        "formula_heavy",
+        "cross_page_table",
+        "handwriting_form"
+      ],
+      "properties": {
+        "native_pdf": { "$ref": "#/$defs/selection" },
+        "normal_scan": { "$ref": "#/$defs/selection" },
+        "korean_financial_table": { "$ref": "#/$defs/selection" },
+        "english_filing": { "$ref": "#/$defs/selection" },
+        "photographed_document": { "$ref": "#/$defs/selection" },
+        "formula_heavy": { "$ref": "#/$defs/selection" },
+        "cross_page_table": { "$ref": "#/$defs/selection" },
+        "handwriting_form": { "$ref": "#/$defs/selection" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nullableString": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "fallback", "recovery", "authority", "selection_basis", "evidence_sha256", "status"],
+      "properties": {
+        "primary": { "$ref": "#/$defs/nullableString" },
+        "fallback": { "$ref": "#/$defs/nullableString" },
+        "recovery": { "$ref": "#/$defs/nullableString" },
+        "authority": { "$ref": "#/$defs/nullableString" },
+        "selection_basis": { "oneOf": [{ "enum": ["authoritative_source", "deterministic_validation", "measured_benchmark"] }, { "type": "null" }] },
+        "evidence_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "status": { "enum": ["production", "unresolved"] }
+      }
+    }
+  }
+}

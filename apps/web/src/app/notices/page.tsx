@@ -24,35 +24,35 @@ export default function NoticesPage() {
           <ShieldCheck size={20} weight="fill" />
           <h2>Security and privacy</h2>
           <p>
-            Review external-transfer consent, retention and deletion, incident
+            Inspect external-transfer consent, retention and deletion, incident
             response, and subprocessor policies.
           </p>
-          <a href="#privacy">
+          <Link href="/legal/privacy">
             Privacy and data handling
             <ArrowSquareOut size={14} />
-          </a>
+          </Link>
         </article>
         <article className="panel notice-card" id="opensource">
           <Scales size={20} weight="fill" />
           <h2>Open Source Notices</h2>
           <p>
-            Review model weights, code, runtime, and dataset licenses
+            Inspect model weights, code, runtime, and dataset licenses
             separately.
           </p>
-          <a href="#opensource">
+          <Link href="/legal/third-party-notices">
             Dependency notices
             <ArrowSquareOut size={14} />
-          </a>
+          </Link>
         </article>
         <article className="panel notice-card">
           <FileText size={20} weight="fill" />
-          <h2>Output accuracy and review</h2>
+          <h2>Output accuracy and integrity</h2>
           <p>
             We show evidence links and numeric or table warnings—not synthetic
             confidence scores.
           </p>
-          <Link href="/workspace">
-            Open Review Studio
+          <Link href="/integrity">
+            Open Integrity Console
             <ArrowSquareOut size={14} />
           </Link>
         </article>

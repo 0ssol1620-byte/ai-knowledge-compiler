@@ -1,0 +1,103 @@
+{
+  "c1_design_question": {
+    "answer": "No, not without a new derivation and a scheme version bump.",
+    "cause": "C1_evidence_identity_design",
+    "cost_of_changing": "IDENTITY_SCHEME_VERSION is 1 and every derived id was computed under it. identity.py:65 says an id computed under one scheme must never be silently compared against another, so this is a migration, not an edit.",
+    "not_concluded": "Whether the design should change. That depends on the shares C2, C3 and C4 carry, which is what the counterfactuals measure.",
+    "question": "Can an evidence identity that is stable under re-render be expressed under the current scheme at all?",
+    "why": "evidence_id() requires a dv_ prefixed document version (identity.py:164) and includes it in the digest (identity.py:177). The id is therefore a location *within one version* by construction, which is a coherent design -- it is what makes an evidence id unambiguous -- and it is also why an unchanged unit gets a new one."
+  },
+  "cases": 660,
+  "changed_set_attribution": {
+    "evidence_moved_only": 10320,
+    "multiple": 379,
+    "total": 10759,
+    "unit_added_only": 60
+  },
+  "claim_state": "selective recompilation: NOT YET DEMONSTRATED",
+  "counterfactuals": {
+    "actual": {
+      "artifacts_left_stale": 0,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 1.0
+    },
+    "c2_and_c3": {
+      "artifacts_left_stale": 0,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 0.12626262626262624
+    },
+    "c2_stable_evidence_ids": {
+      "artifacts_left_stale": 0,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 0.25033670033670036
+    },
+    "c3_semantic_channel_only": {
+      "artifacts_left_stale": 0,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 660,
+        "population": "all cases",
+        "value": 1.0
+      },
+      "mean_rebuild_fraction": 0.12626262626262624
+    },
+    "c4_no_document_rollup": {
+      "artifacts_left_stale": 480,
+      "equivalence_rate": {
+        "denominator": 660,
+        "numerator": 180,
+        "population": "all cases",
+        "value": 0.2727272727272727
+      },
+      "mean_rebuild_fraction": 0.08021390374331551
+    }
+  },
+  "disclosure": "NOT CLEARED FOR EXTERNAL DISCLOSURE",
+  "evidence_moved_only_share": 0.9591969513895343,
+  "experiment": "DIAG-B-01",
+  "for_the_ip_track": {
+    "family_b_section_5_causal_wording": "The degeneration is caused by the changed-set channel carrying positional and semantic change under one identifier (C3), not by the dependency invalidation rule (refuted) and not by evidence identity design (not required). The machinery is IMPLEMENTED; a narrow recompilation benefit is NOT YET DEMONSTRATED, because the corrected channel does not exist.",
+    "forbidden_state": "DEMONSTRATED",
+    "permitted_state": "IMPLEMENTED"
+  },
+  "verdicts": {
+    "C1_evidence_identity_design": {
+      "reason": "C3 alone reaches the floor with equivalence intact, so no change to evidence identity derivation -- and no IDENTITY_SCHEME_VERSION migration -- is implied by this result.",
+      "rebuild_reduction": null,
+      "verdict": "NOT REQUIRED"
+    },
+    "C2_version_scoped_evidence_id": {
+      "reason": "Stabilising evidence ids under re-render is safe (equivalence 660/660) and lowers the fraction to 0.2503, but it does not reach C3's 0.1263: a unit that genuinely moved still reports EVIDENCE_MOVED. Adding it to C3 changes nothing.",
+      "rebuild_reduction": 0.7496632996632997,
+      "safe": true,
+      "verdict": "CONTRIBUTING, NOT NECESSARY"
+    },
+    "C3_semantic_evidence_conflation": {
+      "reason": "Routing only meaning-changing kinds into the changed set takes 1.0000 to 0.1263 with equivalence 660/660 and zero artifacts left stale. The changed-set channel is where the degeneration lives.",
+      "rebuild_reduction": 0.8737373737373737,
+      "safe": true,
+      "verdict": "DOMINANT AND SUFFICIENT"
+    },
+    "C4_dependency_invalidation_rule": {
+      "reason": "Narrowing the dependency rule is cheaper (0.0802) and wrong: equivalence falls to 180/660 with 480 artifacts left stale. The breadth is real -- the rollup genuinely depends on every unit -- so the rule is doing its job and is not the cause.",
+      "rebuild_reduction": 0.9197860962566845,
+      "safe": false,
+      "verdict": "REFUTED"
+    }
+  }
+}

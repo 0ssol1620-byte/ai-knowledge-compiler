@@ -1,0 +1,50 @@
+{
+  "artifacts": [
+    {
+      "bytes": "678",
+      "path": "manifest.json",
+      "sha256": "sha256:659d633b81c664725f89f414cbadcd7e6b2dd07aefbe29cb8823755c2100cc74"
+    },
+    {
+      "bytes": "2578",
+      "path": "metrics/per-mutation-class.json",
+      "sha256": "sha256:ca159841df6ca39755639903645fef379c872a1d8018b78ba2137022596f59fb"
+    },
+    {
+      "bytes": "3458",
+      "path": "metrics/summary.json",
+      "sha256": "sha256:34a011d65dc1a5a7637b8f18e8485491a0a4c8eaf3c9b5e9062db446d7ea0e1f"
+    },
+    {
+      "bytes": "649046",
+      "path": "raw/counterfactuals.jsonl",
+      "sha256": "sha256:298b0c0b4ef7d879fa69cf460dc8086ea21357b4cd930bdec32c40b9a8c839a8"
+    },
+    {
+      "bytes": "4449",
+      "path": "receipts/ip-track-family-b-section-5.md",
+      "sha256": "sha256:5f84afb891cb9068ba6576f7016d513594843f44b2a3beee93276bea00353166"
+    },
+    {
+      "bytes": "4708",
+      "path": "receipts/verdict.json",
+      "sha256": "sha256:84c5e2a8975ac157e8faf3c181e01e6c76173b234790916cfd7944c347672693"
+    },
+    {
+      "bytes": "10437",
+      "path": "scripts/make_findings.py",
+      "sha256": "sha256:c646284466263ce7e21a0e0f109b2481dea78e5107a28794d35c53efab5a6dff"
+    },
+    {
+      "bytes": "6849",
+      "path": "scripts/run_diagnostic.py",
+      "sha256": "sha256:1bfef04cc97f74faad02269486ad7c8b3a8e2a8289ecd229074e30b0d1000bfa"
+    },
+    {
+      "bytes": "3265",
+      "path": "tables/findings.md",
+      "sha256": "sha256:f4742dc4bfe5ca48f7dc406a702442dbdc2192b2e9291078623ff1d1ddf4a556"
+    }
+  ],
+  "experiment": "DIAG-B-01"
+}

@@ -120,10 +120,12 @@ export function AccuracySection() {
         </p>
       </div>
 
-      {accuracy.evidence && (
+      {accuracy.evidence.length > 0 && (
         <p className="tv-accuracy-evidence">
           <span>Evidence</span>
-          <code>{accuracy.evidence.split("/").slice(-2).join("/")}</code>
+          {accuracy.evidence.map((path) => (
+            <code key={path}>{path.split("/").slice(-2).join("/")}</code>
+          ))}
         </p>
       )}
     </section>

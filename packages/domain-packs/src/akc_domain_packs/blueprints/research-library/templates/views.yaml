@@ -1,0 +1,8 @@
+blueprint: research-library
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Papers, primary_type: Paper, sort: publication_date_desc}
+  - {name: Topics, primary_type: OntologyTerm, sort: stable_title}
+  - {name: Methods, primary_type: Method, sort: stable_title}
+  - {name: Findings, primary_type: Finding, sort: source_order}

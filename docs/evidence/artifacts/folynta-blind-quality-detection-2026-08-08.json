@@ -1,0 +1,185 @@
+{
+  "any_signal_operating_point": {
+    "definition": "flag every case whose blind score is above zero",
+    "f1": 0.8391195824824144,
+    "false_negative": 0,
+    "false_positive": 1418,
+    "flagged_cases": 5116,
+    "precision": 0.7228303362001564,
+    "recall": 1.0,
+    "true_positive": 3698
+  },
+  "budgets": [
+    {
+      "blind_beats_length_only": false,
+      "blind_coverage_fraction": 0.0036465440173152025,
+      "blind_failure_mass": 155,
+      "blind_vs_oracle_efficiency": 0.012606750711671411,
+      "blind_vs_random_lift": 0.18655719192584574,
+      "budget_documents": 100,
+      "budget_fraction_of_corpus": 0.019546520719311962,
+      "document_overlap_fraction": 0.0,
+      "document_overlap_with_oracle": 0,
+      "length_only_failure_mass": 3230,
+      "length_only_vs_oracle_efficiency": 0.2627084180561204,
+      "oracle_coverage_fraction": 0.2892532818896156,
+      "oracle_failure_mass": 12295,
+      "random_expected_failure_mass": 830.8
+    },
+    {
+      "blind_beats_length_only": false,
+      "blind_coverage_fraction": 0.04902837246506376,
+      "blind_failure_mass": 2084,
+      "blind_vs_oracle_efficiency": 0.08296508618973686,
+      "blind_vs_random_lift": 0.6742719180948016,
+      "budget_documents": 372,
+      "budget_fraction_of_corpus": 0.0727130570758405,
+      "document_overlap_fraction": 0.04032258064516129,
+      "document_overlap_with_oracle": 15,
+      "length_only_failure_mass": 5173,
+      "length_only_vs_oracle_efficiency": 0.2059397268999562,
+      "oracle_coverage_fraction": 0.5909518656189714,
+      "oracle_failure_mass": 25119,
+      "random_expected_failure_mass": 3090.7
+    },
+    {
+      "blind_beats_length_only": false,
+      "blind_coverage_fraction": 0.07794193760880817,
+      "blind_failure_mass": 3313,
+      "blind_vs_oracle_efficiency": 0.11371983661140288,
+      "blind_vs_random_lift": 0.7975019056133251,
+      "budget_documents": 500,
+      "budget_fraction_of_corpus": 0.09773260359655982,
+      "document_overlap_fraction": 0.046,
+      "document_overlap_with_oracle": 23,
+      "length_only_failure_mass": 6309,
+      "length_only_vs_oracle_efficiency": 0.21655854185974668,
+      "oracle_coverage_fraction": 0.685385592622218,
+      "oracle_failure_mass": 29133,
+      "random_expected_failure_mass": 4154.2
+    },
+    {
+      "blind_beats_length_only": false,
+      "blind_coverage_fraction": 0.13729826377452595,
+      "blind_failure_mass": 5836,
+      "blind_vs_oracle_efficiency": 0.15826440677966103,
+      "blind_vs_random_lift": 0.7024179174704748,
+      "budget_documents": 1000,
+      "budget_fraction_of_corpus": 0.19546520719311963,
+      "document_overlap_fraction": 0.09,
+      "document_overlap_with_oracle": 90,
+      "length_only_failure_mass": 10975,
+      "length_only_vs_oracle_efficiency": 0.2976271186440678,
+      "oracle_coverage_fraction": 0.8675245847645038,
+      "oracle_failure_mass": 36875,
+      "random_expected_failure_mass": 8308.4
+    }
+  ],
+  "cases_with_official_failures": 3698,
+  "corpus_baselines": {
+    "failures_per_1000_chars": 3.747,
+    "probability_of_any_failure": 0.723
+  },
+  "corpus_cases": 5116,
+  "interpretation_policy": "The oracle is a ceiling that requires ground truth and is not achievable in production. The blind-to-oracle efficiency describes this corpus under this baseline model and must not be reported as a general detection rate.",
+  "method": [
+    "Score every frozen prediction using signals computed from the prediction alone.",
+    "Rank blind by that score; rank oracle by official failure count.",
+    "At a fixed re-inference budget, compare the official failure mass each ranking reaches.",
+    "Report the blind-to-oracle ratio, not a threshold chosen after seeing the outcome."
+  ],
+  "outcome": {
+    "budgets_where_blind_beats_length_only": [],
+    "budgets_where_blind_beats_random": [],
+    "hypothesis": "Prediction-only signals can select the documents carrying the most officially attributed failure mass.",
+    "statement": "Not supported. The blind ranking does not beat random selection, and ranking documents by prediction length alone -- which requires no detector -- reaches more failure mass at every budget tested. Failure mass scales with document size, so selecting for defects selects against size and therefore against mass.",
+    "supported": false
+  },
+  "per_signal_discrimination": {
+    "alpha_ratio_under_0_7": {
+      "density_lift_over_corpus": 0.457,
+      "failures_per_1000_chars": 1.713,
+      "flagged": 640,
+      "probability_lift_over_corpus": 1.26,
+      "probability_of_any_failure": 0.911
+    },
+    "empty_output": {
+      "density_lift_over_corpus": 5.726,
+      "failures_per_1000_chars": 21.455,
+      "flagged": 20,
+      "probability_lift_over_corpus": 0.277,
+      "probability_of_any_failure": 0.2
+    },
+    "length_z_over_3": {
+      "density_lift_over_corpus": 0.314,
+      "failures_per_1000_chars": 1.177,
+      "flagged": 57,
+      "probability_lift_over_corpus": 1.238,
+      "probability_of_any_failure": 0.895
+    },
+    "repetition_over_10pct": {
+      "density_lift_over_corpus": 0.449,
+      "failures_per_1000_chars": 1.684,
+      "flagged": 579,
+      "probability_lift_over_corpus": 1.142,
+      "probability_of_any_failure": 0.826
+    },
+    "repetition_over_30pct": {
+      "density_lift_over_corpus": 0.572,
+      "failures_per_1000_chars": 2.144,
+      "flagged": 181,
+      "probability_lift_over_corpus": 1.2,
+      "probability_of_any_failure": 0.867
+    },
+    "table_rows_ragged_over_20pct": {
+      "density_lift_over_corpus": 0.409,
+      "failures_per_1000_chars": 1.531,
+      "flagged": 318,
+      "probability_lift_over_corpus": 1.192,
+      "probability_of_any_failure": 0.862
+    },
+    "table_schema_failure": {
+      "density_lift_over_corpus": 0.411,
+      "failures_per_1000_chars": 1.539,
+      "flagged": 706,
+      "probability_lift_over_corpus": 1.191,
+      "probability_of_any_failure": 0.861
+    },
+    "truncated_tail": {
+      "density_lift_over_corpus": 1.113,
+      "failures_per_1000_chars": 4.17,
+      "flagged": 2367,
+      "probability_lift_over_corpus": 0.989,
+      "probability_of_any_failure": 0.715
+    }
+  },
+  "prediction_manifest": {
+    "cases_contributed_by_root": {
+      "collected-full": 3337,
+      "collected-live-completed": 85,
+      "collected-operational-recovery-round2": 2,
+      "collected-operational-retry-2026-08-05": 1777
+    },
+    "merged_case_count": 5116,
+    "roots": [
+      "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-full",
+      "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-live-completed",
+      "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-operational-recovery-round2",
+      "..\\..\\benchmark\\datasets\\private\\runpod-2026-08-04\\collected-operational-retry-2026-08-05"
+    ],
+    "superseded_by_later_root": 85
+  },
+  "question": "Without ground truth, can prediction-only signals select the documents that official evaluation shows are worst?",
+  "receipt_sha256": "sha256:3549c359625e7b28a23e2cb09f934118d4aee3874fc196dd441ff0dc26e5ce13",
+  "schema": "folynta.blind-quality-detection.v1",
+  "score_inflation_allowed": false,
+  "signal_prevalence": {
+    "empty_output": 20,
+    "length_z_over_3": 57,
+    "repetition_over_10pct": 579,
+    "table_schema_failure": 706,
+    "truncated_tail": 2367
+  },
+  "total_official_failure_records": 42506,
+  "weights_fixed_before_evaluation": true
+}

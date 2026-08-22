@@ -1,0 +1,1005 @@
+﻿.reviewRoot {
+  --canvas: #f5f3ee;
+  --paper: #fcfcfa;
+  --ink: #101216;
+  --graphite: #34383f;
+  --muted: #69707c;
+  --line: #d8d9d5;
+  --soft-line: #ebece8;
+  --brand: #315be8;
+  --brand-deep: #2444b8;
+  --evidence: #2aa8bd;
+  --evidence-text: #176878;
+  --verified: #138067;
+  min-height: 100dvh;
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: "Segoe UI Variable", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+.reviewNav {
+  position: relative;
+  z-index: 20;
+  min-height: 58px;
+  padding: 10px clamp(18px, 3vw, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  color: #f5f3ee;
+  background: #101216;
+  border-bottom: 1px solid #34383f;
+}
+
+.reviewNav > div {
+  display: grid;
+  gap: 2px;
+}
+.reviewNav strong {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+.reviewNav span {
+  color: #afb3ba;
+  font-size: 12px;
+}
+.reviewNav nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.reviewNav a {
+  min-height: 36px;
+  padding: 9px 11px;
+  color: #d5d8dd;
+  border: 1px solid transparent;
+  font-size: 12px;
+  text-decoration: none;
+}
+.reviewNav a[aria-current="page"] {
+  color: #fff;
+  border-color: #69707c;
+  background: #24272c;
+}
+
+.directionPage {
+  min-height: calc(100dvh - 58px);
+  background: var(--canvas);
+  overflow: clip;
+}
+.productNav {
+  height: 72px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(24px, 4vw, 64px);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.wordmark {
+  width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: inherit;
+  text-decoration: none;
+}
+.wordmark svg {
+  width: 30px;
+  height: 30px;
+}
+.wordmark > span {
+  display: grid;
+  gap: 1px;
+}
+.wordmark strong {
+  font-size: 14px;
+  letter-spacing: 0.11em;
+}
+.wordmark small {
+  color: var(--muted);
+  font-size: 7px;
+  letter-spacing: 0.13em;
+}
+.productNav > nav {
+  display: flex;
+  gap: 30px;
+}
+.productNav a {
+  color: var(--graphite);
+  font-size: 13px;
+  text-decoration: none;
+}
+.productNav > div {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 19px;
+}
+.productNav > div a:last-child {
+  min-height: 40px;
+  padding: 11px 15px;
+  color: white;
+  background: var(--ink);
+}
+
+.hero {
+  width: min(1440px, 100%);
+  min-height: min(690px, calc(100dvh - 204px));
+  margin: 0 auto;
+  padding: clamp(56px, 7vw, 104px) clamp(24px, 4vw, 64px) 54px;
+  display: grid;
+  grid-template-columns: minmax(420px, 0.88fr) minmax(540px, 1.12fr);
+  align-items: center;
+  gap: clamp(44px, 7vw, 110px);
+}
+.heroCopy {
+  align-self: center;
+  display: grid;
+  justify-items: start;
+}
+.heroCopy > p {
+  margin: 0 0 25px;
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.heroCopy h1 {
+  max-width: 10.6ch;
+  margin: 0;
+  font-size: clamp(64px, 6.4vw, 98px);
+  font-weight: 590;
+  letter-spacing: -0.068em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+.heroCopy > span {
+  max-width: 55ch;
+  margin-top: 29px;
+  color: var(--graphite);
+  font-size: 17px;
+  line-height: 1.68;
+}
+.actions {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 23px;
+}
+.actions a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+  text-underline-offset: 5px;
+}
+.actions a:first-child {
+  padding: 12px 17px;
+  color: #fff;
+  background: var(--ink);
+  text-decoration: none;
+}
+.heroCopy > small {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.signature {
+  position: relative;
+  height: 510px;
+  isolation: isolate;
+}
+.publicSignature {
+  --paper: var(--folynta-paper, #fcfcfa);
+  --ink: var(--folynta-ink, #101216);
+  --muted: var(--folynta-muted, #69707c);
+  --line: var(--folynta-line, #d8d9d5);
+  --brand: var(--folynta-brand, #315be8);
+  --brand-deep: var(--folynta-brand-deep, #2444b8);
+  --evidence: var(--folynta-evidence, #2aa8bd);
+  --evidence-text: #176878;
+  width: 100%;
+}
+.sourceField {
+  position: absolute;
+  inset: 24px 0 54px;
+}
+.sourceObject {
+  position: absolute;
+  width: 128px;
+  height: 164px;
+  padding: 13px 12px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  background: var(--paper);
+  border: 1px solid #cfd1ce;
+  box-shadow: 0 12px 28px rgba(16, 18, 22, 0.07);
+  transform-origin: bottom center;
+}
+.sourceObject > span {
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+}
+.sourceObject > strong {
+  min-height: 30px;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.sourceDiagram {
+  width: 100%;
+  height: 76px;
+  color: #737982;
+}
+.diagramAccent {
+  fill: var(--evidence);
+  opacity: 0.72;
+}
+.diagramAccentStroke {
+  fill: none;
+  stroke: var(--evidence);
+  stroke-width: 2.2;
+}
+.sourceObject[data-source="1"] {
+  left: 2%;
+  top: 5%;
+  transform: rotate(-8deg);
+}
+.sourceObject[data-source="2"] {
+  left: 18%;
+  top: 0;
+  transform: rotate(-3deg);
+}
+.sourceObject[data-source="3"] {
+  left: 34%;
+  top: 9%;
+  transform: rotate(2deg);
+}
+.sourceObject[data-source="4"] {
+  left: 51%;
+  top: 1%;
+  transform: rotate(6deg);
+}
+.sourceObject[data-source="5"] {
+  left: 69%;
+  top: 8%;
+  transform: rotate(9deg);
+}
+.sourceObject[data-source="6"] {
+  left: 83%;
+  top: 0;
+  transform: rotate(4deg);
+}
+.sourceObject[data-source="7"] {
+  left: 7%;
+  top: 42%;
+  transform: rotate(-4deg);
+}
+.sourceObject[data-source="8"] {
+  left: 23%;
+  top: 48%;
+  transform: rotate(2deg);
+}
+.sourceObject[data-source="9"] {
+  left: 41%;
+  top: 39%;
+  transform: rotate(-2deg);
+}
+.sourceObject[data-source="10"] {
+  left: 58%;
+  top: 47%;
+  transform: rotate(5deg);
+}
+.sourceObject[data-source="11"] {
+  left: 75%;
+  top: 40%;
+  transform: rotate(-4deg);
+}
+.sourceObject[data-source="12"] {
+  left: 87%;
+  top: 49%;
+  transform: rotate(7deg);
+}
+
+.evidenceRoute {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.evidenceRoute span {
+  position: absolute;
+  height: 2px;
+  background: var(--evidence);
+  transform-origin: left center;
+  opacity: 0.82;
+}
+.evidenceRoute span:nth-child(1) {
+  width: 42%;
+  left: 10%;
+  top: 32%;
+  transform: rotate(10deg);
+}
+.evidenceRoute span:nth-child(2) {
+  width: 38%;
+  left: 26%;
+  top: 66%;
+  transform: rotate(-14deg);
+}
+.evidenceRoute span:nth-child(3) {
+  width: 34%;
+  left: 53%;
+  top: 39%;
+  transform: rotate(18deg);
+}
+.compileCore {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 50%;
+  width: 176px;
+  height: 176px;
+  padding: 24px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  color: #fff;
+  background: var(--ink);
+  border: 1px solid #000;
+  transform: translate(-50%, -43%);
+  box-shadow: 0 24px 70px rgba(16, 18, 22, 0.2);
+}
+.compileCore svg {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 7px;
+}
+.compileCore small {
+  color: #aeb6c4;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.compileCore strong {
+  font-size: 13px;
+  font-weight: 620;
+}
+.receipt {
+  position: absolute;
+  z-index: 6;
+  right: 0;
+  bottom: 14px;
+  width: 220px;
+  padding: 13px 15px;
+  display: grid;
+  gap: 4px;
+  background: var(--paper);
+  border-top: 2px solid var(--evidence);
+  border-bottom: 1px solid var(--line);
+}
+.receipt span {
+  color: var(--evidence-text);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.receipt strong {
+  font-size: 12px;
+}
+.receipt code {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.markPlane {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.55;
+}
+.markAxis {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.markBranch {
+  fill: none;
+  stroke: var(--evidence);
+  stroke-width: 2;
+}
+.markProof {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2.2;
+}
+.wordmark .markPlane {
+  color: var(--ink);
+}
+.compileCore .markPlane,
+.compileCore .markAxis {
+  color: #fff;
+}
+
+.directionFooter {
+  min-height: 74px;
+  max-width: 1312px;
+  margin: 0 auto;
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  border-top: 1px solid var(--line);
+}
+.directionFooter p {
+  max-width: 54ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.directionFooter > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.09em;
+}
+.directionFooter i {
+  width: 28px;
+  height: 1px;
+  background: var(--line);
+}
+.directionFooter strong {
+  color: var(--ink);
+}
+
+.directionPage[data-direction="axis"] .hero {
+  grid-template-columns: minmax(460px, 0.95fr) minmax(520px, 1.05fr);
+}
+.directionPage[data-direction="axis"] .signature {
+  height: 470px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+.directionPage[data-direction="axis"] .sourceField {
+  inset: 42px 0;
+}
+.directionPage[data-direction="axis"] .sourceObject {
+  width: 98px;
+  height: 130px;
+  box-shadow: none;
+}
+.directionPage[data-direction="axis"] .sourceDiagram {
+  height: 44px;
+}
+.directionPage[data-direction="axis"] .sourceObject:nth-child(-n + 6) {
+  top: 2%;
+}
+.directionPage[data-direction="axis"] .sourceObject:nth-child(n + 7) {
+  top: 56%;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source] {
+  transform: none;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source="1"],
+.directionPage[data-direction="axis"] .sourceObject[data-source="7"] {
+  left: 0;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source="2"],
+.directionPage[data-direction="axis"] .sourceObject[data-source="8"] {
+  left: 16%;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source="3"],
+.directionPage[data-direction="axis"] .sourceObject[data-source="9"] {
+  left: 32%;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source="4"],
+.directionPage[data-direction="axis"] .sourceObject[data-source="10"] {
+  left: 52%;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source="5"],
+.directionPage[data-direction="axis"] .sourceObject[data-source="11"] {
+  left: 68%;
+}
+.directionPage[data-direction="axis"] .sourceObject[data-source="6"],
+.directionPage[data-direction="axis"] .sourceObject[data-source="12"] {
+  left: 84%;
+}
+.directionPage[data-direction="axis"] .compileCore {
+  width: 132px;
+  height: 180px;
+}
+.directionPage[data-direction="axis"] .evidenceRoute::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--evidence);
+}
+.directionPage[data-direction="axis"] .evidenceRoute span {
+  display: none;
+}
+.directionPage[data-direction="axis"] .receipt {
+  right: 5%;
+  bottom: -28px;
+}
+
+.directionPage[data-direction="plane"] {
+  background: var(--paper);
+}
+.directionPage[data-direction="plane"] .hero {
+  grid-template-columns: minmax(440px, 0.86fr) minmax(560px, 1.14fr);
+}
+.directionPage[data-direction="plane"] .signature {
+  height: 520px;
+  background: #ebe9e2;
+  border: 1px solid #d0d1cd;
+}
+.directionPage[data-direction="plane"] .sourceField {
+  inset: 37px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 7px;
+}
+.directionPage[data-direction="plane"] .sourceObject[data-source] {
+  position: relative;
+  inset: auto;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  box-shadow: none;
+  transform: none;
+  background: rgba(252, 252, 250, 0.78);
+}
+.directionPage[data-direction="plane"] .sourceDiagram {
+  height: 38px;
+}
+.directionPage[data-direction="plane"] .compileCore {
+  left: auto;
+  right: 22px;
+  top: auto;
+  bottom: 18px;
+  width: 190px;
+  height: 116px;
+  transform: none;
+  grid-template-columns: 52px 1fr;
+  justify-items: start;
+}
+.directionPage[data-direction="plane"] .compileCore svg {
+  grid-row: 1 / 3;
+  width: 46px;
+  height: 46px;
+  margin: 0;
+}
+.directionPage[data-direction="plane"] .receipt {
+  left: -28px;
+  right: auto;
+  bottom: 48px;
+}
+.directionPage[data-direction="plane"] .evidenceRoute span:nth-child(1) {
+  width: 58%;
+  left: 18%;
+  top: 28%;
+  transform: rotate(27deg);
+}
+.directionPage[data-direction="plane"] .evidenceRoute span:nth-child(2) {
+  width: 48%;
+  left: 26%;
+  top: 68%;
+  transform: rotate(-25deg);
+}
+.directionPage[data-direction="plane"] .evidenceRoute span:nth-child(3) {
+  width: 43%;
+  left: 46%;
+  top: 45%;
+  transform: rotate(14deg);
+}
+
+.marksPage {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 70px clamp(24px, 5vw, 72px);
+}
+.marksPage > header {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 18px 70px;
+  align-items: end;
+  padding-bottom: 42px;
+  border-bottom: 1px solid var(--ink);
+}
+.marksPage > header p {
+  margin: 0;
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+.marksPage > header h1 {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(44px, 5vw, 72px);
+  font-weight: 570;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+.marksPage > header span {
+  max-width: 54ch;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.markGrid {
+  margin-top: 38px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.markGrid article {
+  min-height: 174px;
+  padding: 24px;
+  display: grid;
+  align-content: space-between;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.markGrid svg {
+  width: 76px;
+  height: 76px;
+}
+.markGrid article:nth-child(4n) svg {
+  color: var(--brand-deep);
+}
+.markGrid article:nth-child(4n + 2) svg {
+  transform: scale(0.82);
+}
+.markGrid article:nth-child(4n + 3) svg {
+  transform: scale(1.08);
+}
+.markGrid article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.markGrid article > div strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.marksPage > footer {
+  padding: 18px 0;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+@media (max-width: 960px) {
+  .reviewNav {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .reviewNav nav {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .productNav {
+    grid-template-columns: 1fr auto;
+  }
+  .productNav > nav {
+    display: none;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .signature {
+    width: min(680px, 100%);
+    margin: 0 auto;
+  }
+  .directionFooter {
+    margin-inline: 24px;
+  }
+  .markGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .reviewNav {
+    padding: 9px 14px;
+  }
+  .reviewNav > div span {
+    display: none;
+  }
+  .reviewNav nav {
+    gap: 2px;
+  }
+  .reviewNav a {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .directionPage {
+    min-height: auto;
+  }
+  .productNav {
+    height: 64px;
+    padding: 0 18px;
+  }
+  .wordmark svg {
+    width: 27px;
+    height: 27px;
+  }
+  .productNav > div a:first-child {
+    display: none;
+  }
+  .productNav > div a:last-child {
+    min-height: 40px;
+    padding: 11px 12px;
+    font-size: 12px;
+  }
+  .hero,
+  .directionPage[data-direction="axis"] .hero,
+  .directionPage[data-direction="plane"] .hero {
+    min-height: 0;
+    padding: 52px 18px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 44px;
+  }
+  .heroCopy > p {
+    margin-bottom: 19px;
+    font-size: 12px;
+  }
+  .heroCopy h1 {
+    max-width: 10ch;
+    font-size: clamp(50px, 15.4vw, 62px);
+    line-height: 0.94;
+  }
+  .heroCopy > span {
+    margin-top: 23px;
+    font-size: 16px;
+    line-height: 1.58;
+  }
+  .actions {
+    margin-top: 27px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .actions a {
+    width: 100%;
+    justify-content: center;
+  }
+  .heroCopy > small {
+    margin-top: 17px;
+  }
+  .signature,
+  .directionPage[data-direction="axis"] .signature,
+  .directionPage[data-direction="plane"] .signature {
+    width: 100%;
+    height: 360px;
+  }
+  .sourceField {
+    inset: 10px 0 38px;
+  }
+  .sourceObject {
+    width: 72px;
+    height: 94px;
+    padding: 8px 7px;
+    gap: 4px;
+  }
+  .sourceObject > strong {
+    min-height: 20px;
+    font-size: 7px;
+  }
+  .sourceObject > span {
+    font-size: 6px;
+  }
+  .sourceDiagram {
+    height: 39px;
+  }
+  .sourceObject[data-source="1"] {
+    left: 0;
+    top: 4%;
+  }
+  .sourceObject[data-source="2"] {
+    left: 18%;
+  }
+  .sourceObject[data-source="3"] {
+    left: 38%;
+    top: 7%;
+  }
+  .sourceObject[data-source="4"] {
+    left: 58%;
+  }
+  .sourceObject[data-source="5"] {
+    left: 78%;
+  }
+  .sourceObject[data-source="6"] {
+    left: 70%;
+    top: 29%;
+  }
+  .sourceObject[data-source="7"] {
+    left: 2%;
+    top: 49%;
+  }
+  .sourceObject[data-source="8"] {
+    left: 21%;
+    top: 55%;
+  }
+  .sourceObject[data-source="9"] {
+    left: 42%;
+    top: 48%;
+  }
+  .sourceObject[data-source="10"] {
+    left: 62%;
+    top: 57%;
+  }
+  .sourceObject[data-source="11"] {
+    left: 80%;
+    top: 52%;
+  }
+  .sourceObject[data-source="12"] {
+    left: 13%;
+    top: 28%;
+  }
+  .compileCore {
+    width: 112px;
+    height: 112px;
+    padding: 14px;
+  }
+  .compileCore svg {
+    width: 43px;
+    height: 43px;
+  }
+  .compileCore small {
+    font-size: 6px;
+  }
+  .compileCore strong {
+    font-size: 12px;
+  }
+  .receipt {
+    right: 0;
+    bottom: 0;
+    width: 168px;
+    padding: 9px 10px;
+  }
+  .receipt span {
+    font-size: 7px;
+  }
+  .receipt strong {
+    font-size: 12px;
+  }
+  .receipt code {
+    font-size: 12px;
+  }
+  .directionFooter {
+    min-height: 84px;
+    margin: 0 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .directionFooter > div {
+    width: 100%;
+    justify-content: space-between;
+    gap: 3px;
+    font-size: 7px;
+  }
+  .directionFooter i {
+    width: 12px;
+  }
+  .directionPage[data-direction="axis"] .sourceField {
+    inset: 28px 0;
+  }
+  .directionPage[data-direction="axis"] .sourceObject {
+    width: 54px;
+    height: 78px;
+    padding: 6px 5px;
+  }
+  .directionPage[data-direction="axis"] .sourceDiagram {
+    height: 22px;
+  }
+  .directionPage[data-direction="axis"] .compileCore {
+    width: 92px;
+    height: 126px;
+  }
+  .directionPage[data-direction="axis"] .receipt {
+    right: 0;
+    bottom: -6px;
+  }
+  .directionPage[data-direction="plane"] .sourceField {
+    inset: 18px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 4px;
+  }
+  .directionPage[data-direction="plane"] .sourceObject[data-source] {
+    width: auto;
+    height: auto;
+    padding: 6px;
+  }
+  .directionPage[data-direction="plane"] .sourceDiagram {
+    height: 20px;
+  }
+  .directionPage[data-direction="plane"] .compileCore {
+    width: 132px;
+    height: 84px;
+    right: 10px;
+    bottom: 10px;
+    grid-template-columns: 36px 1fr;
+  }
+  .directionPage[data-direction="plane"] .compileCore svg {
+    width: 32px;
+    height: 32px;
+  }
+  .directionPage[data-direction="plane"] .receipt {
+    left: -5px;
+    bottom: 34px;
+  }
+  .marksPage {
+    padding: 45px 18px;
+  }
+  .marksPage > header {
+    display: block;
+    padding-bottom: 29px;
+  }
+  .marksPage > header h1 {
+    margin-top: 18px;
+    font-size: 43px;
+  }
+  .marksPage > header span {
+    display: block;
+    margin-top: 18px;
+  }
+  .markGrid {
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 24px;
+  }
+  .markGrid article {
+    min-height: 118px;
+    padding: 13px;
+  }
+  .markGrid svg {
+    width: 50px;
+    height: 50px;
+  }
+  .markGrid article > div span {
+    display: none;
+  }
+  .marksPage > footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reviewRoot *,
+  .reviewRoot *::before,
+  .reviewRoot *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

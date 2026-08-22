@@ -1,0 +1,89 @@
+schema_version: "1.0.0"
+governing_style: editorial_intelligence_2_evidence_in_motion
+defaults:
+  ui_feedback_ms: 160
+  panel_transition_ms: 260
+  section_reveal_ms: 420
+  easing_ui: cubic-bezier(0.2, 0.8, 0.2, 1)
+  easing_cinematic: cubic-bezier(0.45, 0, 0.55, 1)
+  overshoot: false
+  audio: false
+  pause_offscreen: true
+  pause_hidden_document: true
+reduced_motion:
+  disable_autoplay: true
+  disable_transform_interpolation: true
+  final_state: complete
+  preserve_controls: true
+  preserve_status_text: true
+motions:
+  - id: hero_evidence_loop
+    route: /
+    level: cinematic
+    duration_ms: 12000
+    loop: true
+    controllable: true
+    phases:
+      - { id: collect, start_ms: 0, end_ms: 2200 }
+      - { id: structure, start_ms: 2200, end_ms: 4600 }
+      - { id: verify, start_ms: 4600, end_ms: 7600 }
+      - { id: knowledge, start_ms: 7600, end_ms: 9800 }
+      - { id: package, start_ms: 9800, end_ms: 12000 }
+  - id: live_demo_phase_change
+    route: /
+    level: product_education
+    duration_ms: 260
+    trigger: explicit_phase_or_autoplay
+    properties: [opacity, transform]
+    max_translation_px: 12
+  - id: evidence_link_trace
+    routes: [/, /product/verify, /demo/dart]
+    level: product_education
+    duration_ms: 420
+    trigger: fact_selection
+    properties: [stroke-dashoffset, opacity]
+  - id: metric_value_update
+    routes: [/, /benchmarks]
+    level: ui_feedback
+    duration_ms: 160
+    trigger: measured_snapshot_change
+    properties: [opacity]
+    number_scramble: false
+  - id: dialog_entry
+    routes: ["/app/*"]
+    level: ui_feedback
+    duration_ms: 180
+    trigger: user_action
+    properties: [opacity, transform]
+    max_translation_px: 8
+  - id: processing_event_handoff
+    routes: [/workspace, "/documents/*/processing"]
+    level: product_education
+    duration_ms: 320
+    trigger: canonical_event
+    properties: [opacity, stroke-dashoffset]
+micro_loops:
+  - { id: M01, scene: intake_dedupe, source: T0_T1, max_seconds: 4, file: /film/loop-01-intake-dedupe.webm }
+  - { id: M02, scene: adaptive_estimate, source: T0_T1, max_seconds: 4, file: /film/loop-02-adaptive-estimate.webm }
+  - { id: M03, scene: page_block_detection, source: T0, max_seconds: 4, file: /film/loop-03-page-block-detection.webm }
+  - { id: M04, scene: cross_page_table_recovery, source: T0_T1, max_seconds: 4, file: /film/loop-04-cross-page-table.webm }
+  - { id: M05, scene: numeric_proof, source: T0, max_seconds: 4, file: /film/loop-05-numeric-proof.webm }
+  - { id: M06, scene: auto_repair_integrity, source: T0_T1, max_seconds: 4, file: /film/loop-06-auto-repair.webm }
+  - { id: M07, scene: notes_entities_relations, source: T0, max_seconds: 4, file: /film/loop-07-knowledge-relations.webm }
+  - { id: M08, scene: export_ready, source: T0, max_seconds: 4, file: /film/loop-08-export-ready.webm }
+full_film:
+  route: /film
+  duration_seconds: 60
+  autoplay_audio: false
+  webm: /film/structara-evidence-in-motion-60s.webm
+  mp4: /film/structara-evidence-in-motion-60s.mp4
+  poster: /film/structara-evidence-in-motion-poster.webp
+  captions: /film/structara-evidence-in-motion.en.vtt
+  manifest: /film/manifest.json
+prohibited:
+  - continuous_ambient_drift
+  - cursor_chase
+  - spring_overshoot
+  - decorative_number_scramble
+  - autoplay_audio
+  - motion_without_state_meaning

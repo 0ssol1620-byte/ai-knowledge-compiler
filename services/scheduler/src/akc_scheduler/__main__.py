@@ -12,6 +12,7 @@ from akc_api.storage import build_object_store
 from akc_telemetry import set_provider_up, start_metrics_http_server
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from akc_scheduler.collection_finalizer import HttpCollectionFinalizer
 from akc_scheduler.database import (
     create_deletion_engine,
     create_dispatch_engine,
@@ -168,12 +169,24 @@ async def _run(*, once: bool, check: bool, mode: str) -> None:
         max_retry_after_seconds=settings.webhook_max_retry_after_seconds,
         max_redirects=settings.webhook_max_redirects,
     )
+    collection_finalizer = (
+        HttpCollectionFinalizer(
+            endpoint_url=settings.collection_finalizer_api_url,
+            hmac_secret=(
+                settings.collection_finalizer_hmac_secret.get_secret_value().encode("utf-8")
+            ),
+            timeout_seconds=settings.collection_finalizer_timeout_seconds,
+        )
+        if dispatch_enabled and settings.collection_finalizer_enabled
+        else None
+    )
     scheduler = DurableScheduler(
         sessions=sessions,
         http_client=http_client,
         settings=settings,
         dispatch_engine=dispatch_engine or primary_engine,
         object_store=build_object_store(settings) if dispatch_enabled else None,
+        collection_finalizer=collection_finalizer,
     )
     deletion_worker = (
         DeletionWorker(
@@ -315,6 +328,8 @@ async def _run(*, once: bool, check: bool, mode: str) -> None:
                         )
     finally:
         await http_client.aclose()
+        if collection_finalizer is not None:
+            await collection_finalizer.aclose()
         if gpu_client is not None:
             await gpu_client.aclose()
         if metrics_server is not None:

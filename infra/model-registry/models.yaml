@@ -282,6 +282,37 @@ releases:
     rollout:
       traffic_percent: 0
       fallback_recipe: knowledge_precision_v1
+  - provider_key: gemma4_12b_challenger
+    upstream_id: google/gemma-4-12B
+    upstream_revision: "023679ed352de9bb66cc873c9009ce3482585c08"
+    model_size: "12B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: not_distributed
+      dataset_license: not_disclosed_review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: transformers_candidate
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-knowledge-challenger-2026q3-v1
+      status: public_checkpoint_discovered_internal_attestation_required
+    public_discovery:
+      checked_at: "2026-07-31T00:00:00Z"
+      repository_url: https://huggingface.co/google/gemma-4-12B
+      revision_api_url: https://huggingface.co/api/models/google/gemma-4-12B
+      official_family_url: https://ai.google.dev/gemma/docs/core
+      metadata_weight_license: apache-2.0
+      checkpoint_downloaded: false
+      license_snapshot_captured: false
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: knowledge_standard_v1
   - provider_key: qwen3_embedding_0_6b
     upstream_id: Qwen/Qwen3-Embedding-0.6B
     upstream_revision: null

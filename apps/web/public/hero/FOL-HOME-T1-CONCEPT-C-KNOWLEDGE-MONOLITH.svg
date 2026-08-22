@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-labelledby="title desc">
+  <title id="title">Knowledge Monolith</title>
+  <desc id="desc">Verified source blocks align into a shallow knowledge plane whose negative space reveals the FOLYNTA symbol.</desc>
+  <rect width="1200" height="750" fill="#F5F3EE"/>
+  <text x="80" y="78" fill="#2444B8" font-family="Segoe UI, sans-serif" font-size="14" letter-spacing="2">C · KNOWLEDGE MONOLITH</text>
+  <g transform="translate(170 140)">
+    <rect width="860" height="470" rx="8" fill="#FCFCFA" stroke="#DEDFDC"/>
+    <g stroke="#ECEDE9"><path d="M215 0V470M430 0V470M645 0V470"/><path d="M0 157H860M0 314H860"/></g>
+    <g fill="#101216"><rect x="28" y="28" width="154" height="101"/><rect x="458" y="28" width="154" height="101"/><rect x="673" y="185" width="154" height="101"/><rect x="28" y="342" width="154" height="101"/></g>
+    <g fill="#FFFFFF" stroke="#DEDFDC"><rect x="243" y="28" width="154" height="101"/><rect x="673" y="28" width="154" height="101"/><rect x="28" y="185" width="154" height="101"/><rect x="458" y="185" width="154" height="101"/><rect x="243" y="342" width="154" height="101"/><rect x="673" y="342" width="154" height="101"/></g>
+    <g fill="#34383F"><rect x="243" y="185" width="154" height="101"/><rect x="458" y="342" width="154" height="101"/></g>
+    <g stroke-width="5"><path d="M54 62H150M54 82H132M269 62H365M269 82H347M484 62H580M484 82H562M699 62H795M699 82H777" stroke="#69707C"/><path d="M54 219H150M54 239H132M484 219H580M484 239H562M699 219H795M699 239H777" stroke="#69707C"/><path d="M54 376H150M54 396H132M269 376H365M269 396H347M484 376H580M484 396H562M699 376H795M699 396H777" stroke="#69707C"/></g>
+    <g fill="none" stroke="#2AA8BD" stroke-width="4"><path d="M105 129C150 170 255 160 320 185"/><path d="M535 129C500 170 415 160 375 185"/><path d="M750 286C680 320 610 320 535 342"/><path d="M320 342C380 305 455 305 510 286"/></g>
+    <g fill="#138067"><circle cx="105" cy="129" r="7"/><circle cx="535" cy="129" r="7"/><circle cx="750" cy="286" r="7"/><circle cx="320" cy="342" r="7"/></g>
+    <g transform="translate(365 154)"><path d="M0 0H130V40H46V84H116V124H46V196H0Z" fill="#F5F3EE"/><path d="M12 18H112" stroke="#315BE8" stroke-width="9"/><path d="M18 177L102 98" stroke="#2AA8BD" stroke-width="7"/></g>
+    <rect x="690" y="118" width="118" height="28" fill="#F5F3EE" stroke="#B36B13"/><text x="749" y="137" fill="#B36B13" font-family="Segoe UI, sans-serif" font-size="10" text-anchor="middle">REVIEW 02</text>
+  </g>
+  <text x="600" y="662" fill="#34383F" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="middle" letter-spacing="1.5">VERIFIED BLOCKS COMPILE INTO ONE SHALLOW KNOWLEDGE PLANE</text>
+</svg>

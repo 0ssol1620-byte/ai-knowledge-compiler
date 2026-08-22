@@ -285,7 +285,7 @@ export function ExportDialog({
                   <span>{summary.pages} pages</span>
                   <span>{summary.blocks} blocks</span>
                   <span>{summary.knowledgeNotes} knowledge notes</span>
-                  <span>{summary.reviewWarnings} review warnings included</span>
+                  <span>{summary.reviewWarnings} integrity findings included</span>
                 </>
               ) : (
                 <span>Generated from the stored CIR snapshot.</span>
@@ -319,7 +319,7 @@ export function ExportDialog({
               }
             >
               <DownloadSimple size={16} aria-hidden="true" />
-              Download package after review
+              Download validated package
             </button>
           ) : (
             <button
@@ -365,7 +365,7 @@ function VaultPreviewResult({ preview }: { preview: VaultMergePreview }) {
           <h3>
             {preview.safe_to_apply
               ? "Safe to merge with the selected policy"
-              : "Unresolved conflicts require review"}
+              : "Unresolved conflicts require an explicit decision"}
           </h3>
           <p>
             This is a read-only plan. No changes have been applied to the

@@ -1,5 +1,41 @@
 """Durable transactional outbox and signed webhook scheduler."""
 
+from importlib import import_module
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .autonomous_v6_pipeline import (
+        AdmissionEvidenceKind,
+        AdmittedProviderCandidate,
+        AutonomousV6PipelineCoordinator,
+        AutonomousV6RuntimePort,
+        PipelineCheckpoint,
+        PipelineCheckpointConflict,
+        PipelineCheckpointStore,
+        PipelineContractError,
+        PipelineExecutionMode,
+        PipelineInventory,
+        PipelinePhase,
+        PipelineRunResult,
+        ProviderPoll,
+        ProviderPollState,
+        RouteEstimateBinding,
+        ShardCheckpoint,
+        ShardPhase,
+        SqlAlchemyProcessingJobCheckpointStore,
+        SubmissionReceipt,
+        V6PipelineJobSpec,
+    )
+    from .trusted_v6_admission import (
+        PersistedAdmissionEnvelopeReader,
+        PersistedEd25519AdmissionVerifier,
+        TrustedAdmissionContext,
+        TrustedAdmissionError,
+        TrustedAdmissionVerifier,
+        admission_receipt_sha256,
+        build_trusted_admission_payload,
+        sign_trusted_admission_envelope,
+    )
 from .database import (
     SchedulerDatabaseCapability,
     SchedulerDatabasePrivilegeError,
@@ -46,17 +82,96 @@ from .webhooks import (
     webhook_headers,
 )
 
+_AUTONOMOUS_V6_EXPORTS = frozenset(
+    {
+        "AdmissionEvidenceKind",
+        "AdmittedProviderCandidate",
+        "AutonomousV6PipelineCoordinator",
+        "AutonomousV6RuntimePort",
+        "PipelineCheckpoint",
+        "PipelineCheckpointConflict",
+        "PipelineCheckpointStore",
+        "PipelineContractError",
+        "PipelineExecutionMode",
+        "PipelineInventory",
+        "PipelinePhase",
+        "PipelineRunResult",
+        "ProviderPoll",
+        "ProviderPollState",
+        "RouteEstimateBinding",
+        "ShardCheckpoint",
+        "ShardPhase",
+        "SqlAlchemyProcessingJobCheckpointStore",
+        "SubmissionReceipt",
+        "V6PipelineJobSpec",
+    }
+)
+_TRUSTED_V6_EXPORTS = frozenset(
+    {
+        "PersistedAdmissionEnvelopeReader",
+        "PersistedEd25519AdmissionVerifier",
+        "TrustedAdmissionContext",
+        "TrustedAdmissionError",
+        "TrustedAdmissionVerifier",
+        "admission_receipt_sha256",
+        "build_trusted_admission_payload",
+        "sign_trusted_admission_envelope",
+    }
+)
+
+
+def __getattr__(name: str) -> Any:
+    """Load the optional v6 runtime only when a caller requests its API."""
+
+    if name in _AUTONOMOUS_V6_EXPORTS:
+        module = import_module(".autonomous_v6_pipeline", __name__)
+        value = getattr(module, name)
+        globals()[name] = value
+        return value
+    if name in _TRUSTED_V6_EXPORTS:
+        module = import_module(".trusted_v6_admission", __name__)
+        value = getattr(module, name)
+        globals()[name] = value
+        return value
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 __all__ = [
     "WEBHOOK_EVENT_TYPES",
+    "AdmissionEvidenceKind",
+    "AdmittedProviderCandidate",
+    "AutonomousV6PipelineCoordinator",
+    "AutonomousV6RuntimePort",
     "DurableScheduler",
     "GpuInvocationWorker",
     "GpuResultConflict",
     "GpuWorkerPolicy",
     "HostAllowlist",
+    "PersistedAdmissionEnvelopeReader",
+    "PersistedEd25519AdmissionVerifier",
+    "PipelineCheckpoint",
+    "PipelineCheckpointConflict",
+    "PipelineCheckpointStore",
+    "PipelineContractError",
+    "PipelineExecutionMode",
+    "PipelineInventory",
+    "PipelinePhase",
+    "PipelineRunResult",
+    "ProviderPoll",
+    "ProviderPollState",
+    "RouteEstimateBinding",
     "SchedulerDatabaseCapability",
     "SchedulerDatabasePrivilegeError",
     "SchedulerSettings",
     "SecretDecryptionError",
+    "ShardCheckpoint",
+    "ShardPhase",
+    "SqlAlchemyProcessingJobCheckpointStore",
+    "SubmissionReceipt",
+    "TrustedAdmissionContext",
+    "TrustedAdmissionError",
+    "TrustedAdmissionVerifier",
+    "V6PipelineJobSpec",
     "WebhookDeliveryError",
     "WebhookDnsError",
     "WebhookHostNotAllowedError",
@@ -66,6 +181,8 @@ __all__ = [
     "WebhookResponse",
     "WebhookSecretIntegrityError",
     "WebhookTargetError",
+    "admission_receipt_sha256",
+    "build_trusted_admission_payload",
     "canonical_webhook_body",
     "create_dispatch_engine",
     "create_gpu_engine",
@@ -81,6 +198,7 @@ __all__ = [
     "generate_webhook_secret",
     "outbox_claim_statement",
     "parse_retry_after",
+    "sign_trusted_admission_envelope",
     "sign_webhook_payload",
     "validate_webhook_url",
     "verify_dispatch_database",

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.structara.com/benchmark/model-evaluation-public-snapshot.schema.json",
+  "title": "Structara measured model evaluation public snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "generated_at", "evaluator_version", "evidence_bundle_sha256", "corpus_revision", "model_revision", "hardware_profile", "datasets"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "status": { "const": "available" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "evaluator_version": { "type": "string", "minLength": 1 },
+    "evidence_bundle_sha256": { "$ref": "#/$defs/digest" },
+    "corpus_revision": { "type": "string", "minLength": 1 },
+    "model_revision": { "type": "string", "minLength": 1 },
+    "hardware_profile": { "type": "string", "minLength": 1 },
+    "datasets": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/dataset" } }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+    "nonnegative": { "type": "number", "minimum": 0 },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "source", "status", "document_count", "page_count", "metrics", "evidence"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "status": { "const": "available" },
+        "document_count": { "type": "integer", "minimum": 1 },
+        "page_count": { "type": "integer", "minimum": 1 },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text_edit_companion", "formula_edit_companion", "table_teds", "table_structure_teds", "table_edit_companion", "reading_order_companion", "mean_latency_ms", "cost_per_page_usd", "exact_repeat_ratio"],
+          "properties": {
+            "text_edit_companion": { "$ref": "#/$defs/ratio" },
+            "formula_edit_companion": { "$ref": "#/$defs/ratio" },
+            "table_teds": { "$ref": "#/$defs/ratio" },
+            "table_structure_teds": { "$ref": "#/$defs/ratio" },
+            "table_edit_companion": { "$ref": "#/$defs/ratio" },
+            "reading_order_companion": { "$ref": "#/$defs/ratio" },
+            "mean_latency_ms": { "$ref": "#/$defs/nonnegative" },
+            "cost_per_page_usd": { "$ref": "#/$defs/nonnegative" },
+            "exact_repeat_ratio": { "$ref": "#/$defs/ratio" }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["case_count", "hard_failure_count", "repeat_count", "evidence_summary_sha256", "inference_run_summary_sha256", "ground_truth_sha256"],
+          "properties": {
+            "case_count": { "type": "integer", "minimum": 1 },
+            "hard_failure_count": { "type": "integer", "minimum": 0 },
+            "repeat_count": { "type": "integer", "minimum": 3 },
+            "evidence_summary_sha256": { "$ref": "#/$defs/digest" },
+            "inference_run_summary_sha256": { "$ref": "#/$defs/digest" },
+            "ground_truth_sha256": { "$ref": "#/$defs/digest" }
+          }
+        }
+      }
+    }
+  }
+}

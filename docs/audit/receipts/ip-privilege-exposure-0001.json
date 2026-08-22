@@ -1,0 +1,142 @@
+{
+  "schema": "tavonel.ip-privilege-exposure-receipt.v1",
+  "receipt_id": "ip-privilege-exposure-0001",
+  "generated_at": "2026-08-11T11:01:30.023657+00:00",
+  "authority": "Founder instruction 2026-08-11: block forward, do not rewrite tracked history, record the confirmation as a receipt.",
+  "question": "Has RED-family claim-level analysis ever entered version control?",
+  "method": {
+    "tool": "scripts/ip_privilege_guard.py --history",
+    "scope": {
+      "refs": "--all",
+      "commits_scanned": 167
+    },
+    "rules": [
+      "path: any tracked path under docs/ip/ outside the allowlist",
+      "privileged-block: the privileged-block begin marker in tracked content",
+      "claim-level: claim-number, infringement-reading or anticipation-reading vocabulary within 12 lines of a patent identifier"
+    ],
+    "known_limits": [
+      "Detects the vocabulary of claim-level analysis, not the concept. Analysis written without a claim number or a patent identifier is invisible to it.",
+      "The 12-line window is sized from the register's own YAML layout. A wider separation is not detected.",
+      "Prohibitive framing excuses 'reads onto' on the same line. A conclusion phrased as a prohibition would be missed; a claim number never is."
+    ]
+  },
+  "findings": {
+    "claim_charts_ever_tracked": false,
+    "privileged_blocks_in_history": 0,
+    "paths_ever_tracked_under_docs_ip": [
+      "docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml",
+      "docs/ip/V4_DISCLOSURE_REGISTRY.yaml"
+    ],
+    "claim_level_occurrences": 12,
+    "distinct_files": 1,
+    "distinct_commits": 4,
+    "exceedance": {
+      "file": "docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml",
+      "field": "red[tech_ibm_sequential_inference].note",
+      "introduced_by": "c8de965926a2b3c75eb0d93ece3bf726b333aa74",
+      "present_in": [
+        {
+          "commit": "c8de965926a2b3c75eb0d93ece3bf726b333aa74",
+          "subject": "docs: absorb the FTO blueprint, and extract the half that binds today",
+          "committed_at": "2026-08-11T19:05:52+09:00"
+        },
+        {
+          "commit": "9e3a793425d3f289174f8b96f384e90d097772f4",
+          "subject": "docs: open the disclosure entry at design time, not at the win",
+          "committed_at": "2026-08-11T19:29:30+09:00"
+        },
+        {
+          "commit": "812dbe371fefe6a21dc5c6521d8f7c1a363e3612",
+          "subject": "docs: batch 1 absorption contracts, with the two consistency fixes",
+          "committed_at": "2026-08-11T19:28:58+09:00"
+        },
+        {
+          "commit": "e170608847a714560b58c6076d48afb171eed66c",
+          "subject": "docs: freeze five fields before the experiment, append results after",
+          "committed_at": "2026-08-11T19:33:18+09:00"
+        }
+      ],
+      "character": "A claim-scope reading of the RED family registered as tech_ibm_sequential_inference: which of its claims covers what, and which carries a conditional. No conclusion about our own implementation, and no mapping of any product onto it.",
+      "why_it_exceeds": "Founder boundary for source-controlled documents is register ID, status and design-around gate. A claim number is none of those."
+    }
+  },
+  "corrections_to_earlier_reporting": [
+    "An earlier report of mine stated that no tracked file names the RED family registered as tech_ibm_sequential_inference. That check covered docs/ip/ only and was wrong: the intake register and docs/north-star/TAVONEL_FTO_ABSORPTION_BLUEPRINT_v1.0.md both name it.",
+    "The blueprint's mentions are register-level -- the classification, the broad shape to design around, and a link to the public record -- and stay. The register's note field was the only tracked content past the boundary."
+  ],
+  "disposition": {
+    "history_rewritten": false,
+    "reason": "Founder instruction. The exposure is a claim-scope reading in a private repository, not a published conclusion; rewriting 4 commits across 3 worktrees costs more than it removes.",
+    "forward_action": "note field redacted to the operative fact -- the design-around is drawn wider than the blueprint's summary -- with the reading itself moved to the counsel packet.",
+    "residual_risk": "The earlier wording remains retrievable at the four commits listed above by anyone with repository access. Unchanged by the redaction; accepted by instruction."
+  },
+  "controls_installed": {
+    "path_allowlist": {
+      "file": "docs/ip/.gitignore",
+      "sha256": "79e4c7184f9fdab1f8dfc2c1568d0976891aec0479a9849b75d9cc1c81875585",
+      "shape": "fail-closed: ignore *, negate the two registers"
+    },
+    "content_guard": {
+      "file": "scripts/ip_privilege_guard.py",
+      "sha256": "e946afaf1bdf28db08851a8aabf3b9179e4858179c105792374183b15e3a15fb"
+    },
+    "pre_commit_hook": {
+      "file": ".githooks/pre-commit",
+      "sha256": "685f5dcbedb5b166035da4b65709ec2004228beadbdc26d83635b6f43cf1eaaa",
+      "installed_to": "$(git rev-parse --git-common-dir)/hooks/pre-commit",
+      "why_common_dir": "Hooks are shared by every worktree. The branch holding the privileged files predates the tracked guard, so a copy of the guard lives beside the hook and is the fallback."
+    },
+    "tests": {
+      "file": "tests/security/test_ip_privilege_guard.py",
+      "sha256": "9fb265960b9c1926d8e2b7f1d6165f9ee8940e77db176925e2e2b6d86ea8c39f",
+      "count": 15
+    }
+  },
+  "negative_test": {
+    "isolated": {
+      "what": "git add -A run for real against a repository carrying the same two controls",
+      "result": "claim chart not staged; README staged in the same command",
+      "positive_control": "removing docs/ip/.gitignore stages the same file"
+    },
+    "live_worktree": {
+      "path": "D:/CodexProjects/ai-knowledge-compiler-ip-research",
+      "command": "git add -A --dry-run",
+      "privileged_files_present": 7,
+      "would_stage_under_docs_ip": [
+        "docs/ip/V4_DISCLOSURE_REGISTRY.yaml",
+        "docs/ip/.gitignore"
+      ],
+      "blocked": [
+        "CLAIM_CHART_FAMILY_A.md",
+        "CLAIM_CHART_FAMILY_B.md",
+        "INVENTION_DISCLOSURE_A.md",
+        "INVENTION_DISCLOSURE_B.md",
+        "IP_DECISION_PACKAGE_B14.md",
+        "TRADE_SECRET_REGISTER.md",
+        "PUBLIC_DISCLOSURE_FIREWALL.md"
+      ],
+      "why_dry_run": "Agents hold uncommitted work in both live worktrees. A real git add -A there would stage their in-flight changes as a side effect."
+    },
+    "force_add": {
+      "what": "git add -f a claim chart, then commit",
+      "result": "hook rejects, no commit created"
+    },
+    "allowlisted_file": {
+      "what": "claim-level text inside the register, which the path rule permits",
+      "result": "hook rejects, quoting the claim number"
+    },
+    "guard_missing": {
+      "what": "delete the guard, then commit",
+      "result": "hook rejects -- an absent control is not a passing one"
+    }
+  },
+  "defects_found_while_building_the_control": [
+    "First match per line only: 'do not write anything that reads onto claim 1' was excused by its opening phrase, letting the claim number through. Now every match on the line is evaluated.",
+    "git grep -E is POSIX ERE and has no word-boundary, whitespace or digit escapes. The history pre-filter matched nothing and printed 'history clean' over a repository that was not. Separate ERE pattern, and a git grep exit code above 1 now stops the scan instead of reading as no-match.",
+    "subprocess text=True decodes with the locale encoding (cp949 here). The first em dash raised inside the reader thread, where it does not propagate, so git show returned nothing and the file scanned clean. All git output is now decoded UTF-8.",
+    "The installed copy sits in the git common directory, outside every worktree. Resolving the repository root from __file__ would have checked a linked worktree's commit against the main worktree's index -- a pass on the wrong tree."
+  ],
+  "note_on_this_receipt": "Written to the same boundary it documents, and it took two attempts: the first draft named the patent beside the words 'infringement' and 'anticipation' and the pre-commit hook rejected it. Exempting the receipt would have been the easy fix and the wrong one -- it would have opened docs/audit/receipts/ to exactly this material. A receipt needs the register ID, not the patent number.",
+  "receipt_sha256": "8241c06f8bdb89b88ac83536c9a0410d5e049b52fd56f76b8fb186054f6ce42d"
+}

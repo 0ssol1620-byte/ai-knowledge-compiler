@@ -8,7 +8,10 @@ Ingress routes. It does **not** prove that a production environment exists.
 ## Mandatory overlay values
 
 An environment overlay must replace every `.invalid` host, image placeholder,
-bucket placeholder, and TLS secret placeholder. Application and worker images
+bucket placeholder, TLS secret placeholder, and the
+`AKC_DEPLOYMENT_REVISION` placeholder. The revision must be the exact
+40-character Git SHA used to build the signed images; the same ConfigMap value
+is injected into both API and web health responses. Application and worker images
 must use signed immutable digests. `NEXT_PUBLIC_AKC_API_URL` is a Next.js build
 input, so the web image must be built for the public same-origin URL; setting it
 only on the running container is not sufficient.
@@ -26,6 +29,15 @@ overlay must add the narrowest cluster-specific egress rules:
 - the approved ClamAV service on port 3310;
 - an in-cluster OpenTelemetry collector on 4317, if enabled;
 - scheduler egress to PostgreSQL and the exact approved webhook destinations;
+- when `AKC_COLLECTION_SEMANTIC_RETRIEVAL_ENABLED=true`, the exact approved
+  embedding provider on TLS 443 plus PostgreSQL; inject
+  `AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_API_KEY` and
+  `AKC_COLLECTION_SEMANTIC_RETRIEVAL_ROW_HMAC_SECRET` only through
+  `akc-runtime-secrets`;
+- when `AKC_COLLECTION_METADATA_ENCRYPTION_ENABLED=true`, the versioned AES-256
+  decrypt keyring and independent path blind-index key only through
+  `akc-runtime-secrets`; keep collection writes disabled until the staged
+  backfill/collision/decryptability verifier is clean;
 - no GPU/provider egress until the corresponding feature, tenant consent,
   model revision, callback authentication, and release evidence are approved.
 
@@ -37,6 +49,18 @@ NetworkPolicy cannot portably select an external service by DNS name. Use the
 cluster CNI's FQDN policy or reviewed stable CIDRs; do not add `0.0.0.0/0` as a
 shortcut. Patch the ingress-controller, DNS, Prometheus, and OpenTelemetry
 namespace/pod labels when the cluster differs from the documented base labels.
+The collection embedding overlay must bind the FQDN rule to the same hostname
+as `AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_ENDPOINT_URL`; a matching port
+without matching destination identity is not sufficient. Keep the base feature
+disabled until rendered-manifest checks, the PostgreSQL retrieval migration,
+provider attestation, and a no-customer-data canary all pass.
+Semantic retrieval and the finalizer may never be enabled while collection
+metadata encryption is disabled. Encryption-key rotation keeps legacy keys
+decrypt-only until a complete re-encryption pass. Blind-index key rotation is a
+write-fenced full reindex, not a rolling mixed-key deployment.
+Follow the staged
+[collection metadata encryption runbook](../../docs/runbooks/collection-metadata-encryption.md)
+for revision 0026, tenant-scoped backfill/verification, revision 0027, and rotations.
 
 ## Apply sequence
 
@@ -53,9 +77,12 @@ namespace/pod labels when the cluster differs from the documented base labels.
 
 The API readiness probe checks its database and, when configured, the
 fail-closed malware scanner without sending customer content. The web probe
-uses the real `/login` page; the project does not define a fictional
-`/api/health` route. The API Ingress disables response buffering and has a long
-read timeout so SSE is not broken by the proxy.
+uses the real `/login` page. `/api/health` is a revision-bearing deployment
+evidence surface, not a substitute for API/database readiness. Release
+verification must reject a missing revision or a SHA that differs between the
+web response, API response, image attestation, and intended release. The API
+Ingress disables response buffering and has a long read timeout so SSE is not
+broken by the proxy.
 
 ## Durable processing boundary
 

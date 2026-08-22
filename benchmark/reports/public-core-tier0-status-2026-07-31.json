@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "assessed_at": "2026-07-31",
+  "suite_id": "public-core-2026-07-31",
+  "registry_sha256": "sha256:4b536485a0ce8304b906e3206fcc60d8d438a21c0202a3c58f6e728ac4f96cbe",
+  "tier": "tier_0_adapter_and_evaluator_smoke",
+  "registry_remote_manifest_verified": true,
+  "benchmarks": {
+    "omnidocbench": {
+      "version": "v1.7",
+      "evaluator_commit": "193627ae9e97d89188468ed1ee3b7a856ff76044",
+      "dataset_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+      "dataset_manifest_sha256": "sha256:1902d23db1b0e409d774f1420306f9e9e82d1aa8638050f0fc8fd6b94c58aa99",
+      "smoke_result": "5 passed, 1 deselected",
+      "smoke_environment": "Windows compatibility environment; lxml 6.1.1; PYTHONUTF8=1",
+      "full_official_run": false
+    },
+    "parsebench": {
+      "evaluator_commit": "1d460294b3b9c57fb3fa944dc17a9c044c24d1e5",
+      "dataset_revision": "2805a1d940f95a203e0ae4b88be9934f7765b3fc",
+      "dataset_manifest_sha256": "sha256:9e3a722a5db9e8e23273176827c06a30fe6a58a983850329db917fabcff6c30e",
+      "official_evaluator_tests": "198 passed",
+      "full_five_dimension_run": false
+    },
+    "olmocr-bench": {
+      "evaluator_commit": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c",
+      "dataset_revision": "54a96a6fb6a2bd3b297e59869491db4d3625b711",
+      "dataset_manifest_sha256": "sha256:55f347b01850aec77d457f6b3b2b54ddf5adce6f451ed501e59995ec0e9bff15",
+      "smoke_result": "import, normalization, baseline and repetition contracts passed",
+      "full_all_category_run": false
+    }
+  },
+  "structara_public_suite_tests": "12 passed",
+  "runpod_endpoint_count": 0,
+  "signed_report": false,
+  "signature_status": "external_signing_key_and_full_run_required",
+  "promotion_decision": "production_reject_shadow_only",
+  "blocking_gates": [
+    "full_public_core_not_executed",
+    "candidate_and_incumbent_three_repeat_results_absent",
+    "runpod_endpoint_absent",
+    "signed_reproducibility_report_absent",
+    "olmocr_evaluator_and_dataset_license_review_required",
+    "omnidocbench_dataset_is_research_only_non_commercial"
+  ]
+}

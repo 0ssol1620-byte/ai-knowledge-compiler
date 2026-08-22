@@ -1,0 +1,102 @@
+{
+  "absolute_score_delta": 0.269,
+  "additional_rule_failures_without_recovery": 2542,
+  "caveat_absent_tests": "Tests of the 'absent' type check that text is NOT present, and an empty document passes them trivially. Their pass rate therefore rises without recovery (0.9453 -> 0.9635), which makes the no-recovery score generous rather than harsh.",
+  "confidence_intervals_overlap": false,
+  "design": "Single-variable comparison. Model, evaluator revision, corpus, source manifest, test set and settings are identical; the only difference is whether the documents the recovery lane delivered carry content.",
+  "documents_emptied": 582,
+  "documents_total": 1403,
+  "held_constant": {
+    "evaluator_revision": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c",
+    "input_count": 1403,
+    "source_manifest_sha256": "sha256:6af470c73fcf9e164c418ca49b81cc92d0e60199f9dcb714cb634339c22a3865",
+    "test_count": 8413
+  },
+  "interpretation_boundary": "This measures the recovery lane's contribution on this corpus under this baseline model and evaluator revision. It is not comparable to published leaderboard numbers, which use different evaluator revisions and metric scopes.",
+  "per_category": {
+    "arxiv_math.jsonl": {
+      "with_recovery": 0.8558,
+      "without_recovery": 0.5282
+    },
+    "baseline": {
+      "with_recovery": 0.99,
+      "without_recovery": 0.5789
+    },
+    "headers_footers.jsonl": {
+      "with_recovery": 0.95,
+      "without_recovery": 0.9605
+    },
+    "long_tiny_text.jsonl": {
+      "with_recovery": 0.7941,
+      "without_recovery": 0.5271
+    },
+    "multi_column.jsonl": {
+      "with_recovery": 0.8122,
+      "without_recovery": 0.4842
+    },
+    "old_scans.jsonl": {
+      "with_recovery": 0.3688,
+      "without_recovery": 0.2662
+    },
+    "old_scans_math.jsonl": {
+      "with_recovery": 0.7926,
+      "without_recovery": 0.4629
+    },
+    "table_tests.jsonl": {
+      "with_recovery": 0.8845,
+      "without_recovery": 0.4883
+    }
+  },
+  "per_type": {
+    "absent": {
+      "with_recovery": 0.9453,
+      "without_recovery": 0.9635
+    },
+    "baseline": {
+      "with_recovery": 0.99,
+      "without_recovery": 0.5788
+    },
+    "math": {
+      "with_recovery": 0.8473,
+      "without_recovery": 0.5194
+    },
+    "order": {
+      "with_recovery": 0.722,
+      "without_recovery": 0.427
+    },
+    "present": {
+      "with_recovery": 0.6019,
+      "without_recovery": 0.3897
+    },
+    "table": {
+      "with_recovery": 0.8843,
+      "without_recovery": 0.4882
+    }
+  },
+  "question": "How much of the official olmOCR-Bench score is attributable to the recovery lane?",
+  "receipt_sha256": "sha256:5d877230f9e530d6c298a038753700a46d9a0e5bde575b89a0c99aec320be025",
+  "schema": "folynta.recovery-accuracy-counterfactual.v1",
+  "score_inflation_allowed": false,
+  "score_share_lost_without_recovery": 0.3337,
+  "score_uplift_over_no_recovery": 0.5009,
+  "with_recovery": {
+    "confidence_interval_95": [
+      0.7961746266338624,
+      0.8156941944618167
+    ],
+    "overall_score": 0.8060068382873822,
+    "rule_failure_count": 1276,
+    "summary": "evaluation-summary.json",
+    "summary_sha256": "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559"
+  },
+  "without_recovery": {
+    "confidence_interval_95": [
+      0.5261811027940883,
+      0.5493163275332675
+    ],
+    "overall_score": 0.5370292637934323,
+    "rule_failure_count": 3818,
+    "summary": "evaluation-summary.json",
+    "summary_sha256": "sha256:f5e29283636a225c123d3add412b3e8c49a85f4aaf87da24236ec01936aa05c9"
+  }
+}

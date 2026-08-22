@@ -1,0 +1,167 @@
+{
+  "claim_class": "internal_reproducibility_evidence",
+  "corpus": {
+    "ground_truth_mounted_on_inference_worker": false,
+    "id": "omnidocbench-demo-18",
+    "page_count": 18
+  },
+  "evaluator_revision": "193627ae9e97d89188468ed1ee3b7a856ff76044",
+  "excluded_metrics": {
+    "cdm": {
+      "reason": "CDM was excluded from or unavailable in one or more evaluator runs.",
+      "status": "unavailable"
+    }
+  },
+  "model_id": "paddleocr-vl-1.6-fastdeploy-c8",
+  "overall_score": null,
+  "overall_score_status": "unavailable",
+  "performance": {
+    "cost_scope": "runtime estimate; not invoice reconciliation",
+    "estimated_provider_cost_per_page_usd": {
+      "max": 0.0006952971903650366,
+      "mean": 0.0006756085694578539,
+      "min": 0.0006642404662205889,
+      "population_stddev": 1.3977441095509055e-05
+    },
+    "latency_seconds_per_repeat": [
+      65.29747526906431,
+      62.66705182008445,
+      62.38084378419444
+    ],
+    "provider_hourly_usd_observed": 0.69,
+    "seconds_per_page": {
+      "max": 3.627637514948017,
+      "mean": 3.5249142754322818,
+      "min": 3.465602432455247,
+      "population_stddev": 0.07292577962874289
+    }
+  },
+  "promotion_status": "eligible_partial_metrics",
+  "repeat_count": 3,
+  "repeat_stability": {
+    "exact_page_count": 10,
+    "exact_repeat_ratio": 0.5555555555555556,
+    "page_count": 18,
+    "reason": null,
+    "status": "available"
+  },
+  "repeats": [
+    {
+      "cdm": {
+        "exception_count": 0,
+        "reason": "CDM was not executed or its rendering toolchain was unavailable; no model score is reported.",
+        "sample_count": 0,
+        "score": null,
+        "status": "unavailable",
+        "timeout_count": 0
+      },
+      "metrics": {
+        "formula_edit_distance_page_average": 0.11361807442948027,
+        "reading_order_edit_distance_page_average": 0.09295360998120869,
+        "table_edit_distance_page_average": 0.05188793071921827,
+        "table_teds_sample_average": 0.9060647206933243,
+        "table_teds_structure_sample_average": 0.9383699633699634,
+        "text_edit_distance_page_average": 0.03834177211266496
+      },
+      "page_count": 18,
+      "repeat_index": 1,
+      "source": {
+        "path": "metric-result.json",
+        "sha256": "sha256:3fd0bf72a61955b08f9c5c0f21fbcdb95490d72ed4db4d6377f0993ca5a57feb"
+      }
+    },
+    {
+      "cdm": {
+        "exception_count": 0,
+        "reason": "CDM was not executed or its rendering toolchain was unavailable; no model score is reported.",
+        "sample_count": 0,
+        "score": null,
+        "status": "unavailable",
+        "timeout_count": 0
+      },
+      "metrics": {
+        "formula_edit_distance_page_average": 0.11361807442948027,
+        "reading_order_edit_distance_page_average": 0.09295360998120869,
+        "table_edit_distance_page_average": 0.05188793071921827,
+        "table_teds_sample_average": 0.9060647206933243,
+        "table_teds_structure_sample_average": 0.9383699633699634,
+        "text_edit_distance_page_average": 0.03835724639320101
+      },
+      "page_count": 18,
+      "repeat_index": 2,
+      "source": {
+        "path": "metric-result.json",
+        "sha256": "sha256:ca9afb0e84e6b498c15d15493fa0d71a2e3b019f2a90fe32173b69699af0d3e3"
+      }
+    },
+    {
+      "cdm": {
+        "exception_count": 0,
+        "reason": "CDM was not executed or its rendering toolchain was unavailable; no model score is reported.",
+        "sample_count": 0,
+        "score": null,
+        "status": "unavailable",
+        "timeout_count": 0
+      },
+      "metrics": {
+        "formula_edit_distance_page_average": 0.11361807442948027,
+        "reading_order_edit_distance_page_average": 0.08790310493070365,
+        "table_edit_distance_page_average": 0.05188793071921827,
+        "table_teds_sample_average": 0.9060647206933243,
+        "table_teds_structure_sample_average": 0.9383699633699634,
+        "text_edit_distance_page_average": 0.03792754741806803
+      },
+      "page_count": 18,
+      "repeat_index": 3,
+      "source": {
+        "path": "metric-result.json",
+        "sha256": "sha256:1a9ec257e837487a6355c87e6f0f3077b84536e0e9578d198be58d0cf1e7a21e"
+      }
+    }
+  ],
+  "schema_version": "1.0.0",
+  "sources": {
+    "inference_run_summary": {
+      "path": "run-summary.json",
+      "sha256": "sha256:40d5079ddc999ba4abf40707da255082ed87f7462244bf3f7496de90d4fd9c92"
+    }
+  },
+  "valid_partial_metrics": {
+    "formula_edit_distance_page_average": {
+      "max": 0.11361807442948027,
+      "mean": 0.11361807442948028,
+      "min": 0.11361807442948027,
+      "population_stddev": 0.0
+    },
+    "reading_order_edit_distance_page_average": {
+      "max": 0.09295360998120869,
+      "mean": 0.091270108297707,
+      "min": 0.08790310493070365,
+      "population_stddev": 0.0023808309130860144
+    },
+    "table_edit_distance_page_average": {
+      "max": 0.05188793071921827,
+      "mean": 0.05188793071921827,
+      "min": 0.05188793071921827,
+      "population_stddev": 0.0
+    },
+    "table_teds_sample_average": {
+      "max": 0.9060647206933243,
+      "mean": 0.9060647206933243,
+      "min": 0.9060647206933243,
+      "population_stddev": 0.0
+    },
+    "table_teds_structure_sample_average": {
+      "max": 0.9383699633699634,
+      "mean": 0.9383699633699635,
+      "min": 0.9383699633699634,
+      "population_stddev": 0.0
+    },
+    "text_edit_distance_page_average": {
+      "max": 0.03835724639320101,
+      "mean": 0.038208855307978,
+      "min": 0.03792754741806803,
+      "population_stddev": 0.00019901500786578306
+    }
+  }
+}

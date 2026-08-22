@@ -22,10 +22,32 @@ deployment evidence before using the result at a gate.
    reconnect, credits, storage, CPU/GPU estimates, and deletion.
 4. Test mixed small/large synthetic jobs so a large job cannot starve smaller
    jobs. Real large-document and GPU tests remain externally gated.
+5. Run each named v4 profile separately: 5,000-file manifest, interrupted
+   10 GiB/new-process resume, attested 30,000-page preflight, 1,000-page UI,
+   10,000-block workspace, 5,000-node graph, 1,000 SSE, 100 uploads,
+   mixed-tenant fairness, and 100-export burst. Do not combine their blast
+   radii into one run.
 
 Archive k6 JSON, target revision/configuration, environment shape, data
 manifest, thresholds, alerts, and cleanup receipts. A result without those
 bindings is diagnostic, not release evidence.
+
+The exact catalog, commands, fixture contracts, and fail-closed receipt schema
+are in `tests/load/README.md`. Validate the catalog before reserving capacity:
+
+```bash
+python tests/load/validate_profiles.py
+```
+
+Validate any completed evidence receipt separately:
+
+```bash
+python tests/load/validate_profiles.py --evidence /approved/path/scale-evidence.json
+```
+
+An unexecuted profile, missing UI evidence interface, missing object-store
+inventory, or missing fast-preflight telemetry remains open. Do not promote a
+k6 summary alone to a pass.
 
 ### Dispatch fairness drill
 

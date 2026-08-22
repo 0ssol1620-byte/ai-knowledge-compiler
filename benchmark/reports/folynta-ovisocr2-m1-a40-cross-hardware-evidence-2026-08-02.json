@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "claim_class": "internal_runtime_smoke_and_cross_environment_diagnostic",
+  "promotion_scope": false,
+  "cohort": {
+    "id": "folynta-v2-m1-omnidoc-demo-6",
+    "page_count": 6,
+    "families": [
+      "native_simple",
+      "scan_text",
+      "complex_table",
+      "formula",
+      "multi_column",
+      "low_resolution"
+    ],
+    "repeat_count": 3,
+    "ground_truth_mounted_on_inference_worker": false,
+    "evaluator_only_ground_truth_sha256": "sha256:1b14ce5d3cb4ad9570a3cbc0034601d1570439da0f3dbcd89d66761263374dd4"
+  },
+  "model": {
+    "id": "ovisocr2-0.9b-vllm-0.22.1-cu129",
+    "revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+    "payload_file_count": 15,
+    "payload_bytes": 1731023589,
+    "payload_matches_prior_4090_run": true,
+    "cache_excluded_manifest_sha256": "sha256:50b8a6cff82992375d321d9f9b918bdd43c9a48fe1615e40bfaa10fcfc33cc3d"
+  },
+  "a40": {
+    "runtime_image": "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05",
+    "gpu": "NVIDIA A40",
+    "memory_mib": 46068,
+    "driver": "570.195.03",
+    "python": "3.12.13",
+    "torch": "2.11.0+cu129",
+    "vllm": "0.22.1+cu129",
+    "pillow": "12.2.0",
+    "model_load_seconds": 152.64027841575444,
+    "repeat_latency_seconds": [97.06865687482059, 77.00086842104793, 77.08675358258188],
+    "mean_seconds_per_page": 13.953126604358355,
+    "estimated_runtime_cost_per_page_usd": 0.001705382140532688,
+    "completed_cases": 18,
+    "failed_cases": 0,
+    "exact_repeat_cases": 6,
+    "exact_repeat_total": 6,
+    "metrics": {
+      "text_edit_distance": 0.21169159544903768,
+      "formula_edit_distance": 0.10972568578553615,
+      "table_teds": 0.803456362310529,
+      "table_structure_teds": 0.8637820512820512,
+      "table_edit_distance": 0.11863828227522677,
+      "reading_order_edit_distance": 0.2664421933156824
+    }
+  },
+  "prior_4090_same_page_outputs": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "driver": "570.158.01",
+    "python": "3.11.10",
+    "torch": "2.11.0+cu129",
+    "vllm": "0.22.1+cu129",
+    "pillow": "12.3.0",
+    "exact_repeat_cases": 5,
+    "exact_repeat_total": 6,
+    "metrics": {
+      "text_edit_distance": 0.21230518288661349,
+      "formula_edit_distance": 0.10972568578553615,
+      "table_teds": 0.803456362310529,
+      "table_structure_teds": 0.8637820512820512,
+      "table_edit_distance": 0.11863828227522677,
+      "reading_order_edit_distance": 0.2664421933156824
+    }
+  },
+  "comparison": {
+    "a40_minus_4090_text_edit_distance": -0.0006135874375758077,
+    "other_aggregate_metric_deltas": 0.0,
+    "a40_repeat_1_exact_matches_to_4090_repeat_1": 3,
+    "cross_environment_case_total": 6,
+    "identical_environment": false,
+    "hardware_equivalence_claim_allowed": false,
+    "reason": "GPU, driver, Python, and Pillow differ; the result is an A40 runtime smoke and cross-environment diagnostic, not an isolated hardware A/B."
+  },
+  "evidence": {
+    "a40_run_summary_sha256": "sha256:e41b04e29f9084f5d5f3a4896c5f0dc5520a05f1fcbd7f21abf4195bbadef26e",
+    "a40_evidence_summary_sha256": "sha256:b7bb6bc8933eda0575905339a5e7a58e1ea6663dfc34e0a37115d122a5973542",
+    "a40_official_evaluation_summary_sha256": "sha256:cdd2c727c335fb8038e552f1f2e520dd72c756ac8e94bf5926e45a6738c38a3b",
+    "rtx4090_subset_evaluation_summary_sha256": "sha256:c9171965dc491dd38ef39e28bc79750ada384b794c957b8061b1a83c5879b14c",
+    "evaluator_only_ground_truth_receipt_sha256": "sha256:5d8021056af9786198dc142c495bca3060cffa101cf3e1f794190a428bf7db0e",
+    "a40_evidence_archive_sha256": "sha256:859a73bc3bbcd1261763201db4ca5a96522ba2a6781a8892aeef73ca6c9c2406",
+    "final_zero_pod_inventory_sha256": "sha256:b6f4f2e65211a927a90b464c3a259c5a2dcc631fc5e9415bb84b74232f8ef2ea"
+  },
+  "limits": [
+    "Six public demo pages are insufficient for a production or leaderboard claim.",
+    "CDM and overall score are unavailable and are not zero-filled.",
+    "Runtime cost excludes Pod initialization, model download, evaluation, storage, transfer, taxes, and invoice reconciliation.",
+    "A pure hardware A/B still requires one immutable runtime image and identical dependency versions on both GPUs."
+  ]
+}
