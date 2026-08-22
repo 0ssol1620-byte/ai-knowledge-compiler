@@ -151,3 +151,45 @@ restoring it passes. `tsc --noEmit` is clean after both edits.
 - L1/W1/E0/M1 design-only branches (READY docs, no code) — their plans should be
   scheduled off this baseline.
 - Cinematic V2 line remains frozen pending founder visual GO (C02 choreography).
+
+## 6. Wave 2 merges
+
+Twelve completed branches were merged sequentially into
+`integration/g0-consolidation` (base `9e9d69a`), each with `--no-ff`, one at a
+time, no pushes performed. All twelve forked from exactly `9e9d69a`, and their
+changed-file sets are pairwise disjoint, so every merge was taken cleanly by the
+`ort` strategy — no conflicts occurred and none had to be resolved. In
+particular the anticipated collisions did not materialize: only
+`tracked-build-context` touches `packages/cir-python/src/akc_cir/__init__.py`,
+and only `local-mcp` touches root `pyproject.toml`/`uv.lock`.
+
+| # | Branch | Merge commit | Content |
+|---|--------|--------------|---------|
+| 1 | `agent/tavonel-runpod-readiness` ("rp-docs") | `e8dc6f7` | `infra/runpod/v6/PRODUCTION_GPU_READINESS.md` |
+| 2 | `agent/tavonel-r2-docs` | `1ad098d` | `docs/release/r2-storage-provisioning.md` |
+| 3 | `agent/tavonel-fe-adr` | `939cbb9` | `docs/adr/ADR-FRONTEND-CONSOLIDATION.md` |
+| 4 | `agent/tavonel-audit-engine` | `7aeb3e0` | `docs/audit/GAP_AUDIT_ENGINE.md` |
+| 5 | `agent/tavonel-audit-infra` | `a3e675c` | `docs/audit/GAP_AUDIT_INFRA.md` |
+| 6 | `agent/tavonel-audit-product` | `140bb00` | `docs/audit/GAP_AUDIT_PRODUCT.md` |
+| 7 | `agent/tavonel-audit-team` | `9e413eb` | `docs/audit/GAP_AUDIT_TEAM_ENTERPRISE.md` |
+| 8 | `agent/tavonel-w6-v2` | `032f46d` | `benchmark/w6/v2/` harness + pilot results (52 files) |
+| 9 | `agent/tavonel-tracked-build-context` ("tbc") | `b97ef2e` | `akc_cir` TBC + build receipt (+15 unit tests) |
+| 10 | `agent/tavonel-id-sparse` | `e28bc14` | sparse identity blocking (+10 unit tests, bench script) |
+| 11 | `agent/tavonel-desktop-watch` | `0fbc2e6` | new `packages/desktop-watcher/` (own uv.lock; not a root workspace member yet) |
+| 12 | `agent/tavonel-local-mcp` | `7eb8b97` | new `packages/local-mcp/` + root `pyproject.toml`/`uv.lock` dependency-group |
+
+Gate after every code-bearing merge (`UV_LINK_MODE=copy uv sync --extra dev
+--frozen && .venv/Scripts/python.exe -m pytest tests/unit -q`), Python suite
+only per wave scope (web/vitest excluded):
+
+- after w6-v2 (`032f46d`): **553 passed** in 126.67s (baseline held)
+- after tbc (`b97ef2e`): **568 passed** in 27.86s (+15)
+- after id-sparse (`e28bc14`): **578 passed** in 25.91s (+10)
+- after desktop-watch (`0fbc2e6`): **578 passed** in 29.69s
+- after local-mcp (`7eb8b97`): **578 passed** in 25.86s
+
+Final HEAD after the wave: `7eb8b97`; every sync ran frozen-clean against the
+merged locks (local-mcp's lock addition installed without drift). The four GAP
+audit docs landed side by side under `docs/audit/` as expected (distinct
+filenames, no overlap).
+
