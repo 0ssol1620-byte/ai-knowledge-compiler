@@ -591,14 +591,14 @@ function build(entries: readonly { atMs: number; draft: Draft }[]): ScheduledEve
  * be the fake progress §11.1 calls out.
  */
 export const DEMO_COMPILE_STREAM: readonly ScheduledEvent[] = build([
-  { atMs: 0, draft: { event_type: "collection.discovery.progress.v1", payload: { files_discovered: 1207 } } },
+  { atMs: 0, draft: { event_type: "collection.discovery.progress.v1", payload: { discovered_files: 1207 } } },
   // Named files, so the stream says what it found and not only how many. The
   // three chosen are the ones the rest of the story turns on.
   { atMs: 210, draft: { event_type: "file.discovered.v1", payload: { file_name: "warranty_policy_FINAL_v4 (1).pdf", sha256_prefix: "9f2c41" } } },
   { atMs: 340, draft: { event_type: "file.discovered.v1", payload: { file_name: "Contract_182_signed.pdf", sha256_prefix: "c07ab8" } } },
   { atMs: 470, draft: { event_type: "file.discovered.v1", payload: { file_name: "2024 서비스 매뉴얼_scan.pdf", sha256_prefix: "41de60" } } },
-  { atMs: 620, draft: { event_type: "collection.discovery.progress.v1", payload: { files_discovered: 3164 } } },
-  { atMs: 900, draft: { event_type: "collection.discovery.progress.v1", payload: { files_discovered: DEMO_DISCOVERY.filesDiscovered } } },
+  { atMs: 620, draft: { event_type: "collection.discovery.progress.v1", payload: { discovered_files: 3164 } } },
+  { atMs: 900, draft: { event_type: "collection.discovery.progress.v1", payload: { discovered_files: DEMO_DISCOVERY.filesDiscovered } } },
   { atMs: 1280, draft: { event_type: "revision.family.detected.v1", payload: { families_total: DEMO_DISCOVERY.revisionFamilies, confidence: "probable" } } },
   { atMs: 1700, draft: { event_type: "file.duplicate.detected.v1", payload: { duplicates_total: DEMO_DISCOVERY.duplicates } } },
   { atMs: 2160, draft: { event_type: "document.profiled.v1", payload: { documents_profiled: 4738, complex_tables_total: DEMO_DISCOVERY.complexTables } } },

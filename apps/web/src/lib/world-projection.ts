@@ -210,7 +210,7 @@ export function reduceProductEvent(
     case "collection.discovery.progress.v1":
       next.discovery = {
         ...state.discovery,
-        filesDiscovered: event.payload.files_discovered,
+        filesDiscovered: event.payload.discovered_files,
       };
       return next;
 
@@ -226,7 +226,7 @@ export function reduceProductEvent(
           ? [...state.discovery.namedFiles, event.payload.file_name]
           : state.discovery.namedFiles,
         filesDiscovered:
-          event.payload.files_discovered ?? state.discovery.filesDiscovered,
+          event.payload.discovered_files ?? state.discovery.filesDiscovered,
       };
       return next;
 

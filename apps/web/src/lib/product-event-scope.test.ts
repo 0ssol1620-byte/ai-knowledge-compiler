@@ -42,7 +42,7 @@ const collectionEventRaw = {
   occurred_at: "2026-08-13T09:00:01.000Z",
   scope: { kind: "collection", collection_id: "coll-xyz" },
   mode: "live",
-  payload: { files_discovered: 42 },
+  payload: { discovered_files: 42 },
 };
 
 describe("cross-scope cursor independence (I2 §5)", () => {
@@ -159,7 +159,7 @@ describe("no identity fabrication across scopes (I2 §2/§7/§11)", () => {
       scope: { kind: "demo" },
       collection_id: "col_should_not_survive",
       mode: "demo",
-      payload: { files_discovered: 1 },
+      payload: { discovered_files: 1 },
     });
     expect(event).toBeDefined();
     expect(event?.collection_id).toBeUndefined();
@@ -226,7 +226,7 @@ describe("demo scope shares one cursor (I2 §5's own example: \"demo:*\")", () =
       occurred_at: "2026-08-13T09:00:00.000Z",
       scope: { kind: "demo", fixture_id: "fixture-a" },
       mode: "demo",
-      payload: { files_discovered: 1 },
+      payload: { discovered_files: 1 },
     });
     const second: ProductEvent | undefined = parseProductEvent({
       schema_version: "1.0",
@@ -236,7 +236,7 @@ describe("demo scope shares one cursor (I2 §5's own example: \"demo:*\")", () =
       occurred_at: "2026-08-13T09:00:01.000Z",
       scope: { kind: "demo", fixture_id: "fixture-b" },
       mode: "demo",
-      payload: { files_discovered: 2 },
+      payload: { discovered_files: 2 },
     });
     if (!first || !second) throw new Error("fixtures failed to parse");
 

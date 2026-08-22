@@ -235,7 +235,7 @@ function event<T extends ProductEventType, P extends z.ZodTypeAny>(
 const discoveryProgress = event(
   "collection.discovery.progress.v1",
   z.object({
-    files_discovered: z.number().int().nonnegative(),
+    discovered_files: z.number().int().nonnegative(),
     files_total: z.number().int().nonnegative().optional(),
   }),
 );
@@ -256,15 +256,16 @@ const fileDiscovered = event(
   z
     .object({
       file_name: z.string().min(1).optional(),
-      files_discovered: z.number().int().nonnegative().optional(),
+      discovered_files: z.number().int().nonnegative().optional(),
       sha256_prefix: z.string().min(1).optional(),
     })
     // Optional does not mean "all of them at once". An empty payload would
     // render as "a file" — a discovery the stream never reported.
     .refine(
       (payload) =>
-        payload.file_name !== undefined || payload.files_discovered !== undefined,
-      { message: "file.discovered.v1 needs a file_name or a files_discovered" },
+        payload.file_name !== undefined ||
+        payload.discovered_files !== undefined,
+      { message: "file.discovered.v1 needs a file_name or a discovered_files" },
     ),
 );
 
