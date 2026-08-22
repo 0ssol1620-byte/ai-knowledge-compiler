@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "akc-desktop-watcher"
+version = "0.1.0"
+description = "Crash-safe Windows local-folder watcher emitting collection-event.schema.json compatible discovery events"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+dependencies = [
+  "watchdog>=4,<7",
+]
+
+[project.optional-dependencies]
+yaml = [
+  "pyyaml>=6,<8",
+]
+dev = [
+  "pytest>=9.0.3,<10",
+  "jsonschema>=4.25,<5",
+  "pyyaml>=6,<8",
+  "ruff>=0.12,<1",
+  "mypy>=1.17,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/akc_desktop_watcher"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+# Local gate config; overrides the repo-root pyproject (whose pydantic plugin
+# is not installed in this package's standalone venv).
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+warn_unused_ignores = false
