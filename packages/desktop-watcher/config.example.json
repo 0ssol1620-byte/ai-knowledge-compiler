@@ -1,0 +1,16 @@
+{
+  "collection_id": "11111111-1111-4111-8111-111111111111",
+  "job_id": null,
+  "stability_window_seconds": 1.0,
+  "poll_interval_seconds": 0.1,
+  "journal_path": "akc-desktop-watcher-journal.jsonl",
+  "event_sink_path": "akc-desktop-watcher-events.jsonl",
+  "reconcile_on_start": true,
+  "roots": [
+    {
+      "path": "C:/Users/me/Documents/AKC-Inbox",
+      "source_root_id": "22222222-2222-4222-8222-222222222222",
+      "exclude_globs": ["~$*", "*.tmp", "*.part", ".git/**", "node_modules/**", "**/__pycache__/**"]
+    }
+  ]
+}
