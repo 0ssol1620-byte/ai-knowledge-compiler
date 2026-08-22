@@ -29,6 +29,15 @@ at 0.85 -- below the 0.92 bar, forever. Nothing would ever merge. So the score i
 renormalised over the signals that have values, the absent ones are recorded with
 a reason, and when a *critical* signal is absent the resolver abstains instead of
 scoring the remainder higher.
+
+**Resolution scales by blocking, not by all-pairs.** §N15.1 forbids the
+workspace-global all-pairs comparison, and `resolve` now honours that literally:
+`BlockingCandidateIndex` buckets the previous corpus under cheap normalised keys
+(anchor, explicit identifier, structural path) and orders what remains by an
+admissible upper bound on the pair score, so precise scoring runs only until the
+top two candidates are settled. Blocking chooses the examination order, never
+the outcome -- the decision is the same one a whole-corpus scan produces, and
+the equivalence tests hold the implementation to that on randomised corpora.
 """
 
 from __future__ import annotations
@@ -36,6 +45,7 @@ from __future__ import annotations
 import hashlib
 import re
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -45,6 +55,7 @@ __all__ = [
     "IDENTITY_SIGNAL_WEIGHTS",
     "MERGE_THRESHOLD",
     "NEW_IDENTITY_THRESHOLD",
+    "BlockingCandidateIndex",
     "LogicalIdentityDecision",
     "LogicalIdentityResolver",
     "LogicalMatch",
@@ -58,6 +69,7 @@ __all__ = [
     "logical_id_seed",
     "normalize_bbox1000",
     "normalize_text_for_identity",
+    "resolve_units",
     "source_id",
 ]
 
@@ -431,6 +443,316 @@ def generate_candidates(
     return kept[:window]
 
 
+# ---------------------------------------------------------------------------
+# §N15.1 — sparse blocking: cheap keys first, precise scoring second
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class _PreparedFeatures:
+    """The comparable features of one fingerprint, computed once instead of per pair.
+
+    Pair-wise scoring used to re-run NFKC normalisation and the punctuation
+    regex for every (candidate, incoming) pair -- seven signals' worth, over
+    the whole previous corpus, for every incoming unit. That constant factor
+    is a large share of what made resolution quadratic in practice. Everything
+    here is produced by exactly the same normalisers the pair-wise path uses,
+    only hoisted out of the pair loop, so a score computed from prepared
+    features is bit-identical to one computed from raw fingerprints (the
+    equivalence tests pin this).
+
+    Both the raw field and its normalised form are kept where the two play
+    different roles: §N4.4 presence is decided on the raw field (`not
+    candidate.previous_anchor`), while the value is computed on the normalised
+    one. Collapsing the two would silently change which signals count as
+    missing.
+    """
+
+    fingerprint: LogicalUnitFingerprint
+    #: Raw source lineage; presence gate for `source_continuity`.
+    lineage: str
+    version_distance: int
+    norm_path: tuple[str, ...]
+    #: Raw explicit identifier; presence gate for `explicit_identifier`.
+    has_identifier: bool
+    norm_identifier: str
+    #: Already-normalised text, exactly as stored on the fingerprint.
+    norm_text: str
+    text_tokens: frozenset[str]
+    text_token_count: int
+    has_previous_anchor: bool
+    previous_anchor_tokens: frozenset[str]
+    previous_anchor_token_count: int
+    has_next_anchor: bool
+    next_anchor_tokens: frozenset[str]
+    next_anchor_token_count: int
+    has_geometry: bool
+    geometry_tokens: frozenset[str]
+    geometry_token_count: int
+    #: Raw anchor; a blocking key only, never a scoring signal.
+    has_anchor: bool
+    norm_anchor: str
+
+
+def _token_set(normalized: str) -> tuple[frozenset[str], int]:
+    tokens = frozenset(normalized.split())
+    return tokens, len(tokens)
+
+
+def _prepare_features(unit: LogicalUnitFingerprint) -> _PreparedFeatures:
+    """Normalise every field once, with the same normalisers scoring uses."""
+    text_tokens, text_count = _token_set(unit.normalized_text)
+    previous = normalize_text_for_identity(unit.previous_anchor)
+    following = normalize_text_for_identity(unit.next_anchor)
+    geometry = normalize_text_for_identity(unit.geometry_style)
+    anchor = normalize_text_for_identity(unit.anchor)
+    previous_tokens, previous_count = _token_set(previous)
+    following_tokens, following_count = _token_set(following)
+    geometry_tokens, geometry_count = _token_set(geometry)
+    return _PreparedFeatures(
+        fingerprint=unit,
+        lineage=unit.source_lineage,
+        version_distance=unit.version_distance,
+        norm_path=tuple(
+            normalize_text_for_identity(part) for part in unit.document_path
+        ),
+        has_identifier=bool(unit.explicit_identifier),
+        norm_identifier=normalize_text_for_identity(unit.explicit_identifier),
+        norm_text=unit.normalized_text,
+        text_tokens=text_tokens,
+        text_token_count=text_count,
+        has_previous_anchor=bool(unit.previous_anchor),
+        previous_anchor_tokens=previous_tokens,
+        previous_anchor_token_count=previous_count,
+        has_next_anchor=bool(unit.next_anchor),
+        next_anchor_tokens=following_tokens,
+        next_anchor_token_count=following_count,
+        has_geometry=bool(unit.geometry_style),
+        geometry_tokens=geometry_tokens,
+        geometry_token_count=geometry_count,
+        has_anchor=bool(unit.anchor),
+        norm_anchor=anchor,
+    )
+
+
+def _jaccard_sets(left: frozenset[str], right: frozenset[str]) -> float:
+    """`_jaccard` over token sets that were split from the same strings."""
+    if not left and not right:
+        return 1.0
+    if not left or not right:
+        return 0.0
+    return len(left & right) / len(left | right)
+
+
+def _prefix_agreement(left: tuple[str, ...], right: tuple[str, ...]) -> float:
+    """`_path_agreement` over already-normalised parts."""
+    if not left and not right:
+        return 1.0
+    shared = 0
+    for a, b in zip(left, right, strict=False):
+        if a != b:
+            break
+        shared += 1
+    longest = max(len(left), len(right))
+    return shared / longest if longest else 1.0
+
+
+def _pair_score_upper_bound(
+    candidate: _PreparedFeatures,
+    incoming: _PreparedFeatures,
+    bound_weights: tuple[float, float, float, float, float, float, float],
+) -> float:
+    """`LogicalIdentityResolver._score_upper_bound`, unrolled for speed.
+
+    This runs once per (incoming unit, corpus candidate) pair -- the innermost
+    loop of resolution -- so the exact same arithmetic the readable method
+    performed is inlined here: no helper calls, no repeated attribute reads,
+    no per-pair dictionary lookups. The Jaccard bounds are the size-ratio
+    argument from `_token_ratio_bound`: min/max over token counts, 1.0 when
+    both sides are empty, 0.0 when only one is.
+    """
+    (
+        w_source_continuity,
+        w_structural_path,
+        w_explicit_identifier,
+        w_semantic,
+        w_previous_neighbor,
+        w_next_neighbor,
+        w_geometry_style,
+    ) = bound_weights
+
+    weighted = 0.0
+    available = 0.0
+
+    left_lineage = candidate.lineage
+    if left_lineage and incoming.lineage:
+        available += w_source_continuity
+        if left_lineage == incoming.lineage:
+            # Version decay can only lower it; 1.0 is the bound.
+            weighted += w_source_continuity
+
+    # structural_path is always present; its agreement is computed inline --
+    # identical arithmetic to `_prefix_agreement`.
+    left_path = candidate.norm_path
+    right_path = incoming.norm_path
+    if not left_path and not right_path:
+        agreement = 1.0
+    else:
+        shared = 0
+        for left_part, right_part in zip(left_path, right_path, strict=False):
+            if left_part != right_part:
+                break
+            shared += 1
+        longest = len(left_path) if len(left_path) > len(right_path) else len(right_path)
+        agreement = shared / longest if longest else 1.0
+    available += w_structural_path
+    weighted += w_structural_path * agreement
+
+    if candidate.has_identifier and incoming.has_identifier:
+        available += w_explicit_identifier
+        if candidate.norm_identifier == incoming.norm_identifier:
+            weighted += w_explicit_identifier
+
+    if candidate.norm_text or incoming.norm_text:
+        available += w_semantic
+        count = candidate.text_token_count
+        other = incoming.text_token_count
+        largest = count if count > other else other
+        if largest == 0:
+            weighted += w_semantic  # both token sets empty: Jaccard is exactly 1
+        else:
+            smallest = count if count < other else other
+            weighted += w_semantic * (smallest / largest)
+
+    if candidate.has_previous_anchor and incoming.has_previous_anchor:
+        available += w_previous_neighbor
+        count = candidate.previous_anchor_token_count
+        other = incoming.previous_anchor_token_count
+        largest = count if count > other else other
+        if largest == 0:
+            weighted += w_previous_neighbor
+        else:
+            smallest = count if count < other else other
+            weighted += w_previous_neighbor * (smallest / largest)
+
+    if candidate.has_next_anchor and incoming.has_next_anchor:
+        available += w_next_neighbor
+        count = candidate.next_anchor_token_count
+        other = incoming.next_anchor_token_count
+        largest = count if count > other else other
+        if largest == 0:
+            weighted += w_next_neighbor
+        else:
+            smallest = count if count < other else other
+            weighted += w_next_neighbor * (smallest / largest)
+
+    if candidate.has_geometry and incoming.has_geometry:
+        available += w_geometry_style
+        count = candidate.geometry_token_count
+        other = incoming.geometry_token_count
+        largest = count if count > other else other
+        if largest == 0:
+            weighted += w_geometry_style
+        else:
+            smallest = count if count < other else other
+            weighted += w_geometry_style * (smallest / largest)
+
+    if available <= 0.0:
+        return 0.0
+    return weighted / available
+
+
+class BlockingCandidateIndex:
+    """§N15.1 sparse blocking over one previous-version corpus.
+
+    Build it once per corpus and reuse it for every incoming unit::
+
+        index = BlockingCandidateIndex(previous)
+        for unit in incoming:
+            decision = resolver.resolve(unit, previous, index=index)
+
+    Two layers behind one examination order:
+
+    **Exact-key buckets.** Candidates are bucketed under their normalised
+    anchor, normalised explicit identifier and normalised structural path --
+    the cheap keys §N15.1 names. An incoming unit sharing a key with a
+    candidate meets that candidate first, so precise scoring starts at the
+    likely continuation instead of discovering it late.
+
+    **Admissible screening.** Every candidate also carries an upper bound on
+    its pair score computable from prepared features alone: exact values for
+    the three cheap signals, size-ratio bounds for the four Jaccard signals.
+    The remaining candidates are examined best-bound-first, and the walk may
+    stop as soon as no unexamined candidate can still enter the top two --
+    which it provably cannot, because the bound never under-estimates.
+
+    Blocking therefore chooses only the *order* of examination, never the
+    candidate set. Nothing is dropped on a key miss, and the decision is the
+    same as scoring the whole corpus, every time. An empty corpus still falls
+    back to the plain NEW decision, exactly as before: a unit with no prior
+    version to continue from is new, not unmatched.
+    """
+
+    def __init__(self, previous: Sequence[LogicalUnitFingerprint]) -> None:
+        self._fingerprints: list[LogicalUnitFingerprint] = list(previous)
+        self._prepared = [_prepare_features(unit) for unit in self._fingerprints]
+        self._by_anchor: dict[str, list[int]] = {}
+        self._by_identifier: dict[str, list[int]] = {}
+        self._by_path: dict[tuple[str, ...], list[int]] = {}
+        for position, features in enumerate(self._prepared):
+            if features.has_anchor:
+                self._by_anchor.setdefault(features.norm_anchor, []).append(position)
+            if features.has_identifier:
+                self._by_identifier.setdefault(
+                    features.norm_identifier, []
+                ).append(position)
+            if features.norm_path:
+                self._by_path.setdefault(features.norm_path, []).append(position)
+
+    def __len__(self) -> int:
+        return len(self._fingerprints)
+
+    def fingerprint(self, position: int) -> LogicalUnitFingerprint:
+        return self._fingerprints[position]
+
+    def features(self, position: int) -> _PreparedFeatures:
+        return self._prepared[position]
+
+    def _key_hits(self, incoming: _PreparedFeatures) -> set[int]:
+        hits: set[int] = set()
+        if incoming.has_anchor:
+            hits.update(self._by_anchor.get(incoming.norm_anchor, ()))
+        if incoming.has_identifier:
+            hits.update(self._by_identifier.get(incoming.norm_identifier, ()))
+        if incoming.norm_path:
+            hits.update(self._by_path.get(incoming.norm_path, ()))
+        return hits
+
+    def examination_order(
+        self, incoming: LogicalUnitFingerprint, resolver: LogicalIdentityResolver
+    ) -> tuple[_PreparedFeatures, list[tuple[float, str, int]]]:
+        """The order to examine candidates in, plus the prepared incoming unit.
+
+        Returns `(prepared_incoming, order)` where order is a list of
+        `(-upper_bound, logical_id, position)` triples: exact-key hits first,
+        then everything else, each group sorted so the bound never increases
+        along it. That non-increase is precisely what lets the resolver's stop
+        rule cut the tail without risking the outcome.
+        """
+        prepared_incoming = _prepare_features(incoming)
+        hits = self._key_hits(prepared_incoming)
+        bound_weights = resolver._bound_weights()
+        hot: list[tuple[float, str, int]] = []
+        cold: list[tuple[float, str, int]] = []
+        for position, candidate in enumerate(self._prepared):
+            bound = _pair_score_upper_bound(candidate, prepared_incoming, bound_weights)
+            entry = (-bound, candidate.fingerprint.logical_id, position)
+            (hot if position in hits else cold).append(entry)
+        hot.sort()
+        cold.sort()
+        return prepared_incoming, hot + cold
+
+
 class LogicalIdentityResolver:
     """Decide whether a unit in a new version continues one from the old version.
 
@@ -445,6 +767,11 @@ class LogicalIdentityResolver:
     remaining signals renormalised to 1.0 would otherwise manufacture a
     confident score out of a thin one.
     """
+
+    #: Lazily-built weight tuple for the screening bound; see `_bound_weights`.
+    _bound_weights_cache: (
+        tuple[float, float, float, float, float, float, float] | None
+    ) = None
 
     def __init__(
         self,
@@ -559,6 +886,141 @@ class LogicalIdentityResolver:
         score = sum(present[name] * self.weights[name] for name in present) / available
         return score, present, missing
 
+    # -- prepared-feature scoring (sparse blocking path) -------------------
+
+    @staticmethod
+    def _source_continuity_prepared(
+        candidate: _PreparedFeatures, incoming: _PreparedFeatures
+    ) -> tuple[float | None, MissingReason | None]:
+        if not candidate.lineage or not incoming.lineage:
+            return None, MissingReason.NOT_APPLICABLE
+        if candidate.lineage != incoming.lineage:
+            return 0.0, None
+        steps = max(0, candidate.version_distance - 1)
+        return max(_LINEAGE_FLOOR, 1.0 - _LINEAGE_DECAY * steps), None
+
+    @staticmethod
+    def _explicit_identifier_prepared(
+        candidate: _PreparedFeatures, incoming: _PreparedFeatures
+    ) -> tuple[float | None, MissingReason | None]:
+        if not candidate.has_identifier or not incoming.has_identifier:
+            return None, MissingReason.NOT_APPLICABLE
+        return (
+            1.0 if candidate.norm_identifier == incoming.norm_identifier else 0.0
+        ), None
+
+    @staticmethod
+    def _anchor_pair_prepared(
+        has_left: bool,
+        left_tokens: frozenset[str],
+        has_right: bool,
+        right_tokens: frozenset[str],
+    ) -> tuple[float | None, MissingReason | None]:
+        if not has_left or not has_right:
+            return None, MissingReason.NOT_APPLICABLE
+        return _jaccard_sets(left_tokens, right_tokens), None
+
+    def _score_pair_prepared(
+        self, candidate: _PreparedFeatures, incoming: _PreparedFeatures
+    ) -> tuple[float, dict[str, float], dict[str, str]]:
+        """`score_pair` over prepared features: same numbers, no re-normalising.
+
+        Kept in exact lockstep with `_signals` -- same signal order, same
+        presence gates (raw fields), same renormalisation. The equivalence
+        tests pin the two together pair by pair; any drift between them fails
+        loudly instead of quietly changing a decision.
+        """
+        raw: dict[str, tuple[float | None, MissingReason | None]] = {
+            "source_continuity": self._source_continuity_prepared(candidate, incoming),
+            "structural_path": (
+                _prefix_agreement(candidate.norm_path, incoming.norm_path),
+                None,
+            ),
+            "explicit_identifier": self._explicit_identifier_prepared(
+                candidate, incoming
+            ),
+            "semantic": (
+                None
+                if not candidate.norm_text and not incoming.norm_text
+                else _jaccard_sets(candidate.text_tokens, incoming.text_tokens),
+                MissingReason.NOT_APPLICABLE
+                if not candidate.norm_text and not incoming.norm_text
+                else None,
+            ),
+            "previous_neighbor": self._anchor_pair_prepared(
+                candidate.has_previous_anchor,
+                candidate.previous_anchor_tokens,
+                incoming.has_previous_anchor,
+                incoming.previous_anchor_tokens,
+            ),
+            "next_neighbor": self._anchor_pair_prepared(
+                candidate.has_next_anchor,
+                candidate.next_anchor_tokens,
+                incoming.has_next_anchor,
+                incoming.next_anchor_tokens,
+            ),
+            "geometry_style": self._anchor_pair_prepared(
+                candidate.has_geometry,
+                candidate.geometry_tokens,
+                incoming.has_geometry,
+                incoming.geometry_tokens,
+            ),
+        }
+        present: dict[str, float] = {}
+        missing: dict[str, str] = {}
+        for name, (value, reason) in raw.items():
+            if value is None:
+                missing[name] = (reason or MissingReason.MODEL_UNAVAILABLE).value
+            else:
+                present[name] = value
+        available = sum(self.weights[name] for name in present)
+        if available <= 0.0:
+            return 0.0, present, missing
+        score = sum(present[name] * self.weights[name] for name in present) / available
+        return score, present, missing
+
+    def _score_upper_bound(
+        self, candidate: _PreparedFeatures, incoming: _PreparedFeatures
+    ) -> float:
+        """An upper bound on the pair score, from prepared features alone.
+
+        Admissible by construction. The three cheap signals contribute their
+        exact values; each Jaccard signal contributes its size-ratio bound,
+        which its true value can only fall under; and the renormalising
+        denominator is the true present-weight total, because §N4.4 presence
+        is decidable from field emptiness without computing any value. The
+        weighted mean is monotone in every signal value, so no completion of
+        the unknown ones can push the true score past this bound -- which is
+        what makes the resolver's early stop safe rather than lucky.
+
+        The arithmetic lives in `_pair_score_upper_bound`, unrolled for the
+        hot loop; this wrapper keeps it readable at the call sites that are
+        not per-pair.
+        """
+        return _pair_score_upper_bound(candidate, incoming, self._bound_weights())
+
+    def _bound_weights(self) -> tuple[float, float, float, float, float, float, float]:
+        """The seven signal weights as a tuple, read once and cached lazily.
+
+        Cached on first use rather than fixed at construction so a weights
+        dictionary missing a name keeps failing where it always did -- at
+        scoring time, not at `__init__`.
+        """
+        cached = self._bound_weights_cache
+        if cached is None:
+            weights = self.weights
+            cached = (
+                weights["source_continuity"],
+                weights["structural_path"],
+                weights["explicit_identifier"],
+                weights["semantic"],
+                weights["previous_neighbor"],
+                weights["next_neighbor"],
+                weights["geometry_style"],
+            )
+            self._bound_weights_cache = cached
+        return cached
+
     # -- resolution -------------------------------------------------------
 
     def resolve(
@@ -567,7 +1029,24 @@ class LogicalIdentityResolver:
         previous: list[LogicalUnitFingerprint],
         *,
         seed_logical_id: str | None = None,
+        index: BlockingCandidateIndex | None = None,
     ) -> LogicalIdentityDecision:
+        """Resolve one incoming unit against the previous-version corpus.
+
+        The scan is §N15.1 sparse blocking, not all-pairs. Candidates are
+        examined in the index's order -- exact blocking keys first, then by an
+        admissible upper bound on the pair score -- and `score_pair`-precise
+        scoring runs only until the top two are settled. Those top two *are*
+        the first two entries of the full brute-force ordering, reproduced
+        exactly, so the decision handed to `decide_pair` is the decision a
+        whole-corpus scan would have made; only the work changed.
+
+        Resolving many units against one corpus? Build the index once and
+        pass it in (or use `resolve_units`). Without one, an index is built
+        for this call alone, and it must have been built over exactly this
+        `previous` corpus. An empty corpus still returns the plain NEW
+        decision it always did.
+        """
         if not previous:
             return LogicalIdentityDecision(
                 match=LogicalMatch.NEW,
@@ -576,13 +1055,45 @@ class LogicalIdentityResolver:
                 reason="no prior version to continue from",
             )
 
-        scored = sorted(
-            ((self.score_pair(candidate, incoming), candidate) for candidate in previous),
-            key=lambda item: (-item[0][0], item[1].logical_id),
-        )
-        (best_score, best_signals, best_missing), best = scored[0]
-        runner_up = scored[1][0][0] if len(scored) > 1 else 0.0
-        runner_up_id = scored[1][1].logical_id if len(scored) > 1 else None
+        if index is None:
+            index = BlockingCandidateIndex(previous)
+        elif len(index) != len(previous):
+            raise ValueError(
+                "the candidate index was built over a different corpus"
+            )
+
+        prepared_incoming, order = index.examination_order(incoming, self)
+
+        # The best two examined so far, best first, under the brute-force
+        # ordering (-score, logical_id). Corpus position breaks ties exactly
+        # the way the stable sort over `previous` used to.
+        top: list[tuple[float, str, int, dict[str, float], dict[str, str]]] = []
+        for negative_bound, logical_id, position in order:
+            if len(top) == 2:
+                second_score, second_id, second_position = top[1][:3]
+                if (negative_bound, logical_id, position) > (
+                    -second_score,
+                    second_id,
+                    second_position,
+                ):
+                    # Every later entry carries a lower-or-equal bound, and no
+                    # bound ever under-estimates a true score: nothing ahead
+                    # of us can reach the top two. Stop.
+                    break
+            candidate = index.features(position)
+            score, signals, missing = self._score_pair_prepared(
+                candidate, prepared_incoming
+            )
+            top.append((score, logical_id, position, signals, missing))
+            top.sort(key=lambda entry: (-entry[0], entry[1], entry[2]))
+            del top[2:]
+
+        best_score = top[0][0]
+        best_signals = top[0][3]
+        best_missing = top[0][4]
+        best = index.fingerprint(top[0][2])
+        runner_up = top[1][0] if len(top) > 1 else 0.0
+        runner_up_id = top[1][1] if len(top) > 1 else None
 
         return self.decide_pair(
             incoming=incoming,
@@ -829,3 +1340,26 @@ def assign_one_to_one(
             )
         )
     return decisions
+
+
+def resolve_units(
+    incoming: list[LogicalUnitFingerprint],
+    previous: list[LogicalUnitFingerprint],
+    *,
+    resolver: LogicalIdentityResolver | None = None,
+) -> list[LogicalIdentityDecision]:
+    """Resolve a whole incoming version against one previous corpus.
+
+    The shape callers that used to loop `resolve` by hand should reach for:
+    the blocking index is built once over the corpus and reused for every
+    unit, instead of being rebuilt -- or worse, brute-forced -- per unit.
+    Decisions are identical to unit-by-unit `resolve` calls; only the cost
+    changed. An empty previous corpus still returns the plain NEW decisions.
+    """
+    engine = resolver or LogicalIdentityResolver()
+    if not incoming:
+        return []
+    if not previous:
+        return [engine.resolve(unit, []) for unit in incoming]
+    index = BlockingCandidateIndex(previous)
+    return [engine.resolve(unit, previous, index=index) for unit in incoming]
