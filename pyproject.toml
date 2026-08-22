@@ -87,6 +87,7 @@ packages = [
   "packages/retrieval/src/akc_retrieval",
   "packages/domain-packs/src/akc_domain_packs",
   "packages/parallel-runtime/src/akc_parallel_runtime",
+  "packages/local-mcp/src/akc_local_mcp",
   "services/api/src/akc_api",
   "services/url-fetcher/src/akc_url_fetcher",
   "services/scheduler/src/akc_scheduler",
@@ -123,6 +124,7 @@ pythonpath = [
   "packages/retrieval/src",
   "packages/domain-packs/src",
   "packages/parallel-runtime/src",
+  "packages/local-mcp/src",
   "services/api/src",
   "services/url-fetcher/src",
   "services/scheduler/src",
@@ -208,3 +210,8 @@ fail_under = 80
 [tool.bandit]
 exclude_dirs = ["tests", "benchmark/datasets"]
 skips = ["B101"]
+
+[dependency-groups]
+local-mcp = [
+    "mcp>=1.0,<2",
+]

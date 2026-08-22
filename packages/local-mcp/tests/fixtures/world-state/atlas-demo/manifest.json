@@ -1,0 +1,12 @@
+{
+  "schema": "akc.local-world-manifest/1",
+  "world_id": "atlas-demo",
+  "workspace_id": "ws-atlas-demo",
+  "status": "ACTIVE",
+  "compiler_version": "0.1.0",
+  "built_at": "2026-08-21T09:30:00Z",
+  "manifest_hash": "sha256:df0c513c386ea338415eae41e7170e27e2949ecf83c9ee56d705e53c577ac56a",
+  "artifact_hashes": {
+    "states/atlas-demo/state.json": "sha256:7c1c88179cbaf80105375911e02fa9e9999d8daa350e7987f43aa7f7bd8c9d3f"
+  }
+}
