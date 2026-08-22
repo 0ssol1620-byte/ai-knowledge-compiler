@@ -197,7 +197,7 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
           Demo workspace · No documents are processed and no credits are used.
         </div>
       )}
-      <aside className="sidebar" aria-label="Primary navigation">
+      <aside className="sidebar" aria-label="Workspace sidebar">
         <div className="sidebar-brand-row">
           <Link
             href="/"
@@ -216,7 +216,7 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" aria-label="Primary navigation">
           {navigation.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
