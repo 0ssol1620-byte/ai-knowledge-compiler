@@ -1,0 +1,69 @@
+{
+  "schema": "akc.local-world-state/1",
+  "world_id": "atlas-demo",
+  "topics": [
+    {
+      "topic_id": "ingest-pipeline",
+      "title": "Document ingest pipeline",
+      "summary": "Documents are hashed, security-scanned, deduplicated and preflighted before compilation. A page that has not passed preflight never reaches the compiler.",
+      "keywords": ["ingest", "preflight", "deduplication", "security scan"],
+      "claim_ids": ["claim-source-block-evidence", "claim-atomic-publish"]
+    },
+    {
+      "topic_id": "source-traceability",
+      "title": "Source traceability",
+      "summary": "Every compiled answer names the source blocks it was built from, so any sentence in an answer can be traced back to a page region in a document version.",
+      "keywords": ["traceability", "source blocks", "provenance"],
+      "claim_ids": ["claim-source-block-evidence"]
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim-source-block-evidence",
+      "text": "Every AI-derived factual claim carries at least one source block identifier from its document version.",
+      "status": "verified",
+      "confidence": 0.97,
+      "topic_ids": ["ingest-pipeline", "source-traceability"],
+      "evidence": [
+        {
+          "document_version_id": "docver-9f21c3",
+          "source_block_ids": ["blk-014", "blk-015"],
+          "quote": "AI-derived factual content requires valid source block evidence."
+        },
+        {
+          "document_version_id": "docver-9f21c3",
+          "source_block_ids": ["blk-031"],
+          "quote": "Every business query and object key is tenant scoped."
+        }
+      ]
+    },
+    {
+      "claim_id": "claim-atomic-publish",
+      "text": "A new world state is published atomically: readers see either the previous world or the new one, never a partial mix.",
+      "status": "verified",
+      "confidence": 0.93,
+      "topic_ids": ["ingest-pipeline"],
+      "evidence": [
+        {
+          "document_version_id": "docver-4b7a10",
+          "source_block_ids": ["blk-102", "blk-103"],
+          "quote": "새 world state는 원자적으로 publish한다. 부분 성공 state를 agent가 보지 못하게 한다."
+        }
+      ]
+    },
+    {
+      "claim_id": "claim-unresolved-final",
+      "text": "An unresolved artifact is rebuilt rather than skipped: UNRESOLVED never silently becomes CURRENT.",
+      "status": "verified",
+      "confidence": 0.95,
+      "topic_ids": ["source-traceability"],
+      "evidence": [
+        {
+          "document_version_id": "docver-4b7a10",
+          "source_block_ids": ["blk-207"],
+          "quote": "Unresolved artifacts are rebuilt — they may not need it, and rebuilding one costs compute, but not rebuilding one that did need it ships a stale answer."
+        }
+      ]
+    }
+  ]
+}

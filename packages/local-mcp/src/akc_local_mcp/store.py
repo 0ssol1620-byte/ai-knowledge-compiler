@@ -1,0 +1,370 @@
+"""Reading published world states from local JSON files.
+
+This store is the entire data plane of `akc-local-mcp`: an offline desktop
+scenario where no `services/api` process is running, and the only thing that
+exists on disk is whatever the compiler published into a world-state
+directory. Layout:
+
+    <world-state-dir>/
+      <world_id>/manifest.json   the published manifest (the citable pointer)
+      <world_id>/state.json      the compiled truth: topics, claims, evidence
+
+Two properties carry over from the publishing side (`akc_cir.world_state`,
+masterplan invariant 13: *새 world state는 원자적으로 publish한다*):
+
+- **The manifest is a pointer, not a promise.** Every answer this package
+  produces names the manifest hash it was computed against, so the answer is
+  checkable: the files behind it either hash to that manifest or they do not.
+- **Reads go to disk on every call.** Nothing is cached across requests. A
+  republished world is visible on the next question without restarting the
+  server, and a deleted one stops answering.
+
+Everything here is read-only. There is no mutating method on `LocalWorldStore`,
+and none may be added: see `akc_local_mcp.server` for the forbidden-tool list.
+Malformed input fails closed — a file that does not parse, or declares a schema
+version this code does not know, raises instead of being partially interpreted.
+"""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+__all__ = [
+    "ClaimRecord",
+    "EvidenceRecord",
+    "LocalWorldStore",
+    "StoreError",
+    "TopicRecord",
+    "UnknownWorldError",
+    "WorldDocumentError",
+    "WorldManifest",
+    "WorldSnapshot",
+]
+
+MANIFEST_SCHEMA = "akc.local-world-manifest/1"
+STATE_SCHEMA = "akc.local-world-state/1"
+MANIFEST_FILENAME = "manifest.json"
+STATE_FILENAME = "state.json"
+
+
+class StoreError(RuntimeError):
+    """A world-state file cannot be answered from. Never silently degraded."""
+
+
+class UnknownWorldError(StoreError):
+    """No directory of that name exists under the world-state dir."""
+
+
+class WorldDocumentError(StoreError):
+    """A world file exists but cannot be trusted (unreadable or wrong shape)."""
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceRecord:
+    """One evidence link behind a claim.
+
+    Mirrors the repository invariant that AI-derived factual content requires
+    valid source block evidence: `source_block_ids` may not be empty. A claim
+    whose evidence cannot satisfy that is refused at parse time, not served
+    with the gap papered over.
+    """
+
+    source_block_ids: tuple[str, ...]
+    document_version_id: str | None = None
+    quote: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "source_block_ids": list(self.source_block_ids),
+        }
+        if self.document_version_id is not None:
+            payload["document_version_id"] = self.document_version_id
+        if self.quote is not None:
+            payload["quote"] = self.quote
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class ClaimRecord:
+    claim_id: str
+    text: str
+    status: str
+    topic_ids: tuple[str, ...]
+    evidence: tuple[EvidenceRecord, ...]
+    confidence: float | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "claim_id": self.claim_id,
+            "text": self.text,
+            "status": self.status,
+            "topic_ids": list(self.topic_ids),
+            "evidence": [item.to_dict() for item in self.evidence],
+        }
+        if self.confidence is not None:
+            payload["confidence"] = self.confidence
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class TopicRecord:
+    topic_id: str
+    title: str
+    summary: str
+    keywords: tuple[str, ...]
+    claim_ids: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "topic_id": self.topic_id,
+            "title": self.title,
+            "summary": self.summary,
+            "keywords": list(self.keywords),
+            "claim_ids": list(self.claim_ids),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class WorldManifest:
+    """What `manifest.json` recorded, verbatim.
+
+    `status` is kept as written by the publisher (`ACTIVE`, `CANDIDATE`,
+    `SUPERSEDED`, ...) — this package never guesses a world into being active.
+    """
+
+    world_id: str
+    workspace_id: str
+    status: str
+    compiler_version: str
+    built_at: str
+    manifest_hash: str
+    artifact_hashes: Mapping[str, str]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema": MANIFEST_SCHEMA,
+            "world_id": self.world_id,
+            "workspace_id": self.workspace_id,
+            "status": self.status,
+            "compiler_version": self.compiler_version,
+            "built_at": self.built_at,
+            "manifest_hash": self.manifest_hash,
+            "artifact_hashes": dict(sorted(self.artifact_hashes.items())),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class WorldSnapshot:
+    """A manifest joined with its compiled state."""
+
+    manifest: WorldManifest
+    topics: tuple[TopicRecord, ...]
+    claims: tuple[ClaimRecord, ...]
+
+
+def _read_json(path: Path) -> Any:
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise WorldDocumentError(f"{path}: cannot be read ({exc})") from exc
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise WorldDocumentError(f"{path}: invalid JSON ({exc})") from exc
+
+
+def _require_object(value: Any, context: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise WorldDocumentError(f"{context}: expected a JSON object")
+    return value
+
+
+def _require_schema(document: Mapping[str, Any], expected: str, path: Path) -> None:
+    found = document.get("schema")
+    if found != expected:
+        raise WorldDocumentError(
+            f"{path}: schema {found!r} is not supported (expected {expected!r})"
+        )
+
+
+def _require_str(document: Mapping[str, Any], key: str, context: str) -> str:
+    value = document.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise WorldDocumentError(f"{context}: {key!r} must be a non-empty string")
+    return value
+
+
+def _optional_str(document: Mapping[str, Any], key: str, context: str) -> str | None:
+    value = document.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise WorldDocumentError(f"{context}: {key!r} must be a string when present")
+    return value
+
+
+def _require_str_tuple(
+    document: Mapping[str, Any], key: str, context: str, *, allow_empty: bool = True
+) -> tuple[str, ...]:
+    value = document.get(key, [])
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise WorldDocumentError(f"{context}: {key!r} must be a list of strings")
+    if not allow_empty and not value:
+        raise WorldDocumentError(f"{context}: {key!r} must not be empty")
+    return tuple(value)
+
+
+def _parse_manifest(path: Path) -> WorldManifest:
+    document = _require_object(_read_json(path), str(path))
+    _require_schema(document, MANIFEST_SCHEMA, path)
+    context = str(path)
+    artifact_hashes_raw = document.get("artifact_hashes", {})
+    if not isinstance(artifact_hashes_raw, dict) or any(
+        not isinstance(key, str) or not isinstance(val, str)
+        for key, val in artifact_hashes_raw.items()
+    ):
+        raise WorldDocumentError(
+            f"{context}: 'artifact_hashes' must map artifact names to hash strings"
+        )
+    manifest = WorldManifest(
+        world_id=_require_str(document, "world_id", context),
+        workspace_id=_require_str(document, "workspace_id", context),
+        status=_require_str(document, "status", context),
+        compiler_version=_require_str(document, "compiler_version", context),
+        built_at=_require_str(document, "built_at", context),
+        manifest_hash=_require_str(document, "manifest_hash", context),
+        artifact_hashes=dict(artifact_hashes_raw),
+    )
+    if manifest.world_id != path.parent.name:
+        raise WorldDocumentError(
+            f"{context}: world_id {manifest.world_id!r} does not match its "
+            f"directory {path.parent.name!r}"
+        )
+    return manifest
+
+
+def _parse_evidence(raw: Sequence[Any], context: str) -> tuple[EvidenceRecord, ...]:
+    records: list[EvidenceRecord] = []
+    for index, item in enumerate(raw):
+        item_context = f"{context}: evidence[{index}]"
+        entry = _require_object(item, item_context)
+        records.append(
+            EvidenceRecord(
+                source_block_ids=(
+                    _require_str_tuple(entry, "source_block_ids", item_context, allow_empty=False)
+                ),
+                document_version_id=_optional_str(entry, "document_version_id", item_context),
+                quote=_optional_str(entry, "quote", item_context),
+            )
+        )
+    return tuple(records)
+
+
+def _parse_state(path: Path) -> tuple[tuple[TopicRecord, ...], tuple[ClaimRecord, ...]]:
+    document = _require_object(_read_json(path), str(path))
+    _require_schema(document, STATE_SCHEMA, path)
+    context = str(path)
+
+    topics: list[TopicRecord] = []
+    seen_topic_ids: set[str] = set()
+    for index, raw_topic in enumerate(document.get("topics", [])):
+        topic_context = f"{context}: topics[{index}]"
+        entry = _require_object(raw_topic, topic_context)
+        topic = TopicRecord(
+            topic_id=_require_str(entry, "topic_id", topic_context),
+            title=_require_str(entry, "title", topic_context),
+            summary=_optional_str(entry, "summary", topic_context) or "",
+            keywords=_require_str_tuple(entry, "keywords", topic_context),
+            claim_ids=_require_str_tuple(entry, "claim_ids", topic_context),
+        )
+        if topic.topic_id in seen_topic_ids:
+            raise WorldDocumentError(f"{topic_context}: duplicate topic_id {topic.topic_id!r}")
+        seen_topic_ids.add(topic.topic_id)
+        topics.append(topic)
+
+    claims: list[ClaimRecord] = []
+    seen_claim_ids: set[str] = set()
+    for index, raw_claim in enumerate(document.get("claims", [])):
+        claim_context = f"{context}: claims[{index}]"
+        entry = _require_object(raw_claim, claim_context)
+        confidence_raw = entry.get("confidence")
+        if confidence_raw is not None and (
+            not isinstance(confidence_raw, (int, float)) or isinstance(confidence_raw, bool)
+        ):
+            raise WorldDocumentError(f"{claim_context}: 'confidence' must be a number")
+        confidence = float(confidence_raw) if confidence_raw is not None else None
+        if confidence is not None and not 0.0 <= confidence <= 1.0:
+            raise WorldDocumentError(f"{claim_context}: 'confidence' must be within [0.0, 1.0]")
+        claim = ClaimRecord(
+            claim_id=_require_str(entry, "claim_id", claim_context),
+            text=_require_str(entry, "text", claim_context),
+            status=_require_str(entry, "status", claim_context),
+            topic_ids=_require_str_tuple(entry, "topic_ids", claim_context),
+            evidence=_parse_evidence(entry.get("evidence", []), claim_context),
+            confidence=confidence,
+        )
+        if claim.claim_id in seen_claim_ids:
+            raise WorldDocumentError(f"{claim_context}: duplicate claim_id {claim.claim_id!r}")
+        seen_claim_ids.add(claim.claim_id)
+        claims.append(claim)
+
+    known_claim_ids = seen_claim_ids
+    for topic in topics:
+        dangling = [cid for cid in topic.claim_ids if cid not in known_claim_ids]
+        if dangling:
+            raise WorldDocumentError(
+                f"{context}: topic {topic.topic_id!r} references unknown claim(s) "
+                f"{', '.join(sorted(dangling))}"
+            )
+
+    return tuple(topics), tuple(claims)
+
+
+class LocalWorldStore:
+    """Read-only access to one world-state directory. Disk is the only source."""
+
+    def __init__(self, root: Path | str) -> None:
+        self._root = Path(root)
+
+    @property
+    def root(self) -> Path:
+        return self._root
+
+    def world_dir(self, world_id: str) -> Path:
+        if not world_id or "/" in world_id or "\\" in world_id or world_id in {".", ".."}:
+            raise UnknownWorldError(f"invalid world id: {world_id!r}")
+        return self._root / world_id
+
+    def list_worlds(self) -> tuple[WorldManifest, ...]:
+        """Every world directory that declares a readable manifest, sorted."""
+        if not self._root.is_dir():
+            return ()
+        manifests = [
+            _parse_manifest(directory / MANIFEST_FILENAME)
+            for directory in sorted(self._root.iterdir())
+            if (directory / MANIFEST_FILENAME).is_file()
+        ]
+        return tuple(manifests)
+
+    def has_world(self, world_id: str) -> bool:
+        return (self.world_dir(world_id) / MANIFEST_FILENAME).is_file()
+
+    def load_manifest(self, world_id: str) -> WorldManifest:
+        path = self.world_dir(world_id) / MANIFEST_FILENAME
+        if not path.is_file():
+            raise UnknownWorldError(f"no manifest for world {world_id!r} at {path}")
+        return _parse_manifest(path)
+
+    def load_snapshot(self, world_id: str) -> WorldSnapshot:
+        manifest = self.load_manifest(world_id)
+        state_path = self.world_dir(world_id) / STATE_FILENAME
+        if not state_path.is_file():
+            raise WorldDocumentError(
+                f"{state_path}: world {world_id!r} has a manifest but no state file"
+            )
+        topics, claims = _parse_state(state_path)
+        return WorldSnapshot(manifest=manifest, topics=topics, claims=claims)
