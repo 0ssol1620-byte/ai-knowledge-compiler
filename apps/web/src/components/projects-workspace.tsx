@@ -16,8 +16,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { SampleDataBadge } from "@/components/data/sample-data-badge";
 import type { WorkspaceDashboardSnapshot } from "@/components/workspace-dashboard";
 import { apiRequest } from "@/lib/api-client";
+import { asSample, type SampleMarked } from "@/lib/data-boundary";
 import { demoProjects } from "@/lib/demo-data";
 import type { StructaraLocale } from "@/lib/locale";
 import { localeLanguageTag as localeTag } from "@/lib/locale";
@@ -163,22 +165,31 @@ export function ProjectsWorkspace({
     enabled: !DEMO_MODE,
   });
 
-  const projects = useMemo<ProjectSummary[]>(
+  // Fixture projects cross the SAMPLE/LIVE data boundary here. `asSample` is
+  // the only constructor of sample-marked data and attaches the SAMPLE badge;
+  // the badge is rendered in the header below whenever this branch feeds the
+  // page.
+  const sampleProjects = useMemo<SampleMarked<ProjectSummary[]>>(
     () =>
-      DEMO_MODE
-        ? demoProjects.map((project, index) => ({
-            ...project,
-            owner_name:
-              index === 0
-                ? locale === "ko"
-                  ? "데모 김"
-                  : "Demo Kim"
-                : locale === "ko"
-                  ? "샘플 팀"
-                  : "Sample team",
-          }))
-        : (dashboard.data?.projects ?? []),
-    [dashboard.data?.projects, locale],
+      asSample(
+        demoProjects.map((project, index) => ({
+          ...project,
+          owner_name:
+            index === 0
+              ? locale === "ko"
+                ? "데모 김"
+                : "Demo Kim"
+              : locale === "ko"
+                ? "샘플 팀"
+                : "Sample team",
+        })),
+      ),
+    [locale],
+  );
+
+  const projects = useMemo<ProjectSummary[]>(
+    () => (DEMO_MODE ? sampleProjects.data : (dashboard.data?.projects ?? [])),
+    [sampleProjects, dashboard.data?.projects],
   );
 
   const filtered = useMemo(() => {
@@ -271,6 +282,7 @@ export function ProjectsWorkspace({
           <h1>{copy.title}</h1>
           <p>{copy.description}</p>
         </div>
+        {DEMO_MODE && <SampleDataBadge value={sampleProjects} />}
         <Link className="primary-button" href="/intake" data-app-header-action>
           <Plus size={16} /> {copy.newProject}
         </Link>

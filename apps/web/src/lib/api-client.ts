@@ -1,6 +1,31 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { z } from "zod";
 
+import {
+  asLive,
+  asSample,
+  type MarkedData,
+} from "@/lib/data-boundary";
+
+export {
+  asLive,
+  asSample,
+  dataSourceOf,
+  isLive,
+  isSample,
+  markedValue,
+  SAMPLE_BADGE_LABEL,
+} from "@/lib/data-boundary";
+import {
+  DEMO_ANSWER,
+  DEMO_ENTITIES,
+  DEMO_GUARANTEES,
+  DEMO_IMPACT,
+  DEMO_RELATIONS,
+  DEMO_TRACE,
+  DEMO_WORLD_STATE_ID,
+  type DemoGuarantee,
+} from "@/lib/demo-workspace";
 import type { JobEvent, JobEventType, PreflightEstimate } from "@/lib/types";
 
 // The application ships with a nonce-only CSP. Zod's optional JIT path probes
@@ -334,4 +359,138 @@ export async function streamJob(
       return exponential + Math.floor(Math.random() * 500);
     },
   });
+}
+
+/* ── /v1/world client stubs ──────────────────────────────────────────────── */
+
+/**
+ * Client half of the `/v1/world` surface: `getWorld`, `listChanges`, and
+ * `ask` are real fetch calls against the API base URL, but the backend world
+ * module is still being built separately. Until it exists every call fails to
+ * connect — which is not an error state for the UI — so each function falls
+ * back through the SAMPLE/LIVE data boundary (`asSample`) to the registered
+ * demo-workspace fixture.
+ *
+ * The boundary is what keeps this honest: a fallback is wrapped by
+ * `asSample`, so whatever the UI renders from it is forced to carry the
+ * SAMPLE badge. There is deliberately no code path here that produces
+ * live-marked (`asLive`) content from anything other than an actual HTTP
+ * response — no mock server, no invented "live" payload.
+ *
+ * Every function returns `MarkedData<T>` rather than `T`: the caller must
+ * look at `source` (via `isLive`) before presenting the data, which is the
+ * whole point of routing these stubs through lib/data-boundary.ts.
+ */
+
+/** A compiled world state, as `/v1/world/{id}` is expected to return it. */
+export interface WorldStateDto {
+  id: string;
+  revision: number;
+  entity_count: number;
+  relation_count: number;
+}
+
+/** One recorded world change, as `/v1/world/changes` is expected to return. */
+export interface WorldChangeDto {
+  id: string;
+  world_state_id: string;
+  /** Human-readable summary of what moved; never a fabricated metric. */
+  summary: string;
+  /** ISO 8601 instant the change was activated at. */
+  changed_at: string;
+}
+
+/** An answer with its guarantees and provenance trace, as ASK returns them. */
+export interface WorldAnswerDto {
+  question: string;
+  answer: string;
+  guarantees: readonly DemoGuarantee[];
+  trace: readonly string[];
+}
+
+/**
+ * The one instant the demo fixture's clock is pinned to (demo-workspace.ts
+ * `EPOCH`). The sample change record below is stamped with it so
+ * `listChanges(since)` filtering stays deterministic across replays.
+ */
+const FIXTURE_EPOCH_ISO = "2026-08-11T09:00:00.000Z";
+
+const SAMPLE_WORLD_STATE: WorldStateDto = {
+  id: DEMO_WORLD_STATE_ID,
+  revision: 1,
+  entity_count: DEMO_ENTITIES.length,
+  relation_count: DEMO_RELATIONS.length,
+};
+
+const SAMPLE_CHANGE: WorldChangeDto = {
+  id: DEMO_IMPACT.changeId,
+  world_state_id: DEMO_WORLD_STATE_ID,
+  summary: `Recompiled the warranty term source · ${DEMO_IMPACT.knowledgeUnitsAffected} knowledge units affected`,
+  changed_at: FIXTURE_EPOCH_ISO,
+};
+
+/**
+ * Fetch a compiled world state by id. Falls back to the sample workspace
+ * fixture — badged SAMPLE — when the backend is unreachable or errors.
+ */
+export async function getWorld(
+  worldId: string,
+): Promise<MarkedData<WorldStateDto>> {
+  try {
+    const state = await apiRequest<WorldStateDto>(
+      `/v1/world/${encodeURIComponent(worldId)}`,
+    );
+    return asLive(state);
+  } catch {
+    // The sample fallback only knows the fixture workspace; it reports the
+    // fixture's own id rather than pretending the requested id resolved.
+    return asSample(SAMPLE_WORLD_STATE);
+  }
+}
+
+/**
+ * List world changes activated after `since` (ISO 8601 cursor). Falls back to
+ * the fixture's single recorded change when the backend is unavailable — and
+ * to an empty list when the cursor is past it, exactly as the live endpoint
+ * would behave for an up-to-date client.
+ */
+export async function listChanges(
+  since: string,
+): Promise<MarkedData<readonly WorldChangeDto[]>> {
+  try {
+    const changes = await apiRequest<readonly WorldChangeDto[]>(
+      `/v1/world/changes?since=${encodeURIComponent(since)}`,
+    );
+    return asLive(changes);
+  } catch {
+    const cursor = Date.parse(since);
+    const changes =
+      Number.isNaN(cursor) || cursor < Date.parse(FIXTURE_EPOCH_ISO)
+        ? [SAMPLE_CHANGE]
+        : [];
+    return asSample(changes);
+  }
+}
+
+/**
+ * Ask the world a question. The backend answering service is not wired yet,
+ * so this falls back to the fixture exchange (the warranty question's answer,
+ * guarantees, and provenance trace) under the SAMPLE badge.
+ */
+export async function ask(query: string): Promise<MarkedData<WorldAnswerDto>> {
+  try {
+    const answer = await apiRequest<WorldAnswerDto>("/v1/world/ask", {
+      method: "POST",
+      idempotencyKey: crypto.randomUUID(),
+      body: JSON.stringify({ query }),
+    });
+    return asLive(answer);
+  } catch {
+    return asSample({
+      question: query,
+      answer: DEMO_ANSWER,
+      guarantees: DEMO_GUARANTEES,
+      trace: DEMO_TRACE,
+    });
+  }
 }
