@@ -1,0 +1,51 @@
+{
+  "fixture_id": "showcase-world-v1",
+  "recording": {
+    "recording_id": "rec-d8b684cbbd667b25",
+    "recorded_at": "2026-08-23T08:19:12.573Z",
+    "source": "RECORDED_FICTIONAL_SAMPLE",
+    "truth_class_default": "OBSERVED",
+    "privacy_class": "PUBLIC",
+    "envelope_schema_version": "1.0",
+    "mode": "demo",
+    "scope": {
+      "kind": "demo",
+      "fixture_id": "showcase-world-v1"
+    }
+  },
+  "publications": [
+    {
+      "world_state_id": "WS-1",
+      "receipt": {
+        "receipt_id": "rcpt-chg_8049399a905a",
+        "checksums_verified": true,
+        "permission_checked": true,
+        "integrity_passed": true,
+        "equivalence": null
+      }
+    },
+    {
+      "world_state_id": "WS-2",
+      "receipt": {
+        "receipt_id": "rcpt-chg_912a34291350",
+        "checksums_verified": true,
+        "permission_checked": true,
+        "integrity_passed": true,
+        "equivalence": {
+          "equivalent": true,
+          "compared": 26,
+          "diverged": [],
+          "missing_from_selective": [],
+          "unexpectedly_rebuilt": [
+            "claim/ku_5db1c3d31a7920b65589141fd7bf159c34b114c85e64ff5fd28c04087b704cfb",
+            "claim/ku_a22641270b78614f456662126c636f04393f782b1b9bec68b8498d8a6f9c447b",
+            "claim/ku_a23d71695f4bb01ab53d0b02d60c3bf8bea0c212f0bf00d769e97952d94ebb85",
+            "claim/ku_a9aaadd3707067badd160845d8881aa625649a5c21b561aa1bf562b425fe4de0",
+            "claim/ku_f688d2a90c5d43404537a06abdd74a3e08526fcc1eed9a0a059e5ac8a1d8c740"
+          ],
+          "stale_left_behind": []
+        }
+      }
+    }
+  ]
+}
