@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from . import (
@@ -11,12 +11,12 @@ from . import (
     dates,
     duplicates,
     identity,
-    references,
     readiness,
+    references,
     sensitive,
 )
 from .config import HealthScanConfig
-from .inventory import compute_digests, iter_files
+from .inventory import FileRecord, compute_digests, iter_files
 from .models import HEURISTIC_LABEL, LABEL_POLICY, HealthReport
 
 
@@ -44,7 +44,7 @@ def scan(root_path: str | Path, config: HealthScanConfig | None = None) -> Healt
     }
 
     report = HealthReport(
-        generated_at_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        generated_at_utc=datetime.now(UTC).isoformat(timespec="seconds"),
         root_path=str(root),
         label_policy=LABEL_POLICY,
         duration_ms=int((time.perf_counter() - started) * 1000),
@@ -63,7 +63,7 @@ def scan(root_path: str | Path, config: HealthScanConfig | None = None) -> Healt
     return report
 
 
-def _by_extension(records) -> dict[str, int]:
+def _by_extension(records: list[FileRecord]) -> dict[str, int]:
     counts: dict[str, int] = {}
     for record in records:
         counts[record.suffix] = counts.get(record.suffix, 0) + 1

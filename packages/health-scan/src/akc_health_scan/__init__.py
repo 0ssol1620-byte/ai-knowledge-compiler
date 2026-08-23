@@ -13,6 +13,6 @@ __all__ = [
     "SCHEMA_VERSION",
     "HealthReport",
     "HealthScanConfig",
-    "scan",
     "__version__",
+    "scan",
 ]

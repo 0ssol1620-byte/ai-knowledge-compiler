@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from pathlib import PurePosixPath
+from typing import Any
 
 from .inventory import FileRecord
 from .models import HEURISTIC_LABEL
@@ -21,7 +22,7 @@ def stem_of(rel_path: str) -> str:
     return PurePosixPath(rel_path).stem
 
 
-def analyze(records: list[FileRecord]) -> dict:
+def analyze(records: list[FileRecord]) -> dict[str, Any]:
     grouped: dict[str, set[str]] = {}
     for record in records:
         key = normalize_title(stem_of(record.rel_path))

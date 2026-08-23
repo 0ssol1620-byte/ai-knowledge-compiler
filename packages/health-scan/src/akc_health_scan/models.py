@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from typing import Any
 
 ENGINE_ID = "akc-health-scan"
 ENGINE_VERSION = "0.1.0"
@@ -25,16 +26,16 @@ class HealthReport:
     root_path: str = ""
     label_policy: str = LABEL_POLICY
     duration_ms: int = 0
-    config: dict = field(default_factory=dict)
-    sources: dict = field(default_factory=dict)
-    duplicates: dict = field(default_factory=dict)
-    identity_collisions: dict = field(default_factory=dict)
-    conflicting_candidates: dict = field(default_factory=dict)
-    stale_references: dict = field(default_factory=dict)
-    unresolved_dates: dict = field(default_factory=dict)
-    sensitive_exposure: dict = field(default_factory=dict)
-    projection_readiness: dict = field(default_factory=dict)
-    estimated_compile_work: dict = field(default_factory=dict)
+    config: dict[str, Any] = field(default_factory=dict)
+    sources: dict[str, Any] = field(default_factory=dict)
+    duplicates: dict[str, Any] = field(default_factory=dict)
+    identity_collisions: dict[str, Any] = field(default_factory=dict)
+    conflicting_candidates: dict[str, Any] = field(default_factory=dict)
+    stale_references: dict[str, Any] = field(default_factory=dict)
+    unresolved_dates: dict[str, Any] = field(default_factory=dict)
+    sensitive_exposure: dict[str, Any] = field(default_factory=dict)
+    projection_readiness: dict[str, Any] = field(default_factory=dict)
+    estimated_compile_work: dict[str, Any] = field(default_factory=dict)
 
     SECTION_NAMES = (
         "sources",
@@ -48,8 +49,8 @@ class HealthReport:
         "estimated_compile_work",
     )
 
-    def sections(self) -> dict[str, dict]:
+    def sections(self) -> dict[str, dict[str, Any]]:
         return {name: getattr(self, name) for name in self.SECTION_NAMES}
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)

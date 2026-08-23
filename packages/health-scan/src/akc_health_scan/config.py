@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from typing import Any
 
 DEFAULT_EXCLUDED_DIRS = (
     ".git", ".hg", ".svn", ".tox", ".eggs", ".idea", ".vscode",
@@ -39,7 +40,7 @@ class HealthScanConfig:
     chunk_target_tokens: int = 800
     compile_overhead_factor: float = 1.15
 
-    def echo(self) -> dict:
+    def echo(self) -> dict[str, Any]:
         data = asdict(self)
         for key in ("excluded_dir_names", "source_suffixes"):
             data[key] = sorted(data[key])
