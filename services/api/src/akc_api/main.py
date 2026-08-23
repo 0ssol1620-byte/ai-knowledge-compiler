@@ -287,6 +287,7 @@ from akc_api.services import (
     run_compile_job,
 )
 from akc_api.settings import Settings, get_settings
+from akc_api.source_freshness import router as source_freshness_router
 from akc_api.storage import (
     CompletedPart,
     LocalObjectStore,
@@ -9082,6 +9083,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(collection_retrieval_router)
     app.include_router(parallel_runtime_router)
     app.include_router(trust_router)
+    # Connector freshness dashboard: reads source_cursors, tenant-scoped by the
+    # session principal; no writes on this surface.
+    app.include_router(source_freshness_router)
     # Capability tokens are issued from an authenticated session and then
     # verified statelessly; the surface owns no other writes.
     app.include_router(capability_router)
