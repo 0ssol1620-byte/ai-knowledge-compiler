@@ -40,6 +40,7 @@ storybook-static/
 data/
 !apps/web/src/data/
 !apps/web/src/data/benchmark-public-snapshot.json
+!apps/web/src/components/data/
 tmp/
 work/
 artifacts/
