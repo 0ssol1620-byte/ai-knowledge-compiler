@@ -94,6 +94,7 @@ from akc_api.abuse_repository import (
     lock_current_free_usage_day,
     reserve_free_usage,
 )
+from akc_api.ask_api import router as ask_router
 from akc_api.auth_api import begin_mfa_login
 from akc_api.auth_api import router as advanced_auth_router
 from akc_api.auth_security import MfaSecurity, OidcClient, OidcTransactionCipher
@@ -9091,6 +9092,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # desktop workspace path; the whole surface sits behind session auth and
     # returns analyzer output verbatim (heuristic labels preserved).
     app.include_router(health_scan_router)
+    # /v1/ask compiles answers against the locally published world state;
+    # the surface reads the store and never writes it.
+    app.include_router(ask_router)
     # Capability tokens are issued from an authenticated session and then
     # verified statelessly; the surface owns no other writes.
     app.include_router(capability_router)
