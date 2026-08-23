@@ -23,6 +23,13 @@ Everything here is read-only. There is no mutating method on `LocalWorldStore`,
 and none may be added: see `akc_local_mcp.server` for the forbidden-tool list.
 Malformed input fails closed — a file that does not parse, or declares a schema
 version this code does not know, raises instead of being partially interpreted.
+
+Beyond topics and claims, a state file may carry three optional sections that
+the wider read surface reads when present and reports as absent otherwise
+(never guessed): `entities`, `changes`, and `dependencies`. The disk convention
+stays exactly `<root>/<world_id>/{manifest,state}.json`; world history is simply
+every world directory under `<root>`, read through `list_history()` and diffed
+through `diff_worlds()`.
 """
 
 from __future__ import annotations
@@ -30,16 +37,26 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from akc_cir.dependency import EdgeType
+
 __all__ = [
+    "ChangeRecord",
+    "ChangeSummary",
+    "ClaimDiff",
+    "ClaimFieldChange",
     "ClaimRecord",
+    "DependencyEdgeRecord",
+    "EntityRecord",
     "EvidenceRecord",
     "LocalWorldStore",
     "StoreError",
     "TopicRecord",
     "UnknownWorldError",
+    "WorldDiff",
     "WorldDocumentError",
     "WorldManifest",
     "WorldSnapshot",
@@ -129,6 +146,74 @@ class TopicRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class EntityRecord:
+    """One resolved entity as compiled into the world (`entity_id` is stable).
+
+    Optional section: a world without entities simply answers UNRESOLVED for
+    entity lookups rather than inventing one from claim text.
+    """
+
+    entity_id: str
+    name: str
+    entity_type: str | None = None
+    aliases: tuple[str, ...] = ()
+    claim_ids: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "entity_id": self.entity_id,
+            "name": self.name,
+            "aliases": list(self.aliases),
+            "claim_ids": list(self.claim_ids),
+        }
+        if self.entity_type is not None:
+            payload["type"] = self.entity_type
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class ChangeRecord:
+    """One recorded source change behind the world's current truth."""
+
+    change_id: str
+    source_path: str
+    kind: str | None = None
+    summary: str | None = None
+    changed_at: str | None = None
+    claim_ids: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "change_id": self.change_id,
+            "source_path": self.source_path,
+            "claim_ids": list(self.claim_ids),
+        }
+        if self.kind is not None:
+            payload["kind"] = self.kind
+        if self.summary is not None:
+            payload["summary"] = self.summary
+        if self.changed_at is not None:
+            payload["changed_at"] = self.changed_at
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class DependencyEdgeRecord:
+    """One declared dependency edge, edge type validated against §15's vocabulary."""
+
+    source_id: str
+    target_id: str
+    edge_type: EdgeType
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "source_id": self.source_id,
+            "target_id": self.target_id,
+            "edge_type": self.edge_type.value,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class WorldManifest:
     """What `manifest.json` recorded, verbatim.
 
@@ -164,6 +249,80 @@ class WorldSnapshot:
     manifest: WorldManifest
     topics: tuple[TopicRecord, ...]
     claims: tuple[ClaimRecord, ...]
+    entities: tuple[EntityRecord, ...] = ()
+    changes: tuple[ChangeRecord, ...] = ()
+    dependencies: tuple[DependencyEdgeRecord, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ClaimFieldChange:
+    """One claim field whose value moved between two worlds."""
+
+    field: str
+    before: Any
+    after: Any
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"field": self.field, "before": self.before, "after": self.after}
+
+
+@dataclass(frozen=True, slots=True)
+class ClaimDiff:
+    """One claim's fate between world A and world B (B is the newer side)."""
+
+    claim_id: str
+    kind: str  # "added" | "removed" | "changed"
+    changes: tuple[ClaimFieldChange, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {"claim_id": self.claim_id, "kind": self.kind}
+        if self.changes:
+            payload["changes"] = [change.to_dict() for change in self.changes]
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class ChangeSummary:
+    """Counts that let a caller see the shape of a diff without walking it."""
+
+    added: int
+    removed: int
+    changed: int
+    unchanged: int
+
+    def to_dict(self) -> dict[str, int]:
+        return {
+            "added": self.added,
+            "removed": self.removed,
+            "changed": self.changed,
+            "unchanged": self.unchanged,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class WorldDiff:
+    """The claim-level difference between two worlds: added/removed/changed.
+
+    Value changes are reported field by field (`before` → `after`) so a reviewer
+    sees *what* moved, not just that something did.
+    """
+
+    world_a: str
+    world_b: str
+    added: tuple[ClaimDiff, ...]
+    removed: tuple[ClaimDiff, ...]
+    changed: tuple[ClaimDiff, ...]
+    summary: ChangeSummary
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "world_a": self.world_a,
+            "world_b": self.world_b,
+            "added_in_b": [entry.to_dict() for entry in self.added],
+            "removed_from_a": [entry.to_dict() for entry in self.removed],
+            "value_changed": [entry.to_dict() for entry in self.changed],
+            "summary": self.summary.to_dict(),
+        }
 
 
 def _read_json(path: Path) -> Any:
@@ -264,7 +423,98 @@ def _parse_evidence(raw: Sequence[Any], context: str) -> tuple[EvidenceRecord, .
     return tuple(records)
 
 
-def _parse_state(path: Path) -> tuple[tuple[TopicRecord, ...], tuple[ClaimRecord, ...]]:
+def parse_timestamp(value: str, context: str) -> datetime:
+    """Parse an ISO-8601 timestamp; `Z` suffix included. Fail closed otherwise."""
+    text = value.strip()
+    if text.endswith(("Z", "z")):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise WorldDocumentError(f"{context}: timestamp {value!r} is not ISO-8601") from exc
+    if parsed.tzinfo is None:
+        raise WorldDocumentError(f"{context}: timestamp {value!r} must carry a UTC offset")
+    return parsed
+
+
+def _parse_entities(document: Mapping[str, Any], context: str) -> tuple[EntityRecord, ...]:
+    records: list[EntityRecord] = []
+    seen: set[str] = set()
+    for index, raw_entity in enumerate(document.get("entities", [])):
+        entity_context = f"{context}: entities[{index}]"
+        entry = _require_object(raw_entity, entity_context)
+        entity = EntityRecord(
+            entity_id=_require_str(entry, "entity_id", entity_context),
+            name=_require_str(entry, "name", entity_context),
+            entity_type=_optional_str(entry, "type", entity_context),
+            aliases=_require_str_tuple(entry, "aliases", entity_context),
+            claim_ids=_require_str_tuple(entry, "claim_ids", entity_context),
+        )
+        if entity.entity_id in seen:
+            raise WorldDocumentError(f"{entity_context}: duplicate entity_id {entity.entity_id!r}")
+        seen.add(entity.entity_id)
+        records.append(entity)
+    return tuple(records)
+
+
+def _parse_changes(document: Mapping[str, Any], context: str) -> tuple[ChangeRecord, ...]:
+    records: list[ChangeRecord] = []
+    seen: set[str] = set()
+    for index, raw_change in enumerate(document.get("changes", [])):
+        change_context = f"{context}: changes[{index}]"
+        entry = _require_object(raw_change, change_context)
+        change = ChangeRecord(
+            change_id=_require_str(entry, "change_id", change_context),
+            source_path=_require_str(entry, "source_path", change_context),
+            kind=_optional_str(entry, "kind", change_context),
+            summary=_optional_str(entry, "summary", change_context),
+            changed_at=_optional_str(entry, "changed_at", change_context),
+            claim_ids=_require_str_tuple(entry, "claim_ids", change_context),
+        )
+        if change.change_id in seen:
+            raise WorldDocumentError(f"{change_context}: duplicate change_id {change.change_id!r}")
+        seen.add(change.change_id)
+        records.append(change)
+    return tuple(records)
+
+
+def _parse_dependencies(
+    document: Mapping[str, Any], context: str
+) -> tuple[DependencyEdgeRecord, ...]:
+    records: list[DependencyEdgeRecord] = []
+    for index, raw_edge in enumerate(document.get("dependencies", [])):
+        edge_context = f"{context}: dependencies[{index}]"
+        entry = _require_object(raw_edge, edge_context)
+        raw_type = entry.get("edge_type")
+        if not isinstance(raw_type, str):
+            raise WorldDocumentError(f"{edge_context}: 'edge_type' must be a string")
+        try:
+            edge_type = EdgeType(raw_type)
+        except ValueError as exc:
+            known = ", ".join(sorted(member.value for member in EdgeType))
+            raise WorldDocumentError(
+                f"{edge_context}: edge_type {raw_type!r} is not part of the "
+                f"dependency vocabulary ({known})"
+            ) from exc
+        source = _require_str(entry, "source_id", edge_context)
+        target = _require_str(entry, "target_id", edge_context)
+        if source == target:
+            raise WorldDocumentError(f"{edge_context}: a node cannot depend on itself: {source}")
+        records.append(
+            DependencyEdgeRecord(source_id=source, target_id=target, edge_type=edge_type)
+        )
+    return tuple(records)
+
+
+def _parse_state(
+    path: Path,
+) -> tuple[
+    tuple[TopicRecord, ...],
+    tuple[ClaimRecord, ...],
+    tuple[EntityRecord, ...],
+    tuple[ChangeRecord, ...],
+    tuple[DependencyEdgeRecord, ...],
+]:
     document = _require_object(_read_json(path), str(path))
     _require_schema(document, STATE_SCHEMA, path)
     context = str(path)
@@ -321,7 +571,18 @@ def _parse_state(path: Path) -> tuple[tuple[TopicRecord, ...], tuple[ClaimRecord
                 f"{', '.join(sorted(dangling))}"
             )
 
-    return tuple(topics), tuple(claims)
+    entities = _parse_entities(document, context)
+    for entity in entities:
+        dangling = [cid for cid in entity.claim_ids if cid not in known_claim_ids]
+        if dangling:
+            raise WorldDocumentError(
+                f"{context}: entity {entity.entity_id!r} references unknown claim(s) "
+                f"{', '.join(sorted(dangling))}"
+            )
+    changes = _parse_changes(document, context)
+    dependencies = _parse_dependencies(document, context)
+
+    return tuple(topics), tuple(claims), entities, changes, dependencies
 
 
 class LocalWorldStore:
@@ -366,5 +627,91 @@ class LocalWorldStore:
             raise WorldDocumentError(
                 f"{state_path}: world {world_id!r} has a manifest but no state file"
             )
-        topics, claims = _parse_state(state_path)
-        return WorldSnapshot(manifest=manifest, topics=topics, claims=claims)
+        topics, claims, entities, changes, dependencies = _parse_state(state_path)
+        return WorldSnapshot(
+            manifest=manifest,
+            topics=topics,
+            claims=claims,
+            entities=entities,
+            changes=changes,
+            dependencies=dependencies,
+        )
+
+    def list_history(self) -> tuple[WorldManifest, ...]:
+        """Every readable world manifest, oldest first (`built_at` ascending).
+
+        This is the disk's own record of what was published when: the same
+        `<root>/<world_id>/{manifest,state}.json` convention, read as a
+        timeline. A `built_at` that does not parse as an offset-aware ISO-8601
+        timestamp fails closed — an unorderable history would make every
+        as-of answer a guess.
+        """
+        ordered = sorted(
+            self.list_worlds(), key=lambda manifest: (manifest.world_id, manifest.built_at)
+        )
+        stamped: list[tuple[datetime, str, WorldManifest]] = []
+        for manifest in ordered:
+            moment = parse_timestamp(manifest.built_at, f"world {manifest.world_id!r} built_at")
+            stamped.append((moment, manifest.world_id, manifest))
+        stamped.sort(key=lambda entry: (entry[0], entry[1]))
+        return tuple(manifest for _, _, manifest in stamped)
+
+    @staticmethod
+    def diff_claims(snapshot_a: WorldSnapshot, snapshot_b: WorldSnapshot) -> WorldDiff:
+        """Claim-level diff of two snapshots; B is the newer side of the comparison.
+
+        A claim is *changed* only when a value actually moved: text, status,
+        confidence, topic membership, or its evidence chain. Field changes are
+        reported as before/after pairs so the reviewer sees what moved.
+        """
+        by_id_a = {claim.claim_id: claim for claim in snapshot_a.claims}
+        by_id_b = {claim.claim_id: claim for claim in snapshot_b.claims}
+
+        added_ids = sorted(by_id_b.keys() - by_id_a.keys())
+        removed_ids = sorted(by_id_a.keys() - by_id_b.keys())
+        changed_entries: list[ClaimDiff] = []
+        unchanged = 0
+        for claim_id in sorted(by_id_a.keys() & by_id_b.keys()):
+            left, right = by_id_a[claim_id], by_id_b[claim_id]
+            field_changes: list[ClaimFieldChange] = []
+            if left.text != right.text:
+                field_changes.append(ClaimFieldChange("text", left.text, right.text))
+            if left.status != right.status:
+                field_changes.append(ClaimFieldChange("status", left.status, right.status))
+            if left.confidence != right.confidence:
+                field_changes.append(
+                    ClaimFieldChange("confidence", left.confidence, right.confidence)
+                )
+            if left.topic_ids != right.topic_ids:
+                field_changes.append(
+                    ClaimFieldChange("topic_ids", list(left.topic_ids), list(right.topic_ids))
+                )
+            evidence_a = [item.to_dict() for item in left.evidence]
+            evidence_b = [item.to_dict() for item in right.evidence]
+            if evidence_a != evidence_b:
+                field_changes.append(ClaimFieldChange("evidence", evidence_a, evidence_b))
+            if field_changes:
+                changed_entries.append(
+                    ClaimDiff(claim_id=claim_id, kind="changed", changes=tuple(field_changes))
+                )
+            else:
+                unchanged += 1
+
+        summary = ChangeSummary(
+            added=len(added_ids),
+            removed=len(removed_ids),
+            changed=len(changed_entries),
+            unchanged=unchanged,
+        )
+        return WorldDiff(
+            world_a=snapshot_a.manifest.world_id,
+            world_b=snapshot_b.manifest.world_id,
+            added=tuple(ClaimDiff(claim_id=cid, kind="added") for cid in added_ids),
+            removed=tuple(ClaimDiff(claim_id=cid, kind="removed") for cid in removed_ids),
+            changed=tuple(changed_entries),
+            summary=summary,
+        )
+
+    def diff_worlds(self, world_a: str, world_b: str) -> WorldDiff:
+        """Load both worlds from disk and diff their claims (B newer)."""
+        return self.diff_claims(self.load_snapshot(world_a), self.load_snapshot(world_b))

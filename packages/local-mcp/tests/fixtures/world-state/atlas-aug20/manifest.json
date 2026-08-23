@@ -1,0 +1,12 @@
+{
+  "schema": "akc.local-world-manifest/1",
+  "world_id": "atlas-aug20",
+  "workspace_id": "ws-atlas-demo",
+  "status": "SUPERSEDED",
+  "compiler_version": "0.1.0",
+  "built_at": "2026-08-20T08:00:00Z",
+  "manifest_hash": "sha256:f6b18957fca42e8c5a1ed786f3bd6c25bf8b3175e8cfa6f3fecb1d7fc265f88e",
+  "artifact_hashes": {
+    "states/atlas-aug20/state.json": "sha256:ca57d56891727c1ef37041ee1331f63728815203645d2ddd1b82ad10a0d091b8"
+  }
+}
