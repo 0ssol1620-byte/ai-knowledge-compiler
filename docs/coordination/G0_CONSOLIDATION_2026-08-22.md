@@ -234,3 +234,80 @@ Conflicts encountered and how they were resolved (semantic-first):
 `services/api/src/akc_api/main.py` and root `pyproject.toml` merged without
 conflict (each touched by exactly one wave-3 branch). Final HEAD after the
 wave: `f001c65`; final gate **735 passed** in ~26s. Nothing pushed.
+
+## 8. Wave 4 merges
+
+Nineteen branches (docs-bearing first, then code, then apps/web), merged
+`--no-ff` sequentially onto `integration/g0-consolidation` (start: `4466642`).
+Gate after every code-bearing merge (`UV_LINK_MODE=copy uv sync --extra dev
+--frozen && .venv/Scripts/python.exe -m pytest tests/unit -q`). From merge 9
+onward the sync gained an additional `--group local-mcp`: prompt-injection's
+`tests/unit/test_injection_boundary.py` imports `akc_local_mcp`, whose
+`mcp` dependency lives in the root `local-mcp` dependency-group, so the
+wave-3 gate command alone could not collect the suite. The lockfile was not
+touched (`--frozen` throughout).
+
+| # | Branch | Merge commit | Content | Gate |
+|---|--------|--------------|---------|------|
+| 1 | `agent/p0-cinematic-event-contract` | `0dc753a` | cinematic product-event contract (`akc_contracts`, JSON Schema, generated TS types, `docs/ux/CINEMATIC_EVENT_CONTRACT.md`) | **803 passed** |
+| 2 | `agent/p1-obsidian-projection` | `33b4dde` | `akc_cir.projection` — Obsidian vault projection | **813 passed** |
+| 3 | `agent/p1-team-world-categories` | `6a2f792` | world categories: role-gated promotion + sharing policy | **852 passed** |
+| 4 | `agent/p0-cinematic-showcase-fixture` | `ae28dfb` | showcase-world v1/v2 fixtures + `compiler-runtime` demo pipeline | **857 passed** |
+| 5 | `agent/p0-e2e-spine` | `1b2c527` | P0 integration spine harness (`tests/integration/test_p0_spine.py`) | **857 passed** |
+| 6 | `agent/p0-actionkey` | `0f5fb05` | action-key store (scoped capability surface) | **879 passed** |
+| 7 | `agent/p0-consumption-replay` | `cccd8b0` | consumption replay envelopes over published snapshots | **904 passed** |
+| 8 | `agent/p0-mcp-surface` | `bd43c4f` | local-mcp read surface (ask/as-of, entity, impact trace, compare) | **904 passed** |
+| 9 | `agent/p1-prompt-injection` | `0d7390a` | §N19 injection boundary: `_labeled` prose sanitization + `ToolScopeGuard` | **921 passed** |
+| 10 | `agent/p1-runtime-qualification` | `468aba2` | runtime qualification receipt (gates/license/vuln-scan smoke) | **948 passed** |
+| 11 | `agent/p1-connector-freshness` | `f488c0c` | connector freshness dashboard, migration `0040_source_cursor_tenancy` | **948 passed** (migration graph 6 passed, single head) |
+| 12 | `agent/p1-health-scan-integration` | `5d2e0f3` | health-scan API wired into `main.py` behind session auth | **948 passed** |
+| 13 | `agent/p1-github-connector` | `985c477` | GitHub source adapter | **963 passed** |
+| 14 | `agent/p1-google-connectors` | `9adfd61` | Gmail / Calendar / Drive source adapters | **968 passed** |
+| 15 | `agent/p1-desktop-package` | `a00e324` | desktop app package (`packages/desktop-app`) + runbook | **968 passed** |
+| 16 | `agent/p1-ask-live-wiring` | `fe87963` | `/v1/ask` router live wiring in `main.py` | **968 passed** |
+| 17 | `agent/tavonel-e2e-fix` | `5436ed3` | apps/web Playwright E2E remediation + visual-regression baselines | **968 passed** |
+| 18 | `agent/p1-live-surfaces` | `61b2c0a` | SAMPLE/LIVE data boundary (`lib/data-boundary.ts`) + world client stubs | **968 passed** |
+| 19 | `agent/p1-ui-portability` | `4cd153a` | blank-slate design tokens ported as additive `tv-*` layer | **968 passed** |
+
+Conflicts encountered and how they were resolved (semantic-first):
+
+- `akc_cir/__init__.py` (`__all__` and imports), merges 3, 6, 7 and 10: each
+  side appended entries at overlapping sorted positions; resolved as sorted
+  unions every time (`SOURCES_FOLDER`/`TIMELINE_FOLDER`/`TARGET_MINIMUM_ROLE`,
+  `Projection*`/`PromotionDecision`, `SharingPolicy`/`Snapshot*`,
+  `WorldCategory`/`WorldManifest`/`WorldSnapshot`, `ActionKeyStore`,
+  `SmokeResult`, `VulnScanRef`/`VulnSeverityCounts`, `reuse_guard`/
+  `runtime_qualification_json_schema`, plus the `.replay`/`.runtime_qualification`
+  import blocks).
+- `local-mcp/server.py` + `tools.py`, merge 9: mcp-surface widened the tool
+  surface (11 tools, provenance metadata `world_state_id`/`freshness`/
+  `limitations`) while prompt-injection rewrote the three original tools with
+  the scope guard and labeled prose. Unioned both: full tool import list +
+  `TOOL_SCOPE_GUARD`/`ReasonCode` + `_outside_scope`, `PUBLISHABLE_STATUSES`
+  alongside `TOOL_SCOPE_GUARD`/`_SANITIZE_FIELDS`/`_labeled`, and responses
+  keep the provenance kwargs while `topic`/`claim` payloads pass through
+  `_labeled`.
+- Forward-fix amended into `0d7390a`: `test_injection_boundary.py` asserted a
+  closed response key-set that predates mcp-surface's provenance metadata;
+  the assertion now admits those three read-only fields (they authorise
+  nothing) while keeping the no-execution-surface check intact.
+- `main.py` router registration, merges 12 and 16: freshness, health-scan and
+  ask each appended a router at the same anchor; all three registrations (and
+  their comments) survive.
+- Migration graph, merge 11: `0040_source_cursor_tenancy` parented cleanly on
+  `0039`; single head re-verified via `tests/unit/test_migration_graph.py`
+  (6 passed) immediately after the merge.
+- apps/web merges (17–19): file-disjoint as expected, zero conflicts — but the
+  wave gate caught that live-surfaces imports
+  `@/components/data/sample-data-badge`, which had never been committed: the
+  root `.gitignore` `data/` rule silently swallowed the
+  `apps/web/src/components/data/` source directory. Fixed in follow-up commit
+  `7e8db5c`: un-ignore the source dir (mirroring the existing
+  `apps/web/src/data` exception) and add the generic badge renderer that
+  renders `marked.badge.label` for sample envelopes and nothing for live.
+
+apps/web gate once at final HEAD (`pnpm install && pnpm exec tsc --noEmit &&
+pnpm exec vitest run`): install up-to-date, tsc clean, vitest **383 passed**
+across 67 files (≥ the 364 expectation). Final merge HEAD `4cd153a`, final
+HEAD including the web forward-fix `7e8db5c`; python gate **968 passed** in
+~38s. Nothing pushed.
