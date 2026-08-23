@@ -95,28 +95,27 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
   page,
 }) => {
   await page.goto("/");
+  // The W2 facing-pages homepage replaced the earlier long-copy landing: the
+  // round-trip promise moved into the h1, the four chapters carry
+  // structure → evidence → knowledge → portability, and the provenance
+  // disclaimers stay on the surface. Each chapter renders twice (desktop and
+  // compact variants), so visibility is asserted on the first match.
   await expect(
-    page.getByRole("heading", {
-      name: "Your AI is only as good as the knowledge it receives.",
-    }),
+    page.getByRole("heading", { level: 1 }),
+  ).toContainText("Every output returns");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "to its source.",
+  );
+  await expect(page.getByText("It sees more than text.").first()).toBeVisible();
+  await expect(
+    page.getByText("Documents become a knowledge system.").first(),
   ).toBeVisible();
   await expect(
-    page.getByText("Page → Structure → Evidence → Knowledge → Intelligence"),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Every output returns to its source."),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "AI does not need more information. It needs better knowledge.",
-    ),
+    page.getByText("Compile once. Use it everywhere.").first(),
   ).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
   await expect(
     page.getByText("TAVONEL is a working name pending brand clearance."),
-  ).toBeVisible();
-  await expect(
-    page.getByText("First-party illustrative model · no generated imagery"),
   ).toBeVisible();
 });
 
@@ -242,6 +241,18 @@ test("every application route renders the masterplan information architecture", 
 test("quick convert exposes one bounded and consent-aware upload contract", async ({
   page,
 }) => {
+  // The merged locale system renders Korean until a locale cookie exists
+  // (DEFAULT_STRUCTARA_LOCALE is "ko"); this contract's copy is asserted in
+  // English, so pin the cookie instead of depending on the product default.
+  // locale.spec covers cookie-driven switching itself.
+  await page.context().addCookies([
+    {
+      name: "akc_locale",
+      value: "en",
+      url: "http://127.0.0.1:3000",
+      sameSite: "Lax",
+    },
+  ]);
   await page.goto("/quick-convert");
   await expect(page.getByText("Private route first")).toBeVisible();
   await expect(
@@ -289,10 +300,18 @@ test("shell actions and fixed studios expose only operable or explicit gated con
   await expect(
     page.locator('[data-shell-action="notifications"]'),
   ).toHaveAttribute("href", "/notices");
-  await expect(page.locator('[data-shell-action="account"]')).toHaveAttribute(
-    "href",
-    "/settings",
-  );
+  // G0 §2.2 replaced the static account link with the AccountMenu: the
+  // trigger is a button that opens a menu whose entries point at /account,
+  // /billing, and sign out — the /settings shortcut no longer exists.
+  const accountTrigger = page.locator('[data-shell-action="account"]');
+  await expect(accountTrigger).toBeVisible();
+  await accountTrigger.click();
+  await expect(
+    page.getByRole("menuitem", { name: /account/i }),
+  ).toHaveAttribute("href", "/account");
+  await expect(
+    page.getByRole("menuitem", { name: /billing/i }),
+  ).toHaveAttribute("href", "/billing");
 
   for (const path of [
     "/knowledge-bases",
@@ -334,7 +353,10 @@ test("processing workspace exposes real stage counts and source-linked output", 
   await expect(page.getByText("15 of 18 pages available")).toHaveCount(1);
   await expect(page.getByText("3 of 8 stages finished")).toHaveCount(1);
   await expect(page.locator("body")).not.toContainText("68%");
-  await expect(page.getByText("Review queue")).toHaveCount(1);
+  // d7a6b30 renamed the drawer's title from "Review queue" to
+  // "Integrity findings" when the review surface became the Integrity
+  // Console; the drawer is still the queue this test means to pin.
+  await expect(page.getByText("Integrity findings")).toHaveCount(1);
   if (isMobile) {
     await page
       .getByRole("navigation", { name: "Mobile processing views" })
@@ -387,22 +409,30 @@ test("reduced motion removes travel and nonessential animation", async ({
   // all rather than merely be hidden under reduced motion.
   await expect(page.locator(".tv-webgl-layer")).toHaveCount(0);
   await expect(page.locator("canvas")).toHaveCount(0);
-  const moving = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLElement>(".tv-site *"))
-      .map((element) => {
-        const style = getComputedStyle(element);
-        return {
-          animation: style.animationDuration
-            .split(",")
-            .some((value) => parseFloat(value) > 0.01),
-          transition: style.transitionDuration
-            .split(",")
-            .some((value) => parseFloat(value) > 0.01),
-        };
-      })
-      .filter((value) => value.animation || value.transition),
+  // §10.4 (pinned by motion.spec) settles reduced motion as attenuation, not
+  // removal: durations clamp to a visible 0.09s and loops collapse to one
+  // iteration, so "no animated element at all" is the wrong contract. What
+  // reduced motion owes the visitor is that nothing travels — no duration may
+  // exceed the clamp.
+  const maxDuration = await page.evaluate(() =>
+    Math.max(
+      ...Array.from(document.querySelectorAll<HTMLElement>(".tv-site *")).map(
+        (element) => {
+          const style = getComputedStyle(element);
+          return Math.max(
+            0,
+            ...style.animationDuration.split(",").map(parseFloat),
+            ...style.transitionDuration.split(",").map(parseFloat),
+          );
+        },
+      ),
+      0,
+    ),
   );
-  expect(moving).toEqual([]);
+  expect(
+    maxDuration,
+    `reduced-motion durations must stay at the §10.4 clamp (0.09s); got ${maxDuration}s`,
+  ).toBeLessThanOrEqual(0.09 + 1e-9);
 });
 
 test("representative routes have no automated WCAG A or AA violations", async ({
