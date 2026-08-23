@@ -48,6 +48,7 @@ import unicodedata
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Protocol
 
 __all__ = [
     "CRITICAL_IDENTITY_SIGNALS",
@@ -56,6 +57,7 @@ __all__ = [
     "MERGE_THRESHOLD",
     "NEW_IDENTITY_THRESHOLD",
     "BlockingCandidateIndex",
+    "IdentityDecisionRecorder",
     "LogicalIdentityDecision",
     "LogicalIdentityResolver",
     "LogicalMatch",
@@ -391,6 +393,34 @@ class LogicalIdentityDecision:
     @property
     def merged(self) -> bool:
         return self.match is LogicalMatch.MATCHED
+
+
+# ---------------------------------------------------------------------------
+# §15.5 — recording decisions into the identity transition ledger
+# ---------------------------------------------------------------------------
+
+
+class IdentityDecisionRecorder(Protocol):
+    """Where ``resolve``/``decide_pair`` hand a decision when asked to keep one.
+
+    Both accept an optional keyword-only ``recorder``; when one is given,
+    every decision they reach is passed here *after* it is made and before it
+    is returned, so a recorder sees exactly what the caller sees. What counts
+    as a recordable transition is the recorder's call: AMBIGUOUS abstentions
+    arrive too, and the reference recorder in ``akc_cir.identity_ledger``
+    drops them, because an abstention moves nothing. A failing recorder raises
+    out of the resolution -- half-recorded history is worse than none.
+    """
+
+    def record_identity_decision(
+        self,
+        *,
+        decision: LogicalIdentityDecision,
+        incoming: LogicalUnitFingerprint,
+        partner: LogicalUnitFingerprint | None,
+    ) -> None:
+        """Record one decision. Must not swallow its own failures."""
+        ...
 
 
 def generate_candidates(
@@ -1030,6 +1060,7 @@ class LogicalIdentityResolver:
         *,
         seed_logical_id: str | None = None,
         index: BlockingCandidateIndex | None = None,
+        recorder: IdentityDecisionRecorder | None = None,
     ) -> LogicalIdentityDecision:
         """Resolve one incoming unit against the previous-version corpus.
 
@@ -1046,14 +1077,26 @@ class LogicalIdentityResolver:
         for this call alone, and it must have been built over exactly this
         `previous` corpus. An empty corpus still returns the plain NEW
         decision it always did.
+
+        The best-scoring candidate wins the examination, and the bands in
+        `decide_pair` decide what the outcome is. Pass ``recorder`` (anything
+        satisfying `IdentityDecisionRecorder` -- see
+        ``akc_cir.identity_ledger.LedgerDecisionRecorder``) and every decision
+        reached here, including the empty-corpus NEW, is handed to it before
+        being returned; leaving it None changes nothing about the result.
         """
         if not previous:
-            return LogicalIdentityDecision(
+            decision = LogicalIdentityDecision(
                 match=LogicalMatch.NEW,
                 logical_id=seed_logical_id or incoming.logical_id,
                 score=0.0,
                 reason="no prior version to continue from",
             )
+            if recorder is not None:
+                recorder.record_identity_decision(
+                    decision=decision, incoming=incoming, partner=None
+                )
+            return decision
 
         if index is None:
             index = BlockingCandidateIndex(previous)
@@ -1104,6 +1147,7 @@ class LogicalIdentityResolver:
             runner_up=runner_up,
             runner_up_id=runner_up_id,
             seed_logical_id=seed_logical_id,
+            recorder=recorder,
         )
 
     def decide_pair(
@@ -1117,6 +1161,7 @@ class LogicalIdentityResolver:
         runner_up: float,
         runner_up_id: str | None,
         seed_logical_id: str | None,
+        recorder: IdentityDecisionRecorder | None = None,
     ) -> LogicalIdentityDecision:
         """Apply §N15.4's bands to one candidate pair.
 
@@ -1126,86 +1171,106 @@ class LogicalIdentityResolver:
         Letting it call `resolve` was the bug: `resolve` re-picked the highest
         scorer and handed the same old unit to two new ones, which is the exact
         thing §N15.3 exists to prevent.
+
+        With a ``recorder``, the decision reached -- whatever band produced it
+        -- is handed to the recorder before being returned.
         """
         best = partner
         best_score = score
         best_signals = signals
         best_missing = missing
 
+        def finished(decision: LogicalIdentityDecision) -> LogicalIdentityDecision:
+            if recorder is not None:
+                recorder.record_identity_decision(
+                    decision=decision, incoming=incoming, partner=partner
+                )
+            return decision
+
         absent_critical = sorted(CRITICAL_IDENTITY_SIGNALS & set(best_missing))
         if absent_critical:
-            return LogicalIdentityDecision(
-                match=LogicalMatch.AMBIGUOUS,
-                logical_id=None,
-                score=best_score,
-                signals=best_signals,
-                missing=best_missing,
-                reason=(
-                    "critical signal(s) "
-                    + ", ".join(absent_critical)
-                    + " had no value; the remaining signals renormalised to "
-                    f"{best_score:.2f} would be a confident score built on a "
-                    "thin one"
-                ),
-                candidates=(best.logical_id,),
+            return finished(
+                LogicalIdentityDecision(
+                    match=LogicalMatch.AMBIGUOUS,
+                    logical_id=None,
+                    score=best_score,
+                    signals=best_signals,
+                    missing=best_missing,
+                    reason=(
+                        "critical signal(s) "
+                        + ", ".join(absent_critical)
+                        + " had no value; the remaining signals renormalised to "
+                        f"{best_score:.2f} would be a confident score built on a "
+                        "thin one"
+                    ),
+                    candidates=(best.logical_id,),
+                )
             )
 
         if best_score < self.new_threshold:
-            return LogicalIdentityDecision(
-                match=LogicalMatch.NEW,
-                logical_id=seed_logical_id or incoming.logical_id,
-                score=best_score,
-                signals=best_signals,
-                missing=best_missing,
-                reason=(
-                    f"best candidate scored {best_score:.2f}, below the "
-                    f"{self.new_threshold:.2f} floor for continuing an identity"
-                ),
+            return finished(
+                LogicalIdentityDecision(
+                    match=LogicalMatch.NEW,
+                    logical_id=seed_logical_id or incoming.logical_id,
+                    score=best_score,
+                    signals=best_signals,
+                    missing=best_missing,
+                    reason=(
+                        f"best candidate scored {best_score:.2f}, below the "
+                        f"{self.new_threshold:.2f} floor for continuing an identity"
+                    ),
+                )
             )
 
         # Two candidates that score alike are the dangerous case: one of them is
         # the continuation and picking the wrong one rewrites the wrong history.
         if runner_up_id is not None and best_score - runner_up < self.tie_band:
-            return LogicalIdentityDecision(
-                match=LogicalMatch.AMBIGUOUS,
-                logical_id=None,
-                score=best_score,
-                signals=best_signals,
-                missing=best_missing,
-                reason=(
-                    f"two candidates scored within {self.tie_band:.2f} "
-                    f"({best_score:.2f} and {runner_up:.2f}); merging would pick "
-                    "one history arbitrarily"
-                ),
-                candidates=(best.logical_id, runner_up_id),
+            return finished(
+                LogicalIdentityDecision(
+                    match=LogicalMatch.AMBIGUOUS,
+                    logical_id=None,
+                    score=best_score,
+                    signals=best_signals,
+                    missing=best_missing,
+                    reason=(
+                        f"two candidates scored within {self.tie_band:.2f} "
+                        f"({best_score:.2f} and {runner_up:.2f}); merging would pick "
+                        "one history arbitrarily"
+                    ),
+                    candidates=(best.logical_id, runner_up_id),
+                )
             )
 
         if best_score < self.merge_threshold:
-            return LogicalIdentityDecision(
-                match=LogicalMatch.AMBIGUOUS,
-                logical_id=None,
-                score=best_score,
-                signals=best_signals,
-                missing=best_missing,
-                reason=(
-                    f"score {best_score:.2f} sits in the review band between "
-                    f"{self.new_threshold:.2f} and {self.merge_threshold:.2f}"
-                ),
-                candidates=(best.logical_id,),
+            return finished(
+                LogicalIdentityDecision(
+                    match=LogicalMatch.AMBIGUOUS,
+                    logical_id=None,
+                    score=best_score,
+                    signals=best_signals,
+                    missing=best_missing,
+                    reason=(
+                        f"score {best_score:.2f} sits in the review band between "
+                        f"{self.new_threshold:.2f} and {self.merge_threshold:.2f}"
+                    ),
+                    candidates=(best.logical_id,),
+                )
             )
 
         moved = _path_agreement(best.document_path, incoming.document_path) < 1.0
-        return LogicalIdentityDecision(
-            match=LogicalMatch.MATCHED,
-            logical_id=best.logical_id,
-            score=best_score,
-            signals=best_signals,
-            missing=best_missing,
-            reason=f"continues {best.logical_id} at {best_score:.2f}",
-            candidates=(best.logical_id,),
-            relation=(
-                LogicalRelation.MOVED_FROM if moved else LogicalRelation.SAME_AS_VERSION
-            ),
+        return finished(
+            LogicalIdentityDecision(
+                match=LogicalMatch.MATCHED,
+                logical_id=best.logical_id,
+                score=best_score,
+                signals=best_signals,
+                missing=best_missing,
+                reason=f"continues {best.logical_id} at {best_score:.2f}",
+                candidates=(best.logical_id,),
+                relation=(
+                    LogicalRelation.MOVED_FROM if moved else LogicalRelation.SAME_AS_VERSION
+                ),
+            )
         )
 
 
