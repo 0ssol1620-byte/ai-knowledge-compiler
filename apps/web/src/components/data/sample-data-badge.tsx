@@ -1,3 +1,5 @@
+"use client";
+
 import { Flask } from "@phosphor-icons/react";
 
 import type { MarkedData } from "@/lib/data-boundary";
