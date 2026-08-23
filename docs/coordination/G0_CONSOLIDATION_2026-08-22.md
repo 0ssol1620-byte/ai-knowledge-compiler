@@ -193,3 +193,44 @@ merged locks (local-mcp's lock addition installed without drift). The four GAP
 audit docs landed side by side under `docs/audit/` as expected (distinct
 filenames, no overlap).
 
+
+## 7. Wave 3 merges
+
+Seven P0-completion branches, merged `--no-ff` sequentially onto
+`integration/g0-consolidation` (start: `2d27c2f`), document-bearing branches
+first. Gate after every merge (`UV_LINK_MODE=copy uv sync --extra dev --frozen
+&& .venv/Scripts/python.exe -m pytest tests/unit -q`):
+
+| # | Branch | Merge commit | Content | Gate |
+|---|--------|--------------|---------|------|
+| 1 | `agent/tavonel-health-scan` | `567e9b1` | new `packages/health-scan/` local-only analyzer emitting blueprint §5.2 outputs | **578 passed** |
+| 2 | `agent/tavonel-access-path` | `ceeda14` | §25.6 Access-Path Conformance harness (`services/api/tests/`, `docs/security/access-path-conformance.md`) | **578 passed** |
+| 3 | `agent/tavonel-ontology-gates` | `0134f4b` | ontology induction, §16.5 quality gates, §8.4 approval-gate machine (+23) | **601 passed** |
+| 4 | `agent/tavonel-id-ledger` | `31d568e` | append-only identity transition ledger w/ replay + tamper detection, migration `0038_identity_ledger` (+31) | **632 passed** |
+| 5 | `agent/tavonel-answer-compiler` | `1496c3b` | §22.3 CompiledAnswer compiler (+36) | **668 passed** |
+| 6 | `agent/tavonel-capability-token` | `69dd448` | cap_v1 capability tokens (stdlib mint/verify) + session-scoped issuance API (+49) | **717 passed** |
+| 7 | `agent/tavonel-source-adapters` | `f001c65` | source adapter contract (git/obsidian) + cursor persistence, migration `0039_source_adapter_cursors` (+18) | **735 passed** |
+
+Conflicts encountered and how they were resolved (semantic-first):
+
+- `akc_cir/__init__.py` (`__all__`), merges 3 and 6: both sides appended
+  entries at the same sorted positions; resolved as unions
+  (`HiddenInputs`+`IllegalTransitionError`, `ObservedFile`+`Ontology*`,
+  `Claims`/`CoOccurrence`, `InductionConfig`/`InMemoryRevocationStore`).
+- `akc_cir/identity.py`, merge 4: HEAD's sparse-blocking `index:` parameter on
+  `resolve()` collided with the branch's `recorder:` parameter. Unioned the
+  signature and merged both docstring paragraphs; the bodies had integrated
+  cleanly (index flow feeds `decide_pair(recorder=...)`).
+- Migration graph, merge 7: `0039_source_adapter_cursors` was authored with
+  `down_revision = "0037_gpu_post_claim_authorization"`, which would have forked
+  the graph after id-ledger's `0038`. Rebased its `down_revision` to
+  `"0038_identity_ledger"` inside merge commit `f001c65`; single-head verified
+  via `tests/unit/test_migration_graph.py`.
+- Forward-fix amended into `f001c65`: id-ledger's slot-ownership test asserted
+  `0038` was *the* current head, which stopped holding once `0039` parented onto
+  it; it now asserts the lasting invariant instead (exactly one head, and 0038
+  is an ancestor of it).
+
+`services/api/src/akc_api/main.py` and root `pyproject.toml` merged without
+conflict (each touched by exactly one wave-3 branch). Final HEAD after the
+wave: `f001c65`; final gate **735 passed** in ~26s. Nothing pushed.
