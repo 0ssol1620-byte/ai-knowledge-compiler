@@ -29,6 +29,17 @@ from .build_receipt import (
     NonDeterminismSource,
     ObservedFile,
 )
+from .capability_token import (
+    CAPABILITY_SCOPES,
+    MAX_TTL_SECONDS,
+    Claims,
+    InMemoryRevocationStore,
+    RevocationStore,
+    TokenError,
+    mint,
+    require_scope,
+    verify,
+)
 from .collection_events import (
     COLLECTION_EVENT_ENUM_FIELDS,
     COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS,
@@ -276,6 +287,7 @@ from .world_state import (
 
 __all__ = [
     "ALLOWED_PAGE_TRANSITIONS",
+    "CAPABILITY_SCOPES",
     "CATASTROPHIC_CODES",
     "COLLECTION_EVENT_ENUM_FIELDS",
     "COLLECTION_EVENT_OPTIONAL_PAYLOAD_FIELDS",
@@ -289,6 +301,7 @@ __all__ = [
     "IDENTITY_SCHEME_VERSION",
     "IDENTITY_SIGNAL_WEIGHTS",
     "KNOWLEDGE_SYSTEM_PROMPT",
+    "MAX_TTL_SECONDS",
     "MERGE_THRESHOLD",
     "NEW_IDENTITY_THRESHOLD",
     "NORMALIZATION_VERSION",
@@ -321,6 +334,7 @@ __all__ = [
     "CircuitState",
     "Claim",
     "ClaimContext",
+    "Claims",
     "CollectionEventEnvelope",
     "CollectionEventPayloadContract",
     "CollectionEventType",
@@ -360,6 +374,7 @@ __all__ = [
     "HiddenInputs",
     "ImpactPath",
     "ImpactReport",
+    "InMemoryRevocationStore",
     "InjectionIndicator",
     "InjectionStatus",
     "InspectionResult",
@@ -423,6 +438,7 @@ __all__ = [
     "ResolutionTier",
     "RetrievalGuard",
     "ReviewStatus",
+    "RevocationStore",
     "RuleOutcome",
     "ScanResult",
     "ScopedClaim",
@@ -444,6 +460,7 @@ __all__ = [
     "TemporalTimeline",
     "TextNormalizationResult",
     "TocEntry",
+    "TokenError",
     "TrackedBuildContext",
     "TrustOrigin",
     "UnitSnapshot",
@@ -480,6 +497,7 @@ __all__ = [
     "link_tables",
     "logical_id_seed",
     "merge_tables",
+    "mint",
     "normalize_bbox1000",
     "normalize_block_text",
     "normalize_text_for_identity",
@@ -488,6 +506,7 @@ __all__ = [
     "prompt_version_sha256",
     "publication_manifest",
     "rank_claims",
+    "require_scope",
     "resolve_authority",
     "resolve_mention",
     "resolve_public_proof_market",
@@ -499,5 +518,6 @@ __all__ = [
     "tracked_build",
     "validate_collection_event_payload",
     "validate_public_proof_binding",
+    "verify",
     "verify_equivalence",
 ]

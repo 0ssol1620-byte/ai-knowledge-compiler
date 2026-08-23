@@ -15,7 +15,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any, BinaryIO, Literal, cast
 
-from akc_cir import DocumentClassification, PageState
+from akc_cir import DocumentClassification, InMemoryRevocationStore, PageState
 from akc_exporters import MergePolicy
 from akc_scheduler.webhooks import (
     WebhookDnsError,
@@ -99,6 +99,7 @@ from akc_api.auth_api import router as advanced_auth_router
 from akc_api.auth_security import MfaSecurity, OidcClient, OidcTransactionCipher
 from akc_api.batch_api import router as batch_router
 from akc_api.block_merge import three_way_merge
+from akc_api.capability_api import router as capability_router
 from akc_api.cdr import build_cdr_adapter
 from akc_api.collection_api import router as collection_router
 from akc_api.collection_integrity_decisions import router as collection_integrity_router
@@ -8809,6 +8810,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.mfa_security = mfa_security
     app.state.oidc_client = oidc_client
     app.state.oidc_transaction_cipher = oidc_transaction_cipher
+    # cap_v1 revocation registry; process-local until a deployment needs a
+    # shared store satisfying the same RevocationStore protocol.
+    app.state.capability_revocations = InMemoryRevocationStore()
     app.state.collection_metadata_codec = collection_metadata_codec
     app.state.collection_semantic_retrieval_indexer = (
         collection_retrieval_runtime.indexer if collection_retrieval_runtime is not None else None
@@ -9078,6 +9082,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(collection_retrieval_router)
     app.include_router(parallel_runtime_router)
     app.include_router(trust_router)
+    # Capability tokens are issued from an authenticated session and then
+    # verified statelessly; the surface owns no other writes.
+    app.include_router(capability_router)
     # ADR-006. The only unauthenticated write surface; every handler in it
     # returns 404 while trial_ingest_enabled is false.
     app.include_router(trial_api_router)

@@ -63,6 +63,7 @@ class Settings(BaseSettings):
     mfa_recovery_hmac_secret: str | None = None
     mfa_challenge_ttl_seconds: int = Field(default=300, ge=60, le=900)
     mfa_required_plans: str = "team,enterprise"
+    capability_token_secret: str | None = None
 
     object_store_driver: Literal["local", "s3"] = "local"
     s3_endpoint_url: str | None = None
@@ -445,6 +446,20 @@ class Settings(BaseSettings):
         if self.env == "production":
             raise ValueError("production MFA recovery secret is not configured")
         return self._development_secret("mfa-recovery").hex()
+
+    @property
+    def effective_capability_token_secret(self) -> str:
+        """HMAC key for cap_v1 capability tokens, purpose-derived in dev/test.
+
+        Kept distinct from the session JWT key on purpose: a capability token
+        presented where a session is expected (and vice versa) must fail the
+        signature check rather than decode successfully.
+        """
+        if self.capability_token_secret:
+            return self.capability_token_secret
+        if self.env == "production":
+            raise ValueError("production capability token secret is not configured")
+        return self._development_secret("capability-token").hex()
 
     @property
     def effective_verification_delivery_encryption_key(self) -> str:
