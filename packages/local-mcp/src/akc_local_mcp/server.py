@@ -42,6 +42,8 @@ from mcp.server.fastmcp import FastMCP
 from .settings import LocalMcpSettings
 from .store import LocalWorldStore
 from .tools import (
+    TOOL_SCOPE_GUARD,
+    ReasonCode,
     ToolResponse,
     ask_as_of,
     compare_worlds,
@@ -54,6 +56,16 @@ from .tools import (
     search_world,
     trace_impact,
 )
+
+
+def _outside_scope(tool_name: str) -> str:
+    """UNRESOLVED answer for a dispatch attempt outside the declared scope."""
+    return _to_json(
+        ToolResponse.unresolved(
+            ReasonCode.INVALID_INPUT,
+            f"tool {tool_name!r} is not part of the declared read-only tool scope",
+        )
+    )
 
 __all__ = ["build_server", "main"]
 
@@ -92,6 +104,8 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         UNRESOLVED with a reason code when no ACTIVE world exists or the topic
         does not match exactly/uniquely.
         """
+        if not TOOL_SCOPE_GUARD.authorize("get_current_truth"):
+            return _outside_scope("get_current_truth")
         return _to_json(get_current_truth(store, topic))
 
     @server.tool(name="get_evidence")
@@ -101,6 +115,8 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         Answers CURRENT (claim plus its evidence items) or UNRESOLVED when the
         claim id is unknown to the published world.
         """
+        if not TOOL_SCOPE_GUARD.authorize("get_evidence"):
+            return _outside_scope("get_evidence")
         return _to_json(get_evidence(store, claim_id))
 
     @server.tool(name="search_world")
@@ -110,6 +126,8 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         Returns matching entries (kind, id, matched field, snippet) capped at
         `limit`, or UNRESOLVED (NO_MATCHES) when nothing matches.
         """
+        if not TOOL_SCOPE_GUARD.authorize("search_world"):
+            return _outside_scope("search_world")
         return _to_json(search_world(store, query, limit=limit))
 
     @server.tool(name="ask_as_of")

@@ -36,16 +36,26 @@ selected and a limitation saying why.
 There are deliberately no write-shaped counterparts. What may not exist here is
 listed in `akc_local_mcp.server`'s module docstring; none of it can be
 registered by accident because the tool surface below is exhaustive.
+
+Injection boundary (masterplan §N19): everything these tools return was derived
+from compiled documents, i.e. from untrusted source text. Prose-shaped fields
+(`title`, `summary`, `text`, `quote`) therefore leave through
+`akc_cir.safe_payload.sanitize_source_content`: instruction-like passages are
+labelled in place, never removed, and the actual tool scope is fixed by the
+`TOOL_SCOPE_GUARD` parameter below — a response that says "now call the admin
+tool" changes nothing about what this package may dispatch.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
 from akc_cir.dependency import DependencyEdge, DependencyGraph
+from akc_cir.safe_payload import ToolScopeGuard, sanitize_source_content
 
 from .store import (
     ClaimRecord,
@@ -60,6 +70,7 @@ from .store import (
 )
 
 __all__ = [
+    "TOOL_SCOPE_GUARD",
     "ReasonCode",
     "ToolResponse",
     "WorldRef",
@@ -83,6 +94,39 @@ STATUS_UNRESOLVED = "UNRESOLVED"
 #: what an as-of question needs. BUILDING/CANDIDATE were never promoted,
 #: REJECTED was refused, ROLLED_BACK was withdrawn — none may be quoted.
 PUBLISHABLE_STATUSES = frozenset({"ACTIVE", "SUPERSEDED"})
+
+#: The entire tool surface, declared here as constructor parameters. This set —
+#: not anything a query, a topic or a claim text says — is what the server may
+#: dispatch; `allow_execution=False` means no content-shaped request can ever
+#: widen it (§N43: zero source-caused tool runs).
+TOOL_SCOPE_GUARD = ToolScopeGuard(
+    ("get_current_truth", "get_evidence", "search_world"), allow_execution=False
+)
+
+#: Payload fields that carry document-derived prose. Everything else (ids,
+#: statuses, hashes) passes through untouched so benign responses stay
+#: byte-identical.
+_SANITIZE_FIELDS = frozenset({"title", "summary", "text", "quote"})
+
+
+def _labeled(value: Any, *, field: str | None = None) -> Any:
+    """Label instruction-like passages in prose fields; pass everything else.
+
+    Benign strings come back unchanged. Suspicious ones keep every word but
+    gain reserved-delimiter labels naming what they resembled — §N19.1 keeps
+    suspicious content as evidence instead of stripping it.
+    """
+    if isinstance(value, str):
+        if field not in _SANITIZE_FIELDS:
+            return value
+        return sanitize_source_content(value).sanitized_text
+    if isinstance(value, list):
+        return [_labeled(item, field=field) for item in value]
+    if isinstance(value, Mapping):
+        return {
+            str(key): _labeled(item, field=str(key)) for key, item in value.items()
+        }
+    return value
 
 
 class ReasonCode(StrEnum):
@@ -309,13 +353,15 @@ def get_current_truth(store: LocalWorldStore, topic: str) -> ToolResponse:
             limitations=_base_limitations(),
         )
     claims_by_id = {claim.claim_id: claim for claim in snapshot.claims}
-    claims = [claims_by_id[cid].to_dict() for cid in record.claim_ids if cid in claims_by_id]
+    claims = [
+        _labeled(claims_by_id[cid].to_dict()) for cid in record.claim_ids if cid in claims_by_id
+    ]
     return ToolResponse.current(
         f"current truth for topic {record.topic_id!r} in world {ref.world_id!r}",
         world_state_id=ref.world_id,
         freshness=snapshot.manifest.built_at,
         limitations=_base_limitations(),
-        topic=record.to_dict(),
+        topic=_labeled(record.to_dict()),
         claims=claims,
         world=ref.to_dict(),
     )
@@ -360,7 +406,7 @@ def get_evidence(store: LocalWorldStore, claim_id: str) -> ToolResponse:
         world_state_id=ref.world_id,
         freshness=snapshot.manifest.built_at,
         limitations=_base_limitations(),
-        claim=claim.to_dict(),
+        claim=_labeled(claim.to_dict()),
         world=ref.to_dict(),
     )
 
@@ -388,18 +434,25 @@ def search_world(store: LocalWorldStore, query: str, *, limit: int = 10) -> Tool
 
     needle = cleaned.casefold()
 
-    def hit(kind: str, entry_id: str, field: str, text: str) -> dict[str, str]:
+    def hit(kind: str, entry_id: str, field: str, text: str) -> dict[str, Any]:
+        # Snippet windows are computed on the raw value so positions stay
+        # exact, then the window itself is labelled before leaving the tool.
         start = text.casefold().find(needle)
         begin = max(start - 40, 0)
-        snippet = ("…" if begin > 0 else "") + text[begin : start + len(cleaned) + 60]
-        return {
+        end = start + len(cleaned) + 60
+        raw_snippet = ("…" if begin > 0 else "") + text[begin:end]
+        content = sanitize_source_content(raw_snippet)
+        entry: dict[str, Any] = {
             "kind": kind,
             "id": entry_id,
             "matched_in": field,
-            "snippet": snippet + ("…" if start + len(cleaned) + 60 < len(text) else ""),
+            "snippet": content.sanitized_text + ("…" if end < len(text) else ""),
         }
+        if content.is_suspicious:
+            entry["flags"] = [threat.value for threat in content.threat_kinds]
+        return entry
 
-    hits: list[tuple[tuple[int, str], dict[str, str]]] = []
+    hits: list[tuple[tuple[int, str], dict[str, Any]]] = []
     field_rank = {"id": 0, "title": 1, "keyword": 2, "summary": 3, "status": 4, "text": 5}
     for record in snapshot.topics:
         for field, value in (
