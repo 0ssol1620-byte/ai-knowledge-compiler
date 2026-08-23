@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { DemoFixtureEventSource } from "@/lib/demo-event-source";
+import { asSample } from "@/lib/data-boundary";
 import { continueSchedule } from "@/lib/demo-world-source";
 import {
   DEMO_CHANGE_OPTIONS,
@@ -72,8 +73,10 @@ export default function WorldObjectChangePage() {
     setPendingTerm(term);
     const target = nextWorldState(currentWorld, term);
     const speed = 4;
+    // Fixture schedule crosses the SAMPLE/LIVE boundary here; the envelope's
+    // SAMPLE badge is rendered by the world layout around this page.
     const schedule = continueSchedule(
-      buildChangeStream(currentWorld, target),
+      asSample(buildChangeStream(currentWorld, target)).data,
       // The fixture stream is always demo-scope (I2 §5) — see world-projection.ts.
       projection.lastSequenceByScope[scopeKey({ kind: "demo" })] ?? 0,
     );

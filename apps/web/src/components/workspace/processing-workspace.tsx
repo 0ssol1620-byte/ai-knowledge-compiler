@@ -25,11 +25,12 @@ import { ReviewDrawer } from "@/components/workspace/review-drawer";
 import { ProcessingWorkspaceLive } from "@/components/workspace/processing-workspace-live";
 import { SourceViewer } from "@/components/workspace/source-viewer";
 import {
-  demoBlocks,
-  demoEstimate,
-  demoPages,
-  demoReviews,
+  demoBlocks as fixtureBlocks,
+  demoEstimate as fixtureEstimate,
+  demoPages as fixturePages,
+  demoReviews as fixtureReviews,
 } from "@/lib/demo-data";
+import { asSample } from "@/lib/data-boundary";
 import type { ReviewItem } from "@/lib/types";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 
@@ -53,10 +54,19 @@ const completedStages = stages.filter((stage) => stage.done).length;
 const currentStageLabel =
   stages.find((stage) => stage.id === currentStageId)?.label ?? "";
 
+// Fixture content crosses the SAMPLE/LIVE data boundary exactly once, here.
+// Everything below reads through these envelopes' `.data`, and the badge the
+// envelopes carry is rendered in the header ("SAMPLE · Demo snapshot") — the
+// marking cannot be detached from the data it describes.
+const samplePages = asSample(fixturePages);
+const sampleBlocks = asSample(fixtureBlocks);
+const sampleEstimate = asSample(fixtureEstimate);
+const sampleReviews = asSample(fixtureReviews);
+
 // Derived from the fixture rather than typed in. "16 / 18 pages usable" was a
-// literal that matched nothing in demoPages.
-const totalPages = demoPages.length;
-const availablePages = demoPages.filter(
+// literal that matched nothing in the fixture's page list.
+const totalPages = samplePages.data.length;
+const availablePages = samplePages.data.filter(
   (page) => page.status !== "ocr_running",
 ).length;
 
@@ -89,11 +99,11 @@ function DemoProcessingWorkspace() {
   const [mobileTab, setMobileTab] = useState<MobileTab>("progress");
 
   const selectedPage = useMemo(
-    () => demoPages.find((page) => page.id === selectedPageId) ?? demoPages[0]!,
+    () => samplePages.data.find((page) => page.id === selectedPageId) ?? samplePages.data[0]!,
     [selectedPageId],
   );
   const visibleBlocks =
-    selectedPage.blocks.length > 0 ? selectedPage.blocks : demoBlocks;
+    selectedPage.blocks.length > 0 ? selectedPage.blocks : sampleBlocks.data;
 
   function selectEvidence(item: ReviewItem) {
     if (item.page_id) setSelectedPageId(item.page_id);
@@ -134,10 +144,10 @@ function DemoProcessingWorkspace() {
           </button>
           <span
             className="live-badge demo-snapshot-badge"
-            aria-label="Demo snapshot, not a live connection"
+            aria-label="SAMPLE — demo snapshot, not a live connection"
           >
             <Clock size={14} aria-hidden="true" />
-            Demo snapshot
+            SAMPLE · Demo snapshot
           </span>
         </div>
         <div className="processing-actions">
@@ -148,7 +158,7 @@ function DemoProcessingWorkspace() {
           >
             <Warning size={15} weight="fill" aria-hidden="true" />
             Review
-            <span>{demoReviews.length}</span>
+            <span>{sampleReviews.data.length}</span>
           </button>
           <button
             className="primary-button compact"
@@ -238,7 +248,7 @@ function DemoProcessingWorkspace() {
             ["pages", "Pages"],
             ["source", "Source"],
             ["result", "Result"],
-            ["review", `Review ${demoReviews.length}`],
+            ["review", `Review ${sampleReviews.data.length}`],
           ] as Array<[MobileTab, string]>
         ).map(([id, label]) => (
           <button
@@ -333,7 +343,7 @@ function DemoProcessingWorkspace() {
           )}
         >
           <PageRail
-            pages={demoPages}
+            pages={samplePages.data}
             selectedPageId={selectedPageId}
             onSelect={(pageId) => {
               setSelectedPageId(pageId);
@@ -397,7 +407,7 @@ function DemoProcessingWorkspace() {
       </footer>
 
       <ReviewDrawer
-        items={demoReviews}
+        items={sampleReviews.data}
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
         onSelectEvidence={selectEvidence}
@@ -471,22 +481,22 @@ function EstimateDialog({
         <div className="estimate-page-grid">
           <article>
             <small>Total</small>
-            <strong>{demoEstimate.total_pages}</strong>
+            <strong>{sampleEstimate.data.total_pages}</strong>
             <span>pages</span>
           </article>
           <article>
             <small>Native text</small>
-            <strong>{demoEstimate.native_pages}</strong>
+            <strong>{sampleEstimate.data.native_pages}</strong>
             <span>Lower-cost route</span>
           </article>
           <article>
             <small>Visual parsing</small>
-            <strong>{demoEstimate.visual_pages}</strong>
+            <strong>{sampleEstimate.data.visual_pages}</strong>
             <span>OCR·layout</span>
           </article>
           <article>
             <small>Precision candidates</small>
-            <strong>{demoEstimate.precision_candidate_pages}</strong>
+            <strong>{sampleEstimate.data.precision_candidate_pages}</strong>
             <span>Selective cross-checking</span>
           </article>
         </div>
@@ -494,15 +504,15 @@ function EstimateDialog({
           <div>
             <span>Detected structure</span>
             <strong>
-              Tables {demoEstimate.tables} · formulas {demoEstimate.formulas} ·
-              figures {demoEstimate.figures}
+              Tables {sampleEstimate.data.tables} · formulas {sampleEstimate.data.formulas} ·
+              figures {sampleEstimate.data.figures}
             </strong>
           </div>
           <div>
             <span>Estimated time</span>
             <strong>
-              {demoEstimate.expected_duration_min}–
-              {demoEstimate.expected_duration_max} min
+              {sampleEstimate.data.expected_duration_min}–
+              {sampleEstimate.data.expected_duration_max} min
             </strong>
           </div>
           <div>
@@ -517,18 +527,18 @@ function EstimateDialog({
           <div>
             <span>Estimated credits</span>
             <strong>
-              {demoEstimate.credit_min}–{demoEstimate.credit_max}
+              {sampleEstimate.data.credit_min}–{sampleEstimate.data.credit_max}
             </strong>
           </div>
           <p>
-            Reserve up to <strong>{demoEstimate.credit_max} credits</strong>.
+            Reserve up to <strong>{sampleEstimate.data.credit_max} credits</strong>.
             Unused credits are returned immediately.
           </p>
         </div>
         <label className="consent-check">
           <input ref={consentRef} type="checkbox" defaultChecked />
           <span>
-            I reviewed the {demoEstimate.credit_max}-credit maximum reservation
+            I reviewed the {sampleEstimate.data.credit_max}-credit maximum reservation
             and automatic return policy for failed pages.
           </span>
         </label>

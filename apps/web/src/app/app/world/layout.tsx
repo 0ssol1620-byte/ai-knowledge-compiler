@@ -3,6 +3,7 @@
 import { useMemo, type ReactNode } from "react";
 
 import { SampleWorldBadge } from "@/components/world/sample-world-badge";
+import { asSample } from "@/lib/data-boundary";
 import { createSampleWorldSource } from "@/lib/demo-world-source";
 import { ProductWorldProvider, useProductWorld } from "@/lib/product-world-context";
 
@@ -28,9 +29,13 @@ function WorldFrame({ children }: { children: ReactNode }) {
  * source exists.
  */
 export default function WorldLayout({ children }: { children: ReactNode }) {
-  const source = useMemo(() => createSampleWorldSource(), []);
+  // The fixture source crosses the SAMPLE/LIVE data boundary here — the one
+  // hand-off in the WORLD namespace. `asSample` attaches the SAMPLE badge the
+  // frame below renders, and the type makes feeding this provider anything
+  // unmarked a compile error, not a review note.
+  const sample = useMemo(() => asSample(createSampleWorldSource()), []);
   return (
-    <ProductWorldProvider source={source}>
+    <ProductWorldProvider source={sample.data}>
       <WorldFrame>{children}</WorldFrame>
     </ProductWorldProvider>
   );

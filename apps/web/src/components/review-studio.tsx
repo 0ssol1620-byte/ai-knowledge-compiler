@@ -13,7 +13,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { SampleDataBadge } from "@/components/data/sample-data-badge";
 import { apiRequest } from "@/lib/api-client";
+import { asSample } from "@/lib/data-boundary";
 import { demoReviews } from "@/lib/demo-data";
 import type { StructaraLocale } from "@/lib/locale";
 import {
@@ -171,14 +173,18 @@ export function ReviewStudio({
 }) {
   const copy = REVIEW_COPY[locale];
   const queryClient = useQueryClient();
-  const [demoItems, setDemoItems] = useState<ReviewItem[]>(() =>
-    demoReviews.map((item) => ({ ...item })),
+  // Fixture reviews cross the SAMPLE/LIVE data boundary here; the SAMPLE badge
+  // travels with the envelope and is rendered in the header chip below.
+  const sampleReviews = useMemo(
+    () => asSample<ReviewItem[]>(demoReviews.map((item) => ({ ...item }))),
+    [],
   );
+  const [demoItems, setDemoItems] = useState<ReviewItem[]>(sampleReviews.data);
   const [selectedId, setSelectedId] = useState<string>(
-    demoReviews[0]?.id ?? "",
+    sampleReviews.data[0]?.id ?? "",
   );
   const [manualValue, setManualValue] = useState(
-    demoReviews[0]?.candidates?.[0]?.value ?? "",
+    sampleReviews.data[0]?.candidates?.[0]?.value ?? "",
   );
   const [pendingId, setPendingId] = useState<string>();
   const [error, setError] = useState<string>();
@@ -479,6 +485,7 @@ export function ReviewStudio({
           {DEMO_MODE ? copy.sample : copy.connected} · {openItems.length}{" "}
           {copy.openSuffix}
         </span>
+        {DEMO_MODE && <SampleDataBadge value={sampleReviews} />}
         <button
           type="button"
           className="secondary-button compact"

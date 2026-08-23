@@ -1410,6 +1410,31 @@
   color: var(--text-secondary);
 }
 
+/*
+ * Generic SAMPLE data badge (components/data/sample-data-badge.tsx) — the
+ * renderer for lib/data-boundary.ts envelopes on app surfaces outside the
+ * WORLD namespace. Same amber treatment as .sample-world-badge, chip-sized.
+ */
+.sample-data-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid #f0d9a8;
+  border-radius: 999px;
+  background: var(--warning-soft, #fff7eb);
+  color: var(--warning, #9a5b13);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sample-data-badge svg {
+  flex-shrink: 0;
+}
+
 .world-index-header {
   display: flex;
   align-items: baseline;
