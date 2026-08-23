@@ -1,0 +1,103 @@
+{
+  "fixture_id": "showcase-world-v1",
+  "schema_version": "1.0",
+  "sample_notice": "SAMPLE WORLD - FICTIONAL CONTENT - REAL COMPILER RUN",
+  "generated_at": "2026-08-23T08:19:12.573Z",
+  "spec": {
+    "document": "TAVONEL_CINEMATIC_COMPILATION_REPLAY_MASTER_SPEC_v2.0_FINAL_KO_2026-08-23",
+    "sections": [
+      "3.1",
+      "9.4",
+      "11.2",
+      "Phase 2"
+    ],
+    "phase": 2
+  },
+  "compiler": {
+    "package": "akc_compiler_runtime",
+    "version": "akc-compiler-runtime/0.1.0",
+    "pipeline_entrypoints": [
+      "Pipeline.compile_workspace",
+      "Pipeline.recompile",
+      "Pipeline.answer"
+    ],
+    "provenance": "vendored verbatim from agent/p0-e2e-spine 764741c"
+  },
+  "source_files": [
+    {
+      "rel_path": "approved-launch-plan.md",
+      "sha256": "a8674c352e685676fae2496336db24878b4a2cfcf773357add01818b00755704"
+    },
+    {
+      "rel_path": "customer-update.md",
+      "sha256": "8cb1c7c87b4c0ab9286c52c640247a42a833ce40cf51107ce4369bd8648b6843"
+    },
+    {
+      "rel_path": "lp01-naming-brief.md",
+      "sha256": "d603b773158030cb77a5b2cfa6deeeb67de909ed7dfefa536ecd144da3805971"
+    },
+    {
+      "rel_path": "meeting-notes.md",
+      "sha256": "ba37fefc13ee215f3a242dcd372cdc69079af0c14f9b7aa0e4ccc4ba0c4a6d07"
+    },
+    {
+      "rel_path": "proposal-draft.md",
+      "sha256": "92bca63992f5dfa17991e8231d4750f8f5c3877e6e707c295ad0ac1aa14711aa"
+    },
+    {
+      "rel_path": "repo/README.md",
+      "sha256": "08fe8268b1ec2463c33d5cb3a085ab40ec2b0d981ba4f083283ea7e0e42b1a7d"
+    },
+    {
+      "rel_path": "repo/docs/release.md",
+      "sha256": "05250b6105cf25d91961b5a42d2ef1f5aa4ac56a5f8389f190d3a5deb71f7ecb"
+    },
+    {
+      "rel_path": "roadmap.md",
+      "sha256": "a064de7a37ad9bde3d744c639efc83bc49fb58c49c919328c9de63798f5d0728"
+    },
+    {
+      "rel_path": "schedule-events.md",
+      "sha256": "77623390acbbe115f498e0a16eaf5d9f9eac0cdf77cc2238c7fc0a5cd2726265"
+    }
+  ],
+  "mutations_applied": [
+    {
+      "kind": "authoritative-edit",
+      "file": "approved-launch-plan.md",
+      "field": "launch date",
+      "before": "October 15, 2026",
+      "after": "November 3, 2026"
+    },
+    {
+      "kind": "exact-content-rename",
+      "from": "codename-brief.md",
+      "to": "lp01-naming-brief.md"
+    }
+  ],
+  "worlds": [
+    {
+      "world_state_id": "WS-1",
+      "manifest_hash": "sha256:af49b5d998b1a758b78dd0eb20fcf9be0ff8b6d77b6bda2d37a190d8dc390f0f",
+      "built_at": "2026-01-01T01:00:00Z",
+      "knowledge_units": 26,
+      "artifact": "world-v1.json"
+    },
+    {
+      "world_state_id": "WS-2",
+      "parent_world_state_id": "WS-1",
+      "manifest_hash": "sha256:809db36babe6d784832f44dee780ebb3ded3255d7030e18650563b09237568b0",
+      "built_at": "2026-01-01T02:00:00Z",
+      "knowledge_units": 26,
+      "artifact": "world-v2.json"
+    }
+  ],
+  "events": {
+    "count": 69,
+    "sequence_range": [
+      1,
+      69
+    ],
+    "sha256": "d8b684cbbd667b25bebb66b9d4ebdd4aaf0e048d9c978b00fe0996e2abf00f67"
+  }
+}
