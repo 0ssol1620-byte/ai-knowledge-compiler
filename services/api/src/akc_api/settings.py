@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     database_url: str = "sqlite+aiosqlite:///./.akc-data/akc.db"
     data_dir: Path = Path(".akc-data")
+    # Local world-state store backing /v1/ask (§22.3): a directory of
+    # published world-state snapshots (*.json). Unset means the ask surface
+    # answers UNRESOLVED -- an unmounted world is a finding, not an error.
+    world_store_dir: Path | None = None
     web_origins: str = "http://localhost:3000"
 
     jwt_secret: str = "local-development-secret-change-before-production"  # noqa: S105
