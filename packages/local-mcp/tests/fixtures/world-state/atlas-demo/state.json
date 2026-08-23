@@ -65,5 +65,52 @@
         }
       ]
     }
+  ],
+  "entities": [
+    {
+      "entity_id": "ent-acme-corp",
+      "name": "Acme Corp",
+      "type": "customer",
+      "aliases": ["Acme Corporation"],
+      "claim_ids": ["claim-source-block-evidence"]
+    }
+  ],
+  "changes": [
+    {
+      "change_id": "chg-2026-08-19-acme",
+      "source_path": "contracts/acme-msa.docx",
+      "kind": "updated",
+      "summary": "Term clause amended; renewal window narrowed.",
+      "changed_at": "2026-08-19T10:00:00Z",
+      "claim_ids": ["claim-source-block-evidence"]
+    },
+    {
+      "change_id": "chg-2026-08-18-refund",
+      "source_path": "policies/refund-v2.pdf",
+      "kind": "added",
+      "changed_at": "2026-08-18T08:00:00Z"
+    }
+  ],
+  "dependencies": [
+    {
+      "source_id": "docver-9f21c3",
+      "target_id": "claim-source-block-evidence",
+      "edge_type": "SUPPORTS"
+    },
+    {
+      "source_id": "claim-source-block-evidence",
+      "target_id": "ingest-pipeline",
+      "edge_type": "CONSUMED_BY"
+    },
+    {
+      "source_id": "report-quarterly",
+      "target_id": "ent-acme-corp",
+      "edge_type": "DEPENDS_ON"
+    },
+    {
+      "source_id": "ent-acme-corp",
+      "target_id": "claim-source-block-evidence",
+      "edge_type": "REFERENCES"
+    }
   ]
 }

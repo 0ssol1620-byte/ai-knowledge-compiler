@@ -147,7 +147,19 @@ def test_initialize_tools_list_resources_list_and_one_call(
     tools_id = server_process.send("tools/list")
     tools_result = _assert_result(server_process.await_response(tools_id))
     tool_names = sorted(tool["name"] for tool in tools_result["tools"])
-    assert tool_names == ["get_current_truth", "get_evidence", "search_world"]
+    assert tool_names == [
+        "ask_as_of",
+        "compare_worlds",
+        "get_change",
+        "get_claim",
+        "get_current_truth",
+        "get_entity",
+        "get_evidence",
+        "get_world",
+        "search_world",
+        "trace_impact",
+    ]
+    assert len(tool_names) == 10
     for tool in tools_result["tools"]:
         assert tool["inputSchema"]["type"] == "object"
 
