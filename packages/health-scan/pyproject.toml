@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "akc-health-scan"
+version = "0.1.0"
+description = "Local-only Health Scan analyzer producing the blueprint §5.2 outputs (heuristic, no cloud calls)"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0.3,<10",
+  "pytest-cov>=6.2,<7",
+  "mypy>=1.17,<2",
+  "ruff>=0.12,<1",
+]
+
+[project.scripts]
+akc-health-scan = "akc_health_scan.cli:main_cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/akc_health_scan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
