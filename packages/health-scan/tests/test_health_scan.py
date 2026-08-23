@@ -331,7 +331,7 @@ def _cli_env() -> dict:
 
 def test_cli_writes_json_report(corpus, tmp_path: Path) -> None:
     out = tmp_path / "health.json"
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 - fixed interpreter, test-authored argv
         [sys.executable, "-m", "akc_health_scan", str(corpus), "--json", str(out)],
         env=_cli_env(),
         capture_output=True,
@@ -347,7 +347,7 @@ def test_cli_writes_json_report(corpus, tmp_path: Path) -> None:
 
 
 def test_cli_rejects_missing_path(tmp_path: Path) -> None:
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 - fixed interpreter, test-authored argv
         [sys.executable, "-m", "akc_health_scan", str(tmp_path / "nope")],
         env=_cli_env(),
         capture_output=True,

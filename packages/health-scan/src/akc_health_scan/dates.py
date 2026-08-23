@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from typing import Any
 
 from . import inventory
 from .config import HealthScanConfig
@@ -54,7 +55,7 @@ def _parsable(value: str) -> bool:
     return False
 
 
-def analyze(records: list[FileRecord], config: HealthScanConfig) -> dict:
+def analyze(records: list[FileRecord], config: HealthScanConfig) -> dict[str, Any]:
     findings: list[dict[str, object]] = []
     for record in records:
         if record.suffix not in MD_FAMILY:

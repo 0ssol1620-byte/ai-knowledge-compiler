@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from itertools import combinations
+from typing import Any
 
 from . import inventory
 from .config import HealthScanConfig
@@ -26,7 +27,7 @@ def analyze(
     digests: dict[str, str],
     config: HealthScanConfig,
     skipped_hashing: list[dict[str, str]],
-) -> dict:
+) -> dict[str, Any]:
     # --- exact duplicate clusters -----------------------------------------
     by_digest: dict[str, list[str]] = {}
     for rel_path, hex_digest in digests.items():
@@ -78,7 +79,8 @@ def analyze(
     raw_pairs.sort(key=lambda item: (-item[0], item[1], item[2]))
     pairs_truncated = len(raw_pairs) > config.max_near_duplicate_pairs
     near_pairs = [
-        {"a": a, "b": b, "jaccard": round(j, 4)} for j, a, b in raw_pairs[: config.max_near_duplicate_pairs]
+        {"a": a, "b": b, "jaccard": round(j, 4)}
+        for j, a, b in raw_pairs[: config.max_near_duplicate_pairs]
     ]
 
     return {

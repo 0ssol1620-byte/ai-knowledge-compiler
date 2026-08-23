@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Any
 
 from . import inventory
 from .config import HealthScanConfig
@@ -23,7 +24,7 @@ def _percent_decode(target: str) -> str:
     return _PERCENT.sub(lambda m: chr(int(m.group(1), 16)), target)
 
 
-def analyze(md_records: list[FileRecord], config: HealthScanConfig) -> dict:
+def analyze(md_records: list[FileRecord], config: HealthScanConfig) -> dict[str, Any]:
     stale: list[dict[str, object]] = []
     checked = 0
     skipped_external = 0

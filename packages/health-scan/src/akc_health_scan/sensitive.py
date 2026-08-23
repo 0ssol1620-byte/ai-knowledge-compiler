@@ -7,6 +7,7 @@ record the path, line number and rule id only.
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from . import inventory
 from .config import HealthScanConfig
@@ -49,7 +50,7 @@ POLICY = (
 )
 
 
-def analyze(records: list[FileRecord], config: HealthScanConfig) -> dict:
+def analyze(records: list[FileRecord], config: HealthScanConfig) -> dict[str, Any]:
     findings: list[dict[str, object]] = []
     for record in records:
         for rule_id, pattern in FILENAME_RULES:

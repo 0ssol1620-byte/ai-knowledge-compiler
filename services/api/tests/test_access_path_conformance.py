@@ -13,15 +13,14 @@ from __future__ import annotations
 
 import hashlib
 import uuid
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 import httpx
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
-
 from akc_api.main import create_app
 from akc_api.models import (
     AuditEvent,
@@ -41,9 +40,10 @@ from akc_api.models import (
     utcnow,
 )
 from akc_api.settings import Settings
+from sqlalchemy import select
 
 _TEST_SUPPORT_KEY = "access-path-conformance-key"
-_PASSWORD = "correct horse battery staple"
+_PASSWORD = "correct horse battery staple"  # noqa: S105 - test fixture
 _METADATA_KEY_ID = "apath-test-key-v1"
 
 
@@ -462,7 +462,7 @@ _AUDIT_OBSERVATIONS: dict[str, bool] = {}
 
 
 # ---------------------------------------------------------------------------
-# 핵심 측정: 경로 × (A→B 거부 등가성 + 내용 무누출 + 자기 테넌트 양수 컨트롤)
+# 핵심 측정: 경로 x (A→B 거부 등가성 + 내용 무누출 + 자기 테넌트 양수 컨트롤)
 # ---------------------------------------------------------------------------
 
 
@@ -481,10 +481,10 @@ async def test_access_path_verdict_equivalence(
     tenant_a = await _register_tenant(harness, "owner-a@apath.example", "APATH Tenant A")
     tenant_b = await _register_tenant(harness, "owner-b@apath.example", "APATH Tenant B")
     bundle_a = await _seed_resources(
-        harness, tenant_id=uuid.UUID(tenant_a["tenant_id"]), token="a"
+        harness, tenant_id=uuid.UUID(tenant_a["tenant_id"]), token="a"  # noqa: S106
     )
     bundle_b = await _seed_resources(
-        harness, tenant_id=uuid.UUID(tenant_b["tenant_id"]), token="b"
+        harness, tenant_id=uuid.UUID(tenant_b["tenant_id"]), token="b"  # noqa: S106
     )
 
     # 로그인이 남기는 감사 이벤트 이후를 기준선으로 삼는다.
@@ -492,7 +492,9 @@ async def test_access_path_verdict_equivalence(
     baseline_audits = await _audit_event_count(harness, bundle_a.tenant_id)
 
     # --- 1) 미인가 접근: 테넌트 A 주체 → 테넌트 B 자원 -----------------------
-    cross_tenant_url = _render(path_under_test, bundle_b.resource_ids.get(path_under_test.resource_key))
+    cross_tenant_url = _render(
+        path_under_test, bundle_b.resource_ids.get(path_under_test.resource_key)
+    )
     denied = await harness.client.get(cross_tenant_url)
     try:
         if path_under_test.resource_key is not None:

@@ -134,6 +134,7 @@ from akc_api.free_tier import (
     estimate_gpu_cost,
     queue_priority_for_plan,
 )
+from akc_api.health_scan_api import router as health_scan_router
 from akc_api.idempotency import idempotent_mutation
 from akc_api.knowledge_api import router as knowledge_api_router
 from akc_api.malware import (
@@ -9086,6 +9087,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Connector freshness dashboard: reads source_cursors, tenant-scoped by the
     # session principal; no writes on this surface.
     app.include_router(source_freshness_router)
+    # Health Scan runs the local-only §5.2 analyzer over a caller-supplied
+    # desktop workspace path; the whole surface sits behind session auth and
+    # returns analyzer output verbatim (heuristic labels preserved).
+    app.include_router(health_scan_router)
     # Capability tokens are issued from an authenticated session and then
     # verified statelessly; the surface owns no other writes.
     app.include_router(capability_router)
