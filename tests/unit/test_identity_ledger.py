@@ -577,8 +577,19 @@ def test_the_identity_ledger_migration_owns_slot_0038_and_chains_from_the_head()
     assert down_revision
     # The slot chains onto the head that existed before it...
     assert down_revision.group(1) == "0037_gpu_post_claim_authorization"
-    # ...and becomes the single head itself.
-    assert _current_head_revision() == "0038_identity_ledger"
+    # ...and stays on the single chain. When this slot landed it WAS the one
+    # head; a later slot (0039_source_adapter_cursors) may legitimately parent
+    # onto it. The lasting invariants are: exactly one head exists (asserted
+    # inside the helper) and this revision is one of its ancestors.
+    from test_migration_graph import _graph
+
+    _, parents = _graph()
+    revision_on_chain: str | None = _current_head_revision()
+    while revision_on_chain is not None:
+        if revision_on_chain == "0038_identity_ledger":
+            break
+        revision_on_chain = parents.get(revision_on_chain)
+    assert revision_on_chain == "0038_identity_ledger"
 
 
 def _current_head_revision() -> str:
