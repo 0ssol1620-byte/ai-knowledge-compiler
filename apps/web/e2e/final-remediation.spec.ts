@@ -17,115 +17,128 @@ test.beforeEach(async ({ context }) => {
   ]);
 });
 
-test("FOLYNTA home matches the compiler promise and exact seven-scene authority", async ({
+test("FOLYNTA home matches the compiler promise and the live landing contract", async ({
   page,
 }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  // The hero headline carries manual line breaks (§7.4): two spans joined by
+  // <br />, so textContent has no whitespace between the lines.
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "From scattered documents to one knowledge system.",
+    /Every output returns\s*to its source\./,
+  );
+  await expect(page.locator(".tv-hero-comp-lead")).toHaveText(
+    "Documents become structured, verified knowledge that people and AI can reuse — with every value traceable to the page it came from.",
   );
   await expect(
-    page.getByText(
-      "Compile every page into structured, verified, connected knowledge that people and AI can reuse.",
-    ),
-  ).toBeVisible();
+    page.locator('.tv-hero-comp-actions a[data-kind="primary"]'),
+  ).toHaveAttribute("href", "/signup");
+
+  // The four compiler chapters render with real fixture data, not drawings,
+  // and the public filing demo is embedded on the page.
+  await expect(page.locator(".tv-chapters article")).toHaveCount(4);
   await expect(
-    page.getByRole("link", { name: "Compile your collection" }).first(),
-  ).toHaveAttribute("href", "/intake");
-  await expect(page.locator("main > section[data-scene]")).toHaveCount(7);
-  await expect(page.locator('[data-scene="02-processing"]')).toBeVisible();
-  await expect(page.locator('[data-scene="03-proof"]')).toBeAttached();
-  await expect(page.locator('[data-scene="06-trust-security"]')).toBeAttached();
-  await expect(page.locator('[data-scene="07-final"]')).toBeAttached();
+    page.getByRole("heading", { name: "It sees more than text." }),
+  ).toBeVisible();
+  await expect(page.locator(".tv-output-rail")).toContainText(
+    "Portable Markdown",
+  );
+  await expect(
+    page.getByRole("tablist", { name: "DART demo view" }),
+  ).toBeVisible();
 });
 
-test("Reduced-motion hero and source-evidence compare remain fully operable", async ({
+test("Reduced-motion home keeps the proof demo fully operable", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  const hero = page.locator(".st-hero-scene");
-  await expect(hero).toHaveAttribute("data-enhanced", "false");
+  // The paper hero does its work without animation machinery: no canvas may
+  // appear when the visitor prefers reduced motion.
+  const hero = page.locator(".tv-hero-comp[data-live]");
+  await expect(hero).toBeVisible();
   await expect(hero.locator("canvas")).toHaveCount(0);
-  await expect(hero).toHaveAttribute("data-direction", "folio-synthesis");
-  await expect(hero).toHaveAttribute(
-    "data-truth-class",
-    "deterministic-first-party-t1",
-  );
-  await expect(
-    hero.getByText("1 verified folio", { exact: true }),
-  ).toBeVisible();
 
-  const proof = page.locator('[data-scene="03-proof"]');
-  await proof.scrollIntoViewIfNeeded();
-  await proof.getByRole("button", { name: "DART · Korea" }).click();
-  await proof.getByRole("tab", { name: "Original" }).click();
-  await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
-    "data-evidence-state",
-    "compare",
+  // The source-evidence compare stays fully operable: the selected cell keeps
+  // its provenance label and the view tabs still switch.
+  const demo = page.locator(".tv-proof-demo");
+  await expect(demo.locator(".tv-source-cell-selected")).toHaveAttribute(
+    "aria-label",
+    "Revenue 4,902,490,901 JPY, selected source evidence",
   );
-  const selectedCell = proof.getByRole("button", {
-    name: /selected source evidence/,
-  });
-  await selectedCell.focus();
-  await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
-    "data-evidence-state",
-    "keyboard",
+
+  await demo.getByRole("tab", { name: "Original" }).click();
+  await expect(demo.locator(".tv-proof-result code")).toHaveText(
+    "ifrs-full_Revenue · line 3669",
   );
-  await selectedCell.click();
-  await expect(proof.locator(".st-proof-demo")).toHaveAttribute(
-    "data-evidence-state",
-    "pinned",
+  await demo.getByRole("tab", { name: "Markdown" }).click();
+  await expect(demo.locator(".tv-proof-result")).toContainText(
+    "4,902,490,901 JPY for 2026 Q1",
+  );
+  await demo.getByRole("tab", { name: "Proof" }).click();
+  await expect(demo.locator(".tv-proof-result code")).toHaveText(
+    "archive sha256 3b7876350a203296…",
   );
 });
 
-test("SEC proof preserves the actual filing fact through every transformation", async ({
+test("Public filing demo preserves one receipt through every transformation", async ({
   page,
 }) => {
-  await page.goto("/demo/sec");
+  await page.goto("/demo/dart");
   await expect(
-    page.getByRole("heading", { name: /Apple 2025 Form 10-K/ }),
-  ).toBeVisible();
-  await expect(page.getByText("0000320193-25-000079").first()).toBeVisible();
-
-  const total2025 = page.getByRole("button", { name: "$416,161" });
-  await total2025.click();
-  await expect(total2025).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText("$416,161").last()).toBeVisible();
-  await expect(
-    page.getByText("Form 10-K page 22", { exact: false }).first(),
+    page.getByRole("heading", {
+      level: 1,
+      name: "Korea DART Knowledge System.",
+    }),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "Markdown" }).click();
-  await expect(page.getByText("apple-2025-revenue-evidence.md")).toBeVisible();
-  await expect(page.locator("pre")).toContainText("Total net sales");
+  // The acquired OpenDART receipt is shown with the source and stays
+  // verifiable at the original archive.
+  const demo = page.locator(".tv-proof-demo");
+  await expect(demo).toContainText("OPENDART RECEIPT 20260730000413");
+  await expect(demo.getByRole("link", { name: /Verify receipt/ })).toHaveAttribute(
+    "href",
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260730000413",
+  );
+  await expect(demo.locator(".tv-source-cell-selected")).toHaveAttribute(
+    "aria-label",
+    "Revenue 4,902,490,901 JPY, selected source evidence",
+  );
 
-  await page.getByRole("button", { name: "Vault" }).click();
-  await expect(
-    page.getByRole("heading", { name: "FY2025 total net sales" }),
-  ).toBeVisible();
+  // The same revenue fact survives Original → Markdown → Vault → Graph
+  // without losing its origin.
+  const result = demo.locator(".tv-proof-result");
 
-  await page.getByRole("button", { name: "Graph" }).click();
-  await expect(
-    page.getByRole("table", { name: "Accessible relation list" }),
-  ).toBeVisible();
-  await expect(page.getByRole("cell", { name: "filed_by" })).toBeVisible();
+  await demo.getByRole("tab", { name: "Original" }).click();
+  await expect(result).toContainText("ifrs-full_Revenue · line 3669");
 
-  await page.getByRole("button", { name: "Proof" }).click();
-  await expect(page.getByText("Proof receipt")).toBeVisible();
-  await expect(
-    page.getByText(/Pending controlled archive-byte retrieval/),
-  ).toBeVisible();
+  await demo.getByRole("tab", { name: "Markdown" }).click();
+  await expect(result).toContainText("4,902,490,901 JPY for 2026 Q1");
+  await expect(result).toContainText("| Revenue | 4,902,490,901 | 10,048,464,180 |");
+
+  await demo.getByRole("tab", { name: "Vault" }).click();
+  await expect(result).toContainText("JTC — 2026 Q1 revenue");
+  await expect(result).toContainText("source_receipt: 20260730000413");
+
+  await demo.getByRole("tab", { name: "Graph" }).click();
+  await expect(demo.getByLabel("JTC reported revenue")).toBeVisible();
+  await expect(result).toContainText("JTC → reported → Revenue");
 });
 
 test("legacy review links enter the Integrity Console without leaking unsafe context", async ({
   page,
 }) => {
+  // First hit of /integrity in a run can trigger a cold dev compile
+  // (measured 100s+ on this disk); keep a deterministic local budget.
+  test.setTimeout(90_000);
   await page.goto(
     "/review?project=project-7&token=secret&redirect_uri=https%3A%2F%2Fevil.example",
   );
-  await expect(page).toHaveURL(/\/integrity\?project=project-7$/);
+  // The legacy route redirects client-side after the shell hydrates; on a
+  // cold dev compile that hand-off can outlive the default assertion window.
+  await expect(page).toHaveURL(/\/integrity\?project=project-7$/, {
+    timeout: 30_000,
+  });
   await expect(
     page.getByRole("heading", { name: /Automatic recovery first/ }),
   ).toBeVisible();
@@ -186,7 +199,7 @@ test("Projects operates independently with filters, grid view, and bulk actions"
   await expect(page.getByText("1 selected")).toHaveCount(0);
 });
 
-test("Command Palette supports search, keyboard navigation, escape, and focus return", async ({
+test("Command menu filters quick navigation and closes on Escape", async ({
   page,
 }, testInfo) => {
   test.skip(
@@ -197,24 +210,38 @@ test("Command Palette supports search, keyboard navigation, escape, and focus re
   const trigger = page.getByRole("button", {
     name: /Search projects, documents, or evidence/,
   });
-  await trigger.focus();
-  await trigger.click();
+  // The shell loads as a deferred chunk and hydrates after first paint; a
+  // click that lands before hydration is dropped, so retry until the dialog
+  // responds instead of racing a single click.
+  await expect(async () => {
+    await trigger.click();
+    await expect(
+      page.getByRole("dialog", { name: "Command menu" }),
+    ).toBeVisible();
+  }).toPass({ timeout: 15_000 });
 
-  const search = page.getByRole("combobox", {
-    name: "Search workspace commands",
-  });
+  // type="search" exposes the ARIA role "searchbox", not "textbox".
+  const search = page.getByRole("searchbox", { name: "Filter commands" });
   await expect(search).toBeFocused();
+  await expect(search).toHaveAttribute(
+    "placeholder",
+    "Filter quick navigation",
+  );
+
+  await search.fill("projects");
+  await expect(page.getByRole("link", { name: /Open projects/ })).toBeVisible();
+
+  // Filtering is honest: a query with no match says so instead of pretending.
   await search.fill("knowledge");
   await expect(
-    page.getByRole("option", { name: /Explore knowledge/ }),
+    page.locator("#command-results").getByText(/No command matches/),
   ).toBeVisible();
-  await search.press("ArrowDown");
-  await search.press("Home");
+  await expect(page.locator("#command-results a")).toHaveCount(0);
+
   await search.press("Escape");
-  await expect(
-    page.getByRole("dialog", { name: "Workspace command menu" }),
-  ).toHaveCount(0);
-  await expect(trigger).toBeFocused();
+  await expect(page.getByRole("dialog", { name: "Command menu" })).toHaveCount(
+    0,
+  );
 });
 
 test("Legal routes are independent and never claim unapproved legal effect", async ({
@@ -222,18 +249,41 @@ test("Legal routes are independent and never claim unapproved legal effect", asy
 }) => {
   await page.goto("/legal/privacy");
   await expect(
-    page.getByText("Draft · counsel approval required"),
+    page.getByRole("heading", { level: 1, name: "Privacy principles." }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: /Terms/ })).toHaveAttribute(
-    "href",
-    "/legal/terms",
-  );
+  // Honest publication control: the page states its unapproved status instead
+  // of presenting draft text as counsel-reviewed policy.
   await expect(
-    page.getByRole("link", { name: /Subprocessors/ }),
-  ).toHaveAttribute("href", "/legal/subprocessors");
+    page.getByText(/final public policy text requires legal approval/),
+  ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /Third-party notices/ }),
-  ).toHaveAttribute("href", "/legal/third-party-notices");
+    page.getByText(
+      "Collect less. Explain purpose. Retain by policy. Delete completely.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Data categories" }),
+  ).toBeVisible();
+
+  // The four legal routes stay reachable and independent via the shared
+  // marketing footer.
+  for (const [name, href] of [
+    ["privacy", "/legal/privacy"],
+    ["terms", "/legal/terms"],
+    ["subprocessors", "/legal/subprocessors"],
+    ["third party notices", "/legal/third-party-notices"],
+  ] as const) {
+    // exact: true — "Contact privacy" on the page must not match the footer
+    // link that merely reads "privacy".
+    await expect(
+      page.getByRole("link", { name, exact: true }),
+    ).toHaveAttribute("href", href);
+  }
+
+  await page.goto("/legal/terms");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Terms of service." }),
+  ).toBeVisible();
 });
 
 test("Security architecture exposes real trust boundaries and honest evidence status", async ({
@@ -242,24 +292,45 @@ test("Security architecture exposes real trust boundaries and honest evidence st
   await page.goto("/security");
   await expect(
     page.getByRole("heading", {
-      name: /Customer content crosses explicit boundaries/,
+      level: 1,
+      name: "Your knowledge stays yours.",
     }),
   ).toBeVisible();
-  await expect(page.getByText("CPU parser sandbox")).toBeVisible();
-  await expect(page.getByText("GPU worker boundary")).toBeVisible();
-  await expect(page.getByText("External Precision provider")).toBeVisible();
+  // The promise is bounded: no unearned certifications are displayed.
   await expect(
-    page.getByRole("table", { name: "Threat-to-control evidence register" }),
+    page.getByText(
+      /Private by default, controlled by policy, and traceable by design/,
+    ),
   ).toBeVisible();
   await expect(
-    page.getByText("Production evidence required").first(),
+    page.getByText(
+      "Browser → Signed Upload → Private Storage → Controlled Worker → Derived Knowledge → Scheduled Purge",
+    ),
   ).toBeVisible();
+
+  // The control ledger separates current controls from roadmap promises.
+  const ledger = page.locator('[aria-label="Security control ledger"]');
+  await expect(ledger).toBeVisible();
+  await expect(ledger.getByText("External transfer")).toBeVisible();
+  await expect(ledger.getByText("Blocked", { exact: true })).toBeVisible();
+  await expect(ledger.getByText("Retention")).toBeVisible();
+  await expect(ledger.getByText("No hidden policy · no unregistered claim")).toBeVisible();
+
+  for (const section of [
+    "Encryption and isolation",
+    "Retention and deletion",
+    "External processing",
+    "Available and roadmap",
+  ]) {
+    await expect(page.getByRole("heading", { name: section })).toBeVisible();
+  }
+
   await expect(
-    page.getByRole("heading", { name: "Accessible trust-boundary sequence" }),
-  ).toBeVisible();
+    page.getByRole("link", { name: "Read data principles" }),
+  ).toHaveAttribute("href", "/legal/privacy");
 });
 
-test("Processing Theater uses the six-stage reference contract without pretending it is live", async ({
+test("Processing workspace presents a paused demo snapshot without pretending it is live", async ({
   page,
 }) => {
   await page.goto("/documents/sample-dart/processing");
@@ -268,17 +339,31 @@ test("Processing Theater uses the six-stage reference contract without pretendin
       "Demo workspace · No documents are processed and no credits are used.",
     ),
   ).toBeVisible();
-  await expect(page.locator("[data-reference-snapshot]")).toHaveCount(1);
+
+  // The demo is an explicitly paused snapshot: a badge says so, and the stage
+  // track carries finished/not-finished state instead of invented progress.
+  const badge = page.getByLabel("Demo snapshot, not a live connection");
+  await expect(badge).toBeVisible();
+  await expect(badge).toHaveText("Demo snapshot");
+  await expect(page.locator(".pipeline-summary")).toContainText("Paused demo ·");
+
   const stages = page.locator(".stage-track .stage-item");
-  await expect(stages).toHaveCount(6);
-  await expect(stages).toHaveText([
-    /COLLECT/,
-    /UNDERSTAND/,
-    /VERIFY/,
-    /COMPILE/,
-    /ARCHITECT/,
-    /PACKAGE/,
-  ]);
+  const stageLabels = [
+    "Upload",
+    "Security",
+    "Preflight",
+    "Extract",
+    "Structure",
+    "Knowledge",
+    "Validate",
+    "Package",
+  ];
+  await expect(stages).toHaveCount(stageLabels.length);
+  // span:nth-child(2) is the label; the first child holds the check/number.
+  await expect(
+    page.locator(".stage-track .stage-item > span:nth-child(2)"),
+  ).toHaveText(stageLabels);
+
   await expect(page.locator("body")).not.toContainText(/paddle|mineru/i);
 });
 
@@ -371,31 +456,45 @@ test("Integrity Console leads with automatic history and keeps override secondar
   await expect(page.locator("body")).not.toContainText(/paddle|mineru/i);
 });
 
-test("Public benchmark route mounts the measured evidence lab", async ({
+test("Public benchmark route commits to demonstrated accuracy, not declared numbers", async ({
   page,
 }) => {
   await page.goto("/benchmarks");
   await expect(
-    page.getByRole("heading", { name: "Benchmark Lab" }),
+    page.getByRole("heading", {
+      level: 1,
+      name: "We benchmark what matters inside the document.",
+    }),
   ).toBeVisible();
-  await expect(page.getByText("Publishable evidence bundle")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Measured parser evidence" }),
+    page.getByText("Accuracy should be demonstrated, not declared."),
   ).toBeVisible();
-  await expect(page.locator(".benchmark-table-frame tbody tr")).toHaveCount(
-    benchmarkSnapshot.datasets.length,
-  );
-  for (const candidate of benchmarkSnapshot.datasets) {
-    await expect(page.getByText(candidate.label)).toBeVisible();
+
+  for (const section of [
+    "Ground truth",
+    "Deterministic metrics",
+    "Page comparator",
+    "What this does not prove",
+  ]) {
+    // exact: true — the route diagram's "DART Ground Truth" heading must not
+    // match the "Ground truth" section.
+    await expect(
+      page.getByRole("heading", { name: section, exact: true }),
+    ).toBeVisible();
   }
-  await expect(page.locator(".benchmark-table-frame")).not.toContainText(
-    "Not measured",
-  );
+  // The honesty clause stays on the page: no benchmark overclaims coverage.
   await expect(
-    page.getByRole("heading", { name: "Failures stay visible." }),
+    page.getByText(
+      /No benchmark represents every customer document, language, or semantic use case\./,
+    ),
   ).toBeVisible();
-  await expect(page.getByText("OvisOCR2 · vLLM 0.22.1")).toBeVisible();
-  await expect(page.getByText("0 scored cases")).toBeVisible();
+
+  await expect(
+    page.getByRole("link", { name: "View the latest report" }),
+  ).toHaveAttribute("href", "/app/benchmarks");
+  await expect(
+    page.getByRole("link", { name: "Read the methodology" }),
+  ).toHaveAttribute("href", "/research");
 });
 
 test("Evidence film exposes the signed model portfolio with real controls", async ({
@@ -407,16 +506,20 @@ test("Evidence film exposes the signed model portfolio with real controls", asyn
       name: "Different strengths become one routing advantage.",
     }),
   ).toBeVisible();
-  const formalCaseCount = benchmarkSnapshot.datasets.reduce(
-    (total, candidate) => total + (candidate.evidence?.case_count ?? 0),
-    0,
-  );
+  const formalCaseCount = benchmarkSnapshot.datasets
+    .filter((candidate) => candidate.status === "available")
+    .reduce(
+      (total, candidate) => total + (candidate.evidence?.case_count ?? 0),
+      0,
+    );
   await expect(
     page.getByText(
       `${formalCaseCount} / ${formalCaseCount} formal inference cases completed`,
     ),
   ).toBeVisible();
-  for (const candidate of benchmarkSnapshot.datasets) {
+  for (const candidate of benchmarkSnapshot.datasets.filter(
+    (candidate) => candidate.status === "available",
+  )) {
     const expected = candidate.label
       .replace("MinerU 3.4.4 · Pipeline", "MinerU pipe")
       .replace("PaddleOCR-VL 1.6 · FastDeploy c8", "Paddle VL")
@@ -435,18 +538,12 @@ test("Evidence film exposes the signed model portfolio with real controls", asyn
   ).toBeVisible();
 });
 
-test("Compile route and signup keep the Google-centered entry contract", async ({
+test("Signup keeps the Google-centered entry contract while the retired compile route stays gone", async ({
   page,
 }) => {
-  await page.goto("/product/compile");
-  await expect(
-    page.getByRole("heading", {
-      name: "A source-linked result is the beginning of a knowledge system.",
-    }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Actual product · durable processing workspace"),
-  ).toBeVisible();
+  // G0 retired the standalone compile product page. The catch-all must keep
+  // returning 404 instead of reviving orphaned marketing copy.
+  expect((await page.goto("/product/compile"))?.status()).toBe(404);
 
   await page.goto("/signup");
   await expect(

@@ -176,14 +176,25 @@ export function EvidenceFilmStage() {
           <span>{scene.body}</span>
           <small>{scene.signal}</small>
         </div>
-        <div className={`film-visual${"metrics" in scene ? " film-visual-metrics" : ""}`}>
+        <div
+          className={`film-visual${"metrics" in scene ? " film-visual-metrics" : ""}`}
+          style={{
+            position: "relative",
+            aspectRatio: "16 / 10",
+            overflow: "hidden",
+          }}
+        >
           {"metrics" in scene ? <MetricScene /> : (
             <Image src={scene.image} alt="" fill priority sizes="(max-width: 900px) 100vw, 65vw" />
           )}
           <div className="film-proof-chip"><span>Evidence</span><strong>source-linked</strong><small>verified CIR</small></div>
         </div>
       </section>
-      <footer className="film-controls">
+      {/* The G0 merge dropped the film stylesheet. Without a positioned
+          parent, next/image `fill` escapes over the whole stage and intercepts
+          pointer events meant for these controls (§14.3 dead control), so the
+          controls stay above the contained visual until styles are restored. */}
+      <footer className="film-controls" style={{ position: "relative", zIndex: 2 }}>
         <div className="film-progress" aria-hidden="true">
           <span style={{ transform: `scaleX(${progress / 100})` }} />
         </div>
