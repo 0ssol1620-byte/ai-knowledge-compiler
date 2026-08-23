@@ -118,3 +118,162 @@
      */
   }
 }
+
+/*
+ * ── BLANK-SLATE PORT — additive tv-* layer (W-P1) ─────────────────────────
+ *
+ * Ported from the external tavonel-blank-slate reference (read-only output of
+ * 2026-08-20): production-authority values from its src/app/globals.css :root,
+ * NOT the generated MASTER.md palette that the blank-slate's own authority
+ * override rejects. See docs/design/BLANK_SLATE_PORT_MAP.md for the full
+ * comparison and priority list.
+ *
+ * Rules honoured here:
+ *   - purely additive; every new variable carries the --tv-bs-* prefix so it
+ *     cannot collide with the legacy --tv-* names in app/tavonel.css;
+ *   - no existing token above is renamed or re-valued;
+ *   - the .tv-btn/.tv-card classes below are opt-in and referenced by no
+ *     markup yet, so nothing repaints.
+ */
+@layer tokens {
+  :root {
+    /* ── tv-bs COLOR RAMP (verbatim hex from blank-slate globals.css) ── */
+    --tv-bs-void-950: #050607;
+    --tv-bs-graphite-900: #0b0e10;
+    --tv-bs-graphite-800: #141a1d;
+    --tv-bs-steel-650: #344047;
+    --tv-bs-fog-500: #8d969b;
+    --tv-bs-bone-100: #ece8de;
+    --tv-bs-paper-050: #f4efe5;
+
+    /* signal / state */
+    --tv-bs-signal-cobalt: #6d85ff;
+    --tv-bs-signal-cool: #8aa5b5;
+    --tv-bs-warning-amber: #b88a48;
+    --tv-bs-critical-oxide: #9d5752;
+
+    /* semantic aliases, verbatim from the blank-slate shadcn-style set */
+    --tv-bs-background: var(--tv-bs-void-950);
+    --tv-bs-foreground: var(--tv-bs-bone-100);
+    --tv-bs-card: var(--tv-bs-graphite-900);
+    --tv-bs-card-foreground: var(--tv-bs-bone-100);
+    --tv-bs-popover: var(--tv-bs-graphite-800);
+    --tv-bs-popover-foreground: var(--tv-bs-bone-100);
+    --tv-bs-primary: var(--tv-bs-bone-100);
+    --tv-bs-primary-foreground: var(--tv-bs-graphite-900);
+    --tv-bs-secondary: var(--tv-bs-graphite-800);
+    --tv-bs-secondary-foreground: var(--tv-bs-bone-100);
+    --tv-bs-muted: var(--tv-bs-graphite-800);
+    --tv-bs-muted-foreground: var(--tv-bs-fog-500);
+    --tv-bs-accent: var(--tv-bs-signal-cobalt);
+    --tv-bs-accent-foreground: var(--tv-bs-paper-050);
+    --tv-bs-destructive: var(--tv-bs-critical-oxide);
+    --tv-bs-border: rgb(236 232 222 / 14%);
+    --tv-bs-input: rgb(236 232 222 / 12%);
+    --tv-bs-ring: var(--tv-bs-signal-cobalt);
+
+    /* ── tv-bs TYPOGRAPHY ──────────────────────────────────────────────
+     * Font stacks are the blank-slate production stacks. The measured scale
+     * clusters observed across its source (see port map §2); not a spec.
+     */
+    --tv-bs-font-sans:
+      "Instrument Sans", "Instrument Sans Fallback", ui-sans-serif, system-ui,
+      sans-serif;
+    --tv-bs-font-mono:
+      "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, monospace;
+
+    --tv-bs-text-2xs: 8px; /* mono micro labels */
+    --tv-bs-text-xs: 10px; /* mono status labels */
+    --tv-bs-text-sm: 11px; /* nav / meta */
+    --tv-bs-text-md: 12px; /* body meta, nav links */
+    --tv-bs-text-base: 14px; /* brand row, default body */
+    --tv-bs-text-lg: 18px; /* section body */
+    --tv-bs-text-xl: 22px; /* mobile nav display */
+    --tv-bs-text-3xl: 34px; /* section heads */
+    --tv-bs-text-4xl: 46px; /* display */
+    --tv-bs-text-5xl: 72px; /* hero display */
+
+    /* ── tv-bs SHAPE & MOTION ─────────────────────────────────────────── */
+    --tv-bs-radius: 0.35rem;
+    --tv-bs-radius-sm: calc(var(--tv-bs-radius) * 0.5);
+    --tv-bs-radius-md: calc(var(--tv-bs-radius) * 0.75);
+    --tv-bs-radius-lg: var(--tv-bs-radius);
+    --tv-bs-radius-xl: calc(var(--tv-bs-radius) * 1.5);
+
+    --tv-bs-ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+    --tv-bs-ease-camera: cubic-bezier(0.16, 1, 0.3, 1);
+    --tv-bs-duration-ui: 160ms;
+  }
+}
+
+/* Opt-in component classes (P4). Structure follows MASTER.md's button/card
+ * spec; colors bind only to the ported production tokens above. Nothing in
+ * the product references these yet. Flat surfaces win over the rejected
+ * shadow-lift card, and transforms stay behind reduced-motion consent. */
+@layer components {
+  .tv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 12px 24px;
+    border: 2px solid transparent;
+    border-radius: var(--tv-bs-radius-lg);
+    font-family: var(--tv-bs-font-sans);
+    font-size: var(--tv-bs-text-base);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--tv-bs-duration-ui) ease,
+      border-color var(--tv-bs-duration-ui) ease,
+      color var(--tv-bs-duration-ui) ease,
+      opacity 200ms ease;
+  }
+
+  .tv-btn:focus-visible {
+    outline: 2px solid var(--tv-bs-ring);
+    outline-offset: 4px;
+  }
+
+  .tv-btn--primary {
+    background: var(--tv-bs-primary);
+    color: var(--tv-bs-primary-foreground);
+  }
+
+  .tv-btn--primary:hover {
+    opacity: 0.9;
+  }
+
+  .tv-btn--secondary {
+    background: transparent;
+    color: var(--tv-bs-accent);
+    border-color: var(--tv-bs-accent);
+  }
+
+  .tv-btn--secondary:hover {
+    color: var(--tv-bs-paper-050);
+    border-color: var(--tv-bs-paper-050);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tv-btn:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  .tv-card {
+    padding: 24px;
+    background: var(--tv-bs-card);
+    color: var(--tv-bs-card-foreground);
+    border: 1px solid var(--tv-bs-border);
+    border-radius: var(--tv-bs-radius-lg);
+    transition: border-color var(--tv-bs-duration-ui)
+      var(--tv-bs-ease-reveal);
+  }
+
+  .tv-card:hover {
+    border-color: rgb(236 232 222 / 24%);
+  }
+}
