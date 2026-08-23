@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "akc-desktop-app"
+version = "0.1.0"
+description = "Single akc-desktop entry point (init/serve/status/uninstall) wiring desktop-watcher, local-mcp and health-scan for Personal Pro"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+dependencies = [
+  # stdlib only by design: init/status/uninstall must run on a bare venv;
+  # akc_desktop_watcher / akc_local_mcp / akc_health_scan are lazy imports.
+]
+
+[project.scripts]
+akc-desktop = "akc_desktop_app.cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0.3,<10",
+  "ruff>=0.12,<1",
+  "mypy>=1.17,<2",
+]
+
+# ``serve`` needs the real watcher and the MCP SDK; install with
+# ``uv sync --extra dev --group runtime``. akc_local_mcp is src-only today
+# (packages/local-mcp has no pyproject yet), so point PYTHONPATH at
+# packages/local-mcp/src when running full MCP mode — see docs/desktop/RUNBOOK.md.
+[dependency-groups]
+runtime = [
+  "akc-desktop-watcher",
+  "mcp>=1.0,<2",
+]
+
+[tool.uv.sources]
+akc-desktop-watcher = { path = "../desktop-watcher" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/akc_desktop_app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+# Local gate config; overrides the repo-root pyproject (whose pydantic plugin
+# is not installed in this package's standalone venv).
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+warn_unused_ignores = false
