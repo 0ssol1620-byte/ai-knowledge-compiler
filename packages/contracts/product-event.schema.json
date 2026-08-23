@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/product-event/1.0",
+  "title": "ProductEventEnvelopeV1",
+  "description": "Canonical ProductEvent envelope (TAVONEL Cinematic Compilation Replay Master Spec v2.0 \u00a79.4). One vocabulary for the cinematic landing and the live product. Per-type payload shapes are separate payload contracts; the envelope only guarantees framing, identity, ordering and mode.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "sequence",
+    "occurred_at",
+    "mode",
+    "scope",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "description": "Pinned while the v1 envelope is current; a mismatch must fail validation, never fall through."
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Globally unique id of this single frame, e.g. 'evt-impact-0001'."
+    },
+    "event_type": {
+      "enum": [
+        "collection.discovery.progress.v1",
+        "file.discovered.v1",
+        "file.duplicate.detected.v1",
+        "page.route.selected.v1",
+        "verification.failed.v1",
+        "recovery.completed.v1",
+        "entity.resolved.v1",
+        "relation.created.v1",
+        "revision.family.detected.v1",
+        "document.profiled.v1",
+        "document.rerouted.v1",
+        "knowledge.unit.created.v1",
+        "conflict.detected.v1",
+        "authority.resolved.v1",
+        "source.revision.created.v1",
+        "world_state.activated.v1",
+        "impact.detected.v1",
+        "recompile.progress.v1",
+        "recompile.completed.v1",
+        "answer.resolution.started.v1",
+        "answer.source.resolved.v1",
+        "answer.emitted.v1"
+      ],
+      "description": "\u00a79.3 lists A (names already produced by akc_cir.collection_events) and B (client proposal). The \u00a79.3 'C' candidates are deliberately absent until a backend producer or a DERIVED beat exists."
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonic per scope (\u00a79.6). Sequence values from different scopes are different counter spaces and must never be compared."
+    },
+    "occurred_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time",
+      "description": "RFC 3339 timestamp, e.g. '2026-08-23T10:00:00Z'."
+    },
+    "monotonic_offset_ms": {
+      "type": "number",
+      "description": "Optional stream-relative offset used by deterministic replay; absent on frames that carry only wall-clock time."
+    },
+    "mode": {
+      "enum": ["demo", "live"],
+      "description": "'demo' = replayed fixture data, 'live' = real backend frame. A live source cannot emit 'demo'."
+    },
+    "scope": {
+      "description": "Discriminated union on 'kind': which backend plane's identity the event follows.",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "JobScope",
+          "additionalProperties": false,
+          "required": ["kind", "job_id"],
+          "properties": {
+            "kind": { "const": "job" },
+            "job_id": { "type": "string", "minLength": 1 },
+            "document_id": { "type": "string", "minLength": 1 },
+            "page_number": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "title": "CollectionScope",
+          "additionalProperties": false,
+          "required": ["kind", "collection_id"],
+          "properties": {
+            "kind": { "const": "collection" },
+            "collection_id": { "type": "string", "minLength": 1 },
+            "job_id": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "title": "DemoScope",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "demo" },
+            "fixture_id": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "payload": {
+      "description": "Opaque at the envelope level ('unknown' in \u00a79.4); each event_type carries its own payload contract validated elsewhere."
+    }
+  }
+}

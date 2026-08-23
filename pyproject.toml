@@ -116,6 +116,9 @@ pythonpath = [
   # tested with the rest of the tree and must never ship. See its README.
   "packages/absorption/src",
   "packages/cir-python/src",
+  # Canonical ProductEvent envelope types (spec §9.4). Pure stdlib; wheel
+  # packaging is deferred — see docs/ux/CINEMATIC_EVENT_CONTRACT.md §1.
+  "packages/contracts/src",
   "packages/router/src",
   "packages/quality/src",
   "packages/exporters/src",
