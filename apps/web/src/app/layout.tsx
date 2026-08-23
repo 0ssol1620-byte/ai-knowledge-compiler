@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { LocaleProvider } from "@/components/locale-provider";
 import { Providers } from "@/components/providers";
+import { getRequestLocale } from "@/lib/locale-server";
 import { wantedSans } from "./fonts";
 
 // Token layer first (§6.1), then the four legacy sheets in their existing
@@ -74,12 +76,18 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  // The G0 conflict resolution kept this lineage's layout and dropped the
+  // Structara locale wiring with it: every useStructaraLocale consumer
+  // (upload-panel, auth-page, command-palette, locale-switcher, …) then threw
+  // "must be used inside LocaleProvider" during SSR, and <html lang> stopped
+  // following the locale cookie. Restore both, as the pre-merge layout had.
+  const locale = await getRequestLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={wantedSans.variable}
       suppressHydrationWarning
     >
@@ -87,9 +95,11 @@ export default function RootLayout({
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <LocaleProvider locale={locale}>
+          <Providers>
+            <AppShell>{children}</AppShell>
+          </Providers>
+        </LocaleProvider>
       </body>
     </html>
   );

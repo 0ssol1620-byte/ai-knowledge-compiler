@@ -2,6 +2,21 @@ import { expect, test } from "@playwright/test";
 
 import benchmarkSnapshot from "../src/data/benchmark-public-snapshot.json";
 
+// Every assertion in this file targets English product copy. The merged app
+// renders Korean until a locale cookie exists (DEFAULT_STRUCTARA_LOCALE is
+// "ko"), so pin English for the whole spec — the subject matter here is the
+// surfaces' contracts, not locale switching, which locale.spec covers.
+test.beforeEach(async ({ context }) => {
+  await context.addCookies([
+    {
+      name: "akc_locale",
+      value: "en",
+      url: "http://127.0.0.1:3000",
+      sameSite: "Lax",
+    },
+  ]);
+});
+
 test("FOLYNTA home matches the compiler promise and exact seven-scene authority", async ({
   page,
 }) => {

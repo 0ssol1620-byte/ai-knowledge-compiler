@@ -81,6 +81,9 @@ export default defineConfig({
       NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000",
     },
     reuseExistingServer: !process.env.CI,
-    timeout: process.env.CI ? 120_000 : 300_000,
+    // Local disks here are slow enough that a cold `next dev` compile can take
+    // two minutes (measured: "Ready in 113s"); 300s left too little headroom
+    // once another process competes for the disk.
+    timeout: process.env.CI ? 120_000 : 900_000,
   },
 });
