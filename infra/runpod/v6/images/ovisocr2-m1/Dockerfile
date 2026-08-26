@@ -20,7 +20,7 @@ RUN python3 - <<'PY'
 from importlib.metadata import version
 
 expected = {
-    "vllm": "0.22.1",
+    "vllm": "0.22.1+cu129",
     "huggingface-hub": "1.17.0",
     "pillow": "12.2.0",
     "transformers": "5.10.2",
