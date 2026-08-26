@@ -55,3 +55,13 @@ No RunPod endpoint or pod was created; no customer bytes were dispatched; R2 cus
 ## References
 
 [1]: https://github.com/0ssol1620-byte/ai-knowledge-compiler/actions/runs/32957066565 "GitHub Actions — Baked model image #11"
+
+## Remediation validation update — workflow run `32963410180`
+
+The isolated-branch remediation was built and validated by a new `Baked model image` workflow run at commit `7161d3c05f2b8ee4725beb463cbaac85d976ac02`. The immutable image build, SBOM generation, **strict Trivy scan**, and diagnostic-report upload all completed successfully. The resulting image digest was `sha256:f1edcb0fd5ff8ac13d999e789cc7f725841074671bc3bafb4b0134864784090f`. Because the scan step retained the unchanged CRITICAL gate and completed successfully, this is evidence that the 18 previously reported CRITICAL findings are absent from that newly built image.[2]
+
+The workflow still concluded failed because `Create build-only integrity receipt` invoked `python -m infra.runpod.v6.image_build_receipt`, which first imported `infra.runpod.v6.__init__`. That package initializer eagerly imported the HTTP client and required `httpx`, even though receipt generation has no HTTP, credential, or RunPod operation. This is an evidence-pipeline dependency-boundary failure, not a scanner failure. The branch now replaces eager convenience re-exports in both `infra.runpod.v6` and `benchmark.v6` with lazy exports. The receipt module's `--help` path and lightweight `build_receipt` import now execute without HTTP or YAML packages.
+
+A final isolated-branch workflow rerun is required to produce the build integrity receipt and artifact. Until that successful run exists, the image remains **not release-approved** and all pre-existing RunPod, R2, and active-world promotion boundaries remain in force.
+
+[2]: https://github.com/0ssol1620-byte/ai-knowledge-compiler/actions/runs/32963410180 "GitHub Actions — Baked model image remediation validation"
