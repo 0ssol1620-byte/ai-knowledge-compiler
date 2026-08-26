@@ -11,8 +11,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
     MODEL_REVISION=${MODEL_REVISION}
 
 USER root
+# Keep the image's Ubuntu kernel headers above the newest fixed version reported by
+# the Build #11 strict Trivy diagnostic. This is deliberately an explicit package
+# request so the vulnerable base-image copy cannot survive a successful build.
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends openssh-server ca-certificates \
+    && apt-get install -y -qq --no-install-recommends \
+      openssh-server \
+      ca-certificates \
+      linux-libc-dev \
+    && installed_linux_libc_dev="$(dpkg-query -W -f='${Version}' linux-libc-dev)" \
+    && dpkg --compare-versions "${installed_linux_libc_dev}" ge "5.15.0-187.197" \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /run/sshd /root/.ssh /opt/folynta/models/OvisOCR2
 
