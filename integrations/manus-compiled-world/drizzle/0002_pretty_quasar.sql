@@ -1,0 +1,1 @@
+ALTER TABLE `knowledge_projects` ADD `canonical_source_id` int;

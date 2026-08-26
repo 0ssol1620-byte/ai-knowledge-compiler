@@ -1,0 +1,97 @@
+/*
+ * TAVONEL Proof Motion — Field Green marks the stable knowledge field;
+ * lime appears only while a source becomes inspectable structure and context.
+ */
+
+.proof-replay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: fit-content;
+  margin-top: 32px;
+  padding: 11px 0;
+  color: var(--paper);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(240, 237, 228, 0.2);
+  font: 500 10px/1 "DM Mono", monospace;
+  letter-spacing: 0.08em;
+  transition: color 160ms ease-out, transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.proof-replay:hover,
+.proof-replay:focus-visible {
+  color: var(--lime);
+  outline: 0;
+}
+
+.proof-replay:focus-visible { box-shadow: 0 2px 0 var(--lime); }
+.proof-replay:active { transform: scale(0.97); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .proof-surface.is-extracting .proof-source-head,
+  .proof-surface.is-extracting .proof-source > a {
+    animation: proof-fade 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .proof-surface.is-extracting .proof-document > * {
+    animation: source-to-structure 760ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .proof-surface.is-extracting .proof-document > *:nth-child(2) { animation-delay: 60ms; }
+  .proof-surface.is-extracting .proof-document > *:nth-child(3) { animation-delay: 130ms; }
+
+  .proof-surface.is-extracting .proof-thread::before {
+    animation: proof-trace 760ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  }
+
+  .proof-surface.is-extracting .proof-thread i {
+    animation: proof-node 520ms cubic-bezier(0.23, 1, 0.32, 1) 240ms both;
+  }
+
+  .proof-surface.is-extracting .proof-result-label,
+  .proof-surface.is-extracting .proof-result h3,
+  .proof-surface.is-extracting .proof-result p,
+  .proof-surface.is-extracting .proof-result-foot,
+  .proof-surface.is-extracting .proof-replay {
+    animation: context-arrive 620ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .proof-surface.is-extracting .proof-result-label { animation-delay: 230ms; }
+  .proof-surface.is-extracting .proof-result h3 { animation-delay: 300ms; }
+  .proof-surface.is-extracting .proof-result p { animation-delay: 370ms; }
+  .proof-surface.is-extracting .proof-replay { animation-delay: 420ms; }
+  .proof-surface.is-extracting .proof-result-foot { animation-delay: 470ms; }
+}
+
+@keyframes proof-fade {
+  from { opacity: 0.45; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes source-to-structure {
+  0% { opacity: 0.18; transform: translateX(-12px); }
+  45% { opacity: 0.8; transform: translateX(2px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes proof-trace {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  100% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+}
+
+@keyframes proof-node {
+  0% { opacity: 0; transform: scale(0.78); background: var(--field-deep); }
+  70% { opacity: 1; transform: scale(1.13); background: var(--lime); }
+  100% { opacity: 1; transform: scale(1); background: var(--field-deep); }
+}
+
+@keyframes context-arrive {
+  from { opacity: 0; transform: translateY(13px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-replay { transition: none; }
+}

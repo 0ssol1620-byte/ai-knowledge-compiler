@@ -1,0 +1,59 @@
+{
+  "source": "/home/ubuntu/upload/6YVGCouHk4pYdbUSPUGiqX.png",
+  "pixel_width": 1080,
+  "pixel_height": 4000,
+  "aspect_ratio": "27:100",
+  "aspect_ratio_decimal_width_over_height": 0.27,
+  "orientation": "portrait",
+  "tiled": true,
+  "mode": "vertical",
+  "overlap_fraction_requested_target": 0.12,
+  "overlap_fraction_actual_minimum": {
+    "horizontal": 0.0,
+    "vertical": 0.014815
+  },
+  "reading_order": "top-to-bottom",
+  "tile_count": 5,
+  "tiles": [
+    {
+      "index": 1,
+      "path": "/home/ubuntu/tavonel-reference-tiles/tile_001_x000000_y000000.png",
+      "x": 0,
+      "y": 0,
+      "pixel_width": 1080,
+      "pixel_height": 810
+    },
+    {
+      "index": 2,
+      "path": "/home/ubuntu/tavonel-reference-tiles/tile_002_x000000_y000798.png",
+      "x": 0,
+      "y": 798,
+      "pixel_width": 1080,
+      "pixel_height": 810
+    },
+    {
+      "index": 3,
+      "path": "/home/ubuntu/tavonel-reference-tiles/tile_003_x000000_y001595.png",
+      "x": 0,
+      "y": 1595,
+      "pixel_width": 1080,
+      "pixel_height": 810
+    },
+    {
+      "index": 4,
+      "path": "/home/ubuntu/tavonel-reference-tiles/tile_004_x000000_y002392.png",
+      "x": 0,
+      "y": 2392,
+      "pixel_width": 1080,
+      "pixel_height": 810
+    },
+    {
+      "index": 5,
+      "path": "/home/ubuntu/tavonel-reference-tiles/tile_005_x000000_y003190.png",
+      "x": 0,
+      "y": 3190,
+      "pixel_width": 1080,
+      "pixel_height": 810
+    }
+  ]
+}
