@@ -65,3 +65,21 @@ The workflow still concluded failed because `Create build-only integrity receipt
 A final isolated-branch workflow rerun is required to produce the build integrity receipt and artifact. Until that successful run exists, the image remains **not release-approved** and all pre-existing RunPod, R2, and active-world promotion boundaries remain in force.
 
 [2]: https://github.com/0ssol1620-byte/ai-knowledge-compiler/actions/runs/32963410180 "GitHub Actions — Baked model image remediation validation"
+
+## Final validation — workflow run `32966963514`
+
+The final isolated-branch workflow at commit `e1b0c012ecc5ac24e73a1b420b0404074f238d2c` completed successfully. It built and pushed the immutable private image `ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1@sha256:1957daf2c5ffc737b12149e7edbbc8b2f91ffd225f8a0699a36ae21c7be38a2c`, generated the SBOM, passed the unchanged strict Trivy gate, uploaded the raw diagnostic, created the build-only integrity receipt, and uploaded the consolidated integrity artifact.[3]
+
+The downloaded raw Trivy JSON has **zero CRITICAL vulnerability findings**. The downloaded build receipt records the same source commit and immutable image digest with `critical_vulnerability_count: 0`, `build_passed: true`, `runtime_qualification_required: true`, and `paid_capacity_ready: false`. Local copies of the successful consolidated artifact files are stored outside the repository at `/home/ubuntu/tavonel-evidence/run-32966963514/`; their SHA-256 values are retained below for audit correlation.
+
+| Evidence file | SHA-256 |
+|---|---|
+| `ovisocr2-m1.build-receipt.json` | `27ee5f1f4652c32c89efdc930a6fc733050715a492866121ecfed152da3ef69f` |
+| `ovisocr2-m1.trivy.json` | `aea2023eecfe958aec15fb287381138ded751099a84be0075bac9b23f628b4ba` |
+| `ovisocr2-m1.spdx.json` | `0239a162066892bf2d16eb6f786b49709799625c0c3b4a02091e7d021faabdf4` |
+| `build-metadata.json` | `cf6d89f5372f7c9343fd8f1aad0cd4634a8492481262b437fff1280c10bfe7cb` |
+| `source-tree.sha256` | `3485f77cf9fee942b51c9ff5608b1ae551efc86f4f861aba227046e19b3596c5` |
+
+> **Release boundary:** This successful image-build evidence closes the Build #11 CRITICAL-package remediation and integrity-receipt defect. It does **not** grant release approval, create a RunPod endpoint, authorize paid capacity, dispatch customer or synthetic bytes, enable customer R2 intake, or promote an active world. The distinct license, manifest, benchmark, internal-validation, human-approval, fallback-recipe, capacity-preflight, and synthetic qualification evidence requirements remain mandatory.
+
+[3]: https://github.com/0ssol1620-byte/ai-knowledge-compiler/actions/runs/32966963514 "GitHub Actions — successful Baked model image validation"
