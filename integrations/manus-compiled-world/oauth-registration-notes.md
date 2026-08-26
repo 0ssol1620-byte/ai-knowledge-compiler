@@ -32,3 +32,5 @@ Google Drive 테스트 승인 중 Google은 TAVONEL OAuth 앱이 테스트 모�
 `/privacy`와 `/terms`는 375px 모바일 검수에서도 문서 제목, 본문, 섹션 번호, 하단 링크가 한 열로 읽히며 가로 넘침 없이 렌더링됐다.
 
 체크포인트 `4a189578` 저장 뒤 공개 도메인을 다시 확인했으나, 여전히 `Site unavailable due to unpaid billing` 화면을 반환했다. 따라서 공개 URL을 사용하는 Google Drive 콜백은 청구 상태가 정상화될 때까지 완료 검증할 수 없다.
+
+체크포인트 `1d33ff39` 저장 후에도 `https://tavoknowledg-rm8cmlar.manus.space/world?checkpoint=1d33ff39`는 동일한 `Site unavailable due to unpaid billing` 화면을 반환했다. 현재 공개 고객 테스트와 Google Drive 콜백 재검증은 여전히 외부 청구 상태에 의해 차단된다.
