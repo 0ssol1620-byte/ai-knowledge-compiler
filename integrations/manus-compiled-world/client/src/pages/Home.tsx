@@ -122,12 +122,48 @@ const proofViews = [
   },
 ];
 
+const worldContract = [
+  {
+    id: "perimeter",
+    index: "01",
+    label: "PRIVATE PERIMETER",
+    title: "The source enters before the answer exists.",
+    body: "직접 업로드 원본은 개인 오브젝트 저장소에 보존됩니다. TAVONEL은 파일 바이트를 SQL 레코드로 바꾸지 않고, 원본과 그 메타데이터의 경계를 분리합니다.",
+    proof: "SOURCE BYTES / PRESERVED",
+  },
+  {
+    id: "authority",
+    index: "02",
+    label: "REVIEWED AUTHORITY",
+    title: "A person decides which source can lead.",
+    body: "바이트가 같은 복사본은 삭제되지 않고 COPY 관계로 보존됩니다. 검토자는 대표 원본을 지정하고, 다음 컴파일은 그 선택을 명시합니다.",
+    proof: "AUTHORITY / REVIEW-SELECTED",
+  },
+  {
+    id: "proposal",
+    index: "03",
+    label: "ASSISTED, NOT ASSERTED",
+    title: "Structure is proposed with its uncertainty intact.",
+    body: "PDF와 이미지의 구조 지도는 AI 보조 제안으로 표시됩니다. 읽을 수 없는 부분과 검토가 필요한 상태는 근거 없는 확신으로 바꾸지 않습니다.",
+    proof: "CONTEXT / PROPOSED FOR REVIEW",
+  },
+  {
+    id: "approval",
+    index: "04",
+    label: "EXPLICIT APPROVAL",
+    title: "A connector starts with permission, not a credential handoff.",
+    body: "고객은 TAVONEL에서 승인 버튼을 누르고 제공자 동의 화면에서 읽기 전용 범위를 확인합니다. 서비스 자격 증명은 서버에만 보관됩니다.",
+    proof: "GOOGLE DRIVE / READ-ONLY APPROVAL",
+  },
+];
+
 const SEC_DEMO_URL = "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm";
 
 export default function Home() {
   const [activeStep, setActiveStep] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeProof, setActiveProof] = useState(0);
+  const [activeContract, setActiveContract] = useState(0);
   const [isExtracting, setIsExtracting] = useState(false);
   const stepRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const extractionTimer = useRef<number | null>(null);
@@ -155,6 +191,7 @@ export default function Home() {
 
   const selected = steps[activeStep];
   const selectedProof = proofViews[activeProof];
+  const selectedContract = worldContract[activeContract];
 
   const runExtraction = (nextIndex = activeProof) => {
     setActiveProof(nextIndex);
@@ -176,6 +213,7 @@ export default function Home() {
           <div className="nav-links" aria-label="데스크톱 메뉴">
             <a href="#compiler">Compiler</a>
             <a href="#proof">Proof</a>
+            <a href="#contract">Contract</a>
             <a href="#products">Products</a>
             <a href="#principles">Principles</a>
           </div>
@@ -188,6 +226,7 @@ export default function Home() {
         <div className={`mobile-menu ${menuOpen ? "is-open" : ""}`}>
           <a href="#compiler" onClick={() => setMenuOpen(false)}>Compiler</a>
           <a href="#proof" onClick={() => setMenuOpen(false)}>Proof</a>
+          <a href="#contract" onClick={() => setMenuOpen(false)}>Contract</a>
           <a href="#products" onClick={() => setMenuOpen(false)}>Products</a>
           <a href="#principles" onClick={() => setMenuOpen(false)}>Principles</a>
           <a href="/world" onClick={() => setMenuOpen(false)}>Launch a world</a>
@@ -338,9 +377,36 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="contract-section" id="contract" aria-labelledby="contract-title">
+        <div className="contract-heading">
+          <div className="eyebrow"><span>04</span> COMPILED WORLD CONTRACT</div>
+          <div>
+            <h2 id="contract-title">A knowledge world is not<br /><em>a black box.</em></h2>
+            <p>답을 만들기 전부터, 원본·권위·제안·접근 권한이 어떤 경계 안에 있는지 검토할 수 있어야 합니다.</p>
+          </div>
+        </div>
+
+        <div className={`contract-layout contract-state-${activeContract}`}>
+          <div className="contract-map" aria-live="polite">
+            <div className="contract-map-head"><span>WORLD / REVIEW SURFACE</span><span>{selectedContract.index} / 04</span></div>
+            <div className="contract-grid" aria-hidden="true" />
+            <div className="contract-source contract-source-a"><small>ORIGINAL</small><b>customer-file.pdf</b></div>
+            <div className="contract-source contract-source-b"><small>COPY RETAINED</small><b>customer-file (1).pdf</b></div>
+            <div className="contract-thread thread-a" aria-hidden="true" /><div className="contract-thread thread-b" aria-hidden="true" />
+            <div className="contract-core"><small>{selectedContract.label}</small><strong>{selectedContract.proof}</strong><i /></div>
+            <div className="contract-map-foot"><span><i /> REVIEWABLE STATE</span><span>NO SILENT CHANGE</span></div>
+          </div>
+
+          <div className="contract-rail" role="tablist" aria-label="Compiled World 계약 단계">
+            {worldContract.map((contract, index) => <button key={contract.id} type="button" role="tab" aria-selected={activeContract === index} className={activeContract === index ? "is-active" : ""} onClick={() => setActiveContract(index)}><span>{contract.index}</span><div><small>{contract.label}</small><strong>{contract.title}</strong><p>{contract.body}</p></div><em>{contract.proof}</em></button>)}
+          </div>
+        </div>
+        <div className="contract-note"><ShieldCheck size={16} /><p><strong>What is live now:</strong> direct upload, ZIP expansion, duplicate retention, review-selected authority, server-persisted compile stages, and Google Drive read-only approval preparation. SharePoint tenant registration and file-server content collection remain visibly unavailable until their service boundaries are complete.</p></div>
+      </section>
+
       <section className="principles-section" id="principles">
         <div className="principle-intro">
-          <div className="eyebrow light"><span>04</span> WHY IT HOLDS</div>
+          <div className="eyebrow light"><span>05</span> WHY IT HOLDS</div>
           <h2>AI should not have to<br />guess what is true.</h2>
         </div>
         <div className="principle-list">
@@ -353,7 +419,7 @@ export default function Home() {
 
       <section className="products-section" id="products">
         <div className="products-heading">
-          <div className="eyebrow"><span>05</span> PRODUCT SYSTEM</div>
+          <div className="eyebrow"><span>06</span> PRODUCT SYSTEM</div>
           <h2>Three entry points.<br />One <em>evidence standard.</em></h2>
           <p>문서를 읽는 순간부터 결과를 재사용하는 순간까지, 모든 계층은 하나의 출처 연결 원칙을 공유합니다.</p>
         </div>
