@@ -1,0 +1,20 @@
+# Store this tree's bytes verbatim.
+#
+# The repository root declares `* text=auto eol=lf`, and `core.autocrlf` is
+# true on this machine. Under those settings git normalises CRLF to LF when it
+# writes a blob, so the committed bytes of a CRLF file are NOT the bytes on
+# disk. That is fatal here for a reason specific to this study: every freeze
+# receipt pins its instrument by a sha-256 taken over the working-tree bytes.
+# If the blob differs, the pin names bytes git cannot return, a fresh clone
+# produces a different digest, and the instrument is unreproducible -- which is
+# INC-V2-089's failure, arriving by a different route.
+#
+# `-text` disables all end-of-line conversion in both directions, so
+# check-in and check-out are byte-identical and the manifest means what it says.
+#
+# This is scoped to the research tree deliberately. The repository-wide policy
+# is correct for source that people edit across platforms; it is wrong only
+# where a digest over the working tree is load-bearing evidence.
+# Both are unset: the root sets `eol=lf`, and `eol` alone still drives a
+# conversion on check-in and check-out even where `text` is unset.
+* -text -eol
