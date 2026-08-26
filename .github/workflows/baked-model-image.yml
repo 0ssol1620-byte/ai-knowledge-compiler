@@ -102,6 +102,7 @@ jobs:
           severity: CRITICAL
           ignore-unfixed: true
           exit-code: "1"
+          timeout: 20m
       - name: Create build-only integrity receipt
         shell: bash
         run: |
