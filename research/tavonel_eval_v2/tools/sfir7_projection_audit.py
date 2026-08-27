@@ -48,6 +48,7 @@ def audit(catalog: Path, *, progress_rows: int = 2_000_000) -> dict[str, Any]:
     licence_seen: Counter[str] = Counter()
     host_seen: Counter[str] = Counter()
 
+    rejected_by_host: Counter[str] = Counter()
     rows = 0
     parsed = 0
     projected = 0
@@ -59,12 +60,16 @@ def audit(catalog: Path, *, progress_rows: int = 2_000_000) -> dict[str, Any]:
     record_id_monotonic = True
     previous_numeric_id = -1
 
-    for record, reason in parser.stream_records(catalog):
+    for record, reason, raw_row in _stream_with_rows(catalog):
         rows += 1
         if rows % progress_rows == 0:
             print(f"    {rows:,} rows in {time.monotonic() - started:.0f}s", flush=True)
         if record is None:
             rejected[reason] += 1
+            # Which host lost a row matters. 39,401 unparseable addresses is a
+            # small number against 37.7M, and it would still be a finding if they
+            # were all GitHub, because GitHub is the only host the rule selects.
+            rejected_by_host[_host_of(raw_row)] += 1
             continue
         parsed += 1
 
@@ -99,7 +104,7 @@ def audit(catalog: Path, *, progress_rows: int = 2_000_000) -> dict[str, Any]:
         projected += 1
 
     declared = _declared_licences()
-    folded = {name.casefold(): count for name, count in licence_seen.items()}
+    folded = _fold_and_sum(licence_seen)
     coverage = {}
     for value in declared:
         spellings = frame.catalog_spellings(value)
@@ -116,6 +121,7 @@ def audit(catalog: Path, *, progress_rows: int = 2_000_000) -> dict[str, Any]:
         "rows_parsed": parsed,
         "rows_rejected_by_parser": sum(rejected.values()),
         "parser_rejection_reasons": dict(sorted(rejected.items())),
+        "parser_rejections_by_host": dict(sorted(rejected_by_host.items())),
         "rows_projected": projected,
         "rows_projection_refused": sum(refused.values()),
         "projection_refusal_reasons": dict(sorted(refused.items())),
@@ -160,6 +166,24 @@ def audit(catalog: Path, *, progress_rows: int = 2_000_000) -> dict[str, Any]:
     }
 
 
+def _fold_and_sum(tally: Counter[str]) -> dict[str, int]:
+    """Fold case and SUM, never overwrite.
+
+    The first version of this was a dict comprehension keyed on `casefold()`,
+    which silently kept whichever spelling came last: `MIT` (3,054,331 rows) and
+    `mit` (8,347) both fold to `mit`, and the receipt reported 8,347. Wrong in
+    the direction that makes a corpus look smaller, and invisible because the
+    number is real -- it is just the wrong one.
+
+    Both spellings are eligible, so the eligibility decision was never affected.
+    The published count was.
+    """
+    summed: dict[str, int] = {}
+    for name, count in tally.items():
+        summed[name.casefold()] = summed.get(name.casefold(), 0) + count
+    return summed
+
+
 def _refusal_kind(message: str) -> str:
     for needle, kind in (
         ("not exactly owner/repo", "ADDRESS_NOT_OWNER_SLASH_REPO"),
@@ -173,6 +197,37 @@ def _refusal_kind(message: str) -> str:
         if needle in message:
             return kind
     return "UNCLASSIFIED"
+
+
+_HOST_COLUMN_INDEX: list[int] = []
+
+
+def _stream_with_rows(catalog: Path):
+    """`stream_records`, with the raw row alongside, so a rejection can be attributed.
+
+    Written here rather than changing the parser's signature: the parser is the
+    thing under audit, and widening its interface to make auditing convenient is
+    how an audit ends up measuring something other than what runs.
+    """
+    import csv
+
+    csv.field_size_limit(parser.FIELD_SIZE_LIMIT)
+    with catalog.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        header = next(reader)
+        index = parser.require_header(header)
+        _HOST_COLUMN_INDEX.clear()
+        _HOST_COLUMN_INDEX.append(index["host"])
+        for row in reader:
+            record, reason = parser.parse_row(row, index)
+            yield record, reason, row
+
+
+def _host_of(row: list[str]) -> str:
+    if not _HOST_COLUMN_INDEX:
+        return "UNKNOWN"
+    position = _HOST_COLUMN_INDEX[0]
+    return row[position].strip() if len(row) > position else "SHORT_ROW"
 
 
 def _declared_licences() -> list[str]:

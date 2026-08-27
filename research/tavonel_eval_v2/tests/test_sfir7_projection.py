@@ -282,3 +282,45 @@ def test_attestation_compares_the_id_and_not_the_path():
     repository, and must not be refused for the rename alone."""
     expected = _side("1", "facebook/jest", "15062869")
     projection.attest_live_identity(expected, "15062869")
+
+
+# ---------------------------------------------------------------------------
+# Case folding a tally must SUM, never overwrite.
+# ---------------------------------------------------------------------------
+
+
+def test_folding_a_tally_sums_the_spellings_instead_of_keeping_the_last():
+    """The bug this exists for shipped a wrong number in a receipt.
+
+    `{name.casefold(): count for name, count in tally.items()}` keeps whichever
+    spelling comes last. `MIT` (3,054,331 rows) and `mit` (8,347) both fold to
+    `mit`, so the projection audit reported 8,347 as the MIT coverage. Wrong in
+    the direction that makes a corpus look smaller, and invisible because the
+    number is real -- it is simply the wrong one.
+
+    Eligibility was never affected: both spellings match, so no row moved. The
+    published figure did.
+    """
+    from collections import Counter
+
+    import sfir7_projection_audit as audit
+
+    tally = Counter({"MIT": 3_054_331, "mit": 8_347, "Apache-2.0": 856_055, "apache-2.0": 1_943})
+    folded = audit._fold_and_sum(tally)
+    assert folded["mit"] == 3_062_678
+    assert folded["apache-2.0"] == 857_998
+    # the naive construction, kept here as the thing being ruled out
+    naive = {name.casefold(): count for name, count in tally.items()}
+    assert naive["mit"] != folded["mit"]
+
+
+def test_folding_preserves_the_total_across_every_spelling():
+    """A stronger form: nothing may be lost, whatever the spellings are."""
+    from collections import Counter
+
+    import sfir7_projection_audit as audit
+
+    tally = Counter({"GPL-2.0": 338_234, "gpl-2.0": 899, "Gpl-2.0": 7, "MIT": 5})
+    folded = audit._fold_and_sum(tally)
+    assert sum(folded.values()) == sum(tally.values())
+    assert folded["gpl-2.0"] == 338_234 + 899 + 7

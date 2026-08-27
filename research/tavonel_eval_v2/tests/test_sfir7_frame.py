@@ -654,10 +654,13 @@ def test_every_declared_licence_matches_at_least_one_row_in_the_catalogue():
     entirely real, and wrong in a way nothing downstream could see.
     """
     tally = _catalog_vocabulary()["license_tally"]
-    folded = {name.casefold(): count for name, count in tally.items()}
-    declared = [
-        p.value for p in _rule().predicates if p.field == "spdx_license_id"
-    ][0]
+    # summed, not overwritten: MIT and mit both fold to `mit`, and a dict
+    # comprehension keyed on casefold() keeps only the last one. That bug
+    # shipped a wrong count in the projection-audit receipt.
+    folded: dict[str, int] = {}
+    for name, count in tally.items():
+        folded[name.casefold()] = folded.get(name.casefold(), 0) + count
+    declared = next(p.value for p in _rule().predicates if p.field == "spdx_license_id")
     unmatched = []
     for value in declared:
         spellings = frame.catalog_spellings(value)
@@ -673,7 +676,7 @@ def test_the_declared_host_matches_the_catalogues_own_spelling():
     """The charter says `github`; the catalogue writes `GitHub`."""
     hosts = _catalog_vocabulary()["enumerated"]["Host Type"]
     folded = {name.casefold() for name in hosts}
-    declared = [p.value for p in _rule().predicates if p.field == "host"][0]
+    declared = next(p.value for p in _rule().predicates if p.field == "host")
     assert declared.casefold() in folded, (
         f"declared host {declared!r} is not in the catalogue's vocabulary {sorted(hosts)}"
     )
@@ -685,7 +688,11 @@ def test_the_or_later_spellings_are_excluded_and_named_as_excluded():
     Excluding it is correct; excluding it by accident would not be. It is named
     in the module so the exclusion is a declared act rather than an omission.
     """
-    mapped = {s for spellings in frame.LICENSE_SPELLINGS_IN_THIS_CATALOG.values() for s in spellings}
+    mapped = {
+        spelling
+        for spellings in frame.LICENSE_SPELLINGS_IN_THIS_CATALOG.values()
+        for spelling in spellings
+    }
     for excluded in frame.OR_LATER_SPELLINGS_DELIBERATELY_EXCLUDED:
         assert excluded not in mapped
         # and it really is a value the catalogue uses, or the exclusion is theatre
@@ -694,13 +701,13 @@ def test_the_or_later_spellings_are_excluded_and_named_as_excluded():
 
 def test_the_mapping_changes_spelling_only_and_never_adds_a_licence_family():
     """What is eligible must not have moved. Ten families in, ten families out."""
-    declared = [p.value for p in _rule().predicates if p.field == "spdx_license_id"][0]
+    declared = next(p.value for p in _rule().predicates if p.field == "spdx_license_id")
     assert len(declared) == 10
     for value in declared:
         spellings = frame.catalog_spellings(value)
         # each declared value maps to spellings of ITSELF, never to another licence
         stem = value.replace("-only", "")
-        assert all(s == stem or s == value for s in spellings), (value, spellings)
+        assert all(s in (stem, value) for s in spellings), (value, spellings)
 
 
 def test_case_folding_is_applied_to_licences_and_hosts_but_not_to_everything():
@@ -708,9 +715,10 @@ def test_case_folding_is_applied_to_licences_and_hosts_but_not_to_everything():
     it -- `MIT` and `mit` are both present. INC-V2-109 is the opposite case:
     MediaWiki titles ARE case-sensitive and folding them merged two pages. The
     domain decides, not convenience."""
-    assert frame.CASE_INSENSITIVE_FIELDS == {"spdx_license_id", "host"}
+    assert {"spdx_license_id", "host"} == frame.CASE_INSENSITIVE_FIELDS
     tally = _catalog_vocabulary()["license_tally"]
-    assert "MIT" in tally and "mit" in tally, "the inconsistency this exists for is gone"
+    assert "MIT" in tally, "the inconsistency this exists for is gone"
+    assert "mit" in tally, "the inconsistency this exists for is gone"
 
 
 def test_a_lowercase_licence_row_is_eligible_under_the_reconciled_rule():
@@ -718,9 +726,9 @@ def test_a_lowercase_licence_row_is_eligible_under_the_reconciled_rule():
 
     rule = _rule()
     record = _record(1, spdx_license_id="mit", host="GitHub")
-    predicate = [p for p in rule.predicates if p.field == "spdx_license_id"][0]
+    predicate = next(p for p in rule.predicates if p.field == "spdx_license_id")
     assert frame._evaluate(predicate, record) is True
-    host_predicate = [p for p in rule.predicates if p.field == "host"][0]
+    host_predicate = next(p for p in rule.predicates if p.field == "host")
     assert frame._evaluate(host_predicate, record) is True
     # and a licence outside the ten families is still refused
     assert frame._evaluate(predicate, _replace(record, spdx_license_id="Other")) is False
@@ -728,7 +736,7 @@ def test_a_lowercase_licence_row_is_eligible_under_the_reconciled_rule():
 
 def test_a_copyleft_row_in_the_catalogues_spelling_is_eligible():
     """The rows the original spelling would have dropped: 1,076,735 of them."""
-    predicate = [p for p in _rule().predicates if p.field == "spdx_license_id"][0]
+    predicate = next(p for p in _rule().predicates if p.field == "spdx_license_id")
     for spelling in ("GPL-2.0", "GPL-3.0", "LGPL-2.1", "LGPL-3.0"):
         assert frame._evaluate(predicate, _record(1, spdx_license_id=spelling)) is True
     # or-later is a different choice and stays out
