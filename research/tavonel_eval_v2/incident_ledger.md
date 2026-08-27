@@ -9312,3 +9312,138 @@ The pin was verified byte-identical after every mutation and at rest.
 attribution; the literal-versus-keyword blind spot demonstrated by mutation; the
 grep/`read_bytes` disagreement on a file with 0 CRLF and 506 LF; the frozen
 digest matching before and after.
+
+## INC-V2-106 - the Wikipedia lane has never worked, in any SFIR study
+
+**Class:** an adapter whose every request is rejected by the endpoint, producing
+zeros that read as measurements.
+**Disposition:** CAUSE ESTABLISHED. The family is recorded as NOT_MEASURED, not
+as short of capacity. Not repaired in SFIR5, which is closed.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+Found when SFIR5 became the first census in the programme to complete. Wikipedia
+returned 0 candidates from 30 roots, 29 of them filed
+`TRUNCATED_OR_INCOMPLETE_ENUMERATION`, on only 60 requests -- exactly two per
+root.
+
+The sealed response ledger shows the shape without any new traffic. Per root:
+
+    list=categorymembers&cmtitle=Category:Astronomy&cmlimit=500   3222 bytes, 200
+    pageids=<50 ids>&prop=revisions|info|redirects&rvlimit=2       611 bytes, 200
+
+611 bytes for fifty page ids, and 611 bytes again for twenty-five. A response
+size independent of how much was asked for is an error envelope, not data.
+
+One diagnostic request to the endpoint -- two page ids, no cohort read, no
+candidate counted -- returned it verbatim:
+
+    "code": "invalidparammix",
+    "info": "\"titles\", \"pageids\" or a generator was used to supply multiple
+             pages, but the \"rvlimit\" ... parameters may only be used on a
+             single page."
+
+The adapter batches 50 page ids **and** sets `rvlimit=2`. MediaWiki refuses that
+combination outright. Every revision request in every SFIR census has therefore
+failed, `seen_batch != set(batch)` on every root, and **no Wikipedia candidate
+has ever been produced by this programme.**
+
+### Why it was invisible for four studies
+
+SFIR1, SFIR2 and SFIR3 stopped before reaching the family. SFIR4 reached it and
+died on rate limits (INC-V2-101) before completing. The lane has been carried
+through four instruments without once running to the point where its output
+could be looked at. A defect that is upstream of every previous stop is a defect
+no previous stop could reveal.
+
+### The correction this forces on INC-V2-101
+
+That entry's own correction section examined `revision_batch_size: 50` and used
+it to show the frame needed roughly 90 requests, not 3,000. The arithmetic was
+right -- 60 requests were actually issued. The inference drawn from it was not.
+It treated the batching as evidence that the instrument was sound and merely
+needed pacing. The batch size that made the volume tractable is the same
+parameter that makes every request invalid.
+
+So INC-V2-101 now has **three** wrong answers preserved rather than two: the
+User-Agent A/B, the volume estimate, and this. All three stay.
+
+### The correction this forces on SFIR5's own charter
+
+SFIR5's `batching_policy` declares `new_batching_introduced_by_sfir5: false` and
+`require_batching_unchanged` verifies the declared sizes against the frozen
+adapter's. That gate passed, and it was doing exactly what it was written to do:
+proving SFIR5 batches identically to SFIR4.
+
+It is worth stating plainly what that gate is therefore worth. **Semantic
+equivalence to a predecessor is not correctness.** The gate could only ever have
+established that the successor inherited the predecessor's behaviour, and the
+predecessor's behaviour was an error on every request. A check that compares a
+successor to an ancestor cannot find a defect they share, and this study now has
+a measured instance of that.
+
+### Why the zero is not reported as a capacity result
+
+`sfir5-capacity-outcome.json` records this family as
+`NOT_MEASURED_INSTRUMENT_DEFECT` and states that nothing establishes its capacity
+in either direction. Filing it as C=0 alongside `git_docs`'s C=293 would present
+a broken instrument's silence as a measured absence -- and it would make the
+capacity criterion look like it had been evaluated on three families when it was
+evaluated on two.
+
+**Authority:** the 60 ledger observations and their constant 611-byte size; the
+`invalidparammix` response; 29 of 30 roots at
+`TRUNCATED_OR_INCOMPLETE_ENUMERATION`; the `seen_batch != set(batch)` branch in
+`probe_sfir3_capacity`.
+
+
+## INC-V2-107 - the capacity seal could not have accepted any census
+
+**Class:** producer and consumer of one block disagreed, and the consumer had
+never run.
+**Disposition:** CAUSE ESTABLISHED; the frozen module was NOT edited. Proven not
+to change SFIR5's outcome.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+`seal_capacity` refused SFIR5's completed census with
+`encyclopedia_wikipedia pagination proof drifted` -- before reaching any capacity
+arithmetic at all.
+
+The cause is a defect introduced by this study's own INC-V2-098 repair. That
+repair added `retries_total` and `transport_retries` to the pagination block
+`probe_capacity` writes, so a reader could tell a census that lost connections
+from one that was throttled. `seal_capacity` compares that block with **strict
+set equality** against `CAPACITY_PAGINATION_FIELDS`, which was not updated.
+
+    expected: cap_reached, exhausted, rate_limit_retries,
+              rate_limit_wait_seconds, roots_processed
+    written : the same five, plus retries_total, transport_retries
+
+So the seal would have refused **every** census, for **every** family, whatever
+the data said. The instrument could not have produced a capacity authority even
+from a perfect run.
+
+It survived because no census had ever completed. All four SFIR4 runs died
+upstream, so this path had never been exercised against real output -- the same
+shape as INC-V2-092 and INC-V2-103, where a check with no reachable call site
+protects nothing.
+
+### It does not change SFIR5's outcome, and that was run rather than argued
+
+The field set was corrected **in memory only** and `seal_capacity` re-run against
+the same sealed census. The refusal became `encyclopedia_wikipedia capacity
+shortfall`. The module on disk was not edited, and `git diff` confirms it.
+
+That matters because the defect would otherwise be a convenient explanation for
+the failure. It is not the explanation: with it corrected, the criterion is
+reached and is not met.
+
+**Why the module was not repaired here.** `sfir4_protocol.py` is pinned in the
+charter freeze the census ran under. Editing it now would mean sealing SFIR5's
+result against a toolchain SFIR5 did not use -- and `seal_capacity` does not
+verify that the census it is handed was produced by the charter it is given,
+which is a second finding worth recording on its own. The repair belongs to the
+successor, before its census, not to a study whose census is already sealed.
+
+**Authority:** the refusal string; the field-set comparison above; the in-memory
+correction producing a different refusal; `git diff` clean on
+`tools/sfir4_protocol.py`.
