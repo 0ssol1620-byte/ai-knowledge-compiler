@@ -8233,3 +8233,122 @@ not mistake the omission for an oversight.
 
 **Authority:** the aborted run's traceback; the live endpoint probe; commit
 `51b8260`.
+
+## INC-V2-096 - a reserved CFR title aborted the census on a correct answer
+
+**Class:** an instrument requiring a field that cannot exist, aborting a live
+census on a root that had answered correctly.
+**Disposition:** ADAPTER CORRECTED; three zero-candidate reasons separated;
+charter re-frozen result-blind. **GPU seconds:** 0 - **Cost:** $0 -
+**IP gate:** CLOSED.
+
+The second live metadata-only capacity census aborted:
+
+    sfir3_protocol.SFIR3Refused: eCFR edition date is absent under both
+    'latest_amendment_date' and 'latest_date'
+
+This is not INC-V2-095 recurring. That was a renamed field, and the disjunction
+that closed it is intact. This is a title for which NEITHER spelling exists,
+because the title has no edition to date.
+
+All fifty declared eCFR titles were probed directly:
+
+    titles with an edition date: 49
+    titles WITHOUT:               1
+        title 35 -> meta keys ['result_count', 'title'],
+                    result_count '0', content_versions 0 rows
+
+CFR title 35 is reserved. The versioner API answers 200, honestly, with nothing
+in it. The adapter then demanded a date the response could not carry and refused
+the whole census.
+
+### The defect is in the instrument, not the endpoint
+
+The endpoint is right. An empty root has no edition date because there is no
+edition. The adapter had one path for "this root answered" and one for "this
+root failed", and no path for "this root answered and is empty" -- so an empty
+root fell into the second and took the study with it.
+
+The charter already declares the disposition this should have produced:
+`ZERO_CANDIDATE_ROOT_DISPOSITION`. Nothing new was invented. What was missing
+was the code that reaches it.
+
+### Why the check is narrow, and asserted on two fields
+
+Emptiness is decided BEFORE the date is required, and only emptiness excuses a
+missing date. A NON-empty enumeration that cannot say which edition it read is
+still refused -- it is not evidence about any edition, and widening the
+exemption to cover it would have turned a correct refusal into silence.
+
+Emptiness is asserted on two independent fields, the declared `result_count`
+and the actual row list, joined by `and`. A response that claims zero while
+carrying rows, or claims rows while carrying none, contradicts itself and falls
+through to the refusal rather than being absorbed as an empty root. A control
+covers each direction, and weakening the `and` to an `or` turns both red.
+
+### Three ways to reach zero, three reasons
+
+All three end at `ZERO_CANDIDATE_ROOT_DISPOSITION`, and a reader who cannot tell
+them apart cannot tell what was observed:
+
+| reason | what was observed |
+|---|---|
+| `EMPTY_ENUMERATION_NO_VERSIONS` | the root answered and holds nothing |
+| `TRUNCATED_OR_INCOMPLETE_ENUMERATION` | the read could not be finished or reconciled |
+| `EMPTY_ENUMERATION_DISAGREES_WITH_FIRST_CENSUS` | two reads seconds apart disagreed |
+
+The third was found while writing the controls, not while writing the fix. The
+first draft caught the empty enumeration at both `crawl()` call sites and gave
+both the same reason -- so a root that the first census read as non-empty and
+the second read as empty would have been reported as a root with no versions,
+publishing a removal observed mid-census as a property of the corpus. The second
+call site now carries its own reason. This is the INC-V2-036 class inverted: not
+a guard that cannot fire, but a guard that fires correctly and says the wrong
+thing when it does.
+
+### Controls, and their mutation results
+
+Seven controls in `tests/test_sfir3_protocol_capacity.py`, each mutation-tested
+against the defect it claims to catch:
+
+| mutation | red |
+|---|---|
+| empty check removed | 3 |
+| `and` weakened to `or` | 2 |
+| emptiness checked after the date requirement | 2 |
+| both call sites share one reason | 2 |
+
+The suite is 25 passed with the code correct.
+
+### Why re-freezing the charter here is result-blind
+
+Identical in kind to INC-V2-095, and the same three facts hold:
+
+1. **No result existed.** The run raised before any capacity number was
+   computed, printed or written. The captured output holds a traceback and
+   nothing else. Grepped and confirmed before anything was touched.
+2. **Nothing about the criterion moved.** No threshold, root set, per-root cap,
+   cohort, selection salt or scorer differs by a byte. The change is to an
+   input-parsing adapter.
+3. **The correction is determined by the endpoint, not by an outcome.** An empty
+   root has one right disposition and it is the same one whichever way the
+   census comes out.
+
+### What I now know that I did not before, and disclose
+
+Diagnosing this told me that CFR title 35 contributes zero candidates. That is
+outcome information about one of fifty roots, learned before the census
+completed, and it is recorded here rather than left unstated. It cannot be
+unlearned, so what protects the study is that it changed nothing: the root set
+is charter-frozen and title 35 remains in it, its disposition is computed by the
+adapter rather than chosen, and a root the criterion already counts as zero
+cannot be dropped to improve a count.
+
+The verification probe run over all fifty titles was written to be shape-only
+for the same reason -- it checked which fields exist and refused to count
+eligible candidates, so the capacity quantity remains unobserved. It found zero
+shape problems across all fifty, which is what says title 35 is the only empty
+root and the fix needs to be no wider than it is.
+
+**Authority:** the aborted run's traceback; the fifty-title live shape probe;
+`tests/test_sfir3_protocol_capacity.py` and its mutation results.

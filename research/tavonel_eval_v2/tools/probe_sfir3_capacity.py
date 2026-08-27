@@ -41,6 +41,22 @@ class RootUnavailable(RuntimeError):
         super().__init__(f"HTTP_{status}")
 
 
+class EmptyEnumeration(RuntimeError):
+    """A root enumerated successfully and contains nothing.
+
+    Distinct from `RootUnavailable` (the request failed) and from the `None`
+    return that means truncated-or-inconsistent. All three end as
+    `ZERO_CANDIDATE_ROOT_DISPOSITION`, and they must not share a reason string:
+    "this root has no versions" and "we could not finish reading this root" are
+    different facts about the corpus, and a census that spells them the same way
+    cannot tell a reader which one it observed.
+
+    CFR title 35 is the live instance -- reserved, `result_count: 0`, no
+    `content_versions`, and therefore no edition date, because there is no
+    edition to date.
+    """
+
+
 def _http_json(url: str) -> Mapping[str, Any] | list[Any]:
     headers = {"User-Agent": "TAVONEL-SFIR3-capacity-probe/1.0", "Accept": "application/json"}
     if url.startswith("https://api.github.com/"):
@@ -330,6 +346,23 @@ class LiveMetadataTransport:
                 # which edition of the regulation the enumeration describes, and
                 # an enumeration that cannot say which edition it read is not
                 # evidence about any of them.
+                # An empty title carries no edition date because it has no
+                # edition. CFR title 35 is reserved: the API answers 200 with
+                # `result_count: 0`, no `content_versions`, and a `meta` holding
+                # only `result_count` and `title`. Requiring a date there
+                # aborted the census on a root that had answered correctly.
+                #
+                # Checked BEFORE the date requirement and deliberately narrow:
+                # a missing date on a NON-empty enumeration is still a refusal,
+                # because then the enumeration really cannot say which edition
+                # it read. Emptiness is asserted on two independent fields --
+                # the declared count and the actual row list -- so a response
+                # that says zero while carrying rows, or carries no rows while
+                # claiming some, falls through to the refusal rather than being
+                # quietly treated as an empty root.
+                if result_count == 0 and not (body.get("content_versions") or []):
+                    raise EmptyEnumeration(url)
+
                 latest_date = meta.get("latest_amendment_date") or meta.get("latest_date")
                 if not isinstance(latest_date, str) or not latest_date:
                     raise protocol.SFIR3Refused(
@@ -383,6 +416,13 @@ class LiveMetadataTransport:
 
         try:
             first = crawl()
+        except EmptyEnumeration:
+            return _zero(
+                root_id,
+                "EMPTY_ENUMERATION_NO_VERSIONS",
+                refs,
+                self._next(index, len(titles)),
+            )
         except RootUnavailable as error:
             return _zero(
                 root_id,
@@ -399,6 +439,21 @@ class LiveMetadataTransport:
             )
         try:
             second = crawl()
+        except EmptyEnumeration:
+            # Reached only when the FIRST census read this root as non-empty and
+            # the second read it as empty. That is not "this root has no
+            # versions" -- the first census observed some -- it is two censuses
+            # disagreeing about the corpus, which is the same class of fact as a
+            # truncated read and must not be spelled like an empty root. It gets
+            # its own reason because the disagreement is a more specific and more
+            # alarming observation than truncation: something removed rows
+            # between two reads seconds apart.
+            return _zero(
+                root_id,
+                "EMPTY_ENUMERATION_DISAGREES_WITH_FIRST_CENSUS",
+                refs,
+                self._next(index, len(titles)),
+            )
         except RootUnavailable as error:
             return _zero(
                 root_id,

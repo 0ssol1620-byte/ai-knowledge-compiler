@@ -595,3 +595,148 @@ def test_execution_manifest_enriched_reference_is_exact(tmp_path: Path, monkeypa
         protocol.verify_execution_manifest_ref(
             tmp_path, {**ref, "content_digest": "sha256:" + "0" * 64}
         )
+
+
+# --- INC-V2-096: an empty eCFR root is a disposition, not an abort ----------
+#
+# CFR title 35 is reserved. The versioner API answers 200 with `result_count: 0`,
+# no `content_versions`, and a `meta` carrying only `result_count` and `title` --
+# no edition date, because there is no edition to date. Requiring a date there
+# aborted a fifty-minute live census on a root that had answered correctly.
+#
+# These controls are written in pairs on purpose. A refusal that fires on
+# everything proves nothing, and a permit that fires on everything proves less;
+# each branch below is reached by one case and denied to its neighbour.
+
+
+def _ecfr(fetch, *, title_index: int = 1):
+    return probe.LiveMetadataTransport(fetch)(
+        "regulation_ecfr",
+        {
+            "cursor": None,
+            "pool": sources.SOURCE_POOLS["regulation_ecfr"],
+            "metadata_only": True,
+            "expected_discovery_root_id": sources.discovery_root_id(
+                "regulation_ecfr", title_index
+            ),
+        },
+    )
+
+
+def _page(rows, meta):
+    return {"content_versions": rows, "meta": meta}
+
+
+def test_an_empty_ecfr_root_is_a_declared_zero_candidate_disposition() -> None:
+    """The reachable positive: title 35's exact shape must not abort the census."""
+    result = _ecfr(lambda _url: _page([], {"total_pages": 1, "result_count": "0", "title": "35"}))
+    assert result["items"] == []
+    assert result["root_disposition"] == {
+        "discovery_root_id": sources.discovery_root_id("regulation_ecfr", 1),
+        "state": "ZERO_CANDIDATE_ROOT_DISPOSITION",
+        "reason": "EMPTY_ENUMERATION_NO_VERSIONS",
+    }
+
+
+def test_a_non_empty_ecfr_root_without_an_edition_date_is_still_refused() -> None:
+    """The paired negative. Emptiness is the ONLY thing that excuses a missing
+    date. An enumeration that read rows but cannot say which edition they came
+    from is not evidence about any edition, and the exemption above must not
+    have widened into an excuse for that."""
+    rows = [
+        {
+            "type": "section",
+            "part": "1",
+            "identifier": "1.1",
+            "date": "2026-01-01",
+            "removed": False,
+        }
+    ]
+    with pytest.raises(protocol.SFIR3Refused, match="edition date is absent"):
+        _ecfr(lambda _url: _page(rows, {"total_pages": 1, "result_count": 1, "title": "21"}))
+
+
+def test_a_root_claiming_zero_while_carrying_rows_is_refused_not_called_empty() -> None:
+    """Emptiness is asserted on two independent fields -- the declared count and
+    the actual row list -- so a response that contradicts itself falls through to
+    the refusal instead of being quietly absorbed as an empty root. This is the
+    control that makes the conjunction load-bearing: with `and` weakened to `or`,
+    this case would report EMPTY_ENUMERATION_NO_VERSIONS and the contradiction
+    would never be seen."""
+    rows = [
+        {
+            "type": "section",
+            "part": "1",
+            "identifier": "1.1",
+            "date": "2026-01-01",
+            "removed": False,
+        }
+    ]
+    with pytest.raises(protocol.SFIR3Refused, match="edition date is absent"):
+        _ecfr(lambda _url: _page(rows, {"total_pages": 1, "result_count": "0", "title": "21"}))
+
+
+def test_a_root_claiming_rows_while_carrying_none_is_refused_not_called_empty() -> None:
+    """The other half of the same conjunction, in the other direction."""
+    with pytest.raises(protocol.SFIR3Refused, match="edition date is absent"):
+        _ecfr(lambda _url: _page([], {"total_pages": 1, "result_count": 5, "title": "21"}))
+
+
+def test_an_empty_root_carrying_a_date_still_takes_the_empty_disposition() -> None:
+    """Emptiness is decided before the date is consulted, so a root that is empty
+    AND dated is still a zero-candidate disposition rather than an eligible root
+    with nothing in it. Without this the two branches could be reordered without
+    any control noticing."""
+    result = _ecfr(
+        lambda _url: _page(
+            [], {"total_pages": 1, "result_count": 0, "latest_amendment_date": "2026-08-19"}
+        )
+    )
+    assert result["root_disposition"]["reason"] == "EMPTY_ENUMERATION_NO_VERSIONS"
+
+
+def test_a_root_that_empties_between_the_two_censuses_is_not_called_empty() -> None:
+    """Reaches the SECOND crawl's guard, which exists on a different fact. The
+    first census observed rows; the second observed none. That is two censuses
+    disagreeing about the corpus, and spelling it EMPTY_ENUMERATION_NO_VERSIONS
+    would report a removal as a property of the root."""
+    calls = 0
+
+    def fetch(_url: str):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return _page(
+                [
+                    {
+                        "type": "section",
+                        "part": "1",
+                        "identifier": "1.1",
+                        "date": "2026-01-01",
+                        "removed": False,
+                    }
+                ],
+                {"total_pages": 1, "result_count": 1, "latest_amendment_date": "2026-01-01"},
+            )
+        return _page([], {"total_pages": 1, "result_count": 0, "title": "21"})
+
+    result = _ecfr(fetch)
+    assert result["items"] == []
+    assert result["root_disposition"]["state"] == "ZERO_CANDIDATE_ROOT_DISPOSITION"
+    assert result["root_disposition"]["reason"] == "EMPTY_ENUMERATION_DISAGREES_WITH_FIRST_CENSUS"
+
+
+def test_the_three_zero_candidate_reasons_remain_distinguishable() -> None:
+    """All three end at the same disposition state, and a reader who cannot tell
+    them apart cannot tell "this root holds nothing" from "we could not finish
+    reading this root" from "our two reads disagreed". The reasons must stay
+    distinct strings."""
+    source = (NS / "tools" / "probe_sfir3_capacity.py").read_text(encoding="utf-8")
+    reasons = {
+        "EMPTY_ENUMERATION_NO_VERSIONS",
+        "EMPTY_ENUMERATION_DISAGREES_WITH_FIRST_CENSUS",
+        "TRUNCATED_OR_INCOMPLETE_ENUMERATION",
+    }
+    assert len(reasons) == 3
+    for reason in reasons:
+        assert f'"{reason}"' in source
