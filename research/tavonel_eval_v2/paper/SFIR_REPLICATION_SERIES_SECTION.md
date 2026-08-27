@@ -7,11 +7,15 @@ rows are marked `[CLAIM-PENDING]` inline for the programme that owns those files
 It extends §10.4, which reports SFIR5 alone.
 
 **This section was written while SFIR6's census was executing and no SFIR6
-number existed.** Every place an SFIR6 quantity belongs carries the literal
-marker `[SFIR6-RESULT-PENDING]`. That ordering is deliberate and is part of the
-method rather than an accident of scheduling: a Methods section written after
-seeing a result is not the same document as one written before, and the
-difference is not recoverable by resolving to be careful. The same discipline
+number existed.** Every place an SFIR6 quantity belongs carried the literal
+marker `[SFIR6-RESULT-PENDING]` until the census returned; each has since been
+resolved from `receipts/sfir6-capacity-outcome.json` and
+`receipts/sfir6-capacity-census-seal.json` and from nowhere else, and no
+sentence around them was rewritten to suit what they turned out to say. That
+ordering is deliberate and is part of the method rather than an accident of
+scheduling: a Methods section written after seeing a result is not the same
+document as one written before, and the difference is not recoverable by
+resolving to be careful. The same discipline
 produced the two artifacts this section leans on hardest — INC-V2-108, which
 registers four live instrument defects before SFIR6 could return, and the SFIR7
 charter, which was designed without reading a result that did not yet exist.
@@ -146,11 +150,139 @@ layers really are independent, live: it re-issues SFIR5's request shape and
 records `transport_status: 200` together with `protocol_layer_refused: true` in
 the same response.
 
-**Result: `[SFIR6-RESULT-PENDING]`.** All three families are re-measured; no
-family result is reused from SFIR5; the verdict is taken from SFIR6 whatever it
-says. The per-family table, the census transport figures and the criterion
-evaluation are to be filled from SFIR6's own outcome receipt at integration time,
-and from nowhere else.
+**Result: `CAPACITY_CRITERION_APPLIED_AND_FAILED`, and it fails on
+`git_docs`** (`receipts/sfir6-capacity-outcome.json`, over the census sealed at
+`receipts/sfir6-capacity-census-seal.json`). All three families were re-measured
+and no family result was reused from SFIR5; the receipt states in its own
+`predecessor` block that SFIR5's counts appear there only as a comparison target
+and that every figure in its `families` block was computed from SFIR6's own
+census.
+
+| family | roots declared | roots COMPLETE | C | Q | verdict | sealable? |
+|---|---|---|---|---|---|---|
+| `regulation_ecfr` | 50 | 49 | 859 | 687 | `MEETS_CRITERION` | yes |
+| `git_docs` | 20 | 13 | 293 | 234 | `SHORTFALL_MEASURED` | yes |
+| `encyclopedia_wikipedia` | 30 | 29 | 2,152 | 1,000 | `MEASURED_NOT_SEALABLE` | **no** |
+
+**`git_docs` reproduces SFIR5 not merely in count but in identical lineage set.**
+The two censuses' candidate lineage sets were compared as sets rather than as
+counts: 0 lineages in SFIR5 only, 0 in SFIR6 only. Equal counts could coincide;
+equal sets could not. The same holds for `regulation_ecfr` at 859. That is what
+makes 293 a **twice-measured** shortfall rather than two observations that
+happen to agree, and it is also the control on the repair: the two families the
+repair was not aimed at ran through the inherited code path and returned the
+same corpus, so SFIR6's Wikipedia number is not confounded by a transport that
+quietly moved underneath them.
+
+**The INC-V2-106 repair worked, and this is the first Wikipedia measurement the
+programme has ever had.** Twenty-nine of thirty roots are `COMPLETE` with the
+reason `CATEGORY_CONTINUATION_EXHAUSTED_AND_PAIRS_RESOLVED`, against 29 of 30
+filed `TRUNCATED_OR_INCOMPLETE_ENUMERATION` in SFIR5 — and C = 2,152 where no
+candidate had ever been produced by any SFIR study. The thirtieth root
+enumerated and yielded no revision pair; that is an honest `ZERO_CANDIDATE`, the
+kind of zero SFIR5's twenty-nine were not. Note that this family's Q of 1,000 is
+the `min(1000, …)` term binding for the first time in the series and not
+`0.8 · C`: floor(0.8 · 2,152) is 1,721.
+
+**And the family is `MEASURED_NOT_SEALABLE`, which is a fourth kind of answer
+this series had not previously needed.** Its set was enumerated but could not be
+certified: the identity proof refused it, four aliases out of 9,887 each being
+claimed by two lineages (INC-V2-109, below). So C = 2,152 records what the
+repaired instrument enumerated and is **not** a sealed capacity. Nothing in this
+receipt establishes that `encyclopedia_wikipedia` meets the criterion or that it
+misses it — the `meets_C` and `meets_Q` flags in its family block are computed
+over a set the seal declined to certify, and are not a verdict.
+
+**None of that changes the outcome.** The criterion requires every family, and
+`git_docs` fails it on a candidate set identical to the one that failed it in
+SFIR5. The charter's `if_git_fails_again_the_criterion_fails: true` is the field
+that was written for exactly this, before the number existed. No threshold was
+lowered, no root was added, and no view of the Wikipedia family can change the
+verdict.
+
+**Census transport, from the seal.** 3,198 requests — `api.github.com` 2,043,
+`www.ecfr.gov` 1,011, `en.wikipedia.org` 144 — against a frozen cap of 12,000,
+in 3,029.174 seconds of wall clock of which 1,150.952 were spent pacing, under a
+frozen cap of 21,600 seconds. 0 GPU seconds and an estimated cost of $0 (`gpu_seconds: 0`,
+`estimated_cost_usd: 0.0`), as with every receipt in this series. The Wikipedia lane's 144 requests against SFIR5's
+60 are the two-pass grammar's second pass, which SFIR5 never got to issue.
+
+**Nothing downstream ran.** The receipt records
+`acquisition_started: false`, `roster_frozen: false`, `payload_opened: false`
+and `corpus_spent: false`, on the authority of the charter's
+`terminal_policy: no_roster_or_acquisition_on_capacity_shortfall`. A capacity
+shortfall stops the study at the census; it does not proceed to spend a corpus
+on a frame that did not clear the bar.
+
+[CLAIM-PENDING: bind to `receipts/sfir6-capacity-outcome.json`. Two separable
+rows. First, that a repaired instrument reproduced a predecessor's candidate set
+exactly — identical lineage sets on two of three families — which is a claim
+about replication and not about capacity. Second, that the declared frame failed
+the same pre-registered criterion a second time on `git_docs`. Neither row may
+cite `encyclopedia_wikipedia`'s C as a capacity figure, because its set was not
+sealed.]
+
+### B.1 — INC-V2-109: the defect the first measurement bought
+
+The seal refused `encyclopedia_wikipedia` with a namespace collision on
+`wiki:en:title:cd8+`, claimed by two lineages at once. Four aliases out of 9,887
+collide across the 2,152 candidates, and all four have the same single cause:
+**TAVONEL's alias identity case-folds the whole MediaWiki title, and MediaWiki
+titles are case-sensitive after the first character.**
+
+| collapsed alias | one page | the other page |
+|---|---|---|
+| `cd8+` | `CD8+` → Cytotoxic T cell | `Cd8+` → CD8 |
+| `emergency surgery` | `Emergency Surgery` → Surgery | `Emergency surgery` → Elective surgery |
+| `communication systems` | `Communication Systems` → Telecommunications | `Communication systems` → Communications system |
+| `telecommunication systems` | `Telecommunication Systems` → Communications system | `Telecommunication systems` → Telecommunications |
+
+Each was confirmed against the live API rather than inferred. Resolving `CD8+`
+returns exactly one target — `{"from": "CD8+", "to": "Cytotoxic T cell"}` — which
+is the point: every one of these redirects is unambiguous *in the source*. The
+ambiguity is manufactured downstream.
+
+**It is not the corpus and it is not the adapter.** Every batch in the census
+returned `batchcomplete`, with no continuation and no warnings. Transport,
+protocol and semantic completeness all passed. The defect is in our
+normalisation, one layer further in than any gate SFIR6 was built to add — which
+is why the receipt's own `whose_defect` field says "ours".
+
+**It was not repaired, and the refusal is correct behaviour.** Three independent
+reasons, any one sufficient: SFIR6's charter freezes `identity_semantics:
+unchanged`; `akc_cir.identity` is Protected Core and cannot change without a
+same-condition no-regression benchmark; and the outcome was already known by the
+time the collision surfaced, so changing an identity rule at that point would be
+outcome-conditioned by construction, whatever its merits. Beyond the procedural
+reasons, failing closed here is the behaviour the system is supposed to have: an
+authoritative conflict on insufficient evidence must not be auto-resolved, and it
+was not. A study that quietly merged `CD8+` with `Cd8+` to obtain a sealable set
+would have reported a larger number and a worse result.
+
+**The general point is the one worth carrying past this study: repairing one
+instrument exposed a defect in a different layer.** INC-V2-109 was not missed by
+four studies through inattention — it was **unreachable**. `encyclopedia_wikipedia`
+had never produced a candidate, so the identity proof had no Wikipedia input to
+run on at all. The defect sat behind INC-V2-106 and could only surface once
+INC-V2-106 was fixed. That `git_docs` and `regulation_ecfr` aliases do not
+collide under case-folding is a property of those two corpora, not evidence that
+the rule is safe.
+
+This is the ordinary way a first measurement pays for itself, and it is an
+argument for the same thing §E argues from the other direction: a defect upstream
+of every previous stop is a defect no previous stop can reveal, and the corollary
+is that **completing a run buys defects in layers the run was not aimed at.**
+INC-V2-110 arrived by the same route in the same census — a third instance of
+INC-V2-107's strict-set-equality class, this time refusing the repaired Wikipedia
+adapter for carrying *more* evidence than the schema allows. It is recorded and
+not repaired because it is not load-bearing: removing the extra proof lets the
+seal proceed and it then refuses on INC-V2-109 instead.
+
+[CLAIM-PENDING: bind to `incident_ledger.md` INC-V2-109 and to
+`receipts/sfir6-capacity-outcome.json`'s `defects_found_by_this_census`. The
+claim is about the programme's own normalisation and about fail-closed refusal;
+it is not a claim about MediaWiki, and not a claim that the identity rule is
+wrong everywhere — only that it is wrong for case-sensitive title namespaces.]
 
 ---
 
@@ -176,13 +308,23 @@ any narrow-frame result could be.
 Four design commitments make the roster outcome-independent, and each is
 implemented as a refusal rather than a guideline.
 
-1. **The universe is externally defined.** Inclusion is decided by a third
-   party's published catalogue, pinned by snapshot URI and by a sha-256 over
-   working-tree bytes, with the digest determined by byte counting rather than a
-   shell line-ending grep (INC-V2-105). A snapshot whose bytes do not match its
-   digest is refused. The catalogue's identity and its licence terms are
-   explicitly **not an agent's call** and the design is blocked on a founder
-   ruling.
+1. **The universe is externally defined, and it is now named.** Inclusion is
+   decided by a third party's published catalogue: the **Libraries.io Open
+   Source Repository and Dependency Metadata, version 1.6.0**, DOI
+   `10.5281/zenodo.3626071`, deposited 2020-01-12 — a dated, immutable dataset
+   that existed years before SFIR5 and SFIR6 and could not have been chosen for
+   what it would yield. It publishes a stable repository identifier, its own
+   ordinal, creation and update timestamps, language and licence, which is
+   everything the frame rule needs from one frozen file and nothing TAVONEL
+   computed. The snapshot is pinned by URI and by a sha-256 over working-tree
+   bytes, with the digest determined by byte counting rather than a shell
+   line-ending grep (INC-V2-105); a snapshot whose bytes do not match its digest
+   is refused. Its identity and its licence terms were **not an agent's call**
+   and both were settled by founder ruling on 2026-08-27 — the licence
+   conservatively, because the Zenodo record's metadata says CC BY 4.0 while
+   Libraries.io states share-alike terms, and SFIR7 operates under the stricter
+   reading with the discrepancy recorded rather than resolved. Which one governs
+   is a legal question, not an agent's.
 2. **Four eligibility predicates over catalogue-published fields only.** Host is
    `github`, because the inherited adapter addresses one host and changing hosts
    would confound the frame question with an instrument change; the SPDX licence
@@ -193,17 +335,27 @@ implemented as a refusal rather than a guideline.
    catalogue record is refused, and so is a predicate whose stated reason names a
    capacity term. Documentation-file eligibility is deliberately *not* a
    catalogue predicate, because a catalogue does not know what is in a tree.
-3. **Ranking uses the catalogue's own published ordinal, descending**, tie-broken
-   by the catalogue's own stable record identifier. Ties the tie-breaker cannot
-   settle are refused rather than resolved. Ranking on any quantity TAVONEL
-   measured is a forbidden act.
-4. **N is derived, not chosen.** `N = floor(wall_clock_hours ·
-   published_rate_limit_per_hour / per_root_request_bound)`, where two inputs are
-   bounds inherited unchanged from SFIR4 and SFIR6 and read live from the
-   modules, and one is a vendor's published figure. Under the currently inherited
-   bounds this yields 125. A hand-set N is refused, and an N whose declared
-   inputs have drifted from the live bounds is refused. The justification may not
-   cite the capacity minimum or any predecessor measurement.
+3. **Ranking uses the catalogue's own published ordinal, descending, verbatim**,
+   tie-broken by the catalogue's own stable record identifier. Ties the
+   tie-breaker cannot settle are refused rather than resolved. TAVONEL may not
+   recompute popularity or yield and call the result a rank: a rank TAVONEL
+   recomputed would be a TAVONEL judgement wearing an external catalogue's name,
+   and the independence of the frame rests entirely on the ordinal having been
+   decided by someone else before this study existed. Ranking on any quantity
+   TAVONEL measured is a forbidden act.
+4. **N is derived, not chosen — and it was revised downward.**
+   `N = floor(min(wall_clock_hours · published_rate_limit_per_hour,
+   inherited_total_request_cap) / per_root_request_bound)`, which under the
+   currently inherited bounds is `floor(min(6 · 5000, 12000) / 240) = 50`. Three
+   of the four inputs are bounds inherited unchanged from SFIR4, SFIR5 and SFIR6
+   and read live from the modules; the fourth is a vendor's published figure.
+   None of them moves when a census disappoints, and the arithmetic leaves no
+   free parameter. A hand-set N is refused, and an N whose declared inputs have
+   drifted from the live bounds is refused. The justification may not cite the
+   capacity minimum or any predecessor measurement. The published rate limit is
+   also treated as an upper bound on requests issued and not as a throughput
+   guarantee — GitHub enforces secondary limits, and planning a census on 5,000
+   per hour sustained would plan one the endpoint will not serve.
 
 The charter also lists the acts it forbids, as acts rather than as values:
 adding repositories one at a time until a count clears a threshold; removing or
@@ -222,15 +374,32 @@ every input is either an external catalogue's published field or a bound
 inherited from a predecessor, and no part of the rule can be evaluated against a
 capacity quantity.
 
-**SFIR7 is not frozen and no acquisition is authorised.** One conflict is open
-and blocking, and it was registered on the same blind footing: N = 125 roots at a
-per-root bound of 240 requests implies a worst case of 30,000 requests against an
-inherited cap of 12,000. Two honest resolutions exist — raise the cap as a cost
-and wall-clock decision with its own rationale, or derive N from the request cap
-as well as the wall clock, which lowers N. Choosing between them **after** a
-census has produced a count is named in the charter as the forbidden resolution.
-Registering the conflict before any result existed is what keeps that choice
-available as a design decision rather than a tuning act.
+**The one blocking conflict was resolved by tightening rather than by raising,
+and that direction is the methodological point.** It was registered on the blind
+footing above: the first draft derived N from the wall clock alone and produced
+N = 125, which at a per-root bound of 240 requests implies a worst case of 30,000
+requests against an inherited cap of 12,000 — an acquisition that refuses at
+request 12,001 part way through the roster, producing a partial census rather
+than a measurement. Two honest resolutions existed. Raising the cap to 30,000
+would have been a budget expansion decided after SFIR6 returned a shortfall, and
+no amount of documentation makes that outcome-independent. The founder ruling of
+2026-08-27 took the other: the cap stays at 12,000 and N is derived from the
+stronger of two constraints that both already existed, which needs no new number
+at all. **N fell from 125 to 50.** A roster that shrinks cannot be suspected of
+having been sized to reach a capacity figure; a roster that grows after a
+disappointing predecessor always can, however good its stated reason. The
+conflict block is kept in the charter rather than deleted, because the record of
+what it was and how it was settled is the evidence that it was not settled to
+suit a result.
+
+**SFIR7 is still not frozen and no acquisition is authorised.** Two things
+remain: the catalogue snapshot has not been acquired and its digest is not
+pinned, and the selected roots have not been frozen. `frozen: false` and
+`roster_frozen: false` are fields in the document. Every SFIR7 figure in this
+section is therefore a **design** figure — a rule and its arithmetic — and not a
+measurement; SFIR7 has produced no capacity number, and the charter states
+outright that it may still come up short at N = 50 and that a short result is
+reported rather than repaired.
 
 ---
 
@@ -380,6 +549,34 @@ scientific one.
 
 [CLAIM-PENDING: rows binding §D to `incident_ledger.md` INC-V2-108 and
 `receipts/sfir5-capacity-census-seal.json`, and §E to the SFIR6 charter's
-`adapter_gate_separation` block and `receipts/sfir6-adapter-canary.json`. No row
-in this section may bind to an SFIR6 capacity figure until
-`[SFIR6-RESULT-PENDING]` is resolved from SFIR6's own outcome receipt.]
+`adapter_gate_separation` block and `receipts/sfir6-adapter-canary.json`. The
+three `[SFIR6-RESULT-PENDING]` markers are now resolved against
+`receipts/sfir6-capacity-outcome.json` and
+`receipts/sfir6-capacity-census-seal.json`, so §B's rows may bind — with one
+standing exclusion that outlives this note: **no row may cite
+`encyclopedia_wikipedia`'s C = 2,152 as a capacity figure.** That set was
+enumerated and not sealed, and a claim resting on it would be a claim the
+identity proof declined to certify.]
+
+---
+
+## F. Generated tables
+
+The per-study capacity table and the incident table are generated artifacts, not
+prose, and are rebuilt from receipts and from the ledger on every run of
+`paper/build_paper_artifacts.py`:
+
+- `paper/generated/table6_sfir_capacity_series.json` and its markdown rendering
+  `table6_sfir_capacity_series.md` — capacity by study and family across SFIR5
+  and SFIR6, each study read from its own outcome receipt, with SFIR6's
+  set-versus-set replication comparison, the pre-registered-not-calibrated note
+  on 750 and 600, and the denominator each `roots_complete` is counted over.
+- `paper/generated/table7_sfir_incidents.json` and
+  `table7_sfir_incidents.md` — INC-V2-106 through INC-V2-111, with each entry's
+  own class and disposition, and a column separating the two that only the
+  ledger records from the four a sealed receipt also names. Its denominator is
+  every entry the ledger holds, so the six read as a named selection.
+
+`paper/generated/reproducibility.json` pins both capacity receipts and the
+ledger by sha-256, so a rebuild that reads different bytes surfaces as a manifest
+disagreement rather than as a quietly different table.

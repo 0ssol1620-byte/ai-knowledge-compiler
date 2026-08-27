@@ -689,6 +689,514 @@ def build_figure5(
 
 
 # ---------------------------------------------------------------------------
+# Table 6 -- the SFIR capacity series, per study and per family
+
+
+#: The studies whose capacity outcome receipts this table reads, in the order
+#: they ran. A study whose receipt is not on disk yields a PENDING row rather
+#: than an omitted one: a study missing from a replication table reads as a
+#: study that never ran, which is a different fact from "its receipt is not
+#: here yet".
+CAPACITY_STUDIES = (
+    ("SFIR5", "sfir5-capacity-outcome"),
+    ("SFIR6", "sfir6-capacity-outcome"),
+)
+
+#: Fields copied verbatim from each family block. Nothing here is computed by
+#: this generator; ``_recompute_q`` below is the single exception and it is
+#: reported as a CHECK, never as the published value.
+_FAMILY_VERBATIM = (
+    "C",
+    "Q",
+    "roots_declared",
+    "roots_complete",
+    "root_states",
+    "verdict",
+    "is_a_measurement",
+    "meets_C",
+    "meets_Q",
+    "is_sealable",
+)
+
+#: A field a receipt does not carry is not a zero and not a false. SFIR5's
+#: schema has no ``is_sealable`` -- sealability became a distinction only when
+#: SFIR6 produced a set that enumerated and then failed the identity proof.
+#: Rendering that absence as ``false`` would retroactively attribute a verdict
+#: to a study that never made it.
+NOT_IN_SCHEMA = "NOT_DECLARED_BY_THIS_RECEIPT_SCHEMA"
+
+#: The same rule one layer down: a ledger entry that does not carry a
+#: structured field is reported as not declaring it, never as declaring zero.
+NOT_DECLARED_IN_LEDGER_ENTRY = "NOT_DECLARED_IN_THIS_ENTRY"
+
+
+def _recompute_q(c_value: Any, formula: str) -> dict[str, Any]:
+    """Re-derive Q from C under the receipt's OWN declared formula.
+
+    This is a consistency check on the receipt, not a source of a published
+    number: the table publishes the receipt's Q and reports separately whether
+    that Q re-derives. The check earns its place because
+    ``encyclopedia_wikipedia`` is the first family in the programme whose C is
+    large enough for the ``min(1000, ...)`` cap to bind -- floor(0.8*2152)
+    exceeds 1000 -- so its Q is the first one in the series that is not simply
+    0.8*C, and a reader who assumes otherwise mis-reads it.
+    """
+    if formula.replace(" ", "") != "Q_f=min(1000,floor(0.8*C_f))":
+        return {"checked": False, "why": f"unrecognised declared formula: {formula!r}"}
+    if not _numeric(c_value):
+        return {"checked": False, "why": f"C is not numeric: {c_value!r}"}
+    return {"checked": True, "value": min(1000, int(0.8 * c_value))}
+
+
+def build_table6(*, receipts_dir: Path = RECEIPTS_DIR, root: Path = ROOT) -> dict[str, Any]:
+    """Table 6 -- per-study, per-family capacity across the SFIR replication series.
+
+    Every cell is read out of that study's own capacity outcome receipt. No
+    number is carried sideways: SFIR6's receipt states in its own
+    ``predecessor`` block that SFIR5's counts appear there only as a comparison
+    target and that every figure in its ``families`` block was computed from
+    SFIR6's own census, and this table honours the same separation by reading
+    each study from its own file.
+
+    The verdict column is deliberately not collapsed to pass/fail. This series'
+    result is the DISTINCTION between kinds of answer -- a measurement that
+    passes, a measurement that falls short, an instrument defect that produced
+    no measurement at all, and a set that was enumerated but could not be
+    certified -- and a boolean column would destroy exactly that.
+    """
+    require_dir(receipts_dir)
+
+    studies: list[dict[str, Any]] = []
+    for label, stem in CAPACITY_STUDIES:
+        found = resolve_receipt(stem, receipts_dir=receipts_dir, root=root)
+        if found is None:
+            studies.append(
+                {
+                    "study": label,
+                    "state": pending(f"no receipt at receipts/{stem}.json"),
+                    "rows": [],
+                }
+            )
+            continue
+
+        body = found["body"]
+        criterion = body.get("criterion", {})
+        formula = criterion.get("formula", "")
+
+        rows = []
+        for family, block in sorted(body.get("families", {}).items()):
+            row: dict[str, Any] = {"study": label, "family": family}
+            for field in _FAMILY_VERBATIM:
+                row[field] = block.get(field, NOT_IN_SCHEMA)
+            check = _recompute_q(block.get("C"), formula)
+            row["q_recomputes_from_the_receipts_own_formula"] = (
+                (check["value"] == block.get("Q")) if check["checked"] else check["why"]
+            )
+            rows.append(row)
+
+        studies.append(
+            {
+                "study": label,
+                "protocol_id": body.get("protocol_id"),
+                "receipt": {"path": safe_rel(found["path"]), "sha256": found["sha256"]},
+                "resolved_via": found["via"],
+                "state": body.get("state"),
+                "outcome": body.get("outcome"),
+                "criterion": criterion,
+                "families_meeting_criterion": body.get("families_meeting_criterion"),
+                "families_sealable": body.get("families_sealable", NOT_IN_SCHEMA),
+                "families_not_sealable": body.get("families_not_sealable", NOT_IN_SCHEMA),
+                "rows": rows,
+            }
+        )
+
+    # The replication claim is SFIR6's own, so it is read out of SFIR6's
+    # receipt rather than recomputed here. Its load-bearing field is
+    # `lineage_sets_identical`: equal counts could coincide, equal SETS could
+    # not, and the difference is what makes git_docs a twice-measured shortfall
+    # rather than two observations that happen to agree.
+    sfir6_receipt = resolve_receipt(
+        "sfir6-capacity-outcome", receipts_dir=receipts_dir, root=root
+    )
+    if sfir6_receipt is None:
+        replication_block: Any = pending("SFIR6's capacity outcome receipt is not on disk")
+    else:
+        replication_block = sfir6_receipt["body"].get(
+            "replication_of_sfir5",
+            pending("the SFIR6 outcome receipt carries no replication_of_sfir5 block"),
+        )
+
+    return {
+        "title": "Table 6 -- capacity by study and family across the SFIR replication series",
+        "studies": studies,
+        "replication_of_sfir5_by_sfir6": replication_block,
+        "thresholds_are_preregistered_not_calibrated": (
+            "the minimum C of 750 and the minimum Q of 600 are pre-registered figures. "
+            "This table reports whether a declared frame clears them. It does not report "
+            "that they are the right numbers, and no cell here is a calibrated result."
+        ),
+        "what_this_table_is_not": (
+            "three attempts at one measurement. SFIR5 is a completed capacity census; "
+            "SFIR6 is an instrument repair under an explicitly unchanged frame, whose "
+            "receipt is not a rescoring of SFIR5; the two rows for one family are two "
+            "measurements, and where they agree that agreement is the finding."
+        ),
+        "denominators": (
+            "roots_complete is counted over roots_declared for that family in that study, "
+            "not over the census total. root_states sums to roots_declared."
+        ),
+        "inputs": {
+            "receipts": [
+                safe_rel(receipts_dir / f"{stem}.json") for _label, stem in CAPACITY_STUDIES
+            ]
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Table 7 -- the SFIR5/SFIR6-era incidents
+
+
+#: The contiguous block of ledger entries this paper section cites. Named
+#: explicitly rather than derived from a numeric range so that a future entry
+#: cannot silently join the table, and so that an entry named here but absent
+#: from the ledger is a refusal rather than a quietly shorter table.
+TABLE7_INCIDENT_IDS = (
+    "INC-V2-106",
+    "INC-V2-107",
+    "INC-V2-108",
+    "INC-V2-109",
+    "INC-V2-110",
+    "INC-V2-111",
+)
+
+#: Table 4's ``_LEDGER_FIELD`` stops at a newline, which is correct for what it
+#: counts -- it tabulates how many entries DECLARE a field and what the short
+#: values are, and a truncated tail cannot change a count. It is wrong for what
+#: Table 7 does, which is print the value itself: every ``**Class:**`` in this
+#: block wraps onto a second line, so the line-bounded parser renders
+#: "an adapter whose every request is rejected by the endpoint, producing" and
+#: stops mid-sentence. A half-sentence in a paper table is worse than no cell,
+#: because it reads as the whole value. This parser therefore runs from one
+#: ``**Field:**`` to the next, or to the end of the header block, and Table 4's
+#: parser is left untouched: its behaviour is the subject of four tests and is
+#: right for its own question.
+_LEDGER_HEADER_FIELD = re.compile(
+    r"\*\*([A-Za-z ]+):\*\*[ \t]*(.*?)(?=\n\*\*|[ \t]+[-\u00b7][ \t]+\*\*|\n\s*\n|\Z)",
+    re.S,
+)
+
+
+def _header_fields(body: str) -> dict[str, str]:
+    """The structured header of one ledger entry, whole values, no truncation.
+
+    Only the block before the first blank-line break is read. The prose below it
+    also contains bold runs, and sweeping the whole entry would pull sentences
+    out of the narrative into a column labelled with a field name they never
+    belonged to.
+    """
+    lines = body.splitlines()
+    start = next((i for i, line in enumerate(lines) if line.startswith("**")), None)
+    if start is None:
+        return {}
+    end = start
+    while end < len(lines) and lines[end].strip():
+        end += 1
+    header = chr(10).join(lines[start:end])
+    fields: dict[str, str] = {}
+    for name, value in _LEDGER_HEADER_FIELD.findall(header):
+        key = name.strip().lower().replace(" ", "_")
+        collapsed = " ".join(value.split()).rstrip(".")
+        if collapsed:
+            fields.setdefault(key, collapsed)
+    return fields
+
+
+#: Where a receipt -- not the ledger -- also names the incident. The ledger is
+#: the narrative record; a receipt naming the same id is the machine-readable
+#: corroboration, and the two are reported as separate columns rather than
+#: merged, because "the ledger says so" and "a sealed receipt says so" are
+#: different strengths of evidence.
+_INCIDENT_RECEIPT_KEYS = ("repair_outcome", "defects_found_by_this_census")
+
+
+def build_table7(
+    *,
+    ledger_path: Path = LEDGER_PATH,
+    receipts_dir: Path = RECEIPTS_DIR,
+    root: Path = ROOT,
+) -> dict[str, Any]:
+    """Table 7 -- the incidents SFIR5's completion and SFIR6's repair produced.
+
+    Class, disposition, GPU seconds and cost are lifted from each entry's own
+    structured header via the same parser Table 4 uses and checked the same way;
+    the title is the ledger heading. Nothing is summarised into a status word
+    this generator invented.
+
+    The ``named_by_receipt`` column exists because two of these six are recorded
+    in SFIR6's outcome receipt as well as in the ledger, and one -- INC-V2-111 --
+    is a procedural slip with no receipt at all. Rendering all six identically
+    would flatten that difference.
+    """
+    require_file(ledger_path)
+    text = ledger_path.read_text(encoding="utf-8")
+    headings = list(_LEDGER_HEADING.finditer(text))
+    spans = [m.start() for m in headings] + [len(text)]
+    by_id = {m.group(1): index for index, m in enumerate(headings)}
+
+    missing = [name for name in TABLE7_INCIDENT_IDS if name not in by_id]
+    if missing:
+        raise GenerationRefused(
+            f"incident ids named for Table 7 are absent from {safe_rel(ledger_path)}: {missing}"
+        )
+
+    receipt_mentions: dict[str, list[dict[str, str]]] = {}
+    for stem in ("sfir6-capacity-outcome", "sfir5-capacity-outcome"):
+        found = resolve_receipt(stem, receipts_dir=receipts_dir, root=root)
+        if found is None:
+            continue
+        for key in _INCIDENT_RECEIPT_KEYS:
+            block = found["body"].get(key)
+            if not isinstance(block, dict):
+                continue
+            for name in block:
+                if name in TABLE7_INCIDENT_IDS:
+                    receipt_mentions.setdefault(name, []).append(
+                        {"receipt": safe_rel(found["path"]), "field": key}
+                    )
+
+    rows = []
+    for name in TABLE7_INCIDENT_IDS:
+        index = by_id[name]
+        heading = headings[index]
+        body = text[spans[index] : spans[index + 1]]
+        fields = _header_fields(body)
+        rows.append(
+            {
+                "id": name,
+                "title": heading.group(3).strip(" -—"),
+                "class": fields.get("class", NOT_DECLARED_IN_LEDGER_ENTRY),
+                "disposition": fields.get("disposition", NOT_DECLARED_IN_LEDGER_ENTRY),
+                "gpu_seconds": fields.get("gpu_seconds", NOT_DECLARED_IN_LEDGER_ENTRY),
+                "cost": fields.get("cost", NOT_DECLARED_IN_LEDGER_ENTRY),
+                "ip_gate": fields.get("ip_gate", NOT_DECLARED_IN_LEDGER_ENTRY),
+                "named_by_receipt": receipt_mentions.get(name, "ledger only"),
+            }
+        )
+
+    return {
+        "title": "Table 7 -- incidents INC-V2-106 to INC-V2-111",
+        "rows": rows,
+        "rows_selected": len(rows),
+        "entries_in_the_ledger": len(headings),
+        "coverage": f"{len(rows)}/{len(headings)}",
+        "what_this_table_is_not": (
+            "a summary of the ledger. These six are the entries the SFIR replication "
+            "series section cites; the denominator above is every entry the ledger "
+            "holds, so this table's six are read as a named selection and not as the "
+            "whole record."
+        ),
+        "ordering_note": (
+            "listed in ledger order, which is the order they were registered. "
+            "INC-V2-108's own entry records that it was written while SFIR6's census "
+            "was still running and no SFIR6 number existed; INC-V2-109 to INC-V2-111 "
+            "were registered after it returned. That ordering is a fact about the "
+            "evidence and is preserved here rather than sorted away."
+        ),
+        "inputs": {
+            "ledger": safe_rel(ledger_path),
+            "receipts_consulted": [
+                safe_rel(receipts_dir / "sfir5-capacity-outcome.json"),
+                safe_rel(receipts_dir / "sfir6-capacity-outcome.json"),
+            ],
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# markdown renderings of Tables 6 and 7
+#
+# The JSON above is the artifact of record; these two are the paste-ready form
+# for the paper section. They derive EVERY cell from the dict the builder
+# returned -- there is no second read of a receipt here, so a markdown table and
+# its JSON sibling cannot drift apart. Tables 1-5 have no markdown form because
+# nothing pastes them into prose; these two are pasted, and a table retyped by
+# hand into a draft is exactly how a receipt-backed number stops being one.
+
+
+#: A literal backslash-pipe: what a markdown cell needs so a pipe inside a
+#: value does not split the row. Written as a constant because this exact
+#: two-character sequence is the one most easily lost by an editing pass.
+BS_PIPE = chr(92) + "|"
+
+
+def _cell(value: Any) -> str:
+    """Render one cell without ever turning an absence into a value.
+
+    ``None`` becomes the word ``null`` rather than an empty cell: a blank cell
+    in a capacity table reads as zero to a human eye, and this whole series
+    exists because a broken instrument's silence once had to be kept distinct
+    from a measured absence.
+    """
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, dict):
+        return "; ".join(f"{k}={_cell(v)}" for k, v in sorted(value.items()))
+    if isinstance(value, list):
+        return ", ".join(_cell(item) for item in value) if value else "(none)"
+    return str(value).replace("|", BS_PIPE)
+
+
+def _md_table(headers: list[str], rows: list[list[Any]]) -> str:
+    lines = ["| " + " | ".join(headers) + " |", "|" + "---|" * len(headers)]
+    for row in rows:
+        lines.append("| " + " | ".join(_cell(cell) for cell in row) + " |")
+    return chr(10).join(lines) + chr(10)
+
+
+def render_table6_markdown(table6: dict[str, Any]) -> str:
+    parts = [f"### {table6['title']}", ""]
+    headers = [
+        "study",
+        "family",
+        "roots declared",
+        "roots COMPLETE",
+        "C",
+        "Q",
+        "meets C",
+        "meets Q",
+        "is a measurement",
+        "is sealable",
+        "verdict",
+    ]
+    rows = []
+    for study in table6["studies"]:
+        for row in study["rows"]:
+            rows.append(
+                [
+                    row["study"],
+                    f"`{row['family']}`",
+                    row["roots_declared"],
+                    row["roots_complete"],
+                    row["C"],
+                    row["Q"],
+                    row["meets_C"],
+                    row["meets_Q"],
+                    row["is_a_measurement"],
+                    row["is_sealable"],
+                    f"`{row['verdict']}`",
+                ]
+            )
+    parts.append(_md_table(headers, rows))
+    parts.append("")
+
+    for study in table6["studies"]:
+        criterion = study.get("criterion") or {}
+        parts.append(
+            f"**{study['study']}** (`{study.get('protocol_id')}`) --- state "
+            f"`{study.get('state')}`; criterion "
+            f"`C_f >= {criterion.get('minimum_C_per_family')}` and "
+            f"`Q_f >= {criterion.get('minimum_Q_per_family')}`, "
+            f"`{criterion.get('formula')}`, "
+            f"requires every family: {_cell(criterion.get('requires_every_family'))}. "
+            f"Receipt: `{(study.get('receipt') or {}).get('path')}`."
+        )
+        parts.append("")
+
+    replication = table6.get("replication_of_sfir5_by_sfir6")
+    if isinstance(replication, dict):
+        parts.append("**Replication of SFIR5 by SFIR6, compared as sets and not as counts.**")
+        parts.append("")
+        parts.append(
+            _md_table(
+                ["family", "SFIR5 C", "SFIR6 C", "counts agree", "lineage sets identical",
+                 "in SFIR5 only", "in SFIR6 only"],
+                [
+                    [
+                        f"`{family}`",
+                        block.get("sfir5_C"),
+                        block.get("sfir6_C"),
+                        block.get("counts_agree"),
+                        block.get("lineage_sets_identical"),
+                        block.get("in_sfir5_only"),
+                        block.get("in_sfir6_only"),
+                    ]
+                    for family, block in sorted(replication.items())
+                    if isinstance(block, dict)
+                ],
+            )
+        )
+        parts.append("")
+        parts.append(_cell(replication.get("how_established")))
+        parts.append("")
+    else:
+        parts.append(f"**Replication comparison:** {_cell(replication)}")
+        parts.append("")
+
+    checks = [
+        f"{row['study']}/{row['family']}={_cell(row['q_recomputes_from_the_receipts_own_formula'])}"
+        for study in table6["studies"]
+        for row in study["rows"]
+    ]
+    parts.append(
+        "*Q re-derivation check.* Each row's published Q is the receipt's own; this line "
+        "reports whether it re-derives from that receipt's declared formula. "
+        "`encyclopedia_wikipedia` at SFIR6 is the first family in the series whose C is "
+        "large enough for the `min(1000, ...)` cap to bind, so its Q of 1,000 is a cap and "
+        "not `0.8 * C`. "
+        + "; ".join(checks)
+        + "."
+    )
+    parts.append("")
+    parts.append(f"*Denominators.* {table6['denominators']}")
+    parts.append("")
+    parts.append(f"*Thresholds.* {table6['thresholds_are_preregistered_not_calibrated']}")
+    parts.append("")
+    parts.append(f"*What this table is not.* {table6['what_this_table_is_not']}")
+    parts.append("")
+    return chr(10).join(parts)
+
+
+def render_table7_markdown(table7: dict[str, Any]) -> str:
+    parts = [f"### {table7['title']}", ""]
+    parts.append(
+        _md_table(
+            ["id", "what it is", "class", "disposition", "GPU s", "cost", "IP gate",
+             "also named by a receipt"],
+            [
+                [
+                    f"`{row['id']}`",
+                    row["title"],
+                    row["class"],
+                    row["disposition"],
+                    row["gpu_seconds"],
+                    row["cost"],
+                    row["ip_gate"],
+                    row["named_by_receipt"]
+                    if isinstance(row["named_by_receipt"], str)
+                    else ", ".join(
+                        f"`{m['receipt']}` ({m['field']})" for m in row["named_by_receipt"]
+                    ),
+                ]
+                for row in table7["rows"]
+            ],
+        )
+    )
+    parts.append("")
+    parts.append(
+        f"*Denominator.* {table7['coverage']}: {table7['rows_selected']} entries selected "
+        f"out of the {table7['entries_in_the_ledger']} the ledger holds. This table is not "
+        f"{table7['what_this_table_is_not']}"
+    )
+    parts.append("")
+    parts.append(f"*Ordering.* {table7['ordering_note']}")
+    parts.append("")
+    return chr(10).join(parts)
+
+
+# ---------------------------------------------------------------------------
 # orchestration
 
 
@@ -700,6 +1208,8 @@ def generate(*, write: bool = False) -> dict[str, Any]:
     table3 = build_table3()
     table4 = build_table4()
     table5 = build_table5()
+    table6 = build_table6()
+    table7 = build_table7()
     figure5 = build_figure5()
 
     for name, artifact in (
@@ -708,6 +1218,8 @@ def generate(*, write: bool = False) -> dict[str, Any]:
         ("table3", table3),
         ("table4", table4),
         ("table5", table5),
+        ("table6", table6),
+        ("table7", table7),
         ("figure5", figure5),
     ):
         assert_clean(json.dumps(artifact, ensure_ascii=False), forbidden, where=name)
@@ -719,6 +1231,8 @@ def generate(*, write: bool = False) -> dict[str, Any]:
         "table3_baselines": table3,
         "table4_incident_ledger": table4,
         "table5_efficiency_cost": table5,
+        "table6_sfir_capacity_series": table6,
+        "table7_sfir_incidents": table7,
         "figure5_evidence_chain": figure5,
     }
 
@@ -744,9 +1258,21 @@ def generate(*, write: bool = False) -> dict[str, Any]:
             GENERATED_DIR / "table5_efficiency_cost.json",
             json.dumps(table5, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         )
+        _write_lf(
+            GENERATED_DIR / "table6_sfir_capacity_series.json",
+            json.dumps(table6, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
+        )
+        _write_lf(
+            GENERATED_DIR / "table7_sfir_incidents.json",
+            json.dumps(table7, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
+        )
+        _write_lf(GENERATED_DIR / "table6_sfir_capacity_series.md", render_table6_markdown(table6))
+        _write_lf(GENERATED_DIR / "table7_sfir_incidents.md", render_table7_markdown(table7))
         _write_lf(GENERATED_DIR / "figure5_evidence_chain.mmd", figure5["mermaid"])
 
-        reproducibility = build_reproducibility(table1, table2, table3, table5, figure5)
+        reproducibility = build_reproducibility(
+            table1, table2, table3, table5, table6, table7, figure5
+        )
         write_hashed(GENERATED_DIR / "reproducibility.json", reproducibility)
 
     return result
@@ -777,6 +1303,8 @@ def build_reproducibility(
     table2: dict[str, Any],
     table3: dict[str, Any],
     table5: dict[str, Any],
+    table6: dict[str, Any],
+    table7: dict[str, Any],
     figure5: dict[str, Any],
 ) -> dict[str, Any]:
     def hashed(path: Path) -> dict[str, str]:
@@ -811,6 +1339,24 @@ def build_reproducibility(
         "table5_efficiency_cost": {
             "receipts_dir": safe_rel(RECEIPTS_DIR),
             "receipts_scanned": table5["receipts_scanned"],
+        },
+        "table6_sfir_capacity_series": {
+            # Each study's capacity receipt is pinned by the digest it hashes to
+            # right now. A capacity number is the most consequential thing this
+            # paper prints, so a rebuild that reads different bytes must be
+            # visible as a manifest disagreement rather than as a quietly
+            # different table.
+            "capacity_receipts": [
+                hashed(RECEIPTS_DIR / f"{stem}.json")
+                for _label, stem in CAPACITY_STUDIES
+                if (RECEIPTS_DIR / f"{stem}.json").is_file()
+            ],
+            "receipts_named": [stem for _label, stem in CAPACITY_STUDIES],
+        },
+        "table7_sfir_incidents": {
+            "ledger": hashed(LEDGER_PATH),
+            "incident_ids": list(TABLE7_INCIDENT_IDS),
+            "rows_selected_over_ledger_entries": table7.get("coverage"),
         },
         "figure5_evidence_chain": {
             "protocol": hashed(SFIR4_PROTOCOL_PATH),

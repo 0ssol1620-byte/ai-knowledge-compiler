@@ -748,3 +748,314 @@ def test_table4_reports_zero_gpu_and_zero_cost_consistently_with_table5():
     assert set(table4["fields"]["gpu_seconds"]["values"]) == {"0"}
     assert table5["gpu_seconds"]["sum"] == 0
     assert table5["estimated_cost_usd"]["sum"] == 0
+
+
+# --- Table 6: the capacity series, per study and per family -----------------
+
+
+def _capacity_receipt(tmp_path, stem, body):
+    receipts = tmp_path / "receipts"
+    receipts.mkdir(exist_ok=True)
+    (receipts / f"{stem}.json").write_text(json.dumps(body), encoding="utf-8")
+    return receipts
+
+
+CRITERION = {
+    "formula": "Q_f=min(1000,floor(0.8*C_f))",
+    "minimum_C_per_family": 750,
+    "minimum_Q_per_family": 600,
+    "requires_every_family": True,
+}
+
+
+def test_table6_reads_each_study_from_its_own_receipt_not_from_its_predecessor() -> None:
+    """The whole point of SFIR6 is that it is not a rescoring of SFIR5. If this
+    table read one file and labelled both studies from it, the paper's central
+    methodological claim would be false in its own table."""
+    table = bpa.build_table6()
+    paths = {study["study"]: study["receipt"]["path"] for study in table["studies"]}
+    assert "sfir5" in paths["SFIR5"]
+    assert "sfir6" in paths["SFIR6"]
+    assert paths["SFIR5"] != paths["SFIR6"]
+
+
+def test_table6_every_cell_matches_the_receipt_byte_for_byte() -> None:
+    """Independently re-read both receipts and compare, rather than trusting
+    the builder's own copy of them."""
+    table = bpa.build_table6()
+    for label, stem in bpa.CAPACITY_STUDIES:
+        body = json.loads((bpa.RECEIPTS_DIR / f"{stem}.json").read_text(encoding="utf-8"))
+        rows = {
+            row["family"]: row
+            for study in table["studies"]
+            if study["study"] == label
+            for row in study["rows"]
+        }
+        assert set(rows) == set(body["families"])
+        for family, block in body["families"].items():
+            for field in ("C", "Q", "roots_declared", "roots_complete", "verdict"):
+                assert rows[family][field] == block[field], (label, family, field)
+
+
+def test_table6_carries_the_real_sfir6_result_today() -> None:
+    """A regression guard on the numbers this paper section prints. Every value
+    here is asserted against the receipt in the same breath, so the test cannot
+    drift into asserting a number nobody can source."""
+    body = json.loads(
+        (bpa.RECEIPTS_DIR / "sfir6-capacity-outcome.json").read_text(encoding="utf-8")
+    )
+    assert body["state"] == "CAPACITY_CRITERION_APPLIED_AND_FAILED"
+    rows = {
+        row["family"]: row
+        for study in bpa.build_table6()["studies"]
+        if study["study"] == "SFIR6"
+        for row in study["rows"]
+    }
+    assert (rows["git_docs"]["C"], rows["git_docs"]["Q"]) == (293, 234)
+    assert rows["git_docs"]["verdict"] == "SHORTFALL_MEASURED"
+    assert (rows["regulation_ecfr"]["C"], rows["regulation_ecfr"]["Q"]) == (859, 687)
+    assert rows["encyclopedia_wikipedia"]["C"] == 2152
+    assert rows["encyclopedia_wikipedia"]["verdict"] == "MEASURED_NOT_SEALABLE"
+    assert rows["encyclopedia_wikipedia"]["is_sealable"] is False
+
+
+def test_table6_does_not_render_a_field_sfir5s_schema_never_had_as_false(tmp_path) -> None:
+    """`is_sealable` became a distinction only when SFIR6 produced a set that
+    enumerated and then failed the identity proof. Rendering SFIR5's silence as
+    `false` would attribute a verdict to a study that never made one."""
+    rows = {
+        row["family"]: row
+        for study in bpa.build_table6()["studies"]
+        if study["study"] == "SFIR5"
+        for row in study["rows"]
+    }
+    for row in rows.values():
+        assert row["is_sealable"] == bpa.NOT_IN_SCHEMA
+        assert row["is_sealable"] is not False
+
+
+def test_table6_pending_when_a_study_receipt_is_absent_rather_than_omitting_the_study(
+    tmp_path,
+) -> None:
+    """A study missing from a replication table reads as a study that never ran."""
+    receipts = tmp_path / "receipts"
+    receipts.mkdir()
+    table = bpa.build_table6(receipts_dir=receipts, root=tmp_path)
+    assert [study["study"] for study in table["studies"]] == ["SFIR5", "SFIR6"]
+    for study in table["studies"]:
+        assert study["state"].startswith("PENDING (no receipt yet:")
+        assert study["rows"] == []
+
+
+def test_table6_flags_a_q_that_does_not_re_derive_from_the_receipts_own_formula(
+    tmp_path,
+) -> None:
+    """The re-derivation is a CHECK on the receipt, never the published value:
+    a receipt whose Q disagrees with its own declared formula must surface as a
+    disagreement, not be quietly corrected into agreement."""
+    receipts = _capacity_receipt(
+        tmp_path,
+        "sfir5-capacity-outcome",
+        {
+            "protocol_id": "X",
+            "state": "S",
+            "criterion": CRITERION,
+            "families": {
+                "f": {
+                    "C": 1000,
+                    "Q": 999,  # floor(0.8*1000) = 800, so this must NOT agree
+                    "roots_declared": 1,
+                    "roots_complete": 1,
+                    "root_states": {},
+                    "verdict": "V",
+                    "is_a_measurement": True,
+                    "meets_C": True,
+                    "meets_Q": True,
+                }
+            },
+        },
+    )
+    row = bpa.build_table6(receipts_dir=receipts, root=tmp_path)["studies"][0]["rows"][0]
+    assert row["Q"] == 999  # published verbatim
+    assert row["q_recomputes_from_the_receipts_own_formula"] is False
+
+
+def test_table6_q_cap_binds_only_where_the_receipt_says_it_does() -> None:
+    """`encyclopedia_wikipedia` at SFIR6 is the first family whose C makes the
+    min(1000, ...) term bind. floor(0.8*2152)=1721, and the receipt's Q is 1000."""
+    rows = {
+        row["family"]: row
+        for study in bpa.build_table6()["studies"]
+        if study["study"] == "SFIR6"
+        for row in study["rows"]
+    }
+    wiki = rows["encyclopedia_wikipedia"]
+    assert wiki["Q"] == 1000 < int(0.8 * wiki["C"])
+    assert wiki["q_recomputes_from_the_receipts_own_formula"] is True
+
+
+def test_table6_replication_block_is_sfir6s_own_and_not_recomputed_here() -> None:
+    body = json.loads(
+        (bpa.RECEIPTS_DIR / "sfir6-capacity-outcome.json").read_text(encoding="utf-8")
+    )
+    assert bpa.build_table6()["replication_of_sfir5_by_sfir6"] == body["replication_of_sfir5"]
+
+
+def test_table6_names_its_thresholds_as_preregistered_not_calibrated() -> None:
+    text = table6_text = bpa.build_table6()["thresholds_are_preregistered_not_calibrated"]
+    assert "pre-registered" in text
+    assert "calibrated result" in table6_text
+
+
+# --- Table 7: the SFIR5/SFIR6-era incidents ---------------------------------
+
+
+def test_table7_lists_exactly_the_six_incidents_the_section_cites() -> None:
+    table = bpa.build_table7()
+    assert [row["id"] for row in table["rows"]] == list(bpa.TABLE7_INCIDENT_IDS)
+    assert table["rows_selected"] == 6
+
+
+def test_table7_reports_its_denominator_against_the_whole_ledger() -> None:
+    table7 = bpa.build_table7()
+    table4 = bpa.build_table4()
+    assert table7["entries_in_the_ledger"] == table4["entries_total"]
+    assert table7["coverage"] == f"6/{table4['entries_total']}"
+
+
+def test_table7_refuses_an_id_the_ledger_does_not_contain(tmp_path) -> None:
+    """A named entry that has gone missing must be a refusal. Silently emitting
+    five rows under a heading that promises six is the exact failure mode this
+    generator exists to prevent."""
+    ledger = _ledger(tmp_path, "## INC-V2-106 - only this one\n\n**Class:** a.\n")
+    with pytest.raises(bpa.GenerationRefused) as error:
+        bpa.build_table7(ledger_path=ledger)
+    assert "INC-V2-107" in str(error.value)
+
+
+def test_table7_does_not_truncate_a_field_that_wraps_onto_a_second_line(tmp_path) -> None:
+    """Table 4's line-bounded parser is right for counting and wrong for
+    printing: it renders INC-V2-106's Class as '... producing' and stops
+    mid-sentence. A half-sentence in a paper table reads as the whole value."""
+    ledger = _ledger(
+        tmp_path,
+        "## INC-V2-106 - t\n\n**Class:** an adapter whose every request is refused,\n"
+        "producing zeros that read as measurements.\n"
+        "**Disposition:** CAUSE ESTABLISHED.\n"
+        "**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.\n\n"
+        "prose below the header, with a **bold run** that is not a field.\n"
+        + "".join(
+            f"## {name} - t\n\n**Class:** c.\n" for name in bpa.TABLE7_INCIDENT_IDS[1:]
+        ),
+    )
+    row = bpa.build_table7(ledger_path=ledger, receipts_dir=bpa.RECEIPTS_DIR)["rows"][0]
+    assert row["class"] == (
+        "an adapter whose every request is refused, producing zeros that read as measurements"
+    )
+    assert row["disposition"] == "CAUSE ESTABLISHED"
+    assert row["gpu_seconds"] == "0"
+    assert row["cost"] == "$0"
+    assert row["ip_gate"] == "CLOSED"
+    # the bold run in the prose below the header block is not a field
+    assert "bold_run" not in row
+    assert "bold run" not in row["ip_gate"]
+
+
+def test_table7_reports_a_missing_header_field_as_undeclared_not_as_zero(tmp_path) -> None:
+    ledger = _ledger(
+        tmp_path,
+        "".join(f"## {name} - t\n\nprose only, no header\n" for name in bpa.TABLE7_INCIDENT_IDS),
+    )
+    row = bpa.build_table7(ledger_path=ledger, receipts_dir=bpa.RECEIPTS_DIR)["rows"][0]
+    assert row["gpu_seconds"] == bpa.NOT_DECLARED_IN_LEDGER_ENTRY
+    assert row["class"] == bpa.NOT_DECLARED_IN_LEDGER_ENTRY
+
+
+def test_table7_separates_receipt_corroboration_from_ledger_only_entries() -> None:
+    """Two of the six are named in SFIR6's outcome receipt as well as in the
+    ledger; INC-V2-111 is a procedural slip with no receipt at all. Flattening
+    the two would present a narrative record as sealed evidence."""
+    rows = {row["id"]: row for row in bpa.build_table7()["rows"]}
+    assert rows["INC-V2-111"]["named_by_receipt"] == "ledger only"
+    assert rows["INC-V2-108"]["named_by_receipt"] == "ledger only"
+    for name in ("INC-V2-106", "INC-V2-107", "INC-V2-109", "INC-V2-110"):
+        mentions = rows[name]["named_by_receipt"]
+        assert isinstance(mentions, list) and mentions
+        for mention in mentions:
+            body = json.loads(
+                (bpa.ROOT / mention["receipt"]).read_text(encoding="utf-8")
+            )
+            assert name in body[mention["field"]]
+
+
+# --- the markdown renderings must not invent, blank or drift ----------------
+
+
+def test_markdown_renderings_derive_every_cell_from_the_dict_they_are_given() -> None:
+    """No second read of a receipt: a markdown table and its JSON sibling
+    cannot drift apart if the markdown never touches the source."""
+    table6 = bpa.build_table6()
+    text = bpa.render_table6_markdown(table6)
+    for study in table6["studies"]:
+        for row in study["rows"]:
+            assert f"`{row['verdict']}`" in text
+            assert f"| {row['C']} | {row['Q']} |" in text
+
+
+def test_markdown_never_renders_an_absence_as_a_blank_cell() -> None:
+    """A blank cell in a capacity table reads as zero."""
+    assert bpa._cell(None) == "null"
+    assert bpa._cell([]) == "(none)"
+    assert bpa._cell(False) == "false"
+    for text in (
+        bpa.render_table6_markdown(bpa.build_table6()),
+        bpa.render_table7_markdown(bpa.build_table7()),
+    ):
+        for line in text.splitlines():
+            if line.startswith("|") and not set(line) <= set("|- "):
+                assert "|  |" not in line, line
+
+
+def test_markdown_escapes_a_pipe_so_it_cannot_split_a_row() -> None:
+    assert bpa._cell("a|b") == "a" + chr(92) + "|b"
+
+
+def test_table6_markdown_states_the_thresholds_are_not_calibrated() -> None:
+    text = bpa.render_table6_markdown(bpa.build_table6())
+    assert "pre-registered" in text
+    assert "not a calibrated result" in text or "no cell here is a calibrated result" in text
+
+
+def test_table7_markdown_states_its_denominator() -> None:
+    table7 = bpa.build_table7()
+    text = bpa.render_table7_markdown(table7)
+    assert table7["coverage"] in text
+    assert str(table7["entries_in_the_ledger"]) in text
+
+
+def test_generate_writes_the_two_new_tables_in_both_forms(tmp_path, monkeypatch) -> None:
+    out = _generate_into(tmp_path, monkeypatch)
+    for name in (
+        "table6_sfir_capacity_series.json",
+        "table6_sfir_capacity_series.md",
+        "table7_sfir_incidents.json",
+        "table7_sfir_incidents.md",
+    ):
+        path = out / name
+        assert path.is_file(), name
+        assert b"\r\n" not in path.read_bytes(), f"{name} must be LF on every platform"
+
+
+def test_reproducibility_pins_the_capacity_receipts_and_the_ledger(tmp_path, monkeypatch) -> None:
+    out = _generate_into(tmp_path, monkeypatch)
+    manifest = json.loads((out / "reproducibility.json").read_text(encoding="utf-8"))
+    pinned = {
+        entry["path"]: entry["sha256"]
+        for entry in manifest["table6_sfir_capacity_series"]["capacity_receipts"]
+    }
+    assert len(pinned) == 2
+    for path, digest in pinned.items():
+        assert sha_file(bpa.ROOT / path) == digest
+    ledger = manifest["table7_sfir_incidents"]["ledger"]
+    assert sha_file(bpa.ROOT / ledger["path"]) == ledger["sha256"]
+    assert manifest["table7_sfir_incidents"]["incident_ids"] == list(bpa.TABLE7_INCIDENT_IDS)
