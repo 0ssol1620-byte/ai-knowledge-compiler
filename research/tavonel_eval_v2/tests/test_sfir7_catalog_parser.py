@@ -36,6 +36,7 @@ HEADER = [
     "Size",
     "Stars Count",
     "Language",
+    "UUID",
     "SourceRank",
     "License",
     "Status",
@@ -56,6 +57,7 @@ def _row(**overrides: str) -> list[str]:
         "Size": "12345",
         "Stars Count": "900",
         "Language": "Python",
+        "UUID": "24038237",
         "SourceRank": "27",
         "License": "MIT",
         "Status": "",
@@ -83,6 +85,7 @@ def test_a_well_formed_row_carries_the_catalogues_own_values(tmp_path: Path):
     assert len(records) == 1
     record = records[0]
     assert record.record_id == "1001"
+    assert record.host_uuid == "24038237"
     assert record.name_with_owner == "pypa/setuptools"
     assert record.catalog_rank_value == 27
     assert record.spdx_license_id == "MIT"

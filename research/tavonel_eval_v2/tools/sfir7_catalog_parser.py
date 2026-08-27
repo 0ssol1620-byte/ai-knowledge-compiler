@@ -23,10 +23,18 @@ on the ordinal having been decided by someone else; a rank TAVONEL recomputed
 would be a TAVONEL judgement wearing an external catalogue's name.
 
 **Identity is the catalogue's, not the address.** `record_id` is Libraries.io's
-own stable repository id. `owner/repo` is where the census will send requests --
-an address, and addresses move. SFIR6 measured exactly that hazard: GitHub
-answers HTTP 200 for a renamed repository from a different identity (INC-V2-108,
-finding 4).
+own stable repository id, and it is what the frame rule orders and tie-breaks on.
+`owner/repo` is where the census will send requests -- an address, and addresses
+move. SFIR6 measured exactly that hazard: GitHub answers HTTP 200 for a renamed
+repository from a different identity (INC-V2-108, finding 4).
+
+`host_uuid` is carried for that reason. It is the host's own numeric repository
+id as the catalogue recorded it in 2020, and it is the one field that lets a
+census check the repository that *answered* against the repository that was
+*selected*. A rename changes `owner/repo` and leaves this alone, so a roster
+pinned by it can survive six years of renames without silently measuring a
+different repository. Nothing in this module uses it; it exists so the census
+can close that hole rather than inherit it.
 """
 
 from __future__ import annotations
@@ -51,6 +59,7 @@ PROTOCOL_ID = "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7"
 #: silently different roster.
 COLUMN_CONTRACT: dict[str, str] = {
     "record_id": "ID",
+    "host_uuid": "UUID",
     "host": "Host Type",
     "name_with_owner": "Name with Owner",
     "catalog_rank_value": "SourceRank",
@@ -80,6 +89,7 @@ class CatalogRecord:
     """One repository as the catalogue published it. No TAVONEL-derived field."""
 
     record_id: str
+    host_uuid: str
     host: str
     name_with_owner: str
     catalog_rank_value: int
@@ -157,6 +167,7 @@ def parse_row(row: list[str], index: dict[str, int]) -> tuple[CatalogRecord | No
     return (
         CatalogRecord(
             record_id=record_id,
+            host_uuid=_clean(row[index["host_uuid"]]),
             host=_clean(row[index["host"]]),
             name_with_owner=name,
             catalog_rank_value=rank,
@@ -234,4 +245,5 @@ def read_catalog(path: Path) -> tuple[list[CatalogRecord], dict[str, Any]]:
         "rank_recomputed_by_tavonel": False,
         "identity_is_the_catalogues_record_id": True,
         "name_with_owner_is_an_address_not_an_identity": True,
+        "host_uuid_carried_for_rename_detection": True,
     }

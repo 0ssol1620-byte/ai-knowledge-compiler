@@ -1,0 +1,52 @@
+{
+ "archive_bytes": 24890021718,
+ "archive_declared_bytes": 24890021718,
+ "archive_filename": "libraries-1.6.0-2020-01-12.tar.gz",
+ "archive_read_to_end": true,
+ "archive_retained_locally": false,
+ "catalog_id": "LIBRARIES_IO_OPEN_DATA_1_6_0",
+ "content_sha256": "sha256:f38df7607d590ab5f6f528420ce8311e421427ba5c189f916b4f2fb4529b260d",
+ "estimated_cost_usd": 0.0,
+ "extracted_member_bytes": 10167902349,
+ "extracted_member_name": "libraries-1.6.0-2020-01-12/repositories-1.6.0-2020-01-12.csv",
+ "extracted_member_path": "D:/tavonel-sfir7-catalog/repositories-1.6.0-2020-01-12.csv",
+ "extracted_member_sha256": "sha256:148c71eb47f5990f1b5270e681df3e3e2ae34c2586ea8f9fabbe2b45a115fcfb",
+ "extraction_tool": "python tarfile (stream mode r|gz) over ordered HTTP byte ranges",
+ "extraction_tool_version": "3.13.0",
+ "gpu_seconds": 0,
+ "licence": {
+  "attribution_required": "Libraries.io",
+  "compliance_posture_not_a_legal_determination": true,
+  "external_publication_only_after": "KOREAN_PRIORITY_FILING",
+  "posture": "the stricter of the two readings. Share-alike obligations are a superset of attribution-only obligations, so operating under CC BY-SA satisfies either. Which one governs is a legal question, recorded rather than resolved.",
+  "scope_isolated_to_the_derived_data_artifacts": true,
+  "treat_derived_artifacts_as": "CC-BY-SA-4.0",
+  "zenodo_record_metadata_says": "cc-by-4.0"
+ },
+ "locally_computed_sha256": "sha256:9b5c8bbebdd3bfb20638ca9ebf195be327ebef5a609a1771730cc3e5f7aec9f0",
+ "members_in_archive": 9,
+ "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7",
+ "publisher_digest": "md5:4f2275284b86827751bb31ce74238b15",
+ "publisher_digest_verified": true,
+ "result_blind": {
+  "candidate_count_computed": false,
+  "capacity_number_read": false,
+  "member_chosen_by_name_before_the_archive_was_opened": true,
+  "roster_written": false
+ },
+ "schema": "tavonel.sfir7.catalog_snapshot.v1",
+ "source_url": "https://zenodo.org/api/records/3626071/files/libraries-1.6.0-2020-01-12.tar.gz/content",
+ "transfer": {
+  "byte_identical_to_a_single_stream": true,
+  "connections": 8,
+  "mode": "ordered_http_byte_ranges",
+  "part_bytes": 268435456,
+  "parts": 93,
+  "resumable": true,
+  "why_not_one_stream": "a single connection to this endpoint measured 0.3 MB/s, about twenty-four hours for 24.9 GB. The per-connection rate is the bound, so the transfer is split. Parts are concatenated strictly in index order and the archive digest is what proves the result is identical to a plain download."
+ },
+ "wall_clock_seconds": 4873.796,
+ "why_read_to_end": "a digest over a prefix is not a digest over the archive. Stopping at the wanted member would have produced a number that looks like an archive digest and is not one.",
+ "zenodo_doi": "10.5281/zenodo.3626071",
+ "zenodo_record": "3626071"
+}
