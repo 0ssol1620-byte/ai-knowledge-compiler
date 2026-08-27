@@ -44,6 +44,7 @@ import sys
 from collections import Counter
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -141,6 +142,29 @@ def _clean(value: str) -> str:
     return value.strip()
 
 
+def _is_iso_date(value: str) -> bool:
+    """The same date criterion the frame applies, checked where rows are counted.
+
+    Two of the rule's four predicates are date comparisons, and Libraries.io has
+    rows whose `Last pushed Timestamp` is blank. Left to the evaluator, the first
+    such row aborts the whole selection with a refusal -- correct, and useless,
+    because it says nothing about how many rows are like that or on which host.
+
+    So it is refused here, alongside `NO_PUBLISHED_RANK`, on the same principle:
+    a row that cannot answer a question the declared rule asks is dropped and
+    counted, never guessed at. It can only lower the eligible count, which is the
+    direction that cannot be suspected of having been chosen.
+
+    `test_the_parser_accepts_exactly_what_the_frame_can_read` binds this to
+    `frame._as_date` over a table of values, so the two cannot drift apart.
+    """
+    try:
+        date.fromisoformat(value[:10])
+    except ValueError:
+        return False
+    return True
+
+
 def parse_row(row: list[str], index: dict[str, int]) -> tuple[RawCatalogRecord | None, str]:
     """Return a record, or `None` and the reason it could not be read."""
     highest = max(index.values())
@@ -161,6 +185,16 @@ def parse_row(row: list[str], index: dict[str, int]) -> tuple[RawCatalogRecord |
         # A non-integer rank is refused rather than coerced. Ranking descending
         # over a value this parser invented would be a TAVONEL ordinal.
         return None, "RANK_NOT_AN_INTEGER"
+    created = _clean(row[index["created_utc"]])
+    if not created:
+        return None, "NO_CREATED_TIMESTAMP"
+    if not _is_iso_date(created):
+        return None, "CREATED_TIMESTAMP_NOT_A_DATE"
+    last_activity = _clean(row[index["last_activity_utc"]])
+    if not last_activity:
+        return None, "NO_LAST_ACTIVITY_TIMESTAMP"
+    if not _is_iso_date(last_activity):
+        return None, "LAST_ACTIVITY_TIMESTAMP_NOT_A_DATE"
     raw_fork = _clean(row[index["fork"]]).casefold()
     if raw_fork not in {"true", "false", ""}:
         return None, "FORK_NOT_BOOLEAN"
@@ -171,8 +205,8 @@ def parse_row(row: list[str], index: dict[str, int]) -> tuple[RawCatalogRecord |
             host=_clean(row[index["host"]]),
             name_with_owner=name,
             catalog_rank_value=rank,
-            created_utc=_clean(row[index["created_utc"]]),
-            last_activity_utc=_clean(row[index["last_activity_utc"]]),
+            created_utc=created,
+            last_activity_utc=last_activity,
             spdx_license_id=_clean(row[index["spdx_license_id"]]),
             language=_clean(row[index["language"]]),
             fork=raw_fork == "true",

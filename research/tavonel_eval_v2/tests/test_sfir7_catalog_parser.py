@@ -261,3 +261,80 @@ def test_the_balance_check_passes_when_nothing_is_lost(tmp_path: Path):
     records, proof = parser.read_catalog(path)
     assert proof["rows_total"] == 3
     assert len(records) == 3
+
+
+# --- the dates the rule compares on ------------------------------------------
+
+
+def test_a_blank_activity_timestamp_is_refused_and_counted(tmp_path: Path):
+    """Found in the real deposit, on the first full selection pass.
+
+    Left to the frame's evaluator this raised `SFIR7Refused` mid-stream and took
+    the whole run with it, which is a refusal that reports one row and measures
+    none. Refused here it joins the tally, attributable by host like every other
+    unusable row.
+    """
+    records, proof = parser.read_catalog(
+        _write(tmp_path, [_row(**{"Last pushed Timestamp": ""})])
+    )
+    assert records == []
+    assert proof["rejection_reasons"] == {"NO_LAST_ACTIVITY_TIMESTAMP": 1}
+
+
+def test_a_blank_created_timestamp_is_refused_and_counted(tmp_path: Path):
+    records, proof = parser.read_catalog(
+        _write(tmp_path, [_row(**{"Created Timestamp": ""})])
+    )
+    assert records == []
+    assert proof["rejection_reasons"] == {"NO_CREATED_TIMESTAMP": 1}
+
+
+def test_an_unparseable_timestamp_is_refused_rather_than_coerced(tmp_path: Path):
+    """`0000-00-00` and `not a date` are not dates. Neither becomes one here."""
+    rows = [
+        _row(ID="1", **{"Name with Owner": "a/b", "Created Timestamp": "0000-00-00 00:00:00 UTC"}),
+        _row(ID="2", **{"Name with Owner": "c/d", "Last pushed Timestamp": "not a date"}),
+    ]
+    records, proof = parser.read_catalog(_write(tmp_path, rows))
+    assert records == []
+    assert proof["rejection_reasons"] == {
+        "CREATED_TIMESTAMP_NOT_A_DATE": 1,
+        "LAST_ACTIVITY_TIMESTAMP_NOT_A_DATE": 1,
+    }
+
+
+def test_the_parser_accepts_exactly_what_the_frame_can_read():
+    """Bind the parser's date criterion to the evaluator's, so they cannot drift.
+
+    If the frame later widens or narrows what it will read as a date, this goes
+    red rather than leaving a class of rows that the parser admits and the
+    evaluator dies on -- which is precisely the failure that produced this test.
+    """
+    import sfir7_frame as frame
+
+    values = [
+        "2010-03-01 00:00:00 UTC",
+        "2010-03-01",
+        "1970-01-01 00:00:00 UTC",
+        "",
+        "   ",
+        "not a date",
+        "0000-00-00 00:00:00 UTC",
+        "2010-13-01 00:00:00 UTC",
+        "20100301",
+    ]
+    for value in values:
+        parser_accepts = parser._is_iso_date(value)
+        try:
+            frame._as_date(value, label="probe")
+            frame_reads = True
+        except frame.SFIR7Refused:
+            frame_reads = False
+        assert parser_accepts is frame_reads, value
+
+
+def test_a_row_with_good_dates_still_parses(tmp_path: Path):
+    """So the four refusals above mean something."""
+    records, proof = parser.read_catalog(_write(tmp_path, [_row()]))
+    assert len(records) == 1
+    assert proof["rejection_reasons"] == {}

@@ -9766,3 +9766,93 @@ session's tree and re-running; the 25-mutation table with zero survivors; the
 bare-`facts` manifest returning `feasible = True`; the manifest header naming
 SFI2; `receipts/` carrying no SFI3 acceptance, no four-link acceptance and no
 protocol bundle-freeze.
+
+## INC-V2-113
+
+**A unit test of a guard is not a test that the guard is wired in.**
+
+Recorded 2026-08-27, while building SFIR7's streaming selection driver. Found by
+mutation, not by review.
+
+`stream_select` calls `_require_distinct_keys(ordered, rule)` before returning,
+which refuses a roster containing two roots the declared ranking cannot separate.
+The suite had a test for `_require_distinct_keys`: it built two identical records,
+called the function directly, and required `SelectionRefused`. Green, and correct.
+
+Deleting the call from `stream_select` left all eighteen tests green.
+
+The function worked. Nothing tested that anything used it. Every property the
+guard protects was asserted one level below the place the guard actually sits,
+so removing the guard removed nothing any control could see. This is INC-V2-036's
+shape for the ninth time -- a guard whose failure the suite has made impossible --
+but the mechanism is new enough to name separately: **the guard is real and the
+call site is untested.** A unit test proves capability; only a test that drives
+the caller proves the capability is reachable.
+
+Repaired by adding `test_a_duplicated_catalogue_row_refuses_the_whole_selection`,
+which writes a fixture catalogue containing one record id twice at equal rank and
+requires `stream_select` itself to refuse. The unit test was kept -- it localises
+the failure -- but it is no longer the only thing standing there. With both, the
+deletion goes red.
+
+**Rule taken forward:** for every fail-closed guard, one control at the function
+and one control through the caller. Where a guard is invoked from several places,
+the caller-level control goes on the path that actually runs in production.
+
+Fifteen mutations over the driver, zero survivors after the repair. Before it,
+one.
+
+## INC-V2-114
+
+**A rule that dies on the real universe is not a rule that was tested.**
+
+Recorded 2026-08-27, on the first full selection pass over the Libraries.io
+Repositories table.
+
+The frame rule compares two dates: `created_utc on_or_before` a cutoff and
+`last_activity_utc on_or_after` another. 129 tests passed over fixtures whose
+timestamps were always well-formed, because the fixture row was written by hand
+from a real-looking example. The deposit is not like that. Somewhere in the 37.7
+million rows sits a repository whose `Last pushed Timestamp` is the empty string,
+and `frame._as_date` refuses it -- correctly, loudly, and fatally, taking the
+whole selection with it after several minutes of streaming.
+
+Two things were wrong, and only one of them was the blank cell.
+
+The first: the parser admitted a row that could not answer a question the
+declared rule asks. It already refuses `NO_PUBLISHED_RANK` on exactly that
+principle -- the rank is the field the rule orders on, so a row without one is
+dropped and counted. The two date fields are equally load-bearing and had no such
+refusal. Repaired with four reasons: `NO_CREATED_TIMESTAMP`,
+`NO_LAST_ACTIVITY_TIMESTAMP`, `CREATED_TIMESTAMP_NOT_A_DATE`,
+`LAST_ACTIVITY_TIMESTAMP_NOT_A_DATE`. A refused row is tallied and attributable
+by host like every other unusable row, so the cost of the repair is *published*
+rather than absorbed.
+
+The second, and the more interesting one: the parser's notion of a readable date
+and the evaluator's were two separate pieces of code with no binding between
+them. Fixing the first without the second would leave a class of rows the parser
+admits and the evaluator dies on -- the same defect, moved. So
+`test_the_parser_accepts_exactly_what_the_frame_can_read` runs nine values
+through both and requires the same answer from each. If either side's date
+handling moves, that test goes red rather than a future run dying at minute
+seven.
+
+**Direction of bias, registered before the count exists.** Refusing a row can
+only lower the number of eligible repositories. It cannot raise it. The change
+was made with no capacity or yield figure in hand: the projection audit
+deliberately computes none, and the selection that would have produced one had
+not completed. The eligible count was unknown when this was decided and is
+unknown as this is written.
+
+**Cost:** the projection-audit receipt was invalidated -- its `rows_parsed` and
+rejection tallies describe the old parser -- and is being regenerated over the
+full 10.17 GB member rather than edited. A receipt that describes code which no
+longer exists is worse than no receipt.
+
+**What this says about the 129 green tests.** They were not wrong. They were
+written against fixtures, and a fixture is a hypothesis about the data. The
+hostile-test discipline this programme uses generates adversarial *structure* --
+extra slashes, swapped columns, dropped identifiers -- and it did not generate an
+adversarial *value*, because the value came from a row somebody had seen. Tests
+green is not the universe read.
