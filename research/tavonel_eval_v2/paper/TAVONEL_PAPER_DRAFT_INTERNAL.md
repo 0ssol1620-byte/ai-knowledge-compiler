@@ -1245,6 +1245,52 @@ whole sequence remains 0 seconds and spend $0.
 `receipts/sfir4-terminal-operational-stop.json`, and an amendment to C-35, whose
 wording describes a three-instrument sequence.]
 
+> **Correction, 2026-08-27 (P-05).** The paragraph above states that no SFIR5
+> protocol document exists in the research tree. That was true when it was
+> written and is no longer true; it is left standing because the sequence in
+> which these artifacts appeared is part of what the section is describing.
+>
+> SFIR5's design charter now exists and is frozen. Its distinguishing property
+> is that it declares **none** of SFIR4's science: not the families, not the
+> roots, not `C_f`, not `Q_f`, not the caps, not the salt, not the identity or
+> payload rules. It names SFIR4's charter by digest and defers to it, and the
+> freeze refuses any SFIR5 charter that restates one of those fields — including
+> when the restated value is currently correct, since a copy is free to diverge
+> later and nothing would notice. The census executes SFIR4's own probe against
+> SFIR4's own charter, and that probe re-hashes itself against the charter
+> before it runs. "The same question was asked" is therefore not a claim about
+> intent; it is the same bytes, verified by the same code, refusing to start if
+> either has moved.
+>
+> Two things changed and only two, both transport: a frozen per-host request
+> interval, and routing every family through the response-evidence ledger.
+> SFIR4's retry bounds (5 / 60 s / 180 s) are unmodified, and the freeze reads
+> them from the live module rather than from a copy, so editing the frozen
+> instrument is what turns the gate red. One consequence is disclosed rather
+> than left to be found: pacing sleep is not charged to that retry budget,
+> because it is not waiting on a 429, so a paced census can spend wall-clock the
+> frozen fail-safe does not count. A separate finite wall-clock ceiling exists
+> for exactly that reason.
+>
+> The second change repairs a defect found in SFIR4 while building the
+> successor, and it is worth the paper's space. SFIR4's hash-chained response
+> ledger covered **one family of three**: only one code path wrote to it, and
+> the other two reached the network by a route that discarded the observation.
+> The consistency check could not have caught it — a family that records nothing
+> produces no aggregate, and an empty recomputation agrees with an empty
+> declaration exactly. The census receipt would have contained no false field.
+> It would have presented a response-evidence chain covering a third of the
+> census and been silent about the silence. No sealed census exists anywhere in
+> this programme, so nothing published is affected; the finding is about what
+> the instrument would have certified, and it was caught by construction rather
+> than by consequence.
+>
+> **What is still not claimed.** As this correction is written the SFIR5 census
+> is executing and has produced no output. There is no SFIR5 capacity figure, no
+> roster, no endpoint result and no acceptance result, and the sentence in bold
+> above stands unchanged. GPU use across the whole sequence remains 0 seconds
+> and spend $0.
+
 ### 10.3 Two occasions this analysis was confidently wrong before it was right
 
 Both are recorded in INC-V2-101 and both are left standing in the ledger rather
