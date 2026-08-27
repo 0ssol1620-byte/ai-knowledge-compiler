@@ -238,3 +238,94 @@ def test_the_summary_reports_what_actually_left_the_machine(stub_observed):
     assert summary["requests_made"] >= 1
     assert sum(summary["per_host_requests"].values()) == summary["requests_made"]
     assert summary["frozen_bounds"]["max_total_requests"] == t5.MAX_TOTAL_REQUESTS
+
+
+# --- a failed request is evidence too ----------------------------------------
+
+
+def _failing_observed(monkeypatch, error):
+    def fake(url: str):
+        raise error
+
+    monkeypatch.setattr(probe4, "_http_json_observed", fake)
+
+
+@pytest.mark.parametrize(
+    ("error", "outcome"),
+    [
+        (probe4.RootUnavailable(404, "ref"), "HTTP_ERROR"),
+        (probe4.TransportInterrupted(5, "RemoteDisconnected"), "TRANSPORT_INTERRUPTED"),
+        (probe4.RateLimited("55"), "TRANSPORT_ERROR"),
+    ],
+    ids=["http-error", "dropped-connection", "throttled"],
+)
+def test_a_request_that_failed_is_still_in_the_chain(monkeypatch, error, outcome):
+    """It consumed the same budget the frozen bounds are checked against.
+
+    A chain that recorded only successes would reconcile perfectly against a
+    request count that omitted every failure -- and the census that died in
+    INC-V2-101 was nothing BUT failures. Through the paced transport
+    specifically, because the legacy families reach the network by a different
+    route and that is exactly what INC-V2-102 was about.
+    """
+    _failing_observed(monkeypatch, error)
+    transport = _transport()
+    with pytest.raises(type(error)):
+        transport._observe("regulation_ecfr", "root", "https://www.ecfr.gov/api/x")
+    rows = transport.ledger.observations()
+    assert len(rows) == 1
+    assert rows[0].outcome == outcome
+    assert rows[0].observed_bytes is False
+
+
+def test_a_failed_request_is_paced_and_counted_like_any_other(monkeypatch):
+    """A failure that skipped pacing would let a throttled endpoint be hammered
+    precisely when it is asking to be left alone."""
+    _failing_observed(monkeypatch, probe4.RateLimited("55"))
+    transport = _transport()
+    for _ in range(2):
+        with pytest.raises(probe4.RateLimited):
+            transport._observe("regulation_ecfr", "root", "https://en.wikipedia.org/w/api.php")
+    assert transport.requests_made == 2
+    assert transport.paced_seconds >= t5.HOST_MIN_INTERVAL_SECONDS["en.wikipedia.org"]
+
+
+# --- cancellation -------------------------------------------------------------
+
+
+def test_cancelling_mid_census_leaves_no_receipt_and_a_readable_chain(tmp_path, monkeypatch):
+    """A cancelled run must be indistinguishable from one that never started, as
+    far as sealed artifacts go -- and must still be able to say what it did
+    before it stopped. Those are different requirements and both are needed: no
+    partial authority anyone could bind to, but no silent loss of the record of
+    what already left the machine either."""
+    calls = {"n": 0}
+    good = {
+        "status": 200,
+        "content_digest": "sha256:" + "b" * 64,
+        "observed_length": 4,
+        "declared_length": None,
+        "observed_bytes": True,
+    }
+
+    def fake(url: str):
+        calls["n"] += 1
+        if calls["n"] > 1:
+            raise KeyboardInterrupt
+        return {"content_versions": []}, good
+
+    monkeypatch.setattr(probe4, "_http_json_observed", fake)
+    transport = _transport()
+    destination = tmp_path / "census.json"
+    transport._observe("regulation_ecfr", "root", "https://www.ecfr.gov/api/1")
+    with pytest.raises(KeyboardInterrupt):
+        transport._observe("regulation_ecfr", "root", "https://www.ecfr.gov/api/2")
+
+    assert not destination.exists()
+    assert len(transport.ledger.observations()) == 1
+    # Two requests left the machine; one produced a chain entry. The interrupted
+    # one never got a response, so there is nothing to record about it beyond
+    # the count -- and the count is what makes the gap visible rather than
+    # invisible. It is only tolerable because cancellation is terminal: nothing
+    # is sealed, so no receipt ever claims these two numbers agree.
+    assert transport.summary()["requests_made"] == 2
