@@ -1349,6 +1349,97 @@ a successor cheaper to run; it does not make a 180-second total wait retroactive
 adequate for approximately ninety requests against an endpoint that admits about
 ten per minute.
 
+### 10.4 SFIR5: the criterion was applied, and it failed
+
+This is the first section in this paper that reports an applied capacity
+criterion. Every earlier instrument stopped before one could be evaluated, and
+SFIR4's stop receipt says so in a field: `scientific_threshold_evaluated: false`.
+SFIR5 completed a census and the criterion was evaluated against it.
+
+The census ran 2,950 requests in 38 minutes with **zero rate-limit retries and
+zero transport retries**. The pacing that motivated the successor did what it was
+designed to do: 60 requests to the endpoint that ended SFIR4, 593 seconds spent
+waiting deliberately, and not once was the study asked to back off. The frozen
+retry budget that SFIR4 exhausted was never touched, and under SFIR5 it was never
+approached.
+
+| family | C | Q | C ≥ 750 | Q ≥ 600 | is this a measurement? |
+|---|---|---|---|---|---|
+| `regulation_ecfr` | 859 | 687 | yes | yes | yes |
+| `git_docs` | 293 | 234 | no | no | yes |
+| `encyclopedia_wikipedia` | 0 | 0 | no | no | **no** |
+
+The criterion requires every family. It is not met.
+
+**The two failures are not the same kind of thing, and the distinction is the
+result.** `git_docs` fell short and that is a measurement: thirteen of twenty
+roots enumerated to queue exhaustion, seven hit declared tree-traversal bounds
+and were excluded as the charter requires, and no root reached its per-root
+candidate cap of 80 — the largest returned 73. The number is not an artifact of
+the cap.
+
+How much of that shortfall is attributable to the seven excluded roots is a
+question the study can bound but not answer. At the observed mean of 22.5
+candidates per complete root, those seven would have brought the family to
+roughly 451 — still well short. Only if every one of them had performed at the
+observed maximum would the family have reached 750. Those roots were excluded
+precisely because they are large, so the optimistic end is not absurd. The
+honest statement is that the central estimate leaves `git_docs` short and the
+optimistic estimate does not, and the study does not know which is right because
+those roots were never enumerated. That is stated rather than resolved, because
+resolving it by raising the traversal bounds after seeing this result is exactly
+the move §2 forbids.
+
+**`encyclopedia_wikipedia` was not measured at all, and its zero is not a
+capacity statement.** The adapter supplies fifty page ids together with
+`rvlimit=2`; MediaWiki answers `invalidparammix`, because those parameters "may
+only be used on a single page". Every revision request the programme has ever
+issued to that endpoint has been rejected. Every root consequently failed the
+batch-completeness check and was filed `TRUNCATED_OR_INCOMPLETE_ENUMERATION`, and
+**no Wikipedia candidate has ever been produced by any SFIR study.**
+
+The defect was invisible for four instruments for a structural reason worth
+stating: SFIR1–3 stopped before reaching the family, and SFIR4 died on rate
+limits while inside it. A defect upstream of every previous stop is a defect no
+previous stop can reveal. It surfaced the moment a census first ran to
+completion, which is an argument for completing runs even when the outcome is
+expected to be negative.
+
+Recording that family as C=0 beside `git_docs`'s C=293 would have been the worst
+false negative available here — a broken instrument's silence presented as a
+measured absence, and a criterion that appeared to have been evaluated on three
+families when it was evaluated on two. The receipt records it as
+`NOT_MEASURED_INSTRUMENT_DEFECT` and states that nothing establishes that
+family's capacity in either direction.
+
+**Two corrections this forces on the analysis in §10.2 and §10.3.** The first is
+that §10.3's list of occasions this analysis was wrong is now three, not two. Its
+volume correction examined `revision_batch_size: 50` and used it to show the
+frame needed roughly ninety requests rather than three thousand. The arithmetic
+was right — sixty were issued. The inference was not: it treated the batching as
+evidence the instrument was sound and merely needed pacing, when that same batch
+size is what makes every request invalid.
+
+The second is about a gate this study wrote and passed. SFIR5's charter declares
+its batching unchanged from the frozen adapter, and a pre-freeze gate verifies
+the declared sizes against it. That gate passed, and it was doing exactly what it
+was written to do. It is worth saying plainly what such a gate is therefore
+worth: **semantic equivalence to a predecessor is not correctness.** A check that
+compares a successor to an ancestor cannot find a defect they share. This study
+now has a measured instance of that, and it is the more uncomfortable finding of
+the two because the gate was working correctly the entire time.
+
+**What did not happen.** No roster was frozen, no acquisition started, no payload
+opened and no corpus spent — the charter's `terminal_policy` requires that on
+shortfall, and it held. GPU use across the whole sequence remains 0 seconds and
+spend $0.
+
+[CLAIM-PENDING: a CLAIM_MATRIX row binding this section to
+`receipts/sfir5-capacity-outcome.json`. The claim it would carry is narrow and
+should stay narrow: the declared frame did not meet a pre-registered capacity
+criterion on the two families that were measured. It is not a claim about
+Wikipedia, and not a claim that the frame could not be made to meet it.]
+
 ## 11. Identity/change migration closure
 
 The migration campaign separated three questions that earlier instruments had
