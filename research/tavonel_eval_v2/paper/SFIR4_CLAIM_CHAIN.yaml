@@ -66,6 +66,16 @@ corrections:
     reviewer told the code is broken will ask why it shipped; a reviewer told the repair is
     unmeasured because the exhibiting corpus was consumed will ask what the next prospective
     study measures. The second question is the one SFIR4 answers.
+- id: C-02
+  corrects: links L7 and L9 -- a nearby passing study was not mentioned at all
+  was: both links said no experiment produces evidence for them beyond unit tests, which is true
+    of `akc_cir.world_state` and left a reader to discover P3b unaided.
+  now: each link carries `adjacent_evidence_that_must_not_be_cited`, naming P3b, stating that it
+    PASSED, and stating precisely why it is still not evidence for this link -- it measures a
+    minimal model written for P3, not the Protected Core module the claim names.
+  why_this_matters_for_the_paper: a reviewer will find P3b. If the paper is silent about it, the
+    reviewer either assumes it was overlooked or assumes it was quietly relied on. Naming it and
+    refusing it is the only reading that survives contact with someone who checks.
 
 links:
 - id: L1
@@ -365,6 +375,26 @@ links:
     a WorldStateRegistry; every scored study to date compares recompilation PLANS and artifact
     digests directly, not a staged-and-published world state. There is no designed experiment
     for this link.
+  adjacent_evidence_that_must_not_be_cited:
+    what_exists: 'P3b (`receipts/latest/p3b-refusal-legibility.json` -> the immutable receipt it
+      names, digest verified) is a SCORED, PASSING study of a publication boundary with exactly
+      the properties this link claims: a single visible pointer, a verification conjunction that
+      fails closed, and an activation atomic from a reader''s point of view. Its gates all
+      passed -- 19 of 19 declared constructs executed, decision invariance held over 120
+      permutations for each of 11 candidates, and the positive control behaved correctly (the
+      healthy candidate admitted, the deliberately broken one refused). It ran over 154
+      development artifacts at 0 GPU seconds and $0.'
+    why_it_is_not_evidence_for_this_link: 'It measures `activation/knowledge_store_p3b.py`, a
+      minimal model written for P3 and documented as such -- "small on purpose ... anything else
+      in here would be surface a failure could hide behind". It is NOT `akc_cir.world_state`,
+      which is the module this link names. Citing it here would be the delegation defect this
+      study has already paid for twice: a TRUE statement about a narrower question, presented
+      under a claim about a wider one. CLAIM_MATRIX.yaml F-04 already forbids the production
+      reading of P3b in as many words.'
+    what_it_would_take: 'a prospective protocol that stages, verifies and publishes through
+      `akc_cir.world_state` itself over a declared corpus, with the pointer swap observed from a
+      concurrent reader. None exists. Designing one is real work and is not done by asserting
+      that P3b covers it.'
   narrowing_if_unsupported: candidate isolation is implemented and unit-tested against the
     in-memory reference semantics described in world_state.py's own docstring (masterplan
     section N22.2/N22.3); nothing establishes that the production Postgres implementation this
@@ -436,6 +466,26 @@ links:
     measures, and nothing in this research tree scores it. The module's own docstring is
     explicit that it models Postgres's serializable-transaction-plus-unique-partial-index
     semantics rather than exercising the production database.
+  adjacent_evidence_that_must_not_be_cited:
+    what_exists: 'P3b (`receipts/latest/p3b-refusal-legibility.json` -> the immutable receipt it
+      names, digest verified) is a SCORED, PASSING study of a publication boundary with exactly
+      the properties this link claims: a single visible pointer, a verification conjunction that
+      fails closed, and an activation atomic from a reader''s point of view. Its gates all
+      passed -- 19 of 19 declared constructs executed, decision invariance held over 120
+      permutations for each of 11 candidates, and the positive control behaved correctly (the
+      healthy candidate admitted, the deliberately broken one refused). It ran over 154
+      development artifacts at 0 GPU seconds and $0.'
+    why_it_is_not_evidence_for_this_link: 'It measures `activation/knowledge_store_p3b.py`, a
+      minimal model written for P3 and documented as such -- "small on purpose ... anything else
+      in here would be surface a failure could hide behind". It is NOT `akc_cir.world_state`,
+      which is the module this link names. Citing it here would be the delegation defect this
+      study has already paid for twice: a TRUE statement about a narrower question, presented
+      under a claim about a wider one. CLAIM_MATRIX.yaml F-04 already forbids the production
+      reading of P3b in as many words.'
+    what_it_would_take: 'a prospective protocol that stages, verifies and publishes through
+      `akc_cir.world_state` itself over a declared corpus, with the pointer swap observed from a
+      concurrent reader. None exists. Designing one is real work and is not done by asserting
+      that P3b covers it.'
   narrowing_if_unsupported: atomic activation is implemented and unit-tested against an in-
     memory model of the production invariant (masterplan invariant 13); nothing measures the
     production Postgres path this module stands in for.
