@@ -62,10 +62,37 @@ chronology; and SFIR3 refused a recursive Git-tree response whose declared
 `Content-Length` exceeded its frozen 16 MiB bound. None wrote a capacity
 metadata artifact, froze a roster, acquired a cohort, computed a diff or
 SourceFact, scored an endpoint, or authorised a model run. After the third
-instrument refusal we did not open SFIR4: redesigning again after observing
-three successive failure modes would make the next instrument increasingly a
-function of prior outcomes. GPU use therefore remains 0 seconds and spend $0
-(C-35).
+instrument refusal we did not immediately open SFIR4: redesigning again after
+observing three successive failure modes would make the next instrument
+increasingly a function of prior outcomes. GPU use therefore remains 0 seconds
+and spend $0 (C-35).
+
+> **Correction, 2026-08-27 (P-02).** SFIR4 has since been opened, and this
+> paragraph's objection is the standard it was opened against rather than a
+> reason it was not. Its design charter and spent-identity authority were frozen
+> before any of its own data existed, and its criterion — the per-family
+> threshold, the root set, the per-root cap, the cohort, the selection salt and
+> the scorer — has not moved since.
+>
+> Three census attempts aborted before producing a number, and each correction
+> that followed is recorded with the evidence that it was determined by an
+> endpoint's behaviour rather than by an outcome: a renamed eCFR metadata field
+> (INC-V2-095), a reserved CFR title that carries no edition date because it has
+> no edition (INC-V2-096), and an unhandled `RemoteDisconnected` — which
+> subclasses `ConnectionResetError`, not `URLError`, and so matched no handler
+> (INC-V2-098). All three aborted *result-blind*: in each case no capacity
+> quantity was computed, printed or written, and no receipt existed at the
+> destination path, verified before anything was touched.
+>
+> One disclosure belongs here rather than in a footnote. Diagnosing INC-V2-096
+> revealed that CFR title 35 contributes zero candidates — outcome information
+> about one of fifty roots, learned before the census completed. It cannot be
+> unlearned. What protects the study is that it changed nothing: the root set is
+> charter-frozen and title 35 remains in it, and its disposition is computed by
+> the adapter rather than chosen.
+>
+> **No SFIR4 capacity, roster, endpoint or acceptance result is claimed in this
+> draft.** GPU use remains 0 seconds and spend $0.
 
 ---
 
@@ -981,8 +1008,22 @@ report caused a rebuild.
 That is not a scoring error and E4's result is not weakened. It is the limit of
 the question, and the answer is a new endpoint rather than a re-reading of the
 old one. The successor adds one: every detected typed change in a supported
-channel must create a rebuild request. Three of five channels fail it today,
-which is the point — an endpoint the system already passes measures nothing.
+channel must create a rebuild request. When this section was written, three of
+five channels failed it, which was the point — an endpoint the system already
+passes measures nothing.
+
+> **Correction, 2026-08-27 (P-01).** Three of five channels no longer fail it.
+> The gap was closed in `akc_cir.recompilation`: LOCATOR, TEMPORAL and METADATA
+> each now seed their own traversal from the matching dependency channel. What
+> did *not* change is that the endpoint is unmeasured — E9 has been scored on no
+> cohort, and the corpus that exhibited the gap is spent, so the repair cannot
+> be scored against the data that revealed it. The sentence a reader needs is
+> not "all five channels propagate" but "all five are typed, and each propagates
+> exactly where an edge declared it, recording UNRESOLVED where none did" —
+> because propagating across edges that declared nothing is the blunt failure
+> measured at 80.5% false invalidation. The endpoint therefore remains worth
+> asking, for a different reason than when it was written: not because the
+> system fails it, but because nothing has yet asked it of a cohort.
 
 ## 10. SFI3 stopped at the frozen acquisition frame (C-33)
 
