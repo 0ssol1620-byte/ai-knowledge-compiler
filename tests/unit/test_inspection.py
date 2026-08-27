@@ -18,12 +18,14 @@ from akc_cir.inspection import (
     UNKNOWN_REFERENCE,
     CalibrationTable,
     DetectorSignal,
+    EvidenceChannel,
     FailureCode,
     FailureEvent,
     InspectionStatus,
     Severity,
     SourceScope,
     Stage,
+    aggregate_evidence_risk,
     correlate_failures,
     detect_completeness,
     detect_duplication,
@@ -38,6 +40,47 @@ NOW = datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
 
 def _signal(code: FailureCode, score: float, **kw) -> DetectorSignal:
     return DetectorSignal(code=code, score=score, **kw)
+
+
+def test_detector_metadata_is_inferred_without_breaking_old_callers() -> None:
+    signal = _signal(FailureCode.F9_SUSPICIOUSLY_SHORT, 0.4)
+    assert signal.evidence_channel is EvidenceChannel.COMPLETENESS
+    assert signal.independence_group == FailureCode.F9_SUSPICIOUSLY_SHORT.value
+
+
+def test_correlated_signals_do_not_double_count_the_same_evidence() -> None:
+    signals = [
+        _signal(
+            FailureCode.F9_SUSPICIOUSLY_SHORT,
+            0.6,
+            independence_group="same-render",
+        ),
+        _signal(
+            FailureCode.F11_GARBLED_TEXT,
+            0.6,
+            independence_group="same-render",
+        ),
+    ]
+    assert aggregate_evidence_risk(signals) == pytest.approx(0.6)
+    independent = [
+        _signal(FailureCode.F9_SUSPICIOUSLY_SHORT, 0.6, independence_group="a"),
+        _signal(FailureCode.F11_GARBLED_TEXT, 0.6, independence_group="b"),
+    ]
+    assert aggregate_evidence_risk(independent) == pytest.approx(0.84)
+
+
+def test_unknown_reference_is_never_an_acceptable_pass() -> None:
+    result = inspect_output([], unknown_references=[UNKNOWN_REFERENCE])
+    assert result.status is InspectionStatus.UNKNOWN_REFERENCE
+    assert not result.acceptable
+    assert result.recommended_action() == "ACQUIRE_REFERENCE"
+
+
+def test_unresolved_is_fail_closed_at_accept_boundary() -> None:
+    result = inspect_output([], unresolved_reasons=["parser disagreement not settled"])
+    assert result.status is InspectionStatus.UNRESOLVED
+    assert not result.acceptable
+    assert result.recommended_action() == "HUMAN_REVIEW_OR_FAIL_CLOSED"
 
 
 # --------------------------------------------------------------------------

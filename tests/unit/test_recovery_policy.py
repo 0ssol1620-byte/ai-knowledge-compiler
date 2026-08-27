@@ -23,8 +23,10 @@ from akc_cir.recovery_policy import (
     RecoveryLevel,
     RecoveryOutcome,
     RecoveryPolicy,
+    RecoveryTraceReceipt,
     arbitrate,
     circuit_state,
+    default_recovery_registry,
     document_availability,
     select_recovery,
 )
@@ -88,6 +90,46 @@ def test_a_rung_already_tried_is_not_tried_again() -> None:
 def test_the_ladder_is_ordered_by_cost() -> None:
     assert RecoveryLevel.L1_SAFE_RERENDER < RecoveryLevel.L5_STRONGER_VERIFIER
     assert max(RecoveryLevel) == RecoveryLevel.L8_FAIL_CLOSED
+
+
+def test_production_default_registry_covers_output_quality_without_retrying_security() -> None:
+    registry = default_recovery_registry()
+    output_quality = {
+        FailureCode.F8_EMPTY_OUTPUT,
+        FailureCode.F9_SUSPICIOUSLY_SHORT,
+        FailureCode.F10_DUPLICATED_CONTENT,
+        FailureCode.F11_GARBLED_TEXT,
+        FailureCode.F12_READING_ORDER,
+        FailureCode.F13_TABLE_STRUCTURE,
+        FailureCode.F14_FORMULA,
+        FailureCode.F15_FIGURE_CAPTION,
+        FailureCode.F16_CROSS_PAGE,
+        FailureCode.F17_NATIVE_RENDER_DISAGREEMENT,
+        FailureCode.F18_PARSER_DISAGREEMENT,
+    }
+
+    assert not registry.uncovered(output_quality)
+    assert not registry.for_code(FailureCode.F29_PROMPT_INJECTION_SUSPECTED)
+
+
+def test_default_table_ladder_moves_from_rerender_to_crop_to_alt_parser() -> None:
+    registry = default_recovery_registry()
+    actions = [policy.action for policy in registry.for_code(FailureCode.F13_TABLE_STRUCTURE)]
+
+    assert actions[:3] == [
+        "rerender_300dpi",
+        "overlapping_tile_or_crop_retry",
+        "alternate_parser_family",
+    ]
+
+
+def test_default_cross_page_ladder_uses_neighbor_context_then_joint_reconcile() -> None:
+    registry = default_recovery_registry()
+    policies = registry.for_code(FailureCode.F16_CROSS_PAGE)
+
+    assert policies[0].action == "page_neighbor_context"
+    assert policies[-1].action == "document_joint_reconcile"
+    assert policies[-1].level is RecoveryLevel.L6_DOCUMENT_JOINT_RECONCILE
 
 
 # --------------------------------------------------------------------------
@@ -238,6 +280,86 @@ def test_an_expensive_rung_is_not_started_without_the_budget_for_it() -> None:
     )
 
     assert decision.outcome is RecoveryOutcome.BUDGET_EXHAUSTED
+
+
+def test_wall_clock_budget_is_checked_before_starting_a_rung() -> None:
+    registry = PolicyRegistry(
+        [
+            _policy(
+                RecoveryLevel.L1_SAFE_RERENDER,
+                "slow",
+                estimated_wall_clock_seconds=20.0,
+            )
+        ]
+    )
+
+    decision = select_recovery(
+        code=TABLE,
+        failure_signature="sig",
+        registry=registry,
+        budget=RecoveryBudget(max_wall_clock_seconds=10.0),
+    )
+
+    assert decision.outcome is RecoveryOutcome.BUDGET_EXHAUSTED
+
+
+def test_wall_clock_history_is_part_of_the_budget() -> None:
+    policy = _policy(
+        RecoveryLevel.L1_SAFE_RERENDER,
+        "next",
+        estimated_wall_clock_seconds=4.0,
+    )
+    budget = RecoveryBudget(max_wall_clock_seconds=10.0)
+    history = [
+        RecoveryAttempt(
+            policy_signature="previous",
+            failure_signature="old",
+            wall_clock_seconds=7.0,
+        )
+    ]
+
+    assert budget.spent(history) == (0.0, 0.0)
+    assert budget.wall_clock_spent(history) == 7.0
+    assert not budget.can_afford(policy, history)
+
+
+def test_recovery_trace_receipt_is_deterministic_and_cost_accounted() -> None:
+    attempts = [
+        RecoveryAttempt(
+            policy_signature="F13/L1/rerender",
+            failure_signature="sig-a",
+            succeeded=False,
+            gpu_seconds=1.5,
+            cost_units=0.2,
+            wall_clock_seconds=3.0,
+        )
+    ]
+    decision = select_recovery(
+        code=TABLE,
+        failure_signature="sig-b",
+        registry=_registry(),
+        history=attempts,
+    )
+    receipt = RecoveryTraceReceipt.build(
+        tenant_id="tenant-a",
+        page_id="page-17",
+        failure_code=TABLE,
+        attempts=attempts,
+        final_decision=decision,
+    )
+    again = RecoveryTraceReceipt.build(
+        tenant_id="tenant-a",
+        page_id="page-17",
+        failure_code=TABLE,
+        attempts=attempts,
+        final_decision=decision,
+    )
+
+    assert receipt.trace_id == again.trace_id
+    assert receipt.gpu_seconds == 1.5
+    assert receipt.wall_clock_seconds == 3.0
+    assert receipt.cost_units == 0.2
+    assert receipt.as_record()["attempt_count"] == 1
 
 
 # --------------------------------------------------------------------------

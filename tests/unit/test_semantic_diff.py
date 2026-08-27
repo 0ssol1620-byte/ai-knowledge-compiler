@@ -8,9 +8,13 @@ tests are mostly about what it refuses to claim.
 
 from __future__ import annotations
 
+import unicodedata
+from dataclasses import replace
+
 import pytest
 from akc_cir.identity import LogicalIdentityResolver
 from akc_cir.semantic_diff import (
+    ChangeChannel,
     ChangeKind,
     DiffLevel,
     DocumentShape,
@@ -142,7 +146,13 @@ def test_a_changed_table_shape_is_reported() -> None:
 # --------------------------------------------------------------------------
 
 
-def _semantic(before_units, after_units, level=DiffLevel.SEMANTIC, resolver=None):
+def _semantic(
+    before_units,
+    after_units,
+    level=DiffLevel.SEMANTIC,
+    resolver=None,
+    legacy_identity_change_predicate=False,
+):
     return diff_documents(
         before_sha256=A,
         after_sha256=B,
@@ -152,6 +162,7 @@ def _semantic(before_units, after_units, level=DiffLevel.SEMANTIC, resolver=None
         before_units=before_units,
         after_units=after_units,
         resolver=resolver,
+        legacy_identity_change_predicate=legacy_identity_change_predicate,
     )
 
 
@@ -171,16 +182,76 @@ def test_a_unit_that_did_not_change_produces_no_change() -> None:
     assert [c for c in diff.changes if c.kind is ChangeKind.MODIFIED_CLAIM] == []
 
 
-def test_reformatting_is_not_a_claim_change() -> None:
-    """Whitespace and casing are folded; the clause did not change."""
+_RECASED = "  THE WARRANTY covers parts and labour for two years from delivery.  "
+
+
+def test_recasing_and_respacing_is_a_claim_change_after_inc_v2_037() -> None:
+    """This assertion is reversed on purpose, and the reversal is the fix.
+
+    It used to read `== []`, under the gate `counterpart.identity_text !=
+    incoming.identity_text`. That gate asked `normalize_text_for_identity` --
+    a fold documented as lossy and for identity only -- whether the *content*
+    moved, and INC-V2-037 is the bill for it: all 14 SFI2 confirmed selective
+    stale escapes are pairs this gate folded equal, `Github` -> `GitHub` among
+    them. A case difference is not distinguishable from that one, so a suite
+    that keeps asserting `== []` here is asserting the escape.
+
+    The unit is still the *same unit* -- identity keeps matching it, which is
+    what `test_recasing_does_not_disturb_unit_identity` below pins. Only the
+    change question is answered differently.
+    """
+    diff = _semantic([_unit("ku_warranty", TWO_YEARS)], [_unit("ku_warranty", _RECASED)])
+
+    modified = [c for c in diff.changes if c.kind is ChangeKind.MODIFIED_CLAIM]
+    assert len(modified) == 1
+    assert modified[0].logical_id == "ku_warranty"
+    assert diff.changed_logical_ids == ("ku_warranty",)
+
+
+def test_recasing_does_not_disturb_unit_identity() -> None:
+    """The regression risk the new predicate must not create.
+
+    A change predicate runs *after* matching and must not reach back into it.
+    If this pair were ever reported added-plus-removed instead of modified, the
+    fix would have traded 14 missed changes for a broken revision history.
+    """
+    diff = _semantic([_unit("ku_warranty", TWO_YEARS)], [_unit("ku_warranty", _RECASED)])
+
+    kinds = {c.kind for c in diff.changes}
+    assert ChangeKind.UNIT_ADDED not in kinds
+    assert ChangeKind.UNIT_REMOVED not in kinds
+    assert ChangeKind.IDENTITY_UNRESOLVED not in kinds
+
+
+def test_the_legacy_identity_predicate_stays_reachable_and_still_folds_it() -> None:
+    """The old path, behind an explicit non-default flag, for canary and rollback.
+
+    Preserved rather than deleted so the pre-INC-V2-037 behaviour can be
+    reproduced side by side, and so this suite records what that behaviour was
+    instead of only asserting the behaviour that replaced it.
+    """
     diff = _semantic(
         [_unit("ku_warranty", TWO_YEARS)],
-        [
-            _unit(
-                "ku_warranty",
-                "  THE WARRANTY covers parts and labour for two years from delivery.  ",
-            )
-        ],
+        [_unit("ku_warranty", _RECASED)],
+        legacy_identity_change_predicate=True,
+    )
+    assert [c for c in diff.changes if c.kind is ChangeKind.MODIFIED_CLAIM] == []
+
+
+def test_a_pure_unicode_encoding_difference_is_not_a_claim_change() -> None:
+    """The over-fire bound, and the reason the fix is not `old.text != new.text`.
+
+    NFD and NFC spellings of one accented letter are the same visible text and
+    carry no information difference; only an encoder chose between them. The
+    CONTENT facet normalizes NFC and nothing else, so this folds -- while
+    `Apache` vs `Apache(R)` (genuinely different codepoints) does not.
+    """
+    composed = "The garantía covers parts for two years."
+    decomposed = unicodedata.normalize("NFD", composed)
+    assert composed != decomposed  # the bytes really do differ
+
+    diff = _semantic(
+        [_unit("ku_warranty", composed)], [_unit("ku_warranty", decomposed)]
     )
     assert [c for c in diff.changes if c.kind is ChangeKind.MODIFIED_CLAIM] == []
 
@@ -247,7 +318,17 @@ def test_an_unsettled_identity_is_not_a_remove_plus_add_either() -> None:
     unresolved = diff.unresolved
     assert len(unresolved) == 1
     assert unresolved[0].candidates == ("ku_left", "ku_right")
-    assert unresolved[0].logical_id is None
+    # Both sides of the unsettled correspondence are named: the candidates are
+    # the priors, `logical_id` is the incoming unit that may continue one of
+    # them. This assertion used to read `logical_id is None`, and that was the
+    # defect rather than the invariant -- the incoming unit then appeared in no
+    # change at all, so nothing derived from it could be reached and it was
+    # carried over stale. Naming it is still not a remove-plus-add: no
+    # UNIT_ADDED or UNIT_REMOVED is emitted, which is what this test is for.
+    assert unresolved[0].logical_id == "ku_incoming"
+    kinds = {c.kind for c in diff.changes}
+    assert ChangeKind.UNIT_ADDED not in kinds
+    assert ChangeKind.UNIT_REMOVED not in kinds
 
 
 def test_an_unsettled_identity_never_reaches_the_dependency_traversal() -> None:
@@ -281,6 +362,59 @@ def test_a_clause_that_moved_pages_is_reported_as_moved_not_modified() -> None:
     assert len(moved) == 1
     assert "17 -> 18" in moved[0].detail
     assert [c for c in diff.changes if c.kind is ChangeKind.MODIFIED_CLAIM] == []
+
+
+def test_locator_only_movement_does_not_seed_semantic_recompilation() -> None:
+    diff = _semantic(
+        [_unit("ku_warranty", TWO_YEARS, evidence="ev_one", page=17)],
+        [_unit("ku_warranty", TWO_YEARS, evidence="ev_two", page=18)],
+    )
+
+    assert diff.changed_logical_ids == ()
+    assert diff.changed_logical_ids_for(ChangeChannel.LOCATOR) == ("ku_warranty",)
+    assert [c.channel for c in diff.changes] == [ChangeChannel.LOCATOR]
+
+
+def test_semantic_and_locator_changes_share_identity_without_sharing_channel() -> None:
+    diff = _semantic(
+        [_unit("ku_warranty", TWO_YEARS, evidence="ev_one", page=17)],
+        [_unit("ku_warranty", THREE_YEARS, evidence="ev_two", page=18)],
+    )
+
+    assert diff.changed_logical_ids == ("ku_warranty",)
+    assert diff.changed_logical_ids_for(ChangeChannel.LOCATOR) == ("ku_warranty",)
+    assert {c.channel for c in diff.changes} == {
+        ChangeChannel.SEMANTIC,
+        ChangeChannel.LOCATOR,
+    }
+
+
+def test_unit_snapshot_names_logical_identity_and_evidence_occurrence_explicitly() -> None:
+    unit = _unit("ku_warranty", TWO_YEARS, evidence="ev_one")
+
+    assert unit.logical_unit_id == unit.logical_id == "ku_warranty"
+    assert unit.evidence_occurrence_id == unit.evidence_id == "ev_one"
+
+
+def test_visual_temporal_and_metadata_changes_are_typed_without_semantic_rebuild_seed() -> None:
+    before = _unit("ku_warranty", TWO_YEARS, evidence="ev_one")
+    after = replace(
+        before,
+        visual_fingerprint="visual:v2",
+        temporal_fingerprint="valid:2027",
+        metadata_fingerprint="meta:v2",
+    )
+    diff = _semantic([before], [after])
+
+    assert diff.changed_logical_ids == ()
+    assert diff.changed_logical_ids_for(ChangeChannel.VISUAL) == ("ku_warranty",)
+    assert diff.changed_logical_ids_for(ChangeChannel.TEMPORAL) == ("ku_warranty",)
+    assert diff.changed_logical_ids_for(ChangeChannel.METADATA) == ("ku_warranty",)
+    assert {change.kind for change in diff.changes} == {
+        ChangeKind.VISUAL_CHANGED,
+        ChangeKind.TEMPORAL_CHANGED,
+        ChangeKind.METADATA_CHANGED,
+    }
 
 
 def test_evidence_level_alone_reports_added_and_removed_anchors() -> None:

@@ -45,13 +45,16 @@ __all__ = [
     "IDENTITY_SIGNAL_WEIGHTS",
     "MERGE_THRESHOLD",
     "NEW_IDENTITY_THRESHOLD",
+    "PRUNED_CANDIDATE_SCORE_CEILING",
     "LogicalIdentityDecision",
     "LogicalIdentityResolver",
     "LogicalMatch",
     "LogicalRelation",
     "LogicalUnitFingerprint",
+    "MatchingPolicy",
     "MissingReason",
     "assign_one_to_one",
+    "candidate_index_for",
     "document_version_id",
     "evidence_id",
     "generate_candidates",
@@ -261,6 +264,56 @@ _TIE_BAND = 0.05
 #: version. Bootstrap, floored so an old version stays a plausible ancestor.
 _LINEAGE_DECAY = 0.15
 _LINEAGE_FLOOR = 0.25
+
+#: The highest score any candidate with **zero structural-path agreement** can
+#: reach, and the lemma the candidate index rests on.
+#:
+#: `structural_path` is always *present* -- `_path_agreement` returns a float,
+#: never `None` -- so a pruned candidate contributes a hard 0.0 on a 0.20 weight
+#: while every other signal is renormalised over the weight that is available.
+#: Maximising over which other signals are present, with all of them at 1.0:
+#:
+#:     (1.00 - 0.20) / 1.00 = 0.80
+#:
+#: and dropping any signal from the present set moves both numerator and
+#: denominator down by the same weight, which lowers the ratio because the
+#: numerator is already the smaller of the two. So 0.80 is the supremum.
+#:
+#: Two consequences, and they are why pruning is fail-closed **per row**:
+#: 0.80 < `MERGE_THRESHOLD`, so a pruned candidate can never itself be a merge;
+#: and `MERGE_THRESHOLD - _TIE_BAND = 0.87 > 0.80`, so a pruned candidate can
+#: never be the runner-up that fires the tie guard on a pair that would
+#: otherwise merge. Pruning therefore cannot turn AMBIGUOUS or NEW into MATCHED
+#: for a given row.
+#:
+#: It does **not** by itself prove whole-assignment equivalence: the matching is
+#: global, and freeing a column in one row can change who another row is given.
+#: That residual is measured, not assumed -- see
+#: `research/experiments/H1-E-IDENTITY-SCALABILITY-01/`.
+PRUNED_CANDIDATE_SCORE_CEILING = 0.80
+
+
+class MatchingPolicy(StrEnum):
+    """How `assign_one_to_one` chooses who is compared against whom.
+
+    `LEGACY` is the default and is byte-for-byte the behaviour that every
+    existing receipt was measured under: a full incoming x previous score
+    matrix, then one Hungarian assignment over all of it. It is also the reason
+    a 10,000-unit version pair raises `MemoryError`.
+
+    `BLOCKED` builds the same candidate set §N15.1 already describes -- same
+    source lineage, and a shared structural-path root, matching explicit
+    identifier or a neighbouring anchor -- as an inverted index rather than by
+    scanning every previous unit, then runs the Hungarian assignment
+    independently over each connected component of that sparse graph.
+
+    `BLOCKED` is a *shadow* policy. It does not become the default on the
+    strength of the per-row lemma above; it becomes the default when a
+    same-condition benchmark says its decisions do not differ.
+    """
+
+    LEGACY = "LEGACY"
+    BLOCKED = "BLOCKED"
 
 
 def _jaccard(left: str, right: str) -> float:
@@ -766,11 +819,190 @@ def _max_weight_matching(weights: list[list[float]]) -> dict[int, int]:
     return assignment
 
 
+def _path_root(path: tuple[str, ...]) -> str:
+    """The one key that decides whether `_path_agreement` can be non-zero.
+
+    Agreement counts a shared *prefix*, so it is above zero exactly when the
+    first components normalise equal -- or when both paths are empty, which is
+    its own bucket rather than a missing one.
+    """
+    if not path:
+        return "\x00<empty-path>"
+    return normalize_text_for_identity(path[0])
+
+
+def candidate_index_for(
+    previous: list[LogicalUnitFingerprint],
+) -> tuple[dict[str, list[int]], dict[str, list[int]], dict[str, list[int]]]:
+    """Invert `previous` on the three keys `generate_candidates` filters by.
+
+    Returned as (by path root, by explicit identifier, by anchor), each mapping
+    a key to *column indices* into `previous`. Built once per version pair, so
+    the cost is linear in the number of previous units instead of being paid
+    again for every incoming one.
+    """
+    by_path: dict[str, list[int]] = {}
+    by_identifier: dict[str, list[int]] = {}
+    by_anchor: dict[str, list[int]] = {}
+    for column, candidate in enumerate(previous):
+        by_path.setdefault(_path_root(candidate.document_path), []).append(column)
+        if candidate.explicit_identifier:
+            key = normalize_text_for_identity(candidate.explicit_identifier)
+            if key:
+                by_identifier.setdefault(key, []).append(column)
+        if candidate.anchor:
+            by_anchor.setdefault(candidate.anchor, []).append(column)
+    return by_path, by_identifier, by_anchor
+
+
+def _blocked_candidate_columns(
+    incoming: LogicalUnitFingerprint,
+    previous: list[LogicalUnitFingerprint],
+    index: tuple[dict[str, list[int]], dict[str, list[int]], dict[str, list[int]]],
+) -> list[int]:
+    """The columns `generate_candidates` would keep, found by lookup.
+
+    This reproduces that function's `keep` predicate exactly, including the
+    source-lineage filter, and deliberately does **not** apply its `window`
+    truncation: dropping the 25th-nearest candidate is a second, separate
+    lossy step, and mixing it into the indexing would make any divergence
+    impossible to attribute.
+    """
+    by_path, by_identifier, by_anchor = index
+    columns: set[int] = set(by_path.get(_path_root(incoming.document_path), ()))
+
+    if incoming.explicit_identifier:
+        key = normalize_text_for_identity(incoming.explicit_identifier)
+        if key:
+            columns.update(by_identifier.get(key, ()))
+
+    for anchor in (incoming.anchor, incoming.previous_anchor, incoming.next_anchor):
+        if anchor:
+            columns.update(by_anchor.get(anchor, ()))
+
+    kept = []
+    for column in sorted(columns):
+        candidate = previous[column]
+        if (
+            incoming.source_lineage
+            and candidate.source_lineage
+            and candidate.source_lineage != incoming.source_lineage
+        ):
+            continue
+        kept.append(column)
+    return kept
+
+
+def _components(
+    rows: int, columns_for: list[list[int]]
+) -> list[tuple[list[int], list[int]]]:
+    """Split the sparse bipartite graph into independent matching problems.
+
+    A Hungarian assignment over the whole graph and one per connected component
+    give the same answer, because no augmenting path can cross between
+    components. The cost, however, is the difference between one `N**3` and a
+    sum of much smaller cubes, and that is the entire scalability argument.
+    """
+    parent = list(range(rows))
+
+    def find(node: int) -> int:
+        while parent[node] != node:
+            parent[node] = parent[parent[node]]
+            node = parent[node]
+        return node
+
+    def union(left: int, right: int) -> None:
+        a, b = find(left), find(right)
+        if a != b:
+            parent[b] = a
+
+    owner: dict[int, int] = {}
+    for row, columns in enumerate(columns_for):
+        for column in columns:
+            if column in owner:
+                union(row, owner[column])
+            else:
+                owner[column] = row
+
+    grouped: dict[int, tuple[list[int], set[int]]] = {}
+    for row, columns in enumerate(columns_for):
+        if not columns:
+            continue
+        root = find(row)
+        bucket = grouped.setdefault(root, ([], set()))
+        bucket[0].append(row)
+        bucket[1].update(columns)
+    return [(rows_in, sorted(cols)) for rows_in, cols in grouped.values()]
+
+
+def _assign_blocked(
+    incoming: list[LogicalUnitFingerprint],
+    previous: list[LogicalUnitFingerprint],
+    engine: LogicalIdentityResolver,
+) -> list[LogicalIdentityDecision]:
+    index = candidate_index_for(previous)
+    columns_for = [
+        _blocked_candidate_columns(unit, previous, index) for unit in incoming
+    ]
+
+    # row -> column, and the row's scores against its own candidate columns.
+    assignment: dict[int, int] = {}
+    row_scores: list[dict[int, float]] = [{} for _ in incoming]
+
+    for rows_in, cols_in in _components(len(incoming), columns_for):
+        local_columns = {column: position for position, column in enumerate(cols_in)}
+        weights = [[0.0] * len(cols_in) for _ in rows_in]
+        for local_row, row in enumerate(rows_in):
+            for column in columns_for[row]:
+                score = engine.score_pair(previous[column], incoming[row])[0]
+                row_scores[row][column] = score
+                weights[local_row][local_columns[column]] = score
+        for local_row, local_column in _max_weight_matching(weights).items():
+            if local_row >= len(rows_in) or local_column >= len(cols_in):
+                continue
+            row = rows_in[local_row]
+            column = cols_in[local_column]
+            # The padding columns carry zero weight, and a row can be handed one
+            # only because nothing better was left. A pair the row never had as a
+            # candidate is not a pair.
+            if column in row_scores[row]:
+                assignment[row] = column
+
+    decisions: list[LogicalIdentityDecision] = []
+    for row, unit in enumerate(incoming):
+        matched = assignment.get(row)
+        if matched is None:
+            decisions.append(engine.resolve(unit, []))
+            continue
+        taken = {col for other, col in assignment.items() if other != row}
+        rivals = [
+            (score, previous[col].logical_id)
+            for col, score in row_scores[row].items()
+            if col != matched and col not in taken
+        ]
+        runner_up, runner_up_id = max(rivals, default=(0.0, None))
+        score, signals, missing = engine.score_pair(previous[matched], unit)
+        decisions.append(
+            engine.decide_pair(
+                incoming=unit,
+                partner=previous[matched],
+                score=score,
+                signals=signals,
+                missing=missing,
+                runner_up=runner_up,
+                runner_up_id=runner_up_id,
+                seed_logical_id=unit.logical_id,
+            )
+        )
+    return decisions
+
+
 def assign_one_to_one(
     incoming: list[LogicalUnitFingerprint],
     previous: list[LogicalUnitFingerprint],
     *,
     resolver: LogicalIdentityResolver | None = None,
+    policy: MatchingPolicy = MatchingPolicy.LEGACY,
 ) -> list[LogicalIdentityDecision]:
     """§N15.3 -- resolve a whole window at once, one old unit to one new unit.
 
@@ -789,12 +1021,20 @@ def assign_one_to_one(
         return []
     if not previous:
         return [engine.resolve(unit, []) for unit in incoming]
+    if policy is MatchingPolicy.BLOCKED:
+        return _assign_blocked(incoming, previous, engine)
 
+    # Scores are kept as bare floats rather than the full `score_pair` triple.
+    # The signal and missing-reason dictionaries are needed for the one column
+    # each row is actually assigned, and holding a pair of dicts for all N x M
+    # cells is what turns a 10,000-unit version pair into a `MemoryError`. The
+    # decisions are identical either way: the recomputation below is the same
+    # pure function on the same inputs.
     scores = [
-        [engine.score_pair(candidate, unit) for candidate in previous]
+        [engine.score_pair(candidate, unit)[0] for candidate in previous]
         for unit in incoming
     ]
-    assignment = _max_weight_matching([[cell[0] for cell in row] for row in scores])
+    assignment = _max_weight_matching(scores)
 
     decisions: list[LogicalIdentityDecision] = []
     for index, unit in enumerate(incoming):
@@ -809,13 +1049,13 @@ def assign_one_to_one(
         # assignment had already resolved confidently.
         taken = {col for row, col in assignment.items() if row != index}
         rivals = [
-            (scores[index][col][0], previous[col].logical_id)
+            (scores[index][col], previous[col].logical_id)
             for col in range(len(previous))
             if col != column and col not in taken
         ]
         runner_up, runner_up_id = max(rivals, default=(0.0, None))
 
-        score, signals, missing = scores[index][column]
+        score, signals, missing = engine.score_pair(previous[column], unit)
         decisions.append(
             engine.decide_pair(
                 incoming=unit,
