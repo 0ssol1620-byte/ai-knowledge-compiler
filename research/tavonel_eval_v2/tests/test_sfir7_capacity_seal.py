@@ -224,3 +224,72 @@ def test_the_two_exclusion_kinds_are_counted_separately(tmp_path: Path):
     kinds = sealer.build(path)["why_a_shortfall_would_be_which_kind"]
     assert kinds["frame_cut_by_an_inherited_bound"]["roots_excluded"] == 4
     assert kinds["frame_cut_by_the_hosts_rate_limit"]["roots_excluded"] == 1
+
+
+
+# --- a truncated root makes C a floor ----------------------------------------
+
+
+def _with_states(tmp_path: Path, candidates: int, states: list) -> Path:
+    body = json.loads(_census(tmp_path, candidates=candidates).read_text(encoding="utf-8"))
+    body["families"]["git_docs"]["root_dispositions"] = [
+        {"discovery_root_id": f"git:o{i}/n{i}", "state": state, "reason": reason}
+        for i, (state, reason) in enumerate(states)
+    ]
+    path = tmp_path / "states.json"
+    path.write_text(json.dumps(body), encoding="utf-8")
+    return path
+
+
+DONE = ("COMPLETE", "NONRECURSIVE_TREE_BFS_QUEUE_EXHAUSTED")
+CUT = ("EXCLUDED_INCOMPLETE_ROOT_DISPOSITION", "TREE_BFS_BOUND_BEFORE_QUEUE_EXHAUSTION")
+ENQUEUE = ("EXCLUDED_INCOMPLETE_ROOT_DISPOSITION", "TREE_QUEUE_OR_PATH_MAP_BOUND_BEFORE_ENQUEUE")
+
+
+def test_a_census_with_a_truncated_root_is_measured_but_not_sealable(tmp_path: Path):
+    """The distinction SFIR6 introduced MEASURED_NOT_SEALABLE for, arriving here
+    for a different reason: a root the traversal stopped short of exhausting may
+    hold documents nobody counted, so C is a lower bound and not a measurement.
+    """
+    body = sealer.build(_with_states(tmp_path, 800, [DONE] * 49 + [CUT]))
+    assert body["family"]["is_sealable"] is False
+    assert body["family"]["verdict"] == "MEASURED_NOT_SEALABLE"
+    assert body["family"]["roots_truncated_before_exhaustion"] == 1
+
+
+def test_a_fully_exhausted_census_over_the_threshold_meets_the_criterion(tmp_path: Path):
+    """So MEASURED_NOT_SEALABLE is not the only answer available."""
+    body = sealer.build(_with_states(tmp_path, 800, [DONE] * 50))
+    assert body["family"]["verdict"] == "MEETS_CRITERION"
+    assert body["family"]["is_sealable"] is True
+
+
+def test_a_fully_exhausted_census_under_the_threshold_is_a_measured_shortfall(tmp_path: Path):
+    """The third verdict. A shortfall that IS a measurement is a finding about
+    the frame; a shortfall over truncated roots is not the same claim.
+    """
+    body = sealer.build(_with_states(tmp_path, 400, [DONE] * 50))
+    assert body["family"]["verdict"] == "SHORTFALL_MEASURED"
+
+
+def test_a_root_that_enumerated_and_found_nothing_does_not_block_the_seal(tmp_path: Path):
+    """An honest zero is a completed observation, not a truncation."""
+    zero = ("ZERO_CANDIDATE_ROOT_DISPOSITION", "NO_REVISION_PAIRS")
+    body = sealer.build(_with_states(tmp_path, 800, [DONE] * 49 + [zero]))
+    assert body["family"]["is_sealable"] is True
+
+
+def test_the_truncation_reasons_are_reported_with_the_bounds_that_caused_them(tmp_path: Path):
+    """A reader must be able to see that the bounds were frozen for a different,
+    smaller set of repositories.
+    """
+    body = sealer.build(_with_states(tmp_path, 400, [DONE] * 30 + [ENQUEUE] * 20))
+    block = body["why_a_shortfall_would_be_which_kind"][
+        "the_instrument_could_not_finish_the_root"
+    ]
+    assert block["roots_truncated"] == 20
+    assert block["reasons"]["TREE_QUEUE_OR_PATH_MAP_BOUND_BEFORE_ENQUEUE"] == 20
+    assert (
+        block["inherited_per_root_bounds"]["max_git_tree_queue_entries"]
+        == sources.MAX_GIT_TREE_QUEUE_ENTRIES
+    )

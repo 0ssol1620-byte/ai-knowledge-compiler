@@ -480,6 +480,16 @@ design_freeze_state:
   composition_limitations_registered: true  # receipts/sfir7-frame-composition.json
   frozen: true
   frozen_at: 2026-08-27
+  census_run: true                          # receipts/sfir7-capacity-metadata-census.json
+  outcome_sealed: true                      # receipts/sfir7-capacity-outcome.json
+  outcome: CAPACITY_CRITERION_APPLIED_AND_FAILED
+  outcome_verdict: MEASURED_NOT_SEALABLE
+  nothing_adjusted_after_the_result:
+    roots_added: 0
+    threshold_lowered: false
+    n_changed: false
+    roster_edited: false
+    per_root_traversal_bounds_raised: false
   roster_fingerprint: sha256:e328ec8fb910c62a9af0bc8e5868976d9872bf3efaa050cd62adda1b4f9c34df
   blocking_freeze: []
   no_longer_blocking:

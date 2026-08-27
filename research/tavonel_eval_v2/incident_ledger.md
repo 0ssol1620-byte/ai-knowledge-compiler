@@ -10229,3 +10229,92 @@ roots fit, and no repair inside this study's remit can.
 **Still nothing observed about capacity.** No candidate count, no per-root count,
 no disposition has ever been written. Request volume is a function of tree shape,
 not of how many documents carry a usable revision pair.
+
+## SFIR7 CAPACITY OUTCOME -- 2026-08-27
+
+`receipts/sfir7-capacity-metadata-census.json`,
+`receipts/sfir7-capacity-outcome.json`.
+
+    state     CAPACITY_CRITERION_APPLIED_AND_FAILED
+    verdict   MEASURED_NOT_SEALABLE
+    C         459   (criterion requires 750)
+    Q         367   (criterion requires 600)
+
+**The criterion fails, and the number is a floor rather than a measurement.**
+Both statements matter and neither replaces the other. 459 distinct documents
+with a usable revision pair were found across fifty externally selected roots.
+Twenty-four of those fifty roots never finished, so 459 is a lower bound for the
+frame and the outcome is recorded `MEASURED_NOT_SEALABLE` -- the status SFIR6
+introduced for its Wikipedia family, arriving here for an entirely different
+reason.
+
+**Root dispositions.**
+
+    26   NONRECURSIVE_TREE_BFS_QUEUE_EXHAUSTED          completed
+    15   TREE_QUEUE_OR_PATH_MAP_BOUND_BEFORE_ENQUEUE    truncated by an inherited bound
+     5   TREE_BFS_BOUND_BEFORE_QUEUE_EXHAUSTION         truncated by an inherited bound
+     4   EXTERNAL_RATE_LIMIT_EXHAUSTED                  GitHub declined to serve
+     0   GLOBAL_GIT_REQUEST_BOUND                       our own cap never fired
+     0   roots at the per-root candidate cap of 80
+
+**The headline is not the shortfall. It is that the instrument could not finish
+forty per cent of the frame.** SFIR4's per-root traversal bounds --
+`MAX_GIT_TREE_OBJECTS_PER_ROOT = 158`, `MAX_GIT_TREE_QUEUE_ENTRIES = 256`,
+`MAX_GIT_API_REQUESTS_PER_ROOT = 240` -- were frozen around twenty repositories
+TAVONEL chose, which are mostly single-purpose Python and C libraries. Libraries.io's
+published ordinal selected `babel/babel`, `rails/rails`, `facebook/react`,
+`angular/angular`, `spring-projects/spring-boot`, `webpack/webpack`. Those trees
+do not fit in 256 queue entries, and an externally chosen frame is under no
+obligation to pick repositories that fit an instrument calibrated on a different
+population.
+
+**What the completed roots say, and its limits.** The twenty-six roots that ran
+to exhaustion produced 459 documents, about 17.7 each, against SFIR6's 14.7 per
+root over its twenty. So on the roots the instrument could finish, the external
+frame yielded *more* per root, not less. That comparison is worth exactly what it
+is worth: the twenty-six that finished are the twenty-six with small enough
+trees, which is a selected subset and not a random one, and extrapolating from it
+to the other twenty-four would be inventing the number this study exists to
+measure.
+
+**The delta against the predecessor, stated carefully.** SFIR6 measured 293 over
+twenty TAVONEL-chosen roots; SFIR7 measured 459 over fifty externally chosen ones.
+The +166 is not evidence that external selection is better: the root counts
+differ, the traversal completed on only half the frame, and 459 is a floor. What
+can be said is narrower and still useful -- *changing who chose the roots did not
+close the gap to 750*, and it did not close it for a reason that is about the
+instrument as much as about the corpus.
+
+**The fourth gate earned its place on the first live run.** Nine of the fifty
+addresses have been renamed since the January 2020 deposit:
+
+    facebook/react                 -> react/react
+    facebook/jest                  -> jestjs/jest
+    facebook/create-react-app      -> react/create-react-app
+    ReactTraining/react-router     -> remix-run/react-router
+    bundler/bundler                -> rubygems/bundler
+    erikhuda/thor                  -> rails/thor
+    mui-org/material-ui            -> mui/material-ui
+    webpack-contrib/css-loader     -> webpack/css-loader
+    yannickcr/eslint-plugin-react  -> jsx-eslint/eslint-plugin-react
+
+Every one kept its numeric repository id, so identity held and all nine were
+censused as the repositories the frame selected. Under SFIR5's and SFIR6's three
+gates each of these would have passed silently, and nothing in the receipt would
+have shown that the address had moved. Eighteen per cent of a six-year-old roster
+renamed is not an edge case; it is what a six-year-old roster looks like.
+Forty-seven of fifty roots were attested -- the three unattested are among the
+four GitHub declined to serve, which were never reached.
+
+**Nothing was adjusted to suit this result.** No root was added, no threshold
+lowered, N is still 50, the roster fingerprint is unchanged, and the per-root
+traversal bounds that truncated twenty roots are recorded rather than raised.
+Raising them is the obvious way to turn `MEASURED_NOT_SEALABLE` into a
+measurement and it is exactly the move the charter forbids: they are inherited
+constants, the shortfall is known, and changing them now would be tuning an
+instrument against a number already in hand.
+
+**What a follow-up study would have to do, and why it is not this one.** Bounds
+sized for the frame's actual population, chosen and frozen before any census
+runs, would let all fifty roots finish. That is a different study with a
+different pre-registration, and proposing it is not the same as running it.

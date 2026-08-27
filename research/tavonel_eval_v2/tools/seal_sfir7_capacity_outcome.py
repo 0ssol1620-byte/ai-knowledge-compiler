@@ -107,7 +107,19 @@ def build(census_path: Path, *, generated_at: str | None = None) -> dict[str, An
     #: Computed, not declared. A sealer that decided this in advance could not
     #: answer the question SFIR7 exists to ask.
     meets = count >= MINIMUM_C and quota >= MINIMUM_Q
-    sealable = not capped and attestation.get("roots_attested", 0) > 0
+    incomplete = [
+        row["discovery_root_id"]
+        for row in dispositions
+        if row.get("state") not in {"COMPLETE", "ZERO_CANDIDATE_ROOT_DISPOSITION"}
+    ]
+    sealable = not capped and not incomplete and attestation.get("roots_attested", 0) > 0
+    verdict = (
+        "MEETS_CRITERION"
+        if sealable and meets
+        else "SHORTFALL_MEASURED"
+        if sealable
+        else "MEASURED_NOT_SEALABLE"
+    )
 
     return {
         "schema": SCHEMA,
@@ -132,12 +144,46 @@ def build(census_path: Path, *, generated_at: str | None = None) -> dict[str, An
             "meets_Q": quota >= MINIMUM_Q,
             "meets_criterion": meets,
             "is_sealable": sealable,
+            "verdict": verdict,
+            "roots_truncated_before_exhaustion": len(incomplete),
+            "why_a_truncated_root_makes_C_a_floor": (
+                "a root the traversal stopped short of exhausting may hold documents "
+                "nobody counted. C is then a lower bound for that root and the census a "
+                "floor for the frame, which is a different object from a measurement of "
+                "it. SFIR6 introduced MEASURED_NOT_SEALABLE for exactly this "
+                "distinction; it applies here for a different reason."
+            ),
             "roots_frozen": frozen_roots,
             "roots_visited": len(dispositions),
             "roots_complete": states.get("COMPLETE", 0),
             "root_states": states,
         },
         "why_a_shortfall_would_be_which_kind": {
+            "the_instrument_could_not_finish_the_root": {
+                "roots_truncated": len(incomplete),
+                "reasons": {
+                    reason: sum(1 for row in dispositions if row.get("reason") == reason)
+                    for reason in sorted(
+                        {
+                            row.get("reason")
+                            for row in dispositions
+                            if row.get("state")
+                            not in {"COMPLETE", "ZERO_CANDIDATE_ROOT_DISPOSITION"}
+                        }
+                    )
+                },
+                "inherited_per_root_bounds": {
+                    "max_git_tree_objects_per_root": int(sources.MAX_GIT_TREE_OBJECTS_PER_ROOT),
+                    "max_git_tree_queue_entries": int(sources.MAX_GIT_TREE_QUEUE_ENTRIES),
+                    "max_git_api_requests_per_root": int(sources.MAX_GIT_API_REQUESTS_PER_ROOT),
+                },
+                "means": (
+                    "the traversal stopped before the tree was exhausted. These bounds "
+                    "were frozen for SFIR4's twenty hand-picked repositories, and an "
+                    "externally chosen frame is under no obligation to pick "
+                    "repositories that fit them."
+                ),
+            },
             "frame_too_small": {
                 "roots_complete": states.get("COMPLETE", 0),
                 "candidates_from_complete_roots": count,
@@ -255,7 +301,9 @@ def main(argv: list[str] | None = None) -> int:
         json.dumps(
             {
                 "state": body["state"],
+                "verdict": body["family"]["verdict"],
                 "C": body["family"]["C"],
+                "truncated": body["family"]["roots_truncated_before_exhaustion"],
                 "Q": body["family"]["Q"],
                 "roots_complete": body["family"]["roots_complete"],
                 "root_states": body["family"]["root_states"],
