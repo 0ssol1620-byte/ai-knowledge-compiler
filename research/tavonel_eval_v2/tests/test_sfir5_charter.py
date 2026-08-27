@@ -15,6 +15,7 @@ refuses everything satisfies the refusal test and proves nothing.
 from __future__ import annotations
 
 import copy
+import json
 import sys
 from pathlib import Path
 
@@ -263,3 +264,90 @@ def test_the_freeze_pins_the_transport_that_will_actually_run(tmp_path):
 
     body = json.loads(written.read_text(encoding="utf-8"))
     assert body["toolchain"]["sfir5_transport"]["sha256"] == protocol.sha_file(Path(t5.__file__))
+
+
+# --- the census entry point's own guard -------------------------------------
+
+
+def test_the_carried_charter_guard_refuses_wrong_bytes_at_the_right_path(tmp_path):
+    """Written first as `A and B`, which refuses only when BOTH halves fail --
+    so the right filename holding different bytes sailed through, which is the
+    exact scenario a digest exists to catch. Each half is now its own refusal
+    and each has its own control."""
+    import probe_sfir5_capacity as runner
+
+    relative = "research/tavonel_eval_v2/protocols/x.yaml"
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b"different bytes")
+    frozen = {
+        "carried_forward_by_reference": {
+            "charter": "protocols/x.yaml",
+            "sha256": "sha256:" + "0" * 64,
+        }
+    }
+    with pytest.raises(charter.SFIR5Refused, match="bytes"):
+        runner.require_carried_charter(tmp_path, frozen, {"path": relative})
+
+
+def test_the_carried_charter_guard_refuses_right_bytes_at_the_wrong_path(tmp_path):
+    import hashlib
+
+    import probe_sfir5_capacity as runner
+
+    relative = "research/tavonel_eval_v2/protocols/elsewhere.yaml"
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b"the carried bytes")
+    frozen = {
+        "carried_forward_by_reference": {
+            "charter": "protocols/expected.yaml",
+            "sha256": "sha256:" + hashlib.sha256(b"the carried bytes").hexdigest(),
+        }
+    }
+    with pytest.raises(charter.SFIR5Refused, match="path"):
+        runner.require_carried_charter(tmp_path, frozen, {"path": relative})
+
+
+def test_the_carried_charter_guard_accepts_the_real_pair():
+    """The paired positive, against the receipt actually sealed on disk."""
+    import probe_sfir5_capacity as runner
+
+    root = NS.parents[1]
+    frozen = json.loads(
+        (NS / "receipts" / "sfir5-design-charter-freeze.json").read_text(encoding="utf-8")
+    )
+    runner.require_carried_charter(
+        root, frozen, protocol.exact_ref(root, charter.SFIR4_CHARTER_YAML)
+    )
+
+
+def test_a_freeze_of_a_different_charter_is_refused(tmp_path):
+    """Two artifacts, two roles. `probe_capacity` consumes the freeze receipt;
+    SFIR5's carry-forward names the YAML. Checked separately, a caller could
+    hand over a freeze of some other charter alongside the right YAML and every
+    individual gate would still pass. This is the join between them."""
+    import probe_sfir5_capacity as runner
+
+    root = NS.parents[1]
+    freeze = protocol.exact_ref(root, NS / "receipts" / "sfir5-bound-sfir4-charter-freeze.json")
+    wrong = protocol.exact_ref(
+        root, NS / "protocols" / "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V3_DESIGN_CHARTER.yaml"
+    )
+    with pytest.raises(charter.SFIR5Refused, match="seals a different charter"):
+        runner.require_freeze_covers_the_carried_charter(root, freeze, wrong)
+
+
+def test_the_freeze_that_seals_the_carried_charter_is_accepted():
+    import probe_sfir5_capacity as runner
+
+    root = NS.parents[1]
+    body = runner.require_freeze_covers_the_carried_charter(
+        root,
+        protocol.exact_ref(root, NS / "receipts" / "sfir5-bound-sfir4-charter-freeze.json"),
+        protocol.exact_ref(root, charter.SFIR4_CHARTER_YAML),
+    )
+    assert body["protocol_id"] == protocol.PROTOCOL_ID
+    assert body["toolchain"]["probe_sfir4_capacity"]["sha256"] == protocol.sha_file(
+        NS / "tools" / "probe_sfir4_capacity.py"
+    )

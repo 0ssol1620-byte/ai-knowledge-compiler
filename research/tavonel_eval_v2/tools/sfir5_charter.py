@@ -247,6 +247,9 @@ def freeze(
         "toolchain": {
             "sfir5_transport": protocol.exact_ref(base, NS / "tools" / "sfir5_transport.py"),
             "sfir5_charter": protocol.exact_ref(base, Path(__file__)),
+            "probe_sfir5_capacity": protocol.exact_ref(
+                base, NS / "tools" / "probe_sfir5_capacity.py"
+            ),
             "probe_sfir4_capacity": protocol.exact_ref(
                 base, NS / "tools" / "probe_sfir4_capacity.py"
             ),
