@@ -646,3 +646,105 @@ def test_staleness_is_unknown_rather_than_fresh_when_git_cannot_be_asked(tmp_pat
     figure = bpa.build_figure5(receipts_dir=receipts, root=no_repo)
     assert _execution_node(figure)["describes_current_head"] is None
     assert "STALE" not in figure["mermaid"]
+
+
+# --- Table 4: a table about denominators must not misstate its own ----------
+
+
+def _ledger(tmp_path, text):
+    path = tmp_path / "incident_ledger.md"
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def test_table4_counts_entries_and_separates_incidents_from_stop_the_line(tmp_path):
+    ledger = _ledger(
+        tmp_path,
+        "## INC-V2-001 - a thing\n\n**Class:** alpha.\n\n"
+        "## INC-V2-002 - another\n\n**Class:** beta.\n\n"
+        "## STOP-V2-001 - halt\n\nprose only\n",
+    )
+    table = bpa.build_table4(ledger_path=ledger)
+    assert table["entries_total"] == 3
+    assert table["incidents"] == 2
+    assert table["stop_the_line"] == 1
+
+
+def test_table4_reports_the_denominator_not_just_the_distribution(tmp_path):
+    """Two of three entries declare a class. A table that printed only
+    {'alpha': 1, 'beta': 1} would read as a summary of all three."""
+    ledger = _ledger(
+        tmp_path,
+        "## INC-V2-001 - a\n\n**Class:** alpha.\n\n"
+        "## INC-V2-002 - b\n\n**Class:** beta.\n\n"
+        "## INC-V2-003 - c\n\nprose only, no structured header\n",
+    )
+    field = bpa.build_table4(ledger_path=ledger)["fields"]["class"]
+    assert field["coverage"] == "2/3"
+    assert field["entries_declaring_it"] == 2
+    assert field["entries_not_declaring_it"] == 1
+
+
+def test_table4_publishes_its_parsers_disagreement_instead_of_hiding_it(tmp_path):
+    """The self-check counts raw label occurrences WITHOUT the parser it checks.
+    A regex over prose written by hand across a hundred entries will miss forms
+    nobody anticipated, and the failure is silent -- a missed entry reads exactly
+    like an entry that never declared the field. Here the value is deliberately
+    unparseable by the value pattern (it is all asterisks), so the label is
+    present and the parse is not."""
+    ledger = _ledger(
+        tmp_path,
+        "## INC-V2-001 - a\n\n**Class:** alpha.\n\n"
+        "## INC-V2-002 - b\n\n**Class:** ****\n",
+    )
+    field = bpa.build_table4(ledger_path=ledger)["fields"]["class"]
+    assert field["raw_occurrences_of_the_label"] == 2
+    assert field["entries_declaring_it"] == 1
+    assert field["parser_agrees_with_a_raw_label_count"] is False
+    assert field["unparsed"] == 1
+    assert bpa.build_table4(ledger_path=ledger)["parser_fully_agrees"] is False
+
+
+def test_table4_accepts_both_separators_the_ledger_actually_uses(tmp_path):
+    """The ledger uses an ASCII hyphen AND a middle dot between trailing fields.
+    Accepting only the hyphen parsed 11 of 15 GPU-seconds declarations and lost
+    four invisibly. Both forms are asserted so neither can regress alone."""
+    ledger = _ledger(
+        tmp_path,
+        "## INC-V2-001 - hyphen\n\n**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.\n\n"
+        "## INC-V2-002 - middot\n\n"
+        "**GPU seconds:** 0 \u00b7 **Cost:** $0 \u00b7 **IP gate:** CLOSED.\n",
+    )
+    table = bpa.build_table4(ledger_path=ledger)
+    assert table["fields"]["gpu_seconds"]["values"] == {"0": 2}
+    assert table["fields"]["cost"]["values"] == {"$0": 2}
+    assert table["parser_fully_agrees"] is True
+
+
+def test_table4_against_the_real_ledger_agrees_with_an_independent_count():
+    """The real thing. The raw counts here are computed in the test, not read
+    from the table, so a parser that drifts fails rather than reporting its own
+    drift as the truth."""
+    import re as _re
+
+    table = bpa.build_table4()
+    text = bpa.LEDGER_PATH.read_text(encoding="utf-8")
+    assert table["entries_total"] == len(_re.findall(r"^## (?:INC|STOP)-V2-\d+", text, _re.M))
+    assert table["incidents"] + table["stop_the_line"] == table["entries_total"]
+    for key, label in bpa._FIELD_LABELS.items():
+        if key not in table["fields"]:
+            continue
+        raw = len(_re.findall(r"\*\*" + _re.escape(label) + r":\*\*", text))
+        assert table["fields"][key]["entries_declaring_it"] == raw, key
+    assert table["parser_fully_agrees"] is True
+
+
+def test_table4_reports_zero_gpu_and_zero_cost_consistently_with_table5():
+    """Two independent readings of the same fact -- Table 5 sums the receipts,
+    Table 4 reads the ledger's declarations. They must not disagree about
+    whether any GPU work has happened."""
+    table4 = bpa.build_table4()
+    table5 = bpa.build_table5()
+    assert set(table4["fields"]["gpu_seconds"]["values"]) == {"0"}
+    assert table5["gpu_seconds"]["sum"] == 0
+    assert table5["estimated_cost_usd"]["sum"] == 0

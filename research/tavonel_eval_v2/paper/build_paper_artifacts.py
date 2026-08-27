@@ -440,6 +440,117 @@ def current_head(root: Path) -> str | None:
     return completed.stdout.strip() or None
 
 
+
+LEDGER_PATH = NS / "incident_ledger.md"
+
+_LEDGER_HEADING = re.compile(r"^## ((?:INC|STOP)-V2-(\d+))\b(.*)$", re.M)
+#: Deliberately NOT anchored to the start of a line. The ledger writes
+#: several fields on one line -- `**GPU seconds:** 0 - **Cost:** $0 -
+#: **IP gate:** CLOSED` -- so a line-anchored pattern sees the first and
+#: silently misses the rest. That under-counted GPU-seconds coverage as
+#: 3/111 when 15 entries declare it, which would have understated the
+#: ledger's own discipline in a table about that discipline.
+#: The separator class is `[-\u00b7]` because the ledger uses BOTH an ASCII
+#: hyphen and a middle dot between the trailing fields. Accepting only the
+#: hyphen parsed 11 of the 15 GPU-seconds declarations, and the four it lost
+#: were invisible -- a missed entry reads exactly like an entry that never
+#: declared the field. The self-check below is what made them visible.
+_LEDGER_FIELD = re.compile(
+    r"\*\*([A-Za-z ]+):\*\*\s*([^*\n]+?)\s*"
+    r"(?:[-\u00b7]\s*$|[-\u00b7]\s+(?=\*\*)|\.\s|\.$|$)",
+    re.M,
+)
+
+
+#: The human label each normalised key came from, so the self-check can count
+#: occurrences without going through the parser it is checking.
+_FIELD_LABELS = {
+    "class": "Class",
+    "disposition": "Disposition",
+    "gpu_seconds": "GPU seconds",
+    "cost": "Cost",
+    "estimated_cost": "Estimated cost",
+}
+
+
+def build_table4(*, ledger_path: Path = LEDGER_PATH) -> dict[str, Any]:
+    """Table 4 -- the incident ledger, with the denominator of every count.
+
+    This paper's thesis is that incidents are a first-class output, so the
+    ledger is evidence and not bookkeeping. But its 111 entries were not written
+    to one template: the structured `**Class:**` / `**Disposition:**` header is a
+    recent convention, and most older entries carry prose instead.
+
+    A table that tabulated only the entries carrying those fields would look
+    clean and describe a biased subset -- the recent ones -- while reading as a
+    summary of all of them. Every count here therefore reports how many entries
+    it could see out of how many exist, which is the same rule the campaign
+    applies to every published rate.
+    """
+    require_file(ledger_path)
+    text = ledger_path.read_text(encoding="utf-8")
+    headings = _LEDGER_HEADING.findall(text)
+    spans = [m.start() for m in _LEDGER_HEADING.finditer(text)] + [len(text)]
+
+    total = len(headings)
+    inc = sum(1 for name, _, _ in headings if name.startswith("INC"))
+    stop = total - inc
+
+    declared: dict[str, dict[str, int]] = {}
+    for index, (_name, _number, _rest) in enumerate(headings):
+        body = text[spans[index] : spans[index + 1]]
+        for field, value in _LEDGER_FIELD.findall(body):
+            key = field.strip().lower().replace(" ", "_")
+            if key not in {"class", "disposition", "gpu_seconds", "estimated_cost", "cost"}:
+                continue
+            bucket = declared.setdefault(key, {})
+            bucket[value.strip()] = bucket.get(value.strip(), 0) + 1
+
+    fields = {}
+    for key, counts in sorted(declared.items()):
+        seen = sum(counts.values())
+        # The parser is checked against a count that does not use it. A regex
+        # over prose written by hand across 111 entries WILL miss forms nobody
+        # anticipated, and the failure is silent: a missed entry looks exactly
+        # like an entry that never declared the field. In a table whose whole
+        # purpose is to report honest denominators, a denominator its own parser
+        # got wrong is the worst possible defect -- so the disagreement is
+        # published beside the number rather than tuned until it disappears.
+        label = re.escape(_FIELD_LABELS[key])
+        raw = len(re.findall(r"\*\*" + label + r":\*\*", text))
+        fields[key] = {
+            "entries_declaring_it": seen,
+            "entries_not_declaring_it": total - seen,
+            "coverage": f"{seen}/{total}",
+            "raw_occurrences_of_the_label": raw,
+            "parser_agrees_with_a_raw_label_count": raw == seen,
+            "unparsed": max(0, raw - seen),
+            # Only the values are ranked; the reader is told what fraction of
+            # the ledger the ranking describes.
+            "values": dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:12]),
+        }
+
+    return {
+        "title": "Table 4 -- incident ledger composition",
+        "entries_total": total,
+        "incidents": inc,
+        "stop_the_line": stop,
+        "fields": fields,
+        "parser_fully_agrees": all(
+            f["parser_agrees_with_a_raw_label_count"] for f in fields.values()
+        ),
+        "what_this_table_is_not": (
+            "a summary of all "
+            + str(total)
+            + " entries. The structured header is a recent convention, so each "
+            "field's `coverage` is the denominator its value distribution "
+            "describes; the remainder record the same facts in prose and are "
+            "counted as not declaring the field rather than as absent data."
+        ),
+        "inputs": {"ledger": safe_rel(ledger_path)},
+    }
+
+
 def _node_no_fixed_path(node_id: str, label: str, schema: str) -> dict[str, Any]:
     return {
         "id": node_id,
@@ -587,6 +698,7 @@ def generate(*, write: bool = False) -> dict[str, Any]:
     table1 = build_table1()
     table2 = build_table2()
     table3 = build_table3()
+    table4 = build_table4()
     table5 = build_table5()
     figure5 = build_figure5()
 
@@ -594,6 +706,7 @@ def generate(*, write: bool = False) -> dict[str, Any]:
         ("table1", table1),
         ("table2", table2),
         ("table3", table3),
+        ("table4", table4),
         ("table5", table5),
         ("figure5", figure5),
     ):
@@ -604,6 +717,7 @@ def generate(*, write: bool = False) -> dict[str, Any]:
         "table1_source_families": table1,
         "table2_primary_endpoints": table2,
         "table3_baselines": table3,
+        "table4_incident_ledger": table4,
         "table5_efficiency_cost": table5,
         "figure5_evidence_chain": figure5,
     }
@@ -621,6 +735,10 @@ def generate(*, write: bool = False) -> dict[str, Any]:
         _write_lf(
             GENERATED_DIR / "table3_baselines.json",
             json.dumps(table3, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        )
+        _write_lf(
+            GENERATED_DIR / "table4_incident_ledger.json",
+            json.dumps(table4, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
         )
         _write_lf(
             GENERATED_DIR / "table5_efficiency_cost.json",
