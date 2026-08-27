@@ -82,6 +82,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+import live_cohort_guard
+
 TOOLS = Path(__file__).resolve().parent
 NS = TOOLS.parent
 for _sub in ("acquisition", "tools"):
@@ -644,6 +646,11 @@ def check_wikipedia_root(category: str) -> dict[str, Any]:
 
 
 def run() -> dict[str, Any]:
+    # INC-V2-100. Reaches a live cohort; a stray call from a test
+    # runner would spend real budget and OBSERVE. `sys.modules` and not
+    # PYTEST_CURRENT_TEST, so an import-time call is guarded too.
+    if "pytest" in sys.modules or "unittest" in sys.modules:
+        live_cohort_guard.refuse_under_test("preflight_sfi3_roots.run")
     started = now()
     records: list[dict[str, Any]] = []
     records.extend(check_git_root(root) for root in sfi3.GIT_ROOTS)

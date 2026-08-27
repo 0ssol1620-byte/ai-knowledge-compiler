@@ -8613,3 +8613,167 @@ mismatch) turn it red.
 
 **Authority:** the closure-membership check above; `frozen_drift` not naming
 `sources_sfi3.py`; the 102-pointer digest scan.
+
+## INC-V2-100 - a live cohort was one stray import away from a test run
+
+**Class:** an unguarded cohort-touching entry point reachable from pytest.
+**Disposition:** GUARDED, with a self-inflicted live traversal recorded below.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+The anti-blocker audit's defect class 10 named three tools -- `preflight_sfi3_
+roots`, `gpu_successor_preflight`, `v2r4_preacquisition_gate` -- each exposing a
+`run()` that reaches real roots with no test-runner refusal. In the audit's own
+words, an accidental import was the only thing standing between a stray call and
+a live traversal.
+
+The failure this prevents is not a crash. A stray traversal **succeeds**: it
+walks the real roots, spends real request budget against real endpoints, and
+observes. This study's method rests on doing that exactly once, under a frozen
+protocol, with the result recorded -- and a test that quietly performed one
+would be indistinguishable afterwards from one that did not.
+
+None of the three is pinned by a FROZEN-class receipt (checked with
+`verify_frozen_instrument_integrity.classify`, positively controlled against a
+known `-freeze` stem), so guarding them costs no drift and does not enlarge the
+preserved historical FAIL.
+
+The refusal keys on `sys.modules` rather than `PYTEST_CURRENT_TEST`: the runner
+is in `sys.modules` for the whole process once imported, so collection-time and
+import-time calls are guarded too, and an import-time call is exactly the
+accident being guarded against. It is written **inline** in each module because
+`anti_blocker_audit` detects the guard by looking for `sys.modules` in the module
+text -- a fix a detector cannot see leaves the finding standing, and the answer
+to that is to make the fix visible, not to loosen the detector.
+
+Class 10 is now empty; the audit's FINDING count fell from 14 to 11.
+
+### I caused the exact harm the guard prevents, while testing the guard
+
+Mutation-testing it meant disabling the refusal and re-running the controls --
+and the controls call the real `run()`. So the suite did what the guard exists
+to stop: a live traversal from inside pytest, twice. The first mutation run took
+67 seconds because it was really walking roots. The second mutation broke
+`allow_under_test`'s restore, which left the permission latched on and started
+further traversals until the run was killed and the file restored from backup.
+
+Recorded rather than quietly cleaned up, because it is the sharpest available
+evidence for why the guard was needed: the accident it describes is not
+hypothetical, and the person who caused it had just finished reading the finding
+that described it.
+
+**The method was wrong, not just unlucky.** A guard whose removal causes real
+network effects must not be mutation-tested by removing it and calling the real
+entry point. The corrected approach is to mutate against a stub module, or to
+assert on source structure -- which is what
+`test_the_refusal_is_the_first_thing_run_does` already does, and which caught
+the first mutation without making a single request.
+
+**Authority:** the audit's class-10 list before and after; the 67-second
+mutation run; `classify` returning no FROZEN receipt for any of the three.
+
+
+## INC-V2-101 - the frozen instrument cannot reach Wikipedia at the declared frame
+
+**Class:** an operational bound specified an order of magnitude below what the
+endpoint requires. **Disposition:** NOT REPAIRED IN SFIR4 -- founder decision
+required. **GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+The fourth census ran 29 minutes and refused:
+
+    sfir4_protocol.SFIR4Refused: encyclopedia_wikipedia rate-limit retry budget
+    exhausted
+
+The transport repair (INC-V2-098) held -- this run passed the point where all
+three predecessors died. It stopped on a different thing, and the difference
+matters: the instrument was not broken, it was **too impatient to finish**.
+
+### A mis-diagnosis, corrected, and recorded because it was persuasive
+
+The first measurement looked decisive. An interleaved A/B against the live
+endpoint, seconds apart:
+
+    BAD  User-Agent -> HTTP 429 (retry-after 17)
+    GOOD User-Agent -> HTTP 200
+    BAD  User-Agent -> HTTP 429 (retry-after 13)
+    GOOD User-Agent -> HTTP 200
+    BAD  User-Agent -> HTTP 429 (retry-after 9)
+    GOOD User-Agent -> HTTP 200
+
+Six alternating trials, perfectly separated. The conclusion drawn was that
+Wikimedia rate-limits by User-Agent and ours was non-compliant.
+
+It was wrong. Minutes later the **bare** User-Agent returned 200 as well. The
+retry-after values in the trace above were counting down -- 17, 13, 9 -- because
+the bucket our census had exhausted was recovering. The A/B did not isolate the
+User-Agent; it compared an exhausted bucket against a fresh one, and the clean
+alternation came from that, not from a policy.
+
+This is recorded because a wrong answer that reproduces six times is more
+dangerous than one that does not, and because the correction came from a control
+the first test lacked: re-testing the arm that had failed, after waiting.
+
+### What the endpoint actually demands
+
+Unpaced, back-to-back, single-threaded:
+
+    25 requests -> 10 succeeded, 15 throttled
+    Retry-After: 55, 54, 54, 53, 53, 52, 51, 51, 50, 50 ...
+
+About ten requests, then roughly a minute of enforced silence. The declared
+Wikipedia frame is 30 roots at up to 100 category pages each -- up to 3,000
+requests, which at the permitted rate is on the order of **4.6 hours**.
+
+The frozen budget allows `maximum_retries_per_request: 5` and
+`MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS: 180`.
+
+Three minutes of patience against an endpoint that needs hours. This is not a
+parameter that is slightly wrong; the instrument cannot reach a Wikipedia
+capacity measurement at this frame under any sequence of events.
+
+### Why SFIR4 was NOT re-frozen to fix it
+
+The three previous corrections were unconditional defects: a field that had been
+renamed, a title with no edition to date, an exception class no handler named.
+Each had one right answer, the same answer whichever way the census came out.
+
+This one is a **tuning parameter**, and a value chosen after watching a run fail
+is a value chosen partly by the failure. The paper's own section 2 states the
+standard: redesigning after observing successive failure modes makes the next
+instrument increasingly a function of prior outcomes. Editing the budget now
+would be the first correction in this study that fails that test.
+
+Note also what a "fix" would actually require. Making the traversal feasible
+means either accepting a multi-hour census or reducing
+`max_category_pages_per_root` -- and the second changes the cohort, which the
+standing instruction forbids outright after a failure.
+
+So nothing in SFIR4 was touched. The run stands as an operational stop.
+
+### The decision this needs, and who owns it
+
+Three routes, and choosing between them is a research-design call, not an
+implementation detail:
+
+1. **Publish SFIR4 as a fourth instrument stop.** Honest, cheap, and consistent
+   with how SFIR1-3 were reported. The independent-replication sequence would
+   then stand at four stops and no corpus.
+2. **Open SFIR5** with a declared pacing budget, frozen before any data. The
+   standing instruction explicitly allows a methodologically valid new study to
+   take a new protocol ID, and the capacity criterion -- threshold, roots, caps,
+   salt, scorer -- would be carried across unchanged, so it remains the same
+   question asked by an instrument able to reach it.
+3. **Authenticated access**, which raises the limits but requires credentials
+   this agent may not obtain or hold.
+
+Route 2 is the technically indicated one. It is put to the founder rather than
+taken, because route 2 is also the one where an agent deciding for itself to
+re-run after a failure is hardest to distinguish from an agent tuning until it
+passes -- and route 3 needs a credential decision that is explicitly not an
+agent's call.
+
+**Result-blindness at the stop.** Verified as at every previous abort: no receipt
+at the destination path, and no capacity quantity computed, printed or written.
+The captured output holds a traceback and nothing else.
+
+**Authority:** the aborted run's refusal; the 25-request throttling measurement;
+the frozen bounds read from `sources_sfir4.PAGINATION_CONTRACT`.

@@ -34,6 +34,7 @@ for _root in (str(NS), str(NS / "tools"), str(NS / "acquisition")):
 
 import anti_blocker_audit  # noqa: E402
 import invariant_domain  # noqa: E402
+import live_cohort_guard  # noqa: E402
 import rehearse_v2r4_closure as rehearsal  # noqa: E402
 import sfi3_root_reservation as reservation  # noqa: E402
 import v2r4_attestation as att  # noqa: E402
@@ -337,6 +338,11 @@ _require_twelve()
 
 
 def run(*, skip_suite: bool = False) -> dict[str, Any]:
+    # INC-V2-100. Reaches a live cohort; a stray call from a test
+    # runner would spend real budget and OBSERVE. `sys.modules` and not
+    # PYTEST_CURRENT_TEST, so an import-time call is guarded too.
+    if "pytest" in sys.modules or "unittest" in sys.modules:
+        live_cohort_guard.refuse_under_test("v2r4_preacquisition_gate.run")
     """Every condition, executed. The verdict is the AND of all twelve."""
     rows = []
     for name, check in CONDITIONS:

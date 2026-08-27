@@ -71,10 +71,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "endpoint"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "source_fact_ir"))
 
-import ir
 import freeze_gpu_successor_protocols as gpu_protocol_freeze
+import ir
+import live_cohort_guard
 from common import NS, canonical_sha, now, rel, sha_file
-from evidence import SCHEMA as IMMUTABLE_ENVELOPE_SCHEMA, write_immutable
+from evidence import SCHEMA as IMMUTABLE_ENVELOPE_SCHEMA
+from evidence import write_immutable
 from tokenizer_parity import PROBE_CLASSES, battery_digest
 
 # ---------------------------------------------------------------------------
@@ -824,6 +826,11 @@ def run(
     protocol_freeze_receipt: Path | None = None,
     protocol_freeze_sha256: str | None = None,
 ) -> dict[str, Any]:
+    # INC-V2-100. Reaches a live cohort; a stray call from a test
+    # runner would spend real budget and OBSERVE. `sys.modules` and not
+    # PYTEST_CURRENT_TEST, so an import-time call is guarded too.
+    if "pytest" in sys.modules or "unittest" in sys.modules:
+        live_cohort_guard.refuse_under_test("gpu_successor_preflight.run")
     started = now()
 
     #: Both mandatory, neither substituting for the other. There is no stem
