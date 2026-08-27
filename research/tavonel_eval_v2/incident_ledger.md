@@ -7940,3 +7940,296 @@ isolated checkout is not recorded as having recovered any of it.
 **Authority:** `receipts/sfir4-core-conformance.json`,
 `receipts/sfir4-core-revision-comparison.json`,
 `receipts/sfir4-execution-closure.json`.
+
+## INC-V2-093 - the Protected Core landed, and the research tree entered version control
+
+**Class:** the root cause of INC-V2-089, closed prospectively. **Disposition:**
+SFIR4 UNBLOCKED; historical irreproducibility PRESERVED. **GPU seconds:** 0 -
+**Cost:** $0 - **IP gate:** CLOSED.
+
+INC-V2-092 stopped SFIR4 with `PROTECTED_CORE_NOT_LANDED`: the algorithm the
+paper describes existed only as 982 uncommitted lines in a shared working tree,
+so no revision could be frozen against it, and `79dd3b7` -- clean, committed,
+byte-identical, fully closed under imports -- was missing seven claim-bearing
+symbols and could not import SFIR4 at all.
+
+### What was audited before it was landed
+
+The change was hostile-reviewed on correctness, intended semantics, backward
+compatibility and regression before any commit. It is not a refactor:
+
+- `dependency.py` -- `DependencyEdge.channels` defaults to
+  `ALL_DEPENDENCY_CHANNELS`, so every existing adapter is unaffected. Additive.
+- `semantic_diff.py` -- the `MODIFIED_CLAIM` gate moves off
+  `normalize_text_for_identity`, a fold documented as lossy and built for a
+  different question, onto the CONTENT facet derived from raw text under NFC
+  alone. `legacy_identity_change_predicate=True` keeps the old path reachable
+  for canary comparison and rollback.
+- `recompilation.py` -- `StructuralPolicy.LEGACY` with the legacy flag off
+  reproduces prior behaviour exactly. Two defaults do change, deliberately and
+  with measurement attached: `facet_policy=DECLARED` and
+  `seed_unresolved_incoming=True`, the latter costing two additional artifact
+  rebuilds out of 334 across 23 real revision pairs. `StructuralPolicy.ALWAYS`
+  ships available and non-default: it was measured at 80.5% false invalidation
+  on real-revision corpora while buying no correctness.
+- `identity.py` -- the N x M signal/missing cache is dropped; it turned a
+  10,000-unit version pair into a `MemoryError`. The assignment is unchanged and
+  the per-row signals are recomputed by the same pure function on the same
+  inputs.
+
+Two of these carry incident numbers in their own docstrings and describe
+correctness failures on the paper's central claim, INC-V2-038 above all:
+LOCATOR, TEMPORAL and METADATA changes were detected, correctly typed, and then
+reached nothing, and the artifacts reading them were labelled
+`CURRENT, "no change reached it"` -- a claim of freshness that was false.
+
+### The commits
+
+    4823d5d  Protected Core: 20 modules, 20 tests
+             1091 passed, 68 skipped; ruff clean; mypy clean over 40 modules
+    18bae72  the three SFIR3 predecessor receipts SFIR4 READS
+    b5fe0b4  DECLARED_DATA extended; the landing control inverted
+    ad99d18  the rest of the research tree, 1445 files
+    37fe319  the isolated-execution gate hardened
+
+None is pushed. 146 unrelated dirty entries elsewhere in the working tree are
+untouched, no historical receipt is modified, and no repository-wide reformat
+was run.
+
+### Two evidence-integrity hazards found while landing it
+
+**End-of-line conversion.** 19 of the 40 Protected Core files were CRLF in the
+working tree, and the repository's `.gitattributes` declares `* text=auto
+eol=lf`. Committing them unchanged would have produced blobs differing from the
+bytes every freeze digest is taken over -- INC-V2-089's failure mode in new
+clothes, arriving through a checkout rather than a rewrite. They were normalised
+to LF before staging and verified blob-for-byte afterwards. The research tree
+needs no such treatment: its own `.gitattributes` (`* -text -eol`) already
+keeps committed blobs identical to the files the digests cover.
+
+**The declared inputs were not in the closure.** The closure covered SFIR4's
+code and not the SFI2/SFIR3 receipts SFIR4 reads. The gate therefore passed on
+the machine that authored those files while eighteen SFIR4 controls failed in an
+isolated checkout that could not construct them. A declared input only one
+machine can produce is not recoverable, whatever the code says. `DECLARED_DATA`
+now covers them, and the isolated suite went from 232/250 to 265/265 -- a
+difference produced by version control, not by a line of logic.
+
+### The isolated execution environment, and two false-isolation traps
+
+SFIR4 now runs from `D:\CodexProjects\_sfir4_isolated`, a detached worktree with
+its own venv, verified clean at every step. Two ways the isolation claim could
+have been false, both real on this machine:
+
+1. the shared venv installs the repository editable, and its `.pth` hard-codes
+   fifteen absolute paths into the SHARED working tree;
+2. the bash-PATH `python` resolves `akc_cir` out of a DIFFERENT clone entirely,
+   `ai-knowledge-compiler-collection-plane-rehearsal`.
+
+Either would have produced receipts reading `execution_environment:
+isolated_git_checkout` over code nobody pinned. `sfir4_isolated_env` refuses
+both; the refusals were exercised, not assumed.
+
+Its ancestor rule was also hardened here. Admitting a `.pth` reference that sits
+under the nearest common ancestor of the venv and the intended root is right for
+a monorepo venv INSIDE a checkout and wrong for one placed beside it, where the
+ancestor is a container directory holding every other clone. The ancestor must
+now BE a git checkout root -- `.git` as a directory in a clone, as a file in a
+linked worktree. Mutation-tested: forcing that predicate true fails the refusal
+control and nothing else.
+
+### What this does NOT do
+
+**It recovers nothing.** The 59 drifted bindings across 29 files and 20
+receipts belong to the V2R4 and SFIR1-3 chains. Those bytes were never
+committed and no commit returns them. `verify_frozen_instrument_integrity`
+still reports `FAIL 59 / 29 / 20` and must continue to.
+
+What changed is prospective and only that: from `ad99d18` forward the failure
+mode that produced INC-V2-089 cannot recur, because the bytes a freeze pins are
+bytes git will return. The historical chain stays an irreproducibility
+limitation, published as one. Recording this as a repair of INC-V2-089 would be
+the laundering that entry exists to forbid.
+
+**Authority:** `receipts/sfir4-execution-closure.json`,
+`receipts/sfir4-core-conformance.json`, and the five commits named above.
+
+
+## INC-V2-094 - the live-census proof was forgeable, and two pins were pins over nothing
+
+**Class:** three defects found by an adversarial pre-freeze audit, each of the
+INC-V2-036 family. **Disposition:** ALL THREE CLOSED BEFORE ANY SEAL; study
+still result-blind. **GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+An adversarial audit was run against the isolated checkout before the freeze,
+which is the only time a defect in an instrument is free to fix. It returned
+three BLOCKERs. Each was reproduced against the real production functions before
+anything was changed. Nothing had been sealed: the census run aborted for an
+unrelated reason (INC-V2-095) and no capacity number has been observed.
+
+### A -- a census of nothing certified itself
+
+`verify_chain` recomputes the hash chain over `observations` and reads nothing
+else. `_assert_response_evidence` then read `global.all_observed`,
+`global.sequence_is_dense`, `global.requests` and `per_root_requests_sum`
+straight out of the same untrusted document and compared them only to each
+other. None of those four fields was covered by anything at all.
+
+Reproduced exactly: a block with `observations: []` and a hand-written `global`
+claiming a thousand fully observed requests verified its chain -- the head of an
+empty chain is `sha256(CHAIN_SEED)`, a public unkeyed constant anyone can
+compute -- and PASSED. A live-census gate certified a census in which no request
+was ever made.
+
+`ResponseLedger.require_all_observed`, written for precisely this and quoted in
+the module's own docstring as the thing that prevents it, had zero call sites
+anywhere. It could not have had a useful one: it is a method on a ledger held in
+memory, and every sealing caller holds a JSON file.
+
+`require_observed_census` now RECOMPUTES `global`, `per_root` and
+`per_root_requests_sum` from the observations and compares them field by field,
+refuses an empty observation list with a message that says why an empty chain
+proves nothing, and tests for synthesis on two independent signals -- the
+`observed_bytes` flag AND the `synthesized-sha256:` digest prefix. Two, because
+a forger who rewrites one leaves the other; a forgery that rebuilt the chain
+over edited rows and recomputed every aggregate was still refused on the prefix.
+
+### B -- five of the charter's six toolchain pins were never read again
+
+The charter pins six modules by sha at freeze time. Exactly one was ever checked
+afterwards: the probe verifies its own file before a census.
+
+`acquisition/sources_sfir4.py` holds `SOURCE_POOLS`, `declared_roots` and
+`SELECTION_SALT` -- the roots, the per-root caps, the deterministic ordering.
+It was imported at four call sites and compared to its pin at none. The
+consequence is a complete path around pre-registration: a census short for one
+family could be rescued by widening a root list in that module, re-running the
+probe in a fresh process, and sealing against the SAME already-frozen charter,
+with nothing comparing the new bytes to the pinned hash. Post-hoc root addition,
+wearing a frozen charter.
+
+`verify_toolchain` re-hashes all six and refuses on drift. `seal_capacity` and
+both freeze paths call it, and the sealed receipt now carries the re-verified
+digests BESIDE the charter's, in a separate field, because a field that merely
+echoes the charter cannot show that anything was checked.
+
+### C -- the freeze never asked which Protected Core would load
+
+Both freeze paths called `conformance.require_conformant()` with no expected
+root, so the branch that checks WHERE `akc_cir` resolved never ran: the gate
+only asked whether SOME importable core exposed the right symbol names. And
+`sfir4_isolated_env` -- written for exactly the shared-venv absolute-path `.pth`
+described in INC-V2-093 -- had zero call sites and was not in the closure's
+verification entry points, so nothing even required it to be committed.
+
+A receipt would have recorded `execution_environment: isolated_git_checkout`
+while the interpreter imported whatever a developer had open. That is
+INC-V2-092's finding restated: a checkout can satisfy every recoverability
+property and still not be the code that runs.
+
+`_require_reproducible_instrument()` now runs all three -- recoverable,
+conformant, isolated -- from one place, so the two freeze paths cannot drift
+apart, against an `EXPECTED_CORE_ROOT` derived from the running checkout rather
+than configured. There is no value anyone can set to make a freeze run from one
+checkout expect another checkout's core.
+
+### D (MAJOR) -- a docstring described a property nothing established
+
+`payload_resolution_identity`'s docstring: "a roster proves distinctness over
+this value, never over `resolve_payload_locator`". The function had no call
+sites, in the pipeline or in a test.
+
+The roster now computes it. The honest framing, recorded in the code:
+injectivity is established UPSTREAM by `_validate_candidate`, which derives each
+locator from the candidate's own fields and refuses any mismatch, so two
+candidates with different `lineage_id`s cannot reach the loop sharing one
+resolution identity. What was added is a cross-check of that derivation, not the
+proof -- it fires the day the derivation stops binding the section into the
+locator, which is the day the eCFR URL-sharing case silently returns. Its
+controls reach it by suspending the upstream validator, and a separate control
+names that validator as the real source of the property, so the cross-check
+cannot be mistaken for it.
+
+Wiring it up immediately found something else: the eCFR test fixture emitted
+`str(index + 1)` as a section designator. A real one is `<part>.<n>` -- `1.1`,
+`170.3` -- and the versioner API has never served a bare integer. The grammar
+refused it correctly; nothing had noticed, because until now no code in the
+freeze path resolved a candidate's locator.
+
+### Why the audit found what the suite did not
+
+Every existing response-evidence test started from an honestly computed
+`ledger.proof()`. None constructed the document a tamperer would. A suite built
+only from the happy artefact tests that the artefact is well-formed, never that
+a malformed one is refused -- and the gap sat between two functions each of
+which was individually correct.
+
+**Authority:** the reproductions, re-run against the fixes; commits `51b8260`
+and `8095d03`.
+
+
+## INC-V2-095 - eCFR renamed a metadata field between SFIR3 and SFIR4
+
+**Class:** external API drift, aborting a live census in flight.
+**Disposition:** ADAPTER CORRECTED; charter re-frozen result-blind; census
+re-run. **GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+The first live metadata-only capacity census ran for roughly fifty minutes and
+aborted:
+
+    sfir3_protocol.SFIR3Refused: eCFR latest_date metadata malformed
+
+The eCFR versioner API serves `meta.latest_amendment_date` and served
+`meta.latest_date` when SFIR3 read it. The old key is absent from the current
+response, not null. Confirmed directly against the live endpoint:
+
+    meta keys: latest_amendment_date, latest_issue_date, page, per_page,
+               result_count, title, total_pages
+    latest_date            -> None
+    latest_amendment_date  -> '2026-08-19'
+
+Nothing else moved. The row shape is unchanged: 981 of 1000 rows on title-21
+page 1 still satisfy the adapter's `type == "section"` filter with `part`,
+`identifier` and `date` present.
+
+### The fix, and why it is a disjunction and not a fallback
+
+Both spellings are accepted, explicitly. SFIR3's frozen receipts were produced
+against `latest_date`, so that branch is what still lets this adapter reproduce
+SFIR3's reading; the new branch reads the endpoint as it stands. Both are
+reachable, which is what separates a disjunction from a guard that can never
+fire. Neither present is still a refusal: the value pins which edition of the
+regulation an enumeration describes, and an enumeration that cannot say which
+edition it read is not evidence about any of them.
+
+### Why re-freezing the charter here is result-blind
+
+The design charter pins `probe_sfir3_capacity.py` by sha, so correcting it
+required re-freezing. Three facts make that legitimate rather than a protocol
+change made after seeing data:
+
+1. **No result existed.** The run raised before any capacity number was
+   computed, printed or written. The captured output contains a traceback and
+   nothing else -- no C_f, no Q_f, no candidate count. Grepped and confirmed
+   before anything was touched.
+2. **Nothing about the criterion moved.** The change is to an input-parsing
+   adapter. No threshold, root set, per-root cap, cohort, selection salt or
+   scorer differs by a byte.
+3. **The correction is determined by the endpoint, not by an outcome.** A
+   renamed field has one right answer, and it is the same answer whichever way
+   the census comes out.
+
+Recorded because the reverse -- adjusting an instrument after a census returns a
+number one does not like -- is indistinguishable from this if nobody writes down
+which one happened. This is the entry that says which.
+
+### What the study still owes
+
+`probe_sfir2_capacity.py` reads `meta.latest_date` at line 326 and is NOT
+corrected here. SFI2 is spent; changing its adapter would alter a spent study's
+instrument for no benefit, and its receipts were produced while that field
+existed. It is left exactly as it stands, and named here so a later reader does
+not mistake the omission for an oversight.
+
+**Authority:** the aborted run's traceback; the live endpoint probe; commit
+`51b8260`.
