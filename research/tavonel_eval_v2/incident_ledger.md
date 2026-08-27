@@ -8352,3 +8352,89 @@ root and the fix needs to be no wider than it is.
 
 **Authority:** the aborted run's traceback; the fifty-title live shape probe;
 `tests/test_sfir3_protocol_capacity.py` and its mutation results.
+
+## INC-V2-097 - the recoverability commit left one pointer naming nothing
+
+**Class:** a committed pointer whose target was never committed, found in the
+commit whose purpose was recoverability.
+**Disposition:** REPAIRED; standing gate added. **GPU seconds:** 0 -
+**Cost:** $0 - **IP gate:** CLOSED.
+
+While clearing unrelated churn before committing INC-V2-096, the working tree
+showed `receipts/latest/r1-reproducibility-fixture.json` modified. Reverting it
+to HEAD did not help: the file HEAD names does not exist either. An audit of
+every mutable pointer in the tree found the extent exactly:
+
+    pointers: 102
+    resolvable on disk AND at HEAD: 101
+    target absent from disk: 1
+    target on disk but NOT committed at HEAD: 0
+
+One. And `git log --all` on the target returns nothing -- it was never committed
+at all. The pointer was committed in `ad99d18`, *"place the tavonel_eval_v2
+study under version control"*: the commit whose entire purpose was to make this
+tree recoverable published one name for bytes it did not carry. This is
+INC-V2-089's failure in miniature, produced while repairing INC-V2-089.
+
+### How it happened, and why nothing caught it
+
+`tools/reproducibility_fixture.py` writes an immutable receipt AND updates the
+mutable pointer beside it. It ran on 2026-08-26T14:35. The immutable receipt was
+untracked when `ad99d18` was assembled and was removed before the commit; the
+pointer, already tracked, went in carrying the new target name.
+
+Nothing caught it because nothing asked. The SFIR4 execution closure verifies
+that the files IT declares are committed and byte-identical to HEAD; no check
+existed that a receipt pointer resolves to anything. A pointer is not evidence
+and says so in its own `note` -- but it is the only published handle on the
+receipt it names, so a pointer git cannot follow is a citation into nothing.
+
+### What was actually lost: nothing
+
+The R1 fixture is deterministic by construction -- no clock, no randomness, no
+environment, no filesystem scan. Re-running it produces a new run id and the
+same finding. All six runs on record agree:
+
+    20260822T013341Z-2be902c53afd   sha256:8f9f9a3e7a58ee90e68a9ef...
+    20260822T013341Z-8ddf1de00011   sha256:8f9f9a3e7a58ee90e68a9ef...
+    20260822T020257Z-660e7e970d18   sha256:8f9f9a3e7a58ee90e68a9ef...
+    20260822T020257Z-ef3e5fa61232   sha256:8f9f9a3e7a58ee90e68a9ef...
+    20260823T100124Z-c08b5b0fe504   sha256:8f9f9a3e7a58ee90e68a9ef...
+    20260827T020427Z-0545b82e7c4d   sha256:8f9f9a3e7a58ee90e68a9ef...
+
+Five days, six runs, one semantic result digest. The repair is the sixth row and
+its pointer, both committed together. The 2026-08-26 receipt's exact bytes remain
+permanently unrecoverable, and that is stated rather than papered over -- what
+makes it harmless is that it carried no finding the other five do not, and that
+nothing in the tree ever cited it. Grepped: the only file that mentioned that
+run id was the dangling pointer itself.
+
+**This is a repair, not a re-pin.** No historical receipt was edited, no digest
+was re-stated, and the five earlier runs are untouched. A new run was added; the
+mutable pointer -- which is mutable by design and declares itself not evidence --
+now names it.
+
+### The gate
+
+`preflight_checks.receipt_pointer_targets_are_recoverable` asserts every
+`receipts/latest/*.json` pointer names a file present on disk AND committed at
+HEAD. Both halves are required and they fail differently:
+
+- **absent from disk** -- the receipt is gone from this checkout, and it is
+  obvious the moment anyone looks;
+- **on disk but not at HEAD** -- the receipt is gone from every *other*
+  checkout, and everything works locally. That is the half that shipped, and
+  the harder one to notice.
+
+Missing git returns `UNVERIFIABLE`, not `FAIL`: not knowing whether a file is
+committed is a different fact from knowing it is not, and a check that fires in
+every git-less export is one people learn to ignore.
+
+Five controls, each reaching one branch: the passing tree, the disk-absent
+target, the never-committed target, the git-less tree, and the real 102-pointer
+receipts tree. The negative controls build a real one-commit repository rather
+than a mocked git, because the check asks git a question and a mocked answer
+would test the mock.
+
+**Authority:** the 102-pointer audit; `git log --all` on the missing target
+returning empty; the six-run digest agreement above.

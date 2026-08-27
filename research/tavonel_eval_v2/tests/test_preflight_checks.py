@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import pathlib
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -497,3 +498,88 @@ def test_sfi2_forensic_passes_against_the_real_receipt_and_spent_set():
     result = pf.sfi2_forensic_lineages_excluded()
     assert result["verdict"] == pf.PASS
     assert len(result["pinned_lineage_ids"]) == 14
+
+
+# --- INC-V2-097: a mutable pointer must name bytes git can return -----------
+
+
+def _repo(tmp_path, *, target_on_disk=True, target_committed=True):
+    """A real one-commit git repository, because the check asks git a question
+    and a monkeypatched answer would test the mock rather than the query."""
+    root = tmp_path / "repo"
+    latest = root / "receipts" / "latest"
+    latest.mkdir(parents=True)
+    target_rel = "receipts/fixture--20260101T000000Z-abc.json"
+    target = root / target_rel
+    target.write_text(json.dumps({"is_evidence": True}), encoding="utf-8")
+    (latest / "fixture.json").write_text(
+        json.dumps({"is_evidence": False, "points_to": target_rel}), encoding="utf-8"
+    )
+    run = lambda *a: subprocess.run(a, cwd=root, check=True, capture_output=True)  # noqa: E731
+    run("git", "init", "-q")
+    run("git", "config", "user.email", "t@example.invalid")
+    run("git", "config", "user.name", "t")
+    run("git", "add", "receipts/latest/fixture.json")
+    if target_committed:
+        run("git", "add", target_rel)
+    run("git", "commit", "-q", "-m", "fixture")
+    if not target_on_disk:
+        target.unlink()
+    return root, latest
+
+
+def test_pointer_recoverability_passes_when_the_target_is_on_disk_and_committed(tmp_path):
+    root, latest = _repo(tmp_path)
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.PASS
+    assert result["pointers_checked"] == 1
+
+
+def test_pointer_recoverability_fails_when_the_target_is_missing_from_disk(tmp_path):
+    root, latest = _repo(tmp_path, target_on_disk=False)
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.FAIL
+    assert len(result["absent_from_disk"]) == 1
+    assert result["absent_at_head"] == []
+
+
+def test_pointer_recoverability_fails_when_the_target_was_never_committed(tmp_path):
+    """The harder half. Everything works in this checkout and nowhere else --
+    which is exactly the state `ad99d18` committed and nothing detected."""
+    root, latest = _repo(tmp_path, target_committed=False)
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.FAIL
+    assert result["absent_from_disk"] == []
+    assert len(result["absent_at_head"]) == 1
+
+
+def test_pointer_recoverability_is_unverifiable_rather_than_failing_without_git(tmp_path):
+    """Not knowing whether a file is committed is a different fact from knowing
+    it is not. Reporting the first as the second would make this check fire in
+    any export that carries no git directory, and a check that fires everywhere
+    is one people learn to ignore.
+
+    The tree here is otherwise PERFECT -- the pointer resolves on disk -- so the
+    only thing separating this from the passing case is the absence of git. It
+    is built without a repository rather than by deleting one, because removing
+    a `.git` directory is unreliable on Windows (its object files are read-only)
+    and a control that sometimes leaves a half-deleted repository behind is
+    testing something other than what it claims.
+    """
+    root = tmp_path / "no_repo"
+    latest = root / "receipts" / "latest"
+    latest.mkdir(parents=True)
+    target_rel = "receipts/fixture--20260101T000000Z-abc.json"
+    (root / target_rel).write_text(json.dumps({"is_evidence": True}), encoding="utf-8")
+    (latest / "fixture.json").write_text(
+        json.dumps({"is_evidence": False, "points_to": target_rel}), encoding="utf-8"
+    )
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.UNVERIFIABLE
+    assert "git could not be consulted" in result["detail"]
+
+
+def test_pointer_recoverability_passes_against_the_real_receipts_tree():
+    result = pf.receipt_pointer_targets_are_recoverable()
+    assert result["verdict"] == pf.PASS, result
+    assert result["pointers_checked"] > 100

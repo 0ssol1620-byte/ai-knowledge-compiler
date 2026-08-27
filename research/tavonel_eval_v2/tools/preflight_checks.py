@@ -52,6 +52,7 @@ import ast
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -85,6 +86,7 @@ __all__ = [
     "artifact_facet_fingerprint_propagation",
     "fresh_frame_disjointness",
     "sfi2_forensic_lineages_excluded",
+    "receipt_pointer_targets_are_recoverable",
 ]
 
 
@@ -791,4 +793,88 @@ def sfi2_forensic_lineages_excluded(
         "pinned_receipt": _rel_or_str(path),
         "pinned_lineage_ids": pinned,
         "missing_from_spent_set": missing,
+    }
+
+
+# ---------------------------------------------------------------------------
+# INC-V2-097: a mutable pointer must name bytes git can return
+
+
+def receipt_pointer_targets_are_recoverable(
+    *, pointer_dir: Path | None = None, repo_root: Path | None = None
+) -> dict[str, Any]:
+    """Every `receipts/latest/*.json` pointer names a file that is on disk AND
+    committed at HEAD.
+
+    A pointer is not evidence and says so in its own `note`, but it is the only
+    published handle on the receipt it names -- so a pointer whose target git
+    cannot return is a citation into nothing. That is INC-V2-089's failure at a
+    smaller scale: a name for bytes, without the bytes.
+
+    Both halves are required and they fail differently. Absent from disk means
+    the receipt is gone from this checkout; present on disk but absent at HEAD
+    means it is gone from every OTHER checkout, which is the harder failure to
+    notice because everything works locally. `ad99d18` committed exactly one
+    pointer of the second kind having never committed its target, and no test
+    then existed that would have said so.
+
+    `UNVERIFIABLE` rather than `FAIL` when git cannot be consulted: not knowing
+    whether a file is committed is a different fact from knowing it is not, and
+    reporting the first as the second would make this check fire in any export
+    that has no git directory.
+    """
+    directory = pointer_dir if pointer_dir is not None else (NS / "receipts" / "latest")
+    root = repo_root if repo_root is not None else ROOT
+
+    if not directory.is_dir():
+        return {"verdict": FAIL, "detail": f"{_rel_or_str(directory)} does not exist"}
+
+    try:
+        committed = set(
+            subprocess.run(
+                ["git", "ls-tree", "-r", "--name-only", "HEAD"],  # noqa: S607
+                capture_output=True,
+                text=True,
+                cwd=root,
+                check=True,
+            ).stdout.split("\n")
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        return {
+            "verdict": UNVERIFIABLE,
+            "detail": f"git could not be consulted for HEAD membership: {error}",
+        }
+
+    absent_from_disk: list[dict[str, str]] = []
+    absent_at_head: list[dict[str, str]] = []
+    checked = 0
+    for pointer in sorted(directory.glob("*.json")):
+        try:
+            body = json.loads(pointer.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            return {
+                "verdict": FAIL,
+                "detail": f"{_rel_or_str(pointer)} is unreadable as JSON: {error}",
+            }
+        target = body.get("points_to")
+        if not isinstance(target, str) or not target:
+            continue
+        checked += 1
+        row = {"pointer": pointer.name, "points_to": target}
+        if not (root / target).is_file():
+            absent_from_disk.append(row)
+        elif target not in committed:
+            absent_at_head.append(row)
+
+    unrecoverable = absent_from_disk + absent_at_head
+    return {
+        "verdict": PASS if not unrecoverable else FAIL,
+        "detail": (
+            f"{checked} pointer(s) checked; "
+            f"{len(absent_from_disk)} target(s) absent from disk, "
+            f"{len(absent_at_head)} present on disk but not committed at HEAD"
+        ),
+        "pointers_checked": checked,
+        "absent_from_disk": absent_from_disk,
+        "absent_at_head": absent_at_head,
     }
