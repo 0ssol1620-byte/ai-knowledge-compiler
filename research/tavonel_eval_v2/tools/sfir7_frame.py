@@ -158,6 +158,75 @@ N_DERIVATIONS = frozenset({"min_of_rate_limited_and_capped_budget_over_per_root_
 # a census comes out badly.
 PUBLISHED_GITHUB_AUTHENTICATED_RATE_LIMIT_PER_HOUR = 5000
 
+# --------------------------------------------------------------------------
+# Vocabulary reconciliation
+#
+# The predicates were declared while SFIR6 was blind, which is what makes them
+# outcome-independent -- and also means they were written in SPDX's vocabulary
+# and our casing, without having seen what the publisher actually wrote. Measured
+# against the snapshot (receipts/sfir7-catalog-vocabulary.json, 37,702,060 rows,
+# 69 distinct licence values), two spellings do not exist in the catalogue at
+# all:
+#
+#   declared            catalogue       rows
+#   GPL-2.0-only        GPL-2.0         338,234
+#   GPL-3.0-only        GPL-3.0         653,544
+#   LGPL-2.1-only       LGPL-2.1         27,554
+#   LGPL-3.0-only       LGPL-3.0         57,403
+#
+# All four declared spellings matched ZERO rows. Left alone they would have
+# silently removed every copyleft repository from the universe and left a roster
+# of permissive licences -- smaller, entirely real, and wrong in a way no
+# downstream check could see. That is INC-V2-106's shape applied to a filter.
+#
+# The mapping below is decided on SEMANTIC grounds, not on which spelling yields
+# more rows:
+#
+#   * SPDX 3.0 split the ambiguous `GPL-2.0` into `-only` and `-or-later`. This
+#     catalogue predates that and writes the or-later variant with a `+` suffix
+#     (`GPL-3.0+`, `LGPL-2.1+`, `LGPL-3.0+` are all present). So in ITS
+#     vocabulary, the unsuffixed form denotes exactly what `-only` denotes, and
+#     the `+` forms are deliberately NOT mapped in.
+#   * The set of ten licence families is unchanged. Nothing was added.
+#
+# What is eligible did not change. Only the strings did, and only to the ones the
+# publisher wrote.
+LICENSE_SPELLINGS_IN_THIS_CATALOG: dict[str, tuple[str, ...]] = {
+    "GPL-2.0-only": ("GPL-2.0",),
+    "GPL-3.0-only": ("GPL-3.0",),
+    "LGPL-2.1-only": ("LGPL-2.1",),
+    "LGPL-3.0-only": ("LGPL-3.0",),
+}
+
+#: The `+` forms mean "or later" and are deliberately excluded, named here so
+#: that exclusion is a declared act rather than an omission nobody noticed.
+OR_LATER_SPELLINGS_DELIBERATELY_EXCLUDED = ("GPL-3.0+", "LGPL-2.1+", "LGPL-3.0+")
+
+#: Fields compared without regard to case, each for a reason that comes from the
+#: field's own domain rather than from our convenience.
+#:
+#: `spdx_license_id`: SPDX identifiers are matched case-insensitively by the SPDX
+#: specification itself, and this catalogue is internally inconsistent about it
+#: -- it carries both `MIT` (3,054,331 rows) and `mit` (8,347), `Apache-2.0` and
+#: `apache-2.0`, and eleven more such pairs. A case-sensitive match would drop
+#: the lowercase rows silently.
+#:
+#: `host`: the catalogue writes `GitHub`, the charter declared `github`, and
+#: these are three proper nouns in a closed set of three.
+#:
+#: The contrast with INC-V2-109 is deliberate and worth keeping in view. There,
+#: case-folding was WRONG, because MediaWiki titles are case-sensitive after the
+#: first character and `CD8+` and `Cd8+` are two different pages. Here it is
+#: right, because SPDX says so. The same operation, correct in one domain and a
+#: defect in the other -- decided by the data's own rules, never by what is
+#: convenient.
+CASE_INSENSITIVE_FIELDS = frozenset({"spdx_license_id", "host"})
+
+
+def catalog_spellings(declared_value: str) -> tuple[str, ...]:
+    """Every spelling in this catalogue that denotes the declared value."""
+    return LICENSE_SPELLINGS_IN_THIS_CATALOG.get(declared_value, (declared_value,))
+
 
 @dataclass(frozen=True, slots=True)
 class EligibilityPredicate:
@@ -420,15 +489,35 @@ def _as_date(value: Any, *, label: str) -> date:
         raise SFIR7Refused(f"{label} is not an ISO-8601 date: {value!r}") from exc
 
 
+def _comparable(value: Any, field: str) -> Any:
+    """Fold case only where the field's own domain says case carries no meaning."""
+    if field in CASE_INSENSITIVE_FIELDS and isinstance(value, str):
+        return value.casefold()
+    return value
+
+
+def _accepted_values(predicate: EligibilityPredicate) -> tuple[Any, ...]:
+    """Expand each declared value into the spellings this catalogue uses for it."""
+    expanded: list[Any] = []
+    for value in tuple(predicate.value):
+        if predicate.field == "spdx_license_id" and isinstance(value, str):
+            expanded.extend(catalog_spellings(value))
+        else:
+            expanded.append(value)
+    return tuple(_comparable(value, predicate.field) for value in expanded)
+
+
 def _evaluate(predicate: EligibilityPredicate, record: CatalogRecord) -> bool:
     observed = getattr(record, predicate.field)
     op = predicate.op
     if op == "eq":
-        return observed == predicate.value
+        return _comparable(observed, predicate.field) == _comparable(
+            predicate.value, predicate.field
+        )
     if op == "in":
-        return observed in tuple(predicate.value)
+        return _comparable(observed, predicate.field) in _accepted_values(predicate)
     if op == "not_in":
-        return observed not in tuple(predicate.value)
+        return _comparable(observed, predicate.field) not in _accepted_values(predicate)
     if op == "on_or_before":
         return _as_date(observed, label=predicate.field) <= _as_date(predicate.value, label="value")
     if op == "on_or_after":

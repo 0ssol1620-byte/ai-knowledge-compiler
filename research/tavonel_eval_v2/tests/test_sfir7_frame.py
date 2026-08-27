@@ -629,3 +629,108 @@ def test_the_budget_conflict_record_still_matches_the_live_constants():
     )
 
 
+
+
+# ---------------------------------------------------------------------------
+# Vocabulary reconciliation: the predicates were written blind, the catalogue
+# writes its own spellings, and a predicate that matches nothing is invisible.
+# ---------------------------------------------------------------------------
+
+
+def _catalog_vocabulary() -> dict:
+    import json
+
+    path = NS / "receipts" / "sfir7-catalog-vocabulary.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_every_declared_licence_matches_at_least_one_row_in_the_catalogue():
+    """The control that would have caught the original fault.
+
+    All four declared copyleft spellings matched ZERO rows: the charter says
+    `GPL-2.0-only`, this 2020 deposit predates the SPDX 3.0 split and writes
+    `GPL-2.0`. Left alone, the rule would have removed every copyleft repository
+    from the universe and produced a roster of permissive licences -- smaller,
+    entirely real, and wrong in a way nothing downstream could see.
+    """
+    tally = _catalog_vocabulary()["license_tally"]
+    folded = {name.casefold(): count for name, count in tally.items()}
+    declared = [
+        p.value for p in _rule().predicates if p.field == "spdx_license_id"
+    ][0]
+    unmatched = []
+    for value in declared:
+        spellings = frame.catalog_spellings(value)
+        if not any(folded.get(s.casefold(), 0) > 0 for s in spellings):
+            unmatched.append((value, spellings))
+    assert not unmatched, (
+        f"declared licence values that match nothing in the catalogue: {unmatched}. "
+        "A predicate that is false for every row silently narrows the universe."
+    )
+
+
+def test_the_declared_host_matches_the_catalogues_own_spelling():
+    """The charter says `github`; the catalogue writes `GitHub`."""
+    hosts = _catalog_vocabulary()["enumerated"]["Host Type"]
+    folded = {name.casefold() for name in hosts}
+    declared = [p.value for p in _rule().predicates if p.field == "host"][0]
+    assert declared.casefold() in folded, (
+        f"declared host {declared!r} is not in the catalogue's vocabulary {sorted(hosts)}"
+    )
+
+
+def test_the_or_later_spellings_are_excluded_and_named_as_excluded():
+    """`GPL-3.0+` means or-later and is a different licence choice from `-only`.
+
+    Excluding it is correct; excluding it by accident would not be. It is named
+    in the module so the exclusion is a declared act rather than an omission.
+    """
+    mapped = {s for spellings in frame.LICENSE_SPELLINGS_IN_THIS_CATALOG.values() for s in spellings}
+    for excluded in frame.OR_LATER_SPELLINGS_DELIBERATELY_EXCLUDED:
+        assert excluded not in mapped
+        # and it really is a value the catalogue uses, or the exclusion is theatre
+        assert excluded in _catalog_vocabulary()["license_tally"]
+
+
+def test_the_mapping_changes_spelling_only_and_never_adds_a_licence_family():
+    """What is eligible must not have moved. Ten families in, ten families out."""
+    declared = [p.value for p in _rule().predicates if p.field == "spdx_license_id"][0]
+    assert len(declared) == 10
+    for value in declared:
+        spellings = frame.catalog_spellings(value)
+        # each declared value maps to spellings of ITSELF, never to another licence
+        stem = value.replace("-only", "")
+        assert all(s == stem or s == value for s in spellings), (value, spellings)
+
+
+def test_case_folding_is_applied_to_licences_and_hosts_but_not_to_everything():
+    """SPDX matches case-insensitively and this catalogue is inconsistent about
+    it -- `MIT` and `mit` are both present. INC-V2-109 is the opposite case:
+    MediaWiki titles ARE case-sensitive and folding them merged two pages. The
+    domain decides, not convenience."""
+    assert frame.CASE_INSENSITIVE_FIELDS == {"spdx_license_id", "host"}
+    tally = _catalog_vocabulary()["license_tally"]
+    assert "MIT" in tally and "mit" in tally, "the inconsistency this exists for is gone"
+
+
+def test_a_lowercase_licence_row_is_eligible_under_the_reconciled_rule():
+    from dataclasses import replace as _replace
+
+    rule = _rule()
+    record = _record(1, spdx_license_id="mit", host="GitHub")
+    predicate = [p for p in rule.predicates if p.field == "spdx_license_id"][0]
+    assert frame._evaluate(predicate, record) is True
+    host_predicate = [p for p in rule.predicates if p.field == "host"][0]
+    assert frame._evaluate(host_predicate, record) is True
+    # and a licence outside the ten families is still refused
+    assert frame._evaluate(predicate, _replace(record, spdx_license_id="Other")) is False
+
+
+def test_a_copyleft_row_in_the_catalogues_spelling_is_eligible():
+    """The rows the original spelling would have dropped: 1,076,735 of them."""
+    predicate = [p for p in _rule().predicates if p.field == "spdx_license_id"][0]
+    for spelling in ("GPL-2.0", "GPL-3.0", "LGPL-2.1", "LGPL-3.0"):
+        assert frame._evaluate(predicate, _record(1, spdx_license_id=spelling)) is True
+    # or-later is a different choice and stays out
+    for spelling in ("GPL-3.0+", "LGPL-2.1+", "LGPL-3.0+"):
+        assert frame._evaluate(predicate, _record(1, spdx_license_id=spelling)) is False

@@ -310,6 +310,69 @@ control_policy:
   mutation_table_is_reported_with_the_controls: true
   a_control_that_survives_its_mutation_is_not_a_control: true
 
+# Measured after the snapshot landed, before any eligibility was applied and
+# before anything was ranked or selected. Recorded because a predicate that
+# matches nothing is the most invisible failure available here: the roster comes
+# out smaller, every row in it is real, and nothing downstream can tell.
+vocabulary_reconciliation:
+  state: APPLIED_TO_SPELLING_ONLY
+  measured_by: receipts/sfir7-catalog-vocabulary.json
+  catalogue_rows_measured: 37702060
+  distinct_licence_values_in_catalogue: 69
+  what_was_wrong:
+    declared_licence_values_matching_zero_rows:
+      - GPL-2.0-only
+      - GPL-3.0-only
+      - LGPL-2.1-only
+      - LGPL-3.0-only
+    declared_host_value_matching_zero_rows_case_sensitively: github
+    consequence_if_left_alone: >-
+      every copyleft repository would have been removed from the universe and the
+      roster would have been permissive licences only, plus zero rows on the host
+      predicate. Smaller, entirely real, and undetectable downstream.
+    the_class: >-
+      INC-V2-106 applied to a filter instead of a request. A filter that is
+      unconditionally false for a value silently narrows the universe to the
+      values that happen to spell correctly.
+  what_changed: spelling only
+  what_did_not_change:
+    - which licence families are eligible - still the same ten
+    - the host
+    - the date predicates
+    - N
+    - the ranking field, the tie-breaker, or the ordering
+  licence_spelling_map:
+    GPL-2.0-only: [GPL-2.0]
+    GPL-3.0-only: [GPL-3.0]
+    LGPL-2.1-only: [LGPL-2.1]
+    LGPL-3.0-only: [LGPL-3.0]
+  why_that_map_is_semantic_not_convenient: >-
+    SPDX 3.0 split the ambiguous GPL-2.0 into -only and -or-later. This deposit
+    predates that split and writes the or-later variant with a + suffix; GPL-3.0+,
+    LGPL-2.1+ and LGPL-3.0+ are all present in the catalogue. So in this
+    catalogue's own vocabulary the unsuffixed form denotes exactly what -only
+    denotes. The mapping follows the publisher's convention, not the row counts.
+  or_later_spellings_deliberately_excluded: [GPL-3.0+, LGPL-2.1+, LGPL-3.0+]
+  why_excluded: >-
+    or-later is a different licence choice from only. Excluding it is correct;
+    excluding it by accident would not be, so it is named rather than omitted.
+  case_insensitive_fields: [spdx_license_id, host]
+  why_case_folding_is_right_here_and_was_wrong_in_sfir6: >-
+    SPDX identifiers are matched case-insensitively by the SPDX specification, and
+    this catalogue is internally inconsistent about it - MIT appears 3,054,331
+    times and mit 8,347 more, with eleven further such pairs. Host is three proper
+    nouns in a closed set. INC-V2-109 is the opposite case: MediaWiki titles are
+    case-sensitive after the first character, and folding them merged two distinct
+    pages into one identity. The same operation is correct in one domain and a
+    defect in the other, and the data's own rules decide which - never
+    convenience.
+  disclosure: >-
+    the licence row counts were visible in the vocabulary receipt before the
+    spellings were reconciled. The mapping is nonetheless forced by the two
+    semantic facts above and by nothing else, and eligibility also depends on
+    host, dates and the ranking that follows, none of which this touched. The
+    capacity outcome lies downstream of a census that has not run.
+
 design_freeze_state:
   charter_written: true
   frame_rule_implemented: true
