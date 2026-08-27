@@ -186,3 +186,41 @@ def test_the_seal_opens_no_payload_and_spends_no_corpus(tmp_path: Path):
     body = sealer.build(_census(tmp_path, candidates=100))
     assert body["payload_opened"] is False
     assert body["corpus_spent"] is False
+
+
+def test_a_host_rate_limit_exclusion_is_its_own_kind(tmp_path: Path):
+    """Our cap firing and GitHub's firing are different findings. The first is a
+    budget we chose; the second is one imposed on us, and SFIR7 measured that
+    the host counts requests our counter does not (INC-V2-119).
+    """
+    body = json.loads(_census(tmp_path, candidates=200).read_text(encoding="utf-8"))
+    body["families"]["git_docs"]["root_dispositions"][:5] = [
+        {
+            "discovery_root_id": f"git:o{i}/n{i}",
+            "state": "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION",
+            "reason": "EXTERNAL_RATE_LIMIT_EXHAUSTED",
+        }
+        for i in range(5)
+    ]
+    path = tmp_path / "host.json"
+    path.write_text(json.dumps(body), encoding="utf-8")
+    kinds = sealer.build(path)["why_a_shortfall_would_be_which_kind"]
+    assert kinds["frame_cut_by_the_hosts_rate_limit"]["roots_excluded"] == 5
+    assert kinds["frame_cut_by_an_inherited_bound"]["roots_excluded"] == 0
+    assert kinds["frame_cut_by_the_hosts_rate_limit"]["the_fail_safe_was_not_widened"] is True
+
+
+def test_the_two_exclusion_kinds_are_counted_separately(tmp_path: Path):
+    body = json.loads(_census(tmp_path, candidates=200, bound_excluded=4).read_text("utf-8"))
+    body["families"]["git_docs"]["root_dispositions"].append(
+        {
+            "discovery_root_id": "git:x/y",
+            "state": "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION",
+            "reason": "EXTERNAL_RATE_LIMIT_EXHAUSTED",
+        }
+    )
+    path = tmp_path / "both.json"
+    path.write_text(json.dumps(body), encoding="utf-8")
+    kinds = sealer.build(path)["why_a_shortfall_would_be_which_kind"]
+    assert kinds["frame_cut_by_an_inherited_bound"]["roots_excluded"] == 4
+    assert kinds["frame_cut_by_the_hosts_rate_limit"]["roots_excluded"] == 1

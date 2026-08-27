@@ -94,6 +94,9 @@ def build(census_path: Path, *, generated_at: str | None = None) -> dict[str, An
     bound_excluded = sum(
         1 for row in dispositions if row.get("reason") == "GLOBAL_GIT_REQUEST_BOUND"
     )
+    host_excluded = sum(
+        1 for row in dispositions if row.get("reason") == "EXTERNAL_RATE_LIMIT_EXHAUSTED"
+    )
     per_root = _per_root_counts(candidates)
     cap = int(sources.SOURCE_POOLS[FAMILY]["max_candidates_per_repository"])
     capped = sorted(name for name, value in per_root.items() if value >= cap)
@@ -152,6 +155,18 @@ def build(census_path: Path, *, generated_at: str | None = None) -> dict[str, An
                     "roots can only lower C, never raise it, so a criterion MET despite "
                     "them is sound and a shortfall is partly an accounting event."
                 ),
+            },
+            "frame_cut_by_the_hosts_rate_limit": {
+                "roots_excluded": host_excluded,
+                "registered_in_advance_as": "INC-V2-119",
+                "means": (
+                    "roots GitHub declined to serve, having asked for a wait longer than "
+                    "SFIR4's frozen fail-safe permits. Distinct from our own cap firing: "
+                    "that is a budget we chose, this is one imposed on us, and SFIR7 "
+                    "measured that the host counts requests our counter does not, so ours "
+                    "cannot be relied on to fire first."
+                ),
+                "the_fail_safe_was_not_widened": True,
             },
             "roots_that_hit_the_per_root_cap": {
                 "cap": cap,
@@ -246,6 +261,9 @@ def main(argv: list[str] | None = None) -> int:
                 "root_states": body["family"]["root_states"],
                 "bound_excluded": body["why_a_shortfall_would_be_which_kind"][
                     "frame_cut_by_an_inherited_bound"
+                ]["roots_excluded"],
+                "host_excluded": body["why_a_shortfall_would_be_which_kind"][
+                    "frame_cut_by_the_hosts_rate_limit"
                 ]["roots_excluded"],
                 "roots_at_cap": body["why_a_shortfall_would_be_which_kind"][
                     "roots_that_hit_the_per_root_cap"

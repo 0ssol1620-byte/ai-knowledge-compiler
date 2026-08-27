@@ -10157,3 +10157,75 @@ of tree shape, not of how many documents carry a usable revision pair, so nothin
 here anticipates the capacity result. The next run starts on a fresh window,
 visits the same fifty frozen roots in the same frozen order, and records whatever
 the inherited cap leaves.
+
+## INC-V2-119
+
+**GitHub counts requests that our counter does not, so our own cap cannot be
+relied on to fire before theirs -- and when theirs fires, the census died
+instead of recording it.**
+
+2026-08-27, third live run, on a window verified fresh twice ten seconds apart:
+5,000 remaining, 0 used, 3,599 seconds to the next reset. It refused with the
+same message as the second run:
+
+    {"state": "REFUSED", "why": "git retry wait exceeds frozen fail-safe bound"}
+
+Afterwards GitHub reported `remaining 0, used 5000`. So the run began with the
+whole hour available, spent all of it, and stopped -- with SFIR4's own global cap
+of 4,800 never having fired.
+
+**Our counter and theirs disagree.** `_global_git_request_count` increments once
+per `fetch` inside `_git`, and 4,800 is checked against it before every request,
+so by our arithmetic the census could not have exceeded 4,800. GitHub charged
+5,000. Roughly two hundred requests exist that we make and do not count. The
+likeliest cause is redirect following -- a repository renamed since the January
+2020 deposit answers 301 and `urllib` follows it, which is two requests to
+GitHub and one to us -- and SFIR7's roster is six years old, so renames are
+expected rather than exotic. **That explanation is not established.** What is
+established is the disagreement and its size.
+
+**The consequence was total rather than proportional.** The two ceilings sit 200
+apart:
+
+    SFIR4 MAX_GIT_API_REQUESTS_GLOBAL   4,800   ours
+    GitHub authenticated primary        5,000   theirs
+
+Ours firing first trims the census and records the trim. Theirs firing first
+asked for a 38-minute wait, which SFIR4's frozen fail-safe forbids, and the whole
+census was abandoned -- three roots' work and forty-seven roots' work discarded
+alike. A gap of 200 requests decided between a result and nothing.
+
+**The repair changes what the instrument RECORDS, not what it may wait for.** The
+fail-safe is untouched: 60 seconds per retry, 180 in total, read live, with a
+control asserting both. What changed is the decision that predicate drives. A
+wait outside the fail-safe now excludes the current root and every root after it
+as `EXCLUDED_INCOMPLETE_ROOT_DISPOSITION` with reason
+`EXTERNAL_RATE_LIMIT_EXHAUSTED`, and the loop stops without making another
+request -- asking again would spend requests to be told the same thing, against
+the very window that has to reset before anything can run again.
+
+**The two exclusion kinds are counted separately and must stay that way.**
+`GLOBAL_GIT_REQUEST_BOUND` is a budget this programme chose two studies ago
+firing as designed. `EXTERNAL_RATE_LIMIT_EXHAUSTED` is a budget imposed from
+outside, which we have now measured we cannot preempt. Merging them would erase
+the only evidence of which one actually binds, and that is precisely the open
+question INC-V2-115 raised. The census carries a `which_budget_actually_bound`
+summary for the same reason.
+
+**Widening the fail-safe would have produced a census, and is refused.** An hour
+of waiting per retry would have let all three failed runs finish. That bound
+exists so a census cannot idle indefinitely, and stretching it to absorb an
+operational inconvenience is loosening a safety limit so a run can succeed.
+
+**Where this leaves N.** Three live attempts have now failed, and the third
+failed on a full hour of quota with no measurement produced. Fifty roots at
+SFIR4's traversal cost more than one window provides, from a host that charges us
+more than we charge ourselves. This is the third independent confirmation of
+INC-V2-115 and the second by measurement. Under the founder's own formula with
+the binding term, N is 20. **N remains 50 and remains a founder ruling.** The
+repair here makes a trimmed census recordable at N = 50; it does not make fifty
+roots fit, and no repair inside this study's remit can.
+
+**Still nothing observed about capacity.** No candidate count, no per-root count,
+no disposition has ever been written. Request volume is a function of tree shape,
+not of how many documents carry a usable revision pair.

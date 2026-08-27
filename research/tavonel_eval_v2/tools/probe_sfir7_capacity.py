@@ -144,6 +144,49 @@ def require_well_formed_response(
     return disposition, items
 
 
+def _wait_is_within_the_fail_safe(delay: Any, already_waited: int) -> bool:
+    """SFIR4's frozen retry fail-safe, unchanged and read live.
+
+    Not widened, and not going to be. The point of this predicate is that the
+    decision it drives is now `exclude the remaining roots and report it` rather
+    than `abort the census`, which is a change to what the instrument RECORDS and
+    not to what it is permitted to wait for.
+    """
+    return (
+        isinstance(delay, int)
+        and not isinstance(delay, bool)
+        and delay >= 1
+        and delay <= sources.MAX_RATE_LIMIT_WAIT_SECONDS
+        and already_waited + delay <= sources.MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS
+    )
+
+
+def external_limit_disposition(expected: str, repository: str, delay: Any) -> dict[str, Any]:
+    """A root the HOST's budget stopped, as distinct from one ours stopped.
+
+    Both are exclusions and neither is a zero-candidate root, but they are not
+    the same event and a census that merged them would lose the only evidence of
+    which budget actually binds. `GLOBAL_GIT_REQUEST_BOUND` is SFIR4's own cap
+    firing as designed; `EXTERNAL_RATE_LIMIT_EXHAUSTED` is GitHub refusing to
+    answer, which SFIR7 discovered our cap cannot reliably preempt because the
+    host counts requests we do not (INC-V2-119).
+    """
+    return {
+        "discovery_root_id": expected,
+        "state": "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION",
+        "reason": "EXTERNAL_RATE_LIMIT_EXHAUSTED",
+        "traversal_proof": {
+            "algorithm": "IMMUTABLE_NONRECURSIVE_TREE_BFS",
+            "api_requests": 0,
+            "host_requested_wait_seconds": delay if isinstance(delay, int) else None,
+            "frozen_fail_safe_seconds": sources.MAX_RATE_LIMIT_WAIT_SECONDS,
+            "frozen_total_fail_safe_seconds": sources.MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS,
+        },
+        "snapshot_ref": f"github:{repository}:not-reached",
+        "response_refs": [],
+    }
+
+
 def bound_excluded_disposition(
     expected: str, repository: str, transport: Any
 ) -> dict[str, Any]:
@@ -185,6 +228,7 @@ def build_census_body(
     transport_retries: int,
     total_wait_seconds: int,
     bound_excluded: int,
+    externally_excluded: int,
     started: float,
     headroom: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -219,7 +263,7 @@ def build_census_body(
                     "transport_retries": transport_retries,
                     "retries_total": retries,
                     "rate_limit_wait_seconds": total_wait_seconds,
-                    "cap_reached": bound_excluded > 0,
+                    "cap_reached": bound_excluded > 0 or externally_excluded > 0,
                 },
                 "candidates": sorted(candidates.values(), key=lambda row: row["lineage_id"]),
             }
@@ -234,6 +278,13 @@ def build_census_body(
         },
         "bound_exclusions": {
             "roots_excluded_by_the_global_git_bound": bound_excluded,
+            "roots_excluded_by_the_host_rate_limit": externally_excluded,
+            "which_budget_actually_bound": (
+                "ours" if bound_excluded and not externally_excluded
+                else "the host's" if externally_excluded and not bound_excluded
+                else "both" if bound_excluded and externally_excluded
+                else "neither"
+            ),
             "bound": sources.MAX_GIT_API_REQUESTS_GLOBAL,
             "registered_in_advance_as": "INC-V2-115",
             "what_a_bound_exclusion_is_not": (
@@ -290,6 +341,7 @@ def preflight_receipt_path(destination: Path) -> None:
         transport_retries=0,
         total_wait_seconds=0,
         bound_excluded=0,
+        externally_excluded=0,
         started=time.monotonic(),
     )
     protocol._assert_metadata_only(body)
@@ -387,6 +439,7 @@ def census(
     transport_retries = 0
     total_wait_seconds = 0
     bound_excluded = 0
+    externally_excluded = 0
     started = time.monotonic()
 
     for index, repository in enumerate(declared):
@@ -425,13 +478,20 @@ def census(
                         else "git rate-limit retry budget exhausted"
                     )
                 delay = response.get("retry_after_seconds")
-                if (
-                    not isinstance(delay, int)
-                    or delay < 1
-                    or delay > sources.MAX_RATE_LIMIT_WAIT_SECONDS
-                    or total_wait_seconds + delay > sources.MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS
-                ):
-                    raise SFIR7CensusRefused("git retry wait exceeds frozen fail-safe bound")
+                if not _wait_is_within_the_fail_safe(delay, total_wait_seconds):
+                    #: The host's own budget is exhausted and it wants a wait the
+                    #: frozen fail-safe forbids. Every root from here on is
+                    #: excluded, and no further request is made for any of them:
+                    #: asking again would spend requests to be told the same
+                    #: thing (INC-V2-119).
+                    dispositions.extend(
+                        external_limit_disposition(
+                            sources.discovery_root_id(FAMILY, name), name, delay
+                        )
+                        for name in declared[index:]
+                    )
+                    externally_excluded = len(declared) - index
+                    break
                 time.sleep(delay)
                 total_wait_seconds += delay
                 continue
@@ -474,6 +534,8 @@ def census(
             snapshots.append(snapshot)
             response_refs.extend(refs)
             break
+        if externally_excluded:
+            break
 
     if len(candidates) > pool["max_total_candidates"]:
         raise SFIR7CensusRefused("git candidate cap exceeded")
@@ -489,6 +551,7 @@ def census(
         transport_retries=transport_retries,
         total_wait_seconds=total_wait_seconds,
         bound_excluded=bound_excluded,
+        externally_excluded=externally_excluded,
         started=started,
         headroom=headroom,
     )

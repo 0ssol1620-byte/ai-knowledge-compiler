@@ -550,7 +550,93 @@ def test_the_headroom_reading_costs_no_quota_and_is_recorded(monkeypatch):
         transport_retries=0,
         total_wait_seconds=0,
         bound_excluded=0,
+        externally_excluded=0,
         started=0.0,
         headroom=observed,
     )
     assert body["frame"]["rate_limit_headroom_at_start"]["remaining"] == 4999
+
+
+# --- the host's budget, as distinct from ours (INC-V2-119) -------------------
+
+
+def test_the_frozen_fail_safe_accepts_a_short_wait_and_refuses_a_long_one():
+    """Unchanged, read live, and driving a different decision than before."""
+    assert probe7._wait_is_within_the_fail_safe(30, 0) is True
+    assert probe7._wait_is_within_the_fail_safe(60, 0) is True
+    assert probe7._wait_is_within_the_fail_safe(61, 0) is False
+    assert probe7._wait_is_within_the_fail_safe(2280, 0) is False
+
+
+def test_the_cumulative_fail_safe_still_binds():
+    """Three sixty-second waits are allowed; a fourth is not."""
+    assert probe7._wait_is_within_the_fail_safe(60, 120) is True
+    assert probe7._wait_is_within_the_fail_safe(60, 180) is False
+
+
+def test_a_missing_or_nonsense_wait_is_not_within_the_fail_safe():
+    for value in (None, "60", 0, -1, True):
+        assert probe7._wait_is_within_the_fail_safe(value, 0) is False
+
+
+def test_a_host_limited_root_is_excluded_rather_than_aborting_the_census():
+    """The change INC-V2-119 makes, and the whole of it.
+
+    Before, GitHub asking for a 38-minute wait raised and the census produced
+    nothing at all. Now the remaining roots are excluded and whatever completed
+    is recorded. The fail-safe is untouched: no wait is ever taken.
+    """
+    disposition = probe7.external_limit_disposition("git:o/n", "o/n", 2280)
+    assert disposition["state"] == "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION"
+    assert disposition["reason"] == "EXTERNAL_RATE_LIMIT_EXHAUSTED"
+    assert disposition["traversal_proof"]["host_requested_wait_seconds"] == 2280
+    assert disposition["traversal_proof"]["frozen_fail_safe_seconds"] == 60
+
+
+def test_the_two_kinds_of_exclusion_are_not_merged():
+    """Ours firing and the host's firing are different events. A census that
+    merged them would lose the only evidence of which budget actually binds --
+    which is the open question INC-V2-115 and INC-V2-119 turn on.
+    """
+    ours = probe7.bound_excluded_disposition("git:o/n", "o/n", _Recorder({}))
+    theirs = probe7.external_limit_disposition("git:o/n", "o/n", 2280)
+    assert ours["reason"] != theirs["reason"]
+    assert ours["reason"] == "GLOBAL_GIT_REQUEST_BOUND"
+    assert theirs["reason"] == "EXTERNAL_RATE_LIMIT_EXHAUSTED"
+
+
+def test_a_host_limited_root_invents_no_evidence():
+    disposition = probe7.external_limit_disposition("git:o/n", "o/n", 2280)
+    assert disposition["response_refs"] == []
+    assert disposition["snapshot_ref"].endswith(":not-reached")
+    assert disposition["traversal_proof"]["api_requests"] == 0
+
+
+def test_the_census_reports_which_budget_bound_it():
+    """A reader must be able to tell a census our cap trimmed from one the host
+    refused to serve, without reading dispositions one by one.
+    """
+    def body(bound, external):
+        return probe7.build_census_body(
+            transport=type("E", (), {"ledger": None, "identity_attestation": lambda s: {}})(),
+            declared=("a/b",), candidates={}, dispositions=[], snapshots=[],
+            response_refs=[], retries=0, transport_retries=0, total_wait_seconds=0,
+            bound_excluded=bound, externally_excluded=external, started=0.0,
+        )["bound_exclusions"]
+
+    assert body(5, 0)["which_budget_actually_bound"] == "ours"
+    assert body(0, 5)["which_budget_actually_bound"] == "the host's"
+    assert body(3, 5)["which_budget_actually_bound"] == "both"
+    assert body(0, 0)["which_budget_actually_bound"] == "neither"
+
+
+def test_the_census_stops_asking_once_the_host_has_refused():
+    """Continuing to request roots after the host says stop would spend requests
+    to be told the same thing, and every one of them counts against the window
+    that has to reset before anything can run again.
+    """
+    import inspect
+
+    source = inspect.getsource(probe7.census)
+    assert "for name in declared[index:]" in source
+    assert "if externally_excluded:\n            break" in source
