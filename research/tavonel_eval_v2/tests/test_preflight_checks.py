@@ -19,6 +19,7 @@ the assertion, do not delete the test.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import shutil
@@ -503,7 +504,7 @@ def test_sfi2_forensic_passes_against_the_real_receipt_and_spent_set():
 # --- INC-V2-097: a mutable pointer must name bytes git can return -----------
 
 
-def _repo(tmp_path, *, target_on_disk=True, target_committed=True):
+def _repo(tmp_path, *, target_on_disk=True, target_committed=True, declared_sha=...):
     """A real one-commit git repository, because the check asks git a question
     and a monkeypatched answer would test the mock rather than the query."""
     root = tmp_path / "repo"
@@ -512,10 +513,13 @@ def _repo(tmp_path, *, target_on_disk=True, target_committed=True):
     target_rel = "receipts/fixture--20260101T000000Z-abc.json"
     target = root / target_rel
     target.write_text(json.dumps({"is_evidence": True}), encoding="utf-8")
-    (latest / "fixture.json").write_text(
-        json.dumps({"is_evidence": False, "points_to": target_rel}), encoding="utf-8"
-    )
-    run = lambda *a: subprocess.run(a, cwd=root, check=True, capture_output=True)  # noqa: E731
+    body = {"is_evidence": False, "points_to": target_rel}
+    if declared_sha is ...:
+        body["points_to_file_sha256"] = "sha256:" + hashlib.sha256(target.read_bytes()).hexdigest()
+    elif declared_sha is not None:
+        body["points_to_file_sha256"] = declared_sha
+    (latest / "fixture.json").write_text(json.dumps(body), encoding="utf-8")
+    run = lambda *a: subprocess.run(a, cwd=root, check=True, capture_output=True)  # noqa: E731,S603
     run("git", "init", "-q")
     run("git", "config", "user.email", "t@example.invalid")
     run("git", "config", "user.name", "t")
@@ -583,3 +587,36 @@ def test_pointer_recoverability_passes_against_the_real_receipts_tree():
     result = pf.receipt_pointer_targets_are_recoverable()
     assert result["verdict"] == pf.PASS, result
     assert result["pointers_checked"] > 100
+
+
+def test_pointer_recoverability_fails_when_the_target_is_not_the_pinned_bytes(tmp_path):
+    """Every pointer in this tree states its target's digest, and until this
+    existed nothing compared it. It matters because at least one reader follows
+    `points_to` WITHOUT checking it: `sources_sfi3.py` derives the fourteen SFI2
+    E5/E6 forensic lineages -- the cases that must not certify their own repair
+    -- by following a pointer of this kind at import time, guarding the pointer
+    being missing but not the pointer having moved."""
+    root, latest = _repo(tmp_path, declared_sha="sha256:" + "0" * 64)
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.FAIL
+    assert len(result["digest_mismatched"]) == 1
+    assert result["absent_from_disk"] == [] and result["absent_at_head"] == []
+
+
+def test_pointer_recoverability_passes_when_the_digest_matches(tmp_path):
+    """The paired positive -- the default fixture states the true digest, so a
+    check that rejected every pointer would fail here."""
+    root, latest = _repo(tmp_path)
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.PASS
+    assert result["digest_mismatched"] == []
+
+
+def test_a_pointer_that_states_no_digest_is_not_treated_as_mismatched(tmp_path):
+    """Absence of a claim is not a false claim. Older pointer schemas may carry
+    no digest, and inventing a failure for them would make the check fire on
+    files that never promised anything."""
+    root, latest = _repo(tmp_path, declared_sha=None)
+    result = pf.receipt_pointer_targets_are_recoverable(pointer_dir=latest, repo_root=root)
+    assert result["verdict"] == pf.PASS
+    assert result["digest_mismatched"] == []

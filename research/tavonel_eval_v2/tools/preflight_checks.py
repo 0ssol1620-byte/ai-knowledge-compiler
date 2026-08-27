@@ -49,6 +49,7 @@ suite (see the founder's routing note for this session).
 from __future__ import annotations
 
 import ast
+import hashlib
 import importlib.util
 import json
 import re
@@ -846,6 +847,7 @@ def receipt_pointer_targets_are_recoverable(
         }
 
     absent_from_disk: list[dict[str, str]] = []
+    digest_mismatched: list[dict[str, str]] = []
     absent_at_head: list[dict[str, str]] = []
     checked = 0
     for pointer in sorted(directory.glob("*.json")):
@@ -861,20 +863,43 @@ def receipt_pointer_targets_are_recoverable(
             continue
         checked += 1
         row = {"pointer": pointer.name, "points_to": target}
-        if not (root / target).is_file():
+        resolved = root / target
+        if not resolved.is_file():
             absent_from_disk.append(row)
         elif target not in committed:
             absent_at_head.append(row)
+        else:
+            # Every pointer in this tree states its target's digest. Until this
+            # ran, nothing compared it -- and at least one reader follows
+            # `points_to` without checking it: `sources_sfi3.py` derives the
+            # fourteen SFI2 E5/E6 forensic lineages, the cases that must NOT
+            # certify their own repair, by following this kind of pointer at
+            # import time. Its own docstring says "a forensic set that quietly
+            # shrinks re-admits a diagnostic case", and it guards the pointer
+            # being MISSING but not the pointer having MOVED.
+            #
+            # That file is pinned by frozen receipts and is not currently in
+            # frozen_drift, so editing it would newly break a frozen instrument
+            # and grow the preserved historical FAIL. The check therefore lives
+            # here, outside the frozen file, where it costs no drift and covers
+            # all 102 pointers rather than the one reader.
+            declared = body.get("points_to_file_sha256")
+            if isinstance(declared, str) and declared:
+                actual = "sha256:" + hashlib.sha256(resolved.read_bytes()).hexdigest()
+                if actual != declared:
+                    digest_mismatched.append({**row, "declared": declared, "actual": actual})
 
-    unrecoverable = absent_from_disk + absent_at_head
+    unrecoverable = absent_from_disk + absent_at_head + digest_mismatched
     return {
         "verdict": PASS if not unrecoverable else FAIL,
         "detail": (
             f"{checked} pointer(s) checked; "
             f"{len(absent_from_disk)} target(s) absent from disk, "
-            f"{len(absent_at_head)} present on disk but not committed at HEAD"
+            f"{len(absent_at_head)} present on disk but not committed at HEAD, "
+            f"{len(digest_mismatched)} not matching the digest the pointer states"
         ),
         "pointers_checked": checked,
         "absent_from_disk": absent_from_disk,
         "absent_at_head": absent_at_head,
+        "digest_mismatched": digest_mismatched,
     }

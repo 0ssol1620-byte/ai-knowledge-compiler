@@ -8542,3 +8542,74 @@ correction is determined by an exception hierarchy rather than by any outcome.
 
 **Authority:** the aborted run's traceback; the mutation table above; the
 frozen bounds the retry runs under.
+
+## INC-V2-099 - the forensic exclusion set follows a pointer nobody verifies
+
+**Class:** a mutable pointer read as authority, on a path that reaches the new
+SFIR4 chain. **Disposition:** GUARDED FROM OUTSIDE the frozen file; the frozen
+file deliberately untouched. **GPU seconds:** 0 - **Cost:** $0 -
+**IP gate:** CLOSED.
+
+Triaging the anti-blocker audit's 24 entries (14 FINDING, 10 ACCEPTED; the audit
+itself reports `ANTI_BLOCKER_AUDIT_PASS`, so none is a blocker) began with the
+assumption that all of them sit in spent studies and none reaches SFIR4. That
+assumption was wrong, and checking it was the point:
+
+    distinct files carrying a FINDING: 7
+    of those, inside the SFIR4 execution closure: 2
+        acquisition/sources_sfi3.py
+        tools/preflight_sfi3_roots.py
+
+### What `sources_sfi3.py` actually does
+
+At **import time** it derives `SFI2_E5E6_FORENSIC_LINEAGES` -- the fourteen
+lineages SFI2 used to confirm the selective stale escape, the cases that must
+NOT certify their own repair -- by reading
+`receipts/latest/sfi2-native-provenance.json`, following its `points_to`, and
+taking the confirmed ids from the receipt it names.
+
+It handles the pointer being **missing** (raises, with a good reason: "a
+forensic set that quietly shrinks re-admits a diagnostic case"). It does not
+handle the pointer having **moved**. The pointer states
+`points_to_file_sha256`; this reader never compares it. The digest is
+decorative at that call site.
+
+A repointed pointer would silently change which cases are excluded from a
+confirmatory cohort. That is the neighbourhood of the fourth stop condition, and
+it is reachable from the chain SFIR4 is about to run.
+
+### Why the fix is NOT in that file
+
+`sources_sfi3.py` is pinned by frozen receipts and is **not** currently among
+the 29 files in `frozen-instrument-integrity.json`'s `frozen_drift`. Editing it
+would newly break a frozen pin and grow the preserved historical FAIL from
+59/29/20. INC-V2-095 and the founder's standing instruction say preserve that
+measurement; nothing authorises enlarging it to make a repair convenient.
+
+So the guard went where it costs no drift: `preflight_checks.
+receipt_pointer_targets_are_recoverable` now also compares each pointer's stated
+`points_to_file_sha256` against the bytes it resolves to. That covers all 102
+pointers rather than the one reader, and it required no change to any frozen
+file.
+
+    102 pointers checked; 102 state a target digest; 0 mismatched
+
+Every pointer in this tree makes the claim, and until now nothing in the tree
+compared it.
+
+### What this does not fix
+
+The reader still does not verify. If someone repoints the pointer AND updates
+its digest field, `sources_sfi3.py` follows it and the gate agrees, because both
+are then self-consistent. Closing that needs the fourteen identities pinned
+independently of the pointer -- and the natural place to pin them is inside the
+frozen file, which is exactly where nothing may be edited. Recorded as a known
+limitation rather than dressed up as a repair.
+
+Three controls: a mismatched digest fails, a matching digest passes, and a
+pointer that states no digest is not treated as mismatched -- absence of a claim
+is not a false claim. Both mutations (never compare; treat no-claim as
+mismatch) turn it red.
+
+**Authority:** the closure-membership check above; `frozen_drift` not naming
+`sources_sfi3.py`; the 102-pointer digest scan.
