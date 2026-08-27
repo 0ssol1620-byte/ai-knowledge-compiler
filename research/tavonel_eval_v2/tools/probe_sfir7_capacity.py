@@ -46,10 +46,10 @@ for _root in (str(NS), str(NS / "tools"), str(NS / "acquisition")):
     if _root not in sys.path:
         sys.path.insert(0, _root)
 
-import evidence  # noqa: E402
 import live_cohort_guard  # noqa: E402
 import probe_sfir4_capacity as probe4  # noqa: E402
 import sfir4_protocol as protocol  # noqa: E402
+import sfir4_response_evidence as evidence  # noqa: E402
 import sfir7_roots as roots  # noqa: E402
 import sfir7_transport as t7  # noqa: E402
 from acquisition import sources_sfir4 as sources  # noqa: E402
@@ -172,6 +172,129 @@ def bound_excluded_disposition(
     }
 
 
+def build_census_body(
+    *,
+    transport: Any,
+    declared: tuple[str, ...],
+    candidates: dict[str, dict[str, Any]],
+    dispositions: list[dict[str, Any]],
+    snapshots: list[str],
+    response_refs: list[str],
+    retries: int,
+    transport_retries: int,
+    total_wait_seconds: int,
+    bound_excluded: int,
+    started: float,
+) -> dict[str, Any]:
+    """Assemble the census receipt.
+
+    Separated from the loop for one reason, and it is not tidiness. The first
+    live run of this census traversed every frozen root, spent the whole request
+    budget, and then died on the last statement -- `import evidence` had bound a
+    module of that name in `tools/` rather than `sfir4_response_evidence`, so
+    `evidence.ResponseLedger` did not exist. Every measurement was lost to a name
+    collision in code that had never once been executed, because `census` refuses
+    to run under a test harness and nothing else reached its tail (INC-V2-117).
+
+    Here it is reachable. `preflight_receipt_path` runs it end to end, against a
+    real destination, BEFORE the first request leaves the machine.
+    """
+    ledger = getattr(transport, "ledger", None)
+    return {
+        "schema": SCHEMA,
+        "protocol_id": PROTOCOL_ID,
+        "science_carried_from": protocol.PROTOCOL_ID,
+        "families": {
+            FAMILY: {
+                "authority": sources.FAMILY_AUTHORITIES[FAMILY],
+                "snapshot_refs": snapshots,
+                "response_refs": response_refs,
+                "root_dispositions": dispositions,
+                "pagination": {
+                    "roots_processed": len(declared),
+                    "exhausted": True,
+                    "rate_limit_retries": retries - transport_retries,
+                    "transport_retries": transport_retries,
+                    "retries_total": retries,
+                    "rate_limit_wait_seconds": total_wait_seconds,
+                    "cap_reached": bound_excluded > 0,
+                },
+                "candidates": sorted(candidates.values(), key=lambda row: row["lineage_id"]),
+            }
+        },
+        "frame": {
+            "roster_fingerprint": json.loads(
+                roots.FREEZE_PATH.read_text(encoding="utf-8")
+            )["roster_fingerprint"],
+            "roots_frozen": len(declared),
+            "inherited_bounds": roots.inherited_bounds(),
+        },
+        "bound_exclusions": {
+            "roots_excluded_by_the_global_git_bound": bound_excluded,
+            "bound": sources.MAX_GIT_API_REQUESTS_GLOBAL,
+            "registered_in_advance_as": "INC-V2-115",
+            "what_a_bound_exclusion_is_not": (
+                "a root with zero candidates. A budget exhausted and a tree that "
+                "held nothing are different observations, and a census that "
+                "conflated them would report a content finding for an "
+                "accounting event."
+            ),
+            "direction_of_bias": (
+                "an excluded root can only lower measured capacity, never raise it"
+            ),
+        },
+        "identity_attestation": transport.identity_attestation()
+        if hasattr(transport, "identity_attestation")
+        else None,
+        "wall_clock_seconds": round(time.monotonic() - started, 3),
+        "capacity_criterion_evaluated_here": False,
+        "payload_opened": False,
+        "gpu_seconds": 0,
+        "estimated_cost_usd": 0.0,
+        "response_evidence": ledger.proof()
+        if isinstance(ledger, evidence.ResponseLedger)
+        else evidence.ResponseLedger().proof(),
+    }
+
+
+def preflight_receipt_path(destination: Path) -> None:
+    """Write a receipt before spending anything, and refuse if it cannot be written.
+
+    The cheap step runs before the expensive one. An import that does not
+    resolve, a schema violation, a directory that does not exist or a disk that
+    is full all cost one temporary file here and a whole census budget if they
+    are found afterwards.
+
+    It uses the real assembly and the real writer against a real path -- a
+    preflight that exercised a stub would prove the stub works.
+    """
+    import tempfile
+
+    class _Empty:
+        ledger = None
+
+        def identity_attestation(self):
+            return {"roots_attested": 0, "roots_frozen": len(roots.declared_roots())}
+
+    body = build_census_body(
+        transport=_Empty(),
+        declared=roots.declared_roots(),
+        candidates={},
+        dispositions=[],
+        snapshots=[],
+        response_refs=[],
+        retries=0,
+        transport_retries=0,
+        total_wait_seconds=0,
+        bound_excluded=0,
+        started=time.monotonic(),
+    )
+    protocol._assert_metadata_only(body)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=destination.parent) as directory:
+        protocol.write_immutable(Path(directory) / destination.name, body)
+
+
 def census(
     root: Path,
     spent_ref: Mapping[str, Any],
@@ -181,6 +304,10 @@ def census(
     """Visit every frozen root in frozen order. Measure. Refuse nothing quietly."""
     if "pytest" in sys.modules or "unittest" in sys.modules:
         live_cohort_guard.refuse_under_test("probe_sfir7_capacity.census")
+
+    #: Cheap before expensive. The receipt path is proven writable before the
+    #: first request leaves the machine (INC-V2-117).
+    preflight_receipt_path(destination)
 
     spent = protocol.verify_spent(root, spent_ref)
     spent_ids = set(spent["container_ids"]) | set(spent["lineage_ids"]) | set(spent["alias_ids"])
@@ -286,62 +413,19 @@ def census(
     if len(candidates) > pool["max_total_candidates"]:
         raise SFIR7CensusRefused("git candidate cap exceeded")
 
-    ledger = getattr(transport, "ledger", None)
-    body = {
-        "schema": SCHEMA,
-        "protocol_id": PROTOCOL_ID,
-        "science_carried_from": protocol.PROTOCOL_ID,
-        "families": {
-            FAMILY: {
-                "authority": sources.FAMILY_AUTHORITIES[FAMILY],
-                "snapshot_refs": snapshots,
-                "response_refs": response_refs,
-                "root_dispositions": dispositions,
-                "pagination": {
-                    "roots_processed": len(declared),
-                    "exhausted": True,
-                    "rate_limit_retries": retries - transport_retries,
-                    "transport_retries": transport_retries,
-                    "retries_total": retries,
-                    "rate_limit_wait_seconds": total_wait_seconds,
-                    "cap_reached": bound_excluded > 0,
-                },
-                "candidates": sorted(candidates.values(), key=lambda row: row["lineage_id"]),
-            }
-        },
-        "frame": {
-            "roster_fingerprint": json.loads(
-                roots.FREEZE_PATH.read_text(encoding="utf-8")
-            )["roster_fingerprint"],
-            "roots_frozen": len(declared),
-            "inherited_bounds": roots.inherited_bounds(),
-        },
-        "bound_exclusions": {
-            "roots_excluded_by_the_global_git_bound": bound_excluded,
-            "bound": sources.MAX_GIT_API_REQUESTS_GLOBAL,
-            "registered_in_advance_as": "INC-V2-115",
-            "what_a_bound_exclusion_is_not": (
-                "a root with zero candidates. A budget exhausted and a tree that "
-                "held nothing are different observations, and a census that "
-                "conflated them would report a content finding for an "
-                "accounting event."
-            ),
-            "direction_of_bias": (
-                "an excluded root can only lower measured capacity, never raise it"
-            ),
-        },
-        "identity_attestation": transport.identity_attestation()
-        if hasattr(transport, "identity_attestation")
-        else None,
-        "wall_clock_seconds": round(time.monotonic() - started, 3),
-        "capacity_criterion_evaluated_here": False,
-        "payload_opened": False,
-        "gpu_seconds": 0,
-        "estimated_cost_usd": 0.0,
-        "response_evidence": ledger.proof()
-        if isinstance(ledger, evidence.ResponseLedger)
-        else evidence.ResponseLedger().proof(),
-    }
+    body = build_census_body(
+        transport=transport,
+        declared=declared,
+        candidates=candidates,
+        dispositions=dispositions,
+        snapshots=snapshots,
+        response_refs=response_refs,
+        retries=retries,
+        transport_retries=transport_retries,
+        total_wait_seconds=total_wait_seconds,
+        bound_excluded=bound_excluded,
+        started=started,
+    )
     protocol._assert_metadata_only(body)
     return protocol.write_immutable(destination, body)
 

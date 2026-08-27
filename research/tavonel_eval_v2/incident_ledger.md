@@ -10034,3 +10034,70 @@ reproducible from the pinned digest by anyone who downloads the same deposit.
 The freeze chain binds eight modules, three receipts and the charter, plus the
 member digest recomputed from the file on disk. No census has started, no corpus
 is spent, no payload has been opened.
+
+## INC-V2-117
+
+**The census spent its whole budget and then died writing the receipt, because
+the receipt path had never once been executed.**
+
+2026-08-27. SFIR7's first live census traversed the frozen roots, and on the last
+statement of the function raised:
+
+    AttributeError: module 'evidence' has no attribute 'ResponseLedger'
+
+`import evidence` bound `tools/evidence.py`. The module wanted was
+`sfir4_response_evidence`, which is what `probe_sfir4_capacity` imports *under
+the alias* `evidence`, and the alias is what made the mistake invisible to a
+reader copying the surrounding idiom. Two modules, one name, and the wrong one
+had no ledger class.
+
+No census was written. Nothing was sealed. No corpus was marked spent. The
+identity authority is untouched. What was lost is a run.
+
+**Why no test caught it.** `census` calls `live_cohort_guard.refuse_under_test`
+at its head, so nothing in the suite can reach its body, and the receipt assembly
+sat at its tail behind fifty live HTTP traversals. Twenty-one controls covered
+the loop's pieces. Zero executed the statement that failed. This is INC-V2-113's
+class -- a guard, or here a whole step, whose call site no control can reach --
+but with the cost inverted: INC-V2-113 cost a mutation-testing round, this cost a
+census.
+
+**The repair is an ordering rule, not a fixed import.** Fixing the import alone
+would leave the next unexecuted statement in exactly the same position.
+`preflight_receipt_path` now assembles the real body with the real writer against
+a real destination *before the first request leaves the machine*, into a
+temporary directory it then removes. An unresolvable import, a schema violation,
+a missing directory or a full disk now costs one temporary file instead of a
+whole budget.
+
+**Cheap before expensive.** Whatever the expensive, irreversible step is, every
+step that runs *after* it and can fail should be run once *before* it against
+throwaway inputs. That is the rule taken forward, and it is more general than
+this incident.
+
+**The third occurrence in one session of the same untested-call-site pattern.**
+Deleting `preflight_receipt_path(destination)` from `census` left all twenty-seven
+controls green -- the repair for INC-V2-117 acquired INC-V2-113's defect
+immediately. So the control added for it is an *ordering* control by source
+inspection: it parses `census`, finds the preflight call and the first transport
+call, and requires the first to precede the second. Static inspection is weaker
+than execution and it is honest about that; deleting the call, or moving it after
+the loop, both go red. Where a function refuses to run under a harness, its call
+ordering is checkable and its call presence is checkable, and that is better than
+prose.
+
+**What was observed of the failed run, and what it does not license.** The
+GitHub rate-limit endpoint reported 497 requests used in the current hourly
+window. That figure was read to decide whether re-running immediately would
+exhaust the quota -- an operational question -- and it is not a measurement of
+anything: hourly windows reset, the run spanned one, and the number covers part
+of the run only. No candidate count, no per-root count and no disposition was
+observed, because none was ever written. SFIR7's capacity remains unknown as this
+is recorded.
+
+**Re-running is not re-spending.** No receipt exists, no lineage was sealed and
+the spent-identity authority is unchanged, so the second run measures a corpus
+nothing has consumed. The precedent is SFIR6, which re-measured after repairing
+INC-V2-106 under an unchanged frame. The frame here is likewise unchanged: same
+fifty roots, same fingerprint, same N, same threshold. Only the instrument moved,
+and it moved before any result existed to move it towards.

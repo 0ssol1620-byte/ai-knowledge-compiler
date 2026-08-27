@@ -292,3 +292,153 @@ def test_an_incomplete_root_with_no_candidates_is_accepted():
 def test_items_that_are_not_a_list_are_refused():
     with pytest.raises(probe7.SFIR7CensusRefused, match="incomplete root emitted"):
         probe7.require_well_formed_response(_response(items={"a": 1}), EXPECTED)
+
+
+# --- cheap before expensive (INC-V2-117) -------------------------------------
+
+
+def test_the_receipt_can_be_assembled_and_written_before_anything_is_spent(tmp_path):
+    """The control the first live run did not have.
+
+    That run traversed every frozen root, spent the whole request budget, and
+    died on the last statement of the census: `import evidence` had bound a
+    module of that name in `tools/` rather than `sfir4_response_evidence`, so
+    `evidence.ResponseLedger` did not exist. The measurements were lost to a
+    name collision in code nothing had ever executed.
+    """
+    probe7.preflight_receipt_path(tmp_path / "census.json")
+
+
+def test_the_preflight_uses_the_real_assembly_and_the_real_writer(tmp_path, monkeypatch):
+    """A preflight that exercised a stub would prove the stub works."""
+    calls = []
+    original = probe7.build_census_body
+    monkeypatch.setattr(
+        probe7, "build_census_body", lambda **kw: calls.append(kw) or original(**kw)
+    )
+    probe7.preflight_receipt_path(tmp_path / "census.json")
+    assert len(calls) == 1
+    assert calls[0]["declared"] == roots.declared_roots()
+
+
+def test_a_receipt_path_that_cannot_be_written_is_found_before_any_request(tmp_path):
+    """The whole point: a failure here costs one temporary file, and the same
+    failure after the loop costs an entire census budget.
+    """
+    blocked = tmp_path / "blocked"
+    blocked.write_text("not a directory", encoding="utf-8")
+    with pytest.raises(OSError):
+        probe7.preflight_receipt_path(blocked / "census.json")
+
+
+def test_the_preflight_leaves_no_receipt_behind(tmp_path):
+    """A census receipt written by a preflight would be a receipt for a run that
+    never happened -- worse than no receipt at all.
+    """
+    destination = tmp_path / "census.json"
+    probe7.preflight_receipt_path(destination)
+    assert not destination.exists()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_the_response_evidence_module_is_the_one_that_has_a_ledger():
+    """The name collision itself, asserted directly. `tools/evidence.py` exists
+    and is a different module; binding it here is what cost the first run.
+    """
+    assert probe7.evidence.__name__ == "sfir4_response_evidence"
+    assert hasattr(probe7.evidence, "ResponseLedger")
+    import evidence as unrelated
+
+    assert not hasattr(unrelated, "ResponseLedger")
+    assert probe7.evidence is not unrelated
+
+
+def test_the_census_and_the_probe_it_carries_use_the_same_ledger_type():
+    """A census whose ledger type differs from the traversal's would silently
+    write an empty proof for a run full of observations.
+    """
+    assert probe7.evidence.ResponseLedger is probe4.evidence.ResponseLedger
+
+
+def test_the_preflight_writes_through_the_real_writer(monkeypatch, tmp_path):
+    """A preflight that assembles a body and never writes it proves half of what
+    is needed: the last thing that failed in the live run was the write path.
+    """
+    written = []
+    monkeypatch.setattr(
+        probe7.protocol, "write_immutable", lambda path, body: written.append((path, body)) or path
+    )
+    probe7.preflight_receipt_path(tmp_path / "census.json")
+    assert len(written) == 1
+    assert written[0][1]["schema"] == probe7.SCHEMA
+
+
+def test_the_preflight_applies_the_metadata_only_assertion(monkeypatch, tmp_path):
+    """The receipt must contain no payload. Checking that in the preflight is
+    what makes the check part of the cheap step rather than the expensive one.
+    """
+    seen = []
+    original = probe7.protocol._assert_metadata_only
+    monkeypatch.setattr(
+        probe7.protocol,
+        "_assert_metadata_only",
+        lambda body, path="": seen.append(body) or original(body, path) if path else
+        (seen.append(body) or original(body)),
+    )
+    probe7.preflight_receipt_path(tmp_path / "census.json")
+    assert seen, "the preflight did not assert metadata-only"
+
+
+def test_the_census_runs_its_preflight_before_its_first_transport_call():
+    """An ordering control, and deliberately a static one.
+
+    `census` refuses to run under a test harness, so the position of a call
+    inside it cannot be driven. Three times this session a guard's CALL SITE went
+    untested while the guard itself was covered, and each time the deletion
+    stayed green (INC-V2-113, twice in the census loop, and now on the repair for
+    INC-V2-117 itself). Source inspection is weaker than execution and it is not
+    nothing: deleting the call, or moving it after the loop, goes red.
+    """
+    import ast
+    import inspect
+
+    tree = ast.parse(inspect.getsource(probe7.census))
+    calls = [
+        (node.lineno, node.func.id)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    ]
+    preflight = [line for line, name in calls if name == "preflight_receipt_path"]
+    transport = [
+        node.lineno
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "transport"
+    ]
+    assert preflight, "census does not run the receipt preflight at all"
+    assert transport, "census never calls the transport, so this control is vacuous"
+    assert min(preflight) < min(transport), (
+        "the receipt preflight runs after the first request. Its whole purpose is "
+        "to fail before anything is spent."
+    )
+
+
+def test_the_ordering_control_would_notice_a_moved_call():
+    """The control above compares two line numbers; if either list were empty it
+    would pass by accident. Both are asserted non-empty, and this checks that the
+    assertion is reachable rather than decorative.
+    """
+    import ast
+    import inspect
+
+    source = inspect.getsource(probe7.census)
+    assert "preflight_receipt_path(destination)" in source
+    assert source.index("preflight_receipt_path(destination)") < source.index("transport(FAMILY")
+    tree = ast.parse(source)
+    assert any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "transport"
+        for node in ast.walk(tree)
+    )
