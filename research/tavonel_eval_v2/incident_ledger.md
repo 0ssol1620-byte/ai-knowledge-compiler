@@ -10101,3 +10101,59 @@ nothing has consumed. The precedent is SFIR6, which re-measured after repairing
 INC-V2-106 under an unchanged frame. The frame here is likewise unchanged: same
 fifty roots, same fingerprint, same N, same threshold. Only the instrument moved,
 and it moved before any result existed to move it towards.
+
+## INC-V2-118
+
+**Fifty roots do not fit inside one hour of GitHub's quota, and the wrong limit
+firing first destroys the census instead of trimming it.**
+
+2026-08-27, second live run. It refused:
+
+    {"state": "REFUSED", "why": "git retry wait exceeds frozen fail-safe bound"}
+
+GitHub reported 5,000 of 5,000 requests used, resetting in 1,053 seconds. SFIR4's
+frozen fail-safe permits a 60-second wait per retry and 180 seconds in total,
+which is a bound built for a brief secondary-limit backoff and not for waiting
+out an hourly window. The census stopped, correctly, and wrote nothing.
+
+**Two ceilings, and the order they fire in decides what the run produces.**
+
+    SFIR4 MAX_GIT_API_REQUESTS_GLOBAL   4,800   ours, frozen two studies ago
+    GitHub authenticated primary limit  5,000   theirs, per hour
+
+Ours firing first files the remaining roots as
+`EXCLUDED_INCOMPLETE_ROOT_DISPOSITION` with the bound that stopped them: a
+census, trimmed, with the trimming recorded. Theirs firing first asks for a wait
+the fail-safe forbids: no census at all. The difference between those two
+outcomes is 200 requests of headroom, and the run began on a window that already
+had roughly five hundred spent in it -- the residue of the run INC-V2-117 lost.
+
+**The repair is a precondition, not a wider fail-safe.** `require_rate_limit_headroom`
+refuses to begin unless GitHub reports at least `MAX_GIT_API_REQUESTS_GLOBAL`
+requests remaining, so ours is guaranteed to bite first. The check costs no
+quota -- `/rate_limit` is free -- and it runs beside the receipt preflight,
+before anything is spent. The observed headroom is written into the census,
+because a run that began on a partly-spent window is a different observation
+from one that began fresh.
+
+**Widening the fail-safe was available and is refused.** Raising the retry bound
+to an hour would have let the second run finish. That bound exists to stop a
+census idling indefinitely; stretching it to absorb an operational inconvenience
+would be loosening a safety limit so a run could succeed, which is the shape of
+the move this programme forbids by name. A control now asserts both numbers are
+unchanged.
+
+**What this measures, and what it does not.** The run reached roughly 4,500
+requests before the wall, so fifty roots at SFIR4's traversal cost more Git
+requests than one hourly window provides and land close to the 4,800 cap. That is
+an operational magnitude, and it is the second independent confirmation of
+INC-V2-115: the inherited Git budget was sized for twenty roots and N = 50 does
+not fit inside it. Under the founder's own formula with the tighter term, N is
+20.
+
+**N is still unchanged, and still not mine to change.** No candidate count, no
+per-root count and no disposition has been observed. Request volume is a function
+of tree shape, not of how many documents carry a usable revision pair, so nothing
+here anticipates the capacity result. The next run starts on a fresh window,
+visits the same fifty frozen roots in the same frozen order, and records whatever
+the inherited cap leaves.

@@ -442,3 +442,115 @@ def test_the_ordering_control_would_notice_a_moved_call():
         and node.func.id == "transport"
         for node in ast.walk(tree)
     )
+
+
+# --- the operational precondition (INC-V2-118) -------------------------------
+
+
+def _headroom(remaining: int, reset_epoch: int = 1_000_000) -> dict:
+    return {
+        "limit": 5000,
+        "remaining": remaining,
+        "used": 5000 - remaining,
+        "reset_epoch": reset_epoch,
+        "authenticated": True,
+    }
+
+
+def test_a_fresh_window_lets_the_census_start():
+    """So the refusal below is not the only answer this can give."""
+    probe7.require_rate_limit_headroom(_headroom(5000), now_epoch=0)
+    probe7.require_rate_limit_headroom(
+        _headroom(sources.MAX_GIT_API_REQUESTS_GLOBAL), now_epoch=0
+    )
+
+
+def test_a_partly_spent_window_refuses_before_anything_is_spent():
+    """The second live run's failure, as a control.
+
+    It began with roughly five hundred requests already in the window, met
+    GitHub's wall around request 4,500, and was asked to wait out the hour --
+    which exceeds SFIR4's frozen fail-safe, so the census refused and produced
+    nothing.
+    """
+    with pytest.raises(probe7.SFIR7CensusRefused, match="requests remaining this window"):
+        probe7.require_rate_limit_headroom(_headroom(4503), now_epoch=0)
+
+
+def test_the_refusal_says_how_long_the_window_has_left():
+    """A refusal that does not say when to retry makes the operator guess."""
+    with pytest.raises(probe7.SFIR7CensusRefused, match="resets in 1053 seconds"):
+        probe7.require_rate_limit_headroom(_headroom(0, reset_epoch=1053), now_epoch=0)
+
+
+def test_the_threshold_is_the_inherited_bound_and_not_a_number_typed_here():
+    """If SFIR4's global bound moves, this precondition moves with it."""
+    boundary = sources.MAX_GIT_API_REQUESTS_GLOBAL
+    probe7.require_rate_limit_headroom(_headroom(boundary), now_epoch=0)
+    with pytest.raises(probe7.SFIR7CensusRefused):
+        probe7.require_rate_limit_headroom(_headroom(boundary - 1), now_epoch=0)
+
+
+def test_the_frozen_retry_fail_safe_is_not_widened_to_absorb_an_hour():
+    """The forbidden repair. That bound stops a census idling indefinitely, and
+    stretching it to fit an operational inconvenience would loosen a safety
+    limit so a run could succeed.
+    """
+    assert sources.MAX_RATE_LIMIT_WAIT_SECONDS == 60
+    assert sources.MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS == 180
+
+
+def test_the_census_checks_headroom_before_its_first_transport_call():
+    """Ordering, statically, for the same reason as the receipt preflight."""
+    import ast
+    import inspect
+
+    source = inspect.getsource(probe7.census)
+    assert "require_rate_limit_headroom(" in source
+    assert source.index("require_rate_limit_headroom(") < source.index("transport(FAMILY")
+    tree = ast.parse(source)
+    assert any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "transport"
+        for node in ast.walk(tree)
+    )
+
+
+def test_the_headroom_reading_costs_no_quota_and_is_recorded(monkeypatch):
+    """The rate_limit endpoint is free, so asking is not itself a cost. What was
+    observed at the start belongs in the receipt: a census that began with a
+    partly-spent window is a different observation from one that began fresh.
+    """
+    import io
+
+    payload = b'{"resources":{"core":{"limit":5000,"remaining":4999,"used":1,"reset":123}}}'
+
+    class _Response(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    observed = probe7.observed_rate_limit_headroom(
+        opener=lambda request, timeout=None: _Response(payload)
+    )
+    assert observed["remaining"] == 4999
+    assert observed["reset_epoch"] == 123
+
+    body = probe7.build_census_body(
+        transport=type("E", (), {"ledger": None, "identity_attestation": lambda s: {}})(),
+        declared=("a/b",),
+        candidates={},
+        dispositions=[],
+        snapshots=[],
+        response_refs=[],
+        retries=0,
+        transport_retries=0,
+        total_wait_seconds=0,
+        bound_excluded=0,
+        started=0.0,
+        headroom=observed,
+    )
+    assert body["frame"]["rate_limit_headroom_at_start"]["remaining"] == 4999

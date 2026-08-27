@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 import time
 from collections.abc import Mapping
@@ -185,6 +186,7 @@ def build_census_body(
     total_wait_seconds: int,
     bound_excluded: int,
     started: float,
+    headroom: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble the census receipt.
 
@@ -228,6 +230,7 @@ def build_census_body(
             )["roster_fingerprint"],
             "roots_frozen": len(declared),
             "inherited_bounds": roots.inherited_bounds(),
+            "rate_limit_headroom_at_start": headroom,
         },
         "bound_exclusions": {
             "roots_excluded_by_the_global_git_bound": bound_excluded,
@@ -295,6 +298,63 @@ def preflight_receipt_path(destination: Path) -> None:
         protocol.write_immutable(Path(directory) / destination.name, body)
 
 
+def observed_rate_limit_headroom(opener: Any = None) -> dict[str, Any]:
+    """Ask GitHub how much of this hour's quota is left. Costs no quota to ask."""
+    import urllib.request
+
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "tavonel-sfir7-capacity-census",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request("https://api.github.com/rate_limit", headers=headers)
+    with (opener or urllib.request.urlopen)(request, timeout=30) as response:
+        body = json.load(response)
+    core = body["resources"]["core"]
+    return {
+        "limit": int(core["limit"]),
+        "remaining": int(core["remaining"]),
+        "used": int(core["used"]),
+        "reset_epoch": int(core["reset"]),
+        "authenticated": bool(token),
+    }
+
+
+def require_rate_limit_headroom(observed: Mapping[str, Any], *, now_epoch: float) -> None:
+    """Refuse to start unless the inherited cap can bite before GitHub's does.
+
+    SFIR4's frozen global bound is 4,800 requests and GitHub's authenticated
+    primary limit is 5,000 an hour. Starting a census on a window that already
+    has requests in it inverts which limit fires first, and the two produce
+    completely different records: our own cap files the remaining roots as
+    `EXCLUDED_INCOMPLETE_ROOT_DISPOSITION` with the bound that stopped them,
+    whereas GitHub's asks for a wait that exceeds SFIR4's frozen fail-safe
+    (60 seconds per wait, 180 in total) and the census refuses outright,
+    producing nothing at all.
+
+    That is exactly how the second live run ended: it began with roughly five
+    hundred requests already spent in the window, met GitHub's wall around
+    request 4,500, and was asked to wait out the remainder of the hour.
+
+    So the precondition is checked before anything is spent, in the same spirit
+    as the receipt preflight (INC-V2-117). The frozen fail-safe is not widened
+    to absorb an hour-long wait -- that bound exists to stop a census from
+    idling indefinitely, and stretching it to fit an operational inconvenience
+    would be loosening a safety limit to make a run succeed.
+    """
+    needed = int(sources.MAX_GIT_API_REQUESTS_GLOBAL)
+    if observed["remaining"] < needed:
+        wait = max(0, int(observed["reset_epoch"] - now_epoch))
+        raise SFIR7CensusRefused(
+            f"GitHub reports {observed['remaining']} requests remaining this window and the "
+            f"inherited global bound is {needed}. Starting now would let GitHub's limit fire "
+            f"before SFIR4's, which turns recorded bound-exclusions into a refused census. "
+            f"The window resets in {wait} seconds."
+        )
+
+
 def census(
     root: Path,
     spent_ref: Mapping[str, Any],
@@ -308,6 +368,11 @@ def census(
     #: Cheap before expensive. The receipt path is proven writable before the
     #: first request leaves the machine (INC-V2-117).
     preflight_receipt_path(destination)
+
+    #: And the operational precondition, also before anything is spent: the
+    #: inherited cap must be able to fire before GitHub's (INC-V2-118).
+    headroom = observed_rate_limit_headroom()
+    require_rate_limit_headroom(headroom, now_epoch=time.time())
 
     spent = protocol.verify_spent(root, spent_ref)
     spent_ids = set(spent["container_ids"]) | set(spent["lineage_ids"]) | set(spent["alias_ids"])
@@ -425,6 +490,7 @@ def census(
         total_wait_seconds=total_wait_seconds,
         bound_excluded=bound_excluded,
         started=started,
+        headroom=headroom,
     )
     protocol._assert_metadata_only(body)
     return protocol.write_immutable(destination, body)
