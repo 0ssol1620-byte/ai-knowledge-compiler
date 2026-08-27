@@ -8957,3 +8957,95 @@ consequence.
 
 **Authority:** the call-site count above; the zero-observation measurement; the
 post-repair measurement; `_http_json`'s discard of the observation it receives.
+
+## INC-V2-103 - the whole session ran against a different checkout's core
+
+**Class:** the interpreter imported `akc_cir` from another working tree, and
+every test result taken before this was measured against code nobody intended.
+**Disposition:** REPAIRED BEFORE THE SFIR5 CENSUS; earlier measurements retracted.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+Found by running SFIR4's pre-census instrument gates for the first time on this
+machine. Two of the three refused immediately:
+
+    recoverable  PASS
+    conformant   REFUSED - 13 required Protected Core symbols are absent;
+                 13 paper claims are unimplemented by the core that would load;
+                 akc_cir resolves from
+                 D:\CodexProjects\ai-knowledge-compiler-collection-plane-rehearsal
+    isolated     REFUSED - akc_cir.dependency could not be imported
+
+The cause is a single line in the global interpreter's site-packages:
+
+    _editable_impl_ai_knowledge_compiler.pth
+      -> D:\CodexProjects\ai-knowledge-compiler-collection-plane-rehearsal\packages\cir-python\src
+
+An editable install pointing at a *rehearsal* checkout. The repository's own
+`.venv` resolves `akc_cir` correctly from this tree; the bare `python` on PATH
+does not. Both interpreters run, both import, neither says anything.
+
+### What this invalidates
+
+Every full-suite run in this session was executed with the bare interpreter.
+The figures reported earlier -- 3274 passed, 63 failed, 4 errors, and the
+controlled comparison that showed the new SFIR5 files added 55 passes and no
+failures -- were measured against the rehearsal checkout's Protected Core.
+
+The comparison's *conclusion* survives, because both arms of it ran under the
+same wrong interpreter and the SFIR5 modules do not import `akc_cir` at all.
+The absolute numbers do not. They are not a baseline for this repository and are
+not cited as one. The SFIR5 controls were re-run under `.venv` and pass there.
+
+### Correction before this entry was committed: this is not a discovery
+
+The paragraph that stood here called this the first occasion `require_isolated`
+was invoked and treated the finding as new. Both claims are wrong, and the
+ledger already said so.
+
+INC-V2-089's section *The isolated execution environment, and two false-isolation
+traps* names this exact condition as trap 2 -- "the bash-PATH `python` resolves
+`akc_cir` out of a DIFFERENT clone entirely,
+`ai-knowledge-compiler-collection-plane-rehearsal`" -- and records that the
+refusals "were exercised, not assumed". The trap was known, the gate was written
+for it, and the gate had already caught it once.
+
+So the correct reading is narrower and less flattering: **the repair did not
+hold across sessions.** SFIR4's answer was to run from
+`D:\CodexProjects\_sfir4_isolated`, a detached worktree with its own venv. This
+session did not start there, ran several hundred test invocations from the bare
+interpreter, and only noticed when the pre-census gates were run. Nothing
+prevented the regression, because the gate protects the census and nothing
+protects the sessions around it.
+
+What is genuinely new here is only the scope of what was measured wrongly, and
+one gap noted below.
+
+### A gap this exposed in `require_recoverable`
+
+While repairing the environment, `require_recoverable()` returned PASS at a
+moment when two of the four modules the SFIR5 charter pins --
+`probe_sfir5_capacity.py` and the edited `sfir5_charter.py` -- existed only in
+the working tree and in no commit. A pin over bytes git cannot return is
+INC-V2-089's failure mode precisely, and the gate written after INC-V2-089 did
+not see it, because its scope is the frozen SFIR4 instrument and not a
+successor's toolchain.
+
+Both files were committed before the census could seal anything, which changes
+no bytes and leaves the pins valid. The gate's scope is recorded here as
+narrower than its name suggests.
+
+### The repair
+
+The SFIR5 census runs under `.venv/Scripts/python.exe`, where all three gates
+pass. The `.pth` was **not** edited: it belongs to another checkout's
+environment, and rewriting a global editable install to make this study's gates
+go green would be repairing the measurement rather than the instrument -- and
+would silently move whatever that other checkout is doing.
+
+**Standing consequence.** A test figure from this repository is only meaningful
+with the interpreter named beside it. Any future full-suite number that does not
+say which interpreter produced it should be treated as unmeasured.
+
+**Authority:** the two refusals above; the `.pth` contents; the same three gates
+passing under `.venv`; `sys.modules`-level confirmation that `akc_cir.__file__`
+pointed outside this tree.
