@@ -32,6 +32,24 @@ GUARDED = (
     "v2r4_preacquisition_gate",
 )
 
+#: Which entry point each tool actually guards.
+#:
+#: INC-V2-104 B moved `gpu_successor_preflight`'s guard off `run()` -- which
+#: opens no socket, imports no HTTP client and writes nothing -- and onto
+#: `main()`, which seals an immutable receipt and moves a `receipts/latest`
+#: pointer. The two parametrised controls below were left naming `run()` and
+#: so were RED for every input from that moment on. A control that cannot go
+#: green is as empty as one that cannot go red: it stops distinguishing
+#: anything, which is the INC-V2-036 class wearing its other face. They now
+#: name the entry point each tool guards, and `test_run_is_deliberately_not
+#: _guarded_here` below pins the other half of that repair so the guard
+#: cannot drift back onto `run()` unnoticed.
+GUARDED_ENTRY = {
+    "preflight_sfi3_roots": "run",
+    "gpu_successor_preflight": "main",
+    "v2r4_preacquisition_gate": "run",
+}
+
 
 def test_the_runner_is_detected_at_all():
     """The precondition every other control here depends on. If this is false,
@@ -76,38 +94,53 @@ def test_allow_under_test_restores_even_when_the_block_raises():
 #: the refusal rather than passing on an argument error, which would be a green
 #: test proving nothing. They are never used: the guard raises first, which is
 #: exactly the property under test.
-RUN_KWARGS: dict[str, dict[str, object]] = {
-    "gpu_successor_preflight": {
-        "manifest": Path("unused-because-the-guard-raises-first"),
-        "model_pin": {},
-        "runtime_image_digest": "sha256:" + "0" * 64,
-    },
-}
+ENTRY_KWARGS: dict[str, dict[str, object]] = {}
 
 
 @pytest.mark.parametrize("module_name", GUARDED)
-def test_each_named_tool_refuses_its_own_run_under_pytest(module_name):
+def test_each_named_tool_refuses_its_guarded_entry_under_pytest(module_name):
     """The real entry points, called for real. This is the control that would
     have caught the original defect: before the guard, each of these calls
     started a live traversal from inside the test suite."""
     module = __import__(module_name)
+    entry = getattr(module, GUARDED_ENTRY[module_name])
     with pytest.raises(guard.LiveCohortRefused, match=module_name):
-        module.run(**RUN_KWARGS.get(module_name, {}))
+        entry(**ENTRY_KWARGS.get(module_name, {}))
 
 
 @pytest.mark.parametrize("module_name", GUARDED)
-def test_the_refusal_is_the_first_thing_run_does(module_name):
+def test_the_refusal_is_the_first_thing_the_guarded_entry_does(module_name):
     """A guard placed after the first request has already spent the budget it
     exists to protect. Asserted on the source rather than by observing traffic,
     because observing traffic here would be the very thing being prevented."""
     source = (NS / "tools" / f"{module_name}.py").read_text(encoding="utf-8")
-    index = source.index("def run(")
-    body = source[index : index + 1400]
+    index = source.index(f"def {GUARDED_ENTRY[module_name]}(")
+    body = source[index : index + 2000]
     guard_at = body.index('if "pytest" in sys.modules')
     for spender in ("urlopen(", "requests.", "subprocess.run(", "http"):
         position = body.find(spender)
         if position != -1:
             assert guard_at < position, f"{module_name}: {spender!r} precedes the refusal"
+
+
+def test_run_is_deliberately_not_guarded_in_the_gpu_successor_preflight():
+    """The other half of INC-V2-104 B, pinned so it cannot silently revert.
+
+    `gpu_successor_preflight.run()` reads local files and returns a dict. A
+    guard there protected nothing and made the whole gate-assembly block
+    unreachable from any test, which is how a gate true for every input
+    survived review. This control fails if the refusal moves back onto
+    `run()`: it calls `run()` under the runner and requires it to return.
+    """
+    import gpu_successor_preflight as gsp
+
+    body = gsp.run(
+        manifest=Path("no-such-manifest-anywhere.json"),
+        model_pin={},
+        runtime_image_digest="repo/image@sha256:" + "0" * 64,
+    )
+    assert body["verdict"] == "BLOCKED"
+    assert body["gpu_seconds"] == 0
 
 
 @pytest.mark.parametrize("module_name", GUARDED)

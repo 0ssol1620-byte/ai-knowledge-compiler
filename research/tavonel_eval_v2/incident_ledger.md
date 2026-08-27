@@ -9667,3 +9667,102 @@ But "it did not change anything" is a weaker guarantee than "it could not have",
 and the second is the one the design is supposed to provide. The rule for the
 successor: **run the seal first, read the census afterwards.** The seal is
 blind; a person reading a census is not.
+
+
+## INC-V2-112 - a control that could never go green, and three gates that could never go red
+
+**Class:** INC-V2-036, both faces of it, in the GPU successor preflight.
+**Disposition:** CONTROL REPAIRED AND MUTATION-PROVEN; THREE GATES BOUND TO WHAT
+THEY NAME. Two findings referred to the founder, not decided here.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+### The control that was red for the life of the repair it was meant to watch
+
+`tests/test_live_cohort_guard.py` was **failing at HEAD**, and had been since
+INC-V2-104 B:
+
+    FAILED test_each_named_tool_refuses_its_own_run_under_pytest[gpu_successor_preflight]
+    FAILED test_the_refusal_is_the_first_thing_run_does[gpu_successor_preflight]
+
+INC-V2-104 B moved the live-cohort guard off `run()` -- which opens no socket and
+writes nothing -- and onto `main()`, which seals a receipt. That was the right
+move. Both controls kept naming `run()`, so from the moment the repair landed
+they asserted something that was deliberately no longer true.
+
+**A control that can never go green distinguishes nothing, exactly like one that
+can never go red.** INC-V2-036 has been recorded seven times as a guard whose
+failure is impossible; this is the same defect with the sign flipped, and it is
+worth naming because it hides differently. A vacuous guard hides in a green
+suite. This one sat in a red one, where a standing failure becomes scenery.
+
+Repaired by pointing both at `GUARDED_ENTRY` -- `main` for the preflight, `run`
+for the other two tools -- and adding a control that pins the other half of
+INC-V2-104 B: `run` is *deliberately* unguarded. Both directions are
+mutation-proven: removing the guard from `main` reddens the suite, and putting it
+back on `run` reddens it harder.
+
+### Three gates that were true for every input
+
+| gate | what it compared | now |
+|---|---|---|
+| `G_GSP_NO_GPU_YET` | nothing - a hardcoded `True` | reads the module's own AST and refuses a forbidden import root |
+| `G_GSP_CONTEXT_BUDGET_FEASIBLE` | two constants in one file | also requires equality with `context_builder.TOTAL_PROMPT_TOKENS` |
+| `G_GSP_TOKENIZER_PARITY_BATTERY_AVAILABLE` | `battery_digest()` with itself | compares against the digest attested inside the sealed pin receipt |
+
+The third is the sharpest: a pure function agrees with itself for every possible
+battery, so the gate was green whatever the battery contained. It now compares
+against bytes that a *different* gate already proves sealed, which means the
+evidence comes from outside the thing being checked.
+
+`G_GSP_NO_GPU_YET` reads the AST rather than grepping, because the module's own
+docstring discusses sockets and HTTP clients in prose and a grep would go red for
+the wrong reason -- the INC-V2-105 lesson applied before it could recur.
+
+**No threshold moved.** `COHORT_FLOOR` 120, `CAP_GPU_HOURS` 6.0, `CAP_USD` 40.0,
+`CONTEXT_BUDGET_TOKENS` 4096, all unchanged. 25 mutations, 25 killed, zero
+survivors, against 346 passing controls.
+
+### One gate left vacuous on purpose
+
+`G_GSP_EXCLUDES_CLOSED_ENDPOINT` compares this module's literals with this
+module's literals and cannot be reddened by any input. It is left that way:
+INC-V2-104 C records that repointing it at the study protocol would redden a
+divergence the protocol documents as deliberate under `arms_axis`, which is a
+founder question. It is not silently unguarded - a control binds
+`FORBIDDEN_SCORER_CLASSES` to the real `endpoint/value_scorer.CLASSES`, so drift
+is caught even though the gate cannot see it.
+
+### Two findings for the founder, not decided here
+
+**The default cohort comes from a study that is frozen, FAIL and spent.** The
+preflight's default manifest `artifacts/development/typed_fact_cohort.json`
+clears the floor 166 times over, and its own header names
+`artifacts/sfi2/sfi2_acquisition.json` as its source. SFI2 is spent. SFIR6 froze
+no roster and spent no corpus, so **nothing in the programme has produced a
+cohort for this study**. The green on that gate is a green over development
+material from a dead study. Whether development material may back a GPU study is
+not an agent's call.
+
+**`cohort_feasibility` binds the manifest to nothing.** Demonstrated: a JSON file
+containing only a `facts` list -- no schema, no study id, no acquisition
+provenance -- returns `feasible = True`. INC-V2-104 called this "the check the
+three closed preflights teach loudest". Defining what makes a cohort manifest
+legitimate is a protocol change, so it is recorded rather than written. The hole
+is in this gate alone: the four-link gate does bind the launch manifest to an
+acceptance receipt by sha256.
+
+### Standing, unchanged from INC-V2-104
+
+The cost gate still prices `max(floor, eligible)` = 20,018 facts at 25.6 GPU-hours
+and $64.06 against caps of 6.0 and $40 - a run nobody intends. It fails closed,
+but the receipt's headline number describes the wrong run. `EFFECTIVE_TIME`
+remains 0 of four typed-fact kinds.
+
+Current verdict on the tool's own defaults: **BLOCKED** on seven gates. No
+receipt was written, no corpus spent, no roster frozen, no payload opened.
+
+**Authority:** the two named failures reproduced at HEAD by stashing this
+session's tree and re-running; the 25-mutation table with zero survivors; the
+bare-`facts` manifest returning `feasible = True`; the manifest header naming
+SFI2; `receipts/` carrying no SFI3 acceptance, no four-link acceptance and no
+protocol bundle-freeze.

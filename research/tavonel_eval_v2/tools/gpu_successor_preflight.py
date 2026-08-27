@@ -61,6 +61,7 @@ writes, always — see `G_GSP_NO_GPU_YET`.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
@@ -267,6 +268,44 @@ SUPERSEDED_STUDY_STEMS: tuple[tuple[str, str], ...] = (
 
 RUNTIME_IMAGE_DIGEST_PATTERN = re.compile(r"^[\w./-]+@sha256:[0-9a-f]{64}$")
 
+#: Import roots this module must never carry, checked by AST rather than
+#: asserted. `G_GSP_NO_GPU_YET` used to be a hardcoded `True`, so nothing
+#: distinguished a preflight that spends nothing from one that had just
+#: grown an HTTP client -- INC-V2-036's class in its plainest form. INC-V2-104
+#: B established the absence of any network symbol here as the authority for
+#: moving the live-cohort guard off `run()`; that authority is now re-checked
+#: on every run instead of being taken once by hand.
+#:
+#: AST, not a textual grep: this module's own docstring and comments discuss
+#: sockets and HTTP clients in prose, and a grep would be red for the wrong
+#: reason -- which is how a guard stops being read.
+FORBIDDEN_RUNTIME_MODULE_ROOTS: frozenset[str] = frozenset(
+    {
+        "urllib",
+        "socket",
+        "http",
+        "httplib",
+        "requests",
+        "httpx",
+        "aiohttp",
+        "ftplib",
+        "smtplib",
+        "telnetlib",
+        "xmlrpc",
+        "websockets",
+        "ssl",
+        "subprocess",
+        "boto3",
+        "openai",
+        "anthropic",
+        "huggingface_hub",
+        "transformers",
+        "torch",
+        "vllm",
+        "runpod",
+    }
+)
+
 #: A capability pointer is registry evidence only if it is content-addressed —
 #: it must carry a 64-hex digest naming the exact artifact the capability was
 #: read out of. Searched anywhere in the pointer, not anchored, because the
@@ -384,9 +423,15 @@ def load_model_pin_artifact(path: Path | None, expected_file_sha256: str | None)
             }
         resolved = body["resolved_pin"]
         kind = "resolver_receipt"
+        #: The same sealed bytes also carry the resolver's frozen tokenizer-probe
+        #: battery digest. Carried out here so `G_GSP_TOKENIZER_PARITY_BATTERY_
+        #: AVAILABLE` has something outside itself to compare against; a flat
+        #: export has no such block and is reported as None rather than assumed.
+        attestation = body.get("tokenizer_parity")
     else:
         resolved = body
         kind = "sealed_flat_export"
+        attestation = None
 
     required = {"repository", "revision", "tokenizer_file_sha256"}
     missing = sorted(required - set(resolved))
@@ -407,6 +452,9 @@ def load_model_pin_artifact(path: Path | None, expected_file_sha256: str | None)
         "actual_file_sha256": actual,
         "kind": kind,
         "resolved_pin": resolved,
+        "tokenizer_parity_attestation": attestation
+        if isinstance(attestation, dict)
+        else None,
     }
 
 
@@ -595,22 +643,53 @@ def model_identity_pin(pin: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def tokenizer_parity_available() -> dict[str, Any]:
-    """The frozen probe battery is importable and produces a stable digest.
+def tokenizer_parity_available(
+    sealed_attestation: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """The frozen probe battery is the one the sealed model pin was resolved on.
 
     Reused from the closed study rather than rebuilt: the question the battery
     answers — do two tokenizer loads segment text identically — does not
     change with the endpoint. Running the battery against a live tokenizer
-    happens on the GPU side of the real study; this only checks that the
-    frozen contract this preflight would compare against is present and
-    deterministic.
+    happens on the GPU side of the real study.
+
+    `deterministic` alone was vacuous and is kept only as a reported field.
+    `battery_digest()` is a pure function of this module's frozen constants,
+    so two calls in one process agree with each other for EVERY possible
+    battery -- including one whose probes were deleted. Mutation-proven:
+    dropping `long_context_boundary` from `PROBE_CLASSES` left the old gate
+    green. The frozen contract therefore has to be compared with something
+    outside this process, and the sealed `gpu-successor-pin` receipt already
+    records `tokenizer_parity.battery_digest` under bytes that
+    `G_GSP_MODEL_PIN_SOURCE_SEALED` verifies. Absence of that attestation is a
+    block, not a pass -- there is then nothing the battery is frozen against.
     """
     first = battery_digest()
     second = battery_digest()
+    sealed = sealed_attestation if isinstance(sealed_attestation, dict) else {}
+    attested_digest = sealed.get("battery_digest")
+    attested_classes = sealed.get("probe_classes")
+    classes_match = isinstance(attested_classes, list) and list(attested_classes) == list(
+        PROBE_CLASSES
+    )
     return {
         "battery_digest": first,
         "deterministic": first == second,
         "probe_classes": list(PROBE_CLASSES),
+        "attested_battery_digest": attested_digest,
+        "attested_probe_classes": list(attested_classes)
+        if isinstance(attested_classes, list)
+        else None,
+        "matches_sealed_attestation": attested_digest is not None
+        and attested_digest == first,
+        "probe_classes_match_sealed_attestation": classes_match,
+        "why": None
+        if attested_digest is not None
+        else (
+            "no sealed model-pin receipt supplied a tokenizer_parity.battery_digest "
+            "to compare this battery against. Two calls agreeing with each other is "
+            "not a frozen contract."
+        ),
     }
 
 
@@ -654,12 +733,88 @@ def context_budget_feasible() -> dict[str, Any]:
     study used.
     """
     total = ESTIMATED_PROMPT_TOKENS + MAX_NEW_TOKENS
+    #: `CONTEXT_BUDGET_TOKENS` is a RESTATEMENT of
+    #: `endpoint/context_builder.py`'s `TOTAL_PROMPT_TOKENS`, and the old gate
+    #: compared it only with another constant in this same file -- so it was
+    #: true for every input and blind to the one thing that could make it
+    #: wrong. Mutation-proven: halving the materializer's own budget left the
+    #: gate green. The declared value is unchanged; it is now required to still
+    #: equal the declaration it claims to copy, and an unimportable materializer
+    #: is a block rather than a silent pass.
+    materializer_error: str | None = None
+    try:
+        import context_builder
+    except ImportError as error:
+        materializer_budget: int | None = None
+        materializer_error = f"{type(error).__name__}: {error}"
+    else:
+        materializer_budget = getattr(context_builder, "TOTAL_PROMPT_TOKENS", None)
+    bound = materializer_budget == CONTEXT_BUDGET_TOKENS
     return {
         "estimated_prompt_tokens": ESTIMATED_PROMPT_TOKENS,
         "max_new_tokens": MAX_NEW_TOKENS,
         "estimated_total_tokens": total,
         "context_budget_tokens": CONTEXT_BUDGET_TOKENS,
-        "feasible": ESTIMATED_PROMPT_TOKENS <= CONTEXT_BUDGET_TOKENS,
+        "materializer_budget_tokens": materializer_budget,
+        "materializer_error": materializer_error,
+        "budget_matches_materializer": bound,
+        "feasible": ESTIMATED_PROMPT_TOKENS <= CONTEXT_BUDGET_TOKENS and bound,
+    }
+
+
+def no_gpu_and_no_network(source_path: Path | None = None) -> dict[str, Any]:
+    """G_GSP_NO_GPU_YET, checked instead of asserted.
+
+    The gate used to be a hardcoded `True` that said so in a comment. Saying so
+    is not a control: nothing distinguished this module from the same module
+    with an HTTP client bolted on, and INC-V2-104 B leaned on exactly that
+    absence -- established once, by hand -- to move the live-cohort guard off
+    `run()`. Mutation-proven: adding `import urllib.request` to this file left
+    every control in the suite green.
+
+    Read from the module's own AST, so the words `socket` and `HTTP client` in
+    the docstring above do not count as imports and the check cannot be red for
+    a reason that has nothing to do with what the module does.
+
+    `source_path` is a parameter for one reason: a guard whose only input is
+    `__file__` can be exercised in one direction only, and a control that can
+    never see it refuse is not a control. Production always passes None.
+    """
+    source_path = (source_path or Path(__file__)).resolve()
+    try:
+        tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError) as error:
+        return {
+            "module": _safe_rel(source_path),
+            "parsed": False,
+            "clean": False,
+            "why": f"the preflight could not read its own source: {error}",
+        }
+    imported: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported.add(node.module)
+    offending = sorted(
+        name for name in imported if name.split(".")[0] in FORBIDDEN_RUNTIME_MODULE_ROOTS
+    )
+    return {
+        "module": _safe_rel(source_path),
+        "parsed": True,
+        "imports_scanned": sorted(imported),
+        "forbidden_module_roots": sorted(FORBIDDEN_RUNTIME_MODULE_ROOTS),
+        "offending_imports": offending,
+        "gpu_seconds": 0,
+        "estimated_cost_usd": 0.0,
+        "clean": not offending,
+        "why": None
+        if not offending
+        else (
+            "this preflight imports a network, provider or GPU-runtime module. It is "
+            "declared CPU-only and outcome-independent, and the live-cohort guard sits "
+            "on main() rather than run() on the strength of that declaration."
+        ),
     }
 
 
@@ -882,12 +1037,17 @@ def run(
         study_path=STUDY_PROTOCOL,
         runtime_path=RUNTIME_PROTOCOL,
     )
-    parity = tokenizer_parity_available()
+    parity = tokenizer_parity_available(
+        model_pin_source.get("tokenizer_parity_attestation")
+        if model_pin_source["passed"]
+        else None
+    )
     image = runtime_image_pinnable(runtime_image_digest)
     materializer = materializer_ready()
     budget = context_budget_feasible()
     cohort = cohort_feasibility(manifest)
     exclusion = design_excludes_closed_endpoint()
+    no_spend = no_gpu_and_no_network()
     cost = estimate_cost(cohort_size=max(cohort["floor"], cohort["eligible_count"]))
 
     gates: dict[str, dict[str, Any]] = {
@@ -925,7 +1085,9 @@ def run(
         "G_GSP_MODEL_PIN_SOURCE_SEALED": {
             "passed": model_pin_source["passed"],
             "detail": {
-                key: value for key, value in model_pin_source.items() if key != "resolved_pin"
+                key: value
+                for key, value in model_pin_source.items()
+                if key not in {"resolved_pin", "tokenizer_parity_attestation"}
             },
             "rule": (
                 "the model identity must come from an explicitly named resolver "
@@ -949,8 +1111,16 @@ def run(
             ),
         },
         "G_GSP_TOKENIZER_PARITY_BATTERY_AVAILABLE": {
-            "passed": parity["deterministic"] and len(parity["probe_classes"]) > 0,
+            "passed": parity["deterministic"]
+            and parity["matches_sealed_attestation"]
+            and parity["probe_classes_match_sealed_attestation"],
             "detail": parity,
+            "rule": (
+                "the frozen tokenizer probe battery must still hash to the digest "
+                "the sealed model-pin receipt was resolved on, and must still carry "
+                "the same probe classes. Two calls in one process agreeing with each "
+                "other proves only that a pure function is pure."
+            ),
         },
         "G_GSP_RUNTIME_IMAGE_PINNABLE": {
             "passed": image["matches_pinned_digest_form"],
@@ -977,9 +1147,16 @@ def run(
             "detail": cost,
         },
         "G_GSP_NO_GPU_YET": {
-            "passed": True,
+            "passed": no_spend["clean"],
+            "detail": no_spend,
             "gpu_seconds": 0,
             "estimated_cost_usd": 0.0,
+            "rule": (
+                "this preflight is CPU-only and outcome-independent. Checked against "
+                "the module's own AST rather than asserted: a hardcoded True cannot "
+                "tell a preflight that spends nothing from one that has grown an HTTP "
+                "client, and INC-V2-104 B rests on that absence."
+            ),
         },
     }
 

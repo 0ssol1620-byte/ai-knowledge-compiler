@@ -174,3 +174,114 @@ def test_preflight_blocks_without_exact_freeze_and_model_pin_bindings(tmp_path: 
     )
     assert "G_GSP_PROTOCOL_BUNDLE_FROZEN" in body["blocking_gates"]
     assert "G_GSP_MODEL_PIN_SOURCE_SEALED" in body["blocking_gates"]
+
+
+# ---------------------------------------------------------------------------
+# INC-V2-036 class: three gates that were true for every input
+# ---------------------------------------------------------------------------
+#
+# Each of the three below was a mutation SURVIVOR before this block existed:
+# the thing the gate claims to protect was changed and neither the gate nor any
+# test went red. The controls are paired on purpose -- a gate that refuses
+# everything proves as little as one that accepts everything -- so each pair
+# holds a green route and the specific mutation that must redden it.
+
+REAL_PIN = NS / "receipts" / "gpu-successor-pin--20260823T082423Z-6902ef5f7efa.json"
+
+
+def _sealed_attestation() -> dict:
+    loaded = gsp.load_model_pin_artifact(REAL_PIN, sha_file(REAL_PIN))
+    assert loaded["passed"] is True
+    return loaded["tokenizer_parity_attestation"]
+
+
+def test_the_probe_battery_is_bound_to_the_sealed_pins_attestation() -> None:
+    """Green: the live battery still hashes to what the sealed pin recorded."""
+    parity = gsp.tokenizer_parity_available(_sealed_attestation())
+    assert parity["matches_sealed_attestation"] is True
+    assert parity["probe_classes_match_sealed_attestation"] is True
+    assert parity["attested_battery_digest"] == parity["battery_digest"]
+
+
+def test_a_battery_that_no_longer_matches_the_sealed_pin_is_refused() -> None:
+    """Red: the mutation that used to survive. Change the frozen battery and
+    the gate must stop agreeing with the pin it was resolved on."""
+    attestation = dict(_sealed_attestation())
+    attestation["battery_digest"] = "sha256:" + "0" * 64
+    parity = gsp.tokenizer_parity_available(attestation)
+    assert parity["deterministic"] is True  # still pure, still useless alone
+    assert parity["matches_sealed_attestation"] is False
+
+
+def test_a_probe_class_dropped_from_the_battery_is_refused() -> None:
+    attestation = dict(_sealed_attestation())
+    attestation["probe_classes"] = list(attestation["probe_classes"])[:-1]
+    parity = gsp.tokenizer_parity_available(attestation)
+    assert parity["probe_classes_match_sealed_attestation"] is False
+
+
+def test_an_unattested_battery_is_a_block_not_a_pass() -> None:
+    """Two calls to a pure function agreeing is not a frozen contract."""
+    parity = gsp.tokenizer_parity_available(None)
+    assert parity["deterministic"] is True
+    assert parity["matches_sealed_attestation"] is False
+    assert "not a frozen contract" in parity["why"]
+
+
+def test_the_context_budget_is_bound_to_the_materializers_own_declaration() -> None:
+    budget = gsp.context_budget_feasible()
+    assert budget["budget_matches_materializer"] is True
+    assert budget["materializer_budget_tokens"] == gsp.CONTEXT_BUDGET_TOKENS
+    assert budget["feasible"] is True
+
+
+def test_a_materializer_budget_that_drifts_reddens_the_budget_gate(monkeypatch) -> None:
+    """Red: the mutation that used to survive. The preflight restates
+    `context_builder.TOTAL_PROMPT_TOKENS`; a restatement nobody compares is a
+    constant compared with itself."""
+    import context_builder
+
+    monkeypatch.setattr(context_builder, "TOTAL_PROMPT_TOKENS", 1024)
+    budget = gsp.context_budget_feasible()
+    assert budget["materializer_budget_tokens"] == 1024
+    assert budget["budget_matches_materializer"] is False
+    assert budget["feasible"] is False
+
+
+def test_the_preflight_imports_nothing_that_could_spend() -> None:
+    """Green: the real module, read from its own AST."""
+    scan = gsp.no_gpu_and_no_network()
+    assert scan["parsed"] is True
+    assert scan["offending_imports"] == []
+    assert scan["clean"] is True
+    assert scan["gpu_seconds"] == 0
+    assert scan["estimated_cost_usd"] == 0.0
+
+
+def test_a_preflight_that_grew_a_network_client_is_refused(tmp_path: Path) -> None:
+    """Red: the mutation that used to survive. `G_GSP_NO_GPU_YET` was a
+    hardcoded True, so `import urllib.request` in this module changed nothing
+    anywhere -- while INC-V2-104 B's decision to move the live-cohort guard off
+    `run()` rests entirely on that import not being there."""
+    grown = tmp_path / "grown.py"
+    grown.write_text(
+        "import json\nimport urllib.request\nfrom socket import socket\n",
+        encoding="utf-8",
+    )
+    scan = gsp.no_gpu_and_no_network(grown)
+    assert scan["clean"] is False
+    assert scan["offending_imports"] == ["socket", "urllib.request"]
+    assert "CPU-only" in scan["why"]
+
+
+def test_the_docstrings_words_are_not_mistaken_for_imports(tmp_path: Path) -> None:
+    """AST, not grep. The real module's docstring discusses sockets and HTTP
+    clients in prose; a textual check would be red for the wrong reason, and a
+    guard that is red for the wrong reason stops being read."""
+    prose_only = tmp_path / "prose.py"
+    prose_only.write_text(
+        '"""This module opens no socket and imports no HTTP client, not requests."""\n'
+        "import json\n",
+        encoding="utf-8",
+    )
+    assert gsp.no_gpu_and_no_network(prose_only)["clean"] is True
