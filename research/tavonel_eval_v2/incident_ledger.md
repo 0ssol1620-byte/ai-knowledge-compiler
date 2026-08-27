@@ -9970,3 +9970,67 @@ The recomputed licence coverage moves by the same small margin: MIT 3,062,669 ->
 declared licence is still present, and record ids remain unique (36,519,358
 distinct, zero duplicates, strictly increasing), which is what the strict total
 order rests on.
+
+## SFIR7 ROSTER FROZEN -- 2026-08-27
+
+`receipts/sfir7-roster-freeze.json`, state `ROSTER_FROZEN`.
+
+    universe        Libraries.io Open Data 1.6.0, 2020-01-12
+                    DOI 10.5281/zenodo.3626071
+    archive         sha256:9b5c8bbebdd3bfb20638ca9ebf195be327ebef5a609a1771730cc3e5f7aec9f0
+    member          sha256:148c71eb47f5990f1b5270e681df3e3e2ae34c2586ea8f9fabbe2b45a115fcfb
+    rows parsed     36,519,358
+    eligible        65,174
+    N               50
+    roster          sha256:e328ec8fb910c62a9af0bc8e5868976d9872bf3efaa050cd62adda1b4f9c34df
+    sidecar         sha256:5d910f373e0430802ffd6d1...
+
+Dispositions, first failing predicate in declared order:
+
+    ELIGIBLE                                   65,174
+    REJECTED_spdx_license_id_in            31,164,781
+    REJECTED_last_activity_utc_on_or_after  3,038,235
+    REJECTED_created_utc_on_or_before       2,225,592
+    REJECTED_host_eq                           25,576
+
+The licence predicate does most of the work, which is what an allow-list of ten
+families does to a catalogue where the great majority of rows declare no licence
+at all.
+
+**Zero overlap with the twenty Git roots SFIR1-SFIR4 used.** SFIR7 deliberately
+does not exclude them -- excluding them would be TAVONEL curating an external
+universe again -- so this is a diagnostic and was never an input. The external
+rule simply did not reselect any of them.
+
+**The tie-break is lexicographic over the catalogue's record id as written, not
+numeric.** At rank 24 the roster runs 10160, 126181, 129764, 148300, 15838, and
+so on. That is `record_id` compared as a string, which is what the declared rule
+says and what makes the order reproducible from the bytes. Reading it as numeric
+order would be reading it wrong.
+
+**Composition, registered as a limitation before the census, not after.**
+`receipts/sfir7-frame-composition.json`, SFIR7-L1 and SFIR7-L2.
+
+    JavaScript 35, TypeScript 5, Ruby 4, Java 2, C++ 1, PHP 1, C 1, CoffeeScript 1
+    MIT 40, Apache-2.0 5, BSD-3-Clause 3, ISC 2
+
+Six of the ten declared licence families do not appear at all: BSD-2-Clause,
+MPL-2.0, GPL-2.0, GPL-3.0, LGPL-2.1, LGPL-3.0.
+
+Seventy per cent of the roster is JavaScript because Libraries.io's SourceRank is
+computed over a catalogue whose package managers are overwhelmingly npm. This is
+**not repaired**, and the reason is worth stating precisely: balancing by language
+or adding a per-licence floor would be a TAVONEL judgement about which
+repositories deserve to be in the universe, applied on top of an external ordinal
+chosen so that no such judgement is made. A stratified frame is a defensible
+design. It is a *different* design, and adopting one now -- roster in hand,
+census unrun -- would mean choosing a frame while able to guess at its yield.
+
+What it threatens is external validity: a capacity result over this roster speaks
+to repositories like these and not to open-source documentation at large. It does
+not threaten internal validity. The rule is declared, deterministic, and
+reproducible from the pinned digest by anyone who downloads the same deposit.
+
+The freeze chain binds eight modules, three receipts and the charter, plus the
+member digest recomputed from the file on disk. No census has started, no corpus
+is spent, no payload has been opened.

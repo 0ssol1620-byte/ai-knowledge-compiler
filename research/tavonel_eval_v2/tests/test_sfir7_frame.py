@@ -501,26 +501,32 @@ def test_the_charter_licence_allowlist_is_the_module_allowlist():
     assert tuple(charter_licences) == frame.SPDX_ALLOWLIST
 
 
-def test_the_charter_has_not_been_frozen_and_names_what_blocks_it():
-    """SFIR7 is not frozen until its universe is pinned by digest.
+def test_the_freeze_state_is_coherent_with_the_artifacts_on_disk():
+    """Two assertions this has already outlived: that the catalogue was undecided,
+    and that the snapshot was unacquired. Both were true when written and both
+    became the wrong thing to check as the study progressed. What is durable is
+    the implication rather than any particular stage of it.
 
-    This asserted that the catalogue and its licence were undecided, which was
-    true until the founder ruled and is now the wrong thing to check. What has to
-    stay true is narrower and more durable: a frame is not frozen while the
-    snapshot its rule reads is unpinned, because a rule over an unpinned universe
-    selects from whatever happens to be on disk.
+    A frozen charter must have a roster whose fingerprint is the one the freeze
+    receipt sealed; an unfrozen charter must say what blocks it. Both halves bite:
+    declaring `frozen: true` without a roster goes red, and so does a fingerprint
+    that has drifted from the receipt.
     """
     state = CHARTER["design_freeze_state"]
-    #: The snapshot is now acquired and pinned, so asserting it is not would be
-    #: asserting the study made no progress. What stays true is the implication:
-    #: no roster, no freeze -- and a charter that is not frozen has to say why.
-    assert state["frozen"] is False
-    assert state["roster_frozen"] is False
     assert state["snapshot_acquired"] is (NS / "receipts/sfir7-catalog-snapshot.json").exists()
     assert state["snapshot_digest_pinned"] is state["snapshot_acquired"]
-    if not state["roster_frozen"]:
-        assert state["frozen"] is False
-    assert state["blocking_freeze"], "a charter that is not frozen must say what blocks it"
+    freeze_receipt = NS / "receipts/sfir7-roster-freeze.json"
+    assert state["roster_frozen"] is freeze_receipt.exists()
+    if state["frozen"]:
+        import json
+
+        assert state["roster_frozen"] is True
+        sealed = json.loads(freeze_receipt.read_text(encoding="utf-8"))
+        assert state["roster_fingerprint"] == sealed["roster_fingerprint"]
+        assert sealed["state"] == "ROSTER_FROZEN"
+        assert state["blocking_freeze"] == []
+    else:
+        assert state["blocking_freeze"], "a charter that is not frozen must say what blocks it"
     assert CHARTER["root_selection_rule"]["universe"]["catalog_id"] != "PENDING_FOUNDER_DECISION"
 
 
