@@ -59,34 +59,33 @@ def test_the_research_tree_is_committed_and_byte_identical_to_head() -> None:
     assert divergent_research == [], divergent_research
 
 
-def test_freeze_refuses_while_the_protected_core_diverges_from_head(
-    tmp_path: Path,
-) -> None:
+def test_the_protected_core_is_recoverable_from_head() -> None:
     """The gate, unmocked, against the repository as it actually is.
 
-    The SFIR4 closure reaches three ``akc_cir`` modules -- the Protected Core
-    the study executes -- and those carry uncommitted changes belonging to a
-    different workstream. Committed-at-HEAD is not the same as recoverable: the
-    manifest digest is taken over the working tree, so while these differ, a
-    fresh clone reconstructs a different instrument.
+    This control was written asserting REFUSE, because the SFIR4 closure reaches
+    three ``akc_cir`` modules that carried 982 uncommitted lines: committed-at-
+    HEAD is not the same as recoverable, and while those differed a fresh clone
+    reconstructed a different instrument than a freeze would pin. It said that
+    when the work landed the correct response was to assert PASS, never to drop
+    the byte-identity check or narrow the closure so the Protected Core fell
+    outside it. The work landed in ``4823d5d`` and this is that inversion, made
+    on the same closure, with the same byte-identity check.
 
-    When that workstream lands, this control fails and the correct response is
-    to assert PASS -- never to drop the byte-identity check or narrow the
-    closure so the Protected Core falls outside it.
+    It is deliberately still an assertion about ``akc_cir`` in particular. A
+    later change that moved the Protected Core out of the closure would satisfy
+    a bare ``verdict == PASS`` while removing the property this control exists
+    to hold, so the reach is asserted separately from the verdict.
     """
     body = closure.gate()
-    if body["verdict"] == "PASS":
-        pytest.fail(
-            "the closure is now fully recoverable; this control is stale and "
-            "should assert PASS instead of REFUSE"
-        )
-    divergent = [row["path"] for row in body["divergent_from_head"]]
-    assert divergent, "the gate refuses for some other reason than divergence"
-    assert all("akc_cir" in path for path in divergent), divergent
-    with pytest.raises(closure.ClosureRefused, match="not recoverable"):
-        closure.require_recoverable()
-    with pytest.raises(closure.ClosureRefused, match="not recoverable"):
-        freeze.freeze_roster(tmp_path, {}, {}, {}, tmp_path / "r.json", "2026-08-27T00:00:00Z")
+    reached = [path for path in body["manifest"] if "akc_cir" in path]
+    assert reached, "the closure no longer reaches the Protected Core"
+    assert body["totals"]["divergent_from_head"] == 0, body["divergent_from_head"]
+    assert body["totals"]["uncommitted"] == 0, body["uncommitted"]
+    assert body["verdict"] == "PASS", body["why"]
+    # Fail-closed callers now proceed rather than raising, which is the whole
+    # point of the landing; asserting they do not raise is what makes this a
+    # test of the gate and not of the verdict string alone.
+    closure.require_recoverable()
 
 
 def _candidate(family: str, index: int) -> dict:

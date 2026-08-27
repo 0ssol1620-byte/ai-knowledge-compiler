@@ -116,6 +116,16 @@ VERIFICATION_ENTRY_POINTS: tuple[str, ...] = (
 DECLARED_DATA: tuple[str, ...] = (
     "protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4.yaml",
     "protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml",
+    # SFIR3 predecessor evidence. SFIR4 does not produce these; it READS them --
+    # its spent-authority binds the exact SFIR3 capacity failure and its charter
+    # freeze binds SFIR3's charter. Leaving them out of the closure made the gate
+    # PASS in a working tree that happened to hold them and let the same study
+    # fail in an isolated checkout, which is the inversion this gate exists to
+    # prevent: a declared input that only one machine can produce is not
+    # recoverable, whatever the code says.
+    "receipts/sfir3-spent-identity-authority.json",
+    "receipts/sfir3-design-charter-freeze.json",
+    "receipts/sfir3-capacity-failure-authority.json",
 )
 
 #: Directories searched when resolving a first-party import, in order.
