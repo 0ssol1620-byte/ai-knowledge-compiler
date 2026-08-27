@@ -511,10 +511,15 @@ def test_the_charter_has_not_been_frozen_and_names_what_blocks_it():
     selects from whatever happens to be on disk.
     """
     state = CHARTER["design_freeze_state"]
+    #: The snapshot is now acquired and pinned, so asserting it is not would be
+    #: asserting the study made no progress. What stays true is the implication:
+    #: no roster, no freeze -- and a charter that is not frozen has to say why.
     assert state["frozen"] is False
-    assert state["snapshot_acquired"] is False
-    assert state["snapshot_digest_pinned"] is False
     assert state["roster_frozen"] is False
+    assert state["snapshot_acquired"] is (NS / "receipts/sfir7-catalog-snapshot.json").exists()
+    assert state["snapshot_digest_pinned"] is state["snapshot_acquired"]
+    if not state["roster_frozen"]:
+        assert state["frozen"] is False
     assert state["blocking_freeze"], "a charter that is not frozen must say what blocks it"
     assert CHARTER["root_selection_rule"]["universe"]["catalog_id"] != "PENDING_FOUNDER_DECISION"
 
@@ -742,3 +747,67 @@ def test_a_copyleft_row_in_the_catalogues_spelling_is_eligible():
     # or-later is a different choice and stays out
     for spelling in ("GPL-3.0+", "LGPL-2.1+", "LGPL-3.0+"):
         assert frame._evaluate(predicate, _record(1, spdx_license_id=spelling)) is False
+
+
+# --- the scope of N's derivation (INC-V2-115) --------------------------------
+
+
+def _charter() -> dict:
+    import yaml
+
+    path = NS / "protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7_DESIGN_CHARTER.yaml"
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def _inherited_request_caps() -> dict[str, int]:
+    """Every inherited constant that can stop the census by counting requests."""
+    import sfir5_transport as t5
+    from acquisition import sources_sfir4 as sources
+
+    return {
+        "sfir5_transport.MAX_TOTAL_REQUESTS": t5.MAX_TOTAL_REQUESTS,
+        "sources_sfir4.MAX_GIT_API_REQUESTS_GLOBAL": sources.MAX_GIT_API_REQUESTS_GLOBAL,
+    }
+
+
+def test_every_cap_tighter_than_the_one_n_uses_is_registered_in_the_charter():
+    """`refuse_count_tuned_rule` is blind outside the inputs the derivation names.
+
+    It checks that N's four declared inputs equal the live inherited bounds, so a
+    bound the derivation never names cannot fail it. `MAX_GIT_API_REQUESTS_GLOBAL`
+    is 4,800, is enforced on the only family SFIR7 traverses, and is 2.5x tighter
+    than the 12,000 N was derived from -- and no control saw it (INC-V2-115).
+
+    This is that control. It does not change N, which is a founder ruling. It
+    requires that any cap capable of binding the census before N's own term does
+    is written down where a reader of the charter will find it.
+    """
+    used = frame.inherited_total_request_cap()
+    tighter = {
+        name: value for name, value in _inherited_request_caps().items() if value < used
+    }
+    registered = _charter().get("second_inherited_request_cap") or {}
+    for name, value in tighter.items():
+        assert registered.get("constant", "").endswith(name.split(".")[-1]), name
+        assert registered["value"] == value
+        assert registered["state"] == "REGISTERED_NOT_ACTED_ON"
+
+
+def test_the_registration_control_has_something_to_find():
+    """A control over an empty set proves nothing. There is a tighter cap today."""
+    used = frame.inherited_total_request_cap()
+    assert any(value < used for value in _inherited_request_caps().values())
+
+
+def test_the_registered_cap_is_the_one_the_transport_actually_enforces():
+    """Registered against the live constant, not against a number retyped here."""
+    from acquisition import sources_sfir4 as sources
+
+    registered = _charter()["second_inherited_request_cap"]
+    assert registered["value"] == sources.MAX_GIT_API_REQUESTS_GLOBAL
+    assert registered["n_as_frozen"] == frame.declared_rule(
+        catalog_id="LIBRARIES_IO_OPEN_DATA_1_6_0",
+        snapshot_sha256="sha256:" + "0" * 64,
+        snapshot_date_utc="2020-01-12",
+    ).n
+    assert registered["action_taken"] == "none"

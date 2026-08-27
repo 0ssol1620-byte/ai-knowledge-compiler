@@ -373,6 +373,98 @@ vocabulary_reconciliation:
     host, dates and the ranking that follows, none of which this touched. The
     capacity outcome lies downstream of a census that has not run.
 
+# The seam between what the catalogue writes and what the rule may select on.
+# Closed 2026-08-27 as a pre-freeze engineering defect, not a founder decision.
+#
+# The two record types are deliberately NOT one type. `RawCatalogRecord` carries
+# everything Libraries.io published for a repository; `FrameCatalogRecord` carries
+# only the nine fields a predicate may name. Widening the second to avoid the
+# projection would widen the surface a rule can be tuned against, which is the
+# freedom this protocol exists to remove.
+catalog_record_seam:
+  raw_type: RawCatalogRecord            # tools/sfir7_catalog_parser.py
+  frame_type: FrameCatalogRecord        # tools/sfir7_frame.py
+  projection: tools/sfir7_projection.py
+  selectable_fields:
+    - record_id
+    - host
+    - namespace
+    - name
+    - primary_language
+    - spdx_license_id
+    - created_utc
+    - last_activity_utc
+    - catalog_rank_value
+  provenance_only_fields:               # carried, never selected on
+    - host_uuid
+    - fork
+    - status
+  projection_is_exact_or_refused: true
+  address_split:
+    rule: name_with_owner -> namespace + name on exactly one slash
+    round_trip_required: 'f"{namespace}/{name}" == name_with_owner'
+    forbidden: [silent trimming, case conversion, slash repair, guessed split]
+  publisher_spelling_preserved: true
+  where_vocabulary_is_reconciled: the selection comparator, never the raw record
+  why_two_types:
+    - source vocabulary and comparison semantics are separate concerns
+    - a narrow selection surface cannot be widened to reach a number
+    - host_uuid must survive to the census without ever entering a predicate
+  identity_binding_frozen_together:
+    - record_id
+    - name_with_owner
+    - host_uuid
+  live_attestation: observed GitHub repository id == frozen host_uuid, else REFUSE
+
+# Every artifact whose bytes decide what the roster is. Bound together in
+# receipts/sfir7-roster-freeze.json. A freeze that pins the roster without
+# pinning what produced it records a conclusion, not a derivation.
+freeze_chain:
+  - catalogue archive digest
+  - extracted-member digest
+  - parser hash
+  - vocabulary reconciliation hash
+  - adapter hash
+  - frame rule hash
+  - selected roster fingerprint
+  - selection-sidecar fingerprint
+
+# Registered 2026-08-27 before the roster was frozen, before any census ran and
+# before any SFIR7 eligible or capacity count existed. See INC-V2-115.
+#
+# N was derived from `sfir5_transport.MAX_TOTAL_REQUESTS` = 12,000, the cap across
+# all three families. A second inherited cap is tighter and specific to the only
+# family SFIR7 traverses.
+second_inherited_request_cap:
+  state: REGISTERED_NOT_ACTED_ON
+  constant: acquisition/sources_sfir4.MAX_GIT_API_REQUESTS_GLOBAL
+  value: 4800
+  enforced_by:
+    - tools/probe_sfir4_capacity.py    # refuses the fetch at the bound
+    - tools/sfir4_protocol.py          # refuses a seal whose proof exceeds it
+  n_under_the_same_formula_with_this_term: 20   # floor(min(30000, 12000, 4800) / 240)
+  n_as_frozen: 50                                # FOUNDER_RULING_2026-08-27, ruling 3
+  action_taken: none
+  why_no_action:
+    - N is a founder ruling frozen by name; lowering it is not an implementation decision
+    - the standing instruction is that SFIR7 roots, threshold and N are not readjusted
+    - reported to the founder rather than taken
+  what_the_census_will_do:
+    - fifty frozen roots are visited in frozen order
+    - at the inherited global Git cap, remaining roots are excluded as INCOMPLETE
+    - a bound-excluded root is never recorded as a root with zero candidates
+  direction_of_bias: |
+    a root excluded by the cap can only lower measured capacity, never raise it.
+    A criterion cleared despite exclusions is sound; a shortfall is not
+    attributable to a frame chosen too small, because the cut came from a bound
+    frozen two studies before this question was asked.
+  measured_magnitude_not_a_derivation: |
+    SFIR6's Git census over 20 roots used 1,879 requests: 23 lowest, 160 highest,
+    94 mean, global counter 2,043. Fifty roots need about 4,700 at the mean and
+    8,000 at the maximum, so whether they fit is not knowable before the roster
+    exists. This is recorded as a magnitude. Sizing N from measured consumption
+    would make N a function of prior results, which this protocol forbids.
+
 design_freeze_state:
   charter_written: true
   frame_rule_implemented: true
@@ -380,14 +472,18 @@ design_freeze_state:
   catalogue_identity_decided: true          # FOUNDER_RULING_2026-08-27
   catalogue_licence_cleared: true           # FOUNDER_COMPLIANCE_RULING_2026-08-27
   request_budget_resolved: true             # FOUNDER_RULING_2026-08-27, ruling 3
-  snapshot_acquired: false
-  snapshot_digest_pinned: false
+  catalog_record_seam_closed: true          # pre-freeze engineering defect
+  snapshot_acquired: true
+  snapshot_digest_pinned: true
+  projection_correctness_established: true  # receipts/sfir7-projection-audit.json
   roster_frozen: false
   frozen: false
   blocking_freeze:
-    - the catalogue snapshot has not been acquired and its digest is not pinned
     - the selected roots have not been frozen
   no_longer_blocking:
+    - the catalogue snapshot, acquired and pinned by digest
+    - projection correctness over the whole member, established before selection
+    - the raw/frame record seam
     - founder decision on which external catalogue
     - founder ruling on that catalogue's licence terms for a derived, published roster
     - the inherited transport request budget conflict

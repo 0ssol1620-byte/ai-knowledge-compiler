@@ -9856,3 +9856,117 @@ hostile-test discipline this programme uses generates adversarial *structure* --
 extra slashes, swapped columns, dropped identifiers -- and it did not generate an
 adversarial *value*, because the value came from a row somebody had seen. Tests
 green is not the universe read.
+
+## INC-V2-115
+
+**A second inherited request cap, tighter than the one N was derived from, and
+specific to the only family SFIR7 traverses.**
+
+Registered 2026-08-27, before the roster was frozen, before any SFIR7 census ran,
+and before any SFIR7 eligible or capacity count existed. Nothing about SFIR7's
+outcome was known when this was written and nothing is known as it stands.
+
+**The finding.** N was derived by founder ruling as
+
+    N = floor( min(wall_clock_hours * published_rate_limit, inherited_total_request_cap)
+               / per_root_request_bound )
+      = floor( min(6 * 5000, 12000) / 240 ) = 50
+
+The `inherited_total_request_cap` term was bound to `sfir5_transport.MAX_TOTAL_REQUESTS`
+= 12,000, which is the cap across **all three families**. There is a second
+inherited cap, frozen in SFIR4 and never repealed:
+
+    acquisition/sources_sfir4.MAX_GIT_API_REQUESTS_GLOBAL = 4800
+
+It is not decorative. `probe_sfir4_capacity` refuses a Git fetch once the global
+counter reaches it, and `sfir4_protocol` refuses a seal whose arithmetic proof
+reports a global count above it. SFIR7 traverses Git and nothing else, so this is
+the cap that actually binds, and it is tighter by a factor of 2.5.
+
+Under the same formula with the tighter term:
+
+    floor( min(6 * 5000, 12000, 4800) / 240 ) = 20
+
+**What is measured, and what that does and does not license.** SFIR6's Git census
+over 20 roots consumed 1,879 requests -- per root 23 at the lowest, 160 at the
+highest, 94 on average, with the global counter reaching 2,043. Extrapolated at
+the mean, 50 roots need roughly 4,700 and would just fit; at the observed maximum
+they need 8,000 and would not. So whether 50 roots fit under the inherited Git cap
+depends on which repositories the catalogue selects, which is not knowable before
+the roster is frozen.
+
+**That extrapolation is explicitly not a derivation of N.** Sizing a frame from
+measured per-root consumption would make N a function of prior results, which is
+the move this protocol forbids by name. The theoretical bound frozen in SFIR4 --
+240 requests per root -- is the outcome-independent figure, and it is the one the
+formula uses. The measurement is recorded here as a magnitude, in the same way
+INC-V2-108 recorded the magnitude of defects before SFIR6 returned.
+
+**What was done about it: nothing to N.** N = 50 is a founder ruling of
+2026-08-27, frozen by name, and the standing instruction is that SFIR7's roots,
+threshold and N are not readjusted. Lowering N to 20 would be the tightening
+direction and would be defensible on the founder's own stated principle, but it
+is still a change to a number the founder froze, and that is not an
+implementation decision. It is reported rather than taken.
+
+**What the census will therefore do.** Fifty roots are frozen and visited in
+frozen order. If the inherited global Git cap is reached, `GitRequestBoundExceeded`
+excludes the remaining roots as INCOMPLETE -- a defined, tested disposition that
+already exists for exactly this case, not a crash and not a silent stop. A root
+excluded by a bound is never recorded as a root with zero candidates: SFIR4's
+comment on that distinction predates this study.
+
+**Direction of bias.** Any root excluded by the cap can only lower the measured
+capacity. It cannot raise it. So if SFIR7's Git capacity clears its criterion
+despite bound exclusions, the finding is sound and the exclusions cost nothing; if
+it falls short, the shortfall is not attributable to the frame being too small,
+because the frame was cut by a bound frozen two studies earlier and not by
+anything chosen here.
+
+**Why this was not caught earlier.** `refuse_count_tuned_rule` checks that N's
+declared inputs equal the live inherited bounds -- and it checks the four inputs
+the derivation names. A bound the derivation never names cannot fail that check.
+The guard is sound over its own inputs and blind outside them, which is a smaller
+and more ordinary relative of INC-V2-036: not a guard whose failure is impossible,
+but a guard whose *scope* was set by the thing it was meant to constrain.
+
+## INC-V2-114 (addendum) -- the measured cost of the date refusal
+
+The regenerated projection audit over the full 10.17 GB member, 2026-08-27:
+
+    rows read                 37,702,060
+    rows parsed               36,519,358
+    rows rejected              1,182,702
+      NAME_WITH_OWNER...          39,401
+      NO_LAST_ACTIVITY_TIMESTAMP 1,143,301
+      NO_CREATED_TIMESTAMP             0
+      *_NOT_A_DATE                     0
+
+3.03% of the deposit carries no `Last pushed Timestamp`. Every unreadable
+timestamp is a *blank* one -- not a single malformed or out-of-range date in 37.7
+million rows -- which reads as Libraries.io recording an absent value rather than
+a corrupt one, most plausibly a repository never pushed to.
+
+**Where the loss falls is the part worth publishing.** By host:
+
+    GitLab       838,988 rejected of   864,563  (97.0%)
+    Bitbucket    269,930 rejected of   269,931  (99.9997%)
+    GitHub        73,784 rejected of 36,567,566 (0.20%)
+
+The refusal lands almost entirely on the two hosts the frame rule excludes by its
+first predicate. GitHub -- the only host SFIR7 addresses -- loses one row in five
+hundred.
+
+That is a convenient result and it is stated with the discomfort that deserves.
+The rule was written before this was measured; the parser refusal was written
+before this was measured; both were chosen on the principle that a row which
+cannot answer a declared question is dropped and counted. Had the split gone the
+other way -- had GitHub been the host missing its timestamps -- the same refusal
+would stand and the cost would be published in the same place. A rule that only
+survives when the number is flattering is not a rule.
+
+The recomputed licence coverage moves by the same small margin: MIT 3,062,669 ->
+3,062,224, Apache-2.0 857,997 -> 857,827, GPL-3.0 654,162 -> 653,935. Every
+declared licence is still present, and record ids remain unique (36,519,358
+distinct, zero duplicates, strictly increasing), which is what the strict total
+order rests on.
