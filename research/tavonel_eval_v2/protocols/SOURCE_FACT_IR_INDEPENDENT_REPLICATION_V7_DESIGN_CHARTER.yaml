@@ -1,0 +1,274 @@
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7
+state: PROSPECTIVE_PRE_CATALOG_FREEZE
+result_blind_design: true
+purpose: >-
+  A NEW FRAME QUESTION, not a repair. SFIR5 measured git_docs at C=293 against a
+  declared minimum of 750. SFIR6 repairs instruments under an UNCHANGED frame and
+  will confirm or overturn that measurement. Neither study can separate two very
+  different explanations of a shortfall: that the SYSTEM cannot produce
+  qualifying revision pairs at that density, or that the FRAME which was
+  constructed does not contain them. SFIR7 evaluates the second explanation
+  independently, under a deliberately broader universe that TAVONEL does not
+  curate.
+succeeds: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6
+succeeds_because: A_DISTINCT_SCIENTIFIC_QUESTION_ABOUT_FRAME_CONSTRUCTION
+
+# Stated first because it is the sentence most likely to be lost. SFIR7 is not
+# SFIR6 with a wider net, and it is not a second attempt at SFIR5.
+what_sfir7_is_not:
+  it_is_not_an_instrument_repair: true
+  it_is_not_a_rerun_of_sfir5: true
+  it_is_not_a_rerun_of_sfir6: true
+  it_does_not_rescore_any_predecessor: true
+  a_pass_here_does_not_convert_a_predecessor_failure_into_a_pass: true
+  reason: >-
+    SFIR5 and SFIR6 measure the declared narrow frame. SFIR7 measures a different
+    universe. Two universes producing different capacities is the finding, not a
+    contradiction to be resolved in favour of the larger number.
+
+# Preserved, restated so it cannot be quietly superseded.
+predecessor_results_preserved:
+  sfir5:
+    receipt: receipts/sfir5-capacity-outcome.json
+    regulation_ecfr: VALID_CAPACITY_MEASUREMENT_PASS
+    git_docs: VALID_CAPACITY_MEASUREMENT_FAIL
+    encyclopedia_wikipedia: NOT_MEASURED_INSTRUMENT_DEFECT
+    is_not_rescored: true
+    numbers_are_not_copied_into_sfir7: true
+  sfir6:
+    charter: protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6_DESIGN_CHARTER.yaml
+    result_at_the_time_this_charter_was_written: NOT_YET_IN_EXISTENCE
+    this_charter_was_designed_without_reading_it: true
+    is_not_rescored: true
+    numbers_are_not_copied_into_sfir7: true
+  why_that_second_entry_matters: >-
+    SFIR7's root-selection rule is outcome-independent only if it was computable
+    before SFIR6's census existed. It was. The rule is a function of an external
+    catalogue snapshot and of bounds inherited from SFIR4, and no part of it can
+    be evaluated against a capacity quantity, SFIR6's or any other.
+
+scientific_question:
+  statement: >-
+    Is the shortage of qualifying revision pairs in the current narrow git frame
+    a limitation of the SYSTEM, or a coverage limitation of how that frame was
+    CONSTRUCTED?
+  answered_by: >-
+    applying the same unchanged instrument, scorer and acceptance logic to a
+    universe selected by an external party's catalogue rather than by TAVONEL.
+  what_a_pass_would_mean: >-
+    that the narrow frame under-covered. It would NOT mean the system is
+    validated at the narrow frame, and it would not retire the narrow frame's
+    measurement.
+  what_a_failure_would_mean: >-
+    that broadening coverage under an externally defined universe does not lift
+    the yield, which is a far stronger statement about the SYSTEM than any
+    narrow-frame result could be. That is the outcome this design is built to be
+    able to report honestly.
+
+# The whole point of the lane. Written as prohibitions because they describe acts,
+# not values.
+forbidden_acts:
+  - adding repositories one at a time until a count clears a threshold
+  - removing an eligibility predicate because the eligible pool came out small
+  - widening a predicate after the pool size is known
+  - choosing N by reference to what would clear the capacity minimum
+  - choosing N by reference to any predecessor's measured capacity
+  - ranking on any quantity TAVONEL measured rather than the catalogue published
+  - re-drawing the frame after a census and reporting only the second draw
+  - treating a short eligible pool as a defect to be repaired rather than reported
+
+root_selection_rule:
+  computable_before_any_capacity_data_exists: true
+  implemented_by: tools/sfir7_frame.py
+  controls: tests/test_sfir7_frame.py
+  design_note: docs/SFIR7_EXTERNAL_CATALOG_DESIGN_NOTE.md
+
+  universe:
+    externally_defined: true
+    curated_by_tavonel: false
+    catalog_id: PENDING_FOUNDER_DECISION
+    candidates_ranked_by_this_lane:
+      - id: LIBRARIES_IO_OPEN_DATA
+        why_independent: published by a third party with no TAVONEL involvement
+        field_fit: carries host, owner/name, SPDX licence, created, last push, and its own ordinal
+        licensing: CC-BY-SA-4.0 -- SHARE-ALIKE UNCERTAINTY, see design note
+      - id: OPENSSF_CRITICALITY_SCORE_PUBLISHED_RESULTS
+        why_independent: published by the OpenSSF, ranking computed by them
+        field_fit: carries repository URL and the project's own ordinal score
+        licensing: TO BE CONFIRMED against the specific published release
+      - id: DEBIAN_ARCHIVE_SOURCES_INDEX_VIA_SNAPSHOT_DEBIAN_ORG
+        why_independent: inclusion is decided by Debian's own process under the DFSG
+        field_fit: no repository-level ordinal; ranking would need a declared substitute
+        licensing: index files are factual metadata; explicit terms TO BE CONFIRMED
+    the_choice_is_not_an_agents_call: true
+    blocked_on: founder decision on catalogue identity and on licence terms
+    snapshot_pinning:
+      snapshot_uri_recorded: true
+      snapshot_sha256_recorded: true
+      digest_is_over_working_tree_bytes: true
+      eol_determined_by_byte_counting_never_by_shell_grep: true   # INC-V2-105
+      a_snapshot_whose_bytes_do_not_match_its_digest_is_refused: true
+      the_rule_binds_one_snapshot_digest_and_refuses_any_other: true
+
+  eligibility:
+    decided_in_advance: true
+    uses_only_fields_the_catalogue_publishes: true
+    uses_no_capacity_quantity: true
+    a_predicate_naming_a_field_outside_the_catalogue_record_is_refused: true
+    a_predicate_whose_stated_reason_names_a_capacity_term_is_refused: true
+    predicates_applied_in_declared_order_first_failure_recorded: true
+    predicates:
+      - field: host
+        op: eq
+        value: github
+        why: the inherited git_docs adapter addresses one host; changing hosts would confound the frame question with an instrument change
+      - field: spdx_license_id
+        op: in
+        value: [Apache-2.0, BSD-2-Clause, BSD-3-Clause, MIT, ISC, MPL-2.0, GPL-2.0-only, GPL-3.0-only, LGPL-2.1-only, LGPL-3.0-only]
+        why: an SPDX identifier the catalogue itself declares, from a list fixed before the snapshot was taken
+      - field: created_utc
+        op: on_or_before
+        value: snapshot_date_minus_1095_days
+        why: minimum history age of three years, so that a repository has a revision history at all
+      - field: last_activity_utc
+        op: on_or_after
+        value: snapshot_date_minus_365_days
+        why: catalogue-declared activity within a year, so the universe is live software rather than an archive
+    documentation_file_eligibility:
+      is_a_property_of_a_path_not_of_a_repository: true
+      extensions: inherited_live_from_sources_sfir4_git_docs
+      why_not_a_catalogue_predicate: >-
+        a catalogue does not know what is in a tree. A predicate pretending it
+        does would smuggle a TAVONEL judgement into an external universe.
+    prior_programme_roots_are_not_excluded:
+      decision: NOT_EXCLUDED
+      why: >-
+        excluding SFIR1-SFIR4's twenty repositories would be TAVONEL curating the
+        external universe again, which is the habit SFIR7 exists to stop. Whether
+        the external rule happens to reselect any of them is a diagnostic to be
+        reported, not an input to the rule.
+
+  ranking:
+    key: the catalogue's own published ordinal, descending
+    computed_by_tavonel: false
+    tie_breaker: the catalogue's own stable record identifier
+    ties_the_tie_breaker_cannot_settle_are_refused_not_resolved: true
+    ordering_built_from_sorted_tuples_only: true
+    no_set_iteration_no_dict_order_no_locale_no_clock_no_random: true
+    descending_order_over_a_non_integer_field_is_refused: true
+
+  n:
+    value_under_the_currently_inherited_bounds: 125
+    derivation: transport_budget_over_per_root_request_bound
+    formula: N = floor(wall_clock_hours * published_rate_limit_per_hour / per_root_request_bound)
+    inputs:
+      wall_clock_hours: read live from sfir6_transport.MAX_TOTAL_WALL_CLOCK_SECONDS
+      published_rate_limit_per_hour: GitHub's published authenticated primary rate limit
+      per_root_request_bound: read live from sources_sfir4.MAX_GIT_API_REQUESTS_PER_ROOT
+    justification: >-
+      N is the whole number of roots the inherited transport budget can visit.
+      Every input exists for a reason that predates this study's question: two are
+      bounds inherited unchanged from SFIR4 and SFIR6, and one is a vendor's
+      published figure. None of them moves when a census disappoints, and the
+      arithmetic leaves no free parameter.
+    justification_may_not_cite_the_capacity_minimum_or_any_predecessor_measurement: true
+    a_hand_set_n_is_refused: true
+    an_n_whose_declared_inputs_drifted_from_the_live_bounds_is_refused: true
+    sfir7_may_still_come_up_short_at_this_n: true
+    a_short_result_is_reported_not_repaired: true
+    if_the_transport_budget_is_ever_raised:
+      it_is_a_cost_and_wall_clock_decision_recorded_as_such: true
+      it_may_not_be_raised_after_a_capacity_result_is_known: true
+
+carried_forward_by_reference:
+  charter: protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml
+  fields_owned_by_that_document:
+    - capacity_rule
+    - git_tree_enumeration
+    - spent_policy
+    - payload_policy
+    - terminal_policy
+  redeclaring_any_of_them_here_is_a_refusal: true
+
+unchanged_from_the_predecessors:
+  minimum_c_per_family: unchanged
+  minimum_q_per_family: unchanged
+  quota_formula: unchanged
+  per_root_caps: unchanged
+  selection_salt: unchanged
+  inclusion_exclusion_rules: unchanged
+  identity_semantics: unchanged
+  scorer: unchanged
+  acceptance_logic: unchanged
+  scientific_endpoints: unchanged
+  wikipedia_and_ecfr_families: not_addressed_by_sfir7
+  why_the_thresholds_do_not_move: >-
+    moving a threshold in the same study that widens a frame would make the two
+    changes inseparable. SFIR7 changes exactly one thing: who chose the roots.
+
+instrument_policy:
+  the_adapter_scorer_and_acceptance_logic_are_the_inherited_ones: true
+  sfir7_introduces_no_new_measurement_code: true
+  frame_module_makes_no_network_call: true
+  frame_module_source_is_scanned_for_network_imports_by_its_own_controls: true
+  acquiring_the_catalogue_snapshot_is_a_separate_later_authorised_act: true
+  no_acquisition_no_census_and_no_freeze_are_authorised_by_this_charter: true
+
+interpreter_of_record:
+  path: D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe
+  why: the bare `python` on PATH resolves akc_cir from a different checkout
+  incident: INC-V2-103
+  every_reported_figure_names_it: true
+
+control_policy:
+  a_guard_whose_failure_is_impossible_is_not_a_guard: true
+  incident_family: INC-V2-036
+  every_control_is_mutation_tested: true
+  mutation_table_is_reported_with_the_controls: true
+  a_control_that_survives_its_mutation_is_not_a_control: true
+
+design_freeze_state:
+  charter_written: true
+  frame_rule_implemented: true
+  controls_mutation_tested: true
+  catalogue_identity_decided: false
+  catalogue_licence_cleared: false
+  snapshot_acquired: false
+  snapshot_digest_pinned: false
+  frozen: false
+  blocking_freeze:
+    - founder decision on which external catalogue
+    - founder ruling on that catalogue's licence terms for a derived, published roster
+    - the transport request budget below, which no current value satisfies
+
+# Registered 2026-08-27 while SFIR6's census was still running and no SFIR6
+# number existed. That timing is the point: raising a budget after seeing a
+# capacity result is a tuning act, and this conflict must be settled before any
+# result can influence it.
+inherited_transport_budget_conflict:
+  state: OPEN_AND_BLOCKING
+  n_roots: 125
+  per_root_request_bound: 240          # sources_sfir4.MAX_GIT_API_REQUESTS_PER_ROOT
+  implied_worst_case_requests: 30000
+  inherited_cap: 12000                 # sfir5_transport.MAX_TOTAL_REQUESTS
+  consequence_if_unresolved: >-
+    an acquisition refuses at request 12,001 with TransportBudgetExceeded, part
+    way through the roster, producing a partial census rather than a measurement.
+  why_it_is_not_a_defect_in_this_design: >-
+    SFIR7 declares no transport of its own and inherits by reference. The
+    conflict is between two inherited constants, and it is real either way.
+  the_two_honest_resolutions:
+    - raise the request cap, recorded as a cost and wall-clock decision with its
+      own rationale, taken before any capacity result is known
+    - derive N from the request cap as well as the wall clock, which lowers N and
+      is itself a frame decision that must be declared before the snapshot
+  forbidden_resolution: >-
+    choosing between them after an SFIR7 census has produced a count, or
+    choosing the one that produces the larger roster because the smaller one
+    fell short.
+  note_on_the_remaining_degree_of_freedom: >-
+    N's derivation removes N as a free parameter, but wall_clock_hours is
+    inherited from sfir6_transport and is a number a future study could raise.
+    The freeze receipt must pin MAX_TOTAL_WALL_CLOCK_SECONDS and
+    MAX_TOTAL_REQUESTS by digest alongside the catalogue snapshot, or this is a
+    rule in a document rather than a mechanism.
