@@ -1,0 +1,38 @@
+{
+  "charter": {
+    "path": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml",
+    "sha256": "sha256:c211535fae804cb216a869cfe417a2a1f2e06590d5ae96e3a95fca9734bf2174"
+  },
+  "charter_digest": "sha256:c211535fae804cb216a869cfe417a2a1f2e06590d5ae96e3a95fca9734bf2174",
+  "content_sha256": "sha256:21712f760fd4465564792f4b04e6213d1ab44bb81476727f594d23035f6a4041",
+  "generated_at": "2026-08-27T01:06:58.205275Z",
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4",
+  "schema": "tavonel.sfir4.design_charter_freeze.v1",
+  "state": "FROZEN_PRE_CENSUS",
+  "toolchain": {
+    "bound_sfir3_ecfr_wikipedia_adapter": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir3_capacity.py",
+      "sha256": "sha256:162226e6a604960083b56428703e026d516647839d2eb2267a068471695bf311"
+    },
+    "bound_sfir3_ecfr_wikipedia_sources": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir3.py",
+      "sha256": "sha256:e42c2a44b93372de674f616e581ae7feac35e70e09274e43bd9a5ce6e4b2a6a4"
+    },
+    "probe_sfir4_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir4_capacity.py",
+      "sha256": "sha256:6575b69da82e0006c5fca17df8f409ea7ea8ab6b3dc7f9cc344debb68d91f01c"
+    },
+    "sfir4_protocol": {
+      "path": "research/tavonel_eval_v2/tools/sfir4_protocol.py",
+      "sha256": "sha256:e7b9d9de52abca123838065875609c99524b35e1afbabb7c0214ac5c19efa184"
+    },
+    "sfir4_spent_authority": {
+      "path": "research/tavonel_eval_v2/tools/sfir4_spent_authority.py",
+      "sha256": "sha256:fa4454e5dc88219f71f43e18734f475c8bae650441d50cecda16fc66649508c8"
+    },
+    "sources_sfir4": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir4.py",
+      "sha256": "sha256:df50c865e17d09b4523c474fd315c8cac8e0e008ef5919048e17c5a804a31837"
+    }
+  }
+}
