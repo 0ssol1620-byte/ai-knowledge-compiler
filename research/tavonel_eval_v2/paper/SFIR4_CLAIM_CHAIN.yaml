@@ -42,6 +42,31 @@ status_vocabulary_note: |
   IMPLEMENTED_NOT_PROVEN as a synonym for IMPLEMENTED; it is the state one rung
   below it.
 
+corrections:
+# Recorded rather than silently edited. This file was authored earlier on
+# 2026-08-27 against a working tree in which the Protected Core repairs for
+# INC-V2-037 and INC-V2-038 existed only as uncommitted lines and the ledger's
+# dispositions still read REPAIR NOT YET DESIGNED. The repairs landed the same
+# day. Correcting the fields silently would have destroyed the record of what
+# was believed when.
+- id: C-01
+  corrects: links L2 and L5 -- pending_because, narrowing_if_unsupported, cannot_claim
+  was: the INC-V2-037 and INC-V2-038 defects were described as ESTABLISHED, MEASURED and
+    UNREPAIRED Protected Core defects with no repair designed.
+  now: both repairs LANDED in commit 4823d5d. INC-V2-037's gate moved off the identity fold onto
+    content_facet_verdict; INC-V2-038's typed changes now seed their own channel traversals under
+    FacetPolicy.DECLARED and resolve to FacetVerdict.UNRESOLVED where no edge declared the facet,
+    so a change that reaches nothing leaves a trace instead of a freshness claim.
+  what_did_not_change: neither repair is MEASURED. The cohorts that exhibited both defects belong
+    to SFI2 and SFI3, both spent, so neither can be scored against the data that revealed it.
+    The evidence_state stays IMPLEMENTED_NOT_PROVEN for exactly that reason, and the distinction
+    a reader must keep is between "no repair exists" (was true, is not now) and "no held-out
+    measurement exists" (was true, is still true).
+  why_this_matters_for_the_paper: it is the difference between a limitation and a defect. A
+    reviewer told the code is broken will ask why it shipped; a reviewer told the repair is
+    unmeasured because the exhibiting corpus was consumed will ask what the next prospective
+    study measures. The second question is the one SFIR4 answers.
+
 links:
 - id: L1
   claim: A unit's logical identity (source id + explicit structural path, and secondarily a
@@ -107,21 +132,29 @@ links:
     unit''s content change" (for which that same fold is wrong). single_root_cause: true,
     distribution {"typed_delta": 14}, 0 unresolved, per receipt
     sfi2-execution-forensic--20260823T095408Z-2dcd1681a54c cited in the ledger entry.'
-  pending_because: the root cause is established and reproduced on real held-out lineages, but
-    "REPAIR NOT YET DESIGNED" per the ledger's own disposition line, and akc_cir.semantic_diff /
-    akc_cir.identity are Protected Core -- any fix goes through compatibility contract -> shadow
-    -> benchmark -> canary -> rollout -> deprecate, none of which has started.
-  narrowing_if_unsupported: identity and change are decided by two separately NAMED comparators,
-    but as of INC-V2-037 they are not fully independently DECIDED -- the change comparator
-    currently reuses the identity comparator's normalization for one of its inputs, and that
-    reuse produced 14 confirmed false negatives (stale artifacts left ACTIVE) on a held-out
-    study. The claim narrows from "decided independently" to "named separately, with one
-    documented, unrepaired coupling."
+  pending_because: 'CORRECTED 2026-08-27 -- see corrections.C-01. The repair LANDED in commit
+    4823d5d: the MODIFIED_CLAIM gate no longer consults normalize_text_for_identity at all, and
+    is decided by content_facet_verdict on the CONTENT facet derived from raw text under NFC
+    alone. What is still pending is not the repair but its MEASUREMENT: the fourteen lineages
+    that exhibited the defect are SFI2''s, and SFI2''s corpus is spent, so the repair cannot be
+    scored against the cohort that revealed it. Confirming it requires a new prospective study on
+    a fresh cohort, which is what SFIR4 is for. Unit controls constrain the repair; no
+    held-out measurement does.'
+  narrowing_if_unsupported: 'CORRECTED 2026-08-27 -- see corrections.C-01. The coupling is
+    removed in code: content_facet_verdict reads neither identity_text nor the resolver''s
+    decision, which is what keeps its agreement with identity evidence rather than a tautology.
+    The narrowing that remains is about EVIDENCE, not design: the claim narrows from "decided
+    independently, and that independence is confirmed on held-out data" to "decided
+    independently by construction, with the fourteen-lineage confirmation unavailable because
+    that corpus is spent." If SFIR4 does not reach payload, the honest sentence keeps the
+    architectural claim and drops the empirical one.'
   cannot_claim:
-  - identity and change are decided independently
+  - the independence was CONFIRMED on held-out data -- the repair is unit-tested, and the cohort
+    that would confirm it is spent
   - the typed delta names every artifact that needed rebuilding (CLAIM_MATRIX.yaml already
     retracts this exact sentence from paper section 9.5.1)
-  - the repair passed, because no repair has been written
+  - the fourteen INC-V2-037 escapes are closed, because closing them would have to be measured
+    on SFI2's corpus and that corpus is spent
 
 - id: L3
   claim: A unit whose identity resolution the resolver could not settle (AMBIGUOUS or
@@ -241,14 +274,29 @@ links:
     (no reference-or-locator-only clean miss) scored MET, 0 over 39 exercising pairs, because E4
     only asks whether the change was DETECTED, not whether it was ACTED on -- the two are
     conflated by no test that existed before this incident.'
-  pending_because: the channel taxonomy and its detection half are implemented and unit-tested;
-    the gap (3 of 5 channels never seed a rebuild) is a measured, reproduced defect in
-    production code with no repair yet designed, and the endpoint written to catch it (E9) has
-    not been scored on any cohort.
-  narrowing_if_unsupported: the channel set is typed, closed and enumerable, and detection is
-    typed per channel -- but propagation (an edge that causes a rebuild) is implemented for 2 of
-    5 channels only. "Dependency propagation is typed" narrows to "dependency DETECTION is typed
-    for five channels; propagation is typed and implemented for two."
+  pending_because: 'CORRECTED 2026-08-27 -- see corrections.C-01. The gap is closed in code by
+    commit 4823d5d: each of LOCATOR, TEMPORAL and METADATA now seeds its own traversal from
+    changed_logical_ids_for(channel) on the matching DependencyChannel, under
+    FacetPolicy.DECLARED. What remains pending is measurement. E9 has still been scored on no
+    cohort, and the corpus that exhibited the gap is spent.
+
+    One property of the repair belongs in the claim and not only in the code: where NO edge
+    narrowed its channel set to declare a facet, the change is NOT propagated. It resolves to
+    FacetVerdict.UNRESOLVED and is recorded on the plan. That is deliberate --
+    DependencyEdge.channels defaults to every channel, so seeding these facets across
+    undeclared edges would invalidate through edges that declared nothing, which is the blunt
+    failure StructuralPolicy.ALWAYS was measured at (80.5% false invalidation). So the honest
+    statement is not "all five channels now propagate" but "all five are typed, and each
+    propagates exactly where an edge declared it and is recorded as unresolved where none did."'
+  narrowing_if_unsupported: 'CORRECTED 2026-08-27 -- see corrections.C-01. Propagation is now
+    implemented for all five channels, so the old narrowing (detection five, propagation two) no
+    longer describes the code. The narrowing that replaces it is about declaration quality
+    rather than implementation: propagation reaches only edges whose adapter narrowed its
+    channel set, so against an adapter that declares nothing, three of the five channels resolve
+    UNRESOLVED and reach no artifact. "Dependency propagation is typed" narrows to "dependency
+    propagation is typed and complete over DECLARED edges, and reports UNRESOLVED rather than
+    propagating where nothing was declared" -- a statement about the corpus''s adapters as much
+    as about the compiler, and one the paper must make in those words.'
   cannot_claim:
   - a typed change in any declared channel causes a rebuild
   - E4's clean MET result says anything about whether a detected reference/locator/temporal/metadata
