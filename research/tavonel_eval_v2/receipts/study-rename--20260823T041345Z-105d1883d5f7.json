@@ -1,0 +1,74 @@
+{
+  "authorised_by": "founder ruling, 2026-08-23",
+  "because": "the two implementations share a specification, and that specification was written by reading the engine. A defect living in the specification is common-mode and this design cannot see it. Independent verification was not achieved and the earlier working title claimed it.",
+  "estimated_cost_usd": 0.0,
+  "forbidden_after_this_record": [
+    "independent oracle verification",
+    "independent oracle",
+    "independently verified",
+    "oracle-verified"
+  ],
+  "generated_at": "2026-08-23T04:13:44.650730+00:00",
+  "gpu_seconds": 0,
+  "name_is": "independent implementation differential study",
+  "name_was": "independent oracle verification",
+  "not_renamed": [
+    {
+      "carries": "the frozen wording, including the word 'oracle' throughout",
+      "path": "research/tavonel_eval_v2/protocols/ORACLE_INDEPENDENCE_V2.yaml",
+      "pinned_by": "research/tavonel_eval_v2/receipts/oracle-v2-protocol-freeze--20260823T024147Z-7dd609ba17c6.json",
+      "pinned_sha256": "sha256:e9944ff8849d608dde1edb37587cb5d13ad070a8bfc16b45c0d4a6ee1df08bba",
+      "sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950",
+      "why": "frozen and byte-pinned by oracle-v2-protocol-freeze--20260823T024147Z-7dd609ba17c6.json. A frozen protocol is not edited to improve its framing; that is the mutation every gate here exists to refuse. Its own header already records that independence was not achieved and that the shared specification is why."
+    },
+    {
+      "carries": "the executed result, exactly as executed",
+      "path": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T033320Z-248859f8c1ee.json",
+      "sha256": "sha256:077e1db15d7294438eed519f3759544818ec35bd30cce860f471829198ae6ebf",
+      "why": "a result receipt is immutable. The rename is a change of name, not of number, and no number in it moves."
+    }
+  ],
+  "provenance": {
+    "generated_at": "2026-08-23T04:13:45.076950+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "study-rename",
+    "run_id": "20260823T041345Z-105d1883d5f7",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/record_study_rename.py",
+    "tool_sha256": "sha256:6d9a040172a14e4ad7cf2bd19c764a03e6f628b07c4f07ee39a0b5695373c3b4"
+  },
+  "receipt_sha256": "sha256:2d0976d0f8a1c118509c07263a62d1c9fe42abd45933dc2ad8f444fcba3bc81c",
+  "renamed_surfaces": [
+    {
+      "carries": "independent implementation differential study",
+      "exists": true,
+      "path": "paper/CLAIM_MATRIX.yaml",
+      "sha256": "sha256:8081de337b305e01a5cd31623ae979ded6e4c4141f47f841fe13e0d1148820c5",
+      "why": "C-17 carries study_name, name_was and name_changed_because"
+    },
+    {
+      "carries": "independent implementation differential study",
+      "exists": true,
+      "path": "paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "sha256": "sha256:8968b26107619f42a3ef73596308413c2e82f0edfc27f5f0a30e83bc1263eb1b",
+      "why": "section 5.2 heading and body; the four divergences are oracle-relative until section 5.3 confirms them on the production path"
+    },
+    {
+      "carries": "independent implementation differential study",
+      "exists": true,
+      "path": "V2_CONSOLIDATED_REPORT_2026-08-21.md",
+      "sha256": "sha256:4472c762c0385823fd2d8c95eb2cf3055eb3fba664b9d34f95df87cc2e45ca57",
+      "why": "the Workstream B section and its summary line"
+    }
+  ],
+  "schema": "tavonel.v2.study_rename.v1",
+  "study": "ORACLE_INDEPENDENCE_V2",
+  "vocabulary": {
+    "confirmed selective stale escape": "established against the production clean full rebuild alone, in forensic-stale-escape. Four named cases, not a rate.",
+    "oracle-relative divergence": "a disagreement between the production path and the second implementation. Says where to look; says nothing on its own about whether the production path left anything stale."
+  },
+  "what_would_be_required_instead": "an independently checkable reference semantics for the supported source grammar, defined before either implementation. Labelling a second implementation an oracle does not produce one."
+}

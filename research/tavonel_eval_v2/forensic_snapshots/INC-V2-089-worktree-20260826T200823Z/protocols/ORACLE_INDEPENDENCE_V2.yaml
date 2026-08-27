@@ -1,0 +1,245 @@
+# ORACLE_INDEPENDENCE_V2 — an oracle that does not read the engine's output.
+#
+# Frozen before any held-out pair is compared.
+#
+# The earlier 28-pair Wikipedia result is NOT an independent-oracle result and
+# is not restated as one here. That correction stands: it was same-implementation
+# full-recomputation equivalence. The full rebuild and the selective rebuild both
+# consumed the canonical document the engine had already produced, so a defect in
+# canonicalisation was common-mode across both sides and neither could see it.
+#
+# The single structural change in this protocol is where the oracle starts:
+#
+#     v1 oracle:  canonical document -> expected artifacts
+#     v2 oracle:  RAW SOURCE BYTES   -> its own units -> expected artifacts
+#
+# Everything else about the isolation was already right and is kept: a separate
+# process, an import guard that raises rather than a rule that is trusted, and a
+# third comparator that imports neither side.
+
+schema: tavonel.v2.protocol.oracle_independence.v2
+protocol_id: ORACLE_INDEPENDENCE_V2
+version: 2
+authored: 2026-08-23
+authorised_by: founder ruling 2026-08-23, PAPER CLOSURE PROGRAM workstream B
+supersedes: null
+
+split: held_out
+
+relates_to:
+  P0b_recompilation_mechanics:
+    rule: read-only, not re-scored, never restated as independent-oracle evidence
+    standing_correction: >-
+      same-implementation full recomputation equivalence. The wording
+      "independent oracle" is forbidden for that result and remains forbidden.
+  P0c_coverage_completeness: {rule: read-only}
+  SOURCE_FAITHFULNESS_HELDOUT_V1:
+    relation: >-
+      workstream A measures whether a lost fact is declared. This measures
+      whether the selective path agrees with a rebuild that never saw its
+      output. Disjoint cohorts; neither result is restated by the other.
+  STOP-V2-005: {relation: the stopping record this workstream succeeds}
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  model_calls: {approved: false}
+  sealed_evidence: {rule: read-only}
+  docs_ip: {rule: not modified}
+  receipts: {rule: immutable, per INC-V2-005}
+
+# ---------------------------------------------------------------------------
+# 1. What independence means here, and what it does not
+# ---------------------------------------------------------------------------
+
+independence:
+  achieved:
+    - separate executable, run as a subprocess under `python -I -S`
+    - an import guard inside the oracle process that raises on any project module
+    - the oracle never reads a canonical document, a dirty set, a plan, a prior
+      state or any engine output. It reads raw payload bytes.
+    - the oracle implements its own unit derivation, its own artifact identity
+      and its own content extraction
+    - neither side hashes the comparison. The comparator hashes, with its own
+      implementation, from content both sides emit as data.
+    - a third comparator process that imports neither side and is guarded the
+      same way
+
+  not_achieved:
+    specification_is_shared: >-
+      the oracle implements the same declared specification the engine does, and
+      that specification was written by reading the engine. This is an
+      independent IMPLEMENTATION, not an independent SPECIFICATION. A defect
+      that lives in the specification itself is still common-mode and this
+      protocol cannot see it. Stating that plainly is a condition of using the
+      word "independent" at all.
+    consequence: >-
+      a claim of the form "the selective path is correct" is not available from
+      this result. The available claim is narrower and is written out in section
+      6 as the only permitted wording.
+
+# ---------------------------------------------------------------------------
+# 2. The shared specification, declared
+# ---------------------------------------------------------------------------
+#
+# Written out because the oracle implements it from this text. If the engine and
+# this text disagree, that is a finding about the engine or about this text, and
+# either way it is reported rather than reconciled by editing the oracle.
+
+canonical_unit_spec:
+  dispatch:
+    sec_edgar: HTML section reader
+    everything_else: markdown section reader
+    note: >-
+      the eCFR family carries XML and is read by the markdown reader. That is
+      the engine's declared dispatch and the oracle implements it unchanged. It
+      is also a finding in its own right and is reported as one.
+  markdown:
+    - strip shortcode constructs of the form {{< >}} and {{% %}}
+    - skip YAML front matter delimited by --- at the start of the document
+    - fenced code blocks do not open headings
+    - an ATX heading opens a new block at its level
+    - link syntax is replaced by its text; HTML tags become a space; emphasis
+      markers are removed; whitespace collapses to single spaces
+  assembly:
+    - blocks under one heading are joined with a single space before any length test
+    - a section whose joined text is shorter than 120 characters is discarded
+    - a section whose heading casefolds into
+      {references, external links, see also, further reading, notes} is discarded
+    - the heading path is the stack of open headings; if empty, the heading itself
+
+artifact_spec:
+  logical_id: '"u:" + sha256(source_id + "\n" + "/".join(explicit_path))[:24]'
+  doc_key: sha256(source_id)[:16]
+  bucket: int(sha256(logical_id)[:8], 16) % 4
+  artifacts:
+    section: one per unit, carrying that unit's text
+    document-index: one per document, carrying the ordered logical ids
+    structure-map: one per document, carrying the ordered heading paths
+    topic-bucket: up to four per document, carrying sorted member logical ids
+
+comparison_keys:
+  note: >-
+    the two sides cannot be compared on their own digests, because using either
+    side's hashing would make that side the standard. Both emit CONTENT, keyed
+    by a portable identity, and the comparator hashes it.
+  portable_identity:
+    section: 'the literal "section:" followed by the joined explicit path'
+    document-index: 'the literal "document-index"'
+    structure-map: 'the literal "structure-map"'
+    topic-bucket: 'the literal "topic-bucket:" followed by the bucket index'
+
+# ---------------------------------------------------------------------------
+# 3. What is measured
+# ---------------------------------------------------------------------------
+
+measurements:
+  exact_state_equivalence: >-
+    for every portable key, the engine's post-recompilation content and the
+    oracle's source-derived content are byte-identical after the comparator's
+    own canonical encoding.
+  stale_escape: >-
+    a key the oracle says must change across the pair that the engine carried
+    forward instead of rebuilding. This is the failure the whole comparison
+    exists to detect and its bar is zero.
+  typed_invalidation:
+    structural_only: heading paths or their order moved; no unit text changed
+    lexical_only: unit text changed; the path list and its order did not
+    reference_locator: >-
+      a reference target moved in the raw source. Reported by the oracle from
+      raw bytes; the engine has no artifact that can carry it, so the expected
+      engine behaviour is "no change detected", and the interesting quantity is
+      whether that pair is nonetheless reported as a clean recompilation.
+    temporal_authority: >-
+      measured only where the source family carries an explicit effective or
+      filing date the oracle can read from raw bytes. Where it does not, the row
+      is reported UNSUPPORTED rather than assumed correct.
+    mixed: more than one of the above in the same pair
+  unresolved_input_no_false_pass: >-
+    where the oracle cannot derive a state at all — undecodable payload, empty
+    unit set, reader failure — the engine must not report a clean equivalence
+    for that pair. A pair the oracle could not judge is UNJUDGED, never PASS.
+
+# ---------------------------------------------------------------------------
+# 4. Cohort
+# ---------------------------------------------------------------------------
+
+cohort:
+  frame: the VALUE_BEARING_COHORT_V2 frozen lineage list
+  salt: ":oracle-v2"
+  order: ascending sha256 of (lineage id + salt), fixed before any payload is read
+  salt_why: >-
+    a declared constant salt, chosen so this cohort is a different slice of the
+    same frame rather than the front of the same order. It is not chosen after
+    seeing which lineages behave well.
+  disjoint_from:
+    - every lineage SOURCE_FAITHFULNESS_HELDOUT_V1 scored
+    - the three VALUE_BEARING_COHORT_V2 admissions
+    - P0b, P0c, P0d, P2, P3b, P4b-P4i, the VBC1 probe and SOURCE_LOCALITY_V2
+  primary_target: 200
+  floor: 120
+  families_required: 2
+  pair_predicate: >-
+    newest adjacent revision pair whose raw payload digests differ, under the
+    history bounds inherited unchanged from VALUE_BEARING_COHORT_V2.
+  payload_bound:
+    max_payload_bytes: 2000000
+    basis: >-
+      compute, and the same value SOURCE_FAITHFULNESS_HELDOUT_V1 declares. Each
+      pair crosses a process boundary base64-encoded, twice, and the frame's
+      size distribution is bimodal, so the bound sits in a gap rather than on a
+      slope.
+    explicitly_not_basis: observed comparison outcome
+    reporting: >-
+      an excluded revision is counted under PAYLOAD_TOO_LARGE_TO_CLASSIFY and
+      appears in the result. It is never silently skipped.
+
+# ---------------------------------------------------------------------------
+# 5. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_OI2_ORACLE_ISOLATED:
+    bar: >-
+      the oracle process ran under `python -I -S`, its import guard was armed,
+      and it imported no project module. Reported from inside that process.
+  G_OI2_COMPARATOR_ISOLATED:
+    bar: the comparator process imported neither side and its guard was armed
+  G_OI2_NO_STALE_ESCAPE:
+    bar: stale escapes == 0
+    primary: true
+  G_OI2_NO_FALSE_PASS_ON_UNRESOLVED:
+    bar: >-
+      pairs the oracle could not judge are reported UNJUDGED and none of them is
+      counted as an equivalence pass
+    primary: true
+  G_OI2_TYPED_INVALIDATION:
+    bar: >-
+      for every pair the oracle types as structural-only or lexical-only, the
+      engine's detected change kinds are consistent with that type
+    primary: true
+  G_OI2_COHORT_FLOOR:
+    bar: judged pairs >= 120
+  G_OI2_FAMILIES:
+    bar: families contributing at least one judged pair >= 2
+  G_OI2_NO_GPU:
+    bar: gpu_seconds == 0 and spend == 0
+
+verdict_rule: >-
+  PASS requires every gate. A divergence between the two sides that is NOT a
+  stale escape — the oracle and the engine derive different units from the same
+  bytes — is reported as SPECIFICATION_DIVERGENCE with its count and its
+  samples. It is a finding about the specification, not a failure of the
+  selective path, and it is never repaired by editing the oracle to agree.
+
+anti_fitting:
+  - the oracle is written once from section 2 and is not iterated until it agrees
+  - a divergence is investigated and reported; it is not tuned away
+  - the floor is not lowered and the salt is not changed after seeing a result
+  - no result from this protocol is reported using the words "independent
+    oracle" about P0b's 28 pairs
+
+execution:
+  compute: parallel map over pairs, one deterministic reducer, one evidence writer
+  isolation: each oracle run and each comparator run is its own subprocess
+  cost: CPU only. 0 GPU seconds, $0.

@@ -1,0 +1,2299 @@
+{
+  "external_gpu_cost_usd": 0.0,
+  "files": [
+    {
+      "binding_count": 8,
+      "findings": [],
+      "receipt": "docs/evidence/folynta-public-claims-pack.json",
+      "receipt_file_sha256": "sha256:ff6f9f6b17b7845c545c1c76c0c9ef7396bc329c92bc1152c0108aae69d3065e",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [
+        {
+          "expected": "sha256:f508b6d382d070bab0167294e48310376ca6d1b78c1ed2f6bfa98f68e1037784",
+          "head": null,
+          "note": "another receipt in scope binds the current bytes; this receipt pins the pre-amendment revision",
+          "path": "docs/ip/PATENT_CLAIM_SET_v1_2026-08-19.md",
+          "pointer": "/hash_chain/baseline/sha256",
+          "resolved": "docs/ip/PATENT_CLAIM_SET_v1_2026-08-19.md",
+          "state": "SUPERSEDED_BY_LATER_RECEIPT",
+          "tracked_at_head": false,
+          "worktree": "sha256:9471726fca74e6613a3db54882b8c0661de6a024dfc818ccee93a1f6931f76ec"
+        }
+      ],
+      "receipt": "docs/ip/receipts/amendment-coverage-2026-08-19.json",
+      "receipt_file_sha256": "sha256:6379bb33c870ae2b657d8c16db404732368ceaa2e9a0e2543303d9e9e6839646",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "docs/ip/receipts/assertion-registry-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:483e69f3aad79e83dfb3604c7082d523e5f47076e2ea8c4545955eee39f619e6",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/claim-amendment-direction-2026-08-19.json",
+      "receipt_file_sha256": "sha256:a7290c3f221090e80cfe54669fa03e1ac374e8d67a831f77b9d2d8c280d017aa",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 88,
+      "findings": [],
+      "receipt": "docs/ip/receipts/claim-evidence-matrix.json",
+      "receipt_file_sha256": "sha256:036b92f252d03b00886ea431653f290d8cefc10f3eb34bf876b7b9795a750362",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/counsel-and-breadth-2026-08-20.json",
+      "receipt_file_sha256": "sha256:52ac581839a8b10e7f5fe91e9682e6b24f09527704c10f9b5cf8d693c6952702",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/cross-document-consistency-2026-08-19.json",
+      "receipt_file_sha256": "sha256:a8a369a7dbfc4aff1c3688e74e9f2bb4e036fe36113584b94b0fc7b30040fccc",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/element-support-matrix-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c9e757429d489568eab4a911420dbfc3827a1fa2a5a8add30c17aa9676e45f92",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/figure-caption-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:83c630007546db3771249155e208263fe555b81c6ad14973a9b494afbe60ff07",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/inference-vs-measurement-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:0d1bcf41ec2bb322e67e675114bc4b86cdb82fb587c5b67f18c7aeba7f763adf",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/manuscript-number-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:3491b6cb40354fd8997464b77406ff51aa1205e35eb449a2e57db25b3ef6b596",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/package-selftest-2026-08-20.json",
+      "receipt_file_sha256": "sha256:b309a665a0f9056da67a34e12b42cd866b0b1bd7b9837b59f9e22d21896e3cda",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/submission-archive-2026-08-20.json",
+      "receipt_file_sha256": "sha256:0de1604cc156d0efbf9a63902ce833947a265b8a74f8eed6885e04e006c0ea3d",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 48,
+      "findings": [
+        {
+          "expected": "sha256:93420f8b05de5d7c4f64ddd1f0015fdf748b9934ae75c7edcd39117af18c4071",
+          "head": null,
+          "path": "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+          "pointer": "/files/28/sha256",
+          "resolved": "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+          "state": "MISMATCH_UNEXPLAINED",
+          "tracked_at_head": false,
+          "worktree": "sha256:c25ecbb4857c90f59412d820054f3ad3fb8d5fc44029c091bca7e55910a8e537"
+        },
+        {
+          "expected": "sha256:0c12365dcf854a239a655cba995d04e33ae1009a8b8d1a2a04b936b6270a39ed",
+          "head": null,
+          "path": "docs/repro/TEST_SCOPE_STATUS.json",
+          "pointer": "/files/42/sha256",
+          "resolved": "docs/repro/TEST_SCOPE_STATUS.json",
+          "state": "MISMATCH_UNEXPLAINED",
+          "tracked_at_head": false,
+          "worktree": "sha256:4f354e3e5597b4a4b48cbd6acc8caa9d3e35ac33619dd4387a3d6d5e51f89711"
+        }
+      ],
+      "receipt": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c65d6566ac52d5013c65345026d00e482b01a97b140bfc750d68839d213006e7",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/submission-pdf-build-2026-08-20.json",
+      "receipt_file_sha256": "sha256:daf66e71beb3d6313696832073d24435747d5f36e67c2a1e34b7e04feb727188",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "docs/ip/receipts/submission-pdf-check-2026-08-20.json",
+      "receipt_file_sha256": "sha256:9fd6a23a28be3b802c00093195c52c74cc5779c4babf6250d20c5d20c100820b",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/cpu-critical-token-pilot.json",
+      "receipt_file_sha256": "sha256:8d9f536c2b292abe1893266d798e8771aa31fadf4d3dc9695853aca6efec68f9",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/development-completion-2026-08-15.json",
+      "receipt_file_sha256": "sha256:1ce6b738670cdba518ca4774156531f0bef2d798de9767409fcb48e88403c11f",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 19,
+      "findings": [
+        {
+          "expected": "sha256:f01c362729cdb4b8247d32e0e02bf0c935311edc3bd1c5c2a7d973c568208ac2",
+          "path": "/opt/folynta/baked-runtime-receipt.txt",
+          "pointer": "/runtime_files//opt/folynta/baked-runtime-receipt.txt",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+          "path": "/opt/folynta/models/OvisOCR2/LICENSE",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/LICENSE",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:03c876522bb7be5e8410eed758854dbb933204935afa898758d929c10725945d",
+          "path": "/opt/folynta/models/OvisOCR2/README.md",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/README.md",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:273d8e0e683b885071fb17e08d71e5f2a5ddfb5309756181681de4f5a1822d80",
+          "path": "/opt/folynta/models/OvisOCR2/chat_template.jinja",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/chat_template.jinja",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204",
+          "path": "/opt/folynta/models/OvisOCR2/config.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/config.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+          "path": "/opt/folynta/models/OvisOCR2/merges.txt",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/merges.txt",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+          "path": "/opt/folynta/models/OvisOCR2/model.safetensors",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/model.safetensors",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:771a452b0072234bd09984f9702f751ddfbf3a58e5aca6286ce493d1d1d0dfdc",
+          "path": "/opt/folynta/models/OvisOCR2/performance.png",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/performance.png",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:f67200bf177cc8fc14774f1895386aab06ca544bf0a672d0789778a5fb15f087",
+          "path": "/opt/folynta/models/OvisOCR2/performance_omnidocbench_v16.png",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/performance_omnidocbench_v16.png",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:65c8a4ce9391f29ab35d2c4e379d0aeac38a315409c0ff4dd210f3627a3cc1a7",
+          "path": "/opt/folynta/models/OvisOCR2/performance_puredocbench.png",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/performance_puredocbench.png",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+          "path": "/opt/folynta/models/OvisOCR2/preprocessor_config.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/preprocessor_config.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:8fa254a861ba524d927d8f8b4e74d20246503afe7d978977b7bd033f0effb858",
+          "path": "/opt/folynta/models/OvisOCR2/snapshot-receipt.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/snapshot-receipt.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+          "path": "/opt/folynta/models/OvisOCR2/tokenizer.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/tokenizer.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:49e2b6e395f959f077f1e992b338919c0d4a9732fc6e613995e06557f843500c",
+          "path": "/opt/folynta/models/OvisOCR2/tokenizer_config.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/tokenizer_config.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+          "path": "/opt/folynta/models/OvisOCR2/video_preprocessor_config.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/video_preprocessor_config.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+          "path": "/opt/folynta/models/OvisOCR2/vocab.json",
+          "pointer": "/runtime_files//opt/folynta/models/OvisOCR2/vocab.json",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:aa53908268ff67992685b2c607607e9a6e183ca70e129e2e9b3620f36019157f",
+          "path": "/opt/folynta/qualification-http.py",
+          "pointer": "/runtime_files//opt/folynta/qualification-http.py",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:6489518d0a098e30af6a353b7f910cc842d27ed0ed36c397236e91d72bdf027f",
+          "path": "/opt/folynta/start-ssh.sh",
+          "pointer": "/runtime_files//opt/folynta/start-ssh.sh",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:d56d4d94aa82a573df0553e8ccb42a7702cf471c334426d132f68df4897b847d",
+          "path": "/opt/folynta/verify-runtime.sh",
+          "pointer": "/runtime_files//opt/folynta/verify-runtime.sh",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        }
+      ],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-bake-v27.json",
+      "receipt_file_sha256": "sha256:8f325e63696a8e032144557931af31a88374d7617d0290f5f17fde1eb51c6e2b",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-bake-v28.json",
+      "receipt_file_sha256": "sha256:5272096399f6747f656e5c0a5f686a5e90e331b8f13f412b46c50fc4d650b207",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-integrity-v27.json",
+      "receipt_file_sha256": "sha256:98bf79dd58feba01eb312cf7fc5c0a5b144f822caad029592628f32ba6989431",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-integrity-v28.json",
+      "receipt_file_sha256": "sha256:20a1e7ba35cf8a52b051f5fd1677cd09a92f78d2bf471f193746417fc01e33df",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 3,
+      "findings": [
+        {
+          "expected": "sha256:aa53908268ff67992685b2c607607e9a6e183ca70e129e2e9b3620f36019157f",
+          "path": "/opt/folynta/qualification-http.py",
+          "pointer": "/runtime_file_sha256//opt/folynta/qualification-http.py",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:6489518d0a098e30af6a353b7f910cc842d27ed0ed36c397236e91d72bdf027f",
+          "path": "/opt/folynta/start-ssh.sh",
+          "pointer": "/runtime_file_sha256//opt/folynta/start-ssh.sh",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        },
+        {
+          "expected": "sha256:d56d4d94aa82a573df0553e8ccb42a7702cf471c334426d132f68df4897b847d",
+          "path": "/opt/folynta/verify-runtime.sh",
+          "pointer": "/runtime_file_sha256//opt/folynta/verify-runtime.sh",
+          "state": "EXTERNAL_TO_REPOSITORY"
+        }
+      ],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-source-provenance-v27.json",
+      "receipt_file_sha256": "sha256:f46f66d0ad9d6fdc244246d7e5c1784c5f0a176183df0432cc110d05f23bc823",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-ghcr-publication-v28.json",
+      "receipt_file_sha256": "sha256:a2871feb6a822b51ffc316a25f0132711797c9503076cb3585a3a7e83ccb4c3a",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-vllm-server-smoke-2026-08-16.json",
+      "receipt_file_sha256": "sha256:baceab2ef6186a4348773af0a8018c209be0118524d94733aa5f8edf526879e2",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-vllm-server-smoke-v2-2026-08-16.json",
+      "receipt_file_sha256": "sha256:a6f542ac11a1a3cc4c48b57445113b4de57c8e427c0bd818ce38d87af31b5cb5",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovis-windows-trivy-security-v28.json",
+      "receipt_file_sha256": "sha256:6a3abc0d35bd50f4fcb916c84646959b6fc717b3377c638d8c22ba54b0b84e11",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovisocr2-m1-daemonless-v28.build-receipt.json",
+      "receipt_file_sha256": "sha256:437f677c86b8de0b7054902bf1d037e77010b306c0eb7a2d611a43d99b7f4797",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/ovisocr2-m1-verified-assembly-v29.runtime-qualification.json",
+      "receipt_file_sha256": "sha256:c5339f22669e12b17d22cd0a88db571a86d0439b330b31cfeca22d89a550ab48",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/ASSURANCE-A-01/receipts/runpod-stage1-preflight-2026-08-15.json",
+      "receipt_file_sha256": "sha256:002032d3194ec81cb170e045f82938dba460106dd9adc00197ea0541b43511bd",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/DIAG-B-01/receipts/committed-bytes-verification.json",
+      "receipt_file_sha256": "sha256:416eb254689f432b68aba6321701091bd9699c9a6d6a9834fea6ab7eb53b2392",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/DIAG-B-01/receipts/production-semantic-channel-promotion.json",
+      "receipt_file_sha256": "sha256:04a194c12ae085f20d647fc0305529793dee658dd4f6021e5c35e7bc8deeb5ef",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 9,
+      "findings": [],
+      "receipt": "research/experiments/DIAG-B-01/receipts/receipts.json",
+      "receipt_file_sha256": "sha256:cd84ddfeda338402e65fe223bc85e472a0e17b3c85f16f07edac18c3d0ab55e3",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/DIAG-B-01/receipts/verdict.json",
+      "receipt_file_sha256": "sha256:84c5e2a8975ac157e8faf3c181e01e6c76173b234790916cfd7944c347672693",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0101/receipts/canonical-finding.json",
+      "receipt_file_sha256": "sha256:b3b2ae60d74599283bc9c3b14f1b6b3e44e6a3ee5142638622379a1c6afe9383",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0101/receipts/clean-room-provenance.json",
+      "receipt_file_sha256": "sha256:0bc62179463139f1baba3843495e7f6cc6344fdd56ad9adeece5a81b8da4112b",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0101/receipts/committed-bytes-verification.json",
+      "receipt_file_sha256": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0101/receipts/raw-evidence-manifest.json",
+      "receipt_file_sha256": "sha256:c4322b20127b5da1cd4689766f001405bed327f24cb683b3429a0cc4695ac8a4",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 27,
+      "findings": [
+        {
+          "expected": "sha256:287003fa2da00f1d81970b5c7b4c8a286a84a00e281957dc7f3dfe19c67bb28f",
+          "head": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+          "path": "receipts/committed-bytes-verification.json",
+          "pointer": "/artifacts/13/sha256",
+          "resolved": "research/experiments/EXP-0101/receipts/committed-bytes-verification.json",
+          "state": "MISMATCH_UNEXPLAINED",
+          "tracked_at_head": true,
+          "worktree": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018"
+        }
+      ],
+      "receipt": "research/experiments/EXP-0101/receipts/receipts.json",
+      "receipt_file_sha256": "sha256:0a241aee270ce0125190151c2d1fbefd513076483edf2cf179f1601a0fbab31c",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0101/receipts/reproducibility.json",
+      "receipt_file_sha256": "sha256:c271a09c0611aa9eedac484e4fe5247d91ed8f497a406e4e34a2f9aefeae7ad4",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0103/receipts/committed-bytes-verification.json",
+      "receipt_file_sha256": "sha256:75dfeb6283d3aa10c1b2c425dd2e859c8291a50829633e16835954a3072bb690",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0103/receipts/intake-0103-status.json",
+      "receipt_file_sha256": "sha256:0bacbeb54e28ca95d29a3ee187f78daac886b47cc2a94b3485608672392e7159",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 5,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0103/receipts/receipts.json",
+      "receipt_file_sha256": "sha256:477984be293f0ee2b2899e82e7e51aa87d6dbc29d3332adf6bfca9411697c018",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A12-01/receipts/phase0-input-discovery.json",
+      "receipt_file_sha256": "sha256:134614798534b003fbe275458e005329d93934a80e8f8ed67f574a090741a1b2",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A12-01/receipts/production-path-reconciliation.json",
+      "receipt_file_sha256": "sha256:d57803abd50dfce4c22242b8ddf89ff96f4a1e4b1fa90deb8d3dc168867e3017",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 6,
+      "findings": [],
+      "receipt": "research/experiments/H1-A12-01/receipts/runtime-readiness-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:23e3eb234fde81a55c7552b7225aaab143f7dcc2acb430b9184ca20dfd63926a",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 6,
+      "findings": [],
+      "receipt": "research/experiments/H1-A12-01/receipts/runtime-readiness-audit-v2-2026-08-19.json",
+      "receipt_file_sha256": "sha256:1096ea7ca93074b6c2ae134abc865488ac748726dc40ac00f6d3b9abaae68d02",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 7,
+      "findings": [],
+      "receipt": "research/experiments/H1-A12-01/receipts/same-family-recipe-freeze-2026-08-19.json",
+      "receipt_file_sha256": "sha256:a268d10d74427a5b810d50ba2322935a78855f428a403eaaa0cd53b8504cf536",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A12-01/receipts/zero-cost-unblock-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:b4f0526518b00ca67ee8f55592469c764d9a324cff1574a6fb9a1a521d2ca2e2",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/confidence-proxy-arm-2026-08-18.json",
+      "receipt_file_sha256": "sha256:35f02306617b98e9f7655038f3ef4c6e209dd17079a621234e902a1426b7b392",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/confirmatory-holdout-800-2026-08-18.json",
+      "receipt_file_sha256": "sha256:9e71f34114026797c308797530ef660f27b34ab6dee1638bb0e4c98ccfc02c01",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/confirmatory-result-2026-08-18.json",
+      "receipt_file_sha256": "sha256:aca7a20f0c99d29c056e67df03bfce48ce9860ecff90811c0d728d3d5dbbf7e0",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/confirmatory-result-deterministic-2026-08-18.json",
+      "receipt_file_sha256": "sha256:ccb6965459bc0347cb133c18f292614d4e8010f8642a270e84c5b361e204a4f9",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/correction-locality-2026-08-18.json",
+      "receipt_file_sha256": "sha256:40bf93fae2afe3ead4bf224c9e6c1786bedea76215ea165ecdb21ad215288b6f",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/discovery-set-seal-2026-08-18.json",
+      "receipt_file_sha256": "sha256:460d1a272ee5061cc573cc3c95034f1db070ce6114974f4586427cc2d94da737",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/evaluator-aligned-instruments-2026-08-18.json",
+      "receipt_file_sha256": "sha256:afcc813fbdcd1dc4bc4a38ad597344733a7cba2a3edc2985cb1baa458c5f3023",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/evaluator-correction-comparison-2026-08-18.json",
+      "receipt_file_sha256": "sha256:c8b7c97d5443058f92c77f3f2c7beb5c0fea33dc96f1dca797b20bdf369a9be2",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/evaluator-determinism-2026-08-18.json",
+      "receipt_file_sha256": "sha256:aefcaed291051ead28b439936dfd4da4e1c0319d27d93667a272051f65e129be",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/evaluator-version-deterministic-v1.json",
+      "receipt_file_sha256": "sha256:265482c0d041d487269af1e27cb732bf48dbaf18f10c0fcfade3222a0e2a7df9",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/fallback-independence-2026-08-18.json",
+      "receipt_file_sha256": "sha256:d63e377a2ed1d124dc740bea86cbcc49d0aabed4f6289672ce192a68737bff57",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/holdout-execution-log-2026-08-18.json",
+      "receipt_file_sha256": "sha256:9bdd7193c37207349892509288b868536e843a2628aff56960c1b913a35111fa",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/holdout-forensics-2026-08-18.json",
+      "receipt_file_sha256": "sha256:177e63bc70be7c7fde72e7b5bd3d598e5b590a5e84a6d655f45786761975f9d6",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/holdout-forensics-deterministic-2026-08-18.json",
+      "receipt_file_sha256": "sha256:6f5c70dd1afbdab1213d202f1d2382165c479f5a73abcb628103e94b9c5b08b8",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/holdout-power-2026-08-18.json",
+      "receipt_file_sha256": "sha256:8cea2d094d46eb4817153b86abd13995f81c8debe021eefe43b57a8c86397015",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/holdout-power-v2-2026-08-18.json",
+      "receipt_file_sha256": "sha256:b68ef456b9ed892d031cc77c73f3f3bf9aa83694fd19cf4f1d66b9fb75e2cc98",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/holdout-provenance-audit-2026-08-18.json",
+      "receipt_file_sha256": "sha256:b232f48f397f35e2428c2f348de68a04f9856c913a04ed075cc028f7588aa910",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/ink-coverage-verifier-2026-08-18.json",
+      "receipt_file_sha256": "sha256:4b7f3d305584e14f0b97aecdd5ddf9726c4c4f5b3d89c26d3619c06cd674cb73",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/metric-reproducibility-2026-08-18.json",
+      "receipt_file_sha256": "sha256:d5d1a73872c6b03878f0a7c50747d9fa3044da498a8d62e527759c3ae68b968f",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/metric-reproducibility-deterministic-2026-08-18.json",
+      "receipt_file_sha256": "sha256:c816e73ee1a3529b11128a1c92f0b620d52544427b1322b1bdec9e04c8bb4325",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/missed-case-forensics-2026-08-18.json",
+      "receipt_file_sha256": "sha256:4324c552decfcb01c7d3fa92617f17db20d99f1eda307011782d1ee41df33021",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/phase0-feasibility-2026-08-18.json",
+      "receipt_file_sha256": "sha256:af3223cdb5181754bd37500fd2570905fccb8ad6184ad267e69dccf8d6dced78",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/phase0-input-discovery.json",
+      "receipt_file_sha256": "sha256:644dd18a527742ef493c44ffff53d8872f59436d06d7f4eb2c0201b6a82650e8",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/r4-confirmatory-2026-08-18.json",
+      "receipt_file_sha256": "sha256:0fb53e5039e0e7dd16aca7302414546e2e37d14627e71f43de9328627c7dfc7b",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/r4-confirmatory-deterministic-2026-08-18.json",
+      "receipt_file_sha256": "sha256:6e33b69eae53f063a1a93c30943b0af472a75b339e353f999e3d7da3a7b9ca5f",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/r4-cost-quality-gating-2026-08-18.json",
+      "receipt_file_sha256": "sha256:4b5b3a9ab5f2105fc5901db7d7e67c2dd4fd5a3d747179d66e36e4dc9a670b0e",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/r4-marginal-2026-08-18.json",
+      "receipt_file_sha256": "sha256:3a833e229ec58b078e4c6a3b544d7282f7cf4518f99d87a57e925f67814bf006",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/repaired-instruments-2026-08-18.json",
+      "receipt_file_sha256": "sha256:3041e419994c3f187ab05bc2133122838c9bdbddfbb14598aa99a261c1263439",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/scored-page-criterion-2026-08-18.json",
+      "receipt_file_sha256": "sha256:86f3c3a24b1408b47985bfeed6a1df2dd9a42a59d67da09ef47b9b7eb001dd3a",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-01/receipts/selective-acceptance-two-parser-2026-08-18.json",
+      "receipt_file_sha256": "sha256:86edd2b74bbb1fb242de2d5241a967f578c8e49f04e7b2f0eaeece5b6eef18f8",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-graph-2026-08-19.json",
+      "receipt_file_sha256": "sha256:6cd8faa992de88b9765a085674712d6877dcf09d8c79ba02ca178f7502ee0ada",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-2026-08-19.json",
+      "receipt_file_sha256": "sha256:0242cabdda653ae9c4f5f20d645361ffa018ace890a0cbe0813978230292accf",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-attempt1-invalidation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:bbd6a9c161fad6c24613df9157f999d69cb854e5581a31676cfae4b0c46c2ef1",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-v2-2026-08-19.json",
+      "receipt_file_sha256": "sha256:ae49d4ac52bb4b1a3828589ec2ecf28fd41428eaa0dda5a7111394ee70844555",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/build-record-mutation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:39b70fcbba496fa60648a9fb24fd55e3167f06cbc73709df7a4f7ddcfc44f945",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/change-space-sweep-2026-08-19.json",
+      "receipt_file_sha256": "sha256:3994e0eea1e7bb4748471affe7377c7a88ea0bdfeca5e8c549d0e591d371840d",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/declaration-mutation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:606d0df1b50016a49f8d3ff19b77b263aaebdd9dec532529e41b96344743f7a1",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/final-fresh-holdout-2026-08-19.json",
+      "receipt_file_sha256": "sha256:fa91a9dd8d85e5168379a0e2b6129d2a61996a6b068d139f89744dbb97707e5c",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/final-fresh-holdout-preregistration-2026-08-19.json",
+      "receipt_file_sha256": "sha256:9f89bccafd82dfc78fefc26af3db7eadc5a070475063aa92655e8fdb1465b95b",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/generator-collision-correction-2026-08-19.json",
+      "receipt_file_sha256": "sha256:6efa73ae71b2400e05c32cb9ea71e7eb7351595ace6cffb3a8ff4d4c02cf4fb1",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/measured-performance-attempt1-incomplete-2026-08-19.json",
+      "receipt_file_sha256": "sha256:9b9e3798eb637799d1d26afbe9d63f05d5180c1c450a9e7ef32fc627ed5b3edc",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/measured-performance-v2-2026-08-19.json",
+      "receipt_file_sha256": "sha256:12863aa5b10bbb34230f8f547695b5491b3bbd85f71b54bd0c3b36e1f385dd56",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/precise-structural-2026-08-19.json",
+      "receipt_file_sha256": "sha256:58e226697f2afbcbf08354011be19a0f85ff2a4d95589f0a68fcaf20a271b8e9",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/recompilation-fix-benchmark-2026-08-19.json",
+      "receipt_file_sha256": "sha256:634fa53d3f34d72a45aa654785d27511ac93d6a18b8a55b596a291bd7d74a14e",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/stale-attribution-correction-2026-08-19.json",
+      "receipt_file_sha256": "sha256:0572b92360bbe0bb61a737684bee11d36fc31ca9871619af9b107a9dd78caba6",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/structural-channel-shadow-benchmark-2026-08-19.json",
+      "receipt_file_sha256": "sha256:3299a68366dac8673b10588b464445f8ca796fdda7e5adf5d9172a75e52d5e86",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/structure-only-stale-diagnosis-2026-08-18.json",
+      "receipt_file_sha256": "sha256:ba444ddb6b2e479da706a3e723e11b21bb2c17c10e4f79fe2e4e104c58fc8ee7",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/untouched-holdout-extension-2026-08-19.json",
+      "receipt_file_sha256": "sha256:43a60c7e9a8a847c68d0b43298442a7f120b5191d014d01d8f2b1d4c9c41ac59",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-confirmatory-v1.json",
+      "receipt_file_sha256": "sha256:124ccfa972893c7b9619fa5347cfa96b0e5234df767d81229b9204c90ffbff94",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-holdout-v2.json",
+      "receipt_file_sha256": "sha256:c00be97389fdca61b9585cc2651362e33b30289a5404f8ba59dfd32ecefae87d",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/receipts/temporal-authority-2026-08-19.json",
+      "receipt_file_sha256": "sha256:a47d9fa492486f122d75782021c836dbe0164e3ecb5f94273c38cce40b499465",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-D-GOVERNANCE-LINEAGE-01/receipts/controlled-validation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:9e7b1512a9ce2d4f3b71262b159b00badfb7f23ca366030451bf3df19c4ebeb8",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/divergence-attribution-2026-08-19.json",
+      "receipt_file_sha256": "sha256:9756c7bd388c2b94164c46c3dfbbc7391ebe34cf973b587881649794aad7c46c",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/scaling-2026-08-19.json",
+      "receipt_file_sha256": "sha256:60972d02ee606f00cf9279da993d4471ccc120294d6d508b828df597e23ddca3",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-2026-08-19.json",
+      "receipt_file_sha256": "sha256:1347f21f8f911862dbe8f62e4cfaa91d1613b97e7d2ea81379390004c5a70654",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+      "receipt_file_sha256": "sha256:dc686db1054713225d650d956709ea2f4dcf50acae0f0fd0c17e1b5bdb44ed63",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/receipts/path-dependence-amend1-2026-08-19.json",
+      "receipt_file_sha256": "sha256:eea20f25624c223d76f2e928eacb2e4c7b8a8e328ee819b0f3ffed9005d07078",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [
+        {
+          "expected": "sha256:7e05dd6f5369bce2cd7ca47e935052d6895c3b1d2840c8ac89bd8289e1e414fb",
+          "head": null,
+          "note": "another receipt in scope binds the current bytes; this receipt pins the pre-amendment revision",
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/scripts/tie_path_dependence.py",
+          "pointer": "/script_sha256",
+          "resolved": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/scripts/tie_path_dependence.py",
+          "state": "SUPERSEDED_BY_LATER_RECEIPT",
+          "tracked_at_head": false,
+          "worktree": "sha256:d097b76eb5c8ed2a9a5a060bd3d5c7e1d4eac9b66aab4a7a337da1df40fea903"
+        }
+      ],
+      "receipt": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/receipts/seal-2026-08-19.json",
+      "receipt_file_sha256": "sha256:9d8165aaa8fb732841eb6aeac2c38d3a9e0c3f3bf756615f8e10a40d9a3828d4",
+      "self_hash": {
+        "field": "seal_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/receipts/seal-amend1-2026-08-19.json",
+      "receipt_file_sha256": "sha256:51b1b379e0d77b282e356312f3a5b85f0c2c57a6a4fa4ba39e2f7c18118b6410",
+      "self_hash": {
+        "field": "seal_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 4,
+      "findings": [],
+      "receipt": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/receipts/all-stored-real-corpus-2026-08-19.json",
+      "receipt_file_sha256": "sha256:386d4b3075a148e98b103fbbf00679e2a938d1da8901a56cc07f579dda9799db",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 63,
+      "findings": [],
+      "receipt": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/receipts/seal-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c7bfdb2491a68f4db93a619cfbc1fced5e31099ea7ff6decb4295736998abe67",
+      "self_hash": {
+        "field": "seal_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 6,
+      "findings": [],
+      "receipt": "research/experiments/H1-G-ATOMIC-PROMOTION-01/receipts/atomic-promotion-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:f46568d01e6891f4d271b57efc016176dcf0c552cab7afdcf057bebbc2bfb4c3",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 6,
+      "findings": [],
+      "receipt": "research/experiments/H1-G-ATOMIC-PROMOTION-01/receipts/seal-2026-08-19.json",
+      "receipt_file_sha256": "sha256:4e0e9874748af183054695efc3eab2c45c130fc253f7f7d1895d0b25e4241133",
+      "self_hash": {
+        "field": "seal_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-G0-01/receipts/current-repo-reconciliation.json",
+      "receipt_file_sha256": "sha256:df8407700a44832c04c91d18e85834d28d346680f28a5458fc6524e1440789c0",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-G0-01/receipts/l1-reconciliation.json",
+      "receipt_file_sha256": "sha256:8a3870a520c8916b5b42c8803803dc0cad879086168c8b9403d5c3f3d903bffe",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-H-CROSS-SOURCE-SURVEY-01/receipts/version-pair-survey-2026-08-19.json",
+      "receipt_file_sha256": "sha256:2430d3e0f287c087079e68b46f5543e43f98f36215360a34a20c56dc7d83b625",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-I-GATE-ORDERING-01/receipts/check-independence-attempt1-falsepositive-2026-08-19.json",
+      "receipt_file_sha256": "sha256:99d967db77a72db718628ea022ac0407444d54db5bad9cb895deb19d3ade236b",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-I-GATE-ORDERING-01/receipts/check-independence-static-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:cebc7810f2addc81140853d2c2b217b403cf8125f72583beb1bfe13832de5386",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-I-GATE-ORDERING-01/receipts/gate-ordering-attempt1-void-2026-08-19.json",
+      "receipt_file_sha256": "sha256:fac1f994ca62ad19c905e53d530d75f2a84deaec54278290199b61459579726b",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-I-GATE-ORDERING-01/receipts/gate-ordering-attempt2-nonseparating-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c81b7fae82d460370a44963b0ef0248fb043465af560d136176e5d23736a1788",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-I-GATE-ORDERING-01/receipts/gate-ordering-permutation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:000885dd06b42abf5340b1f0cd4e072edb19769c32bf14c24e10c6f7cce09a46",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-IP-HARDENING-01/receipts/implementation-v2.json",
+      "receipt_file_sha256": "sha256:3ea4f2465b64278285399d9ab7de0a74ae4398011a2ef07d3b370516b1118ea9",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-IP-HARDENING-01/receipts/implementation.json",
+      "receipt_file_sha256": "sha256:6ae6469da4360bd3e6af2d212816897550762224e38afa19b3b6f1ead2995002",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-IP-HARDENING-01/receipts/reconciliation-v3.json",
+      "receipt_file_sha256": "sha256:b875b686cfc031a335615ead53e54941601409f8687eb0bce8417f97af7ecbea",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/receipts/governance-filter-ablation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:0cd2ece957f84d94d6be158a2d5f16d2039c56a2d823b887f6935e8146be104d",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/receipts/governance-filter-ablation-attempt1-2026-08-19.json",
+      "receipt_file_sha256": "sha256:2e8c690bd77c20a6e62c2e5967ca7f72fcd0846c0c7ccb99ae6efb7661e2fd00",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/candidates-semanticity-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:cf668606559fed8ea9cc392c190b6737db7dfb586b84803750f42149ce2248c1",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [
+        {
+          "expected": "sha256:9e0799692fb1c6fd375527732402fd04af302ea33b433682eb5e00e852044cc9",
+          "head": null,
+          "note": "another receipt in scope binds the current bytes; this receipt pins the pre-amendment revision",
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+          "pointer": "/source_receipt_sha256",
+          "resolved": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+          "state": "SUPERSEDED_BY_LATER_RECEIPT",
+          "tracked_at_head": false,
+          "worktree": "sha256:dc686db1054713225d650d956709ea2f4dcf50acae0f0fd0c17e1b5bdb44ed63"
+        }
+      ],
+      "receipt": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/h1e-residual-mechanism-crosscheck-2026-08-19.json",
+      "receipt_file_sha256": "sha256:6971566894fd69f30823848c2216e9ffa74613faa2921f617b3c0c9c0b047608",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/legacy-invariant-probe-2026-08-19.json",
+      "receipt_file_sha256": "sha256:320c069f8e7dd668b2b144cf8dfc45ba755a705cae779fb499d40f72cc1408b2",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/pruning-ceiling-attempt1-mischaracterized-2026-08-19.json",
+      "receipt_file_sha256": "sha256:4ef7a28ab4399b97e7969de834c42e7d69569e9cd2279d2c5a3af9b87e770345",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/pruning-ceiling-lemma-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:7aa83ef744e7803b164a6b8c60bcb4ddbd7175dfaf3310a182ffa9c4c42f23a9",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/assigned-column-exactness-2026-08-19.json",
+      "receipt_file_sha256": "sha256:1c21bdc38761b6b80fbbf7f4e56e23f2fed48e64d5a8ae6b1de94c61a9b2bc9b",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/exactness-2026-08-19.json",
+      "receipt_file_sha256": "sha256:062863e6a436ccfef5dba453ac57f64bcbb4523cdbab031e7ea02041229a3117",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/exactness-attempt1-void-mutant-2026-08-19.json",
+      "receipt_file_sha256": "sha256:7fef4423f9a7c7a2e5a7b082c025a08dd473334b686367b6d60c185875ac6f2c",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/full-contract-exactness-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c0ab2e655a1e5ddb96ec97dc278aec13ab83f80de7de02a6c81e5be7c0103857",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/future-path-exactness-2026-08-19.json",
+      "receipt_file_sha256": "sha256:8645d075021d7a58d85d585c4e8d5080e0b05ae86d8e31e518b92795539dd413",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [
+        {
+          "expected": "sha256:9e0799692fb1c6fd375527732402fd04af302ea33b433682eb5e00e852044cc9",
+          "head": null,
+          "note": "another receipt in scope binds the current bytes; this receipt pins the pre-amendment revision",
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+          "pointer": "/seed_source_receipt_sha256",
+          "resolved": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+          "state": "SUPERSEDED_BY_LATER_RECEIPT",
+          "tracked_at_head": false,
+          "worktree": "sha256:dc686db1054713225d650d956709ea2f4dcf50acae0f0fd0c17e1b5bdb44ed63"
+        }
+      ],
+      "receipt": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/h1e-topology-exactness-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c86d76b02fc67816b6000f8f1c8f7f3549428b843e1a67c8aa677aa1673f24d0",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 4,
+      "findings": [],
+      "receipt": "research/experiments/H1-M-ABSENCE-REASON-CONTRACT-01/receipts/absence-reason-contract-audit-2026-08-20.json",
+      "receipt_file_sha256": "sha256:a7e4e2bdcd9a59ec5a13eec9a2d802ae28598e5ea460b00d2da7b3d118fe01c6",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 4,
+      "findings": [],
+      "receipt": "research/experiments/H1-M-ABSENCE-REASON-CONTRACT-01/receipts/seal-2026-08-20.json",
+      "receipt_file_sha256": "sha256:49bf8655c87a379e115123eb9222c37824e6cfff92473713d5b830580452872d",
+      "self_hash": {
+        "field": "seal_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-postfetch-dryrun-2026-08-19.json",
+      "receipt_file_sha256": "sha256:db7c83d2e04efc53e07fbdb2be4f1cc41122357d7cb8907524b82becfdca85ba",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-resume-audit-2026-08-19.json",
+      "receipt_file_sha256": "sha256:917364758cbbc2b0ca95f3c97036c6acb41f5dce8772a7f0cf8e63a0c3aac623",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v7-2026-08-19.json",
+      "receipt_file_sha256": "sha256:ed443571995eb6034c02c35bedd3212d1e847149f47225d3d3ea5acc3cd5eda1",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v7-completion-2026-08-19.json",
+      "receipt_file_sha256": "sha256:cf09d068db4df0f6ff1ccf062aa3ec631908979dd9a119450e0bba0b79283570",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v8-holdout-completion.json",
+      "receipt_file_sha256": "sha256:e5858ceef491664d498c23c2310de4e9adfb2f96c31588c2b156482ef54e73b3",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v8-holdout.json",
+      "receipt_file_sha256": "sha256:cee6b398d28abd4221fca3688ce72ce6d22dd9e4f34be5b4985fde8201133fd8",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/baseline-validation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:9d9f75526d330647df191dc803b60945ecb28c9b05122adbf9319e4972e12a2e",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/holdout-manifest-v8.json",
+      "receipt_file_sha256": "sha256:f298f82cfe1ef81147da58fb4a2c4cc7a05f7afaf765c67ea790c422637f92e1",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v1-invalidation-2026-08-19.json",
+      "receipt_file_sha256": "sha256:e6ddf01bab667920396ed475e3881df1572f7215ef2d0b772b36844ac2e46234",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v2-2026-08-19.json",
+      "receipt_file_sha256": "sha256:7dcd9f85b088a179e1882bf156ae23598a375f815c979747439b492314bee4b2",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v7-2026-08-19.json",
+      "receipt_file_sha256": "sha256:4187eb1a8e591110dffe989186c43a9384757688bd7a46e5e0e9d7dc87a03fb7",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c23c3b4ba1f50eafb9e29d1792ce0fd0568ca7f74b55b376a8e550304f1ebf17",
+      "self_hash": {
+        "declared": [
+          "receipt_sha256"
+        ],
+        "field": "receipt_sha256",
+        "state": "FAIL"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-holdout.json",
+      "receipt_file_sha256": "sha256:915f29f5439dce46a0c82fea8fc72f42e479ba1100366f12b8cba67d58b446ee",
+      "self_hash": {
+        "declared": [
+          "receipt_sha256"
+        ],
+        "field": "receipt_sha256",
+        "state": "FAIL"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/recovery-fixture-2026-08-19.json",
+      "receipt_file_sha256": "sha256:f1e3088c344461fbc6b7489370f5220eeb0190229cf65ab08f96657fb0c5d4d6",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/single-title-freeze-v5-2026-08-19.json",
+      "receipt_file_sha256": "sha256:f281489d12b999df933fc2be0fb6fe82d4ec8026ddf85acd4e2c717c7d923886",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/single-title-freeze-v8-holdout.json",
+      "receipt_file_sha256": "sha256:40f0d753fa6729505b3237908747796882d34b3140320ff6981a6713a209fc81",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/title-manifest-v3-2026-08-19.json",
+      "receipt_file_sha256": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/transport-freeze-v4-2026-08-19.json",
+      "receipt_file_sha256": "sha256:04537206ac5c7f2a58a71000f8fa7b1fd6d77b08f619136965210a2650c53b6e",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v5-corpus-completeness-2026-08-19.json",
+      "receipt_file_sha256": "sha256:a71f810adda3d172c464d0c9aba47fd42850d768ff8809b16302709193075436",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v5-health-check-2026-08-19.json",
+      "receipt_file_sha256": "sha256:e066ed6ed524cfbc3d6c8c2a0624ebb768b6ff47e2ca75138ee3bb7d8dbfa00e",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v6-acquisition-failure-diagnosis-2026-08-19.json",
+      "receipt_file_sha256": "sha256:15181edf767736ba455b6c388ee4e16869eee987cb30bd40852bf93b9c9b3a82",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v6-launch-record-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c14f702219737c3d4d0c717e9fdb74c67a3e9ba81b4f336a7eb005d5a9610bf8",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v7-corpus-integrity-2026-08-19.json",
+      "receipt_file_sha256": "sha256:514f4117ee83520a0d8a7eb7e3bf7f9ee8c89ff30fe1df2b42f42dc5779308f7",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 13,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v7-development-seal-2026-08-19.json",
+      "receipt_file_sha256": "sha256:a1c927340c30d69faa000c6dbb3d9e3b36f6fdb331dbd2ab904fce153dd9fded",
+      "self_hash": {
+        "field": "seal_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v7-endpoint-sufficiency-2026-08-19.json",
+      "receipt_file_sha256": "sha256:e5d83d6f1ac6c7656504f979007495bf210307902c256198e03fb49e9631106f",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v7-launch-provenance-2026-08-19.json",
+      "receipt_file_sha256": "sha256:0dd966b1f757df7e57863dd4d5754c05096aefa745ee245db83517e7f514cc73",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v7-pre-arm-gates-2026-08-19.json",
+      "receipt_file_sha256": "sha256:c4606cb81c31ab4a2de703fe2f8f504dbbe3b579b8c1f1b6b98b237c432e5e59",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-acquisition-attempt2-invocation-proof.json",
+      "receipt_file_sha256": "sha256:9250b12bba91e4a64392a4fef31ac2338708c0e904b4e21623c6b364d7f3712d",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-acquisition-attempt2-liveness-2026-08-20T0759Z.json",
+      "receipt_file_sha256": "sha256:1d496a34d95954486aa6e373f2991dc7d550cffeede9ed992d82459d886a60cd",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-acquisition-failure-2026-08-20-superseded-20260820T0600Z.json",
+      "receipt_file_sha256": "sha256:f3f06d03344fd6eee21775b0ab6eb30cca895bf84217b2ef3348d93378417229",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-acquisition-failure-2026-08-20.json",
+      "receipt_file_sha256": "sha256:007c8d9dbe3a921b4dbffcd18f83b6dc874ba562d7d5b0520ac1f58f2c311efc",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 17,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-config-freeze.json",
+      "receipt_file_sha256": "sha256:08a0ae93fe764d2866805614a74cee8554e4e3426da29bffefa48bc28fab00fd",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 9,
+      "findings": [
+        {
+          "expected": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+          "head": null,
+          "path": "question-set-v8-dev-2026-08-19.json",
+          "pointer": "/question_set_sha256",
+          "resolved": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+          "state": "MISMATCH_UNEXPLAINED",
+          "tracked_at_head": false,
+          "worktree": "sha256:c23c3b4ba1f50eafb9e29d1792ce0fd0568ca7f74b55b376a8e550304f1ebf17"
+        }
+      ],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-development-arm-run-2026-08-19.json",
+      "receipt_file_sha256": "sha256:eef7bb94d04b31d2b9f2db190fe4ac052a7f14a8f1b06574bb2da1e2365f0e60",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 30,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-endpoint-seal.json",
+      "receipt_file_sha256": "sha256:687a1741eb93669576777f0e770a7e3b1391e0002b68989eea9244047e0b1c59",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-entity-conditioned-gate-dev-2026-08-19.json",
+      "receipt_file_sha256": "sha256:26b3c33d3fc0976909e17bb7dcdfeb67309fa2b3d37e3643f4dab268d29fa7f4",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-entity-conditioned-gate-holdout.json",
+      "receipt_file_sha256": "sha256:3599f10efb9488a23595b8ad2fb38837524500fad927235ba3fa61264931252c",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-entity-conditioned-gate-on-v8-questions-dev-2026-08-19.json",
+      "receipt_file_sha256": "sha256:5b21c25f9619483c26009f2bab09a11f18db3dc5df5e38f5ce67ee3d1c4fbdef",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-holdout-acquisition-integrity.json",
+      "receipt_file_sha256": "sha256:94f9596cbc13537d235c71983f305a80ad74cf54e40440a14d57371649951f3a",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 11,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-holdout-preflight-2026-08-19.json",
+      "receipt_file_sha256": "sha256:53cd0fa3fe321bd0c3cf50bc7027bf1c10aa5795631ec7701161c16ed5c1129e",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 3,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-holdout-question-set-binding.json",
+      "receipt_file_sha256": "sha256:96d1a193f0522ef7e6181aae58b70c1a4fbdfe691fb72aa3301c85f301b254e3",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json",
+      "receipt_file_sha256": "sha256:6f31456a21a760849cf42cd229844182a2a46f707f82005be1f724e61f6e225e",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-post-open-instrumentation-superseded-20260820T054753Z.json",
+      "receipt_file_sha256": "sha256:72ee3ac102086982980647fb05ea0809141fedc0149bed3097b29693f1e0e10b",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 2,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-post-open-instrumentation.json",
+      "receipt_file_sha256": "sha256:27f7fd6af69e6a7771ae1e5274dc74cea4aa7dbf10a24e2c465fac2837a16bc0",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 3,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-pre-arm-gate-verdict.json",
+      "receipt_file_sha256": "sha256:d8d8df05a719dc29b02bd560d0c410eda789f20f8ada165544b5b9df04852775",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-residual-calibration-dev-2026-08-19.json",
+      "receipt_file_sha256": "sha256:d7309ce0cffe1cfa0d766d831f1d5eabd3bdbb47c0fc86f29815baf328ca0fc7",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-residual-overlap-holdout.json",
+      "receipt_file_sha256": "sha256:d7c190bf64281cbe03caf631f044fd47c47a0f8e24cf2e9af7cb860afd1d1939",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-runtime-attestation.json",
+      "receipt_file_sha256": "sha256:60aef6b33bf895691241de2394b3bbc53741cb882f03e7dd3dd36fe0a335a743",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-runtime-feasibility-2026-08-20.json",
+      "receipt_file_sha256": "sha256:a183db917a041364798411116ad1f0bfc88d3725c1bdd83946c59b838baaea5b",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-structural-taint-gate-dev-2026-08-19.json",
+      "receipt_file_sha256": "sha256:cc999d2b96dd8422c5fd62aef95aef684c5589a8c14ed8079dda2f3fd1c2cbd8",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-structural-taint-gate-holdout.json",
+      "receipt_file_sha256": "sha256:3ca44f12371e506e93ce9ae24168c03064c26c692ff3ad8d3a5ccb2f811fd16c",
+      "self_hash": {
+        "field": "receipt_sha256",
+        "state": "PASS"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/DIAG-B-01/manifest.json",
+      "receipt_file_sha256": "sha256:659d633b81c664725f89f414cbadcd7e6b2dd07aefbe29cb8823755c2100cc74",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0101/manifest.json",
+      "receipt_file_sha256": "sha256:dbe94d8c501c60d4091089c4c1aa21a242e9ebbdd413f172cf575ba8024af68b",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 0,
+      "findings": [],
+      "receipt": "research/experiments/EXP-0103/manifest.json",
+      "receipt_file_sha256": "sha256:e92fd1204a6fb0c59ec0d7875a908610039dbdf74b00069fe8a00b9f8c73b281",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "binding_count": 1,
+      "findings": [],
+      "receipt": "research/experiments/H1-A9-A12-SHARED-01/source-only-v1/inference-input-manifest.json",
+      "receipt_file_sha256": "sha256:fb85e0d92a3252792aa39833c4624760c1ea9bb6ef7ff4c81a3f578da8100225",
+      "self_hash": {
+        "field": null,
+        "reason": "no self-hash field declared",
+        "state": "NOT_APPLICABLE"
+      }
+    }
+  ],
+  "generated_at": "2026-08-21T04:12:02.272284+00:00",
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "read_only": true,
+  "receipt_sha256": "sha256:3c9450bc897897b36b6325518dff0c44d12f4fb2681176cbf8c2d3d2aafc4a3f",
+  "schema": "tavonel.v2.p0.sealed_evidence_verification.v1",
+  "scope": [
+    "docs/evidence/*.json",
+    "docs/ip/receipts/*.json",
+    "research/experiments/*/receipts/*.json",
+    "research/experiments/*/manifest.json",
+    "research/experiments/*/*/*manifest*.json"
+  ],
+  "sealed_evidence_corrupt": true,
+  "sealed_evidence_reproducible_from_head": false,
+  "self_hash_failures": [
+    "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+    "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-holdout.json"
+  ],
+  "totals": {
+    "bindings": 434,
+    "bindings_external": 22,
+    "bindings_match": 404,
+    "bindings_mismatch_unexplained": 4,
+    "bindings_mismatch_worktree_head_ok": 0,
+    "bindings_missing": 0,
+    "bindings_superseded": 4,
+    "receipts": 192,
+    "self_hash_fail": 2,
+    "self_hash_not_applicable": 63,
+    "self_hash_pass": 127
+  },
+  "unexplained_drift": [
+    {
+      "expected": "sha256:93420f8b05de5d7c4f64ddd1f0015fdf748b9934ae75c7edcd39117af18c4071",
+      "head": null,
+      "path": "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+      "pointer": "/files/28/sha256",
+      "receipt": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+      "resolved": "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+      "state": "MISMATCH_UNEXPLAINED",
+      "tracked_at_head": false,
+      "worktree": "sha256:c25ecbb4857c90f59412d820054f3ad3fb8d5fc44029c091bca7e55910a8e537"
+    },
+    {
+      "expected": "sha256:0c12365dcf854a239a655cba995d04e33ae1009a8b8d1a2a04b936b6270a39ed",
+      "head": null,
+      "path": "docs/repro/TEST_SCOPE_STATUS.json",
+      "pointer": "/files/42/sha256",
+      "receipt": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+      "resolved": "docs/repro/TEST_SCOPE_STATUS.json",
+      "state": "MISMATCH_UNEXPLAINED",
+      "tracked_at_head": false,
+      "worktree": "sha256:4f354e3e5597b4a4b48cbd6acc8caa9d3e35ac33619dd4387a3d6d5e51f89711"
+    },
+    {
+      "expected": "sha256:287003fa2da00f1d81970b5c7b4c8a286a84a00e281957dc7f3dfe19c67bb28f",
+      "head": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+      "path": "receipts/committed-bytes-verification.json",
+      "pointer": "/artifacts/13/sha256",
+      "receipt": "research/experiments/EXP-0101/receipts/receipts.json",
+      "resolved": "research/experiments/EXP-0101/receipts/committed-bytes-verification.json",
+      "state": "MISMATCH_UNEXPLAINED",
+      "tracked_at_head": true,
+      "worktree": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018"
+    },
+    {
+      "expected": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+      "head": null,
+      "path": "question-set-v8-dev-2026-08-19.json",
+      "pointer": "/question_set_sha256",
+      "receipt": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-development-arm-run-2026-08-19.json",
+      "resolved": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+      "state": "MISMATCH_UNEXPLAINED",
+      "tracked_at_head": false,
+      "worktree": "sha256:c23c3b4ba1f50eafb9e29d1792ce0fd0568ca7f74b55b376a8e550304f1ebf17"
+    }
+  ],
+  "verdict": "FAIL",
+  "worktree_clean": false,
+  "worktree_dirty_path_count": 181
+}

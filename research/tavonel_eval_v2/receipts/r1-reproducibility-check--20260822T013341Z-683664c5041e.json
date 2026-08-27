@@ -1,0 +1,88 @@
+{
+  "closes": "the two-run reproducibility check owed by INC-V2-005",
+  "does_not_reproduce": "any P0/P2/P3/P4 result. This reproduces a fixture, and the withdrawn INC-V2-005 two-run claim stays withdrawn.",
+  "ended_at": "2026-08-22T01:33:41.445833+00:00",
+  "estimated_cost_usd": 0.0,
+  "fixture": "research/tavonel_eval_v2/tools/reproducibility_fixture.py",
+  "fixture_sha256": "sha256:a0d4c66950dfcebf6a859b9eb269e4ffe0c912557365c478c7a158fb1ef4af2d",
+  "gates": {
+    "G_R1_BOTH_RECEIPTS_EXIST": {
+      "first": "research/tavonel_eval_v2/receipts/r1-reproducibility-fixture--20260822T013341Z-8ddf1de00011.json",
+      "first_self_hash_recomputes": true,
+      "passed": true,
+      "second": "research/tavonel_eval_v2/receipts/r1-reproducibility-fixture--20260822T013341Z-2be902c53afd.json",
+      "second_self_hash_recomputes": true
+    },
+    "G_R1_DISTINCT_PATHS": {
+      "first_run_id": "20260822T013341Z-8ddf1de00011",
+      "passed": true,
+      "second_run_id": "20260822T013341Z-2be902c53afd"
+    },
+    "G_R1_FIRST_RECEIPT_UNMODIFIED": {
+      "after_run_one": "sha256:23d4c20a76e3c35b18c678bbab1967575959384ed57f512bb466ffb57f33717f",
+      "after_run_two": "sha256:23d4c20a76e3c35b18c678bbab1967575959384ed57f512bb466ffb57f33717f",
+      "passed": true
+    },
+    "G_R1_OVERWRITE_REFUSED": {
+      "detail": "research/tavonel_eval_v2/receipts/r1-reproducibility-fixture--20260822T013341Z-8ddf1de00011.json already exists. Receipts are never overwritten; a re-run gets its own run id.",
+      "exception": "ReceiptExists",
+      "file_unchanged_after_attempt": true,
+      "passed": true,
+      "refused": true,
+      "target": "research/tavonel_eval_v2/receipts/r1-reproducibility-fixture--20260822T013341Z-8ddf1de00011.json"
+    },
+    "G_R1_POINTER_IS_NOT_EVIDENCE": {
+      "carries_no_payload_field": true,
+      "declares_is_evidence_false": true,
+      "has_no_semantic_result_digest": true,
+      "passed": true,
+      "path": "research/tavonel_eval_v2/receipts/latest/r1-reproducibility-fixture.json",
+      "payload_fields_found_in_pointer": [],
+      "points_to_second_run": true,
+      "recorded_digest_matches_file": true
+    },
+    "G_R1_SAME_SEMANTIC_RESULT": {
+      "passed": true,
+      "value": "sha256:8f9f9a3e7a58ee90e68a9efaef605f05b4d66521ee50643b5fe1dc8383921fd6"
+    },
+    "G_R1_SAME_TOOL_AND_PROTOCOL_DIGEST": {
+      "passed": true,
+      "protocol_sha256": "sha256:23aa8e1d39db98b7e1086e9ce72f20d20ba84473e511e9675ada3fb803e0bab1",
+      "tool_sha256": "sha256:a0d4c66950dfcebf6a859b9eb269e4ffe0c912557365c478c7a158fb1ef4af2d"
+    }
+  },
+  "gpu_seconds": 0,
+  "protocol": "R1_receipt_reproducibility",
+  "provenance": {
+    "generated_at": "2026-08-22T01:33:41.456413+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/R1_receipt_reproducibility.yaml",
+    "protocol_sha256": "sha256:23aa8e1d39db98b7e1086e9ce72f20d20ba84473e511e9675ada3fb803e0bab1",
+    "receipt_stem": "r1-reproducibility-check",
+    "run_id": "20260822T013341Z-683664c5041e",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_r1_reproducibility.py",
+    "tool_sha256": "sha256:6342be7f23bd55397e3d7a708f4ce2bf2ba1a2e3543a5c1089e336a60f502025"
+  },
+  "receipt_sha256": "sha256:a9e0413c8dd4ded8f591d5a2bb05d6cb50aee3d752161b3dd74422c9e762c4e5",
+  "receipts_are_byte_identical": false,
+  "receipts_are_byte_identical_is_not_expected": "run id and timestamp differ by design. A scheme whose two runs produced identical bytes could not distinguish two runs, which is exactly the property INC-V2-005 needed and did not have.",
+  "runs": [
+    {
+      "receipt": "research/tavonel_eval_v2/receipts/r1-reproducibility-fixture--20260822T013341Z-8ddf1de00011.json",
+      "run_id": "20260822T013341Z-8ddf1de00011",
+      "semantic_result_digest": "sha256:8f9f9a3e7a58ee90e68a9efaef605f05b4d66521ee50643b5fe1dc8383921fd6"
+    },
+    {
+      "receipt": "research/tavonel_eval_v2/receipts/r1-reproducibility-fixture--20260822T013341Z-2be902c53afd.json",
+      "run_id": "20260822T013341Z-2be902c53afd",
+      "semantic_result_digest": "sha256:8f9f9a3e7a58ee90e68a9efaef605f05b4d66521ee50643b5fe1dc8383921fd6"
+    }
+  ],
+  "schema": "tavonel.v2.r1_reproducibility_check.v1",
+  "started_at": "2026-08-22T01:33:41.176867+00:00",
+  "subject": "research/tavonel_eval_v2/tools/evidence.py",
+  "subject_sha256": "sha256:3d120a824701f130498890a44fb15df4711c0c0a2d4be331d6343b067739e498",
+  "verdict": "PASS"
+}

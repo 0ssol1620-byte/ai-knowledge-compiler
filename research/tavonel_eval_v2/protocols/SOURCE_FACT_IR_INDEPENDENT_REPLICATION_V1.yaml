@@ -1,0 +1,42 @@
+schema: tavonel.sfir1.protocol.v1
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V1
+status: AWAITING_EXACT_AUTHORITIES_AND_PROTOCOL_FREEZE
+split: prospective_independent_replication
+gpu_authorized: false
+
+authority_requirements:
+  charter: tavonel.sfir1.design_charter_freeze.v1
+  capacity: tavonel.sfir1.capacity_census_authority.v1
+  roster: tavonel.sfir1.lineage_freeze.v1
+  spent_identity: tavonel.sfir1.spent_identity_authority.v1
+  charter_toolchain_bindings: [sources_sfir1, probe_sfir1_capacity, sfir1_spent_authority]
+  resolution: exact path and sha256; no directory scan, glob, latest, or newest
+
+endpoints:
+  primary_exercised_and_met: [E1, E2, E3, E4, E5, E6, E7, E9]
+  veto_only: E8
+  E8_positive_credit: false
+  E8_required_violations: 0
+
+capacity:
+  quota_formula: Q_f=min(1000,floor(0.8*C_f))
+  minimum_q_per_family: 600
+  minimum_C_per_family: 750
+  candidate_fields: [root_container_id, lineage_id, family, container_id, alias_ids, payload_ref, revision_id, revision_timestamp, capability_exercise]
+  root_container_namespace: {git_docs: "git:<casefolded owner/repository>", regulation_ecfr: "ecfr:<integer title>:<part>", encyclopedia_wikipedia: "wikipedia:en:category:<casefolded underscore-normalized frozen category>"}
+  revision_pair_shape: {before: immutable_revision_locator, after: immutable_revision_locator}
+  complete_pagination_required: true
+  truncate_at_cap: forbidden
+
+analysis_floor:
+  total_pairs: 300
+  families: 3
+  per_family_pairs: 60
+  exercising_minimum: {E5: 29, E6: 29, E9: 29}
+
+execution:
+  score_exactly_once: true
+  fresh_and_disjoint_only: true
+  corpus_spent_on_first_payload_read: true
+  threshold_tuning_after_outcome: forbidden
+  gpu_before_primary_pass: forbidden

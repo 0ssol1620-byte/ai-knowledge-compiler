@@ -1,0 +1,1901 @@
+{
+  "assay_sensitivity_gate": {
+    "evaluated": "after the full first pass of all four arms, never sequentially",
+    "kind": "VALIDITY GATE, not a significance test",
+    "on_failure": "ENDPOINT_INSENSITIVE_TO_CURRENCY; no primary product-effect claim",
+    "p_value": null,
+    "predicate": "compiled_current current-value accuracy minus superseded_control accuracy >= 0.15"
+  },
+  "budget": {
+    "gpu_hours": 6,
+    "hard_spend_cap_usd": 40
+  },
+  "cohort_manifest": "research/tavonel_eval_v2/artifacts/development/p4i_cohort.json",
+  "cohort_manifest_file_sha256": "sha256:08a9682a9d8b20c6721f2469029b3c931efa0299104b0976a55f9b2b6832ecc4",
+  "context_budget": {
+    "max_new_tokens": 256,
+    "measured_with": "the pinned tokenizer, after the chat template",
+    "total_prompt_tokens": 4096
+  },
+  "eligibility_labels": {
+    "eligible_q1_in_receipt": 296,
+    "read_not_recomputed": "P4i was scored once and stays scored once. Coverage labels are read from its sealed receipt; only the deterministic retrieval machinery is regenerated.",
+    "receipt": "research/tavonel_eval_v2/receipts/p4i--20260822T142215Z-d7c7ff4a8c3b.json",
+    "receipt_file_sha256": "sha256:fb50ab18dd49de029180ede0dba0bb60317fbafe5e769fe4d7703e12ac98b0ef"
+  },
+  "ended_at": "2026-08-22T15:15:17.363024+00:00",
+  "estimated_cost_usd": 0.0,
+  "excluded_by_reason": {
+    "TARGET_EVIDENCE_LOST_TO_TRUNCATION": 12,
+    "VALUES_NOT_DISTINGUISHABLE": 274
+  },
+  "excluded_detail": [
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-10-50-50-2|Q1_REVISED_VALUE|§ 50.2 Definitions./(3)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-10-50-50-2|Q1_REVISED_VALUE|§ 50.2 Definitions./(ii)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1024-1024-37|Q1_REVISED_VALUE|§ 1024.37 Force-placed insurance./(3)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1024-1024-37|Q1_REVISED_VALUE|§ 1024.37 Force-placed insurance./(4)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1024-1024-37|Q1_REVISED_VALUE|§ 1024.37 Force-placed insurance./(4)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1024-1024-37|Q1_REVISED_VALUE|§ 1024.37 Force-placed insurance./(ii)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-12|Q1_REVISED_VALUE|§ 1026.12 Special credit card provisions./(2)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-12|Q1_REVISED_VALUE|§ 1026.12 Special credit card provisions./(3)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-19|Q1_REVISED_VALUE|§ 1026.19 Certain mortgage and variable-rate transactions./(4)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "full_current_oracle"
+      ],
+      "question_id": "ecfr-12-1026-1026-19|Q1_REVISED_VALUE|§ 1026.19 Certain mortgage and variable-rate transactions./(4)#2",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-19|Q1_REVISED_VALUE|§ 1026.19 Certain mortgage and variable-rate transactions./(ii)#5",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-19|Q1_REVISED_VALUE|§ 1026.19 Certain mortgage and variable-rate transactions./(iii)#4",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-19|Q1_REVISED_VALUE|§ 1026.19 Certain mortgage and variable-rate transactions./(iii)#8",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-19|Q1_REVISED_VALUE|§ 1026.19 Certain mortgage and variable-rate transactions./(iv)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-12-1026-1026-2|Q1_REVISED_VALUE|§ 1026.2 Definitions and rules of construction./(ii)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-17-230-230-144|Q1_REVISED_VALUE|§ 230.144 Persons deemed not to be engaged in a distribution and therefore not underwriters./(2)#5",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-17-275-275-203-m-1|Q1_REVISED_VALUE|§ 275.203(m)-1 Private fund adviser exemption./(1)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-17-275-275-203a-2|Q1_REVISED_VALUE|§ 275.203A-2 Exemptions from prohibition on Commission registration./(2)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "full_current_oracle"
+      ],
+      "question_id": "ecfr-26-1-1-1001-1|Q1_REVISED_VALUE|§ 1.1001-1 Computation of gain or loss./(ii)#1",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "arms": [
+        "compiled_current"
+      ],
+      "question_id": "ecfr-26-1-1-101-1|Q1_REVISED_VALUE|§ 1.101-1 Exclusion from gross income of proceeds of life insurance contracts payable by reason of death./(2)#1",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-26-1-1-101-1|Q1_REVISED_VALUE|§ 1.101-1 Exclusion from gross income of proceeds of life insurance contracts payable by reason of death./(i)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-29-1910-1910-1018|Q1_REVISED_VALUE|§ 1910.1018 Inorganic arsenic./(3)#5",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1018|Q1_REVISED_VALUE|§ 1910.1018 Inorganic arsenic./(ii)#11",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1018|Q1_REVISED_VALUE|§ 1910.1018 Inorganic arsenic./(ii)#19",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1018|Q1_REVISED_VALUE|§ 1910.1018 Inorganic arsenic./(ii)#20",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1025|Q1_REVISED_VALUE|§ 1910.1025 Lead./(ii)#25",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1025|Q1_REVISED_VALUE|§ 1910.1025 Lead./(ii)#26",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1025|Q1_REVISED_VALUE|§ 1910.1025 Lead./(ii)#27",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1026|Q1_REVISED_VALUE|§ 1910.1026 Chromium (VI)./(ii)#15",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1910-1910-1026|Q1_REVISED_VALUE|§ 1910.1026 Chromium (VI)./(ii)#18",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-29-1926-1926-1101|Q1_REVISED_VALUE|§ 1926.1101 Asbestos./(3)#10",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-29-1926-1926-1101|Q1_REVISED_VALUE|§ 1926.1101 Asbestos./(4)#1",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1926-1926-1101|Q1_REVISED_VALUE|§ 1926.1101 Asbestos./(7)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-29-1926-1926-1101|Q1_REVISED_VALUE|§ 1926.1101 Asbestos./(7)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1926-1926-1126|Q1_REVISED_VALUE|§ 1926.1126 Chromium (VI)./(ii)#11",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-29-1926-1926-1126|Q1_REVISED_VALUE|§ 1926.1126 Chromium (VI)./(ii)#14",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-30-250-250-1007|Q1_REVISED_VALUE|§ 250.1007 What to include in applications./(i)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-30-250-250-105|Q1_REVISED_VALUE|§ 250.105 Definitions./(2)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-30-250-250-105|Q1_REVISED_VALUE|§ 250.105 Definitions./(3)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-151|Q1_REVISED_VALUE|§ 141.151 Purpose and applicability of this subpart./(a)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-151|Q1_REVISED_VALUE|§ 141.151 Purpose and applicability of this subpart./(c)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-151|Q1_REVISED_VALUE|§ 141.151 Purpose and applicability of this subpart./(d)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-151|Q1_REVISED_VALUE|§ 141.151 Purpose and applicability of this subpart./(f)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-153|Q1_REVISED_VALUE|§ 141.153 Content of the reports./(1)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-154|Q1_REVISED_VALUE|§ 141.154 Required additional health information./(1)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-141-141-154|Q1_REVISED_VALUE|§ 141.154 Required additional health information./(a)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-60-60-1|Q1_REVISED_VALUE|§ 60.1 Applicability./(a)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-40-63-63-10|Q1_REVISED_VALUE|§ 63.10 Recordkeeping and reporting requirements./(3)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-42-422-422-101|Q1_REVISED_VALUE|§ 422.101 Requirements relating to basic benefits./(2)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-42-422-422-101|Q1_REVISED_VALUE|§ 422.101 Requirements relating to basic benefits./(4)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-42-422-422-101|Q1_REVISED_VALUE|§ 422.101 Requirements relating to basic benefits./(i)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-42-422-422-101|Q1_REVISED_VALUE|§ 422.101 Requirements relating to basic benefits./(iv)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-42-482-482-13|Q1_REVISED_VALUE|§ 482.13 Condition of participation: Patient's rights./(i)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-42-482-482-15|Q1_REVISED_VALUE|§ 482.15 Condition of participation: Emergency preparedness./(2)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-42-482-482-15|Q1_REVISED_VALUE|§ 482.15 Condition of participation: Emergency preparedness./(i)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-42-482-482-15|Q1_REVISED_VALUE|§ 482.15 Condition of participation: Emergency preparedness./(ii)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-45-164-164-502|Q1_REVISED_VALUE|§ 164.502 Uses and disclosures of protected health information: General rules./(5)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-45-164-164-502|Q1_REVISED_VALUE|§ 164.502 Uses and disclosures of protected health information: General rules./(i)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-45-164-164-512|Q1_REVISED_VALUE|§ 164.512 Uses and disclosures for which an authorization or opportunity to agree or object is not required./(3)#1",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-45-164-164-512|Q1_REVISED_VALUE|§ 164.512 Uses and disclosures for which an authorization or opportunity to agree or object is not required./(3)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-45-164-164-512|Q1_REVISED_VALUE|§ 164.512 Uses and disclosures for which an authorization or opportunity to agree or object is not required./(3)#3",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-45-164-164-512|Q1_REVISED_VALUE|§ 164.512 Uses and disclosures for which an authorization or opportunity to agree or object is not required./(ii)#3",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-45-164-164-520|Q1_REVISED_VALUE|§ 164.520 Notice of privacy practices for protected health information./(ii)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-45-164-164-520|Q1_REVISED_VALUE|§ 164.520 Notice of privacy practices for protected health information./(iii)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-47-76-76-1502|Q1_REVISED_VALUE|§ 76.1502 Certification./(2)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-49-571-571-101|Q1_REVISED_VALUE|§ 571.101 Standard No. 101; Controls and displays./(b)#4",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-49-571-571-101|Q1_REVISED_VALUE|§ 571.101 Standard No. 101; Controls and displays./(b)#5",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-49-571-571-101|Q1_REVISED_VALUE|§ 571.101 Standard No. 101; Controls and displays./(b)#6",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-49-571-571-101|Q1_REVISED_VALUE|§ 571.101 Standard No. 101; Controls and displays./(e)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-49-571-571-105|Q1_REVISED_VALUE|§ 571.105 Standard No. 105; Hydraulic and electric brake systems./(b)#18",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-49-571-571-105|Q1_REVISED_VALUE|§ 571.105 Standard No. 105; Hydraulic and electric brake systems./(b)#22",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ],
+      "question_id": "ecfr-49-571-571-105|Q1_REVISED_VALUE|§ 571.105 Standard No. 105; Hydraulic and electric brake systems./(c)#4",
+      "reason": "TARGET_EVIDENCE_LOST_TO_TRUNCATION"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-49-571-571-106|Q1_REVISED_VALUE|§ 571.106 Standard No. 106; Brake hoses./(2)#3",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-50-17-17-31|Q1_REVISED_VALUE|§ 17.31 Prohibitions./(a)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-50-17-17-31|Q1_REVISED_VALUE|§ 17.31 Prohibitions./(c)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-7-205-205-2|Q1_REVISED_VALUE|§ 205.2 Terms defined./(2)#1",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-7-205-205-2|Q1_REVISED_VALUE|§ 205.2 Terms defined./(2)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "ecfr-7-205-205-2|Q1_REVISED_VALUE|§ 205.2 Terms defined./(3)#2",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-7-205-205-201|Q1_REVISED_VALUE|§ 205.201 Organic production and handling system plan./(3)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "ecfr-7-205-205-201|Q1_REVISED_VALUE|§ 205.201 Organic production and handling system plan./(a)",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-complex-sequences-md|Q1_REVISED_VALUE|Complex animation sequences/Animations and Component View Encapsulation",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-css-md|Q1_REVISED_VALUE|Animating your Application with CSS/Animating a Transition/Animating State and Styles",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-css-md|Q1_REVISED_VALUE|Animating your Application with CSS/Animating a Transition/Transitions, Timing, and Easing",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-css-md|Q1_REVISED_VALUE|Animating your Application with CSS/How to write animations in native CSS",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-css-md|Q1_REVISED_VALUE|Animating your Application with CSS/Transition and Triggers/Animate entering and leaving a view",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-css-md|Q1_REVISED_VALUE|Animating your Application with CSS/Transition and Triggers/Animating Auto Height",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-enter-and-leave-md|Q1_REVISED_VALUE|Animating your applications with animate.enter and animate.leave",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-enter-and-leave-md|Q1_REVISED_VALUE|Animating your applications with animate.enter and animate.leave/animate.enter",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-migration-md|Q1_REVISED_VALUE|Migrating away from Angular's Animations package/Animating a Transition/Animating State and Styles/With Animations Package",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-migration-md|Q1_REVISED_VALUE|Migrating away from Angular's Animations package/How to write animations in native CSS",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-migration-md|Q1_REVISED_VALUE|Migrating away from Angular's Animations package/Transition and Triggers/Parent / Child Animations",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-overview-md|Q1_REVISED_VALUE|Introduction to Angular animations",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-overview-md|Q1_REVISED_VALUE|Introduction to Angular animations/Animating a transition",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-overview-md|Q1_REVISED_VALUE|Introduction to Angular animations/Animating a transition/Defining animations and attaching them to the HTML template",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-overview-md|Q1_REVISED_VALUE|Introduction to Angular animations/Animating a transition/Transitions and timing/Animation metadata: duration, delay, and easing",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-overview-md|Q1_REVISED_VALUE|Introduction to Angular animations/Getting started",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-transition-and-triggers-md|Q1_REVISED_VALUE|Animation transitions and triggers",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-transition-and-triggers-md|Q1_REVISED_VALUE|Animation transitions and triggers/Aliases :enter and :leave",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-transition-and-triggers-md|Q1_REVISED_VALUE|Animation transitions and triggers/Aliases :enter and :leave/Use ngIf and ngFor with :enter and :leave",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-transition-and-triggers-md|Q1_REVISED_VALUE|Animation transitions and triggers/Keyframes/Animatable properties and units",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-angular-angular-adev-src-content-guide-animations-transition-and-triggers-md|Q1_REVISED_VALUE|Animation transitions and triggers/Keyframes/Keyframes with a pulsation",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-apache-kafka-docs-configuration-broker-configs-md|Q1_REVISED_VALUE|Updating Broker Configs",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-apache-kafka-docs-configuration-configuration-providers-md|Q1_REVISED_VALUE|Example: Referencing files",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-apache-kafka-docs-configuration-configuration-providers-md|Q1_REVISED_VALUE|Using Configuration Providers",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-admission-control-md|Q1_REVISED_VALUE|Considerations",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-admission-control-md|Q1_REVISED_VALUE|How admission control works",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-admission-control-md|Q1_REVISED_VALUE|Operations subject to admission control",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-alter-changefeed-md|Q1_REVISED_VALUE|Synopsis",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-alter-database-md|Q1_REVISED_VALUE|Subcommands/RESET {session variable}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-alter-database-md|Q1_REVISED_VALUE|Synopsis",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-cockroachdb-docs-src-current-v24-1-alter-function-md|Q1_REVISED_VALUE|Synopsis",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-create-account-md|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-deactivate-user-account-md|Q1_REVISED_VALUE|Deactivate",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-deactivate-user-account-md|Q1_REVISED_VALUE|Prerequisites",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-deactivate-user-account-md|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-general-faqs-md|Q1_REVISED_VALUE|What if my Docker ID is taken?",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-general-faqs-md|Q1_REVISED_VALUE|What is a Docker ID?",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-general-faqs-md|Q1_REVISED_VALUE|What's an organization name or namespace?",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-manage-account-md|Q1_REVISED_VALUE|Change your password",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-manage-account-md|Q1_REVISED_VALUE|Manage connected accounts",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-manage-account-md|Q1_REVISED_VALUE|Update account information",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-manage-account-md|Q1_REVISED_VALUE|Update email address",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-accounts-manage-account-md|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-admin-organization-deactivate-account-md|Q1_REVISED_VALUE|Deactivate",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-admin-organization-deactivate-account-md|Q1_REVISED_VALUE|Prerequisites",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-admin-organization-deactivate-account-md|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-ai-compose-models-and-compose-md|Q1_REVISED_VALUE|Model configuration options",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-ai-compose-models-and-compose-md|Q1_REVISED_VALUE|Platform portability/Cloud providers",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-docker-docs-content-manuals-ai-mcp-catalog-and-toolkit-catalog-md|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-dotnet-docs-docs-csharp-advanced-topics-interface-implementation-default-int|Q1_REVISED_VALUE|Tutorial: Update interfaces with default interface methods/Upgrade with default interface methods",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-dotnet-docs-docs-csharp-advanced-topics-interface-implementation-mixins-with|Q1_REVISED_VALUE|Tutorial: Mix functionality in when creating classes using interfaces with default interface methods/Design the application",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-dotnet-docs-docs-csharp-advanced-topics-interface-implementation-static-virt|Q1_REVISED_VALUE|Tutorial: Explore static virtual members in interfaces",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v2-3-admin-guide-md|Q1_REVISED_VALUE|Cluster Management/Client Request Timeout/Get requests",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v2-3-admin-guide-md|Q1_REVISED_VALUE|Cluster Management/Disaster Recovery/Backing up the datastore",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v2-3-admin-guide-md|Q1_REVISED_VALUE|Cluster Management/Disaster Recovery/Restoring the cluster",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v2-3-api-md|Q1_REVISED_VALUE|Key Space Operations/Waiting for a change",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v2-3-benchmarks-etcd-3-watch-memory-benchmar|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v2-3-security-md|Q1_REVISED_VALUE|Example 3: Transport security & client certificates in a cluster",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-etcd-io-website-content-en-docs-v3-1-benchmarks-etcd-2-2-0-benchmarks-md|Q1_REVISED_VALUE|Testing",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-alerting-migration-md|Q1_REVISED_VALUE|Import data source-managed rules to Grafana-managed rules/How it works",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-alerting-migration-md|Q1_REVISED_VALUE|Import data source-managed rules to Grafana-managed rules/Import rules with Grafana Alerting/Before you begin",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-alerting-migration-md|Q1_REVISED_VALUE|Import data source-managed rules to Grafana-managed rules/Import rules with command-line tools/Compatible endpoints",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-alerting-migration-md|Q1_REVISED_VALUE|Import data source-managed rules to Grafana-managed rules/Import rules with command-line tools/Optional Headers/X-Grafana-Alerting-Notification-Settings/AlertRuleNotificationSettings object",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-grafana-managed-|Q1_REVISED_VALUE|Configure Grafana-managed alert rules/Configure alert evaluation behavior",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-grafana-managed-|Q1_REVISED_VALUE|Configure Grafana-managed alert rules/Configure notifications",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-grafana-managed-|Q1_REVISED_VALUE|Configure Grafana-managed alert rules/Define query and condition",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-|Q1_REVISED_VALUE|Create Grafana-managed recording rules",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-|Q1_REVISED_VALUE|Create Grafana-managed recording rules",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-|Q1_REVISED_VALUE|Create Grafana-managed recording rules/Before you begin",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-|Q1_REVISED_VALUE|Create Grafana-managed recording rules/Before you begin",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-link-alert-rules-to-pan|Q1_REVISED_VALUE|Create and link alert rules to panels",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-link-alert-rules-to-pan|Q1_REVISED_VALUE|Create and link alert rules to panels/Access linked alert rules from panels",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-link-alert-rules-to-pan|Q1_REVISED_VALUE|Create and link alert rules to panels/Create alert rules from panels",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-link-alert-rules-to-pan|Q1_REVISED_VALUE|Create and link alert rules to panels/Link alert rules to panels",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-templates-examples-md|Q1_REVISED_VALUE|Labels and annotations template examples/Annotation example/Include labels for extra details",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-grafana-docs-sources-alerting-alerting-rules-templates-examples-md|Q1_REVISED_VALUE|Labels and annotations template examples/Label example/Based on query value",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-loki-docs-sources-community-design-documents-2021-01-ordering-constr|Q1_REVISED_VALUE|Design/Background",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grafana-loki-docs-sources-community-governance-md|Q1_REVISED_VALUE|Governance/Projects",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-bazel-rules-protobuf-md|Q1_REVISED_VALUE|1: About Bazel {#about-bazel}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-bazel-rules-protobuf-md|Q1_REVISED_VALUE|1: About Bazel {#about-bazel}/1.3: Target Pattern Syntax",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-bazel-rules-protobuf-md|Q1_REVISED_VALUE|1: About Bazel {#about-bazel}/1.6: rulesprotobuf",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-bazel-rules-protobuf-md|Q1_REVISED_VALUE|2: Building a gRPC service with rulesprotobuf {#building}/2.3: Protobuf Definitions",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-grpc-csharp-future-md|Q1_REVISED_VALUE|Q & A",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-grpc-dotnet-build-md|Q1_REVISED_VALUE|A Walkthrough/Build it!",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-grpc-dotnet-build-md|Q1_REVISED_VALUE|A Walkthrough/Create a new project",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-blog-grpc-dotnet-build-md|Q1_REVISED_VALUE|A Walkthrough/Where are the generated files?",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-auth-md|Q1_REVISED_VALUE|Supported auth mechanisms",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-benchmarking-md|Q1_REVISED_VALUE|Overview",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-cancellation-md|Q1_REVISED_VALUE|Language Support",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-custom-backend-metrics-md|Q1_REVISED_VALUE|Language Support",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-custom-load-balancing-md|Q1_REVISED_VALUE|Language Support",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-deadlines-md|Q1_REVISED_VALUE|Language Support",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-grpc-grpc-io-content-en-docs-guides-error-md|Q1_REVISED_VALUE|Language Support",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-cgroups-md|Q1_REVISED_VALUE|Using cgroup v2 {#using-cgroupv2}/Migrating to cgroup v2 {#migrating-cgroupv2}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-garbage-collection-|Q1_REVISED_VALUE|Garbage collection of unused containers and images {#containers-images}/Container image lifecycle/Garbage collection for unused container images {#image-maximum-age-gc}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-mixed-version-proxy|Q1_REVISED_VALUE|Mixed version proxying/How it works under the hood",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-mixed-version-proxy|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-nodes-md|Q1_REVISED_VALUE|Management/Node name uniqueness",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-nodes-md|Q1_REVISED_VALUE|Management/Self-registration of Nodes",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-concepts-architecture-nodes-md|Q1_REVISED_VALUE|lead",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-admission-co|Q1_REVISED_VALUE|What does each admission controller do?/ImagePolicyWebhook {#imagepolicywebhook}/Request payloads",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-admission-co|Q1_REVISED_VALUE|What does each admission controller do?/LimitPodHardAntiAffinityTopology {#limitpodhardantiaffinitytopology}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-admission-co|Q1_REVISED_VALUE|What does each admission controller do?/NodeRestriction {#noderestriction}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-authenticati|Q1_REVISED_VALUE|Anonymous requests",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-authenticati|Q1_REVISED_VALUE|Authentication strategies",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-authenticati|Q1_REVISED_VALUE|Users in Kubernetes",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-authorizatio|Q1_REVISED_VALUE|Request attributes used in authorization",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-authorizatio|Q1_REVISED_VALUE|Request attributes used in authorization/Request verbs and authorization {#determine-the-request-verb}/Resource requests {#request-verb-resource}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-bootstrap-to|Q1_REVISED_VALUE|ConfigMap Signing",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-certificate-|Q1_REVISED_VALUE|PodCertificateRequests {#pod-certificate-requests}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-certificate-|Q1_REVISED_VALUE|Signers/Kubernetes signers",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-certificate-|Q1_REVISED_VALUE|Signing/Control plane signer {#signer-control-plane}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-extensible-a|Q1_REVISED_VALUE|Experimenting with admission webhooks/Authenticate API servers {#authenticate-apiservers}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-extensible-a|Q1_REVISED_VALUE|Webhook configuration",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-reference-access-authn-authz-extensible-a|Q1_REVISED_VALUE|Webhook configuration/Failure policy",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-setup-best-practices-certificates-md|Q1_REVISED_VALUE|How certificates are used by your cluster/Kubelet's server and client certificates",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-setup-production-environment-container-ru|Q1_REVISED_VALUE|CRI version support {#cri-versions}",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-setup-production-environment-tools-kubead|Q1_REVISED_VALUE|Instructions/Managed node labels",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-setup-production-environment-tools-kubead|Q1_REVISED_VALUE|Instructions/Managed node labels",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    },
+    {
+      "detail": [
+        "NO_DISTINGUISHING_CURRENT_VALUE",
+        "NO_DISTINGUISHING_SUPERSEDED_VALUE"
+      ],
+      "question_id": "git-kubernetes-website-content-en-docs-tasks-access-application-cluster-configur|Q1_REVISED_VALUE|Check the subject represented by the kubeconfig",
+      "reason": "VALUES_NOT_DISTINGUISHABLE"
+    }
+  ],
+  "final_cohort_by_family": {
+    "encyclopedia_wikipedia": 1,
+    "git_docs": 2,
+    "regulation_ecfr": 7
+  },
+  "gates": {
+    "G_ME1_COHORT_FLOOR": {
+      "final_cohort": 10,
+      "floor": 190,
+      "passed": false
+    },
+    "G_ME1_CONTEXT_VALIDITY": {
+      "append_only_excluded_because": "the two revisions crowd each other out of the budget, which is part of the intervention rather than a defect",
+      "passed": true,
+      "single_revision_arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ]
+    },
+    "G_ME1_INPUTS_MATERIALIZED": {
+      "arms": 4,
+      "passed": true,
+      "prompts": 40,
+      "questions": 10
+    },
+    "G_ME1_MODEL_PINNED": {
+      "detail": {
+        "behaviour_probe": {
+          "expected_tokens": 20,
+          "matches": true,
+          "observed_tokens": 20,
+          "text": "TAVONEL 1,450 — café ü 42.50 USD"
+        },
+        "chat_template_matches": true,
+        "tokenizer_file_matches": true
+      },
+      "passed": true
+    },
+    "G_ME1_NO_GPU_YET": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_ME1_PROMPT_CARRIES_NO_ARM_LABEL": {
+      "found": [],
+      "passed": true,
+      "template_digest": "sha256:ba60d3b2ce422e499cd6705050f69f678ad6f3de122f910baa5443d5e6348641"
+    },
+    "G_ME1_RUNTIME_DECLARED": {
+      "passed": true,
+      "runtime": {
+        "attested_gpu": "NVIDIA H200",
+        "decoding": "greedy",
+        "dtype": "bfloat16",
+        "max_new_tokens": 256,
+        "quantization": "none",
+        "runtime_image_digest": "runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+        "serving_runtime": "vllm",
+        "serving_runtime_version": "0.27.1",
+        "temperature": 0.0,
+        "thinking": "off",
+        "tools": "off"
+      }
+    },
+    "G_ME1_SCHEDULE_BALANCED": {
+      "detail": {
+        "balanced": true,
+        "by_arm_and_position": {
+          "append_only_stale_capable": [
+            2,
+            3,
+            3,
+            2
+          ],
+          "compiled_current": [
+            3,
+            2,
+            2,
+            3
+          ],
+          "full_current_oracle": [
+            3,
+            3,
+            2,
+            2
+          ],
+          "superseded_control": [
+            2,
+            2,
+            3,
+            3
+          ]
+        },
+        "max_position_spread": 1
+      },
+      "passed": true
+    },
+    "G_ME1_SCORER_CONTROLS": {
+      "count": 8,
+      "detail": {
+        "ambiguous": true,
+        "negative": true,
+        "passed": true,
+        "positive": true
+      },
+      "passed": true
+    },
+    "G_ME1_TRUNCATION": {
+      "ceiling": 0.25,
+      "passed": false,
+      "rates": {
+        "append_only_stale_capable": 0.7,
+        "compiled_current": 0.4,
+        "full_current_oracle": 0.4,
+        "superseded_control": 0.2
+      }
+    },
+    "G_ME1_VALUES_DISTINGUISHABLE": {
+      "excluded_indistinguishable": 274,
+      "passed": true
+    }
+  },
+  "gpu_authorisation_note": "the founder approved execution without a further check-in on condition that this preflight passes. It has not run any model.",
+  "gpu_authorised": false,
+  "gpu_seconds": 0,
+  "inputs_path": "research/tavonel_eval_v2/artifacts/development/model_endpoint_inputs.json",
+  "inputs_sha256": "sha256:12ade40c40fc5bac97fda319e37c2c37289171fadb5bfe44be67c69605d0fbf7",
+  "model": {
+    "added_tokens_attested": 33,
+    "added_tokens_here": 33,
+    "behaviour_probe": {
+      "expected_tokens": 20,
+      "matches": true,
+      "observed_tokens": 20,
+      "text": "TAVONEL 1,450 — café ü 42.50 USD"
+    },
+    "chat_template_matches": true,
+    "chat_template_sha256": "sha256:e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259",
+    "chat_template_sha256_attested": "e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259",
+    "no_auto_update": "pinned by commit; resolving to latest is forbidden",
+    "repository": "Qwen/Qwen3.6-27B",
+    "revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "source_of_pin": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json",
+    "tokenizer_class_attested": "Qwen2Tokenizer",
+    "tokenizer_class_here": "Qwen2TokenizerFast",
+    "tokenizer_file_matches": true,
+    "tokenizer_file_sha256": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_file_sha256_attested": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "vocab_size_attested": 248320,
+    "vocab_size_here": 248044,
+    "vocab_size_note": "the two libraries report this field differently — transformers here excludes added tokens. Identity rests on the file digest and the behaviour probe, which match exactly."
+  },
+  "primary_test": {
+    "alpha": 0.05,
+    "no_other_hypothesis_tests": true,
+    "one_only": "exact McNemar, compiled_current versus append_only_stale_capable",
+    "two_sided": true
+  },
+  "programme_status": "PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED",
+  "prompt_template_digest": "sha256:ba60d3b2ce422e499cd6705050f69f678ad6f3de122f910baa5443d5e6348641",
+  "protocol": "MODEL_ENDPOINT_V1",
+  "provenance": {
+    "generated_at": "2026-08-22T15:15:17.369457+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/MODEL_ENDPOINT_V1.yaml",
+    "protocol_sha256": "sha256:2b0487c41076fee00dfc9eae6265881c0d6918a9a66f5337b35130000b1172f4",
+    "receipt_stem": "model-endpoint-preflight",
+    "run_id": "20260822T151517Z-43f9291f0970",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_model_preflight.py",
+    "tool_sha256": "sha256:99fecd23bcb69fb5eb51e73eab6e8dc099212da8c08ce37a288760df9569d9f0"
+  },
+  "receipt_sha256": "sha256:9b776e7b39180677dacc0cd5ecf4c2555a067fee9cb7f5c1d2bda7aadf4c656d",
+  "runtime": {
+    "attested_gpu": "NVIDIA H200",
+    "decoding": "greedy",
+    "dtype": "bfloat16",
+    "max_new_tokens": 256,
+    "quantization": "none",
+    "runtime_image_digest": "runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+    "serving_runtime": "vllm",
+    "serving_runtime_version": "0.27.1",
+    "temperature": 0.0,
+    "thinking": "off",
+    "tools": "off"
+  },
+  "schedule_balance": {
+    "balanced": true,
+    "by_arm_and_position": {
+      "append_only_stale_capable": [
+        2,
+        3,
+        3,
+        2
+      ],
+      "compiled_current": [
+        3,
+        2,
+        2,
+        3
+      ],
+      "full_current_oracle": [
+        3,
+        3,
+        2,
+        2
+      ],
+      "superseded_control": [
+        2,
+        2,
+        3,
+        3
+      ]
+    },
+    "max_position_spread": 1
+  },
+  "schema": "tavonel.v2.model_endpoint_preflight.v1",
+  "scorer": {
+    "both_and_no_match_are_failures": true,
+    "classes": [
+      "CURRENT_ONLY",
+      "SUPERSEDED_ONLY",
+      "BOTH",
+      "NO_MATCH"
+    ],
+    "controls": {
+      "all_agree": true,
+      "results": [
+        {
+          "agrees": true,
+          "expected": "CURRENT_ONLY",
+          "guards": "the ordinary success case",
+          "name": "positive_current_value",
+          "observed": "CURRENT_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "SUPERSEDED_ONLY",
+          "guards": "the stale answer must not score as a success",
+          "name": "negative_superseded_value",
+          "observed": "SUPERSEDED_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "BOTH",
+          "guards": "reciting both is not selecting one",
+          "name": "ambiguous_both_values",
+          "observed": "BOTH"
+        },
+        {
+          "agrees": true,
+          "expected": "NO_MATCH",
+          "guards": "a refusal is not a current-value success",
+          "name": "no_value_at_all",
+          "observed": "NO_MATCH"
+        },
+        {
+          "agrees": true,
+          "expected": "CURRENT_ONLY",
+          "guards": "typography must not decide the endpoint",
+          "name": "thousands_separator_is_the_same_value",
+          "observed": "CURRENT_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "NO_MATCH",
+          "guards": "42 inside 4200 is not the value 42",
+          "name": "substring_is_not_a_match",
+          "observed": "NO_MATCH"
+        },
+        {
+          "agrees": true,
+          "expected": "CURRENT_ONLY",
+          "guards": "a unicode dash must not hide a date",
+          "name": "unicode_dash_and_case_are_normalised",
+          "observed": "CURRENT_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "SUPERSEDED_ONLY",
+          "guards": "normalisation must not merge two genuinely different values",
+          "name": "decimal_precision_is_not_collapsed",
+          "observed": "SUPERSEDED_ONLY"
+        }
+      ],
+      "three_directions": {
+        "ambiguous": true,
+        "negative": true,
+        "passed": true,
+        "positive": true
+      }
+    },
+    "deterministic_only": true,
+    "primary_success": "CURRENT_ONLY"
+  },
+  "split": "MODEL-ENDPOINT CONFIRMATORY — MODEL OUTCOMES UNSEEN",
+  "split_note": "the P4i corpus already carries retrieval and source-coverage development results. Only the model's answers have never been opened, so it is not an untouched confirmatory corpus.",
+  "started_at": "2026-08-22T15:14:21.643787+00:00",
+  "totals": {
+    "candidates_regenerated": 296,
+    "eligible_q1_from_p4i": 293,
+    "excluded": 286,
+    "final_frozen_cohort": 10,
+    "prompts_materialized": 40
+  },
+  "truncation_rates": {
+    "append_only_stale_capable": 0.7,
+    "compiled_current": 0.4,
+    "full_current_oracle": 0.4,
+    "superseded_control": 0.2
+  },
+  "verdict": "FAIL"
+}

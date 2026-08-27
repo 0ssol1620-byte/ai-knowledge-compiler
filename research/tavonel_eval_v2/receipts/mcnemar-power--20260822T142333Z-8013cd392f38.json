@@ -1,0 +1,44 @@
+{
+  "computed_at": "2026-08-22T14:23:33.556088+00:00",
+  "computed_required_n_at_target_power": 173,
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "method": "exact McNemar, summing over the binomial distribution of the discordant count",
+  "not_normal_approximation_because": "the normal approximation is optimistic at exactly the sample sizes under argument, and conditioning on a random discordant count is the property that makes the exact form necessary.",
+  "parameters": {
+    "alpha": 0.05,
+    "assumed_discordant_pair_rate": 0.3,
+    "effect": 0.15,
+    "effect_definition": "difference in marginal proportions between the two arms",
+    "floor_status": "conservative preregistered floor. Never lowered after seeing an eligibility count.",
+    "hard_minimum_eligible_Q1": 190,
+    "sided": "two",
+    "target_power": 0.95
+  },
+  "power_at_the_declared_floor": 0.967,
+  "power_curve": {
+    "50": 0.4067,
+    "100": 0.7466,
+    "150": 0.916,
+    "190": 0.967,
+    "200": 0.9741,
+    "250": 0.9925,
+    "300": 0.998
+  },
+  "provenance": {
+    "generated_at": "2026-08-22T14:23:33.584599+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/SOURCE_LOCALITY_V2.yaml",
+    "protocol_sha256": "sha256:37db14dc9db77e465b4ad6b4876b35dc3a993e5509b6f59388a81103c8395adc",
+    "receipt_stem": "mcnemar-power",
+    "run_id": "20260822T142333Z-8013cd392f38",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/mcnemar_power.py",
+    "tool_sha256": "sha256:49a217ce8d1f99ade0a9332a2f2163308de1931f324240be0069663722ccd955"
+  },
+  "receipt_sha256": "sha256:4ed58c3555563c7b66eff1fd7e782b7f591dc382e3eef4622497acbb5d786f09",
+  "schema": "tavonel.v2.mcnemar_power.v1",
+  "tool": "research/tavonel_eval_v2/tools/mcnemar_power.py",
+  "tool_sha256": "sha256:49a217ce8d1f99ade0a9332a2f2163308de1931f324240be0069663722ccd955"
+}

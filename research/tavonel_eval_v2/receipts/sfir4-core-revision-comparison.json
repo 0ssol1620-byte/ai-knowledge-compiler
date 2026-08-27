@@ -1,0 +1,211 @@
+{
+  "api_removals": [],
+  "claim_bearing_absent_from_left": [
+    {
+      "claim": "the channel set is closed and enumerable, so a traversal cannot silently omit one",
+      "module": "akc_cir.dependency",
+      "symbol": "ALL_DEPENDENCY_CHANNELS"
+    },
+    {
+      "claim": "dependency propagation is typed: an edge is sensitive to named channels",
+      "module": "akc_cir.dependency",
+      "symbol": "DependencyChannel"
+    },
+    {
+      "claim": "every facet's outcome is recorded, including UNRESOLVED -- a change that resolved to nothing must leave a trace of having been seen",
+      "module": "akc_cir.recompilation",
+      "symbol": "FacetVerdict"
+    },
+    {
+      "claim": "structural participation in the traversal is a declared policy, not a constant",
+      "module": "akc_cir.recompilation",
+      "symbol": "StructuralPolicy"
+    },
+    {
+      "claim": "identity and change are decided independently, by typed comparators",
+      "module": "akc_cir.semantic_diff",
+      "symbol": "ChangeChannel"
+    },
+    {
+      "claim": "an identity the resolver could not settle is quarantined, fail-closed",
+      "module": "akc_cir.semantic_diff",
+      "symbol": "QUARANTINE_UNSETTLED_IDENTITY_DEFAULT"
+    },
+    {
+      "claim": "the change decision is taken on CONTENT, derived without consulting identity",
+      "module": "akc_cir.semantic_diff",
+      "symbol": "content_facet_verdict"
+    }
+  ],
+  "does_not_classify_intent": "This tool does not label a change a refactor or a bug fix. It reports what moved and which claims depend on it; the judgement is a person's.",
+  "estimated_cost_usd": 0.0,
+  "files": {
+    "packages/cir-python/src/akc_cir/dependency.py": {
+      "api_added": [
+        "ALL_DEPENDENCY_CHANNELS",
+        "DependencyChannel"
+      ],
+      "api_removed": [],
+      "left_bytes": 11630,
+      "member_changes": {
+        "DependencyEdge": {
+          "added": [
+            "channels"
+          ],
+          "removed": []
+        },
+        "DependencyGraph": {
+          "added": [
+            "declares_structural_dependency",
+            "edges_from"
+          ],
+          "removed": []
+        }
+      },
+      "right_bytes": 13498
+    },
+    "packages/cir-python/src/akc_cir/recompilation.py": {
+      "api_added": [
+        "FacetPolicy",
+        "FacetResolution",
+        "FacetVerdict",
+        "StructuralPolicy",
+        "_FACET_CHANNELS",
+        "_declares_facet",
+        "_facet_channel_enabled",
+        "_structural_wanted"
+      ],
+      "api_removed": [],
+      "left_bytes": 11505,
+      "member_changes": {
+        "RecompilationPlan": {
+          "added": [
+            "facet_resolutions",
+            "unresolved_facet_changes"
+          ],
+          "removed": []
+        }
+      },
+      "right_bytes": 30250
+    },
+    "packages/cir-python/src/akc_cir/semantic_diff.py": {
+      "api_added": [
+        "CHANGE_FACET_SCHEMA",
+        "ChangeChannel",
+        "ChangeFacetVerdict",
+        "QUARANTINE_UNSETTLED_IDENTITY_DEFAULT",
+        "_CHANGE_CHANNEL",
+        "_SEMANTIC_RECOMPILATION_CHANNELS",
+        "_content_facet_projection",
+        "_nonsemantic_dimension_changes",
+        "content_facet_verdict"
+      ],
+      "api_removed": [],
+      "left_bytes": 18387,
+      "member_changes": {
+        "ChangeKind": {
+          "added": [
+            "METADATA_CHANGED",
+            "TEMPORAL_CHANGED",
+            "VISUAL_CHANGED"
+          ],
+          "removed": []
+        },
+        "DocumentShape": {
+          "added": [
+            "unit_order"
+          ],
+          "removed": []
+        },
+        "SemanticChange": {
+          "added": [
+            "channel"
+          ],
+          "removed": []
+        },
+        "SemanticDiff": {
+          "added": [
+            "changed_logical_ids_for",
+            "structural_change_present",
+            "structural_scope"
+          ],
+          "removed": []
+        },
+        "UnitSnapshot": {
+          "added": [
+            "evidence_occurrence_id",
+            "logical_unit_id",
+            "metadata_fingerprint",
+            "temporal_fingerprint",
+            "visual_fingerprint"
+          ],
+          "removed": []
+        }
+      },
+      "right_bytes": 45131
+    }
+  },
+  "generated_at": "2026-08-26T23:31:19.223657+00:00",
+  "gpu_seconds": 0,
+  "how_to_read_this": "A symbol under claim_bearing_absent_from_left is one the paper's claim chain depends on that exists only on the right-hand side. If the right-hand side is the working tree, that claim is implemented only in uncommitted state and no revision can be frozen against it.",
+  "left_revision": "79dd3b70460b6fc0a7deb44c6f29ecf99049f06e",
+  "other_api_additions": [
+    {
+      "module": "akc_cir.recompilation",
+      "symbol": "FacetPolicy"
+    },
+    {
+      "module": "akc_cir.recompilation",
+      "symbol": "FacetResolution"
+    },
+    {
+      "module": "akc_cir.recompilation",
+      "symbol": "_FACET_CHANNELS"
+    },
+    {
+      "module": "akc_cir.recompilation",
+      "symbol": "_declares_facet"
+    },
+    {
+      "module": "akc_cir.recompilation",
+      "symbol": "_facet_channel_enabled"
+    },
+    {
+      "module": "akc_cir.recompilation",
+      "symbol": "_structural_wanted"
+    },
+    {
+      "module": "akc_cir.semantic_diff",
+      "symbol": "CHANGE_FACET_SCHEMA"
+    },
+    {
+      "module": "akc_cir.semantic_diff",
+      "symbol": "ChangeFacetVerdict"
+    },
+    {
+      "module": "akc_cir.semantic_diff",
+      "symbol": "_CHANGE_CHANNEL"
+    },
+    {
+      "module": "akc_cir.semantic_diff",
+      "symbol": "_SEMANTIC_RECOMPILATION_CHANNELS"
+    },
+    {
+      "module": "akc_cir.semantic_diff",
+      "symbol": "_content_facet_projection"
+    },
+    {
+      "module": "akc_cir.semantic_diff",
+      "symbol": "_nonsemantic_dimension_changes"
+    }
+  ],
+  "read_only": true,
+  "receipt_sha256": "sha256:587e2eaba36192ba5c6cf1890679f6ae851ebc5e84ddb774ff4c3247a863c3c2",
+  "right_revision": "WORKING_TREE",
+  "schema": "tavonel.sfir4.core_revision_comparison.v1",
+  "totals": {
+    "api_removals": 0,
+    "claim_bearing_symbols_absent_from_left": 7,
+    "other_api_additions": 12
+  }
+}

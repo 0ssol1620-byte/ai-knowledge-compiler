@@ -1,0 +1,12 @@
+{
+  "amendment_of": null,
+  "external_gpu_cost_usd": 0.0,
+  "frozen_at": "2026-08-21T05:43:13.539878+00:00",
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "protocol_path": "research/tavonel_eval_v2/protocols/P2_multi_revision_lineage.yaml",
+  "protocol_sha256": "sha256:3809c14d01909435f0fcf810599cd5c242017032345658512601925d1a8bc50c",
+  "receipt_sha256": "sha256:cac469d0f85014e4b7bb8a25b8f5075215a3d88476d9b11127a697141e426bef",
+  "schema": "tavonel.v2.protocol_freeze.v1",
+  "worktree_dirty_path_count": 181
+}

@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/sfi2-execution-forensic--20260823T095408Z-2dcd1681a54c.json",
+  "points_to_file_sha256": "sha256:9b21a2ab8a39d1724fe38c8af8476fa844f4e2adcd480dcded7e7fa5c12e2114",
+  "run_id": "20260823T095408Z-2dcd1681a54c",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "sfi2-execution-forensic",
+  "updated_at": "2026-08-23T09:54:08.369199+00:00"
+}

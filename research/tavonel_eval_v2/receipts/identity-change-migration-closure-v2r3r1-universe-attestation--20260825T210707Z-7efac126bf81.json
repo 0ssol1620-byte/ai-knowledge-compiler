@@ -1,0 +1,81 @@
+{
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3r1-universe--20260825T210707Z-d22131ceff74.json",
+    "receipt_body_sha256": "sha256:e2b6ed0fb1ae57706acdf9d6aae82de439e2e229e62a2b923fe7dfec10702bed",
+    "receipt_file_sha256": "sha256:d38357dddaa0c99cefd5ee42a8b76ffe65297efa7879f7b5ab8f867af8cf0a05",
+    "run_id": "20260825T210707Z-d22131ceff74",
+    "stem": "identity-change-migration-closure-v2r3r1-universe"
+  },
+  "exact_set_equality": {
+    "added_pairs": 0,
+    "by_family": {
+      "git_docs": 133,
+      "regulation_ecfr": 104,
+      "sec_edgar": 63
+    },
+    "changed_canonical_digests": 0,
+    "changed_family_labels": 0,
+    "changed_raw_digests": 0,
+    "changed_revision_ids": 0,
+    "compared": "this chain's FROZEN universe against the parent's frozen universe",
+    "frozen_universe_sha256": "sha256:628f29617f43ab4113ad5ab172ddcafb635a0f98f01f432afc4531abb0bd0739",
+    "held": true,
+    "how": "the rows were compared whole and in order; the eight declared deltas are derived from that comparison rather than measured beside it, and whole-row equality is asserted separately so a field outside the declared set cannot pass unnoticed.",
+    "no_selection_function": "the parent's frozen universe is the complete candidate set. Nothing is searched, sampled, filtered or subset -- not even by a condition that is currently always true.",
+    "ordered_lineage_ids_identical": true,
+    "pair_count": 300,
+    "parent_universe_sha256": "sha256:628f29617f43ab4113ad5ab172ddcafb635a0f98f01f432afc4531abb0bd0739",
+    "removed_pairs": 0,
+    "reordered_pairs": 0,
+    "replaced_pairs": 0,
+    "whole_row_equality": true,
+    "why_not_the_same_proof_as_rung_0a": "rung 0a compares the parent's receipt to the rows about to be enumerated. This asks what rung 3 actually sealed. A proof about the input says nothing about the output."
+  },
+  "parent_universe": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3-universe--20260825T180058Z-914589827af0.json",
+    "receipt_body_sha256": "sha256:15b1d3a3f7e19500a7c6372f676043e9cf5e9bf9180ba82806c72f10f58d5069",
+    "receipt_file_sha256": "sha256:d554d250f464882df9145303963d9728530dab2f78ba4a4d821560acd48e8415",
+    "run_id": "20260825T180058Z-914589827af0",
+    "stem": "identity-change-migration-closure-v2r3-universe"
+  },
+  "provenance": {
+    "generated_at": "2026-08-25T21:07:07.455525+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml",
+    "protocol_sha256": "sha256:1be970071924fcaea5d2ffbe05e30fd40327408bc2ac3a69bcb2131a839b4f1f",
+    "receipt_stem": "identity-change-migration-closure-v2r3r1-universe-attestation",
+    "run_id": "20260825T210707Z-7efac126bf81",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:7214c8c32f279018cff1c2988a6be8aa08053994a0d67b0eb10bb1ce83bb4006",
+  "refuses_unless": "both spent intersections are empty AND this chain's frozen universe is exactly the parent's, row for row and digest for digest",
+  "rung": "3a",
+  "rung_name": "universe_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3r1_attestation.v1",
+  "spent_disjointness": {
+    "frozen_pairs": 300,
+    "intersections": {
+      "v2r1": 0,
+      "v2r2": 0
+    },
+    "proved": true,
+    "read_for": "lineage ids only. No V2R1 or V2R2 verdict, count or violated case is read, and neither INVALID_INSTRUMENT_CONTRACT adjudication is re-opened or re-interpreted here.",
+    "sources": [
+      {
+        "distinct_lineages": 285,
+        "source_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-universe--20260825T074754Z-26b160b1ac43.json",
+        "source_receipt_sha256": "sha256:f5e127d74881dd19bcda8aba585bfbfe7a136a64175285b689b6756d3da018a3",
+        "study": "v2r1"
+      },
+      {
+        "distinct_lineages": 270,
+        "source_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r2-universe--20260825T104523Z-6a50832c28d1.json",
+        "source_receipt_sha256": "sha256:a3f37ffde73c0934889f7abb6889056cedbd8c3fad4633cab51d60d17c0a5d17",
+        "study": "v2r2"
+      }
+    ]
+  },
+  "v2r3_is_not_a_spent_set": "it is the set being inherited. Its intersection with this universe is 300 by design and is proven by equality, not by subtraction."
+}

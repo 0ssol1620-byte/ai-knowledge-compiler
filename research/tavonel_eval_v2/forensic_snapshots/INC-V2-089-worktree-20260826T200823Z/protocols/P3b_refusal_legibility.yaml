@@ -1,0 +1,214 @@
+# P3b — failure injection with a legible exception path.
+#
+# Frozen before any P3b result exists.
+#
+# P3 v1 stands at FAIL on assertion A3 and is not amended, re-run or re-scored.
+# Its receipt pins the digest of the module it tested; that module is untouched.
+# The repair is a new module, and it is validated here or not at all.
+#
+# Founder ruling, 2026-08-21: the contract is not weakened. An exception path
+# that produces no evidence stays a failure. What is added is a mechanism that
+# can produce evidence there.
+
+schema: tavonel.v2.protocol.P3b.v1
+protocol_id: P3b_refusal_legibility
+version: 1
+authored: 2026-08-21
+supersedes: null
+relates_to:
+  P3_failure_injection:
+    relation: >-
+      same injection matrix, run against a different subject module. P3 v1's
+      FAIL is preserved and is not restated as passing by anything here.
+  INC-V2-004: the defect this protocol exists to test a repair for
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  sealed_evidence: {rule: read-only}
+  p0_v1: {rule: read-only}
+  p3_v1: {rule: read-only, note: subject module and receipt both untouched}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+  receipts: {rule: immutable, per INC-V2-005}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. Subject
+# ---------------------------------------------------------------------------
+
+subject:
+  module: research/tavonel_eval_v2/activation/knowledge_store_p3b.py
+  derived_from: research/tavonel_eval_v2/activation/knowledge_store.py
+  contract_carried_over_unchanged:
+    - one visible active reference
+    - admission requires every declared predicate present and every one PASS
+    - four gate states, and only PASS admits
+    - a refused candidate leaves the active reference where it was
+    - published states are immutable
+  what_changed:
+    predicate_domains: >-
+      every predicate declares the part of the candidate it evaluates over, and
+      the framework resolves that domain to concrete references BEFORE calling
+      the predicate. A predicate that raises on its first line therefore still
+      produces a refusal carrying the artifacts or inputs it was about to read.
+    refusal_fields: see section 2
+    structural_enforcement: >-
+      constructing a refusal with no evidence reference raises, except for the
+      predicates named in section 2 whose evidence is the pointer itself. The
+      requirement is enforced by the type, not only checked by a test.
+
+# ---------------------------------------------------------------------------
+# 2. What a refusal must carry
+# ---------------------------------------------------------------------------
+
+refusal_minimum:
+  required_on_every_refusal:
+    - predicate name
+    - state, which on the exception path is UNVERIFIABLE and never PASS
+    - a stable reason code
+    - candidate state id
+    - candidate state digest
+    - evaluation event id
+    - at least one evidence reference to the artifact or input under evaluation
+
+  reason_code_stability: >-
+    the exception's class name, prefixed PREDICATE_RAISED:. Stable across runs
+    and across message changes, and groupable.
+
+  pointer_evidence_exemption:
+    predicates: [pointer_compare_and_swap]
+    basis: >-
+      the evidence for a compare-and-swap refusal IS the pointer, and the
+      refusal carries it. Named explicitly rather than left as a general
+      exemption for any predicate that happens to have nothing.
+
+  deliberately_not_recorded:
+    - the exception message
+    - the traceback
+    rationale: >-
+      a message can carry a document fragment, a path or a credential from
+      whatever the predicate was reading, and evidence that cannot be shown to
+      an operator is not evidence. The class name is stable and safe; the
+      domain references say what to go and look at.
+    consequence_accepted: >-
+      debugging a raising predicate needs the module's own logs, not the refusal
+      record. That is the trade, and it is made deliberately.
+
+  evidence_cap:
+    limit: 8 references
+    rule: >-
+      when the domain is larger, the overflow is stated in the reference list
+      itself. A truncated list that reads as complete is its own defect.
+
+# ---------------------------------------------------------------------------
+# 3. Injection matrix
+#
+# The seventeen scenarios of P3 section 2, unchanged in construction and in
+# expectation, re-run against the new subject. A scenario is not removed,
+# renamed or reworded to suit the repair.
+# ---------------------------------------------------------------------------
+
+injections:
+  carried_over_from_P3_verbatim: true
+  source: protocols/P3_failure_injection.yaml section 2
+  count: 17
+  additional:
+    - id: RAISE_ON_EMPTY_DOMAIN
+      does: >-
+        a predicate raises while its declared domain resolves to nothing — no
+        artifacts, no declared inputs
+      expect: >-
+        refused, UNVERIFIABLE, and the refusal still carries a reference. An
+        empty domain is where the naive repair silently returns to an empty
+        evidence tuple.
+    - id: RAISE_IN_EVERY_POSITION
+      does: >-
+        each of the five predicates in turn is made to raise, first in the
+        conjunction and last in the conjunction
+      expect: >-
+        every one refuses with the full required field set, whichever position
+        it occupies
+
+# ---------------------------------------------------------------------------
+# 4. Assertions
+# ---------------------------------------------------------------------------
+
+assertions:
+  A1_previous_state_available: as P3
+  A2_no_mixed_state_observation: as P3
+  A3_refusal_names_predicate_and_evidence:
+    text: >-
+      every refusal event carries the predicate that refused, its state, and at
+      least one evidence reference, unless the predicate is one whose evidence
+      is the pointer itself
+    unchanged_from_P3: true
+    note: >-
+      the assertion is not reworded. It failed in P3 and it is the same
+      assertion here.
+  A4_not_reached_never_admits: as P3
+  A5_recovery_does_not_rewrite_a_failure: as P3
+  A6_refusal_carries_the_full_required_field_set:
+    text: >-
+      every refusal carries all seven fields of section 2, with the pointer
+      exemption applying only to the named predicates
+  A7_no_message_or_traceback_is_recorded:
+    text: >-
+      no refusal record contains an exception message or a traceback, on any
+      scenario
+    basis: >-
+      the safety half of the ruling. A repair that made refusals legible by
+      dumping raw exception text would satisfy A3 and violate this.
+  A8_reason_code_is_stable:
+    text: >-
+      the reason code for a raising predicate is identical across repeated runs
+      of the same scenario
+
+# ---------------------------------------------------------------------------
+# 5. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P3B_COVERAGE:
+    predicate: every declared scenario executed or reported NOT_IMPLEMENTED with a reason
+  G_P3B_EXPECTATIONS:
+    predicate: every executed scenario produced the outcome declared beside it
+  G_P3B_ASSERTIONS:
+    predicate: A1 through A8 hold over every scenario
+  G_P3B_POSITIVE_CONTROL:
+    predicate: >-
+      a healthy candidate admitted and a gate-break candidate did not, in the
+      same execution as the failing scenarios
+  G_P3B_ORDER_INVARIANCE:
+    predicate: >-
+      the admit/refuse decision is identical across all 120 permutations for
+      every candidate tested
+  G_P3B_STRUCTURAL_ENFORCEMENT:
+    predicate: >-
+      constructing a refusal with no evidence reference raises, demonstrated in
+      the run rather than asserted
+    rationale: >-
+      without this the gate could pass because no scenario happened to produce
+      an empty refusal, which is what "no failures observed" meant in P3 for the
+      four assertions that did hold
+  G_P3B_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+# ---------------------------------------------------------------------------
+# 6. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under the declared injections, this publication boundary refused every
+    unverified candidate with a refusal that named the predicate, the candidate
+    state, the evaluation event and at least one input under evaluation,
+    including when the predicate raised, and without recording any exception
+    message or traceback.
+  forbidden:
+    - reading this as repairing, amending or re-scoring P3 v1, which stays FAIL
+    - any claim of crash atomicity; no process is killed here
+    - any claim about a distributed store, a database or a consensus protocol
+    - any claim that the injection matrix is complete
+    - generalising to the production system
+    - treating a development-split result as confirmatory

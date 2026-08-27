@@ -1,0 +1,203 @@
+{
+  "cases": [
+    {
+      "after_version": "1354150833",
+      "artifacts_carried_though_moved": [
+        "section:u:95960f721a832950b6fa7653"
+      ],
+      "artifacts_moved_by_clean_rebuild": 1,
+      "before_version": "1286337912",
+      "difference_classes_of_stale_artifacts": [
+        "alphanumeric"
+      ],
+      "family": "encyclopedia_wikipedia",
+      "findings": [
+        {
+          "artifact": "section:u:95960f721a832950b6fa7653",
+          "carried_forward_by_selective": true,
+          "difference_class": "alphanumeric",
+          "first_divergence": {
+            "after": " to one another. In some cases , one side of a street is part of one village while the opp",
+            "at": 5888,
+            "before": " to one another. In some cases, one side of a street is part of one village while the oppo"
+          },
+          "kind": "section",
+          "length_after": 12104,
+          "length_before": 12103
+        }
+      ],
+      "lineage_id": "wikipedia:en:Three Villages",
+      "selective_carried_forward": 4,
+      "selective_detected_change_kinds": [],
+      "selective_rebuilt": 0,
+      "selective_structural_change_present": false
+    },
+    {
+      "after_version": "1289724072",
+      "artifacts_carried_though_moved": [
+        "section:u:0bf3fdf668eeabb24f6ea511"
+      ],
+      "artifacts_moved_by_clean_rebuild": 1,
+      "before_version": "1259026565",
+      "difference_classes_of_stale_artifacts": [
+        "alphanumeric"
+      ],
+      "family": "encyclopedia_wikipedia",
+      "findings": [
+        {
+          "artifact": "section:u:0bf3fdf668eeabb24f6ea511",
+          "carried_forward_by_selective": true,
+          "difference_class": "alphanumeric",
+          "first_divergence": {
+            "after": "i pass Monteceneri had an area (as of the 2004/09 survey) of 36.08 km 2 (13.93 sq mi). [ 7",
+            "at": 12710,
+            "before": "i pass Monteceneri had an area, (as of the 2004/09 survey) of 36.08 km 2 (13.93 sq mi). [ "
+          },
+          "kind": "section",
+          "length_after": 29264,
+          "length_before": 29265
+        }
+      ],
+      "lineage_id": "wikipedia:en:Monteceneri",
+      "selective_carried_forward": 4,
+      "selective_detected_change_kinds": [],
+      "selective_rebuilt": 0,
+      "selective_structural_change_present": false
+    },
+    {
+      "after_version": "1360080269",
+      "artifacts_carried_though_moved": [
+        "section:u:55f9943b9e89e6b19ce0a64e"
+      ],
+      "artifacts_moved_by_clean_rebuild": 1,
+      "before_version": "1360080177",
+      "difference_classes_of_stale_artifacts": [
+        "typographic_punctuation"
+      ],
+      "family": "encyclopedia_wikipedia",
+      "findings": [
+        {
+          "artifact": "section:u:55f9943b9e89e6b19ce0a64e",
+          "carried_forward_by_selective": true,
+          "difference_class": "typographic_punctuation",
+          "first_divergence": {
+            "after": "nd Cylindrical cup, so-called \"of the birds\". Imperial Age, Roman culture (1st–4th century",
+            "at": 46983,
+            "before": "nd Cylindrical cup, so-called “of the birds”. Imperial Age, Roman culture (1st-4th century"
+          },
+          "kind": "section",
+          "length_after": 68240,
+          "length_before": 68240
+        }
+      ],
+      "lineage_id": "wikipedia:en:Locarno",
+      "selective_carried_forward": 4,
+      "selective_detected_change_kinds": [],
+      "selective_rebuilt": 0,
+      "selective_structural_change_present": false
+    },
+    {
+      "after_version": "9c27c8b20c20337edcce2757f349b36fabe158d3",
+      "artifacts_carried_though_moved": [
+        "topic-bucket:e1f43638beb6bac5:0"
+      ],
+      "artifacts_moved_by_clean_rebuild": 6,
+      "before_version": "17faaa6c831ee9dc5666eddfa9410589135c0857",
+      "difference_classes_of_stale_artifacts": [
+        "artifact_membership_or_order"
+      ],
+      "family": "git_docs",
+      "findings": [
+        {
+          "artifact": "document-index:e1f43638beb6bac5",
+          "carried_forward_by_selective": false,
+          "difference_class": "artifact_membership_or_order",
+          "kind": "document-index"
+        },
+        {
+          "artifact": "section:u:465c5f9821a9d16e13d5cc76",
+          "carried_forward_by_selective": false,
+          "difference_class": "artifact_membership_or_order",
+          "kind": "section"
+        },
+        {
+          "artifact": "section:u:c854da9ea40620c7752f9f42",
+          "carried_forward_by_selective": false,
+          "difference_class": "artifact_membership_or_order",
+          "kind": "section"
+        },
+        {
+          "artifact": "structure-map:e1f43638beb6bac5",
+          "carried_forward_by_selective": false,
+          "difference_class": "artifact_membership_or_order",
+          "kind": "structure-map"
+        },
+        {
+          "artifact": "topic-bucket:e1f43638beb6bac5:0",
+          "carried_forward_by_selective": true,
+          "difference_class": "artifact_membership_or_order",
+          "kind": "topic-bucket"
+        },
+        {
+          "artifact": "topic-bucket:e1f43638beb6bac5:3",
+          "carried_forward_by_selective": false,
+          "difference_class": "artifact_membership_or_order",
+          "kind": "topic-bucket"
+        }
+      ],
+      "lineage_id": "git:pnpm/pnpm.io:docs/cli/change.md",
+      "selective_carried_forward": 7,
+      "selective_detected_change_kinds": [
+        "evidence_moved",
+        "structure_changed"
+      ],
+      "selective_rebuilt": 2,
+      "selective_structural_change_present": true
+    }
+  ],
+  "confirms": "research/tavonel_eval_v2/receipts/forensic-stale-escape--20260823T040142Z-0c6f0f65db2e.json",
+  "confirms_sha256": "sha256:412fc510545e6855a0bb0e6121352f8ef3e0ad2b94e87426e3b0a2f8c7706c77",
+  "ended_at": "2026-08-23T04:04:18.383918+00:00",
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "ladder": [
+    "identical",
+    "whitespace",
+    "html_entities",
+    "unicode_nfkc",
+    "typographic_punctuation",
+    "case",
+    "alphanumeric",
+    "substantive"
+  ],
+  "ladder_is_cumulative_and_ordered": true,
+  "provenance": {
+    "generated_at": "2026-08-23T04:04:18.384955+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "forensic-stale-escape-root-cause",
+    "run_id": "20260823T040418Z-c4160cdad636",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/forensic_stale_escape_root_cause.py",
+    "tool_sha256": "sha256:14cba9ae8a0433a37c4b6cf9c81b0042d6d9fc04c555657b98d216c2551033d1"
+  },
+  "reading": "where a stale artifact's difference class is anything other than 'substantive', the semantic diff correctly judged the edit non-semantic and the artifact fingerprint moved anyway. The two notions of 'changed' are not aligned, and the selective path is where the gap shows.",
+  "receipt_sha256": "sha256:91716c3b5d63ea3f6e6d8f74b2b62633600b966969d7a548f6ce79dafc9c99d1",
+  "result_digest": "sha256:fdf2a7aad80315c0bd52eb2bc5495125955cdabe9c4c12f84e726dded2118f99",
+  "schema": "tavonel.v2.forensic_stale_escape_root_cause.v1",
+  "stale_artifact_difference_classes": {
+    "alphanumeric": 2,
+    "artifact_membership_or_order": 1,
+    "typographic_punctuation": 1
+  },
+  "started_at": "2026-08-23T04:04:09.280995+00:00",
+  "wall_seconds": 9.1,
+  "what_this_is": "a diagnostic on the four cases forensic-stale-escape confirmed. It names the class of source difference that produced each stale artifact, using a fixed and declared normalisation ladder.",
+  "what_this_is_not": [
+    "a rate. Four named cases are not a denominator.",
+    "a rescore. No gate anywhere is recomputed.",
+    "a repair. Nothing is normalised, aligned or fixed by this tool."
+  ]
+}

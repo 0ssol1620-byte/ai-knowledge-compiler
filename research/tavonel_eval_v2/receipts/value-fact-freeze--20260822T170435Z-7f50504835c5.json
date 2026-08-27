@@ -1,0 +1,245 @@
+{
+  "component_sha256": {
+    "context_builder": "sha256:36ebe4735a307bdba9fd78f7424055808399c2bb2e9ef2669dd7545265f4b2b2",
+    "value_fact": "sha256:4b2aa38a662dd5fedb262d451fe15ce50ee84c043b4e9cbfde3c692ec4b2a42b",
+    "value_fact_controls": "sha256:1c115482a1b035b69ad9ca73d70c1c45ee6cfdebfdc2372505c5a91c4b91ff9d",
+    "value_scorer": "sha256:00c417042b3bdaf3e03b47c6a16d663a3eb92b7a830fb1dbfce0f698757305ba"
+  },
+  "components": {
+    "context_builder": "research/tavonel_eval_v2/endpoint/context_builder.py",
+    "value_fact": "research/tavonel_eval_v2/endpoint/value_fact.py",
+    "value_fact_controls": "research/tavonel_eval_v2/endpoint/value_fact_controls.py",
+    "value_scorer": "research/tavonel_eval_v2/endpoint/value_scorer.py"
+  },
+  "estimated_cost_usd": 0.0,
+  "extractor_controls": {
+    "all_agree": true,
+    "by_kind": {
+      "adversarial": true,
+      "negative": true,
+      "positive": true
+    },
+    "results": [
+      {
+        "agrees": true,
+        "guards": "the ordinary case: one row label, one column, one changed value",
+        "kind": "positive",
+        "name": "positive_markdown_table_default",
+        "observed": "1 fact(s)"
+      },
+      {
+        "agrees": true,
+        "guards": "a row that did not change is not a currency question",
+        "kind": "negative",
+        "name": "negative_unchanged_row_is_not_a_fact",
+        "observed": "VALUE_UNCHANGED"
+      },
+      {
+        "agrees": true,
+        "guards": "a th/td row is a source-native key/value and must be read as one",
+        "kind": "positive",
+        "name": "positive_html_infobox_row",
+        "observed": "1 fact(s)"
+      },
+      {
+        "agrees": true,
+        "guards": "a renamed option is a different property, not a changed value",
+        "kind": "adversarial",
+        "name": "adversarial_renamed_key",
+        "observed": "PROPERTY_NOT_STABLE"
+      },
+      {
+        "agrees": true,
+        "guards": "1,200 and 1200 are the same value; the scorer says so and so must this",
+        "kind": "adversarial",
+        "name": "adversarial_typography_only",
+        "observed": "VALUE_UNCHANGED"
+      },
+      {
+        "agrees": true,
+        "guards": "a version becoming a date is not a single-kind contrast",
+        "kind": "adversarial",
+        "name": "adversarial_value_kind_change",
+        "observed": "VALUE_KIND_MISMATCH"
+      },
+      {
+        "agrees": true,
+        "guards": "a label carrying a value would put part of the answer in the question",
+        "kind": "adversarial",
+        "name": "adversarial_label_contains_a_number",
+        "observed": "0"
+      },
+      {
+        "agrees": true,
+        "guards": "two rows claiming one key is ambiguity, not a choice of ordinal",
+        "kind": "adversarial",
+        "name": "adversarial_duplicate_row_label",
+        "observed": "0"
+      },
+      {
+        "agrees": true,
+        "guards": "nested pattern matches must not make a version look like two values",
+        "kind": "positive",
+        "name": "positive_version_chain_is_one_value",
+        "observed": "1 fact(s)"
+      },
+      {
+        "agrees": true,
+        "guards": "dominance is span containment, not string containment",
+        "kind": "adversarial",
+        "name": "adversarial_two_values_at_their_own_positions",
+        "observed": "0"
+      },
+      {
+        "agrees": true,
+        "guards": "a cell holding two tokens binds no single value",
+        "kind": "adversarial",
+        "name": "adversarial_range_is_not_a_value",
+        "observed": "0"
+      },
+      {
+        "agrees": true,
+        "guards": "answering from a neighbouring change is not currency selection",
+        "kind": "adversarial",
+        "name": "adversarial_atom_carries_a_second_changed_number",
+        "observed": "noisy=False clean=True"
+      },
+      {
+        "agrees": true,
+        "guards": "the generated question must be blind to both values",
+        "kind": "adversarial",
+        "name": "adversarial_question_never_states_a_value",
+        "observed": "Default of --query.lookback-delta"
+      }
+    ],
+    "three_directions_passed": true
+  },
+  "frozen_before_any_acquisition": true,
+  "frozen_before_any_fresh_candidate_list": true,
+  "gates": {
+    "G_VBC1_SCORER_UNCHANGED": {
+      "passed": true,
+      "sha256": "sha256:00c417042b3bdaf3e03b47c6a16d663a3eb92b7a830fb1dbfce0f698757305ba"
+    },
+    "G_VBC1_VALUE_FACT_CONTROLS": {
+      "adversarial": true,
+      "count": 13,
+      "negative": true,
+      "passed": true,
+      "positive": true
+    }
+  },
+  "gpu_seconds": 0,
+  "property_taxonomy": [
+    {
+      "example": "a CLI flag's Default column",
+      "grammars": "markdown pipe tables, HTML tables with a header row",
+      "label_from": "the first cell of the row, under the named column header",
+      "shape": "table_row_by_column"
+    },
+    {
+      "example": "an encyclopedia infobox key",
+      "grammars": "HTML infobox and definition tables",
+      "label_from": "the row's th, with the value in the td beside it",
+      "shape": "key_value_row"
+    }
+  ],
+  "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V1.yaml",
+  "protocol_sha256": "sha256:a4a2b568d3d04b475ea9edccf28f588c6d349852e960a55f608500c049d0e68e",
+  "provenance": {
+    "generated_at": "2026-08-22T17:04:35.166823+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V1.yaml",
+    "protocol_sha256": "sha256:a4a2b568d3d04b475ea9edccf28f588c6d349852e960a55f608500c049d0e68e",
+    "receipt_stem": "value-fact-freeze",
+    "run_id": "20260822T170435Z-7f50504835c5",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_value_fact.py",
+    "tool_sha256": "sha256:eed284143ee2ebd5a1c94821eaf91c41e924130cf9dd0d425eb18d2b7c8cf913"
+  },
+  "question_template": "{column} of {label}",
+  "receipt_sha256": "sha256:5e8802660a2e7254f61a2daf8eb761a921759b601339edce86b7cdf48720091b",
+  "schema": "tavonel.v2.value_fact_freeze.v1",
+  "scorer_controls": {
+    "all_agree": true,
+    "results": [
+      {
+        "agrees": true,
+        "expected": "CURRENT_ONLY",
+        "guards": "the ordinary success case",
+        "name": "positive_current_value",
+        "observed": "CURRENT_ONLY"
+      },
+      {
+        "agrees": true,
+        "expected": "SUPERSEDED_ONLY",
+        "guards": "the stale answer must not score as a success",
+        "name": "negative_superseded_value",
+        "observed": "SUPERSEDED_ONLY"
+      },
+      {
+        "agrees": true,
+        "expected": "BOTH",
+        "guards": "reciting both is not selecting one",
+        "name": "ambiguous_both_values",
+        "observed": "BOTH"
+      },
+      {
+        "agrees": true,
+        "expected": "NO_MATCH",
+        "guards": "a refusal is not a current-value success",
+        "name": "no_value_at_all",
+        "observed": "NO_MATCH"
+      },
+      {
+        "agrees": true,
+        "expected": "CURRENT_ONLY",
+        "guards": "typography must not decide the endpoint",
+        "name": "thousands_separator_is_the_same_value",
+        "observed": "CURRENT_ONLY"
+      },
+      {
+        "agrees": true,
+        "expected": "NO_MATCH",
+        "guards": "42 inside 4200 is not the value 42",
+        "name": "substring_is_not_a_match",
+        "observed": "NO_MATCH"
+      },
+      {
+        "agrees": true,
+        "expected": "CURRENT_ONLY",
+        "guards": "a unicode dash must not hide a date",
+        "name": "unicode_dash_and_case_are_normalised",
+        "observed": "CURRENT_ONLY"
+      },
+      {
+        "agrees": true,
+        "expected": "SUPERSEDED_ONLY",
+        "guards": "normalisation must not merge two genuinely different values",
+        "name": "decimal_precision_is_not_collapsed",
+        "observed": "SUPERSEDED_ONLY"
+      }
+    ],
+    "three_directions": {
+      "ambiguous": true,
+      "negative": true,
+      "passed": true,
+      "positive": true
+    }
+  },
+  "scorer_unchanged": {
+    "controls_all_agree": true,
+    "rule": "byte-identical to the version MODEL_ENDPOINT_V1 froze",
+    "sha256": "sha256:00c417042b3bdaf3e03b47c6a16d663a3eb92b7a830fb1dbfce0f698757305ba"
+  },
+  "value_kinds": [
+    "iso_date",
+    "version_chain",
+    "percentage",
+    "currency",
+    "numeric",
+    "identifier"
+  ],
+  "verdict": "FROZEN"
+}

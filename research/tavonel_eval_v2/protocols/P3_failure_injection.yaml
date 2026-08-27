@@ -1,0 +1,204 @@
+﻿# P3 — failure injection at the publication boundary.
+#
+# Frozen before any P3 result exists.
+#
+# Handoff RQ5. P0b and P2 measured what a healthy pipeline produces. P3 measures
+# what a broken one exposes: whether a consumer can ever observe a knowledge
+# state that was not verified, or half of one.
+
+schema: tavonel.v2.protocol.P3.v1
+protocol_id: P3_failure_injection
+version: 1
+authored: 2026-08-21
+supersedes: null
+depends_on:
+  P0b_recompilation_mechanics: the candidate states injected here are P0b builds
+  P2_multi_revision_lineage: no dependency
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  sealed_evidence: {rule: read-only, scope: [docs/evidence/**, docs/ip/**, research/experiments/**]}
+  p0_v1: {rule: read-only}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. Subject
+# ---------------------------------------------------------------------------
+
+subject:
+  module: research/tavonel_eval_v2/activation/knowledge_store.py
+  contract:
+    - one visible active reference
+    - a verification conjunction over declared predicates
+    - >-
+      admission requires every declared predicate to be present in the result set
+      and every one of them to be PASS
+    - >-
+      four gate states, and only PASS admits: PASS, FAIL, UNVERIFIABLE,
+      NOT_REACHED
+    - a refused candidate leaves the active reference where it was
+    - published states are immutable, so a reader binds a reference and then reads
+      a state that cannot change under it
+
+# ---------------------------------------------------------------------------
+# 2. Injection matrix
+#
+# Every scenario is declared here before it is run. A scenario that turns out to
+# be unimplementable is reported as NOT_IMPLEMENTED with a reason, never removed.
+# ---------------------------------------------------------------------------
+
+injections:
+  source:
+    - id: SRC_PARTIAL_FETCH
+      does: a declared source input is absent from the build
+      expect: refuse on source_complete, FAIL
+    - id: SRC_EMPTY_LISTING
+      does: every declared input is absent
+      expect: refuse on source_complete, FAIL
+    - id: SRC_MISSING_REVISION
+      does: one unit's artifacts are absent from the candidate
+      expect: >-
+        admitted, and reported as a coverage observation rather than a refusal.
+        The store cannot know a unit it was never given. This is recorded as a
+        boundary of the contract, not as a pass.
+  identity:
+    - id: ID_MISSING_CRITICAL_SIGNAL
+      does: an artifact carries no recorded sensitivity
+      expect: refuse on sensitivity_recorded, UNVERIFIABLE
+    - id: ID_FINGERPRINT_ABSENT
+      does: an artifact carries no input fingerprint
+      expect: refuse on fingerprint_present, UNVERIFIABLE
+  build:
+    - id: BUILD_ARTIFACT_CRASH
+      does: one artifact is missing its receipt because its builder died
+      expect: refuse on receipt_matches_output, UNVERIFIABLE
+    - id: BUILD_NONDETERMINISTIC_OUTPUT
+      does: the receipt declares a digest the artifact does not carry
+      expect: refuse on receipt_matches_output, FAIL
+    - id: BUILD_PREDICATE_RAISES
+      does: a predicate raises an exception mid-evaluation
+      expect: >-
+        refuse, with that predicate UNVERIFIABLE. An exception is not a pass and
+        is not silently swallowed.
+  receipt:
+    - id: RCPT_MISSING
+      does: every receipt is absent
+      expect: refuse on receipt_matches_output, UNVERIFIABLE
+    - id: RCPT_WRONG_DIGEST
+      does: one receipt declares another artifact's digest
+      expect: refuse on receipt_matches_output, FAIL
+    - id: RCPT_OVERWRITTEN_AFTER_REFUSAL
+      does: a refused candidate is repaired and re-published
+      expect: >-
+        the original refusal event survives verbatim in the refusal log. Recovery
+        may not rewrite a failed receipt.
+  activation:
+    - id: ACT_CONCURRENT_CANDIDATE
+      does: two verified candidates publish against the same expected reference
+      expect: >-
+        exactly one activates; the other is refused on
+        pointer_compare_and_swap, FAIL
+    - id: ACT_CAS_STALE_EXPECTATION
+      does: a candidate publishes against a reference that has already moved
+      expect: refuse on pointer_compare_and_swap, FAIL
+    - id: ACT_CONCURRENT_READERS
+      does: >-
+        readers read continuously while activations proceed, at least 2000 reads
+        across at least 4 threads
+      expect: >-
+        every read returns a state that equals exactly one published state. Zero
+        mixed-state observations.
+  permission:
+    - id: PERM_UNAUTHORISED_UNIT_REACHABLE
+      does: a unit outside the authorised set is reachable by identifier
+      expect: refuse on permission_respected, FAIL
+  ordering:
+    - id: ORDER_PREDICATE_PERMUTATION
+      does: >-
+        every permutation of the five declared predicates is evaluated against a
+        healthy candidate and against each failing candidate
+      expect: >-
+        the admit/refuse decision is invariant under permutation. The predicate
+        named in the refusal may differ, which is expected and is reported.
+  control:
+    - id: CTRL_HEALTHY_CANDIDATE
+      does: nothing; a well-formed candidate
+      expect: admitted
+      rationale: >-
+        A positive control in the same execution. A gate that cannot fire reads
+        identically to a clean result, and this programme has shipped that defect
+        before.
+    - id: CTRL_BREAK_THE_GATE
+      does: >-
+        admission is evaluated against a result set with one predicate removed
+      expect: >-
+        not admitted. This confirms the conjunction requires presence, not just
+        absence of failure.
+
+# ---------------------------------------------------------------------------
+# 3. Oracle assertions, evaluated over every scenario
+# ---------------------------------------------------------------------------
+
+assertions:
+  A1_previous_state_available: >-
+    after any refused publication, the active reference equals what it was before
+    the attempt, and reading it returns a complete published state
+  A2_no_mixed_state_observation: >-
+    across all concurrent reads, no read returns a state that is not exactly one
+    published state
+  A3_refusal_names_predicate_and_evidence: >-
+    every refusal event carries the predicate that refused, its state, and at
+    least one evidence reference, unless the predicate is one whose evidence is
+    the pointer itself
+  A4_not_reached_never_admits: >-
+    no admission occurs where any declared predicate is NOT_REACHED or
+    UNVERIFIABLE
+  A5_recovery_does_not_rewrite_a_failure: >-
+    a repaired candidate that later admits does not remove or alter the earlier
+    refusal event
+
+# ---------------------------------------------------------------------------
+# 4. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P3_COVERAGE:
+    predicate: every scenario declared in section 2 was executed or reported NOT_IMPLEMENTED with a reason
+  G_P3_EXPECTATIONS:
+    predicate: every executed scenario produced the outcome declared beside it
+    on_fail: report the scenario and the actual outcome; do not amend the expectation
+  G_P3_ASSERTIONS:
+    predicate: A1 through A5 hold over every scenario
+  G_P3_POSITIVE_CONTROL:
+    predicate: >-
+      CTRL_HEALTHY_CANDIDATE admitted and CTRL_BREAK_THE_GATE did not, in the same
+      execution as the failing scenarios
+    rationale: without this the whole run could be a gate that always refuses
+  G_P3_ORDER_INVARIANCE:
+    predicate: >-
+      the admit/refuse decision is identical across all 120 permutations for every
+      candidate tested
+  G_P3_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+# ---------------------------------------------------------------------------
+# 5. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under the declared injections, this publication boundary refused every
+    unverified candidate, left the previous active state available, and exposed no
+    mixed state to concurrent readers.
+  forbidden:
+    - any claim of crash atomicity; no process is killed here
+    - any claim about a distributed store, a database or a consensus protocol
+    - >-
+      any claim that the injection matrix is complete. It is a declared list, and
+      its completeness is not established.
+    - generalising to the production system; this is a minimal store built for
+      this experiment
+    - treating a development-split result as confirmatory

@@ -1,0 +1,43 @@
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4
+state: PROSPECTIVE_PRE_CENSUS
+result_blind_design: true
+purpose: Independent replication after SFIR3 pre-payload capacity-instrument failure
+family_authorities:
+  git_docs: GITHUB_IMMUTABLE_NONRECURSIVE_GIT_TREE_BFS_API_V1
+  regulation_ecfr: ECFR_VERSIONER_METADATA_API_V1
+  encyclopedia_wikipedia: MEDIAWIKI_PAGE_REVISION_METADATA_API_V1
+capacity_rule:
+  formula: Q_f=min(1000,floor(0.8*C_f))
+  minimum_c_per_family: 750
+  minimum_q_per_family: 600
+git_tree_enumeration:
+  mutable_branch_used_only_to_resolve_head_once: true
+  bind_exact_head_commit_and_commit_tree_sha: true
+  recursive_tree_parameter_forbidden: true
+  traversal: deterministic_fifo_bfs_over_exact_nonrecursive_tree_objects
+  complete_requires_queue_exhaustion: true
+  max_response_bytes: 16777216
+  max_tree_objects_per_root: 158
+  max_queue_entries: 256
+  max_aggregate_tree_metadata_bytes_per_root: 536870912
+  max_api_requests_per_root: 240
+  max_api_requests_global: 4800
+  max_retained_doc_paths_per_root: 80
+  theoretical_request_formula: roots*(2+max_tree_objects_per_root+max_candidates_per_repository)
+  max_traversal_identities_per_root: 512
+  max_rate_limit_wait_seconds: 60
+  max_total_rate_limit_wait_seconds: 180
+  retryable_http_backoff_seconds: 5
+  bound_or_truncation_disposition: EXCLUDED_INCOMPLETE_ROOT_DISPOSITION
+  incomplete_root_contributes_candidates: false
+spent_policy:
+  bind_exact_sfir3_spent_charter_and_terminal_failure: true
+  reserve_all_sfir3_git_roots_because_exact_failed_root_unknown: true
+  reuse_sfir3_ecfr_and_wikipedia_roots_because_families_not_reached: true
+payload_policy:
+  capacity_stage_metadata_only: true
+  payload_open_forbidden: true
+  diff_open_forbidden: true
+terminal_policy:
+  no_live_census_before_charter_and_toolchain_freeze: true
+  no_roster_or_acquisition_on_capacity_shortfall: true

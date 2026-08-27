@@ -1,0 +1,270 @@
+# SOURCE_FACT_IR_HELDOUT_V1 (SFI1) — the fresh held-out study for the repair.
+#
+# FROZEN. The architecture and its tests were stable first - 749 tests green,
+# ruff clean across eight lanes - and this file was frozen BEFORE a single real
+# cohort lineage was read. Nothing below may move now; a change is an amendment
+# with its own receipt naming what it supersedes.
+#
+# Read the freeze discipline first, because the previous two studies died of it:
+#
+#   SFH1 and the differential study were both designed as held-out and both were
+#   demoted to development diagnostics. Not because their instruments were bad —
+#   their numbers stand exactly as executed — but because a SMOKE RUN on real
+#   cohort lineages produced and exposed outcome metrics 35 and 28 minutes
+#   before the protocol amendments, and both protocols were first frozen after
+#   the runs they govern had already begun.
+#
+# So: a smoke run is an execution. This study smoke-tests on FIXTURES ONLY, and
+# freezes before one real lineage is read. That sentence is the protocol's most
+# important line and it is not negotiable by a later convenience.
+
+schema: tavonel.v2.protocol.source_fact_ir_heldout.v1
+protocol_id: SOURCE_FACT_IR_HELDOUT_V1
+status: FROZEN
+split: held_out
+authorised_by: founder ruling, 2026-08-23
+
+purpose: >
+  measure whether the SOURCE_FACT_IR representation repairs the two failures the
+  programme has confirmed: source facts recognised by the parser but not carried
+  by the compiled state, and a selective state that a clean full rebuild cannot
+  reproduce.
+
+supersedes:
+  study: SOURCE_FAITHFULNESS_HELDOUT_V1
+  relationship: >
+    SFI1 does not rescore SFH1 and does not reuse its cohort. SFH1's result
+    stands exactly as executed, as a development diagnostic. This is a fresh
+    disjoint study of a changed system, which is the only thing that can show a
+    repair worked.
+  forbidden: >
+    re-running SFH1 against the repaired system and reporting the improvement.
+    SFH1's lineages were used to find the defect; a corpus used to diagnose
+    cannot certify.
+
+# ---------------------------------------------------------------------------
+# what changed in the system under test
+
+repair_under_test:
+  the_defect: >
+    the old instrument asked the grammar whether a construct was modelled and
+    the grammar answered from a table. The compiled state was never consulted.
+    121,682 regions were called MODELED; 63,196 of them could not be verified
+    against the compiled state at all.
+  what_the_integration_found:
+    #: recorded before the freeze because it is the reason the architecture is
+    #: worth scoring at all, and because a defect found after a freeze reads as
+    #: an excuse. All four were invisible to every lane's own passing suite.
+    - >-
+      the IR module was loaded twice under two names, producing two registries.
+      An extractor was registered, tested, and produced nothing. Nothing raised;
+      the document simply looked clean.
+    - >-
+      witness unit_path was document-qualified on one side of the contract and
+      bare on the other, so the dependency resolver derived a document key of
+      040c3fd8 where the real key was e1f43638.
+    - >-
+      an unsupported construct produced no fact at all. MathML has no
+      representation in this IR, so a section containing one scored perfectly.
+      The UNSUPPORTED_CONSTRUCT kind exists because of this.
+    - >-
+      two lanes disagreed on percent-encoding equivalence. Resolved by rule -
+      decode unreserved octets only, leave reserved octets encoded - so that
+      %7E and ~ are one URI and %2F and / are two.
+  the_change:
+    - >-
+      MODELED splits into REPRESENTED_IN_COMPILED_STATE and
+      RECOGNIZED_BUT_UNREPRESENTED
+    - "a non-ignored source fact with no canonical representation is fail-closed"
+    - >-
+      reference targets, language, accessibility, applicability, effective time,
+      authority, canonical locator and provenance spans are first-class kinds
+      with their own representations, NOT text
+    - >-
+      every represented fact must resolve the whole chain - source witness,
+      canonical representation, fingerprint, dependency path
+  the_rule_that_shapes_it: >
+    a representation lives in the IR, not in unit text. Text is where facets go
+    to become invisible: a reference whose target moved but whose anchor text
+    did not produces no textual difference, so a text-only state cannot
+    represent the change, cannot fingerprint it and cannot invalidate on it.
+
+states:
+  REPRESENTED_IN_COMPILED_STATE: >
+    the compiled state carries it and the chain resolves. The only state
+    permitted inside a scope declared complete.
+  RECOGNIZED_BUT_UNREPRESENTED: >
+    the parser saw it; nothing carries it. Fail-closed.
+  IGNORED_BY_PREDECLARED_POLICY: >
+    declined in advance by a policy identifier that existed before the run.
+    The only fail-open state.
+  UNRESOLVED_SOURCE_FACT: >
+    seen but not decidable - malformed source, ambiguous locator, unsupported
+    construct. Fail-closed.
+  exactly_one: true
+  collapse_direction: >
+    where two states could arguably apply, the fail-closed one wins. Never
+    toward IGNORED: a policy reference on a fact that was not actually declined
+    makes a defect read as a limitation, which is the most valuable confusion in
+    this whole programme to prevent.
+
+# ---------------------------------------------------------------------------
+# endpoints
+#
+# The founder named seven. Each is a gate, each is scored, and a gate that was
+# never exercised is reported as skipped rather than met - the programme's
+# gate-power rule, carried forward from SFH1 where it was the only reason the
+# result could be read at all.
+
+endpoints:
+  E1_no_unclassified_changed_regions:
+    requirement: zero changed regions with no state
+    rationale: a changed byte that no state covers is a hard failure, not a row.
+  E2_no_recognized_but_unrepresented:
+    requirement: >
+      zero RECOGNIZED_BUT_UNREPRESENTED facts, unless covered by a predeclared
+      ignore policy - in which case they are IGNORED and not this state at all.
+    rationale: this is the defect the repair exists to close.
+  E3_no_silent_loss_in_a_complete_scope:
+    requirement: >
+      zero source facts lost inside a scope the run declared locally complete
+    rationale: >
+      a declined-and-declared loss is a limitation. The same loss inside a
+      scope called complete is a false statement about the world.
+  E4_no_reference_or_locator_only_clean_miss:
+    requirement: >
+      zero pairs where only a reference target or canonical locator changed and
+      the system reported no change
+    rationale: INC-V2-006, and three of the four confirmed stale escapes.
+  E5_no_confirmed_selective_stale_escape:
+    requirement: zero confirmed selective stale escapes among judged cases
+    rationale: >
+      confirmed means against the production clean full rebuild, not against a
+      second implementation. An oracle-relative divergence is not this.
+  E6_exact_selective_vs_clean_equivalence:
+    requirement: >
+      exact equivalence between selective execution and clean full rebuild on
+      every judged supported case
+    rationale: >
+      INC-V2-028. The selective state must be reproducible by a clean rebuild
+      or every equivalence result the programme has is bounded by luck.
+  E7_unresolved_fails_closed:
+    requirement: >
+      unresolved and unsupported cases fail closed rather than counting as
+      passes
+    rationale: >
+      a pass that is really an absence is the failure mode this entire
+      programme was built to make impossible.
+
+gate_power:
+  required: true
+  rule: >
+    each endpoint reports whether its failure state was reachable and whether
+    any case exercised it. An endpoint never exercised is SKIPPED, never MET.
+
+# ---------------------------------------------------------------------------
+# cohort
+
+cohort:
+  frame: acquisition/sources_sfi1.py
+  disjointness:
+    from_SFH1: required, computed from SFH1's own receipts, not hand-copied
+    from_VBC2_admissions: required
+    from_the_four_forensic_cases: required
+    why: >
+      the four cases were used to diagnose the alignment failure. A case used to
+      find a defect cannot be used to certify its repair.
+  the_predecessor_pool_is_exhausted:
+    finding: >-
+      SFH1 walked its entire frame - lineages_considered 2,268 against
+      frame.candidates 2,268. There is no unspent remainder of the VBC2 pool to
+      draw a fresh cohort from.
+    consequence: >-
+      SFI1 cannot be a filtered slice of an existing frame. It declares fresh
+      roots, disjoint from VBC2's and P4i's, and its lineage list is expanded
+      and sealed AFTER this protocol is frozen. An empty frame raises rather
+      than returning zero rows, because an empty cohort reads as a clean
+      measured result.
+  families:
+    included: [git_docs, regulation_ecfr, encyclopedia_wikipedia]
+    required: 3
+    excluded:
+      sec_edgar: >-
+        every VBC2 issuer is exhausted at the lineage level (16 issuers x 8
+        filing-series lineages = 128, all walked). Fresh issuers need CIKs that
+        cannot be verified without acquisition, and inventing one would be
+        fabricating data. SEC HTML was the predecessor frame's only long-form
+        filing grammar, so this IS a narrowing of grammar breadth and is
+        recorded as one rather than absorbed silently.
+    the_narrowing_is_declared_not_compensated: >-
+      quotas are NOT redistributed to the remaining three families to keep the
+      target. Moving a quota to cover an absent family is the same act as
+      tuning one against yield, arriving by a sympathetic route.
+  quotas:
+    git_docs: 120
+    regulation_ecfr: 100
+    encyclopedia_wikipedia: 70
+    target: 290
+    floor: 200
+    basis: >-
+      carried forward unchanged from SFH1, whose basis was grammar breadth -
+      markdown, MediaWiki HTML, eCFR XML. Explicitly NOT a basis: pass yield,
+      classification outcome or gate result, in SFH1 or in SFI1.
+  payload_bound:
+    bytes: 2000000
+    basis: >-
+      the source payload distribution, not the instrument, so it survives the
+      change from the span scanner to the IR extractors. Payload sizes are
+      bimodal: p95 0.49 MB, next populated band above 3 MB.
+    insensitivity: >-
+      every cap in [1 MB, 3 MB] excludes the same revisions. A bound that
+      cannot be moved usefully is one that was not tuned.
+    excluded_fraction_in_the_predecessor: "44 of 2,268 considered = 1.94%"
+  quotas_frozen_from_the_acquisition_frame: true
+  anti_fitting:
+    - >-
+      quotas and family composition are frozen from the acquisition frame
+      BEFORE scoring and are never tuned against pass yield
+    - >-
+      unsupported constructs are NOT removed from the cohort after seeing
+      results. They stay UNRESOLVED and the source-faithful claim is refused
+    - "no threshold, bound or quota is moved after any outcome metric exists"
+    - "the payload bound carries a published basis and an insensitivity range"
+
+# ---------------------------------------------------------------------------
+# execution
+
+execution:
+  shape: parallel compute / deterministic single reduction / immutable evidence
+  reduction_is_order_independent: true
+  smoke_tests: "FIXTURES ONLY. Never a real cohort lineage, never before the freeze."
+  freeze_before_first_real_lineage: true
+  gpu_seconds: 0
+  cost_usd: 0
+
+# ---------------------------------------------------------------------------
+# what a PASS does and does not authorise
+
+on_pass:
+  authorises: >
+    freezing and running the GPU successor study without a further founder wait,
+    under a hard cap of 6 GPU hours and $40, per the founder ruling of
+    2026-08-23.
+  forbids:
+    - >-
+      reviving the exact-value VBC endpoint, closed by STOP-V2-005 after a
+      complete walk of 2,271 lineages found 3 against a floor of 190
+    - >-
+      reading a PASS as a general correctness result. It is a result on this
+      cohort, this grammar subset and these seven endpoints.
+
+on_fail:
+  consequence: >
+    a negative held-out closure result, reported as one. It is not a development
+    finding and it is not a reason to widen the grammar, lower a gate or drop a
+    construct from the cohort.
+
+release:
+  ip_gate: CLOSED
+  docs_ip: untouched
+  public_release: forbidden

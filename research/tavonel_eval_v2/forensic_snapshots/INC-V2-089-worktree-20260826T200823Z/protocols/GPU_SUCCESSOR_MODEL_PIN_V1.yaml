@@ -1,0 +1,168 @@
+# GPU_SUCCESSOR_MODEL_PIN_V1 — standalone model/runtime identity pin for
+# SOURCE_FACT_PROPAGATION_MODEL_V1 (`tools/gpu_successor_preflight.py`,
+# `protocols/GPU_SUCCESSOR_STUDY_V1.yaml`).
+#
+# `GPU_SUCCESSOR_STUDY_V1.yaml`'s own `model:` block already carries the
+# repository/revision/tokenizer values and says `capability_evidence` "must be
+# supplied as a pointer distinct from the repository string itself" — it does
+# not supply one. This file is that resolution: a pin that
+# `tools/resolve_gpu_successor_pin.py` loads, validates, cross-checks against
+# `MODEL_ENDPOINT_V1.yaml`, and hands to
+# `gpu_successor_preflight.model_identity_pin` in the shape that function
+# expects. It is data the preflight consumes, not a change to the preflight.
+
+schema: tavonel.v2.protocol.gpu_successor_model_pin.v1
+protocol_id: GPU_SUCCESSOR_MODEL_PIN_V1
+version: 1
+authored: 2026-08-23
+supersedes: null
+
+# ---------------------------------------------------------------------------
+# 1. This is not the closed endpoint, said explicitly
+# ---------------------------------------------------------------------------
+#
+# Reusing the closed endpoint's MODEL pin is not reusing the closed endpoint.
+# STOP-V2-005 closed MODEL_ENDPOINT_V1 — the exact-value question design, its
+# four arms (compiled_current, full_current_oracle, append_only_stale_capable,
+# superseded_control) and its scorer classes (CURRENT_ONLY, SUPERSEDED_ONLY,
+# BOTH, NO_MATCH) — because three preregistered CPU preflights in turn refused
+# to find a cohort under that design. It did not close the *model weights*.
+# The founder's framing for the successor is explicit: "the already pinned
+# model/runtime" (`protocols/GPU_SUCCESSOR_STUDY_V1.yaml`, `agreement_with_
+# preflight`). This file pins those same weights for a structurally different
+# study — different eligibility predicate (single-revision typed
+# representation, never a cross-revision value transition), different arms
+# (TYPED_REPRESENTATION / TEXT_ONLY_BASELINE, or CURRENT / STALE depending on
+# which of the two successor documents runs), different scorer classes
+# (REPRESENTATION_CORRECT / REPRESENTATION_INCORRECT / REFUSED). Nothing in
+# this file revives MODEL_ENDPOINT_V1's question design, its arms, or its
+# scorer, and `tools/resolve_gpu_successor_pin.py` does not import or invoke
+# any of `endpoint/value_scorer.py`'s closed-endpoint scorer classes.
+#
+# `gpu_successor_preflight.G_GSP_EXCLUDES_CLOSED_ENDPOINT` is the gate that
+# checks this structurally (`design_excludes_closed_endpoint`), against the
+# preflight's own `STUDY_ID`, `SCORER_CLASSES` and
+# `REQUIRES_VALUE_TRANSITION_BETWEEN_REVISIONS` constants — not against this
+# file. This file's job is narrower: state the relationship in words next to
+# the pin, so a reader of the pin alone is not left to guess it.
+
+closed_endpoint_relationship:
+  closed_protocol_id: MODEL_ENDPOINT_V1
+  closed_by: STOP-V2-005
+  reused_from_closed_endpoint: [repository, revision, tokenizer_revision, tokenizer_file_sha256, runtime_image_digest]
+  not_reused_from_closed_endpoint: [arms, scorer_classes, eligibility_predicate, question_frame, cohort_floor]
+  statement: >-
+    reusing the closed endpoint's MODEL is not reusing the closed endpoint.
+    This pin carries forward only the weights, tokenizer and runtime image
+    that MODEL_ENDPOINT_V1 attested; it carries forward none of the design
+    STOP-V2-005 closed. This pin does not revive MODEL_ENDPOINT_V1.
+
+# ---------------------------------------------------------------------------
+# 2. Model identity — every value traced to its source field
+# ---------------------------------------------------------------------------
+#
+# Every field below is copied verbatim from `protocols/MODEL_ENDPOINT_V1.yaml`
+# section 2 (`model:`), which sources itself from the W6 v8 runtime
+# attestation. `tools/resolve_gpu_successor_pin.py` re-reads
+# MODEL_ENDPOINT_V1.yaml at load time and refuses loudly if any value here
+# disagrees with it — this comment is not the enforcement, the cross-check is.
+
+model:
+  repository: Qwen/Qwen3.6-27B
+  revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  tokenizer_revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  tokenizer_file_sha256: sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42
+  chat_template_sha256: sha256:e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259
+  provenance:
+    repository: "protocols/MODEL_ENDPOINT_V1.yaml, model.repository"
+    revision: "protocols/MODEL_ENDPOINT_V1.yaml, model.revision"
+    tokenizer_revision: "protocols/MODEL_ENDPOINT_V1.yaml, model.tokenizer_revision"
+    tokenizer_file_sha256: "protocols/MODEL_ENDPOINT_V1.yaml, model.tokenizer_file_sha256"
+    chat_template_sha256: "protocols/MODEL_ENDPOINT_V1.yaml, model.chat_template_sha256"
+    ultimate_source: >-
+      research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json
+      (the W6 v8 runtime attestation MODEL_ENDPOINT_V1.yaml itself cites as
+      `model.source_of_pin`). Not re-fetched here — this file is a copy of an
+      already-attested value, not a fresh attestation, and carries no network
+      dependency.
+
+runtime_image_digest: >-
+  runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35
+runtime_image_digest_provenance: "protocols/MODEL_ENDPOINT_V1.yaml, runtime.runtime_image_digest"
+
+# ---------------------------------------------------------------------------
+# 3. Capability evidence — genuine, or explicitly absent
+# ---------------------------------------------------------------------------
+#
+# A name is not a capability. `capability_from_registry`
+# (`tools/gpu_successor_preflight.py`) refuses to assert one unless given a
+# pointer distinct from the repository string. What is available without a
+# GPU and without a network is the v8 attestation's `model_file_manifest`,
+# which pins `config.json`'s own sha256 — a registry artifact, not the model
+# name — and the attestation's own `max_position_embeddings` field read from
+# that pinned config. That is genuine registry evidence: it identifies a
+# real capability (context window) and grounds it in a config-file digest,
+# not in the string "Qwen/Qwen3.6-27B" repeated back.
+#
+# What it is NOT: a live capability probe. Nobody has loaded this config.json
+# during this pin's resolution and re-hashed it against the value below — the
+# value is copied from the attestation receipt, the same way the model
+# fields above are. If that receipt were ever amended, this pin would still
+# show its old value until someone re-derives it. That is the same trust
+# boundary MODEL_ENDPOINT_V1's own `source_of_pin` field already accepts for
+# the model/tokenizer fields, made explicit here rather than silently
+# inherited.
+
+capability_evidence:
+  present: true
+  pointer: >-
+    research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json
+    #model_file_manifest["config.json"].sha256 = 69db4eb7196bc8190813231b3018ca05d8c2e3abc7b1af19d55c157af44a9d9c
+  capability_claim: "context window: max_position_embeddings = 262144, read from that pinned config.json"
+  distinct_from_repository_name: true
+  why_this_counts_as_evidence: >-
+    it is a sha256 of a specific config file the attested runtime actually
+    loaded, carrying a concrete numeric field (262144), not the string
+    "Qwen/Qwen3.6-27B" or "Qwen3.6" repeated back as if a name implied a
+    capability. `capability_from_registry` only requires the pointer differ
+    from the repository string; this pointer additionally names the exact
+    field and file it comes from so a reader can verify it independently of
+    trusting this file.
+  what_would_make_it_stronger: >-
+    a fresh sha256 of config.json taken at pin-resolution time, matched
+    against the value above, the same two-way check
+    (`endpoint/tokenizer_parity.py`'s digest-plus-behaviour-probe pattern)
+    MODEL_ENDPOINT_V1 uses for the tokenizer. That check needs the config
+    file bytes, which are not available on this CPU-only, no-network pass —
+    recorded as a gap, not silently closed.
+
+# ---------------------------------------------------------------------------
+# 4. Tokenizer parity — frozen-contract check, reused, not reimplemented
+# ---------------------------------------------------------------------------
+
+tokenizer_parity:
+  mechanism: endpoint/tokenizer_parity.py (PROBE_CLASSES, battery_digest, run_battery)
+  reused_from: MODEL_ENDPOINT_V1's own tokenizer parity mechanism (`INC-V2-017`)
+  what_is_attestable_here: >-
+    the frozen probe battery's own digest (`battery_digest()`) is CPU-only,
+    content-independent of any live tokenizer, and deterministic across
+    calls. `tools/resolve_gpu_successor_pin.py` calls it and records the
+    digest in its receipt.
+  what_is_not_attestable_here: >-
+    `run_battery()` needs an actual loaded tokenizer (`encode`,
+    `encode_chat` callables) to produce token-id parity between a CPU load
+    and the eventual GPU load. No tokenizer is loaded in this pass — that
+    would require either a network fetch or a local copy of the model
+    files, neither available here. This is recorded as NOT_YET_ATTESTED,
+    never faked as a pass.
+
+# ---------------------------------------------------------------------------
+# 5. What this file does not do
+# ---------------------------------------------------------------------------
+
+does_not:
+  - "does not fetch anything over the network"
+  - "does not load a model or a tokenizer"
+  - "does not spend a GPU second (gpu_seconds is always 0 in the receipt this pin's resolver writes)"
+  - "does not loosen, bypass or duplicate any G_GSP_* gate in tools/gpu_successor_preflight.py"
+  - "does not revive MODEL_ENDPOINT_V1 or any of its arms/scorer classes"

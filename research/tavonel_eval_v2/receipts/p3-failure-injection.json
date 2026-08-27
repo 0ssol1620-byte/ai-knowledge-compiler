@@ -1,0 +1,649 @@
+{
+  "activation_log": [
+    "state-000",
+    "c-healthy",
+    "c-src-missing-revision",
+    "c-race-1",
+    "c-repaired",
+    "c-stream-0",
+    "c-stream-1",
+    "c-stream-2",
+    "c-stream-3",
+    "c-stream-4",
+    "c-stream-5",
+    "c-stream-6",
+    "c-stream-7",
+    "c-stream-8",
+    "c-stream-9",
+    "c-stream-10",
+    "c-stream-11"
+  ],
+  "assertion_failures": [
+    {
+      "assertion": "A3",
+      "detail": "refusal carried no evidence reference",
+      "scenario": "BUILD_PREDICATE_RAISES"
+    }
+  ],
+  "candidate_artifact_count": 154,
+  "candidate_source": "research/tavonel_eval_v2/artifacts/development/p0b/selective/git-000-prometheus-configuration.json",
+  "candidate_source_sha256": "sha256:cc59f31312f39c8eb91a9ba1e152506f7275ee3ff7db33e842ffd43ad3906605",
+  "driver_sha256": "sha256:9607a3c1e2361397fbcaa1ce1946906a518d479abb51fd8658090a044a744c6d",
+  "ended_at": "2026-08-21T05:48:23.673822+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_P3_ASSERTIONS": {
+      "failures": [
+        {
+          "assertion": "A3",
+          "detail": "refusal carried no evidence reference",
+          "scenario": "BUILD_PREDICATE_RAISES"
+        }
+      ],
+      "passed": false
+    },
+    "G_P3_COST": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_P3_COVERAGE": {
+      "declared": 17,
+      "executed": 17,
+      "not_implemented": [],
+      "passed": true
+    },
+    "G_P3_EXPECTATIONS": {
+      "mismatched": [],
+      "passed": true
+    },
+    "G_P3_ORDER_INVARIANCE": {
+      "candidates_tested": 11,
+      "passed": true,
+      "permutations_each": 120
+    },
+    "G_P3_POSITIVE_CONTROL": {
+      "break_control_admitted": false,
+      "healthy_admitted": true,
+      "passed": true
+    }
+  },
+  "gpu_seconds": 0,
+  "order_invariance": [
+    {
+      "candidate": "healthy",
+      "decision": [
+        true
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": []
+    },
+    {
+      "candidate": "SRC_PARTIAL_FETCH",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "source_complete"
+      ]
+    },
+    {
+      "candidate": "SRC_EMPTY_LISTING",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "source_complete"
+      ]
+    },
+    {
+      "candidate": "SRC_MISSING_REVISION",
+      "decision": [
+        true
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": []
+    },
+    {
+      "candidate": "ID_MISSING_CRITICAL_SIGNAL",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "sensitivity_recorded"
+      ]
+    },
+    {
+      "candidate": "ID_FINGERPRINT_ABSENT",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "fingerprint_present"
+      ]
+    },
+    {
+      "candidate": "BUILD_ARTIFACT_CRASH",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "BUILD_NONDETERMINISTIC_OUTPUT",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "RCPT_MISSING",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "RCPT_WRONG_DIGEST",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "PERM_UNAUTHORISED_UNIT_REACHABLE",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "permission_respected"
+      ]
+    }
+  ],
+  "protocol": "P3_failure_injection",
+  "protocol_sha256": "sha256:d5fd5379213fd90f191d3e7bc17b9044c369ce1e2536b14e913fd86b09530983",
+  "receipt_sha256": "sha256:3df35f5d100675237994a066e9cd727a9549ddac651e4c1e896bdddbb066338e",
+  "refusal_log": [
+    {
+      "active_reference_at_refusal": "c-healthy",
+      "candidate_id": "c-src-partial",
+      "evidence_refs": [
+        "u:0143973f45ce4a3016d6cf24"
+      ],
+      "predicate": "source_complete",
+      "reason_code": "a declared source input is absent from this build",
+      "state": "FAIL"
+    },
+    {
+      "active_reference_at_refusal": "c-healthy",
+      "candidate_id": "c-src-empty",
+      "evidence_refs": [
+        "u:0143973f45ce4a3016d6cf24",
+        "u:0707140aac8997063330de12",
+        "u:10f7f1f5b417592fabccfffe",
+        "u:14ca11d06eae95c6b1e47997",
+        "u:1f2142ca870a31147f59e203",
+        "u:21354cf747f9f561bfc893bc",
+        "u:25001fbc9a3086960ffc876e",
+        "u:26d5c7b4ef35849eb7ce62dc"
+      ],
+      "predicate": "source_complete",
+      "reason_code": "a declared source input is absent from this build",
+      "state": "FAIL"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-id-no-sensitivity",
+      "evidence_refs": [
+        "document-index:2918cf756c84fa23"
+      ],
+      "predicate": "sensitivity_recorded",
+      "reason_code": "an artifact carries no recorded sensitivity, so no fingerprint covers it",
+      "state": "UNVERIFIABLE"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-id-no-fingerprint",
+      "evidence_refs": [
+        "document-index:2918cf756c84fa23"
+      ],
+      "predicate": "fingerprint_present",
+      "reason_code": "no input fingerprint recorded for this artifact",
+      "state": "UNVERIFIABLE"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-build-crash",
+      "evidence_refs": [
+        "document-index:2918cf756c84fa23"
+      ],
+      "predicate": "receipt_matches_output",
+      "reason_code": "no build receipt exists for this artifact",
+      "state": "UNVERIFIABLE"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-build-nondeterministic",
+      "evidence_refs": [
+        "document-index:2918cf756c84fa23"
+      ],
+      "predicate": "receipt_matches_output",
+      "reason_code": "the receipt declares a different output digest than the artifact carries",
+      "state": "FAIL"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-rcpt-missing",
+      "evidence_refs": [
+        "document-index:2918cf756c84fa23",
+        "section:u:0143973f45ce4a3016d6cf24",
+        "section:u:0707140aac8997063330de12",
+        "section:u:10f7f1f5b417592fabccfffe",
+        "section:u:14ca11d06eae95c6b1e47997",
+        "section:u:1f2142ca870a31147f59e203",
+        "section:u:21354cf747f9f561bfc893bc",
+        "section:u:25001fbc9a3086960ffc876e"
+      ],
+      "predicate": "receipt_matches_output",
+      "reason_code": "no build receipt exists for this artifact",
+      "state": "UNVERIFIABLE"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-rcpt-wrong",
+      "evidence_refs": [
+        "section:u:0143973f45ce4a3016d6cf24"
+      ],
+      "predicate": "receipt_matches_output",
+      "reason_code": "the receipt declares a different output digest than the artifact carries",
+      "state": "FAIL"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-perm-leak",
+      "evidence_refs": [
+        "u:7c4ad9d7dc20d57232a66bb6"
+      ],
+      "predicate": "permission_respected",
+      "reason_code": "a unit outside the authorised set is reachable by identifier",
+      "state": "FAIL"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-predicate-raises",
+      "evidence_refs": [],
+      "predicate": "raising",
+      "reason_code": "RuntimeError",
+      "state": "UNVERIFIABLE"
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-act-stale",
+      "evidence_refs": [
+        "c-src-missing-revision"
+      ],
+      "predicate": "pointer_compare_and_swap",
+      "reason_code": "the active reference moved while this candidate was verified",
+      "state": "FAIL"
+    },
+    {
+      "active_reference_at_refusal": "c-race-1",
+      "candidate_id": "c-race-0",
+      "evidence_refs": [
+        "c-race-1"
+      ],
+      "predicate": "pointer_compare_and_swap",
+      "reason_code": "the active reference moved while this candidate was verified",
+      "state": "FAIL"
+    }
+  ],
+  "scenarios": [
+    {
+      "active_reference_after": "c-healthy",
+      "active_reference_before": "state-000",
+      "active_state_readable": true,
+      "actual_admitted": true,
+      "actual_predicate": null,
+      "actual_state": "PASS",
+      "category": "control",
+      "expected_admitted": true,
+      "expected_predicate": null,
+      "expected_state": null,
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "PASS",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "scenario": "CTRL_HEALTHY_CANDIDATE"
+    },
+    {
+      "actual_admitted": false,
+      "category": "control",
+      "detail": "admission evaluated against a result set with one predicate removed",
+      "expected_admitted": false,
+      "matched_expectation": true,
+      "scenario": "CTRL_BREAK_THE_GATE"
+    },
+    {
+      "active_reference_after": "c-healthy",
+      "active_reference_before": "c-healthy",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "source_complete",
+      "actual_state": "FAIL",
+      "category": "source",
+      "expected_admitted": false,
+      "expected_predicate": "source_complete",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "FAIL"
+      },
+      "matched_expectation": true,
+      "scenario": "SRC_PARTIAL_FETCH"
+    },
+    {
+      "active_reference_after": "c-healthy",
+      "active_reference_before": "c-healthy",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "source_complete",
+      "actual_state": "FAIL",
+      "category": "source",
+      "expected_admitted": false,
+      "expected_predicate": "source_complete",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "FAIL"
+      },
+      "matched_expectation": true,
+      "scenario": "SRC_EMPTY_LISTING"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-healthy",
+      "active_state_readable": true,
+      "actual_admitted": true,
+      "actual_predicate": null,
+      "actual_state": "PASS",
+      "category": "source",
+      "expected_admitted": true,
+      "expected_predicate": "sensitivity_recorded",
+      "expected_state": "PASS",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "PASS",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "scenario": "SRC_MISSING_REVISION"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "sensitivity_recorded",
+      "actual_state": "UNVERIFIABLE",
+      "category": "identity",
+      "expected_admitted": false,
+      "expected_predicate": "sensitivity_recorded",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "NOT_REACHED",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "UNVERIFIABLE",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "ID_MISSING_CRITICAL_SIGNAL"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "fingerprint_present",
+      "actual_state": "UNVERIFIABLE",
+      "category": "identity",
+      "expected_admitted": false,
+      "expected_predicate": "fingerprint_present",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "UNVERIFIABLE",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "ID_FINGERPRINT_ABSENT"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "UNVERIFIABLE",
+      "category": "build",
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "UNVERIFIABLE",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "BUILD_ARTIFACT_CRASH"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "FAIL",
+      "category": "build",
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "FAIL",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "BUILD_NONDETERMINISTIC_OUTPUT"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "UNVERIFIABLE",
+      "category": "receipt",
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "UNVERIFIABLE",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "RCPT_MISSING"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "FAIL",
+      "category": "receipt",
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "FAIL",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "RCPT_WRONG_DIGEST"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "permission_respected",
+      "actual_state": "FAIL",
+      "category": "permission",
+      "expected_admitted": false,
+      "expected_predicate": "permission_respected",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "FAIL",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "scenario": "PERM_UNAUTHORISED_UNIT_REACHABLE"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "raising",
+      "actual_state": "UNVERIFIABLE",
+      "category": "build",
+      "expected_admitted": false,
+      "expected_predicate": "raising",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "NOT_REACHED",
+        "permission_respected": "NOT_REACHED",
+        "raising": "UNVERIFIABLE",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "NOT_REACHED",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "scenario": "BUILD_PREDICATE_RAISES"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "pointer_compare_and_swap",
+      "actual_state": "FAIL",
+      "category": "activation",
+      "expected_admitted": false,
+      "expected_predicate": "pointer_compare_and_swap",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "PASS",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "scenario": "ACT_CAS_STALE_EXPECTATION"
+    },
+    {
+      "active_reference_after": "c-race-1",
+      "actual_admitted": false,
+      "actual_predicate": "pointer_compare_and_swap",
+      "actual_state": "FAIL",
+      "admitted_count": 1,
+      "category": "activation",
+      "expected_admitted": false,
+      "expected_predicate": "pointer_compare_and_swap",
+      "expected_state": "FAIL",
+      "matched_expectation": true,
+      "scenario": "ACT_CONCURRENT_CANDIDATE"
+    },
+    {
+      "actual_admitted": true,
+      "category": "receipt",
+      "earlier_refusals_survived_verbatim": true,
+      "expected_admitted": true,
+      "matched_expectation": true,
+      "refusal_count": 12,
+      "scenario": "RCPT_OVERWRITTEN_AFTER_REFUSAL"
+    },
+    {
+      "category": "activation",
+      "matched_expectation": true,
+      "mixed_state_observations": 0,
+      "reader_threads": 6,
+      "reads": 3000,
+      "scenario": "ACT_CONCURRENT_READERS"
+    }
+  ],
+  "scenarios_sha256": "sha256:fd27cd9c2a3962c32855a39ba00a09d75adf0e62768b895d44d500000bee0a9a",
+  "schema": "tavonel.v2.p3_failure_injection.v1",
+  "split": "development",
+  "started_at": "2026-08-21T05:48:23.458906+00:00",
+  "subject_module": "research/tavonel_eval_v2/activation/knowledge_store.py",
+  "subject_sha256": "sha256:1b36ae9ac5aee65608e6b3f2b139fe9bec76778e464bcecc680a8cc8a2d7b1c0",
+  "verdict": "FAIL"
+}

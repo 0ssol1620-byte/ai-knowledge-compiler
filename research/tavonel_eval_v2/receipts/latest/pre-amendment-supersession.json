@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/pre-amendment-supersession--20260823T040022Z-b9072c1eda2a.json",
+  "points_to_file_sha256": "sha256:c197576a78b6122b37cea7cc1ad76031d378bd7733f227d762dad183b7c258ca",
+  "run_id": "20260823T040022Z-b9072c1eda2a",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "pre-amendment-supersession",
+  "updated_at": "2026-08-23T04:00:22.470213+00:00"
+}

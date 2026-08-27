@@ -1,0 +1,308 @@
+{
+  "by_family": {
+    "encyclopedia_wikipedia": 40,
+    "git_docs": 80,
+    "regulation_ecfr": 50,
+    "sec_edgar": 0
+  },
+  "cache": {
+    "extractor_digest": "sha256:ed235461c6f4019922dd0ade1c1d169b16e9a0626e604cf71292b66de3963cfa",
+    "is_evidence": false,
+    "note": "a cache accelerates a run and proves nothing about it. Every hit is verified against the payload hash it is filed under, and deleting this directory changes run time, not results.",
+    "payload_hits": 1696,
+    "payload_misses": 0,
+    "rejected_entries": 0,
+    "state_hits": 0,
+    "state_misses": 0
+  },
+  "cohort": {
+    "candidates": 1958,
+    "excluded_lineages": 313,
+    "family_quota": {
+      "encyclopedia_wikipedia": 40,
+      "git_docs": 80,
+      "regulation_ecfr": 60,
+      "sec_edgar": 20
+    },
+    "floor": 120,
+    "frame": "research/tavonel_eval_v2/artifacts/development/vbc2_lineages.json",
+    "max_payload_bytes": 2000000,
+    "order": "ascending sha256 of (lineage id + salt), fixed before any payload was read",
+    "payload_bound_basis": "compute; declared, and not tuned to an outcome",
+    "salt": ":oracle-v2"
+  },
+  "ended_at": "2026-08-23T03:33:20.267767+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_OI2_COHORT_FLOOR": true,
+    "G_OI2_COMPARATOR_ISOLATED": true,
+    "G_OI2_FAMILIES": true,
+    "G_OI2_NO_FALSE_PASS_ON_UNRESOLVED": true,
+    "G_OI2_NO_GPU": true,
+    "G_OI2_NO_STALE_ESCAPE": false,
+    "G_OI2_ORACLE_ISOLATED": true,
+    "G_OI2_TYPED_INVALIDATION": true
+  },
+  "gpu_seconds": 0,
+  "http": {
+    "api.github.com": {
+      "errors": 0,
+      "limit": 8,
+      "min_interval": 0.05,
+      "requests": 793,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "data.sec.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.12,
+      "requests": 108,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "en.wikipedia.org": {
+      "errors": 1,
+      "limit": 6,
+      "min_interval": 0.05,
+      "requests": 264,
+      "retry_after_seconds": 1682.0,
+      "throttles": 35
+    },
+    "raw.githubusercontent.com": {
+      "errors": 6,
+      "limit": 12,
+      "min_interval": 0.05,
+      "requests": 6,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "www.ecfr.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.2,
+      "requests": 828,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    }
+  },
+  "isolation": {
+    "comparator_graph": {
+      "clean": true,
+      "file": "research/tavonel_eval_v2/comparator/compare_recompilation.py",
+      "forbidden_imports_present": [],
+      "imports": [
+        "__future__",
+        "argparse",
+        "hashlib",
+        "json",
+        "sys",
+        "typing"
+      ],
+      "sha256": "sha256:25052e588a3188fb10c801277236fcbdd8f9bb5c9535fe1e2c2ece7c2bd19793"
+    },
+    "comparator_runtime_clean": true,
+    "oracle_graph": {
+      "clean": true,
+      "file": "research/tavonel_eval_v2/oracle/source_derived_expected.py",
+      "forbidden_imports_present": [],
+      "imports": [
+        "__future__",
+        "argparse",
+        "base64",
+        "hashlib",
+        "html",
+        "json",
+        "os",
+        "re",
+        "sys",
+        "typing"
+      ],
+      "sha256": "sha256:ed235461c6f4019922dd0ade1c1d169b16e9a0626e604cf71292b66de3963cfa"
+    },
+    "oracle_runs_isolated": true,
+    "oracle_runtime_clean": true,
+    "processes": "oracle and comparator each run as python -I -S subprocesses"
+  },
+  "lineages_considered": 1958,
+  "pairs_path": "research/tavonel_eval_v2/artifacts/development/oracle_v2/oracle_v2_pairs.json",
+  "pairs_sha256": "sha256:48f6c660acfea1fc33b40d9507eb1e51b08b3829368f27d5db9371c4464b217e",
+  "prior_result_not_restated": "the 28-pair Wikipedia result remains same-implementation full recomputation equivalence and is not called an independent oracle",
+  "protocol": "research/tavonel_eval_v2/protocols/ORACLE_INDEPENDENCE_V2.yaml",
+  "protocol_sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950",
+  "provenance": {
+    "generated_at": "2026-08-23T03:33:20.915781+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/ORACLE_INDEPENDENCE_V2.yaml",
+    "protocol_sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950",
+    "receipt_stem": "oracle-independence-v2",
+    "run_id": "20260823T033320Z-248859f8c1ee",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_oracle_v2.py",
+    "tool_sha256": "sha256:b0e6f811cd172c1413d1383980768067e69f815ef457a631fbd9822c16c5eb42"
+  },
+  "receipt_sha256": "sha256:af5ffca8fe535606a0977795db26810445930e58316a219971cd6babe9625e29",
+  "rejected_by_code": {
+    "BEYOND_FAMILY_QUOTA": 631,
+    "PAYLOAD_TOO_LARGE_TO_CLASSIFY": 44,
+    "PAYLOAD_UNAVAILABLE": 6,
+    "TOO_FEW_REVISIONS": 1107
+  },
+  "result_digest": "sha256:0a07339446527655958fdfde49a8c91b511c752d442b3d60b929f732930a46bb",
+  "schema": "tavonel.v2.oracle_independence.v2",
+  "split": "held_out",
+  "started_at": "2026-08-23T03:11:08.739904+00:00",
+  "summary": {
+    "change_types": {
+      "lexical_only": 73,
+      "mixed": 54,
+      "no_modelled_change": 21,
+      "reference_locator_only": 12,
+      "structural_only": 4
+    },
+    "divergence_rate": 0.3049,
+    "divergence_samples": [
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Quasquara",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Hafnarfjörður",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Hornafjörður (municipality)",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Hietzing",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Three Villages",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Figari",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Cugnasco-Gerra",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Mela, Corse-du-Sud",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      },
+      {
+        "diverged": [
+          "document-index",
+          "structure-map",
+          "topic-bucket:1",
+          "topic-bucket:3"
+        ],
+        "engine_units": 13,
+        "family": "git_docs",
+        "lineage_id": "git:pnpm/pnpm.io:docs/cli/add.md",
+        "only_engine": [
+          "section:Options/--filter <packageselector\\>"
+        ],
+        "only_oracle": [
+          "section:Options/--filter &lt;packageselector\\>"
+        ],
+        "oracle_units": 8
+      },
+      {
+        "diverged": [
+          "section:lead"
+        ],
+        "engine_units": 4,
+        "family": "encyclopedia_wikipedia",
+        "lineage_id": "wikipedia:en:Brigittenau",
+        "only_engine": [],
+        "only_oracle": [],
+        "oracle_units": 1
+      }
+    ],
+    "divergent": 50,
+    "exact_state_equivalent": 114,
+    "families": [
+      "encyclopedia_wikipedia",
+      "git_docs",
+      "regulation_ecfr"
+    ],
+    "pairs_attempted": 170,
+    "pairs_judged": 164,
+    "pairs_unjudged": 6,
+    "pairs_with_a_stale_escape": 4,
+    "reference_locator_only_pairs": 12,
+    "reference_locator_only_reported_clean": 12,
+    "stale_escapes": 4,
+    "typed_invalidation_consistent": 77,
+    "typed_invalidation_tested": 77,
+    "unjudged_reasons": [
+      "AFTER_REVISION_HAS_NO_UNITS",
+      "BEFORE_REVISION_HAS_NO_UNITS"
+    ]
+  },
+  "verdict": "FAIL",
+  "wall_seconds": 1331.5,
+  "what_this_is_not": "not an independent specification. The oracle implements the same declared rules the engine does, written down by reading the engine. A defect in the specification is still common-mode."
+}

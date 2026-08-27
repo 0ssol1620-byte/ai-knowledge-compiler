@@ -1,0 +1,270 @@
+{
+  "clause_d_raw_violations": 13,
+  "contradiction": {
+    "clause_d_B_required": "unit_added",
+    "clause_e_required": "identity_unresolved",
+    "quarantine_contract_forbade": "unit_added",
+    "satisfiable": false,
+    "state": "resolver NEW INTERSECT quarantined",
+    "why": "no implementation can emit and not emit the same record. The instrument did not measure a property production failed; it described a state production is forbidden to occupy."
+  },
+  "corpus_spent": true,
+  "corpus_status": "SPENT",
+  "estimated_cost_usd": 0.0,
+  "forensics": {
+    "build_quarantine_used_for": "FORENSICS ONLY. Production's own quarantine may never be the expected side of a measurement -- that compares production to itself. V2R3 builds an independent oracle from the compatibility contract.",
+    "census": {
+      "NEW+QUARANTINED": 13,
+      "stated_as_identity_unresolved": 13
+    },
+    "lineages": {
+      "ecfr:47:20:20.19": {
+        "after_units": 94,
+        "before_units": 76,
+        "quarantine_members": 37,
+        "unit_added_emitted_for_non_quarantined_new": 17,
+        "violating_units": {
+          "u:44dd83263953972267296f15": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:44dd83263953972267296f15",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:7e4b003a028d84c605bce9c4": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:7e4b003a028d84c605bce9c4",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:938574c9cad637199264e073": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:938574c9cad637199264e073",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:ccb3cce10d6b8ef6726871b0": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:ccb3cce10d6b8ef6726871b0",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:d37889deaa4caf9aa84d0194": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:d37889deaa4caf9aa84d0194",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:ec34f5e3ff14c48112e15f21": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:ec34f5e3ff14c48112e15f21",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:f411a5a62ab012000af19d04": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:f411a5a62ab012000af19d04",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:ff7a5cb8d652c81f4f9a16cf": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:ff7a5cb8d652c81f4f9a16cf",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          }
+        }
+      },
+      "ecfr:7:3560:3560.102": {
+        "after_units": 52,
+        "before_units": 73,
+        "quarantine_members": 29,
+        "unit_added_emitted_for_non_quarantined_new": 11,
+        "violating_units": {
+          "u:6d1a25e5a2fb8c47463c17dc": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:6d1a25e5a2fb8c47463c17dc",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          }
+        }
+      },
+      "ecfr:7:3560:3560.105": {
+        "after_units": 52,
+        "before_units": 45,
+        "quarantine_members": 24,
+        "unit_added_emitted_for_non_quarantined_new": 6,
+        "violating_units": {
+          "u:0f79d1706478678f6b1052a4": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:0f79d1706478678f6b1052a4",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:149488a3598621cb96002c1d": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:149488a3598621cb96002c1d",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:b44c4f5e39dd25169d04fb9f": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:b44c4f5e39dd25169d04fb9f",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          },
+          "u:da5c1b9af9f165fc34916103": {
+            "effective_disposition_should_be": "EFFECTIVE_UNRESOLVED",
+            "implicated_identity": "u:da5c1b9af9f165fc34916103",
+            "production_emitted_as_subject": [
+              "identity_unresolved"
+            ],
+            "production_named_as_candidate_in": [
+              "identity_unresolved"
+            ],
+            "quarantined": true,
+            "resolver_decision": "NEW"
+          }
+        }
+      }
+    },
+    "recomputed_here": true
+  },
+  "gpu_seconds": 0,
+  "invalidity": "V2R2 treated a resolver-local NEW decision as a FINAL EFFECTIVE IDENTITY DISPOSITION even when the same unit was quarantined. The resolver's decision is one layer; the identity quarantine is an overlay on top of it; the effective disposition is their composition. V2R2 had no third layer and read the first as if it were.",
+  "must_not_be_described_as": [
+    "a successful closure",
+    "evidence that production violated identity correctness",
+    "a PASS",
+    "a corrected V2R2 verdict"
+  ],
+  "preexisting_semantics": {
+    "clause_2_verbatim": "No quarantined member receives a concrete identity-sensitive outcome. Not `UNIT_ADDED`, not `UNIT_REMOVED`, not `MODIFIED_CLAIM`. The guard is asked before every one of those exits, not before some of them.",
+    "compatibility_contract": "docs/COMPAT_IDENTITY_UNCERTAINTY_QUARANTINE.md",
+    "compatibility_contract_sha256": "sha256:655fd3d85eebec5209a2489290b34a8ca9d6c4cff8f1ac39e8504e4447f1b101",
+    "contract_predates_v2r2": true,
+    "differential_receipt": "identity-quarantine-differential--20260825T022223Z-aeb7bfe3bbf9.json",
+    "differential_receipt_sha256": "sha256:1f53322d96e67bea09458021603a9e1b815721b69be548665608f5280107511e",
+    "production_guard_location": "akc_cir.semantic_diff, quarantine tested before every definite exit and above the NEW branch. Its own comment records that placing it BELOW the NEW branch produced 12 violations in a development replay, all `unit_added` on a quarantined id.",
+    "production_guard_predates_v2r2": true,
+    "why_this_block_matters": "it proves the adjudication is NOT an outcome-conditioned relaxation. Every semantics cited here was written, implemented and receipted before V2R2 was drafted. The instrument contradicted a contract that already existed; nothing is being loosened after seeing a result."
+  },
+  "production_correctness_verdict": "NOT_ESTABLISHED",
+  "production_failure_established": false,
+  "production_must_not_be_changed": [
+    "do not move the quarantine guard below NEW",
+    "do not emit unit_added alongside identity_unresolved",
+    "do not weaken the quarantine",
+    "do not remove the transitive quarantine clause",
+    "do not change identity normalisation",
+    "do not change the facet predicate"
+  ],
+  "provenance": {
+    "generated_at": "2026-08-25T12:49:27.017146+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r2-adjudication",
+    "run_id": "20260825T124927Z-837610ef0b35",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/adjudicate_v2r2.py",
+    "tool_sha256": "sha256:cb2f01daff621a54cf866a181ed55f82fcdf5b037f58bb6a6d7abb131e060fc8"
+  },
+  "raw_execution_verdict": "FAIL",
+  "raw_invariant_6": "VIOLATED",
+  "raw_receipt_untouched": true,
+  "raw_violation_dispositions": {
+    "B_NEW": 13
+  },
+  "receipt_sha256": "sha256:1bcd674f54865ad683ccd24727af4a84e87caee1a860da23e3dc8229443365b8",
+  "rescore_permitted": false,
+  "schema": "tavonel.v2.identity_change_migration_closure.adjudication.v1",
+  "scientific_adjudication": "INVALID_INSTRUMENT_CONTRACT",
+  "subject": {
+    "invariant_module_sha256": "sha256:bb87c5fd993fbc617b7c336abf9fc1cd10c2d799c3fe50d517082d5082110fdf",
+    "measurement_receipt": "identity-change-migration-closure-v2r2--20260825T104800Z-c1041a14bdc3.json",
+    "measurement_receipt_sha256": "sha256:9e62c7a890de07736c6900b83f9d04a5ccbc06829b0fb917593b11800b5bfab3",
+    "protocol_freeze_receipt": "identity-change-migration-closure-v2r2-protocol-freeze--20260825T102151Z-de4c44b1b9c8.json",
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+    "protocol_sha256": "sha256:56bbe4c43f15d918483b3e7ff4941edc5a08246cec2a361e734c2f593793a48c",
+    "scorer_freeze_receipt": "identity-change-migration-closure-v2r2-scorer-freeze--20260825T104559Z-db606c6abc47.json",
+    "scorer_freeze_receipt_sha256": "sha256:8551579d049e7e042ec2265777bdb4991876c71620df983f6176741d962f2ac5",
+    "scorer_module_sha256": "sha256:02109961da2f7eb5a238efe147446a34eb2b3ff91470b5ef69bf7f98bba52912",
+    "surface_module_sha256": "sha256:94356c20ba87de4287093e27956b96abb56b92955d35a65ab51d409182237907"
+  },
+  "successor": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3",
+  "the_13_units_may_be": "DEVELOPMENT / FORENSIC regression cases only, because they are spent. They must be shown to classify as resolver-local NEW plus quarantine override yielding EFFECTIVE_UNRESOLVED, and they may never become positive confirmatory evidence.",
+  "v2r2_lineages_excluded_from_successor": true
+}

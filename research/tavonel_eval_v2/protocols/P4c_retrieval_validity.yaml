@@ -1,0 +1,303 @@
+# P4c — retrieval validity on an independent cohort, split into two endpoints.
+#
+# Frozen before any P4c result exists.
+#
+# P4 and P4b both stand at FAIL and neither is re-scored. P4b's Q1 = 58 result is
+# preserved as a development observation and is explicitly NOT used to set any
+# threshold here: a bar chosen to clear a number already seen is not a bar.
+#
+# The two endpoints are separate experiments with separate verdicts. They are
+# never summed, averaged, or reported as one figure.
+
+schema: tavonel.v2.protocol.P4c.v1
+protocol_id: P4c_retrieval_validity
+version: 1
+authored: 2026-08-22
+supersedes: null
+relates_to:
+  P4_retrieval_validity: {state: FAIL, rule: read-only, thresholds_reused: false}
+  P4b_retrieval_validity:
+    state: FAIL
+    rule: read-only
+    thresholds_reused: false
+    observations_reused: >-
+      none as evidence. P4b's stage A numbers and its Q1 = 58 revision-selection
+      figures are development observations on a spent cohort.
+    implementation_reused: >-
+      the fielded BM25 scorer and the unit-level, non-tie-breaking ranking
+      function, imported rather than re-implemented. INC-V2-007 was caused by
+      writing that ranking twice; writing it a third time is the same risk.
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu:
+    approved: false
+    ceiling_usd: 0.0
+    rule: >-
+      CPU only. No embedding model, no GPU, no paid API. Passing P4c-Core makes
+      a spend request possible; it does not authorise spend.
+  sealed_evidence: {rule: read-only}
+  frozen_results: {rule: P0b, P0c, P0d, P2, P3b, P4b are read-only}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+  receipts: {rule: immutable, per INC-V2-005}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. Cohort
+# ---------------------------------------------------------------------------
+
+cohort:
+  manifest: written by acquisition/fetch_p4c_corpus.py before this protocol runs
+  independence_rule: >-
+    one revision pair per source document. P4b's global routing gate failed
+    partly because 26 pairs came from 12 documents: three pairs of the same file
+    competed as separate routing targets while being identical in every field a
+    question may name. A question cannot be asked to route between them, and a
+    gate that asks it to is measuring the corpus.
+  selection_rule_frozen_before_any_retrieval_result: true
+  container_cap: 4 documents per repository, issuer or CFR part
+  targets:
+    source_families: 4
+    distinct_source_documents: 40
+    scored_questions: 250
+  families:
+    sec_edgar: amendment pairs, existing acquisition
+    git_docs: consecutive-commit pairs, existing acquisition
+    regulation_ecfr: two most recent dated versions of a CFR section
+    encyclopedia_wikipedia: two most recent revisions of an article
+  dart_kr:
+    state: BLOCKED_MISSING_CREDENTIAL
+    handling: >-
+      declared, attempted at fetch time, and recorded with the API's own
+      response. A missing certification key is a founder decision, so DART is
+      absent from the cohort and its absence is on the record rather than
+      inferred from the family list.
+
+# ---------------------------------------------------------------------------
+# 2. Index — fielded, source-provided metadata
+# ---------------------------------------------------------------------------
+
+index:
+  scheme: BM25 per field, weighted sum, k1 = 1.2, b = 0.75
+  weights: {title: 3.0, doc_type: 2.0, heading_path: 3.0, heading: 4.0, body: 1.0}
+  weights_carried_from: P4b, unchanged, so the cohort is the only variable that moved
+  unit: one canonical unit in one revision
+  corpus: >-
+    append-only. Both revisions of every admitted document are indexed, each
+    labelled current or superseded.
+  machine_identifiers_may_be_indexed: >-
+    they are source-provided. Indexing them is not the same act as injecting
+    them into a question, and section 3 forbids the second.
+
+# ---------------------------------------------------------------------------
+# 3. Question construction — answer-independent
+# ---------------------------------------------------------------------------
+
+questions:
+  permitted_intent_sources:
+    - source-provided document title
+    - issuer, project or document identity a user would normally have
+    - document or form type
+    - leaf heading
+    - immediate parent heading
+  forbidden_intent_sources:
+    - any answer span
+    - any token taken from the body in order to identify the answer
+    - the oracle-current revision identifier
+    - the revision window
+    - any before/after label
+    - any current/superseded indicator
+
+  machine_identifiers:
+    decision: excluded from every query
+    affected: [SEC CIK, bare numeric CFR section token]
+    reason: >-
+      a CIK is machine routing metadata. A person asking about a filing says the
+      company's name, not its ten-digit central index key. P4b placed ticker and
+      CIK in the query together, and its SEC routing looked comparatively strong
+      for a reason unconnected to how anyone actually asks. Machine routing
+      metadata and natural-language user intent are not mixed.
+    consequence_accepted: >-
+      SEC routing is expected to look worse than it did in P4b. That is the
+      point: the earlier number was measuring the identifier.
+
+  rendering: an interrogative sentence with ordinary function words, not a field
+    concatenation
+  full_path_withheld: >-
+    a query carrying the complete explicit path would be an identity match
+    against the heading_path field. The immediate parent is what a person
+    supplies.
+  types:
+    Q1_REVISED_VALUE: a unit whose SEMANTIC facet moved between the two revisions
+    C1_UNCHANGED_CONTROL: a unit whose SEMANTIC facet did not move
+  per_document_cap: 12 of each type, in reading order
+
+# ---------------------------------------------------------------------------
+# 4. P4c-Core — the causal, controlled endpoint
+# ---------------------------------------------------------------------------
+
+core:
+  design: the correct source document lineage is GIVEN as a condition
+  isolates: >-
+    state integrity from document-router quality. P4 and P4b could not tell a
+    targeting failure from a routing failure from a revision failure, and
+    conflating them is how a null result gets attributed to the wrong stage.
+  measured_path: question → correct unit → current versus superseded revision
+  revision_selection_arms:
+    LEXICAL_ONLY:
+      rule: >-
+        among the retrieved unit's two revisions, take the higher-scoring one.
+        An exact tie selects nothing and counts as a failure to discriminate.
+      role: the baseline a retrieval layer has with no compiler behind it
+      gated: false
+      reason_not_gated: >-
+        this is the finding. Gating it would turn a pre-registered prediction
+        into a pass/fail on the thing under investigation.
+    COMPILED_CURRENCY:
+      rule: take the revision the compiled state marks current
+      gated: true, at >= 0.99
+      status: >-
+        a positive control on the harness, NOT a TAVONEL performance result.
+        Near 1.0 by construction; below the bar means the harness is broken, and
+        the run is void rather than interesting. It must never be quoted as a
+        result.
+  the_核心_measurement: >-
+    with the correct unit secured, how often does lexical retrieval select the
+    SUPERSEDED revision, and does restricting to the compiled current state
+    remove that failure mode? The first number is the finding; the second is
+    arithmetic once the first exists.
+  gpu_eligibility: >-
+    passing every P4c-Core gate, together with the source-coverage gates, is
+    what makes a controlled same-intelligence model experiment eligible to be
+    proposed. It is not itself an authorisation.
+
+# ---------------------------------------------------------------------------
+# 5. P4c-Global — the ecological endpoint
+# ---------------------------------------------------------------------------
+
+global:
+  design: the whole corpus, nothing given
+  measured_path: question → document → unit → revision
+  independence: >-
+    a Global failure does NOT invalidate Core. They answer different questions
+    and carry separate verdicts.
+  consequence_of_failure: >-
+    a global end-to-end GPU endpoint stays closed. Core eligibility is
+    unaffected.
+  never_combined: >-
+    the two endpoints are not summed, averaged or reported as a single number.
+
+# ---------------------------------------------------------------------------
+# 6. Tie policy, fixed before any score
+# ---------------------------------------------------------------------------
+
+tie_policy:
+  rule: >-
+    an exact top-score tie returns the whole tied set. Ties are never broken by
+    list position, index order, document id or any other incidental ordering.
+  granularity: >-
+    measures are stated over UNITS. Two revisions of one unit are two indexed
+    documents and one unit. This is the distinction INC-V2-007 was recorded for.
+  rank: >-
+    conservative. Every tied competitor counts against the target, so no tie is
+    ever resolved in the answer's favour.
+  lineage_at_1: >-
+    holds only when every unit in the tied top set belongs to the correct
+    document.
+  rounding: scores rounded to 9 decimal places
+  determinism_check: reversed insertion order must reproduce every score and tied set
+
+# ---------------------------------------------------------------------------
+# 7. Gates. Thresholds declared before any score is computed.
+# ---------------------------------------------------------------------------
+
+gates:
+  shared:
+    G_P4C_SCALE:
+      predicate: >-
+        at least 250 scored questions, at least 40 distinct source documents, at
+        least 4 source families
+    G_P4C_DETERMINISM:
+      predicate: the reversed-order index reproduces every score and every tied set
+      on_fail: STOP. A non-deterministic representation cannot support a frozen holdout.
+    G_P4C_COST:
+      predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+  core:
+    G_P4C_CORE_TIE:
+      predicate: unit-level tie rate <= 0.10 within the given lineage
+      basis: inside one document, headings are distinct enough that a tie means
+        the question named nothing the index holds
+    G_P4C_CORE_RETRIEVABLE:
+      predicate: oracle-current unit in the top 10 within the lineage >= 0.90
+      basis: a question whose answer is not retrievable inside its own document
+        cannot discriminate anything downstream
+    G_P4C_CORE_TOP1:
+      predicate: oracle-current unit is the unique top unit >= 0.60
+      basis: >-
+        below the retrievability bar on purpose. Sibling sections share a parent
+        heading, so exact-first is harder than top-ten, and a high bar here would
+        constrain the corpus rather than the method.
+    G_P4C_CORE_Q1_SCALE:
+      predicate: at least 100 Q1 questions
+      basis: >-
+        the revision-selection failure mode cannot be measured on a handful. P4b
+        had 58 and no rate was claimed from it. This is a bar on measurability,
+        not on the outcome.
+    G_P4C_CORE_HARNESS:
+      predicate: COMPILED_CURRENCY selects the current revision on >= 0.99
+      on_fail: the harness is broken; the run is void, not interesting
+
+  global:
+    G_P4C_GLOBAL_LINEAGE:
+      predicate: lineage_at_1 >= 0.80 over the whole corpus
+      basis: routing to the wrong document makes an answer wrong, not imprecise
+    G_P4C_GLOBAL_UNIT:
+      predicate: oracle-current unit in the top 10 across the whole index >= 0.75
+      basis: lower than Core's bar, because every other document's sections
+        become competitors
+
+not_gated_deliberately:
+  LEXICAL_ONLY_rates: the finding, reported per family and overall
+  source_coverage_rate: owned by P0d, not re-gated here
+
+# ---------------------------------------------------------------------------
+# 8. Pre-registered predictions
+# ---------------------------------------------------------------------------
+
+predictions:
+  sec_routing_looks_worse_than_in_P4b: >-
+    the CIK is gone from the query. If SEC routing drops, that is the earlier
+    number having measured the identifier rather than the method.
+  global_is_harder_than_core: >-
+    by construction. The interesting quantity is the size of the gap, not its
+    sign.
+  lexical_only_selects_the_superseded_revision_at_a_non_trivial_rate: >-
+    the two revisions of a unit share every metadata field, so the ordering
+    between them rests on body terms the query never names. Whether that lands
+    near chance or somewhere else is exactly what this cohort is for.
+  regulation_and_encyclopedia_differ: >-
+    CFR sections are numbered and formulaic; encyclopedia headings are natural
+    language. No direction is predicted, and the per-family split is reported.
+
+# ---------------------------------------------------------------------------
+# 9. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under a fielded BM25 representation over an append-only index of both
+    revisions of 4 families of source documents, this question cohort reached
+    the oracle-current unit at these rates with the lineage given and across the
+    whole corpus, and these two revision-selection rules performed as recorded.
+  forbidden:
+    - quoting COMPILED_CURRENCY as a TAVONEL performance result. It is a harness
+      control.
+    - combining the Core and Global endpoints into one number
+    - any statement about a dense or hybrid representation, which was not run
+    - any statement about answer correctness; no model is executed in P4c
+    - reusing P4 or P4b thresholds, holdouts or observations as support
+    - describing the LEXICAL_ONLY / COMPILED_CURRENCY comparison as a model arm
+    - reading a passed Core endpoint as authorising spend
+    - treating a development-split result as confirmatory

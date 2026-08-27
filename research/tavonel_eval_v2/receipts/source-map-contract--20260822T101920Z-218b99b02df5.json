@@ -1,0 +1,320 @@
+{
+  "controls_through_the_map": {
+    "all_agree": true,
+    "ignored_does_not_block": true,
+    "results": [
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "colspan",
+        "expected_facet": "STRUCTURAL",
+        "expected_state": "MODELED",
+        "guards": "a span change moves which header a cell answers to",
+        "name": "rowspan_changes_table_association",
+        "observed": {
+          "after": {
+            "facet": "STRUCTURAL",
+            "found": true,
+            "state": "MODELED"
+          },
+          "before": {
+            "facet": "STRUCTURAL",
+            "found": true,
+            "state": "MODELED"
+          }
+        },
+        "scanned_kind": "attr:colspan"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "alt",
+        "expected_facet": "ACCESSIBILITY",
+        "expected_state": "MODELED",
+        "guards": "for a non-visual consumer the alternative text IS the content",
+        "name": "alt_changes_accessible_content",
+        "observed": {
+          "after": {
+            "facet": "ACCESSIBILITY",
+            "found": true,
+            "state": "MODELED"
+          },
+          "before": {
+            "facet": "ACCESSIBILITY",
+            "found": true,
+            "state": "MODELED"
+          }
+        },
+        "scanned_kind": "attr:alt"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "lang",
+        "expected_facet": "METADATA",
+        "expected_state": "MODELED",
+        "guards": "the same characters mean different things in different languages",
+        "name": "lang_changes_interpretation",
+        "observed": {
+          "after": {
+            "facet": "METADATA",
+            "found": true,
+            "state": "MODELED"
+          },
+          "before": {
+            "facet": "METADATA",
+            "found": true,
+            "state": "MODELED"
+          }
+        },
+        "scanned_kind": "attr:lang"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "rel",
+        "expected_facet": "REFERENCE_LOCATOR",
+        "expected_state": "MODELED",
+        "guards": "canonical, nofollow and license assert different things about the same URL",
+        "name": "rel_changes_relationship",
+        "observed": {
+          "after": {
+            "facet": "REFERENCE_LOCATOR",
+            "found": true,
+            "state": "MODELED"
+          },
+          "before": {
+            "facet": "REFERENCE_LOCATOR",
+            "found": true,
+            "state": "MODELED"
+          }
+        },
+        "scanned_kind": "attr:rel"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "&#160;",
+        "expected_facet": "CONTENT_LEXICAL",
+        "expected_state": "MODELED",
+        "guards": "a reference produces a real character in the canonical text",
+        "name": "charref_changes_canonical_text",
+        "observed": {
+          "after": {
+            "facet": "CONTENT_LEXICAL",
+            "found": true,
+            "state": "MODELED"
+          },
+          "before": {
+            "facet": "CONTENT_LEXICAL",
+            "found": true,
+            "state": "MODELED"
+          }
+        },
+        "scanned_kind": "charref"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "li",
+        "expected_facet": "STRUCTURAL",
+        "expected_state": "MODELED",
+        "guards": "the visible token sequence is identical and the structure is not. A policy that ignored tags would call these two documents the same",
+        "name": "nesting_changes_structure_same_tokens",
+        "observed": {
+          "after": {
+            "facet": "STRUCTURAL",
+            "found": true,
+            "state": "MODELED"
+          },
+          "before": {
+            "facet": "STRUCTURAL",
+            "found": true,
+            "state": "MODELED"
+          }
+        },
+        "scanned_kind": "start_tag:li"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": true,
+        "construct": "class",
+        "expected_facet": "EXTERNAL_DEPENDENCY_EXECUTION",
+        "expected_state": "UNRESOLVED_SOURCE_FACT",
+        "guards": "an external rule may hide or reorder this. Neither MODELED nor IGNORED is honest, which is why the third state exists",
+        "name": "class_external_dependency_unresolved",
+        "observed": {
+          "after": {
+            "facet": "EXTERNAL_DEPENDENCY_EXECUTION",
+            "found": true,
+            "state": "UNRESOLVED_SOURCE_FACT"
+          },
+          "before": {
+            "facet": "EXTERNAL_DEPENDENCY_EXECUTION",
+            "found": true,
+            "state": "UNRESOLVED_SOURCE_FACT"
+          }
+        },
+        "scanned_kind": "attr:class"
+      },
+      {
+        "agrees": true,
+        "blocks_completeness": false,
+        "construct": "cellpadding",
+        "expected_facet": null,
+        "expected_state": "IGNORED_BY_DECLARED_POLICY",
+        "guards": "the other direction. A policy that called everything meaningful would pass the seven controls above and be useless",
+        "name": "decorative_attribute_stays_ignorable",
+        "observed": {
+          "after": {
+            "facet": null,
+            "found": true,
+            "state": "IGNORED_BY_DECLARED_POLICY"
+          },
+          "before": {
+            "facet": null,
+            "found": true,
+            "state": "IGNORED_BY_DECLARED_POLICY"
+          }
+        },
+        "scanned_kind": "attr:cellpadding"
+      }
+    ],
+    "three_directions": {
+      "ignored": true,
+      "modeled": true,
+      "passed": true,
+      "unresolved": true
+    },
+    "unresolved_blocks": true
+  },
+  "ended_at": "2026-08-22T10:19:20.534216+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_SMC_CONTENT_BY_TRACEABILITY": {
+      "detail": {
+        "charref_traceable_is_modeled": true,
+        "passed": true,
+        "text_traceable_is_modeled": true,
+        "text_untraceable_is_unmodeled": true,
+        "text_with_no_canonical_text_is_unmodeled": true,
+        "why": "the policy's MODELED is a statement about the KIND of construct. Whether one occurrence reached the compiled artifact is a separate question, and granting it by assertion would be an over-grant."
+      },
+      "passed": true
+    },
+    "G_SMC_CONTROLS_THROUGH_THE_MAP": {
+      "count": 8,
+      "passed": true
+    },
+    "G_SMC_COST": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_SMC_LEGACY_INSTRUMENT_UNTOUCHED": {
+      "detail": {
+        "research/tavonel_eval_v2/canonicalization/coverage_witness.py": "sha256:080c7ded3d216e75a563ec8811fe15863b5c8a8d7ee812e39b36920b5dcfbd7a",
+        "research/tavonel_eval_v2/canonicalization/source_map.py": "sha256:e61ebae70e774bfbbcf3d98a4b0473f93668cf52b0f9016d0a1461b8f5a425bc"
+      },
+      "passed": true,
+      "why": "SOURCE_LOCALITY_V2 sealed those digests. Its eligible Q1 = 5 stays reproducible because the files are not edited."
+    },
+    "G_SMC_OLD_GRAMMAR_NOT_INHERITED": {
+      "detail": {
+        "class": "UNRESOLVED_SOURCE_FACT",
+        "colspan": "MODELED",
+        "lang": "MODELED",
+        "passed": true,
+        "start_tag_td": "MODELED",
+        "under_the_old_grammar": {
+          "attr:class": "IGNORED_BY_DECLARED_POLICY",
+          "attr:colspan": "IGNORED_BY_DECLARED_POLICY",
+          "attr:lang": "IGNORED_BY_DECLARED_POLICY",
+          "start_tag:td": "IGNORED_BY_DECLARED_POLICY"
+        }
+      },
+      "passed": true
+    },
+    "G_SMC_THREE_DIRECTIONS": {
+      "detail": {
+        "ignored": true,
+        "modeled": true,
+        "passed": true,
+        "unresolved": true
+      },
+      "passed": true
+    },
+    "G_SMC_UNRESOLVED_BLOCKS": {
+      "passed": true,
+      "reason_code": "UNRESOLVED_SOURCE_FACT_IN_CLOSURE"
+    }
+  },
+  "gpu_authorised_by_this_result": false,
+  "gpu_seconds": 0,
+  "incident": "INC-V2-013",
+  "inheritance_control": {
+    "class": "UNRESOLVED_SOURCE_FACT",
+    "colspan": "MODELED",
+    "lang": "MODELED",
+    "passed": true,
+    "start_tag_td": "MODELED",
+    "under_the_old_grammar": {
+      "attr:class": "IGNORED_BY_DECLARED_POLICY",
+      "attr:colspan": "IGNORED_BY_DECLARED_POLICY",
+      "attr:lang": "IGNORED_BY_DECLARED_POLICY",
+      "start_tag:td": "IGNORED_BY_DECLARED_POLICY"
+    }
+  },
+  "instrument_identity": {
+    "composite": "sha256:df5dabb51432afa7e00f0f28f984481f389344dde8cb63c048d29ac986bd7a70",
+    "part_files": {
+      "markup_semantics_code": "research/tavonel_eval_v2/canonicalization/markup_semantics.py",
+      "source_map_code": "research/tavonel_eval_v2/canonicalization/source_map_v2.py",
+      "witness_code": "research/tavonel_eval_v2/canonicalization/coverage_witness_v2.py"
+    },
+    "parts": {
+      "markup_policy": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+      "markup_semantics_code": "sha256:5206511d4b8745741197e2a171d066e4add9bb0891baf048174a52f49e8d9d61",
+      "schema": "sha256:f4d1aec809956d845b2789124bc0122f832587606531cd6b861e35e5e0a6f953",
+      "source_map_code": "sha256:7e8fbf728144d3b784c2594eca2a997df7555bf62d5872aac7be1962550fe139",
+      "witness_code": "sha256:765e06bbb91a1ae75a613a294cbdd9a6dba1024ded51ac0d9f58603b5f218920"
+    },
+    "superseded_parts_left_untouched": {
+      "research/tavonel_eval_v2/canonicalization/coverage_witness.py": "sha256:080c7ded3d216e75a563ec8811fe15863b5c8a8d7ee812e39b36920b5dcfbd7a",
+      "research/tavonel_eval_v2/canonicalization/source_map.py": "sha256:e61ebae70e774bfbbcf3d98a4b0473f93668cf52b0f9016d0a1461b8f5a425bc"
+    },
+    "why_it_differs_from_the_P4g_freeze": "INC-V2-013. Two of the five parts are different files, because the files P4g named do not consult the frozen markup policy. Recorded before any eligibility number existed, and not aimed at one: the predictable direction of this change is that eligibility falls."
+  },
+  "predecessors_read_only": {
+    "P0d": "PASS on its own gates; result stands under its declared grammar",
+    "P4f": "SUPERSEDED_BEFORE_EXECUTION",
+    "P4g": "not modified; scoring runs under the composite recorded here",
+    "SOURCE_LOCALITY_V2": "PASS; eligible Q1 = 5; instrument untouched; not re-scored"
+  },
+  "programme_status": "PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED",
+  "protocol": "MARKUP_SEMANTICS_V1",
+  "provenance": {
+    "generated_at": "2026-08-22T10:19:20.535415+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/MARKUP_SEMANTICS_V1.yaml",
+    "protocol_sha256": "sha256:4cba5049326f32495f168b1186a93fe072a3ebc98017c6543f6a5ff9e08027eb",
+    "receipt_stem": "source-map-contract",
+    "run_id": "20260822T101920Z-218b99b02df5",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/seal_source_map_contract.py",
+    "tool_sha256": "sha256:0a803f12a5b574f66da1d3635c7d3138698cbd01e9481d75f97ca4bb5c2a5847"
+  },
+  "receipt_sha256": "sha256:d398a37c984636df23b6a5882b9c6d4f737399e9709f8a14da573952d8c612f6",
+  "schema": "tavonel.v2.source_map_contract.v1",
+  "started_at": "2026-08-22T10:19:20.529626+00:00",
+  "traceability_controls": {
+    "charref_traceable_is_modeled": true,
+    "passed": true,
+    "text_traceable_is_modeled": true,
+    "text_untraceable_is_unmodeled": true,
+    "text_with_no_canonical_text_is_unmodeled": true,
+    "why": "the policy's MODELED is a statement about the KIND of construct. Whether one occurrence reached the compiled artifact is a separate question, and granting it by assertion would be an over-grant."
+  },
+  "verdict": "PASS"
+}

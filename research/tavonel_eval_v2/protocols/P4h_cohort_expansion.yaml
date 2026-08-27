@@ -1,0 +1,226 @@
+# P4h — cohort expansion after P4g came in under the floor.
+#
+# P4g scored once: eligible Q1 = 174 against a floor of 190, on 321 documents
+# against a required 400. The standing ruling for that outcome is explicit —
+# no GPU request, no re-fitting of instrument or policy, no narrowing, no
+# lowering of the floor, and a new acquisition protocol expanding documents and
+# revision pairs. This is that protocol.
+#
+# It is written having SEEN 174. That is unavoidable and is the reason every
+# clause below is about scale and balance rather than about which documents
+# score well.
+
+schema: tavonel.v2.protocol.P4h.v1
+protocol_id: P4h_cohort_expansion
+version: 1
+authored: 2026-08-22
+supersedes: P4g_cohort_expansion
+
+relates_to:
+  P4g_cohort_expansion:
+    state: EXECUTED, verdict FAIL on G_P4G_SCALE
+    rule: read-only, never re-scored
+    eligible_Q1: 174
+    documents: 321
+    note: >-
+      its cohort, its questions and its coverage rows stand as recorded. P4h
+      acquires a larger cohort; it does not re-measure P4g's.
+  MARKUP_SEMANTICS_V1: {rule: frozen, unchanged, policy digest carried forward}
+  SOURCE_LOCALITY_V2: {rule: read-only, eligible_Q1: 5, not_re_scored: true}
+  P4e_provenance_retrieval: {rule: read-only, Core: PASS 12/12}
+  P0d_source_coverage: {rule: read-only, standing_result: 26 of 26 SOURCE_COVERAGE_INCOMPLETE}
+
+# ---------------------------------------------------------------------------
+# 1. The instrument does not move
+# ---------------------------------------------------------------------------
+
+instrument:
+  rule: >-
+    identical to the one that produced 174. Not one classification, threshold,
+    facet, state or gate changes between P4g and P4h. The only thing that
+    changes is how many documents are put through it.
+  identity: >-
+    source-map code digest + witness code digest + markup-semantics code digest
+    + markup-semantics policy digest + schema digest, hashed together
+  parts:
+    source_map_code: canonicalization/source_map_v2.py
+    witness_code: canonicalization/coverage_witness_v2.py
+    markup_semantics_code: canonicalization/markup_semantics.py
+    markup_policy: computed over the declared mapping, not the file bytes
+    schema: the shape a classification result takes
+  composite_at_freeze: sha256:0ed844f6eb83e8b342f6790a772099c8ebec4c80c525cdf721b59a54df10fe2a
+  gate: >-
+    the composite at scoring time equals this value. Unlike P4g there is no
+    escape clause, because the reason P4g needed one — a policy that nothing
+    read — has been repaired and there is no known further gap.
+
+the_specific_temptation:
+  construct: attr:class
+  observed: >-
+    1,795 of 1,878 UNRESOLVED refusals, and the reason encyclopedia_wikipedia
+    yields 7 eligible Q1 from 518.
+  rule: >-
+    it stays UNRESOLVED_SOURCE_FACT. Moving it to IGNORED would clear the floor
+    in a single line, which is precisely why it must not be moved in response to
+    this result.
+  what_would_be_required_instead: >-
+    a separate workstream proving, for a named corpus and declared before any
+    measurement, that no external rule changes visibility, ordering or behaviour
+    for the elements in question. A proof, with its own evidence and its own
+    controls. Not a reclassification.
+
+# ---------------------------------------------------------------------------
+# 2. Scale, and how it was chosen
+# ---------------------------------------------------------------------------
+
+targets:
+  source_documents: 550
+  minimum_families: 4
+  revision_pairs: one per source document
+  container_cap: 8
+  markdown_family_documents: 165
+  family_quota:
+    git_docs: 165
+    regulation_ecfr: 165
+    encyclopedia_wikipedia: 165
+    sec_edgar: 55
+  balance_rule: >-
+    no family exceeds 30% of the target, unchanged from P4g. The mix is SCALED,
+    not re-weighted: the proportions that produced 174 are kept.
+
+why_the_mix_is_not_re_weighted:
+  observed_yield_per_document:
+    git_docs: 1.11
+    regulation_ecfr: 0.62
+    encyclopedia_wikipedia: 0.06
+    sec_edgar: 0.00
+  the_available_move: >-
+    shifting the quota toward git_docs would reach the floor with far fewer
+    documents. It is not taken. Selecting a cohort by which families score well
+    is conditioning selection on an eligibility result, which is the mirror of
+    fitting the instrument to the cohort and is forbidden for the same reason.
+  consequence_accepted: >-
+    P4h needs more documents than a re-weighted cohort would, and 165 Wikipedia
+    documents are expected to contribute roughly ten eligible Q1. That is the
+    price of a cohort whose composition was not chosen by its outcome.
+
+projection:
+  status: A PROJECTION, NOT A TARGET AND NOT A GATE
+  arithmetic: 165*1.11 + 165*0.62 + 165*0.06 + 55*0.00
+  expected_eligible_Q1: about 295
+  headroom_over_the_floor: about 1.55x
+  why_headroom_matters: >-
+    a cohort sized to land just above 190 would make the gate the target. P4g
+    already showed per-family yield can move — regulation_ecfr went from 0 to
+    58 when the markup policy changed — so a design with no margin is a design
+    that expects its own estimates to hold.
+  binding: nothing. If the real figure is lower, it is reported and the floor still stands.
+
+sec_edgar:
+  expected: 20 to 55, probably nearer the low end
+  why: >-
+    amendment pairs whose primary document yields three canonical units are
+    scarce; 20 issuers produced 16. The family is acquired, scored and reported
+    at whatever it reaches. It is not padded by relaxing the parse floor, and it
+    is not dropped for contributing zero — a family that yields nothing is
+    evidence about the family.
+
+acquisition_note:
+  known_attrition: >-
+    P4g selected 376 and admitted 300 because selectors stop at a quota of
+    SELECTED documents while attrition happens later, at payload and parse
+    floor. P4h over-selects: each family selects up to 1.5x its quota and the
+    admitted list is truncated at the quota in declared order.
+  this_is_not_selection_by_outcome: >-
+    truncation is by declared order, which is fixed before the first fetch. No
+    coverage, eligibility or retrieval figure is consulted, and none exists at
+    acquisition time.
+
+# ---------------------------------------------------------------------------
+# 3. Anti-fitting
+# ---------------------------------------------------------------------------
+
+anti_fitting:
+  binding: yes
+  scoring: the expanded cohort is scored for eligibility exactly ONCE
+  before_scoring:
+    - the document list, family quotas and spacing rules are frozen
+    - the instrument composite is recorded
+  after_seeing_the_number:
+    forbidden:
+      - any change to the source map, the witness or the markup policy aimed at that number
+      - reclassifying attr:class, attr:style or any other construct in response to it
+      - lowering the eligible-Q1 floor
+      - narrowing the reported cohort to one family
+      - re-weighting the family quota toward the families that scored well
+      - re-scoring P4g, P4e, SOURCE_LOCALITY_V2 or P0d
+    permitted: >-
+      repair of a genuine conformance defect against a frozen contract, as a
+      separate recorded incident preserving the existing run and receipt. A run
+      that dies before producing a figure has not consumed the once-only budget
+      — see INC-V2-015 — and a run that produces one has.
+
+# ---------------------------------------------------------------------------
+# 4. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P4H_SCALE:
+    predicate: at least 550 admitted documents across at least 4 families
+    note: P4g failed its scale gate at 321 of 400; over-selection exists to prevent a repeat
+  G_P4H_INDEPENDENCE:
+    predicate: one revision pair per source document
+  G_P4H_SELECTION_BLIND:
+    predicate: >-
+      the document list and family quotas are fixed before any eligibility,
+      coverage or retrieval figure is computed
+  G_P4H_MIX_NOT_REWEIGHTED:
+    predicate: >-
+      the family quota proportions match P4g's balance rule and were not moved
+      toward the families that yielded well
+  G_P4H_NO_NARROWING:
+    predicate: all four families appear in the scored cohort and in every reported measure
+  G_P4H_INSTRUMENT_UNCHANGED:
+    predicate: the composite instrument identity at scoring time equals the value frozen here
+  G_P4H_SCORED_ONCE:
+    predicate: the expanded cohort is scored for eligibility exactly once
+  G_P4H_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+reported_not_gated:
+  - eligible Q1, total and by family
+  - eligible Q1 yield per family, against P4g's figures
+  - witness failure reasons by family
+  - the UNRESOLVED share and which constructs drive it
+  - envelope retrievable@10 and atom recoverability
+  why: >-
+    gating the thing under investigation would make the protocol unable to
+    return bad news.
+
+# ---------------------------------------------------------------------------
+# 5. Decision gate, unchanged
+# ---------------------------------------------------------------------------
+
+decision_gate:
+  hard_minimum_eligible_Q1: 190
+  status: >-
+    conservative preregistered floor. Exact McNemar power at 190 is 0.967 and
+    the 0.95 target is first reached at n = 173. Not lowered, and specifically
+    not lowered to 174.
+  spread_requirement: eligible Q1 present in more than one family
+  if_met: >-
+    resubmit the model-study proposal with real numbers, for founder approval.
+    Approval of the study is a separate decision from meeting this floor.
+  if_not_met: >-
+    report it. No GPU request, no re-fitting, no narrowing, no lowering of the
+    floor.
+
+claim_boundary:
+  forbidden:
+    - reporting a single-family figure as the cohort result
+    - re-fitting the instrument or the markup policy to any cohort
+    - lowering the 190 floor
+    - treating UNRESOLVED as IGNORED
+    - calling any document revision source-faithful end-to-end
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

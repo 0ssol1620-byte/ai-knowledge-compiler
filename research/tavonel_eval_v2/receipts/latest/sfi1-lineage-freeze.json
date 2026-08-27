@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/sfi1-lineage-freeze--20260823T051946Z-1caf335c778a.json",
+  "points_to_file_sha256": "sha256:9130839ef34a7968438e365d4ccace09054efb242334c169506b4210a6410226",
+  "run_id": "20260823T051946Z-1caf335c778a",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "sfi1-lineage-freeze",
+  "updated_at": "2026-08-23T05:19:46.197159+00:00"
+}

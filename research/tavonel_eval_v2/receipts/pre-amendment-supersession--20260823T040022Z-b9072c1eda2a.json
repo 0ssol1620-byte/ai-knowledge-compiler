@@ -1,0 +1,89 @@
+{
+  "authorised_by": "founder ruling, 2026-08-23",
+  "consequence": {
+    "ORACLE_INDEPENDENCE_V2": "development_diagnostic",
+    "SOURCE_FAITHFULNESS_HELDOUT_V1": "development_diagnostic",
+    "note": "the ruling ordered the SFH1 downgrade. ORACLE_INDEPENDENCE_V2 fails the identical test on identical evidence, and applying the test to one study and not the other would leave a stronger claim standing on weaker evidence."
+  },
+  "estimated_cost_usd": 0.0,
+  "executions": [
+    {
+      "edit_forbidden_because": "editing a receipt to record that it is superseded is a mutation of evidence in the name of describing evidence",
+      "edited": false,
+      "exists": true,
+      "file_sha256": "sha256:e5147646195114181549370bfce924dd11c7262d4d2f2dfe503cfe3db073a676",
+      "generated_at": "2026-08-23T02:06:07.740909+00:00",
+      "path": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T020607Z-4d87a644df4d.json",
+      "state": "SUPERSEDED_PRE_AMENDMENT_EXECUTION",
+      "superseded_by": "receipts/sfh1-source-faithfulness--20260823T031017Z-329258f9ec8a.json",
+      "why": "an execution on real lineages that produced and exposed outcome-derived metrics before the protocol was frozen or amended. It is the exposure that costs the study its held-out status; it is not a result and never was. 8 lineages considered, 3 scored."
+    },
+    {
+      "edit_forbidden_because": "editing a receipt to record that it is superseded is a mutation of evidence in the name of describing evidence",
+      "edited": false,
+      "exists": true,
+      "file_sha256": "sha256:18cca01e3126dd8f4ab9b6aa4fbba9b835816a6dbee627832b1abb69ede28726",
+      "generated_at": "2026-08-23T02:13:01.060454+00:00",
+      "path": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T021301Z-f8d3eaca6dd1.json",
+      "state": "SUPERSEDED_PRE_AMENDMENT_EXECUTION",
+      "superseded_by": "receipts/oracle-independence-v2--20260823T033320Z-248859f8c1ee.json",
+      "why": "an execution on real lineages that produced and exposed outcome-derived metrics before the protocol was frozen or amended. It is the exposure that costs the study its held-out status; it is not a result and never was. 6 lineages considered, 2 judged."
+    }
+  ],
+  "gpu_seconds": 0,
+  "interrupted_run": {
+    "cohort_receipt_written": false,
+    "started_at": "2026-08-23T02:07:06+00:00",
+    "state": "PARTIAL_EXECUTION_NO_RESULT_WRITTEN",
+    "stopped_at": "approximately 2026-08-23T02:34+00:00",
+    "stopped_by": "operator, after a timing probe showed the span scan was superlinear",
+    "study": "SOURCE_FAITHFULNESS_HELDOUT_V1",
+    "what_was_visible": "one progress line: considered 96, admitted 46, per-family counts. That is an acquisition-yield figure rather than a classification outcome, and it is recorded here anyway because the ruling's test is one-sided and this tool does not get to decide what counted.",
+    "why": "stopped by hand and wrote no receipt of any kind. Only its per-family admitted counts were ever visible, in a progress log. It is a partial execution, not a result, and nothing cites it."
+  },
+  "late_freezes": [
+    {
+      "edit_forbidden_because": "editing a receipt to record that it is superseded is a mutation of evidence in the name of describing evidence",
+      "edited": false,
+      "exists": true,
+      "file_sha256": "sha256:968346d32588d8c156a4305ee3fc49c6405a9826ba1a65f6ef0bee1e581b0771",
+      "generated_at": "2026-08-23T02:22:51.941576+00:00",
+      "path": "research/tavonel_eval_v2/receipts/sfh1-protocol-freeze--20260823T022251Z-cb1523508572.json",
+      "state": "FREEZE_AFTER_EXECUTION_BEGAN",
+      "superseded_by": "receipts/sfh1-protocol-freeze--20260823T024116Z-91689ae88d7b.json",
+      "why": "frozen at 02:22:51, after the smoke run at 02:06:07 and after the full run began at 02:07:06. It never carried the property its protocol claims for itself."
+    },
+    {
+      "edit_forbidden_because": "editing a receipt to record that it is superseded is a mutation of evidence in the name of describing evidence",
+      "edited": false,
+      "exists": true,
+      "file_sha256": "sha256:4c3d2ef76562176cfc2296cc71ce6ef2b5824c0ac990a777ded2ec5f4d014aa1",
+      "generated_at": "2026-08-23T02:22:52.201626+00:00",
+      "path": "research/tavonel_eval_v2/receipts/oracle-v2-protocol-freeze--20260823T022252Z-2c122136037f.json",
+      "state": "FREEZE_AFTER_EXECUTION_BEGAN",
+      "superseded_by": "receipts/oracle-v2-protocol-freeze--20260823T024147Z-7dd609ba17c6.json",
+      "why": "frozen at 02:22:52, after the smoke run at 02:13:01."
+    }
+  ],
+  "not_affected": [
+    "VALUE_BEARING_COHORT_V1",
+    "VALUE_BEARING_COHORT_V2",
+    "STOP-V2-005"
+  ],
+  "provenance": {
+    "generated_at": "2026-08-23T04:00:22.089518+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "pre-amendment-supersession",
+    "run_id": "20260823T040022Z-b9072c1eda2a",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/supersede_pre_amendment_runs.py",
+    "tool_sha256": "sha256:c9cae7f7671e07575db02dd83fe53307e3be062def2a0d61d6b4b33f51a6cb9e"
+  },
+  "receipt_sha256": "sha256:e78fdffdefd7eb50e0f2696c2143d1082f526fe3299e9f64b0123ab3d560be0f",
+  "results_preserved": "neither final result is repaired, re-scored or re-run. What changes is the split each may be reported under, not a single number in either.",
+  "rule": "the pre-amendment execution remains immutable and is explicitly superseded and partial",
+  "schema": "tavonel.v2.pre_amendment_supersession.v1"
+}

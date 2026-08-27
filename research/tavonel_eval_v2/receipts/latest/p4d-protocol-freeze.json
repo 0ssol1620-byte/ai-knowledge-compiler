@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/p4d-protocol-freeze--20260822T022556Z-fd2416a689dd.json",
+  "points_to_file_sha256": "sha256:d00ec0f32f5c373899b56cae09bb5c2dfc25b86ab146b5eda164d353a04b011a",
+  "run_id": "20260822T022556Z-fd2416a689dd",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "p4d-protocol-freeze",
+  "updated_at": "2026-08-22T02:25:56.611819+00:00"
+}

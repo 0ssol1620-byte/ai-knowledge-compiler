@@ -1,0 +1,243 @@
+{
+  "candidate_pools": {
+    "encyclopedia_wikipedia": [
+      "Category:Municipalities of Sweden",
+      "Category:Municipalities of Denmark",
+      "Category:Cities and towns in Greece",
+      "Category:Municipalities of Austria",
+      "Category:Populated places in Serbia",
+      "Category:Cities in Hungary"
+    ],
+    "git_docs": [
+      {
+        "license": "MIT",
+        "owner": "facebook",
+        "prefix": "website/docs/",
+        "repo": "docusaurus"
+      },
+      {
+        "license": "MIT",
+        "owner": "oven-sh",
+        "prefix": "docs/",
+        "repo": "bun"
+      },
+      {
+        "license": "MIT",
+        "owner": "facebook",
+        "prefix": "docs/",
+        "repo": "react-native-website"
+      },
+      {
+        "license": "Apache-2.0",
+        "owner": "apache",
+        "prefix": "nifi-docs/",
+        "repo": "nifi"
+      },
+      {
+        "license": "Apache-2.0",
+        "owner": "mattermost",
+        "prefix": "source/",
+        "repo": "docs"
+      },
+      {
+        "license": "BSD-2-Clause",
+        "owner": "mkdocs",
+        "prefix": "docs/",
+        "repo": "mkdocs"
+      },
+      {
+        "license": "MIT",
+        "owner": "readthedocs",
+        "prefix": "docs/user/",
+        "repo": "readthedocs.org"
+      },
+      {
+        "license": "BSD-2-Clause",
+        "owner": "sphinx-doc",
+        "prefix": "doc/",
+        "repo": "sphinx"
+      },
+      {
+        "license": "MIT",
+        "owner": "jekyll",
+        "prefix": "docs/_docs/",
+        "repo": "jekyll"
+      },
+      {
+        "license": "MIT",
+        "owner": "squidfunk",
+        "prefix": "docs/",
+        "repo": "mkdocs-material"
+      },
+      {
+        "license": "MIT",
+        "owner": "testing-library",
+        "prefix": "docs/",
+        "repo": "testing-library-docs"
+      },
+      {
+        "license": "Apache-2.0",
+        "owner": "apache",
+        "prefix": "webapps/docs/",
+        "repo": "tomcat"
+      },
+      {
+        "license": "Apache-2.0",
+        "owner": "spring-projects",
+        "prefix": "docs/modules/ROOT/pages/",
+        "repo": "spring-security"
+      },
+      {
+        "license": "Apache-2.0",
+        "owner": "micrometer-metrics",
+        "prefix": "docs/modules/ROOT/pages/",
+        "repo": "micrometer"
+      },
+      {
+        "license": "EPL-2.0",
+        "owner": "junit-team",
+        "prefix": "documentation/",
+        "repo": "junit5"
+      },
+      {
+        "license": "Elastic-2.0",
+        "owner": "elastic",
+        "prefix": "docs/",
+        "repo": "kibana"
+      },
+      {
+        "license": "MIT",
+        "owner": "fastify",
+        "prefix": "docs/",
+        "repo": "fastify"
+      },
+      {
+        "license": "Apache-2.0",
+        "owner": "apache",
+        "prefix": "docs/en/",
+        "repo": "dubbo"
+      },
+      {
+        "license": "BSD-2-Clause",
+        "owner": "nginx",
+        "prefix": "xml/en/docs/",
+        "repo": "documentation"
+      },
+      {
+        "license": "MIT",
+        "owner": "trpc",
+        "prefix": "www/docs/",
+        "repo": "trpc.io"
+      }
+    ],
+    "regulation_ecfr": [
+      [
+        "40",
+        "50",
+        "National primary and secondary ambient air quality standards"
+      ],
+      [
+        "21",
+        "700",
+        "Cosmetic labeling"
+      ],
+      [
+        "12",
+        "1",
+        "Organization and functions, availability of information"
+      ],
+      [
+        "17",
+        "200",
+        "Organization; conduct and ethics; and information and requests"
+      ],
+      [
+        "5",
+        "1201",
+        "Practices and procedures (Merit Systems Protection Board)"
+      ],
+      [
+        "34",
+        "106",
+        "Nondiscrimination on the basis of sex in education programs"
+      ]
+    ]
+  },
+  "declared_totals": {
+    "encyclopedia_wikipedia": 10,
+    "git_docs": 32,
+    "regulation_ecfr": 36
+  },
+  "forbidden_properties": [
+    "reading revision content",
+    "counting or estimating revisions, changes or yield",
+    "looking for qualifying transitions",
+    "inspecting any fact or value transition",
+    "choosing a root because it looks productive or has good history"
+  ],
+  "frozen_before_any_network_call": true,
+  "ordering_rule": "ascending sha256 of (candidate_id + ':sfi3-root-replacement-v1'); candidate_id is 'owner/repo' for git_docs, 'title-{T}-part-{P}' for regulation_ecfr, and the literal 'Category:...' string for encyclopedia_wikipedia",
+  "permitted_properties": [
+    "repository exists",
+    "path prefix exists on the default branch",
+    "host/family matches",
+    "identifier syntactically valid",
+    "disjoint from every spent lineage (every predecessor study's declared roots, SFI3's own current declaration, and every candidate already accepted earlier in this run)"
+  ],
+  "policy_digest": "sha256:10a82b24843c48175f096ffd5b216e10ddcb7562d58c097799dd273bb44429aa",
+  "provenance": {
+    "generated_at": "2026-08-23T12:37:08.078626+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-root-replacement-policy",
+    "run_id": "20260823T123708Z-39e1d14f3843",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/replace_sfi3_roots.py",
+    "tool_sha256": "sha256:2ef84dfac11a4dc9c6670735d85f64aeaab3fd5f3423b333d519f2ff7638399a"
+  },
+  "receipt_sha256": "sha256:5dd354bbd85af0cce8a0c14e3e8a540d4f591e7ed497c813192e47a4aa4c2d2f",
+  "retry_policy": {
+    "applies_to_state": "UNREACHABLE",
+    "backoff_seconds": [
+      1.0,
+      2.0,
+      4.0
+    ],
+    "basis": "declared here, before any transient failure is observed by this run; trinodb/trino's TLS handshake timeout is the known case this exists for, but the policy is applied uniformly to every UNREACHABLE outcome this run produces, not special-cased to that one root",
+    "max_attempts": 4
+  },
+  "roots_eligible_for_retry": {
+    "encyclopedia_wikipedia": [],
+    "git_docs": [
+      "trinodb/trino"
+    ],
+    "regulation_ecfr": []
+  },
+  "roots_needing_a_replacement_candidate": {
+    "encyclopedia_wikipedia": [
+      "Category:Cities and towns in Hyogo Prefecture"
+    ],
+    "git_docs": [
+      "gitlab-org/gitlab",
+      "hashicorp/boundary",
+      "open-policy-agent/opa",
+      "apache/pinot",
+      "questdb/questdb",
+      "arangodb/docs",
+      "emberjs/guides-source",
+      "tailwindlabs/tailwindcss.com",
+      "twbs/bootstrap",
+      "micronaut-projects/micronaut-docs",
+      "hasura/graphql-engine"
+    ],
+    "regulation_ecfr": [
+      "title-41-part-301"
+    ]
+  },
+  "schema": "tavonel.v2.sfi3_root_replacement_policy.v1",
+  "selection_rule": "walk each family's candidate pool in the frozen deterministic order; for each candidate, reject without a network call if it is not disjoint from every spent lineage or fails syntactic validation; otherwise check availability (with the retry policy applied to a transient UNREACHABLE result); accept the first N that confirm VALID or REDIRECTED, where N is this family's post-retry shortfall; stop consuming the pool once N is reached. Never choose by content, quality or expected yield — the source of every acceptance and rejection is this receipt's own state field, nothing else.",
+  "source_preflight_receipt": "research/tavonel_eval_v2/receipts/sfi3-root-preflight--20260823T113621Z-39cd4b2447f9.json",
+  "source_preflight_receipt_sha256": "sha256:9566911edebe7ff01e271442bc85db9ab910464291ca64d1fe6fcb1d064a138f"
+}

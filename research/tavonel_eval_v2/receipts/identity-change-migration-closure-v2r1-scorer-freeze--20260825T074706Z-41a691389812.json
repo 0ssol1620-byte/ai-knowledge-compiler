@@ -1,0 +1,49 @@
+{
+  "acceptance_blocks": [
+    "invariants",
+    "pass_rule",
+    "vacuity_rule",
+    "facet_channels",
+    "unresolved_fail_closed",
+    "predeclared_ignored_facets"
+  ],
+  "acceptance_semantics_sha256": "sha256:11d759493e2f47a59770d401ab7186be3916fdfe3116d3da961213d939ff0838",
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "protocol_freeze_run_id": "20260825T064808Z-0c5c4c915447",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+  "protocol_sha256": "sha256:66cf1920b892bba32179d371b5ba5b8d944e4c532824a4b6603377f2e32f27ba",
+  "provenance": {
+    "generated_at": "2026-08-25T07:47:06.897744+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1.yaml",
+    "protocol_sha256": "sha256:66cf1920b892bba32179d371b5ba5b8d944e4c532824a4b6603377f2e32f27ba",
+    "receipt_stem": "identity-change-migration-closure-v2r1-scorer-freeze",
+    "run_id": "20260825T074706Z-41a691389812",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:ce9254cad590aec349a84709dc3e5172927d47d65c4d3cee88f2ae3fb6578d31"
+  },
+  "receipt_sha256": "sha256:2ecd44b8924d5ab304df38f9772be12d338ddc94d8ee918fddca243f9a57097b",
+  "rung": 3,
+  "rung_name": "scorer_acceptance",
+  "schema": "tavonel.v2.scorer_acceptance_freeze.v1",
+  "scorer_modules": [
+    {
+      "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2.py",
+      "sha256": "sha256:ee63d3b6103c8c35319cad4aa7f7ef9989af682a0bf8c3fcd8bd3cd720610952"
+    },
+    {
+      "path": "research/tavonel_eval_v2/source_fact_ir/expected_change_status.py",
+      "sha256": "sha256:6081f6cfb8d5de730099b4609fe29a597c7b031917980241fd823227f2d65546"
+    },
+    {
+      "path": "research/tavonel_eval_v2/source_fact_ir/change_facets.py",
+      "sha256": "sha256:befeabe3629db7679fa963365db75b98c73af52b1a371c9b62d3e198aa82786f"
+    }
+  ],
+  "universe_freeze_receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-universe--20260825T074701Z-2ed621f918a8.json",
+  "universe_freeze_run_id": "20260825T074701Z-2ed621f918a8",
+  "universe_sha256": "sha256:1fa0d8d9844f2ab778d871bf59a121559da6f4b95dfcdad6364b428cfe651a1f",
+  "why": "INC-V2-048. A condition drifted from the declaration it implemented and reported the more comfortable of two measurements. A protocol digest cannot see a scorer module move; this rung can."
+}

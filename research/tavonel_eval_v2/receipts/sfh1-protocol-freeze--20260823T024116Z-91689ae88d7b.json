@@ -1,0 +1,27 @@
+{
+  "amendment_of": "declare a 2 MB per-revision payload bound on compute grounds, before any held-out pair was scored; the frozen span scanner is superlinear in payload size and an uncapped run cannot reach the frame",
+  "estimated_cost_usd": 0.0,
+  "frozen_before_any_result": false,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "protocol_path": "research/tavonel_eval_v2/protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+  "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8",
+  "provenance": {
+    "generated_at": "2026-08-23T02:41:16.470453+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+    "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8",
+    "receipt_stem": "sfh1-protocol-freeze",
+    "run_id": "20260823T024116Z-91689ae88d7b",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_protocol_immutable.py",
+    "tool_sha256": "sha256:2d353f9fe4475f136eb848768adb0dfe3f34f44ab53cdafa8f5652aa3b31554b"
+  },
+  "receipt_sha256": "sha256:7a654181d198d7dd3196c07516cbea150479db12d339d701b7938e4b69cb4711",
+  "schema": "tavonel.v2.protocol_freeze.v2",
+  "supersedes_receipts": [
+    "research/tavonel_eval_v2/receipts/sfh1-protocol-freeze--20260823T022251Z-cb1523508572.json"
+  ],
+  "worktree_dirty_path_count": 182
+}

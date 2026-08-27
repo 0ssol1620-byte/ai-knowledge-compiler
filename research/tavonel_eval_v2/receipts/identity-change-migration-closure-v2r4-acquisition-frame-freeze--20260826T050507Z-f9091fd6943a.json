@@ -1,0 +1,1257 @@
+{
+  "frame_declaration": {
+    "availability_probe": {
+      "every_declared_part_is_readable_in_one_fetcher_page": "the acquisition fetcher queries `versions/title-N.json?part=P` and does NOT follow pagination. That base is V2R2 tooling and is not edited, so the constraint is enforced HERE: every part declared below was queried at exactly the URL the fetcher will use and returned `total_pages` 1. A part needing more would have its traversal silently restricted to whatever page 1 held -- deterministic, but not the traversal this frame declares, and a frame that describes a traversal the acquisition does not perform describes nothing.",
+      "git_docs": "repository metadata plus the recursive tree at the declared branch; documents counted with acquisition's own predicate. 78 candidates probed, 6 unreachable at the declared prefix, 27 dropped for holding fewer than 17 documents, 1 dropped for a truncated tree, 44 declared.",
+      "never_asked": "what changed in a revision, whether a unit was renamed, whether the resolver would call anything ambiguous, whether a quarantine would form, how many qualifying changes a container holds, or what any invariant would say about it",
+      "probe_tool": "tools/probe_v2r4_roots.py, metadata-only, screening every candidate through root_identity AND SFI3_ROOT_RESERVATION_V1 before asking anything. It names the eight questions section F forbids it.",
+      "regulation_ecfr": "a PAGINATED metadata scan across ALL FIFTY TITLES. The versions endpoint gives the number of sections carrying two or more distinct dated versions, per PART, without asking about any part individually -- which keeps the probe cheap and, more importantly, blind. The structure endpoint at 2026-08-01 says whether the part still EXISTS. 872 fresh parts cleared the 12-section rule across 47 titles; 9 were rejected for carrying section history without a live container; 6 were rejected because the acquisition fetcher could not read them whole; the top two survivors per title were declared, giving 88.",
+      "sec_edgar": "the published issuer universe plus the submissions API for the first 30 issuers above the start CIK; form types and period dates only",
+      "why_existence_is_checked_separately": "the versions endpoint carries section version HISTORY, and a part can vanish from the structure while that history remains. Title 39 part 3004 has 20 multi-version sections on record and is not in the CFR today. Supply counted from history is not proof the container is usable, which is the one question a capacity probe exists to answer.",
+      "why_pagination_is_followed": "the versions endpoint pages at 1,000 rows and reports the true total in `meta.total_pages`. An unpaginated read UNDERSTATES supply, and it understates it unevenly across titles, so a rule that ranks parts by supply would be ranking them by supply-visible-on-page-1. Title 2 carries 3,350 rows across 4 pages, and part 180 read as 20 multi-version sections when it has 117. The probe now follows every page and REFUSES a response whose meta says more rows exist than were read -- a partial supply reading that reports itself as complete is the defect this repair was for (INC-V2-076)."
+    },
+    "burn_scope_read_and_found_none": {
+      "p4c": "acquisition/sources_p4c.py contains no burn, spent or confirmatory-reuse declaration of any kind; its frozen SELECTION_RULE speaks only to cohort construction. Declared burn scope: NONE_DECLARED. Reported exactly and generalised into nothing. Its individual disposition is moot regardless -- one lineage cannot constitute a confirmatory cohort."
+    },
+    "cache_identity": {
+      "historical_artifacts": "UNTOUCHED. Not rewritten, not re-keyed, not migrated.",
+      "key": "sha256 over the full, untruncated lineage/source identity tuple, plus the revision's raw content digest. No truncation anywhere in the path.",
+      "raw_bytes_retained": "every side stores its RAW fetched bytes alongside the canonical document, so a canonicalisation defect can be repaired by RECOMPUTING rather than by re-fetching. INC-V2-058.3 is what the alternative costs: a re-canonicalisation that had to re-read the sources destroyed `known_at` across 564 documents and the corpus was discarded.",
+      "readable_slug_is": "a LABEL only, never a key, never compared for identity",
+      "scheme": "content_addressed",
+      "still_required": "structural collision detection, raw digest verification, canonical digest verification, and whole-collision-group exclusion. A better key reduces collisions; it does not license skipping the check that finds them.",
+      "truncation": "FORBIDDEN in any identity-bearing position"
+    },
+    "container_cap": {
+      "git_docs": 5,
+      "regulation_ecfr": 4,
+      "sec_edgar": 4
+    },
+    "excluded_families": {
+      "encyclopedia_wikipedia": "SFI3 root family. Reservation membership is by category, which is not decidable from identity metadata, so SFI3_ROOT_RESERVATION_V1 declares the family UNDECIDABLE and fails closed. `root_identity` reads 324 Wikipedia identities from prior modules and the reservation holds 15 more, which is why the family is excluded rather than merely unused. Opening an SFI3 category to prove disjointness here is FORBIDDEN."
+    },
+    "excluded_sets": [
+      {
+        "id": "v2r3_and_v2r3r1_spent_300",
+        "why": "the 300 pairs V2R3 acquired and froze UNSCORED, which V2R3R1 inherited by exact carry-forward and then MEASURED. Their INVARIANT_6 outcome was read and reported, so the material is SPENT -- a cohort whose results are known cannot be a prospective confirmatory denominator. That the run was adjudicated INCOMPLETE_INSTRUMENT_COVERAGE under INC-V2-067 does not un-spend it: the instrument graded one invariant of eight, and the one it graded is the one whose answer is now known. Both universes name the same 300 lineages and both are excluded."
+      },
+      {
+        "id": "v2r2_spent_270",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2's frozen universe. The run executed exactly once and its corpus is SPENT. That it was adjudicated an invalid instrument does not un-spend the material. Its three violating shapes -- ecfr:47:20:20.19, ecfr:7:3560:3560.105 and ecfr:7:3560:3560.102 -- are DEVELOPMENT / FORENSIC regression cases only and may never certify V2R4."
+      },
+      {
+        "id": "v2r1_spent_285",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1's frozen universe. Spent for the same reason, two studies earlier. Its three violating shapes are likewise development regressions only."
+      },
+      {
+        "id": "v1_closure_514",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1's universe. V1 is a permanent FAIL and its universe may never become a positive migration-closure denominator after repair."
+      },
+      {
+        "id": "sfi1_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V1's own frame and executor"
+      },
+      {
+        "id": "sfi2_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V2's own frame and executor"
+      },
+      {
+        "id": "retrospective_538",
+        "why": "the retrospective migration-safety regression cohort, reclassified by founder ruling as retrospective rather than prospective qualification"
+      },
+      {
+        "id": "sfi2_forensic_14",
+        "why": "the fourteen cases that DIAGNOSED the INC-V2-037 defect. A case used to find a defect cannot certify its repair."
+      },
+      {
+        "id": "vbc1_probe",
+        "why": "sources_vbc1_probe.py declares BEFORE use that every lineage listed there is spent the moment the probe reports, and that it is not the confirmatory cohort and must never become it, with burned_after_use=True and not_the_confirmatory_cohort=True. That burn is GLOBAL for confirmatory reuse."
+      },
+      {
+        "id": "earlier_identity_measurements",
+        "why": "any lineage an earlier identity closure or identity regression already measured; burned for THIS question specifically"
+      },
+      {
+        "id": "sfi3_all",
+        "why": "SFI3 roots and every SFI3 lineage, payload and expansion. SFI3 is the next study's prospective confirmatory material and opening any of it here would spend it. Enforced at CONTAINER level by SFI3_ROOT_RESERVATION_V1 at rung 0, which is decidable now, rather than by comparing against an SFI3 cohort that does not exist yet."
+      },
+      {
+        "id": "contract_declared_spent",
+        "why": "any source whose OWN predeclared contract says it is spent for confirmatory reuse. Read that contract; do not assume, and do not generalise from another corpus's contract."
+      }
+    ],
+    "families": [
+      "git_docs",
+      "regulation_ecfr",
+      "sec_edgar"
+    ],
+    "families_required": 3,
+    "family_floor": {
+      "git_docs": 40,
+      "regulation_ecfr": 40,
+      "sec_edgar": 25
+    },
+    "family_quota": {
+      "git_docs": 170,
+      "regulation_ecfr": 150,
+      "sec_edgar": 160
+    },
+    "family_share": {
+      "git_docs": "17/48",
+      "regulation_ecfr": "5/16",
+      "sec_edgar": "1/3"
+    },
+    "floor": 200,
+    "forbidden_in_selection": [
+      "inspecting revision content in order to choose a candidate",
+      "inspecting any identity outcome",
+      "probing for ambiguity",
+      "probing for quarantine membership",
+      "probing for changed facets",
+      "acquiring until a quarantine case appears",
+      "removing a pair after seeing its outcome",
+      "adding a pair after seeing any outcome",
+      "replacing a family after seeing its yield",
+      "adjusting a quota, the floor or a threshold after acquisition",
+      "adding an ignore entry",
+      "sizing a quota from any predecessor's realised admission yield",
+      "selecting for or against the shape V2R3R1's INVARIANT_6 result revealed",
+      "declaring a container whose enumeration the probe could not complete"
+    ],
+    "integrity_rejection": {
+      "canonical_digest": "recomputed for every revision side; a mismatch rejects the pair",
+      "canonical_shape": "both sides must canonicalise into the shape production's `selective_build.snapshots` reads, mirrored field-for-field from `canonical_document` and never reinvented per family. V2R1's first eCFR canonicalisation invented `heading_path` with no `heading` and no `text_sha256`, which made 106 pairs unmeasurable for a reason unrelated to the migration (INC-V2-058.2).",
+      "collision_groups": "collisions are detected STRUCTURALLY. If a cache-key or slug collision makes provenance ambiguous, the ENTIRE collision group is excluded -- never whichever member is convenient. Every exclusion is named and counted.",
+      "identical_sides": "a pair whose two sides carry the same raw digest is rejected as not a revision pair. This is a metadata-level identity check, not a content judgement about whether anything meaningful changed.",
+      "parse": "both sides must parse and yield at least 3 canonical units",
+      "raw_digest": "recomputed for every revision side; a mismatch rejects the pair"
+    },
+    "order_salt": ":icmc-v2r4",
+    "primary_target": 480,
+    "probed_and_not_declared": {
+      "21-520": "the acquisition fetcher queries this part at one URL and does not follow pagination; the part returns 1035 rows across 2 pages, so the fetcher would see only the first. Excluded by name rather than declared with a traversal the acquisition would not perform.",
+      "40-52": "the acquisition fetcher queries this part at one URL and does not follow pagination; the part returns 6858 rows across 7 pages, so the fetcher would see only the first. Excluded by name rather than declared with a traversal the acquisition would not perform.",
+      "40-721": "the acquisition fetcher queries this part at one URL and does not follow pagination; the part returns 3722 rows across 4 pages, so the fetcher would see only the first. Excluded by name rather than declared with a traversal the acquisition would not perform.",
+      "42-423": "the acquisition fetcher queries this part at one URL and does not follow pagination; the part returns 1205 rows across 2 pages, so the fetcher would see only the first. Excluded by name rather than declared with a traversal the acquisition would not perform.",
+      "43-4": "the acquisition fetcher queries this part at one URL and does not follow pagination; the part returns 1469 rows across 2 pages, so the fetcher would see only the first. Excluded by name rather than declared with a traversal the acquisition would not perform.",
+      "48-252": "the acquisition fetcher queries this part at one URL and does not follow pagination; the part returns 1385 rows across 2 pages, so the fetcher would see only the first. Excluded by name rather than declared with a traversal the acquisition would not perform.",
+      "ClickHouse/ClickHouse": "GitHub returned the recursive tree TRUNCATED. The probe counted 18,962 documents under the declared prefix, but a truncated tree means the enumeration did not complete, so that number is a lower bound rather than a measurement -- and the traversal at acquisition time would not be reproducible from this frame. A container whose capacity was not measured is not declared. It is excluded by name rather than dropped silently, and it is not replaced: replacing it would be selection responding to supply."
+    },
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4",
+    "quota_basis": {
+      "basis": "grammar breadth and PROBED container capacity: 44 repositories x 5, 88 CFR parts x 4, and issuers above CIK 33213 x 4",
+      "explicitly_not_basis": "violation rate, pass yield, closure outcome, or any V1 / V2R1 / V2R2 / V2R3 / V2R3R1 observation -- including V2R3R1's realised admission and including its INVARIANT_6 result, which was read and is therefore the single outcome this programme now knows about that material",
+      "floor_prior": "FLOOR=200 is carried forward from the founder ruling as a PRE-MEASUREMENT COHORT SUFFICIENCY GATE and is NOT lowered. V1's published 8/514 sized it as a sample-size planning prior and appears nowhere else: not in a quota, not in a numerator, not in a denominator, not in the scorer.",
+      "frozen_before": "any V2R4 fetch, any V2R4 diff, any V2R4 score",
+      "no_selection_for_a_known_shape": "the cohort is NOT selected for quarantine outcomes, ambiguity outcomes, or any other shape. V2R3R1's INVARIANT_6 outcome is the one result this programme knows about identity behaviour at scale, and selecting for or against the shape it revealed would make the next result a statement about the selection rather than about production.",
+      "redistribution": "forbidden; an under-delivering family is reported short"
+    },
+    "root_disjointness": {
+      "container_level_is_stronger_than_lineage_level": "not one repository, CFR part or CIK below appears among the prior identities. A container that was never touched cannot hold a lineage that was. Lineage-level exclusion still runs on top of it -- a stronger proof does not license skipping the weaker check.",
+      "enumerator_obligation": "reporting an overlap is not enough. The enumerator REMOVES or named-excludes every overlapping row before universe admission and then RE-PROVES disjointness over the survivors. A report that leaves the row in the universe is a note, not a control.",
+      "prior_by_family": {
+        "ecfr": 309,
+        "git": 308,
+        "sec": 19,
+        "wikipedia": 324
+      },
+      "prior_identities": 960,
+      "prior_modules_read": 14,
+      "reader": "tools/root_identity.py",
+      "screened_at_repository_level_not_prefix_level": "the git identity tuple carries a prefix, so the same repository under a different subtree reads as a different identity. Screening was done on owner/repo, which is STRICTER: a repository that was ever touched is not fresh for this study regardless of which subtree was read.",
+      "screening": "every candidate below was canonicalised and checked against the prior set BEFORE it was probed, so a spent container was never even asked about",
+      "unverifiable_at_declaration": 0,
+      "unverifiable_policy": "a root whose shape the reader cannot interpret returns UNVERIFIABLE and BLOCKS. It is NEVER assumed disjoint -- that assumption is exactly how 7 CFR 273, SFI1-spent and a VBC1 declared root, entered the V2R2 frame."
+    },
+    "sfi3_reservation": {
+      "bound_by": "path and sha256, by BOTH studies, at rung 0",
+      "built_from_identity_metadata_only": "source and root IDENTITY METADATA. No revision contents, no qualifying pair counts, no change outcomes, no source fact transitions, no payload opening. It pins the SFI3 protocol id, the sha256 of acquisition/sources_sfi3.py, and the exact git / eCFR / SEC / Wikipedia root identities.",
+      "module": "tools/sfi3_root_reservation.py",
+      "no_post_v2r4_widening": "the replacement pool is PREDECLARED. A root promoted out of it later cannot widen the reservation, because the pool was inside it from the start.",
+      "reservation_id": "SFI3_ROOT_RESERVATION_V1",
+      "reverse_direction": "SFI3's own freeze gate (condition 21) proves the reverse before SFI3 acquires: its roots lie inside the reservation and outside V2R4's frozen containers. It resolves the reservation through V2R4's frame attestation binding, never a stem glob (INC-V2-069), and V2R4's OUTCOMES are never an input to it.",
+      "what_it_reserves": "SFI3's declared roots UNION its predeclared legal replacement pool, per family, on container identity. The union is the reservation: a container SFI3 may use, whether it uses it first or only after an availability failure.",
+      "wikipedia_fails_closed": "reservation membership for encyclopedia_wikipedia is by category and is NOT decidable from identity metadata. The reservation REFUSES rather than reporting the family clean, and V2R4 excludes the family."
+    },
+    "source_roots": {
+      "git_docs": {
+        "container_count": 44,
+        "containers": [
+          "ant-design/ant-design",
+          "apache/tvm",
+          "babel/website",
+          "chakra-ui/chakra-ui",
+          "cockroachdb/cockroach",
+          "containers/buildah",
+          "crystal-lang/crystal-book",
+          "dask/dask",
+          "firecracker-microvm/firecracker",
+          "gradio-app/gradio",
+          "grafana/pyroscope",
+          "huggingface/accelerate",
+          "huggingface/datasets",
+          "huggingface/diffusers",
+          "jestjs/jest",
+          "JuliaLang/julia",
+          "k0sproject/k0s",
+          "kata-containers/kata-containers",
+          "kubernetes-sigs/kustomize",
+          "kubernetes/ingress-nginx",
+          "Lightning-AI/pytorch-lightning",
+          "mui/material-ui",
+          "networkx/networkx",
+          "oauth2-proxy/oauth2-proxy",
+          "ocaml/ocaml.org",
+          "onnx/onnx",
+          "open-policy-agent/gatekeeper",
+          "open-telemetry/opentelemetry-specification",
+          "openbao/openbao",
+          "OWASP/CheatSheetSeries",
+          "projectcontour/contour",
+          "pydata/xarray",
+          "ruby/ruby",
+          "run-llama/llama_index",
+          "rust-lang/edition-guide",
+          "scipy/scipy",
+          "siderolabs/talos",
+          "statsmodels/statsmodels",
+          "storybookjs/storybook",
+          "sympy/sympy",
+          "tarantool/doc",
+          "vitest-dev/vitest",
+          "vuejs/router",
+          "withastro/docs"
+        ],
+        "roots": [
+          {
+            "branch": "master",
+            "license_metadata": "MIT",
+            "owner": "ant-design",
+            "prefix": "docs",
+            "probed_documents": 196,
+            "repo": "ant-design"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "apache",
+            "prefix": "docs",
+            "probed_documents": 75,
+            "repo": "tvm"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "babel",
+            "prefix": "docs",
+            "probed_documents": 89,
+            "repo": "website"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "chakra-ui",
+            "prefix": "apps/www/content",
+            "probed_documents": 141,
+            "repo": "chakra-ui"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "cockroachdb",
+            "prefix": "docs",
+            "probed_documents": 234,
+            "repo": "cockroach"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "containers",
+            "prefix": "docs",
+            "probed_documents": 35,
+            "repo": "buildah"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "crystal-lang",
+            "prefix": "docs",
+            "probed_documents": 82,
+            "repo": "crystal-book"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "BSD-3-Clause",
+            "owner": "dask",
+            "prefix": "docs",
+            "probed_documents": 86,
+            "repo": "dask"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "firecracker-microvm",
+            "prefix": "docs",
+            "probed_documents": 42,
+            "repo": "firecracker"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "gradio-app",
+            "prefix": "guides",
+            "probed_documents": 133,
+            "repo": "gradio"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "AGPL-3.0",
+            "owner": "grafana",
+            "prefix": "docs",
+            "probed_documents": 105,
+            "repo": "pyroscope"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "huggingface",
+            "prefix": "docs",
+            "probed_documents": 45,
+            "repo": "accelerate"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "huggingface",
+            "prefix": "docs",
+            "probed_documents": 57,
+            "repo": "datasets"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "huggingface",
+            "prefix": "docs",
+            "probed_documents": 353,
+            "repo": "diffusers"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "jestjs",
+            "prefix": "docs",
+            "probed_documents": 30,
+            "repo": "jest"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "MIT",
+            "owner": "JuliaLang",
+            "prefix": "doc",
+            "probed_documents": 108,
+            "repo": "julia"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "k0sproject",
+            "prefix": "docs",
+            "probed_documents": 60,
+            "repo": "k0s"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "kata-containers",
+            "prefix": "docs",
+            "probed_documents": 91,
+            "repo": "kata-containers"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "kubernetes-sigs",
+            "prefix": "site/content",
+            "probed_documents": 71,
+            "repo": "kustomize"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "kubernetes",
+            "prefix": "docs",
+            "probed_documents": 49,
+            "repo": "ingress-nginx"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "Lightning-AI",
+            "prefix": "docs",
+            "probed_documents": 136,
+            "repo": "pytorch-lightning"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "MIT",
+            "owner": "mui",
+            "prefix": "docs/data",
+            "probed_documents": 136,
+            "repo": "material-ui"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "networkx",
+            "prefix": "doc",
+            "probed_documents": 63,
+            "repo": "networkx"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "MIT",
+            "owner": "oauth2-proxy",
+            "prefix": "docs",
+            "probed_documents": 233,
+            "repo": "oauth2-proxy"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "ocaml",
+            "prefix": "data",
+            "probed_documents": 1485,
+            "repo": "ocaml.org"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "onnx",
+            "prefix": "docs",
+            "probed_documents": 47,
+            "repo": "onnx"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "open-policy-agent",
+            "prefix": "website/docs",
+            "probed_documents": 32,
+            "repo": "gatekeeper"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "open-telemetry",
+            "prefix": "specification",
+            "probed_documents": 68,
+            "repo": "opentelemetry-specification"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MPL-2.0",
+            "owner": "openbao",
+            "prefix": "website/content",
+            "probed_documents": 386,
+            "repo": "openbao"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "CC-BY-SA-4.0",
+            "owner": "OWASP",
+            "prefix": "cheatsheets",
+            "probed_documents": 116,
+            "repo": "CheatSheetSeries"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "projectcontour",
+            "prefix": "site/content/docs",
+            "probed_documents": 1191,
+            "repo": "contour"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "pydata",
+            "prefix": "doc",
+            "probed_documents": 44,
+            "repo": "xarray"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "ruby",
+            "prefix": "doc",
+            "probed_documents": 36,
+            "repo": "ruby"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "run-llama",
+            "prefix": "docs",
+            "probed_documents": 131,
+            "repo": "llama_index"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "rust-lang",
+            "prefix": "src",
+            "probed_documents": 33,
+            "repo": "edition-guide"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "BSD-3-Clause",
+            "owner": "scipy",
+            "prefix": "doc",
+            "probed_documents": 179,
+            "repo": "scipy"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MPL-2.0",
+            "owner": "siderolabs",
+            "prefix": "website/content",
+            "probed_documents": 43,
+            "repo": "talos"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "BSD-3-Clause",
+            "owner": "statsmodels",
+            "prefix": "docs",
+            "probed_documents": 61,
+            "repo": "statsmodels"
+          },
+          {
+            "branch": "next",
+            "license_metadata": "MIT",
+            "owner": "storybookjs",
+            "prefix": "docs",
+            "probed_documents": 483,
+            "repo": "storybook"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "sympy",
+            "prefix": "doc",
+            "probed_documents": 134,
+            "repo": "sympy"
+          },
+          {
+            "branch": "latest",
+            "license_metadata": "NOASSERTION",
+            "owner": "tarantool",
+            "prefix": "doc",
+            "probed_documents": 364,
+            "repo": "doc"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "vitest-dev",
+            "prefix": "docs",
+            "probed_documents": 131,
+            "repo": "vitest"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "vuejs",
+            "prefix": "packages/docs",
+            "probed_documents": 81,
+            "repo": "router"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "withastro",
+            "prefix": "src/content/docs",
+            "probed_documents": 1331,
+            "repo": "docs"
+          }
+        ]
+      },
+      "regulation_ecfr": {
+        "container_count": 88,
+        "containers": [
+          "2-180",
+          "2-182",
+          "4-28",
+          "4-21",
+          "5-2634",
+          "5-894",
+          "6-13",
+          "6-27",
+          "7-4290",
+          "7-5001",
+          "8-1003",
+          "8-1208",
+          "9-590",
+          "9-93",
+          "10-2",
+          "10-431",
+          "11-111",
+          "11-100",
+          "12-192",
+          "12-19",
+          "13-107",
+          "13-124",
+          "14-13",
+          "14-21",
+          "15-904",
+          "15-700",
+          "16-23",
+          "16-0",
+          "17-23",
+          "17-274",
+          "18-385",
+          "18-12",
+          "19-111",
+          "19-210",
+          "20-30",
+          "20-641",
+          "21-522",
+          "22-96",
+          "22-213",
+          "23-630",
+          "23-1300",
+          "24-206",
+          "24-983",
+          "25-224",
+          "25-1000",
+          "26-49",
+          "26-300",
+          "27-26",
+          "27-555",
+          "28-32",
+          "28-0",
+          "29-2200",
+          "29-2700",
+          "30-585",
+          "30-817",
+          "31-50",
+          "31-548",
+          "32-37",
+          "32-1900",
+          "33-127",
+          "33-147",
+          "34-75",
+          "34-76",
+          "36-1280",
+          "36-228",
+          "37-2",
+          "37-201",
+          "38-20",
+          "38-19",
+          "39-955",
+          "39-962",
+          "41-102-118",
+          "41-102-37",
+          "42-405",
+          "43-30",
+          "44-206",
+          "44-9",
+          "45-2556",
+          "45-2522",
+          "46-56",
+          "46-111",
+          "47-27",
+          "47-74",
+          "48-552",
+          "49-385",
+          "49-195",
+          "50-217",
+          "50-665"
+        ],
+        "roots": [
+          {
+            "part": "180",
+            "probed_multi_version_sections": 117,
+            "subject": "OMB Guidelines to Agencies on Government-Wide Debarment and Suspension (Nonprocurement)",
+            "title": "2"
+          },
+          {
+            "part": "182",
+            "probed_multi_version_sections": 37,
+            "subject": "Government-Wide Requirements for Drug-Free Workplace (Financial Assistance)",
+            "title": "2"
+          },
+          {
+            "part": "28",
+            "probed_multi_version_sections": 22,
+            "subject": "Government Accountability Office Personnel Appeals Board; Procedures Applicable to Claims Concerning Employment Practices at the Government Accountability Office",
+            "title": "4"
+          },
+          {
+            "part": "21",
+            "probed_multi_version_sections": 15,
+            "subject": "Bid Protest Regulations",
+            "title": "4"
+          },
+          {
+            "part": "2634",
+            "probed_multi_version_sections": 65,
+            "subject": "Executive Branch Financial Disclosure, Qualified Trusts, and Certificates of Divestiture",
+            "title": "5"
+          },
+          {
+            "part": "894",
+            "probed_multi_version_sections": 33,
+            "subject": "Federal Employees Dental and Vision Insurance Program",
+            "title": "5"
+          },
+          {
+            "part": "13",
+            "probed_multi_version_sections": 36,
+            "subject": "Administrative Remedies for False Claims and Statements",
+            "title": "6"
+          },
+          {
+            "part": "27",
+            "probed_multi_version_sections": 31,
+            "subject": "Chemical Facility Anti-Terrorism Standards",
+            "title": "6"
+          },
+          {
+            "part": "4290",
+            "probed_multi_version_sections": 92,
+            "subject": "Rural Business Investment Company (“Rbic”) Program",
+            "title": "7"
+          },
+          {
+            "part": "5001",
+            "probed_multi_version_sections": 69,
+            "subject": "Guaranteed Loans",
+            "title": "7"
+          },
+          {
+            "part": "1003",
+            "probed_multi_version_sections": 35,
+            "subject": "Executive Office for Immigration Review",
+            "title": "8"
+          },
+          {
+            "part": "1208",
+            "probed_multi_version_sections": 22,
+            "subject": "Procedures for Asylum and Withholding of Removal",
+            "title": "8"
+          },
+          {
+            "part": "590",
+            "probed_multi_version_sections": 136,
+            "subject": "Inspection of Eggs and Egg Products (Egg Products Inspection Act)",
+            "title": "9"
+          },
+          {
+            "part": "93",
+            "probed_multi_version_sections": 53,
+            "subject": "Importation of Certain Animals, Birds, Fish, and Poultry, and Certain Animal, Bird, and Poultry Products; Requirements for Means of Conveyance and Shipping Containers",
+            "title": "9"
+          },
+          {
+            "part": "2",
+            "probed_multi_version_sections": 89,
+            "subject": "Agency Rules of Practice and Procedure",
+            "title": "10"
+          },
+          {
+            "part": "431",
+            "probed_multi_version_sections": 77,
+            "subject": "Energy Efficiency Program for Certain Commercial and Industrial Equipment",
+            "title": "10"
+          },
+          {
+            "part": "111",
+            "probed_multi_version_sections": 18,
+            "subject": "Compliance Procedure (52 U.S.C. 30109, 30107(a))",
+            "title": "11"
+          },
+          {
+            "part": "100",
+            "probed_multi_version_sections": 16,
+            "subject": "Scope and Definitions (52 U.S.C. 30101)",
+            "title": "11"
+          },
+          {
+            "part": "192",
+            "probed_multi_version_sections": 95,
+            "subject": "Conversions from Mutual to Stock Form",
+            "title": "12"
+          },
+          {
+            "part": "19",
+            "probed_multi_version_sections": 84,
+            "subject": "Rules of Practice and Procedure",
+            "title": "12"
+          },
+          {
+            "part": "107",
+            "probed_multi_version_sections": 67,
+            "subject": "Small Business Investment Companies",
+            "title": "13"
+          },
+          {
+            "part": "124",
+            "probed_multi_version_sections": 63,
+            "subject": "8(a) Business Development/Small Disadvantaged Business Status Determinations",
+            "title": "13"
+          },
+          {
+            "part": "13",
+            "probed_multi_version_sections": 87,
+            "subject": "Investigative and Enforcement Procedures",
+            "title": "14"
+          },
+          {
+            "part": "21",
+            "probed_multi_version_sections": 40,
+            "subject": "Certification Procedures for Products and Articles",
+            "title": "14"
+          },
+          {
+            "part": "904",
+            "probed_multi_version_sections": 48,
+            "subject": "Civil Procedures",
+            "title": "15"
+          },
+          {
+            "part": "700",
+            "probed_multi_version_sections": 34,
+            "subject": "Defense Priorities and Allocations System",
+            "title": "15"
+          },
+          {
+            "part": "23",
+            "probed_multi_version_sections": 27,
+            "subject": "Guides for the Jewelry, Precious Metals, and Pewter Industries",
+            "title": "16"
+          },
+          {
+            "part": "0",
+            "probed_multi_version_sections": 18,
+            "subject": "Organization",
+            "title": "16"
+          },
+          {
+            "part": "23",
+            "probed_multi_version_sections": 41,
+            "subject": "Swap Dealers and Major Swap Participants",
+            "title": "17"
+          },
+          {
+            "part": "274",
+            "probed_multi_version_sections": 40,
+            "subject": "Forms Prescribed Under the Investment Company Act of 1940",
+            "title": "17"
+          },
+          {
+            "part": "385",
+            "probed_multi_version_sections": 49,
+            "subject": "Rules of Practice and Procedure",
+            "title": "18"
+          },
+          {
+            "part": "12",
+            "probed_multi_version_sections": 24,
+            "subject": "Safety of Water Power Projects and Project Works",
+            "title": "18"
+          },
+          {
+            "part": "111",
+            "probed_multi_version_sections": 55,
+            "subject": "Customs Brokers",
+            "title": "19"
+          },
+          {
+            "part": "210",
+            "probed_multi_version_sections": 49,
+            "subject": "Adjudication and Enforcement",
+            "title": "19"
+          },
+          {
+            "part": "30",
+            "probed_multi_version_sections": 81,
+            "subject": "Claims for Compensation Under the Energy Employees Occupational Illness Compensation Program Act of 2000, as Amended",
+            "title": "20"
+          },
+          {
+            "part": "641",
+            "probed_multi_version_sections": 38,
+            "subject": "Provisions Governing the Senior Community Service Employment Program",
+            "title": "20"
+          },
+          {
+            "part": "522",
+            "probed_multi_version_sections": 121,
+            "subject": "Implantation or Injectable Dosage Form New Animal Drugs",
+            "title": "21"
+          },
+          {
+            "part": "96",
+            "probed_multi_version_sections": 55,
+            "subject": "Intercountry Adoption Accreditation of Agencies and Approval of Persons",
+            "title": "22"
+          },
+          {
+            "part": "213",
+            "probed_multi_version_sections": 33,
+            "subject": "Claims Collection",
+            "title": "22"
+          },
+          {
+            "part": "630",
+            "probed_multi_version_sections": 34,
+            "subject": "Preconstruction Procedures",
+            "title": "23"
+          },
+          {
+            "part": "1300",
+            "probed_multi_version_sections": 31,
+            "subject": "Uniform Procedures for State Highway Safety Grant Programs",
+            "title": "23"
+          },
+          {
+            "part": "206",
+            "probed_multi_version_sections": 57,
+            "subject": "Home Equity Conversion Mortgage Insurance",
+            "title": "24"
+          },
+          {
+            "part": "983",
+            "probed_multi_version_sections": 51,
+            "subject": "Project-Based Voucher (PBV) Program",
+            "title": "24"
+          },
+          {
+            "part": "224",
+            "probed_multi_version_sections": 94,
+            "subject": "Tribal Energy Resource Agreements Under the Indian Tribal Energy Development and Self Determination Act",
+            "title": "25"
+          },
+          {
+            "part": "1000",
+            "probed_multi_version_sections": 41,
+            "subject": "Annual Funding Agreements Under the Tribal Self-Government Act Amendments to the Indian Self-Determination and Education Act",
+            "title": "25"
+          },
+          {
+            "part": "49",
+            "probed_multi_version_sections": 19,
+            "subject": "Facilities and Services Excise Taxes",
+            "title": "26"
+          },
+          {
+            "part": "300",
+            "probed_multi_version_sections": 12,
+            "subject": "User Fees",
+            "title": "26"
+          },
+          {
+            "part": "26",
+            "probed_multi_version_sections": 59,
+            "subject": "Liquors and Articles from Puerto Rico and the Virgin Islands",
+            "title": "27"
+          },
+          {
+            "part": "555",
+            "probed_multi_version_sections": 57,
+            "subject": "Commerce in Explosives",
+            "title": "27"
+          },
+          {
+            "part": "32",
+            "probed_multi_version_sections": 30,
+            "subject": "Public Safety Officers' Death, Disability, and Educational Assistance Benefit Claims",
+            "title": "28"
+          },
+          {
+            "part": "0",
+            "probed_multi_version_sections": 28,
+            "subject": "Organization of the Department of Justice",
+            "title": "28"
+          },
+          {
+            "part": "2200",
+            "probed_multi_version_sections": 73,
+            "subject": "Rules of Procedure",
+            "title": "29"
+          },
+          {
+            "part": "2700",
+            "probed_multi_version_sections": 58,
+            "subject": "Procedural Rules",
+            "title": "29"
+          },
+          {
+            "part": "585",
+            "probed_multi_version_sections": 151,
+            "subject": "Renewable Energy on the Outer Continental Shelf",
+            "title": "30"
+          },
+          {
+            "part": "817",
+            "probed_multi_version_sections": 55,
+            "subject": "Permanent Program Performance Standards—Underground Mining Activities",
+            "title": "30"
+          },
+          {
+            "part": "50",
+            "probed_multi_version_sections": 49,
+            "subject": "Terrorism Risk Insurance Program",
+            "title": "31"
+          },
+          {
+            "part": "548",
+            "probed_multi_version_sections": 49,
+            "subject": "Belarus Sanctions Regulations",
+            "title": "31"
+          },
+          {
+            "part": "37",
+            "probed_multi_version_sections": 24,
+            "subject": "Technology Investment Agreements",
+            "title": "32"
+          },
+          {
+            "part": "1900",
+            "probed_multi_version_sections": 20,
+            "subject": "Public Access to CIA Records Under the Freedom of Information Act (FOIA)",
+            "title": "32"
+          },
+          {
+            "part": "127",
+            "probed_multi_version_sections": 65,
+            "subject": "Waterfront Facilities Handling Liquefied Natural Gas and Liquefied Hazardous Gas",
+            "title": "33"
+          },
+          {
+            "part": "147",
+            "probed_multi_version_sections": 62,
+            "subject": "Safety Zones",
+            "title": "33"
+          },
+          {
+            "part": "75",
+            "probed_multi_version_sections": 102,
+            "subject": "Direct Grant Programs",
+            "title": "34"
+          },
+          {
+            "part": "76",
+            "probed_multi_version_sections": 81,
+            "subject": "State-Administered Formula Grant Programs",
+            "title": "34"
+          },
+          {
+            "part": "1280",
+            "probed_multi_version_sections": 34,
+            "subject": "Use of NARA Facilities",
+            "title": "36"
+          },
+          {
+            "part": "228",
+            "probed_multi_version_sections": 17,
+            "subject": "Minerals",
+            "title": "36"
+          },
+          {
+            "part": "2",
+            "probed_multi_version_sections": 82,
+            "subject": "Rules of Practice in Trademark Cases",
+            "title": "37"
+          },
+          {
+            "part": "201",
+            "probed_multi_version_sections": 36,
+            "subject": "General Provisions",
+            "title": "37"
+          },
+          {
+            "part": "20",
+            "probed_multi_version_sections": 71,
+            "subject": "Board of Veterans' Appeals: Rules of Practice",
+            "title": "38"
+          },
+          {
+            "part": "19",
+            "probed_multi_version_sections": 35,
+            "subject": "Board of Veterans' Appeals: Legacy Appeals Regulations",
+            "title": "38"
+          },
+          {
+            "part": "955",
+            "probed_multi_version_sections": 30,
+            "subject": "Rules of Practice Before the Postal Service Board of Contract Appeals",
+            "title": "39"
+          },
+          {
+            "part": "962",
+            "probed_multi_version_sections": 27,
+            "subject": "Administrative False Claims Act",
+            "title": "39"
+          },
+          {
+            "part": "102-118",
+            "probed_multi_version_sections": 90,
+            "subject": "Transportation Payment and Audit",
+            "title": "41"
+          },
+          {
+            "part": "102-37",
+            "probed_multi_version_sections": 87,
+            "subject": "Donation of Surplus Personal Property",
+            "title": "41"
+          },
+          {
+            "part": "405",
+            "probed_multi_version_sections": 133,
+            "subject": "Federal Health Insurance for the Aged and Disabled",
+            "title": "42"
+          },
+          {
+            "part": "30",
+            "probed_multi_version_sections": 54,
+            "subject": "Indian Probate Hearings Procedures",
+            "title": "43"
+          },
+          {
+            "part": "206",
+            "probed_multi_version_sections": 26,
+            "subject": "Federal Disaster Assistance",
+            "title": "44"
+          },
+          {
+            "part": "9",
+            "probed_multi_version_sections": 17,
+            "subject": "Floodplain Management and Protection of Wetlands",
+            "title": "44"
+          },
+          {
+            "part": "2556",
+            "probed_multi_version_sections": 66,
+            "subject": "Volunteers in Service to America",
+            "title": "45"
+          },
+          {
+            "part": "2522",
+            "probed_multi_version_sections": 49,
+            "subject": "AmeriCorps Participants, Programs, and Applicants",
+            "title": "45"
+          },
+          {
+            "part": "56",
+            "probed_multi_version_sections": 102,
+            "subject": "Piping Systems and Appurtenances",
+            "title": "46"
+          },
+          {
+            "part": "111",
+            "probed_multi_version_sections": 99,
+            "subject": "Electric Systems—General Requirements",
+            "title": "46"
+          },
+          {
+            "part": "27",
+            "probed_multi_version_sections": 109,
+            "subject": "Miscellaneous Wireless Communications Services",
+            "title": "47"
+          },
+          {
+            "part": "74",
+            "probed_multi_version_sections": 94,
+            "subject": "Experimental Radio, Auxiliary, Special Broadcast and Other Program Distributional Services",
+            "title": "47"
+          },
+          {
+            "part": "552",
+            "probed_multi_version_sections": 138,
+            "subject": "Solicitation Provisions and Contract Clauses",
+            "title": "48"
+          },
+          {
+            "part": "385",
+            "probed_multi_version_sections": 60,
+            "subject": "Safety Fitness Procedures",
+            "title": "49"
+          },
+          {
+            "part": "195",
+            "probed_multi_version_sections": 55,
+            "subject": "Transportation of Hazardous Liquids by Pipeline",
+            "title": "49"
+          },
+          {
+            "part": "217",
+            "probed_multi_version_sections": 124,
+            "subject": "Regulations Governing the Take of Marine Mammals Incidental to Specified Activities",
+            "title": "50"
+          },
+          {
+            "part": "665",
+            "probed_multi_version_sections": 85,
+            "subject": "Fisheries in the Western Pacific",
+            "title": "50"
+          }
+        ]
+      },
+      "sec_edgar": {
+        "container_count": null,
+        "containers": "RULE",
+        "rule": {
+          "availability_probe": "27 of the first 30 issuers above CIK 33213 carry at least one amendment pair, 135 pairs among those 30, so the quota is reachable well inside the ordered universe of 7856 issuers above the start",
+          "distinct_ciks_at_declaration": 8002,
+          "forms": [
+            "10-K",
+            "10-Q",
+            "20-F",
+            "8-K"
+          ],
+          "order": "ascending by CIK above the start, which is stable and not chosen by us",
+          "pair_construction": "a source document is (CIK, base form, period of report). An amendment pair exists where the same (CIK, base form, period) carries both an original filing and its /A amendment. Both sides are named by accession number from the submissions API -- metadata only.",
+          "sfi3_reservation": "SFI3 declares no SEC roots, so the reservation reserves nothing in this family. That is reported as zero rather than treated as absence: a family the reservation says nothing about would REFUSE, and this one is covered and empty.",
+          "start_after_cik": 33213,
+          "stopping": "walk in CIK order until the family quota is met or the universe ends",
+          "submissions_api": "https://data.sec.gov/submissions/CIK##########.json",
+          "universe": "https://www.sec.gov/files/company_tickers.json",
+          "universe_size_at_declaration": 10388,
+          "why_start_after": "33213 is the highest CIK any predecessor admitted -- V2R1 stopped at 8177, V2R2 at 21344, V2R3 and V2R3R1 at 33213 over the same 300 pairs. Starting strictly above it makes the SEC family container-disjoint from EVERY predecessor by construction, matching the treatment of the other two families, rather than relying on lineage-level exclusion alone. The figure was read from the frozen universe receipts, not from memory."
+        }
+      }
+    },
+    "traversal": {
+      "attrition": "a candidate lost to fetch failure, parse failure or integrity rejection is RECORDED with its reason and never silently replaced. The realised count is whatever survives; the gate is FLOOR.",
+      "container_cap": "per-family, from CONTAINER_CAP -- repository, CFR part, issuer -- so no single container dominates the cohort",
+      "duplicate_rule": "deduplicate by lineage id, keeping the first occurrence in traversal order. A lineage reachable from two containers is admitted once.",
+      "insufficient_cohort": "if fewer than FLOOR pairs are admitted, or fewer than FAMILIES_REQUIRED families clear their FAMILY_FLOOR, the study STOPS as INSUFFICIENT_COHORT. It does not proceed with a power disclaimer beside a verdict, and it does not pad after measuring outcomes.",
+      "order": "families in the order FAMILIES declares; within a family, containers sorted lexicographically by container id; within a container, source documents sorted lexicographically by source id. Deterministic, and reproducible from this file without a fetch.",
+      "oversampling": "construct up to PRIMARY_TARGET candidates in this order, then filter. Over-selection precedes every outcome. Padding after measurement is forbidden without exception.",
+      "pair_construction": "one revision pair per source document: the two most recent DISTINCT revisions by the source's own revision metadata, before-side older. Ties broken by the lexicographically smallest revision identifier. Chosen without reading either revision's content.",
+      "stopping_rule": "stop when the family quota is met or the family's declared roots are exhausted, whichever comes first. NEVER 'keep acquiring until a quarantine case appears', and never 'until the cohort looks balanced' -- a stopping rule that reads the outcome makes selection a function of the result."
+    }
+  },
+  "frame_declaration_digest": "sha256:5d12467f7a3854d31ad393ae2743537ef7504d077e06f54370bb65a6116ead76",
+  "frame_module": "research/tavonel_eval_v2/acquisition/sources_v2r4.py",
+  "frame_module_sha256": "sha256:a3010167a2c0db03bf83a39bd08bcad42d7e60a958856b14af74fc56edf2b15e",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4",
+  "provenance": {
+    "generated_at": "2026-08-26T05:05:07.817721+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml",
+    "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+    "receipt_stem": "identity-change-migration-closure-v2r4-acquisition-frame-freeze",
+    "run_id": "20260826T050507Z-f9091fd6943a",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:4bf3ac0ea1208d704db36c8c1314f2f57b420707facbe269d1e621656f1020db",
+  "rung": 0,
+  "sealed_before_acquisition": true,
+  "why_rung_0_exists": "V2R1 acquires its own material, so the rules deciding what to acquire are sealed before any content exists. V1 and the abandoned V2 drew from an existing cache and had no equivalent obligation."
+}

@@ -1,0 +1,89 @@
+{
+  "estimated_cost_usd": 0.0,
+  "fixture_source": "compiler/channel_cases.py helpers -- synthetic development documents. The 14 SFI2 forensic cases are NOT used: they are development regression fixtures for the identity/change repair and may not certify SFI3",
+  "generated_at": "2026-08-24T23:52:57.495537+00:00",
+  "gpu_seconds": 0,
+  "negative_controls": [
+    {
+      "control": "E8 block absent",
+      "raised": "the executor summary has no block 'E8_rebuild_required_carried_without_execution'; the scorer and the executor disagree about the contract, and E8_no_rebuild_re",
+      "refused": true
+    },
+    {
+      "control": "E9 block absent",
+      "raised": "the executor summary has no block 'E9_detected_change_without_rebuild_request'; the scorer and the executor disagree about the contract, and E9_every_detected_t",
+      "refused": true
+    },
+    {
+      "control": "E8 block missing its violation count",
+      "raised": "block 'E8_rebuild_required_carried_without_execution' has no key 'pairs_with_unexecuted_carry'; E8_no_rebuild_required_artifact_carried_without_execution cannot",
+      "refused": true
+    },
+    {
+      "control": "E9 block missing its power denominator",
+      "raised": "block 'E9_detected_change_without_rebuild_request' has no key 'pairs_that_could_have_exhibited'; E9_every_detected_typed_change_creates_a_rebuild_request cannot",
+      "refused": true
+    },
+    {
+      "control": "E9 block missing gate_power",
+      "raised": "block 'E9_detected_change_without_rebuild_request' has no key 'gate_power'; E9_every_detected_typed_change_creates_a_rebuild_request cannot be read without defa",
+      "refused": true
+    },
+    {
+      "control": "an E8 violation is injected",
+      "endpoint": "E8_no_rebuild_required_artifact_carried_without_execution",
+      "verdict": "FAILED"
+    },
+    {
+      "control": "an E9 silent disappearance is injected",
+      "endpoint": "E9_every_detected_typed_change_creates_a_rebuild_request",
+      "verdict": "FAILED"
+    },
+    {
+      "control": "E8 is observed at only one stage",
+      "endpoint": "E8_no_rebuild_required_artifact_carried_without_execution",
+      "verdict": "FAILED"
+    }
+  ],
+  "negative_controls_passed": 8,
+  "opened_fresh_payload": false,
+  "positive_path": {
+    "E8_gate_power": false,
+    "E8_reading": "gate_power False is expected and is not a defect: the classification loop makes required-to-rebuild and carried-forward disjoint by construction, so this cohort could not have exhibited the failure. E8 vetoes a PASS if violated and credits nothing when clean",
+    "E8_stages_checked": [
+      "post_execution",
+      "pre_activation"
+    ],
+    "E9_gate_power": true,
+    "E9_pairs_that_could_have_exhibited": 2,
+    "endpoints_readable": [
+      "E5_no_confirmed_selective_stale_escape",
+      "E6_exact_selective_vs_clean_equivalence",
+      "E8_no_rebuild_required_artifact_carried_without_execution",
+      "E9_every_detected_typed_change_creates_a_rebuild_request"
+    ],
+    "pairs_judged": 4,
+    "verdicts": {
+      "E5_no_confirmed_selective_stale_escape": "MET",
+      "E6_exact_selective_vs_clean_equivalence": "MET",
+      "E8_no_rebuild_required_artifact_carried_without_execution": "VETO_CLEAR_NO_POSITIVE_CREDIT",
+      "E9_every_detected_typed_change_creates_a_rebuild_request": "MET"
+    }
+  },
+  "provenance": {
+    "generated_at": "2026-08-24T23:52:57.496141+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-execution-rehearsal",
+    "run_id": "20260824T235257Z-9785847f11db",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/rehearse_sfi3_execution.py",
+    "tool_sha256": "sha256:d3fda6451fc1801577d5a14414eb0fc09c68bcbd477569189ca88e0341b941dd"
+  },
+  "receipt_sha256": "sha256:c143302327b5aeaaf304fd5320043623f1cd9c2b059b96e7e3f8389b28aa31cb",
+  "schema": "tavonel.v2.sfi3_execution_rehearsal.v1",
+  "study": "SOURCE_FACT_IR_HELDOUT_V3",
+  "verdict": "PASS"
+}

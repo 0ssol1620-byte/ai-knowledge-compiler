@@ -1,0 +1,546 @@
+{
+  "admission_failure_codes": [
+    "LISTING_FAILED",
+    "PAYLOAD_UNAVAILABLE",
+    "PARSE_FLOOR",
+    "TOO_FEW_REVISIONS",
+    "NO_QUALIFYING_TRANSITION",
+    "AMBIGUOUS_VALUE_FACT",
+    "LINEAGE_NOT_FRESH",
+    "BEYOND_FAMILY_QUOTA",
+    "SOURCE_EXHAUSTION",
+    "OTHER"
+  ],
+  "all_pairs_adjacent": true,
+  "by_family": {
+    "encyclopedia_wikipedia": 1,
+    "git_docs": 2
+  },
+  "cache": {
+    "extractor_digest": "sha256:4b2aa38a662dd5fedb262d451fe15ce50ee84c043b4e9cbfde3c692ec4b2a42b",
+    "is_evidence": false,
+    "note": "a cache accelerates a run and proves nothing about it. Every hit is verified against the payload hash it is filed under, and deleting this directory changes run time, not results.",
+    "payload_hits": 46,
+    "payload_misses": 7006,
+    "rejected_entries": 0,
+    "state_hits": 65,
+    "state_misses": 6986
+  },
+  "complete": true,
+  "consumption_order": {
+    "encyclopedia_wikipedia": [
+      "Category:Cities in Bavaria",
+      "Category:Communes of Corse-du-Sud",
+      "Category:Municipalities of Iceland",
+      "Category:Cities and towns in Hokkaido",
+      "Category:Districts of Vienna",
+      "Category:Municipalities of Ticino",
+      "Category:Cities in Tasmania",
+      "Category:Municipalities of Luxembourg",
+      "Category:Cities in Estonia",
+      "Category:Populated places in Malta"
+    ],
+    "frozen_before_any_history_read": true,
+    "frozen_before_any_value_read": true,
+    "git_docs": [
+      "postgres/postgres",
+      "mysql/mysql-server",
+      "sqlite/sqlite",
+      "python/cpython",
+      "golang/go",
+      "denoland/docs",
+      "pnpm/pnpm.io",
+      "pypa/pip",
+      "astral-sh/uv",
+      "astral-sh/ruff",
+      "pola-rs/polars",
+      "duckdb/duckdb-web",
+      "clickhouse/clickhouse-docs",
+      "apache/flink",
+      "apache/cassandra",
+      "elastic/elasticsearch",
+      "opensearch-project/OpenSearch",
+      "rabbitmq/rabbitmq-website",
+      "nats-io/nats.docs",
+      "temporalio/documentation",
+      "dapr/docs",
+      "knative/docs",
+      "linkerd/website",
+      "kedacore/keda-docs",
+      "crossplane/docs",
+      "backstage/backstage",
+      "grafana/tempo",
+      "grafana/mimir",
+      "thanos-io/thanos",
+      "open-telemetry/opentelemetry-collector",
+      "jaegertracing/documentation",
+      "vectordotdev/vector",
+      "kubernetes-sigs/kind",
+      "k3s-io/docs",
+      "rancher/rancher-docs",
+      "traefik/traefik-helm-chart"
+    ],
+    "regulation_ecfr": [
+      "2-200",
+      "5-550",
+      "7-210",
+      "7-226",
+      "10-20",
+      "10-430",
+      "12-217",
+      "12-1002",
+      "14-39",
+      "14-135",
+      "16-1500",
+      "17-39",
+      "19-351",
+      "21-133",
+      "21-184",
+      "21-610",
+      "23-635",
+      "24-982",
+      "27-5",
+      "29-1926",
+      "30-75",
+      "32-199",
+      "33-154",
+      "36-800",
+      "40-180",
+      "40-268",
+      "40-1065",
+      "42-409",
+      "42-435",
+      "45-147",
+      "46-170",
+      "47-15",
+      "48-31",
+      "49-213",
+      "49-563",
+      "50-648"
+    ],
+    "rule": "declared root order, then lineage order within a root as expanded",
+    "sec_edgar": [
+      "SO",
+      "DUK",
+      "NEE",
+      "AEP",
+      "EXC",
+      "XEL",
+      "WEC",
+      "ED",
+      "PEG",
+      "SRE",
+      "PPL",
+      "CMS",
+      "DTE",
+      "AEE",
+      "CNP",
+      "NI"
+    ]
+  },
+  "diagnostic_count": 14,
+  "diagnostic_transitions": [
+    {
+      "column_label": "Population",
+      "current_value": "71",
+      "current_value_text": "71",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:184ece90799875f1ab7691895ad9ef91",
+      "property_label": "Greece",
+      "superseded_value": "33",
+      "superseded_value_text": "33",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "72",
+      "current_value_text": "72",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:199bed5128d68512e81c98df045fa8b2",
+      "property_label": "Philippines",
+      "superseded_value": "40",
+      "superseded_value_text": "40",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "62",
+      "current_value_text": "62",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:37f978225d79138a0b8cfa721c013a21",
+      "property_label": "Iraq",
+      "superseded_value": "24",
+      "superseded_value_text": "24",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "84",
+      "current_value_text": "84",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:65788ac86781e6818e7c11035ca12c21",
+      "property_label": "Spain",
+      "superseded_value": "27",
+      "superseded_value_text": "27",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "6",
+      "current_value_text": "6",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:6c126954478d2168f15e63f9f9c0aa81",
+      "property_label": "Oceania",
+      "superseded_value": "7",
+      "superseded_value_text": "7",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "222",
+      "current_value_text": "222",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:759c8be63d36330aa11db081c1368133",
+      "property_label": "Latvia",
+      "superseded_value": "96",
+      "superseded_value_text": "96",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "6",
+      "current_value_text": "6",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:7af933c221d45c8c60fe1d54db896a5e",
+      "property_label": "Stateless",
+      "superseded_value": "10",
+      "superseded_value_text": "10",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "123",
+      "current_value_text": "123",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:8a0a1f84594f40f46e91eadb620beb28",
+      "property_label": "Portugal",
+      "superseded_value": "30",
+      "superseded_value_text": "30",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "47",
+      "current_value_text": "47",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:8e523c85c6fd043b513f98bd7863a5da",
+      "property_label": "Bulgaria",
+      "superseded_value": "30",
+      "superseded_value_text": "30",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "370",
+      "current_value_text": "370",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:a86f150beb3f6f4b088e209359188665",
+      "property_label": "Other Europe",
+      "superseded_value": "169",
+      "superseded_value_text": "169",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "148",
+      "current_value_text": "148",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:aba58771a205389b2e6b371cc6ad9646",
+      "property_label": "Other Asia",
+      "superseded_value": "60",
+      "superseded_value_text": "60",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "99",
+      "current_value_text": "99",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:bd75ab099f1780c6da90083401a80c1c",
+      "property_label": "Other Americas",
+      "superseded_value": "31",
+      "superseded_value_text": "31",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "122",
+      "current_value_text": "122",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:cab148e3fde0697a94f76f2ddc157fb5",
+      "property_label": "Africa",
+      "superseded_value": "62",
+      "superseded_value_text": "62",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "142",
+      "current_value_text": "142",
+      "excluded_from": "primary McNemar sample",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:dcfa7cecbb70767f85f7ea62039c2e9b",
+      "property_label": "Croatia",
+      "superseded_value": "49",
+      "superseded_value_text": "49",
+      "value_kind": "numeric"
+    }
+  ],
+  "document_count": 3,
+  "documents_sha256": "sha256:48fdde2eab5b5846a4a45ce5cfd3c25530b0e2509ab61a6d7f7c546e7f0aee7c",
+  "ended_at": "2026-08-23T00:34:28.543991+00:00",
+  "estimated_cost_usd": 0.0,
+  "executor": {
+    "completion_order_is_not_selection_order": "results are collected as they finish and then re-sorted into frozen lineage order before a single admission pass",
+    "mode": "parallel",
+    "revision_prefetch": 3,
+    "roles": "read workers -> one deterministic reducer -> one writer",
+    "scientific_contract_unchanged": "candidate list, quotas, extractor, predicate, cutoff, horizon, revision bound, newest-qualifying rule, one-per-lineage and the 190 floor are the frozen ones",
+    "workers": 16
+  },
+  "family_quota": {
+    "encyclopedia_wikipedia": 52,
+    "git_docs": 104,
+    "regulation_ecfr": 78,
+    "sec_edgar": 26
+  },
+  "family_share": {
+    "encyclopedia_wikipedia": 0.2,
+    "git_docs": 0.4,
+    "regulation_ecfr": 0.3,
+    "sec_edgar": 0.1
+  },
+  "gpu_seconds": 0,
+  "history_bounds": {
+    "acquisition_cutoff": "2026-08-23T00:00:00Z",
+    "basis": "API availability, compute and reproducibility",
+    "explicitly_not_basis": "observed value-fact yield",
+    "horizon_days": 1460,
+    "max_revisions_inspected_per_lineage": 12,
+    "walk_order": "newest first, stopping at the first qualifying transition"
+  },
+  "http": {
+    "api.github.com": {
+      "errors": 1,
+      "limit": 8,
+      "min_interval": 0.05,
+      "requests": 915,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "data.sec.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.12,
+      "requests": 128,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "en.wikipedia.org": {
+      "errors": 0,
+      "limit": 6,
+      "min_interval": 0.05,
+      "requests": 2724,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "raw.githubusercontent.com": {
+      "errors": 20,
+      "limit": 12,
+      "min_interval": 0.05,
+      "requests": 3638,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "www.ecfr.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.2,
+      "requests": 1555,
+      "retry_after_seconds": 0.0,
+      "throttles": 179
+    },
+    "www.sec.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.12,
+      "requests": 512,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    }
+  },
+  "lineage_list": "research/tavonel_eval_v2/artifacts/development/vbc2_lineages.json",
+  "manifest_path": "research/tavonel_eval_v2/artifacts/development/vbc2_cohorts/vbc2_cohort.20260823T003428.543991+0000-191ef2a596ae.json",
+  "manifest_sha256": "sha256:e4458d5e075a021ead9bc0485e6cab8ba1621c5e6b7212be4480f79bf1222780",
+  "one_question_per_lineage": {
+    "distinct_lineages": 3,
+    "holds": true,
+    "primary_questions": 3
+  },
+  "primary_count": 3,
+  "primary_target": 260,
+  "primary_transitions": [
+    {
+      "column_label": "Electrobun",
+      "current_value": "61",
+      "current_value_text": "~61 MB",
+      "heading_path": [
+        "At a glance"
+      ],
+      "lineage_id": "git:denoland/docs:runtime/desktop/comparison.md",
+      "property_id": "prop:305f0518e16e77551e6e2258d30bd17a",
+      "property_label": "**App size**",
+      "slug": "git-denoland-docs-runtime-desktop-comparison-md",
+      "superseded_value": "14",
+      "superseded_value_text": "~14 MB",
+      "value_kind": "numeric"
+    },
+    {
+      "column_label": "BUI CSS Variable",
+      "current_value": "neutral-1",
+      "current_value_text": "`var(--bui-bg-neutral-1)`",
+      "heading_path": [
+        "MUI to BUI Migration Skill",
+        "CSS Variable Reference",
+        "Colors"
+      ],
+      "lineage_id": "git:backstage/backstage:docs/.well-known/skills/mui-to-bui-migration/SKILL.md",
+      "property_id": "prop:0a06c888be8d813d5cf6d828323bfc1e",
+      "property_label": "`background.paper`",
+      "slug": "git-backstage-backstage-docs-well-known-skills-mui-to-bui-migration-skill-md",
+      "superseded_value": "surface-1",
+      "superseded_value_text": "`var(--bui-bg-surface-1)`",
+      "value_kind": "identifier"
+    },
+    {
+      "column_label": "Population",
+      "current_value": "287",
+      "current_value_text": "287",
+      "heading_path": [
+        "Overview",
+        "Demographics"
+      ],
+      "lineage_id": "wikipedia:en:Reykjanesbær",
+      "property_id": "prop:1761430994e81bc41f7516c603017652",
+      "property_label": "Romania",
+      "slug": "wikipedia-en-reykjanesb-r",
+      "superseded_value": "43",
+      "superseded_value_text": "43",
+      "value_kind": "numeric"
+    }
+  ],
+  "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V2.yaml",
+  "protocol_sha256": "sha256:5f3a860138fe1c7a6fd0b7e571723e8224d325037cd7e3ecfabc7e511e4ca8b7",
+  "provenance": {
+    "generated_at": "2026-08-23T00:34:29.540729+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V2.yaml",
+    "protocol_sha256": "sha256:5f3a860138fe1c7a6fd0b7e571723e8224d325037cd7e3ecfabc7e511e4ca8b7",
+    "receipt_stem": "vbc2-cohort",
+    "run_id": "20260823T003429Z-7a819c36887d",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_vbc2_parallel.py",
+    "tool_sha256": "sha256:816c057acd17bf58ea1bac5c4ff3d1aaaf027a260a4c5e7a634e5b49f77c0e02"
+  },
+  "receipt_sha256": "sha256:ea0d5a416cc5a1c393a1236f91af30f886d3c141279b0b31cc97bc99ca56a2c5",
+  "rejected_by_code": {
+    "NO_QUALIFYING_TRANSITION": 1144,
+    "PARSE_FLOOR": 1,
+    "PAYLOAD_UNAVAILABLE": 16,
+    "TOO_FEW_REVISIONS": 1107
+  },
+  "rejected_count": 2268,
+  "schema": "tavonel.v2.vbc2_cohort.v1",
+  "semantic_digest": "sha256:191ef2a596ae309d875187b69ce993a30154354f0cec7479655d49ae5b6d1969",
+  "started_at": "2026-08-22T23:27:41.518106+00:00",
+  "status": "COMPLETE",
+  "walk_coverage": {
+    "budget_seconds": null,
+    "limit": null,
+    "lineages_available": 2271,
+    "lineages_considered": 2271,
+    "lineages_walked": 2271,
+    "note": "a partial walk is a coverage limit, not a source property. An admitted count from one is a diagnostic figure and is never a cohort result.",
+    "stopped_on_wall_clock_budget": false
+  }
+}

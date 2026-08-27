@@ -1,0 +1,248 @@
+# P0c — coverage completeness over the facet model.
+#
+# Frozen before any P0c result exists.
+#
+# Founder ruling, 2026-08-21, on the INC-V2-002 residual: do not add a fourth
+# domain facet. Keep the open facet model and add an invariant that makes the
+# blind spot visible instead of trying to enumerate it away. A new facet covers
+# one more thing and leaves the same open edge behind it; an invariant over
+# attribution covers the edge itself.
+#
+# P0b is NOT amended. Its PASS stands on its own projection and its own gates.
+# Everything here is validated in this protocol and nowhere else.
+
+schema: tavonel.v2.protocol.P0c.v1
+protocol_id: P0c_coverage_completeness
+version: 1
+authored: 2026-08-21
+supersedes: null
+depends_on:
+  P0b_recompilation_mechanics: >-
+    the facet model, the recording view and the observed-sensitivity result this
+    protocol extends. P0b's result is not restated, reinterpreted or re-run.
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  sealed_evidence: {rule: read-only}
+  p0_v1: {rule: read-only}
+  p0b: {rule: read-only, note: not amended by this protocol}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+  receipts:
+    rule: >-
+      written through tools/evidence.py. Run-specific immutable filename,
+      content hash, run id, and the digests of the tool and this protocol. Never
+      overwritten. (INC-V2-005.)
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. The failure this addresses
+# ---------------------------------------------------------------------------
+
+problem:
+  statement: >-
+    An artifact's observed sensitivity is a record of which facets its builder
+    was seen through, not of which inputs it actually consumed. A builder that
+    reads a field no facet projects produces a sensitivity set that looks clean.
+    Its carry-forward decision is then made on a comparison that cannot see the
+    input it read.
+  why_a_fourth_facet_does_not_fix_it: >-
+    A fourth facet moves the edge; it does not close it. The next field nobody
+    thought about is unclassified again, and the model reports the same clean
+    sensitivity it reported before.
+  what_is_added_instead: >-
+    attribution. Every input access is recorded as a (field, facet) pair. An
+    access that cannot be attributed to a known facet is recorded as
+    UNCLASSIFIED, and the artifact that made it cannot prove its coverage.
+
+# ---------------------------------------------------------------------------
+# 2. Projection map. The whole contract.
+# ---------------------------------------------------------------------------
+
+projection_map:
+  text: [LEXICAL, SEMANTIC]
+  explicit_path: [STRUCTURAL]
+  ordinal: [STRUCTURAL]
+  heading: [STRUCTURAL]
+
+derived_fields:
+  text_sha256:
+    derives_from: text
+    covered: transitively, because the field it derives from is projected and
+      cannot move without it moving
+
+absent_means_unclassified: >-
+  A field not named above is unclassified by construction. This is deliberate:
+  the failure being guarded against is a field nobody remembered to think about,
+  and a map that defaults to covered would swallow exactly that case.
+
+structural_projection_change:
+  from_p0b: ["/".join(explicit_path), ordinal]
+  in_p0c: ["/".join(explicit_path), ordinal, heading]
+  reason: >-
+    P0b's recording view attributed a heading read to STRUCTURAL, but P0b's
+    STRUCTURAL projection was not a function of heading. A builder reading the
+    heading was therefore attributed a facet whose comparison could not see the
+    field it read. In the corpora seen so far the heading is the last element of
+    the explicit path, so this is expected to change no outcome — but "happens
+    to be redundant here" is not coverage.
+  expected_effect_on_results: none, and if any is observed it is reported as a
+    finding rather than absorbed
+  p0b_amended: false
+
+# ---------------------------------------------------------------------------
+# 3. The coverage invariant
+# ---------------------------------------------------------------------------
+
+invariant:
+  statement: >-
+    every input access a builder makes is attributed to a known facet, or the
+    artifact cannot prove its coverage and may not be carried forward
+  attributed_access: recorded as (field, facet) with facet in {LEXICAL, SEMANTIC, STRUCTURAL}
+  unattributed_access:
+    recorded_as: UNCLASSIFIED, together with the field name
+    consequence: >-
+      the artifact's coverage is unproven. It may never be carried forward, in
+      this revision or any later one, and its state is reported as
+      UNVERIFIABLE_UNCLASSIFIED_INPUT when it is not rebuilt.
+    not_raised: >-
+      the access returns its value rather than raising. Refusing it would let a
+      builder be written around the check by reaching the raw mapping from
+      elsewhere; recording it keeps the builder honest and the decision visible.
+  read_nothing:
+    treated_as: coverage unproven
+    reason: >-
+      an artifact that read nothing cannot be shown to be insensitive to its
+      inputs. It can only be shown not to have looked, which is the same
+      evidential position.
+
+# ---------------------------------------------------------------------------
+# 4. UNCLASSIFIED_SOURCE_CHANGE
+# ---------------------------------------------------------------------------
+
+unclassified_source_change:
+  fires_when: >-
+    the two revisions carry different source_digest values, the logical unit
+    sets are equal, and every known facet projection is identical across every
+    unit
+  meaning: >-
+    the raw source moved and the model cannot see where. Either the change was
+    outside anything the canonicaliser emits as a unit, or it is in a field no
+    facet projects.
+  response:
+    global_rebuild: FORBIDDEN
+    rationale: >-
+      rebuilding everything on this signal would convert an unknown into a cost
+      and learn nothing. The diagnostic's job is to make the blind spot visible
+      and to scope the conservative response, not to trigger work.
+    proven_coverage_artifacts: may carry forward. Their inputs are fully
+      projected and no projection moved.
+    unproven_coverage_artifacts: conservative rebuild, and reported as
+      coverage-unproven in the receipt
+  reported_even_when_no_artifact_is_affected: true
+
+# ---------------------------------------------------------------------------
+# 5. Controls, in the same execution as the measurement
+# ---------------------------------------------------------------------------
+
+controls:
+  UNCLASSIFIED_ACCESS_PROBE:
+    construction: >-
+      a control document carries an extra unit field, unmapped_probe_field, that
+      the projection map does not name. A coverage-probe artifact reads it.
+    expect: >-
+      sensitivity contains UNCLASSIFIED, coverage_proven is false, the artifact
+      is never in the carried set
+    role: >-
+      without it, a run in which no builder ever reaches an unmapped field reads
+      identically to a run in which the check does not work
+  UNCLASSIFIED_SOURCE_CHANGE_POSITIVE:
+    construction: >-
+      the after revision of a natural pair, byte-identical in every unit, with
+      only source_digest perturbed
+    expect: diagnostic fires; zero proven-coverage artifacts rebuilt; equivalent
+      to the independent full rebuild
+  UNCLASSIFIED_SOURCE_CHANGE_NEGATIVE:
+    construction: a pair whose source_digest and units are both unchanged
+    expect: diagnostic does not fire
+  LEXICAL and STRUCTURAL controls: carried over from the P0b corpus unchanged
+
+# ---------------------------------------------------------------------------
+# 6. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P0C_ATTRIBUTION:
+    predicate: >-
+      every access made by every production builder is attributed to a known
+      facet. Unattributed accesses occur only in the declared control.
+  G_P0C_CARRY_BAN:
+    predicate: >-
+      no artifact whose coverage is unproven appears in any carried-forward set,
+      on any pair
+    on_fail: STOP. This is the invariant itself.
+  G_P0C_PROBE_FIRES:
+    predicate: >-
+      the coverage-probe artifact records UNCLASSIFIED, reports coverage_proven
+      false, and is refused carry-forward
+  G_P0C_DIAGNOSTIC:
+    predicate: >-
+      UNCLASSIFIED_SOURCE_CHANGE fires on every positive control and on no
+      negative control
+  G_P0C_NO_GLOBAL_REBUILD:
+    predicate: >-
+      on every pair where the diagnostic fires, no proven-coverage artifact is
+      rebuilt
+    basis: >-
+      the ruling forbids escalating this diagnostic into a global invalidation
+  G_P0C_EQUIVALENCE:
+    predicate: >-
+      every pair's selective state is artifact-exact against an independent full
+      rebuild, with zero stale artifacts carried
+  G_P0C_ISOLATION:
+    predicate: >-
+      the oracle is a separate process, imports the standard library only, and
+      loads neither akc_cir nor any engine module. Verified by AST scan and by a
+      runtime guard probed in the run.
+  G_P0C_SCALE:
+    predicate: at least the P0b natural corpus, plus every declared control
+  G_P0C_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+# ---------------------------------------------------------------------------
+# 7. Pre-registered predictions
+# ---------------------------------------------------------------------------
+
+predictions:
+  production_builders_are_fully_attributed: >-
+    section, semantic-summary, document-index, structure-map and topic-bucket
+    read only mapped fields, so all five prove coverage
+  heading_projection_changes_nothing: >-
+    adding heading to the STRUCTURAL projection changes no rebuild decision on
+    this corpus, because heading equals the last path element in both families
+  natural_pairs_do_not_fire_the_diagnostic: >-
+    every natural pair in the P0b corpus has at least one moved projection, so
+    the diagnostic is expected to fire only on the constructed positive control.
+    If a natural pair fires it, that is a finding about the canonicaliser and is
+    reported as one.
+
+# ---------------------------------------------------------------------------
+# 8. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    On this corpus, every production builder's input access was attributable to
+    a known facet; artifacts that could not prove coverage were never carried
+    forward; and a source change invisible to every projection was reported
+    rather than absorbed or escalated into a global rebuild.
+  forbidden:
+    - that the projection map is complete. It is a declared map, and this
+      protocol measures attribution against it, not its adequacy.
+    - that no invisible change can now occur. A change inside a projected field
+      that the projection maps to the same value remains invisible, and no
+      invariant here detects it.
+    - any performance or efficiency claim
+    - treating a development-split result as confirmatory
+    - reading this as amending, repairing or re-scoring P0b

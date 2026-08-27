@@ -1,0 +1,1375 @@
+{
+  "allowed_delta": {
+    "accepted_delta_count": 216,
+    "accepted_deltas": [
+      {
+        "category": "administrative",
+        "declared_at": "/authorised_by",
+        "path": "/authorised_by"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/all_or_nothing"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/by_family/git_docs"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/by_family/regulation_ecfr"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/by_family/sec_edgar"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/conditional_on/[0]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/conditional_on/[1]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/conditional_on/[2]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/from_receipt_stem"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/mode"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/network"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/no_selection_function"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/not_one_pair_is_smoke_tested"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/pair_count"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/reacquisition"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[0]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[10]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[11]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[1]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[2]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[3]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[4]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[5]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[6]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[7]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[8]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_identical/[9]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[0]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[1]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[2]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[3]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[4]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[5]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[6]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/what_must_be_zero/[7]"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/carry_forward",
+        "path": "/carry_forward/why_no_refetch"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/cohort/enumerated_by",
+        "path": "/cohort/enumerated_by"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/cohort/floor_is_not_lowered",
+        "path": "/cohort/floor_is_not_lowered"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/cohort/frame",
+        "path": "/cohort/frame"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/cohort/path_taken",
+        "path": "/cohort/path_taken"
+      },
+      {
+        "category": "carry_forward_removed",
+        "declared_at": "/cohort/why_not_a_carry_forward",
+        "path": "/cohort/why_not_a_carry_forward"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/a_v2r3r1_measurement_that_already_exists_refuses",
+        "path": "/companion_attestations/a_v2r3r1_measurement_that_already_exists_refuses"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/a_v2r4_measurement_that_already_exists_refuses",
+        "path": "/companion_attestations/a_v2r4_measurement_that_already_exists_refuses"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/a_count_of_eight_is_not_sufficient"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/binds/[0]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/binds/[1]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/binds/[2]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/binds/[3]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/records/[0]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/records/[1]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/records/[2]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/records/[3]"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/refuses_unless"
+      },
+      {
+        "category": "invariant_domain_guard",
+        "declared_at": "/companion_attestations/rungs/domain_attestation",
+        "path": "/companion_attestations/rungs/domain_attestation/why_the_graded_set_is_executed"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/binds/[1]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/binds/[2]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/binds/[3]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/records/[0]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/records/[1]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/records/[2]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/records/[3]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/records/[4]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/records/[5]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/refuses_unless"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/frame_attestation",
+        "path": "/companion_attestations/rungs/frame_attestation/why_the_reservation_is_bound_here_and_not_later"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/not_identical_and_does_not_claim_to_be"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/records/[4]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/records/[5]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/refuses_unless"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/the_old_checker_is_not_weakened"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/what_the_new_contract_proves"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/protocol_attestation",
+        "path": "/companion_attestations/rungs/protocol_attestation/why_exact_equality_was_the_wrong_contract"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/binds/[3]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/binds/[4]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/binds/[5]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/no_future_receipt_is_read"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/records/[0]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/records/[1]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/records/[2]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/refuses_unless"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/rungs/universe_attestation",
+        "path": "/companion_attestations/rungs/universe_attestation/silence_is_not_disjointness"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/the_gate_must_consume_them",
+        "path": "/companion_attestations/the_gate_must_consume_them"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/companion_attestations/the_scorer_may_not_call_the_base_gate",
+        "path": "/companion_attestations/the_scorer_may_not_call_the_base_gate"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[10]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[11]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[12]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[13]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[3]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[4]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[5]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[6]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[7]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[8]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/every_exclusion_is_named_and_counted/reasons_are_a_closed_set/[9]"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/sfi3_root_reservation/applied_where"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/sfi3_root_reservation/not_a_lineage_subtraction"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/sfi3_root_reservation/proved_independently_where"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/sfi3_root_reservation/read_for"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/sfi3_root_reservation/undecidable_containers_fail_closed"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/sfi3_root_reservation/what"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/v2r3r1_spent_universe/applied_where"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/v2r3r1_spent_universe/proved_independently_where"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/v2r3r1_spent_universe/the_i6_result_is_not_carried_here"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/v2r3r1_spent_universe/what"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/v2r3r1_spent_universe/why_spent_despite_a_partial_instrument"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/vbc1_and_every_declared_confirmatory_burn/applied_where"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/vbc1_and_every_declared_confirmatory_burn/proved_independently_where"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/vbc1_and_every_declared_confirmatory_burn/what"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/exclusion_policy",
+        "path": "/exclusion_policy/vbc1_and_every_declared_confirmatory_burn/why"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run",
+        "path": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run/[11]"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run",
+        "path": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run/[12]"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run",
+        "path": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run/[13]"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run",
+        "path": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run/[14]"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run",
+        "path": "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run/[15]"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/every_stem_is_this_chains_own",
+        "path": "/freeze/every_stem_is_this_chains_own"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/no_selection_for_outcome",
+        "path": "/freeze/no_selection_for_outcome"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/rung_0_is_an_acquisition_frame_again",
+        "path": "/freeze/rung_0_is_an_acquisition_frame_again"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/rung_0_under_exact_carry_forward",
+        "path": "/freeze/rung_0_under_exact_carry_forward"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/acquisition_frame"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/carry_forward_attestation"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/domain_attestation"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/exclusions"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/frame_attestation"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/measurement"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/protocol"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/protocol_attestation"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/scorer_acceptance"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/universe"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/stems",
+        "path": "/freeze/stems/universe_attestation"
+      },
+      {
+        "category": "acceptance_plumbing",
+        "declared_at": "/freeze/the_acceptance_is_bound_by_path_and_digest_not_by_stem",
+        "path": "/freeze/the_acceptance_is_bound_by_path_and_digest_not_by_stem"
+      },
+      {
+        "category": "namespace",
+        "declared_at": "/freeze/tool",
+        "path": "/freeze/tool"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/also_reported",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/also_reported"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/can_come_back_red_because",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/can_come_back_red_because"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/executable_meaning",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/executable_meaning"
+      },
+      {
+        "category": "sfi3_reservation",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them/separation_is_not_weakened"
+      },
+      {
+        "category": "sfi3_reservation",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them/the_chronology"
+      },
+      {
+        "category": "sfi3_reservation",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them/the_principle"
+      },
+      {
+        "category": "sfi3_reservation",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them/the_reverse_direction_is_also_checked"
+      },
+      {
+        "category": "sfi3_reservation",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them/what_is_forbidden"
+      },
+      {
+        "category": "sfi3_reservation",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them/why"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/statement",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/statement"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_the_14_sfi2_forensic_cases"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_the_538_pair_retrospective_cohort"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_v1_universe"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_v2r1_universe"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_v2r2_universe"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_v2r3r1_universe"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations/from_vbc1_burned_material"
+      },
+      {
+        "category": "i8_hygiene",
+        "declared_at": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/violation",
+        "path": "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/violation"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/manifest_contract/acquisition_manifest",
+        "path": "/manifest_contract/acquisition_manifest"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/manifest_contract/acquisition_manifest_is_inherited",
+        "path": "/manifest_contract/acquisition_manifest_is_inherited"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/manifest_contract/acquisition_manifest_is_this_chains_own",
+        "path": "/manifest_contract/acquisition_manifest_is_this_chains_own"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/manifest_contract/enumeration_schema",
+        "path": "/manifest_contract/enumeration_schema"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/manifest_contract/owner_tool",
+        "path": "/manifest_contract/owner_tool"
+      },
+      {
+        "category": "fresh_plumbing",
+        "declared_at": "/manifest_contract/path",
+        "path": "/manifest_contract/path"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/chain_status"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/corpus_status"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/crash"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/disposition_receipt_stem"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/file"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/non_disclosure_receipt_stem"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/old_chain_reexecution_permitted"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/old_frozen_scorer_sha256"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/outcome_disclosure"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/overall_closure_verdict"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/production_failure_established"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/production_verdict"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/protocol_id"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/raw_i6_verdict"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/raw_scientific_verdict"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/reason"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/repaired_scorer_sha256_is_pinned_by"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/rescore_permitted"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/result_receipt_exists"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/scorer_changed_after_rung4"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/the_i6_endpoint_is_valid_evidence"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/the_parent_is_not_edited"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/ungraded_invariants"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/parent_protocol",
+        "path": "/parent_protocol/what_it_is_not"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/a_pass_does_not_absorb_v2r3r1s_i6",
+        "path": "/pass_rule/a_pass_does_not_absorb_v2r3r1s_i6"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/receipt_shape",
+        "path": "/pass_rule/receipt_shape/invariants"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/receipt_shape",
+        "path": "/pass_rule/receipt_shape/overall"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/receipt_shape",
+        "path": "/pass_rule/receipt_shape/pairs_resolved"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/the_scorer_produces_the_verdict",
+        "path": "/pass_rule/the_scorer_produces_the_verdict"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/what_a_fail_means",
+        "path": "/pass_rule/what_a_fail_means"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/pass_rule/what_a_pass_authorises",
+        "path": "/pass_rule/what_a_pass_authorises"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/acceptance_plumbing"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/administrative"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/carry_forward_removed"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/fresh_plumbing"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/full_eight_grading"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/i8_hygiene"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/invariant_domain_guard"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/namespace"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/categories/sfi3_reservation"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/the_pass_rule_lost_nothing"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/what_is_NOT_changed"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_delta",
+        "path": "/protocol_delta/v2r4_hygiene_changes/what_this_block_is"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/protocol_id",
+        "path": "/protocol_id"
+      },
+      {
+        "category": "administrative",
+        "declared_at": "/schema",
+        "path": "/schema"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[0]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[10]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[11]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[12]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[13]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[1]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[2]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[3]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[4]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[5]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[6]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[7]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[8]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/modules/[9]"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/the_domain_is_executed_not_declared"
+      },
+      {
+        "category": "full_eight_grading",
+        "declared_at": "/scorer_acceptance",
+        "path": "/scorer_acceptance/scorer/the_full_eight_scorer_is_not_reinvented"
+      }
+    ],
+    "by_category": {
+      "acceptance_plumbing": 1,
+      "administrative": 39,
+      "carry_forward_removed": 38,
+      "fresh_plumbing": 13,
+      "full_eight_grading": 23,
+      "i8_hygiene": 38,
+      "invariant_domain_guard": 11,
+      "namespace": 47,
+      "sfi3_reservation": 6
+    },
+    "contract_id": "V2R4_ALLOWED_DELTA_V1",
+    "core_breaches": [],
+    "core_paths_preserved": [
+      "/invariants/INVARIANT_1_identity_decisions_unchanged",
+      "/invariants/INVARIANT_2_identity_fold_remains_identity_only",
+      "/invariants/INVARIANT_3_expectation_is_independent",
+      "/invariants/INVARIANT_4_changed_facet_resolves_typed_or_failclosed",
+      "/invariants/INVARIANT_5_never_silently_unchanged",
+      "/invariants/INVARIANT_6_ambiguous_identity_stays_unresolved",
+      "/invariants/INVARIANT_7_only_predeclared_ignores",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/population",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/met_when",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/v1_is_read_for_ids_only",
+      "/effective_identity_disposition",
+      "/quarantine_channel",
+      "/contract_consistency_gate",
+      "/predeclared_ignored_facets",
+      "/expectation_oracle",
+      "/facet_channels",
+      "/unresolved_fail_closed",
+      "/diff_level",
+      "/why_L4",
+      "/root_normalisation",
+      "/cohort_sufficiency",
+      "/vacuity_rule",
+      "/pass_rule/no_threshold",
+      "/pass_rule/a_pass_does_not_retire_v1s_fail",
+      "/supersedes_nothing",
+      "/v1_standing",
+      "/retrospective_evidence",
+      "/legacy_is_not_ground_truth",
+      "/anti_fitting",
+      "/declared_blind_spots",
+      "/manifest_contract/rows_key",
+      "/manifest_contract/required_row_fields",
+      "/manifest_contract/required_side_fields",
+      "/manifest_contract/accepted_lineage_id_aliases",
+      "/manifest_contract/accepted_row_key_aliases",
+      "/manifest_contract/recorded_raw_digest_key",
+      "/manifest_contract/recorded_canonical_digest_key",
+      "/manifest_contract/canonical_digest_convention_key",
+      "/freeze/no_post_freeze_change"
+    ],
+    "declarations_used": [
+      "/authorised_by",
+      "/carry_forward",
+      "/cohort/enumerated_by",
+      "/cohort/floor_is_not_lowered",
+      "/cohort/frame",
+      "/cohort/path_taken",
+      "/cohort/why_not_a_carry_forward",
+      "/companion_attestations/a_v2r3r1_measurement_that_already_exists_refuses",
+      "/companion_attestations/a_v2r4_measurement_that_already_exists_refuses",
+      "/companion_attestations/rungs/domain_attestation",
+      "/companion_attestations/rungs/frame_attestation",
+      "/companion_attestations/rungs/protocol_attestation",
+      "/companion_attestations/rungs/universe_attestation",
+      "/companion_attestations/the_gate_must_consume_them",
+      "/companion_attestations/the_scorer_may_not_call_the_base_gate",
+      "/exclusion_policy",
+      "/execution/preconditions_that_must_all_be_PROVEN_before_the_single_run",
+      "/freeze/every_stem_is_this_chains_own",
+      "/freeze/no_selection_for_outcome",
+      "/freeze/rung_0_is_an_acquisition_frame_again",
+      "/freeze/rung_0_under_exact_carry_forward",
+      "/freeze/stems",
+      "/freeze/the_acceptance_is_bound_by_path_and_digest_not_by_stem",
+      "/freeze/tool",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/also_reported",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/can_come_back_red_because",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/executable_meaning",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/sfi3_is_deliberately_not_one_of_them",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/statement",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/the_declared_populations",
+      "/invariants/INVARIANT_8_sfi2_cases_cannot_certify/violation",
+      "/manifest_contract/acquisition_manifest",
+      "/manifest_contract/acquisition_manifest_is_inherited",
+      "/manifest_contract/acquisition_manifest_is_this_chains_own",
+      "/manifest_contract/enumeration_schema",
+      "/manifest_contract/owner_tool",
+      "/manifest_contract/path",
+      "/parent_protocol",
+      "/pass_rule/a_pass_does_not_absorb_v2r3r1s_i6",
+      "/pass_rule/receipt_shape",
+      "/pass_rule/the_scorer_produces_the_verdict",
+      "/pass_rule/what_a_fail_means",
+      "/pass_rule/what_a_pass_authorises",
+      "/protocol_delta",
+      "/protocol_id",
+      "/schema",
+      "/scorer_acceptance"
+    ],
+    "held": true,
+    "no_wildcards": "every declaration is an exact path. There is no /invariants/*, no /cohort/*, no /execution/*, and `_require_no_delta_reaches_the_core` proves at import that none overlaps the core.",
+    "not_identical_and_does_not_claim_to_be": "V2R3 -> V2R3R1 carried the SAME UNSCORED 300 pairs forward, so exact scientific equality was both true and required there. V2R4 is a fresh cohort under a fresh protocol id with full-eight grading, so exact equality is neither. `v2r3r1_semantics.py` is preserved untouched as evidence for the carry-forward decision it was built for.",
+    "parent": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml",
+    "pass_rule": {
+      "added": [
+        "zero violations",
+        "DECLARED_INVARIANT_SET == GRADED_INVARIANT_SET == RECEIPT_INVARIANT_SET, compared as SET EQUALITY on full identifiers in both directions. Not a count: eight wrong names must fail",
+        "every declared disjointness population is proved present and holding, compared as set equality against the declared population list"
+      ],
+      "clauses_after": 11,
+      "clauses_before": 8,
+      "compared_as": "a set of clause texts, never positionally",
+      "nothing_removed": true,
+      "renamed": [
+        {
+          "from": "all eight invariants MET",
+          "to": "every declared invariant's verdict is MET",
+          "why": "the count becomes the DECLARED SET, which the domain-equality clause makes precise. Strictly stronger: 'all eight' is satisfied by eight wrong names, 'every declared' is not."
+        }
+      ]
+    },
+    "schema": "tavonel.v2.v2r4_allowed_delta.v1",
+    "successor": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml",
+    "verdict": "SCIENTIFIC_CORE_PRESERVED_WITH_PREDECLARED_HYGIENE_DELTAS"
+  },
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4-protocol-freeze--20260826T050542Z-6bfd41e1af76.json",
+    "receipt_body_sha256": "sha256:b47d479e67e9abbb72d1ed735c7d2563a5de39560f601c9a9c566d7f6a008fcf",
+    "receipt_file_sha256": "sha256:9ff9f138b34808fe7a7c2f753876466e7d19dc74d1010c45a3717eb0bfd2ab46",
+    "run_id": "20260826T050542Z-6bfd41e1af76",
+    "stem": "identity-change-migration-closure-v2r4-protocol-freeze"
+  },
+  "contract_consistency": {
+    "checked_by": [
+      "tools/v2r3_state_table.py::check_contract",
+      "tests/test_v2r3_contract_consistency.py"
+    ],
+    "prose_matches_executable_rows": true,
+    "proved": true,
+    "reachable_rows": 8,
+    "required_intersect_forbidden_empty_for_every_row": true,
+    "rows": [
+      {
+        "effective": "EFFECTIVE_MATCHED",
+        "forbidden": [
+          "unit_added",
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [],
+        "resolver_state": "MATCHED",
+        "rule": "E",
+        "side": "after",
+        "silence_allowed": true
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "MATCHED",
+        "rule": "D",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_NEW",
+        "forbidden": [
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [
+          "unit_added"
+        ],
+        "resolver_state": "NEW",
+        "rule": "C",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "NEW",
+        "rule": "B",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": false,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "AMBIGUOUS",
+        "rule": "A",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "AMBIGUOUS",
+        "rule": "A",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_REMOVED",
+        "forbidden": [
+          "modified_claim",
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [
+          "unit_removed"
+        ],
+        "resolver_state": "UNCONSUMED",
+        "rule": "G",
+        "side": "before_unconsumed",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_removed",
+          "modified_claim"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "UNCONSUMED",
+        "rule": "F",
+        "side": "before_unconsumed",
+        "silence_allowed": false
+      }
+    ],
+    "state": "SATISFIABLE"
+  },
+  "not_identical_and_does_not_claim_to_be": "an earlier draft of this rung claimed the V2R3R1 -> V2R4 scientific projection is IDENTICAL and bound v2r3r1_semantics.py to prove it. That claim was FALSE: the checker refuses on this pair, and the first difference it reports is /cohort/floor_is_not_lowered -- a field this protocol added precisely to say the floor did NOT move.",
+  "pinned_files": {
+    "docs/COMPAT_IDENTITY_UNCERTAINTY_QUARANTINE.md": "sha256:655fd3d85eebec5209a2489290b34a8ca9d6c4cff8f1ac39e8504e4447f1b101",
+    "protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml": "sha256:1be970071924fcaea5d2ffbe05e30fd40327408bc2ac3a69bcb2131a839b4f1f",
+    "protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+    "tests/test_v2r3_contract_consistency.py": "sha256:f5775f7c10843496ec82ee300f8d9b9788ea3113576b7f16b323e4c81470b7f9",
+    "tools/v2r3_effective_identity.py": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+    "tools/v2r3_quarantine_oracle.py": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+    "tools/v2r3_state_table.py": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+    "tools/v2r4_semantics_delta.py": "sha256:0240e973370aa1c42c79874db33ffbcbad3b0bbe5a609c4ece4f11e3c180115e"
+  },
+  "provenance": {
+    "generated_at": "2026-08-26T05:05:43.760848+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml",
+    "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+    "receipt_stem": "identity-change-migration-closure-v2r4-protocol-attestation",
+    "run_id": "20260826T050543Z-53b2dc7abad8",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:a4d149854a93a6a7286368b73254afaec6f60162db52a1122f433b7bce4a5b38",
+  "refuses_unless": "the state table is SATISFIABLE AND the consistency suite passes AND v2r4_semantics_delta returns SCIENTIFIC_CORE_PRESERVED_WITH_PREDECLARED_HYGIENE_DELTAS",
+  "rung": "1a",
+  "rung_name": "protocol_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r4_attestation.v1"
+}

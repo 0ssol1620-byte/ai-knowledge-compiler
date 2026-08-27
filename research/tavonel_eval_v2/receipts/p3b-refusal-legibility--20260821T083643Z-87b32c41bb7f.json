@@ -1,0 +1,996 @@
+{
+  "activation_log": [
+    "state-000",
+    "c-healthy",
+    "c-src-missing-revision",
+    "c-race-1",
+    "c-repaired",
+    "c-stream-0",
+    "c-stream-1",
+    "c-stream-2",
+    "c-stream-3",
+    "c-stream-4",
+    "c-stream-5",
+    "c-stream-6",
+    "c-stream-7",
+    "c-stream-8",
+    "c-stream-9",
+    "c-stream-10",
+    "c-stream-11"
+  ],
+  "assertion_failures": [],
+  "candidate_artifact_count": 154,
+  "candidate_source": "research/tavonel_eval_v2/artifacts/development/p0c/selective/git-000-prometheus-configuration.json",
+  "candidate_source_sha256": "sha256:60753366d42b2355983dc31fae67b8f55e363e3f9f514855d14a047f1ebc2ea9",
+  "ended_at": "2026-08-21T08:36:43.583165+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_P3B_ASSERTIONS": {
+      "failures": [],
+      "passed": true,
+      "refusals_without_evidence": []
+    },
+    "G_P3B_COST": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_P3B_COVERAGE": {
+      "declared": 19,
+      "executed": 19,
+      "not_implemented": [],
+      "passed": true
+    },
+    "G_P3B_EXPECTATIONS": {
+      "mismatched": [],
+      "passed": true
+    },
+    "G_P3B_ORDER_INVARIANCE": {
+      "candidates_tested": 11,
+      "passed": true,
+      "permutations_each": 120
+    },
+    "G_P3B_POSITIVE_CONTROL": {
+      "break_control_admitted": false,
+      "healthy_admitted": true,
+      "passed": true
+    },
+    "G_P3B_STRUCTURAL_ENFORCEMENT": {
+      "exception": "RefusalWithoutEvidence",
+      "exempt_predicate_constructs": true,
+      "passed": true,
+      "raised": true
+    }
+  },
+  "gpu_seconds": 0,
+  "order_invariance": [
+    {
+      "candidate": "healthy",
+      "decision": [
+        true
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": []
+    },
+    {
+      "candidate": "SRC_PARTIAL_FETCH",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "source_complete"
+      ]
+    },
+    {
+      "candidate": "SRC_EMPTY_LISTING",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "source_complete"
+      ]
+    },
+    {
+      "candidate": "SRC_MISSING_REVISION",
+      "decision": [
+        true
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": []
+    },
+    {
+      "candidate": "ID_MISSING_CRITICAL_SIGNAL",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "sensitivity_recorded"
+      ]
+    },
+    {
+      "candidate": "ID_FINGERPRINT_ABSENT",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "fingerprint_present"
+      ]
+    },
+    {
+      "candidate": "BUILD_ARTIFACT_CRASH",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "BUILD_NONDETERMINISTIC_OUTPUT",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "RCPT_MISSING",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "RCPT_WRONG_DIGEST",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "receipt_matches_output"
+      ]
+    },
+    {
+      "candidate": "PERM_UNAUTHORISED_UNIT_REACHABLE",
+      "decision": [
+        false
+      ],
+      "decision_invariant": true,
+      "permutations": 120,
+      "refusing_predicates_seen": [
+        "permission_respected"
+      ]
+    }
+  ],
+  "p3_v1_subject_untouched": {
+    "module": "research/tavonel_eval_v2/activation/knowledge_store.py",
+    "note": "P3 v1 stands at FAIL; nothing here amends or re-scores it",
+    "sha256": "sha256:1b36ae9ac5aee65608e6b3f2b139fe9bec76778e464bcecc680a8cc8a2d7b1c0"
+  },
+  "protocol": "P3b_refusal_legibility",
+  "provenance": {
+    "generated_at": "2026-08-21T08:36:43.586817+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/P3b_refusal_legibility.yaml",
+    "protocol_sha256": "sha256:77de9cbef6a041841bf115eb81844955e991193fd5c3fb0a3de8e16932ed4f7c",
+    "receipt_stem": "p3b-refusal-legibility",
+    "run_id": "20260821T083643Z-87b32c41bb7f",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_p3b.py",
+    "tool_sha256": "sha256:65b87eeaaa68f3cbcd7484cb0ca17ffb671da0bdac99db1912202ffa37dc0dbc"
+  },
+  "receipt_sha256": "sha256:6bbd10203456f8628c85c6c753d44c7f3f6afb63a564be0271ff4308ba9b6f71",
+  "refusal_log": [
+    {
+      "active_reference_at_refusal": "c-healthy",
+      "candidate_id": "c-src-partial",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-src-partial",
+      "evaluation_id": "eval:88867931b6ed3152",
+      "evidence_refs": [
+        "input:u:0143973f45ce4a3016d6cf24"
+      ],
+      "predicate": "source_complete",
+      "raw_message_recorded": false,
+      "reason_code": "DECLARED_INPUT_ABSENT",
+      "state": "FAIL",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-healthy",
+      "candidate_id": "c-src-empty",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-src-empty",
+      "evaluation_id": "eval:4064c9fc743ffb5d",
+      "evidence_refs": [
+        "input:u:0143973f45ce4a3016d6cf24",
+        "input:u:0707140aac8997063330de12",
+        "input:u:10f7f1f5b417592fabccfffe",
+        "input:u:14ca11d06eae95c6b1e47997",
+        "input:u:1f2142ca870a31147f59e203",
+        "input:u:21354cf747f9f561bfc893bc",
+        "input:u:25001fbc9a3086960ffc876e",
+        "input:u:26d5c7b4ef35849eb7ce62dc"
+      ],
+      "predicate": "source_complete",
+      "raw_message_recorded": false,
+      "reason_code": "DECLARED_INPUT_ABSENT",
+      "state": "FAIL",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-id-no-sensitivity",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-id-no-sensitivity",
+      "evaluation_id": "eval:a84f588959077527",
+      "evidence_refs": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "predicate": "sensitivity_recorded",
+      "raw_message_recorded": false,
+      "reason_code": "NO_RECORDED_SENSITIVITY",
+      "state": "UNVERIFIABLE",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-id-no-fingerprint",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-id-no-fingerprint",
+      "evaluation_id": "eval:fc036ee379143d8c",
+      "evidence_refs": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "predicate": "fingerprint_present",
+      "raw_message_recorded": false,
+      "reason_code": "NO_INPUT_FINGERPRINT",
+      "state": "UNVERIFIABLE",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-build-crash",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-build-crash",
+      "evaluation_id": "eval:7d7aa3fd0242d6c5",
+      "evidence_refs": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "predicate": "receipt_matches_output",
+      "raw_message_recorded": false,
+      "reason_code": "NO_BUILD_RECEIPT",
+      "state": "UNVERIFIABLE",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-build-nondeterministic",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-build-nondeterministic",
+      "evaluation_id": "eval:d4a2b7443ae8f9e9",
+      "evidence_refs": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "predicate": "receipt_matches_output",
+      "raw_message_recorded": false,
+      "reason_code": "RECEIPT_DIGEST_MISMATCH",
+      "state": "FAIL",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-rcpt-missing",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-rcpt-missing",
+      "evaluation_id": "eval:7198c8e520285e60",
+      "evidence_refs": [
+        "artifact:document-index:2918cf756c84fa23",
+        "artifact:section:u:0143973f45ce4a3016d6cf24",
+        "artifact:section:u:0707140aac8997063330de12",
+        "artifact:section:u:10f7f1f5b417592fabccfffe",
+        "artifact:section:u:14ca11d06eae95c6b1e47997",
+        "artifact:section:u:1f2142ca870a31147f59e203",
+        "artifact:section:u:21354cf747f9f561bfc893bc",
+        "artifact:section:u:25001fbc9a3086960ffc876e"
+      ],
+      "predicate": "receipt_matches_output",
+      "raw_message_recorded": false,
+      "reason_code": "NO_BUILD_RECEIPT",
+      "state": "UNVERIFIABLE",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-rcpt-wrong",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-rcpt-wrong",
+      "evaluation_id": "eval:9ade22d2c8db5045",
+      "evidence_refs": [
+        "artifact:section:u:0143973f45ce4a3016d6cf24"
+      ],
+      "predicate": "receipt_matches_output",
+      "raw_message_recorded": false,
+      "reason_code": "RECEIPT_DIGEST_MISMATCH",
+      "state": "FAIL",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-perm-leak",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-perm-leak",
+      "evaluation_id": "eval:db04b4f859ccbcfe",
+      "evidence_refs": [
+        "unit:u:7c4ad9d7dc20d57232a66bb6"
+      ],
+      "predicate": "permission_respected",
+      "raw_message_recorded": false,
+      "reason_code": "UNAUTHORISED_UNIT_REACHABLE",
+      "state": "FAIL",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-predicate-raises",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-predicate-raises",
+      "evaluation_id": "eval:b0c4d55a9e743908",
+      "evidence_refs": [
+        "artifact:document-index:2918cf756c84fa23",
+        "artifact:section:u:0143973f45ce4a3016d6cf24",
+        "artifact:section:u:0707140aac8997063330de12",
+        "artifact:section:u:10f7f1f5b417592fabccfffe",
+        "artifact:section:u:14ca11d06eae95c6b1e47997",
+        "artifact:section:u:1f2142ca870a31147f59e203",
+        "artifact:section:u:21354cf747f9f561bfc893bc",
+        "artifact:section:u:25001fbc9a3086960ffc876e",
+        "artifact:+146 more of 154"
+      ],
+      "predicate": "raising",
+      "raw_message_recorded": false,
+      "reason_code": "PREDICATE_RAISED:RuntimeError",
+      "state": "UNVERIFIABLE",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-raise-empty-domain",
+      "candidate_state_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "candidate_state_id": "c-raise-empty-domain",
+      "evaluation_id": "eval:a2322581ac97ffe7",
+      "evidence_refs": [
+        "candidate-state:c-raise-empty-domain (declared_inputs is empty)"
+      ],
+      "predicate": "raising",
+      "raw_message_recorded": false,
+      "reason_code": "PREDICATE_RAISED:RuntimeError",
+      "state": "UNVERIFIABLE",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-src-missing-revision",
+      "candidate_id": "c-act-stale",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-act-stale",
+      "evaluation_id": "eval:e1dc895dc3640756",
+      "evidence_refs": [
+        "c-src-missing-revision"
+      ],
+      "predicate": "pointer_compare_and_swap",
+      "raw_message_recorded": false,
+      "reason_code": "ACTIVE_REFERENCE_MOVED",
+      "state": "FAIL",
+      "traceback_recorded": false
+    },
+    {
+      "active_reference_at_refusal": "c-race-1",
+      "candidate_id": "c-race-0",
+      "candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "candidate_state_id": "c-race-0",
+      "evaluation_id": "eval:c4f90cd9a1893269",
+      "evidence_refs": [
+        "c-race-1"
+      ],
+      "predicate": "pointer_compare_and_swap",
+      "raw_message_recorded": false,
+      "reason_code": "ACTIVE_REFERENCE_MOVED",
+      "state": "FAIL",
+      "traceback_recorded": false
+    }
+  ],
+  "scenarios": [
+    {
+      "active_reference_after": "c-healthy",
+      "active_reference_before": "state-000",
+      "active_state_readable": true,
+      "actual_admitted": true,
+      "actual_predicate": null,
+      "actual_state": "PASS",
+      "category": "control",
+      "expected_admitted": true,
+      "expected_predicate": null,
+      "expected_state": null,
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "PASS",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "scenario": "CTRL_HEALTHY_CANDIDATE"
+    },
+    {
+      "actual_admitted": false,
+      "category": "control",
+      "detail": "admission evaluated against a result set with one predicate removed",
+      "expected_admitted": false,
+      "matched_expectation": true,
+      "scenario": "CTRL_BREAK_THE_GATE"
+    },
+    {
+      "active_reference_after": "c-healthy",
+      "active_reference_before": "c-healthy",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "source_complete",
+      "actual_state": "FAIL",
+      "category": "source",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "source_complete",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "FAIL"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:88867931b6ed3152",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "input:u:0143973f45ce4a3016d6cf24"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "DECLARED_INPUT_ABSENT",
+      "refusal_required_fields_present": true,
+      "scenario": "SRC_PARTIAL_FETCH"
+    },
+    {
+      "active_reference_after": "c-healthy",
+      "active_reference_before": "c-healthy",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "source_complete",
+      "actual_state": "FAIL",
+      "category": "source",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "source_complete",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "FAIL"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:4064c9fc743ffb5d",
+      "refusal_evidence_ref_count": 8,
+      "refusal_evidence_sample": [
+        "input:u:0143973f45ce4a3016d6cf24",
+        "input:u:0707140aac8997063330de12",
+        "input:u:10f7f1f5b417592fabccfffe"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "DECLARED_INPUT_ABSENT",
+      "refusal_required_fields_present": true,
+      "scenario": "SRC_EMPTY_LISTING"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-healthy",
+      "active_state_readable": true,
+      "actual_admitted": true,
+      "actual_predicate": null,
+      "actual_state": "PASS",
+      "category": "source",
+      "expected_admitted": true,
+      "expected_predicate": "sensitivity_recorded",
+      "expected_state": "PASS",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "PASS",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "scenario": "SRC_MISSING_REVISION"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "sensitivity_recorded",
+      "actual_state": "UNVERIFIABLE",
+      "category": "identity",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "sensitivity_recorded",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "NOT_REACHED",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "UNVERIFIABLE",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:a84f588959077527",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "NO_RECORDED_SENSITIVITY",
+      "refusal_required_fields_present": true,
+      "scenario": "ID_MISSING_CRITICAL_SIGNAL"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "fingerprint_present",
+      "actual_state": "UNVERIFIABLE",
+      "category": "identity",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "fingerprint_present",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "UNVERIFIABLE",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:fc036ee379143d8c",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "NO_INPUT_FINGERPRINT",
+      "refusal_required_fields_present": true,
+      "scenario": "ID_FINGERPRINT_ABSENT"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "UNVERIFIABLE",
+      "category": "build",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "UNVERIFIABLE",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:7d7aa3fd0242d6c5",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "NO_BUILD_RECEIPT",
+      "refusal_required_fields_present": true,
+      "scenario": "BUILD_ARTIFACT_CRASH"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "FAIL",
+      "category": "build",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "FAIL",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:d4a2b7443ae8f9e9",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "artifact:document-index:2918cf756c84fa23"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "RECEIPT_DIGEST_MISMATCH",
+      "refusal_required_fields_present": true,
+      "scenario": "BUILD_NONDETERMINISTIC_OUTPUT"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "UNVERIFIABLE",
+      "category": "receipt",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "UNVERIFIABLE",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:7198c8e520285e60",
+      "refusal_evidence_ref_count": 8,
+      "refusal_evidence_sample": [
+        "artifact:document-index:2918cf756c84fa23",
+        "artifact:section:u:0143973f45ce4a3016d6cf24",
+        "artifact:section:u:0707140aac8997063330de12"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "NO_BUILD_RECEIPT",
+      "refusal_required_fields_present": true,
+      "scenario": "RCPT_MISSING"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "receipt_matches_output",
+      "actual_state": "FAIL",
+      "category": "receipt",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "receipt_matches_output",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "NOT_REACHED",
+        "receipt_matches_output": "FAIL",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:9ade22d2c8db5045",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "artifact:section:u:0143973f45ce4a3016d6cf24"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "RECEIPT_DIGEST_MISMATCH",
+      "refusal_required_fields_present": true,
+      "scenario": "RCPT_WRONG_DIGEST"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "permission_respected",
+      "actual_state": "FAIL",
+      "category": "permission",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "permission_respected",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "FAIL",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:db04b4f859ccbcfe",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "unit:u:7c4ad9d7dc20d57232a66bb6"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "UNAUTHORISED_UNIT_REACHABLE",
+      "refusal_required_fields_present": true,
+      "scenario": "PERM_UNAUTHORISED_UNIT_REACHABLE"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "raising",
+      "actual_state": "UNVERIFIABLE",
+      "category": "build",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "raising",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "NOT_REACHED",
+        "permission_respected": "NOT_REACHED",
+        "raising": "UNVERIFIABLE",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "NOT_REACHED",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:b0c4d55a9e743908",
+      "refusal_evidence_ref_count": 9,
+      "refusal_evidence_sample": [
+        "artifact:document-index:2918cf756c84fa23",
+        "artifact:section:u:0143973f45ce4a3016d6cf24",
+        "artifact:section:u:0707140aac8997063330de12"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "PREDICATE_RAISED:RuntimeError",
+      "refusal_required_fields_present": true,
+      "scenario": "BUILD_PREDICATE_RAISES"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "raising",
+      "actual_state": "UNVERIFIABLE",
+      "category": "build",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "raising",
+      "expected_state": "UNVERIFIABLE",
+      "gate_states": {
+        "fingerprint_present": "NOT_REACHED",
+        "permission_respected": "NOT_REACHED",
+        "raising": "UNVERIFIABLE",
+        "receipt_matches_output": "NOT_REACHED",
+        "sensitivity_recorded": "NOT_REACHED",
+        "source_complete": "NOT_REACHED"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "refusal_evaluation_id": "eval:a2322581ac97ffe7",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "candidate-state:c-raise-empty-domain (declared_inputs is empty)"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "PREDICATE_RAISED:RuntimeError",
+      "refusal_required_fields_present": true,
+      "scenario": "RAISE_ON_EMPTY_DOMAIN"
+    },
+    {
+      "actual_admitted": false,
+      "all_contracts_satisfied": true,
+      "category": "build",
+      "detail_rows": [
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "first",
+          "predicate": "sensitivity_recorded",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "sensitivity_recorded_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "first",
+          "predicate": "fingerprint_present",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "fingerprint_present_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "first",
+          "predicate": "receipt_matches_output",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "receipt_matches_output_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "first",
+          "predicate": "source_complete",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "source_complete_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "first",
+          "predicate": "permission_respected",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "permission_respected_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "last",
+          "predicate": "sensitivity_recorded",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "sensitivity_recorded_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "last",
+          "predicate": "fingerprint_present",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "fingerprint_present_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "last",
+          "predicate": "receipt_matches_output",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "receipt_matches_output_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "last",
+          "predicate": "source_complete",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "source_complete_raising"
+        },
+        {
+          "admitted": false,
+          "contract_satisfied": true,
+          "evidence_ref_count": 9,
+          "position": "last",
+          "predicate": "permission_respected",
+          "reason_code": "PREDICATE_RAISED:RuntimeError",
+          "refusing_predicate": "permission_respected_raising"
+        }
+      ],
+      "distinct_reason_codes": [
+        "PREDICATE_RAISED:RuntimeError"
+      ],
+      "expected_admitted": false,
+      "matched_expectation": true,
+      "positions_tested": 10,
+      "scenario": "RAISE_IN_EVERY_POSITION"
+    },
+    {
+      "active_reference_after": "c-src-missing-revision",
+      "active_reference_before": "c-src-missing-revision",
+      "active_state_readable": true,
+      "actual_admitted": false,
+      "actual_predicate": "pointer_compare_and_swap",
+      "actual_state": "FAIL",
+      "category": "activation",
+      "exception_text_leaked": [],
+      "expected_admitted": false,
+      "expected_predicate": "pointer_compare_and_swap",
+      "expected_state": "FAIL",
+      "gate_states": {
+        "fingerprint_present": "PASS",
+        "permission_respected": "PASS",
+        "receipt_matches_output": "PASS",
+        "sensitivity_recorded": "PASS",
+        "source_complete": "PASS"
+      },
+      "matched_expectation": true,
+      "refusal_candidate_state_digest": "sha256:397896053c638d535e36eeb41277c42e39ffd83e3557b9cd37c2013396cc1d12",
+      "refusal_evaluation_id": "eval:e1dc895dc3640756",
+      "refusal_evidence_ref_count": 1,
+      "refusal_evidence_sample": [
+        "c-src-missing-revision"
+      ],
+      "refusal_missing_fields": [],
+      "refusal_reason_code": "ACTIVE_REFERENCE_MOVED",
+      "refusal_required_fields_present": true,
+      "scenario": "ACT_CAS_STALE_EXPECTATION"
+    },
+    {
+      "active_reference_after": "c-race-1",
+      "actual_admitted": false,
+      "actual_predicate": "pointer_compare_and_swap",
+      "actual_state": "FAIL",
+      "admitted_count": 1,
+      "category": "activation",
+      "expected_admitted": false,
+      "expected_predicate": "pointer_compare_and_swap",
+      "expected_state": "FAIL",
+      "matched_expectation": true,
+      "scenario": "ACT_CONCURRENT_CANDIDATE"
+    },
+    {
+      "actual_admitted": true,
+      "category": "receipt",
+      "earlier_refusals_survived_verbatim": true,
+      "expected_admitted": true,
+      "matched_expectation": true,
+      "refusal_count": 13,
+      "scenario": "RCPT_OVERWRITTEN_AFTER_REFUSAL"
+    },
+    {
+      "category": "activation",
+      "matched_expectation": true,
+      "mixed_state_observations": 0,
+      "reader_threads": 6,
+      "reads": 3000,
+      "scenario": "ACT_CONCURRENT_READERS"
+    }
+  ],
+  "scenarios_sha256": "sha256:d45b85ae6633efa79c7cf93fb65c156fe6b63697a291102ba8a3a72308fe1ac1",
+  "schema": "tavonel.v2.p3b_refusal_legibility.v1",
+  "split": "development",
+  "started_at": "2026-08-21T08:36:43.306528+00:00",
+  "subject_module": "research/tavonel_eval_v2/activation/knowledge_store_p3b.py",
+  "subject_sha256": "sha256:5e39003e654bdecff6c4a90ccda84f1fc300c8ccee16debfa83f04827654928f",
+  "verdict": "PASS"
+}

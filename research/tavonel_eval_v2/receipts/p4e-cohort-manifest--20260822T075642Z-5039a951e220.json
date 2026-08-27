@@ -1,0 +1,69 @@
+{
+  "dart": {
+    "api_message": "인증키가 누락되었습니다.",
+    "api_status": "100",
+    "credential_env": "DART_API_KEY / crtfc_key",
+    "documents_acquired": 0,
+    "endpoint": "https://opendart.fss.or.kr/api/list.json",
+    "family": "dart_kr",
+    "note": "declared so its absence is recorded rather than inferred from the family list. A missing credential is a founder decision.",
+    "resolution": "founder decision: a DART certification key is a missing secret",
+    "state": "BLOCKED_MISSING_CREDENTIAL"
+  },
+  "document_count": 57,
+  "documents_sha256": "sha256:d28e87091f21838d43a43af29fb63eb6f35b97e7f74fd62c47db8923bbb7e8be",
+  "estimated_cost_usd": 0.0,
+  "excluded_count": 763,
+  "family_counts": {
+    "encyclopedia_wikipedia": 22,
+    "git_docs": 7,
+    "regulation_ecfr": 24,
+    "sec_edgar": 4
+  },
+  "frozen_before_any_retrieval_result": true,
+  "gpu_seconds": 0,
+  "manifest_path": "research/tavonel_eval_v2/artifacts/development/p4e_cohort.json",
+  "provenance": {
+    "generated_at": "2026-08-22T07:56:42.131445+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/acquisition/sources_p4e.py",
+    "protocol_sha256": "sha256:874b1737e27ae5aeab90437ad489925e9b53d51a1fc7be35b3e96e0f36be7465",
+    "receipt_stem": "p4e-cohort-manifest",
+    "run_id": "20260822T075642Z-5039a951e220",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/acquisition/fetch_p4e_corpus.py",
+    "tool_sha256": "sha256:fce4ded3e7576b173c5b9528d8eef3a8c359787590054380106e968b0093d0ed"
+  },
+  "receipt_sha256": "sha256:06b72e1e75eff60c91fa2068f79bcf5997e942055ef8cfd6c759fb4497f781da",
+  "revision_spacing": {
+    "encyclopedia_wikipedia": {
+      "decidable_from": "revision timestamps alone",
+      "rule": "the newest revision, paired with the newest revision at least 180 days older than it. If the article has no such older revision in the fetched window, the article is excluded.",
+      "separation": "180 days"
+    },
+    "frozen_before_any_retrieval_result": true,
+    "git_docs": {
+      "decidable_from": "the acquisition manifest alone",
+      "rule": "the pair already held whose after-revision has the most recent known_at, unchanged from P4c. Git documents are carried over so one family holds spacing constant while three vary it.",
+      "separation": "unchanged from P4c"
+    },
+    "never_conditioned_on": [
+      "how many units moved",
+      "any retrieval score",
+      "the Q1 count",
+      "any gate outcome"
+    ],
+    "regulation_ecfr": {
+      "decidable_from": "the versioner's date list alone",
+      "rule": "the newest dated version of the section, paired with the oldest dated version the versioner reports for it. Sections with fewer than two dated versions are excluded.",
+      "separation": "maximal available ordinal separation"
+    },
+    "sec_edgar": {
+      "decidable_from": "the acquisition manifest alone",
+      "rule": "the amendment pair already held, unchanged from P4c",
+      "separation": "unchanged from P4c"
+    }
+  },
+  "schema": "tavonel.v2.p4e_cohort_receipt.v1"
+}

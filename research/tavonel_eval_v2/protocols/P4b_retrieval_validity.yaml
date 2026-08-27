@@ -1,0 +1,288 @@
+# P4b — retrieval validity, rebuilt. Two stages, fielded index, CPU only.
+#
+# Frozen before any P4b result exists.
+#
+# P4 v1 stands at FAIL / STOP-V2-001 permanently. Nothing here re-scores it, and
+# its thresholds and question set are not reused. New protocol, new cohort, new
+# thresholds, declared below.
+#
+# Founder ruling, 2026-08-21, on how P4's failure may be described: the finding
+# is that the P4 question construction was unfit for measuring the endpoint. It
+# is NOT that the representation was adequate. BM25 gave the current and the
+# superseded revision different scores on 90% of revised units, but wrong-
+# revision dominance was 0.32, so the *direction* of that ordering was never
+# shown to be adequate. Both halves are carried into this protocol's design.
+
+schema: tavonel.v2.protocol.P4b.v1
+protocol_id: P4b_retrieval_validity
+version: 1
+authored: 2026-08-21
+supersedes: null
+relates_to:
+  P4_retrieval_validity:
+    relation: >-
+      preserved at FAIL. Its holdout, its thresholds, its tie ceiling and its
+      question set are not reused, reinterpreted or cited as support.
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu:
+    approved: false
+    ceiling_usd: 0.0
+    rule: >-
+      P4b runs on CPU with a deterministic lexical representation. No embedding
+      model, no GPU, no paid API. Passing this gate does not authorise spend; it
+      makes a spend request possible.
+  sealed_evidence: {rule: read-only}
+  p0_v1: {rule: read-only}
+  p4_v1: {rule: read-only, note: FAIL preserved}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+  receipts: {rule: immutable, per INC-V2-005}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. What P4 established, stated at the strength the evidence supports
+# ---------------------------------------------------------------------------
+
+carried_finding:
+  established: >-
+    the P4 question construction is unfit for measuring the endpoint. Queries
+    built from a report date and a heading path, scored against a body-only
+    BM25 index, put the oracle-current unit in the top ten on 34.6% of
+    questions, with 154 of 182 questions ending in an exact top-score tie.
+  not_established: >-
+    that the representation is adequate. Separation on Q1 was 0.90 — the two
+    revisions received different scores — but wrong-revision dominance was 0.32,
+    so on roughly a third of revised units the superseded revision strictly
+    outranked the current one. A representation that orders two revisions in the
+    wrong direction is not shown adequate by the fact that it orders them at all.
+  design_consequence: >-
+    P4b separates targeting from revision selection, because P4 could not tell
+    the two failures apart.
+
+# ---------------------------------------------------------------------------
+# 2. Index — fielded, from source-provided metadata only
+# ---------------------------------------------------------------------------
+
+index:
+  family: lexical, BM25 per field, weighted sum
+  parameters: {k1: 1.2, b: 0.75}
+  tokeniser: casefold, split on non-word characters, drop tokens shorter than 2
+  unit: one admitted canonical unit, in one revision
+  corpus: >-
+    append-only. Both revisions of every admitted pair are indexed, each labelled
+    current or superseded. This is deliberately the pathological configuration.
+
+  fields:
+    title:
+      weight: 3.0
+      sec_edgar: >-
+        the issuer's ticker and the CIK from the source identifier. NOT the
+        report date. P4 used the period of report as though it were a title,
+        which is the specific defect this replaces.
+      git_docs: the repository owner, the repository name and the document path
+    doc_type:
+      weight: 2.0
+      sec_edgar: the SEC base form as filed — 10-K, 10-Q, 8-K, DEF 14A, 20-F, S-1, S-4, 40-F
+      git_docs: the document kind, markdown documentation
+    heading_path:
+      weight: 3.0
+      value: every element of the unit's explicit path, joined
+    heading:
+      weight: 4.0
+      value: the unit's leaf heading
+    body:
+      weight: 1.0
+      value: the unit's text
+
+  weights_frozen_before_any_score: true
+  weight_basis: >-
+    Headings and paths are the fields a routing question actually names, so they
+    carry more weight than body prose, which the query never quotes. The exact
+    values are a declared choice, not a tuned one; they are recorded here so that
+    a later change is visibly a change.
+
+# ---------------------------------------------------------------------------
+# 3. Questions — new cohort
+# ---------------------------------------------------------------------------
+
+questions:
+  source_of_intent: >-
+    the document title, the document or form type, the unit's leaf heading and
+    its immediate parent heading. Never the body, never an answer span, never a
+    token taken from the oracle answer.
+  deliberately_not_the_full_path: >-
+    a query carrying the complete explicit path would be an identity match
+    against the heading_path field and would measure nothing. The immediate
+    parent is what a person asking about a section actually supplies.
+  rendering: >-
+    a natural question frame, not a field concatenation: the fields are placed
+    into an interrogative sentence with ordinary function words.
+  types:
+    Q1_REVISED_VALUE:
+      built_from: a unit whose SEMANTIC facet moved between the two revisions
+      oracle_current: the after revision of that unit
+      superseded_competitor: the before revision of that unit
+    C1_UNCHANGED_CONTROL:
+      built_from: a unit whose SEMANTIC facet did not move
+      oracle_current: the after revision of that unit
+      role: separates "cannot order revisions" from "this question is hard"
+  per_pair_cap: 12 of each type, in reading order
+  minimum_scale: 200 scored questions across at least 10 source lineages
+  ineligible_recorded_as:
+    INELIGIBLE_NO_ORACLE_UNIT: the current unit is not in the index
+    INELIGIBLE_EMPTY_QUERY: the metadata fields tokenise to nothing
+    INELIGIBLE_HEADING_ABSENT: the unit has no usable heading
+
+# ---------------------------------------------------------------------------
+# 4. Stage A — lineage-conditioned unit targeting
+# ---------------------------------------------------------------------------
+
+stage_A:
+  question: >-
+    inside the correct document lineage, does the question reach the
+    oracle-current unit?
+  index_scope: the units of one lineage only, both revisions
+  isolates: targeting, with routing removed as a variable
+  measures:
+    tie_rate_A: questions whose maximum score is shared by two or more units
+    unit_retrievable_at_10_A: the oracle-current unit appears in the top 10
+    unit_top_1_A: the oracle-current unit is the unique top-scoring unit
+
+# ---------------------------------------------------------------------------
+# 5. Stage B — global routing, then revision discrimination
+# ---------------------------------------------------------------------------
+
+stage_B:
+  question: >-
+    from the whole index, does the question reach the correct lineage, the
+    correct unit, and the current revision of it?
+  index_scope: every unit of every lineage, both revisions
+  measures:
+    lineage_at_1_B: the top-scoring unit belongs to the correct lineage
+    unit_retrievable_at_10_B: the oracle-current unit appears in the top 10
+    tie_rate_B: exact top-score ties
+
+  revision_selection_arms:
+    LEXICAL_ONLY:
+      rule: >-
+        among the retrieved unit's two revisions, take the higher-scoring one. An
+        exact tie selects nothing and counts as a failure to discriminate.
+      role: the baseline a retrieval layer has without a compiler behind it
+    COMPILED_CURRENCY:
+      rule: take the revision the compiled state marks current
+      role: >-
+        the positive control on the harness, and the arm the product's claim
+        actually rests on. It is expected to be near 1.0 by construction; if it
+        is not, the harness is broken and the run is void rather than
+        interesting.
+  both_arms_are_index_policies: >-
+    no model is executed and no inference is purchased. This is a CPU-only
+    comparison of two selection rules over the same scores.
+
+# ---------------------------------------------------------------------------
+# 6. Tie policy, fixed before any score exists
+# ---------------------------------------------------------------------------
+
+tie_policy:
+  rule: >-
+    an exact top-score tie returns the whole tied set. Ties are never broken by
+    list position, index order, document id or any other incidental ordering.
+  revision_consequence: >-
+    a tie between the two revisions of one unit is scored as LEXICAL_ONLY
+    failing to discriminate. It is not scored as a success and not as an error.
+  rounding: scores are rounded to 9 decimal places, so a difference that is only
+    floating-point noise is recorded as a tie rather than as an ordering
+  determinism_check: >-
+    every index is built twice, the second time with insertion order reversed.
+    Every score vector and every tied set must be identical.
+
+# ---------------------------------------------------------------------------
+# 7. Gates. Thresholds declared before any score is computed.
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P4B_SCALE:
+    predicate: at least 200 scored questions across at least 10 source lineages
+  G_P4B_DETERMINISM:
+    predicate: the reversed-order index reproduces every score vector and every tied set
+    on_fail: STOP. A non-deterministic representation cannot support a frozen holdout.
+  G_P4B_A_TIE:
+    predicate: tie_rate_A <= 0.10
+    basis: inside one lineage, headings are distinct enough that a tie means the
+      question did not name anything the index holds
+  G_P4B_A_RETRIEVABLE:
+    predicate: unit_retrievable_at_10_A >= 0.90
+    basis: a question whose answer is not retrievable within its own document
+      cannot discriminate anything downstream
+  G_P4B_A_TOP1:
+    predicate: unit_top_1_A >= 0.60
+    basis: >-
+      deliberately below the retrievability bar. Sibling sections share a parent
+      heading, so exact-first is harder than top-ten and a high bar here would be
+      a bar on the corpus rather than on the method.
+  G_P4B_B_LINEAGE:
+    predicate: lineage_at_1_B >= 0.80
+    basis: routing to the wrong document is the failure that makes a global
+      answer wrong rather than imprecise
+  G_P4B_B_UNIT:
+    predicate: unit_retrievable_at_10_B >= 0.75
+    basis: lower than stage A's bar, because the global index adds every other
+      lineage's sections as competitors
+  G_P4B_CONTROL_ARM:
+    predicate: COMPILED_CURRENCY selects the current revision on >= 0.99 of scored questions
+    on_fail: the harness is broken; the run is void, not interesting
+  G_P4B_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+not_gated_deliberately:
+  LEXICAL_ONLY_accuracy: >-
+    reported, not gated. Gating it would convert a pre-registered prediction into
+    a pass/fail on the thing being investigated. See section 8.
+
+on_gate_failure: >-
+  STOP. No model arm, no spend request, no threshold relaxed after seeing a
+  score. A failed preflight is a result.
+
+# ---------------------------------------------------------------------------
+# 8. Pre-registered predictions
+# ---------------------------------------------------------------------------
+
+predictions:
+  fielded_index_fixes_targeting: >-
+    stage A retrievability will be far above P4's 0.346, because the fields a
+    query names are now indexed fields rather than absent from a body-only index
+  lexical_only_cannot_discriminate_revisions: >-
+    LEXICAL_ONLY will be at or near chance on Q1, and the tie rate between the
+    two revisions of one unit will be high, because the two revisions share every
+    metadata field and the query carries no body terms. If this holds, the
+    finding is that **revision currency is not recoverable from the query at
+    all** — it has to come from the compiled state — and that is a statement
+    about what a knowledge compiler is for, not a defect in BM25.
+  sec_targeting_is_harder_than_git: >-
+    SEC item headings are formulaic and repeat across issuers and years, so
+    lineage routing is expected to be worse on sec_edgar than on git_docs
+
+# ---------------------------------------------------------------------------
+# 9. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under a fielded BM25 representation over an append-only index of both
+    revisions, this question cohort reached the oracle-current unit at these
+    rates within a lineage and across the whole index, and these two revision
+    selection rules performed as recorded.
+  forbidden:
+    - any statement about a dense or hybrid representation, which was not run
+    - any statement about answer correctness; no model is executed in P4b
+    - reading a passed preflight as evidence that an endpoint comparison will
+      show anything
+    - reusing P4 v1's holdout, thresholds or tie ceiling as support
+    - describing P4 v1's failure as "question construction, not representation".
+      The permitted description is that the question construction was shown
+      unfit, and that the representation's ordering direction was never shown
+      adequate.
+    - treating a development-split result as confirmatory
+    - describing the LEXICAL_ONLY / COMPILED_CURRENCY comparison as a model arm

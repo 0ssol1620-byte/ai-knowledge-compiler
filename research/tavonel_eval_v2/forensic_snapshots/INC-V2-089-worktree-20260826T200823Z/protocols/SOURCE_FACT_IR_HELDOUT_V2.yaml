@@ -1,0 +1,232 @@
+# SOURCE_FACT_IR_HELDOUT_V2 (SFI2) — native provenance, scored once.
+#
+# FROZEN. Frozen after deterministic integration of five parallel lanes and
+# BEFORE any fresh lineage was read. Every endpoint, threshold, cohort floor and
+# declared blind spot below was written while no count existed. Nothing in this
+# file moves after a result: an amendment requires its own receipt naming what it
+# supersedes, and the scorer refuses to run if the bytes no longer match.
+#
+# V1 is not superseded, corrected or rescored. It returned FAIL on held-out data
+# and that result stands exactly as executed, permanently. Its corpus is spent
+# and is development material from here on. This is a study of a CHANGED SYSTEM
+# on a corpus V1 never touched, which is the only thing that can show a repair
+# worked.
+
+schema: tavonel.v2.protocol.source_fact_ir_heldout.v2
+protocol_id: SOURCE_FACT_IR_HELDOUT_V2
+status: FROZEN
+split: held_out
+authorised_by: "founder ruling, 2026-08-23 (native provenance propagation)"
+
+# ---------------------------------------------------------------------------
+# what V1 established, and what it did not
+
+predecessor:
+  study: SOURCE_FACT_IR_HELDOUT_V1
+  verdict: FAIL
+  standing: "frozen, never rescored, corpus now development material only"
+  three_grounds:
+    - >-
+      1,284 RECOGNIZED_BUT_UNREPRESENTED facts, every one a PROVENANCE_SPAN,
+      every one reporting that the unit's text could not be located in the raw
+      source.
+    - "E5 (confirmed selective stale escape) reported SKIPPED_NEVER_EXERCISED."
+    - "E6 (selective versus clean full rebuild) reported SKIPPED_NEVER_EXERCISED."
+  what_v1_proved: >-
+    that carrying a source fact and being able to say where it came from are
+    different properties, and that the previous vocabulary had no word for the
+    difference. The old MODELED was not wrong about those 1,284 units - the text
+    is carried - it was silent about the question.
+  what_v1_did_not_measure: >-
+    anything about selective-versus-clean equivalence or about stale escapes.
+    Those endpoints did not run. V1 did not find escapes and V1 did not look,
+    and neither sentence may be reported as the other.
+
+# ---------------------------------------------------------------------------
+# the change under test
+
+repair_under_test:
+  ruling: >-
+    Do not iterate _locate heuristics. Replace retrospective text-location with
+    native provenance propagation.
+  chain: >-
+    raw source span -> parsed node span -> canonical transformation span-map ->
+    SourceFact/CanonicalAtom witness
+  requirement: >-
+    source witnesses survive markup stripping, whitespace normalisation, entity
+    decoding and block composition BY CONSTRUCTION, never by searching canonical
+    text back inside raw bytes.
+  why_searching_was_a_category_error: >-
+    after markup is stripped, whitespace collapsed, entities decoded and blocks
+    joined, there is nothing left to search for. A tolerant matcher does not
+    fail less often, it fails differently - it finds the WRONG bytes, and a
+    provenance span that is wrong is worse than one that is absent, because the
+    absent one is visible.
+  the_only_unsourced_path: >-
+    text emitted from nothing - a separator inserted when two blocks are joined.
+    The builder has no method that emits text without naming its source, so an
+    untraceable character cannot be added by accident.
+  legacy_canonicaliser: >-
+    canonicalization/canonical_document.py is NOT modified. Every frozen study
+    in this namespace reads it, and changing it would alter what those studies
+    would produce if re-run. The native canonicaliser is a parallel module and
+    the legacy path stays authoritative for legacy receipts.
+
+# ---------------------------------------------------------------------------
+# endpoints
+#
+# The founder fixed these before anything was measured. They are recorded here
+# in that state and no threshold moves after a result exists.
+
+endpoints:
+  E1_no_unclassified_changed_regions:
+    requirement: "zero changed regions with no state"
+    must_be_exercised: true
+  E2_no_recognized_but_unrepresented:
+    requirement: "zero, unless covered by a predeclared ignore policy"
+    must_be_exercised: true
+    note: >-
+      this is the endpoint V1 failed, and the 1,284 were all provenance spans.
+      Native propagation is the change; this is the measurement of it.
+  E3_no_silent_loss_in_a_complete_scope:
+    requirement: "zero source facts lost inside a scope declared locally complete"
+    must_be_exercised: true
+    declared_blind_spot: >-
+      E3 detects silent loss by way of UNSUPPORTED_CONSTRUCT, which is a short
+      named list. Loss that happens inside the reader, before any fact exists,
+      is outside it. The provenance fixture corpus confirmed one such case
+      before this protocol was frozen: malformed markup of the shape
+      <b class="term"30 days</a> is absorbed whole by both the markdown strip
+      and the HTML parser, so the enclosed text never reaches canonical text at
+      all, and the surviving unit reports fully_sourced true with zero
+      provenance anomalies. Native provenance cannot see it - the span map
+      faithfully describes text that is already missing content.
+    consequence_for_reading_this_endpoint: >-
+      an E3 result of MET means no silent loss was found among the constructs
+      this instrument can see. It does not mean none occurred. That sentence
+      belongs beside any E3 number this study produces.
+    why_not_repaired_before_the_freeze: >-
+      the repair is either a heuristic detector for malformed markup, which the
+      UNSUPPORTED table deliberately avoids because a general detector fires on
+      ordinary prose and buries the real cases, or a reader change, which would
+      alter what every frozen study would produce on re-run. An over-firing
+      detector would also push pairs into the fail-closed unsupported set,
+      shrinking the judged cohort and potentially costing E5 and E6 their gate
+      power - which is the exact failure this study exists to avoid. Declaring
+      a known limitation before results is honest; fitting a detector to a
+      fixture days before a freeze is not.
+    owed_to_the_successor: >-
+      byte accounting. The span map measures output coverage and nothing
+      measures input coverage, so source bytes consumed inside a unit's span and
+      represented by nothing are currently uncountable. Counting them would make
+      this class of loss visible without any heuristic at all.
+  E4_no_reference_or_locator_only_clean_miss:
+    requirement: >-
+      zero pairs where only a reference target or canonical locator changed and
+      the system reported no change
+    must_be_exercised: true
+  E5_no_confirmed_selective_stale_escape:
+    requirement: "zero confirmed selective stale escapes among judged cases"
+    must_be_exercised: true
+    may_be_skipped: false
+    confirmed_means: >-
+      an artifact the production clean full rebuild moved that the production
+      selective execution carried forward. Not an oracle-relative divergence.
+  E6_exact_selective_vs_clean_equivalence:
+    requirement: >-
+      selective execution equals clean full rebuild on every judged supported
+      pair
+    must_be_exercised: true
+    may_be_skipped: false
+  E7_unresolved_fails_closed:
+    requirement: >-
+      unresolved and unsupported cases fail closed rather than counting as
+      passes
+    must_be_exercised: true
+
+pass_rule:
+  all_seven_exercised_and_met: true
+  e5_e6_may_not_be_skipped: true
+  why: >-
+    an endpoint nothing could have violated has not been met, it has been
+    avoided. V1 was failed by two such endpoints and the temptation to call them
+    not-applicable and pass on the remaining five is exactly what this rule
+    refuses.
+  cohort_floor_pairs: 200
+  families_required: 3
+
+# ---------------------------------------------------------------------------
+# cohort
+
+cohort:
+  frame: acquisition/sources_sfi2.py
+  disjointness:
+    from_SFI1: "required, computed from SFI1's frame and acquisition artifacts"
+    from_SFH1: "required, inherited through SFI1's own spent-set derivation"
+    from_the_four_forensic_cases: "required"
+    why: >-
+      a case used to diagnose a defect cannot certify its repair, and a corpus
+      used to measure a failure cannot measure the fix to that failure.
+  anti_fitting:
+    - "no threshold, bound, quota or floor is moved after any outcome exists"
+    - >-
+      quotas and family composition are frozen from the acquisition frame before
+      scoring and are never tuned against pass yield
+    - >-
+      unsupported constructs are NOT removed from the cohort after seeing
+      results. They stay fail-closed and the claim is refused
+    - >-
+      the provenance implementation is not iterated against this corpus. If V2
+      fails, the corpus is spent and a further repair is measured on a fresh one
+    - >-
+      a quota shortfall is reported as a shortfall. It is not absorbed by moving
+      a quota, and it is not compensated by redistributing to another family
+
+# ---------------------------------------------------------------------------
+# execution
+
+execution:
+  shape: "parallel compute / deterministic single reduction / immutable evidence"
+  single_writer: "integration, freeze and the final evidence commit only"
+  smoke_tests: "FIXTURES ONLY. Never a real lineage, never before the freeze."
+  freeze_before_first_real_lineage: true
+  scored_once: true
+  gpu_seconds: 0
+  cost_usd: 0
+
+gate_power:
+  required: true
+  rule: >-
+    each endpoint reports whether its failure state was reachable and whether
+    any pair exercised it. An endpoint never exercised is SKIPPED and SKIPPED
+    fails the study.
+
+# ---------------------------------------------------------------------------
+# what a verdict authorises
+
+on_pass:
+  authorises: >-
+    freezing and running the GPU successor study immediately, with no further
+    founder check-in, under a hard cap of 6 GPU hours and $40.
+  successor_measures: >-
+    downstream effects of verified-current typed source-fact state versus stale
+    or append-only state, using the already pinned model and runtime.
+  forbids:
+    - >-
+      reviving the exact-value VBC endpoint, closed by STOP-V2-005 after a
+      complete walk of 2,271 lineages found 3 against a floor of 190
+    - >-
+      reading a PASS as a general correctness result. It is a result on this
+      cohort, this grammar subset and these seven endpoints.
+
+on_fail:
+  consequence: >-
+    a negative held-out closure result, reported as one, with the corpus spent.
+    Not a reason to widen the grammar, lower a gate, drop a construct or
+    re-score.
+  gpu: "remains 0. The successor stays blocked."
+
+release:
+  ip_gate: CLOSED
+  docs_ip: untouched
+  public_release: forbidden

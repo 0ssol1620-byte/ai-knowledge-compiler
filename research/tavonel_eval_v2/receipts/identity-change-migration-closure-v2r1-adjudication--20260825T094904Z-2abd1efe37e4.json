@@ -1,0 +1,100 @@
+{
+  "corpus_spent": true,
+  "corpus_status": "SPENT",
+  "estimated_cost_usd": 0.0,
+  "evidence_moved_ruling": {
+    "debt": "SemanticDiff publishes no first-class matched-correspondence surface, which forced the external scorer to reconstruct matching and contributed to the bad inference",
+    "is_a_production_correctness_defect": false,
+    "production_must_not_be_altered": "no change to production may be made merely to turn the spent V2R1 receipt green",
+    "recorded_instead_as": "representation / observability debt",
+    "why": "EVIDENCE_MOVED is emitted only AFTER the resolver has already matched a counterpart, so it is a facet event on an established correspondence, not an identity disposition. Production keys it to the stable resolved prior logical identity, which is consistent with MATCHED semantics; the after-side raw snapshot id is not necessarily the enduring identity."
+  },
+  "forensics": {
+    "lineages": {
+      "ecfr:40:273:273.3": {
+        "after_units": 14,
+        "before_units": 14,
+        "matched_with_different_incoming_raw_id": 14,
+        "raw_logical_id_overlap": 0,
+        "resolver_dispositions": {
+          "MATCHED": 14
+        }
+      },
+      "ecfr:47:54:54.101": {
+        "after_units": 3,
+        "before_units": 5,
+        "matched_with_different_incoming_raw_id": 1,
+        "raw_logical_id_overlap": 0,
+        "resolver_dispositions": {
+          "AMBIGUOUS": 1,
+          "MATCHED": 1,
+          "NEW": 1
+        }
+      },
+      "git:qdrant/landing_page:qdrant-landing/content/documentation/capacity-planning.md": {
+        "after_units": 18,
+        "before_units": 7,
+        "matched_with_different_incoming_raw_id": 2,
+        "raw_logical_id_overlap": 1,
+        "resolver_dispositions": {
+          "AMBIGUOUS": 2,
+          "MATCHED": 2,
+          "NEW": 14
+        }
+      }
+    },
+    "matched_with_different_raw_id_total": 17,
+    "recomputed_here": true
+  },
+  "gpu_seconds": 0,
+  "must_not_be_described_as": [
+    "a successful closure",
+    "evidence that production failed INVARIANT_6",
+    "a PASS"
+  ],
+  "production_correctness_verdict": "NOT_ESTABLISHED",
+  "production_failure_established": false,
+  "provenance": {
+    "generated_at": "2026-08-25T09:49:04.488809+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r1-adjudication",
+    "run_id": "20260825T094904Z-2abd1efe37e4",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/adjudicate_v2r1.py",
+    "tool_sha256": "sha256:cc6613feeb4e52f9da4b9806b70384bedf1dcb7811c837fb31fa9b975e828f39"
+  },
+  "raw_execution_verdict": "FAIL",
+  "raw_receipt_untouched": true,
+  "receipt_sha256": "sha256:d95fbd529e6f38ad25e0d5060ad704c6a8503ad4d767f56ad7f967ca160c8aca",
+  "reclassification": {
+    "all_are_instrument_false_violations": true,
+    "arithmetic": "14 + 2 + 1 = 17 alleged silent appearances, all resolver-MATCHED",
+    "reported_as_silent_appearance": 17,
+    "reported_as_silent_disappearance": 13,
+    "resolver_matched_with_differing_raw_ids": 17,
+    "superseded_analysis": "an earlier 13/17 split attributed 13 to a scorer gap around EVIDENCE_MOVED and 17 to a production representation gap. Both halves were wrong: the split described a symptom of the wrong ontology rather than two independent causes.",
+    "the_13_disappearances_are": "the before-side counterparts consumed by those same MATCHED decisions, correctly not reported as removed",
+    "total_clause_d_violations": 30
+  },
+  "rescore_permitted": false,
+  "schema": "tavonel.v2.identity_change_migration_closure.adjudication.v1",
+  "scientific_adjudication": "INVALID_INSTRUMENT_CONTRACT",
+  "subject": {
+    "measurement_receipt": "identity-change-migration-closure-v2r1--20260825T075028Z-fc54677a5d9a.json",
+    "measurement_receipt_sha256": "sha256:709ddc7146883e7f511cf446e404b55369a5fa549d2155715a5f31816ad349d6",
+    "protocol_freeze_receipt": "identity-change-migration-closure-v2r1-protocol-freeze--20260825T064808Z-0c5c4c915447.json",
+    "protocol_freeze_receipt_sha256": "sha256:988f75ce1f351db2e6bc22b600b5482fa6600aae5f2fed0b3e7050c22af2119b",
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+    "protocol_sha256": "sha256:66cf1920b892bba32179d371b5ba5b8d944e4c532824a4b6603377f2e32f27ba",
+    "scorer_freeze_receipt": "identity-change-migration-closure-v2r1-scorer-freeze--20260825T074849Z-a0f7180f6b9b.json",
+    "scorer_freeze_receipt_sha256": "sha256:91453a57e455a1010f718b30608430944ab2b8e388eedcab3e55db9a50dc53d7",
+    "scorer_module_sha256": "sha256:ee63d3b6103c8c35319cad4aa7f7ef9989af682a0bf8c3fcd8bd3cd720610952"
+  },
+  "successor": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+  "the_three_violating_lineages_may_be": "DEVELOPMENT / FORENSIC regression cases only, because they are spent. They may never certify V2R2.",
+  "v2r1_lineages_excluded_from_successor": true,
+  "why_invalid": "the frozen INVARIANT_6(d) equated raw revision-local logical-id equality with resolver-established cross-revision identity. `selective_build.snapshots` derives a snapshot logical id from source_id + explicit_path, so an incoming unit's revision-local id changes when its path changes; `LogicalIdentityResolver` exists precisely to bridge that, and on MATCHED returns the BEFORE-side stable logical id while the incoming snapshot keeps its own. `before_ids & after_ids` is therefore not the set of cross-revision identity matches, and a clause built on it measures the wrong property."
+}

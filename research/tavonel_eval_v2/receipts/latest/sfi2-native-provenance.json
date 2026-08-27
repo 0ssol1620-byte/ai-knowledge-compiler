@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/sfi2-native-provenance--20260823T085006Z-e53cc8aaeb7d.json",
+  "points_to_file_sha256": "sha256:3aacb083f48d1ab2a5282255e82c679d7c37d9e8ccc22c0e7fc3d4be82f9b310",
+  "run_id": "20260823T085006Z-e53cc8aaeb7d",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "sfi2-native-provenance",
+  "updated_at": "2026-08-23T08:50:06.295530+00:00"
+}

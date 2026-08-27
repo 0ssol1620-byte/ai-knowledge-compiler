@@ -1,0 +1,235 @@
+{
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3r1-protocol-freeze--20260825T210407Z-29e25c1053da.json",
+    "receipt_body_sha256": "sha256:6adc2f00c047cccbd706007a457d8fb55cf234627b5714d35ece742ca84f82b3",
+    "receipt_file_sha256": "sha256:68b0d2a360319e7d931b85c72edeb6ac00f9f3e0087ebd5e8fff6a1fa3d0af23",
+    "run_id": "20260825T210407Z-29e25c1053da",
+    "stem": "identity-change-migration-closure-v2r3r1-protocol-freeze"
+  },
+  "contract_consistency": {
+    "checked_by": [
+      "tools/v2r3_state_table.py::check_contract",
+      "tests/test_v2r3_contract_consistency.py"
+    ],
+    "prose_matches_executable_rows": true,
+    "proved": true,
+    "reachable_rows": 8,
+    "required_intersect_forbidden_empty_for_every_row": true,
+    "rows": [
+      {
+        "effective": "EFFECTIVE_MATCHED",
+        "forbidden": [
+          "unit_added",
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [],
+        "resolver_state": "MATCHED",
+        "rule": "E",
+        "side": "after",
+        "silence_allowed": true
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "MATCHED",
+        "rule": "D",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_NEW",
+        "forbidden": [
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [
+          "unit_added"
+        ],
+        "resolver_state": "NEW",
+        "rule": "C",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "NEW",
+        "rule": "B",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": false,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "AMBIGUOUS",
+        "rule": "A",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "AMBIGUOUS",
+        "rule": "A",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_REMOVED",
+        "forbidden": [
+          "modified_claim",
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [
+          "unit_removed"
+        ],
+        "resolver_state": "UNCONSUMED",
+        "rule": "G",
+        "side": "before_unconsumed",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_removed",
+          "modified_claim"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "UNCONSUMED",
+        "rule": "F",
+        "side": "before_unconsumed",
+        "silence_allowed": false
+      }
+    ],
+    "state": "SATISFIABLE"
+  },
+  "pinned_files": {
+    "docs/COMPAT_IDENTITY_UNCERTAINTY_QUARANTINE.md": "sha256:655fd3d85eebec5209a2489290b34a8ca9d6c4cff8f1ac39e8504e4447f1b101",
+    "protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml": "sha256:51b8a0b0ec32dc5c04224ed346fa720c21c35929a917db7db2a0335581b74318",
+    "protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml": "sha256:1be970071924fcaea5d2ffbe05e30fd40327408bc2ac3a69bcb2131a839b4f1f",
+    "tests/test_v2r3_contract_consistency.py": "sha256:c33bf9b1ffaa8036d6a75b3d4812011879bde2f174d00fc51ac511f0575d17ed",
+    "tools/v2r3_effective_identity.py": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+    "tools/v2r3_quarantine_oracle.py": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+    "tools/v2r3_state_table.py": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+    "tools/v2r3r1_semantics.py": "sha256:a9f6e7c716ca200801f099b5ce264ba4940d754d9d56165733e272a8914882c9"
+  },
+  "provenance": {
+    "generated_at": "2026-08-25T21:04:09.614535+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml",
+    "protocol_sha256": "sha256:1be970071924fcaea5d2ffbe05e30fd40327408bc2ac3a69bcb2131a839b4f1f",
+    "receipt_stem": "identity-change-migration-closure-v2r3r1-protocol-attestation",
+    "run_id": "20260825T210409Z-b2cca585b5a3",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:8f9b57a7f5410eb696c9f18d830b8244b0f5445a748702370aa0d158cc98d5e0",
+  "refuses_unless": "the state table is SATISFIABLE, the consistency suite passes, and the scientific projection of this protocol equals the parent's exactly",
+  "rung": "1a",
+  "rung_name": "protocol_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3r1_attestation.v1",
+  "semantic_equivalence": {
+    "administrative_blocks": {
+      "authorised_by": "the successor is authorised by a later founder ruling",
+      "carry_forward": "how the cohort arrived; proven row by row instead",
+      "companion_attestations": "instrument provenance",
+      "freeze": "stems and rung wiring; its one binding rule is checked by text",
+      "parent_protocol": "lineage metadata; exists only in the successor",
+      "protocol_id": "the successor's identity",
+      "schema": "the successor's schema id",
+      "scorer_acceptance": "the module list, which is exactly what the repair changed",
+      "split": "development/production bookkeeping",
+      "status": "draft/frozen bookkeeping"
+    },
+    "cohort_keys_excluded": [
+      "path_taken",
+      "frame",
+      "frame_is_freeze_rung_0",
+      "acquired_by",
+      "enumerated_by"
+    ],
+    "execution_keys_excluded": [
+      "order",
+      "runs_after",
+      "preconditions_that_must_all_be_PROVEN_before_the_single_run",
+      "one_shot_authorisation"
+    ],
+    "held": true,
+    "how": "both files were parsed from disk, projected onto the declared scientific subtree, and compared node by node. The first difference raises with its path. Every top-level block is classified as scientific or administrative explicitly; an unclassified block refuses.",
+    "manifest_keys_excluded": [
+      "path",
+      "owner_tool",
+      "acquisition_manifest",
+      "acquisition_manifest_is_inherited",
+      "enumeration_schema"
+    ],
+    "no_post_freeze_change_rule_identical": true,
+    "parent": "protocols\\IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml",
+    "partially_projected_blocks": [
+      "cohort",
+      "execution",
+      "manifest_contract"
+    ],
+    "scientific_blocks": [
+      "supersedes_nothing",
+      "predecessor",
+      "cohort_sufficiency",
+      "background",
+      "v1_standing",
+      "retrospective_evidence",
+      "legacy_is_not_ground_truth",
+      "anti_fitting",
+      "protocol_delta",
+      "exclusion_policy",
+      "expectation_oracle",
+      "facet_channels",
+      "unresolved_fail_closed",
+      "quarantine_channel",
+      "diff_level",
+      "why_L4",
+      "predeclared_ignored_facets",
+      "effective_identity_disposition",
+      "contract_consistency_gate",
+      "root_normalisation",
+      "invariants",
+      "vacuity_rule",
+      "pass_rule",
+      "fixture_battery",
+      "release",
+      "declared_blind_spots"
+    ],
+    "scientific_projection_sha256": "sha256:2a31489a60b29f89a7121ceac9e08679f358e2644b58b6b39412681d3706f298",
+    "successor": "protocols\\IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml",
+    "what_a_failure_means": "not that the successor is wrong, but that it is a different experiment and may not reuse the parent's unscored material."
+  }
+}

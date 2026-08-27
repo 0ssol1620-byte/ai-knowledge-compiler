@@ -1,0 +1,41 @@
+{
+  "estimated_cost_usd": 0.0,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "note": "The verifier is sealed and writes to a mutable path. This envelope pins the run; it does not make that path immutable, and a later run may still overwrite the raw file. The digest recorded here is what makes that detectable.",
+  "occasion": "after the INC-V2-001 restoration of EXP-0101/receipts/committed-bytes-verification.json",
+  "provenance": {
+    "generated_at": "2026-08-21T08:10:18.350210+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sealed-evidence-verification",
+    "run_id": "20260821T081018Z-578301c32326",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/seal_verification_envelope.py",
+    "tool_sha256": "sha256:c25cbbb0d3736ff0d6177ce07f05546978d0871d125345e735a21a5ffdffdf18"
+  },
+  "raw_output": "research/tavonel_eval_v2/receipts/p0-sealed-evidence-verification-post-restoration.json",
+  "raw_output_file_sha256": "sha256:a4ab186185d039a7f85999111df771a95c333e9e3666d9d415b83b483e42af79",
+  "raw_output_receipt_sha256": "sha256:330a1275a6f8919b4fc05abf4671058346204f9e02ca64433b5ba7454391f63c",
+  "receipt_sha256": "sha256:03af13500a9ff870aa040f8cb0aa5c1bdbde2cf36187c5a2470dd4f8f50168e1",
+  "schema": "tavonel.v2.sealed_verification_envelope.v1",
+  "totals": {
+    "bindings": 434,
+    "bindings_external": 22,
+    "bindings_match": 405,
+    "bindings_mismatch_unexplained": 3,
+    "bindings_mismatch_worktree_head_ok": 0,
+    "bindings_missing": 0,
+    "bindings_superseded": 4,
+    "receipts": 192,
+    "self_hash_fail": 2,
+    "self_hash_not_applicable": 63,
+    "self_hash_pass": 127
+  },
+  "verdict": "FAIL",
+  "verifier": "research/tavonel_eval_v2/tools/verify_sealed_evidence.py",
+  "verifier_is_sealed_by": "research/tavonel_eval_v2/receipts/p0-v1-seal.json",
+  "verifier_sha256": "sha256:4c7784ab29a3e046b4bfb5f27537d358178c626779282dc95f8affbfd782de33"
+}

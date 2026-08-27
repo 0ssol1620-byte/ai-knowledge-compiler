@@ -1,0 +1,423 @@
+{
+  "cohort_pairs_declared": 514,
+  "estimated_cost_usd": 0.0,
+  "facet_observations_total": 85194,
+  "fixture_battery": {
+    "drift": {
+      "built_without_a_declaration": [],
+      "declared_without_a_builder": []
+    },
+    "failed": [],
+    "held": true,
+    "never_summed_into_a_cohort_denominator": true,
+    "results": {
+      "ambiguous_identity_stays_unresolved": {
+        "ambiguous_decisions_excluded_from_matching": 1,
+        "held": true,
+        "identity_unresolved_records": 1,
+        "matched_pairs": 0,
+        "route": "review band",
+        "violations": []
+      },
+      "content_unresolved_projection_fails_closed": {
+        "held": true,
+        "independent_module_agrees": false,
+        "independent_module_behaviour": "raised:TypeError",
+        "production_verdict": "unresolved",
+        "reachable_through_diff_documents": false
+      },
+      "facet_authority_changed": {
+        "expected_record": "authority_changed",
+        "held": true,
+        "records": [
+          "authority_changed"
+        ]
+      },
+      "facet_locator_changed": {
+        "expected_record": "evidence_moved",
+        "held": true,
+        "records": [
+          "evidence_moved"
+        ]
+      },
+      "facet_metadata_changed": {
+        "expected_record": "metadata_changed",
+        "held": true,
+        "records": [
+          "metadata_changed"
+        ]
+      },
+      "facet_temporal_changed": {
+        "expected_record": "temporal_changed",
+        "held": true,
+        "records": [
+          "temporal_changed"
+        ]
+      },
+      "facet_visual_changed": {
+        "expected_record": "visual_changed",
+        "held": true,
+        "records": [
+          "visual_changed"
+        ]
+      },
+      "fold_case_only": {
+        "folds_equal": true,
+        "held": true,
+        "raw_differ": true
+      },
+      "fold_nfkc_compatibility": {
+        "folds_equal": true,
+        "held": true,
+        "raw_differ": true
+      },
+      "fold_punctuation_to_space": {
+        "folds_equal": true,
+        "held": true,
+        "raw_differ": true
+      },
+      "fold_whitespace_collapse": {
+        "folds_equal": true,
+        "held": true,
+        "raw_differ": true
+      }
+    },
+    "standing": "DEVELOPMENT_GATE_POWER_ONLY"
+  },
+  "freeze_precedes_measurement": {
+    "enforced_by": "this tool refuses to run without both receipts and without a protocol digest match; the run ids carry the wall-clock stamps as corroboration",
+    "protocol_freeze_run_id": "20260825T000609Z-9edc066095d8",
+    "universe_freeze_run_id": "20260825T000853Z-b92bccc5bc13"
+  },
+  "gpu_seconds": 0,
+  "identity_fold": {
+    "classes": [
+      "nfkc_compatibility",
+      "case_only",
+      "punctuation_to_space",
+      "whitespace_collapse"
+    ],
+    "lossiness_witnesses": 8132,
+    "observations": 8132,
+    "per_class": {
+      "case_only": {
+        "pairs": 2033,
+        "witnesses": 2033
+      },
+      "nfkc_compatibility": {
+        "pairs": 2033,
+        "witnesses": 2033
+      },
+      "punctuation_to_space": {
+        "pairs": 2033,
+        "witnesses": 2033
+      },
+      "whitespace_collapse": {
+        "pairs": 2033,
+        "witnesses": 2033
+      }
+    },
+    "texts": 2033,
+    "violations": []
+  },
+  "invariants": {
+    "INVARIANT_1_identity_decisions_unchanged": {
+      "exercising_observations": 514,
+      "population": "resolved pairs",
+      "verdict": "MET",
+      "violations": []
+    },
+    "INVARIANT_2_identity_fold_remains_identity_only": {
+      "exercising_observations": 8132,
+      "lossiness_witnesses": 8132,
+      "per_class": {
+        "case_only": {
+          "pairs": 2033,
+          "witnesses": 2033
+        },
+        "nfkc_compatibility": {
+          "pairs": 2033,
+          "witnesses": 2033
+        },
+        "punctuation_to_space": {
+          "pairs": 2033,
+          "witnesses": 2033
+        },
+        "whitespace_collapse": {
+          "pairs": 2033,
+          "witnesses": 2033
+        }
+      },
+      "population": "fold classes x cohort texts, plus the fold fixtures",
+      "verdict": "MET",
+      "violations": []
+    },
+    "INVARIANT_3_expectation_is_independent": {
+      "exercising_observations": 514,
+      "modules_inspected": [
+        "research/tavonel_eval_v2/source_fact_ir/expected_change_status.py",
+        "research/tavonel_eval_v2/source_fact_ir/change_facets.py"
+      ],
+      "population": "the oracle module set, exercised over every resolved pair",
+      "signature": "(before: 'Any', after: 'Any', *, channels: 'dict[str, bool]', ignored: 'frozenset[str]' = frozenset()) -> 'dict[str, dict[str, str]]'",
+      "verdict": "MET",
+      "violations": []
+    },
+    "INVARIANT_4_changed_facet_resolves_typed_or_failclosed": {
+      "exercising_observations": 1917,
+      "population": "changed, non-ignored facet observations",
+      "verdict": "MET",
+      "violations": []
+    },
+    "INVARIANT_5_never_silently_unchanged": {
+      "declared_gap": "production has no fail-closed behaviour for an absent fingerprint on the non-CONTENT facets; those observations are counted here, never recorded as unchanged, and never counted as evidence that the channel works. See the frozen protocol's unresolved_fail_closed.",
+      "exercising_observations": 56796,
+      "mapping_combinations_evaluated": 72,
+      "population": "the oracle's 72-combination domain, plus every facet observation",
+      "unresolved_observations": 56796,
+      "unresolved_without_a_production_fail_closed_behaviour": 37864,
+      "verdict": "MET",
+      "violations": []
+    },
+    "INVARIANT_6_ambiguous_identity_stays_unresolved": {
+      "cohort_gate_power": "present",
+      "cohort_observations": 753,
+      "fixture_observations": 1,
+      "population": "identity_unresolved records; cohort and fixture counted apart",
+      "verdict": "VIOLATED",
+      "violations": [
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:40:141:141.153",
+          "logical_id": "u:aad22330ba59cb2db5271716",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:40:141:141.153",
+          "logical_id": "u:aad22330ba59cb2db5271716",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:422:422.100",
+          "logical_id": "u:b0a99e39ca6c476fc5496db9",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:422:422.100",
+          "logical_id": "u:b0a99e39ca6c476fc5496db9",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:422:422.101",
+          "logical_id": "u:8341eaf0ee778ef54d32cbb0",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:422:422.101",
+          "logical_id": "u:8341eaf0ee778ef54d32cbb0",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:422:422.111",
+          "logical_id": "u:428252a6c1e5c8640ae81ed7",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:422:422.111",
+          "logical_id": "u:428252a6c1e5c8640ae81ed7",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:482:482.21",
+          "logical_id": "u:fb2908a47001807f6ebc2ebf",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:42:482:482.21",
+          "logical_id": "u:fb2908a47001807f6ebc2ebf",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:49:571:571.106",
+          "logical_id": "u:584953a849e1683e9bbae8f5",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:49:571:571.106",
+          "logical_id": "u:584953a849e1683e9bbae8f5",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:50:17:17.21",
+          "logical_id": "u:40a6edb55ee42d113a2bc573",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:50:17:17.21",
+          "logical_id": "u:9327aad7f7f428595f018be9",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:50:17:17.21",
+          "logical_id": "u:40a6edb55ee42d113a2bc573",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "ecfr:50:17:17.21",
+          "logical_id": "u:9327aad7f7f428595f018be9",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+          "logical_id": "u:2812935fff1a10ec76712c88",
+          "predicate": "legacy",
+          "why": "an unsettled identity also carries a continuity assertion"
+        },
+        {
+          "kinds": [
+            "unit_removed"
+          ],
+          "lineage_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+          "logical_id": "u:2812935fff1a10ec76712c88",
+          "predicate": "new",
+          "why": "an unsettled identity also carries a continuity assertion"
+        }
+      ]
+    },
+    "INVARIANT_7_only_predeclared_ignores": {
+      "change_equivalent_observations": 0,
+      "exercising_observations": 85194,
+      "population": "every (matched pair, facet) observation",
+      "verdict": "MET",
+      "violations": []
+    },
+    "INVARIANT_8_sfi2_cases_cannot_certify": {
+      "exercising_observations": 514,
+      "population": "the frozen universe",
+      "retrospective_receipts_read_for_grading": [],
+      "sfi2_pairs_in_any_denominator": 0,
+      "verdict": "MET",
+      "violations": []
+    }
+  },
+  "legacy_reference_path": {
+    "flag": "legacy_identity_change_predicate=True",
+    "never_used_as": "ground truth; the legacy predicate is the defect under repair",
+    "preserved": true,
+    "used_for": "identity-continuity comparison only"
+  },
+  "limit": null,
+  "matched_pairs_total": 9466,
+  "obligation_mapping": {
+    "combinations_evaluated": 72,
+    "observations": 74,
+    "violations": [],
+    "vocabulary_probes": 2
+  },
+  "oracle_independence": {
+    "modules_inspected": [
+      "research/tavonel_eval_v2/source_fact_ir/expected_change_status.py",
+      "research/tavonel_eval_v2/source_fact_ir/change_facets.py"
+    ],
+    "observations": 2,
+    "signature": "(before: 'Any', after: 'Any', *, channels: 'dict[str, bool]', ignored: 'frozenset[str]' = frozenset()) -> 'dict[str, dict[str, str]]'",
+    "violations": []
+  },
+  "over_fire_reading": {
+    "legacy_modified_total": 1396,
+    "new_modified_total": 1777,
+    "note": "reported descriptively and graded by nothing. No acceptance criterion in this closure reads a disagreement count, and no over-fire is called a false positive."
+  },
+  "overall": "FAIL",
+  "pair_count_measured": 514,
+  "pairs_resolved": 514,
+  "path_taken": "DISJOINT_REAL_DEVELOPMENT_COHORT",
+  "protocol_freeze_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-protocol-freeze--20260825T000609Z-9edc066095d8.json",
+  "protocol_freeze_run_id": "20260825T000609Z-9edc066095d8",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1",
+  "protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+  "provenance": {
+    "generated_at": "2026-08-25T00:10:37.197307+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml",
+    "protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+    "receipt_stem": "identity-change-migration-closure",
+    "run_id": "20260825T001037Z-bee4064eae33",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/identity_change_migration_closure.py",
+    "tool_sha256": "sha256:b499e8635f4cbbb5aed5748d57de79139d43019041f476e00177934933b6cb59"
+  },
+  "receipt_sha256": "sha256:2fbe346249f9fbdc60442c76f9764cf7d32a4167158c8d84ae66f815d96742dd",
+  "schema": "tavonel.v2.identity_change_migration_closure.v1",
+  "universe_freeze_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-universe--20260825T000853Z-b92bccc5bc13.json",
+  "universe_freeze_run_id": "20260825T000853Z-b92bccc5bc13",
+  "universe_sha256": "sha256:b36f1a0821ea02f14e7c3162a0039cca88a06024710a1a1fee50bd94185246cc",
+  "wall_seconds": 98.5
+}

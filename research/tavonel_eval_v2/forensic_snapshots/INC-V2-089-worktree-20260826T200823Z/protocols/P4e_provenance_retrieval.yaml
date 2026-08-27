@@ -1,0 +1,294 @@
+# P4e — answer independence by provenance, on a new cohort.
+#
+# Frozen before any P4e result exists. Every threshold is fixed here and none is
+# derived from a P4d number.
+#
+# P4d is read-only. Its protocol, its two execution receipts, INC-V2-009,
+# STOP-V2-004 and its Core-Semantic FAIL / Citation PASS verdicts stand. P4d's
+# leakage predicate is NOT amended and P4d is NOT re-scored. P4e is a successor
+# protocol, not a correction applied backwards.
+
+schema: tavonel.v2.protocol.P4e.v1
+protocol_id: P4e_provenance_retrieval
+version: 1
+authored: 2026-08-22
+supersedes: null
+
+relates_to:
+  P4_retrieval_validity:  {state: FAIL, rule: read-only}
+  P4b_retrieval_validity: {state: FAIL, rule: read-only}
+  P4c_retrieval_validity: {core: FAIL, global: PASS, rule: read-only}
+  P4d_retrieval_granularity:
+    core_semantic: {state: FAIL, rule: read-only}
+    citation: {state: PASS, rule: read-only, kept_separate: true}
+    reused: >-
+      the envelope architecture and the fielded BM25 scorer, imported unchanged.
+      P4d's envelope retrievable@10 = 1.0, fine atom recoverability = 1.0 and the
+      eCFR addressing improvement are preserved as development evidence.
+    not_reused: >-
+      the cohort, which is rebuilt; and the leakage predicate, which is replaced
+      by a provenance invariant rather than repaired.
+  P0d_source_coverage:
+    state: PASS, meaning the measurement satisfied its own gates and nothing wider
+    standing_result: 26 of 26 natural pairs SOURCE_COVERAGE_INCOMPLETE, unchanged
+    rule: read-only, never ignored, never softened
+
+# ---------------------------------------------------------------------------
+# 1. The ruling this protocol implements
+# ---------------------------------------------------------------------------
+
+ruling:
+  source: founder, 2026-08-22
+  normative_definition_of_leakage: >-
+    permitted_intent_sources take precedence. A question sharing a word with the
+    body is not leakage. A word that came from permitted metadata and also
+    appears in the body is not leakage.
+  answer_independence_is: information provenance, not string matching
+  consequence_for_P4d: >-
+    P4d's 475 leakage failures are preserved as recorded. None of them carried
+    an answer span; all were permitted metadata recurring in prose. That result
+    stays FAIL and is not rescored.
+
+# ---------------------------------------------------------------------------
+# 2. The IntentView — enforcement by construction
+# ---------------------------------------------------------------------------
+
+intent_view:
+  rule: >-
+    the query builder does not receive a document object. Its only argument is a
+    restricted IntentView.
+  may_expose:
+    - document_title
+    - document_identity
+    - document_type
+    - anchor_heading
+    - parent_heading
+  unreachable_by_the_query_builder_process:
+    - atom_body
+    - answer_span
+    - oracle_answer
+    - current_revision_id
+    - superseded_revision_id
+    - revision_window
+    - before_after_label
+    - current_superseded_state
+    - retrieval_result
+  enforcement: >-
+    structural, not filtered. The view refuses at CONSTRUCTION time to carry a
+    field outside the permitted list; a view that accepted the field and then
+    declined to return it would still have put it in the builder's memory. The
+    class defines __slots__, forbids attribute assignment, and exposes named
+    sources only through a recording accessor.
+  provenance: >-
+    every read is recorded with its source. A query field with no provenance
+    record fails the gate exactly as a forbidden source does — absence is a
+    failure, not a pass.
+
+lexical_overlap:
+  status: DIAGNOSTIC_ONLY
+  computed: yes, reported per family and overall
+  gated: >-
+    never. Using it as a leakage gate is the specific error this protocol
+    replaces, and re-promoting it later would need its own frozen justification.
+
+# ---------------------------------------------------------------------------
+# 3. Revision neutrality
+# ---------------------------------------------------------------------------
+
+revision_neutrality:
+  rule: >-
+    for a Q1/C1 pair, the title, document identity, document type, anchor
+    heading and parent heading must be identical between the before and after
+    revisions.
+  forbidden: >-
+    choosing the current revision's value for a permitted field that differs
+    across revisions. That would smuggle the answer to the question under test —
+    which revision is current — through a field the protocol calls innocent.
+    Choosing the superseded value is the same defect pointing the other way.
+  on_difference: >-
+    exclude the question as INELIGIBLE_INTENT_CHANGED_ACROSS_REVISIONS, or admit
+    it only where an external intent exists that was generated independently of
+    the current/superseded judgement. No such external intent exists on this
+    corpus, so every affected question is excluded.
+
+negative_controls:
+  required: yes, in the same execution
+  ctrl_body_token_injected:
+    construction: a query builder handed answer-body tokens
+    expected: REJECTED by the provenance gate
+  ctrl_current_only_heading:
+    construction: a heading that exists only in the current revision
+    expected: REJECTED by the revision-neutrality gate
+  rule: >-
+    a control that is not rejected voids the run. A gate that cannot be made to
+    fail on purpose has not been shown to work.
+
+# ---------------------------------------------------------------------------
+# 4. Cohort
+# ---------------------------------------------------------------------------
+
+cohort:
+  manifest: written by acquisition/fetch_p4e_corpus.py before this protocol runs
+  independence: one revision pair per source document, carried from P4c
+  spacing_rule_frozen_before_any_retrieval_result: true
+  spacing:
+    encyclopedia_wikipedia: newest revision paired with the newest at least 180 days older
+    regulation_ecfr: newest dated version paired with the oldest the versioner reports
+    git_docs: unchanged from P4c, so one family holds spacing constant
+    sec_edgar: unchanged from P4c
+  never_conditioned_on: [units moved, any retrieval score, the Q1 count, any gate outcome]
+  headroom: >-
+    quotas and part/article lists were widened so the Q1 bar is cleared by
+    design margin rather than by aim. P4d's Q1 = 67 stays FAIL and is not
+    repaired by reselecting pairs.
+
+# ---------------------------------------------------------------------------
+# 5. Source coverage, bound into every question
+# ---------------------------------------------------------------------------
+
+source_coverage:
+  per_question_record: required, over
+    - the target atom
+    - its source evidence spans and facts
+    - the retrieved envelope's membership
+  QUESTION_LOCAL_COVERAGE_COMPLETE: >-
+    granted only when every relevant source fact in that target and evidence
+    scope is MODELED or IGNORED_BY_DECLARED_POLICY and no relevant
+    UNMODELED_SOURCE_FACT exists.
+  gpu_confirmatory_eligibility: >-
+    a question is a candidate for the confirmatory model study only if it is
+    QUESTION_LOCAL_COVERAGE_COMPLETE. Local completeness is a per-question
+    property and never a claim about the document.
+  forbidden_inference: >-
+    if the whole document revision is still SOURCE_COVERAGE_INCOMPLETE, that
+    revision is NOT called globally CURRENT and NOT called source-faithful
+    end-to-end evidence, whatever any question-local status says.
+
+endpoints:
+  controlled_currency:
+    measurable_now: yes, on locally coverage-complete targets
+    scope: question → envelope → fine atom → current versus superseded
+  source_faithful_end_to_end:
+    state: NOT_ESTABLISHED
+    reason: front-end source coverage is unresolved; P0d measured 26 of 26 incomplete
+    rule: >-
+      never reported as a result, never implied by a controlled-currency figure,
+      and never combined with one.
+
+# ---------------------------------------------------------------------------
+# 6. Tie policy — carried from P4c and P4d unchanged
+# ---------------------------------------------------------------------------
+
+tie_policy:
+  rule: an exact top-score tie returns the whole tied set, never broken by
+    list position, index order or identifier
+  granularity: >-
+    measures are stated over logical envelopes. Two revisions of one envelope
+    are two indexed rows and one envelope — the rule INC-V2-009 was recorded for.
+  rank: conservative — every tied competitor counts against the target
+  rounding: scores rounded to 9 decimal places
+  determinism_check: reversed insertion order must reproduce every score and tied set
+
+# ---------------------------------------------------------------------------
+# 7. Gates. Thresholds fixed here, before any score is computed.
+# ---------------------------------------------------------------------------
+
+gates:
+  core:
+    G_P4E_PROVENANCE:
+      predicate: >-
+        every substantive query field carries a provenance record whose source
+        is in PERMITTED_INTENT_SOURCES
+      on_fail: STOP
+    G_P4E_NO_FORBIDDEN_CONTRIBUTION:
+      predicate: forbidden-source contribution == 0
+      on_fail: STOP
+    G_P4E_NO_BODY_ACCESS:
+      predicate: >-
+        answer or body access by the query builder == 0, established by the
+        builder's single restricted argument and by a static check that its
+        source references no forbidden name
+      on_fail: STOP
+    G_P4E_REVISION_NEUTRAL:
+      predicate: >-
+        every scored question's permitted fields are identical across the two
+        revisions; every question where they differ is excluded, not adjusted
+    G_P4E_CONTROLS_REJECTED:
+      predicate: both negative controls are rejected by the gate each targets
+      on_fail: STOP. A gate that cannot be made to fail on purpose is not evidence.
+    G_P4E_SCALE:
+      predicate: at least 250 scored questions, at least 40 source documents,
+        at least 4 source families
+    G_P4E_Q1_SCALE:
+      predicate: at least 100 Q1 questions
+      basis: unchanged from P4d, which failed it at 67. The bar is not moved.
+    G_P4E_ENVELOPE_RETRIEVABLE:
+      predicate: the oracle-current envelope is in the top 10 within the lineage >= 0.90
+    G_P4E_ATOM_RECOVERABLE:
+      predicate: the fine evidence atom is recoverable from the retrieved envelope >= 0.95
+    G_P4E_COVERAGE_RECORDED:
+      predicate: >-
+        every scored question carries a source-coverage status over its target
+        atom, its evidence facts and its envelope membership
+      note: >-
+        this gates the RECORDING, not the outcome. A low locally-complete share
+        is a finding to report, not a failure to hide.
+    G_P4E_DETERMINISM:
+      predicate: the reversed-order index reproduces every score and every tied set
+    G_P4E_COST:
+      predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+not_gated_deliberately:
+  lexical_overlap_rate: diagnostic, reported, never a gate
+  question_local_coverage_complete_share: reported; it selects confirmatory
+    candidates rather than passing or failing the run
+  LEXICAL_ONLY_rates: the finding
+
+# ---------------------------------------------------------------------------
+# 8. Pre-registered predictions
+# ---------------------------------------------------------------------------
+
+predictions:
+  wider_spacing_raises_Q1: >-
+    adjacent revisions moved few units. Spacing is the declared cause and the
+    only thing changed about pair choice, so if Q1 does not rise the diagnosis
+    in STOP-V2-004 was wrong.
+  lexical_overlap_stays_high_and_no_longer_matters: >-
+    the same words will still recur. Under a provenance definition that is not a
+    finding about leakage, and the two numbers appearing side by side is the
+    point.
+  some_questions_are_excluded_as_intent_changed: >-
+    a heading edited between revisions is ordinary. If the exclusion count is
+    zero, the neutrality check is probably not reaching the field it should.
+  question_local_coverage_is_far_from_universal: >-
+    P0d found every document incomplete. Local completeness is a weaker
+    condition, so it should be more common than zero and well short of all. Its
+    value determines how large a confirmatory cohort could be.
+
+# ---------------------------------------------------------------------------
+# 9. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under a fielded BM25 representation over derived retrieval envelopes, with
+    queries whose every field is provenance-bound to a permitted intent source,
+    on this cohort, questions reached the oracle-current envelope at these rates
+    and the fine evidence atom was recoverable at these rates; and this share of
+    questions is question-locally coverage-complete.
+  forbidden:
+    - calling any result source-faithful end-to-end evidence
+    - calling a document revision globally CURRENT while it is SOURCE_COVERAGE_INCOMPLETE
+    - combining the controlled-currency and source-faithful endpoints
+    - combining semantic and citation figures
+    - quoting the lexical overlap rate as a leakage measure
+    - claiming P4c or P4d is repaired, retired or superseded by any P4e result
+    - any statement about a dense or hybrid representation, which was not run
+    - any statement about answer correctness; no model is executed in P4e
+    - reading a passed Core as authorising spend. It makes a model study
+      eligible to be PROPOSED; the proposal is submitted and approved before any
+      GPU runs.
+    - treating a development-split result as confirmatory
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED. This protocol
+    cannot change that, whatever it returns.

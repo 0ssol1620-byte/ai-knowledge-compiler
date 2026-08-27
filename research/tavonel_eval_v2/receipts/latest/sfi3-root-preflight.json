@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/sfi3-root-preflight--20260823T124032Z-460a72fb471c.json",
+  "points_to_file_sha256": "sha256:a6e398c87622ea155e343f188d157e307dc9a9339288997a89d0ab5abefcfd45",
+  "run_id": "20260823T124032Z-460a72fb471c",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "sfi3-root-preflight",
+  "updated_at": "2026-08-23T12:40:32.930749+00:00"
+}

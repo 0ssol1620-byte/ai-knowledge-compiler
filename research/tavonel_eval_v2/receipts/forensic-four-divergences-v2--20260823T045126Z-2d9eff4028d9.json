@@ -1,0 +1,619 @@
+{
+  "by_conclusion": {
+    "TYPED_DELTA_WOULD_HAVE_NAMED_THE_STALE_ARTIFACT": 4
+  },
+  "cases": [
+    {
+      "after_version": "1354150833",
+      "alignment_report": {
+        "is_aligned": true,
+        "moved": [
+          "section:u:95960f721a832950b6fa7653"
+        ],
+        "silent_facts": [],
+        "under_invalidated": []
+      },
+      "before_version": "1286337912",
+      "clean_full_rebuild": {
+        "artifacts_that_moved": [
+          "section:u:95960f721a832950b6fa7653"
+        ],
+        "artifacts_that_moved_count": 1
+      },
+      "conclusion": "TYPED_DELTA_WOULD_HAVE_NAMED_THE_STALE_ARTIFACT",
+      "confirmed_stale_artifacts": [
+        "section:u:95960f721a832950b6fa7653"
+      ],
+      "family": "encyclopedia_wikipedia",
+      "lineage_id": "wikipedia:en:Three Villages",
+      "per_artifact": {
+        "section:u:95960f721a832950b6fa7653": {
+          "named_by_typed_delta": true,
+          "via_fact_kind_and_channel": [
+            [
+              "CONTENT_TEXT",
+              "SEMANTIC"
+            ]
+          ]
+        }
+      },
+      "refetched": {
+        "after_sha256": "sha256:3cf4e1d3c6e3056be68bb27d475ca1735db7e88752b65d7b765a070f190a0ab9",
+        "before_sha256": "sha256:9f8cfc9fb94c7edf73e07d2feee977b1f5f6b0df8866b9f00ea9011c55218642"
+      },
+      "selective": {
+        "carried_forward_count": 4,
+        "confirmed_stale_artifacts_this_run": [
+          "section:u:95960f721a832950b6fa7653"
+        ]
+      },
+      "typed_delta": {
+        "after_fact_count": 3,
+        "before_fact_count": 3,
+        "invalidated_artifact_keys": [
+          "document-index:baab39480e3ca6c7",
+          "section:u:95960f721a832950b6fa7653",
+          "structure-map:baab39480e3ca6c7",
+          "topic-bucket:baab39480e3ca6c7:0",
+          "topic-bucket:baab39480e3ca6c7:1",
+          "topic-bucket:baab39480e3ca6c7:2",
+          "topic-bucket:baab39480e3ca6c7:3"
+        ],
+        "moved_fact_count": 1,
+        "moved_facts": [
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:baab39480e3ca6c7",
+              "section:u:95960f721a832950b6fa7653",
+              "structure-map:baab39480e3ca6c7",
+              "topic-bucket:baab39480e3ca6c7:0",
+              "topic-bucket:baab39480e3ca6c7:1",
+              "topic-bucket:baab39480e3ca6c7:2",
+              "topic-bucket:baab39480e3ca6c7:3"
+            ],
+            "fact_id": "sha256:ab564298afd22d65b5e3cf24dde0ab49cad85ac8cb97bfb565b947a163bd0e75",
+            "kind": "CONTENT_TEXT"
+          }
+        ],
+        "registered_kinds": [
+          "CONTENT_TEXT",
+          "PROVENANCE_SPAN",
+          "STRUCTURE"
+        ],
+        "unclaimed_kinds": [
+          "ACCESSIBILITY",
+          "APPLICABILITY",
+          "AUTHORITY",
+          "CANONICAL_SOURCE_LOCATOR",
+          "EFFECTIVE_TIME",
+          "INCLUDE_TARGET",
+          "LANGUAGE",
+          "REFERENCE_DEFINITION",
+          "REFERENCE_TARGET"
+        ]
+      },
+      "why": "the typed delta invalidated every confirmed-stale artifact for this case"
+    },
+    {
+      "after_version": "1289724072",
+      "alignment_report": {
+        "is_aligned": true,
+        "moved": [
+          "section:u:0bf3fdf668eeabb24f6ea511"
+        ],
+        "silent_facts": [],
+        "under_invalidated": []
+      },
+      "before_version": "1259026565",
+      "clean_full_rebuild": {
+        "artifacts_that_moved": [
+          "section:u:0bf3fdf668eeabb24f6ea511"
+        ],
+        "artifacts_that_moved_count": 1
+      },
+      "conclusion": "TYPED_DELTA_WOULD_HAVE_NAMED_THE_STALE_ARTIFACT",
+      "confirmed_stale_artifacts": [
+        "section:u:0bf3fdf668eeabb24f6ea511"
+      ],
+      "family": "encyclopedia_wikipedia",
+      "lineage_id": "wikipedia:en:Monteceneri",
+      "per_artifact": {
+        "section:u:0bf3fdf668eeabb24f6ea511": {
+          "named_by_typed_delta": true,
+          "via_fact_kind_and_channel": [
+            [
+              "CONTENT_TEXT",
+              "SEMANTIC"
+            ]
+          ]
+        }
+      },
+      "refetched": {
+        "after_sha256": "sha256:79cf7657a47f57a4a9ee923f163fb762d6e205702b1675a92fd5806de3de8781",
+        "before_sha256": "sha256:b45f213c67e80821814bd9f1e5b8620455c7a4cb0967c3269df5c10014eb4516"
+      },
+      "selective": {
+        "carried_forward_count": 4,
+        "confirmed_stale_artifacts_this_run": [
+          "section:u:0bf3fdf668eeabb24f6ea511"
+        ]
+      },
+      "typed_delta": {
+        "after_fact_count": 3,
+        "before_fact_count": 3,
+        "invalidated_artifact_keys": [
+          "document-index:ad1e8ddc7eb81548",
+          "section:u:0bf3fdf668eeabb24f6ea511",
+          "structure-map:ad1e8ddc7eb81548",
+          "topic-bucket:ad1e8ddc7eb81548:0",
+          "topic-bucket:ad1e8ddc7eb81548:1",
+          "topic-bucket:ad1e8ddc7eb81548:2",
+          "topic-bucket:ad1e8ddc7eb81548:3"
+        ],
+        "moved_fact_count": 1,
+        "moved_facts": [
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:ad1e8ddc7eb81548",
+              "section:u:0bf3fdf668eeabb24f6ea511",
+              "structure-map:ad1e8ddc7eb81548",
+              "topic-bucket:ad1e8ddc7eb81548:0",
+              "topic-bucket:ad1e8ddc7eb81548:1",
+              "topic-bucket:ad1e8ddc7eb81548:2",
+              "topic-bucket:ad1e8ddc7eb81548:3"
+            ],
+            "fact_id": "sha256:f8bb857749781194a8d33d540e41d12434ef2ff450b7030e43bbb7af5ec906b2",
+            "kind": "CONTENT_TEXT"
+          }
+        ],
+        "registered_kinds": [
+          "CONTENT_TEXT",
+          "PROVENANCE_SPAN",
+          "STRUCTURE"
+        ],
+        "unclaimed_kinds": [
+          "ACCESSIBILITY",
+          "APPLICABILITY",
+          "AUTHORITY",
+          "CANONICAL_SOURCE_LOCATOR",
+          "EFFECTIVE_TIME",
+          "INCLUDE_TARGET",
+          "LANGUAGE",
+          "REFERENCE_DEFINITION",
+          "REFERENCE_TARGET"
+        ]
+      },
+      "why": "the typed delta invalidated every confirmed-stale artifact for this case"
+    },
+    {
+      "after_version": "1360080269",
+      "alignment_report": {
+        "is_aligned": true,
+        "moved": [
+          "section:u:55f9943b9e89e6b19ce0a64e"
+        ],
+        "silent_facts": [],
+        "under_invalidated": []
+      },
+      "before_version": "1360080177",
+      "clean_full_rebuild": {
+        "artifacts_that_moved": [
+          "section:u:55f9943b9e89e6b19ce0a64e"
+        ],
+        "artifacts_that_moved_count": 1
+      },
+      "conclusion": "TYPED_DELTA_WOULD_HAVE_NAMED_THE_STALE_ARTIFACT",
+      "confirmed_stale_artifacts": [
+        "section:u:55f9943b9e89e6b19ce0a64e"
+      ],
+      "family": "encyclopedia_wikipedia",
+      "lineage_id": "wikipedia:en:Locarno",
+      "per_artifact": {
+        "section:u:55f9943b9e89e6b19ce0a64e": {
+          "named_by_typed_delta": true,
+          "via_fact_kind_and_channel": [
+            [
+              "CONTENT_TEXT",
+              "SEMANTIC"
+            ]
+          ]
+        }
+      },
+      "refetched": {
+        "after_sha256": "sha256:473431d5ddf8765663ea4336d837ade9b1d8666b64302c24f0f31bc420ee3f0c",
+        "before_sha256": "sha256:23725144b69de74ffb8c132b17f2f723022ebf2a5959d56148e92270e0f09207"
+      },
+      "selective": {
+        "carried_forward_count": 4,
+        "confirmed_stale_artifacts_this_run": [
+          "section:u:55f9943b9e89e6b19ce0a64e"
+        ]
+      },
+      "typed_delta": {
+        "after_fact_count": 3,
+        "before_fact_count": 3,
+        "invalidated_artifact_keys": [
+          "document-index:e2b428a27ae8af88",
+          "section:u:55f9943b9e89e6b19ce0a64e",
+          "structure-map:e2b428a27ae8af88",
+          "topic-bucket:e2b428a27ae8af88:0",
+          "topic-bucket:e2b428a27ae8af88:1",
+          "topic-bucket:e2b428a27ae8af88:2",
+          "topic-bucket:e2b428a27ae8af88:3"
+        ],
+        "moved_fact_count": 1,
+        "moved_facts": [
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:e2b428a27ae8af88",
+              "section:u:55f9943b9e89e6b19ce0a64e",
+              "structure-map:e2b428a27ae8af88",
+              "topic-bucket:e2b428a27ae8af88:0",
+              "topic-bucket:e2b428a27ae8af88:1",
+              "topic-bucket:e2b428a27ae8af88:2",
+              "topic-bucket:e2b428a27ae8af88:3"
+            ],
+            "fact_id": "sha256:914457b4badc7b5e614c93e0e3d27e71bd5a97db76cb746c7c5d96c7b6a166f4",
+            "kind": "CONTENT_TEXT"
+          }
+        ],
+        "registered_kinds": [
+          "CONTENT_TEXT",
+          "PROVENANCE_SPAN",
+          "STRUCTURE"
+        ],
+        "unclaimed_kinds": [
+          "ACCESSIBILITY",
+          "APPLICABILITY",
+          "AUTHORITY",
+          "CANONICAL_SOURCE_LOCATOR",
+          "EFFECTIVE_TIME",
+          "INCLUDE_TARGET",
+          "LANGUAGE",
+          "REFERENCE_DEFINITION",
+          "REFERENCE_TARGET"
+        ]
+      },
+      "why": "the typed delta invalidated every confirmed-stale artifact for this case"
+    },
+    {
+      "after_version": "9c27c8b20c20337edcce2757f349b36fabe158d3",
+      "alignment_report": {
+        "is_aligned": true,
+        "moved": [
+          "document-index:e1f43638beb6bac5",
+          "section:u:465c5f9821a9d16e13d5cc76",
+          "section:u:c854da9ea40620c7752f9f42",
+          "structure-map:e1f43638beb6bac5",
+          "topic-bucket:e1f43638beb6bac5:0",
+          "topic-bucket:e1f43638beb6bac5:3"
+        ],
+        "silent_facts": [],
+        "under_invalidated": []
+      },
+      "before_version": "17faaa6c831ee9dc5666eddfa9410589135c0857",
+      "clean_full_rebuild": {
+        "artifacts_that_moved": [
+          "document-index:e1f43638beb6bac5",
+          "section:u:465c5f9821a9d16e13d5cc76",
+          "section:u:c854da9ea40620c7752f9f42",
+          "structure-map:e1f43638beb6bac5",
+          "topic-bucket:e1f43638beb6bac5:0",
+          "topic-bucket:e1f43638beb6bac5:3"
+        ],
+        "artifacts_that_moved_count": 6
+      },
+      "conclusion": "TYPED_DELTA_WOULD_HAVE_NAMED_THE_STALE_ARTIFACT",
+      "confirmed_stale_artifacts": [
+        "topic-bucket:e1f43638beb6bac5:0"
+      ],
+      "family": "git_docs",
+      "lineage_id": "git:pnpm/pnpm.io:docs/cli/change.md",
+      "per_artifact": {
+        "topic-bucket:e1f43638beb6bac5:0": {
+          "named_by_typed_delta": true,
+          "via_fact_kind_and_channel": [
+            [
+              "CONTENT_TEXT",
+              "SEMANTIC"
+            ],
+            [
+              "PROVENANCE_SPAN",
+              "STRUCTURAL"
+            ],
+            [
+              "STRUCTURE",
+              "STRUCTURAL"
+            ]
+          ]
+        }
+      },
+      "refetched": {
+        "after_sha256": "sha256:9e78299c5d4f5e92d2d535b5c48c582ab2e2fc62d6b5cbeeb426388afa692457",
+        "before_sha256": "sha256:cc301ac878b1640a78ffffd1bb09da0a9cb6ef7565788f179aff8a13755f417e"
+      },
+      "selective": {
+        "carried_forward_count": 7,
+        "confirmed_stale_artifacts_this_run": [
+          "topic-bucket:e1f43638beb6bac5:0"
+        ]
+      },
+      "typed_delta": {
+        "after_fact_count": 15,
+        "before_fact_count": 15,
+        "invalidated_artifact_keys": [
+          "document-index:e1f43638beb6bac5",
+          "section:u:33c0056935de1a6d4b7ce819",
+          "section:u:465c5f9821a9d16e13d5cc76",
+          "section:u:c854da9ea40620c7752f9f42",
+          "structure-map:e1f43638beb6bac5",
+          "topic-bucket:e1f43638beb6bac5:0",
+          "topic-bucket:e1f43638beb6bac5:1",
+          "topic-bucket:e1f43638beb6bac5:2",
+          "topic-bucket:e1f43638beb6bac5:3"
+        ],
+        "moved_fact_count": 12,
+        "moved_facts": [
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:c854da9ea40620c7752f9f42",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:06b6b1a608a1fea876a92e25cd4f398657a4c7fa5b352af936ab44fb6a00c5f0",
+            "kind": "STRUCTURE"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:33c0056935de1a6d4b7ce819",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:817d523ca00f3c21519bd0e5a4905f38502d151bd8a46065c117a51aeb7a7c2a",
+            "kind": "PROVENANCE_SPAN"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:c854da9ea40620c7752f9f42",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:a909d57ba1769b89417112903a5432583b7344400a226110d0c5e923c15e4982",
+            "kind": "PROVENANCE_SPAN"
+          },
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:c854da9ea40620c7752f9f42",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:cc882742af64cb0748626be2acc2f2a4ac9cea81a4f890767e518075f70e7380",
+            "kind": "CONTENT_TEXT"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:33c0056935de1a6d4b7ce819",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:f23c9782fddb58d46a7e4bce35bfb3a69ed6e5719c43fefabe223435e0c059a7",
+            "kind": "STRUCTURE"
+          },
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:33c0056935de1a6d4b7ce819",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:fe0120822951ae0be0189225e85d69c3f278b560b41aa08b9e5357a58d126697",
+            "kind": "CONTENT_TEXT"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:33c0056935de1a6d4b7ce819",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:08ddc456d5e94c96a07b8fb2cbd5a9bc08c219d9d7702b726e6931cb9311b8d9",
+            "kind": "STRUCTURE"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:465c5f9821a9d16e13d5cc76",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:140f620c046a13b57c70fb33188beda907890e818c5fba68a95864d1208cf20b",
+            "kind": "PROVENANCE_SPAN"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:465c5f9821a9d16e13d5cc76",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:2625d9cc61dfa3875cbb0cb3751f7077122c41c1875224109e0bb212313ce004",
+            "kind": "STRUCTURE"
+          },
+          {
+            "channel": "STRUCTURAL",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:33c0056935de1a6d4b7ce819",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:7bb4d17a4c3be924a7acbf412ec5261dc4e668b6be7c03d1d4c5f6d1097c6755",
+            "kind": "PROVENANCE_SPAN"
+          },
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:465c5f9821a9d16e13d5cc76",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:e219cabb66a6b7b28a6fc2e35bab0ae6f6251e35363e3eb9e423fbc2c90c6ac7",
+            "kind": "CONTENT_TEXT"
+          },
+          {
+            "channel": "SEMANTIC",
+            "dependency_keys": [
+              "document-index:e1f43638beb6bac5",
+              "section:u:33c0056935de1a6d4b7ce819",
+              "structure-map:e1f43638beb6bac5",
+              "topic-bucket:e1f43638beb6bac5:0",
+              "topic-bucket:e1f43638beb6bac5:1",
+              "topic-bucket:e1f43638beb6bac5:2",
+              "topic-bucket:e1f43638beb6bac5:3"
+            ],
+            "fact_id": "sha256:e3f7673de678a814061fd665d1f451386d884efdf389cd2d61b497ec72f1a920",
+            "kind": "CONTENT_TEXT"
+          }
+        ],
+        "registered_kinds": [
+          "CONTENT_TEXT",
+          "PROVENANCE_SPAN",
+          "STRUCTURE"
+        ],
+        "unclaimed_kinds": [
+          "ACCESSIBILITY",
+          "APPLICABILITY",
+          "AUTHORITY",
+          "CANONICAL_SOURCE_LOCATOR",
+          "EFFECTIVE_TIME",
+          "INCLUDE_TARGET",
+          "LANGUAGE",
+          "REFERENCE_DEFINITION",
+          "REFERENCE_TARGET"
+        ]
+      },
+      "why": "the typed delta invalidated every confirmed-stale artifact for this case"
+    }
+  ],
+  "cases_examined": 4,
+  "confirms": "research/tavonel_eval_v2/receipts/forensic-stale-escape--20260823T040142Z-0c6f0f65db2e.json",
+  "confirms_sha256": "sha256:412fc510545e6855a0bb0e6121352f8ef3e0ad2b94e87426e3b0a2f8c7706c77",
+  "ended_at": "2026-08-23T04:51:26.890571+00:00",
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "http": {
+    "api.github.com": {
+      "errors": 0,
+      "limit": 8,
+      "min_interval": 0.05,
+      "requests": 1,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "en.wikipedia.org": {
+      "errors": 0,
+      "limit": 6,
+      "min_interval": 0.05,
+      "requests": 9,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "raw.githubusercontent.com": {
+      "errors": 0,
+      "limit": 12,
+      "min_interval": 0.05,
+      "requests": 2,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    }
+  },
+  "provenance": {
+    "generated_at": "2026-08-23T04:51:26.891441+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "forensic-four-divergences-v2",
+    "run_id": "20260823T045126Z-2d9eff4028d9",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/forensic_four_divergences_v2.py",
+    "tool_sha256": "sha256:cb89ef57df34fae778dd7e24f00bebda7ec37a9f697210699b1bf42d2774c5c0"
+  },
+  "receipt_sha256": "sha256:bc555d5a16cb56b91f8381e03eb930e47abd656936da894b8cf4ebecdf157e4b",
+  "result_digest": "sha256:4e548aefc81e4f0a78c6f4db6205016745f25a96bed82be52afc3f3f50e9c07d",
+  "schema": "tavonel.v2.forensic_four_divergences_v2.v1",
+  "source_fact_ir_lane_imports": {
+    "core_extractor": {
+      "imported": true
+    },
+    "fingerprint": {
+      "imported": true
+    },
+    "metadata": {
+      "imported": false,
+      "reason": "ModuleNotFoundError: No module named 'metadata'"
+    },
+    "reference": {
+      "imported": true
+    }
+  },
+  "started_at": "2026-08-23T04:51:17.219210+00:00",
+  "wall_seconds": 9.7,
+  "what_this_is": "for each of the four cases forensic-stale-escape confirmed against the production path, on freshly refetched bytes: whether source_fact_ir's typed delta (ir.extract_all + source_fact_ir.fingerprint.aligned) would have named the artifact the clean full rebuild moved and the selective path carried stale, and through which fact kind and dependency channel",
+  "what_this_is_not": [
+    "a rate. Four named cases are not a denominator.",
+    "a rescore of forensic-stale-escape or forensic-stale-escape-root-cause; both receipts are read only, never touched.",
+    "a held-out result. The corpus here is the same four named cases the confirmation already looked at, refetched again. It cannot establish that the typed design works — only that it does or does not name these four named artifacts. The real verdict comes later, from a fresh disjoint held-out corpus."
+  ]
+}

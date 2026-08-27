@@ -1,0 +1,288 @@
+{
+  "checks": {
+    "every_declared_control_has_a_test_and_a_red_test": {
+      "class": "structural",
+      "controls_total": 10,
+      "pass": true,
+      "why": "a declared control with no test is a control that silently never ran; a control with no red test is a control that cannot fail. This is about the battery, not about the repair",
+      "with_an_undeclared_red_mutation": [],
+      "without_a_red_test": [],
+      "without_a_test": []
+    },
+    "every_unresolved_record_is_on_the_unresolved_channel": {
+      "class": "tautological",
+      "observed_violations": 0,
+      "pass": true,
+      "why": "`_CHANGE_CHANNEL` maps IDENTITY_UNRESOLVED to UNRESOLVED, so an emitted record cannot be on another channel. Reported because it is the contract's own claim; labelled so nobody counts it as independent evidence. The half that is NOT tautological -- a unit carrying an unresolved record AND a definite one, which enters `changed_logical_ids` regardless -- is gated separately above"
+    },
+    "every_withheld_definite_record_is_restated": {
+      "class": "prospective",
+      "observed_violations": 0,
+      "pass": true,
+      "why": "the weaker half of the same rule: a unit may keep other records while losing its definite one, and it is still silenced about the thing that was withheld"
+    },
+    "no_unsettled_identity_seeds_a_recompilation": {
+      "class": "prospective",
+      "observed_violations": 0,
+      "pass": true,
+      "predicted": true,
+      "why": "an unresolved unit that reaches `changed_logical_ids` is both unsettled and definitely classified; control 10's second half"
+    },
+    "nothing_disappears_silently": {
+      "class": "prospective",
+      "observed_violations": 0,
+      "pass": true,
+      "why": "a unit that carried a record under pin OFF and carries none under pin ON has had a false statement replaced by no statement, which a fail-closed endpoint cannot score"
+    },
+    "the_definite_vocabulary_survives": {
+      "class": "prospective",
+      "collapsed_under_pin_on": [],
+      "counts_pin_off": {
+        "evidence_moved": 70,
+        "modified_claim": 1777,
+        "structure_changed": 381,
+        "unit_added": 1157,
+        "unit_removed": 931
+      },
+      "counts_pin_on": {
+        "evidence_moved": 70,
+        "modified_claim": 1777,
+        "structure_changed": 381,
+        "unit_added": 1116,
+        "unit_removed": 922
+      },
+      "definite_kinds_under_pin_off": [
+        "evidence_moved",
+        "modified_claim",
+        "structure_changed",
+        "unit_added",
+        "unit_removed"
+      ],
+      "pass": true,
+      "predicted": true,
+      "why": "controls 3-6 say a settled decision is untouched. Over-quarantine is its own defect and would show here as a definite kind that pin OFF speaks and pin ON does not"
+    },
+    "the_document_level_channel_is_untouched": {
+      "class": "prospective",
+      "observed_violations": 0,
+      "pass": true,
+      "why": "the repair is about units; a structural record must not move"
+    },
+    "the_nine_v1_development_fixtures_close": {
+      "class": "retrospective-development-fixture",
+      "fixture_cases": 9,
+      "fixtures_not_observed": [],
+      "observed_but_not_a_fixture": [],
+      "observed_withheld_removals": 9,
+      "pass": true,
+      "why": "the repair was written after seeing these nine, so their closure is a development regression. REPORTED AND NEVER COUNTED. IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 graded FAIL on INVARIANT_6 and that verdict is permanent, is not rescored here, and is not a denominator for anything"
+    },
+    "the_quarantine_path_is_actually_exercised": {
+      "class": "prospective",
+      "declared_reasons": [
+        "declared_candidate",
+        "logical_id_counterpart",
+        "matched_to_a_quarantined_unit",
+        "selected_candidate"
+      ],
+      "membership_by_clause": {
+        "declared_candidate": 725,
+        "logical_id_counterpart": 38,
+        "matched_to_a_quarantined_unit": 0,
+        "selected_candidate": 0,
+        "total_members": 763
+      },
+      "pass": true,
+      "records_emitted_by_reason": {
+        "declared_candidate": 41,
+        "logical_id_counterpart": 0,
+        "matched_to_a_quarantined_unit": 0,
+        "selected_candidate": 0
+      },
+      "why": "the quarantine must have MEMBERS on this corpus. Without them every check above is clean because it is watching nothing, which is this study's most-repeated defect",
+      "why_membership_and_not_emission": "clause (3) -- the member INC-V2-047 is about -- suppresses a false unit_removed while the record making it visible was already emitted by the AMBIGUOUS branch under the same id, so it contributes no `detail` of its own. Gating on emitted reasons would report the load-bearing clause as never firing"
+    },
+    "the_reference_arm_is_still_production": {
+      "class": "prospective",
+      "observed": 9,
+      "pass": true,
+      "why": "pin OFF must still reproduce the INC-V2-047 defect. If it does not, the two arms are the same behaviour and every number in the differential is the repair compared with itself"
+    },
+    "the_repair_only_ever_withholds": {
+      "class": "prospective",
+      "observed_violations": 0,
+      "pass": true,
+      "predicted": true,
+      "why": "no unit may acquire a concrete record it did not carry under pin OFF. A repair that adds a statement is not withholding one"
+    }
+  },
+  "checks_by_class": {
+    "prospective": {
+      "passed": 8,
+      "total": 8
+    },
+    "retrospective-development-fixture": {
+      "passed": 1,
+      "total": 1
+    },
+    "structural": {
+      "passed": 1,
+      "total": 1
+    },
+    "tautological": {
+      "passed": 1,
+      "total": 1
+    }
+  },
+  "differential": {
+    "population": {
+      "limit": null,
+      "pairs_declared": 514,
+      "pairs_measured": 514,
+      "universe_freeze_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-universe--20260825T000853Z-b92bccc5bc13.json",
+      "universe_freeze_run_id": "20260825T000853Z-b92bccc5bc13",
+      "universe_sha256": "sha256:b36f1a0821ea02f14e7c3162a0039cca88a06024710a1a1fee50bd94185246cc"
+    },
+    "schema": "tavonel.v2.identity_quarantine_differential.v1",
+    "subject_code": {
+      "files": {
+        "packages/cir-python/src/akc_cir/identity_quarantine.py": "sha256:7cdcd663ae5993503416c3d36c9a347ec80c5f3d10bd120a5169fda7fcbf358c",
+        "packages/cir-python/src/akc_cir/semantic_diff.py": "sha256:6c0290c14c90a60a2a3ea9868c73a2f4583a6c0942b24ac9ed9dcddab010fb8c"
+      },
+      "observed_module_default": false,
+      "observed_module_default_is_not_an_input": "both arms pass quarantine_unsettled_identity explicitly; this value is recorded as an observation of the tree, not as an input"
+    },
+    "verdict": "PASS"
+  },
+  "limit": null,
+  "predictions_from_controls": {
+    "controls": [
+      "control_1_ambiguous_same_logical_id_counterpart_is_never_removed",
+      "control_2_a_candidate_never_receives_a_concrete_outcome",
+      "control_3_a_clear_same_id_match_remains_matched",
+      "control_4_a_genuine_removal_remains_removed",
+      "control_5_a_genuine_addition_remains_added",
+      "control_6_ambiguity_does_not_quarantine_unrelated_units",
+      "control_7_many_to_one_one_to_many_tie_and_restructured",
+      "control_8_the_nine_v1_failures_replay_and_close",
+      "control_9_legacy_and_new_content_predicates_still_agree",
+      "control_10_every_quarantined_unit_stays_visible"
+    ],
+    "controls_total": 10,
+    "controls_with_an_undeclared_red_mutation": [],
+    "controls_without_a_red_test": [],
+    "controls_without_a_test": [],
+    "development_fixture_cases": [
+      {
+        "lineage_id": "ecfr:40:141:141.153",
+        "logical_id": "u:aad22330ba59cb2db5271716"
+      },
+      {
+        "lineage_id": "ecfr:42:422:422.100",
+        "logical_id": "u:b0a99e39ca6c476fc5496db9"
+      },
+      {
+        "lineage_id": "ecfr:42:422:422.101",
+        "logical_id": "u:8341eaf0ee778ef54d32cbb0"
+      },
+      {
+        "lineage_id": "ecfr:42:422:422.111",
+        "logical_id": "u:428252a6c1e5c8640ae81ed7"
+      },
+      {
+        "lineage_id": "ecfr:42:482:482.21",
+        "logical_id": "u:fb2908a47001807f6ebc2ebf"
+      },
+      {
+        "lineage_id": "ecfr:49:571:571.106",
+        "logical_id": "u:584953a849e1683e9bbae8f5"
+      },
+      {
+        "lineage_id": "ecfr:50:17:17.21",
+        "logical_id": "u:40a6edb55ee42d113a2bc573"
+      },
+      {
+        "lineage_id": "ecfr:50:17:17.21",
+        "logical_id": "u:9327aad7f7f428595f018be9"
+      },
+      {
+        "lineage_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+        "logical_id": "u:2812935fff1a10ec76712c88"
+      }
+    ],
+    "predicts_no_unresolved_unit_seeds_a_recompilation": true,
+    "predicts_no_unsettled_unit_is_definitely_classified": true,
+    "predicts_the_definite_vocabulary_survives": true,
+    "red_mutations_used": [
+      "doctored_records",
+      "over_quarantine",
+      "pin_off"
+    ]
+  },
+  "prospective_checks_passed": 8,
+  "prospective_checks_total": 8,
+  "provenance": {
+    "generated_at": "2026-08-25T02:24:26.431009+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-quarantine-canary",
+    "run_id": "20260825T022426Z-0308c9c0ab39",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/canary_identity_quarantine.py",
+    "tool_sha256": "sha256:6a34c67bd7e5fa382460ea8df3c848446ab700078e9f19b381a42b4692883553"
+  },
+  "receipt_sha256": "sha256:100a8589d3b82e00f1c77e1b4b7e23e1147db6761bdb9088179c7e863263d277",
+  "reported_not_gated": {
+    "clause_coverage_is_a_limit_not_a_failure": "a contract clause the corpus never reaches is not a defect in the repair; it is a statement about what this run is evidence for. Reported so a later reader cannot mistake a PASS here for coverage of the whole contract",
+    "clauses_never_exercised_on_this_corpus": [
+      "matched_to_a_quarantined_unit",
+      "selected_candidate"
+    ],
+    "identical_share_of_units_compared": 0.989138,
+    "kind_counts_pin_off": {
+      "evidence_moved": 70,
+      "identity_unresolved": 753,
+      "modified_claim": 1777,
+      "structure_changed": 381,
+      "unit_added": 1157,
+      "unit_removed": 931
+    },
+    "kind_counts_pin_on": {
+      "evidence_moved": 70,
+      "identity_unresolved": 794,
+      "modified_claim": 1777,
+      "structure_changed": 381,
+      "unit_added": 1116,
+      "unit_removed": 922
+    },
+    "quarantine_membership_by_clause": {
+      "declared_candidate": 725,
+      "logical_id_counterpart": 38,
+      "matched_to_a_quarantined_unit": 0,
+      "selected_candidate": 0,
+      "total_members": 763
+    },
+    "quarantine_reason_counts_pin_on": {
+      "declared_candidate": 41,
+      "logical_id_counterpart": 0,
+      "matched_to_a_quarantined_unit": 0,
+      "selected_candidate": 0
+    },
+    "transitions": {
+      "identity_unresolved+unit_removed -> identity_unresolved": 9,
+      "unit_added -> identity_unresolved": 41
+    },
+    "unit_added_withheld": 41,
+    "unit_removed_withheld": 9,
+    "units_changed": 50,
+    "units_compared": 4603,
+    "units_identical_under_both_pins": 4553,
+    "why": "no threshold in this repository is calibrated; a rate bar invented here would be an uncalibrated number presented as a measured one"
+  },
+  "rung": "4 -- canary",
+  "schema": "tavonel.v2.canary_identity_quarantine.v1",
+  "verdict": "PASS",
+  "what_may_be_counted_as_evidence": "the prospective checks only. The structural check is about the control battery, the retrospective check replays fixtures the repair was written after seeing, and the tautological check is true by construction"
+}

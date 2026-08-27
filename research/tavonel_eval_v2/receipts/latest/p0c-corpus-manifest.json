@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/p0c-corpus-manifest--20260821T081657Z-bb8ae6f07495.json",
+  "points_to_file_sha256": "sha256:4f4d073d5d0f1e4e5024b4db1c18aa0cb893eed9d7f6e74e48a1dd16a032ceaa",
+  "run_id": "20260821T081657Z-bb8ae6f07495",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "p0c-corpus-manifest",
+  "updated_at": "2026-08-21T08:16:57.528958+00:00"
+}

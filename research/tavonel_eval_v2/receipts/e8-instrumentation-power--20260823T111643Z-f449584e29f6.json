@@ -1,0 +1,155 @@
+{
+  "classification": "mandatory safety veto (founder ruling 2026-08-23, option b)",
+  "control_false_positives": 0,
+  "controls": [
+    {
+      "expected_raise": false,
+      "raised": false,
+      "stage": "post_execution"
+    },
+    {
+      "expected_raise": false,
+      "raised": false,
+      "stage": "pre_activation"
+    }
+  ],
+  "controls_total": 2,
+  "endpoint": "E8_no_rebuild_required_artifact_carried_without_execution",
+  "estimated_cost_usd": 0.0,
+  "generated_at": "2026-08-23T11:16:43.866672+00:00",
+  "gpu_seconds": 0,
+  "injections_missed": [],
+  "injections_not_raised": 0,
+  "injections_raised": 8,
+  "injections_total": 8,
+  "never_mixed_into_held_out_denominator": true,
+  "proven": true,
+  "provenance": {
+    "generated_at": "2026-08-23T11:16:43.867415+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "e8-instrumentation-power",
+    "run_id": "20260823T111643Z-f449584e29f6",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/prove_e8_instrumentation_power.py",
+    "tool_sha256": "sha256:133412ca31ff302b1560b5797658edd6990fc6a2b1c0c096af5f19fc5da7d07b"
+  },
+  "receipt_sha256": "sha256:f801ab6ef0bcad6426357d7b8caacc79557ec5b60f68e59aeceaeb123be18191",
+  "results": [
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "section:a"
+      ],
+      "injection": "single_artifact",
+      "named_in_message": [
+        "section:a"
+      ],
+      "raised": true,
+      "stage": "post_execution"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "section:a"
+      ],
+      "injection": "single_artifact",
+      "named_in_message": [
+        "section:a"
+      ],
+      "raised": true,
+      "stage": "pre_activation"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "section:b"
+      ],
+      "injection": "one_of_several_slips_through",
+      "named_in_message": [
+        "section:b"
+      ],
+      "raised": true,
+      "stage": "post_execution"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "section:b"
+      ],
+      "injection": "one_of_several_slips_through",
+      "named_in_message": [
+        "section:b"
+      ],
+      "raised": true,
+      "stage": "pre_activation"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "chain:c"
+      ],
+      "injection": "deepest_hop_of_a_three_hop_chain",
+      "named_in_message": [
+        "chain:c"
+      ],
+      "raised": true,
+      "stage": "post_execution"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "chain:c"
+      ],
+      "injection": "deepest_hop_of_a_three_hop_chain",
+      "named_in_message": [
+        "chain:c"
+      ],
+      "raised": true,
+      "stage": "pre_activation"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "section:a",
+        "section:b"
+      ],
+      "injection": "every_required_artifact_carried",
+      "named_in_message": [
+        "section:a",
+        "section:b"
+      ],
+      "raised": true,
+      "stage": "post_execution"
+    },
+    {
+      "expected_raise": true,
+      "expected_violating_artifacts": [
+        "section:a",
+        "section:b"
+      ],
+      "injection": "every_required_artifact_carried",
+      "named_in_message": [
+        "section:a",
+        "section:b"
+      ],
+      "raised": true,
+      "stage": "pre_activation"
+    }
+  ],
+  "schema": "tavonel.v2.e8_instrumentation_power.v1",
+  "split": "development",
+  "stages": [
+    "post_execution",
+    "pre_activation"
+  ],
+  "violating_artifacts_not_named": [],
+  "what_this_does_not_establish": [
+    "that the system is correct. A working detector is not an absent defect.",
+    "any held-out result. These injections are synthetic development fixtures and are never counted as pairs, denominators or gate power.",
+    "that E8 has natural gate power. It does not: the seam is structurally closed, and a held-out zero still credits nothing."
+  ],
+  "what_this_establishes": "E8's check raises InvariantViolation on an injected unexecuted carry, at both stages, and does not raise on clean input"
+}

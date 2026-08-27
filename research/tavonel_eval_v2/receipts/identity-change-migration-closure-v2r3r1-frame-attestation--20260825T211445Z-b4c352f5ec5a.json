@@ -1,0 +1,118 @@
+{
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3r1-acquisition-frame-freeze--20260825T211445Z-c30ab96cb45a.json",
+    "receipt_body_sha256": "sha256:a3b5a58c3fde33c0a459d72db021c7a2dd79a968a60da4720899c0beb702d91e",
+    "receipt_file_sha256": "sha256:e6647b059537176ef6f0a79810300868ec9d059681e4a189dd10c872f106564d",
+    "run_id": "20260825T211445Z-c30ab96cb45a",
+    "stem": "identity-change-migration-closure-v2r3r1-acquisition-frame-freeze"
+  },
+  "carry_forward": {
+    "all_or_nothing": "any defect raises and offers no repair path. Repairing a row, dropping a row or re-fetching a payload would each create the selection freedom the eligibility argument depends on not existing.",
+    "candidate_correspondence": {
+      "fields_compared": 3300,
+      "frozen_order_is_the_candidate_rows_sorted_by_rung_3_key": true,
+      "held": true,
+      "lineage_id_sets_identical": true,
+      "pairs": 300,
+      "row_fields": [
+        "family",
+        "before_version",
+        "after_version"
+      ],
+      "side_fields": {
+        "canonical_path": "canonical_path",
+        "canonical_sha256_recorded": "canonical_sha256",
+        "raw_path": "raw_path",
+        "raw_sha256_recorded": "raw_sha256"
+      },
+      "why_not_whole_row_equality": "rung 3 transforms a candidate row into a frozen row: it consumes `raw_sha256_recorded`, re-hashes the file, and emits `raw_sha256` beside a verification flag. The shapes differ by construction, so the honest question is whether every surviving field is unchanged."
+    },
+    "equality": {
+      "added_pairs": 0,
+      "by_family": {
+        "git_docs": 133,
+        "regulation_ecfr": 104,
+        "sec_edgar": 63
+      },
+      "changed_canonical_digests": 0,
+      "changed_family_labels": 0,
+      "changed_raw_digests": 0,
+      "changed_revision_ids": 0,
+      "held": true,
+      "how": "the rows were compared whole and in order; the eight declared deltas are derived from that comparison rather than measured beside it, and whole-row equality is asserted separately so a field outside the declared set cannot pass unnoticed.",
+      "no_selection_function": "the parent's frozen universe is the complete candidate set. Nothing is searched, sampled, filtered or subset -- not even by a condition that is currently always true.",
+      "ordered_lineage_ids_identical": true,
+      "pair_count": 300,
+      "removed_pairs": 0,
+      "reordered_pairs": 0,
+      "replaced_pairs": 0,
+      "whole_row_equality": true
+    },
+    "held": true,
+    "mode": "EXACT_SET",
+    "network": "none",
+    "parent_manifest_sha256": "sha256:67ad8a11de69d3fbe1bc02c83b4233bcdbe7dc37b0ce413a50273865932e6ca7",
+    "parent_protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3",
+    "parent_universe_receipt": "identity-change-migration-closure-v2r3-universe--20260825T180058Z-914589827af0.json",
+    "parent_universe_receipt_file_sha256": "sha256:d554d250f464882df9145303963d9728530dab2f78ba4a4d821560acd48e8415",
+    "parent_universe_run_id": "20260825T180058Z-914589827af0",
+    "parent_universe_sha256": "sha256:628f29617f43ab4113ad5ab172ddcafb635a0f98f01f432afc4531abb0bd0739",
+    "payload_verification": {
+      "held": true,
+      "how": "every raw and canonical file named by every row was re-hashed from disk and compared to the digest the parent's frozen receipt pinned. Nothing was re-fetched, and the recorded digest was never trusted in place of the file.",
+      "network": "none",
+      "pairs": 300,
+      "payloads_rehashed": 1200
+    },
+    "reacquisition": "none"
+  },
+  "parent_disposition": {
+    "bindings": {
+      "disposition": {
+        "outcome_disclosure": "NONE_ESTABLISHED",
+        "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3-chain-disposition--20260825T204825Z-620d496e43b9.json",
+        "receipt_file_sha256": "sha256:ff326c8939ecef371adaa4a3bf0e9381e69ea08b000a05d9fec95eb5370498f5",
+        "run_id": "20260825T204825Z-620d496e43b9"
+      },
+      "non_disclosure": {
+        "outcome_disclosure": "NONE_ESTABLISHED",
+        "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3-non-disclosure--20260825T204825Z-9a9095df6202.json",
+        "receipt_file_sha256": "sha256:3a686499abf0c70ea10d5de9e44c8bd9860b6cf9f0f974bc3dca0f060f4377f4",
+        "run_id": "20260825T204825Z-9a9095df6202"
+      }
+    },
+    "held": true,
+    "outcome_disclosure": "NONE_ESTABLISHED",
+    "parent_chain_status": "ABORTED_PRE_RESULT_INSTRUMENT_CRASH",
+    "parent_corpus_status": "ACQUIRED_AND_FROZEN_BUT_UNSCORED",
+    "why_this_is_read_and_not_restated": "this chain's whole cohort is eligible because of that adjudication. A chain that asserted it in its own prose would be citing itself."
+  },
+  "parent_universe": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3-universe--20260825T180058Z-914589827af0.json",
+    "receipt_body_sha256": "sha256:15b1d3a3f7e19500a7c6372f676043e9cf5e9bf9180ba82806c72f10f58d5069",
+    "receipt_file_sha256": "sha256:d554d250f464882df9145303963d9728530dab2f78ba4a4d821560acd48e8415",
+    "run_id": "20260825T180058Z-914589827af0",
+    "stem": "identity-change-migration-closure-v2r3-universe"
+  },
+  "pinned_files": {
+    "acquisition/sources_v2r3r1.py": "sha256:2b6950ce86e15ce2bad3555258bb38da763232296d33ba5566b22b44b1d6f854",
+    "tools/enumerate_v2r3r1_universe.py": "sha256:746b12cb7dd317db35c3102fc449ed5872c997fe134487c2072804ebb4794990",
+    "tools/v2r3r1_carry_forward.py": "sha256:1830444b544eccfa372424442cf00d2753952ba8b82fedf522aeb0a6666b1ecd"
+  },
+  "provenance": {
+    "generated_at": "2026-08-25T21:14:45.827416+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1.yaml",
+    "protocol_sha256": "sha256:1be970071924fcaea5d2ffbe05e30fd40327408bc2ac3a69bcb2131a839b4f1f",
+    "receipt_stem": "identity-change-migration-closure-v2r3r1-frame-attestation",
+    "run_id": "20260825T211445Z-b4c352f5ec5a",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:ce32994ba6daac9d20dadaaebd4a2aaf9a9a80528015fa4d99f9a6f68061e44e",
+  "refuses_unless": "every declared carry-forward delta is 0, the pair count is 300, every payload re-hashes to the parent's frozen digest, and the parent's outcome disclosure is NONE_ESTABLISHED",
+  "rung": "0a",
+  "rung_name": "frame_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3r1_attestation.v1"
+}
