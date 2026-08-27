@@ -8614,6 +8614,47 @@ mismatch) turn it red.
 **Authority:** the closure-membership check above; `frozen_drift` not naming
 `sources_sfi3.py`; the 102-pointer digest scan.
 
+## INC-V2-097 update - the same pointer dangled again, and the gate caught it
+
+**Disposition:** REGENERATED; cause of THIS recurrence undetermined and said so.
+
+Sealing SFIR4's terminal stop, the pointer check added for the first occurrence
+went red:
+
+    102 pointers checked; 1 target absent from disk
+
+Same pointer, new run id: `r1-reproducibility-fixture--20260827T024437Z-...`,
+written at 02:44:37 and gone. The receipt was written and later vanished --
+`write_immutable` creates the immutable file with an exclusive open BEFORE it
+touches the pointer, so a crash between the two leaves the safe half, not this
+one. No test patches `evidence.RECEIPTS` or `evidence.POINTERS`, so it was not a
+tmp-directory redirection either.
+
+**The cause of this recurrence is not established.** What is known is the window:
+02:44 sits inside the INC-V2-100 incident, where `allow_under_test` was mutated
+to latch permission on and `v2r4_preacquisition_gate.run()` executed for real
+until the run was killed. A gate run does write receipts. That is a plausible
+account and it is not a demonstrated one, and the difference is recorded rather
+than smoothed over -- writing "caused by the latched guard" would be a
+delegation defect: a true statement about a narrower question (it happened in
+that window) presented as an answer to a wider one (what removed the file).
+
+The repair is the same as before and no stronger: re-run the deterministic
+fixture, commit the receipt and the pointer together. All runs on disk still
+carry one semantic result digest, so nothing was lost but bytes.
+
+**What this says about the first fix.** INC-V2-097 added a gate and regenerated
+a receipt. The gate worked -- this was found in seconds, by a check, rather than
+in a year by a reader following a citation into nothing. The regeneration did
+not prevent recurrence, because it was never going to: it treated the symptom,
+and the entry said so at the time. What is now also clear is that the underlying
+cause remains unidentified after two occurrences, which is the honest headline
+and the reason this is an update rather than a closure.
+
+**Authority:** the failing gate output; `write_immutable`'s write order; the
+absence of any test patching the receipt directories.
+
+
 ## INC-V2-100 - a live cohort was one stray import away from a test run
 
 **Class:** an unguarded cohort-touching entry point reachable from pytest.
@@ -8777,3 +8818,61 @@ The captured output holds a traceback and nothing else.
 
 **Authority:** the aborted run's refusal; the 25-request throttling measurement;
 the frozen bounds read from `sources_sfir4.PAGINATION_CONTRACT`.
+
+### Correction, same day: the volume figure above is wrong
+
+The section headed *What the endpoint actually demands* states the declared
+Wikipedia frame at "up to 3,000 requests ... on the order of 4.6 hours". That is
+wrong, and it was wrong when written.
+
+It assumed one request per candidate page. The adapter already batches, and has
+all along:
+
+    category_page_size:          500   (one request covers a 100-page root)
+    revision_batch_size:          50   (prop=revisions over 50 titles at once)
+    max_category_pages_per_root: 100
+    roots:                        30
+
+Which is roughly **3 requests per root, ~90 in total** -- not 3,000. At the
+observed throughput that is about ten minutes, not four and a half hours.
+
+The error came from reading `max_category_pages_per_root: 100` as a request
+count when it is a page count, and never checking the number against the code
+that issues the requests. The conclusion drawn from it -- "the instrument cannot
+reach a Wikipedia capacity measurement at this frame under any sequence of
+events" -- was therefore overstated. What is true is narrower and still
+sufficient to have stopped SFIR4: **~90 unpaced requests exhaust a 5-retry
+budget**, because the endpoint admits about ten per minute and the frozen total
+wait is 180 seconds.
+
+This is the second wrong first answer in this incident, after the User-Agent
+A/B. Both are left in place above rather than edited away. A study whose method
+is that incidents are evidence does not get to quietly delete the two occasions
+its own analysis was confidently wrong before it was right.
+
+**The disposition does not change.** SFIR4 remains a terminal operational stop
+and its budget is still not edited: the corrected figure makes the successor
+cheaper to run, not the frozen bound retroactively adequate. 180 seconds is
+still less than ~90 requests need.
+
+### What the successor's pacing is actually based on
+
+Measured directly, after the correction, with a cool-down between arms so one
+trial's bucket could not bleed into the next:
+
+| inter-request delay | result |
+|---|---|
+| 0 s | 10 ok, 2 throttled |
+| 2 s | 10 ok, 2 throttled |
+| 5 s | 11 ok, 1 throttled |
+| **7 s** | **20 ok, 0 throttled** (over 150 s) |
+
+Spacing below about 6 seconds does not help, which says the limit is a quota per
+roughly-60-second window rather than a rate: ten-ish requests get through
+whatever the gaps between them. At 7 s the window never fills and nothing is
+refused.
+
+That is the operational motivation recorded in SFIR5's provenance, and it is
+admissible for designing a new prospective protocol because it is a measurement
+of the endpoint, not of SFIR5's capacity result -- no candidate was counted, no
+threshold evaluated, no cohort read.
