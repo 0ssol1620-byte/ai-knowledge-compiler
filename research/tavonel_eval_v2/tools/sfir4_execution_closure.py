@@ -98,6 +98,11 @@ ENTRY_POINTS: tuple[str, ...] = (
 #: the same reason: their verdicts are pre-freeze conditions, so a verdict from
 #: a tool that has since drifted is not evidence.
 VERIFICATION_ENTRY_POINTS: tuple[str, ...] = (
+    # The isolated-execution gate and its controls. Absent from this tuple until
+    # a pre-freeze audit found it had no call sites at all: a gate the closure
+    # does not require to be committed is a gate a fresh clone may not have.
+    "tools/sfir4_isolated_env.py",
+    "tests/test_sfir4_isolated_env.py",
     "tests/test_sfir4_locator.py",
     "tests/test_sfir4_identity_domain.py",
     "tests/test_sfir4_response_evidence.py",

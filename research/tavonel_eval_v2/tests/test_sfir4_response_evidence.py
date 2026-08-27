@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -288,3 +290,145 @@ def test_an_empty_ledger_states_an_empty_proof() -> None:
     assert proof["global"]["requests"] == 0
     assert proof["per_root"] == {}
     assert ev.verify_chain(proof)
+
+
+# ---------------------------------------------------------------------------
+# The pre-freeze audit finding: verify_chain covers only `observations`
+# ---------------------------------------------------------------------------
+
+
+def _observed_ledger(count: int = 2) -> ev.ResponseLedger:
+    ledger = ev.ResponseLedger()
+    for index in range(count):
+        payload = f"body-{index}".encode()
+        ledger.record(
+            family="git_docs",
+            root_id=f"root-{index % 2}",
+            purpose="tree",
+            url=f"https://api.github.com/repos/x/y/git/trees/{index}",
+            status=200,
+            content_digest=ev.digest_bytes(payload),
+            observed_length=len(payload),
+            declared_length=len(payload),
+            observed_bytes=True,
+        )
+    return ledger
+
+
+def test_an_honestly_produced_proof_is_accepted() -> None:
+    """Without this, every refusal below could be satisfied by refusing always."""
+    recomputed = ev.require_observed_census(_observed_ledger().proof())
+    assert recomputed["global"]["requests"] == 2
+    assert recomputed["global"]["all_observed"] is True
+
+
+def test_a_zero_observation_census_with_fabricated_aggregates_is_refused() -> None:
+    """The exact block a pre-freeze audit used to certify a census of nothing.
+
+    The head of an empty chain is ``sha256(CHAIN_SEED)`` -- a public, unkeyed
+    constant anyone can compute -- so ``verify_chain`` returns True on it. The
+    aggregates beside it were then believed. This asserts both halves: that the
+    chain really does verify, so the test is about the gap and not about a
+    malformed document, and that the census is refused anyway.
+    """
+    forged = {
+        "schema": ev.SCHEMA,
+        "chain_seed": ev.CHAIN_SEED.decode("ascii"),
+        "chain_head": "sha256:" + hashlib.sha256(ev.CHAIN_SEED).hexdigest(),
+        "global": {
+            "requests": 1000,
+            "roots": 20,
+            "observed_bytes_total": 999999,
+            "responses": 1000,
+            "failures": 0,
+            "all_observed": True,
+            "sequence_is_dense": True,
+        },
+        "per_root": {},
+        "per_root_requests_sum": 1000,
+        "observations": [],
+    }
+    assert ev.verify_chain(dict(forged)) is True
+    with pytest.raises(ev.ResponseEvidenceRefused, match="records no observations"):
+        ev.require_observed_census(forged)
+
+
+def test_an_edited_aggregate_is_refused_even_though_the_chain_still_verifies() -> None:
+    proof = _observed_ledger().proof()
+    proof["global"]["requests"] = 500
+    assert ev.verify_chain(dict(proof)) is True
+    with pytest.raises(ev.ResponseEvidenceRefused, match="does not match the observations"):
+        ev.require_observed_census(proof)
+
+
+def test_an_edited_per_root_block_is_refused() -> None:
+    proof = _observed_ledger().proof()
+    first = next(iter(proof["per_root"]))
+    proof["per_root"][first]["observed_bytes_total"] += 1
+    with pytest.raises(ev.ResponseEvidenceRefused, match="does not match the observations"):
+        ev.require_observed_census(proof)
+
+
+def test_a_synthesised_census_is_refused_on_its_own_arithmetic() -> None:
+    """Self-consistent, nothing edited -- and still not a live census."""
+    ledger = ev.ResponseLedger()
+    ledger.record(
+        family="git_docs",
+        root_id="root-0",
+        purpose="tree",
+        url="https://api.github.com/repos/x/y/git/trees/0",
+        status=200,
+        content_digest=ev.digest_parsed({"injected": True}),
+        observed_length=0,
+        declared_length=None,
+        observed_bytes=False,
+    )
+    with pytest.raises(ev.ResponseEvidenceRefused, match="synthesised"):
+        ev.require_observed_census(ledger.proof())
+
+
+def test_flipping_the_observed_flag_leaves_the_digest_prefix_behind() -> None:
+    """The two signals are checked independently, on purpose.
+
+    A forger who rewrites ``observed_bytes`` AND every aggregate to match, and
+    rebuilds the chain over the edited rows, still leaves ``synthesized-sha256:``
+    in the digest. One signal alone would make this forgery succeed.
+    """
+    ledger = ev.ResponseLedger()
+    ledger.record(
+        family="git_docs",
+        root_id="root-0",
+        purpose="tree",
+        url="https://api.github.com/repos/x/y/git/trees/0",
+        status=200,
+        content_digest=ev.digest_parsed({"injected": True}),
+        observed_length=0,
+        declared_length=None,
+        observed_bytes=False,
+    )
+    proof = ledger.proof()
+    for row in proof["observations"]:
+        row["observed_bytes"] = True
+    proof.update(ev.recompute_proof_arithmetic(proof))
+    head = "sha256:" + hashlib.sha256(ev.CHAIN_SEED).hexdigest()
+    for row in proof["observations"]:
+        canonical = json.dumps(row, sort_keys=True, separators=(",", ":"))
+        head = (
+            "sha256:"
+            + hashlib.sha256(head.encode("ascii") + b"\0" + canonical.encode("utf-8")).hexdigest()
+        )
+    proof["chain_head"] = head
+
+    assert ev.verify_chain(dict(proof)) is True, "the forgery must be chain-valid"
+    with pytest.raises(ev.ResponseEvidenceRefused, match="synthesised"):
+        ev.require_observed_census(proof)
+
+
+def test_a_reordered_chain_is_still_refused() -> None:
+    proof = _observed_ledger(3).proof()
+    proof["observations"][0], proof["observations"][1] = (
+        proof["observations"][1],
+        proof["observations"][0],
+    )
+    with pytest.raises(ev.ResponseEvidenceRefused, match="chain does not recompute"):
+        ev.require_observed_census(proof)

@@ -12,8 +12,10 @@ sys.path.insert(0, str(NS / "tools"))
 
 import freeze_sfir4_protocol as freeze  # noqa: E402
 import probe_sfir4_capacity as probe  # noqa: E402
+import sfir4_core_conformance as conformance  # noqa: E402
 import sfir4_execution as sx  # noqa: E402
 import sfir4_execution_closure as closure  # noqa: E402
+import sfir4_isolated_env as isolation  # noqa: E402
 import sfir4_protocol as protocol  # noqa: E402
 from acquisition import sources_sfir4 as sources  # noqa: E402
 
@@ -284,3 +286,71 @@ def test_worker_default_and_maximum_are_two():
     assert sfir4_worker.MAX_WORKERS == 2
     workers = inspect.signature(sfir4_worker.produce_observation_batch).parameters["workers"]
     assert workers.default == 2
+
+
+# ---------------------------------------------------------------------------
+# The pre-freeze audit finding: the freeze asked whether SOME akc_cir had the
+# right symbols, never which one would load
+# ---------------------------------------------------------------------------
+
+
+def test_the_freeze_gate_asks_all_three_questions() -> None:
+    """Recoverable, conformant, AND the core that will actually load.
+
+    Both freeze paths used to call ``conformance.require_conformant()`` with no
+    expected root, so the branch that checks WHERE ``akc_cir`` resolved never
+    ran, and ``sfir4_isolated_env`` -- written for exactly the shared-venv
+    absolute-path ``.pth`` that resolves the core out of the shared working tree
+    -- had zero call sites anywhere in the pipeline. A receipt would have
+    recorded ``isolated_git_checkout`` while the interpreter imported whatever a
+    developer had open.
+
+    Asserted on the source text rather than by monkeypatching, because what went
+    wrong was an omitted call, and a test that patches the three functions would
+    pass whether or not the freeze paths call them.
+    """
+    source = (NS / "tools" / "freeze_sfir4_protocol.py").read_text(encoding="utf-8")
+    # The indented, newline-terminated form counts CALL SITES; the bare name
+    # also appears in the definition line.
+    assert source.count("    _require_reproducible_instrument()" + chr(10)) == 2, (
+        "both freeze_roster and freeze_protocol must run the gate"
+    )
+    assert "closure.require_recoverable()" in source
+    assert "conformance.require_conformant(EXPECTED_CORE_ROOT)" in source
+    assert "isolation.require_isolated(EXPECTED_CORE_ROOT)" in source
+    assert "conformance.require_conformant()" not in source, (
+        "a bare call skips the which-core-resolved check entirely"
+    )
+
+
+def test_the_expected_core_root_is_derived_from_this_checkout() -> None:
+    """Derived, not configured: there is no value anyone can set to make a
+    freeze run from one checkout expect another checkout's Protected Core."""
+    assert NS.parents[1] / "packages" / "cir-python" / "src" == freeze.EXPECTED_CORE_ROOT
+    assert (freeze.EXPECTED_CORE_ROOT / "akc_cir" / "__init__.py").is_file()
+
+
+def test_the_gate_passes_against_the_checkout_it_is_running_in() -> None:
+    """The happy path, so the controls above are not asserting a broken gate."""
+    freeze._require_reproducible_instrument()
+
+
+def test_conformance_refuses_a_core_resolved_from_somewhere_else() -> None:
+    with pytest.raises(conformance.ConformanceRefused):
+        conformance.require_conformant(Path("/nowhere/that/exists"))
+
+
+def test_isolation_refuses_a_core_resolved_from_somewhere_else() -> None:
+    with pytest.raises(isolation.IsolationRefused):
+        isolation.require_isolated(Path("/nowhere/that/exists"))
+
+
+def test_the_isolation_gate_is_inside_the_recoverable_closure() -> None:
+    """A gate a fresh clone might not have is not a gate.
+
+    ``sfir4_isolated_env.py`` was absent from the closure's verification entry
+    points, so nothing required it to be committed at all.
+    """
+    body = closure.gate()
+    reached = [path for path in body["manifest"] if "sfir4_isolated_env" in path]
+    assert len(reached) == 2, reached

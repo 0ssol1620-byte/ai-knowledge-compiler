@@ -48,6 +48,7 @@ import json
 import re
 import urllib.parse
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import Any, Final
 
@@ -301,3 +302,130 @@ def verify_chain(proof: dict[str, Any]) -> bool:
             + hashlib.sha256(head.encode("ascii") + b"\0" + canonical.encode("utf-8")).hexdigest()
         )
     return head == proof.get("chain_head")
+
+
+def recompute_proof_arithmetic(proof: Mapping[str, Any]) -> dict[str, Any]:
+    """Rebuild every aggregate in ``proof`` from its own ``observations``.
+
+    Written because ``verify_chain`` reads ONLY ``observations``: it proves the
+    recorded sequence was not edited, and says nothing whatever about the
+    ``global`` and ``per_root`` blocks sitting beside it. A reader that checked
+    the chain and then believed those blocks was checking a signature on one
+    document and quoting a different one.
+
+    The gap was not theoretical. A block with ``observations: []`` and a
+    hand-written ``global`` claiming 1000 observed requests recomputed its chain
+    head correctly -- the head of an empty chain is just ``sha256(CHAIN_SEED)``,
+    a public unkeyed constant anyone can compute -- and passed every downstream
+    assertion, certifying a census in which no request was ever made.
+    """
+    observations = proof.get("observations")
+    if not isinstance(observations, list):
+        raise ResponseEvidenceRefused("response evidence carries no observation list")
+
+    by_root: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+    for row in observations:
+        if not isinstance(row, Mapping):
+            raise ResponseEvidenceRefused("response evidence carries a malformed observation")
+        by_root[str(row.get("root_id"))].append(row)
+
+    def arithmetic(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+        return {
+            "requests": len(rows),
+            "first_sequence": rows[0].get("sequence") if rows else None,
+            "last_sequence": rows[-1].get("sequence") if rows else None,
+            "observed_bytes_total": sum(int(r.get("observed_length") or 0) for r in rows),
+            "responses": sum(1 for r in rows if r.get("outcome") == "RESPONSE"),
+            "failures": sum(1 for r in rows if r.get("outcome") != "RESPONSE"),
+            "all_observed": all(
+                bool(r.get("observed_bytes")) for r in rows if r.get("outcome") == "RESPONSE"
+            ),
+            "response_digests": [r.get("content_digest") for r in rows],
+            "distinct_response_digests": len({r.get("content_digest") for r in rows}),
+        }
+
+    per_root = {root: arithmetic(by_root[root]) for root in sorted(by_root)}
+    total = len(observations)
+    return {
+        "global": {
+            "requests": total,
+            "roots": len(per_root),
+            "observed_bytes_total": sum(int(r.get("observed_length") or 0) for r in observations),
+            "responses": sum(1 for r in observations if r.get("outcome") == "RESPONSE"),
+            "failures": sum(1 for r in observations if r.get("outcome") != "RESPONSE"),
+            "all_observed": all(
+                bool(r.get("observed_bytes"))
+                for r in observations
+                if r.get("outcome") == "RESPONSE"
+            ),
+            "sequence_is_dense": [r.get("sequence") for r in observations] == list(range(total)),
+        },
+        "per_root": per_root,
+        "per_root_requests_sum": sum(row["requests"] for row in per_root.values()),
+    }
+
+
+def require_observed_census(proof: Mapping[str, Any]) -> dict[str, Any]:
+    """Fail-closed: this proof describes requests that were actually made.
+
+    ``verify_chain`` is necessary and nowhere near sufficient. This is what a
+    sealing caller must use instead, and it refuses on each of the four ways a
+    census can fail to be one:
+
+    1. the chain does not recompute -- an observation was added, dropped or
+       moved;
+    2. there are no observations at all -- an empty chain has a well-known head
+       and certifies nothing;
+    3. a recorded aggregate disagrees with the observations it claims to
+       summarise -- the ``global``/``per_root`` blocks are recomputed here and
+       compared field by field, so editing them is exactly as detectable as
+       editing an observation;
+    4. any response was synthesised. This is tested twice, deliberately, on two
+       independent signals: the ``observed_bytes`` flag AND the digest prefix.
+       ``digest_parsed`` writes ``synthesized-sha256:``; a forger who flips only
+       the boolean leaves the prefix behind, and one who rewrites only the
+       prefix leaves the boolean.
+
+    ``ResponseLedger.require_all_observed`` covers (4) for a ledger still held
+    in memory. It cannot be reached by a reader holding only a JSON file, which
+    is the position every sealing caller is actually in -- and, as the audit
+    that produced this function found, it had zero call sites anywhere.
+    """
+    if not isinstance(proof, Mapping):
+        raise ResponseEvidenceRefused("response evidence is not a mapping")
+    if proof.get("schema") != SCHEMA:
+        raise ResponseEvidenceRefused("response evidence schema moved")
+    if not verify_chain(dict(proof)):
+        raise ResponseEvidenceRefused("response evidence chain does not recompute")
+
+    observations = proof.get("observations")
+    if not isinstance(observations, list) or not observations:
+        raise ResponseEvidenceRefused(
+            "response evidence records no observations; an empty chain has a "
+            "publicly computable head and is not evidence that any request was made"
+        )
+
+    recomputed = recompute_proof_arithmetic(proof)
+    for key in ("global", "per_root", "per_root_requests_sum"):
+        if proof.get(key) != recomputed[key]:
+            raise ResponseEvidenceRefused(
+                f"response evidence {key!r} does not match the observations it "
+                "summarises; the recorded arithmetic was not derived from this chain"
+            )
+
+    synthetic = [
+        row.get("sequence")
+        for row in observations
+        if row.get("outcome") == "RESPONSE"
+        and (
+            not row.get("observed_bytes")
+            or not str(row.get("content_digest", "")).startswith("sha256:")
+        )
+    ]
+    if synthetic:
+        raise ResponseEvidenceRefused(
+            f"{len(synthetic)} of {len(observations)} responses were synthesised, "
+            f"not observed; first at sequence {synthetic[0]}. A simulated census "
+            "is not a live one"
+        )
+    return recomputed

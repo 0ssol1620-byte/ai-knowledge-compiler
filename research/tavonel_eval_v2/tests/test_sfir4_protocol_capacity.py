@@ -1112,7 +1112,13 @@ def test_a_census_whose_request_arithmetic_does_not_reconcile_refuses(
     block = _response_evidence(requests=3)
     block["per_root_requests_sum"] = 99
     metadata = _census(tmp_path, "arithmetic", block)
-    with pytest.raises(protocol.SFIR4Refused, match="do not sum to the global count"):
+    # The refusal now fires one step earlier and for a stronger reason. The
+    # aggregates are recomputed from `observations` before anything compares
+    # them to each other, so an edited `per_root_requests_sum` is caught as
+    # arithmetic that was not derived from this chain rather than as arithmetic
+    # that failed to reconcile with a sibling field. Both are refusals; only the
+    # second could be satisfied by editing the sibling too.
+    with pytest.raises(protocol.SFIR4Refused, match="does not match the observations"):
         _seal(tmp_path, metadata, "out")
 
 
@@ -1137,7 +1143,9 @@ def test_a_synthesised_census_is_not_accepted_as_a_live_one(tmp_path: Path) -> N
 
 def test_a_census_that_observed_nothing_refuses(tmp_path: Path) -> None:
     metadata = _census(tmp_path, "empty", evidence.ResponseLedger().proof())
-    with pytest.raises(protocol.SFIR4Refused, match="observed no responses"):
+    # Refused for observing nothing, which is now stated as what it is: the head
+    # of an empty chain is a public constant and certifies no request at all.
+    with pytest.raises(protocol.SFIR4Refused, match="records no observations"):
         _seal(tmp_path, metadata, "out")
 
 
@@ -1155,3 +1163,66 @@ def test_the_probe_records_one_observation_per_git_request() -> None:
     )
     purposes = {row["purpose"] for row in proof["observations"]}
     assert purposes <= {"repository", "commit", "tree"}
+
+
+# ---------------------------------------------------------------------------
+# The pre-freeze audit finding: charter toolchain pins were written once and
+# never read again
+# ---------------------------------------------------------------------------
+
+
+def test_the_charter_toolchain_is_reverified_and_a_drifted_module_refuses_the_seal(
+    tmp_path: Path,
+) -> None:
+    """Post-hoc root addition, wearing an already-frozen charter.
+
+    ``acquisition/sources_sfir4.py`` holds ``SOURCE_POOLS``, ``declared_roots``
+    and ``SELECTION_SALT`` -- the roots, the per-root caps and the deterministic
+    ordering. Until ``verify_toolchain`` existed, exactly one of the charter's
+    six pins was ever checked again (the probe checks its own file), so a census
+    that came up short for a family could be rescued by widening a root list in
+    that module, re-running the probe in a fresh process, and sealing against the
+    SAME frozen charter. Nothing compared the new bytes to the pinned hash.
+
+    The mutation here is a comment, not a behaviour change, precisely so that
+    what the seal refuses is the DRIFT and not its consequences.
+    """
+    charter_path, charter_ref = _isolated_freeze(tmp_path)
+    spent_path, spent_ref = _isolated_spent(tmp_path)
+    base = tmp_path / "research/tavonel_eval_v2"
+
+    pinned = base / "acquisition/sources_sfir4.py"
+    pinned.write_text(
+        pinned.read_text(encoding="utf-8") + "\n# widened after the charter froze\n",
+        encoding="utf-8",
+    )
+
+    metadata = base / "metadata.json"
+    metadata.write_text(json.dumps({"schema": "x"}), encoding="utf-8")
+    with pytest.raises(protocol.SFIR4Refused, match="toolchain drifted"):
+        protocol.seal_capacity(
+            tmp_path, charter_ref, spent_ref, metadata, tmp_path / "out.json", STAMP
+        )
+    assert charter_path.is_file() and spent_path.is_file()
+
+
+def test_verify_toolchain_accepts_the_charter_it_was_frozen_against(tmp_path: Path) -> None:
+    """The other direction, so the refusal above is a rule rather than a veto."""
+    charter_path, _ = _isolated_freeze(tmp_path)
+    charter = json.loads(charter_path.read_text(encoding="utf-8"))
+    verified = protocol.verify_toolchain(tmp_path, charter)
+    assert set(verified) == set(charter["toolchain"])
+    assert all(value.startswith("sha256:") for value in verified.values())
+
+
+def test_verify_toolchain_refuses_when_a_pinned_module_is_absent(tmp_path: Path) -> None:
+    charter_path, _ = _isolated_freeze(tmp_path)
+    charter = json.loads(charter_path.read_text(encoding="utf-8"))
+    (tmp_path / "research/tavonel_eval_v2/tools/sfir4_spent_authority.py").unlink()
+    with pytest.raises(protocol.SFIR4Refused, match="pinned file is absent"):
+        protocol.verify_toolchain(tmp_path, charter)
+
+
+def test_verify_toolchain_refuses_a_charter_with_no_pins(tmp_path: Path) -> None:
+    with pytest.raises(protocol.SFIR4Refused, match="no toolchain pins"):
+        protocol.verify_toolchain(tmp_path, {"toolchain": {}})

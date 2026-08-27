@@ -310,9 +310,32 @@ class LiveMetadataTransport:
                     result_count = int(meta.get("result_count"))
                 except (TypeError, ValueError) as error:
                     raise protocol.SFIR3Refused("eCFR census counts malformed") from error
-                latest_date = meta.get("latest_date")
+                # eCFR renamed this field between SFIR3's run and SFIR4's.
+                #
+                # The versioner API served `meta.latest_date` when SFIR3 read it
+                # and serves `meta.latest_amendment_date` now; the old key is
+                # absent from the current response, not null. A census that
+                # required the old spelling therefore aborted mid-run against a
+                # live endpoint whose semantics had not changed at all.
+                #
+                # Both spellings are accepted, deliberately as an explicit
+                # disjunction rather than a fallback: SFIR3's frozen receipts
+                # were produced against `latest_date`, so that branch is what
+                # lets this adapter still reproduce SFIR3's reading, and the new
+                # branch is what lets it read the endpoint as it stands today.
+                # Both are reachable, which is the difference between a
+                # disjunction and a guard that can never fire.
+                #
+                # Neither spelling present is still a refusal. The value pins
+                # which edition of the regulation the enumeration describes, and
+                # an enumeration that cannot say which edition it read is not
+                # evidence about any of them.
+                latest_date = meta.get("latest_amendment_date") or meta.get("latest_date")
                 if not isinstance(latest_date, str) or not latest_date:
-                    raise protocol.SFIR3Refused("eCFR latest_date metadata malformed")
+                    raise protocol.SFIR3Refused(
+                        "eCFR edition date is absent under both "
+                        "'latest_amendment_date' and 'latest_date'"
+                    )
                 current_meta = (pages, result_count, latest_date)
                 if observed_meta is None:
                     observed_meta = current_meta

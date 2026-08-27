@@ -461,6 +461,55 @@ def freeze_design_charter(
     return write_immutable(destination, core)
 
 
+def verify_toolchain(root: Path, charter: Mapping[str, Any]) -> dict[str, str]:
+    """Re-hash every module the charter pinned, and refuse on any drift.
+
+    The charter records six exact refs under ``toolchain`` at freeze time. Until
+    this existed, exactly one of them was ever checked again -- ``probe_sfir4_
+    capacity`` verifies its own file against the charter before a census -- and
+    the other five were pins over bytes nothing read.
+
+    ``acquisition/sources_sfir4.py`` is the one that matters most, because it
+    holds ``SOURCE_POOLS``, ``declared_roots`` and ``SELECTION_SALT``: the roots,
+    the per-root caps and the deterministic ordering. A census that came up
+    short for one family could be rescued by widening a root list in that file
+    and re-running the probe in a fresh process, then sealing against the SAME
+    already-frozen charter -- and nothing compared the new bytes to the pinned
+    hash. That is post-hoc root addition wearing a frozen charter, which is the
+    single thing a pre-registered capacity criterion exists to prevent.
+
+    Called by ``seal_capacity`` and by both freeze paths, so the pins are
+    re-established at every point where a decision is recorded rather than only
+    at the point where they were written down.
+    """
+    toolchain = charter.get("toolchain")
+    if not isinstance(toolchain, Mapping) or not toolchain:
+        raise SFIR4Refused("charter carries no toolchain pins")
+    drifted: list[str] = []
+    verified: dict[str, str] = {}
+    for name, ref in sorted(toolchain.items()):
+        if not isinstance(ref, Mapping):
+            raise SFIR4Refused(f"charter toolchain pin {name!r} is malformed")
+        path = _resolve_ref(root, ref)
+        if not path.is_file():
+            drifted.append(f"{name}: pinned file is absent at {ref.get('path')}")
+            continue
+        actual = sha_file(path)
+        if actual != ref.get("sha256"):
+            drifted.append(
+                f"{name}: {ref.get('path')} is {actual}, "
+                f"charter pinned {ref.get('sha256')}"
+            )
+            continue
+        verified[name] = actual
+    if drifted:
+        raise SFIR4Refused(
+            "charter toolchain drifted since the freeze; the code that would run "
+            "is not the code the charter pinned: " + "; ".join(drifted)
+        )
+    return verified
+
+
 def _assert_response_evidence(block: object) -> None:
     """The census must carry a verifiable record of what actually came back.
 
@@ -482,24 +531,35 @@ def _assert_response_evidence(block: object) -> None:
         raise SFIR4Refused("capacity census carries no response evidence")
     if block.get("schema") != RESPONSE_EVIDENCE_SCHEMA:
         raise SFIR4Refused("capacity response-evidence schema moved")
-    if not evidence.verify_chain(dict(block)):
-        raise SFIR4Refused("capacity response-evidence chain does not recompute")
-    totals = block.get("global")
-    if not isinstance(totals, Mapping):
-        raise SFIR4Refused("capacity response evidence carries no global arithmetic")
-    if block.get("per_root_requests_sum") != totals.get("requests"):
+    # Every aggregate is RECOMPUTED from the observations and compared field by
+    # field, then the observations are checked for synthesis on two independent
+    # signals. See `require_observed_census`.
+    #
+    # This replaced a version that verified the chain and then read
+    # `global.all_observed`, `global.sequence_is_dense`, `global.requests` and
+    # `per_root_requests_sum` straight out of the same untrusted document,
+    # comparing them only to each other. `verify_chain` reads ONLY
+    # `observations`, so none of those four fields was covered by anything: a
+    # block with `observations: []` and a hand-written `global` claiming a
+    # thousand fully observed requests recomputed its chain head correctly --
+    # the head of an empty chain is sha256(CHAIN_SEED), a public constant -- and
+    # passed every assertion below it. A pre-freeze audit reproduced exactly
+    # that against these functions and it certified a census in which no request
+    # was ever made.
+    try:
+        recomputed = evidence.require_observed_census(dict(block))
+    except evidence.ResponseEvidenceRefused as error:
+        raise SFIR4Refused(f"capacity response evidence refused: {error}") from error
+
+    totals = recomputed["global"]
+    if not totals["requests"]:
+        raise SFIR4Refused("capacity census observed no responses at all")
+    if not totals["sequence_is_dense"]:
+        raise SFIR4Refused("capacity response-evidence sequence has a gap")
+    if recomputed["per_root_requests_sum"] != totals["requests"]:
         raise SFIR4Refused(
             "capacity response-evidence per-root request counts do not sum to the global count"
         )
-    if not totals.get("sequence_is_dense"):
-        raise SFIR4Refused("capacity response-evidence sequence has a gap")
-    if not totals.get("all_observed"):
-        raise SFIR4Refused(
-            "capacity census contains synthesised responses; a simulated census "
-            "is not a live one"
-        )
-    if not totals.get("requests"):
-        raise SFIR4Refused("capacity census observed no responses at all")
 
 
 def _assert_metadata_only(value: object, path: str = "$") -> None:
@@ -533,6 +593,9 @@ def seal_capacity(
     generated_at: str,
 ) -> Path:
     charter = verify_authority(root, charter_ref, CHARTER_SCHEMA)
+    # The charter's pins, re-established here rather than trusted from the
+    # freeze. See `verify_toolchain`.
+    verified_toolchain = verify_toolchain(root, charter)
     spent = verify_spent(root, spent_ref)
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     _assert_metadata_only(metadata)
@@ -773,6 +836,12 @@ def seal_capacity(
             "spent_identity_authority": dict(spent_ref),
             "metadata": exact_ref(root, metadata_path),
             "frozen_toolchain": charter["toolchain"],
+            #: The same pins, RE-HASHED at seal time rather than copied from the
+            #: charter. `frozen_toolchain` above records what the charter said;
+            #: this records what was on disk when the census was sealed. Two
+            #: fields, because a single field that merely echoes the charter
+            #: cannot show that anything was checked.
+            "toolchain_reverified_at_seal": verified_toolchain,
         },
     )
 

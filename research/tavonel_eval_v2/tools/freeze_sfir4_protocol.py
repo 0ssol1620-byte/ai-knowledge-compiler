@@ -20,6 +20,7 @@ sys.path.insert(0, str(NS / "tools"))
 import sfir4_core_conformance as conformance  # noqa: E402
 import sfir4_execution as sx  # noqa: E402
 import sfir4_execution_closure as closure  # noqa: E402
+import sfir4_isolated_env as isolation  # noqa: E402
 import sfir4_protocol as protocol  # noqa: E402
 from acquisition import sources_sfir4 as sources  # noqa: E402
 
@@ -30,6 +31,46 @@ def _ref(root: Path, path: Path) -> dict[str, str]:
 
 def _resolved(root: Path, ref: Mapping[str, Any]) -> Path:
     return protocol._resolve_ref(root, ref)
+
+
+#: The `src` directory the Protected Core MUST resolve from: the one inside the
+#: checkout this module is running from, derived rather than configured.
+#:
+#: `NS` is `<checkout>/research/tavonel_eval_v2`, so its grandparent is the
+#: checkout root. Deriving it means a freeze run from an isolated checkout
+#: expects that checkout's core, and a freeze run from the shared tree expects
+#: the shared one -- there is no value anyone can set to make the two agree
+#: when they should not.
+EXPECTED_CORE_ROOT = NS.parents[1] / "packages" / "cir-python" / "src"
+
+
+def _require_reproducible_instrument() -> None:
+    """The three questions a freeze must answer before it seals anything.
+
+    They are separate, and this study has been bitten by each of them alone:
+
+    **Is it recoverable?** INC-V2-089 lost 29 files that 20 receipts pinned,
+    because the research tree was untracked. A pin over unrecoverable bytes is a
+    statement with nothing behind it.
+
+    **Does it implement the algorithm?** A revision can be clean, committed and
+    byte-identical and still not contain the semantics the paper claims --
+    `79dd3b7` satisfied every recoverability property and was missing seven
+    claim-bearing symbols (INC-V2-092).
+
+    **Is it the one that will actually load?** This is the question the first two
+    do not ask, and it went unasked until a pre-freeze audit noticed. Both gates
+    were being called with no expected root, so `conformance()` only checked that
+    SOME importable `akc_cir` exposed the right names, and `sfir4_isolated_env`
+    -- written specifically to catch the shared venv's absolute-path `.pth`
+    resolving `akc_cir` out of the shared working tree -- had zero call sites
+    anywhere in the pipeline. A receipt would have recorded
+    `execution_environment: isolated_git_checkout` while the interpreter
+    imported whatever a developer had open.
+    """
+    closure.require_recoverable()
+    conformance.require_conformant(EXPECTED_CORE_ROOT)
+    isolation.require_isolated(EXPECTED_CORE_ROOT)
 
 
 def _candidate_order(family: str, row: Mapping[str, Any]) -> tuple[str, str]:
@@ -208,18 +249,7 @@ def freeze_roster(
     destination: Path,
     generated_at: str,
 ) -> Path:
-    # Before anything is sealed: is the instrument being frozen recoverable at
-    # all?  INC-V2-089 lost 29 files that 20 receipts pinned, because the whole
-    # research tree was untracked and a pin over unrecoverable bytes is a
-    # statement with nothing behind it.  A freeze that cannot be reproduced is
-    # not a freeze.
-    closure.require_recoverable()
-    # And: is the Protected Core that would actually import the one whose
-    # semantics the paper claims?  A revision can be clean, committed and
-    # byte-identical and still not implement the algorithm under study --
-    # 79dd3b7 is exactly that.  Recoverability and conformance are separate
-    # questions and a freeze needs both.
-    conformance.require_conformant()
+    _require_reproducible_instrument()
     _, capacity, spent, metadata_path, metadata = _verified_inputs(
         root, charter_ref, capacity_ref, spent_ref
     )
@@ -278,18 +308,7 @@ def freeze_protocol(
     destination: Path,
     generated_at: str,
 ) -> Path:
-    # Before anything is sealed: is the instrument being frozen recoverable at
-    # all?  INC-V2-089 lost 29 files that 20 receipts pinned, because the whole
-    # research tree was untracked and a pin over unrecoverable bytes is a
-    # statement with nothing behind it.  A freeze that cannot be reproduced is
-    # not a freeze.
-    closure.require_recoverable()
-    # And: is the Protected Core that would actually import the one whose
-    # semantics the paper claims?  A revision can be clean, committed and
-    # byte-identical and still not implement the algorithm under study --
-    # 79dd3b7 is exactly that.  Recoverability and conformance are separate
-    # questions and a freeze needs both.
-    conformance.require_conformant()
+    _require_reproducible_instrument()
     _, capacity, spent, metadata_path, metadata = _verified_inputs(
         root, charter_ref, capacity_ref, spent_ref
     )
