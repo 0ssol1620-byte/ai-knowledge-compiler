@@ -40,6 +40,22 @@ PRIMARIES = acc.PRIMARY_ENDPOINTS
 VETO = acc.VETO_ENDPOINT
 
 
+def _endpoint(stem: str) -> str:
+    """The scorer's own spelling of an endpoint id, looked up rather than copied.
+
+    A control that re-spells an endpoint id agrees with a copy of the contract
+    instead of the contract itself: rename the id in the scorer and the copy
+    still reads, still passes, and now guards an endpoint that no longer exists.
+    Looking it up by stem follows a rename and raises on a removal.
+    """
+    found = [name for name in score_sfi3.ENDPOINTS if name.split("_", 1)[0] == stem]
+    if len(found) != 1:
+        raise AssertionError(
+            f"{stem} names {found} in score_sfi3.ENDPOINTS, not exactly one endpoint"
+        )
+    return found[0]
+
+
 def _endpoints(**overrides: Any) -> dict[str, Any]:
     """A clean SFI3 endpoint block: eight primaries MET and exercised, E8 clear."""
     block: dict[str, Any] = {
@@ -221,7 +237,8 @@ def test_control_4_an_extra_graded_endpoint_refuses(landed):
 def test_a_renamed_primary_refuses(landed):
     """A rename is both an omission and an addition; either alone would refuse."""
     endpoints = _endpoints()
-    endpoints["E7_unresolved_fails_open"] = endpoints.pop("E7_unresolved_fails_closed")
+    renamed = _endpoint("E7")
+    endpoints[renamed + "_but_renamed"] = endpoints.pop(renamed)
     with pytest.raises(acc.AcceptanceRefused, match="not the same set"):
         acc.verify(landed(_measurement(endpoints=endpoints)))
 
@@ -250,12 +267,11 @@ def test_a_failed_primary_refuses(landed):
 
 @pytest.mark.parametrize(
     "endpoint",
+    #: The set comes from the scorer, so an endpoint added to or removed from
+    #: the must-run policy changes what these controls actually cover.
     [
-        pytest.param("E5_no_confirmed_selective_stale_escape", id="control 6 -- E5"),
-        pytest.param("E6_exact_selective_vs_clean_equivalence", id="control 7 -- E6"),
-        pytest.param(
-            "E9_every_detected_typed_change_creates_a_rebuild_request", id="control 8 -- E9"
-        ),
+        pytest.param(endpoint, id=f"control {6 + offset} -- {endpoint.split('_', 1)[0]}")
+        for offset, endpoint in enumerate(acc.MUST_BE_EXERCISED)
     ],
 )
 def test_controls_6_7_8_an_unexercised_must_run_endpoint_refuses(landed, endpoint):

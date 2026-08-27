@@ -32,6 +32,38 @@ import score_sfi3  # noqa: E402
 from score_sfi1 import FAILED, MET, SKIPPED  # noqa: E402
 
 
+def _endpoint(stem: str) -> str:
+    """The scorer's own spelling of an endpoint id, looked up rather than copied.
+
+    This is the INC-V2-036 class in miniature. A test that re-spells an endpoint
+    id keeps agreeing with a copy of the contract: rename the id in the scorer
+    and the copy still reads, still passes, and now guards nothing. Looking the
+    id up by its stem means a rename is followed, and a removal raises here
+    instead of quietly grading an endpoint that no longer exists.
+    """
+    found = [name for name in score_sfi3.ENDPOINTS if name.split("_", 1)[0] == stem]
+    if len(found) != 1:
+        raise AssertionError(
+            f"{stem} names {found} in score_sfi3.ENDPOINTS, not exactly one endpoint"
+        )
+    return found[0]
+
+
+def _block_key(stem: str) -> str:
+    """The executor's own key for that endpoint's block -- not the endpoint id.
+
+    The two are deliberately different strings for E5 and E8; assuming they
+    coincided is INC-V2-035.
+    """
+    endpoint = _endpoint(stem)
+    found = [key for name, key, _count, _names in score_sfi3.EXECUTOR_BLOCKS if name == endpoint]
+    if len(found) != 1:
+        raise AssertionError(
+            f"{endpoint} has blocks {found} in score_sfi3.EXECUTOR_BLOCKS, not exactly one"
+        )
+    return found[0]
+
+
 def _block(*, exercising: int = 10, violations: int = 0, names: tuple = ()) -> dict:
     return {
         "pairs_that_could_have_exhibited": exercising,
@@ -48,14 +80,10 @@ def _block(*, exercising: int = 10, violations: int = 0, names: tuple = ()) -> d
 
 
 def _executor(**overrides) -> dict:
-    summary = {
-        "E5_confirmed_selective_stale_escape": _block(),
-        "E6_exact_selective_vs_clean_equivalence": _block(),
-        "E8_rebuild_required_carried_without_execution": {
-            **_block(),
-            "stages_checked": list(score_sfi3.STAGES_REQUIRED),
-        },
-        "E9_detected_change_without_rebuild_request": _block(),
+    summary = {key: _block() for _endpoint_id, key, _count, _names in score_sfi3.EXECUTOR_BLOCKS}
+    summary[_block_key("E8")] = {
+        **_block(),
+        "stages_checked": list(score_sfi3.STAGES_REQUIRED),
     }
     summary.update(overrides)
     return summary
@@ -85,15 +113,9 @@ def test_the_endpoint_name_and_the_block_name_are_allowed_to_differ():
     is precisely why assuming they all coincided went unnoticed for a whole run.
     """
     pairs = {endpoint: key for endpoint, key, _, _ in score_sfi3.EXECUTOR_BLOCKS}
-    assert pairs["E5_no_confirmed_selective_stale_escape"] != (
-        "E5_no_confirmed_selective_stale_escape"
-    )
-    assert pairs["E8_no_rebuild_required_artifact_carried_without_execution"] != (
-        "E8_no_rebuild_required_artifact_carried_without_execution"
-    )
-    assert pairs["E6_exact_selective_vs_clean_equivalence"] == (
-        "E6_exact_selective_vs_clean_equivalence"
-    )
+    assert pairs[_endpoint("E5")] != _endpoint("E5")
+    assert pairs[_endpoint("E8")] != _endpoint("E8")
+    assert pairs[_endpoint("E6")] == _endpoint("E6")
 
 
 @pytest.mark.parametrize(
@@ -124,7 +146,7 @@ def test_a_missing_key_inside_a_block_raises_rather_than_defaulting(missing):
     strictly worse than the false SKIPPED that was actually shipped.
     """
     summary = _executor()
-    del summary["E5_confirmed_selective_stale_escape"][missing]
+    del summary[_block_key("E5")][missing]
     with pytest.raises(score_sfi3.ContractBroken):
         score_sfi3.score_executor(summary)
 
@@ -136,7 +158,7 @@ def test_a_missing_key_inside_a_block_raises_rather_than_defaulting(missing):
 def test_an_endpoint_nothing_could_have_violated_is_skipped_not_met():
     summary = _executor(E5_confirmed_selective_stale_escape=_block(exercising=0))
     verdicts = score_sfi3.score_executor(summary)
-    assert verdicts["E5_no_confirmed_selective_stale_escape"]["verdict"] == SKIPPED
+    assert verdicts[_endpoint("E5")]["verdict"] == SKIPPED
 
 
 def test_gate_power_false_is_skipped_even_when_the_denominator_is_positive():
@@ -144,7 +166,7 @@ def test_gate_power_false_is_skipped_even_when_the_denominator_is_positive():
     block = _block(exercising=40)
     block["gate_power"] = False
     verdicts = score_sfi3.score_executor(_executor(E6_exact_selective_vs_clean_equivalence=block))
-    assert verdicts["E6_exact_selective_vs_clean_equivalence"]["verdict"] == SKIPPED
+    assert verdicts[_endpoint("E6")]["verdict"] == SKIPPED
 
 
 def test_violations_are_reported_with_their_named_cases():
@@ -152,7 +174,7 @@ def test_violations_are_reported_with_their_named_cases():
     summary = _executor(
         E5_confirmed_selective_stale_escape=_block(violations=2, names=("a.md", "b.md"))
     )
-    row = score_sfi3.score_executor(summary)["E5_no_confirmed_selective_stale_escape"]
+    row = score_sfi3.score_executor(summary)[_endpoint("E5")]
     assert row["verdict"] == FAILED
     assert row["cases"] == ["a.md", "b.md"]
 
@@ -219,7 +241,7 @@ def test_e8_fails_when_a_required_stage_was_never_observed(dropped):
     }
     row = score_sfi3.score_executor(
         _executor(E8_rebuild_required_carried_without_execution=block)
-    )["E8_no_rebuild_required_artifact_carried_without_execution"]
+    )[score_sfi3.SAFETY_VETO_ENDPOINT]
     assert row["verdict"] == FAILED
     assert dropped in row["stages_missing"]
 
@@ -228,7 +250,7 @@ def test_e8_with_no_stages_at_all_fails_rather_than_passing_silently():
     block = {**_block(), "stages_checked": []}
     row = score_sfi3.score_executor(
         _executor(E8_rebuild_required_carried_without_execution=block)
-    )["E8_no_rebuild_required_artifact_carried_without_execution"]
+    )[score_sfi3.SAFETY_VETO_ENDPOINT]
     assert row["verdict"] == FAILED
 
 
@@ -251,7 +273,7 @@ def test_a_skipped_endpoint_fails_the_study_exactly_as_a_violated_one_does():
     verdicts = score_sfi3.score(
         rows, _executor(E5_confirmed_selective_stale_escape=_block(exercising=0))
     )
-    assert verdicts["E5_no_confirmed_selective_stale_escape"]["verdict"] == SKIPPED
+    assert verdicts[_endpoint("E5")]["verdict"] == SKIPPED
 
     failed = [n for n, r in verdicts.items() if r["verdict"] == FAILED]
     skipped = [n for n, r in verdicts.items() if r["verdict"] == SKIPPED]
@@ -310,10 +332,13 @@ def test_the_veto_arguments_are_required_so_they_cannot_be_forgotten():
 
 
 def test_e5_e6_and_e9_may_not_be_skipped():
-    assert set(score_sfi3.MAY_NOT_BE_SKIPPED) == {
-        "E5_no_confirmed_selective_stale_escape",
-        "E6_exact_selective_vs_clean_equivalence",
-        "E9_every_detected_typed_change_creates_a_rebuild_request",
+    #: Pinned by stem, not by a second copy of the three full ids. What this
+    #: guards is WHICH endpoints may never be skipped; renaming one of them is
+    #: the scorer's business, changing the membership is this test's.
+    assert {name.split("_", 1)[0] for name in score_sfi3.MAY_NOT_BE_SKIPPED} == {
+        "E5",
+        "E6",
+        "E9",
     }
     for endpoint in score_sfi3.MAY_NOT_BE_SKIPPED:
         assert endpoint in score_sfi3.PRIMARY_ENDPOINTS
@@ -367,7 +392,7 @@ def test_the_executor_block_table_is_a_superset_of_sfi2s():
     added = set(score_sfi3.EXECUTOR_BLOCKS) - inherited
     assert {endpoint for endpoint, _, _, _ in added} == {
         score_sfi3.SAFETY_VETO_ENDPOINT,
-        "E9_every_detected_typed_change_creates_a_rebuild_request",
+        _endpoint("E9"),
     }
 
 

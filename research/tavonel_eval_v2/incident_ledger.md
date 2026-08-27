@@ -9049,3 +9049,266 @@ say which interpreter produced it should be treated as unmeasured.
 **Authority:** the two refusals above; the `.pth` contents; the same three gates
 passing under `.venv`; `sys.modules`-level confirmation that `akc_cir.__file__`
 pointed outside this tree.
+
+## INC-V2-104 - the capability rule was unenforced, and its guard could not fail
+
+**Class:** INC-V2-036, sixth recurrence -- plus the same class inverted, a guard
+placed where the harm it names is impossible.
+**Disposition:** A REPAIRED AND MUTATION-PROVEN; B-F RECORDED, four of them
+deliberately not fixed.
+**GPU seconds:** 0 - **Cost:** $0 (no pod, no provider call) - **IP gate:** CLOSED.
+
+Found by a parallel lane auditing the GPU successor preflight while the SFIR5
+census ran.
+
+### A - `G_GSP_CAPABILITY_NOT_INFERRED_FROM_NAME` was true for every input
+
+The constitution says: *never infer capability from a model's name; capability
+comes from registry capability evidence or it does not exist.* The gate meant to
+enforce it read:
+
+    not identity["capability"]["capability_claimed"]
+    or identity["capability"].get("inferred_from_name") is False
+
+`capability_from_registry` returns exactly two shapes. Either
+`capability_claimed` is False, satisfying the first disjunct; or it is True on a
+branch that sets `inferred_from_name = False` **unconditionally**, satisfying the
+second. The gate re-states, one line later, the branch that was just taken.
+
+Measured across an 11-pin probe: **0 of 11 reachable red states.**
+`capability_evidence: "trust me"` produced a claimed capability and a green gate.
+The only thing actually required was that the pointer string differ from the
+repository string.
+
+The tell is general enough to grep for, and it is the sharpest statement of this
+defect class the study has: **the guard read a field that the branch producing it
+had just set unconditionally.** Five earlier recurrences were harder to see than
+this one; that this one survived review says the class is not being looked for
+by shape.
+
+A contributing cause: the gate lived as an inline expression inside `run()`,
+which the live-cohort guard blocks under pytest -- **no test could reach it.**
+The repair extracts `capability_not_inferred_from_name` so the predicate is
+reachable, and requires the evidence pointer to be content-addressed by a 64-hex
+digest naming the artifact the capability was read from. The live pin still
+passes; its pointer already carried one. No protocol file was edited, and
+`capability_claimed` keeps its documented meaning, so
+`GPU_SUCCESSOR_MODEL_PIN_V1.yaml`'s statement about it stays true.
+
+Mutation-proven, and proven in both directions: reverting the predicate to the
+old tautology reddens 6 of 8 controls, while the two that must stay green -- no
+claim made, and the real sealed pin -- stay green. A fix that reddened
+everything would have proved nothing.
+
+### B - the live-cohort guard is itself misplaced here
+
+`live_cohort_guard`'s docstring says all three guarded tools "expose a `run()`
+that reaches out to real roots", and that a stray call "spends real request
+budget against real endpoints". For `gpu_successor_preflight` that is **false**,
+and checkable in one grep: the module imports no `urllib`, no `socket`, no HTTP
+client and no provider backend. It reads local files and does arithmetic.
+
+The premise was taken from the anti-blocker audit's own wording and applied to
+three tools without checking it against each. Its cost is not theoretical: the
+guard reddens two controls that existed specifically to prove the real tool
+blocks, and it made the entire gate-assembly block untestable -- which is how A
+survived.
+
+This is the same defect class in the other direction. A is a guard that cannot
+fail; B is a guard that cannot be reached past. Both are the result of asserting
+a property instead of exercising it.
+
+**What is true** is that `run()` writes immutable receipts and moves a
+`receipts/latest` pointer, so calling it from a test does pollute real evidence.
+That is a genuine harm, and a different one from the harm the guard names. The
+escape hatch for exactly this case already exists and is documented in the
+guard's own docstring.
+
+### C - three further vacuous gates, recorded and NOT fixed
+
+- `G_GSP_EXCLUDES_CLOSED_ENDPOINT` compares the module's literals to the
+  module's own literals. Repointing it at the protocol would redden a path the
+  protocol documents as deliberate: `GPU_SUCCESSOR_STUDY_V1.yaml` declares a
+  currency axis and three scorer classes, while the preflight declares a
+  representation axis and different ones, and the protocol names that divergence
+  under `arms_axis`. **Whether those two axes are meant to be the same is a
+  founder question, not an agent's.**
+- `G_GSP_CONTEXT_BUDGET_FEASIBLE` compares two module constants. Verified
+  correct on the substance -- the prompt budget genuinely is separate from
+  generation -- so it is vacuous, not wrong.
+- `G_GSP_NO_GPU_YET` is a hardcoded `True`, and says so.
+
+### D - the cost gate prices a run nobody intends
+
+`estimate_cost` is called with `max(floor, eligible_count)` = **20,018**, the
+entire universe rather than a sample: 25.62 GPU-h, $64.06, against caps of 6.0 h
+and $40. It fails closed, which is why this is a finding and not an incident with
+a spend attached. But the receipt's headline figure describes a run that is not
+planned, and a launcher reading it would be reading the wrong number. The
+underlying throughput (2000 tok/s) and rate ($2.50/h) are `declared_assumption`
+and have never been measured.
+
+### E - teardown and output-completeness are ABSENT from the V1 path
+
+Not weak -- absent. `GPU_SUCCESSOR_RUNTIME_V1.yaml` contains no deletion,
+termination, watchdog or absence-proof clause at all, and `STUDY_V1` has no
+completeness criterion. Both exist in the V2 protocols, which are frozen, and
+**the V1 preflight never opens them.** Any claim that the GPU lane has a teardown
+guarantee is a claim about V2 made against a preflight that reads V1.
+
+### F - the cohort is one typed-fact kind wearing four labels
+
+20,018 of 20,018 eligible, and the floor of 120 is cleared 166 times over. The
+composition is `REFERENCE_TARGET` 19,714 (98.5%), `LANGUAGE` 275,
+`APPLICABILITY` 29, `EFFECTIVE_TIME` **0**. Three of the four typed-fact kinds
+the successor design names are near-absent and one is empty. A result over this
+cohort would be a result about reference targets, whatever the design says it is
+about, and a per-kind breakdown cannot be produced for a kind with no instances.
+
+**Authority:** the 11-pin probe and its 0/11 result; the mutation table in both
+directions; the absence of any network symbol in `gpu_successor_preflight`; the
+two named controls reddened by the guard; the preflight receipt's own cost and
+cohort figures; grep returning nothing for teardown terms in
+`GPU_SUCCESSOR_RUNTIME_V1.yaml`.
+
+## INC-V2-097 update - cause established: a test moved a real pointer and deleted its target
+
+**Disposition:** CAUSE ESTABLISHED AND REPAIRED. Supersedes the previous
+update's "cause of THIS recurrence undetermined".
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+Three occurrences, twice regenerated, cause recorded as unknown both times. It
+recurred a fourth time during the SFIR5 census session and was caught in
+`git status` rather than by luck:
+
+    receipts/latest/r1-reproducibility-fixture.json
+      points_to  r1-reproducibility-fixture--20260827T051827Z-bb56f881f8fa.json
+      on disk    NO
+      in HEAD    NO
+
+The timestamp fell inside this session, which is what made it findable: the
+window contained exactly one full-suite run.
+
+### The cause
+
+`tests/test_part3.py::test_two_subprocess_runs_agree_on_the_semantic_digest_but_not_the_path`.
+
+It runs `tools/reproducibility_fixture.py` twice as a subprocess. That is
+correct and deliberate -- the contract under test is that two runs collide on
+semantics and not on path, which cannot be exercised against a fake directory.
+Each subprocess therefore writes a real immutable receipt, and because
+`write_immutable` takes `pointer: bool = True` and the fixture's `main()` never
+overrides it, **each run also moves the real `receipts/latest` pointer.**
+
+The test then deleted both receipts and did not restore the pointer. What it
+left behind was a pointer naming the second run's receipt, which no longer
+existed anywhere.
+
+Not one of the three earlier investigations looked at the test suite, because
+the pointer's mtime was read as evidence that a *tool* had written it. A test
+that shells out to a tool leaves exactly the same trace as the tool.
+
+### Why this is not a housekeeping defect
+
+A dangling pointer is an authority naming bytes nobody can produce. That is
+INC-V2-089's shape, and the reason `receipt_pointer_targets_are_recoverable`
+was added as a standing gate covering all 102 pointers. The gate worked; what
+was missing was an explanation, and an unexplained recurrence is a defect that
+is free to happen again -- which it did, three times.
+
+### The repair
+
+The test now snapshots the pointer's bytes and restores them in a `finally`,
+after the unlinks. In `finally` specifically: a failed assertion previously
+left the pointer dangling too, which is one of the ways this went unattributed.
+
+A second control asserts, against the real pointer, that the receipt it names is
+on disk. The tree-wide gate already checks all 102; this one is local so a
+regression is attributed to the test that causes it instead of surfacing later
+as an unexplained dangling reference somewhere else.
+
+Mutation-proven: removing the restore turns the local control red
+(1 failed, 1 passed) and the pointer is left dangling exactly as observed.
+
+**One correction to the earlier updates.** Both said the cause was not
+established, which was honest and is now superseded rather than deleted. Neither
+should be read as having been wrong to say so -- what was wrong was investigating
+only the tools.
+
+**Authority:** the four dangling states; `write_immutable`'s `pointer=True`
+default and `reproducibility_fixture.main()`'s call site; the mutation result;
+`git status` clean on that pointer after the repaired test runs.
+
+## INC-V2-105 - two detection tools that under-report what they exist to find
+
+**Class:** an audit whose scope is narrower than its name, and a measurement
+whose instrument was wrong about the thing being measured.
+**Disposition:** A RECORDED, deliberately not fixed; B REPAIRED AS PRACTICE.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+Both found by the lane closing defect-class-4 findings while the SFIR5 census
+ran. Class 4 is "an acceptance-criterion identifier re-spelled as a literal in a
+test instead of imported", and it matters because a test carrying its own copy of
+an identifier keeps passing after the canonical one is renamed -- it is then a
+guard whose failure is impossible, the INC-V2-036 family again.
+
+Nine class-4 findings became six. The three closed are real: mutation MUT-D
+(delete E5 from `ENDPOINTS` while `EXECUTOR_BLOCKS` still grades it) turns six
+tests from passing-against-a-stale-spelling to failing, and no test moved the
+other way.
+
+### A - `anti_blocker_audit` class 4 walks string literals only
+
+The identical defect spelled as a **keyword-argument name** is invisible to it:
+
+    _executor(E5_confirmed_selective_stale_escape=_block(...))
+
+is exactly as stale as the literal form and is not reported. The residual
+failures under a block-key-rename mutation land precisely on those sites, which
+is how they were found -- by a mutation the audit does not model, not by the
+audit.
+
+`tools/score_sfi3.py` itself re-spells three endpoint ids at lines 637-639, so
+the tool the tests are told to import from also carries copies.
+
+**Not fixed, and the reason is not cost.** Widening the audit would raise the
+finding count on files three other lanes own, mid-flight, during a live census.
+More importantly the count is currently read as a progress figure, and a
+detector that grows its own denominator halfway through is worse than one that
+under-reports consistently. Recorded so the six remaining is understood as
+**six of the shapes this audit can see**, not six defects of this kind.
+
+### B - the EOL instrument was wrong about the file it was measuring
+
+`grep -c $'$'` under the Bash tool reported 490 of 553 lines CRLF for a file
+that `pathlib.read_bytes()` proves is pure LF. Acting on that reading would have
+rewritten both files to CRLF.
+
+That is not a formatting nuisance. This research tree sets `* -text -eol` because
+freeze receipts digest **working-tree bytes**, so a whole-file EOL rewrite
+silently changes every pinned digest in the tree. The session had already
+produced three EOL incidents, one of which reached a commit; this would have been
+the fourth and the largest.
+
+**Standing practice, adopted:** EOL counts come from `read_bytes()` and byte
+comparison, never from a shell line-ending grep. The repo is genuinely mixed --
+`tools/*.py` CRLF, several test modules pure LF -- so "what convention does this
+repo use" has no answer and the question is always per file.
+
+### C - the obvious remediation route is closed, by design
+
+`tools/score_sfi3.py` is sha256-pinned in `receipts/frozen-instrument-integrity.json`
+at `4b566415...d445b4`. Exporting a new constant to import would break that
+digest. So class-4 remediation on frozen modules must **derive** identifiers from
+what the module already exports, never add to it. Two tests were deliberately
+left pinning policy by stem rather than derivation: an acceptance criterion that
+may not be skipped is a statement about the criterion, and deriving it from the
+module would make the test agree with whatever the module says -- a tautology
+wearing a test's name.
+
+The pin was verified byte-identical after every mutation and at rest.
+
+**Authority:** the MUT-D failure list; the six residual findings and their new
+attribution; the literal-versus-keyword blind spot demonstrated by mutation; the
+grep/`read_bytes` disagreement on a file with 0 CRLF and 506 LF; the frozen
+digest matching before and after.

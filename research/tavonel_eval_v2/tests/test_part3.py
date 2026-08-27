@@ -247,20 +247,64 @@ def test_the_fixture_reads_no_clock_randomness_or_environment() -> None:
 
 
 def test_two_subprocess_runs_agree_on_the_semantic_digest_but_not_the_path() -> None:
+    """Two runs, same semantics, different paths.
+
+    The fixture writes into the REAL receipts directory, because that is the
+    contract under test -- a run id collision has to be a real collision. It
+    therefore also moves the REAL `receipts/latest` pointer, since
+    `write_immutable` updates one unless told not to.
+
+    This test used to delete the two receipts and leave the pointer naming the
+    second one. That is INC-V2-097: a pointer to a receipt that exists nowhere,
+    on disk or in git. It was observed three times and its cause was recorded as
+    not established; this is the cause. Restoring the pointer is not tidiness --
+    a dangling pointer is an authority naming bytes nobody can produce, which is
+    the exact shape INC-V2-089 is about.
+    """
     fixture = NS / "tools" / "reproducibility_fixture.py"
-    runs = [
-        json.loads(
-            subprocess.run(
-                [sys.executable, str(fixture)], capture_output=True, text=True, check=True, cwd=ROOT
-            ).stdout
-        )
-        for _ in range(2)
-    ]
-    assert runs[0]["semantic_result_digest"] == runs[1]["semantic_result_digest"]
-    assert runs[0]["receipt"] != runs[1]["receipt"]
-    assert runs[0]["run_id"] != runs[1]["run_id"]
-    for run in runs:
-        (ROOT / run["receipt"]).unlink(missing_ok=True)
+    pointer = NS / "receipts" / "latest" / "r1-reproducibility-fixture.json"
+    before = pointer.read_bytes() if pointer.is_file() else None
+    runs = []
+    try:
+        runs = [
+            json.loads(
+                subprocess.run(
+                    [sys.executable, str(fixture)],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    cwd=ROOT,
+                ).stdout
+            )
+            for _ in range(2)
+        ]
+        assert runs[0]["semantic_result_digest"] == runs[1]["semantic_result_digest"]
+        assert runs[0]["receipt"] != runs[1]["receipt"]
+        assert runs[0]["run_id"] != runs[1]["run_id"]
+    finally:
+        for run in runs:
+            (ROOT / run["receipt"]).unlink(missing_ok=True)
+        # in `finally`, and after the unlinks: a failed assertion must not be
+        # able to leave the pointer dangling either, which is how this went
+        # unnoticed for three occurrences
+        if before is None:
+            pointer.unlink(missing_ok=True)
+        else:
+            pointer.write_bytes(before)
+
+
+def test_the_fixture_test_above_leaves_no_dangling_pointer() -> None:
+    """The control for the repair, asserted against the real pointer.
+
+    INC-V2-097's standing gate checks every pointer in the tree; this one checks
+    the specific pointer the test above disturbs, so a regression is attributed
+    here rather than surfacing later as an unexplained dangling reference.
+    """
+    pointer = NS / "receipts" / "latest" / "r1-reproducibility-fixture.json"
+    if not pointer.is_file():
+        pytest.skip("no r1 fixture pointer in this tree")
+    target = ROOT / json.loads(pointer.read_text(encoding="utf-8"))["points_to"]
+    assert target.is_file(), f"pointer names a receipt that is not on disk: {target}"
 
 
 # --- P4c: question construction ----------------------------------------------

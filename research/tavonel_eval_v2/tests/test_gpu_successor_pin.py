@@ -19,6 +19,7 @@ No network, no GPU, no model load. Covers:
 from __future__ import annotations
 
 import copy
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -187,6 +188,81 @@ def test_real_pin_capability_evidence_is_distinct_from_repository_name(
 
 
 # ---------------------------------------------------------------------------
+# 5b. G_GSP_CAPABILITY_NOT_INFERRED_FROM_NAME must have a reachable red state
+#
+# INC-V2-036 class. The gate was
+#     not capability_claimed or capability.get("inferred_from_name") is False
+# and `capability_from_registry` sets `inferred_from_name: False` on every path
+# that can reach the second disjunct -- so the gate re-stated the branch that
+# had just been taken and could not go red for ANY input. A probe of eleven
+# pins, including `capability_evidence: "trust me"`, produced eleven greens.
+#
+# These are controls, not coverage: each one fails if the fix is reverted.
+# ---------------------------------------------------------------------------
+
+#: Pointers that differ from the repository string -- so the old gate passed
+#: them -- but assert a capability instead of grounding it in an artifact.
+UNGROUNDED_CAPABILITY_POINTERS = (
+    "trust me",
+    "Qwen3.6 supports vision",
+    "it is obviously a VLM",
+    "see the model card",
+    # a digest of the wrong length is not a content address either
+    "config.json#sha256=69db4eb7196bc8190813231b3018ca05",
+)
+
+
+@pytest.mark.parametrize("pointer", UNGROUNDED_CAPABILITY_POINTERS)
+def test_capability_gate_is_red_for_an_ungrounded_claim(pointer: str) -> None:
+    """The red state the old gate did not have."""
+    capability = gsp.capability_from_registry(
+        {"repository": "Qwen/Qwen3.6-27B", "capability_evidence": pointer}
+    )
+    assert capability["capability_claimed"] is True
+    assert capability["evidence_is_content_addressed"] is False
+    assert gsp.capability_not_inferred_from_name(capability) is False
+
+
+def test_capability_gate_is_green_when_no_capability_is_claimed() -> None:
+    """Absence of a claim stays legal -- the fix must not turn "no capability"
+    into a block, or it would have moved the defect rather than closed it."""
+    capability = gsp.capability_from_registry(
+        {"repository": "Qwen/Qwen3.6-27B", "capability_evidence": None}
+    )
+    assert capability["capability_claimed"] is False
+    assert gsp.capability_not_inferred_from_name(capability) is True
+
+
+def test_capability_gate_is_green_for_the_real_content_addressed_pin(
+    valid_pin: dict[str, Any],
+) -> None:
+    """The live pin must still pass -- a gate that reddens the real path is a
+    regression, not a hardening."""
+    resolved = rgp.resolved_pin_dict(valid_pin)
+    capability = gsp.capability_from_registry(resolved)
+    assert capability["evidence_is_content_addressed"] is True
+    assert len(capability["evidence_digest"]) == 64
+    assert gsp.capability_not_inferred_from_name(capability) is True
+
+
+def test_capability_gate_predicate_is_not_a_tautology() -> None:
+    """Directly asserts what the defect was: over a spread of pins the gate
+    must produce BOTH verdicts. If it ever yields one value for every input,
+    it is watching nothing again."""
+    pins = [
+        {"repository": "Qwen/Qwen3.6-27B"},
+        {"repository": "Qwen/Qwen3.6-27B", "capability_evidence": "Qwen/Qwen3.6-27B"},
+        {"repository": "Qwen/Qwen3.6-27B", "capability_evidence": "trust me"},
+        {"repository": "Qwen/Qwen3.6-27B", "capability_evidence": {"claim": "vision"}},
+        {"repository": "Qwen/Qwen3.6-27B", "capability_evidence": "attest.json#" + "a1" * 32},
+    ]
+    verdicts = {
+        gsp.capability_not_inferred_from_name(gsp.capability_from_registry(pin)) for pin in pins
+    }
+    assert verdicts == {True, False}
+
+
+# ---------------------------------------------------------------------------
 # 6. resolved dict shape matches what model_identity_pin expects
 # ---------------------------------------------------------------------------
 
@@ -251,3 +327,33 @@ def test_closed_endpoint_not_revived() -> None:
 
     exclusion = gsp.design_excludes_closed_endpoint()
     assert exclusion["clean"] is True
+
+
+# --- INC-V2-104 B: the guard sits where the harm is --------------------------
+
+
+def test_main_still_refuses_under_a_test_runner():
+    """`main()` seals an immutable receipt and moves a `receipts/latest`
+    pointer. A stray call from a test runner writes real evidence, which is the
+    harm INC-V2-100 is about, so the guard must still fire here."""
+    import live_cohort_guard
+
+    with pytest.raises(
+        live_cohort_guard.LiveCohortRefused, match=re.escape("gpu_successor_preflight.main")
+    ):
+        gsp.main()
+
+
+def test_run_is_reachable_from_a_test_and_causes_nothing(tmp_path):
+    """The other half, and the reason the guard moved. `run()` opens no socket,
+    imports no HTTP client and writes nothing -- guarding it protected against
+    nothing while making the gate-assembly block untestable, which is how a gate
+    that was true for every input survived review."""
+    receipts_before = sorted((NS / "receipts").glob("gpu-successor-preflight--*.json"))
+    result = gsp.run(
+        manifest=tmp_path / "absent.json",
+        model_pin={},
+        runtime_image_digest="repo/image@sha256:" + "0" * 64,
+    )
+    assert result["verdict"] == "BLOCKED"
+    assert sorted((NS / "receipts").glob("gpu-successor-preflight--*.json")) == receipts_before

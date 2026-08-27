@@ -267,6 +267,13 @@ SUPERSEDED_STUDY_STEMS: tuple[tuple[str, str], ...] = (
 
 RUNTIME_IMAGE_DIGEST_PATTERN = re.compile(r"^[\w./-]+@sha256:[0-9a-f]{64}$")
 
+#: A capability pointer is registry evidence only if it is content-addressed —
+#: it must carry a 64-hex digest naming the exact artifact the capability was
+#: read out of. Searched anywhere in the pointer, not anchored, because the
+#: pin's own pointer form is a path plus a fragment plus `= <digest>` and this
+#: check is about whether a digest is present at all, not about its position.
+CAPABILITY_EVIDENCE_DIGEST_PATTERN = re.compile(r"\b[0-9a-f]{64}\b")
+
 
 def _safe_rel(path: Path) -> str:
     """`common.rel` assumes a path under the repo root, which a test fixture
@@ -525,12 +532,40 @@ def capability_from_registry(pin: dict[str, Any]) -> dict[str, Any]:
                 "supplied; a name is not a capability and none is inferred from it"
             ),
         }
+    evidence_text = evidence if isinstance(evidence, str) else json.dumps(evidence, sort_keys=True)
+    digest_match = CAPABILITY_EVIDENCE_DIGEST_PATTERN.search(evidence_text)
     return {
         "repository": repository,
         "capability_claimed": True,
         "capability_evidence": evidence,
         "inferred_from_name": False,
+        #: INC-V2-036 class. `inferred_from_name: False` is set on every path
+        #: that reaches here, so a gate reading only that field can never be
+        #: red -- it re-states, one line later, what the branch above already
+        #: decided. This field is the part that can actually be false: a
+        #: pointer that merely differs from the repository string ("trust me",
+        #: "Qwen3.6 supports vision") is a second assertion, not registry
+        #: evidence. `capability_claimed` deliberately keeps its documented
+        #: meaning; this is an additional, independently-false property.
+        "evidence_is_content_addressed": digest_match is not None,
+        "evidence_digest": digest_match.group(0) if digest_match else None,
     }
+
+
+def capability_not_inferred_from_name(capability: dict[str, Any]) -> bool:
+    """G_GSP_CAPABILITY_NOT_INFERRED_FROM_NAME, as a callable predicate.
+
+    Extracted from `run()` deliberately. The vacuous version of this gate lived
+    as an inline expression inside `run()`, which refuses to execute under a
+    test runner (`live_cohort_guard.refuse_under_test`) -- so no test could
+    reach it, and a guard no test can reach is a guard nobody has watched fail.
+    """
+    if not capability.get("capability_claimed"):
+        return True
+    return (
+        capability.get("inferred_from_name") is False
+        and capability.get("evidence_is_content_addressed") is True
+    )
 
 
 def model_identity_pin(pin: dict[str, Any]) -> dict[str, Any]:
@@ -826,11 +861,6 @@ def run(
     protocol_freeze_receipt: Path | None = None,
     protocol_freeze_sha256: str | None = None,
 ) -> dict[str, Any]:
-    # INC-V2-100. Reaches a live cohort; a stray call from a test
-    # runner would spend real budget and OBSERVE. `sys.modules` and not
-    # PYTEST_CURRENT_TEST, so an import-time call is guarded too.
-    if "pytest" in sys.modules or "unittest" in sys.modules:
-        live_cohort_guard.refuse_under_test("gpu_successor_preflight.run")
     started = now()
 
     #: Both mandatory, neither substituting for the other. There is no stem
@@ -907,11 +937,16 @@ def run(
             "detail": identity,
         },
         "G_GSP_CAPABILITY_NOT_INFERRED_FROM_NAME": {
-            "passed": (
-                not identity["capability"]["capability_claimed"]
-                or identity["capability"].get("inferred_from_name") is False
-            ),
+            "passed": capability_not_inferred_from_name(identity["capability"]),
             "detail": identity["capability"],
+            "rule": (
+                "a claimed capability must be grounded in content-addressed "
+                "registry evidence -- a pointer carrying the 64-hex digest of the "
+                "artifact the capability was read out of. A pointer that merely "
+                "differs from the repository string is a second assertion about "
+                "the model, not evidence about it. No claim is the other legal "
+                "state; an ungrounded claim is not."
+            ),
         },
         "G_GSP_TOKENIZER_PARITY_BATTERY_AVAILABLE": {
             "passed": parity["deterministic"] and len(parity["probe_classes"]) > 0,
@@ -1014,6 +1049,21 @@ def default_model_pin() -> dict[str, Any]:
 
 
 def main() -> int:
+    # INC-V2-100, corrected by INC-V2-104. The guard used to sit on `run()`,
+    # where it protected against nothing: `run()` opens no socket, imports no
+    # HTTP client and no provider backend, and writes nothing -- it reads local
+    # files and returns a dict. Its only effect was to redden two controls that
+    # existed to prove the real tool blocks, and to make the gate-assembly block
+    # unreachable from any test, which is how a gate that was true for every
+    # input survived review (INC-V2-104 A).
+    #
+    # `main()` is where the harm actually is: it seals an immutable receipt and
+    # moves a `receipts/latest` pointer. A stray call from a test runner would
+    # write real evidence. So the guard moves to the function that causes the
+    # thing it names, and `sys.modules` stays in this module's text where the
+    # anti-blocker audit can see it.
+    if "pytest" in sys.modules or "unittest" in sys.modules:
+        live_cohort_guard.refuse_under_test("gpu_successor_preflight.main")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--manifest",
