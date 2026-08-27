@@ -51,7 +51,7 @@ def test_urllib_cannot_reach_a_real_endpoint():
     """The layer that matters: a tool reaching for the network the ordinary way,
     with no cooperation from it and no knowledge that this switch exists."""
     with pytest.raises((RealNetworkForbidden, urllib.error.URLError)) as raised:
-        urllib.request.urlopen("https://en.wikipedia.org/w/api.php", timeout=5)  # noqa: S310
+        urllib.request.urlopen("https://en.wikipedia.org/w/api.php", timeout=5)
     # a URLError here must be WRAPPING the refusal, not a real network failure
     error = raised.value
     if isinstance(error, urllib.error.URLError):
@@ -73,9 +73,8 @@ def test_the_switch_holds_inside_allow_under_test():
     """`allow_under_test` opens layer one deliberately. It must not open this
     one -- otherwise the escape hatch written for the guard's own controls would
     silently become an escape hatch to the internet."""
-    with guard.allow_under_test():
-        with pytest.raises(RealNetworkForbidden):
-            socket.create_connection(REMOTE, timeout=5)
+    with guard.allow_under_test(), pytest.raises(RealNetworkForbidden):
+        socket.create_connection(REMOTE, timeout=5)
 
 
 def test_loopback_is_still_allowed():

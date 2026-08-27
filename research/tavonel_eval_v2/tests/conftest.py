@@ -44,7 +44,7 @@ _REAL_SOCKET_CONNECT = socket.socket.connect
 _REAL_SOCKET_CONNECT_EX = socket.socket.connect_ex
 _REAL_CREATE_CONNECTION = socket.create_connection
 
-_LOOPBACK = frozenset({"127.0.0.1", "::1", "localhost", "0.0.0.0", ""})  # noqa: S104
+_LOOPBACK = frozenset({"127.0.0.1", "::1", "localhost", "0.0.0.0", ""})
 
 MARKER = "allow_real_network"
 
