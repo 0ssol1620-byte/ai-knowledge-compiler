@@ -62,6 +62,7 @@ for _root in (str(NS), str(NS / "tools"), str(NS / "acquisition")):
     if _root not in sys.path:
         sys.path.insert(0, _root)
 
+import sfir5_transport as t5  # noqa: E402  -- read only; the inherited total request cap
 import sfir6_transport as t6  # noqa: E402  -- read only; the inherited wall-clock bound
 from acquisition import sources_sfir4 as sources  # noqa: E402  -- read only
 
@@ -150,7 +151,7 @@ _OPS: Mapping[str, str] = MappingProxyType(
 
 # Every derivation SFIR7 will accept for N. The enum is closed so that "I picked
 # it" cannot be spelled as a justification.
-N_DERIVATIONS = frozenset({"transport_budget_over_per_root_request_bound"})
+N_DERIVATIONS = frozenset({"min_of_rate_limited_and_capped_budget_over_per_root_bound"})
 
 # GitHub's published authenticated primary rate limit, requests per hour. An
 # external vendor constant. It is not a TAVONEL choice and it does not move when
@@ -307,27 +308,54 @@ def inherited_per_root_request_bound() -> int:
     return int(sources.MAX_GIT_API_REQUESTS_PER_ROOT)
 
 
+def inherited_total_request_cap() -> int:
+    """Read live from SFIR5's transport, not copied.
+
+    The second operational bound. SFIR7's first draft derived N from the wall
+    clock alone and produced a roster whose worst case needed 30,000 requests
+    against an inherited cap of 12,000 -- a conflict no value satisfied. It is
+    resolved by applying the STRONGER of the two bounds that already existed,
+    not by raising either. Raising a budget after a census disappoints is a
+    tuning act; taking the tighter of two constraints written beforehand is not.
+    """
+    return int(t5.MAX_TOTAL_REQUESTS)
+
+
 def derive_n(
     *,
     wall_clock_hours: int,
     published_rate_limit_per_hour: int,
     per_root_request_bound: int,
+    inherited_total_request_cap: int,
 ) -> int:
-    """N = floor(hours * published_rate_limit / per_root_request_bound).
+    """N = floor(min(hours * rate_limit, total_cap) / per_root_request_bound).
 
-    Every input exists for a reason outside this study. The wall-clock bound and
-    the per-root request bound are inherited unchanged from SFIR4/SFIR6. The rate
-    limit is GitHub's published figure. None of the three moves when a capacity
-    number is disappointing, and the arithmetic leaves no free parameter.
+    Every input exists for a reason outside this study. The wall-clock bound, the
+    per-root request bound and the total request cap are inherited unchanged from
+    SFIR4/SFIR5/SFIR6. The rate limit is GitHub's published figure. None of the
+    four moves when a capacity number is disappointing, and the arithmetic leaves
+    no free parameter.
+
+    The `min` is the whole point. Two operational bounds already constrained this
+    study and the first draft honoured only one of them, which is how it arrived
+    at a roster the transport could not have finished. Applying the tighter bound
+    lowers N. That direction matters: a rule that reduces the roster cannot be
+    suspected of having been written to reach a capacity number.
+
+    The rate limit is an UPPER bound, not a guaranteed sustained throughput --
+    GitHub enforces secondary limits as well, so execution still paces serially
+    and honours `Retry-After`, `remaining` and `reset`.
     """
     for label, value in (
         ("wall_clock_hours", wall_clock_hours),
         ("published_rate_limit_per_hour", published_rate_limit_per_hour),
         ("per_root_request_bound", per_root_request_bound),
+        ("inherited_total_request_cap", inherited_total_request_cap),
     ):
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
             raise SFIR7Refused(f"{label} must be a positive integer, got {value!r}")
-    return (wall_clock_hours * published_rate_limit_per_hour) // per_root_request_bound
+    available = min(wall_clock_hours * published_rate_limit_per_hour, inherited_total_request_cap)
+    return available // per_root_request_bound
 
 
 def refuse_count_tuned_rule(rule: FrameRule) -> int:
@@ -363,6 +391,7 @@ def refuse_count_tuned_rule(rule: FrameRule) -> int:
         "wall_clock_hours": inherited_wall_clock_hours(),
         "published_rate_limit_per_hour": PUBLISHED_GITHUB_AUTHENTICATED_RATE_LIMIT_PER_HOUR,
         "per_root_request_bound": inherited_per_root_request_bound(),
+        "inherited_total_request_cap": inherited_total_request_cap(),
     }
     declared_inputs = dict(rule.n_inputs)
     if declared_inputs != expected_inputs:
@@ -663,6 +692,7 @@ def declared_rule(*, catalog_id: str, snapshot_sha256: str, snapshot_date_utc: s
         "wall_clock_hours": inherited_wall_clock_hours(),
         "published_rate_limit_per_hour": PUBLISHED_GITHUB_AUTHENTICATED_RATE_LIMIT_PER_HOUR,
         "per_root_request_bound": inherited_per_root_request_bound(),
+        "inherited_total_request_cap": inherited_total_request_cap(),
     }
     return FrameRule(
         catalog_id=catalog_id,
@@ -671,15 +701,21 @@ def declared_rule(*, catalog_id: str, snapshot_sha256: str, snapshot_date_utc: s
         ranking=(RankKey(field="catalog_rank_value", descending=True),),
         tie_breaker="record_id",
         n=derive_n(**inputs),
-        n_derivation="transport_budget_over_per_root_request_bound",
+        n_derivation="min_of_rate_limited_and_capped_budget_over_per_root_bound",
         n_inputs=MappingProxyType(dict(inputs)),
         n_justification=(
-            "N is the whole number of roots the inherited transport budget can visit: "
-            "the inherited wall-clock bound in whole hours, multiplied by GitHub's "
-            "published authenticated primary rate limit per hour, divided by the "
-            "inherited per-root request bound, floored. Every input predates this "
-            "study's question and none of them moves when a census disappoints. "
-            "SFIR7 may still come up short at this N, and if it does, that is a "
-            "finding rather than a reason to recompute N."
+            "N is the whole number of roots the inherited transport budget can visit. "
+            "Two operational bounds constrain it and the STRONGER one applies: the "
+            "inherited wall-clock bound in whole hours multiplied by GitHub's published "
+            "authenticated primary rate limit per hour, or the inherited total request "
+            "cap, whichever is smaller -- divided by the inherited per-root request "
+            "bound, floored. Every input predates this study's question and none of them "
+            "moves when a census disappoints. Taking the tighter of two pre-existing "
+            "constraints LOWERS N, which is the direction that cannot be suspected of "
+            "having been chosen to reach a number. The rate limit is an upper bound and "
+            "not a guaranteed sustained throughput; secondary limits exist, so execution "
+            "still paces serially and honours Retry-After, remaining and reset. SFIR7 may "
+            "come up short at this N, and if it does, that is a finding rather than a "
+            "reason to recompute N."
         ),
     )

@@ -80,8 +80,56 @@ def test_the_declared_n_is_exactly_the_derivation_over_live_modules():
         wall_clock_hours=frame.inherited_wall_clock_hours(),
         published_rate_limit_per_hour=frame.PUBLISHED_GITHUB_AUTHENTICATED_RATE_LIMIT_PER_HOUR,
         per_root_request_bound=frame.inherited_per_root_request_bound(),
+        inherited_total_request_cap=frame.inherited_total_request_cap(),
     )
     assert frame.refuse_count_tuned_rule(rule) == rule.n
+
+
+def test_n_takes_the_stronger_of_the_two_operational_bounds():
+    """The founder ruling, as arithmetic rather than as prose.
+
+    The wall clock alone allows 6 x 5000 = 30,000 requests; the inherited cap
+    allows 12,000. The cap is the binding constraint, so N is 12,000 / 240 = 50
+    and not 125. The direction matters as much as the number: resolving the
+    conflict by TIGHTENING cannot be suspected of having been chosen to reach a
+    capacity figure, whereas raising the cap to 30,000 after a shortfall could
+    only ever have been.
+    """
+    common = {
+        "published_rate_limit_per_hour": 5000,
+        "per_root_request_bound": 240,
+    }
+    assert frame.derive_n(wall_clock_hours=6, inherited_total_request_cap=12_000, **common) == 50
+    # the cap binds, so more wall clock buys nothing
+    assert frame.derive_n(wall_clock_hours=99, inherited_total_request_cap=12_000, **common) == 50
+    # and when the wall clock is the tighter one, it binds instead
+    assert frame.derive_n(wall_clock_hours=1, inherited_total_request_cap=12_000, **common) == 20
+
+
+def test_removing_the_cap_from_the_derivation_would_raise_n_and_is_refused():
+    """The mutation this control exists for: drop the `min` and N returns to 125.
+
+    Stated as a test rather than a comment, because the whole argument for N=50
+    is that the second bound is applied. A successor that quietly derives from
+    the wall clock alone gets a roster 2.5x larger and a transport that cannot
+    finish it.
+    """
+    without_cap = (6 * 5000) // 240
+    with_cap = frame.derive_n(
+        wall_clock_hours=6,
+        published_rate_limit_per_hour=5000,
+        per_root_request_bound=240,
+        inherited_total_request_cap=12_000,
+    )
+    assert without_cap == 125
+    assert with_cap == 50
+    assert with_cap < without_cap, "the resolution must lower N, never raise it"
+
+    from dataclasses import replace as _replace
+
+    inflated = _replace(_rule(), n=without_cap)
+    with pytest.raises(frame.SFIR7Refused, match="hand-set N"):
+        frame.refuse_count_tuned_rule(inflated)
 
 
 def test_an_input_that_drifted_from_the_inherited_bound_is_refused():
@@ -454,15 +502,76 @@ def test_the_charter_licence_allowlist_is_the_module_allowlist():
 
 
 def test_the_charter_has_not_been_frozen_and_names_what_blocks_it():
-    """SFIR7 is design-only until a founder rules on the catalogue and its terms.
-    If this goes green-by-deletion, something froze a frame with no universe."""
+    """SFIR7 is not frozen until its universe is pinned by digest.
+
+    This asserted that the catalogue and its licence were undecided, which was
+    true until the founder ruled and is now the wrong thing to check. What has to
+    stay true is narrower and more durable: a frame is not frozen while the
+    snapshot its rule reads is unpinned, because a rule over an unpinned universe
+    selects from whatever happens to be on disk.
+    """
     state = CHARTER["design_freeze_state"]
     assert state["frozen"] is False
-    assert state["catalogue_identity_decided"] is False
-    assert state["catalogue_licence_cleared"] is False
+    assert state["snapshot_acquired"] is False
     assert state["snapshot_digest_pinned"] is False
-    assert len(state["blocking_freeze"]) >= 2
-    assert CHARTER["root_selection_rule"]["universe"]["catalog_id"] == "PENDING_FOUNDER_DECISION"
+    assert state["roster_frozen"] is False
+    assert state["blocking_freeze"], "a charter that is not frozen must say what blocks it"
+    assert CHARTER["root_selection_rule"]["universe"]["catalog_id"] != "PENDING_FOUNDER_DECISION"
+
+
+def test_the_catalogue_is_pinned_to_an_immutable_third_party_deposit():
+    """The universe is someone else's, dated, and addressable by DOI."""
+    universe = CHARTER["root_selection_rule"]["universe"]
+    catalogue = universe["catalogue"]
+    assert universe["externally_defined"] is True
+    assert universe["curated_by_tavonel"] is False
+    assert catalogue["doi"] == "10.5281/zenodo.3626071"
+    assert catalogue["version"] == "1.6.0"
+    assert str(catalogue["publication_date"]) == "2020-01-12"
+    assert catalogue["publisher_digest"].startswith("md5:")
+    assert catalogue["locally_computed_sha256_is_required_in_addition"] is True
+    # the deposit predates every SFIR study in this programme
+    assert str(catalogue["publication_date"]) < "2026"
+
+
+def test_the_rank_is_the_catalogues_own_and_tavonel_may_not_recompute_it():
+    """The independence of the frame rests on the ordinal being someone else's."""
+    policy = CHARTER["root_selection_rule"]["universe"]["rank_field_policy"]
+    assert policy["use_the_catalogues_published_rank_verbatim"] is True
+    assert policy["tavonel_may_not_recompute_popularity_or_yield"] is True
+    # asserted over the rule the code will actually apply, not over the prose
+    ranking = _rule().ranking
+    assert [key.field for key in ranking] == ["catalog_rank_value"]
+    assert ranking[0].descending is True
+    assert CHARTER["root_selection_rule"]["ranking"]["computed_by_tavonel"] is False
+
+
+def test_the_licence_posture_is_the_stricter_reading_and_is_scoped_to_the_data():
+    """A compliance posture, recorded with the discrepancy it steps around."""
+    licence = CHARTER["root_selection_rule"]["universe"]["licence"]
+    assert licence["treat_derived_artifacts_as"] == "CC-BY-SA-4.0"
+    assert licence["attribution_required"] == "Libraries.io"
+    assert licence["this_is_a_compliance_posture_not_a_legal_determination"] is True
+    # the discrepancy is recorded rather than resolved: Zenodo's record metadata
+    # says CC BY 4.0 while Libraries.io states share-alike. Operating under the
+    # stricter reading satisfies either, and which governs is not an agent's call.
+    assert licence["discrepancy_recorded"]["zenodo_record_metadata_says"] == "cc-by-4.0"
+    # and the share-alike scope is isolated to the data, not spread over the repo
+    for excluded in ("TAVONEL source code", "patent material", "manuscript source"):
+        assert excluded in licence["scope_explicitly_excludes"]
+    assert licence["external_publication"]["permitted_only_after"] == "KOREAN_PRIORITY_FILING"
+
+
+def test_the_budget_conflict_was_resolved_by_tightening_not_by_raising():
+    """Recorded while SFIR6 was blind, resolved afterwards in the pre-declared
+    conservative direction. The record of both is what makes the second sound."""
+    conflict = CHARTER["inherited_transport_budget_conflict"]
+    assert conflict["state"] == "RESOLVED_BY_TIGHTENING_NOT_BY_RAISING"
+    assert conflict["registered_before_the_predecessor_result_existed"] is True
+    assert conflict["what_the_conflict_was"]["inherited_cap"] == 12_000
+    assert conflict["what_the_conflict_was"]["n_roots_under_the_first_draft"] == 125
+    n_now = CHARTER["root_selection_rule"]["n"]["value_under_the_currently_inherited_bounds"]
+    assert n_now < conflict["what_the_conflict_was"]["n_roots_under_the_first_draft"]
 
 
 def test_the_charter_says_sfir7_is_a_new_frame_question_and_not_a_repair():
@@ -490,36 +599,33 @@ def test_the_charter_does_not_quote_a_predecessor_capacity_number_as_a_target():
 # ---------------------------------------------------------------------------
 
 
-def test_the_budget_conflict_is_registered_with_the_live_numbers_and_still_blocks():
-    """Prose in a charter is not a mechanism; this reads the constants.
+def test_the_budget_conflict_record_still_matches_the_live_constants():
+    """Superseded form of an earlier control.
 
-    N=125 roots at 240 requests each implies 30,000 requests against an
-    inherited cap of 12,000. The conflict is real, it blocks the freeze, and the
-    two honest resolutions are both frame decisions that must be taken before a
-    count exists. If someone quietly raises either constant, the recorded
-    arithmetic stops matching the modules and this goes red.
+    It used to assert the conflict was OPEN_AND_BLOCKING, which was correct while
+    SFIR6 was still running and is now stale: the founder resolved it by tightening
+    N rather than raising the cap. What must still hold is that the numbers the
+    charter recorded are the numbers the modules carry, so the account of the
+    conflict cannot drift out from under the resolution.
     """
     import sfir5_transport as t5
     import sfir6_transport as t6
     from acquisition import sources_sfir4 as sources
 
-    charter = CHARTER
-    conflict = charter["inherited_transport_budget_conflict"]
-
-    assert conflict["state"] == "OPEN_AND_BLOCKING"
+    conflict = CHARTER["inherited_transport_budget_conflict"]["what_the_conflict_was"]
     assert conflict["inherited_cap"] == t5.MAX_TOTAL_REQUESTS
     assert conflict["per_root_request_bound"] == sources.MAX_GIT_API_REQUESTS_PER_ROOT
-    assert conflict["n_roots"] * conflict["per_root_request_bound"] == (
+    assert conflict["n_roots_under_the_first_draft"] * conflict["per_root_request_bound"] == (
         conflict["implied_worst_case_requests"]
     )
     assert conflict["implied_worst_case_requests"] > conflict["inherited_cap"], (
-        "the conflict was recorded as open but the numbers no longer conflict"
+        "the conflict as recorded must still be a conflict, or the record is fiction"
     )
-    # the wall clock the N derivation reads, pinned here too
     assert t6.MAX_TOTAL_WALL_CLOCK_SECONDS == 21600
 
-    assert any(
-        "transport request budget" in str(item)
-        for item in charter["design_freeze_state"]["blocking_freeze"]
+    n_now = CHARTER["root_selection_rule"]["n"]["value_under_the_currently_inherited_bounds"]
+    assert n_now * conflict["per_root_request_bound"] <= conflict["inherited_cap"], (
+        "the resolved N must fit inside the cap that caused the conflict"
     )
-    assert charter["design_freeze_state"]["frozen"] is False
+
+
