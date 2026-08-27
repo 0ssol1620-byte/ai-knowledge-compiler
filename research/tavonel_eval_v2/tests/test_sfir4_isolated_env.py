@@ -154,6 +154,74 @@ class TestFabricatedForeignPthRefuses:
         assert ".pth" in combined
         assert str(foreign.resolve()) in combined or "outside both the intended" in combined
 
+    def test_a_sibling_clone_under_a_shared_container_directory_is_still_foreign(
+        self, tmp_path: Path
+    ) -> None:
+        """The hole the depth bound alone left open.
+
+        A venv placed BESIDE a checkout rather than inside it makes the shared
+        ancestor of ``prefix`` and ``expected_root`` a plain container directory
+        -- shallow enough to satisfy the depth bound, and parent to every other
+        clone someone keeps there. Admitting it would readmit exactly the
+        sibling-clone import this module exists to refuse.
+
+        ``_own_tree_roots`` now requires that ancestor to be a git checkout
+        root. Here it is not one, so the foreign ``.pth`` stays foreign.
+        """
+        container = tmp_path / "projects"
+        expected_root = container / "study" / "packages" / "cir-python" / "src"
+        expected_root.mkdir(parents=True)
+        for name in iso.CORE_MODULES:
+            (expected_root / (name.split(".")[-1] + ".py")).write_text("# stub\n")
+
+        beside = container / "venvs" / "shared"
+        beside.mkdir(parents=True)
+        foreign = container / "other-clone" / "packages" / "cir-python" / "src"
+        foreign.mkdir(parents=True)
+
+        report = self._fake_report(expected_root, foreign)
+        report["prefix"] = str(beside)
+
+        with patch.object(iso, "probe", return_value=report):
+            body = iso.verify(expected_root)
+
+        assert body["verdict"] == "REFUSE", body["why"]
+        assert any(".pth" in reason for reason in body["why"]), body["why"]
+
+    def test_a_real_checkout_ancestor_is_admitted_so_the_rule_is_not_a_blanket_refusal(
+        self, tmp_path: Path
+    ) -> None:
+        """The other direction, so the hardening is a rule and not a veto.
+
+        A monorepo legitimately installs sibling packages of the SAME checkout
+        editable. When the shared ancestor really is a checkout root -- marked
+        by ``.git``, which is a FILE in a linked worktree and a directory in a
+        clone -- those references are the interpreter's own tree and must pass.
+        Without this control the previous test could be satisfied by a check
+        that refuses everything.
+        """
+        checkout = tmp_path / "study"
+        checkout.mkdir(parents=True)
+        (checkout / ".git").write_text("gitdir: elsewhere\n")
+
+        expected_root = checkout / "packages" / "cir-python" / "src"
+        expected_root.mkdir(parents=True)
+        for name in iso.CORE_MODULES:
+            (expected_root / (name.split(".")[-1] + ".py")).write_text("# stub\n")
+
+        venv = checkout / ".venv"
+        venv.mkdir()
+        sibling = checkout / "packages" / "domain-packs" / "src"
+        sibling.mkdir(parents=True)
+
+        report = self._fake_report(expected_root, sibling)
+        report["prefix"] = str(venv)
+
+        with patch.object(iso, "probe", return_value=report):
+            body = iso.verify(expected_root)
+
+        assert body["verdict"] == "PASS", body["why"]
+
     def test_verify_passes_when_pth_only_references_expected_root_or_own_tree(
         self, tmp_path: Path
     ) -> None:

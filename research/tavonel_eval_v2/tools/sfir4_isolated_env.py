@@ -275,7 +275,29 @@ def _check_module_roots(report: dict[str, Any], expected_root: Path) -> list[str
 #: happen to sit under the same home directory (``C:\Users\<name>``) would be
 #: silently admitted, which would defeat this check for exactly the sibling-
 #: clone case it exists to catch.
+#:
+#: The depth bound is a heuristic and is deliberately no longer load-bearing on
+#: its own: ``_own_tree_roots`` additionally requires the shared ancestor to be
+#: a git checkout root (see ``_is_checkout_root``). Depth alone had a real hole
+#: -- a venv placed beside a checkout rather than inside it, e.g.
+#: ``D:\projects\venvs\x`` with ``D:\projects\repo\packages\p\src``, yields the
+#: shallow common ancestor ``D:\projects``, and every sibling clone under it
+#: would then be admitted as "the interpreter's own tree". Requiring a ``.git``
+#: at the ancestor turns "the same checkout" from an inference about path shape
+#: into a fact about the filesystem.
 _MAX_CHECKOUT_ANCESTOR_DEPTH = 5
+
+
+def _is_checkout_root(path: Path) -> bool:
+    """Is ``path`` the root of a git checkout?
+
+    ``.git`` is a directory in a normal clone and a FILE in a linked worktree
+    (it holds a ``gitdir:`` pointer), and the isolated checkouts this gate is
+    built for are linked worktrees -- so testing for a directory only would
+    reject exactly the configuration the study uses.
+    """
+    marker = path / ".git"
+    return marker.is_dir() or marker.is_file()
 
 
 def _own_tree_roots(report: dict[str, Any], expected_root: Path) -> list[Path]:
@@ -319,6 +341,12 @@ def _own_tree_roots(report: dict[str, Any], expected_root: Path) -> list[Path]:
             depth = _MAX_CHECKOUT_ANCESTOR_DEPTH + 1
         if depth > _MAX_CHECKOUT_ANCESTOR_DEPTH:
             return roots  # too shallow/generic an ancestor to trust
+
+    if not _is_checkout_root(common):
+        # The shared ancestor is a container directory, not a checkout. Admitting
+        # it would make every sibling clone under it "the interpreter's own
+        # tree", which is the failure this whole module exists to catch.
+        return roots
 
     roots.append(common)
     return roots
