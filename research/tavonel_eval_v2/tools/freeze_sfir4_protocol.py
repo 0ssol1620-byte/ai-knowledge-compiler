@@ -22,6 +22,7 @@ import sfir4_execution as sx  # noqa: E402
 import sfir4_execution_closure as closure  # noqa: E402
 import sfir4_isolated_env as isolation  # noqa: E402
 import sfir4_protocol as protocol  # noqa: E402
+import sfir4_worker as worker  # noqa: E402
 from acquisition import sources_sfir4 as sources  # noqa: E402
 
 
@@ -138,6 +139,32 @@ def _selected_roster(
     selected: dict[str, list[dict[str, Any]]] = {}
     capability_counts = {name: 0 for name in sources.CAPABILITY_ENDPOINTS}
     global_ids: set[str] = set()
+    #: What each candidate's locators actually READ, across every family.
+    #:
+    #: Distinct identifiers are not distinct reads. Every eCFR section of one
+    #: part shares a request URL and is isolated locally afterwards, so two
+    #: candidates can carry different `lineage_id`s, pass the identity-domain
+    #: proof, and still fetch the same bytes. `resolution_identity` is the value
+    #: that separates them -- the URL, plus the local selector when the response
+    #: is not itself the payload.
+    #:
+    #: `payload_resolution_identity`'s own docstring said "a roster proves
+    #: distinctness over this value, never over resolve_payload_locator", and a
+    #: pre-freeze audit found the function had no call sites anywhere. This is
+    #: the call site that makes the sentence true.
+    #:
+    #: What this is and is not. Injectivity is established UPSTREAM, by
+    #: `_validate_candidate`, which derives each locator from the candidate's
+    #: own title/part/section/revision and refuses any candidate whose
+    #: `payload_ref` differs from that derivation -- so two candidates with
+    #: different `lineage_id`s cannot currently reach this loop carrying one
+    #: resolution identity. This is a cross-check of that derivation, not a
+    #: substitute for it, and it is recorded as such rather than presented as
+    #: the proof. It fires if the derivation ever stops binding the section into
+    #: the locator, which is the day the eCFR URL-sharing case silently returns.
+    #: Its controls reach it by suspending the upstream validator, because a
+    #: check that cannot be reached is not a check.
+    global_reads: dict[tuple[str, str], str] = {}
     for family in sources.FAMILIES:
         block = metadata["families"].get(family)
         if not isinstance(block, Mapping):
@@ -190,6 +217,24 @@ def _selected_roster(
                 raise protocol.SFIR4Refused("capacity identity domains collide")
             identities.update(normalized)
             global_ids.update(normalized)
+
+            refs = row["payload_ref"]
+            read = (
+                worker.payload_resolution_identity(family, str(refs["before"])),
+                worker.payload_resolution_identity(family, str(refs["after"])),
+            )
+            if read[0] == read[1]:
+                raise protocol.SFIR4Refused(
+                    f"{family} candidate {row['lineage_id']} reads the same bytes on both "
+                    "sides; a before/after pair that resolves to one payload is not a revision"
+                )
+            owner = global_reads.get(read)
+            if owner is not None and owner != str(row["lineage_id"]):
+                raise protocol.SFIR4Refused(
+                    f"{family} candidate {row['lineage_id']} resolves to the same payload "
+                    f"pair as {owner}; distinct identifiers are not distinct reads"
+                )
+            global_reads[read] = str(row["lineage_id"])
         quota = quotas[family]
         count = counts[family]
         per_root_key = {

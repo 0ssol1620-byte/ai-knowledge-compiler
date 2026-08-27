@@ -17,6 +17,7 @@ import sfir4_execution as sx  # noqa: E402
 import sfir4_execution_closure as closure  # noqa: E402
 import sfir4_isolated_env as isolation  # noqa: E402
 import sfir4_protocol as protocol  # noqa: E402
+import sfir4_worker as worker  # noqa: E402
 from acquisition import sources_sfir4 as sources  # noqa: E402
 
 
@@ -103,10 +104,17 @@ def _candidate(family: str, index: int) -> dict:
             "timestamp_after": "2026-08-26T00:00:00Z",
         }
     elif family == "regulation_ecfr":
+        # A real eCFR section designator is `<part>.<n>` -- `1.1`, `170.3` --
+        # never a bare integer. The fixture emitted `str(index + 1)`, which the
+        # locator grammar correctly refuses and which the versioner API has
+        # never served; it went unnoticed while nothing in the freeze path
+        # resolved a candidate's locator. The roster's resolution-identity
+        # proof does, so the fixture now generates what eCFR actually emits.
+        part = str(index // 100 + 1)
         item = {
             "title": root,
-            "part": str(index // 100 + 1),
-            "section": str(index + 1),
+            "part": part,
+            "section": f"{part}.{index + 1}",
             "version_before": "2026-08-25",
             "version_after": "2026-08-26",
             "timestamp_before": "2026-08-25T00:00:00Z",
@@ -354,3 +362,96 @@ def test_the_isolation_gate_is_inside_the_recoverable_closure() -> None:
     body = closure.gate()
     reached = [path for path in body["manifest"] if "sfir4_isolated_env" in path]
     assert len(reached) == 2, reached
+
+
+# ---------------------------------------------------------------------------
+# The pre-freeze audit finding: the roster never proved what it documented
+# ---------------------------------------------------------------------------
+
+
+def test_two_candidates_that_read_the_same_payload_pair_are_refused(
+    recoverable: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Distinct identifiers are not distinct reads.
+
+    Every eCFR section of one part shares a request URL and is isolated locally
+    afterwards, so two candidates can carry different `lineage_id`s, satisfy the
+    identity-domain proof, and still fetch the same bytes.
+    `payload_resolution_identity` is the value that separates them, and its
+    docstring claimed a roster proves distinctness over it while the function
+    had no call sites anywhere.
+    """
+    capacity, spent, metadata = _fixture()
+    rows = metadata["families"]["regulation_ecfr"]["candidates"]
+    assert len(rows) >= 2, "the fixture must produce at least two eCFR candidates"
+    rows[1]["payload_ref"] = dict(rows[0]["payload_ref"])
+
+    # `_validate_candidate` derives each locator from the candidate's own
+    # title/part/section/revision and refuses any mismatch, so it catches this
+    # edit first -- correctly. Suspending it is what reaches the roster's own
+    # cross-check, which is the thing under test here. Without this the control
+    # would pass while asserting nothing about the code it names.
+    monkeypatch.setattr(protocol, "_validate_candidate", lambda *args, **kwargs: None)
+    with pytest.raises(protocol.SFIR4Refused, match="distinct identifiers are not distinct reads"):
+        freeze._selected_roster(capacity, spent, metadata)
+
+
+def test_a_candidate_whose_two_sides_read_one_payload_is_refused(
+    recoverable: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A before/after pair that resolves to one payload is not a revision.
+
+    Also upstream-unreachable today -- `_validate_candidate` requires the two
+    revisions to differ and derives the locators from them -- so the same
+    suspension applies, for the same reason.
+    """
+    capacity, spent, metadata = _fixture()
+    rows = metadata["families"]["regulation_ecfr"]["candidates"]
+    rows[0]["payload_ref"]["after"] = rows[0]["payload_ref"]["before"]
+    monkeypatch.setattr(protocol, "_validate_candidate", lambda *args, **kwargs: None)
+    with pytest.raises(protocol.SFIR4Refused, match="reads the same bytes on both sides"):
+        freeze._selected_roster(capacity, spent, metadata)
+
+
+def test_the_upstream_derivation_is_what_actually_establishes_injectivity(
+    recoverable: None,
+) -> None:
+    """Say where the property really comes from, so the cross-check above is not
+    mistaken for the proof.
+
+    `_validate_candidate` rejects a candidate whose `payload_ref` is not the
+    exact derivation of its own fields. That is what makes two candidates with
+    different `lineage_id`s unable to share a resolution identity.
+    """
+    capacity, spent, metadata = _fixture()
+    rows = metadata["families"]["regulation_ecfr"]["candidates"]
+    rows[1]["payload_ref"] = dict(rows[0]["payload_ref"])
+    with pytest.raises(protocol.SFIR4Refused, match="payload locator scheme or revision binding"):
+        freeze._selected_roster(capacity, spent, metadata)
+
+
+def test_the_fixture_roster_passes_the_resolution_identity_proof(
+    recoverable: None,
+) -> None:
+    """The paired control, so neither refusal above can be satisfied by a check
+    that refuses everything."""
+    capacity, spent, metadata = _fixture()
+    selected, _ = freeze._selected_roster(capacity, spent, metadata)
+    assert set(selected) == set(sources.FAMILIES)
+
+
+def test_every_selected_candidate_resolves_through_sfir4s_own_grammar(
+    recoverable: None,
+) -> None:
+    """The fixture emits what the live endpoints emit.
+
+    An eCFR section designator is `<part>.<n>`; the fixture used to emit a bare
+    integer, which the grammar refuses and which the versioner API has never
+    served. Nothing caught it while no freeze-path code resolved a locator.
+    """
+    _, _, metadata = _fixture()
+    for family, block in metadata["families"].items():
+        for row in block["candidates"]:
+            for side in ("before", "after"):
+                identity = worker.payload_resolution_identity(family, row["payload_ref"][side])
+                assert identity.startswith("https://"), identity
