@@ -56,7 +56,21 @@ SCHEMA: Final[str] = "tavonel.sfir4.response_evidence.v1"
 CHAIN_SEED: Final[bytes] = b"tavonel.sfir4.response_chain.v1"
 
 #: How a request ended. A failure is still a request and still consumes budget.
-OUTCOMES: Final[frozenset[str]] = frozenset({"RESPONSE", "HTTP_ERROR", "TRANSPORT_ERROR"})
+#:
+#: `TRANSPORT_INTERRUPTED` is separate from `TRANSPORT_ERROR` because only one of
+#: them is retried. An interrupted request observed nothing and is reissued under
+#: the frozen retry budget, so a census can contain many of them and still be
+#: sound; a `TRANSPORT_ERROR` ended the attempt. Spelling both the same way would
+#: hide, inside a count a reader uses to judge the run, the difference between a
+#: census that lost one connection and a census that lost two hundred.
+#:
+#: This set is closed on purpose, and it refused `TRANSPORT_INTERRUPTED` until
+#: this line was written. That refusal is the design working: a new outcome
+#: reaches the evidence chain by a deliberate edit here, never by a caller
+#: inventing a string.
+OUTCOMES: Final[frozenset[str]] = frozenset(
+    {"RESPONSE", "HTTP_ERROR", "TRANSPORT_ERROR", "TRANSPORT_INTERRUPTED"}
+)
 
 #: Query parameter names that must never appear in a recorded URL.
 _SECRET_PARAMS: Final[frozenset[str]] = frozenset(

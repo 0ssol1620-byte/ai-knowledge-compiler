@@ -8438,3 +8438,107 @@ would test the mock.
 
 **Authority:** the 102-pointer audit; `git log --all` on the missing target
 returning empty; the six-run digest agreement above.
+
+## INC-V2-098 - one dropped connection ended a twelve-minute census
+
+**Class:** an unhandled transport exception class in a frozen instrument.
+**Disposition:** INSTRUMENT REPAIRED; retry bounded by the already-frozen
+budget; charter re-frozen result-blind. **GPU seconds:** 0 - **Cost:** $0 -
+**IP gate:** CLOSED.
+
+The third live census ran twelve minutes and died:
+
+    http.client.RemoteDisconnected: Remote end closed connection without response
+
+Not eCFR this time. The traceback lands in `_git` -> `fetch` -> `_observe` ->
+`_http_json_observed`, enumerating a GitHub tree.
+
+### Why no handler caught it
+
+`_http_json_observed` handled `urllib.error.HTTPError` (status codes),
+then `(urllib.error.URLError, TimeoutError, json.JSONDecodeError)`.
+`http.client.RemoteDisconnected` is none of those. It subclasses
+`ConnectionResetError` and `BadStatusLine` -- **not** `URLError` -- so it matched
+nothing and propagated raw through every layer.
+
+The charter permits 4,800 requests. One dropped connection somewhere in 4,800 is
+not an edge case, it is the expected case; three censuses have now died before
+producing a number, and this instrument would have kept dying. An instrument that
+cannot survive a single lost TCP connection is not an instrument.
+
+### The repair, and what it deliberately does not do
+
+`TransportInterrupted` is a new class, distinct from the three that existed:
+
+| signal | what it means |
+|---|---|
+| `RootUnavailable` | the server answered with a status |
+| `RateLimited` | the server answered and asked us to wait |
+| `SFIR4Refused` | the response arrived and was unusable |
+| `TransportInterrupted` | the connection failed; nothing was observed |
+
+It is **not** folded into `RateLimited`, though that would have been a two-line
+change and would have worked. A receipt that spells a dropped connection as rate
+limiting puts a network event into the count a reader uses to judge whether the
+endpoint was throttling us. The census receipt now reports
+`rate_limit_retries`, `transport_retries` and `retries_total` separately,
+because a run that lost one connection and a run that lost two hundred are
+different observations and one number cannot tell them apart.
+
+`TimeoutError` moved from the refusing branch to the retrying one. A read
+timeout is a fact about the network like the others; refusing it ends a
+quarter-hour census because one request was slow, and if the endpoint is
+genuinely unresponsive the retry budget still ends the run -- with an honest
+reason.
+
+`json.JSONDecodeError` deliberately stayed refusing. Bytes arrived and were not
+JSON: a fact about the RESPONSE, not the network. Retrying fetches the same bad
+body, so a handler wide enough to retry it turns a permanent defect into a loop
+that ends only when the budget does.
+
+**No bound was widened.** Retries run under the already-frozen
+`maximum_retries_per_request`, `MAX_RATE_LIMIT_WAIT_SECONDS` and
+`MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS`. Nothing about the criterion moved.
+
+### The closed vocabulary refused the new outcome, and that was correct
+
+`sfir4_response_evidence.OUTCOMES` rejected `TRANSPORT_INTERRUPTED` until it was
+registered by an explicit edit. That refusal is the design working: a new kind
+of request ending reaches the evidence chain by a deliberate change to that set,
+never by a caller inventing a string. An interrupted attempt is still recorded
+in the observation ledger -- `verify_chain` reads the observations, so a silent
+retry would be a request the arithmetic cannot see.
+
+### A control that could not fail
+
+Mutation testing caught a defect in my own controls, not only in the code. The
+first `test_a_malformed_body_is_still_refused_not_retried` asserted
+`pytest.raises(Exception)`, which `TransportInterrupted` also satisfies -- so it
+passed whichever branch the code took and proved nothing. Two mutations
+(malformed body made retryable; outcome vocabulary reopened) stayed green until
+the controls were rewritten to name exact types.
+
+This is the INC-V2-036 class arriving in the test suite rather than the product,
+and it is recorded because it is the second time in two days that writing the
+control was where the real defect surfaced.
+
+Final mutation results, all red as they should be:
+
+| mutation | red |
+|---|---|
+| the transport clause removed (the original defect) | 7 |
+| a malformed body made retryable | 1 |
+| an interruption relabelled as rate limiting | 1 |
+| the outcome vocabulary reopened | 1 |
+| a failed request allowed to carry a body | 1 |
+
+### Result-blindness, third time
+
+Unchanged and verified the same way. The run raised before any capacity number
+was computed, printed or written; no receipt exists at the destination path; the
+captured output holds a traceback and nothing else. The criterion -- threshold,
+root set, per-root cap, cohort, selection salt, scorer -- is untouched, and the
+correction is determined by an exception hierarchy rather than by any outcome.
+
+**Authority:** the aborted run's traceback; the mutation table above; the
+frozen bounds the retry runs under.

@@ -6,6 +6,7 @@ import shutil
 import sys
 import urllib.error
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 
@@ -1226,3 +1227,156 @@ def test_verify_toolchain_refuses_when_a_pinned_module_is_absent(tmp_path: Path)
 def test_verify_toolchain_refuses_a_charter_with_no_pins(tmp_path: Path) -> None:
     with pytest.raises(protocol.SFIR4Refused, match="no toolchain pins"):
         protocol.verify_toolchain(tmp_path, {"toolchain": {}})
+
+
+# --- INC-V2-098: a dropped connection must not kill a census ---------------
+#
+# `http.client.RemoteDisconnected` subclasses `ConnectionResetError`, NOT
+# `URLError`, so it matched no handler and propagated raw out of the probe --
+# ending a census twelve minutes in, on the one dropped connection that is
+# near-certain somewhere in the 4,800 requests the charter permits.
+#
+# These controls are paired: each retryable class is asserted retryable, and the
+# classes that must still refuse are asserted to still refuse. A handler broad
+# enough to swallow a malformed response would pass the first half alone.
+
+
+def _raise_on_open(monkeypatch, error):
+    def urlopen(*_args, **_kwargs):
+        raise error
+
+    monkeypatch.setattr(probe.urllib.request, "urlopen", urlopen)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param(
+            probe.http.client.RemoteDisconnected("closed without response"),
+            id="remote_disconnected",
+        ),
+        pytest.param(ConnectionResetError("reset by peer"), id="connection_reset"),
+        pytest.param(probe.http.client.IncompleteRead(b"half"), id="incomplete_read"),
+        pytest.param(TimeoutError("read timed out"), id="read_timeout"),
+        pytest.param(
+            urllib.error.URLError(ConnectionResetError("reset")), id="urlerror_wrapping_reset"
+        ),
+    ],
+)
+def test_a_transport_failure_is_interrupted_not_refused(monkeypatch, error):
+    """Each of these is a fact about the NETWORK. Nothing was observed, so the
+    request may be reissued -- under the frozen retry budget, not freely."""
+    _raise_on_open(monkeypatch, error)
+    with pytest.raises(probe.TransportInterrupted) as raised:
+        probe._http_json_observed("https://api.github.com/repos/x/y/git/trees/main")
+    assert raised.value.retry_after_seconds >= 1
+    assert raised.value.reason
+
+
+def test_a_malformed_body_is_still_refused_not_retried(monkeypatch):
+    """The paired negative. Bytes arrived and were not JSON: a fact about the
+    RESPONSE. Retrying would fetch the same bad body, and a handler wide enough
+    to retry this would turn a permanent defect into an infinite loop that ends
+    only when the budget does."""
+
+    class Response:
+        headers: ClassVar[dict[str, str]] = {}
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def read(self, _n=None):
+            value, self._done = (b"" if getattr(self, "_done", False) else b"not json"), True
+            return value
+
+    monkeypatch.setattr(probe.urllib.request, "urlopen", lambda *a, **k: Response())
+    # The EXACT type, and explicitly not the retryable one. An earlier draft of
+    # this control accepted `Exception`, which `TransportInterrupted` also
+    # satisfies -- so it passed whichever branch the code took and proved
+    # nothing. A control that cannot fail is not a control.
+    with pytest.raises(protocol.SFIR4Refused):
+        probe._http_json_observed("https://api.github.com/repos/x/y/git/trees/main")
+    _raise_on_open(monkeypatch, probe.http.client.RemoteDisconnected("closed"))
+    with pytest.raises(probe.TransportInterrupted):
+        probe._http_json_observed("https://api.github.com/repos/x/y/git/trees/main")
+
+
+def test_a_transport_interruption_is_not_reported_as_rate_limiting(monkeypatch):
+    """Both are retryable and share one budget, but a receipt that spells a
+    dropped connection as `rate_limited` puts a network event into the account a
+    reader uses to judge whether the endpoint was throttling us."""
+    _raise_on_open(monkeypatch, probe.http.client.RemoteDisconnected("closed"))
+    response = probe.LiveMetadataTransport()("git_docs", _request())
+    assert response["transport_interrupted"] is True
+    assert response.get("rate_limited") is not True
+    assert response["snapshot_id"].startswith("transport-interrupted:")
+    assert response["items"] == []
+    assert response["root_disposition"] is None
+
+
+def test_the_interrupted_request_is_recorded_as_its_own_ledger_outcome(monkeypatch):
+    """An attempt that observed nothing must still appear in the observation
+    ledger, and must not be spelled like the transport errors that came from a
+    refusal -- `verify_chain` reads the observations, so a silent retry would be
+    a request the arithmetic cannot see."""
+    _raise_on_open(monkeypatch, probe.http.client.RemoteDisconnected("closed"))
+    transport = probe.LiveMetadataTransport()
+    transport("git_docs", _request())
+    rows = transport.ledger.observations()
+    assert rows, "the interrupted attempt left no observation"
+    assert rows[-1].outcome == "TRANSPORT_INTERRUPTED"
+    assert rows[-1].observed_bytes is False
+
+
+def test_the_probe_names_every_transport_class_it_means_to_survive():
+    """The defect was an exception class nobody had named. This is the list, in
+    the source, so removing one is a visible edit rather than a silent
+    narrowing that only a live census would discover."""
+    source = (NS / "tools" / "probe_sfir4_capacity.py").read_text(encoding="utf-8")
+    assert "except (ConnectionError, http.client.HTTPException, TimeoutError) as error:" in source
+    assert "except json.JSONDecodeError as error:" in source
+
+
+def test_the_ledger_refuses_an_outcome_that_is_not_in_the_closed_vocabulary():
+    """`OUTCOMES` is closed so a new kind of request ending reaches the evidence
+    chain by a deliberate edit, never by a caller inventing a string. It refused
+    TRANSPORT_INTERRUPTED until that outcome was registered, and this is the
+    control that keeps the closure load-bearing rather than decorative."""
+    ledger = evidence.ResponseLedger()
+    with pytest.raises(evidence.ResponseEvidenceRefused, match="unknown response outcome"):
+        ledger.record(
+            family="git_docs",
+            root_id="git:x/y",
+            purpose="tree",
+            url="https://api.github.com/repos/x/y/git/trees/main",
+            status=0,
+            content_digest=evidence.digest_parsed(None),
+            observed_length=0,
+            declared_length=None,
+            observed_bytes=False,
+            outcome="SOMETHING_NOBODY_DECLARED",
+        )
+
+
+def test_every_registered_outcome_except_a_response_carries_no_observed_body():
+    """The paired invariant. A failed request cannot carry bytes, and adding an
+    outcome must not be a way around that."""
+    ledger = evidence.ResponseLedger()
+    for outcome in sorted(evidence.OUTCOMES - {"RESPONSE"}):
+        with pytest.raises(evidence.ResponseEvidenceRefused, match="cannot carry an observed body"):
+            ledger.record(
+                family="git_docs",
+                root_id="git:x/y",
+                purpose="tree",
+                url="https://api.github.com/repos/x/y/git/trees/main",
+                status=0,
+                content_digest=evidence.digest_parsed(None),
+                observed_length=0,
+                declared_length=None,
+                observed_bytes=True,
+                outcome=outcome,
+            )

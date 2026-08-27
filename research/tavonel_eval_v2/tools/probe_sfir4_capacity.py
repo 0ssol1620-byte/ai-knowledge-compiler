@@ -7,6 +7,7 @@ charter-bound adapter.  No payload text or revision diff is opened here.
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import os
 import sys
@@ -30,6 +31,28 @@ class RateLimited(RuntimeError):
     def __init__(self, retry_after_seconds: int):
         self.retry_after_seconds = retry_after_seconds
         super().__init__(f"rate limited; retry after {retry_after_seconds}s")
+
+
+class TransportInterrupted(RuntimeError):
+    """The connection failed mid-request. Nothing was observed.
+
+    Distinct from ``RateLimited`` (the server answered and asked us to wait),
+    from ``RootUnavailable`` (the server answered with a status) and from
+    ``SFIR4Refused`` (the response was answered and unusable). Those are facts
+    about the corpus or the protocol; this is a fact about the network, and
+    labelling a dropped TCP connection as rate limiting would put a transport
+    event into the rate-limit account a reader uses to judge the census.
+
+    It exists because ``http.client.RemoteDisconnected`` subclasses
+    ``ConnectionResetError``, NOT ``URLError``, so it matched no handler here and
+    propagated raw -- killing a census after twelve minutes on the single
+    dropped connection that is near-certain somewhere in the 4,800 requests the
+    charter permits. An instrument that cannot survive one is not an instrument.
+    """
+
+    def __init__(self, retry_after_seconds: int, reason: str):
+        self.retry_after_seconds, self.reason = retry_after_seconds, reason
+        super().__init__(f"transport interrupted: {reason}")
 
 
 class MetadataResponseBoundExceeded(RuntimeError):
@@ -120,7 +143,33 @@ def _http_json_observed(url: str) -> tuple[Mapping[str, Any] | list[Any], dict[s
         if error.code in sources.PAGINATION_CONTRACT["retryable_http_statuses"]:
             raise RateLimited(sources.RETRYABLE_HTTP_BACKOFF_SECONDS) from error
         raise protocol.SFIR4Refused(f"unknown metadata HTTP state {error.code}") from error
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+    except urllib.error.URLError as error:
+        # A URLError is a wrapper. What it wraps decides whether this is a
+        # transport event we may retry or a response we must refuse, so the
+        # reason is inspected rather than the wrapper being treated as one kind.
+        if isinstance(error.reason, ConnectionError | TimeoutError):
+            raise TransportInterrupted(
+                sources.RETRYABLE_HTTP_BACKOFF_SECONDS, type(error.reason).__name__
+            ) from error
+        raise protocol.SFIR4Refused("unknown partial metadata response") from error
+    except (ConnectionError, http.client.HTTPException, TimeoutError) as error:
+        # RemoteDisconnected, ConnectionReset, IncompleteRead, BadStatusLine, and
+        # the read timeout from `urlopen(timeout=60)` -- `socket.timeout` has been
+        # an alias of `TimeoutError` since 3.10, so naming both would be one
+        # clause pretending to be two. None of these is a URLError and none of
+        # them observed any bytes.
+        #
+        # The timeout moves here deliberately. It used to refuse, which ends a
+        # census that has already run for a quarter of an hour because one
+        # request was slow. It is a fact about the network like the others, it
+        # retries under the same frozen budget, and if the endpoint is genuinely
+        # unresponsive the budget still ends the run -- with an honest reason.
+        raise TransportInterrupted(
+            sources.RETRYABLE_HTTP_BACKOFF_SECONDS, type(error).__name__
+        ) from error
+    except json.JSONDecodeError as error:
+        # Bytes arrived and were not JSON. That is a fact about the RESPONSE, not
+        # about the network, and retrying it would just fetch the same bad body.
         raise protocol.SFIR4Refused("unknown partial metadata response") from error
 
 
@@ -190,6 +239,22 @@ class LiveMetadataTransport:
             if family == "encyclopedia_wikipedia":
                 return self._legacy._wiki(request)
             raise protocol.SFIR4Refused("unknown family")
+        except TransportInterrupted as error:
+            root = str(request["expected_discovery_root_id"])
+            return {
+                "items": [],
+                "next_cursor": request.get("cursor"),
+                "snapshot_id": f"transport-interrupted:{root}",
+                "response_refs": [],
+                # A separate flag from `rate_limited` on purpose. Both are
+                # retryable and share one budget, but they are different facts
+                # and the receipt must not report a dropped connection as the
+                # server asking us to slow down.
+                "transport_interrupted": True,
+                "transport_reason": error.reason,
+                "retry_after_seconds": error.retry_after_seconds,
+                "root_disposition": None,
+            }
         except RateLimited as error:
             root = str(request["expected_discovery_root_id"])
             return {
@@ -259,6 +324,20 @@ class LiveMetadataTransport:
                 declared_length=None,
                 observed_bytes=False,
                 outcome="HTTP_ERROR",
+            )
+            raise
+        except TransportInterrupted:
+            self.ledger.record(
+                family=family,
+                root_id=root_id,
+                purpose=purpose,
+                url=url,
+                status=0,
+                content_digest=evidence.digest_parsed(None),
+                observed_length=0,
+                declared_length=None,
+                observed_bytes=False,
+                outcome="TRANSPORT_INTERRUPTED",
             )
             raise
         except (RateLimited, MetadataResponseBoundExceeded, protocol.SFIR4Refused):
@@ -680,6 +759,7 @@ def probe_capacity(
         snapshots: list[str] = []
         response_refs: list[str] = []
         retries = 0
+        transport_retries = 0
         total_wait_seconds = 0
         for index, declared_root in enumerate(roots):
             expected = sources.discovery_root_id(family, declared_root)
@@ -695,11 +775,18 @@ def probe_capacity(
                     request["repository"] = declared_root
                 response = transport(family, request)
                 protocol._assert_metadata_only(response)
-                if response.get("rate_limited") is True:
+                interrupted = response.get("transport_interrupted") is True
+                if response.get("rate_limited") is True or interrupted:
                     current_retries += 1
                     retries += 1
+                    if interrupted:
+                        transport_retries += 1
                     if current_retries > sources.PAGINATION_CONTRACT["maximum_retries_per_request"]:
-                        raise protocol.SFIR4Refused(f"{family} rate-limit retry budget exhausted")
+                        raise protocol.SFIR4Refused(
+                            f"{family} transport retry budget exhausted"
+                            if interrupted
+                            else f"{family} rate-limit retry budget exhausted"
+                        )
                     delay = response.get("retry_after_seconds")
                     if (
                         not isinstance(delay, int)
@@ -708,7 +795,7 @@ def probe_capacity(
                         or total_wait_seconds + delay > sources.MAX_TOTAL_RATE_LIMIT_WAIT_SECONDS
                     ):
                         raise protocol.SFIR4Refused(
-                            f"{family} rate-limit wait exceeds frozen fail-safe bound"
+                            f"{family} retry wait exceeds frozen fail-safe bound"
                         )
                     time.sleep(delay)
                     total_wait_seconds += delay
@@ -781,7 +868,15 @@ def probe_capacity(
             "pagination": {
                 "roots_processed": len(roots),
                 "exhausted": True,
-                "rate_limit_retries": retries,
+                # `retries` counts every retry; `transport_retries` is the
+                # subset caused by a dropped connection rather than by the
+                # server asking us to wait. Reported separately because a census
+                # that silently retried a hundred interrupted requests is a
+                # different observation from one that never lost a connection,
+                # and a single figure cannot tell a reader which happened.
+                "rate_limit_retries": retries - transport_retries,
+                "transport_retries": transport_retries,
+                "retries_total": retries,
                 "rate_limit_wait_seconds": total_wait_seconds,
                 "cap_reached": False,
             },
