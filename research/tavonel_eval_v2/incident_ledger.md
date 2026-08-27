@@ -8876,3 +8876,84 @@ That is the operational motivation recorded in SFIR5's provenance, and it is
 admissible for designing a new prospective protocol because it is a measurement
 of the endpoint, not of SFIR5's capacity result -- no candidate was counted, no
 threshold evaluated, no cohort read.
+
+## INC-V2-102 - the response-evidence chain covered one family of three
+
+**Class:** a hash-chained evidence ledger that two of three families never
+reached, and a consistency check that could not notice.
+**Disposition:** REPAIRED IN SFIR5; SFIR4 left untouched as a terminal stop.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+Found while building SFIR5's transport, by asking a question that had not been
+asked before: which code path actually writes to the response ledger?
+
+    ledger.record call sites in probe_sfir4_capacity: 5
+    all five are inside _observe
+    call sites reaching _observe: 1   ("git_docs", line 392)
+
+`regulation_ecfr` and `encyclopedia_wikipedia` never touch `_observe`. They reach
+the network through `legacy_fetch -> _http_json`, and `_http_json` calls
+`_http_json_observed` and **discards the observation**, returning the value only.
+
+Measured rather than inferred -- a full eCFR family call against SFIR4's
+transport:
+
+    eCFR family: ledger observations recorded = 0
+    ledger sees families: NONE
+
+### Why this is worse than a gap
+
+The census receipt carries a hash-chained response ledger and a request
+arithmetic that reconciles against it. A reader takes that to cover the census.
+It would have covered `git_docs`.
+
+Two of three families would have contributed candidates to a capacity figure
+while producing **no response evidence at all** -- no observed bytes, no digest,
+no chain entry, nothing to re-verify. The receipt would not have been lying in
+any field. It would simply have been silent about the silence.
+
+### The check that could not fail
+
+`require_observed_census` was hardened earlier the same day (INC-V2-094) to
+recompute the chain and refuse aggregates that disagree with the observations.
+It is a good check and it cannot catch this. A family that never records leaves
+no rows; no rows means no aggregate; and an empty recomputation agrees with an
+empty declaration exactly.
+
+This is the INC-V2-036 class in its purest form so far. Not a guard placed where
+its failure is unlikely -- a guard placed where its failure is **arithmetically
+impossible**, because the quantity it compares is derived from the same absence
+on both sides. The study has now paid for this defect class five times, and this
+is the first instance where the check was written, reviewed and strengthened
+without anyone noticing it was comparing a thing to itself.
+
+### The repair, and the check that CAN fail
+
+SFIR5's transport routes the legacy families through `_observe` as well, so all
+three families land in one chain with `observed_bytes: true`. Verified:
+
+    eCFR ledger observations: 1
+    families in ledger: ['regulation_ecfr']
+    observed_bytes all true: True
+
+`require_family_coverage` compares the ledger's families against the families the
+**census reports candidates for**. That is the one comparison silence cannot
+satisfy: a family that records nothing and reports candidates is a contradiction
+between two independent structures, not an agreement between two empty ones.
+
+### Why SFIR4 was not repaired
+
+It is sealed as a terminal operational stop. Editing its frozen instrument now
+would grow the preserved historical FAIL and would be repairing an instrument
+that will never run again. The defect is recorded against SFIR4 and fixed in the
+successor, which is what a successor is for.
+
+**One consequence for the paper.** SFIR1, SFIR2 and SFIR3 also stopped before
+producing a capacity artifact, so no sealed census exists anywhere in this
+programme that could have been affected. Nothing published needs retraction. The
+finding is about what the instrument WOULD have certified, and it is worth
+publishing precisely because it was caught by construction rather than by
+consequence.
+
+**Authority:** the call-site count above; the zero-observation measurement; the
+post-repair measurement; `_http_json`'s discard of the observation it receives.
