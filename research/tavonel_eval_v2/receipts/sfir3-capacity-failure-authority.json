@@ -1,0 +1,41 @@
+{
+  "schema": "tavonel.sfir3.capacity_probe_failure.v1",
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V3",
+  "generated_at": "2026-08-26T14:22:58Z",
+  "state": "TERMINAL_PRE_PAYLOAD_CAPACITY_INSTRUMENT_REFUSAL",
+  "reason": "FROZEN_GIT_TREE_METADATA_CONTENT_LENGTH_EXCEEDS_BOUND",
+  "exit_code": 1,
+  "charter": {
+    "path": "research/tavonel_eval_v2/receipts/sfir3-design-charter-freeze.json",
+    "sha256": "sha256:4a798d09ea02ac98b57593e6795e021313ca6650eb611dfe481490ece8d413be"
+  },
+  "spent_identity_authority": {
+    "path": "research/tavonel_eval_v2/receipts/sfir3-spent-identity-authority.json",
+    "sha256": "sha256:e9feb8678061b92ee41b524e5ea147a0d75455846ddd9bc2f3443b64e849f337"
+  },
+  "toolchain": {
+    "probe_sfir3_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir3_capacity.py",
+      "sha256": "sha256:440f6f3128581fda144ccb85e49bb4e720819c1fbaefbb4d616dc8168f8b90df"
+    },
+    "sources_sfir3": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir3.py",
+      "sha256": "sha256:e42c2a44b93372de674f616e581ae7feac35e70e09274e43bd9a5ce6e4b2a6a4"
+    }
+  },
+  "failure_stage": "GIT_DOCS_FAMILY_BEFORE_FAMILY_EXIT",
+  "exact_root_unknown": true,
+  "families_not_reached": [
+    "regulation_ecfr",
+    "encyclopedia_wikipedia"
+  ],
+  "capacity_metadata_written": false,
+  "payload_opened": false,
+  "diff_opened": false,
+  "source_fact_computed": false,
+  "endpoint_outcome_computed": false,
+  "score_attempted": false,
+  "gpu_seconds": 0,
+  "estimated_cost_usd": 0.0,
+  "disposition": "NO_RETRY_NO_CHARTER_AMENDMENT_NO_ROSTER_NO_ACQUISITION"
+}

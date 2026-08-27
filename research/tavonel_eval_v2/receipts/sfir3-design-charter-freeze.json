@@ -1,0 +1,26 @@
+{
+  "charter": {
+    "path": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V3_DESIGN_CHARTER.yaml",
+    "sha256": "sha256:e8b62c790068ee96655d2944463325df1f7453a8f524813bf5c9c5ee76e893b4"
+  },
+  "charter_digest": "sha256:8375c077572a9ab9a04b6266f79831fa7da46d48074f527ed1a85cc64bfdc0ad",
+  "content_sha256": "sha256:5c51065ab0bd746a3e5a742dc0085bb1b08c3abc8727f6ac4ccaab3f3ad21514",
+  "generated_at": "2026-08-26T14:17:49Z",
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V3",
+  "schema": "tavonel.sfir3.design_charter_freeze.v1",
+  "state": "FROZEN_PRE_CENSUS",
+  "toolchain": {
+    "probe_sfir3_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir3_capacity.py",
+      "sha256": "sha256:440f6f3128581fda144ccb85e49bb4e720819c1fbaefbb4d616dc8168f8b90df"
+    },
+    "sfir3_spent_authority": {
+      "path": "research/tavonel_eval_v2/tools/sfir3_spent_authority.py",
+      "sha256": "sha256:873a3fc325835283d65996fa49680786d2dfba6c4a04bfdd8f368f1e2a32f28e"
+    },
+    "sources_sfir3": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir3.py",
+      "sha256": "sha256:e42c2a44b93372de674f616e581ae7feac35e70e09274e43bd9a5ce6e4b2a6a4"
+    }
+  }
+}
