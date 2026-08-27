@@ -446,9 +446,20 @@ def test_fresh_frame_disjointness_sealed_frame_with_no_overlap_passes(under_ns):
 
 
 def test_fresh_frame_disjointness_passes_against_the_real_state():
+    """Disjointness holds in the real state, whether or not the frame is sealed.
+
+    This asserted `frame_sealed is False` until the SFI3 frame was actually
+    sealed, at which point it went red for a reason that has nothing to do with
+    disjointness -- it was a snapshot of a moment, not a contract. What it was
+    really recording is that the Wikipedia branch had no reachable inputs yet.
+    That belongs in the check's own coverage, so it is asserted here against the
+    artifact on disk rather than against a hard-coded expectation of it.
+    """
+    import sources_sfi3 as sfi3
+
     result = pf.fresh_frame_disjointness()
     assert result["verdict"] == pf.PASS
-    assert result["frame_sealed"] is False
+    assert result["frame_sealed"] is sfi3.FRAME.exists()
 
 
 # ---------------------------------------------------------------------------

@@ -9447,3 +9447,114 @@ successor, before its census, not to a study whose census is already sealed.
 **Authority:** the refusal string; the field-set comparison above; the in-memory
 correction producing a different refusal; `git diff` clean on
 `tools/sfir4_protocol.py`.
+
+
+## INC-V2-108 - the same silent-error class in the git and eCFR adapters, registered before SFIR6's census returned
+
+**Class:** INC-V2-106 generalised. A hostile audit of the two families the
+Wikipedia incident did not touch.
+**Disposition:** FOUR DEFECTS CONFIRMED LIVE, ONE REPORTED DEFECT REFUTED,
+MAGNITUDE MEASURED ON SFIR5. SFIR6's frozen charter is NOT amended.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+INC-V2-106 was a Wikipedia defect with a general shape: transport success
+(bytes arrived) is not protocol success (the API said yes) is not semantic
+completeness (we got what we asked for). This entry records what that lens
+found when turned on `git_docs` and `regulation_ecfr`.
+
+**This entry is written while the SFIR6 census is still running and no SFIR6
+number exists.** That ordering is the point. A limitation registered after a
+disappointing result is indistinguishable from an excuse for it; the same
+limitation registered before the result cannot be one.
+
+### Confirmed live
+
+- **eCFR files an HTTP 404/409/451 as a corpus zero.** `probe_sfir3_capacity`
+  returns `_zero(...)`, i.e. `ZERO_CANDIDATE_ROOT_DISPOSITION`, for a root the
+  server refused. The identical status in `git_docs` returns
+  `UNAVAILABLE_ROOT_DISPOSITION`. One census, one HTTP status, two incompatible
+  meanings - and the correct state already exists in the seal's allowed set.
+- **eCFR files an unfinishable enumeration as a corpus zero.** Five distinct
+  instrument failures - page bound, byte bound, `meta` drift between pages,
+  `rows_seen != result_count`, and two crawls disagreeing - all reach the same
+  `ZERO_CANDIDATE`. The reason strings distinguish them; the state does not, and
+  the state is what the arithmetic reads. This is INC-V2-106's exact shape.
+- **A git doc path whose commit history returns `[]` disappears uncounted.**
+  GitHub answers HTTP 200 `[]` for a path filter that matched nothing - captured
+  live at `/repos/pypa/setuptools/commits?path=NO_SUCH_PATH_zzz.md`. A path read
+  out of the HEAD tree in the same census cannot honestly have zero commits, so
+  `[]` there is the API refusing the filter. It is dropped by the same
+  `len(commits) < 2: continue` as a genuine single-commit file, and no proof
+  field records it. **A root where every path answered `[]` would seal as
+  `COMPLETE` with zero candidates** - the same false zero as INC-V2-106,
+  arriving through `COMPLETE` instead of through `ZERO_CANDIDATE`.
+- **Repository identity is never verified.** `_git` accepts the metadata body if
+  it merely carries a string `default_branch`; `full_name` is never compared to
+  the repository asked for. Captured live: `GET /repos/facebook/jest` returns
+  HTTP 200 from `/repositories/15062869` with `full_name: jestjs/jest`. urllib
+  follows GitHub's rename 301 silently. Candidates would be attributed to a
+  `discovery_root_id` and `payload_ref` naming a repository that does not hold
+  them, and `assert_static_disjointness` - which compares declared names while
+  the census reads redirect targets - could not see it.
+
+**A fourth gate follows from the last one:** *identity success - the thing that
+answered is the thing we asked for.* Transport, protocol and semantic
+completeness can all pass on a response from the wrong resource.
+
+### Refuted: the response ledger does cover all three families
+
+The audit reported that only `git_docs` reaches the ledger, because
+`probe_sfir4_capacity.py:392` is the sole call site of `_observe` and eCFR and
+Wikipedia go through `legacy_fetch` directly to `_http_json`. That is true of
+**SFIR4's probe** and false of **the transport that executed SFIR5 and is
+executing SFIR6**. `PacedObservingTransport.__init__` replaces the legacy
+closure with one whose body is `return self._observe(family, root_id, url)`.
+
+That is not an argument, it is in the receipt.
+`receipts/sfir5-capacity-census-seal.json` records
+`families_in_ledger: [encyclopedia_wikipedia, git_docs, regulation_ecfr]` and
+`per_host_requests: {api.github.com: 1879, en.wikipedia.org: 60,
+www.ecfr.gov: 1011}`. Had eCFR bypassed the ledger, its 1,011 requests would
+have left no rows and `require_family_coverage` would have refused the census.
+
+The finding was reasoned from the frozen module without reading the subclass that
+overrides it. **An audit of an inherited module is not an audit of the code that
+runs** - the mirror image of INC-V2-036, and worth keeping next to it.
+
+### Magnitude, measured rather than assumed
+
+Counted over the 100 root dispositions in SFIR5's sealed census:
+
+| family | COMPLETE | EXCLUDED_INCOMPLETE | ZERO_CANDIDATE |
+|---|---|---|---|
+| `regulation_ecfr` | 49 | 0 | 1 (`EMPTY_ENUMERATION_NO_VERSIONS`) |
+| `git_docs` | 13 | 7 | 0 |
+| `encyclopedia_wikipedia` | 1 | 0 | 29 (`TRUNCATED_OR_INCOMPLETE_ENUMERATION`) |
+
+The eCFR conflation **never fired**. Its single zero carries the one reason that
+genuinely means an empty corpus, and no root took a refused-or-truncated path.
+eCFR's 859 is not contaminated by these defects. `git_docs` used
+`EXCLUDED_INCOMPLETE` correctly for all seven bounded roots; its exposure is the
+uncounted `[]` history and the unverified identity, neither of which leaves a
+trace in a receipt - which is exactly why they need counters rather than
+reasoning.
+
+**Direction of bias.** Filing a failure as a zero can only lower a capacity
+count, never raise it. So these defects cannot inflate a passing family, and a
+family that passes despite them has passed. They bound a *shortfall*, and only a
+shortfall. The identity defect is the exception: it is a misattribution, not a
+count error, and it can move candidates between roots in either direction.
+
+### Why SFIR6 is not amended
+
+SFIR6 is frozen with `repairs: [INC-V2-106, INC-V2-107]` and is executing. These
+defects are unconditional and were found before its result existed, so amending
+it now would not be outcome-conditioned - but it would still be an edit to a
+sealed charter during the census it authorises, and a freeze that can be widened
+mid-run is not a freeze. SFIR6 reports under its declared scope, with this entry
+as its named limitation.
+
+**Authority:** `probe_sfir3_capacity._zero` call sites; `probe_sfir4_capacity`
+`len(commits) < 2: continue` and the metadata acceptance branch; the live
+`facebook/jest` and `pypa/setuptools` responses; `sfir5_transport.py:147-157`;
+`receipts/sfir5-capacity-census-seal.json`; the disposition counts above.
