@@ -19,7 +19,7 @@ adding repositories, or nudging a threshold, until the count clears 750. Three
 structural properties do that work, and each is testable:
 
     1. Nothing here can see a capacity quantity. Eligibility predicates may only
-       name fields that exist on `CatalogRecord`, and any predicate naming a
+       name fields that exist on `FrameCatalogRecord`, and any predicate naming a
        capacity term is refused. There is no code path from a candidate count
        into a selection decision because there is no parameter to carry one.
 
@@ -83,7 +83,7 @@ class SFIR7Refused(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
-class CatalogRecord:
+class FrameCatalogRecord:
     """One repository as the external catalogue describes it. Nothing added."""
 
     record_id: str  # the catalogue's own stable identifier; total-order key
@@ -97,7 +97,32 @@ class CatalogRecord:
     catalog_rank_value: int  # the catalogue's own ordinal; NOT computed here
 
 
-CATALOG_FIELDS = frozenset(f.name for f in fields(CatalogRecord))
+CATALOG_FIELDS = frozenset(f.name for f in fields(FrameCatalogRecord))
+
+#: The selectable field set, written out rather than only derived, because
+#: deriving it means any field added to the projection silently becomes
+#: available to a predicate. `host_uuid`, `fork` and `status` exist on the raw
+#: publisher record and are deliberately NOT here: the rule was designed blind
+#: over exactly these nine fields, and a rule that can reach a tenth is not the
+#: rule that was designed blind. A control asserts the two agree.
+SELECTABLE_FIELDS = frozenset(
+    {
+        "record_id",
+        "host",
+        "namespace",
+        "name",
+        "primary_language",
+        "spdx_license_id",
+        "created_utc",
+        "last_activity_utc",
+        "catalog_rank_value",
+    }
+)
+
+#: Carried on the raw record for provenance and identity attestation, and
+#: forbidden to the selection rule. Naming them is the point -- an omission is
+#: invisible, a declared exclusion is not.
+PROVENANCE_ONLY_FIELDS = frozenset({"host_uuid", "fork", "status"})
 
 # Substrings that must never appear in a predicate field, a ranking field or an
 # N justification. These are the names a capacity quantity travels under in this
@@ -130,7 +155,7 @@ class CatalogSnapshot:
     snapshot_uri: str
     snapshot_sha256: str
     snapshot_date_utc: str
-    records: tuple[CatalogRecord, ...]
+    records: tuple[FrameCatalogRecord, ...]
 
 
 # --------------------------------------------------------------------------
@@ -265,7 +290,7 @@ class FrameSelection:
     snapshot_sha256: str
     eligible_count: int
     n: int
-    selected: tuple[CatalogRecord, ...]
+    selected: tuple[FrameCatalogRecord, ...]
     dispositions: Mapping[str, str]
 
 
@@ -329,7 +354,7 @@ def assert_capacity_blind(rule: FrameRule) -> None:
     """Refuse any rule that could have looked at how much the frame will yield.
 
     Two ways in are closed here: a predicate or ranking key naming a field that
-    is not on `CatalogRecord`, and any field or justification naming a capacity
+    is not on `FrameCatalogRecord`, and any field or justification naming a capacity
     term. A rule cannot be tuned against a number it cannot name.
     """
     for predicate in rule.predicates:
@@ -507,7 +532,7 @@ def _accepted_values(predicate: EligibilityPredicate) -> tuple[Any, ...]:
     return tuple(_comparable(value, predicate.field) for value in expanded)
 
 
-def _evaluate(predicate: EligibilityPredicate, record: CatalogRecord) -> bool:
+def _evaluate(predicate: EligibilityPredicate, record: FrameCatalogRecord) -> bool:
     observed = getattr(record, predicate.field)
     op = predicate.op
     if op == "eq":
@@ -531,7 +556,7 @@ def _evaluate(predicate: EligibilityPredicate, record: CatalogRecord) -> bool:
 
 def apply_eligibility(
     snapshot: CatalogSnapshot, rule: FrameRule
-) -> tuple[tuple[CatalogRecord, ...], dict[str, str]]:
+) -> tuple[tuple[FrameCatalogRecord, ...], dict[str, str]]:
     """Every record gets a disposition: ELIGIBLE, or the first predicate it failed.
 
     Predicates are applied in declared order and the first failure is recorded,
@@ -539,7 +564,7 @@ def apply_eligibility(
     iteration order.
     """
     assert_capacity_blind(rule)
-    eligible: list[CatalogRecord] = []
+    eligible: list[FrameCatalogRecord] = []
     dispositions: dict[str, str] = {}
     for record in snapshot.records:
         verdict = "ELIGIBLE"
@@ -577,7 +602,7 @@ def is_documentation_path(path: str) -> bool:
 # --------------------------------------------------------------------------
 
 
-def _ranking_key(record: CatalogRecord, rule: FrameRule) -> tuple[Any, ...]:
+def _ranking_key(record: FrameCatalogRecord, rule: FrameRule) -> tuple[Any, ...]:
     parts: list[Any] = []
     for key in rule.ranking:
         observed = getattr(record, key.field)
@@ -596,7 +621,7 @@ def _ranking_key(record: CatalogRecord, rule: FrameRule) -> tuple[Any, ...]:
 
 
 def assert_strict_total_order(
-    records: Sequence[CatalogRecord], rule: FrameRule
+    records: Sequence[FrameCatalogRecord], rule: FrameRule
 ) -> None:
     """Refuse if any two eligible records share a full ranking key.
 

@@ -30,7 +30,7 @@ DIGEST = "sha256:" + "a" * 64
 SNAPSHOT_DATE = "2026-08-27"
 
 
-def _record(index: int, **overrides) -> frame.CatalogRecord:
+def _record(index: int, **overrides) -> frame.FrameCatalogRecord:
     base = {
         "record_id": f"cat-{index:05d}",
         "host": "github",
@@ -43,7 +43,7 @@ def _record(index: int, **overrides) -> frame.CatalogRecord:
         "catalog_rank_value": 10_000 - index,
     }
     base.update(overrides)
-    return frame.CatalogRecord(**base)
+    return frame.FrameCatalogRecord(**base)
 
 
 def _snapshot(records) -> frame.CatalogSnapshot:
@@ -328,7 +328,7 @@ def test_a_tie_breaker_outside_the_catalogue_record_is_refused():
 
 
 def test_the_capacity_record_field_set_is_closed():
-    """If CatalogRecord ever grows a measured quantity, this is where it shows."""
+    """If FrameCatalogRecord ever grows a measured quantity, this is where it shows."""
     assert {
         "record_id",
         "host",

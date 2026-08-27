@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read Libraries.io's Repositories table into SFIR7 `CatalogRecord`s, fail-closed.
+"""Read Libraries.io's Repositories table into SFIR7 `RawCatalogRecord`s, fail-closed.
 
 Everything this module reads is somebody else's data, written six years before
 this study existed. Its whole job is to carry that data across without adding a
@@ -54,7 +54,7 @@ for _root in (str(NS), str(NS / "tools"), str(NS / "acquisition")):
 
 PROTOCOL_ID = "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7"
 
-#: The Libraries.io column each `CatalogRecord` field is read from. Declared
+#: The Libraries.io column each `RawCatalogRecord` field is read from. Declared
 #: before the file is opened, so a header that moved is a refusal rather than a
 #: silently different roster.
 COLUMN_CONTRACT: dict[str, str] = {
@@ -85,7 +85,7 @@ class CatalogParseRefused(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
-class CatalogRecord:
+class RawCatalogRecord:
     """One repository as the catalogue published it. No TAVONEL-derived field."""
 
     record_id: str
@@ -141,7 +141,7 @@ def _clean(value: str) -> str:
     return value.strip()
 
 
-def parse_row(row: list[str], index: dict[str, int]) -> tuple[CatalogRecord | None, str]:
+def parse_row(row: list[str], index: dict[str, int]) -> tuple[RawCatalogRecord | None, str]:
     """Return a record, or `None` and the reason it could not be read."""
     highest = max(index.values())
     if len(row) <= highest:
@@ -165,7 +165,7 @@ def parse_row(row: list[str], index: dict[str, int]) -> tuple[CatalogRecord | No
     if raw_fork not in {"true", "false", ""}:
         return None, "FORK_NOT_BOOLEAN"
     return (
-        CatalogRecord(
+        RawCatalogRecord(
             record_id=record_id,
             host_uuid=_clean(row[index["host_uuid"]]),
             host=_clean(row[index["host"]]),
@@ -184,7 +184,7 @@ def parse_row(row: list[str], index: dict[str, int]) -> tuple[CatalogRecord | No
 
 def stream_records(
     path: Path, tally: list[int] | None = None
-) -> Iterator[tuple[CatalogRecord | None, str]]:
+) -> Iterator[tuple[RawCatalogRecord | None, str]]:
     """Yield every row's outcome, in file order, holding one row at a time.
 
     `tally`, if given, is the producer's own count of rows yielded. The consumer
@@ -206,7 +206,7 @@ def stream_records(
             yield parse_row(row, index)
 
 
-def read_catalog(path: Path) -> tuple[list[CatalogRecord], dict[str, Any]]:
+def read_catalog(path: Path) -> tuple[list[RawCatalogRecord], dict[str, Any]]:
     """Read the whole table, returning the records and an accounting of the rest.
 
     The accounting is not decoration, and it is reconciled against the *producer*
@@ -217,7 +217,7 @@ def read_catalog(path: Path) -> tuple[list[CatalogRecord], dict[str, Any]]:
     matters comes from `stream_records`, so a row dropped between producer and
     consumer -- a stray `continue` added here by a later edit -- is refused.
     """
-    records: list[CatalogRecord] = []
+    records: list[RawCatalogRecord] = []
     rejected: Counter[str] = Counter()
     yielded = [0]
     accounted = 0

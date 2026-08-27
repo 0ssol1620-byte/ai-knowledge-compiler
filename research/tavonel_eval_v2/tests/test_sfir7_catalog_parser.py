@@ -212,7 +212,7 @@ def test_every_row_is_either_a_record_or_a_counted_rejection(tmp_path: Path):
 def test_the_record_carries_no_field_tavonel_derived():
     """If a popularity or yield score ever appears here, the frame stops being
     external and becomes a TAVONEL judgement wearing a catalogue's name."""
-    fields = set(parser.CatalogRecord.__dataclass_fields__)
+    fields = set(parser.RawCatalogRecord.__dataclass_fields__)
     assert fields == set(parser.COLUMN_CONTRACT)
     for forbidden in ("score", "popularity", "yield", "weight", "priority", "tavonel"):
         assert not any(forbidden in name.casefold() for name in fields), forbidden
