@@ -1,0 +1,77 @@
+{
+  "all_three_families_remeasured": true,
+  "capacity_criterion_evaluated_here": false,
+  "census_input": {
+    "path": "research/tavonel_eval_v2/receipts/sfir6-capacity-metadata-census.json",
+    "sha256": "sha256:cd3a9e399442c798a2f31160d4c9160929239162c4b6affac1fe7b774ef0acec"
+  },
+  "census_input_protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4",
+  "charter_freeze": {
+    "path": "research/tavonel_eval_v2/receipts/sfir6-design-charter-freeze--r2.json",
+    "sha256": "sha256:da996a202940297c5d9f54ea2e49fd986e22c4d60026ac6787ae8fd29dc7f0da"
+  },
+  "content_sha256": "sha256:66b6a84d16a0378ee7c023420e168e66b3899eca9f9ab32fb1f2d89b40913aa0",
+  "estimated_cost_usd": 0.0,
+  "executed_under": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6",
+  "families_declared": [
+    "encyclopedia_wikipedia",
+    "git_docs",
+    "regulation_ecfr"
+  ],
+  "family_coverage": {
+    "covered": true,
+    "families_in_ledger": [
+      "encyclopedia_wikipedia",
+      "git_docs",
+      "regulation_ecfr"
+    ],
+    "families_with_candidates": [
+      "encyclopedia_wikipedia",
+      "git_docs",
+      "regulation_ecfr"
+    ]
+  },
+  "generated_at": "2026-08-27T06:48:26.835426+00:00",
+  "gpu_seconds": 0,
+  "no_sfir5_number_reused": true,
+  "payload_opened": false,
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6",
+  "schema": "tavonel.sfir6.capacity_census_seal.v1",
+  "science_carried_from": {
+    "path": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml",
+    "sha256": "sha256:c211535fae804cb216a869cfe417a2a1f2e06590d5ae96e3a95fca9734bf2174"
+  },
+  "science_carried_from_freeze": {
+    "path": "research/tavonel_eval_v2/receipts/sfir5-bound-sfir4-charter-freeze.json",
+    "sha256": "sha256:a1cf2e1773b784c953f6cc3de764c52b15888c33d29993e2f8c88feb4483931f"
+  },
+  "spent_identity_authority": {
+    "path": "research/tavonel_eval_v2/receipts/sfir5-spent-identity-authority.json",
+    "sha256": "sha256:f2bb77fea28712d6f7f1ac669514412a99cc0e98b05458ba8f5b21b91d741f27"
+  },
+  "state": "CENSUS_SEALED",
+  "transport": {
+    "frozen_bounds": {
+      "default_min_interval_seconds": 1.0,
+      "host_min_interval_seconds": {
+        "api.github.com": 0.5,
+        "en.wikipedia.org": 7.0,
+        "www.ecfr.gov": 0.5
+      },
+      "max_concurrent_requests_per_host": 1,
+      "max_total_requests": 12000,
+      "max_total_wall_clock_seconds": 21600
+    },
+    "per_host_requests": {
+      "api.github.com": 2043,
+      "en.wikipedia.org": 144,
+      "www.ecfr.gov": 1011
+    },
+    "requests_made": 3198,
+    "schema": "tavonel.sfir5.transport_freeze.v1",
+    "seconds_spent_pacing": 1150.952,
+    "wall_clock_seconds": 3029.174
+  },
+  "what_the_census_input_protocol_id_means": "the census input records SFIR4's protocol_id because it is SFIR4's probe and SFIR4's charter that produced it. The RUN is SFIR6's, with the Wikipedia adapter repaired per INC-V2-106.",
+  "wikipedia_adapter": "SFIR6_TWO_PASS_BATCHED_NO_RVLIMIT"
+}

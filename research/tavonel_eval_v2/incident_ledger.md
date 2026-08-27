@@ -9558,3 +9558,112 @@ as its named limitation.
 `len(commits) < 2: continue` and the metadata acceptance branch; the live
 `facebook/jest` and `pypa/setuptools` responses; `sfir5_transport.py:147-157`;
 `receipts/sfir5-capacity-census-seal.json`; the disposition counts above.
+
+
+## INC-V2-109 - alias identity case-folds MediaWiki titles, which are case-sensitive
+
+**Class:** an identity normalisation that merges two distinct real-world things.
+**Disposition:** CAUSE ESTABLISHED AND VERIFIED LIVE. NOT REPAIRED - identity
+semantics are frozen for SFIR6 and `akc_cir.identity` is Protected Core.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+SFIR6's capacity seal refused `encyclopedia_wikipedia` with
+
+    DOCUMENT namespace collision on 'wiki:en:title:cd8+':
+    claimed by alias_ids and again by alias_ids
+
+Four aliases out of 9,887 collide across the 2,152 candidates. All four have the
+same single cause, confirmed against the live API rather than inferred:
+
+| collapsed alias | one page | the other page |
+|---|---|---|
+| `cd8+` | `CD8+` -> Cytotoxic T cell (211947) | `Cd8+` -> CD8 (2305842) |
+| `emergency surgery` | `Emergency Surgery` -> Surgery (45599) | `Emergency surgery` -> Elective surgery (12712661) |
+| `communication systems` | `Communication Systems` -> Telecommunications | `Communication systems` -> Communications system |
+| `telecommunication systems` | `Telecommunication Systems` -> Communications system | `Telecommunication systems` -> Telecommunications |
+
+**MediaWiki titles are case-sensitive after the first character.** `CD8+` and
+`Cd8+` are two different redirect pages pointing at two different articles.
+TAVONEL's alias identity case-folds the whole title and merges them, so one
+identity is claimed by two lineages and the identity proof fails closed.
+
+Resolving `CD8+` through the API returns exactly one target
+(`{"from": "CD8+", "to": "Cytotoxic T cell"}`), which is the point: each redirect
+is unambiguous in the source, and the ambiguity is manufactured by the
+normalisation.
+
+**This is our defect, not the corpus's and not the adapter's.** The fetch is
+sound - every batch returned `batchcomplete`, no continuation, no warnings.
+
+### Why it was not repaired here
+
+Three independent reasons, any one sufficient. The SFIR6 charter freezes
+`identity_semantics: unchanged`. `akc_cir.identity` is Protected Core and cannot
+be changed without a same-condition no-regression benchmark. And the outcome was
+already known when this surfaced - changing an identity rule at that point is
+outcome-conditioned by construction, whatever its merits.
+
+The failure is also **correct behaviour**: an authoritative conflict on
+insufficient evidence must not be auto-resolved, and it was not.
+
+### Why four studies did not find it
+
+It was unreachable. `encyclopedia_wikipedia` had never produced a candidate -
+INC-V2-106 meant every revision request was rejected, so the identity proof had
+no Wikipedia input to run on. **Repairing one instrument exposed a defect in a
+different layer**, which is the ordinary way a first measurement pays for itself.
+`git_docs` and `regulation_ecfr` aliases evidently do not collide under
+case-folding; that is a property of those corpora, not evidence the rule is safe.
+
+**Authority:** the seal's refusal string; the four collisions in
+`receipts/sfir6-capacity-metadata-census.json`; the six live API responses above,
+each with `batchcomplete: true` and no continuation.
+
+
+## INC-V2-110 - the disposition field set is INC-V2-107's defect a third time
+
+**Class:** strict set equality over a field set that a legitimate change grows.
+**Disposition:** IDENTIFIED, NOT LOAD-BEARING for SFIR6's verdict.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+`seal_capacity` compares each root disposition against
+`CAPACITY_DISPOSITION_FIELDS`, permitting `traversal_proof` **only** for
+`git_docs`. SFIR6's repaired Wikipedia adapter emits a traversal proof for every
+root, so the seal refuses with `encyclopedia_wikipedia root disposition fields
+drifted` - because the census carries **more** evidence than the schema allows.
+
+That is the same shape as INC-V2-107 and, counting the pagination block, the
+third instance in one module. The generalisation worth keeping: **a schema that
+compares an evidence block by strict set equality punishes any successor that
+produces better evidence.** Additive evidence and schema drift are not
+distinguishable to `!=`, and the study that adds a counter is the one that pays.
+
+It is recorded rather than repaired because it is not load-bearing here. Removing
+the extra proof to satisfy the frozen contract lets the seal proceed - and it
+then refuses on INC-V2-109 instead, which is a finding about the data and not
+about the schema. The field-set gate therefore stands between the census and
+nothing; `git_docs`'s 293 decides the verdict either way.
+
+
+## INC-V2-111 - a procedural slip of my own: counts read before the seal ran
+
+**Class:** result-blindness given up when it did not have to be.
+**Disposition:** RECORDED. No artifact is affected.
+**GPU seconds:** 0 - **Cost:** $0 - **IP gate:** CLOSED.
+
+After the census completed I counted candidates per family directly from
+`receipts/sfir6-capacity-metadata-census.json` **before** invoking the seal. The
+seal is the instrument that produces the verdict; reading the raw counts first
+was unnecessary and meant that when the seal then refused twice - once on
+INC-V2-110, once on INC-V2-109 - I was already holding the outcome.
+
+Nothing was changed to suit it, and the two refusals were handled as findings
+rather than as obstacles: identity semantics were not touched, no threshold
+moved, no root was added. INC-V2-110's proof is that removing the extra evidence
+reaches the same place, and the verdict rests on `git_docs = 293`, which
+reproduces SFIR5's number **and its exact lineage set**.
+
+But "it did not change anything" is a weaker guarantee than "it could not have",
+and the second is the one the design is supposed to provide. The rule for the
+successor: **run the seal first, read the census afterwards.** The seal is
+blind; a person reading a census is not.

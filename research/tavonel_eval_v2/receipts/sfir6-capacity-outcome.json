@@ -1,0 +1,144 @@
+{
+  "census": {
+    "path": "research/tavonel_eval_v2/receipts/sfir6-capacity-metadata-census.json",
+    "sha256": "sha256:cd3a9e399442c798a2f31160d4c9160929239162c4b6affac1fe7b774ef0acec"
+  },
+  "census_seal": {
+    "path": "research/tavonel_eval_v2/receipts/sfir6-capacity-census-seal.json",
+    "sha256": "sha256:cb86beb1d8a73726fccee1474553ffad3df56ceb7b7c10a39595fd6a998e1586"
+  },
+  "content_sha256": "sha256:d73a58b2310c0bed58593faaba95484066ec6237bc74acabf16408a6623ae7ab",
+  "criterion": {
+    "formula": "Q_f=min(1000,floor(0.8*C_f))",
+    "minimum_C_per_family": 750,
+    "minimum_Q_per_family": 600,
+    "requires_every_family": true
+  },
+  "defects_found_by_this_census": {
+    "INC-V2-109": "alias identity case-folds MediaWiki titles. Unreachable in SFIR1-SFIR5 because this family had never produced a candidate. NOT repaired: identity semantics are frozen, akc_cir.identity is Protected Core, and the outcome was known by the time it surfaced.",
+    "INC-V2-110": "seal_capacity permits a traversal proof only for git_docs, so the repaired Wikipedia adapter is refused for carrying MORE evidence than the schema allows. Third instance of INC-V2-107's class. Not load-bearing: removing the extra proof reaches INC-V2-109 instead."
+  },
+  "downstream_not_run": {
+    "acquisition_started": false,
+    "authority": "charter terminal_policy: no_roster_or_acquisition_on_capacity_shortfall",
+    "corpus_spent": false,
+    "payload_opened": false,
+    "roster_frozen": false
+  },
+  "estimated_cost_usd": 0.0,
+  "families": {
+    "encyclopedia_wikipedia": {
+      "C": 2152,
+      "Q": 1000,
+      "is_a_measurement": true,
+      "is_sealable": false,
+      "meets_C": true,
+      "meets_Q": true,
+      "root_states": {
+        "COMPLETE": 29,
+        "ZERO_CANDIDATE_ROOT_DISPOSITION": 1
+      },
+      "roots_complete": 29,
+      "roots_declared": 30,
+      "the_count_is_not_a_certified_capacity": "C=2152 records what the repaired instrument enumerated. It is not a sealed capacity, because the identity proof refused to certify the set. Nothing here establishes that this family meets or misses the criterion.",
+      "verdict": "MEASURED_NOT_SEALABLE",
+      "whose_defect": "ours. The fetch is sound -- every batch returned batchcomplete, with no continuation and no warnings. The collision is manufactured by our normalisation, not present in the source.",
+      "why": "the INC-V2-106 repair worked: 29 of 30 roots enumerated to continuation exhaustion and produced 2,152 candidates, against SFIR5 where every revision request was rejected and 29 roots were filed TRUNCATED_OR_INCOMPLETE. The 30th root enumerated and yielded no revision pair, which is an honest zero.",
+      "why_not_sealable": "the candidate set fails the identity proof. Four aliases of 9,887 are each claimed by two lineages because alias identity case-folds MediaWiki titles, which are case-sensitive after the first character (INC-V2-109). Verified live: CD8+ -> Cytotoxic T cell and Cd8+ -> CD8 are two distinct redirects."
+    },
+    "git_docs": {
+      "C": 293,
+      "Q": 234,
+      "is_a_measurement": true,
+      "is_sealable": true,
+      "meets_C": false,
+      "meets_Q": false,
+      "root_states": {
+        "COMPLETE": 13,
+        "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION": 7
+      },
+      "roots_complete": 13,
+      "roots_declared": 20,
+      "verdict": "SHORTFALL_MEASURED",
+      "why": "13 of 20 roots enumerated to queue exhaustion, 7 hit declared tree-traversal bounds and were excluded as the charter requires. No root reached its per-root candidate cap of 80 (highest was 73), so the total is not an artifact of the cap. Reproduces SFIR5's candidate set exactly, which makes this a twice-measured shortfall rather than a single observation."
+    },
+    "regulation_ecfr": {
+      "C": 859,
+      "Q": 687,
+      "is_a_measurement": true,
+      "is_sealable": true,
+      "meets_C": true,
+      "meets_Q": true,
+      "root_states": {
+        "COMPLETE": 49,
+        "ZERO_CANDIDATE_ROOT_DISPOSITION": 1
+      },
+      "roots_complete": 49,
+      "roots_declared": 50,
+      "verdict": "MEETS_CRITERION",
+      "why": "49 of 50 roots enumerated to exhaustion; one reserved title carries no versions. Reproduces SFIR5's candidate set exactly."
+    }
+  },
+  "families_meeting_criterion": [
+    "regulation_ecfr"
+  ],
+  "families_not_sealable": [
+    "encyclopedia_wikipedia"
+  ],
+  "families_sealable": [
+    "git_docs",
+    "regulation_ecfr"
+  ],
+  "generated_at": "2026-08-27T07:47:30.146930+00:00",
+  "gpu_seconds": 0,
+  "outcome": "The criterion requires every family. regulation_ecfr meets it. git_docs falls short as a measurement, for the second time, on an identical candidate set. encyclopedia_wikipedia was measured for the first time in the programme but its set could not be sealed. The criterion is not met, and it is not met because of git_docs -- a result no view of the Wikipedia family can change.",
+  "predecessor": {
+    "is_not_rescored": true,
+    "numbers_were_not_copied": "SFIR5's counts appear here only as a comparison target for the replication claim. Every figure in `families` was computed from SFIR6's own census.",
+    "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5",
+    "receipt": "receipts/sfir5-capacity-outcome.json"
+  },
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6",
+  "repair_outcome": {
+    "INC-V2-106": {
+      "evidence": "29 of 30 Wikipedia roots COMPLETE with reason CATEGORY_CONTINUATION_EXHAUSTED_AND_PAIRS_RESOLVED, against 29 of 30 filed TRUNCATED_OR_INCOMPLETE_ENUMERATION in SFIR5. 2,152 candidates where no candidate had ever been produced.",
+      "repaired": true
+    },
+    "INC-V2-107": {
+      "evidence": "the census passed the pagination field-set comparison it would otherwise have failed, and the seal proceeded to later checks.",
+      "repaired": true
+    }
+  },
+  "replication_of_sfir5": {
+    "git_docs": {
+      "counts_agree": true,
+      "in_sfir5_only": 0,
+      "in_sfir6_only": 0,
+      "lineage_sets_identical": true,
+      "sfir5_C": 293,
+      "sfir5_C_matches_the_sealed_outcome": true,
+      "sfir6_C": 293
+    },
+    "how_established": "the SFIR5 and SFIR6 candidate lineage sets were compared as sets, not as counts. Equal counts could coincide; equal sets could not.",
+    "identical_lineage_sets": true,
+    "regulation_ecfr": {
+      "counts_agree": true,
+      "in_sfir5_only": 0,
+      "in_sfir6_only": 0,
+      "lineage_sets_identical": true,
+      "sfir5_C": 859,
+      "sfir5_C_matches_the_sealed_outcome": true,
+      "sfir6_C": 859
+    },
+    "what_it_shows": "the repair changed only the family it was aimed at. git_docs and regulation_ecfr ran through the inherited code path and returned the same corpus, so SFIR6's Wikipedia number is not confounded by a transport that quietly moved underneath the other two."
+  },
+  "schema": "tavonel.sfir6.capacity_outcome.v1",
+  "state": "CAPACITY_CRITERION_APPLIED_AND_FAILED",
+  "successor": {
+    "authority": "charter verdict_policy: successor_on_failure",
+    "designed_while_this_census_was_blind": true,
+    "is_a_new_frame_question_not_a_repair": true,
+    "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7"
+  },
+  "what_this_receipt_does_not_say": "that encyclopedia_wikipedia lacks capacity, or that it has it -- its set was enumerated but not certified. That the declared thresholds are the right thresholds: 750 and 600 are pre-registered, not calibrated. That git_docs would fail under a different frame; SFIR7 asks that question, and asks it with a rule written before this number existed."
+}
