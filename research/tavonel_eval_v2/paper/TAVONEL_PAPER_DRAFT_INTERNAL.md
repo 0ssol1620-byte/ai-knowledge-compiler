@@ -512,6 +512,41 @@ the two notions happened to agree. §3.1 is bounded by that sentence.
    SFIR2 and SFIR3 each stopped at a different frozen Git metadata constraint
    before payload. The sequence supports a claim about instrument feasibility
    and adaptation discipline, not about source-fact endpoint behaviour.
+10. **No SFIR corpus has been opened at all.** Across four
+    independent-replication instruments no roster was frozen, no cohort was
+    acquired and no payload was read. Every statement this paper makes about the
+    SFIR sequence is a statement about instruments; none is a statement about the
+    sources those instruments were built to read.
+11. **Four instrument stops, four different causes, none of them combinable.**
+    SFIR1 stopped on a Git-root HTTP 404, SFIR2 on a revision-chronology
+    contract, SFIR3 on a recursive-tree `Content-Length` bound and SFIR4 on an
+    exhausted rate-limit retry budget (§10.2). They are not four attempts at one
+    measurement and cannot be pooled; each preserves only the particular
+    constraint that stopped it.
+12. **The capacity criterion has never been evaluated.** No SFIR instrument
+    reached the point of applying its per-family threshold to a counted candidate
+    set. Nothing here indicates that the declared frame is adequate, and nothing
+    here indicates that it is short. SFIR4 needs particular care on this point
+    because its stop is operational rather than evaluative: `capacity_measured`
+    is `incomplete` and `scientific_threshold_evaluated` is `false` in its own
+    terminal receipt.
+13. **The binding constraint throughout has been this study's own instruments
+    rather than the corpora.** Of the causes that ended the four censuses, a
+    renamed metadata field, an adapter with no path for a legitimately empty
+    root, an unhandled transport exception class and a retry budget set for a
+    patience the endpoint does not permit are all defects or mis-specifications
+    on this side of the boundary; in each of those cases the endpoint answered
+    correctly (INC-V2-095, INC-V2-096, INC-V2-098, INC-V2-101). That is the
+    honest summary of where the effort went, and it bounds any reading of the
+    sequence as evidence about the difficulty of the sources themselves.
+
+> **Correction, 2026-08-27 (P-04).** Limitation 9 above names "SFIR1, SFIR2 and
+> SFIR3". A fourth instrument, SFIR4, has since been opened and sealed at a
+> terminal operational stop (§10.2), so the sequence is four instruments and
+> still no corpus. The original wording is left in place because its substantive
+> claim — that the sequence supports a statement about instrument feasibility and
+> adaptation discipline rather than about source-fact endpoint behaviour — is
+> unchanged, and now rests on one more instrument than when it was written.
 
 ---
 
@@ -1071,6 +1106,202 @@ independent confirmation without a new, externally justified design basis
 would risk result-following adaptation. The scientifically honest terminal
 state is therefore `NO SFIR4 OPENED`, with no endpoint result, no model result,
 0 GPU seconds and $0 spend.
+
+> **Correction, 2026-08-27 (P-03).** SFIR4 was subsequently opened, so
+> `NO SFIR4 OPENED` is no longer where this sequence ends. The paragraph above
+> is left standing as the standard the fourth instrument was opened *against*
+> rather than as a description of the current state: SFIR4's design charter and
+> spent-identity authority were frozen before any of its own data existed, and
+> its criterion — the per-family threshold, the root set, the per-root cap, the
+> cohort, the selection salt and the scorer — has not moved since. The table in
+> this section gains a fourth row in §10.2 rather than being rewritten, because
+> the four stops are four separate instrument-feasibility refusals and merging
+> them would destroy the only thing they individually establish. No SFIR4
+> capacity, roster, endpoint or acceptance result is claimed anywhere in this
+> draft; GPU use remains 0 seconds and spend $0.
+
+### 10.2 SFIR4 stopped operationally, and that is not a capacity result
+
+SFIR4 was opened under the objection §10.1 records, which is to say that the
+objection was treated as a specification rather than as a veto. Four
+metadata-only capacity censuses were then attempted against the live endpoints.
+The first aborted after roughly fifty minutes on an eCFR metadata field that had
+been renamed between SFIR3 and SFIR4 (INC-V2-095); the second on a reserved CFR
+title that carries no edition date because it has no edition, which the adapter
+had no path for and so refused the entire census over a root that had in fact
+answered correctly (INC-V2-096); the third after twelve minutes on
+`http.client.RemoteDisconnected`, which subclasses `ConnectionResetError` and
+`BadStatusLine` rather than `urllib.error.URLError` and therefore matched none
+of the handlers the instrument declared (INC-V2-098). The fourth ran twenty-nine
+minutes, passed the point at which all three predecessors had died, and refused
+with `encyclopedia_wikipedia rate-limit retry budget exhausted` (INC-V2-101).
+SFIR4 is sealed there. Its terminal receipt records
+`state: TERMINAL_OPERATIONAL_STOP`, `corpus_opened: false`,
+`capacity_measured: incomplete` and `scientific_threshold_evaluated: false`.
+
+The distinction that carries this section is between an instrument that asked
+its question and received an unwelcome answer and an instrument that never
+reached the point of asking. SFIR4 is the second. The capacity criterion was
+never applied to anything: no candidate was counted, no threshold evaluated, no
+roster frozen, no cohort read. A reader who files this under the same heading as
+a failed capacity check will draw the inference that the declared frame is short
+of capacity, and **nothing in this programme establishes that either way** —
+neither that the frame is sufficient nor that it is not. The stop receipt is
+explicit on the point in its own `what_this_receipt_does_not_say` field, and the
+field exists because the confusion is the natural one to fall into: a run that
+ends without a number and a run that ends with a number below a floor look alike
+from the outside, and only the receipt distinguishes them.
+
+Three of the four corrections were made and one deliberately was not, and the
+line between them is the whole methodological content of the incident. A field
+that has been renamed, a root that cannot carry an edition date, and an
+exception class that no handler names are **unconditional defects**: each has
+exactly one right answer, and it is the same answer whichever way the census
+would have come out. Repairing them cannot bias a result, because the repair is
+determined by the endpoint's behaviour and not by any property of the outcome.
+A retry budget is not of that kind. `maximum_retries_per_request: 5`,
+`max_rate_limit_wait_seconds: 60` and `max_total_rate_limit_wait_seconds: 180`
+are tuning parameters, and a value chosen after watching a run fail is chosen
+partly by the failure — there is no version of that edit that is not informed by
+the run it responds to. So the budget was not touched and SFIR4 was not
+re-frozen a fourth time. That the corrected value would probably have been
+harmless is beside the point; what would not have survived is the property that
+makes the first three corrections defensible, namely that a reader can check
+that each of them was forced.
+
+The alternative repair is worse, and is named here so that it is visibly refused
+rather than merely unmentioned. Making the traversal fit the frozen budget
+without touching the budget means reducing `max_category_pages_per_root`, which
+changes the cohort — and changing a cohort after a failure is precisely the move
+the standing instruction forbids outright. Between an edit that biases a
+parameter and an edit that biases the sample, the study is not choosing the
+lesser of the two; it is declining both.
+
+§2 states the standard this has to meet: a protocol is frozen before its data
+exists, and §10.1 extends that into the claim that redesigning again after
+observing successive failure modes would make the next instrument increasingly a
+function of prior outcomes. The SFIR4/SFIR5 split is an attempt to satisfy that
+sentence rather than to route around it. Re-freezing SFIR4's budget and calling
+the next census the same study would have been the evasion — one protocol
+identity would then contain both the observation of a failure and the parameter
+chosen in response to it, with nothing in the record able to separate them.
+Sealing SFIR4 where it stopped and taking a **new prospective protocol
+identifier** for the successor keeps the two on opposite sides of a freeze
+boundary. The scientific question is carried across unchanged; what the successor
+is permitted to alter is transport feasibility and nothing else. That is a weaker
+guarantee than never having failed, and it is stated as the weaker thing it is:
+SFIR5 is not independent of SFIR4 in the sense that SFIR1 was independent of
+everything, because the fact that a pacing budget is needed at all was learned
+from SFIR4. What the split does preserve is that the budget is chosen from a
+direct measurement of the endpoint rather than from any capacity quantity, and
+that the reasoning sits in a receipt where it can be checked rather than in an
+assertion.
+
+All four aborts were verified **result-blind before anything was touched**: in
+each case the destination path held no capacity receipt, and the captured run
+output was searched and holds a traceback and nothing else. No capacity quantity
+was computed, printed or written at any of the four stops. One disclosure sits
+against that record and is repeated here rather than left in the ledger:
+diagnosing INC-V2-096 revealed that CFR title 35 contributes zero candidates,
+which is outcome information about one of fifty roots learned before any census
+completed. It cannot be unlearned. What protects the study is that it changed
+nothing — the root set is charter-frozen, title 35 remains in it, and its
+disposition is computed by the adapter rather than chosen.
+
+The independent-replication sequence therefore now stands at **four instrument
+stops and no opened corpus**:
+
+| Instrument | Frozen refusal | Last scientifically permitted state |
+|---|---|---|
+| SFIR1 | Git-root metadata returned HTTP 404 | terminal before capacity metadata |
+| SFIR2 | Git revision chronology could not satisfy the frozen chronology contract | terminal before capacity metadata |
+| SFIR3 | recursive Git-tree `Content-Length` exceeded the frozen 16 MiB response bound | terminal before capacity metadata |
+| SFIR4 | Wikipedia rate-limit retry budget exhausted; the frozen budget deliberately not edited | terminal operational stop; capacity incomplete |
+
+These are four instrument-feasibility refusals, each preserving the exact
+constraint that stopped it, and they do not add up to an endpoint outcome of any
+kind. What they do add up to is a finding, and it is presented as one rather than
+apologised for: **against live, third-party, unauthenticated endpoints, a
+capacity instrument frozen in advance failed to survive contact with those
+endpoints four times, and each failure was of a different kind** — an absent
+root, a chronology contract, a response-size bound, a transport exception class,
+and finally a request-pacing bound. None of the five is exotic, none was
+anticipated by a design that had already been hostile-audited, and every one of
+them is invisible to a study designed against a fixture. That is a result about
+what prospective freezing costs on infrastructure one does not control, and it is
+the kind of result that is normally absorbed into an appendix by studies that
+quietly re-ran until something worked.
+
+The successor's status is stated narrowly because nothing more is available. The
+stop receipt names `succeeded_by: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5`. No
+SFIR5 protocol document exists in the research tree as this section is written,
+the choice between publishing the fourth stop as terminal, opening a paced
+successor and pursuing authenticated access is recorded in INC-V2-101 as a
+founder decision rather than an agent's, and consequently **no SFIR5 capacity,
+roster, endpoint or acceptance result exists or is claimed**. GPU use across the
+whole sequence remains 0 seconds and spend $0.
+
+[CLAIM-PENDING: a CLAIM_MATRIX row binding this section to
+`receipts/sfir4-terminal-operational-stop.json`, and an amendment to C-35, whose
+wording describes a three-instrument sequence.]
+
+### 10.3 Two occasions this analysis was confidently wrong before it was right
+
+Both are recorded in INC-V2-101 and both are left standing in the ledger rather
+than edited away, on the principle that a programme whose stated method is that
+incidents are its output does not get to delete the incidents in which its own
+reasoning was the defect.
+
+The first was a diagnosis of *why* the Wikipedia census was being throttled. An
+interleaved A/B against the live endpoint, seconds apart, produced six
+alternating trials with perfect separation: the non-compliant User-Agent returned
+HTTP 429 three times with `Retry-After` values of 17, 13 and 9, and the compliant
+one returned HTTP 200 three times. The conclusion drawn was that Wikimedia
+rate-limits by User-Agent. It was wrong. Minutes later the bare User-Agent
+returned 200 as well, and the countdown in the retry-after values — 17, then 13,
+then 9 — is the tell that was there all along: the bucket the census had already
+exhausted was recovering while the trials ran. The A/B never isolated the variable
+it named. It compared an exhausted rate bucket against a fresh one, and the clean
+alternation was an artefact of the alternation itself.
+
+The second was a volume estimate. The declared Wikipedia frame is 30 roots at up
+to `max_category_pages_per_root: 100`, and that hundred was read as a request
+count, yielding "up to 3,000 requests" and, at the observed throughput, "on the
+order of 4.6 hours" — from which followed the much stronger conclusion that the
+instrument could not reach a Wikipedia capacity measurement at this frame under
+any sequence of events. The adapter batches, and had all along:
+`category_page_size: 500` covers a hundred-page root in one request, and
+`revision_batch_size: 50` fetches revisions for fifty titles at once. The real
+figure is roughly three requests per root and **about ninety in total**, which at
+the observed throughput is on the order of ten minutes rather than four and a
+half hours. The estimate was wrong by more than an order of magnitude, and it was
+wrong because a configuration value was never checked against the code that
+issues the requests.
+
+The methodological point is the same in both cases, and it is not the obvious one
+about double-checking. It is that **a wrong answer that reproduces is more
+dangerous than one that does not.** Six clean alternating trials is the kind of
+evidence that ordinarily ends an investigation; reproducibility was doing no work
+there, because the confound was itself time-dependent and the alternation sampled
+it in phase. No number of additional repetitions would have found it. In both
+cases the correction came from a control the first test did not contain —
+re-testing the arm that had failed, after waiting long enough for the bucket to
+refill, and reading the batching constants in the adapter rather than the page
+counts in the protocol. The pacing measurement that a successor would be designed
+against was taken only after both corrections, with a cool-down between arms so
+that one trial's bucket could not bleed into the next, which is that same control
+applied prospectively: 0 s spacing gave 10 successes and 2 refusals, 2 s gave 10
+and 2, 5 s gave 11 and 1, and 7 s gave 20 successes and no refusals over 150
+seconds. That spacing below about six seconds does not help is what says the limit
+is a quota over a roughly-sixty-second window rather than a per-request rate — a
+shape neither wrong answer would have predicted. It is admissible for designing a
+successor because it measures the endpoint and not a capacity result: no candidate
+was counted, no threshold evaluated and no cohort read.
+
+Neither correction changes SFIR4's disposition. The corrected volume figure makes
+a successor cheaper to run; it does not make a 180-second total wait retroactively
+adequate for approximately ninety requests against an endpoint that admits about
+ten per minute.
 
 ## 11. Identity/change migration closure
 
