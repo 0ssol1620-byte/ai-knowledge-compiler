@@ -92,6 +92,12 @@ MUTATIONS = [
      '        return Outcome(PASS, "not imported")'),
 
     # --- the report
+    ("F23b the closure is handed the namespace root again",
+     "        result = closure.closure(repository_root=repository_root_of(root))",
+     "        result = closure.closure(repository_root=root)"),
+    ("F23c the repository root is derived one level too shallow",
+     "    return root.resolve().parents[1]",
+     "    return root.resolve().parents[0]"),
     ("F24 the condition list is truncated",
      '    Condition(\n        "seam_verification",',
      '    Condition(\n        "_removed_seam_verification",'),

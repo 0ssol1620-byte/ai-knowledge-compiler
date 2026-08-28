@@ -107,6 +107,19 @@ def read_receipt(root: Path, name: str, verdict_key: str, digest_key: str) -> Ou
     return Outcome(PASS, f"{name} verified, {digest_key} recomputes")
 
 
+def repository_root_of(root: Path) -> Path:
+    """The closure addresses components from the repository root, not this one.
+
+    Every other condition here is namespace-relative -- suites, receipts, the
+    cohort artifacts. The closure is not: its component paths start
+    `research/tavonel_eval_v2/`, because a git blob id is only meaningful
+    against the repository the blob is in. Conflating the two roots made the
+    closure refuse every component as absent, which is what the first real run
+    of this gate reported.
+    """
+    return root.resolve().parents[1]
+
+
 def check_closure(root: Path) -> Outcome:
     """Component closure, source recoverability and import isolation at once.
 
@@ -121,7 +134,7 @@ def check_closure(root: Path) -> Outcome:
         return Outcome(UNPROVEN, f"the closure could not be imported: {error}")
     try:
         closure.require_component_lists_agree()
-        result = closure.closure(repository_root=root)
+        result = closure.closure(repository_root=repository_root_of(root))
     except closure.ClosureRefused as error:
         return Outcome(FAIL, str(error))
     except Exception as error:

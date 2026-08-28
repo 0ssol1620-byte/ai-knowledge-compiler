@@ -414,3 +414,31 @@ def test_the_gate_records_why_the_seam_is_asked_about_separately(monkeypatch, tm
     note = fg.gate(tmp_path)["why_the_seam_has_its_own_condition"]
     assert "UNPROVEN" in note
     assert "vanished" in note
+
+
+# ------------------------------------------------ the two roots are not the same
+#
+# The first real run of this gate reported the closure refusing every component
+# as absent. The gate had passed it the namespace directory, and the closure
+# addresses components from the repository root, because a git blob id is only
+# meaningful against the repository the blob is in.
+
+
+def test_the_closure_is_given_the_repository_root_not_the_namespace():
+    assert fg.repository_root_of(NS) == NS.parents[1]
+    assert (fg.repository_root_of(NS) / "research/tavonel_eval_v2").is_dir()
+
+
+def test_the_closure_passes_against_this_repository():
+    """The condition that was FAIL until the roots were told apart."""
+    outcome = fg.check_closure(NS)
+    assert outcome.state == fg.PASS, outcome.detail
+    assert "10 components" in outcome.detail
+
+
+def test_the_namespace_root_would_not_have_worked():
+    """So the fix is doing something, rather than the closure being lenient."""
+    import sfir9_execution_closure as closure
+
+    with pytest.raises(closure.ClosureRefused):
+        closure.closure(repository_root=NS)
