@@ -1,0 +1,128 @@
+"""Mutations for the prospective freeze gate.
+
+Each entry is one specific weakening, written by hand: what it changes, and the
+text it replaces. The gate is the last thing between a weakened instrument and a
+freeze, so most of these attack its ability to stay shut rather than its ability
+to open.
+"""
+
+from __future__ import annotations
+
+TARGET = 'tools/sfir9_freeze_gate.py'
+
+TESTS = ['tests/test_sfir9_freeze_gate.py']
+
+MUTATIONS = [
+    # --- the verdict
+    ("F1 the gate opens regardless of the conditions",
+     '        "gate_opens": len(passed) == len(rows),',
+     '        "gate_opens": True,'),
+    ("F2 the gate opens if anything passed",
+     '        "gate_opens": len(passed) == len(rows),',
+     '        "gate_opens": len(passed) > 0,'),
+    ("F3 an unproven condition counts as a pass",
+     '    passed = [row for row in rows if row["state"] == PASS]',
+     '    passed = [row for row in rows if row["state"] != FAIL]'),
+    ("F4 a failed condition counts as a pass",
+     '    passed = [row for row in rows if row["state"] == PASS]',
+     '    passed = [row for row in rows if row["state"] != UNPROVEN]'),
+    ("F5 the exit code ignores the verdict",
+     '    return 0 if report["gate_opens"] else 1',
+     "    return 0"),
+
+    # --- receipts are verified, not trusted
+    ("F6 the receipt digest is not recomputed",
+     "    if recorded != recomputed:",
+     "    if False:"),
+    ("F7 the digest is recomputed over the whole file, including itself",
+     '    body = {key: value for key, value in report.items() if key != digest_key}',
+     "    body = report"),
+    ("F8 a truthy verdict is accepted as a passing one",
+     "    if report[verdict_key] is not True:",
+     "    if not report[verdict_key]:"),
+    ("F9 an absent receipt passes",
+     '    if not path.is_file():\n'
+     '        return Outcome(UNPROVEN, f"{name} has not been written")',
+     '    if not path.is_file():\n        return Outcome(PASS, "absent")'),
+    ("F10 an unreadable receipt passes",
+     '        return Outcome(UNPROVEN, f"{name} could not be read: {error}")',
+     '        return Outcome(PASS, "unreadable")'),
+    ("F11 a receipt with no verdict at all passes",
+     "    if verdict_key not in report:",
+     "    if False:"),
+    ("F12 a receipt reporting failure passes",
+     '        return Outcome(FAIL, f"{name} reports {verdict_key} = {report[verdict_key]!r}")',
+     '        return Outcome(PASS, "reported")'),
+
+    # --- the roster stays shut
+    ("F13 the cohort check never finds anything",
+     "    if found:",
+     "    if False:"),
+    ("F14 the cohort check reports a pass when it finds one",
+     '        return Outcome(FAIL, f"a real cohort has already been opened: {found}")',
+     '        return Outcome(PASS, "found")'),
+    ("F15 the cohort patterns are narrowed to one",
+     "ROSTER_ARTIFACTS = (\"sfir9-cohort-roster*.json\", \"sfir9-census*.json\", \"sfir9-roster*.json\")",
+     'ROSTER_ARTIFACTS = ("sfir9-cohort-roster*.json",)'),
+    ("F16 the cohort patterns match any receipt",
+     "ROSTER_ARTIFACTS = (\"sfir9-cohort-roster*.json\", \"sfir9-census*.json\", \"sfir9-roster*.json\")",
+     'ROSTER_ARTIFACTS = ("*.json",)'),
+    ("F17 the cohort question stops being asked last",
+     '    Condition(\n        "roster_not_yet_opened",',
+     '    Condition(\n        "aaa_roster_not_yet_opened",'),
+
+    # --- suites and the closure
+    ("F18 a failing suite passes",
+     "    return Outcome(PASS if result.returncode == 0 else FAIL, tail[0])",
+     '    return Outcome(PASS, tail[0])'),
+    ("F19 a suite that collected nothing passes",
+     "    if result.returncode == 5:",
+     "    if False:"),
+    ("F20 a suite that could not run passes",
+     '        return Outcome(UNPROVEN, f"the suite could not be run: {error}")',
+     '        return Outcome(PASS, "not run")'),
+    ("F21 a refusing closure passes",
+     "    except closure.ClosureRefused as error:\n        return Outcome(FAIL, str(error))",
+     "    except closure.ClosureRefused as error:\n        return Outcome(PASS, str(error))"),
+    ("F22 a closure that could not be evaluated passes",
+     '        return Outcome(UNPROVEN, f"the closure could not be evaluated: {error}")',
+     '        return Outcome(PASS, "not evaluated")'),
+    ("F23 a closure that could not be imported passes",
+     '        return Outcome(UNPROVEN, f"the closure could not be imported: {error}")',
+     '        return Outcome(PASS, "not imported")'),
+
+    # --- the report
+    ("F24 the condition list is truncated",
+     '    Condition(\n        "seam_verification",',
+     '    Condition(\n        "_removed_seam_verification",'),
+    ("F25 a condition stops saying what it establishes",
+     '                "establishes": condition.what_it_establishes,',
+     '                "establishes": "",'),
+    ("F26 read and re-derived stop being distinguished",
+     '            derived = "re-derived in this run"',
+     '            derived = "evaluated in this run"'),
+    ("F27 a re-derived condition ignores what the re-run said",
+     "            outcome = _rerun(root, SLOW[condition.name])",
+     "            outcome = Outcome(PASS, 're-derived')"),
+    ("F28 the gate digest stops moving with the verdict",
+     '        "gate_digest": "sha256:"\n'
+     "        + hashlib.sha256(\n"
+     '            json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")\n'
+     "        ).hexdigest(),",
+     '        "gate_digest": "sha256:" + "0" * 64,'),
+    ("F29b the seam note is dropped, so the overlap goes unexplained",
+     '        "why_the_seam_has_its_own_condition": (',
+     '        "_removed_why_the_seam_has_its_own_condition": ('),
+    ("F29 the gate stops saying what it does not establish",
+     '        "what_this_gate_does_not_establish": (',
+     '        "_removed_what_this_gate_does_not_establish": ('),
+    ("F30 the gate stops explaining why unproven is not a pass",
+     '        "unproven_does_not_pass": (',
+     '        "_removed_unproven_does_not_pass": ('),
+    ("F31 the passed count counts every row",
+     '        "conditions_passed": len(passed),',
+     '        "conditions_passed": len(rows),'),
+    ("F32 a slow condition loses its re-derivation script",
+     'SLOW = {"legacy_failure_taxonomy": "tools/sfir9_legacy_taxonomy.py",',
+     'SLOW = {"legacy_failure_taxonomy": "tools/does_not_exist.py",'),
+]

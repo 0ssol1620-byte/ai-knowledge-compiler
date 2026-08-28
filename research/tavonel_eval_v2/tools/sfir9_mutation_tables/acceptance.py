@@ -1,0 +1,92 @@
+"""Mutations for the acceptance matrix and its seal.
+
+Each entry is one specific weakening, written by hand: what it changes,
+and the text it replaces. Lifted verbatim from the driver that first ran
+them, so the committed table is the table that produced the recorded
+result.
+"""
+
+from __future__ import annotations
+
+TARGET = 'tools/sfir9_acceptance.py'
+
+TESTS = ['tests/test_sfir9_acceptance.py']
+
+MUTATIONS = [
+    ("A1 an undeclared acceptance state is accepted",
+     "        if self.state not in STATES:", "        if False:"),
+    ("A2 a pass needs no evidence",
+     "        if self.state == PASS and not self.evidence:", "        if False:"),
+    ("A3 a missing artifact is recorded as a failure rather than unproven",
+     "            name, UNPROVEN, evidence=None,", "            name, FAIL, evidence=None,"),
+    ("A4 a missing artifact is recorded as a pass",
+     "    if artifact is None:", "    if False:"),
+    ("A5 unproven criteria do not block acceptance",
+     "        return not self.missing() and not self.failures() and not self.unproven()",
+     "        return not self.missing() and not self.failures()"),
+    ("A6 failed criteria do not block acceptance",
+     "        return not self.missing() and not self.failures() and not self.unproven()",
+     "        return not self.missing() and not self.unproven()"),
+    ("A7 a matrix short of its own list still seals",
+     "        if self.missing():", "        if False:"),
+    ("A8 acceptance is not checked before sealing",
+     "        if not self.accepted():", "        if False:"),
+    ("A9 a not-sealable verdict is sealed anyway",
+     "        if score[\"verdict\"] == scorer.NOT_SEALABLE:", "        if False:"),
+    ("A10 the required criteria list is narrowed",
+     '    "four_links_complete",\n    "verdict_is_sealable",', '    "verdict_is_sealable",'),
+    ("A11 the criteria list drops the isolation check",
+     '    "historical_isolation_clean",\n', "    "),
+    ("A12 the sealable verdicts are widened",
+     "    sealable = score[\"verdict\"] in {scorer.PASS, scorer.FAIL}",
+     "    sealable = True"),
+    ("A13 a sealed fail is reported as a pass",
+     '            "verdict": score["verdict"],', '            "verdict": scorer.PASS,'),
+    ("A14 the protocol freeze is not checked",
+     "        PASS if protocol.is_frozen() else FAIL,", "        PASS,"),
+    ("A15 the roster seal is not checked",
+     "        lambda s: bool(s.get(\"intact\")),", "        lambda s: True,"),
+    ("A16 the chain head is not part of the chain criterion",
+     '        lambda c: bool(c.get("links_intact")) and bool(c.get("head_matches")),',
+     '        lambda c: bool(c.get("links_intact")),'),
+    ("A17 the chain links are not part of the chain criterion",
+     '        lambda c: bool(c.get("links_intact")) and bool(c.get("head_matches")),',
+     '        lambda c: bool(c.get("head_matches")),'),
+    ("A18 an unattested counted root passes",
+     "    unattested = sorted(counted - attested)", "    unattested = []"),
+    ("A19 the attestation check runs the wrong way round",
+     "    unattested = sorted(counted - attested)", "    unattested = sorted(attested - counted)"),
+    ("A20 the provider delta need not be recorded",
+     '        lambda r: "UNATTRIBUTED_PROVIDER_ACCOUNTING_DELTA" in r,', "        lambda r: True,"),
+    ("A21 the provider criterion demands a zero delta",
+     '        lambda r: "UNATTRIBUTED_PROVIDER_ACCOUNTING_DELTA" in r,',
+     '        lambda r: r.get("UNATTRIBUTED_PROVIDER_ACCOUNTING_DELTA") == 0,'),
+    ("A22 credential material in a receipt is tolerated",
+     '        lambda s: s.get("credential_material_found") == 0,', "        lambda s: True,"),
+    ("A23 the isolation criterion accepts a dirty proof",
+     '        lambda p: p.get("sfir9_prospective_integrity") == "CLEAN",', "        lambda p: True,"),
+    ("A24 the upstream binding criterion accepts an empty manifest",
+     '        lambda b: bool(b.get("upstream_modules")),', "        lambda b: True,"),
+
+    ("A25 a fact with a missing link is complete",
+     "    missing = [link for link in REQUIRED_LINKS if not fact.get(link)]", "    missing = []"),
+    ("A26 the required links are narrowed",
+     '    "fingerprint",\n    "dependency_path",', '    "dependency_path",'),
+    ("A27 incomplete facts count toward the floor",
+     '    complete = [row for row in audited if row["complete"]]', "    complete = audited"),
+    ("A28 the floor is lowered to the supply",
+     "    shortfall = max(0, floor - len(complete))", "    shortfall = 0"),
+    ("A29 a shortfall is reported as feasible",
+     '        "feasible": shortfall == 0,', '        "feasible": True,'),
+    ("A30 a surplus is reported as a negative shortfall",
+     "    shortfall = max(0, floor - len(complete))", "    shortfall = floor - len(complete)"),
+
+    ("A31 the matrix digest ignores the criteria",
+     '            "matrix_digest": _digest(\n                {\n                    name: self._criteria[name].as_dict()\n                    for name in sorted(self._criteria)\n                }\n            ),',
+     '            "matrix_digest": _digest({}),'),
+    ("A32 the sealed result does not name its acceptance",
+     '            "acceptance_digest": self.evaluate()["matrix_digest"],',
+     '            "acceptance_digest": "sha256:none",'),
+    ("A33 the matrix does not report what it never evaluated",
+     '            "not_evaluated": self.missing(),', '            "not_evaluated": [],'),
+]
