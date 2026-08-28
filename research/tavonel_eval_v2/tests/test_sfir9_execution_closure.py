@@ -53,6 +53,14 @@ def _copied_tree(tmp_path):
     return committed, origins
 
 
+def _manifest_in_copy(tmp_path, committed, closure_result):
+    return closure_module.freeze_manifest(
+        closure_result,
+        repository_root=tmp_path,
+        read_committed_bytes=lambda _root, path: committed[path],
+    )
+
+
 def _verify_copy(tmp_path, committed, origins, **kwargs):
     return closure_module.closure(
         repository_root=tmp_path,
@@ -77,6 +85,21 @@ def test_the_component_lists_are_checked_against_each_other(monkeypatch):
     monkeypatch.setattr(
         gate, "REQUIRED_COMPONENTS", gate.REQUIRED_COMPONENTS[:-1]
     )
+    with pytest.raises(closure_module.ClosureRefused) as caught:
+        closure_module.require_component_lists_agree()
+    assert caught.value.code == closure_module.LIST_DISAGREEMENT
+
+
+def test_two_lists_of_the_same_length_can_still_disagree(monkeypatch):
+    """A count comparison would pass this, and the study would be misaligned.
+
+    Ten against ten, one name different: the closure would verify a component
+    the gate never asked about, and skip one the gate requires.
+    """
+    swapped = ("selection_rule_v2",) + tuple(gate.REQUIRED_COMPONENTS[1:])
+    assert len(swapped) == len(gate.REQUIRED_COMPONENTS)
+
+    monkeypatch.setattr(gate, "REQUIRED_COMPONENTS", swapped)
     with pytest.raises(closure_module.ClosureRefused) as caught:
         closure_module.require_component_lists_agree()
     assert caught.value.code == closure_module.LIST_DISAGREEMENT
@@ -182,9 +205,35 @@ def test_a_component_file_that_is_absent_refuses(tmp_path):
     assert caught.value.code == closure_module.MISSING_COMPONENT
 
 
+def test_the_list_check_runs_before_any_component_is_verified_in_a_copy(
+    tmp_path, monkeypatch
+):
+    committed, origins = _copied_tree(tmp_path)
+    monkeypatch.setattr(gate, "REQUIRED_COMPONENTS", ("protocol",))
+    with pytest.raises(closure_module.ClosureRefused) as caught:
+        _verify_copy(tmp_path, committed, origins)
+    assert caught.value.code == closure_module.LIST_DISAGREEMENT
+
+
+def test_the_reported_count_is_the_number_actually_verified(tmp_path):
+    """Derived from the records, not from a number that happens to be ten."""
+    committed, origins = _copied_tree(tmp_path)
+    result = _verify_copy(tmp_path, committed, origins)
+    assert result["component_count"] == len(result["components"])
+    assert result["component_count"] == len(closure_module.COMPONENTS)
+
+
+def test_the_closure_states_its_own_limit_in_a_copy(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    result = _verify_copy(tmp_path, committed, origins)
+    assert "its own bytes" in result["what_this_does_not_certify"]
+    assert "proves nothing" in result["what_this_does_not_certify"]
+
+
 def test_a_clean_copy_verifies(tmp_path):
     """The refusals must be about the defect, not about being checked at all."""
-    assert _verify_copy(*(tmp_path,) + _copied_tree(tmp_path))["component_count"] == 10
+    committed, origins = _copied_tree(tmp_path)
+    assert _verify_copy(tmp_path, committed, origins)["component_count"] == 10
 
 
 def test_the_closure_digest_moves_when_a_component_changes(tmp_path):
@@ -317,6 +366,119 @@ def test_the_manifest_refuses_to_be_written_against_an_uncommitted_tool(tmp_path
             read_committed_bytes=lambda _root, path: committed[path],
         )
     assert caught.value.code == closure_module.BYTES_MISMATCH
+
+
+# ------------------------------------- the manifest, checked without this repo
+#
+# These repeat the manifest controls above against a copied tree. The duplication
+# is deliberate. A control that reads this repository cannot survive having this
+# module mutated: the committed-versus-working check fails first, for a reason
+# unrelated to whatever was mutated, so the control dies trivially and proves
+# nothing. The copied-tree versions take committed and working bytes from the
+# same (possibly mutated) source, so they still discriminate.
+
+
+def test_the_manifest_records_the_tool_bytes_in_a_copied_tree(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    result = _verify_copy(tmp_path, committed, origins)
+    manifest = _manifest_in_copy(tmp_path, committed, result)
+
+    on_disk = (tmp_path / closure_module.CLOSURE_PATH).read_bytes()
+    assert manifest["closure_tool"]["sha256"] == transport.sha256_of(on_disk)
+    assert manifest["closure_tool"]["git_blob_id"] == transport.git_blob_id_of(on_disk)
+    assert manifest["closure_digest"] == result["closure_digest"]
+    assert manifest["component_count"] == 10
+
+
+def test_a_good_manifest_verifies_in_a_copied_tree(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    result = _verify_copy(tmp_path, committed, origins)
+    manifest = _manifest_in_copy(tmp_path, committed, result)
+
+    verification = closure_module.verify_freeze_manifest(
+        manifest, repository_root=tmp_path, closure_result=result
+    )
+    assert verification["verified"] is True
+    assert verification["problems"] == []
+
+
+@pytest.mark.parametrize(
+    "field,bad",
+    [("sha256", "sha256:" + "0" * 64), ("git_blob_id", "0" * 40)],
+)
+def test_a_manifest_pinning_the_wrong_tool_fails_in_a_copied_tree(tmp_path, field, bad):
+    committed, origins = _copied_tree(tmp_path)
+    manifest = _manifest_in_copy(
+        tmp_path, committed, _verify_copy(tmp_path, committed, origins)
+    )
+    manifest["closure_tool"][field] = bad
+    verification = closure_module.verify_freeze_manifest(
+        manifest, repository_root=tmp_path
+    )
+    assert verification["verified"] is False
+    # Named specifically: editing the manifest also breaks its own digest, so a
+    # bare `verified is False` would pass with this check removed entirely.
+    field_flag = {
+        "sha256": "closure_tool_sha256_matches",
+        "git_blob_id": "closure_tool_blob_matches",
+    }[field]
+    assert verification[field_flag] is False
+    assert verification["problems"], "a refusal that lists no problem is not a report"
+
+
+def test_an_edited_manifest_fails_in_a_copied_tree(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    manifest = _manifest_in_copy(
+        tmp_path, committed, _verify_copy(tmp_path, committed, origins)
+    )
+    manifest["closure_digest"] = "sha256:" + "1" * 64
+    verification = closure_module.verify_freeze_manifest(
+        manifest, repository_root=tmp_path
+    )
+    assert verification["manifest_digest_intact"] is False
+    assert verification["verified"] is False
+
+
+def test_a_manifest_from_another_closure_fails_in_a_copied_tree(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    result = _verify_copy(tmp_path, committed, origins)
+    manifest = _manifest_in_copy(tmp_path, committed, result)
+    other = _verify_copy(
+        tmp_path, committed, origins, upstream_binding={"upstream_modules": [{"m": 1}]}
+    )
+    verification = closure_module.verify_freeze_manifest(
+        manifest, repository_root=tmp_path, closure_result=other
+    )
+    assert verification["closure_digest_matches"] is False
+    assert verification["verified"] is False
+
+
+def test_an_absent_closure_result_is_skipped_not_assumed_in_a_copied_tree(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    manifest = _manifest_in_copy(
+        tmp_path, committed, _verify_copy(tmp_path, committed, origins)
+    )
+    verification = closure_module.verify_freeze_manifest(
+        manifest, repository_root=tmp_path
+    )
+    assert verification["closure_digest_matches"] is None
+    assert verification["verified"] is True
+
+
+def test_the_manifest_notices_a_tool_edited_after_it_was_written(tmp_path):
+    committed, origins = _copied_tree(tmp_path)
+    manifest = _manifest_in_copy(
+        tmp_path, committed, _verify_copy(tmp_path, committed, origins)
+    )
+    tool = tmp_path / closure_module.CLOSURE_PATH
+    tool.write_bytes(tool.read_bytes() + b"\n# edited after the freeze\n")
+
+    verification = closure_module.verify_freeze_manifest(
+        manifest, repository_root=tmp_path
+    )
+    assert verification["closure_tool_sha256_matches"] is False
+    assert verification["verified"] is False
+    assert any("bytes" in problem for problem in verification["problems"])
 
 
 def test_the_manifest_says_why_it_is_a_separate_artifact():

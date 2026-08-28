@@ -229,15 +229,10 @@ def closure(
         )
         for component in COMPONENTS
     ]
-    verified = {record["component"] for record in records}
-    missing = [c.name for c in COMPONENTS if c.name not in verified]
-    if missing:
-        raise ClosureRefused(
-            MISSING_COMPONENT,
-            f"{missing} were not verified. A partial closure is exactly what a "
-            "freeze must not be able to record.",
-        )
-
+    # No "were any components missed" check here: `records` is built by
+    # iterating COMPONENTS, so a component can only be absent if COMPONENTS is
+    # short -- and that is caught above, by the agreement with the isolation
+    # gate's list. A second check could never fire.
     body = {
         "schema": SCHEMA,
         "components": records,
