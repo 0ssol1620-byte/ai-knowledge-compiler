@@ -157,7 +157,8 @@ class Frontier:
                    tree_sha TEXT NOT NULL,
                    depth INTEGER NOT NULL,
                    parent_path TEXT,
-                   dequeued INTEGER NOT NULL DEFAULT 0
+                   leased INTEGER NOT NULL DEFAULT 0,
+                   completed INTEGER NOT NULL DEFAULT 0
                )"""
         )
         self._db.execute(
@@ -169,8 +170,13 @@ class Frontier:
         )
         self._db.execute(
             "CREATE INDEX IF NOT EXISTS frontier_pending "
-            "ON frontier (dequeued, enqueue_sequence)"
+            "ON frontier (completed, leased, enqueue_sequence)"
         )
+        # A lease belongs to the process that took it. This one holds none yet,
+        # so anything left in flight when the previous segment ended returns to
+        # pending -- it was handed out and never finished, which is exactly the
+        # state a resumed traversal has to replay.
+        self._db.execute("UPDATE frontier SET leased = 0 WHERE completed = 0")
         self._db.commit()
 
     # -- lifecycle --------------------------------------------------------
@@ -232,21 +238,30 @@ class Frontier:
         )
 
     def dequeue(self) -> Entry | None:
-        """The oldest pending entry, and only ever the oldest.
+        """Lease the oldest unfinished entry, and only ever the oldest.
 
         Strict enqueue order is what makes a segmented traversal reproduce an
         uninterrupted one. Any ordering that consults the entry's *content* --
         depth, path, size -- would make resume order depend on what was in
         memory when the process stopped.
+
+        This is a lease, not a removal. An entry is finished only when
+        `complete` says so, so a segment that ends between handing an entry out
+        and expanding it leaves that entry pending rather than consumed. The
+        earlier version marked it consumed immediately, which meant a storage
+        refusal mid-expansion dropped the whole subtree beneath it and no
+        resumed segment ever went back for it -- a silent loss of candidates,
+        reported as a completed traversal.
         """
         row = self._db.execute(
             "SELECT enqueue_sequence, root_id, path, tree_sha, depth, parent_path "
-            "FROM frontier WHERE dequeued = 0 ORDER BY enqueue_sequence LIMIT 1"
+            "FROM frontier WHERE completed = 0 AND leased = 0 "
+            "ORDER BY enqueue_sequence LIMIT 1"
         ).fetchone()
         if row is None:
             return None
         self._db.execute(
-            "UPDATE frontier SET dequeued = 1 WHERE enqueue_sequence = ?", (row[0],)
+            "UPDATE frontier SET leased = 1 WHERE enqueue_sequence = ?", (row[0],)
         )
         self._db.commit()
         return Entry(
@@ -257,6 +272,22 @@ class Frontier:
             depth=row[4],
             parent_path=row[5],
         )
+
+    def complete(self, entry: Entry) -> None:
+        """Mark a leased entry finished. Only expansion may call this."""
+        self._db.execute(
+            "UPDATE frontier SET completed = 1 WHERE enqueue_sequence = ?",
+            (entry.enqueue_sequence,),
+        )
+        self._db.commit()
+
+    def release(self, entry: Entry) -> None:
+        """Return a leased entry to pending, unfinished."""
+        self._db.execute(
+            "UPDATE frontier SET leased = 0 WHERE enqueue_sequence = ? AND completed = 0",
+            (entry.enqueue_sequence,),
+        )
+        self._db.commit()
 
     # -- reading ----------------------------------------------------------
 
@@ -270,8 +301,11 @@ class Frontier:
         )
 
     def pending_count(self) -> int:
+        """Entries still held: unfinished, whether or not currently leased."""
         return int(
-            self._db.execute("SELECT COUNT(*) FROM frontier WHERE dequeued = 0").fetchone()[0]
+            self._db.execute(
+                "SELECT COUNT(*) FROM frontier WHERE completed = 0"
+            ).fetchone()[0]
         )
 
     def visited_count(self) -> int:
@@ -281,7 +315,7 @@ class Frontier:
         """Every pending entry in enqueue order. For digesting, not for driving."""
         for row in self._db.execute(
             "SELECT enqueue_sequence, root_id, path, tree_sha, depth, parent_path "
-            "FROM frontier WHERE dequeued = 0 ORDER BY enqueue_sequence"
+            "FROM frontier WHERE completed = 0 ORDER BY enqueue_sequence"
         ):
             yield Entry(
                 enqueue_sequence=row[0],

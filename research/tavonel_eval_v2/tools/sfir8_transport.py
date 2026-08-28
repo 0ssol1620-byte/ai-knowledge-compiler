@@ -284,6 +284,10 @@ class ManualRedirectTransport:
             "expected_repository_id": str(expected_uuid),
             "observed_repository_id": str(observed),
             "identity_verified": True,
+            # From the metadata response already fetched for the identity check,
+            # so naming it costs no extra request. The traversal fetches its own
+            # head commit -- seeding a frontier is not this method's job.
+            "default_branch": record.body.get("default_branch"),
             "hops_spent_resolving": record.network_hops,
             "provider_charged_resolving": record.provider_charged,
             "why_the_canonical_address_is_used_afterwards": (

@@ -45,6 +45,7 @@ def drain(f, *, limit=1000):
         entry = f.dequeue()
         if entry is None:
             return out
+        f.complete(entry)
         out.append(entry)
     raise AssertionError(
         f"dequeue produced more than {limit} entries from a frontier that was never "
@@ -74,7 +75,11 @@ def test_order_survives_the_process_that_built_it(db):
     """The whole point of the disk. A resumed run continues the same sequence."""
     with frontier.Frontier(db) as f:
         _enqueue(f, 6)
-        first = [f.dequeue().path for _ in range(2)]
+        first = []
+        for _ in range(2):
+            entry = f.dequeue()
+            f.complete(entry)
+            first.append(entry.path)
 
     with frontier.Frontier(db) as resumed:
         rest = [e.path for e in drain(resumed)]
@@ -106,6 +111,7 @@ def test_a_segmented_traversal_matches_an_uninterrupted_one(db, tmp_path):
             for _ in range(3):
                 entry = f.dequeue()
                 if entry is not None:
+                    f.complete(entry)
                     segmented.append(entry.path)
 
     assert segmented == straight
@@ -115,7 +121,11 @@ def test_a_dequeued_entry_is_not_handed_out_again(db):
     """Replaying an entry double-counts every candidate beneath it."""
     with frontier.Frontier(db) as f:
         _enqueue(f, 3)
-        seen = [f.dequeue().path for _ in range(3)]
+        seen = []
+        for _ in range(3):
+            entry = f.dequeue()
+            f.complete(entry)
+            seen.append(entry.path)
         assert f.dequeue() is None
         assert len(set(seen)) == 3
 
@@ -156,7 +166,7 @@ def test_the_visited_set_is_scoped_to_its_root(db):
 def test_the_visited_set_survives_reopening(db):
     with frontier.Frontier(db) as f:
         f.enqueue(root_id="r", path="a", tree_sha="s", depth=1, parent_path=None)
-        f.dequeue()
+        f.complete(f.dequeue())
 
     with frontier.Frontier(db) as resumed:
         assert resumed.visited("r", "s") is True
@@ -168,7 +178,7 @@ def test_the_visited_set_survives_reopening(db):
 def test_dequeuing_does_not_forget_that_an_entry_was_seen(db):
     with frontier.Frontier(db) as f:
         f.enqueue(root_id="r", path="a", tree_sha="s", depth=1, parent_path=None)
-        f.dequeue()
+        f.complete(f.dequeue())
         assert f.visited("r", "s") is True
 
 
@@ -243,7 +253,9 @@ def test_dequeuing_frees_capacity_because_the_bound_is_on_what_is_held(db):
             f.enqueue(
                 root_id="r", path=f"p{i}", tree_sha=f"s{i}", depth=1, parent_path=None
             )
-            assert f.dequeue() is not None
+            entry = f.dequeue()
+            assert entry is not None
+            f.complete(entry)
         assert f.visited_count() == 50, "fifty trees expanded under a two-entry ceiling"
 
 
@@ -309,7 +321,7 @@ def test_the_sequence_is_the_stored_ordinal_not_a_count_of_what_is_pending(db):
     with frontier.Frontier(db) as f:
         _enqueue(f, 5)
         for _ in range(4):
-            f.dequeue()
+            f.complete(f.dequeue())
         assert f.pending_count() == 1
         later = f.enqueue(
             root_id="r1", path="p9", tree_sha="sha9", depth=1, parent_path=None
@@ -325,10 +337,78 @@ def test_the_stored_sequence_and_the_returned_sequence_agree(db):
     a segment records disagree with the frontier it is meant to describe."""
     with frontier.Frontier(db) as f:
         _enqueue(f, 3)
-        f.dequeue()
+        f.complete(f.dequeue())
         returned = f.enqueue(
             root_id="r1", path="p7", tree_sha="sha7", depth=1, parent_path=None
         )
         stored = next(e for e in f.pending() if e.path == "p7")
     assert returned.enqueue_sequence == stored.enqueue_sequence
     assert returned.as_dict() == stored.as_dict()
+
+
+# ------------------------------------------------------- a lease is not a removal
+
+
+def test_an_entry_handed_out_but_not_finished_returns_to_pending(db):
+    """The defect mutation T9 exposed, in the frontier where it lived.
+
+    Marking an entry consumed the moment it is handed out means a segment that
+    ends between the hand-out and the expansion loses that entry -- and with it
+    every candidate beneath the subtree it names. Nothing reports the loss: the
+    frontier simply looks emptier than it should, and the root is recorded as
+    exhausted.
+    """
+    with frontier.Frontier(db) as f:
+        _enqueue(f, 3)
+        leased = f.dequeue()
+        assert leased.path == "p0"
+
+    with frontier.Frontier(db) as resumed:
+        assert [e.path for e in drain(resumed)] == ["p0", "p1", "p2"], (
+            "an entry that was leased and never completed must be replayed"
+        )
+
+
+def test_a_completed_entry_does_not_come_back(db):
+    with frontier.Frontier(db) as f:
+        _enqueue(f, 2)
+        f.complete(f.dequeue())
+
+    with frontier.Frontier(db) as resumed:
+        assert [e.path for e in drain(resumed)] == ["p1"]
+
+
+def test_a_leased_entry_is_not_handed_out_twice_in_one_session(db):
+    with frontier.Frontier(db) as f:
+        _enqueue(f, 2)
+        assert f.dequeue().path == "p0"
+        assert f.dequeue().path == "p1", "the leased entry was handed out again"
+        assert f.dequeue() is None
+
+
+def test_releasing_an_entry_returns_it_to_the_head_of_the_queue(db):
+    """Order is preserved through a release: the entry keeps its ordinal."""
+    with frontier.Frontier(db) as f:
+        _enqueue(f, 3)
+        first = f.dequeue()
+        f.release(first)
+        assert f.dequeue().path == "p0"
+
+
+def test_releasing_a_completed_entry_does_not_resurrect_it(db):
+    with frontier.Frontier(db) as f:
+        _enqueue(f, 2)
+        entry = f.dequeue()
+        f.complete(entry)
+        f.release(entry)
+        assert [e.path for e in drain(f)] == ["p1"]
+
+
+def test_an_unfinished_entry_still_occupies_the_storage_envelope(db):
+    """It has to be held to be replayed, so it is still held."""
+    with frontier.Frontier(db, working_storage_bytes=frontier.worst_case_entry_bytes()) as f:
+        f.enqueue(root_id="r", path="p0", tree_sha="s0", depth=1, parent_path=None)
+        f.dequeue()
+        assert f.pending_count() == 1
+        with pytest.raises(frontier.WorkingStorageExhausted):
+            f.enqueue(root_id="r", path="p1", tree_sha="s1", depth=1, parent_path=None)

@@ -10607,3 +10607,97 @@ artifact it is measuring was worth more than the mutation results it produced.
 
 Final: frontier 16/16, checkpoint 17/17, redirect 22/22, each against a verified
 green baseline. 108 controls across the four SFIR8 modules.
+
+## INC-V2-124 -- an equivalence test cannot check the equivalence it uses
+
+2026-08-28. SFIR8 section J, plus the first SFIR9 gate. Development instrument;
+no capacity claim.
+
+**The controls passed and meant almost nothing.** J1 compares an uninterrupted
+traversal against a segmented one by asserting
+`segmented.scientific_identity() == straight.scientific_identity()`. Twenty-five
+controls, all green. Then mutation testing deleted candidate order from
+`scientific_identity()`, and they stayed green. Then dispositions. Then the
+visited set. Then frontier exhaustion. Then it keyed candidate identity on the
+address instead of the numeric repository id. Green every time.
+
+The reason is structural and worth stating plainly: **a self-comparison is
+invariant under any change applied to both sides.** Removing a field removes it
+from the left and the right at once, so the equality survives. The assertion was
+never testing what the runs contained; it was testing that one function agrees
+with itself. Eight of twenty-two mutations died. Fourteen lived.
+
+The repair is two-sided. The relation is now pinned against explicit expected
+content -- a golden assertion naming every candidate, ordinal, disposition and
+visited tree of the fixture -- and against runs that *genuinely differ* and must
+therefore not compare equal: a reversed candidate order, a missing candidate, a
+truncated root, a different visited set, an unexhausted frontier. And one that
+must still compare equal: a different transport trace. That last one is not
+padding. It is the direction the whole section depends on, because a segment
+interrupted mid-root legitimately costs more requests than an uninterrupted run,
+and treating that as a failure would be as wrong as ignoring a real one.
+
+**A surviving mutation found a real defect, not a missing test.** `INSERT OR
+IGNORE` versus `INSERT OR REPLACE` for candidates made no difference to any
+control, and the reason turned out to be worse than a weak test: a candidate was
+never re-offered, because `dequeue` marked an entry consumed the moment it was
+handed out. So a segment that ended between the hand-out and the expansion --
+which is exactly what a `WorkingStorageExhausted` refusal does -- dropped that
+entry, and with it every candidate beneath the subtree it named. Nothing
+reported the loss. The frontier simply looked emptier than it should and the
+root was recorded as exhausted.
+
+Dequeue is a lease now. An entry is finished only when expansion says so;
+anything left in flight when a segment ends returns to pending, and reopening
+the store reclaims stale leases because a lease belongs to the process that took
+it. The storage path releases rather than consumes. Five new mutations cover the
+lease itself.
+
+**Two constants that described behaviour were never checked against it.**
+`OPEN_ROOT_REQUEST_COST` is the number the minimum segment budget is derived
+from, and changing it left every control green -- the derivation still held, and
+nothing compared the declaration against what opening a root actually costs. It
+is measured now. A constant that describes behaviour and is only ever read by
+code derived from it is a comment with a type.
+
+**And one guard was deleted rather than tested.** The runtime no-progress check
+could not fire: the budget pre-check already refuses anything below
+open-cost-plus-one, so a segment that reaches the loop always expands or
+advances a root. INC-V2-036, twelve recurrences and counting -- a guard placed
+where its failure is impossible is not a guard. The pre-check is the whole of
+the protection and it is reachable.
+
+Final: traversal 19/21 then 24/24 after repair, frontier 21/21, checkpoint
+17/17, redirect 22/22, isolation gate 26/26. All against verified green
+baselines.
+
+**J1 and J2 both hold.** Segmenting at four granularities leaves candidate
+identities, candidate order, root dispositions, the visited set and frontier
+exhaustion identical while the request count differs. Addressing one repository
+by its 2020 catalogue name through a verified redirect, or by its canonical name
+today, yields one identical population from one numeric identity -- and a
+redirect that leads to a *different* numeric id produces no candidates at all
+rather than a plausible set.
+
+**The first SFIR9 gate is machine-checkable, and it is not a repair.** The
+founder ruling preserves all fifty-nine drifted frozen attestations as the
+evidence of a reproducibility chain that failed. The isolation gate reads that
+receipt, records its digest, and never writes to it. It refuses a drifted
+receipt used as a scientific prerequisite, a historical expected digest used to
+certify current source, a claim of continuity with an old pin, an undeclared or
+value-bearing historical input, and any component that selects an authority by
+recency or shape rather than by name and digest.
+
+It deliberately does *not* refuse a file merely for appearing in the drift list.
+Current bytes may be newly frozen for SFIR9 with a new digest against a current
+Git blob -- that is "the current implementation newly frozen", never "the old
+component restored" -- and a gate that forbade it would make the failed chain
+permanently contagious, rendering every file it ever touched unusable however
+sound its implementation today.
+
+The proof block reports both states side by side and says in its own text that
+they are not merged: historical integrity FAIL, fifty-nine frozen drifts,
+`PRESERVED_FAIL`; SFIR9 integrity independently evaluated. It also records what
+it cannot establish -- the lookup scan is static and cannot prove that no
+component selects an authority by recency at runtime. A control that overstates
+itself is worse than none.
