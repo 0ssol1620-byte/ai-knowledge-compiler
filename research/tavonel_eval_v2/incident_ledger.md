@@ -10725,3 +10725,65 @@ they are not merged: historical integrity FAIL, fifty-nine frozen drifts,
 it cannot establish -- the lookup scan is static and cannot prove that no
 component selects an authority by recency at runtime. A control that overstates
 itself is worse than none.
+
+## INC-V2-125 -- three freeze preconditions were true and none was checkable
+
+**The evidence for each lived in a session transcript rather than in the
+repository.**
+
+The ruling lists "mutation baselines green" among the conditions the freeze
+depends on. It was green: twelve components, three hundred and ninety-one
+hand-written mutations, zero survivors. But the drivers that produced that
+number were scratchpad scripts. Nothing in the repository could be re-run to
+reproduce it, and nothing would have noticed if a component later drifted out
+from under its own table. The claim rested entirely on an implementer saying
+so, which is the one form of evidence this project's own rules refuse.
+
+The same was true of the legacy failure taxonomy, classified by reading
+tracebacks in a terminal, and of the hostile audit's relationship to the rest
+of the gate: each artifact existed, and no single thing could be run to check
+that they still held together against the tree that would actually execute.
+
+**The repair moved the evidence rather than strengthening the claim.** The
+mutation tables were lifted verbatim into `tools/sfir9_mutation_tables/` and
+the forty-line driver loop around them became one engine, so what is
+committed is thirteen tables and one runner rather than thirteen
+near-identical scripts. The classification became
+`tools/sfir9_legacy_taxonomy.py`, which runs the suite and matches root causes
+against declared signatures. Both write receipts. A gate,
+`tools/sfir9_freeze_gate.py`, reads them, recomputes their digests, and
+refuses to open unless every condition passes.
+
+**What the move surfaced, which is why it was worth doing.** Writing controls
+for the engine and the gate found three defects that the twelve scratchpad
+drivers had all shared and none could have reported.
+
+An emptied test selection read as a failing suite. The closure cannot verify
+itself -- mutating it breaks its own committed-versus-working check -- so its
+real-repository controls are excluded by name and copy-tree equivalents carry
+the load. An exclusion that removed *every* test would have been just as
+invisible, and pytest exits 5 on "no tests collected", which the drivers'
+`returncode != 0` read as red. Red is nearly the right answer, but for the
+wrong reason, and the reason is what would have had to be believed later. The
+engine checks for the empty selection first and reports
+`BASELINE_SELECTED_NO_TESTS`.
+
+The gate's first draft carried an impossible check. It read each closure
+record's `committed_bytes_equal_working_bytes` and
+`import_origin_is_the_verified_file` and reported a failure if either was
+false. Neither can be false: `closure()` raises on the first component that
+fails any of its five bindings, so a returned record can only say they held.
+**INC-V2-036, sixteenth recurrence** -- a guard placed where its failure is
+impossible. Removed, with the reason recorded where the check used to be.
+
+Seven of the gate's own thirty-two mutations then survived their first pass,
+every one in a branch the controls never reached: the suite runner, the
+closure's two "could not" exits, the re-derivation, and `main()`. **A branch
+nothing drives is not defended**, and a mutation score computed only over the
+branches someone happened to exercise is a measure of the test author's
+attention, not of the code's defences.
+
+**Status:** closed. The preconditions are receipts a fresh checkout can
+regenerate, and the gate that reads them refuses on `UNPROVEN` as well as on
+`FAIL` -- a condition nobody could measure and a condition that failed are
+different problems, and only one of them looks like a clean bill.
