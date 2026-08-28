@@ -402,10 +402,12 @@ def test_a_component_that_is_not_a_file_is_refused(drift_receipt, components):
         )
 
 
-def test_the_required_components_are_the_eight_the_ruling_names():
+def test_the_required_components_are_the_ten_the_ruling_names():
     assert set(gate.REQUIRED_COMPONENTS) == {
         "protocol",
         "execution_closure",
+        "historical_isolation_gate",
+        "selection_rule",
         "scorer",
         "acceptance",
         "cohort_roster",
@@ -413,6 +415,19 @@ def test_the_required_components_are_the_eight_the_ruling_names():
         "identity_logic",
         "checkpoint_chain",
     }
+
+
+def test_the_closure_contains_the_two_components_that_judge_the_study():
+    """A closure that does not contain its own judgement is not a closure.
+
+    The first version listed eight components and omitted both the selection
+    rule and this gate. Either could then have been changed after a freeze
+    without the closure noticing -- the code choosing which repositories are
+    studied, and the code deciding whether the study leans on the failed
+    historical chain.
+    """
+    assert "selection_rule" in gate.REQUIRED_COMPONENTS
+    assert "historical_isolation_gate" in gate.REQUIRED_COMPONENTS
 
 
 def test_every_refusal_carries_the_declared_refusal_code(drift_receipt, components):

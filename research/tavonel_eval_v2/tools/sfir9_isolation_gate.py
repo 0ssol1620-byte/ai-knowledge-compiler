@@ -163,9 +163,19 @@ class Sfir9Declaration:
     claims_continuity_with_historical_pin: bool = False
 
 
+#: The minimum closure. Ten, not eight.
+#:
+#: The first version omitted the selection rule and this gate itself, which
+#: meant the code that decides *which repositories are studied* and the code
+#: that decides *whether the study leans on the failed historical chain* could
+#: both be changed without the closure noticing. A closure that does not contain
+#: its own judgement is not a closure; it is a list of things somebody else
+#: checks.
 REQUIRED_COMPONENTS = (
     "protocol",
     "execution_closure",
+    "historical_isolation_gate",
+    "selection_rule",
     "scorer",
     "acceptance",
     "cohort_roster",
