@@ -537,3 +537,42 @@ def test_read_global_parses_the_core_resource(monkeypatch):
         100,
         77,
     )
+
+
+# ------------------------------------------------- the counter needs a baseline
+
+
+def test_an_unseeded_counter_cannot_price_its_first_hop(monkeypatch):
+    """Honest about it rather than reporting a fabricated zero."""
+    _install(monkeypatch, _Server({REPO: (200, _rate(4999), _json({"id": 1}))}))
+    client = transport.ManualRedirectTransport()
+    result = client.get(REPO)
+    assert result.atoms[0].provider_remaining_before is None
+    assert result.provider_charged is None
+    assert client.totals()["counter_was_seeded"] is False
+
+
+def test_seeding_from_the_free_global_reading_makes_the_first_hop_priceable(monkeypatch):
+    """The 1-unit gap in the first live probe was this, not a provider mystery.
+
+    `/rate_limit` costs no quota, so the baseline is free. Without it a run's
+    per-request charge sum is short by exactly one against the provider's own
+    counter -- indistinguishable, in the receipt, from a hidden provider charge.
+    """
+    _install(monkeypatch, _Server({REPO: (200, _rate(4999), _json({"id": 1}))}))
+    client = transport.ManualRedirectTransport()
+    client.seed_remaining(5000)
+    result = client.get(REPO)
+
+    assert result.atoms[0].provider_remaining_before == 5000
+    assert result.provider_charged == 1
+    assert client.totals()["counter_was_seeded"] is True
+    assert client.totals()["provider_charged"] == client.totals()["network_hops"]
+
+
+def test_seeding_does_not_invent_a_charge_when_the_response_has_no_headers(monkeypatch):
+    """A seeded `before` with no `after` is still unknown, not a charge of zero."""
+    _install(monkeypatch, _Server({REPO: (200, {}, _json({"id": 1}))}))
+    client = transport.ManualRedirectTransport()
+    client.seed_remaining(5000)
+    assert client.get(REPO).provider_charged is None

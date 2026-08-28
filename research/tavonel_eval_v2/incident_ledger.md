@@ -10459,3 +10459,67 @@ exclusivity cannot currently be established, and that is recorded as a
 limitation on the measurement rather than argued away -- another process holding
 the same token produces arithmetic identical to a hidden provider-side charge,
 and this instrument cannot tell them apart.
+
+## INC-V2-122 -- the accounting closes, and both defects that hid it were mine
+
+2026-08-28. SFIR8 sections A and B, first live run. Development instrument;
+SFIR7's roots are spent material and no capacity claim is made from this.
+
+**The first run produced two wrong numbers and neither was GitHub's fault.**
+
+`TOLL_REMAINS`: canonical-addressed renamed roots cost 1.0 charge per request,
+the never-moved baseline cost 1.2. A baseline more expensive than the treatment
+is not a result, it is a broken control group -- and it was. The probe sampled
+five of the nine known renames and then built its baseline by excluding *only
+those five*, so `facebook/react` sat in the control group and redirected on
+every one of its three requests. The entire 1.2-vs-1.0 difference was that one
+contaminant. The exclusion set is now every known rename, and the receipt
+carries `baseline_group_is_uncontaminated` so the next reader does not have to
+take it on trust.
+
+`UNATTRIBUTED_PROVIDER_ACCOUNTING_DELTA = 1`: forty-three hops, forty-two
+charges. The transport's remaining-counter starts at `None`, so the very first
+hop of a run has no `before` reading and its charge is unknowable -- correctly
+recorded as unknown rather than as zero, which is why it showed up as a gap
+instead of silently vanishing. But a gap of exactly one, in a receipt about
+unattributed provider charges, is indistinguishable from the thing the receipt
+exists to detect. `/rate_limit` is free and was already being read immediately
+beforehand; the counter is now seeded from it.
+
+**With both repaired, the accounting closes exactly.**
+
+    logical requests        35
+    network hops            40
+    per-request charge sum  40
+    provider used delta     40
+    UNATTRIBUTED             0
+
+Forty hop atoms, every one priced. And the canonical-addressing question is
+answered: fifteen requests against five resolved canonical addresses, zero
+redirects, 1.0 charge each -- identical to five repositories that never moved.
+Resolution costs two hops once per root and nothing thereafter. Each of the five
+was verified by numeric repository id before its live name was adopted:
+`ReactTraining/react-router` -> 19872456, `bundler/bundler` -> 488514,
+`erikhuda/thor` -> 15257, `facebook/create-react-app` -> 63537249,
+`facebook/jest` -> 15062869.
+
+**What this does and does not say about the residual 240.** At this scale
+per-hop accounting closes perfectly, which is evidence against the hypothesis
+that GitHub levies charges the response headers never expose. It is not proof:
+thirty-five requests in a quiet window is not thirty-nine hundred in a saturated
+one, and a secondary limit would not engage at this volume at all. The residual
+stays unattributed. SFIR9 carries this accounting into a full traversal, which
+is where the question gets answered.
+
+**A note on what the zero is worth.** Credential exclusivity was not
+established, and the receipt says so even though the delta came out zero. A zero
+delta is consistent with exclusive use; it does not establish it. The limitation
+is registered on a favourable result for the same reason it would be on an
+unfavourable one -- a limitation that only appears when the number disappoints
+is not a limitation, it is an excuse.
+
+**Three further mutations, T13-T15, cover the seeding.** Twenty-two total, zero
+survivors. The one worth naming is T14, which gives the unseeded counter a
+plausible starting value instead of `None`: it makes every charge look
+measurable while making the first one wrong. Reporting unknown as unknown is
+what turned a silent one-unit error into a visible one.

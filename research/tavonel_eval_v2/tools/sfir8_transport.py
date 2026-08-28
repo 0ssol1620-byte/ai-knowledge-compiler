@@ -138,9 +138,22 @@ class ManualRedirectTransport:
         self.max_hops = max_hops
         self.requests: list[LogicalRequest] = []
         self._remaining: int | None = None
+        self._seeded = False
         self._sequence = 0
         #: catalogue address -> canonical live address, once resolved
         self.canonical: dict[str, str] = {}
+
+    def seed_remaining(self, remaining: int) -> None:
+        """Give the counter a baseline before the first request is issued.
+
+        Without this the first hop of a run has no `before` reading and its
+        charge is unknowable, so the run's per-request charge sum is short by
+        one against the provider's own counter -- a gap that looks exactly like
+        an unattributed provider charge and is not one. `/rate_limit` is free,
+        so the baseline costs nothing to obtain.
+        """
+        self._remaining = int(remaining)
+        self._seeded = True
 
     # -- counting ---------------------------------------------------------
 
@@ -152,6 +165,7 @@ class ManualRedirectTransport:
             "provider_charged": sum(charged),
             "requests_with_provider_accounting": len(charged),
             "requests_that_redirected": sum(1 for r in self.requests if r.redirected),
+            "counter_was_seeded": self._seeded,
             "automatic_redirect_following": self.follows_redirects_automatically(),
         }
 

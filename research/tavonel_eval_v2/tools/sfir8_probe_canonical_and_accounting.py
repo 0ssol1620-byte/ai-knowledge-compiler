@@ -91,12 +91,21 @@ def run(*, renamed_limit: int, unrenamed_limit: int) -> dict[str, Any]:
     census = json.loads(
         (NS / "receipts/sfir7-capacity-metadata-census.json").read_text(encoding="utf-8")
     )
-    renamed = sorted(census["identity_attestation"]["renames_observed"])[:renamed_limit]
-    all_roots = list(roots.declared_roots())
-    unrenamed = [name for name in all_roots if name not in set(renamed)][:unrenamed_limit]
+    known_renames = set(census["identity_attestation"]["renames_observed"])
+    renamed = sorted(known_renames)[:renamed_limit]
+    # Every known rename is excluded from the baseline, not merely the sampled
+    # ones. The first run of this probe excluded only the five it sampled, so
+    # `facebook/react` sat in the control group and redirected on every request
+    # -- the whole of the 1.2-vs-1.0 difference was that one contaminant.
+    unrenamed = [
+        name for name in roots.declared_roots() if name not in known_renames
+    ][:unrenamed_limit]
 
     client = transport.ManualRedirectTransport()
     before = accounting.read_global()
+    # The counter needs a baseline before the first hop, or that hop's charge is
+    # unknowable and the run's charge sum is short by exactly one.
+    client.seed_remaining(before.remaining)
 
     resolutions: list[dict[str, Any]] = []
     rows: list[dict[str, Any]] = []
@@ -136,6 +145,9 @@ def run(*, renamed_limit: int, unrenamed_limit: int) -> dict[str, Any]:
         "provider_accounting": reconciliation,
         "hop_atoms": client.atoms(),
         "canonical_addressing_removed_the_toll": _toll_verdict(rows),
+        "baseline_group_is_uncontaminated": all(
+            not row["redirected"] for row in rows if row["group"] == "unrenamed"
+        ),
         "gpu_seconds": 0,
         "estimated_cost_usd": 0.0,
     }
