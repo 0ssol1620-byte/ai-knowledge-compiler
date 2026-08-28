@@ -1,0 +1,624 @@
+{
+  "category_definitions": {
+    "A": "the study has advanced past the state the test asserts. The test encodes a snapshot of the repository at an earlier rung -- SFI3 unacquired, no freeze receipt written, twelve source modules on disk. Reconciling it would mean either un-acquiring real material or editing a frozen declaration, and both are worse than the red.",
+    "B": "a preserved historical frozen drift. The founder ruled that the frozen drifts are preserved rather than reconciled, and that SFIR9 is built as an independent chain instead. Turning these green is forbidden; they are evidence, not breakage.",
+    "C": "the execution environment, not the instrument. An absent third-party dependency, or a deliberate guard refusing live network or live cohort access from a test runner.",
+    "D": "a defect in code the SFIR9 prospective chain depends on. The freeze condition is that this category is empty."
+  },
+  "counts": {
+    "A": 31,
+    "B": 12,
+    "C": 17,
+    "D": 0
+  },
+  "failures_examined": 60,
+  "freeze_condition": "D == 0",
+  "freeze_condition_met": true,
+  "rows": [
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_cli_writes_only_explicit_export_and_refuses_overwrite",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_materializes_all_arms_with_exact_offline_token_counts_deterministically",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_context_bound_to_other_manifest",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_manifest_facts_digest_drift",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_missing_chat_template_instead_of_approximating",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_tampered_context_atom_even_if_outer_digest_is_recomputed",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_tampered_sfir4_acceptance_bytes",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_tokenizer_revision_drift",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "C",
+      "failure_signature": "ModuleNotFoundError: No module named 'tokenizers'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_gpu_successor_v2_materializer.py::test_refuses_unlisted_tokenizer_file",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "absent_third_party_dependency",
+      "value_bearing_for_sfir9": false,
+      "why": "a third-party package this checkout does not have installed."
+    },
+    {
+      "category": "B",
+      "failure_signature": "+ sha256:b2fa07425acd54138da3198b337117006ea8f874e9566c78f19968d0840fbcad",
+      "nodeid": "research/tavonel_eval_v2/tests/test_part15.py::test_the_frozen_vbc2_contract_is_pinned_by_digest_so_a_later_edit_is_visible",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "frozen_contract_digest_moved",
+      "value_bearing_for_sfir9": false,
+      "why": "a pinned frozen-contract file whose digest moved. The pin exists so the edit is visible, and it is visible."
+    },
+    {
+      "category": "A",
+      "failure_signature": "Use -v to get more diff",
+      "nodeid": "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py::test_this_suite_never_calls_expand_main_against_real_network_or_receipts",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_protocol_freeze_receipt_exists",
+      "value_bearing_for_sfir9": false,
+      "why": "the orchestrator has already frozen the SFI3 protocol. The suite's documentation-as-assertion recorded that no freeze had happened yet."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: preflight_sfi3_roots.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py::test_aggregation_reports_counts_by_family_and_state_never_a_bare_boolean",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: preflight_sfi3_roots.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py::test_cli_no_receipt_round_trips",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "B",
+      "failure_signature": "sfir1_spent_authority.SpentAuthorityRefused: mandatory spent source digest drift: research/tavonel_eval_v2/tools/root_identity.py",
+      "nodeid": "research/tavonel_eval_v2/tests/test_sfir1_spent_authority.py::test_live_default_inventory_is_exact_complete_and_protocol_digest_compatible",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "spent_source_digest_drift",
+      "value_bearing_for_sfir9": false,
+      "why": "a spent-authority source whose digest drifted. Spent material cannot be re-pinned without laundering the record it stands for."
+    },
+    {
+      "category": "B",
+      "failure_signature": "sfir1_spent_authority.SpentAuthorityRefused: mandatory spent source digest drift: research/tavonel_eval_v2/tools/root_identity.py",
+      "nodeid": "research/tavonel_eval_v2/tests/test_sfir1_spent_authority.py::test_root_module_emits_exact_root_container_namespaces",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "spent_source_digest_drift",
+      "value_bearing_for_sfir9": false,
+      "why": "a spent-authority source whose digest drifted. Spent material cannot be re-pinned without laundering the record it stands for."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_clean_disjoint_pair_survives",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_collision_whose_members_both_verify_is_still_a_collision",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_constructed_control_pair_is_not_a_revision_pair",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_lineage_inside_an_sfi3_ecfr_root_is_excluded",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_lineage_inside_an_sfi3_git_root_is_excluded",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_neighbouring_ecfr_part_is_not_swept_up",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_non_empty_universe_exits_zero",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_a_side_with_no_recorded_canonical_digest_carries_the_computed_one",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_an_identity_measured_lineage_is_excluded",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_an_injected_v1_lineage_is_excluded_and_named",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_both_canonical_digest_conventions_are_accepted_and_recorded[canonical_form]",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_both_canonical_digest_conventions_are_accepted_and_recorded[file_bytes]",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_collision_group_excludes_the_member_that_still_verifies",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_dedup_keeps_the_first_occurrence_and_names_the_rest",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_each_cache_integrity_failure_is_named_separately[kwargs0-PAYLOAD_DIGEST_MISMATCH]",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_each_cache_integrity_failure_is_named_separately[kwargs1-PAYLOAD_MISSING]",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_each_cache_integrity_failure_is_named_separately[kwargs2-CANONICAL_MISSING]",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_each_cache_integrity_failure_is_named_separately[kwargs3-CANONICAL_DIGEST_MISMATCH]",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_every_emitted_category_is_declared",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_outcome_visibility_is_recorded_not_used_to_exclude",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_spent_and_forensic_and_retrospective_lineages_are_each_excluded",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_the_power_note_cannot_move_the_selected_set",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_the_real_enumeration_excludes_both_members_of_every_p4i_collision",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_the_real_enumeration_is_deterministic",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_the_real_enumeration_proves_every_declared_disjointness",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "+      where WindowsPath('D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json') = enumerator.SFI3_FRAME",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_the_real_run_leaves_sfi3_unacquired",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_present_but_asserted_absent",
+      "value_bearing_for_sfir9": false,
+      "why": "the same materialised frame, seen from the assertion side."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_the_wikipedia_family_is_excluded_as_unprovable",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "enumerate_v2_universe.EnumerationRefused: research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json exists. This tool runs while SFI3 is unacquired and must not be the thing that made it exist.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py::test_zero_eligible_pairs_is_a_blocking_finding",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "sfi3_frame_materialised",
+      "value_bearing_for_sfir9": false,
+      "why": "the SFI3 development frame was materialised, and the enumerator refuses to be the thing that made it exist. The refusal is the tool working; the assertion is about a repository state that has moved on."
+    },
+    {
+      "category": "A",
+      "failure_signature": "1 failed, 12 passed in 0.72s",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r3_attestation.py::test_an_intact_chain_reports_ready_and_carries_all_three_proofs",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "more_source_modules_than_v2r3_declared",
+      "value_bearing_for_sfir9": false,
+      "why": "four source frames were declared after v2r3 fixed its count. The declared number sits inside a frozen protocol and is not editable."
+    },
+    {
+      "category": "A",
+      "failure_signature": "+  where 16 = len(['sources_p4c', 'sources_p4e', 'sources_p4g', 'sources_p4i', 'sources_sfh1', 'sources_sfi1', ...])",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py::test_the_declared_root_counts_are_the_counts_on_disk",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "more_source_modules_than_v2r3_declared",
+      "value_bearing_for_sfir9": false,
+      "why": "four source frames were declared after v2r3 fixed its count. The declared number sits inside a frozen protocol and is not editable."
+    },
+    {
+      "category": "B",
+      "failure_signature": "AssertionError: assert 'already exists' in 'a frozen scorer module has changed since rung 3: research/tavonel_eval_v2/tools/v2r3_effective_identity.py\\n  frozen:...eba9f96ca2577665603d729d8a68cc39d3\\n  current: sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py::test_an_existing_measurement_turns_the_gate_red",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "frozen_scorer_module_changed",
+      "value_bearing_for_sfir9": false,
+      "why": "one of the preserved frozen drifts, reported by the rung that pins it."
+    },
+    {
+      "category": "B",
+      "failure_signature": "Use -v to get more diff",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py::test_every_scientific_pin_v2r3r1_froze_still_holds",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "attested_files_since_changed",
+      "value_bearing_for_sfir9": false,
+      "why": "a frozen attestation naming files that moved. Preserved, not reconciled: this is what the founder ruled must not be repaired."
+    },
+    {
+      "category": "B",
+      "failure_signature": "?           +++++++++++++++++++++++++",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py::test_the_protocol_rung_refuses_and_names_the_file_that_moved",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "attested_files_since_changed",
+      "value_bearing_for_sfir9": false,
+      "why": "a frozen attestation naming files that moved. Preserved, not reconciled: this is what the founder ruled must not be repaired."
+    },
+    {
+      "category": "C",
+      "failure_signature": "conftest.RealNetworkForbidden: this test tried to open a real socket to 'www.ecfr.gov'. The suite is barred from the network so a deleted or mutated guard cannot reach a live endpoint (INC-V2-100). Inject a fake transport, or mark the test @pytest.mark.allow_real_network if it genuinely must use one.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_frame.py::test_a_part_with_section_history_but_no_live_container_is_not_declarable",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "real_network_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the suite's network bar refusing a real socket (INC-V2-100)."
+    },
+    {
+      "category": "B",
+      "failure_signature": "Actual message: 'a frozen scorer module has changed since rung 3: research/tavonel_eval_v2/tools/v2r4_grading.py\\n  frozen:  sha256:ce3b0b03cfaedd1d271bd10d28657de493728c72cf839c76b5c9aa6ae304b9fd\\n  current: sha256:afab413f3d88e947fdcf1f655c66f06e0839a5573d2e2e5b73b4b11afe59fbb7'",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_frame.py::test_the_gate_reports_ready_on_the_fully_sealed_live_chain",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "frozen_scorer_module_changed",
+      "value_bearing_for_sfir9": false,
+      "why": "one of the preserved frozen drifts, reported by the rung that pins it."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: v2r4_preacquisition_gate.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py::test_a_failed_condition_reports_its_reason_rather_than_being_swallowed",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: v2r4_preacquisition_gate.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py::test_sealing_a_blocked_verdict_writes_nothing",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: v2r4_preacquisition_gate.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py::test_skipping_the_suite_is_a_failure_not_a_pass",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: v2r4_preacquisition_gate.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py::test_the_gate_refuses_to_seal_a_blocked_verdict",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "C",
+      "failure_signature": "live_cohort_guard.LiveCohortRefused: v2r4_preacquisition_gate.run touches a live cohort and was called from a test runner. A stray traversal here would spend real request budget against real endpoints and would OBSERVE, which this study may do only once under a frozen protocol. Use live_cohort_guard.allow_under_test() if a control genuinely needs to reach this entry point.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py::test_the_verdict_is_the_and_of_every_row",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "live_cohort_guard",
+      "value_bearing_for_sfir9": false,
+      "why": "the live-cohort guard refusing to let a test runner touch a live cohort. The guard firing is the guard working."
+    },
+    {
+      "category": "B",
+      "failure_signature": "v2r4_sfi3_reservation_handoff.HandoffRefused: the reservation no longer describes what SFI3 declares: ['replacement_module_sha256'] moved. A container set that changed after it was reserved cannot be the set the other study was told to avoid.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py::test_00_green_exact_handoff_passes_and_freeze_has_no_pointer",
+      "phase": "setup",
+      "sfir9_components_in_traceback": [],
+      "signature": "reservation_no_longer_describes_sfi3",
+      "value_bearing_for_sfir9": false,
+      "why": "the same drift reaching the reservation handoff, which refuses because a container set that changed cannot be the reserved set."
+    },
+    {
+      "category": "B",
+      "failure_signature": "v2r4_sfi3_reservation_handoff.HandoffRefused: the reservation no longer describes what SFI3 declares: ['replacement_module_sha256'] moved. A container set that changed after it was reserved cannot be the set the other study was told to avoid.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py::test_09_declared_container_drift_fails_verification",
+      "phase": "setup",
+      "sfir9_components_in_traceback": [],
+      "signature": "reservation_no_longer_describes_sfi3",
+      "value_bearing_for_sfir9": false,
+      "why": "the same drift reaching the reservation handoff, which refuses because a container set that changed cannot be the reserved set."
+    },
+    {
+      "category": "B",
+      "failure_signature": "Actual message: \"the reservation no longer describes what SFI3 declares: ['replacement_module_sha256'] moved. A container set that changed after it was reserved cannot be the set the other study was told to avoid.\"",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py::test_10_one_v2r4_sfi3_container_collision_fails",
+      "phase": "call",
+      "sfir9_components_in_traceback": [],
+      "signature": "reservation_no_longer_describes_sfi3",
+      "value_bearing_for_sfir9": false,
+      "why": "the same drift reaching the reservation handoff, which refuses because a container set that changed cannot be the reserved set."
+    },
+    {
+      "category": "B",
+      "failure_signature": "v2r4_sfi3_reservation_handoff.HandoffRefused: the reservation no longer describes what SFI3 declares: ['replacement_module_sha256'] moved. A container set that changed after it was reserved cannot be the set the other study was told to avoid.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py::test_11_missing_declared_containers_fails_strict_schema",
+      "phase": "setup",
+      "sfir9_components_in_traceback": [],
+      "signature": "reservation_no_longer_describes_sfi3",
+      "value_bearing_for_sfir9": false,
+      "why": "the same drift reaching the reservation handoff, which refuses because a container set that changed cannot be the reserved set."
+    },
+    {
+      "category": "B",
+      "failure_signature": "v2r4_sfi3_reservation_handoff.HandoffRefused: the reservation no longer describes what SFI3 declares: ['replacement_module_sha256'] moved. A container set that changed after it was reserved cannot be the set the other study was told to avoid.",
+      "nodeid": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py::test_12_extra_undeclared_container_fails",
+      "phase": "setup",
+      "sfir9_components_in_traceback": [],
+      "signature": "reservation_no_longer_describes_sfi3",
+      "value_bearing_for_sfir9": false,
+      "why": "the same drift reaching the reservation handoff, which refuses because a container set that changed cannot be the reserved set."
+    }
+  ],
+  "schema": "tavonel.sfir9.legacy_failure_taxonomy.v1",
+  "taxonomy_digest": "sha256:4fe44d43d6f60398cc1d1e8bbe519aeb40b740cae054d8313a2a9231514b688d",
+  "unclassified_defaults_to": "D",
+  "why_names_are_not_used": "a test's name records what its author hoped it did. Every signature here matches the exception and traceback that actually came back.",
+  "why_unclassified_is_a_d": "a failure nobody has looked at is exactly what this check exists to catch. A permissive default would have made it quietest when it mattered most."
+}
