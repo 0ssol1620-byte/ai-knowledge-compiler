@@ -504,3 +504,87 @@ def test_the_advisory_count_is_reported_separately_from_the_frozen_count(
     historical = proof["HISTORICAL_INSTRUMENT_INTEGRITY"]
     assert historical["historical_frozen_drift_count"] == 59
     assert historical["historical_advisory_drift_count"] == 126
+
+
+# ------------------------------------------- the gate scanning its own source
+#
+# The gate is one of the ten components it scans, and it names the shapes it
+# looks for. Without an exclusion it refuses itself; with the wrong exclusion it
+# becomes a way to hide a real offending line. Both halves are checked.
+
+
+def test_the_gate_does_not_refuse_itself_for_naming_what_it_looks_for():
+    """It found its own pattern list and reported a 'latest' pointer.
+
+    The patterns' own declaration is not a use of them. Before this was
+    excluded, the real declaration could not be produced at all.
+    """
+    source = (NS / "tools/sfir9_isolation_gate.py").read_text(encoding="utf-8")
+    assert "'latest'" in source or '"latest"' in source
+    assert gate._without_the_pattern_definition(source).count("latest") < source.count(
+        "latest"
+    )
+
+
+def test_the_exclusion_covers_only_the_pattern_assignment():
+    """A real use elsewhere in the same file is still found."""
+    planted = (
+        "import re\n"
+        "_NONDETERMINISTIC_LOOKUPS = (\n"
+        '    (re.compile(r"x"), "a \'latest\' pointer"),\n'
+        ")\n"
+        "def load():\n"
+        '    return open("latest")\n'
+    )
+    stripped = gate._without_the_pattern_definition(planted)
+    assert stripped.count("latest") == 1
+    assert 'open("latest")' in stripped
+
+
+def test_the_exclusion_is_structural_rather_than_a_comment():
+    """A marker comment would be a mechanism anyone could put on a real line."""
+    planted = 'BAD = open("latest")  # noqa: nondeterministic-lookup\n'
+    assert "latest" in gate._without_the_pattern_definition(planted)
+
+
+def test_the_exclusion_does_not_apply_to_a_differently_named_assignment():
+    planted = 'OTHER_PATTERNS = (\n    "latest",\n)\n'
+    assert "latest" in gate._without_the_pattern_definition(planted)
+
+
+def test_the_exclusion_preserves_line_numbers():
+    """Blanked, not removed, so any line the scan reports still lines up."""
+    planted = "a = 1\n_NONDETERMINISTIC_LOOKUPS = (\n    1,\n    2,\n)\nb = 2\n"
+    stripped = gate._without_the_pattern_definition(planted)
+    assert len(stripped.splitlines()) == len(planted.splitlines())
+    assert stripped.splitlines()[0] == "a = 1"
+    assert stripped.splitlines()[5] == "b = 2"
+
+
+def test_unparseable_source_is_scanned_rather_than_skipped():
+    """A file that will not parse must not become a file that is not checked."""
+    planted = 'def broken(:\n    open("latest")\n'
+    assert "latest" in gate._without_the_pattern_definition(planted)
+
+
+def test_the_proof_records_the_one_statement_the_scan_excludes(
+    drift_receipt, components
+):
+    _root, paths = components
+    record = gate.proof(declaration(paths), gate.read_drift(drift_receipt))
+    excluded = record["the_one_statement_the_scan_excludes"]
+    assert "declares the patterns themselves" in excluded
+    assert "marker comment" in excluded
+
+
+def test_the_real_gate_passes_its_own_scan(drift_receipt):
+    """The declaration this study actually produces, against this repository."""
+    import sfir9_execution_closure as closure_module
+
+    repo = NS.parents[1]
+    paths = {c.name: c.relative_path for c in closure_module.COMPONENTS}
+    record = gate.evaluate(
+        declaration(paths), gate.read_drift(drift_receipt), root=repo
+    )
+    assert record["SFIR9_PROSPECTIVE_INTEGRITY"]["state"] == "INDEPENDENTLY_EVALUATED"
+    assert record["HISTORICAL_INSTRUMENT_INTEGRITY"]["state"] == "FAIL"

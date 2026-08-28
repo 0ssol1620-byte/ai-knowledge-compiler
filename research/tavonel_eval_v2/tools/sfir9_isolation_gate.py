@@ -37,6 +37,7 @@ freeze, and an SFIR9 PASS does not repair the historical chain.
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import re
@@ -279,6 +280,43 @@ def _require_historical_inputs_are_declared_non_authoritative(
             )
 
 
+#: The name whose assignment holds the patterns above. The scan blanks that one
+#: assignment before searching, because this module is itself one of the ten
+#: components it scans and the patterns' own definition is not a use of them.
+_PATTERN_DEFINITION = "_NONDETERMINISTIC_LOOKUPS"
+
+
+def _without_the_pattern_definition(text: str) -> str:
+    """Blank the assignment that defines the patterns, and nothing else.
+
+    Located structurally, by parsing for a module-level assignment to that one
+    name -- not by a marker comment. A comment-based exemption would be a
+    mechanism anyone could sprinkle over a real offending line, which is the
+    opposite of what a scan is for. This can only ever silence the single
+    statement that declares the patterns, in whichever file declares them.
+
+    The lines are replaced with blanks rather than removed so that any line
+    number this scan reports still refers to the real file.
+    """
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return text
+    lines = text.splitlines(keepends=True)
+    for node in tree.body:
+        targets = getattr(node, "targets", [])
+        if not isinstance(node, ast.Assign) or not targets:
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == _PATTERN_DEFINITION
+            for target in targets
+        ):
+            continue
+        for index in range(node.lineno - 1, min(node.end_lineno, len(lines))):
+            lines[index] = "\n"
+    return "".join(lines)
+
+
 def _scan_for_nondeterministic_authority_lookup(
     declaration: Sfir9Declaration, root: Path
 ) -> list[str]:
@@ -288,6 +326,10 @@ def _scan_for_nondeterministic_authority_lookup(
     shapes that have actually caused this class of failure before, and a
     component that finds a novel way to select an authority by recency will pass
     it. That limitation is recorded in the proof rather than left implied.
+
+    One statement is excluded: the assignment declaring the patterns themselves,
+    because this module is one of the ten components it scans and would otherwise
+    refuse itself for describing what it looks for.
     """
     findings: list[str] = []
     for name, relative in sorted(declaration.components.items()):
@@ -297,7 +339,7 @@ def _scan_for_nondeterministic_authority_lookup(
                 f"component {name!r} points at {relative}, which is not a file. A "
                 "component that cannot be read cannot be checked."
             )
-        text = path.read_text(encoding="utf-8")
+        text = _without_the_pattern_definition(path.read_text(encoding="utf-8"))
         for pattern, description in _NONDETERMINISTIC_LOOKUPS:
             if pattern.search(text):
                 findings.append(f"{name} ({relative}) uses {description}")
@@ -330,5 +372,13 @@ def proof(declaration: Sfir9Declaration, drift: DriftRecord) -> dict[str, Any]:
             "the lookup scan is static: it reads source text for the shapes that have "
             "caused this failure before and cannot prove that no component selects an "
             "authority by recency at runtime. It is a control, not a proof."
+        ),
+        "the_one_statement_the_scan_excludes": (
+            "the assignment that declares the patterns themselves. This gate is one "
+            "of the ten components it scans, and without that exclusion it would "
+            "refuse itself for naming the shapes it looks for. The exclusion is "
+            "located by parsing for that single module-level assignment, not by a "
+            "marker comment -- a comment-based exemption would be a mechanism anyone "
+            "could put on a real offending line."
         ),
     }
