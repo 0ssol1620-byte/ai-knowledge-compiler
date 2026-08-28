@@ -96,7 +96,7 @@ def test_two_lists_of_the_same_length_can_still_disagree(monkeypatch):
     Ten against ten, one name different: the closure would verify a component
     the gate never asked about, and skip one the gate requires.
     """
-    swapped = ("selection_rule_v2",) + tuple(gate.REQUIRED_COMPONENTS[1:])
+    swapped = ("selection_rule_v2", *gate.REQUIRED_COMPONENTS[1:])
     assert len(swapped) == len(gate.REQUIRED_COMPONENTS)
 
     monkeypatch.setattr(gate, "REQUIRED_COMPONENTS", swapped)
