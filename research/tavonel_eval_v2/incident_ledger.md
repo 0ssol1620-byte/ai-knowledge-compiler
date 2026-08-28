@@ -10318,3 +10318,77 @@ instrument against a number already in hand.
 sized for the frame's actual population, chosen and frozen before any census
 runs, would let all fifty roots finish. That is a different study with a
 different pre-registration, and proposing it is not the same as running it.
+
+## INC-V2-120 -- SFIR8 opens: GitHub charges per network hop, and that is measured
+
+2026-08-27. SFIR7 is terminal evidence by founder ruling and was not re-run.
+SFIR8 is a development / instrument calibration study and produces no capacity
+claim.
+
+**The question.** SFIR7's counter recorded at most 4,800 Git requests and GitHub
+charged 5,000. INC-V2-119 named redirect following as the likely cause and
+recorded it as a suspicion, because a roster deposited in January 2020 had nine
+of fifty addresses renamed by 2026 and `urllib` follows a 301 silently. The
+founder ruling required the cause to be instrumented and measured, not assumed.
+
+**The measurement.** GitHub returns `x-ratelimit-remaining` on every response,
+including the one at the end of a redirect chain, so the drop in that header
+across a single logical request *is* what the provider charged. No model of
+GitHub's accounting is needed and none is used. Seventy-two logical requests over
+eighteen repositories -- nine renamed, nine not -- across all four endpoint shapes
+the traversal uses:
+
+    unrenamed   36 logical   36 hops   36 charged   1.0 per request, 0 redirected
+    renamed     36 logical   72 hops   76 charged   2.0 modal,      36 redirected
+
+Thirty-three of the thirty-six renamed requests were exactly two hops and two
+charges. Three were charged more than their observed hops -- two on
+`webpack-contrib/css-loader` and one on `yannickcr/eslint-plugin-react` -- and
+those are recorded as observations rather than folded into the rule.
+
+**The instrument now keeps three counts apart**, because conflating two of them
+is what cost SFIR7 four runs:
+
+    logical_requests   what the traversal algorithm asked for
+    network_hops       HTTP responses actually received, redirects included
+    provider_charged   what the provider's own header says it deducted
+
+`provider_charged` is the only one comparable with a rate limit.
+`logical_requests` is what a traversal bound governs. A bound expressed in the
+first cannot protect a budget denominated in the third, however carefully it is
+derived -- which is the whole of SFIR7's operational failure in one sentence.
+
+**Applying the rule to SFIR7 does NOT close the gap, and the receipt says so.**
+Reading the terminal census only, and making no requests:
+
+    logical requests recorded              3,970
+    of those, on renamed addresses           790
+    predicted provider charge              4,760
+    provider limit                         5,000
+    residual unexplained                     240
+
+Per-hop charging accounts for a 790-request surcharge -- measured -- and leaves
+240 charges unattributed. Two candidates are recorded and **neither is adopted**:
+the run may have met a *secondary* rate limit with primary quota remaining, in
+which case the residual is not a charge at all; or the provider charges something
+the redirect handler cannot see, which the three outlier requests are consistent
+with. The reconciliation reports
+`PER_HOP_CHARGING_EXPLAINS_PART_OF_THE_DIVERGENCE` and refuses to say more.
+
+**It is settled prospectively rather than argued.** SFIR7's census is not re-run
+to resolve this. SFIR9's traversal will carry per-request charge accounting, so
+the next live run answers the question with data instead of arithmetic.
+
+**A note on using the mode rather than the mean.** The mean charge on renamed
+requests is 2.11, inflated by the three outliers. Reconciling on 2.11 would have
+predicted 4,848 and shrunk the visible residual to 152 -- absorbing an
+unexplained observation into the rule and making the remaining mystery look
+smaller than it is. The mode is what the provider does to a request of that kind;
+everything else belongs in the residual where someone has to account for it.
+
+**Two controls were missing and mutation found them**, both the
+untested-call-site shape this session keeps producing. Every hop test built a
+`RequestAccounting` by hand, so deleting the redirect hops from `fetch`'s
+assembly stayed green; and the mode/mean fixture happened to have
+`int(mean) == mode`, so swapping one for the other changed nothing. Fifteen
+mutations, zero survivors after repair.
