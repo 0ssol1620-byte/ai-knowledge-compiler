@@ -10523,3 +10523,87 @@ survivors. The one worth naming is T14, which gives the unseeded counter a
 plausible starting value instead of `None`: it makes every charge look
 measurable while making the first one wrong. Reporting unknown as unknown is
 what turned a silent one-unit error into a visible one.
+
+## INC-V2-123 -- the frontier goes on disk, and the bound stops being about repositories
+
+2026-08-28. SFIR8 sections C, D, E and F. Development instrument; no capacity claim.
+
+**What SFIR7 actually measured when it truncated twenty roots.** Not that those
+repositories were too large to count. Not that the request budget ran out. The
+frontier was a Python list with a cardinality bound of 256, and SFIR4 arrived at
+256 by looking at twenty smaller hand-picked repositories. `babel`, `rails` and
+`react` exceeded it, and the census recorded them among the measured. They were
+not measured; the instrument stopped.
+
+**A bound derived from repositories cannot tell "large" from "unmeasurable".**
+That is the defect in one line, and it is why the repair is not a larger number.
+Raising 256 to 1024 would fail on the next repository nobody looked at, and
+choosing 1024 *because* 256 failed is outcome-fitting. The frontier moved to
+SQLite instead: durable, ordered, deterministic, standard library. Entries come
+out in enqueue order and only in enqueue order, and the visited set is a table
+rather than a set in memory, so both survive the process that built them.
+
+**The remaining bound is bytes, and its derivation runs the other way.** A
+declared working-storage envelope -- a property of the machine the study may run
+on -- divided by the largest an entry can serialize to, built from Git's own
+maxima rather than estimated. Nothing in the derivation reads a repository. The
+disposition when it binds is `WORKING_STORAGE_BUDGET_EXHAUSTED`, an operational
+stop, never mixed in with roots that finished. And because the bound is on what
+is *held* rather than what has passed through, a traversal that keeps up with
+itself is never stopped by it: a control expands fifty trees under a two-entry
+ceiling.
+
+**Segments replace waiting.** The frozen 60s-per-retry / 180s-total fail-safe is
+unchanged, because widening an execution bound after a disappointing result is
+the one thing the protocol forbids. When the window resets further away than the
+fail-safe permits, the segment closes as `SEGMENT_COMPLETE_RATE_WINDOW` and the
+next window resumes from a checkpoint it can prove it inherited. Each segment
+names its predecessor's digest, so drop one, swap two, edit a field or arrive
+with a different roster and the chain refuses to open. Counters are checked for
+monotonicity across every boundary: work does not un-happen, and a counter that
+fell means the segment did not inherit the state it claims.
+
+**Four mutation findings worth keeping.**
+
+`F3` deleted the statement that marks an entry as dequeued, and the suite *hung*
+rather than failed -- the drain was `iter(f.dequeue, None)`, which reads
+beautifully and never terminates against a queue that re-serves its head. A
+control that hangs is indistinguishable from a broken runner, so it is not a
+control. The drain is bounded now and the bound is an assertion.
+
+`F9` deleted the UTF-8 encode from the entry size and survived, and the cause was
+upstream of the mutation: `json.dumps` escapes non-ASCII by default, so the
+string was already ASCII and the encode had nothing left to do. A number no
+control can distinguish from its own absence is not being checked. The size is
+now measured as SQLite actually stores it, which is also the honest unit for a
+storage budget.
+
+`F14` and `F15` were equivalent mutants -- a column DEFAULT that never applies,
+and AUTOINCREMENT, which is *stricter* about reuse rather than looser. Neither
+could express the defect it was named for, so both were replaced. The real F15,
+returning `pending_count()` as the ordinal, then survived on a coincidence:
+until something is dequeued, the count and the ordinal are the same number.
+Dequeue first and they diverge.
+
+`C10`, `C14` and `C16` survived for one reason in three costumes: each control
+asserted something adjacent to its claim rather than the claim. Two frontiers
+that differed in their ordinals could not detect an order-insensitive digest;
+checkpoints all built key-by-key in one order could not detect a non-canonical
+one; and looking for the word "unchanged" elsewhere in a sentence could not
+detect the clause that said the bound had been widened.
+
+**A defect in the harness itself.** The drivers never checked that the suite was
+green before mutating. A red baseline makes every mutation look killed, which is
+the most flattering possible failure mode. One run did exactly that and reported
+17/17 while a control was failing on unmutated code. All three drivers now
+refuse to start against a red baseline.
+
+**The redirect driver was also corrupting what it tested.** It round-tripped
+through `read_text`/`write_text`, which translates newlines on Windows, so every
+run silently rewrote the module as CRLF. That is how f79d50c came to commit CRLF
+blobs against a `.gitattributes` that says `eol=lf`, and why the EOL guard fired
+on the commit after it. Bytes in, bytes out now. A tool that modifies the
+artifact it is measuring was worth more than the mutation results it produced.
+
+Final: frontier 16/16, checkpoint 17/17, redirect 22/22, each against a verified
+green baseline. 108 controls across the four SFIR8 modules.
