@@ -30,7 +30,6 @@ for _root in (str(NS), str(NS / "tools"), str(NS / "acquisition")):
 
 import sfir9_protocol as protocol  # noqa: E402
 
-
 # ------------------------------------------------------------- capacity criterion
 
 
