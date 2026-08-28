@@ -9930,7 +9930,7 @@ The guard is sound over its own inputs and blind outside them, which is a smalle
 and more ordinary relative of INC-V2-036: not a guard whose failure is impossible,
 but a guard whose *scope* was set by the thing it was meant to constrain.
 
-## INC-V2-114 (addendum) -- the measured cost of the date refusal
+## INC-V2-114 -- update: the measured cost of the date refusal
 
 The regenerated projection audit over the full 10.17 GB member, 2026-08-27:
 
@@ -10034,6 +10034,30 @@ reproducible from the pinned digest by anyone who downloads the same deposit.
 The freeze chain binds eight modules, three receipts and the charter, plus the
 member digest recomputed from the file on disk. No census has started, no corpus
 is spent, no payload has been opened.
+
+## INC-V2-116
+
+**A number was allocated and never written, and the gap was closed by
+recording it rather than by renumbering.**
+
+The coherence check reads the ledger's headings and reports any gap in the
+declared numbering, on the reasoning that a missing number is usually a lost
+entry rather than a deliberate skip. It was right to report this one: nothing
+was ever written as INC-V2-116, and nothing anywhere in the repository or in
+git history refers to it.
+
+Renumbering 117 and everything after it would have closed the gap too, and
+would have been the wrong repair. Those numbers are cited from other ledger
+entries, from commit messages and from receipts; the identifiers are the only
+thing making those citations resolvable. A gap is cheap. A citation that
+silently now points at a different incident is not.
+
+So the number stays spent, and this entry is what it was spent on. The
+alternative repair -- teaching the checker to accept gaps -- was available and
+was not taken, because the check would then have stopped reporting the case it
+exists for.
+
+**Status:** closed. The gap is recorded, not reconciled away.
 
 ## INC-V2-117
 
