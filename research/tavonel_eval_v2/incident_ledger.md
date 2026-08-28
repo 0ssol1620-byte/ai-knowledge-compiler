@@ -10392,3 +10392,70 @@ untested-call-site shape this session keeps producing. Every hop test built a
 assembly stayed green; and the mode/mean fixture happened to have
 `int(mean) == mode`, so swapping one for the other changed nothing. Fifteen
 mutations, zero survivors after repair.
+
+## INC-V2-121 -- the guard that was never installed, and the receipt that said so anyway
+
+2026-08-28. SFIR8 sections A and B. Development instrument work; no capacity claim.
+
+**What was built.** A transport that follows redirects itself instead of letting
+`urllib` do it silently, writing one evidence atom per network hop --
+`logical_request_id`, `hop_index`, `requested_url`, `status`,
+`redirect_target_digest`, `response_body_sha256`, provider remaining before and
+after, the charge delta, and GitHub's request id. Credential material is never
+recorded: `_header_str` refuses by header *name*, so no value can reach an atom
+even if a response echoes one back. Alongside it, a reconciliation that compares
+three internal sums against `/rate_limit` read before and after, and reports the
+difference as `UNATTRIBUTED_PROVIDER_ACCOUNTING_DELTA` without classifying it.
+
+Canonical address resolution is the other half. A root's catalogue address is
+followed once, the live numeric repository id is checked against the id the
+roster froze, and only then is the live name adopted for the rest of that root's
+traversal. A redirect to a *different* numeric id is refused, not adopted. SFIR7
+spent 790 extra provider charges re-paying the redirect toll on every request of
+every renamed root; this pays it once, per root, after proving identity.
+
+**Twenty-seven controls passed on the first run. Two mutations survived.**
+
+`T1` turned automatic redirect following back on -- deleting the entire reason
+the module exists -- and the suite stayed green. Two independent reasons, and
+both are the same mistake wearing different clothes:
+
+  - The control tested `_NoRedirect.redirect_request` in isolation. That is a
+    unit test of a guard, not a test that the guard is installed. The stub
+    server replaced `build_opener` wholesale and never inspected its arguments,
+    so whether a handler was passed at all was invisible to every test.
+  - `totals()` reported `"automatic_redirect_following": False` as a **literal**.
+    The receipt asserted the property rather than reading it. Remove the handler
+    and the receipt goes on claiming manual following, in writing, to a reader
+    who has no way to check.
+
+The second is the worse of the two, and it is a new shape for this ledger. A
+false field in a receipt is not a missing test -- it is evidence that says
+something untrue. The repair makes the field a reading:
+`follows_redirects_automatically()` instantiates the handler the fetch path will
+actually use and asks it what it would do with a 301. Substitute a following
+handler and the receipt now says `True` about itself.
+
+`T10` appended a refused request to the completed-request list at the hop-bound
+refusal, inflating the logical count with a request that never resolved. The
+control for this existed but exercised the *other* refusal path -- the
+Location-less one. Two `raise` statements, one covered.
+
+**INC-V2-113, sixth recurrence.** Every time it has appeared in this study the
+shape has been identical: the guard has a test, the call site does not.
+Twice now the fix has had to be a control that inspects *how a collaborator was
+constructed* rather than what it returns. That is uncomfortable to write and it
+is the only thing that would have caught either of these.
+
+**After repair: nineteen mutations, zero survivors.** T1 was split into T1a
+(handler not installed) and T1b (reported policy hardcoded), because they fail
+independently and a single mutation would have let one hide behind the other.
+
+**What this does not settle.** The residual 240 from INC-V2-120 remains
+unattributed and is not attributed here. The reconciliation is instrumented but
+has not yet been run against a live isolated window, so
+`UNATTRIBUTED_PROVIDER_ACCOUNTING_DELTA` has no measured value yet. Credential
+exclusivity cannot currently be established, and that is recorded as a
+limitation on the measurement rather than argued away -- another process holding
+the same token produces arithmetic identical to a hidden provider-side charge,
+and this instrument cannot tell them apart.
