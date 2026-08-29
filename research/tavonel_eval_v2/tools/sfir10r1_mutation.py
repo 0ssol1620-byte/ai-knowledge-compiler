@@ -227,17 +227,20 @@ def audit() -> dict[str, Any]:
         path = NS / mutation.target
         original = path.read_bytes()
         text = original.decode("utf-8")
-        if text.count(mutation.old) != 1:
+        newline = "\r\n" if b"\r\n" in original else "\n"
+        old = mutation.old.replace("\n", newline)
+        new = mutation.new.replace("\n", newline)
+        if text.count(old) != 1:
             outcomes.append(
                 {
                     "label": mutation.label,
                     "target": mutation.target,
                     "outcome": "ANCHOR_NOT_UNIQUE",
-                    "anchor_count": text.count(mutation.old),
+                    "anchor_count": text.count(old),
                 }
             )
             continue
-        path.write_bytes(text.replace(mutation.old, mutation.new, 1).encode("utf-8"))
+        path.write_bytes(text.replace(old, new, 1).encode("utf-8"))
         try:
             try:
                 result = _pytest(first_fail=True)
