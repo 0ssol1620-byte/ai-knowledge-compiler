@@ -1,0 +1,14 @@
+{
+  "bytes": 139454,
+  "confirmatory_eligible": false,
+  "dataset_id": "opendatalab/OmniDocBench",
+  "dataset_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+  "evidence_class": "SPENT_DEVELOPMENT_ONLY",
+  "filename": "PPT_1001115_eng_page_003.png",
+  "fresh": false,
+  "historical_family": "OMNIDOCBENCH_2026_08_09_1651",
+  "schema": "tavonel.recovery.public_qualification_input.v1",
+  "selection_rule": "LEXICOGRAPHIC_FIRST_PUBLIC_IMAGE_NAME",
+  "sha256": "sha256:6b91b8be02fd82b9ad9e52310644bed7af1e6cce12e18cb1b58fc1d5b70975d1",
+  "url": "https://huggingface.co/datasets/opendatalab/OmniDocBench/resolve/aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec/images/PPT_1001115_eng_page_003.png?download=true"
+}
