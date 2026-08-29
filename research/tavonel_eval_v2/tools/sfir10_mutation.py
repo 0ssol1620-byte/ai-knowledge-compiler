@@ -102,10 +102,16 @@ MUTATIONS = (
     Mutation(
         "M11 report transport stop as frontier exhaustion",
         "tools/sfir10_runner.py",
-        "except transport_module.TransportStop:\n"
+        "except (transport_module.SegmentClose, transport_module.MeasurementUnproven):\n"
+        "            store.frontier.release(entry)\n"
+        "            raise\n"
+        "        except transport_module.TransportStop:\n"
         "            store.frontier.release(entry)\n"
         "            return STOPPED",
-        "except transport_module.TransportStop:\n"
+        "except (transport_module.SegmentClose, transport_module.MeasurementUnproven):\n"
+        "            store.frontier.release(entry)\n"
+        "            raise\n"
+        "        except transport_module.TransportStop:\n"
         "            store.frontier.release(entry)\n"
         "            return EXHAUSTED",
     ),
@@ -228,7 +234,7 @@ def audit() -> dict[str, Any]:
         "all_mutations_killed": not bad,
         "outcomes": outcomes,
         "what_this_establishes": (
-            "the selected synthetic controls detect these twelve declared weakenings; "
+            "the selected synthetic controls detect these thirteen declared weakenings; "
             "it does not prove absence of other defects"
         ),
     }
