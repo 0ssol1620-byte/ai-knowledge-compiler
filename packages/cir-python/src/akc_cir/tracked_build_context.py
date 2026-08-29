@@ -286,6 +286,7 @@ class TrackedBuildContext:
         self._restores: list[tuple[Any, str, Any]] = []
         self._import_recorder: _ImportRecorder | None = None
         self._previous_trace: Callable[..., Any] | None = None
+        self._previous_datetime_sink: Callable[[str], None] | None = None
 
     # -- public surface ----------------------------------------------------
 
@@ -440,11 +441,13 @@ class TrackedBuildContext:
         wrap(uuid, "uuid4")
 
         global _TRACKED_DATETIME_SINK
+        self._previous_datetime_sink = _TRACKED_DATETIME_SINK
         _TRACKED_DATETIME_SINK = sink
         import datetime as datetime_module
 
+        original_datetime = datetime_module.datetime
         datetime_module.datetime = _TracedDateTime  # type: ignore[misc]
-        self._record_restore(datetime_module, "datetime", datetime_module.datetime)
+        self._record_restore(datetime_module, "datetime", original_datetime)
 
     def _install_import_recorder(self) -> None:
         recorder = _ImportRecorder(self._record_module)
@@ -482,7 +485,8 @@ class TrackedBuildContext:
             self._import_recorder.active = False
             self._import_recorder = None
         global _TRACKED_DATETIME_SINK
-        _TRACKED_DATETIME_SINK = _noop_sink
+        _TRACKED_DATETIME_SINK = self._previous_datetime_sink or _noop_sink
+        self._previous_datetime_sink = None
         for namespace, attr, original in reversed(self._restores):
             setattr(namespace, attr, original)
         self._restores.clear()

@@ -8,7 +8,8 @@ from akc_cir.base import canonical_json
 from akc_product_core.api import create_product_core_app
 from akc_product_core.auth import sign_product_core_request
 from fastapi.testclient import TestClient
-from test_product_core_bridge import RELEASE, _document, _request
+
+from .test_product_core_bridge import RELEASE, _document, _request
 
 SECRET = b"foundation-product-core-test-secret-32-bytes-minimum"
 

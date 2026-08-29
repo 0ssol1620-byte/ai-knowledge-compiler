@@ -581,7 +581,7 @@ def test_the_identity_ledger_migration_owns_slot_0038_and_chains_from_the_head()
     # head; a later slot (0039_source_adapter_cursors) may legitimately parent
     # onto it. The lasting invariants are: exactly one head exists (asserted
     # inside the helper) and this revision is one of its ancestors.
-    from test_migration_graph import _graph
+    from .test_migration_graph import _graph
 
     _, parents = _graph()
     revision_on_chain: str | None = _current_head_revision()
@@ -593,7 +593,7 @@ def test_the_identity_ledger_migration_owns_slot_0038_and_chains_from_the_head()
 
 
 def _current_head_revision() -> str:
-    from test_migration_graph import REVISION, VERSIONS, _graph
+    from .test_migration_graph import REVISION, VERSIONS, _graph
 
     _, parents = _graph()
     parented = {parent for parent in parents.values() if parent is not None}
@@ -609,7 +609,7 @@ def _current_head_revision() -> str:
 
 def test_the_whole_migration_graph_stays_single_chained() -> None:
     """The guard the 0023 fork earned: my slot may not fork it again."""
-    from test_migration_graph import _graph
+    from .test_migration_graph import _graph
 
     files, parents = _graph()
     children: dict[object, list[str]] = {}
