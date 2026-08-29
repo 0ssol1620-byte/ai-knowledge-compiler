@@ -10866,3 +10866,76 @@ uncommitted bytes describes a file that may never exist again.
 **Status:** closed. The engine refuses the condition, and two controls cover it
 -- one that a named dirty target refuses, and one that a clean tree does not.
 
+## INC-V2-128 -- SFIR9 has no frozen rate-window orchestration, and the absence is load-bearing
+
+**The question, asked before any cohort repository was contacted.** What
+pre-roster frozen artifact specifies when the runner invokes
+`observe_rate_window`, how `remaining` / `reset_epoch` / `retry_after` are
+obtained, and when a segment must terminate?
+
+**Answer: none.** Established mechanically by
+`tools/sfir9_execution_authority_gap.py`, which parses call sites rather than
+grepping, because a mention in a docstring is not a caller and this finding
+turns on that difference.
+
+    observe_rate_window production callers   []
+    observe_rate_window test callers         7
+    plan_wait production callers             only observe_rate_window itself
+    HopAtom carries reset epoch              False
+    HopAtom carries retry-after              False
+    upstream reads x-ratelimit-remaining     True
+    upstream reads x-ratelimit-reset         False
+    upstream reads Retry-After               False
+    declared_surface observed_from           all three
+
+So the decision function has no caller; two of its three inputs cannot be
+carried by the frozen hop record and are never read from response headers by
+the frozen upstream; and the transport's own declared surface names all three as
+observed. The declaration is frozen. The acquisition is absent.
+
+**Frozen constants are not a frozen control flow.** `RETRY_WAIT_SECONDS`,
+`TOTAL_WAIT_SECONDS` and `SEGMENT_COMPLETE_RATE_WINDOW` are all frozen and all
+three describe what happens once the decision function has been called with
+three observed values. None says when to call it. SFIR8's equivalence controls
+segment at budgets of 1, 3 and 4 precisely to show that where a segment ends
+does not change candidate identities, order, dispositions, the visited set or
+frontier exhaustion -- they prove segmentation is scientifically neutral given
+eventual completion, and specify no production schedule at all.
+
+**Why the gap is not cosmetic.** With no caller, nothing closes a segment on a
+rate window. A 403 returns through the frozen upstream as an ordinary record
+with a non-dict body; `_expand` reads that as an empty tree; the frontier
+drains; and the root is recorded `FRONTIER_EXHAUSTED`, which the frozen scorer
+defines as a count that is exact.
+
+That is SFIR7 restated exactly -- twenty of fifty roots recorded as measured
+when the instrument had merely stopped -- and it is the single failure SFIR9
+was built to eliminate. Inventing the orchestration now, with the roster
+visible, would mean choosing when the study stops looking after seeing what it
+would be looking at.
+
+**Ruling applied.** SFIR9 stops as a non-sealable prospective chain. It is not
+repaired after roster opening. The instrument freeze, the cohort-input binding
+and the sealed fifty-root roster are all preserved unchanged, and no cohort
+repository has been contacted.
+
+**What was not done.** No polling schedule was invented, no segment budget
+chosen, no checkpoint cadence selected. `sfir9_census_authority.py` was written
+and then removed unissued: an execution authority that binds a driver which must
+not exist is an invitation to run one.
+
+**An evidentiary correction worth keeping.** That authority draft marked
+`cohort_network_contact_before_driver_freeze = false` as OBSERVED, justified by
+the absence of census and frontier artifacts. Artifact absence cannot establish
+that no request whatsoever ever occurred -- a manual metadata GET leaves no
+frontier database. The observable facts are narrower and should be recorded
+separately from the stronger claim: no census artifact exists, no
+frontier-or-segment artifact exists, no capacity or score receipt exists. The
+universal statement rests on operator knowledge and is ASSERTED. Evidence must
+not be stronger than its source, which is this paper's own thesis pointed at its
+own receipts.
+
+**Status:** closed as a finding. SFIR9 remains a valid frozen instrument for a
+future protocol whose orchestration is frozen before selection; what it cannot
+be is this study's sealable capacity result.
+

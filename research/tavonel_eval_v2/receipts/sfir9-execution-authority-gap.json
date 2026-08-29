@@ -1,0 +1,88 @@
+{
+  "conclusion": {
+    "a_frozen_rate_window_orchestration_exists": false,
+    "basis": "OBSERVED",
+    "how": "observe_rate_window has no production caller; plan_wait is reachable only through it; two of plan_wait's three inputs cannot be carried by the frozen hop record and are never read from response headers by the frozen upstream. The surface declares all three as observed, so the declaration is frozen and the acquisition is absent."
+  },
+  "consequence_if_it_were_invented_now": "with no caller, nothing closes a segment on a rate window. A 403 returns through the frozen upstream as an ordinary record with a non-dict body; _expand reads that as an empty tree; the frontier drains; and the root is recorded FRONTIER_EXHAUSTED, which the frozen scorer defines as a count that is exact. That is SFIR7's failure restated: an instrument that stopped, reported as a measurement, which is the failure SFIR9 exists to eliminate.",
+  "findings": {
+    "declared_surface": {
+      "basis": "OBSERVED",
+      "how": "sfir9_transport.declared_surface() as it stands frozen",
+      "value": {
+        "declared_observed_from": [
+          "x-ratelimit-remaining",
+          "x-ratelimit-reset",
+          "retry-after"
+        ],
+        "declared_polling_permitted": false,
+        "declared_segment_close_condition": "SEGMENT_COMPLETE_RATE_WINDOW"
+      }
+    },
+    "hop_evidence": {
+      "basis": "OBSERVED",
+      "how": "dataclass fields of the frozen HopAtom",
+      "value": {
+        "carries_provider_remaining": true,
+        "carries_reset_epoch": false,
+        "carries_retry_after": false,
+        "hop_atom_fields": [
+          "logical_request_id",
+          "hop_index",
+          "requested_url",
+          "status",
+          "redirect_target_digest",
+          "response_body_sha256",
+          "provider_remaining_before",
+          "provider_remaining_after",
+          "provider_charge_delta",
+          "provider_request_id"
+        ]
+      }
+    },
+    "observe_rate_window_production_callers": {
+      "basis": "OBSERVED",
+      "how": "every call site in tools/, parsed rather than grepped",
+      "value": []
+    },
+    "observe_rate_window_test_callers": {
+      "basis": "OBSERVED",
+      "how": "a function exercised only by its own controls has no orchestration behind it",
+      "value": [
+        "test_sfir9_transport.py:879 in test_a_closed_segment_issues_no_further_request()",
+        "test_sfir9_transport.py:891 in test_a_closed_segment_also_refuses_a_new_attestation()",
+        "test_sfir9_transport.py:900 in test_the_decision_is_computed_from_headers_never_from_a_probe()",
+        "test_sfir9_transport.py:907 in test_the_wait_is_actually_slept_not_merely_announced()",
+        "test_sfir9_transport.py:914 in test_a_continue_decision_sleeps_for_nothing()",
+        "test_sfir9_transport.py:1026 in test_a_segment_closed_by_the_rate_window_says_so_in_its_handoff()",
+        "test_sfir9_transport.py:868 in test_cumulative_waiting_never_exceeds_the_total_fail_safe()"
+      ]
+    },
+    "plan_wait_production_callers": {
+      "basis": "OBSERVED",
+      "how": "the wait decision is reachable only through observe_rate_window",
+      "value": [
+        "sfir9_transport.py:745 in observe_rate_window()"
+      ]
+    },
+    "rate_window_headers_read_by_the_frozen_upstream": {
+      "basis": "OBSERVED",
+      "how": "byte search of the frozen sfir8_transport source",
+      "value": {
+        "retry_after": false,
+        "x_ratelimit_remaining": true,
+        "x_ratelimit_reset": false
+      }
+    }
+  },
+  "gap_digest": "sha256:9400ccb1cbb93c7af76cc302b7911a0590eab8816cff6ff92796056c92ef3d3a",
+  "question": "what pre-roster frozen artifact specifies when the runner invokes observe_rate_window, how remaining/reset_epoch/retry_after are obtained, and when a segment must terminate?",
+  "schema": "tavonel.sfir9.execution_authority_gap.v1",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+  "what_this_does_not_establish": {
+    "basis": "ASSERTED",
+    "value": "that SFIR9's frozen components are wrong, or that a future protocol cannot use them. Everything frozen here remains valid for a study whose orchestration is frozen before selection."
+  },
+  "what_was_not_done": "no polling schedule was invented, no segment budget was chosen, no checkpoint cadence was selected, and no census was run. The instrument freeze, the cohort-input binding and the sealed roster are unchanged.",
+  "why_this_is_not_a_seam": "a seam is two frozen components whose shapes do not meet, bridged by a representation-only adapter that decides nothing. This is a decision nobody has made: when to look, what to look at, and when to stop. Choosing it now would be choosing it with the roster visible."
+}
