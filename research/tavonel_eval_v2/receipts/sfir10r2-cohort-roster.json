@@ -1,0 +1,395 @@
+{
+  "accounting": {
+    "eligibility_dispositions": {
+      "ELIGIBLE": 65174,
+      "REJECTED_created_utc_on_or_before": 2225592,
+      "REJECTED_host_eq": 25576,
+      "REJECTED_last_activity_utc_on_or_after": 3038235,
+      "REJECTED_spdx_license_id_in": 31164781
+    },
+    "eligible_in_partition": 1010,
+    "rows_read": 37702060,
+    "unreadable": {
+      "NAME_WITH_OWNER_NOT_OWNER_SLASH_REPO": 39401,
+      "NO_LAST_ACTIVITY_TIMESTAMP": 1143301
+    }
+  },
+  "entries": [
+    {
+      "catalogue_address": "guard/guard",
+      "host_uuid": "812610",
+      "record_id": "41079",
+      "selection_ordinal": 1,
+      "source_rank": 22
+    },
+    {
+      "catalogue_address": "less/less.js",
+      "host_uuid": "527644",
+      "record_id": "703",
+      "selection_ordinal": 2,
+      "source_rank": 22
+    },
+    {
+      "catalogue_address": "gulpjs/gulp-util",
+      "host_uuid": "11214932",
+      "record_id": "135854",
+      "selection_ordinal": 3,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "avoidwork/filesize.js",
+      "host_uuid": "3602669",
+      "record_id": "10174",
+      "selection_ordinal": 4,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "cbeust/testng",
+      "host_uuid": "745749",
+      "record_id": "167706",
+      "selection_ordinal": 5,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "gruntjs/grunt-contrib-compress",
+      "host_uuid": "5722848",
+      "record_id": "19664",
+      "selection_ordinal": 6,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "Behat/Behat",
+      "host_uuid": "1367484",
+      "record_id": "24117",
+      "selection_ordinal": 7,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "symfony/phpunit-bridge",
+      "host_uuid": "31119738",
+      "record_id": "279727",
+      "selection_ordinal": 8,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "inversify/InversifyJS",
+      "host_uuid": "33568214",
+      "record_id": "386119",
+      "selection_ordinal": 9,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "google/gson",
+      "host_uuid": "32538871",
+      "record_id": "492010",
+      "selection_ordinal": 10,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "d3/d3-scale",
+      "host_uuid": "37559299",
+      "record_id": "2683459",
+      "selection_ordinal": 11,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "ai/autoprefixer-rails",
+      "host_uuid": "9228993",
+      "record_id": "278343",
+      "selection_ordinal": 12,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "web-animations/web-animations-js",
+      "host_uuid": "26568741",
+      "record_id": "346309",
+      "selection_ordinal": 13,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "webpack/webpack-sources",
+      "host_uuid": "48954523",
+      "record_id": "4324490",
+      "selection_ordinal": 14,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "puppetlabs/puppet",
+      "host_uuid": "910744",
+      "record_id": "44370",
+      "selection_ordinal": 15,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "symfony/psr-http-message-bridge",
+      "host_uuid": "36024079",
+      "record_id": "482736",
+      "selection_ordinal": 16,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "xojs/eslint-config-xo",
+      "host_uuid": "40052921",
+      "record_id": "947177",
+      "selection_ordinal": 17,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "vohof/gulp-livereload",
+      "host_uuid": "14869593",
+      "record_id": "105151",
+      "selection_ordinal": 18,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "palantir/tslint-react",
+      "host_uuid": "61270075",
+      "record_id": "11042398",
+      "selection_ordinal": 19,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "koajs/bodyparser",
+      "host_uuid": "16918137",
+      "record_id": "111236",
+      "selection_ordinal": 20,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "livereload/livereload-js",
+      "host_uuid": "2484579",
+      "record_id": "1365",
+      "selection_ordinal": 21,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "tediousjs/tedious",
+      "host_uuid": "1719690",
+      "record_id": "156586",
+      "selection_ordinal": 22,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "postcss/sugarss",
+      "host_uuid": "49004761",
+      "record_id": "4344079",
+      "selection_ordinal": 23,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "yiminghe/css-animation",
+      "host_uuid": "36866202",
+      "record_id": "7177516",
+      "selection_ordinal": 24,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "hughsk/flat",
+      "host_uuid": "6093469",
+      "record_id": "99919",
+      "selection_ordinal": 25,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "swimlane/ngx-datatable",
+      "host_uuid": "60117259",
+      "record_id": "10624698",
+      "selection_ordinal": 26,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "erikdubbelboer/node-sleep",
+      "host_uuid": "3627029",
+      "record_id": "152241",
+      "selection_ordinal": 27,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "indutny/asn1.js",
+      "host_uuid": "14838554",
+      "record_id": "185492",
+      "selection_ordinal": 28,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "DevExpress/testcafe",
+      "host_uuid": "34262857",
+      "record_id": "3136599",
+      "selection_ordinal": 29,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "google/closure-compiler-npm",
+      "host_uuid": "46283752",
+      "record_id": "3304966",
+      "selection_ordinal": 30,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "IdentityModel/IdentityModel",
+      "host_uuid": "46938589",
+      "record_id": "3576266",
+      "selection_ordinal": 31,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "reactiveui/Akavache",
+      "host_uuid": "2896461",
+      "record_id": "36847178",
+      "selection_ordinal": 32,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "mizzy/serverspec",
+      "host_uuid": "8981131",
+      "record_id": "396402",
+      "selection_ordinal": 33,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "uber/deck.gl",
+      "host_uuid": "48030204",
+      "record_id": "4053933",
+      "selection_ordinal": 34,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "infinispan/infinispan",
+      "host_uuid": "1050944",
+      "record_id": "48854",
+      "selection_ordinal": 35,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "dimsemenov/PhotoSwipe",
+      "host_uuid": "1580851",
+      "record_id": "49593",
+      "selection_ordinal": 36,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "spryker/code-sniffer",
+      "host_uuid": "48367920",
+      "record_id": "5018181",
+      "selection_ordinal": 37,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "zendframework/zend-log",
+      "host_uuid": "35280812",
+      "record_id": "610581",
+      "selection_ordinal": 38,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "nodeca/probe-image-size",
+      "host_uuid": "42185437",
+      "record_id": "1291673",
+      "selection_ordinal": 39,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "webpack-contrib/extract-text-webpack-plugin",
+      "host_uuid": "16297741",
+      "record_id": "130247",
+      "selection_ordinal": 40,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "sindresorhus/xdg-basedir",
+      "host_uuid": "24845067",
+      "record_id": "163308",
+      "selection_ordinal": 41,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "Mermade/oas-kit",
+      "host_uuid": "71464935",
+      "record_id": "17428870",
+      "selection_ordinal": 42,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "mapbox/pixelmatch",
+      "host_uuid": "44182157",
+      "record_id": "2676671",
+      "selection_ordinal": 43,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "lebab/lebab",
+      "host_uuid": "30953633",
+      "record_id": "341861",
+      "selection_ordinal": 44,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "angular/clang-format",
+      "host_uuid": "32405165",
+      "record_id": "401622",
+      "selection_ordinal": 45,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "rollbar/rollbar-gem",
+      "host_uuid": "5556347",
+      "record_id": "45289",
+      "selection_ordinal": 46,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "Justineo/vue-awesome",
+      "host_uuid": "55218353",
+      "record_id": "7494826",
+      "selection_ordinal": 47,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "jossef/material-design-icons-iconfont",
+      "host_uuid": "39010817",
+      "record_id": "919000",
+      "selection_ordinal": 48,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "IonicaBizau/scrape-it",
+      "host_uuid": "57284932",
+      "record_id": "9648397",
+      "selection_ordinal": 49,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "maximkoretskiy/postcss-initial",
+      "host_uuid": "41269230",
+      "record_id": "977135",
+      "selection_ordinal": 50,
+      "source_rank": 15
+    }
+  ],
+  "entry_count": 50,
+  "freeze_digest": "sha256:14b964dcfe592a4a901126df02739da9a1bc2621b211d166bb4877b884b47c6a",
+  "input_binding_digest": "sha256:68ab4837e602bc69b9625ec14afe5973e3a571d7c739abe714a2740af7c172e5",
+  "n": 50,
+  "partition": {
+    "count": 64,
+    "index": 2,
+    "predecessor_index": 1,
+    "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2"
+  },
+  "protocol_digest": "sha256:5dcdb0f9767970ef9c1e17ed8895de8fafa69144dcfc17f573c34db22436cfe5",
+  "roster_seal": "sha256:a88bd2f96e480175e5e95a3098f6e96e0e864b7c2d2e7079d5f7ebb47c860881",
+  "schema": "tavonel.sfir10r2.cohort_roster.v1",
+  "selection_digest": "sha256:c412f27d3710298765ddf2944b2af6f95eae884d6b0a72ca818374f31159eb8d",
+  "spent_exclusion": {
+    "count": 2,
+    "host_uuids": [
+      "23083156",
+      "2504175"
+    ],
+    "reason": "SPENT_DEVELOPMENT_ROOT",
+    "why": "these identities have been looked at. That is a property of this study's history, not of the repository, and it is the only reason any identity is excluded."
+  },
+  "state": "SEALED",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R2",
+  "what_this_does_not_establish": "capacity, C, Q, or any model/compiler endpoint"
+}
