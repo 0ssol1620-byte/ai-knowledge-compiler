@@ -1,10 +1,10 @@
 {
   "all_baselines_green": true,
-  "baselines_digest": "sha256:2dce5d959c3032b3a1c9b90eef9529819df56296992d2bedff3063f0e406c527",
+  "baselines_digest": "sha256:9ee888de8081f37086fc0731103bc62369d27f9562209abccfc872a2b61c1057",
   "components_run": 13,
   "components_with_no_survivor": 13,
-  "mutations_declared": 426,
-  "mutations_killed": 426,
+  "mutations_declared": 436,
+  "mutations_killed": 436,
   "results": [
     {
       "baseline_tests_selected": 29,
@@ -1703,10 +1703,10 @@
       "target": "tools/sfir9_legacy_taxonomy.py"
     },
     {
-      "baseline_tests_selected": 41,
+      "baseline_tests_selected": 53,
       "component": "freeze_gate",
-      "mutations_declared": 35,
-      "mutations_killed": 35,
+      "mutations_declared": 45,
+      "mutations_killed": 45,
       "outcomes": [
         {
           "mutation": "F1 the gate opens regardless of the conditions",
@@ -1781,6 +1781,10 @@
           "outcome": "KILLED"
         },
         {
+          "mutation": "F18a a passing suite is reported as failing",
+          "outcome": "KILLED"
+        },
+        {
           "mutation": "F19 a suite that collected nothing passes",
           "outcome": "KILLED"
         },
@@ -1806,6 +1810,42 @@
         },
         {
           "mutation": "F23c the repository root is derived one level too shallow",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23d the selection goes back to a -k filter over the whole tests tree",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23e a suite that should exist but is absent is skipped rather than reported",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23f the selection ignores the closure's component list",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23g the support suites are dropped from the selection",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23h the seam is dropped from the support suites",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18b a failing suite reports only the count, not the tests",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18d collection errors are not named",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18e the overflow count is dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18f every failure is named, however many there are",
           "outcome": "KILLED"
         },
         {

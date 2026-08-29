@@ -2,21 +2,21 @@
   "conditions": [
     {
       "condition": "sfir8_equivalence_j1_j2",
-      "detail": "47 passed in 2.62s",
+      "detail": "47 passed in 2.71s",
       "establishes": "segmented traversal equals uninterrupted traversal, and a canonical address equals the redirect-followed one",
       "how": "evaluated in this run",
       "state": "PASS"
     },
     {
       "condition": "component_suites",
-      "detail": "736 passed, 3844 deselected in 31.36s",
+      "detail": "748 passed in 38.95s",
       "establishes": "every component the freeze binds passes its own controls",
       "how": "evaluated in this run",
       "state": "PASS"
     },
     {
       "condition": "seam_verification",
-      "detail": "13 passed in 0.37s",
+      "detail": "13 passed in 0.41s",
       "establishes": "catalogue parser to live transport, bound at every stage, with the selected set fixed by an external oracle",
       "how": "evaluated in this run",
       "state": "PASS"
@@ -30,7 +30,7 @@
     },
     {
       "condition": "historical_isolation",
-      "detail": "53 passed in 1.07s",
+      "detail": "53 passed in 1.23s",
       "establishes": "the prospective chain depends on no historical authority",
       "how": "evaluated in this run",
       "state": "PASS"
@@ -66,10 +66,10 @@
   ],
   "conditions_checked": 9,
   "conditions_passed": 9,
-  "gate_digest": "sha256:e74440086ffd28160f0720501b617bb4ab2e0ea33b141ecd2e78deb2366260fa",
+  "gate_digest": "sha256:8418c6afaba4db7c78bec5db8333356a7836281c94ab1125f803d51e456c0119",
   "gate_opens": true,
   "schema": "tavonel.sfir9.freeze_gate.v1",
   "unproven_does_not_pass": "a condition nobody could measure and a condition that failed are different problems. Neither opens the gate.",
   "what_this_gate_does_not_establish": "that any threshold here is calibrated, or that the instrument measures what the protocol says it measures. It establishes that the instrument is the one that was committed, and that nothing downstream of the cohort has seen the cohort.",
-  "why_the_seam_has_its_own_condition": "`component_suites` already collects the seam tests -- `-k sfir9` matches their path. The narrow condition is not redundant with the broad one: if the seam file were deleted, the broad condition would still pass with fewer tests, while the narrow one reports UNPROVEN because its selection collected nothing. A suite that vanished and a suite that passed look identical to a count of failures."
+  "why_the_seam_has_its_own_condition": "`component_suites` runs the seam file too. The narrow condition is not redundant with the broad one: a suite that vanished and a suite that passed look identical to a count of failures, and asking about the seam by name makes its absence say UNPROVEN rather than nothing."
 }
