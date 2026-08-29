@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import UTC, datetime
 
 import pytest
@@ -131,6 +132,12 @@ def test_initial_compile_emits_region_bound_candidate_without_promoting() -> Non
     assert all(
         file.size_bytes == len(file.content.encode()) for file in response.candidate.package.files
     )
+    chunk_file = next(
+        file for file in response.candidate.package.files if file.path == "rag/chunks.jsonl"
+    )
+    chunks = [json.loads(line) for line in chunk_file.content.splitlines()]
+    assert chunks[0]["bbox1000"] == [100, 120, 900, 240]
+    assert chunks[0]["authority"] == "regulatory_filing"
 
 
 def test_incremental_compile_abstains_on_ambiguous_identity_and_proves_equivalence() -> None:

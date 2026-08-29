@@ -785,6 +785,13 @@ class ProductCoreCompiler:
             + "\n"
             for item in canonical_documents
         )
+        evidence_refs = {
+            item["payload"]["evidenceId"]: item["sourceRefs"][0]
+            for item in objects
+            if item["kind"] == "evidence"
+            and item["sourceRefs"]
+            and isinstance(item["payload"].get("evidenceId"), str)
+        }
         chunk_jsonl = "".join(
             canonical_json(
                 {
@@ -795,6 +802,8 @@ class ProductCoreCompiler:
                     "sourceVersionId": unit.source_version_id,
                     "evidenceId": unit.evidence_id,
                     "pageNumber1": unit.page_number1,
+                    "bbox1000": evidence_refs[unit.evidence_id].get("bbox1000"),
+                    "authority": unit.authority,
                 }
             )
             + "\n"
