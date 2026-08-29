@@ -66,7 +66,7 @@ FROZEN_COMPONENTS = (
 #: Components added after the instrument was frozen. Each records its own
 #: baseline in its own receipt, because regenerating the frozen one to include
 #: it would change bytes the freeze points at.
-POST_FREEZE_COMPONENTS = ("cohort_input",)
+POST_FREEZE_COMPONENTS = ("cohort_input", "generate_roster")
 
 COMPONENTS = FROZEN_COMPONENTS + POST_FREEZE_COMPONENTS
 
