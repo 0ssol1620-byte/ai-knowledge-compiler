@@ -1,16 +1,16 @@
 {
   "all_baselines_green": true,
-  "baselines_digest": "sha256:87b5f745cae01649f959d021d81f479681b3965f0c92f52c1b3e6f1c596f5e0a",
+  "baselines_digest": "sha256:064102779f90894691c5033a76057f600dddb7d0c445b655a5cb9d70e0f8a9ef",
   "components_run": 1,
   "components_with_no_survivor": 1,
-  "mutations_declared": 40,
-  "mutations_killed": 40,
+  "mutations_declared": 43,
+  "mutations_killed": 43,
   "results": [
     {
-      "baseline_tests_selected": 30,
+      "baseline_tests_selected": 35,
       "component": "cohort_input",
-      "mutations_declared": 40,
-      "mutations_killed": 40,
+      "mutations_declared": 43,
+      "mutations_killed": 43,
       "outcomes": [
         {
           "mutation": "C1 an absent member is bound anyway",
@@ -89,7 +89,19 @@
           "outcome": "KILLED"
         },
         {
-          "mutation": "C20 record_id becomes an eligibility field",
+          "mutation": "C20 the identity fields become available to a predicate",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20a the allowed field set is restated instead of read",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20b the key that actually filters stops being treated as identity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20c the eligibility fields are not recorded",
           "outcome": "KILLED"
         },
         {

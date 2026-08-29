@@ -1,5 +1,5 @@
 {
-  "binding_digest": "sha256:0a0c966009c93b28c07106029549363233cab4837ae69952b945a8ada9fbacaf",
+  "binding_digest": "sha256:6f88ffa431d6bba14047d97bb09e1e094b0101c58aab46017498ada9d4c65d58",
   "catalogue": {
     "archive_bytes": 24890021718,
     "archive_filename": "libraries-1.6.0-2020-01-12.tar.gz",
@@ -10,6 +10,16 @@
     "member_sha256": "sha256:148c71eb47f5990f1b5270e681df3e3e2ae34c2586ea8f9fabbe2b45a115fcfb",
     "zenodo_doi": "10.5281/zenodo.3626071"
   },
+  "eligibility_fields": [
+    "catalog_rank_value",
+    "created_utc",
+    "host",
+    "last_activity_utc",
+    "name",
+    "namespace",
+    "primary_language",
+    "spdx_license_id"
+  ],
   "inherited_frame": {
     "composed_against_snapshot": "sha256:148c71eb47f5990f1b5270e681df3e3e2ae34c2586ea8f9fabbe2b45a115fcfb",
     "independence": {
@@ -74,6 +84,22 @@
       "relative_path": "research/tavonel_eval_v2/tools/sfir7_catalog_parser.py",
       "sha256": "sha256:b67f8271cc414fa248a953b60ca845f8f58b71c7e60dcbeaac679981df3975f8",
       "working_tree_bytes": 11818
+    },
+    {
+      "git_blob_id": "3fcaa86e6f22cd3b910df06d1624543d259b18a2",
+      "import_origin": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\tools\\sfir7_projection.py",
+      "module": "sfir7_projection",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_projection.py",
+      "sha256": "sha256:7e6435633b7354742e43085ff02d505c3ad224f579571c9f83c2375e50b993ce",
+      "working_tree_bytes": 11233
+    },
+    {
+      "git_blob_id": "5f873d4514e53e1e3606740f015863b82a3be931",
+      "import_origin": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\tools\\sfir7_frame.py",
+      "module": "sfir7_frame",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_frame.py",
+      "sha256": "sha256:03b6f16e5b80528483bb96878b2c8eb7e814ffe95d82a4aa0a2aadf13b6cf37b",
+      "working_tree_bytes": 34005
     },
     {
       "git_blob_id": "c166d1a5dd42049cb290e1bca360403cf560daeb",
