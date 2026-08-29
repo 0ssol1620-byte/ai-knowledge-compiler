@@ -442,3 +442,131 @@ def test_the_namespace_root_would_not_have_worked():
 
     with pytest.raises(closure.ClosureRefused):
         closure.closure(repository_root=NS)
+
+
+# ------------------------------------------- the suite selection is derived
+#
+# `pytest tests -k sfir9` was the first selection. Collection happens before
+# `-k` filtering, so an import error anywhere in the tests directory failed this
+# condition -- and did, in the first isolated checkout, over four GPU-successor
+# modules with nothing to do with the instrument.
+
+
+def test_every_bound_component_has_its_suite_in_the_selection():
+    import sfir9_execution_closure as closure
+
+    names = fg.component_suite_paths(NS)
+    for component in closure.COMPONENTS:
+        assert f"test_{component.module}.py" in names, component.name
+
+
+def test_no_sfir9_suite_on_disk_is_left_out_of_the_gate():
+    """A new suite cannot be added and quietly never run by the gate."""
+    on_disk = {path.name for path in (NS / "tests").glob("test_sfir9_*.py")}
+    assert on_disk - set(fg.component_suite_paths(NS)) == set()
+
+
+def test_the_selection_is_derived_from_the_closure_rather_than_listed():
+    """So a component gaining a suite cannot leave the gate behind."""
+    import sfir9_execution_closure as closure
+
+    names = fg.component_suite_paths(NS)
+    original = closure.COMPONENTS
+    try:
+        closure.COMPONENTS = original[:-1]
+        assert len(fg.component_suite_paths(NS)) < len(names)
+    finally:
+        closure.COMPONENTS = original
+
+
+def test_a_missing_suite_is_unproven_rather_than_a_smaller_run(tmp_path):
+    """The failure mode the `-k` selection had: fewer tests still reads green."""
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tools").mkdir()
+    outcome = fg.check_component_suites(tmp_path)
+    assert outcome.state == fg.UNPROVEN
+    assert "absent" in outcome.detail
+
+
+def test_a_failing_component_suite_closes_the_gate(tmp_path, monkeypatch):
+    """Driven in a sandbox, never against this repository.
+
+    The selection includes this file, so a control that ran it here would spawn
+    a pytest that ran this file, which would spawn another. The gate's own run
+    is what establishes the real suites pass; it is recorded in the receipt.
+    """
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tests/test_a.py").write_text(
+        "def test_a():\n    assert False\n", "utf-8"
+    )
+    monkeypatch.setattr(fg, "component_suite_paths", lambda _root: ["test_a.py"])
+    assert fg.check_component_suites(tmp_path).state == fg.FAIL
+
+
+def test_a_passing_component_suite_is_a_pass(tmp_path, monkeypatch):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tests/test_a.py").write_text(
+        "def test_a():\n    assert True\n", "utf-8"
+    )
+    monkeypatch.setattr(fg, "component_suite_paths", lambda _root: ["test_a.py"])
+    assert fg.check_component_suites(tmp_path).state == fg.PASS
+
+
+def test_an_import_error_in_an_unrelated_test_module_no_longer_reaches_this_gate():
+    """The whole point of the narrowing: the selection names files, not a filter."""
+    names = fg.component_suite_paths(NS)
+    assert all(name.startswith("test_sfir9_") for name in names)
+    assert "-k" not in names
+
+
+# ------------------------------------------------- a failing suite names names
+#
+# One transient red in `component_suites` recorded "1 failed, 742 passed" and
+# nothing else, so there was nothing to act on and nothing to attribute it to.
+
+
+def test_a_failing_suite_names_the_tests_that_failed(suite_tree):
+    outcome = fg._run_suite(suite_tree, ["tests/test_bad.py"])
+    assert outcome.state == fg.FAIL
+    assert "test_bad" in outcome.detail
+    assert "FAILED" in outcome.detail
+
+
+def test_a_passing_suite_does_not_carry_a_failure_list(suite_tree):
+    outcome = fg._run_suite(suite_tree, ["tests/test_ok.py"])
+    assert outcome.state == fg.PASS
+    assert "FAILED" not in outcome.detail
+
+
+def test_a_long_failure_list_is_summarised_rather_than_dumped(tmp_path, monkeypatch):
+    """The detail goes in a receipt, so it cannot be unbounded.
+
+    The cap is monkeypatched rather than read: a fixture sized from the constant
+    under test grows with it, and the first version of this control generated ten
+    thousand test functions when the constant was mutated upward. A control whose
+    cost scales with the value it checks stops being able to check it.
+    """
+    monkeypatch.setattr(fg, "MAX_NAMED_FAILURES", 3)
+    (tmp_path / "tests").mkdir()
+    body = "".join(f"def test_n{i}():\n    assert False\n" for i in range(8))
+    (tmp_path / "tests/test_many.py").write_text(body, encoding="utf-8")
+    outcome = fg._run_suite(tmp_path, ["tests/test_many.py"])
+    assert outcome.state == fg.FAIL
+    assert outcome.detail.count("FAILED") == 3
+    assert "and 5 more" in outcome.detail
+
+
+def test_the_named_failure_cap_stays_small_enough_for_a_receipt():
+    """Pinned separately, because the control above monkeypatches it."""
+    assert 1 <= fg.MAX_NAMED_FAILURES <= 25
+
+
+def test_a_collection_error_is_named_too(tmp_path):
+    """An import error reports ERROR, not FAILED, and is just as actionable."""
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests/test_broken.py").write_text("import nonexistent_module\n", "utf-8")
+    outcome = fg._run_suite(tmp_path, ["tests/test_broken.py"])
+    assert outcome.state == fg.FAIL
+    assert "ERROR" in outcome.detail

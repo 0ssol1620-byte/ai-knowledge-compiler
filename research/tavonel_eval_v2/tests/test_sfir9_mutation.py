@@ -62,7 +62,11 @@ def table(**overrides):
 
 
 def _run(table_, root):
-    return engine.run_component(table_, python=sys.executable, root=root, timeout=120)
+    # Generous, because these shell out to pytest and the freeze gate runs this
+    # file from inside another pytest. The timeout is a fail-safe against a hang,
+    # not an assertion about speed, and a loaded machine turning a kill into a
+    # HUNG would be a false red.
+    return engine.run_component(table_, python=sys.executable, root=root, timeout=600)
 
 
 def _assert_killed(result, expected):

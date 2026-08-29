@@ -50,6 +50,9 @@ AUDIT = ("sfir9-hostile-audit.json", "audit_passes", "audit_digest")
 BASELINES = ("sfir9-mutation-baselines.json", "all_baselines_green", "baselines_digest")
 
 #: Any of these on disk means a real cohort has been opened.
+#: How many failing tests a failed suite names before it summarises the rest.
+MAX_NAMED_FAILURES = 10
+
 ROSTER_ARTIFACTS = ("sfir9-cohort-roster*.json", "sfir9-census*.json", "sfir9-roster*.json")
 
 
@@ -78,10 +81,21 @@ def _run_suite(root: Path, selection: list[str], *, timeout: int = 1800) -> Outc
         )
     except (subprocess.TimeoutExpired, OSError) as error:
         return Outcome(UNPROVEN, f"the suite could not be run: {error}")
-    tail = result.stdout.strip().splitlines()[-1:] or [""]
+    lines = result.stdout.strip().splitlines()
+    tail = lines[-1] if lines else ""
     if result.returncode == 5:
         return Outcome(UNPROVEN, "the selection collected no tests")
-    return Outcome(PASS if result.returncode == 0 else FAIL, tail[0])
+    if result.returncode == 0:
+        return Outcome(PASS, tail)
+    # Name the tests, not just the count. A gate that reports "1 failed" and
+    # nothing else leaves nothing to act on, and an unreadable failure gets
+    # explained away rather than looked at -- which is how one transient red in
+    # this very condition became unattributable.
+    named = [line for line in lines if line.startswith(("FAILED", "ERROR"))]
+    detail = tail if not named else f"{tail} :: " + "; ".join(named[:MAX_NAMED_FAILURES])
+    if len(named) > MAX_NAMED_FAILURES:
+        detail += f"; and {len(named) - MAX_NAMED_FAILURES} more"
+    return Outcome(FAIL, detail)
 
 
 def read_receipt(root: Path, name: str, verdict_key: str, digest_key: str) -> Outcome:
@@ -147,6 +161,47 @@ def check_closure(root: Path) -> Outcome:
     )
 
 
+#: Suites that are not one component's controls but gate the freeze anyway.
+SUPPORT_SUITES = (
+    "test_sfir9_hostile_audit.py",
+    "test_sfir9_legacy_taxonomy.py",
+    "test_sfir9_mutation.py",
+    "test_sfir9_freeze_gate.py",
+    "test_sfir9_seam.py",
+)
+
+
+def component_suite_paths(root: Path) -> list[str]:
+    """One suite per bound component, derived from the closure's own list.
+
+    Not `pytest tests -k sfir9`. Collection happens before `-k` filtering, so
+    that selection turned an import error anywhere in the tests directory into a
+    failure of this condition -- and it did, in the first isolated checkout,
+    over four GPU-successor modules that have nothing to do with the
+    instrument. A condition has to measure what its name says.
+
+    Derived rather than listed so a component cannot gain a suite that the gate
+    never runs, and a suite cannot quietly vanish: a missing file is reported,
+    not skipped.
+    """
+    sys.path.insert(0, str(root / "tools"))
+    import sfir9_execution_closure as closure
+
+    names = [f"test_{component.module}.py" for component in closure.COMPONENTS]
+    return sorted({*names, *SUPPORT_SUITES})
+
+
+def check_component_suites(root: Path) -> Outcome:
+    try:
+        names = component_suite_paths(root)
+    except ImportError as error:
+        return Outcome(UNPROVEN, f"the component list could not be read: {error}")
+    missing = [name for name in names if not (root / "tests" / name).is_file()]
+    if missing:
+        return Outcome(UNPROVEN, f"suites that should exist are absent: {missing}")
+    return _run_suite(root, [f"tests/{name}" for name in names])
+
+
 def check_roster_unopened(root: Path) -> Outcome:
     found = sorted(
         path.name
@@ -168,7 +223,7 @@ CONDITIONS = (
     Condition(
         "component_suites",
         "every component the freeze binds passes its own controls",
-        lambda root: _run_suite(root, ["tests", "-k", "sfir9"]),
+        check_component_suites,
     ),
     Condition(
         "seam_verification",
@@ -266,12 +321,10 @@ def gate(root: Path = NS, *, rerun_slow: bool = False) -> dict[str, Any]:
             "different problems. Neither opens the gate."
         ),
         "why_the_seam_has_its_own_condition": (
-            "`component_suites` already collects the seam tests -- `-k sfir9` "
-            "matches their path. The narrow condition is not redundant with the "
-            "broad one: if the seam file were deleted, the broad condition would "
-            "still pass with fewer tests, while the narrow one reports UNPROVEN "
-            "because its selection collected nothing. A suite that vanished and "
-            "a suite that passed look identical to a count of failures."
+            "`component_suites` runs the seam file too. The narrow condition is "
+            "not redundant with the broad one: a suite that vanished and a suite "
+            "that passed look identical to a count of failures, and asking about "
+            "the seam by name makes its absence say UNPROVEN rather than nothing."
         ),
         "what_this_gate_does_not_establish": (
             "that any threshold here is calibrated, or that the instrument "
