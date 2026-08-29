@@ -77,7 +77,7 @@ MUTATIONS = [
      '    if rule["snapshot_sha256"] != snapshot_sha256:',
      "    if False:"),
     ("C19 a predicate naming an identity field is accepted",
-     '        if predicate["field"] not in PREDICATE_FIELDS:',
+     '        if predicate["field"] not in allowed:',
      "        if False:"),
     ("C20 the identity fields become available to a predicate",
      '    return frozenset(sfir7_frame.SELECTABLE_FIELDS) - IDENTITY_FIELDS',
@@ -86,9 +86,11 @@ MUTATIONS = [
      '    return frozenset(sfir7_frame.SELECTABLE_FIELDS) - IDENTITY_FIELDS',
      '    return frozenset({"host", "spdx_license_id", "created_utc",' + NL +
      '                      "last_activity_utc", "language", "fork", "status"})'),
-    ("C20b only record_id is treated as identity",
+    # Not "drop host_uuid": that is an equivalent mutant, because host_uuid is
+    # already outside SFIR7's selectable set and subtracting it removes nothing.
+    ("C20b the key that actually filters stops being treated as identity",
      'IDENTITY_FIELDS = frozenset({"record_id", "host_uuid"})',
-     'IDENTITY_FIELDS = frozenset({"record_id"})'),
+     'IDENTITY_FIELDS = frozenset({"host_uuid"})'),
     ("C20c the eligibility fields are not recorded",
      '        "eligibility_fields": sorted(eligibility_fields()),',
      '        "eligibility_fields": [],'),

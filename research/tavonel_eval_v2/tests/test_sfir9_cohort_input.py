@@ -445,3 +445,17 @@ def test_the_eligibility_fields_are_sfir7s_own_minus_identity():
 def test_the_binding_records_the_fields_a_predicate_could_have_named(sandbox):
     """A refusal that never fires is only meaningful if the set is written down."""
     assert _bind(sandbox)["eligibility_fields"] == sorted(ci.eligibility_fields())
+
+
+def test_only_one_identity_field_does_work_and_that_is_declared():
+    """host_uuid is outside SFIR7's selectable set, so subtracting it is a no-op.
+
+    Named anyway, because an omission is invisible and a declared exclusion is
+    not. A mutation removing it survives; the source says why.
+    """
+    import sfir7_frame
+
+    assert "host_uuid" not in sfir7_frame.SELECTABLE_FIELDS
+    assert "record_id" in sfir7_frame.SELECTABLE_FIELDS
+    source = (NS / "tools/sfir9_cohort_input.py").read_text(encoding="utf-8")
+    assert "declared equivalent rather than scored" in source

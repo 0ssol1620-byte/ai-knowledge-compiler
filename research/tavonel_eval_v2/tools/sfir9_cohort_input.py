@@ -90,6 +90,12 @@ INPUT_MODULES = (
 #: Identity keys. SFIR7 lets `record_id` order and tie-break, which is not the
 #: same as letting it filter: a predicate naming an identity would be a
 #: hand-picked roster wearing a rule's clothes.
+#:
+#: Only `record_id` does work here. `host_uuid` is already outside SFIR7's
+#: selectable set, so subtracting it removes nothing -- it is named because an
+#: omission is invisible and a declared exclusion is not, and because if a later
+#: projection ever made it selectable this line is what would keep it out. A
+#: mutation removing it survives, and is declared equivalent rather than scored.
 IDENTITY_FIELDS = frozenset({"record_id", "host_uuid"})
 
 DIGEST_MISMATCH = "REFUSED_CATALOGUE_DIGEST_MISMATCH"
