@@ -1,0 +1,267 @@
+{
+  "authorises": "bind the external catalogue input, then generate exactly one SFIR10R2 roster under partition two; after that roster is sealed, execute only this frozen census runner",
+  "cohort_state_at_freeze": "NO_SFIR10_ROSTER_ARTIFACT_IN_WORKTREE_OR_HISTORY",
+  "components": [
+    {
+      "bytes": 11065,
+      "git_blob_id": "1c0db2b82ed0da11288b50b1e16196464bf03be2",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10r2_protocol.py",
+      "sha256": "sha256:b1d8932615bb89898b423db3a8cacdd4025d973d1fcab975d811b26153a60080"
+    },
+    {
+      "bytes": 21272,
+      "git_blob_id": "f3319869199f9d0ba005046675e7a7158e717287",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10r2_transport.py",
+      "sha256": "sha256:8f39c1c02a43c1bc91b375a4058a7ffd8f530a57749de2d3facbcd86a379db1a"
+    },
+    {
+      "bytes": 44640,
+      "git_blob_id": "3119655ead1a313190c54f51805507d36f5fbc7c",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10r2_runner.py",
+      "sha256": "sha256:a4d414d5fe1095f4fccc5e167ea4e69e9b547b8c7e64e8ac578103755a2ba143"
+    },
+    {
+      "bytes": 4587,
+      "git_blob_id": "a51307dc0efea2532cf8ba1bd60f55b1a0dcc84d",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10r2_bind_input.py",
+      "sha256": "sha256:237a884ccce862086fa0f35319eab00f6f5e04b4feaac37193895637ade29784"
+    },
+    {
+      "bytes": 12920,
+      "git_blob_id": "80685ff2efa8ebc848041c70d38d55d7def3d952",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10r2_mutation.py",
+      "sha256": "sha256:3cc478e373f4e67ecf3c187d52907684a4913dd13838779b0ee0e7167a5bfd3a"
+    },
+    {
+      "bytes": 14018,
+      "git_blob_id": "965e28abfa4b7d9a7a6e310240a54e5d55e94a4b",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10r2_freeze.py",
+      "sha256": "sha256:d77e1da4aa26a56079429e5028759ad08a7cf8dcd56b762963003f6d394110b8"
+    },
+    {
+      "bytes": 14100,
+      "git_blob_id": "bb989b16fc2866ed148aa6daafdd56096f35e6c2",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir8_frontier.py",
+      "sha256": "sha256:7482faa9109cf698591b309a4a4697924465e017b62c075daf31205c9f7b9991"
+    },
+    {
+      "bytes": 12177,
+      "git_blob_id": "c0fb583a3534c6c00900d9b905b6912c204b275f",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_selection.py",
+      "sha256": "sha256:4cb823d47a247001f1800ce92d81ae78802d8a9eeae1b203a4300d38277b76ab"
+    },
+    {
+      "bytes": 21122,
+      "git_blob_id": "c783e492f5dc2e73c0a8cdead9128a775d906abc",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_cohort_input.py",
+      "sha256": "sha256:0eae35d587e1172c8ec107bb1188a4b814d16ea3e66375347bae010576b7476d"
+    },
+    {
+      "bytes": 8088,
+      "git_blob_id": "248a761154fdfd73c33eb608526d643e4ba31e5a",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_protocol.py",
+      "sha256": "sha256:90df8e6c6079eff018b8ed3405fbb2c5252cd1283998634bb85b7bbf2511a056"
+    },
+    {
+      "bytes": 11818,
+      "git_blob_id": "1fd53029c4e04b0703f1bf375c1ef598ccccde12",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_catalog_parser.py",
+      "sha256": "sha256:b67f8271cc414fa248a953b60ca845f8f58b71c7e60dcbeaac679981df3975f8"
+    },
+    {
+      "bytes": 11233,
+      "git_blob_id": "3fcaa86e6f22cd3b910df06d1624543d259b18a2",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_projection.py",
+      "sha256": "sha256:7e6435633b7354742e43085ff02d505c3ad224f579571c9f83c2375e50b993ce"
+    },
+    {
+      "bytes": 34005,
+      "git_blob_id": "5f873d4514e53e1e3606740f015863b82a3be931",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_frame.py",
+      "sha256": "sha256:03b6f16e5b80528483bb96878b2c8eb7e814ffe95d82a4aa0a2aadf13b6cf37b"
+    },
+    {
+      "bytes": 6927,
+      "git_blob_id": "c166d1a5dd42049cb290e1bca360403cf560daeb",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_roots.py",
+      "sha256": "sha256:fd0d7ee7481e2df5ec5eec1ecc582f89c72e58faaa0f58d11d2d1b4f1c891bc6"
+    },
+    {
+      "bytes": 12678,
+      "git_blob_id": "df1896c1e3b43febdf6f516c0e829243ac11d298",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_execution_authority_gap.py",
+      "sha256": "sha256:dd0bc7389c6e1676425672b1ae6d1818748a333eccb4e106c51fda1f532b9f88"
+    }
+  ],
+  "control_run": {
+    "command": [
+      "-m",
+      "pytest",
+      "research/tavonel_eval_v2/tests/test_sfir10r2_protocol.py",
+      "research/tavonel_eval_v2/tests/test_sfir10r2_transport.py",
+      "research/tavonel_eval_v2/tests/test_sfir10r2_runner.py",
+      "-q"
+    ],
+    "returncode": 0,
+    "summary_tail": [
+      "..................................................                       [100%]",
+      "50 passed in 0.85s"
+    ]
+  },
+  "controls": [
+    {
+      "bytes": 3167,
+      "git_blob_id": "6628ecb5b36585d3bd674848aa1b65a01fcaabac",
+      "relative_path": "research/tavonel_eval_v2/tests/test_sfir10r2_protocol.py",
+      "sha256": "sha256:e16da20077cd24bda4bcc86694c70b744152c9b06892abbda1316648524d84ef"
+    },
+    {
+      "bytes": 12473,
+      "git_blob_id": "58049086c87c4b0b7b01dc4e36c98adb85662b72",
+      "relative_path": "research/tavonel_eval_v2/tests/test_sfir10r2_transport.py",
+      "sha256": "sha256:1b33e50723f9335e41e7348c160b341bdf5c2196bd1d3009b939d9db354e2333"
+    },
+    {
+      "bytes": 15684,
+      "git_blob_id": "6377ae405599836714fde22e26c96e3994209b3e",
+      "relative_path": "research/tavonel_eval_v2/tests/test_sfir10r2_runner.py",
+      "sha256": "sha256:0f8e65fbff53fcf739d392260fb8c59107cf6269bbdee2c6bb1973c8afa7153c"
+    }
+  ],
+  "freeze_digest": "sha256:14b964dcfe592a4a901126df02739da9a1bc2621b211d166bb4877b884b47c6a",
+  "instrument_commit": "b8e216ead983ec5d95857be2e1b508a9367fb60f",
+  "mutation_baseline": {
+    "file_sha256": "sha256:33e152427bb284506c36950a1404efa3d73e38b4aff58290f8656ac610820f7b",
+    "mutation_digest": "sha256:b3aa253f70530732079910d0f2f8466e0b11d11acc33af035ba02eaef15cac83",
+    "mutations_declared": 25,
+    "mutations_killed": 25,
+    "relative_path": "research/tavonel_eval_v2/receipts/sfir10r2-mutation-baselines.json"
+  },
+  "predecessor": {
+    "r1_entry_count": 50,
+    "r1_freeze_digest": "sha256:09306d2fff3b61f60d82105763efe7ba1a5ff3357997683832e03d950e1a20db",
+    "r1_input_binding_digest": "sha256:9513898c0f313f30a11559396b1d6a9edb9a1be5299951a0ded1bd83669c272a",
+    "r1_no_pass_or_fail": true,
+    "r1_partition_index": 1,
+    "r1_roster_file_sha256": "sha256:0688549b7d78144f9b2a1f3640d76d4c72030aa40d21e8f9d09222e87a075dc5",
+    "r1_roster_relative_path": "receipts/sfir10r1-cohort-roster.json",
+    "r1_roster_seal": "sha256:cd0da092e18b9f6c87adbc79e05caa8cffbeff73b9f4a20cfe4f76fe586601cd",
+    "r1_terminal_digest": "sha256:d9629cfc05075fe8a3138b89021abf87e1f3b13ff62b450d548e206147e93e5b",
+    "r1_terminal_file_sha256": "sha256:0a3f3ce72c81c929b905eabed89e1fa40032ff52e31aaff7e7c15bf38c7d9e78",
+    "r1_terminal_reason": "per-response provider delta is 2; exclusive attribution is not established",
+    "r1_terminal_relative_path": "receipts/sfir10r1-terminal-unproven.json",
+    "r1_windows_used": 0,
+    "r2_partition_index": 2,
+    "what_is_inherited": "criterion, envelope, salt, partition count, catalogue frame",
+    "what_is_not_reused": "R1 root identities, candidate yields, and partial traversal outcomes do not enter R2 selection; only sealed predecessor metadata establishes that partition one is spent"
+  },
+  "protocol_digest": "sha256:5dcdb0f9767970ef9c1e17ed8895de8fafa69144dcfc17f573c34db22436cfe5",
+  "protocol_terms": {
+    "criterion": {
+      "inherited_unchanged_from": "SFIR10R1",
+      "maximum_q": 1000,
+      "minimum_c": 750,
+      "minimum_q": 600,
+      "quota_fraction": [
+        8,
+        10
+      ]
+    },
+    "execution_envelope": {
+      "candidate_extensions": [
+        ".py",
+        ".md",
+        ".rst",
+        ".txt"
+      ],
+      "declared_working_storage_bytes_per_root": 2147483648,
+      "inherited_unchanged_from": "SFIR10R1",
+      "n": 50,
+      "n_formula": "(windows * usable_charges_per_window) // per_root_charge_allowance",
+      "per_root_cumulative_provider_charge_allowance": 540,
+      "permitted_rate_windows": 6,
+      "require_full_roster_before_census": true,
+      "usable_provider_charges_per_window": 4500
+    },
+    "predecessor_precohort_instrument": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R1",
+    "predecessor_terminal_study": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R1",
+    "protocol_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R2",
+    "rate_window_execution": {
+      "close_before_request_when_segment_reservation_would_exceed": 4500,
+      "exclusive_credential_preflight": {
+        "cohort_contact_before_success": false,
+        "endpoint": "https://api.github.com/repos/octocat/Hello-World",
+        "failure_policy": "SEGMENT_NOT_STARTED_RETRY_ALLOWED",
+        "reconcile_exact_charges": 10,
+        "requests": 10,
+        "require_request_id": true,
+        "require_unique_request_ids": true,
+        "require_unit_delta_each_response": true,
+        "scientific_data_consumed": false,
+        "wait_seconds": 0
+      },
+      "mid_segment_window_reset_policy": "MEASUREMENT_UNPROVEN_STOP",
+      "observe_every_response": [
+        "x-ratelimit-remaining",
+        "x-ratelimit-reset",
+        "retry-after"
+      ],
+      "poll_during_segment": false,
+      "rate_limit_http_statuses": [
+        403,
+        429
+      ],
+      "request_reservation_provider_charges": 4,
+      "require_remaining_header": true,
+      "require_reset_header": true,
+      "segment_start_endpoint": "https://api.github.com/rate_limit",
+      "segment_start_observations": 1,
+      "segment_start_requires_remaining_after_preflight_at_least": 4500,
+      "segment_start_requires_remaining_before_preflight_at_least": 4510,
+      "stop_root_before_request_when_root_reservation_would_exceed": 540,
+      "unattributed_provider_delta_policy": "MEASUREMENT_UNPROVEN_STOP",
+      "wait_inside_segment": false,
+      "why_no_wait": "R2 adds no adaptive polling or waiting: exclusivity is established by one fixed ten-request preflight, cohort execution then follows R1 unchanged, and exhaustion closes a segment for later durable resume"
+    },
+    "result_visibility": {
+      "partial_c_forbidden": true,
+      "partial_q_forbidden": true,
+      "per_root_candidate_yield_progress_forbidden": true,
+      "score_only_after_census_seal": true
+    },
+    "root_snapshot_and_completion": {
+      "all_refused_policy": "MEASURED_NOT_SEALABLE",
+      "census_complete_requires": "zero stopped roots AND at least one counted root",
+      "record_at_first_seed": [
+        "repository_numeric_id",
+        "canonical_address",
+        "default_branch",
+        "root_commit_sha",
+        "root_tree_sha"
+      ],
+      "resume_identity_failure_policy": "STOPPED_BEFORE_EXHAUSTION",
+      "resume_never_reseeds_default_branch": true,
+      "resume_re_attests_numeric_identity": true,
+      "snapshot_policy": "PIN_ON_FIRST_SUCCESSFUL_SEED_NEVER_RESEED"
+    },
+    "schema": "tavonel.sfir10r2.protocol.v1",
+    "selection": {
+      "ordering": [
+        "source_rank descending",
+        "record_id ascending"
+      ],
+      "partition_count": 64,
+      "partition_index": 2,
+      "partition_key": "host_uuid",
+      "partition_rule": "(predecessor_partition_index + 1) mod partition_count",
+      "predecessor_partition_index": 1,
+      "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2",
+      "why_no_new_salt": "choosing a new salt after R1 opened partition one would add a post-outcome selection degree of freedom; the predecessor salt is inherited unchanged"
+    },
+    "study_kind": "FRESH_HELDOUT_CONFIRMATORY_SUCCESSOR"
+  },
+  "schema": "tavonel.sfir10r2.instrument_freeze.v1",
+  "state": "INSTRUMENT_FROZEN",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R2",
+  "why_this_is_not_an_r1_repair": "R1 remains terminal MEASUREMENT_UNPROVEN with no PASS or FAIL. R2 uses the next untouched partition and freezes an execution-authority preflight before selecting it."
+}
