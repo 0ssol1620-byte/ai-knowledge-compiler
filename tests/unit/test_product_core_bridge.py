@@ -124,8 +124,15 @@ def test_initial_compile_emits_region_bound_candidate_without_promoting() -> Non
         "ontology/knowledge.ttl",
         "graph/nodes.csv",
         "graph/relationships.csv",
+        "semantics/profile.json",
+        "semantics/claims.jsonl",
+        "semantics/entities.jsonl",
+        "semantics/relations.jsonl",
+        "semantics/contradictions.jsonl",
         "rag/documents.jsonl",
         "rag/chunks.jsonl",
+        "rag/retrieval-profile.json",
+        "ontology/architecture-plan.json",
         "provenance/activities.jsonl",
         "validation/report.json",
     } <= package_paths
@@ -138,6 +145,21 @@ def test_initial_compile_emits_region_bound_candidate_without_promoting() -> Non
     chunks = [json.loads(line) for line in chunk_file.content.splitlines()]
     assert chunks[0]["bbox1000"] == [100, 120, 900, 240]
     assert chunks[0]["authority"] == "regulatory_filing"
+    assert chunks[0]["authorityTier"] == "official"
+    assert chunks[0]["claimIds"]
+    assert chunks[0]["retrievalTerms"]
+    architecture_file = next(
+        file
+        for file in response.candidate.package.files
+        if file.path == "ontology/architecture-plan.json"
+    )
+    architecture = json.loads(architecture_file.content)
+    assert architecture["blueprint"] == "corporate-filings"
+    assert architecture["module_sha256"].startswith("sha256:")
+    assert any(
+        row["kind"] == "knowledge_view" and row["blueprint"] == "corporate-filings"
+        for row in response.candidate.directory_plan
+    )
 
 
 def test_incremental_compile_abstains_on_ambiguous_identity_and_proves_equivalence() -> None:
@@ -239,3 +261,42 @@ def test_missing_region_geometry_and_authority_require_review() -> None:
     assert any(
         reason.startswith("AUTHORITY_UNCLASSIFIED:") for reason in response.candidate.review_reasons
     )
+
+
+def test_multilingual_semantics_and_numeric_conflicts_stay_evidence_bound_for_review() -> None:
+    response = ProductCoreCompiler(core_release_digest=RELEASE).compile(
+        _request(
+            (
+                _document(
+                    "filing-en",
+                    "2025 revenue was 100 million won. "
+                    "TAVONEL Research Institute reported the result.",
+                ),
+                _document("filing-ko", "2025 revenue was 120 million won. 한국은행은 공시했다."),
+            ),
+            request_id="compile-semantic-review",
+        ),
+        input_sha256=_sha("semantic-review"),
+    )
+
+    assert response.status == "review_required"
+    assert any(
+        reason.startswith("CONTRADICTION_CANDIDATE:")
+        for reason in response.candidate.review_reasons
+    )
+    objects = response.candidate.canonical_knowledge_model["objects"]
+    claims = [item for item in objects if item["kind"] == "claim"]
+    entities = [item for item in objects if item["kind"] == "entity"]
+    validations = [item for item in objects if item["kind"] == "validation_record"]
+    assert claims and entities and validations
+    assert all(item["sourceRefs"][0]["bbox1000"] == [100, 120, 900, 240] for item in claims)
+    assert all(item["verificationState"] == "unresolved" for item in validations)
+    semantic_profile = json.loads(
+        next(
+            file.content
+            for file in response.candidate.package.files
+            if file.path == "semantics/profile.json"
+        )
+    )
+    assert set(semantic_profile["languages"]) == {"en", "ko"}
+    assert semantic_profile["contradictionCandidateCount"] == 1

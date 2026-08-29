@@ -2,7 +2,7 @@ FROM python:3.12.13-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e2631
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/packages/cir-python/src:/app/packages/product-core/src \
+    PYTHONPATH=/app/packages/cir-python/src:/app/packages/domain-packs/src:/app/packages/product-core/src \
     PORT=8080
 
 RUN groupadd --system --gid 10001 tavonel \
@@ -10,10 +10,12 @@ RUN groupadd --system --gid 10001 tavonel \
     && pip install --no-cache-dir \
         fastapi==0.140.13 \
         pydantic==2.13.4 \
+        pyyaml==6.0.3 \
         uvicorn==0.35.0
 
 WORKDIR /app
 COPY --chown=10001:10001 packages/cir-python/src/akc_cir packages/cir-python/src/akc_cir
+COPY --chown=10001:10001 packages/domain-packs/src/akc_domain_packs packages/domain-packs/src/akc_domain_packs
 COPY --chown=10001:10001 packages/product-core/src/akc_product_core packages/product-core/src/akc_product_core
 
 USER 10001:10001

@@ -9,6 +9,8 @@ def test_product_core_image_is_nonroot_without_ssh_and_uses_candidate_entrypoint
     assert "USER 10001:10001" in dockerfile
     assert "EXPOSE 8080" in dockerfile
     assert "akc_product_core.__main__:app" in dockerfile
+    assert "packages/domain-packs/src/akc_domain_packs" in dockerfile
+    assert "pyyaml==6.0.3" in dockerfile
     assert "TAVONEL_CORE_ALLOW_CUSTOMER_DATA=true" not in dockerfile
     assert "openssh" not in dockerfile.casefold()
     assert " 22" not in dockerfile

@@ -13,6 +13,15 @@ PRODUCT_CORE_REQUEST_SCHEMA = "tavonel.product_core.compile_request.v2"
 PRODUCT_CORE_RESPONSE_SCHEMA = "tavonel.product_core.compile_response.v2"
 
 Identifier = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$")]
+BlueprintId = Literal[
+    "corporate-filings",
+    "course-materials",
+    "generic-mixed-corpus",
+    "legal-contracts",
+    "personal-knowledge",
+    "research-library",
+    "technical-documentation",
+]
 
 
 class ProductCoreRegion(ContractModel):
@@ -107,6 +116,7 @@ class ProductCoreCompileRequest(ContractModel):
     workspace_id: Identifier
     collection_id: Identifier
     requested_at: datetime
+    requested_blueprint: BlueprintId | None = None
     route: ProductCoreRoute
     documents: Annotated[tuple[ProductCoreDocument, ...], Field(min_length=1, max_length=500)]
     previous_active_world: PreviousWorldSnapshot | None = None

@@ -47,6 +47,7 @@ from akc_cir.semantic_diff import (
     UnitSnapshot,
     diff_documents,
 )
+from akc_domain_packs import ArchitecturePlan, ArchitectureProfile, plan_architecture
 
 from .contracts import (
     CandidateArtifact,
@@ -59,6 +60,7 @@ from .contracts import (
     ProductCoreDocument,
     ProductCoreReceipt,
 )
+from .semantics import SemanticClaim, SemanticCompilation, SemanticSource, compile_semantics
 
 
 def _stable_id(prefix: str, *parts: str) -> str:
@@ -159,15 +161,54 @@ class ProductCoreCompiler:
                     )
 
         diff = self._aggregate_diff(all_changes, initial=previous is None)
-        knowledge_model = self._knowledge_model(request, canonical_documents, current_units)
+        semantics = compile_semantics(
+            tuple(
+                SemanticSource(
+                    logical_id=unit.logical_id,
+                    source_id=unit.source_id,
+                    source_version_id=unit.source_version_id,
+                    evidence_id=unit.evidence_id,
+                    text=unit.text,
+                    authority=unit.authority or "unclassified",
+                )
+                for unit in current_units
+            )
+        )
+        architecture = plan_architecture(
+            ArchitectureProfile(
+                domain=semantics.domain,
+                object_types=semantics.object_types,
+                user_goal="Build an evidence-bound living knowledge world",
+                corpus_size=len(canonical_documents),
+                temporal_structure=semantics.temporal_structure,
+                requested_blueprint=request.requested_blueprint,
+            )
+        )
+        if not semantics.claims:
+            review_reasons.append("SEMANTIC_CLAIMS_EMPTY")
+        review_reasons.extend(
+            f"CONTRADICTION_CANDIDATE:{item.contradiction_id}" for item in semantics.contradictions
+        )
+        knowledge_model = self._knowledge_model(
+            request,
+            canonical_documents,
+            current_units,
+            semantics,
+            architecture,
+        )
         graph, artifacts = self._dependency_graph_and_artifacts(
-            canonical_documents, knowledge_model, current_units
+            canonical_documents,
+            knowledge_model,
+            current_units,
+            semantics,
         )
         plan = plan_recompilation(diff=diff, graph=graph, artifacts=artifacts)
         full_hashes = self._artifact_hashes(
             canonical_documents=canonical_documents,
             knowledge_model=knowledge_model,
             units=current_units,
+            semantics=semantics,
+            architecture=architecture,
             artifacts=artifacts,
         )
 
@@ -227,6 +268,8 @@ class ProductCoreCompiler:
             canonical_documents=canonical_documents,
             knowledge_model=knowledge_model,
             units=current_units,
+            semantics=semantics,
+            architecture=architecture,
             lifecycle=lifecycle,
             review_reasons=review_reasons,
         )
@@ -280,7 +323,13 @@ class ProductCoreCompiler:
             candidate.model_dump(mode="json", by_alias=True, exclude_none=True)
         )
         artifact_rows = self._candidate_artifacts(
-            canonical_documents, knowledge_model, graph, candidate, candidate_bytes
+            canonical_documents,
+            knowledge_model,
+            graph,
+            candidate,
+            candidate_bytes,
+            semantics,
+            architecture,
         )
         receipt = ProductCoreReceipt(
             request_id=request.request_id,
@@ -493,6 +542,8 @@ class ProductCoreCompiler:
         request: ProductCoreCompileRequest,
         documents: list[CanonicalDocument],
         units: list[PreviousUnit],
+        semantics: SemanticCompilation,
+        architecture: ArchitecturePlan,
     ) -> CanonicalKnowledgeModel:
         activity = _stable_id("activity", request.request_id, self.core_release_digest)
         refs_by_version = {
@@ -564,6 +615,9 @@ class ProductCoreCompiler:
             for block in document.blocks
             for ref in block.source_refs[:1]
         }
+        unit_by_logical = {unit.logical_id: unit for unit in units}
+        refs_by_evidence: dict[str, tuple[SourceRef, ...]] = {}
+        evidence_object_by_id: dict[str, str] = {}
         for unit in units:
             verification_state = (
                 KnowledgeVerificationState.UNRESOLVED
@@ -572,7 +626,8 @@ class ProductCoreCompiler:
             )
             block = block_by_evidence[unit.evidence_id]
             evidence_object_id = _stable_id("ko_evidence", unit.evidence_id)
-            claim_object_id = _stable_id("ko_claim", unit.logical_id)
+            refs_by_evidence[unit.evidence_id] = block.source_refs
+            evidence_object_by_id[unit.evidence_id] = evidence_object_id
             objects.append(
                 build_knowledge_object(
                     stable_id=evidence_object_id,
@@ -587,22 +642,107 @@ class ProductCoreCompiler:
                     payload={"evidenceId": unit.evidence_id},
                 )
             )
+
+        for claim in semantics.claims:
+            unit = unit_by_logical[claim.logical_id]
+            verification_state = (
+                KnowledgeVerificationState.UNRESOLVED
+                if unit.identity_state == "unresolved"
+                else KnowledgeVerificationState.VERIFIED_WITH_WARNING
+            )
             objects.append(
                 build_knowledge_object(
-                    stable_id=claim_object_id,
+                    stable_id=claim.claim_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.CLAIM,
-                    source_refs=block.source_refs,
+                    source_refs=refs_by_evidence[claim.evidence_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=verification_state,
                     created_by_activity=activity,
                     version=1,
-                    links=(evidence_object_id,),
+                    links=(evidence_object_by_id[claim.evidence_id], *claim.entity_ids),
+                    payload=claim.as_record(),
+                )
+            )
+
+        claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
+        for entity in semantics.entities:
+            first_claim = claim_by_id[entity.claim_ids[0]]
+            objects.append(
+                build_knowledge_object(
+                    stable_id=entity.entity_id,
+                    tenant_id=request.tenant_id,
+                    collection_id=request.collection_id,
+                    kind=KnowledgeObjectKind.ENTITY,
+                    source_refs=refs_by_evidence[first_claim.evidence_id],
+                    origin=KnowledgeOrigin.RULE_DERIVED,
+                    verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
+                    created_by_activity=activity,
+                    version=1,
+                    payload=entity.as_record(),
+                )
+            )
+
+        for relation in semantics.relations:
+            objects.append(
+                build_knowledge_object(
+                    stable_id=relation.relation_id,
+                    tenant_id=request.tenant_id,
+                    collection_id=request.collection_id,
+                    kind=KnowledgeObjectKind.RELATION,
+                    source_refs=refs_by_evidence[relation.evidence_id],
+                    origin=KnowledgeOrigin.RULE_DERIVED,
+                    verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
+                    created_by_activity=activity,
+                    version=1,
+                    links=(relation.subject_id, relation.object_id),
+                    payload=relation.as_record(),
+                )
+            )
+
+        for contradiction in semantics.contradictions:
+            left = claim_by_id[contradiction.claim_ids[0]]
+            right = claim_by_id[contradiction.claim_ids[1]]
+            objects.append(
+                build_knowledge_object(
+                    stable_id=contradiction.contradiction_id,
+                    tenant_id=request.tenant_id,
+                    collection_id=request.collection_id,
+                    kind=KnowledgeObjectKind.VALIDATION_RECORD,
+                    source_refs=(
+                        *refs_by_evidence[left.evidence_id],
+                        *refs_by_evidence[right.evidence_id],
+                    ),
+                    origin=KnowledgeOrigin.RULE_DERIVED,
+                    verification_state=KnowledgeVerificationState.UNRESOLVED,
+                    created_by_activity=activity,
+                    version=1,
+                    links=contradiction.claim_ids,
+                    payload=contradiction.as_record(),
+                )
+            )
+
+        first_ref = next(ref for refs in refs_by_version.values() for ref in refs)
+        for object_type in semantics.object_types:
+            objects.append(
+                build_knowledge_object(
+                    stable_id=_stable_id(
+                        "ontology_term", architecture.blueprint, object_type.casefold()
+                    ),
+                    tenant_id=request.tenant_id,
+                    collection_id=request.collection_id,
+                    kind=KnowledgeObjectKind.ONTOLOGY_TERM,
+                    source_refs=(first_ref,),
+                    origin=KnowledgeOrigin.STRUCTURED_DERIVED,
+                    verification_state=KnowledgeVerificationState.VERIFIED,
+                    created_by_activity=activity,
+                    version=1,
                     payload={
-                        "logicalId": unit.logical_id,
-                        "text": unit.text,
-                        "authority": unit.authority,
+                        "term": object_type,
+                        "blueprint": architecture.blueprint,
+                        "blueprintVersion": architecture.blueprint_version,
+                        "moduleSha256": architecture.module_sha256,
                     },
                 )
             )
@@ -617,6 +757,7 @@ class ProductCoreCompiler:
         documents: list[CanonicalDocument],
         model: CanonicalKnowledgeModel,
         units: list[PreviousUnit],
+        semantics: SemanticCompilation,
     ) -> tuple[DependencyGraph, tuple[str, ...]]:
         edges: list[DependencyEdge] = []
         artifacts = ["canonical/model", "knowledge/model", "retrieval/global", "export/package"]
@@ -635,6 +776,19 @@ class ProductCoreCompiler:
                 "export/package",
             ):
                 edges.append(DependencyEdge(claim_id, artifact, EdgeType.CONSUMED_BY))
+        for claim in semantics.claims:
+            edges.append(DependencyEdge(claim.claim_id, claim.logical_id, EdgeType.DERIVED_FROM))
+            for entity_id in claim.entity_ids:
+                edges.append(DependencyEdge(entity_id, claim.claim_id, EdgeType.DERIVED_FROM))
+        for contradiction in semantics.contradictions:
+            for claim_id in contradiction.claim_ids:
+                edges.append(
+                    DependencyEdge(
+                        contradiction.contradiction_id,
+                        claim_id,
+                        EdgeType.DERIVED_FROM,
+                    )
+                )
         _ = documents, model
         return DependencyGraph(edges), tuple(dict.fromkeys(artifacts))
 
@@ -644,22 +798,48 @@ class ProductCoreCompiler:
         canonical_documents: list[CanonicalDocument],
         knowledge_model: CanonicalKnowledgeModel,
         units: list[PreviousUnit],
+        semantics: SemanticCompilation,
+        architecture: ArchitecturePlan,
         artifacts: tuple[str, ...],
     ) -> dict[str, str]:
         unit_by_id = {unit.logical_id: unit for unit in units}
+        claims_by_logical: defaultdict[str, list[dict[str, object]]] = defaultdict(list)
+        for claim in semantics.claims:
+            claims_by_logical[claim.logical_id].append(claim.as_record())
         canonical_payload = [
             item.model_dump(mode="json", by_alias=True, exclude_none=True)
             for item in canonical_documents
         ]
         knowledge_payload = knowledge_model.model_dump(mode="json", by_alias=True)
+        semantic_payload = {
+            "profile": semantics.profile_record(),
+            "claims": [claim.as_record() for claim in semantics.claims],
+            "entities": [entity.as_record() for entity in semantics.entities],
+            "relations": [relation.as_record() for relation in semantics.relations],
+            "contradictions": [
+                contradiction.as_record() for contradiction in semantics.contradictions
+            ],
+            "architecture": architecture.model_dump(mode="json", by_alias=True),
+        }
         hashes: dict[str, str] = {
             "canonical/model": sha256_digest(_json_bytes(canonical_payload)),
             "knowledge/model": sha256_digest(_json_bytes(knowledge_payload)),
             "retrieval/global": sha256_digest(
-                _json_bytes([unit.model_dump(mode="json", by_alias=True) for unit in units])
+                _json_bytes(
+                    {
+                        "units": [unit.model_dump(mode="json", by_alias=True) for unit in units],
+                        "semantics": semantic_payload,
+                    }
+                )
             ),
             "export/package": sha256_digest(
-                _json_bytes({"canonical": canonical_payload, "knowledge": knowledge_payload})
+                _json_bytes(
+                    {
+                        "canonical": canonical_payload,
+                        "knowledge": knowledge_payload,
+                        "semantics": semantic_payload,
+                    }
+                )
             ),
         }
         for artifact in artifacts:
@@ -676,6 +856,7 @@ class ProductCoreCompiler:
                         "text": unit.text,
                         "evidenceId": unit.evidence_id,
                         "authority": unit.authority,
+                        "semanticClaims": claims_by_logical[unit.logical_id],
                     },
                 }
             )
@@ -706,6 +887,8 @@ class ProductCoreCompiler:
         canonical_documents: list[CanonicalDocument],
         knowledge_model: CanonicalKnowledgeModel,
         units: list[PreviousUnit],
+        semantics: SemanticCompilation,
+        architecture: ArchitecturePlan,
         lifecycle: str,
         review_reasons: list[str],
     ) -> tuple[CandidatePackage, tuple[dict[str, object], ...]]:
@@ -792,6 +975,12 @@ class ProductCoreCompiler:
             and item["sourceRefs"]
             and isinstance(item["payload"].get("evidenceId"), str)
         }
+        claims_by_logical: defaultdict[str, list[SemanticClaim]] = defaultdict(list)
+        for claim in semantics.claims:
+            claims_by_logical[claim.logical_id].append(claim)
+        entity_names = {
+            entity.entity_id: entity.canonical_name for entity in semantics.entities
+        }
         chunk_jsonl = "".join(
             canonical_json(
                 {
@@ -804,6 +993,50 @@ class ProductCoreCompiler:
                     "pageNumber1": unit.page_number1,
                     "bbox1000": evidence_refs[unit.evidence_id].get("bbox1000"),
                     "authority": unit.authority,
+                    "authorityTier": (
+                        claims_by_logical[unit.logical_id][0].authority_tier
+                        if claims_by_logical[unit.logical_id]
+                        else "unclassified"
+                    ),
+                    "authorityScore": (
+                        claims_by_logical[unit.logical_id][0].authority_score
+                        if claims_by_logical[unit.logical_id]
+                        else 0.0
+                    ),
+                    "claimIds": [claim.claim_id for claim in claims_by_logical[unit.logical_id]],
+                    "entityIds": list(
+                        dict.fromkeys(
+                            entity_id
+                            for claim in claims_by_logical[unit.logical_id]
+                            for entity_id in claim.entity_ids
+                        )
+                    ),
+                    "entityNames": list(
+                        dict.fromkeys(
+                            entity_names[entity_id]
+                            for claim in claims_by_logical[unit.logical_id]
+                            for entity_id in claim.entity_ids
+                        )
+                    ),
+                    "languages": list(
+                        dict.fromkeys(
+                            claim.language for claim in claims_by_logical[unit.logical_id]
+                        )
+                    ),
+                    "temporalRefs": list(
+                        dict.fromkeys(
+                            temporal_ref
+                            for claim in claims_by_logical[unit.logical_id]
+                            for temporal_ref in claim.temporal_refs
+                        )
+                    ),
+                    "retrievalTerms": list(
+                        dict.fromkeys(
+                            term
+                            for claim in claims_by_logical[unit.logical_id]
+                            for term in claim.retrieval_terms
+                        )
+                    ),
                 }
             )
             + "\n"
@@ -824,10 +1057,27 @@ class ProductCoreCompiler:
         )
         home = (
             "# TAVONEL Candidate Knowledge Package\n\n"
+            + f"Blueprint: `{architecture.blueprint}` v{architecture.blueprint_version}\n\n"
+            + "## Knowledge views\n\n"
+            + "\n".join(f"- [[{view}]]" for view in architecture.root_views)
+            + "\n\n## Sources\n\n"
             + "\n".join(
                 f"- [[Sources/{item.document_id}|{item.title}]]" for item in canonical_documents
             )
             + "\n"
+        )
+        claims_jsonl = "".join(
+            canonical_json(claim.as_record()) + "\n" for claim in semantics.claims
+        )
+        entities_jsonl = "".join(
+            canonical_json(entity.as_record()) + "\n" for entity in semantics.entities
+        )
+        relations_jsonl = "".join(
+            canonical_json(relation.as_record()) + "\n" for relation in semantics.relations
+        )
+        contradictions_jsonl = "".join(
+            canonical_json(contradiction.as_record()) + "\n"
+            for contradiction in semantics.contradictions
         )
         contents: dict[str, str] = {
             "source/collection-files.json": canonical_json(
@@ -843,12 +1093,22 @@ class ProductCoreCompiler:
             + "\n",
             "canonical/model.json": canonical_json(model_payload) + "\n",
             "obsidian/Home.md": home,
+            "ontology/architecture-plan.json": canonical_json(
+                architecture.model_dump(mode="json", by_alias=True)
+            )
+            + "\n",
             "ontology/knowledge.jsonld": canonical_json(jsonld) + "\n",
             "ontology/knowledge.ttl": "\n".join(ttl_lines) + "\n",
             "graph/nodes.csv": node_csv,
             "graph/relationships.csv": relation_csv,
+            "semantics/profile.json": canonical_json(semantics.profile_record()) + "\n",
+            "semantics/claims.jsonl": claims_jsonl,
+            "semantics/entities.jsonl": entities_jsonl,
+            "semantics/relations.jsonl": relations_jsonl,
+            "semantics/contradictions.jsonl": contradictions_jsonl,
             "rag/documents.jsonl": document_jsonl,
             "rag/chunks.jsonl": chunk_jsonl,
+            "rag/retrieval-profile.json": canonical_json(semantics.retrieval_profile) + "\n",
             "provenance/activities.jsonl": provenance_jsonl,
             "validation/report.json": canonical_json(
                 {
@@ -859,6 +1119,17 @@ class ProductCoreCompiler:
                     "documentCount": len(canonical_documents),
                     "knowledgeObjectCount": len(objects),
                     "unitCount": len(units),
+                    "claimCount": len(semantics.claims),
+                    "entityCount": len(semantics.entities),
+                    "relationCount": len(semantics.relations),
+                    "contradictionCandidateCount": len(semantics.contradictions),
+                    "languages": dict(semantics.languages),
+                    "blueprint": architecture.blueprint,
+                    "architecturePlanSha256": architecture.plan_sha256,
+                    "semanticEvidenceCoverage": (
+                        sum(1 for claim in semantics.claims if claim.evidence_id)
+                        / max(1, len(semantics.claims))
+                    ),
                 }
             )
             + "\n",
@@ -887,6 +1158,7 @@ class ProductCoreCompiler:
             "obsidian",
             "ontology",
             "graph",
+            "semantics",
             "rag",
             "provenance",
             "validation",
@@ -894,6 +1166,15 @@ class ProductCoreCompiler:
         directory_plan_rows: list[dict[str, object]] = [
             {"path": root, "kind": "root", "sourceIds": []} for root in roots
         ]
+        directory_plan_rows.extend(
+            {
+                "path": path,
+                "kind": "knowledge_view",
+                "sourceIds": [],
+                "blueprint": architecture.blueprint,
+            }
+            for path in architecture.folder_paths
+        )
         directory_plan_rows.extend(
             {
                 "path": file.path,
@@ -912,6 +1193,8 @@ class ProductCoreCompiler:
         graph: DependencyGraph,
         candidate: CandidateWorld,
         candidate_bytes: bytes,
+        semantics: SemanticCompilation,
+        architecture: ArchitecturePlan,
     ) -> tuple[CandidateArtifact, ...]:
         rows = (
             (
@@ -924,7 +1207,15 @@ class ProductCoreCompiler:
             (
                 "retrieval",
                 "retrieval_index",
-                [item.model_dump(mode="json", by_alias=True) for item in candidate.units],
+                {
+                    "units": [
+                        item.model_dump(mode="json", by_alias=True) for item in candidate.units
+                    ],
+                    "claims": [claim.as_record() for claim in semantics.claims],
+                    "entities": [entity.as_record() for entity in semantics.entities],
+                    "profile": semantics.retrieval_profile,
+                    "architecturePlanSha256": architecture.plan_sha256,
+                },
             ),
         )
         artifacts = [
