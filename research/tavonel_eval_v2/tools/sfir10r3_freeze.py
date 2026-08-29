@@ -18,7 +18,7 @@ R2_ROSTER = NS / "receipts/sfir10r2-cohort-roster.json"
 R2_TERMINAL = NS / "receipts/sfir10r2-terminal-unproven.json"
 R2_FREEZE = NS / "receipts/sfir10r2-instrument-freeze.json"
 R2_INPUT_BINDING = NS / "receipts/sfir10r2-cohort-input-binding.json"
-MUTATION_RECEIPT = NS / "receipts/sfir10r3-mutation-baselines.json"
+MUTATION_RECEIPT = NS / "receipts/sfir10r3-mutation-baselines-v2.json"
 
 sys.path.insert(0, str(NS / "tools"))
 import sfir10r3_protocol as protocol  # noqa: E402
@@ -236,7 +236,7 @@ def _mutation_baseline() -> dict[str, Any]:
             f"SFIR10 mutation audit is not clean: survivors={report.get('survivors_or_invalid')}"
         )
     return {
-        "relative_path": "research/tavonel_eval_v2/receipts/sfir10r3-mutation-baselines.json",
+        "relative_path": "research/tavonel_eval_v2/receipts/sfir10r3-mutation-baselines-v2.json",
         "file_sha256": "sha256:" + hashlib.sha256(MUTATION_RECEIPT.read_bytes()).hexdigest(),
         "mutation_digest": report["mutation_digest"],
         "mutations_declared": report["mutations_declared"],

@@ -20,7 +20,7 @@ from typing import Any
 
 NS = Path(__file__).resolve().parents[1]
 REPO = NS.parents[1]
-OUTPUT = NS / "receipts/sfir10r3-mutation-baselines.json"
+OUTPUT = NS / "receipts/sfir10r3-mutation-baselines-v2.json"
 SCHEMA = "tavonel.sfir10r3.mutation_baselines.v1"
 
 TESTS = (

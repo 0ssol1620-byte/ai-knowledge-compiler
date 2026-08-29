@@ -47,6 +47,7 @@ def test_shared_token_accounting_policy_is_frozen_in_protocol_terms():
     assert preflight["minimum_delta_each_response"] == 1
     assert preflight["external_extra_permitted"] is True
     assert terms["minimum_attributable_charge_per_network_hop"] == 1
+    assert terms["require_reset_header"] is True
     assert terms["unattributed_extra_policy"] == (
         "RECORD_AS_EXTERNAL_INTERFERENCE_NEVER_CREDIT_TO_YIELD"
     )

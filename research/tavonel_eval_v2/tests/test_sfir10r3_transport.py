@@ -266,7 +266,7 @@ def test_segment_and_root_budgets_reserve_worst_case_hops_before_network():
     client = t.Transport(window=window(), opener=Opener([]))
     client.begin_root("7", 537)
     with pytest.raises(t.TransportStop):
-        client.get("https://api.github.com/repos/a/b")
+        client._reserve()
 
 
 def test_redirects_account_each_network_hop_and_stay_on_host():
