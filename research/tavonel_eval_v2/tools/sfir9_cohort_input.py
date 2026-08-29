@@ -75,16 +75,22 @@ FRAME_SOURCE = "research/tavonel_eval_v2/" + INHERITED_FRAME_RECEIPT
 #: Everything outside the frozen closure that stands between the catalogue file
 #: and the frozen selection rule.
 INPUT_MODULES = (
+    # reads the CSV by declared column name
     "research/tavonel_eval_v2/tools/sfir7_catalog_parser.py",
+    # maps publisher fields onto the fields a predicate may name, and decides
+    # which fields the rule may not see at all
+    "research/tavonel_eval_v2/tools/sfir7_projection.py",
+    # holds the operator semantics, the licence spellings this catalogue uses,
+    # and the selectable-field set
+    "research/tavonel_eval_v2/tools/sfir7_frame.py",
+    # the spent identities an earlier study already looked at
     "research/tavonel_eval_v2/tools/sfir7_roots.py",
 )
 
-#: Fields a predicate may name. `record_id` and `host_uuid` are identity, and an
-#: eligibility rule that filtered on identity would be a hand-picked roster
-#: wearing a rule's clothes.
-PREDICATE_FIELDS = frozenset(
-    {"host", "spdx_license_id", "created_utc", "last_activity_utc", "language", "fork", "status"}
-)
+#: Identity keys. SFIR7 lets `record_id` order and tie-break, which is not the
+#: same as letting it filter: a predicate naming an identity would be a
+#: hand-picked roster wearing a rule's clothes.
+IDENTITY_FIELDS = frozenset({"record_id", "host_uuid"})
 
 DIGEST_MISMATCH = "REFUSED_CATALOGUE_DIGEST_MISMATCH"
 MEMBER_ABSENT = "REFUSED_CATALOGUE_MEMBER_ABSENT"
@@ -101,6 +107,20 @@ class CohortInputRefused(Exception):
     def __init__(self, code: str, message: str) -> None:
         super().__init__(f"{code}: {message}")
         self.code = code
+
+
+def eligibility_fields() -> frozenset[str]:
+    """What a predicate may name, read live from SFIR7 rather than restated.
+
+    An earlier draft listed these by hand and got them wrong in both directions:
+    it named the raw publisher fields, so it would have refused a predicate on
+    `primary_language` and admitted one on `fork` or `status` -- the two the
+    projection deliberately withholds from the rule. Restating a field list is
+    the same mistake as restating a predicate, one level down.
+    """
+    import sfir7_frame
+
+    return frozenset(sfir7_frame.SELECTABLE_FIELDS) - IDENTITY_FIELDS
 
 
 def _digest(payload: Any) -> str:
@@ -250,13 +270,15 @@ def inherited_frame(
             "against different bytes are not the predicates this cohort inherits.",
         )
 
+    allowed = eligibility_fields()
     for predicate in rule["predicates"]:
-        if predicate["field"] not in PREDICATE_FIELDS:
+        if predicate["field"] not in allowed:
             raise CohortInputRefused(
                 FRAME_NAMES_IDENTITY,
-                f"predicate names {predicate['field']!r}, which is not an "
-                "eligibility field. A rule that filtered on identity would be a "
-                "hand-picked roster wearing a rule's clothes.",
+                f"predicate names {predicate['field']!r}, which is not one of the "
+                f"fields SFIR7's rule may filter on ({sorted(allowed)}). A rule "
+                "that filtered on identity, or on a field the projection withholds "
+                "from it, would be a hand-picked roster wearing a rule's clothes.",
             )
 
     frame_added = _added_at(repository_root, FRAME_SOURCE)
@@ -382,6 +404,7 @@ def binding(
         "member_verification": member,
         "input_modules": modules,
         "inherited_frame": frame,
+        "eligibility_fields": sorted(eligibility_fields()),
         "why_this_is_separate_from_the_instrument_freeze": (
             "the freeze binds the rule that decides the cohort. It does not bind "
             "the path input travels to reach that rule, and it does not contain "

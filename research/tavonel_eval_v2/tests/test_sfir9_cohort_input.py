@@ -196,8 +196,13 @@ def test_a_reader_with_no_recorded_origin_is_refused(sandbox):
 
 def test_every_reader_is_bound_by_bytes_and_by_blob(sandbox):
     report = _bind(sandbox)
+    # Named explicitly. Comparing against INPUT_MODULES would narrow exactly as
+    # far as INPUT_MODULES narrowed, which is no check at all -- and the first
+    # draft of this binding did narrow, missing the projection and the frame.
     assert {record["module"] for record in report["input_modules"]} == {
         "sfir7_catalog_parser",
+        "sfir7_projection",
+        "sfir7_frame",
         "sfir7_roots",
     }
     for record in report["input_modules"]:
@@ -396,3 +401,47 @@ def test_the_binding_authorises_nothing_and_says_so(sandbox):
     report = _bind(sandbox)
     assert "authorises nothing" not in report["this_binding_authorises_nothing"]
     assert "instrument freeze" in report["this_binding_authorises_nothing"]
+
+def test_a_predicate_on_a_field_the_projection_withholds_is_refused(sandbox):
+    """`fork` and `status` reach the parser and never reach the rule.
+
+    The first draft of this binding listed the allowed fields by hand and named
+    the raw publisher fields, so it would have admitted exactly this.
+    """
+    receipt = json.loads((sandbox / ci.INHERITED_FRAME_RECEIPT).read_text())
+    receipt["frame_rule"]["predicates"].append(
+        {"field": "fork", "op": "eq", "value": "false"}
+    )
+    (sandbox / ci.INHERITED_FRAME_RECEIPT).write_text(json.dumps(receipt), encoding="utf-8")
+    with pytest.raises(ci.CohortInputRefused) as caught:
+        _bind(sandbox)
+    assert caught.value.code == ci.FRAME_NAMES_IDENTITY
+
+
+def test_a_predicate_on_a_projected_field_is_accepted(sandbox):
+    """The other direction of the same bug: the hand-written list refused this."""
+    receipt = json.loads((sandbox / ci.INHERITED_FRAME_RECEIPT).read_text())
+    receipt["frame_rule"]["predicates"].append(
+        {"field": "primary_language", "op": "in", "value": ["Python"]}
+    )
+    (sandbox / ci.INHERITED_FRAME_RECEIPT).write_text(json.dumps(receipt), encoding="utf-8")
+    assert len(_bind(sandbox)["inherited_frame"]["predicates"]) == 5
+
+
+def test_the_eligibility_fields_are_sfir7s_own_minus_identity():
+    """Read live, so a field added to the projection cannot silently become
+    available to a predicate without this test noticing."""
+    import sfir7_frame
+
+    assert ci.eligibility_fields() == frozenset(sfir7_frame.SELECTABLE_FIELDS) - {
+        "record_id",
+        "host_uuid",
+    }
+    assert "record_id" not in ci.eligibility_fields()
+    assert "fork" not in ci.eligibility_fields()
+    assert "primary_language" in ci.eligibility_fields()
+
+
+def test_the_binding_records_the_fields_a_predicate_could_have_named(sandbox):
+    """A refusal that never fires is only meaningful if the set is written down."""
+    assert _bind(sandbox)["eligibility_fields"] == sorted(ci.eligibility_fields())
