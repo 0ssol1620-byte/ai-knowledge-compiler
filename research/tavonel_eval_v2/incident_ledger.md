@@ -10939,3 +10939,48 @@ own receipts.
 future protocol whose orchestration is frozen before selection; what it cannot
 be is this study's sealable capacity result.
 
+## INC-V2-129 -- SFIR10 is invalid before cohort opening; one hostile hypothesis is falsified
+
+2026-08-29. Prospective successor instrument. No SFIR10 roster was generated,
+no partition-one root was contacted and no C/Q existed when this was found.
+
+**What SFIR10 fixed correctly.** It froze the rate-window observation schedule
+and control flow that SFIR9 lacked: one uncharged `/rate_limit` observation at
+segment start, response-header evidence on every charged response, no adaptive
+polling or in-process waiting, fail-closed 403/429 handling, provider-charge
+reconciliation and crash refusal. The pre-cohort mutation audit killed all 13
+declared weakenings, and the instrument and 10.2 GB catalogue binding were both
+sealed before partition one was opened.
+
+**The real defect found after freeze but before roster.** The frozen V10 runner
+sets `complete = stopped == 0`. If all fifty roots are refused on identity,
+`stopped` is zero, the candidate lower bound is zero, and that expression calls
+the census complete with exact count zero even though no root was measured. The
+older scorer contract had the missing second condition explicitly: completion
+requires no stopped roots **and at least one counted root**. This is not an
+outcome-dependent concern; the counterexample is synthetic and existed before
+any V10 cohort was selected.
+
+**Why V10 is not repaired.** The instrument freeze is immutable. The defect is
+in a frozen result-semantics path, so editing the runner and pretending the old
+freeze still governs it would make the freeze false. V10 therefore closes as
+`PRECOHORT_INSTRUMENT_INVALID_NO_COHORT_SPENT`. Its freeze and input binding are
+preserved. Partition one remains unopened and may be used only by a separately
+frozen successor whose corrected runner predates selection.
+
+**A second suspected defect was tested and falsified.** A hostile read initially
+suggested that a root seeded just before a segment boundary might have
+`visited_count() == 0`, causing a later segment to fetch a newer default-branch
+head and mix revisions. The synthetic control disproved that premise:
+`sfir8_frontier.enqueue` writes the frontier entry and its `(root_id, tree_sha)`
+visited identity in the same committed operation. Immediately after seeding,
+`visited_count() == 1` and the root tree is pending. That hypothesis is recorded
+as **FALSIFIED**, not converted into an incident merely because it sounded
+plausible. The successor nevertheless records an explicit immutable root
+snapshot as additional reproducibility evidence.
+
+**Status:** V10 terminal pre-cohort invalid instrument; no cohort spent. The
+successor is `SOURCE_FACT_IR_FRESH_HELDOUT_V10R1`, with the same frozen
+criterion, envelope, salt and mechanically-next partition one, but a new
+complete pre-selection freeze.
+
