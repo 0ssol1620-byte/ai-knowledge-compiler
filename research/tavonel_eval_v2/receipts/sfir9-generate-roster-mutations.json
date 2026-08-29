@@ -1,0 +1,200 @@
+{
+  "all_baselines_green": true,
+  "baselines_digest": "sha256:a560b04722b34a4c87e42c8dcb2e3767310dfc37e8be49888bad49badd3f5f96",
+  "components_run": 1,
+  "components_with_no_survivor": 1,
+  "mutations_declared": 44,
+  "mutations_killed": 44,
+  "results": [
+    {
+      "baseline_tests_selected": 30,
+      "component": "generate_roster",
+      "mutations_declared": 44,
+      "mutations_killed": 44,
+      "outcomes": [
+        {
+          "mutation": "G1 a second roster overwrites the first",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G2 the second roster is written elsewhere instead of refused",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G3 an absent freeze is skipped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G4 a freeze that does not verify is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G5 the binding is read instead of re-derived",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G6 a drifted binding is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G7 the freeze is verified against nothing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G8 the predicates are replaced by a locally written one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G9 only the first predicate is applied",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G10 a failing predicate no longer stops the row",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G11 the disposition stops naming which predicate rejected the row",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G12 the predicate result is inverted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G13 ineligible rows are yielded anyway",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G14 the projection is bypassed and the raw record is judged",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G15 a row with no host id is given one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G16 a row with no host id is dropped without being counted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G17 the address is used as the identity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G18 the rank is recomputed rather than copied",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G19 the tie-break key is dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G20 the spent set is empty",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G21 the spent set is keyed on the address instead of the id",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G22 the exclusion proof is not carried into the roster",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G23 the count of spent identities is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G24 the roster is generated against a draft protocol",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G25 the partition index moves",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G26 the partition count moves",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G27 the salt moves",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G28 an envelope term is sourced from something the study measured",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G29 the per-root allowance is widened, which widens N",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G30 unreadable rows are not tallied by reason",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G31 the row count comes from the consumer instead of the producer",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G32 the eligibility dispositions are not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G33 the unreadable total is folded into one number",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G34 the roster is not sealed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G35 the seal is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G36 the receipt does not bind the freeze it ran under",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G37 the receipt does not bind the input it selected from",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G38 the receipt claims the cohort says something about capacity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G39 the generation digest is not recomputed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G40 the digest covers itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G41 an unsealed roster verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G42 broken ordinals verify",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G43 verification passes with problems recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G44 a refused generation exits zero",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_generate_roster.py"
+    }
+  ],
+  "schema": "tavonel.sfir9.mutation_baselines.v1",
+  "why_a_missing_anchor_is_a_survivor": "a table entry whose text is no longer in the file has stopped testing anything. Skipping it would let a component drift out from under its own mutations while the score stayed green.",
+  "why_a_red_baseline_is_refused": "against a failing suite every mutation looks killed, so the score would be a perfect 100% that measured nothing."
+}
