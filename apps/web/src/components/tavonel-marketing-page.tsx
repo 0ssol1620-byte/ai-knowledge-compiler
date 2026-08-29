@@ -12,10 +12,8 @@ import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
 import { TavonelPricingPlanner } from "@/components/tavonel-pricing-planner";
 import type { TavonelPage } from "@/lib/tavonel-content";
-import {
-  ROUTE_DIAGRAMS,
-  type TavonelDiagramId,
-} from "@/lib/tavonel-diagrams";
+import type { StructaraLocale } from "@/lib/locale";
+import { ROUTE_DIAGRAMS, type TavonelDiagramId } from "@/lib/tavonel-diagrams";
 
 const glyphs: TavonelGlyphName[] = ["page", "block", "evidence", "node"];
 
@@ -57,9 +55,12 @@ const productEvidence: Record<
 
 export function TavonelMarketingPage({
   definition,
+  locale,
 }: {
   definition: TavonelPage;
+  locale: StructaraLocale;
 }) {
+  const ko = locale === "ko";
   return (
     <TavonelMarketingShell>
       <main id="main-content" className="tv-page">
@@ -90,6 +91,7 @@ export function TavonelMarketingPage({
             <ProductEvidence
               evidence={productEvidence[definition.path]!}
               path={definition.path}
+              locale={locale}
             />
           ) : (
             <PageThesis definition={definition} />
@@ -98,18 +100,24 @@ export function TavonelMarketingPage({
 
         <section className="tv-thesis">
           <p>{definition.thesis}</p>
-          <span>Source-linked by design</span>
+          <span>{ko ? "설계부터 원문 연결" : "Source-linked by design"}</span>
         </section>
 
         {definition.path === "/demo/dart" && (
           <section className="tv-route-proof">
             <div className="tv-route-proof-heading">
-              <p className="tv-context-label">Public filing proof surface</p>
-              <h2>One number, every transformation, the original evidence.</h2>
+              <p className="tv-context-label">
+                {ko ? "공개 공시 근거 화면" : "Public filing proof surface"}
+              </p>
+              <h2>
+                {ko
+                  ? "하나의 숫자와 모든 변환, 그리고 원본 근거."
+                  : "One number, every transformation, the original evidence."}
+              </h2>
               <p>
-                The values below come from an acquired OpenDART filing. They are
-                a public-source product fixture, not benchmark labels or a
-                quality claim.
+                {ko
+                  ? "아래 값은 수집된 OpenDART 공시에서 가져온 공개 원문 제품 픽스처이며, 벤치마크 정답이나 품질 주장이 아닙니다."
+                  : "The values below come from an acquired OpenDART filing. They are a public-source product fixture, not benchmark labels or a quality claim."}
               </p>
             </div>
             <TavonelProofDemo />
@@ -155,10 +163,14 @@ export function TavonelMarketingPage({
         <section className="tv-route-cta">
           <div>
             <p>Page → Structure → Evidence → Knowledge → Intelligence</p>
-            <h2>Build knowledge that can always show its work.</h2>
+            <h2>
+              {ko
+                ? "언제든 근거를 제시할 수 있는 지식을 만드세요."
+                : "Build knowledge that can always show its work."}
+            </h2>
           </div>
           <Link href="/signup" className="tv-button tv-button-light">
-            Start with your documents
+            {ko ? "내 문서로 시작하기" : "Start with your documents"}
           </Link>
         </section>
       </main>
@@ -169,10 +181,13 @@ export function TavonelMarketingPage({
 function ProductEvidence({
   evidence,
   path,
+  locale,
 }: {
   evidence: (typeof productEvidence)[string];
   path: string;
+  locale: StructaraLocale;
 }) {
+  const ko = locale === "ko";
   return (
     <figure className="tv-page-product-evidence">
       <div>
@@ -186,8 +201,14 @@ function ProductEvidence({
         />
       </div>
       <figcaption>
-        <span>{evidence.label}</span>
-        <strong>Public Filing Knowledge Demo</strong>
+        <span>
+          {ko
+            ? evidence.label.replace("Actual product", "실제 제품")
+            : evidence.label}
+        </span>
+        <strong>
+          {ko ? "공개 공시 지식 데모" : "Public Filing Knowledge Demo"}
+        </strong>
       </figcaption>
     </figure>
   );

@@ -16,7 +16,7 @@ test.describe("reduced motion is attenuation, not removal", () => {
   test("durations clamp to a visible minimum rather than zero", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
     const probe = await page.evaluate(() => {
       const element = document.createElement("div");
@@ -54,7 +54,7 @@ test.describe("reduced motion is attenuation, not removal", () => {
   test("no element is left invisible when motion is reduced", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     // The failure mode a JavaScript reveal fallback introduces: content that
     // starts at opacity 0 and is never revealed. Nothing may be transparent
     // and still occupy layout.
@@ -76,7 +76,7 @@ test.describe("typed custom properties", () => {
   test("the facing spread keeps its columns whatever the ratio", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
     // The ratio is selected by `data-ratio` in CSS rather than written from
     // the component, because a flex value cannot be passed safely through a
@@ -104,7 +104,7 @@ test.describe("typed custom properties", () => {
   test("the progress property is registered and animatable", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     const registered = await page.evaluate(() => {
       const element = document.createElement("div");
       document.body.append(element);

@@ -973,7 +973,7 @@
     border-color: #72c7d6;
   }
 }
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .hero {
     grid-template-columns: 1fr;
     padding-top: 120px;
@@ -1004,7 +1004,7 @@
     border-bottom: 1px solid #cbc9c1;
   }
 }
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .siteHeader {
     grid-template-columns: 1fr auto;
     gap: 12px;

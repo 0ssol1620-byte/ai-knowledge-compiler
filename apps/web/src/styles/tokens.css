@@ -34,7 +34,7 @@
     --ink-0: oklch(16% 0.012 250); /* #0B0D10 */
     --ink-1: oklch(30% 0.014 250); /* #2B3038 */
     --ink-2: oklch(50% 0.012 250); /* #626A76 */
-    --ink-3: oklch(63% 0.01 250); /* #8B929C */
+    --ink-3: oklch(50% 0.01 250); /* WCAG AA metadata on --paper-0 */
 
     /* ── INSTRUMENT surface ─────────────────────────── */
     --inst-0: oklch(14% 0.01 250); /* #0A0C10 */
@@ -42,7 +42,7 @@
     --inst-2: oklch(22% 0.012 250); /* #191D25 */
     --inst-ink-0: oklch(94% 0.005 250); /* #EDF0F4 */
     --inst-ink-1: oklch(74% 0.01 250); /* #A6AEBA */
-    --inst-ink-2: oklch(54% 0.012 250); /* #6B7481 */
+    --inst-ink-2: oklch(64% 0.012 250); /* WCAG AA on --inst-0 */
 
     /* ── RULES — alpha, never a hardcoded hex (§6.3) ── */
     --rule-paper-1: oklch(16% 0.012 250 / 6%);
@@ -269,8 +269,7 @@
     color: var(--tv-bs-card-foreground);
     border: 1px solid var(--tv-bs-border);
     border-radius: var(--tv-bs-radius-lg);
-    transition: border-color var(--tv-bs-duration-ui)
-      var(--tv-bs-ease-reveal);
+    transition: border-color var(--tv-bs-duration-ui) var(--tv-bs-ease-reveal);
   }
 
   .tv-card:hover {

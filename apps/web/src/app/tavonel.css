@@ -67,6 +67,18 @@
     radial-gradient(circle at 80% 70%, rgb(42 168 189 / 2.5%), transparent 36%);
 }
 
+@layer utilities {
+  /* WCAG-readable leaf copy must not collapse inside dense evidence surfaces. */
+  :where(p, span, strong, b, em, small, code, pre, li, dt, dd, th, td, caption) {
+    font-size: max(12px, 1em) !important;
+  }
+
+  /* Interactive copy has the stricter §7.3 rendered-size floor. */
+  main :where(a[href], button, input, select, textarea, summary, label) {
+    font-size: max(14px, 1em) !important;
+  }
+}
+
 body {
   background: var(--tv-canvas);
   color: var(--tv-ink);
@@ -375,6 +387,11 @@ body.tv-menu-open {
   overflow: clip;
 }
 
+.tv-home > section:not(.tv-hero-comp) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 .tv-home-hero {
   position: relative;
   min-height: 900px;
@@ -440,7 +457,7 @@ body.tv-menu-open {
 .tv-compiler-sequence {
   margin: 14px 0 0;
   color: var(--tv-graphite);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.045em;
 }
@@ -937,7 +954,7 @@ body.tv-menu-open {
 .tv-chapter-copy small {
   display: block;
   margin-top: 32px;
-  color: #6f7b91;
+  color: #8c96aa;
   font-size: 11px;
 }
 
@@ -2050,7 +2067,7 @@ body.tv-menu-open {
 
 .tv-footer-grid nav a {
   color: #8f9bb0;
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: none;
   text-transform: capitalize;
 }
@@ -3304,7 +3321,7 @@ body.tv-menu-open {
   background: #15181d;
   border: 0;
   color: #cbd0d8;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.025em;
 }
 
@@ -4540,6 +4557,26 @@ body.tv-menu-open {
   border-color: #87a5ff;
   outline: 2px solid rgb(49 91 232 / 34%);
   outline-offset: 2px;
+}
+
+.login-page .login-google {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #d7d9dd;
+  border-radius: 6px;
+  background: var(--tv-surface);
+  color: var(--tv-ink);
+  font: inherit;
+  font-weight: 650;
+}
+
+.login-page .login-google:hover:not(:disabled) {
+  border-color: #aeb3bb;
+  background: #f3f4f5;
 }
 
 .login-page .login-form .primary-button {

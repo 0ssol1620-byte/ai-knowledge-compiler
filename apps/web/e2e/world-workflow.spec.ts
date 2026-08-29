@@ -199,6 +199,9 @@ test.describe("keyboard operation, no mouse", () => {
     page,
   }) => {
     await page.goto("/app/world", { waitUntil: "domcontentloaded" });
+    await expect(
+      page.locator('.app-frame[data-app-hydrated="true"]'),
+    ).toBeVisible();
 
     const search = page.getByLabel("Search objects in the world");
     await search.focus();

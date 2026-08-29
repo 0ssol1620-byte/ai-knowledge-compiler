@@ -22,7 +22,7 @@ import {
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AccountMenu } from "@/components/account-menu";
 import { BrandMark } from "@/components/brand-mark";
@@ -67,6 +67,7 @@ const COMMAND_ENTRIES = [
 export function AuthenticatedShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const frameRef = useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [sessionState, setSessionState] = useState<
     "checking" | "ready" | "denied" | "error"
@@ -77,6 +78,12 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
   const setSession = useAuthStore((state) => state.setSession);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    frame?.setAttribute("data-app-hydrated", "true");
+    return () => frame?.removeAttribute("data-app-hydrated");
+  }, []);
 
   useEffect(() => {
     if (DEMO_MODE) {
@@ -191,7 +198,10 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
     .toUpperCase();
 
   return (
-    <div className={clsx("app-frame", collapsed && "sidebar-collapsed")}>
+    <div
+      ref={frameRef}
+      className={clsx("app-frame", collapsed && "sidebar-collapsed")}
+    >
       {DEMO_MODE && (
         <div className="demo-mode-banner" role="status">
           Demo workspace · No documents are processed and no credits are used.

@@ -590,7 +590,7 @@ a {
   padding: 1px 5px;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 12px;
   box-shadow: var(--shadow-xs);
 }
 
@@ -1693,7 +1693,7 @@ a {
   grid-column: 1 / -1;
   margin-top: 3px;
   color: var(--text-tertiary);
-  font-size: 7px;
+  font-size: 12px;
   font-style: normal;
   text-align: right;
 }
@@ -2029,7 +2029,7 @@ a {
   width: 31px;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -2094,7 +2094,7 @@ a {
   color: #69717d;
   /* impeccable-disable-next-line overused-font -- facsimile of the source PDF, not product UI type */
   font-family: Arial, sans-serif;
-  font-size: 0.62em;
+  font-size: max(12px, 0.62em);
   letter-spacing: 0.08em;
 }
 
@@ -2117,7 +2117,7 @@ a {
 
 .paper-page h3 {
   margin: 6% 0 2%;
-  font-size: 1.15em;
+  font-size: max(1.15em, 15px);
 }
 
 .paper-page p {
@@ -5521,7 +5521,7 @@ a {
   background: var(--surface-subtle);
   padding: 2px 5px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .mobile-app-nav {
@@ -5597,7 +5597,7 @@ a {
 .command-palette kbd {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 @media (max-width: 1180px) {
@@ -5916,7 +5916,7 @@ a {
   font-weight: 650;
 }
 
-.knowledge-tabs {
+.knowledge-view-tabs {
   display: flex;
   align-items: end;
   gap: 2px;
@@ -5925,8 +5925,11 @@ a {
   padding: 0 14px;
 }
 
-.knowledge-tabs button {
+.knowledge-view-tabs button {
+  display: inline-flex;
   height: 41px;
+  align-items: center;
+  gap: 6px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -5935,10 +5938,27 @@ a {
   font-size: 11px;
 }
 
-.knowledge-tabs button.active {
+.knowledge-view-tabs button.active {
   border-bottom-color: var(--accent);
   color: var(--accent);
   font-weight: 650;
+}
+
+.knowledge-health-inline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.knowledge-health-inline span {
+  white-space: nowrap;
+}
+
+.knowledge-health-inline strong {
+  color: var(--text);
+  font-family: var(--font-mono);
 }
 
 .knowledge-empty {
@@ -6765,26 +6785,77 @@ a {
     height: calc(100dvh - var(--topbar-height) - 64px);
   }
 
+  .knowledge-studio-page {
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
   .app-frame:has(.demo-mode-banner) .knowledge-studio-page,
   .app-frame:has(.demo-mode-banner) .review-studio-page {
     height: calc(100dvh - var(--topbar-height) - 64px - 30px);
   }
 
   .knowledge-layout {
-    grid-template-columns: 1fr;
+    display: block;
+    overflow: auto;
   }
 
-  .knowledge-explorer,
   .knowledge-evidence-panel {
     display: none;
   }
 
-  .knowledge-tabs {
+  .knowledge-view-tabs {
     overflow-x: auto;
   }
 
-  .knowledge-tabs button {
+  .knowledge-view-tabs button {
     flex: 0 0 auto;
+  }
+
+  .knowledge-context-header {
+    min-height: 104px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 10px 12px;
+  }
+
+  .knowledge-context-header > div:first-child {
+    flex-basis: calc(100% - 150px);
+  }
+
+  .knowledge-health-inline {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .knowledge-explorer {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(max-content, 1fr));
+    gap: 6px;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 10px;
+  }
+
+  .knowledge-explorer > label {
+    display: flex;
+    grid-column: 1 / -1;
+  }
+
+  .knowledge-explorer > span {
+    display: none;
+  }
+
+  .knowledge-explorer > button {
+    min-width: 92px;
+    justify-content: center;
+    border: 1px solid var(--border);
+  }
+
+  .knowledge-explorer > button span {
+    display: inline;
   }
 
   .developer-quickstart {
@@ -7099,7 +7170,7 @@ a {
 
   .document-identity h1 {
     max-width: 46vw;
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .document-classification-row {

@@ -98,7 +98,7 @@ describe("the claims pack", () => {
     );
     expect(korean, "the pack ships no must_say at all").toBeTruthy();
 
-    const { must_say_en: _dropped, ...withoutEnglish } = korean!;
+    const withoutEnglish = { ...korean!, must_say_en: undefined };
     const context = claimContext(withoutEnglish);
 
     expect(context[0]!.lang).toBe("ko");

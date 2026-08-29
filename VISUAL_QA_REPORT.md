@@ -140,3 +140,26 @@ replacement nonce design is not an acceptable performance optimization.
 The locally executable visual, trust, interaction, accessibility, contract, and
 asset gates pass. Production release still depends on the external gates above.
 No status label should be interpreted as replacing those missing artifacts.
+
+## 2026-08-30 P0-P2 release verification
+
+The current production build was re-verified after the P0-P2 accessibility,
+responsive, localization, hydration, and performance remediation:
+
+- Playwright: 220 passed, 18 intentional project-scope skips, 0 failed across
+  desktop, mobile, 1920, 1440, 1280, 1024, 768, 390, 360, and reduced-motion
+  projects.
+- All 11 desktop visual baselines passed after direct inspection and approved
+  baseline regeneration.
+- Representative WCAG 2 A/AA scans passed with below-the-fold content fully
+  laid out for inspection.
+- Forced colors, 200% text scaling, 12px visible-text floor, 14px control and
+  form-label floor, keyboard-only WORLD workflows, and mobile overflow checks
+  passed.
+- Lighthouse completed all 12 configured runs for `/`, `/product`,
+  `/benchmarks`, and `/pricing`; every blocking assertion passed. The remaining
+  unused-JavaScript findings are non-blocking opportunities, not release-gate
+  failures.
+
+Automated evidence confirms implementation integrity, not subjective approval.
+**FOUNDER VISUAL REVIEW REQUIRED.**

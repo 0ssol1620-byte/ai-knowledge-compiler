@@ -1,4 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function expectHydrated(page: Page) {
+  await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true", {
+    timeout: 15_000,
+  });
+  const appFrame = page.locator(".app-frame");
+  if ((await appFrame.count()) > 0) {
+    await expect(appFrame).toHaveAttribute("data-app-hydrated", "true", {
+      timeout: 15_000,
+    });
+  }
+}
 
 const representativeRoutes = [
   "/",
@@ -27,6 +39,7 @@ test("representative public and product surfaces remain usable across the releas
 
   for (const route of representativeRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expectHydrated(page);
     expect(
       response?.status(),
       `${route} response on ${testInfo.project.name}`,

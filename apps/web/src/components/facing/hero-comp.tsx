@@ -4,6 +4,7 @@ import { FacingPages } from "@/components/facing/facing-pages";
 import { HeroDropzone } from "@/components/facing/hero-dropzone";
 import { bboxStyle } from "@/lib/bbox";
 import type { ThreadAnchor } from "@/lib/facing/thread";
+import type { StructaraLocale } from "@/lib/locale";
 
 /**
  * Hero static comps — DESIGN_MASTER_V3 §12.2, W1.
@@ -73,6 +74,7 @@ const ANCHORS: readonly ThreadAnchor[] = [
 export function HeroComp({
   variant,
   copy,
+  locale = "en",
   /**
    * Comps render the CTAs as inert <span> so an unwired control never reaches
    * the page (§14.3). The live hero passes `live` and gets real controls and a
@@ -82,8 +84,10 @@ export function HeroComp({
 }: {
   variant: HeroVariant;
   copy: HeroCopy;
+  locale?: StructaraLocale;
   live?: boolean;
 }) {
+  const korean = locale === "ko";
   return (
     <section
       // tv-paper carries the §15.3 fibre. data-surface picks the amplitude for
@@ -94,7 +98,9 @@ export function HeroComp({
       data-live={live || undefined}
     >
       <div className="tv-hero-comp-copy">
-        <p className="tv-hero-comp-eyebrow">The Knowledge Compiler</p>
+        <p className="tv-hero-comp-eyebrow">
+          {korean ? "지식 컴파일러" : "The Knowledge Compiler"}
+        </p>
         <h1>
           {copy.headline.map((line, index) => (
             <span key={line}>
@@ -114,30 +120,32 @@ export function HeroComp({
                 className="tv-hero-comp-cta"
                 data-kind="primary"
               >
-                Start compiling
+                {korean ? "컴파일 시작" : "Start compiling"}
               </Link>
               <Link
                 href="/demo/dart"
                 className="tv-hero-comp-cta"
                 data-kind="secondary"
               >
-                Inspect the proof
+                {korean ? "근거 확인" : "Inspect the proof"}
               </Link>
             </>
           ) : (
             <>
               <span className="tv-hero-comp-cta" data-kind="primary">
-                Start compiling
+                {korean ? "컴파일 시작" : "Start compiling"}
               </span>
               <span className="tv-hero-comp-cta" data-kind="secondary">
-                Inspect the proof
+                {korean ? "근거 확인" : "Inspect the proof"}
               </span>
             </>
           )}
         </div>
 
         <p className="tv-hero-comp-trust">
-          Source-linked output · KO DART / US SEC · No unverified claims
+          {korean
+            ? "원본 연결 출력 · 한국 DART / 미국 SEC · 검증되지 않은 주장 없음"
+            : "Source-linked output · KO DART / US SEC · No unverified claims"}
         </p>
       </div>
 
@@ -148,14 +156,24 @@ export function HeroComp({
           anchors={ANCHORS}
           meta={
             <>
-              <span>Sample · Journal of Reliable AI Systems · Page 8</span>
-              <span data-state="verified">Verified</span>
+              <span>
+                {korean
+                  ? "샘플 · 신뢰할 수 있는 AI 시스템 저널 · 8페이지"
+                  : "Sample · Journal of Reliable AI Systems · Page 8"}
+              </span>
+              <span data-state="verified">
+                {korean ? "검증됨" : "Verified"}
+              </span>
             </>
           }
           caption={
             live
-              ? "Sample document, compiled. Drop your own below."
-              : "Drop a document here to compile your own — sample shown"
+              ? korean
+                ? "샘플 문서를 컴파일했습니다. 아래에 문서를 놓아 직접 확인하세요."
+                : "Sample document, compiled. Drop your own below."
+              : korean
+                ? "문서를 놓아 직접 컴파일하세요. 현재는 샘플입니다."
+                : "Drop a document here to compile your own — sample shown"
           }
           verso={<VersoPage />}
           recto={<RectoOutput />}
@@ -275,7 +293,10 @@ const PAGE_BLOCKS = [
       </table>
     ),
   },
-].map((block) => ({ ...block, bbox: [...block.bbox] as [number, number, number, number] }));
+].map((block) => ({
+  ...block,
+  bbox: [...block.bbox] as [number, number, number, number],
+}));
 
 /**
  * The knowledge side. Real product vocabulary — typed blocks, a source
@@ -287,7 +308,9 @@ function RectoOutput() {
     <div className="tv-hero-comp-output">
       <div className="tv-hero-comp-row" data-kind="title">
         <span className="tv-hero-comp-tag">Title</span>
-        <strong>Evaluating Evidence Fidelity in Retrieval-Augmented Generation</strong>
+        <strong>
+          Evaluating Evidence Fidelity in Retrieval-Augmented Generation
+        </strong>
         <span className="tv-hero-comp-ref">p.8 · 112, 94, 882, 158</span>
       </div>
 
