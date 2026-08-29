@@ -35,7 +35,7 @@ from runpod_qualification import (
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-ATTEMPT = "phase-diagnostic-v1"
+ATTEMPT = "phase-diagnostic-v2"
 PRIVATE_ROOT = HERE / ".private" / "runpod-phase-diagnostic" / ATTEMPT
 RECEIPT_ROOT = HERE / "receipts" / "runtime-phase-diagnostic"
 PORT = 8001
@@ -77,7 +77,7 @@ def _phase_function(role: str) -> str:
   local name="$1"
   local status="${{2:-RUNNING}}"
   local rc="${{3:-0}}"
-  PHASE_NAME="$name" PHASE_STATUS="$status" PHASE_RC="$rc" /usr/bin/python3.11 - <<'PY'
+  PHASE_NAME="$name" PHASE_STATUS="$status" PHASE_RC="$rc" "$PHASE_PYTHON" - <<'PY'
 import json, os, time
 from pathlib import Path
 path=Path(os.environ["PHASE_HTTP_FILE"])
@@ -156,6 +156,12 @@ def _decorate_primary(raw: str) -> str:
     )
     text = _replace_once(
         text,
+        '/usr/bin/python3.11 -m venv "$venv"',
+        '"$PHASE_PYTHON" -m venv "$venv"',
+        label="primary python resolver",
+    )
+    text = _replace_once(
+        text,
         "fi\n\n# PaddlePaddle 3.2.1 still reads FieldDescriptor.label",
         "fi\nphase RUNTIME_INSTALL_DONE\n\n# PaddlePaddle 3.2.1 still reads FieldDescriptor.label",
         label="primary runtime done",
@@ -205,9 +211,12 @@ def _startup(role: str) -> tuple[str, dict[str, str]]:
         f"ROOT={root}",
         "mkdir -p $ROOT/http $ROOT/runner $ROOT/input $ROOT/receipts",
         "export PHASE_HTTP_FILE=$ROOT/http/evidence.json",
+        'PHASE_PYTHON="$(command -v python3 || command -v python || true)"',
+        'test -n "$PHASE_PYTHON"',
+        "export PHASE_PYTHON",
         _phase_function(role),
         "phase STARTED",
-        "/usr/bin/python3.11 -m http.server 8001 --bind 0.0.0.0 --directory $ROOT/http >/tmp/tavonel-phase-http.log 2>&1 &",  # noqa: E501
+        '"$PHASE_PYTHON" -m http.server 8001 --bind 0.0.0.0 --directory $ROOT/http >/tmp/tavonel-phase-http.log 2>&1 &',  # noqa: E501
         "server=$!",
         "phase HTTP_SERVER_STARTED",
         "trap 'rc=$?; phase FAILED FAIL $rc; wait $server' ERR",
@@ -223,7 +232,7 @@ def _startup(role: str) -> tuple[str, dict[str, str]]:
     if role == "strong":
         setup.extend(
             [
-                "RECEIPT_ROOT=$ROOT/receipts PYTHON_BIN=/usr/bin/python3.11 bash $ROOT/runner/bootstrap.sh",  # noqa: E501
+                'RECEIPT_ROOT=$ROOT/receipts PYTHON_BIN="$PHASE_PYTHON" bash $ROOT/runner/bootstrap.sh',  # noqa: E501
                 "phase DIAGNOSTIC_COMPLETE PASS",
                 "wait $server",
             ]
