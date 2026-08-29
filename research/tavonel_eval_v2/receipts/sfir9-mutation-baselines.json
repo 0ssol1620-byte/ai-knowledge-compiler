@@ -1,10 +1,10 @@
 {
   "all_baselines_green": true,
-  "baselines_digest": "sha256:9ee888de8081f37086fc0731103bc62369d27f9562209abccfc872a2b61c1057",
-  "components_run": 13,
-  "components_with_no_survivor": 13,
-  "mutations_declared": 436,
-  "mutations_killed": 436,
+  "baselines_digest": "sha256:f63415dc505660dc235cba4a8d1739c4575ff8d33e087af68590bbb5b24ba441",
+  "components_run": 14,
+  "components_with_no_survivor": 14,
+  "mutations_declared": 465,
+  "mutations_killed": 465,
   "results": [
     {
       "baseline_tests_selected": 29,
@@ -1705,8 +1705,8 @@
     {
       "baseline_tests_selected": 53,
       "component": "freeze_gate",
-      "mutations_declared": 45,
-      "mutations_killed": 45,
+      "mutations_declared": 46,
+      "mutations_killed": 46,
       "outcomes": [
         {
           "mutation": "F1 the gate opens regardless of the conditions",
@@ -1833,6 +1833,10 @@
           "outcome": "KILLED"
         },
         {
+          "mutation": "F23i the freeze suite is dropped from the support suites",
+          "outcome": "KILLED"
+        },
+        {
           "mutation": "F18b a failing suite reports only the count, not the tests",
           "outcome": "KILLED"
         },
@@ -1892,6 +1896,129 @@
       "state": "RUN",
       "survivors": [],
       "target": "tools/sfir9_freeze_gate.py"
+    },
+    {
+      "baseline_tests_selected": 24,
+      "component": "freeze",
+      "mutations_declared": 28,
+      "mutations_killed": 28,
+      "outcomes": [
+        {
+          "mutation": "Z1 a dirty namespace is frozen anyway",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z2 a closed gate does not stop the freeze",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z3 an unproven condition is treated as passing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z4 an opened cohort does not stop the freeze",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z5 a second freeze overwrites the first",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z6 a missing supporting receipt is skipped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z7 a git failure is assumed away",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z8 the gate verdict is read from the receipt instead of re-derived",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z9 the freeze stops recording that it re-derived the gate",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z10 the supporting receipts are bound by nothing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z11 the receipt file hash is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z12 the receipt's own digest is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z13 the bound receipt list is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z14 the gate receipt is dropped from the bound list",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z15 the dirty-tree refusal stops naming what was uncommitted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z16 the instrument commit is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z17 the protocol recorded is the draft one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z18 the closure is not bound into the freeze",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z19 the freeze manifest is not bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z20 the upstream SFIR8 binding is not bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z21 the freeze digest is not recomputed on verify",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z22 a draft protocol verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z23 any state verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z24 verification passes with problems recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z25 the digest covers itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z26 a refused freeze exits zero",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z27 the freeze stops saying what it does not establish",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z28 the freeze stops saying what it authorises",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_freeze.py"
     }
   ],
   "schema": "tavonel.sfir9.mutation_baselines.v1",

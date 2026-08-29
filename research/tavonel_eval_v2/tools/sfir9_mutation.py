@@ -58,6 +58,7 @@ COMPONENTS = (
     "audit",
     "taxonomy",
     "freeze_gate",
+    "freeze",
 )
 
 KILLED = "KILLED"

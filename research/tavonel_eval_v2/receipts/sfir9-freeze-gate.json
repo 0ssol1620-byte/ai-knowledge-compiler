@@ -2,14 +2,14 @@
   "conditions": [
     {
       "condition": "sfir8_equivalence_j1_j2",
-      "detail": "47 passed in 2.71s",
+      "detail": "47 passed in 2.81s",
       "establishes": "segmented traversal equals uninterrupted traversal, and a canonical address equals the redirect-followed one",
       "how": "evaluated in this run",
       "state": "PASS"
     },
     {
       "condition": "component_suites",
-      "detail": "748 passed in 38.95s",
+      "detail": "772 passed, 4 skipped in 40.80s",
       "establishes": "every component the freeze binds passes its own controls",
       "how": "evaluated in this run",
       "state": "PASS"
@@ -66,7 +66,7 @@
   ],
   "conditions_checked": 9,
   "conditions_passed": 9,
-  "gate_digest": "sha256:8418c6afaba4db7c78bec5db8333356a7836281c94ab1125f803d51e456c0119",
+  "gate_digest": "sha256:c1dbe7b07b65c1950b5fd79910a21a96bcbe4e1365d6e5aa47920aaf440916a9",
   "gate_opens": true,
   "schema": "tavonel.sfir9.freeze_gate.v1",
   "unproven_does_not_pass": "a condition nobody could measure and a condition that failed are different problems. Neither opens the gate.",

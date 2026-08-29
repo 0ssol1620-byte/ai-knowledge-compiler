@@ -168,6 +168,7 @@ SUPPORT_SUITES = (
     "test_sfir9_mutation.py",
     "test_sfir9_freeze_gate.py",
     "test_sfir9_seam.py",
+    "test_sfir9_freeze.py",
 )
 
 
