@@ -1,0 +1,32 @@
+{
+  "schema": "tavonel.recovery.calibration_policy.v1",
+  "state": "DEVELOPMENT_ONLY_PRE_FREEZE",
+  "prediction_only": {
+    "threshold": 0.5,
+    "reason": "fixed simple baseline threshold; not tuned on confirmatory outcomes",
+    "historical_finding": "the earlier prediction-only blind detector did not beat the length-only floor consistently, so this arm is retained as a deliberately weak baseline rather than promoted as a product claim"
+  },
+  "disagreement": {
+    "normalized_text_similarity_threshold": 0.65,
+    "critical_token_mismatch_policy": "UNRESOLVED_OR_ESCALATE",
+    "source": "packages/cir-python/src/akc_cir/parser_verification.py"
+  },
+  "tavonel_evidence_recovery": {
+    "risk_threshold": 0.55,
+    "uncertainty_threshold": 0.35,
+    "cross_page_risk_threshold": 0.55,
+    "strong_acceptance_requires_independent_evidence": true,
+    "unresolved_policy": "FAIL_CLOSED_NO_SILENT_ACCEPT",
+    "source": "packages/cir-python/src/akc_cir/parser_verification.py"
+  },
+  "selection": {
+    "stage1_equal_source_family_quota": {
+      "drdocbench": 100,
+      "sec": 100,
+      "dart": 100
+    },
+    "quota_reallocation_on_shortfall": false,
+    "outcome_derived_selection": false
+  },
+  "confirmatory_retuning_allowed": false
+}
