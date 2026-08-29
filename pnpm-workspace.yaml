@@ -20,6 +20,7 @@ overrides:
   sharp: 0.35.3
 
 patchedDependencies:
+  extract-zip@2.0.1: patches/extract-zip@2.0.1.patch
   minimatch@3.1.5: patches/minimatch@3.1.5.patch
 
 allowBuilds:

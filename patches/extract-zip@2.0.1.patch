@@ -1,0 +1,18 @@
+diff --git a/index.js b/index.js
+index 23384ea16bb848616886f356d8d69f94325535bf..861cc4810b6c19e666356c0f4312c92dd13c13c6 100644
+--- a/index.js
++++ b/index.js
+@@ -127,5 +127,13 @@ class Extractor {
+     if (symlink) {
+       const link = await getStream(readStream)
++      const linkTarget = path.resolve(path.dirname(dest), link)
++      const relativeTarget = path.relative(this.opts.dir, linkTarget)
++      const outsideRoot = path.isAbsolute(relativeTarget) ||
++        relativeTarget === '..' ||
++        relativeTarget.startsWith(`..${path.sep}`)
++      if (outsideRoot) {
++        throw new Error(`Out of bound symlink target "${link}" found while processing file ${entry.fileName}`)
++      }
+       debug('creating symlink', link, dest)
+       await fs.symlink(link, dest)
+     } else {

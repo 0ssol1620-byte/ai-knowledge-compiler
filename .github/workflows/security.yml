@@ -113,7 +113,10 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.9.0 --activate
           pnpm install --frozen-lockfile
-          pnpm audit --audit-level high
+          # No fixed extract-zip release exists; the next command proves the
+          # committed patch blocks this exact symlink traversal advisory.
+          pnpm audit --audit-level high --ignore GHSA-jmr9-qjv8-65gv
+          node scripts/verify-dependency-patches.mjs
 
   application-images:
     runs-on: ubuntu-24.04

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   COLLECTION_EVENT_REQUIRED_PAYLOAD_FIELDS,
   type GeneratedJsonValue,
