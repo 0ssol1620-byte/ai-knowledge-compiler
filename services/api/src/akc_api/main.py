@@ -8883,6 +8883,47 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     },
                 )
         response = await call_next(request)
+        principal = getattr(request.state, "principal", None)
+        if (
+            request.method in {"GET", "HEAD"}
+            and response.status_code in {403, 404}
+            and isinstance(principal, Principal)
+        ):
+            route = request.scope.get("route")
+            route_template = getattr(route, "path", "unmatched")
+            try:
+                async with request.app.state.database.sessions.begin() as session:
+                    await set_rls_context(
+                        session,
+                        tenant_id=principal.tenant_id,
+                        user_id=principal.user_id,
+                    )
+                    await audit(
+                        session,
+                        tenant_id=principal.tenant_id,
+                        actor_id=principal.user_id,
+                        action="security.read_access_denied",
+                        target_type="http_route",
+                        target_id=str(route_template)[:200],
+                        metadata={
+                            "method": request.method,
+                            "status_code": response.status_code,
+                            "request_id": request_id,
+                        },
+                    )
+            except Exception:
+                response = JSONResponse(
+                    status_code=503,
+                    content={
+                        "error": {
+                            "code": "AUDIT_WRITE_FAILED",
+                            "message": "Security audit recording failed.",
+                            "request_id": request_id,
+                            "retryable": True,
+                            "details": {},
+                        }
+                    },
+                )
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"

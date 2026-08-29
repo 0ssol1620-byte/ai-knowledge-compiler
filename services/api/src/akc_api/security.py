@@ -185,6 +185,7 @@ async def get_principal(
                 tenant_id=principal.tenant_id,
                 user_id=principal.user_id,
             )
+            request.state.principal = principal
             return principal
     if token is None:
         token = request.cookies.get(settings.session_cookie_name)
@@ -207,13 +208,15 @@ async def get_principal(
     )
     if user is None or membership is None:
         raise HTTPException(status_code=401, detail={"code": "SESSION_REVOKED"})
-    return Principal(
+    verified_principal = Principal(
         user_id=principal.user_id,
         tenant_id=principal.tenant_id,
         roles=frozenset({membership.role}),
         scopes=principal.scopes,
         auth_type=principal.auth_type,
     )
+    request.state.principal = verified_principal
+    return verified_principal
 
 
 def require_roles(

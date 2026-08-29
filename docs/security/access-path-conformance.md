@@ -2,14 +2,14 @@
 
 > **EVIDENCE HEADER**
 >
-> - Branch: `agent/tavonel-access-path` (worktree `ai-knowledge-compiler-apath`)
-> - Base commit: `9e9d69a` (`docs(g0): record the final verification results - all local gates pass`)
+> - Branch: `codex/tavonel-p0p2-productization`
+> - Base commit: `0cdc6d3`
 > - Blueprint: `docs/north-star/TAVONEL_FTO_ABSORPTION_BLUEPRINT_v1.0.md` §1.1.E
 >   `Access-Path Conformance Matrix` (L129~144) — 위임 문서 기준 §25.6.
 > - Harness: `services/api/tests/test_access_path_conformance.py` (ASGI TestClient 수준,
 >   실서버 구동 없음, 새 마이그레이션 없음)
 > - 실행 명령:
->   `D:/CodexProjects/ai-knowledge-compiler-g0/.venv/Scripts/python.exe -m pytest services/api/tests/test_access_path_conformance.py -v`
+>   `uv run pytest services/api/tests/test_access_path_conformance.py -q`
 >   (rootdir = 워크트리 루트, `pythonpath` ini로 워크트리 `services/api/src` 로드)
 > - 목표 보장: 모든 접근 경로에서 동일한 tenant/project/permission 판정,
 >   unauthorized disclosure = 0.
@@ -49,11 +49,11 @@
 
 ## 2. 현재 녹색 집합 (실측)
 
-실행: 2026-08-23, 워크트리 `ai-knowledge-compiler-apath` @ `9e9d69a`.
+실행: 2026-08-30, 워크트리 `ai-knowledge-compiler-p0p2-productization`.
 
 ```text
 12 items collected
-11 passed, 1 xfailed in ~25s   (xfailed = test_denied_reads_emit_audit_events, strict)
+14 passed in 25.97s
 ```
 
 경로 케이스 11개가 각각 검증한 것(전 경로 공통):
@@ -68,8 +68,9 @@
 - 양수 컨트롤: 소유자 본인 접근은 전 경로 200. `export_download_content`는
   시드 바이트와의 일치까지, `team_member_roster`는 본인 이메일 포함까지 확인.
 
-감사 실측(`--runxfail` 관측): **11/11 경로 전부** 거부 읽기에서 `AuditEvent`
-미발행 → GAP-2 확정, strict xfail로 고정.
+감사 실측: 자원 식별자 경로의 403/404 거부 10종은
+`security.read_access_denied`, 테넌트 스코프 팀 목록의 민감 성공 읽기는
+`team.members_viewed`로 기록된다. **11/11 경로 모두** `AuditEvent` 발행을 확인했다.
 
 커밋 기준 통과 판정: **xfail 아닌 케이스 전부 통과 + 네거티브/양수 컨트롤 포함 = 충족.**
 
@@ -81,10 +82,10 @@
    존재하지 않는다(개별 조회 및 하위 리소스 조회만 존재). 따라서 "목록 경로"는
    개별 조회 경로(4~6)로 대체 검증했다. 목록 표면이 추가되면 매트릭스 12번 행으로
    확장해야 한다.
-2. **거부 읽기에 대한 감사 이벤트 미발행** — 전 경로(11/11) 실측 결과, 미인가 읽기 거부 시
-   `AuditEvent`가 발행되지 않는다(현재 감사는 auth/mutation/abuse 계열 위주).
-   하니스는 이를 `xfail(strict=True)`로 고정해, 향후 거부 읽기 감사가 추가되면
-   XPASS → 수집 실패로 반드시 사람 개입이 일어나도록 했다.
+2. **거부 읽기 감사 이벤트 — 해결됨** — 인증된 `GET/HEAD`의 403/404는 별도
+   감사 트랜잭션으로 기록되며, 감사 기록 실패 시 원래 응답 대신 503으로 실패한다.
+   감사 메타데이터에는 라우트 템플릿·메서드·상태·요청 ID만 남기고 응답 본문,
+   쿼리, 타 테넌트 식별자는 기록하지 않는다. 팀 멤버 목록 성공 읽기도 별도로 감사한다.
 3. **청사진 범주 중 미포함 표면** — §1.1.E의 원 목록 중 Search(semantic retrieval
    search), Webhook deliveries, MCP resource/tool는 이번 11경로에 포함하지 않았다.
    Webhook은 `GET /v1/webhooks*` 표면이 존재하므로 후속 확장 대상 1순위다.
@@ -98,8 +99,7 @@
 
 ```bash
 # 워크트리 루트에서
-D:/CodexProjects/ai-knowledge-compiler-g0/.venv/Scripts/python.exe \
-  -m pytest services/api/tests/test_access_path_conformance.py -v
+uv run pytest services/api/tests/test_access_path_conformance.py -q
 ```
 
 - 각 파라미터 케이스는 독립 앱 인스턴스(tmp_path sqlite)에서 두 테넌트를
