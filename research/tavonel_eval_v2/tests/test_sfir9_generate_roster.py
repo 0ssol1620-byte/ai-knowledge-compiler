@@ -419,3 +419,73 @@ def test_a_refused_generation_exits_nonzero(sandbox, monkeypatch, capsys):
     monkeypatch.setattr(gen, "generate", refuse)
     assert gen.main(["--namespace", str(sandbox)]) == 1
     assert "REFUSED" in capsys.readouterr().out
+
+def test_an_ineligible_row_inside_the_partition_never_reaches_the_roster(sandbox, monkeypatch):
+    """Aimed at the partition, or the test is a coin flip.
+
+    A row that fails a predicate but lands where the roster is drawn from is the
+    only row that can prove the eligibility filter is wired into the selection
+    rather than merely counted.
+    """
+    rows = [
+        _row(0, UUID=admitted_uuid(930000)),
+        _row(1, UUID=admitted_uuid(940000), **{"Host Type": "GitLab"}),
+    ]
+    report = _generate(sandbox, _binding(_catalogue(sandbox, rows)), monkeypatch)
+    produced = [entry["host_uuid"] for entry in report["roster"]["entries"]]
+    assert produced == [admitted_uuid(930000)]
+    assert admitted_uuid(940000) not in produced
+
+
+def test_the_spent_set_is_keyed_on_the_host_id_not_the_address(sandbox, monkeypatch):
+    """Addresses move; the numeric id is what an earlier study actually spent.
+
+    The spent entry here carries an address that matches nothing in the
+    catalogue, so a generator keying on `name_with_owner` would exclude nobody.
+    """
+    spent_uuid = admitted_uuid(950000)
+    monkeypatch.setattr(
+        sfir7_roots,
+        "frozen_roster",
+        lambda: ({"host_uuid": spent_uuid, "name_with_owner": "someone/else"},),
+    )
+    rows = [_row(0, UUID=spent_uuid), _row(1, UUID=admitted_uuid(960000))]
+    report = _generate(sandbox, _binding(_catalogue(sandbox, rows)), monkeypatch)
+    produced = [entry["host_uuid"] for entry in report["roster"]["entries"]]
+    assert produced == [admitted_uuid(960000)]
+    assert report["selection"]["exclusions"]["host_uuids"] == [spent_uuid]
+
+
+def test_the_exclusion_proof_travels_into_the_roster(sandbox, monkeypatch):
+    """A reader a year from now sees which identities were withheld, and why."""
+    spent_uuid = admitted_uuid(970000)
+    monkeypatch.setattr(
+        sfir7_roots,
+        "frozen_roster",
+        lambda: ({"host_uuid": spent_uuid, "name_with_owner": "someone/else"},),
+    )
+    rows = [_row(0, UUID=spent_uuid), _row(1, UUID=admitted_uuid(980000))]
+    report = _generate(sandbox, _binding(_catalogue(sandbox, rows)), monkeypatch)
+    proof = report["roster"]["exclusion_proof"]
+    assert proof["host_uuids"] == [spent_uuid]
+    assert proof["count"] == 1
+    assert proof == report["selection"]["exclusions"]
+
+
+def test_the_receipt_binds_the_two_authorities_it_ran_under(sandbox, monkeypatch):
+    """A roster that does not name its freeze and its input is unreproducible."""
+    rows = [_row(index) for index in range(200)]
+    binding = _binding(_catalogue(sandbox, rows))
+    report = _generate(sandbox, binding, monkeypatch)
+    assert report["instrument_freeze"] == "sha256:f"
+    assert report["instrument_commit"] == "abc123"
+    assert report["cohort_input_binding"] == binding["binding_digest"]
+
+
+def test_the_receipt_says_the_cohort_establishes_nothing_about_capacity(sandbox, monkeypatch):
+    """No repository here has been contacted. C and Q do not exist yet."""
+    rows = [_row(index) for index in range(200)]
+    report = _generate(sandbox, _binding(_catalogue(sandbox, rows)), monkeypatch)
+    assert "C and Q do not exist yet" in report["what_this_does_not_establish"]
+    assert "has been contacted" in report["what_this_does_not_establish"]
+
