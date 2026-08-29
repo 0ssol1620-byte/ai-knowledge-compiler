@@ -1,0 +1,11 @@
+{
+  "freeze_digest": "sha256:09306d2fff3b61f60d82105763efe7ba1a5ff3357997683832e03d950e1a20db",
+  "protocol_digest": "sha256:5d50cbd241767d00977d55fb2b1fca516f7ef4a9c453f47de101ca346791147c",
+  "reason": "per-response provider delta is 2; exclusive attribution is not established",
+  "roster_seal": "sha256:cd0da092e18b9f6c87adbc79e05caa8cffbeff73b9f4a20cfe4f76fe586601cd",
+  "schema": "tavonel.sfir10r1.terminal_unproven.v1",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R1",
+  "terminal_digest": "sha256:d9629cfc05075fe8a3138b89021abf87e1f3b13ff62b450d548e206147e93e5b",
+  "what_this_means": "no PASS or FAIL may be sealed from this cohort",
+  "windows_used": 0
+}
