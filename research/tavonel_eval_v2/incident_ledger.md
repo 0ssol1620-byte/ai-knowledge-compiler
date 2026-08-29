@@ -10787,3 +10787,82 @@ attention, not of the code's defences.
 regenerate, and the gate that reads them refuses on `UNPROVEN` as well as on
 `FAIL` -- a condition nobody could measure and a condition that failed are
 different problems, and only one of them looks like a clean bill.
+
+## INC-V2-126 -- the freeze binds a receipt that a later commit may legitimately regenerate
+
+**Observed.** Re-verifying the instrument freeze against the working tree found
+`freeze_gate` DRIFTED while the other four bound receipts matched. Git reported
+the receipts directory clean, so the committed gate receipt was not the one the
+freeze recorded.
+
+**Cause, established rather than assumed.** The freeze bound
+`sfir9-freeze-gate.json` as it stood at the instrument commit `f2912af`, and
+that hash still matches the blob at `f2912af` exactly. Commit `4150f90` -- the
+commit that recorded the freeze -- also replaced the gate receipt with one
+regenerated in the main working tree. The two receipts carry the same verdict:
+`gate_opens` true in both, 9/9 in both, the same nine condition names, and no
+condition in a different state. They differ in wall-clock timings and in one
+suite line, `772 passed, 4 skipped` from the isolated checkout against
+`779 passed` from the main tree, which is the untracked
+`infra.runpod.v6.credentials` import resolving in one tree and not the other.
+
+**What was not done.** The freeze's recorded hash was not rewritten, and the
+older receipt was not restored over the newer one. Both moves would have made a
+check go green by editing the evidence it checks. This is the same ruling the
+fifty-nine historical frozen drifts are held under: preserve, do not reconcile.
+
+**The actual defect is the verification procedure, not the freeze.** A freeze
+binds bytes as they were at the instrument commit. Its supporting receipts are
+regenerable artifacts, so any honest re-run of the gate produces different bytes
+for the same verdict, and a verifier comparing the freeze against the *working
+tree* will report drift every time without that drift meaning anything. The
+comparison that carries information is against the blob at the instrument
+commit:
+
+    git show <instrument_commit>:<relative_path> | sha256sum
+
+**Status:** open as a documentation defect. The freeze receipt records
+`instrument_commit`, so the correct comparison is available to anyone holding
+the receipt, but the receipt does not say that the working tree is the wrong
+side to compare against. A verifier that drifts benignly on every re-run trains
+its reader to ignore it, and a binding whose failures are all false is not
+usefully different from no binding at all.
+
+## INC-V2-127 -- a killed mutation run left a frozen component mutated on disk
+
+**Observed.** A full mutation run was started, then stopped because it would
+have overwritten `sfir9-mutation-baselines.json`, which the instrument freeze
+binds by hash. Afterwards `test_every_mutation_anchor_is_present_in_its_component`
+reported one stale anchor, `audit: H30 the results are dropped from the receipt`.
+`git diff` showed why: `tools/sfir9_hostile_audit.py` was still holding H30,
+with `"results": results` replaced by `"results": []`.
+
+**Cause.** The engine applies a mutation, runs the suite, and restores the file
+in a `finally`. A `finally` covers an exception. It does not cover the process
+being killed, and the run was killed between the write and the restore.
+
+**Why it mattered more than a dirty file.** `sfir9_hostile_audit.py` is a
+component the instrument freeze binds. Left as it was, the next mutation run
+would have scored against a file nobody wrote, and the hostile audit itself
+would have produced a receipt with an empty `results` list while still
+reporting `audit_passes` true -- because the count of refusals and the count of
+results were both taken from the same emptied list.
+
+**Repair.** The single file was restored from its committed bytes with
+`git checkout -- <path>`, not a repository-wide restore, and all ten frozen
+closure components were then re-checked against the hashes the freeze recorded.
+All ten matched.
+
+**Change.** `sfir9_mutation.py` now refuses to run when any target it is about
+to mutate differs from its committed bytes, naming them. The check lives in the
+runner rather than in `run_component`, because the sandboxes the engine's own
+tests build are not in the repository at all and a check there would refuse
+every one of them.
+
+**Consequence that is not a defect.** A component cannot be measured before it
+is committed. That ordering is the point: a baseline recorded against
+uncommitted bytes describes a file that may never exist again.
+
+**Status:** closed. The engine refuses the condition, and two controls cover it
+-- one that a named dirty target refuses, and one that a clean tree does not.
+

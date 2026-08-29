@@ -280,9 +280,15 @@ def test_the_recorded_baselines_are_green():
 
 @pytest.mark.skipif(not RECEIPT.exists(), reason="the baselines have not been run")
 def test_the_recorded_baselines_actually_ran_something():
-    """A run over zero components would meet every other assertion here."""
+    """A run over zero components would meet every other assertion here.
+
+    Measured against FROZEN_COMPONENTS, not COMPONENTS. The instrument freeze
+    binds this receipt by hash, so it covers what existed at freeze time, and
+    regenerating it to add a later component would change bytes the freeze
+    points at (INC-V2-126).
+    """
     report = json.loads(RECEIPT.read_text(encoding="utf-8"))
-    assert report["components_run"] == len(engine.COMPONENTS)
+    assert report["components_run"] == len(engine.FROZEN_COMPONENTS)
     assert report["mutations_declared"] > 0
     for result in report["results"]:
         assert result["state"] == "RUN"
@@ -304,3 +310,105 @@ def test_a_genuinely_failing_suite_is_still_reported_as_red(sandbox):
     """So the previous test cannot pass by turning every refusal into EMPTY."""
     (sandbox / "tools/widget.py").write_text("LIMIT = 99\n", encoding="utf-8")
     assert _run(table(), sandbox)["state"] == engine.BASELINE_RED
+
+
+def _one_clean_result(table, **_kwargs):
+    return {
+        "component": table.component,
+        "target": table.target,
+        "state": "RUN",
+        "mutations_declared": 1,
+        "mutations_killed": 1,
+        "survivors": [],
+        "baseline_tests_selected": 1,
+        "outcomes": [{"mutation": "x", "outcome": engine.KILLED}],
+    }
+
+
+def test_every_post_freeze_component_has_its_own_baseline_receipt():
+    """Added after the freeze means recorded outside the frozen receipt.
+
+    Without this, a component could be added to COMPONENTS and never measured:
+    the frozen receipt cannot grow to cover it, and nothing else would ask.
+    """
+    for component in engine.POST_FREEZE_COMPONENTS:
+        receipt = NS / f"receipts/sfir9-{component.replace('_', '-')}-mutations.json"
+        assert receipt.is_file(), f"{component} has no baseline receipt at {receipt}"
+        report = json.loads(receipt.read_text(encoding="utf-8"))
+        assert report["all_baselines_green"] is True
+        assert [r["component"] for r in report["results"]] == [component]
+
+
+def test_the_two_component_lists_do_not_overlap():
+    """Control for the split: a component in both would be measured twice or not at all."""
+    assert not set(engine.FROZEN_COMPONENTS) & set(engine.POST_FREEZE_COMPONENTS)
+    assert set(engine.COMPONENTS) == set(engine.FROZEN_COMPONENTS) | set(
+        engine.POST_FREEZE_COMPONENTS
+    )
+
+
+def test_a_component_left_mutated_by_a_killed_run_is_refused(monkeypatch, capsys):
+    """`finally` does not survive a killed process (INC-V2-127).
+
+    A run stopped between writing a mutation and restoring it leaves the
+    component mutated on disk. Scoring the next run against that file would
+    measure something nobody wrote.
+    """
+    monkeypatch.setattr(engine, "uncommitted_targets", lambda _tables: ["tools/x.py"])
+    monkeypatch.setattr(engine, "run_component", _one_clean_result)
+    assert engine.main(["--component", "protocol"]) == 1
+    assert "differ from their committed bytes" in capsys.readouterr().out
+
+
+def test_a_clean_tree_is_not_refused(monkeypatch):
+    """Control for the test above."""
+    monkeypatch.setattr(engine, "uncommitted_targets", lambda _tables: [])
+    monkeypatch.setattr(engine, "run_component", _one_clean_result)
+    assert engine.main(["--component", "protocol"]) == 0
+
+
+def test_the_guard_reads_git_rather_than_the_filesystem():
+    """A file absent from the commit is uncommitted, not merely different."""
+    tables = engine.chosen_tables(["protocol"])
+    assert engine.uncommitted_targets(tables) == []
+
+
+def test_a_partial_run_writes_no_receipt_by_default(monkeypatch):
+    """The frozen baselines receipt is bound by the instrument freeze.
+
+    A one-component run overwriting it would leave the freeze pointing at a
+    report covering one component instead of all fifteen, under the same
+    filename and with a perfectly consistent digest.
+    """
+    monkeypatch.setattr(engine, "uncommitted_targets", lambda _tables: [])
+    written = []
+    monkeypatch.setattr(engine, "run_component", _one_clean_result)
+    monkeypatch.setattr(
+        Path, "write_bytes", lambda self, payload: written.append(self), raising=True
+    )
+    assert engine.main(["--component", "protocol"]) == 0
+    assert written == []
+
+
+def test_a_partial_run_writes_where_it_is_told(monkeypatch, tmp_path):
+    """Control for the test above: --output is how a partial run records itself."""
+    monkeypatch.setattr(engine, "uncommitted_targets", lambda _tables: [])
+    monkeypatch.setattr(engine, "run_component", _one_clean_result)
+    target = tmp_path / "one-component.json"
+    assert engine.main(["--component", "protocol", "--output", str(target)]) == 0
+    report = json.loads(target.read_text(encoding="utf-8"))
+    assert report["components_run"] == 1
+    assert report["all_baselines_green"] is True
+
+
+def test_a_full_run_still_writes_the_default_receipt(monkeypatch, tmp_path):
+    """Control for both: the default path is unchanged for a full run."""
+    monkeypatch.setattr(engine, "uncommitted_targets", lambda _tables: [])
+    written = []
+    monkeypatch.setattr(engine, "run_component", _one_clean_result)
+    monkeypatch.setattr(
+        Path, "write_bytes", lambda self, payload: written.append(self), raising=True
+    )
+    assert engine.main([]) == 0
+    assert written == [engine.OUTPUT]
+

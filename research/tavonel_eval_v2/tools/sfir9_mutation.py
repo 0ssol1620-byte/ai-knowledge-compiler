@@ -44,7 +44,9 @@ OUTPUT = NS / "receipts/sfir9-mutation-baselines.json"
 SCHEMA = "tavonel.sfir9.mutation_baselines.v1"
 
 #: One table module per component, in the freeze's own order.
-COMPONENTS = (
+#: The components the instrument freeze's baselines receipt covers. The freeze
+#: binds that receipt by hash, so this tuple is history and does not change.
+FROZEN_COMPONENTS = (
     "protocol",
     "transport",
     "identity",
@@ -60,6 +62,13 @@ COMPONENTS = (
     "freeze_gate",
     "freeze",
 )
+
+#: Components added after the instrument was frozen. Each records its own
+#: baseline in its own receipt, because regenerating the frozen one to include
+#: it would change bytes the freeze points at.
+POST_FREEZE_COMPONENTS = ("cohort_input",)
+
+COMPONENTS = FROZEN_COMPONENTS + POST_FREEZE_COMPONENTS
 
 KILLED = "KILLED"
 SURVIVED = "SURVIVED"
@@ -224,13 +233,53 @@ def baselines(results: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def chosen_tables(components: list[str] | None) -> tuple[Table, ...]:
+    return tuple(load(name) for name in (components or COMPONENTS))
+
+
+def uncommitted_targets(tables: tuple[Table, ...]) -> list[str]:
+    """Targets whose working bytes are not their committed bytes.
+
+    The engine restores every mutation in a `finally`, which covers an exception
+    and does not cover the process being killed. A component left mutated by an
+    interrupted run would otherwise be scored on the next one (INC-V2-127).
+    """
+    paths = sorted({table.target for table in tables})
+    result = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        ["git", "status", "--porcelain", "--", *paths],  # noqa: S607 - git from PATH
+        cwd=NS,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return [f"git status failed: {result.stderr.strip()}"]
+    return [line[3:].strip() for line in result.stdout.splitlines() if line.strip()]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--component", action="append", choices=COMPONENTS)
     parser.add_argument("--python", default=sys.executable)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="write the report here instead of the default receipt",
+    )
     args = parser.parse_args(argv)
 
-    chosen = [load(name) for name in (args.component or COMPONENTS)]
+    dirty = uncommitted_targets(chosen_tables(args.component))
+    if dirty:
+        print(
+            f"REFUSED  these components differ from their committed bytes: {dirty}. "
+            "A run killed part-way leaves its component mutated -- `finally` does "
+            "not survive a killed process -- and scoring against one would measure "
+            "a file nobody wrote."
+        )
+        return 1
+
+    chosen = list(chosen_tables(args.component))
     results = []
     for table in chosen:
         result = run_component(table, python=args.python)
@@ -244,11 +293,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"    {survivor['outcome']}  {survivor['mutation']}")
 
     report = baselines(results)
-    if args.component is None:
-        OUTPUT.write_bytes(
+    # A partial run has no default destination. The frozen baselines receipt
+    # is bound by the instrument freeze, and a one-component report
+    # overwriting it would leave the freeze pointing at a narrower report
+    # under the same filename, with a perfectly consistent digest.
+    default_target = OUTPUT if args.component is None else None
+    target = args.output if args.output is not None else default_target
+    if target is not None:
+        target.write_bytes(
             json.dumps(report, indent=2, sort_keys=True).encode("utf-8") + b"\n"
         )
-        print(f"written to {OUTPUT.relative_to(REPO).as_posix()}")
+        print(f"written to {target}")
     print("-" * 60)
     print(f"{report['mutations_killed']}/{report['mutations_declared']} killed")
     print(f"all baselines green: {report['all_baselines_green']}")
