@@ -9,6 +9,7 @@ RUN groupadd --system --gid 10001 tavonel \
     && useradd --system --uid 10001 --gid tavonel --home /nonexistent --shell /usr/sbin/nologin tavonel \
     && pip install --no-cache-dir \
         fastapi==0.140.13 \
+        jsonschema==4.26.0 \
         pydantic==2.13.4 \
         pyyaml==6.0.3 \
         uvicorn==0.35.0
