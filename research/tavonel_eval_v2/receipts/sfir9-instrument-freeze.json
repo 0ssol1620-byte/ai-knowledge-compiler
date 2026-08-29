@@ -1,0 +1,308 @@
+{
+  "cohort_state_at_freeze": "no real cohort artifact exists",
+  "execution_closure": {
+    "closure_digest": "sha256:33e867a5f5ca2e40d112f4c6bcd7a75dcae8fd259a98d38d32434fd4f41c34f4",
+    "component_count": 10,
+    "components": [
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "protocol",
+        "git_blob_id": "248a761154fdfd73c33eb608526d643e4ba31e5a",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_protocol.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_protocol",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_protocol.py",
+        "sha256": "sha256:90df8e6c6079eff018b8ed3405fbb2c5252cd1283998634bb85b7bbf2511a056",
+        "working_tree_bytes": 8088
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "execution_closure",
+        "git_blob_id": "65d469fbd1aff20339ed0653a47ba1774a03b7e0",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_execution_closure.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_execution_closure",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_execution_closure.py",
+        "sha256": "sha256:906919d610e06c495c55c72fe2b65efdb80a9c8c6b6ed6179c248f46f327ca64",
+        "working_tree_bytes": 13509
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "historical_isolation_gate",
+        "git_blob_id": "a501a416af077539bcf1d2d8c435b1049301d8ea",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_isolation_gate.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_isolation_gate",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_isolation_gate.py",
+        "sha256": "sha256:5bd9122d72b0ee351e4136670605cd1a2de185059dfef8716a6d845b85cd0efc",
+        "working_tree_bytes": 16652
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "selection_rule",
+        "git_blob_id": "c0fb583a3534c6c00900d9b905b6912c204b275f",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_selection.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_selection",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_selection.py",
+        "sha256": "sha256:4cb823d47a247001f1800ce92d81ae78802d8a9eeae1b203a4300d38277b76ab",
+        "working_tree_bytes": 12177
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "scorer",
+        "git_blob_id": "a9f8cfeba238420f4809ef77b35ed78e47570ee1",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_scorer.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_scorer",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_scorer.py",
+        "sha256": "sha256:1b2c5e72a8907a93a98c5a43ed56f6048e10f81e72aab41227cf3516465bd5e4",
+        "working_tree_bytes": 11131
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "acceptance",
+        "git_blob_id": "4fe9a2871ba009fee96860889786c30f02ae0e91",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_acceptance.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_acceptance",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_acceptance.py",
+        "sha256": "sha256:188a3515298622f3cde70be6b96e2e20ab260fb20ec7faa1bc531952e4eb3cf0",
+        "working_tree_bytes": 14275
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "cohort_roster",
+        "git_blob_id": "32f069638f4b5e5ead694499720caa7debce2834",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_cohort_roster.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_cohort_roster",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_cohort_roster.py",
+        "sha256": "sha256:eed5c88f2f55396185e76b5739aa577fa56f328bb25e04899f0856cd386b3e25",
+        "working_tree_bytes": 13321
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "transport",
+        "git_blob_id": "c356430e77dfa330596d7be9fec032b2b8ef8d10",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_transport.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_transport",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_transport.py",
+        "sha256": "sha256:dfb1483f824fe7bb4d884a852487934f57bb265aeca077fe558f2e2484eef02e",
+        "working_tree_bytes": 36970
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "identity_logic",
+        "git_blob_id": "b43c29119e5123c9642d63b3a311e29159d55ddf",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_identity_logic.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_identity_logic",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_identity_logic.py",
+        "sha256": "sha256:f28ee5939f2ee55ff3fef75328a80989adfa816dea08d4633e2e45d79d601def",
+        "working_tree_bytes": 12923
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "component": "checkpoint_chain",
+        "git_blob_id": "c067aaf347f1922e69e08f30b0e0a564ea88b6eb",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir9_checkpoint_chain.py",
+        "import_origin_is_the_verified_file": true,
+        "module": "sfir9_checkpoint_chain",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir9_checkpoint_chain.py",
+        "sha256": "sha256:1a83adb54897f50535724f76a2382685e17a885473cc2215300ee65fb7b5e12f",
+        "working_tree_bytes": 13511
+      }
+    ],
+    "schema": "tavonel.sfir9.execution_closure.v1",
+    "upstream_binding": null,
+    "what_this_does_not_certify": "its own bytes. This module is one of the ten it verifies, and a closure reporting that its own hash matches proves nothing: the edit that changed the file could change what it claims about the file. Certification of this module lives in the separate freeze manifest."
+  },
+  "freeze_digest": "sha256:687e7a8cc49cb3ccd2c320a94580d2cb19260ae3cdeeca9c3817e9abf23f1cac",
+  "freeze_manifest": {
+    "closure_digest": "sha256:33e867a5f5ca2e40d112f4c6bcd7a75dcae8fd259a98d38d32434fd4f41c34f4",
+    "closure_tool": {
+      "bytes": 13509,
+      "git_blob_id": "65d469fbd1aff20339ed0653a47ba1774a03b7e0",
+      "read_how": "from disk as bytes, without importing the module",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_execution_closure.py",
+      "sha256": "sha256:906919d610e06c495c55c72fe2b65efdb80a9c8c6b6ed6179c248f46f327ca64"
+    },
+    "component_count": 10,
+    "manifest_digest": "sha256:46d91daad48421a2a92011c35aa756e4e1c6071eff5f4f391588fe054043d5b1",
+    "schema": "tavonel.sfir9.freeze_manifest.v1",
+    "why_this_is_a_separate_artifact": "a closure cannot certify itself. This manifest is the outside vantage point: it reads the closure tool's bytes directly and records them beside the digest of what that tool produced, so an edited tool reporting a clean closure is visible as a changed tool hash."
+  },
+  "gate_at_freeze_time": {
+    "conditions_checked": 9,
+    "conditions_passed": 9,
+    "gate_digest": "sha256:223660323b41f7ab114e0daedb3706bf1fd976f9d10dd36a8f06b67cc8383579",
+    "re_derived_here": true
+  },
+  "instrument_commit": "f2912afb6acbf257258cd26f3783df3075df5839",
+  "namespace": "research/tavonel_eval_v2",
+  "protocol": {
+    "digest": "sha256:38d9f8f4d8131aea38488160d3ca846b60fd4cbb5810fe501bb38dba7cf7cea9",
+    "freeze_state": "PROTOCOL_FROZEN",
+    "terms": {
+      "capacity_criterion": {
+        "inherited_unchanged_from": "SFIR7",
+        "maximum_q": 1000,
+        "minimum_c": 750,
+        "minimum_q": 600,
+        "quota_fraction": [
+          8,
+          10
+        ]
+      },
+      "execution_envelope": {
+        "denominated_in": "provider_charge",
+        "per_root_charge_allowance": 540,
+        "permitted_rate_windows": 6,
+        "usable_charge_per_window": 4500
+      },
+      "predecessor_development_studies": [
+        "SFIR7",
+        "SFIR8"
+      ],
+      "protocol_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+      "rate_window_semantics": {
+        "inherited_unchanged_from": "SFIR7",
+        "on_a_reset_beyond_the_fail_safe": "SEGMENT_COMPLETE_RATE_WINDOW",
+        "retry_wait_seconds": 60,
+        "total_wait_seconds": 180
+      },
+      "schema": "tavonel.sfir9.protocol.v1",
+      "selection": {
+        "ordering": [
+          "source_rank descending",
+          "record_id ascending"
+        ],
+        "partition_count": 64,
+        "partition_index": 0,
+        "partition_keyed_on": "host_uuid",
+        "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2"
+      },
+      "study_kind": "FRESH_HELDOUT_CONFIRMATORY",
+      "traversal": {
+        "candidate_extensions": [
+          ".py",
+          ".md",
+          ".rst",
+          ".txt"
+        ],
+        "declared_working_storage_bytes": 2147483648,
+        "population_calibrated_bounds": [],
+        "why_no_population_calibrated_bounds": "SFIR4 bounded the frontier at 158 tree objects and 256 queue entries, both calibrated on twenty smaller hand-picked repositories, and SFIR7 recorded twenty of fifty externally selected roots as measured when the instrument had merely stopped. A bound derived from repositories cannot distinguish 'large' from 'unmeasurable'."
+      }
+    }
+  },
+  "roster_refusal_is_established_by": "sfir9_cohort_roster controls and the hostile audit's roster_generated_before_the_protocol_freeze attack",
+  "schema": "tavonel.sfir9.instrument_freeze.v1",
+  "state": "INSTRUMENT_FROZEN",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+  "supporting_receipts": {
+    "freeze_gate": {
+      "bytes": 3542,
+      "file_sha256": "sha256:18bf4bc0d7ec7f707c3b723fb1b8572ab87319acc988b020e465d1991b180c65",
+      "relative_path": "receipts/sfir9-freeze-gate.json",
+      "self_digest": "sha256:c1dbe7b07b65c1950b5fd79910a21a96bcbe4e1365d6e5aa47920aaf440916a9"
+    },
+    "historical_isolation": {
+      "bytes": 5329,
+      "file_sha256": "sha256:cfb1facb2dfee25fb1dc31497917e66e5435c8d37a727a0af70cd684bc4cff36",
+      "relative_path": "receipts/sfir9-historical-isolation.json",
+      "self_digest": null
+    },
+    "hostile_audit": {
+      "bytes": 5292,
+      "file_sha256": "sha256:410afd81ee8d8c9fd6cf4dee21aa7aee3be6c903d4aff5f25439fdca4df30713",
+      "relative_path": "receipts/sfir9-hostile-audit.json",
+      "self_digest": "sha256:103dc36d18e07259bf81cf3f65aeeb81800fa9b4caea3846ee42879006dc043d"
+    },
+    "legacy_failure_taxonomy": {
+      "bytes": 44211,
+      "file_sha256": "sha256:d62b42b8f48b0520288780eade98aa9e1e0f3b24de2b27b4dfd51ae9a64f0286",
+      "relative_path": "receipts/sfir9-legacy-failure-taxonomy.json",
+      "self_digest": "sha256:4fe44d43d6f60398cc1d1e8bbe519aeb40b740cae054d8313a2a9231514b688d"
+    },
+    "mutation_baselines": {
+      "bytes": 61519,
+      "file_sha256": "sha256:0afde9d048c9cb1a51fe5c128b7d3465164393ce1ff5620c8cb40b85f21e7711",
+      "relative_path": "receipts/sfir9-mutation-baselines.json",
+      "self_digest": "sha256:f63415dc505660dc235cba4a8d1739c4575ff8d33e087af68590bbb5b24ba441"
+    }
+  },
+  "upstream_binding": {
+    "manifest_digest": "sha256:5b47472fad58c5fc032efdc70a14092ea4ae05efeb1cda32cbe74405a0c98056",
+    "protocol_digest_at_binding_time": "sha256:38d9f8f4d8131aea38488160d3ca846b60fd4cbb5810fe501bb38dba7cf7cea9",
+    "schema": "tavonel.sfir9.transport.v1",
+    "upstream_modules": [
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "git_blob_id": "d47762b2adcc14f3f9f6c8842bde6c8f799ae375",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir8_transport.py",
+        "import_origin_inside_frozen_checkout": true,
+        "module": "sfir8_transport",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir8_transport.py",
+        "sha256": "sha256:e534a3535e4c10216d6a751224d6bd96f7c4ca6850a5708cb62226f890dba9ca",
+        "working_tree_bytes": 14288
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "git_blob_id": "776618b0ad4311e9232c546bb9cd772fb43a3d56",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir8_traversal.py",
+        "import_origin_inside_frozen_checkout": true,
+        "module": "sfir8_traversal",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir8_traversal.py",
+        "sha256": "sha256:130b11048eb1db5ddd6945a6848ea8400cb8cbde00d89e7ab2cf0af44ab7f3f4",
+        "working_tree_bytes": 21379
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "git_blob_id": "bb989b16fc2866ed148aa6daafdd56096f35e6c2",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir8_frontier.py",
+        "import_origin_inside_frozen_checkout": true,
+        "module": "sfir8_frontier",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir8_frontier.py",
+        "sha256": "sha256:7482faa9109cf698591b309a4a4697924465e017b62c075daf31205c9f7b9991",
+        "working_tree_bytes": 14100
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "git_blob_id": "879e74da07673fcb83f388d016fe493a950801a3",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir8_checkpoint.py",
+        "import_origin_inside_frozen_checkout": true,
+        "module": "sfir8_checkpoint",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir8_checkpoint.py",
+        "sha256": "sha256:de75744c738bf8a31f04abea27f1d0738e1ac0963fc691533648bac687def842",
+        "working_tree_bytes": 11065
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "git_blob_id": "79f43d4c72d15334fb711e0566029a9546c93d8a",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir8_hop_accounting.py",
+        "import_origin_inside_frozen_checkout": true,
+        "module": "sfir8_hop_accounting",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir8_hop_accounting.py",
+        "sha256": "sha256:3a40bfd78f3410aa2e049889c4f3562c9754a8a53d68e960f0e62da92eb4d9ad",
+        "working_tree_bytes": 8916
+      },
+      {
+        "committed_bytes_equal_working_bytes": true,
+        "git_blob_id": "199db22fb0e68ab86c7ee9341af013f81eb0966d",
+        "import_origin": "D:\\_sfir9wt\\research\\tavonel_eval_v2\\tools\\sfir8_provider_accounting.py",
+        "import_origin_inside_frozen_checkout": true,
+        "module": "sfir8_provider_accounting",
+        "relative_path": "research/tavonel_eval_v2/tools/sfir8_provider_accounting.py",
+        "sha256": "sha256:549e8f57b6832edc5b670309dd5a8a228502cac3bfead45727fd7f75d8264c1e",
+        "working_tree_bytes": 5905
+      }
+    ],
+    "what_is_reused": "the current implementation bytes, newly frozen for SFIR9. Not SFIR8's conclusions: no SFIR8 receipt is a prerequisite of any SFIR9 pass, and the zero accounting delta SFIR8 observed in a quiet window guarantees nothing about SFIR9.",
+    "why_origin_is_checked_as_well_as_hash": "a correct hash on disk does not establish that the interpreter loaded that file. A `.pth` entry substituted an implementation earlier in this study while every digest still agreed."
+  },
+  "what_this_authorises": "roster generation, exactly once, under the frozen selection rule. Nothing else.",
+  "what_this_does_not_establish": "that the criterion is calibrated, that the cohort will meet it, or that the instrument measures what the protocol says it measures. A freeze fixes what will run; it says nothing about what will be found."
+}

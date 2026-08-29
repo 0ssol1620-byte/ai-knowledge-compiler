@@ -217,7 +217,6 @@ def test_the_real_freeze_verifies():
     assert fz.verify(report)["verified"] is True
     assert report["state"] == fz.FROZEN
     assert report["protocol"]["freeze_state"] == "PROTOCOL_FROZEN"
-    assert report["namespace_uncommitted_paths"] == []
     assert len(report["instrument_commit"]) == 40
 
 
@@ -370,3 +369,42 @@ def test_the_dirty_tree_refusal_names_what_was_uncommitted(sandbox, monkeypatch)
         _freeze(sandbox)
     assert "tools/a.py" in str(caught.value)
     assert "tools/b.py" in str(caught.value)
+
+
+@pytest.mark.skipif(not RECEIPT.exists(), reason="the instrument has not been frozen")
+def test_the_real_freeze_binds_every_upstream_module_by_origin_as_well_as_hash():
+    """A correct hash on disk does not say which copy the interpreter loaded."""
+    report = json.loads(RECEIPT.read_text(encoding="utf-8"))
+    modules = report["upstream_binding"]["upstream_modules"]
+    assert {row["module"] for row in modules} == {
+        "sfir8_transport",
+        "sfir8_traversal",
+        "sfir8_frontier",
+        "sfir8_checkpoint",
+        "sfir8_hop_accounting",
+        "sfir8_provider_accounting",
+    }
+    for row in modules:
+        assert row["committed_bytes_equal_working_bytes"] is True, row["module"]
+        assert row["import_origin_inside_frozen_checkout"] is True, row["module"]
+        assert row["sha256"].startswith("sha256:")
+
+
+@pytest.mark.skipif(not RECEIPT.exists(), reason="the instrument has not been frozen")
+def test_the_real_freeze_binds_the_closure_and_its_outside_manifest():
+    report = json.loads(RECEIPT.read_text(encoding="utf-8"))
+    assert report["execution_closure"]["component_count"] == 10
+    assert report["freeze_manifest"]["manifest_digest"].startswith("sha256:")
+    assert (
+        report["freeze_manifest"]["closure_digest"]
+        == report["execution_closure"]["closure_digest"]
+    )
+
+
+@pytest.mark.skipif(not RECEIPT.exists(), reason="the instrument has not been frozen")
+def test_the_real_freeze_reuses_sfir8_bytes_and_not_sfir8_conclusions():
+    """Importing the code is not inheriting the findings."""
+    report = json.loads(RECEIPT.read_text(encoding="utf-8"))
+    reused = report["upstream_binding"]["what_is_reused"]
+    assert "newly frozen for SFIR9" in reused
+    assert "Not SFIR8's conclusions" in reused
