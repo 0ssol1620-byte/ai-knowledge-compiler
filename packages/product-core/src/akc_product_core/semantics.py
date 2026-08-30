@@ -315,6 +315,14 @@ def _sentences(value: str) -> tuple[str, ...]:
     return rows or ((_normalized_space(value),) if value.strip() else ())
 
 
+def _is_semantic_claim_candidate(value: str) -> bool:
+    """Keep OCR provenance intact while rejecting index-like semantic projections."""
+
+    # Numeric-only fragments are page or table indices, and a lone letter/ideograph is
+    # too ambiguous to promote into claims or contradiction review candidates.
+    return sum(character.isalpha() for character in value) >= 2
+
+
 def _tokens(value: str) -> tuple[str, ...]:
     normalized: list[str] = []
     for raw in _TOKEN.findall(value):
@@ -573,6 +581,8 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
     for source in sources:
         tier, authority_score = authority_tier(source.authority)
         for index, sentence in enumerate(_sentences(source.text)):
+            if not _is_semantic_claim_candidate(sentence):
+                continue
             language = detect_language(sentence)
             languages[language] += 1
             claim_id = _stable_id("claim", source.logical_id, str(index), sentence.casefold())

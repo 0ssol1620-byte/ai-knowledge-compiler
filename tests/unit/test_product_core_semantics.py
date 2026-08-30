@@ -64,6 +64,24 @@ def test_numeric_disagreement_is_review_candidate_not_asserted_relation() -> Non
     assert set(contradiction.claim_ids) <= {claim.claim_id for claim in result.claims}
 
 
+def test_index_and_single_glyph_ocr_noise_never_becomes_a_semantic_claim() -> None:
+    result = compile_semantics(
+        (
+            _source(
+                "noisy-scan",
+                "..46\n中.\n2025\n2025 revenue was 100 million won.\n계약 이행은 필수다.",
+            ),
+        )
+    )
+
+    assert [claim.text for claim in result.claims] == [
+        "2025 revenue was 100 million won.",
+        "계약 이행은 필수다.",
+    ]
+    assert {claim.language for claim in result.claims} == {"en", "ko"}
+    assert not result.contradictions
+
+
 def test_adaptive_retrieval_profile_is_deterministic_and_honest_about_embeddings() -> None:
     sources = (
         _source("en", "TAVONEL Research Institute published the dataset."),
