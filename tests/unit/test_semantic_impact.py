@@ -9,6 +9,7 @@ unresolved identity.
 from __future__ import annotations
 
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
+from akc_cir.recompilation import content_hash, plan_recompilation, verify_equivalence
 from akc_cir.semantic_diff import ChangeKind, DiffLevel, DocumentShape, UnitSnapshot, diff_documents
 from akc_cir.semantic_impact import plan_semantic_recompilation, semantic_impact_seeds
 
@@ -145,3 +146,39 @@ def test_unresolved_identity_remains_fail_closed_and_rebuilds_candidates_consume
     assert set(plan.unresolved) == {"chunk_a", "workflow_a"}
     assert set(plan.to_rebuild) == {"chunk_a", "workflow_a"}
     assert "chunk_unrelated" not in plan.to_rebuild
+
+
+def test_positional_split_avoids_legacy_work_without_breaking_full_rebuild_equivalence() -> None:
+    """The product claim needs both halves: less work and no stale escape."""
+    diff = _diff(
+        [_unit("ku_warranty", "Warranty is two years.", evidence="ev_old", page=17)],
+        [_unit("ku_warranty", "Warranty is two years.", evidence="ev_new", page=18)],
+    )
+    graph = _graph("ku_warranty")
+
+    legacy = plan_recompilation(diff=diff, graph=graph, artifacts=ARTIFACTS)
+    challenger = plan_semantic_recompilation(diff=diff, graph=graph, artifacts=ARTIFACTS)
+
+    assert set(legacy.to_rebuild) == {"chunk_a", "workflow_a"}
+    assert challenger.to_rebuild == ()
+    assert challenger.work_avoided > legacy.work_avoided
+
+    # A pure evidence move does not change the semantic content of any derived
+    # artifact. Therefore the full rebuild after the move equals the carried
+    # artifact content from before the move.
+    full = {
+        artifact: content_hash({"artifact": artifact, "semantic_value": "two years"})
+        for artifact in ARTIFACTS
+    }
+    carried = dict(full)
+
+    report = verify_equivalence(
+        full_rebuild=full,
+        selective_rebuild={},
+        carried_over=carried,
+        plan=challenger,
+    )
+
+    assert report.equivalent is True
+    assert report.stale_left_behind == ()
+    assert report.unexpectedly_rebuilt == ()
