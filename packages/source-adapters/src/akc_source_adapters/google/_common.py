@@ -39,6 +39,18 @@ class GoogleAdapterError(RuntimeError):
         self.status = status
 
 
+def _is_safe_google_url(value: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(value)
+    except ValueError:
+        return False
+    if not parsed.hostname or parsed.username is not None or parsed.password is not None:
+        return False
+    return parsed.scheme == "https" or (
+        parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    )
+
+
 def get_json(
     url: str,
     token_provider: GoogleTokenProvider,
@@ -51,6 +63,8 @@ def get_json(
     Non-retryable 4xx raise immediately. Every attempt honors the server's
     ``Retry-After`` over our own exponential schedule.
     """
+    if not _is_safe_google_url(url):
+        raise GoogleAdapterError("Google API URL must use HTTPS (or exact loopback for tests)")
     delay = BASE_BACKOFF_SECONDS
     last_status: int | None = None
     for attempt in range(1, MAX_ATTEMPTS + 1):

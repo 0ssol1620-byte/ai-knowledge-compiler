@@ -59,6 +59,18 @@ REQUEST_TIMEOUT_SECONDS = 30.0
 _SINCE_BACKSTEP = timedelta(seconds=1)  # widens `since=` so the anchor stays in the window
 
 
+def _is_safe_api_base(value: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(value)
+    except ValueError:
+        return False
+    if not parsed.hostname or parsed.username is not None or parsed.password is not None:
+        return False
+    return parsed.scheme == "https" or (
+        parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    )
+
+
 class GitHubAdapterError(RuntimeError):
     """A GitHub REST call failed; the message carries status and endpoint."""
 
@@ -101,6 +113,8 @@ class GitHubAdapter:
         owner, _, name = repo.partition("/")
         if not owner or not name or "/" in name:
             raise ValueError(f"repo must look like 'owner/name', got {repo!r}")
+        if not _is_safe_api_base(api_base):
+            raise ValueError("api_base must use HTTPS (or exact loopback for tests)")
         self.repo = f"{owner}/{name}"
         self.token_provider = token_provider
         self.source_id = source_id or f"github:{self.repo}"
@@ -272,8 +286,6 @@ class GitHubAdapter:
             return None  # unparsable anchor date: widen to a fuller listing instead
         return (moment.astimezone(UTC) - _SINCE_BACKSTEP).isoformat().replace("+00:00", "Z")
 
-
-
     def _request_json(self, path: str, params: Mapping[str, str | int]) -> Any:
         query = urllib.parse.urlencode(params, doseq=True)
         url = f"{self.api_base}{path}{'?' + query if query else ''}"
@@ -394,8 +406,6 @@ def _body_hint(raw: bytes | str, limit: int = 120) -> str:
     except Exception:  # pragma: no cover - decode with replace cannot raise
         return ""
     return " ".join(text.split())[:limit]
-
-
 
 
 def _next_state(

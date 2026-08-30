@@ -9,6 +9,7 @@ import pytest
 from akc_source_adapters.foundation_agent import (
     AgentState,
     FoundationAgentError,
+    HttpFoundationClient,
     _is_safe_transport_url,
     load_state,
     save_state,
@@ -34,6 +35,11 @@ DOCUMENT_ID = "59d42924-a3cc-4a09-b92d-9c86b58901a1"
 )
 def test_transport_urls_require_https_or_exact_loopback(url: str, expected: bool) -> None:
     assert _is_safe_transport_url(url) is expected
+
+
+def test_foundation_client_rejects_deceptive_localhost_base() -> None:
+    with pytest.raises(ValueError, match="HTTPS"):
+        HttpFoundationClient("http://localhost.evil.example", "tvnl_live_test")
 
 
 class FakeFoundation:

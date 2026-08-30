@@ -232,6 +232,11 @@ def test_github_adapter_satisfies_the_protocol() -> None:
         assert adapter.provider == "github"
 
 
+def test_github_adapter_rejects_deceptive_localhost_base() -> None:
+    with pytest.raises(ValueError, match="HTTPS"):
+        GitHubAdapter(f"{OWNER}/{REPO}", api_base="http://localhost.evil.example")
+
+
 def test_discover_snapshots_visibility_and_branch_protection() -> None:
     with stub_github(make_state()) as base:
         info = make_adapter(base).discover()

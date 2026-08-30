@@ -90,8 +90,10 @@ class DriveAdapter:
                 path = str(file_meta.get("name") or change.get("fileId"))
                 revision = f"{change.get('fileId')}@{file_meta.get('modifiedTime', '')}"
                 removed = bool(change.get("removed")) or bool(file_meta.get("trashed"))
-                kind = "file_removed" if removed else (
-                    "file_changed" if files.get(path) else "file_added"
+                kind = (
+                    "file_removed"
+                    if removed
+                    else ("file_changed" if files.get(path) else "file_added")
                 )
                 event_payload: dict[str, object] = {"path": path}
                 if not removed:
@@ -129,9 +131,9 @@ class DriveAdapter:
         return FetchResult(events=tuple(events), cursor=cursor_out)
 
     def checkpoint(self) -> Cursor:
-        start = get_json(
-            f"{self.api_base}/changes/startPageToken", self.token_provider
-        ).get("startPageToken", "")
+        start = get_json(f"{self.api_base}/changes/startPageToken", self.token_provider).get(
+            "startPageToken", ""
+        )
         return Cursor(
             provider=PROVIDER,
             source_id=self.source_id,

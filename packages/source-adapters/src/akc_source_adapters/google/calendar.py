@@ -41,23 +41,20 @@ class CalendarAdapter:
 
     def _events_url(self, params: dict[str, str]) -> str:
         query = urllib.parse.urlencode(params)
-        return (
-            f"{self.api_base}/calendars/"
-            f"{urllib.parse.quote(self.calendar_id)}/events?{query}"
-        )
+        return f"{self.api_base}/calendars/{urllib.parse.quote(self.calendar_id)}/events?{query}"
 
     def _event_event(self, event: dict[str, Any], observed_at: datetime) -> ChangeEvent:
         status = event.get("status")
-        kind = "event_cancelled" if status == "cancelled" else (
-            "event_added" if status == "confirmed" else "event_changed"
+        kind = (
+            "event_cancelled"
+            if status == "cancelled"
+            else ("event_added" if status == "confirmed" else "event_changed")
         )
         start_value = event.get("start")
         start_data = start_value if isinstance(start_value, Mapping) else {}
         start = start_data.get("dateTime") or start_data.get("date", "")
-        attendees = [
-            a.get("email", "") for a in (event.get("attendees") or []) if a.get("email")
-        ]
-        revision = f"{event.get('id','')}@{event.get('etag', '')}"
+        attendees = [a.get("email", "") for a in (event.get("attendees") or []) if a.get("email")]
+        revision = f"{event.get('id', '')}@{event.get('etag', '')}"
         return ChangeEvent(
             source_id=self.source_id,
             provider=PROVIDER,

@@ -42,9 +42,7 @@ class GmailAdapter:
     def _message(self, message_id: str) -> dict[str, Any]:
         params = {"format": "metadata", "metadataHeaders": "Subject"}
         query = urllib.parse.urlencode(params)
-        return get_json(
-            f"{self.api_base}/messages/{message_id}?{query}", self.token_provider
-        )
+        return get_json(f"{self.api_base}/messages/{message_id}?{query}", self.token_provider)
 
     @staticmethod
     def _subject(message: dict[str, Any]) -> str:

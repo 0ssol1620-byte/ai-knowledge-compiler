@@ -88,7 +88,7 @@ class HttpFoundationClient:
     """Bounded stdlib HTTP client; key values are never logged or persisted."""
 
     def __init__(self, base_url: str, api_key: str, *, timeout_seconds: float = 60.0) -> None:
-        if not base_url.startswith("https://") and not base_url.startswith("http://localhost"):
+        if not _is_safe_transport_url(base_url):
             raise ValueError("Foundation base URL must use HTTPS (or localhost for tests)")
         if not api_key.startswith("tvnl_live_"):
             raise ValueError("TAVONEL_API_KEY is missing or malformed")

@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 from akc_source_adapters.google import CalendarAdapter, DriveAdapter, GmailAdapter
-from akc_source_adapters.google._common import StaticTokenProvider
+from akc_source_adapters.google._common import GoogleAdapterError, StaticTokenProvider, get_json
 
 
 class _Stub(BaseHTTPRequestHandler):
@@ -62,6 +62,11 @@ def stub():
 
 def _token() -> str:
     return "stub-token"
+
+
+def test_google_transport_rejects_deceptive_localhost() -> None:
+    with pytest.raises(GoogleAdapterError, match="HTTPS"):
+        get_json("http://localhost.evil.example/drive", StaticTokenProvider(_token()))
 
 
 def test_drive_full_then_incremental_with_tombstone(stub) -> None:
