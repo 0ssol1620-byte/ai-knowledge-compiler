@@ -9,6 +9,7 @@ import pytest
 from akc_source_adapters.foundation_agent import (
     AgentState,
     FoundationAgentError,
+    _is_safe_transport_url,
     load_state,
     save_state,
     sync_file_server,
@@ -17,6 +18,22 @@ from akc_source_adapters.foundation_agent import (
 
 CONNECTION_ID = "49d42924-a3cc-4a09-b92d-9c86b58901a1"
 DOCUMENT_ID = "59d42924-a3cc-4a09-b92d-9c86b58901a1"
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("https://storage.example/object?signature=secret", True),
+        ("http://localhost:9000/bucket", True),
+        ("http://127.0.0.1:9000/bucket", True),
+        ("http://[::1]:9000/bucket", True),
+        ("http://localhost.evil.example/bucket", False),
+        ("https://user:password@storage.example/bucket", False),
+        ("http://storage.example/bucket", False),
+    ],
+)
+def test_transport_urls_require_https_or_exact_loopback(url: str, expected: bool) -> None:
+    assert _is_safe_transport_url(url) is expected
 
 
 class FakeFoundation:
@@ -63,6 +80,7 @@ def test_agent_uploads_qualified_bytes_directly_then_commits_cursor(tmp_path: Pa
     assert [event["nativeId"] for event in events] == ["notes.md", "report.pdf"]
     assert events[0]["documentId"] is None
     assert events[1]["documentId"] == DOCUMENT_ID
+    assert len(events[1]["sourceIdempotencyKey"]) == 64
     assert load_state(state_path, CONNECTION_ID).server_cursor_sha256
 
     replay = sync_file_server(
@@ -152,6 +170,7 @@ def test_s3_agent_downloads_only_qualified_objects_then_commits(tmp_path: Path) 
     report = next(event for event in events if event["nativeId"].endswith("report.pdf"))
     notes = next(event for event in events if event["nativeId"].endswith("notes.md"))
     assert report["documentId"] == DOCUMENT_ID
+    assert len(report["sourceIdempotencyKey"]) == 64
     assert report["contentSha256"]
     assert notes["documentId"] is None
     assert notes["contentSha256"] is None

@@ -13,6 +13,7 @@ import json
 import os
 import tempfile
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from collections.abc import Mapping, Sequence
@@ -46,6 +47,18 @@ QUALIFIED_MIME_BY_SUFFIX = {
 
 class FoundationAgentError(RuntimeError):
     """The agent cannot safely complete and commit one polling cycle."""
+
+
+def _is_safe_transport_url(value: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(value)
+    except ValueError:
+        return False
+    if not parsed.hostname or parsed.username is not None or parsed.password is not None:
+        return False
+    return parsed.scheme == "https" or (
+        parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    )
 
 
 class FoundationClient(Protocol):
@@ -133,7 +146,7 @@ class HttpFoundationClient:
         )
 
     def upload_file(self, *, upload_url: str, path: Path, mime_type: str, size: int) -> None:
-        if not upload_url.startswith("https://") and not upload_url.startswith("http://localhost"):
+        if not _is_safe_transport_url(upload_url):
             raise FoundationAgentError("upload capability URL is not HTTPS")
         before = path.stat()
         if before.st_size != size:
@@ -260,6 +273,7 @@ def sync_file_server(
         native_id = str(event.payload["path"])
         deleted = event.kind == "file_deleted"
         document_id: str | None = None
+        source_idempotency_key: str | None = None
         raw_size = event.payload.get("size")
         size: int | None = None
         if not deleted:
@@ -274,12 +288,14 @@ def sync_file_server(
             source_path = (root / Path(native_id)).resolve()
             if not source_path.is_relative_to(root.resolve()):
                 raise FoundationAgentError("source path escaped the mounted root")
-            idempotency_key = _source_idempotency_key(connection_id, native_id, event.revision)
+            source_idempotency_key = _source_idempotency_key(
+                connection_id, native_id, event.revision
+            )
             capability = client.create_upload(
                 filename=Path(native_id).name,
                 mime_type=mime_type,
                 size=size,
-                idempotency_key=idempotency_key,
+                idempotency_key=source_idempotency_key,
             )
             upload_url = capability.get("uploadUrl")
             document_id_value = capability.get("documentId")
@@ -305,6 +321,7 @@ def sync_file_server(
                 "sizeBytes": size,
                 "mimeType": mime_type,
                 "documentId": document_id,
+                "sourceIdempotencyKey": source_idempotency_key,
             }
         )
 
@@ -422,6 +439,7 @@ def sync_s3_source(
         )
         content_sha256: str | None = None
         document_id: str | None = None
+        source_idempotency_key: str | None = None
         if not deleted and mime_type is not None and size is not None and size > 0:
             etag = event.payload.get("etag")
             if not isinstance(etag, str) or not etag:
@@ -435,12 +453,14 @@ def sync_s3_source(
                 expected_size=size,
             )
             try:
-                idempotency_key = _source_idempotency_key(connection_id, native_id, event.revision)
+                source_idempotency_key = _source_idempotency_key(
+                    connection_id, native_id, event.revision
+                )
                 capability = client.create_upload(
                     filename=Path(native_id).name,
                     mime_type=mime_type,
                     size=size,
-                    idempotency_key=idempotency_key,
+                    idempotency_key=source_idempotency_key,
                 )
                 upload_url = capability.get("uploadUrl")
                 document_id_value = capability.get("documentId")
@@ -468,6 +488,7 @@ def sync_s3_source(
                 "sizeBytes": size,
                 "mimeType": mime_type,
                 "documentId": document_id,
+                "sourceIdempotencyKey": source_idempotency_key,
             }
         )
 
@@ -525,6 +546,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         import boto3
 
+        if args.s3_endpoint_url and not _is_safe_transport_url(args.s3_endpoint_url):
+            raise FoundationAgentError("S3-compatible endpoint URL must use HTTPS")
         s3_client = cast(
             S3ObjectClient,
             boto3.client(
