@@ -91,6 +91,8 @@ def test_headings_version_labels_and_layout_metadata_are_not_asserted_claims() -
                 "Can AI help?\nPage 1\npage\":2,\n"
                 "people's lives -from commerce and health to transportation and envi\n"
                 "ever, also pose risks that can negatively impact organizations\n"
+                "ronment and our planet.AI technologies can support growth\n"
+                "scientific advancements improve the conditions of our world\n"
                 "Revenue was 100 million won\n"
                 "The evaluation uses a fixed multilingual evidence corpus without translation",
             ),

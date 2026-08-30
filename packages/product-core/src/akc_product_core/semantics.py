@@ -358,6 +358,8 @@ def _is_semantic_claim_candidate(value: str) -> bool:
     normalized = _normalized_space(value).strip()
     if sum(character.isalpha() for character in normalized) < 2:
         return False
+    if re.match(r"[a-z]", normalized):
+        return False
     if _METADATA_FRAGMENT.fullmatch(normalized):
         return False
     if re.fullmatch(r"https?://\S+", normalized, re.IGNORECASE):
