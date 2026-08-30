@@ -5,8 +5,16 @@ Cloud Run control-plane access is unavailable. It preserves the same FastAPI,
 HMAC, release-digest, candidate-only, and customer-data fail-closed contracts
 as `infra/product-core/Dockerfile`.
 
-Stage a deployment directory outside the Git worktree. Copy this directory's
-four runtime files, then copy these package roots into `vendor/`:
+Stage a deployment directory outside the Git worktree with the deterministic
+release builder:
+
+```powershell
+uv run python infra/product-core/vercel/stage_release.py `
+  --output $env:TEMP/tavonel-product-core-v2-release
+```
+
+The builder copies this directory's four runtime files and these package roots
+into `vendor/`, then writes `release-manifest.json` with the exact source digest:
 
 - `packages/cir-python/src/akc_cir`
 - `packages/domain-packs/src/akc_domain_packs`
