@@ -8,6 +8,8 @@ Public surface:
 * :class:`Cursor` / :class:`FetchResult` — resume tokens and poll outputs.
 * :class:`GitAdapter` — commit history via ``git log``, sha-addressed.
 * :class:`ObsidianVaultAdapter` — polled notes, content-hash addressed.
+* :class:`FileServerAdapter` — mounted SMB/NFS/cloud-sync trees, content-hash addressed.
+* :class:`S3Adapter` — metadata-only polling for AWS S3, R2 and MinIO.
 * :class:`Freshness` — F0-F3 tiers with SLO constants and evaluation helpers.
 """
 
@@ -23,6 +25,11 @@ from akc_source_adapters.envelope import (
     canonical_json,
     stable_hash,
     utc_now,
+)
+from akc_source_adapters.file_server_adapter import (
+    DEFAULT_EXCLUDES,
+    FileServerAdapter,
+    FileServerAdapterError,
 )
 from akc_source_adapters.freshness import (
     FRESHNESS_DESCRIPTIONS,
@@ -46,11 +53,13 @@ from akc_source_adapters.obsidian_adapter import (
     NoteState,
     ObsidianVaultAdapter,
 )
+from akc_source_adapters.s3_adapter import S3Adapter, S3AdapterError, S3ListClient
 
 __version__ = "0.1.0"
 
 __all__ = [
     "CANONICAL_JSON_SEPARATORS",
+    "DEFAULT_EXCLUDES",
     "EVENT_HASH_PREFIX",
     "FRESHNESS_DESCRIPTIONS",
     "FRESHNESS_SLO_SECONDS",
@@ -62,6 +71,8 @@ __all__ = [
     "ChangeEvent",
     "Cursor",
     "FetchResult",
+    "FileServerAdapter",
+    "FileServerAdapterError",
     "Freshness",
     "FreshnessReport",
     "GitAdapter",
@@ -69,6 +80,9 @@ __all__ = [
     "GitCursorInvalid",
     "NoteState",
     "ObsidianVaultAdapter",
+    "S3Adapter",
+    "S3AdapterError",
+    "S3ListClient",
     "SourceAdapter",
     "canonical_json",
     "classify_lag",

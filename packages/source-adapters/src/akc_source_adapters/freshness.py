@@ -55,8 +55,10 @@ FRESHNESS_DESCRIPTIONS: Final[dict[Freshness, str]] = {
 }
 
 PROVIDER_DEFAULT_FRESHNESS: Final[dict[str, Freshness]] = {
+    "file_server": Freshness.F1,
     "git": Freshness.F2,
     "obsidian": Freshness.F1,
+    "s3": Freshness.F1,
 }
 
 
