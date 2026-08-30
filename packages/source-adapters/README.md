@@ -51,3 +51,30 @@ envelopes that can be resumed from a persisted cursor.
 
 Provider defaults: `git` → F2; `obsidian`, `file_server`, and `s3` → F1
 (operator-overridable per source).
+
+## Foundation local agent
+
+Create a `documents:intake + connections:sync` key in the Foundation workspace,
+mount the share with the operating system, and run one bounded poll:
+
+```powershell
+$env:TAVONEL_API_KEY = "tvnl_live_..."
+uv run tavonel-source-agent --root Z:\research --connection-id <uuid> --state $env:LOCALAPPDATA\TAVONEL\research.cursor.json
+```
+
+S3-compatible stores use the operator's existing AWS profile, workload role,
+or provider environment (never command-line credential values):
+
+```powershell
+uv run tavonel-source-agent --s3-bucket research --s3-prefix approved/ --connection-id <uuid> --state $env:LOCALAPPDATA\TAVONEL\research-s3.cursor.json
+```
+
+For R2 or MinIO, add the non-secret endpoint URL and endpoint label. The agent
+uses conditional/version-bound `GetObject`, hashes the bounded temporary file,
+direct-uploads it, then removes the temporary file before committing the cursor.
+
+The key is read only from the environment and never written to the cursor file.
+Qualified source bytes use a short-lived direct R2 PUT capability; the
+application server receives metadata only. A deterministic source-event key
+makes upload/compute reservation replay idempotent, and the local cursor moves
+only after the remote expected-cursor transaction commits.

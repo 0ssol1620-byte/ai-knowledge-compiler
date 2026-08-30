@@ -54,6 +54,9 @@ dependencies = [
   "zstandard>=0.24,<1"
 ]
 
+[project.scripts]
+tavonel-source-agent = "akc_source_adapters.foundation_agent:main"
+
 [project.optional-dependencies]
 dev = [
   "bandit[toml]>=1.8,<2",
