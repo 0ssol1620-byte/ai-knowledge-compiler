@@ -7,8 +7,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable, Mapping
-from typing import Any, Protocol
+from collections.abc import Callable
+from typing import Any, Protocol, cast
 
 MAX_ATTEMPTS = 5
 BASE_BACKOFF_SECONDS = 1.0
@@ -45,7 +45,7 @@ def get_json(
     *,
     timeout: float = 30.0,
     sleep: Callable[[float], None] = time.sleep,
-) -> Any:
+) -> dict[str, Any]:
     """GET one JSON document with polite backoff on 429/5xx and Retry-After.
 
     Non-retryable 4xx raise immediately. Every attempt honors the server's
@@ -59,7 +59,10 @@ def get_json(
         request.add_header("Accept", "application/json")
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
-                return json.loads(response.read().decode("utf-8"))
+                value = json.loads(response.read().decode("utf-8"))
+            if not isinstance(value, dict):
+                raise GoogleAdapterError("Google API response must be a JSON object")
+            return cast(dict[str, Any], value)
         except urllib.error.HTTPError as exc:
             last_status = exc.code
             headers = dict(exc.headers or {})
@@ -70,7 +73,11 @@ def get_json(
                     f"GET {urllib.parse.urlsplit(url).path} failed (HTTP {exc.code})",
                     status=exc.code,
                 ) from exc
-            wait = float(retry_after) if (retry_after or "").isdigit() else delay
+            wait = (
+                float(retry_after)
+                if isinstance(retry_after, str) and retry_after.isdigit()
+                else delay
+            )
             sleep(min(wait, MAX_BACKOFF_SECONDS))
             delay = min(delay * 2, MAX_BACKOFF_SECONDS)
         except urllib.error.URLError as exc:
