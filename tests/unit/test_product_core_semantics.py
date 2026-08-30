@@ -89,6 +89,8 @@ def test_headings_version_labels_and_layout_metadata_are_not_asserted_claims() -
                 "layout-heavy-scan",
                 "NIST AI 100-1\nAIRMF 1.0\nExecutiveSummary\nMay 2025\n"
                 "Can AI help?\nPage 1\npage\":2,\n"
+                "people's lives -from commerce and health to transportation and envi\n"
+                "ever, also pose risks that can negatively impact organizations\n"
                 "Revenue was 100 million won\n"
                 "The evaluation uses a fixed multilingual evidence corpus without translation",
             ),

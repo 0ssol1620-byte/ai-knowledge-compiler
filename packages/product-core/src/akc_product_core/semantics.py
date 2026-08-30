@@ -366,15 +366,11 @@ def _is_semantic_claim_candidate(value: str) -> bool:
         return False
     if _TERMINAL_ASSERTION.search(normalized) or _ENGLISH_PREDICATE.search(normalized):
         return True
-    if _CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f")):
-        return True
-
-    # OCR often drops terminal punctuation. Keep substantial prose, but do not turn
-    # compact headings, product/version labels or table cells into asserted claims.
-    lexical_tokens = [
-        token for token in _TOKEN.findall(normalized) if any(c.isalpha() for c in token)
-    ]
-    return len(normalized) >= 40 and len(lexical_tokens) >= 5
+    # Unfinished OCR lines remain available as evidence-bound retrieval chunks. They
+    # do not become asserted graph claims merely because they are long.
+    return bool(
+        _CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f"))
+    )
 
 
 def _tokens(value: str) -> tuple[str, ...]:
