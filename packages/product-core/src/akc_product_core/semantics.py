@@ -25,6 +25,43 @@ _NUMBER = re.compile(
     r"(?<![A-Za-z])[-+]?\d+(?:[.,]\d+)*(?:\s?(?:%|원|억원|만원|달러|USD|KRW|million|billion))?",
     re.IGNORECASE,
 )
+_TERMINAL_ASSERTION = re.compile(r"[.!\u3002\uff01]\s*$")
+_QUESTION_END = re.compile(r"[?\uff1f]\s*$")
+_ENGLISH_PREDICATE = re.compile(
+    r"\b(?:is|are|was|were|be|been|has|have|had|does|do|did|will|would|shall|"
+    r"should|must|reported|shows?|demonstrates?|requires?|"
+    r"prohibits?|contains?|uses?|achieves?|supports?|causes?|improves?|reduces?|"
+    r"increased|decreased)\b",
+    re.IGNORECASE,
+)
+_CJK_PREDICATE_ENDING = re.compile(
+    r"(?:이다|입니다|있다|없다|한다|했다|된다|됐다|하였다|보였다|나타났다|"
+    r"발표했다|증가했다|감소했다|해야|する|した|である|です|ます|"
+    r"是|为|有|无|显示|表明|增长|下降|必须|应当)$"
+)
+_METADATA_FRAGMENT = re.compile(
+    r"^\s*[\"'{[(]*\s*(?:page|pages|page_number|pageno|bbox|bbox1000|x|y|"
+    r"width|height|section|table|figure|fig)\s*[\"']*\s*[:=#]?\s*"
+    r"[-+]?\d+(?:[.,]\d+)*(?:\s*[,}\])]+)?\s*$",
+    re.IGNORECASE,
+)
+_NON_CONTRADICTION_TOPICS = frozenset(
+    {
+        "page",
+        "pages",
+        "page number",
+        "pageno",
+        "section",
+        "table",
+        "figure",
+        "fig",
+        "chapter",
+        "appendix",
+        "index",
+        "version",
+        "revision",
+    }
+)
 _DATE_PATTERNS = (
     re.compile(r"\b(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])[-/.](?:0?[1-9]|[12]\d|3[01])\b"),
     re.compile(r"\b(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])\b"),
@@ -318,9 +355,26 @@ def _sentences(value: str) -> tuple[str, ...]:
 def _is_semantic_claim_candidate(value: str) -> bool:
     """Keep OCR provenance intact while rejecting index-like semantic projections."""
 
-    # Numeric-only fragments are page or table indices, and a lone letter/ideograph is
-    # too ambiguous to promote into claims or contradiction review candidates.
-    return sum(character.isalpha() for character in value) >= 2
+    normalized = _normalized_space(value).strip()
+    if sum(character.isalpha() for character in normalized) < 2:
+        return False
+    if _METADATA_FRAGMENT.fullmatch(normalized):
+        return False
+    if re.fullmatch(r"https?://\S+", normalized, re.IGNORECASE):
+        return False
+    if _QUESTION_END.search(normalized):
+        return False
+    if _TERMINAL_ASSERTION.search(normalized) or _ENGLISH_PREDICATE.search(normalized):
+        return True
+    if _CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f")):
+        return True
+
+    # OCR often drops terminal punctuation. Keep substantial prose, but do not turn
+    # compact headings, product/version labels or table cells into asserted claims.
+    lexical_tokens = [
+        token for token in _TOKEN.findall(normalized) if any(c.isalpha() for c in token)
+    ]
+    return len(normalized) >= 40 and len(lexical_tokens) >= 5
 
 
 def _tokens(value: str) -> tuple[str, ...]:
@@ -646,7 +700,7 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
     )
     grouped: defaultdict[tuple[str, tuple[str, ...]], list[SemanticClaim]] = defaultdict(list)
     for claim in claims:
-        if claim.topic_key:
+        if claim.topic_key and claim.topic_key not in _NON_CONTRADICTION_TOPICS:
             grouped[(claim.topic_key, claim.temporal_refs)].append(claim)
     contradiction_rows: dict[str, ContradictionCandidate] = {}
     for (topic_key, temporal_refs), group in grouped.items():

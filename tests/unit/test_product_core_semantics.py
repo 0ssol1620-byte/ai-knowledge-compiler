@@ -82,6 +82,41 @@ def test_index_and_single_glyph_ocr_noise_never_becomes_a_semantic_claim() -> No
     assert not result.contradictions
 
 
+def test_headings_version_labels_and_layout_metadata_are_not_asserted_claims() -> None:
+    result = compile_semantics(
+        (
+            _source(
+                "layout-heavy-scan",
+                "NIST AI 100-1\nAIRMF 1.0\nExecutiveSummary\nMay 2025\n"
+                "Can AI help?\nPage 1\npage\":2,\n"
+                "Revenue was 100 million won\n"
+                "The evaluation uses a fixed multilingual evidence corpus without translation",
+            ),
+        )
+    )
+
+    assert [claim.text for claim in result.claims] == [
+        "Revenue was 100 million won",
+        "The evaluation uses a fixed multilingual evidence corpus without translation",
+    ]
+    assert not result.contradictions
+
+
+def test_generic_page_numbers_never_create_contradiction_candidates() -> None:
+    result = compile_semantics(
+        (
+            _source("page-one", "Page 1"),
+            _source("page-two", "Page 2"),
+            _source("revenue-one", "Revenue was 100 million won."),
+            _source("revenue-two", "Revenue was 120 million won."),
+        )
+    )
+
+    assert len(result.contradictions) == 1
+    assert result.contradictions[0].topic_key != "page"
+    assert all(claim.text not in {"Page 1", "Page 2"} for claim in result.claims)
+
+
 def test_adaptive_retrieval_profile_is_deterministic_and_honest_about_embeddings() -> None:
     sources = (
         _source("en", "TAVONEL Research Institute published the dataset."),
