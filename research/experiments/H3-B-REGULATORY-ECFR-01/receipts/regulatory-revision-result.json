@@ -1,0 +1,152 @@
+{
+  "all_pairs_equivalent": true,
+  "change_kind_counts": {
+    "content_unchanged": 6,
+    "evidence_moved": 484,
+    "metadata_changed": 484,
+    "modified_claim": 9
+  },
+  "changed_pair_count": 5,
+  "channel_counts": {
+    "locator": 484,
+    "metadata": 484,
+    "semantic": 9,
+    "unchanged": 6
+  },
+  "claim_boundary": "A PASS here establishes that typed change-channel separation and selective recompilation hold on a second, non-Wikipedia, production-shaped revision family (US federal regulation) under the same sealed evaluator. It does NOT widen the V03 claim, does NOT establish a general work-avoided rate across corpora, and does NOT establish OCR, ontology or customer-data performance.",
+  "completed_at": "2026-08-31T14:11:23.277317+00:00",
+  "corpus_family": "us_federal_regulation_ecfr_title_21",
+  "evidence_adequacy_pass": false,
+  "experiment_id": "H3-B-REGULATORY-ECFR-01",
+  "external_gpu_cost_usd": 0.0,
+  "external_label_comparison": {
+    "agreement_count": 11,
+    "disagreement_count": 0,
+    "note": "Reported only. The eCFR substantive flag was never used to select pairs and is not a pass gate (protocol.forbidden).",
+    "pairs": [
+      {
+        "after_date": "2025-10-27",
+        "agrees": true,
+        "before_date": "2025-09-25",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 4,
+        "part": "1",
+        "tavonel_semantic_changes": 4
+      },
+      {
+        "after_date": "2024-07-23",
+        "agrees": true,
+        "before_date": "2023-03-02",
+        "ecfr_any_substantive": false,
+        "ecfr_substantive_false": 1,
+        "ecfr_substantive_true": 0,
+        "part": "11",
+        "tavonel_semantic_changes": 0
+      },
+      {
+        "after_date": "2025-04-28",
+        "agrees": true,
+        "before_date": "2025-02-25",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 2,
+        "part": "101",
+        "tavonel_semantic_changes": 2
+      },
+      {
+        "after_date": "2023-03-30",
+        "agrees": true,
+        "before_date": "2022-10-31",
+        "ecfr_any_substantive": false,
+        "ecfr_substantive_false": 3,
+        "ecfr_substantive_true": 0,
+        "part": "117",
+        "tavonel_semantic_changes": 0
+      },
+      {
+        "after_date": "2023-03-30",
+        "agrees": true,
+        "before_date": "2016-12-31",
+        "ecfr_any_substantive": false,
+        "ecfr_substantive_false": 1,
+        "ecfr_substantive_true": 0,
+        "part": "120",
+        "tavonel_semantic_changes": 0
+      },
+      {
+        "after_date": "2026-07-20",
+        "agrees": true,
+        "before_date": "2023-03-30",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "130",
+        "tavonel_semantic_changes": 1
+      },
+      {
+        "after_date": "2026-07-20",
+        "agrees": true,
+        "before_date": "2024-06-03",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "131",
+        "tavonel_semantic_changes": 1
+      },
+      {
+        "after_date": "2024-06-03",
+        "agrees": true,
+        "before_date": "2023-03-30",
+        "ecfr_any_substantive": false,
+        "ecfr_substantive_false": 1,
+        "ecfr_substantive_true": 0,
+        "part": "133",
+        "tavonel_semantic_changes": 0
+      },
+      {
+        "after_date": "2024-06-03",
+        "agrees": true,
+        "before_date": "2023-03-30",
+        "ecfr_any_substantive": false,
+        "ecfr_substantive_false": 1,
+        "ecfr_substantive_true": 0,
+        "part": "136",
+        "tavonel_semantic_changes": 0
+      },
+      {
+        "after_date": "2025-09-04",
+        "agrees": true,
+        "before_date": "2025-04-11",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "172",
+        "tavonel_semantic_changes": 1
+      },
+      {
+        "after_date": "2024-06-03",
+        "agrees": true,
+        "before_date": "2023-11-28",
+        "ecfr_any_substantive": false,
+        "ecfr_substantive_false": 3,
+        "ecfr_substantive_true": 0,
+        "part": "179",
+        "tavonel_semantic_changes": 0
+      }
+    ]
+  },
+  "git_head": "4945478e02970ff800946471c287e5aa04a63ee3",
+  "max_rebuild_fraction": 0.1875,
+  "mean_rebuild_fraction": 0.03878778135378013,
+  "mean_work_avoided_fraction": 0.9612122186462199,
+  "median_rebuild_fraction": 0.0,
+  "pairs_evaluated": 11,
+  "result_sha256": "sha256:2c67673dfa0481c3f20ee95d5e09c09de790ee6c9b469d4bb5b667ef101aa878",
+  "safety_gate_pass": true,
+  "schema": "tavonel.family-b.regulatory-revision.result.v1",
+  "seal_sha256": "sha256:b42db9920c251a3b39a51a5964665f9e70ebd1027022f679b770c6297a3d2b3f",
+  "stale_left_behind_total": 0,
+  "unresolved_identity_total": 0,
+  "v03_seal_sha256": "sha256:d57901f6de3d2883d5be244ce7c45e3bc29e5a241724b2cec8f152bf86b9442b"
+}

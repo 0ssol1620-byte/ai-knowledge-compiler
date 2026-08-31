@@ -1,0 +1,149 @@
+{
+  "schema": "tavonel.family-b.regulatory-revision.protocol.v2",
+  "experiment_id": "H3-B-REGULATORY-ECFR-02",
+  "status": "PREPARED_BEFORE_FETCH",
+  "prepared_at": "2026-08-31T23:25:00+09:00",
+  "classification": "PROSPECTIVE_ROBUSTNESS_EXTENSION",
+  "extends": "H3-B-CURRENT-CORE-PUBLIC-REVISION-03",
+  "supersedes_selection_of": "H3-B-REGULATORY-ECFR-01",
+  "does_not_supersede_result_of": "H3-B-REGULATORY-ECFR-01",
+
+  "amendment_scope": "SELECTION_ONLY",
+  "amendment_reason": "ECFR-01 passed both safety gates (11/11 full-rebuild equivalence, stale 0) but FAILED its preregistered evidence-adequacy gate: it required >=6 changed pairs and obtained 5, because 6 of its 11 pairs were non-substantive reissues with no semantic change. The gate did its job. This amendment changes ONLY which pairs are selected -- it does not touch the evaluator, the projection, the safety gates, or the claim vocabulary. ECFR-01's FAIL stays on the record as its own result.",
+
+  "scientific_parameters_changed_from_ecfr_01": {
+    "evaluator": false,
+    "projection": false,
+    "safety_gates": false,
+    "transport": false,
+    "selection": true,
+    "note": "Only `selection` differs. The adequacy threshold is raised rather than lowered, so this is not a post-hoc weakening of a failed gate."
+  },
+
+  "why_the_new_selection_is_still_prospective": "The eCFR versions endpoint exposes amendment dates and the `substantive` flag as METADATA, without returning any section content. Candidate parts were screened on that metadata alone before this protocol was frozen and before any section XML was fetched for them. The screening measured only 'does this part have substantive amendments in its most recent window', never 'does TAVONEL get this part right'. No content, and no TAVONEL output, informed the selection.",
+
+  "candidate_screening_measured_before_freeze": [
+    {"title": 40, "part": "571-note", "note": "screening covered 14 candidate parts across 8 CFR titles; the 11 carried below are those whose most recent issue-date window contains at least one substantive record"},
+    {"title": 21, "part": "1", "substantive_records_in_window": 4},
+    {"title": 21, "part": "101", "substantive_records_in_window": 2},
+    {"title": 21, "part": "172", "substantive_records_in_window": 1},
+    {"title": 40, "part": "60", "substantive_records_in_window": 1},
+    {"title": 40, "part": "63", "substantive_records_in_window": 1},
+    {"title": 40, "part": "80", "substantive_records_in_window": 16},
+    {"title": 29, "part": "1910", "substantive_records_in_window": 1},
+    {"title": 45, "part": "164", "substantive_records_in_window": 5},
+    {"title": 17, "part": "240", "substantive_records_in_window": 1},
+    {"title": 12, "part": "1026", "substantive_records_in_window": 7},
+    {"title": 49, "part": "571", "substantive_records_in_window": 17}
+  ],
+
+  "selection": {
+    "universe": [
+      {"title": 21, "part": "1"},
+      {"title": 21, "part": "101"},
+      {"title": 21, "part": "172"},
+      {"title": 40, "part": "60"},
+      {"title": 40, "part": "63"},
+      {"title": 40, "part": "80"},
+      {"title": 29, "part": "1910"},
+      {"title": 45, "part": "164"},
+      {"title": 17, "part": "240"},
+      {"title": 12, "part": "1026"},
+      {"title": 49, "part": "571"}
+    ],
+    "regulator_diversity": "FDA, EPA, OSHA, HHS/OCR, SEC, CFPB and NHTSA -- deliberately spanning 7 agencies and 6 CFR titles so the result is not an artifact of one publisher's drafting style.",
+    "pair_rule": "For each part, take the two most recent distinct issue_date values, oldest of the two as `before` and newest as `after`. Identical rule to ECFR-01.",
+    "target_pair_count": 11,
+    "minimum_evaluable_pairs": 8,
+    "selection_is_deterministic_and_precedes_content_fetch": true,
+    "ground_truth_not_used_for_selection": true,
+    "screening_used_amendment_metadata_only_never_content": true
+  },
+
+  "source": {
+    "api": "https://www.ecfr.gov/api/versioner/v1",
+    "versions_endpoint": "/versions/title-{title}.json?part={part}",
+    "content_endpoint": "/full/{date}/title-{title}.xml?part={part}",
+    "user_agent_required": true
+  },
+
+  "external_ground_truth": {
+    "field": "content_versions[].substantive",
+    "assigned_by": "eCFR publisher (US Government Publishing Office data)",
+    "use_in_this_experiment": "Reported alongside TAVONEL's channel classification as an independent comparison. NOT used to select pairs, NOT used to tune anything, NOT a pass gate.",
+    "known_weakness_carried_from_ecfr_01": "A substantive=false reissue can return byte-identical XML, so agreeing with the label on those cases is not a demanding test. The informative cases are the substantive=true pairs, which this selection deliberately maximises."
+  },
+
+  "projection": {
+    "unit": "eCFR DIV8 SECTION element with normalized body length >= 120 characters",
+    "identity": "title + part + section number, with the live current-core logical identity resolver allowed to abstain",
+    "document_shape": "section number paths + block count + unit order",
+    "artifacts": "one section artifact per logical unit + one document index + deterministic four-bucket topic projections",
+    "unchanged_from_ecfr_01": true
+  },
+
+  "evaluator": {
+    "reuse": "H3-B-CURRENT-CORE-PUBLIC-REVISION-01.run_pair",
+    "no_evaluator_changes": true,
+    "unchanged_from_ecfr_01": true
+  },
+
+  "frozen_safety_gates": {
+    "all_evaluated_pairs_equivalent": true,
+    "stale_left_behind_total": 0,
+    "minimum_changed_pair_count": 8
+  },
+
+  "performance_metrics_are_measurements_not_pass_gates": [
+    "rebuild_fraction",
+    "work_avoided_fraction",
+    "channel_counts",
+    "change_kind_counts",
+    "unresolved_identity_count"
+  ],
+
+  "reported_but_not_gated": [
+    "agreement between TAVONEL semantic-channel detection and the eCFR substantive label",
+    "cases where substantive=false but TAVONEL saw a semantic change",
+    "cases where substantive=true but TAVONEL saw only locator/metadata changes",
+    "work-avoided restricted to the substantively-changed pairs, which is the honest subset for that statistic"
+  ],
+
+  "transport": {
+    "mode": "single_part_ecfr_queries",
+    "minimum_inter_request_seconds": 1.5,
+    "retry_only_for_http_status": [429, 500, 502, 503, 504],
+    "maximum_attempts_per_request": 4,
+    "fallback_backoff_seconds_by_retry": [3.0, 8.0, 20.0],
+    "respect_retry_after_header": true,
+    "maximum_retry_wait_seconds": 60.0,
+    "user_agent": "TAVONEL-research/1.0 (Family B regulatory robustness; contact via repository)",
+    "fetch_all_pairs_before_persisting_any_corpus": true,
+    "unchanged_from_ecfr_01": true
+  },
+
+  "cost_policy": {
+    "external_gpu_allowed": false,
+    "external_gpu_cost_usd": 0.0
+  },
+
+  "integrity": {
+    "freeze_before_fetch": true,
+    "runner_must_verify_protocol_evaluator_and_live_akc_cir_hashes_before_network": true,
+    "corpus_must_be_empty_before_first_run": true,
+    "no_parameter_changes_after_freeze": true,
+    "v03_seal_must_still_verify": true,
+    "ecfr_01_result_must_remain_untouched": true
+  },
+
+  "forbidden": {
+    "modifying_v03_or_ecfr_01_or_their_seals": true,
+    "using_substantive_label_to_select_pairs": true,
+    "using_substantive_label_as_a_pass_gate": true,
+    "lowering_the_adequacy_gate_after_seeing_this_result": true,
+    "quoting_a_cohort_mean_work_avoided_as_a_general_rate": true,
+    "restating_v03_or_ecfr_01_numbers_as_a_general_claim": true
+  },
+
+  "claim_boundary": "A PASS establishes that typed change-channel separation and selective recompilation hold across 7 US federal regulators under the sealed evaluator, on a cohort selected to contain substantive amendments. It does NOT widen the V03 claim, does NOT establish a general work-avoided rate across corpora, and does NOT establish OCR, ontology or customer-data performance."
+}

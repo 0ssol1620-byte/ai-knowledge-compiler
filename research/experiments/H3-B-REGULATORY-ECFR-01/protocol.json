@@ -1,0 +1,112 @@
+{
+  "schema": "tavonel.family-b.regulatory-revision.protocol.v1",
+  "experiment_id": "H3-B-REGULATORY-ECFR-01",
+  "status": "PREPARED_BEFORE_FETCH",
+  "prepared_at": "2026-08-31T22:50:00+09:00",
+  "classification": "PROSPECTIVE_ROBUSTNESS_EXTENSION",
+  "extends": "H3-B-CURRENT-CORE-PUBLIC-REVISION-03",
+  "does_not_supersede": "H3-B-CURRENT-CORE-PUBLIC-REVISION-03",
+
+  "purpose": "Audit section 28-C requires at least one non-Wikipedia, production-shaped revision source for Family B. This experiment adds US federal regulation (eCFR) as a second corpus family. It does not modify, reopen or reinterpret the sealed V03 result; V03 remains the evidence for its own declared English-Wikipedia section projection, and this experiment stands or falls on its own.",
+
+  "why_ecfr": [
+    "Revision-shaped: every section carries an amendment_date and issue_date lineage through the versioner API.",
+    "Production-shaped: numbered hierarchical sections, defined terms, cross-references, dates and quantities -- the document shape TAVONEL actually targets, unlike prose encyclopedia articles.",
+    "Carries an INDEPENDENT external change label: each content_version record has a government-assigned `substantive` boolean. Wikipedia has no equivalent. This is the scientific reason to prefer eCFR over SEC filings for this round.",
+    "Public domain US government work; no licence barrier to storing derived artifacts."
+  ],
+
+  "source": {
+    "api": "https://www.ecfr.gov/api/versioner/v1",
+    "versions_endpoint": "/versions/title-{title}.json?part={part}",
+    "content_endpoint": "/full/{date}/title-{title}.xml?part={part}&section={section}",
+    "user_agent_required": true
+  },
+
+  "external_ground_truth": {
+    "field": "content_versions[].substantive",
+    "assigned_by": "eCFR publisher (US Government Publishing Office data)",
+    "meaning_true": "the amendment changed regulatory substance",
+    "meaning_false": "the section was reissued without a substantive change",
+    "measured_before_freeze": "For title 21 part 1, an identical section (1.71) reissued on 2023-03-30 against a 2022-11-17 amendment_date with substantive=false returned byte-identical XML (sha256 68b9aadf6dace6af..., 3338 bytes) at both dates. The label and the bytes agree on the case that was checked.",
+    "use_in_this_experiment": "Reported alongside TAVONEL's own channel classification as an independent comparison. It is NOT used to select pairs, NOT used to tune anything, and NOT a pass gate -- see forbidden."
+  },
+
+  "selection": {
+    "universe": "eCFR title 21 (Food and Drugs) parts 1, 11, 101, 110, 117, 120, 130, 131, 133, 136, 172, 179",
+    "pair_rule": "For each part, take the two most recent distinct issue_date values that both resolve to retrievable section XML, oldest of the two as `before` and newest as `after`.",
+    "target_pair_count": 12,
+    "minimum_evaluable_pairs": 8,
+    "selection_is_deterministic_and_precedes_content_fetch": true,
+    "ground_truth_not_used_for_selection": true
+  },
+
+  "projection": {
+    "unit": "eCFR DIV8 SECTION element with normalized body length >= 120 characters",
+    "identity": "title + part + section number, with the live current-core logical identity resolver allowed to abstain",
+    "document_shape": "section number paths + block count + unit order",
+    "artifacts": "one section artifact per logical unit + one document index + deterministic four-bucket topic projections",
+    "note": "This mirrors the V03 projection contract with the heading hierarchy replaced by the eCFR section hierarchy. The evaluator itself is reused unchanged."
+  },
+
+  "evaluator": {
+    "reuse": "H3-B-CURRENT-CORE-PUBLIC-REVISION-01.run_pair",
+    "reason": "Reusing the sealed evaluator byte-for-byte is what makes this a corpus-family robustness test rather than a new method. Only the transport and the projection adapter are new.",
+    "no_evaluator_changes": true
+  },
+
+  "frozen_safety_gates": {
+    "all_evaluated_pairs_equivalent": true,
+    "stale_left_behind_total": 0,
+    "minimum_changed_pair_count": 6
+  },
+
+  "performance_metrics_are_measurements_not_pass_gates": [
+    "rebuild_fraction",
+    "work_avoided_fraction",
+    "channel_counts",
+    "change_kind_counts",
+    "unresolved_identity_count"
+  ],
+
+  "reported_but_not_gated": [
+    "agreement between TAVONEL semantic-channel detection and the eCFR substantive label",
+    "cases where substantive=false but TAVONEL saw a semantic change",
+    "cases where substantive=true but TAVONEL saw only locator/metadata changes"
+  ],
+
+  "transport": {
+    "mode": "single_section_ecfr_queries",
+    "minimum_inter_request_seconds": 1.5,
+    "retry_only_for_http_status": [429, 500, 502, 503, 504],
+    "maximum_attempts_per_request": 4,
+    "fallback_backoff_seconds_by_retry": [3.0, 8.0, 20.0],
+    "respect_retry_after_header": true,
+    "maximum_retry_wait_seconds": 60.0,
+    "user_agent": "TAVONEL-research/1.0 (Family B regulatory robustness; contact via repository)",
+    "fetch_all_pairs_before_persisting_any_corpus": true
+  },
+
+  "cost_policy": {
+    "external_gpu_allowed": false,
+    "external_gpu_cost_usd": 0.0
+  },
+
+  "integrity": {
+    "freeze_before_fetch": true,
+    "runner_must_verify_protocol_evaluator_and_live_akc_cir_hashes_before_network": true,
+    "corpus_must_be_empty_before_first_run": true,
+    "no_parameter_changes_after_freeze": true,
+    "v03_seal_must_still_verify": true
+  },
+
+  "forbidden": {
+    "modifying_v03_or_its_seal": true,
+    "using_substantive_label_to_select_pairs": true,
+    "using_substantive_label_as_a_pass_gate": true,
+    "tuning_any_threshold_on_this_corpus_then_calling_it_confirmatory": true,
+    "restating_v03_work_avoided_as_a_general_claim": true
+  },
+
+  "claim_boundary": "A PASS here establishes that typed change-channel separation and selective recompilation hold on a second, non-Wikipedia, production-shaped revision family (US federal regulation) under the same sealed evaluator. It does NOT widen the V03 claim, does NOT establish a general work-avoided rate across corpora, and does NOT establish OCR, ontology or customer-data performance."
+}

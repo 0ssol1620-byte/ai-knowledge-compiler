@@ -1,0 +1,156 @@
+{
+  "all_pairs_equivalent": true,
+  "change_kind_counts": {
+    "evidence_moved": 5613,
+    "identity_unresolved": 6,
+    "metadata_changed": 5613,
+    "modified_claim": 87,
+    "structure_changed": 7,
+    "unit_added": 3,
+    "unit_removed": 4
+  },
+  "changed_pair_count": 11,
+  "channel_counts": {
+    "locator": 5613,
+    "metadata": 5613,
+    "semantic": 94,
+    "structural": 7,
+    "unresolved": 6
+  },
+  "claim_boundary": "A PASS establishes that typed change-channel separation and selective recompilation hold across 7 US federal regulators under the sealed evaluator, on a cohort selected to contain substantive amendments. It does NOT widen the V03 claim, does NOT establish a general work-avoided rate across corpora, and does NOT establish OCR, ontology or customer-data performance.",
+  "completed_at": "2026-08-31T14:43:25.342709+00:00",
+  "corpus_family": "us_federal_regulation_ecfr_seven_regulators",
+  "evidence_adequacy_pass": true,
+  "experiment_id": "H3-B-REGULATORY-ECFR-02",
+  "external_gpu_cost_usd": 0.0,
+  "external_label_comparison": {
+    "agreement_count": 11,
+    "disagreement_count": 0,
+    "note": "Reported only. The eCFR substantive flag was never used to select pairs and is not a pass gate (protocol.forbidden).",
+    "pairs": [
+      {
+        "after_date": "2025-10-27",
+        "agrees": true,
+        "before_date": "2025-09-25",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 4,
+        "part": "21 CFR 1",
+        "tavonel_semantic_changes": 4
+      },
+      {
+        "after_date": "2025-04-28",
+        "agrees": true,
+        "before_date": "2025-02-25",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 2,
+        "part": "21 CFR 101",
+        "tavonel_semantic_changes": 2
+      },
+      {
+        "after_date": "2025-09-04",
+        "agrees": true,
+        "before_date": "2025-04-11",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "21 CFR 172",
+        "tavonel_semantic_changes": 1
+      },
+      {
+        "after_date": "2026-06-08",
+        "agrees": true,
+        "before_date": "2026-05-11",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "40 CFR 60",
+        "tavonel_semantic_changes": 9
+      },
+      {
+        "after_date": "2026-07-06",
+        "agrees": true,
+        "before_date": "2026-06-22",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "40 CFR 63",
+        "tavonel_semantic_changes": 15
+      },
+      {
+        "after_date": "2026-06-15",
+        "agrees": true,
+        "before_date": "2026-04-01",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 16,
+        "part": "40 CFR 80",
+        "tavonel_semantic_changes": 35
+      },
+      {
+        "after_date": "2026-02-13",
+        "agrees": true,
+        "before_date": "2026-01-15",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "29 CFR 1910",
+        "tavonel_semantic_changes": 1
+      },
+      {
+        "after_date": "2024-06-25",
+        "agrees": true,
+        "before_date": "2024-06-03",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 5,
+        "part": "45 CFR 164",
+        "tavonel_semantic_changes": 5
+      },
+      {
+        "after_date": "2026-06-01",
+        "agrees": true,
+        "before_date": "2026-04-06",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 1,
+        "part": "17 CFR 240",
+        "tavonel_semantic_changes": 1
+      },
+      {
+        "after_date": "2026-03-02",
+        "agrees": true,
+        "before_date": "2026-01-07",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 7,
+        "part": "12 CFR 1026",
+        "tavonel_semantic_changes": 5
+      },
+      {
+        "after_date": "2026-07-06",
+        "agrees": true,
+        "before_date": "2026-06-10",
+        "ecfr_any_substantive": true,
+        "ecfr_substantive_false": 0,
+        "ecfr_substantive_true": 17,
+        "part": "49 CFR 571",
+        "tavonel_semantic_changes": 16
+      }
+    ]
+  },
+  "git_head": "4945478e02970ff800946471c287e5aa04a63ee3",
+  "max_rebuild_fraction": 0.5,
+  "mean_rebuild_fraction": 0.1133644363591305,
+  "mean_work_avoided_fraction": 0.8866355636408695,
+  "median_rebuild_fraction": 0.027450980392156862,
+  "pairs_evaluated": 11,
+  "result_sha256": "sha256:856504469e9fec5ef9fc1c2410db82f841f33cc87e00c6f2f5098ad2e2e17271",
+  "safety_gate_pass": true,
+  "schema": "tavonel.family-b.regulatory-revision.result.v2",
+  "seal_sha256": "sha256:32fb7403b5e36bd579bc122638d35b887552beafd29494f1723ccad523e645c8",
+  "stale_left_behind_total": 0,
+  "unresolved_identity_total": 6,
+  "v03_seal_sha256": "sha256:d57901f6de3d2883d5be244ce7c45e3bc29e5a241724b2cec8f152bf86b9442b"
+}
