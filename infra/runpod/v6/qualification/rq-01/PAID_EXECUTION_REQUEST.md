@@ -122,8 +122,8 @@ quote from RunPod's live pricing API, which this agent cannot reach.
 
 | Cap | Proposed value | Status |
 |---|---|---|
-| Per-run cap | $5.00/hr × ≤8h runtime ceiling, i.e. ≤ **$40.00** absolute per-run ceiling (matching the existing `QualificationPodSpec.maximum_cost_usd` formula: `maximum_hourly_rate_usd × maximum_runtime_hours + non_compute_contingency_usd`, which already caps at $5/hr × 8h + $2 = $42.00 per run) | proposed for this request |
-| Total-round cap (≤4 runs) | **$50.00** | proposed for this request |
+| Per-run cap | $5.00/hr × ≤8h runtime ceiling, i.e. ≤ **$40.00 (ESTIMATE_UNVERIFIED)** absolute per-run ceiling (matching the existing `QualificationPodSpec.maximum_cost_usd` formula: `maximum_hourly_rate_usd × maximum_runtime_hours + non_compute_contingency_usd`, which already caps at $5/hr × 8h + $2 = $42.00 (ESTIMATE_UNVERIFIED) per run) | proposed for this request |
+| Total-round cap (≤4 runs) | **$50.00 (ESTIMATE_UNVERIFIED)** | proposed for this request |
 
 Both the per-run rate (`≤ $5/hr`) and per-run runtime (`≤ 8h`) ceilings are
 not new — they are already enforced in code by
@@ -135,7 +135,7 @@ request's total-round cap of $50.00 is a new, additional ceiling proposed
 specifically for this round's up-to-4 qualification runs; it is far above
 the §4 high estimate of $11.91 to leave margin for provider price variance,
 while still being a hard stop well below what 4 runs at the absolute
-per-run ceiling could theoretically reach (4 × $42.00 = $168.00).
+per-run ceiling could theoretically reach (4 × $42.00 (ESTIMATE_UNVERIFIED) = $168.00 (ESTIMATE_UNVERIFIED)).
 
 **This is a SEPARATE budget from `research/experiments/SEM-RISK-CONF-02/protocol.json`'s
 `cost.hard_cap_usd: 500.0`.** That $500 cap is reserved for the later,
@@ -257,3 +257,32 @@ and comes before, the GPU-spend approval in §4/§5.
 completeness is the only thing being claimed as done here; the underlying
 images and qualification remain `IMPLEMENTED`/`TESTED` at most, not `PROVEN`,
 until a real run produces and verifies a real receipt.
+
+---
+
+## 11. Known limitation: qualification-path cleanup and watchdog
+
+`RunPodQualificationClient` (`infra/runpod/v6/qualification_pod.py`) — the
+actual client this qualification phase uses — does not itself implement the
+delete-then-verify-404-absence-proof pattern described in §7, nor a watchdog
+that terminates a pod once its `maximum_runtime_hours` deadline is reached.
+Its `delete()` method issues a single `DELETE` call and returns
+(`infra/runpod/v6/qualification_pod.py:241-243`); nothing in this class
+follows up with a `get()` to confirm the pod is actually gone. Likewise,
+`maximum_runtime_hours` on `QualificationPodSpec` is validated at
+construction time and feeds the `maximum_cost_usd` calculation
+(`infra/runpod/v6/qualification_pod.py:79-84`), but nothing in
+`RunPodQualificationClient` reads a clock against that deadline or forces
+cleanup if it is exceeded. The delete-then-verify-absence pattern and the
+watchdog deadline described in §7 exist today only in
+`confirmatory_pod_controller.py`, which this qualification phase does not
+use.
+
+A separate driver script — the qualification session driver, being built in
+parallel as part of this same round — is responsible for supplying both of
+these safety properties around `RunPodQualificationClient`, since the client
+itself does not provide them. Until that driver exists and is used for every
+run approved under this request, the cleanup guarantees in §7 that reference
+delete-then-verify-absence and watchdog enforcement describe the intended
+operating procedure, not a property of `RunPodQualificationClient` in
+isolation.
