@@ -1,0 +1,10 @@
+{
+  "absence_proven": true,
+  "context": "zombie: uptimeInSeconds=0, CUDA>=12.8 unsatisfied on host, billed since 2026-08-30T13:43Z",
+  "delete_error": null,
+  "delete_requested": true,
+  "observation": "GET_404_NOT_FOUND",
+  "pod_id": "tcmo7xom13m2ch",
+  "receipt_sha256": "sha256:df8be22a096aae1f775a81cc70452a7ca7f26167badfb0361a00281766795b1a",
+  "schema": "folynta.runpod-builder-absence.v1"
+}

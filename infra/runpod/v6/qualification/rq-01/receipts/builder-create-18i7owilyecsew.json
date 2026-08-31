@@ -1,0 +1,15 @@
+{
+  "allocation_id": "rq-01-builder-2026-08-31-a1",
+  "gpu": null,
+  "gpu_verified_at_creation": false,
+  "hourly_rate_usd": "0.74",
+  "maximum_runtime_hours": "3",
+  "name": "folynta-builder-rq01-conf-images",
+  "pod_id": "18i7owilyecsew",
+  "receipt_sha256": "sha256:b4877a146f9187a44e4f0a53087d18fb5fd9eeeb0c2cefd7b182049a3b515f9e",
+  "request_sha256": "sha256:db7b2951983df8f657e0df9d2fb66678a8dc97ccf01bbe0748ccd2dde00befc1",
+  "reserved_maximum_cost_usd": "7.000000",
+  "runtime_qualification_eligible": false,
+  "schema": "folynta.runpod-builder-create.v1",
+  "status": "RUNNING"
+}

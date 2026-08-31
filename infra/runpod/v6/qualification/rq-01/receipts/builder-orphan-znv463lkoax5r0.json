@@ -1,0 +1,10 @@
+{
+  "absence_proven": true,
+  "delete_error": null,
+  "delete_requested": true,
+  "observation": "GET_404_NOT_FOUND",
+  "pod_id": "znv463lkoax5r0",
+  "receipt_sha256": "sha256:9a4a0e98c553356e8222760b0d3469774557d171ee58571c5ee2fa19a04ca4ac",
+  "reconciliation": "ambiguous_create_orphan",
+  "schema": "folynta.runpod-builder-absence.v1"
+}

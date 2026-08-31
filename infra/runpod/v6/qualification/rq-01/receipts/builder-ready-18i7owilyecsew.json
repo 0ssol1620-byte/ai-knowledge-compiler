@@ -1,0 +1,14 @@
+{
+  "allocation_id": "rq-01-builder-2026-08-31-a1",
+  "gpu": "RTX 4090",
+  "gpu_identity_source": "graphql_cross_check",
+  "hourly_rate_usd": "0.74",
+  "name": "folynta-builder-rq01-conf-images",
+  "pod_id": "18i7owilyecsew",
+  "public_ip": "213.181.111.2",
+  "receipt_sha256": "sha256:326594dbb45f92b0c6a5419aea67cc0c31010db6bddd505252ed047f4fe6256d",
+  "runtime_qualification_eligible": false,
+  "schema": "folynta.runpod-builder-ready.v1",
+  "ssh_port": 40107,
+  "status": "RUNNING"
+}
