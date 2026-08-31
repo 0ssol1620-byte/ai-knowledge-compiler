@@ -72,7 +72,12 @@ jobs:
               echo "MODEL_ARTIFACT_SHA256=sha256:40ca2a90af83f79a9adf2d5ddb7e32187e6956e45e5730119595be7305e06a53" >> "$GITHUB_ENV"
               ;;
             mineru-3.4.4-vlm-c1)
-              echo "MODEL_REVISION=79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7" >> "$GITHUB_ENV"
+              # bff20d4a... is the WEIGHTS revision (opendatalab/MinerU2.5-Pro-2605-1.2B,
+              # snapshot_download), not the source revision (opendatalab/MinerU,
+              # 79d6d8d7..., git clone/checkout). image_build_receipt.py bakes this
+              # value into model_revision, which build_runtime_qualification.py
+              # compares against lineage.json targets["mineru-3.4.4-vlm-c1"].weights_revision.
+              echo "MODEL_REVISION=bff20d4ae2bf202df9f45284b4d43681555a97ed" >> "$GITHUB_ENV"
               echo "MODEL_ARTIFACT_SHA256=sha256:1611a8892cc0e7e287d31c4a1b5af87652f0f6e4a3f80276b92b4c71f982de84" >> "$GITHUB_ENV"
               ;;
             *)
