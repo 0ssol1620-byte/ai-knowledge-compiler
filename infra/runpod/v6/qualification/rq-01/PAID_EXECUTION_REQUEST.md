@@ -267,11 +267,11 @@ actual client this qualification phase uses — does not itself implement the
 delete-then-verify-404-absence-proof pattern described in §7, nor a watchdog
 that terminates a pod once its `maximum_runtime_hours` deadline is reached.
 Its `delete()` method issues a single `DELETE` call and returns
-(`infra/runpod/v6/qualification_pod.py:241-243`); nothing in this class
+(`infra/runpod/v6/qualification_pod.py:266-268`); nothing in this class
 follows up with a `get()` to confirm the pod is actually gone. Likewise,
 `maximum_runtime_hours` on `QualificationPodSpec` is validated at
 construction time and feeds the `maximum_cost_usd` calculation
-(`infra/runpod/v6/qualification_pod.py:79-84`), but nothing in
+(`infra/runpod/v6/qualification_pod.py:96-101`), but nothing in
 `RunPodQualificationClient` reads a clock against that deadline or forces
 cleanup if it is exceeded. The delete-then-verify-absence pattern and the
 watchdog deadline described in §7 exist today only in
