@@ -1,0 +1,44 @@
+{
+  "schema": "folynta.runtime-qualification-lineage.v1",
+  "lineage_id": "rq-01",
+  "created_at": "2026-08-31T03:16:33Z",
+  "consumed_by": ["research/experiments/SEM-RISK-CONF-02"],
+  "scientific_experiment_id_untouched": "SEM-RISK-CONF-01",
+  "candidate_registry_sha256": "4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+  "protocol_sha256": "c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "targets": {
+    "paddleocr-vl-1.6-fastdeploy-c8": {
+      "registry_candidate_id": "paddleocr-vl-1.6",
+      "weights_repository": "PaddlePaddle/PaddleOCR-VL-1.6",
+      "weights_revision": "66317acc4c9fc17bd154591ce650735cd2855f3e",
+      "artifact_sha256": "sha256:40ca2a90af83f79a9adf2d5ddb7e32187e6956e45e5730119595be7305e06a53",
+      "runtime_source_repository": "PaddlePaddle/PaddleOCR",
+      "runtime_source_revision": "2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "image_dir": "infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8",
+      "runner_pins": {
+        "benchmark/runpod_eval/paddleocr_vl_stage2.py": "sha256:414b5b876f71c527e0c2ac3baadde37dca53fb9d49d5eb270501c5ba71c8f120",
+        "benchmark/runpod_eval/input_contract.py": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310",
+        "benchmark/runpod_eval/isolated_case_process.py": "sha256:05559dba43b6c250dcf8f077600f48e72dfd0238af3c137836e32d7667a34372"
+      }
+    },
+    "mineru-3.4.4-vlm-c1": {
+      "registry_candidate_id": "mineru-3.4.4-vlm",
+      "source_repository": "opendatalab/MinerU",
+      "source_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "weights_repository": "opendatalab/MinerU2.5-Pro-2605-1.2B",
+      "weights_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+      "artifact_sha256": "sha256:1611a8892cc0e7e287d31c4a1b5af87652f0f6e4a3f80276b92b4c71f982de84",
+      "image_dir": "infra/runpod/v6/images/mineru-3.4.4-vlm-c1",
+      "runner_pins": {
+        "benchmark/runpod_eval/mineru_stage2.py": "sha256:e7d84e289d9ea1b123d4451243a185950af3bf236520eb92c54ea2ba80387c77",
+        "benchmark/runpod_eval/input_contract.py": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310"
+      }
+    }
+  },
+  "smoke_fixture": {
+    "path": "infra/runpod/v6/qualification/rq-01/fixtures/",
+    "evidence_class": "SYNTHETIC_UNSPENT_NO_GROUND_TRUTH"
+  },
+  "paid_capacity_ready": false,
+  "ghcr_push_performed": false
+}

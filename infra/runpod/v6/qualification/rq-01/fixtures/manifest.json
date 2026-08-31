@@ -1,0 +1,15 @@
+{
+  "schema": "folynta.runtime-qualification-fixture.v1",
+  "fixture_id": "rq-01-smoke-001",
+  "created_at": "2026-08-31T03:17:33Z",
+  "path": "infra/runpod/v6/qualification/rq-01/fixtures/rq-01-smoke-001.png",
+  "sha256": "d6eb34339f54aff6a0747449d3ef6b5343ba1d7e0ca30d500d7875c5821a176b",
+  "bytes": 13018,
+  "evidence_class": "SYNTHETIC_UNSPENT_NO_GROUND_TRUTH",
+  "ground_truth_exists": false,
+  "derived_from_confirmatory_cohort": false,
+  "derived_from_omnidocbench_or_any_external_corpus": false,
+  "generator": "generate_fixture.py",
+  "content_description": "900x600 white-background synthetic document image with a heading line ('RQ-01 Qualification Smoke Fixture'), a three-line plain ASCII body paragraph, one 2x2 bordered table (headers 'Item'/'Count', row 'Widget'/'7'), and one critical-token line ('Version: 1.4.2') styled as a version string.",
+  "regeneration_note": "The committed PNG is the frozen artifact produced by the first successful run of generate_fixture.py on 2026-08-31. Re-running the generator will not overwrite it (the script refuses to clobber an existing file), because font rasterization is not guaranteed byte-identical across Pillow versions or host font libraries."
+}

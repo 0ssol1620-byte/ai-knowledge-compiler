@@ -71,3 +71,46 @@ critical vulnerability, or any failed gate keeps the pod spec non-runnable.
 The current Ovis specs correctly remain `BUILD_REQUIRED`: their `image_name`
 still identifies the upstream base image rather than a published, qualified
 FOLYNTA baked image.
+
+## Confirmatory candidates (rq-01)
+
+A second runtime-qualification lineage exists at
+`infra/runpod/v6/qualification/rq-01/` for two candidates that
+`research/experiments/SEM-RISK-CONF-02` needs before GPU inference can run:
+
+- `paddleocr-vl-1.6-fastdeploy-c8` — image definition at
+  `infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8/`.
+- `mineru-3.4.4-vlm-c1` — image definition at
+  `infra/runpod/v6/images/mineru-3.4.4-vlm-c1/`.
+
+Both remain `BUILD_REQUIRED` as of this writing: no image has been built or
+pushed for either candidate, and no qualification receipt exists yet. See
+`infra/runpod/v6/qualification/rq-01/README.md` for the full checklist of
+what remains before paid execution can be triggered.
+
+**Anti-fabrication mechanism.** A qualification gate that compares a fresh
+smoke prediction against an "expected" hash is only meaningful if that
+expected hash cannot be produced from the very run it is meant to judge.
+`infra/runpod/v6/runtime_smoke_baseline.py` seals a baseline — three
+intra-pod repeats of the same smoke prediction, written with an
+exclusive-create receipt (`write_receipt_exclusive`, which raises
+`FileExistsError` rather than overwrite an existing baseline) — from an
+earlier, separate pod session, *before*
+`infra/runpod/v6/build_runtime_qualification.py` can validate a later,
+separate run against it. `build_runtime_qualification.py` takes a required
+`--baseline-receipt` path and reads `smoke_expected_sha256` only from that
+sealed file; the module exposes no CLI argument that accepts
+`smoke_expected_sha256` directly, so that value can only ever originate from
+a previously sealed baseline, never from a command-line argument on the
+validating run itself.
+
+The smoke fixture used by this lineage lives at
+`infra/runpod/v6/qualification/rq-01/fixtures/` — self-authored and
+ground-truth-free, unrelated to the frozen confirmatory cohort it will
+eventually help unblock.
+
+A pre-existing defect (not introduced by this round) was found in the
+existing Ovis bootstrap pattern regarding `FOLYNTA_BAKED_RUNTIME_RECEIPT_SHA256`
+semantics; see
+`infra/runpod/v6/qualification/rq-01/KNOWN_ISSUES.md` for details. Fixing it
+is out of scope for this round.

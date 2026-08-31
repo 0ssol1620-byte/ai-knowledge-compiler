@@ -1,0 +1,14 @@
+# PaddleX/FastDeploy service configuration baked into the
+# paddleocr-vl-1.6-fastdeploy-c8 image. Adapted, byte-for-byte value copy,
+# from benchmark/runpod_eval/paddle-fastdeploy-backend.yaml (that file is
+# read-only reference and is left untouched by this image).
+#
+# RunPod's base image reserves port 8001 for nginx, so metrics are isolated on
+# 18119. The API stays loopback-only and ground truth is never mounted.
+gpu-memory-utilization: 0.7
+max-model-len: 16384
+max-num-batched-tokens: 16384
+max-num-seqs: 256
+workers: 4
+metrics-port: 18119
+graph-optimization-config: '{"graph_opt_level":0,"use_cudagraph":true}'
