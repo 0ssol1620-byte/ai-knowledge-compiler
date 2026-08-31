@@ -102,3 +102,13 @@ crash.log
 # eslint/vitest JSON reports written during gate runs
 .eslint.json
 .vitest.json
+
+# Frozen experiment input corpora. The bytes are large (SEM-RISK-CONF-02 alone
+# is 117 MB of OmniDocBench pages and source PDFs) and are NOT the evidence:
+# every input's sha256, size and case_id is already bound in the experiment's
+# acquisition receipt and inference manifests, which ARE committed. A later
+# worker reacquires the corpus with the experiment's own acquisition script and
+# verifies it against those receipts (verify_frozen_integrity.py), so the
+# provenance chain survives without carrying the payload in git history.
+research/experiments/*/corpus/
+

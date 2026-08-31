@@ -1,0 +1,11 @@
+{
+  "blocked_at": "2026-08-30T19:39:22.874823+00:00",
+  "corpus_files_persisted": 0,
+  "error": "missing batch page for Database -> Database",
+  "error_type": "RuntimeError",
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-02",
+  "external_gpu_cost_usd": 0.0,
+  "schema": "tavonel.family-b.current-core-public-revision.blocked.v2",
+  "seal_sha256": "sha256:794abb6b08f8d41030e34ad9687e0d7352ce4d1aee0ec418defb045012be6040",
+  "stage": "single_batch_network_fetch_before_corpus_persist"
+}

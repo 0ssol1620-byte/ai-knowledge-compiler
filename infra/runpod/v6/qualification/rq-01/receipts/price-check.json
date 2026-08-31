@@ -1,0 +1,50 @@
+{
+  "schema": "folynta.rq-01-price-check.v1",
+  "observed_at": "2026-08-31T08:06:32Z",
+  "observed_via": "RunPod MCP (mcp__plugin_runpod_runpod__list-gpu-types, product=POD, secureCloudOnly=true); mcp__3a0e839b-e5a6-44a3-a518-760c7a36711b__list-gpu-types (the other available prefix) returned HTTP 404 on every call including an unfiltered one, so only the plugin_runpod_runpod prefix was usable this session",
+  "gpu_ladder": [
+    {
+      "gpu_type": "NVIDIA L40S",
+      "gpu_type_id": "NVIDIA L40S",
+      "available": true,
+      "availability": "HIGH",
+      "observed_hourly_rate_usd": 0.99
+    },
+    {
+      "gpu_type": "NVIDIA RTX A6000",
+      "gpu_type_id": "NVIDIA RTX A6000",
+      "available": true,
+      "availability": "LOW",
+      "observed_hourly_rate_usd": 0.53
+    },
+    {
+      "gpu_type": "NVIDIA A40",
+      "gpu_type_id": "NVIDIA A40",
+      "available": true,
+      "availability": "HIGH",
+      "observed_hourly_rate_usd": 0.44
+    },
+    {
+      "gpu_type": "NVIDIA GeForce RTX 4090",
+      "gpu_type_id": "NVIDIA GeForce RTX 4090",
+      "available": true,
+      "availability": "LOW",
+      "observed_hourly_rate_usd": 0.74
+    }
+  ],
+  "selected_gpu": "NVIDIA L40S",
+  "selection_rule": "first GPU in the fixed priority order (L40S, A6000, A40, RTX 4090) that is available and within the $5/hr contract ceiling",
+  "observed_hourly_rate_usd": 0.99,
+  "contract_ceiling_usd_per_hour": 5,
+  "chosen_maximum_hourly_rate_formula": "min(contract_ceiling_usd_per_hour, round_up(observed_hourly_rate_usd * 1.25, 2 decimals)) = min(5, round_up(0.99 * 1.25, 2)) = min(5, 1.24) = 1.24",
+  "chosen_maximum_hourly_rate_usd": 1.24,
+  "maximum_runtime_hours": 2,
+  "non_compute_contingency_usd": 2,
+  "per_pod_maximum_cost_usd": 4.48,
+  "per_pod_maximum_cost_formula": "chosen_maximum_hourly_rate_usd * maximum_runtime_hours + non_compute_contingency_usd = 1.24 * 2 + 2 = 4.48",
+  "four_pod_worst_case_usd": 17.92,
+  "four_pod_worst_case_formula": "per_pod_maximum_cost_usd * 4 = 4.48 * 4 = 17.92",
+  "round_cap_usd": "50.00",
+  "fits_round_cap": true,
+  "decision": "Proceed with NVIDIA L40S: available (HIGH, secure cloud) at an observed $0.99/hr, well under the $5/hr ceiling; four-pod worst case of $17.92 fits comfortably under the $50.00 round cap. No pod was created — this is a read-only price observation only."
+}

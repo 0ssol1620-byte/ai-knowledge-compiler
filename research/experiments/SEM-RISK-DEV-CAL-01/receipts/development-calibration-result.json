@@ -1,0 +1,1541 @@
+{
+  "candidate_region": {
+    "production_threshold_selected": false,
+    "semantic_risk_thresholds_with_positive_damage_reduction_and_cost_below_always_strong": []
+  },
+  "claim_boundary": "This study reuses the already-observed 18-page OmniDocBench demo evidence from the August 1 parser evaluation. It is development calibration only. It is not fresh confirmatory evidence, a field SLO, a production threshold selection study, a customer-data benchmark, or patent novelty evidence.",
+  "classification": "RETROSPECTIVE_DEVELOPMENT_CALIBRATION_ONLY",
+  "custom_metric_is_official_omnidocbench": false,
+  "development_diagnostics": {
+    "always_primary_mean_damage": 0.2008730579954079,
+    "critical_token_pages": 12,
+    "current_semantic_risk_max": 0.009997986172252012,
+    "current_semantic_risk_min": 0.0,
+    "default_threshold_0_55_assessment": "UNDER_SENSITIVE_UNDER_AVAILABLE_DEVELOPMENT_FEATURE_PROXIES",
+    "equal_damage_pages": 1,
+    "formula_pages": 2,
+    "oracle_damage_reduction_vs_always_primary": 0.03190430465161542,
+    "page_oracle_mean_damage": 0.16896875334379247,
+    "strong_better_pages": 8,
+    "strong_worse_pages": 9,
+    "table_pages": 9
+  },
+  "experiment_id": "SEM-RISK-DEV-CAL-01",
+  "external_gpu_cost_usd": 0.0,
+  "input_manifest": [
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler-vkc-research/packages/cir-python/src/akc_cir/semantic_risk.py",
+      "sha256": "sha256:cad8309c1a89ecdcb9390097a12e2886a77bf7a6a8dfd0894a51eb097b8a7704",
+      "size": 5572
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30.md",
+      "sha256": "sha256:e9d309ceb226310df5143a860956aed5814b4b75783adc0f86d6ff55703cfe30",
+      "size": 5941
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185.md",
+      "sha256": "sha256:46559c394416f062a572677dc2d8879df30a1a67ee88a83d59ff694203b5038a",
+      "size": 3161
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170.md",
+      "sha256": "sha256:1441736105627ac1a9bd51f613e8505ae4594e5e59c8eacfa7d1ff5f28b4443a",
+      "size": 2559
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128.md",
+      "sha256": "sha256:6262d0f1b911d7bd94493a67952afc4e2e970f8c5a74c4348d61db29f49893b1",
+      "size": 1512
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4.md",
+      "sha256": "sha256:e9f87c934fddb66f74c342894a605d231a8133a8c5e67bedd4ae010bab96702c",
+      "size": 6142
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3.md",
+      "sha256": "sha256:2203db27574d74e90a4858f775e8fa7e1de7e3e761428efc23e7e195d359e728",
+      "size": 4188
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0.md",
+      "sha256": "sha256:1e4f2af4c7b96677080009d376de7f4330a9e926c0bc351048702e6e2fe102d0",
+      "size": 5183
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/jiaocaineedrop_Chapter9.pdf_46.md",
+      "sha256": "sha256:b2de8a79d4a4811c9b506b2ea87e84c5d822ab7decd872d63b355440ea52c156",
+      "size": 2142
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5.md",
+      "sha256": "sha256:85e16b528aadece8f6a03e50d101bfb68181dd70112c98f7885c9a3460925d95",
+      "size": 2986
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/jiaocaineedrop_jiaocai_needrop_en_1898.md",
+      "sha256": "sha256:0b76f11e4a3b6e1346faaf78cf311a1ee14e554ba3e98fbe555143d5c95a0826",
+      "size": 1905
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/jiaocaineedrop_jiaocai_needrop_en_3361.md",
+      "sha256": "sha256:88b93707e8bd4067e42ad058106cf4087e92783cb766582d7b1274bc0dd01af0",
+      "size": 3162
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.md",
+      "sha256": "sha256:e3d7c86c9cf51414d266dc263e93d0ff3e24c47a15acabf4ce4050fc2cc27a4a",
+      "size": 26140
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.md",
+      "sha256": "sha256:d942d78cf82755508ee92c81eb40322d57b8b87455ab45ba56d60bf18e6ad7ed",
+      "size": 6607
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/notes_1ba14cb325bc448f7201b20502ecf2b5_15.md",
+      "sha256": "sha256:20306d242b317e2d3c69e54f30b26dacf5b30bd445bbcf2da4ebdb71d6cd6a5d",
+      "size": 1404
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/notes_f7f010b78016aeebd76e56d9283eb67f_49.md",
+      "sha256": "sha256:c8158a2c2c6fcc1a56f58a6f741f48f98c88c61d0f6aaef758a6d341d0ba9cc0",
+      "size": 1594
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2.md",
+      "sha256": "sha256:ffb7782ee208773e75c0818c8d32169560ceb164da026586a85b28bd3cf44840",
+      "size": 4197
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/yanbaopptmerge_SE05.pdf_7.md",
+      "sha256": "sha256:d4e98962018080b50c52c4da7e4937a953975cbb7f99c1a799509723470075c4",
+      "size": 354
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-1/yanbaopptmerge_yanbaoPPT_145.md",
+      "sha256": "sha256:a65476981c6b445497553395c13597bca2d365fca97dd54ef32557c89d157669",
+      "size": 488
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30.md",
+      "sha256": "sha256:e9d309ceb226310df5143a860956aed5814b4b75783adc0f86d6ff55703cfe30",
+      "size": 5941
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185.md",
+      "sha256": "sha256:46559c394416f062a572677dc2d8879df30a1a67ee88a83d59ff694203b5038a",
+      "size": 3161
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170.md",
+      "sha256": "sha256:1441736105627ac1a9bd51f613e8505ae4594e5e59c8eacfa7d1ff5f28b4443a",
+      "size": 2559
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128.md",
+      "sha256": "sha256:6262d0f1b911d7bd94493a67952afc4e2e970f8c5a74c4348d61db29f49893b1",
+      "size": 1512
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4.md",
+      "sha256": "sha256:e9f87c934fddb66f74c342894a605d231a8133a8c5e67bedd4ae010bab96702c",
+      "size": 6142
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3.md",
+      "sha256": "sha256:2203db27574d74e90a4858f775e8fa7e1de7e3e761428efc23e7e195d359e728",
+      "size": 4188
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0.md",
+      "sha256": "sha256:1e4f2af4c7b96677080009d376de7f4330a9e926c0bc351048702e6e2fe102d0",
+      "size": 5183
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/jiaocaineedrop_Chapter9.pdf_46.md",
+      "sha256": "sha256:b2de8a79d4a4811c9b506b2ea87e84c5d822ab7decd872d63b355440ea52c156",
+      "size": 2142
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5.md",
+      "sha256": "sha256:85e16b528aadece8f6a03e50d101bfb68181dd70112c98f7885c9a3460925d95",
+      "size": 2986
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/jiaocaineedrop_jiaocai_needrop_en_1898.md",
+      "sha256": "sha256:0b76f11e4a3b6e1346faaf78cf311a1ee14e554ba3e98fbe555143d5c95a0826",
+      "size": 1905
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/jiaocaineedrop_jiaocai_needrop_en_3361.md",
+      "sha256": "sha256:88b93707e8bd4067e42ad058106cf4087e92783cb766582d7b1274bc0dd01af0",
+      "size": 3162
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.md",
+      "sha256": "sha256:e3d7c86c9cf51414d266dc263e93d0ff3e24c47a15acabf4ce4050fc2cc27a4a",
+      "size": 26140
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.md",
+      "sha256": "sha256:d942d78cf82755508ee92c81eb40322d57b8b87455ab45ba56d60bf18e6ad7ed",
+      "size": 6607
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/notes_1ba14cb325bc448f7201b20502ecf2b5_15.md",
+      "sha256": "sha256:20306d242b317e2d3c69e54f30b26dacf5b30bd445bbcf2da4ebdb71d6cd6a5d",
+      "size": 1404
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/notes_f7f010b78016aeebd76e56d9283eb67f_49.md",
+      "sha256": "sha256:c8158a2c2c6fcc1a56f58a6f741f48f98c88c61d0f6aaef758a6d341d0ba9cc0",
+      "size": 1594
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2.md",
+      "sha256": "sha256:ffb7782ee208773e75c0818c8d32169560ceb164da026586a85b28bd3cf44840",
+      "size": 4197
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/yanbaopptmerge_SE05.pdf_7.md",
+      "sha256": "sha256:d4e98962018080b50c52c4da7e4937a953975cbb7f99c1a799509723470075c4",
+      "size": 354
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-2/yanbaopptmerge_yanbaoPPT_145.md",
+      "sha256": "sha256:a65476981c6b445497553395c13597bca2d365fca97dd54ef32557c89d157669",
+      "size": 488
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30.md",
+      "sha256": "sha256:e9d309ceb226310df5143a860956aed5814b4b75783adc0f86d6ff55703cfe30",
+      "size": 5941
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185.md",
+      "sha256": "sha256:46559c394416f062a572677dc2d8879df30a1a67ee88a83d59ff694203b5038a",
+      "size": 3161
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170.md",
+      "sha256": "sha256:1441736105627ac1a9bd51f613e8505ae4594e5e59c8eacfa7d1ff5f28b4443a",
+      "size": 2559
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128.md",
+      "sha256": "sha256:6262d0f1b911d7bd94493a67952afc4e2e970f8c5a74c4348d61db29f49893b1",
+      "size": 1512
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4.md",
+      "sha256": "sha256:e9f87c934fddb66f74c342894a605d231a8133a8c5e67bedd4ae010bab96702c",
+      "size": 6142
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3.md",
+      "sha256": "sha256:2203db27574d74e90a4858f775e8fa7e1de7e3e761428efc23e7e195d359e728",
+      "size": 4188
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0.md",
+      "sha256": "sha256:1e4f2af4c7b96677080009d376de7f4330a9e926c0bc351048702e6e2fe102d0",
+      "size": 5183
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/jiaocaineedrop_Chapter9.pdf_46.md",
+      "sha256": "sha256:b2de8a79d4a4811c9b506b2ea87e84c5d822ab7decd872d63b355440ea52c156",
+      "size": 2142
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5.md",
+      "sha256": "sha256:85e16b528aadece8f6a03e50d101bfb68181dd70112c98f7885c9a3460925d95",
+      "size": 2986
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/jiaocaineedrop_jiaocai_needrop_en_1898.md",
+      "sha256": "sha256:0b76f11e4a3b6e1346faaf78cf311a1ee14e554ba3e98fbe555143d5c95a0826",
+      "size": 1905
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/jiaocaineedrop_jiaocai_needrop_en_3361.md",
+      "sha256": "sha256:88b93707e8bd4067e42ad058106cf4087e92783cb766582d7b1274bc0dd01af0",
+      "size": 3162
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.md",
+      "sha256": "sha256:e3d7c86c9cf51414d266dc263e93d0ff3e24c47a15acabf4ce4050fc2cc27a4a",
+      "size": 26140
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.md",
+      "sha256": "sha256:d942d78cf82755508ee92c81eb40322d57b8b87455ab45ba56d60bf18e6ad7ed",
+      "size": 6607
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/notes_1ba14cb325bc448f7201b20502ecf2b5_15.md",
+      "sha256": "sha256:20306d242b317e2d3c69e54f30b26dacf5b30bd445bbcf2da4ebdb71d6cd6a5d",
+      "size": 1404
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/notes_f7f010b78016aeebd76e56d9283eb67f_49.md",
+      "sha256": "sha256:c8158a2c2c6fcc1a56f58a6f741f48f98c88c61d0f6aaef758a6d341d0ba9cc0",
+      "size": 1594
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2.md",
+      "sha256": "sha256:ffb7782ee208773e75c0818c8d32169560ceb164da026586a85b28bd3cf44840",
+      "size": 4197
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/yanbaopptmerge_SE05.pdf_7.md",
+      "sha256": "sha256:d4e98962018080b50c52c4da7e4937a953975cbb7f99c1a799509723470075c4",
+      "size": 354
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/markdown-repeat-3/yanbaopptmerge_yanbaoPPT_145.md",
+      "sha256": "sha256:a65476981c6b445497553395c13597bca2d365fca97dd54ef32557c89d157669",
+      "size": 488
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/official-partial-evaluation/repeat-1/metric-result.json",
+      "sha256": "sha256:6aa5e65a73b77784d66d973d492fd44654eb726cdf45153ad39112e0e793f479",
+      "size": 12899
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/official-partial-evaluation/repeat-2/metric-result.json",
+      "sha256": "sha256:6aa5e65a73b77784d66d973d492fd44654eb726cdf45153ad39112e0e793f479",
+      "size": 12899
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/official-partial-evaluation/repeat-3/metric-result.json",
+      "sha256": "sha256:6aa5e65a73b77784d66d973d492fd44654eb726cdf45153ad39112e0e793f479",
+      "size": 12899
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/mineru-3.4.4-vlm-c1-omnidoc-demo-18x3-clean/mineru-vlm-c1-formal-18x3/run-summary.json",
+      "sha256": "sha256:ee5046059fae45bf40b2b42910a72e2718cfaebd7eb3ee3c887607a16ccfddf5",
+      "size": 17153
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30.md",
+      "sha256": "sha256:3268f250d16409ad1c7462bf69c010273c1bba9b0206484e44419623eb87ef8b",
+      "size": 5956
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185.md",
+      "sha256": "sha256:8274c620250bc23262c66c307c3ac1765618e86bcdd576b0186335b96103eea4",
+      "size": 5097
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170.md",
+      "sha256": "sha256:8c7e41fa3e83111faa834ec1f9a740d2f39642a93f8bfaf25816dbe9c3df7719",
+      "size": 4304
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128.md",
+      "sha256": "sha256:ce9859dfcbca39855e8b363990a295d58c270c8adae489e0de4d230038bb093a",
+      "size": 1443
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4.md",
+      "sha256": "sha256:c575e544818228919b21b01ca4cc21e4af4155552e9c0195f27f48809580d77b",
+      "size": 9744
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3.md",
+      "sha256": "sha256:5107471c9a05d0f828ba9cd14b3eff690bfa13a3c629c6ce33ee231d646d374f",
+      "size": 3737
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0.md",
+      "sha256": "sha256:ec31f211b63aca700900173403cdb32f1027ab05a277884b229c935f6ae0cce2",
+      "size": 9378
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/jiaocaineedrop_Chapter9.pdf_46.md",
+      "sha256": "sha256:bbc4eac87aa0a5f6e8d3939d348e5fc94d970278c3d8432e1cbb233b6f4c3894",
+      "size": 2987
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5.md",
+      "sha256": "sha256:db170696cf934087331adacab9dd404e5f72166c339d830af996fcc931ee1aa9",
+      "size": 2540
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/jiaocaineedrop_jiaocai_needrop_en_1898.md",
+      "sha256": "sha256:da9c0122c822b964849c6498e3dbfeec612370be9decbabebbf81b70cb76faca",
+      "size": 6545
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/jiaocaineedrop_jiaocai_needrop_en_3361.md",
+      "sha256": "sha256:09de8afad9d9b2113be7c8ae27a37c4c2b6ec510c33cd22504221e4089d8b121",
+      "size": 3311
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.md",
+      "sha256": "sha256:0c67e9df45cae001487ea4c5c021c4ae1175b6ccf55b77f8c31dadf587a3abc5",
+      "size": 26025
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.md",
+      "sha256": "sha256:76c9098e7771e3e86fc4cbca54d04e8d91990a9cd02cf261c422f41e40e2d6fe",
+      "size": 6573
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/notes_1ba14cb325bc448f7201b20502ecf2b5_15.md",
+      "sha256": "sha256:3a24d8a79233e7b1dbaaad663aa9d8d04d06a8d6b6256ce070c2689b7a89716c",
+      "size": 2403
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/notes_f7f010b78016aeebd76e56d9283eb67f_49.md",
+      "sha256": "sha256:444de22a6a3db832fc1b12ac83cbd0b4bf060d2383ee72ce35c275a8753ae956",
+      "size": 4292
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2.md",
+      "sha256": "sha256:4206eadf4d298aa4d29d6c73564f9a99a215830746e7109e929294b6d84e51ae",
+      "size": 5105
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/yanbaopptmerge_SE05.pdf_7.md",
+      "sha256": "sha256:73596ee3595a3b3be19912fdef18e10c226a8b805afd785ecfbfe521f40e3227",
+      "size": 599
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-1/yanbaopptmerge_yanbaoPPT_145.md",
+      "sha256": "sha256:a96fd6513dfcf5cfd0df189918265e438afb1732f181a273822d8be2ae7df9ad",
+      "size": 491
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30.md",
+      "sha256": "sha256:322b5660947f004a90ee45ec62ade2139de18ac74b94451b3e1b1673340a059f",
+      "size": 5956
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185.md",
+      "sha256": "sha256:9eeb58e2887c8beb962912beebea3fbd6a31423e62e9fc9aa2de15810022bb23",
+      "size": 5096
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170.md",
+      "sha256": "sha256:8c7e41fa3e83111faa834ec1f9a740d2f39642a93f8bfaf25816dbe9c3df7719",
+      "size": 4304
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128.md",
+      "sha256": "sha256:ce9859dfcbca39855e8b363990a295d58c270c8adae489e0de4d230038bb093a",
+      "size": 1443
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4.md",
+      "sha256": "sha256:c575e544818228919b21b01ca4cc21e4af4155552e9c0195f27f48809580d77b",
+      "size": 9744
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3.md",
+      "sha256": "sha256:5107471c9a05d0f828ba9cd14b3eff690bfa13a3c629c6ce33ee231d646d374f",
+      "size": 3737
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0.md",
+      "sha256": "sha256:ec31f211b63aca700900173403cdb32f1027ab05a277884b229c935f6ae0cce2",
+      "size": 9378
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/jiaocaineedrop_Chapter9.pdf_46.md",
+      "sha256": "sha256:61a2fdd589d621b539a86d747306623f1b168f819a06eeaf3fd6902b061e23eb",
+      "size": 2953
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5.md",
+      "sha256": "sha256:db170696cf934087331adacab9dd404e5f72166c339d830af996fcc931ee1aa9",
+      "size": 2540
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/jiaocaineedrop_jiaocai_needrop_en_1898.md",
+      "sha256": "sha256:da9c0122c822b964849c6498e3dbfeec612370be9decbabebbf81b70cb76faca",
+      "size": 6545
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/jiaocaineedrop_jiaocai_needrop_en_3361.md",
+      "sha256": "sha256:8d06c90fd3aeaeef811a9687419a82b04d64fa1e250c80c3b46c14ed8c4ca913",
+      "size": 3311
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.md",
+      "sha256": "sha256:46aab1813b1fb26c0640aa28aed63cd6fb90dcee586b36c249cc8f0102be20ad",
+      "size": 26025
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.md",
+      "sha256": "sha256:41e12c4c84dc9ef61fb6af2ee9ab313524571755fbd617ea3390325ecd2e2528",
+      "size": 6590
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/notes_1ba14cb325bc448f7201b20502ecf2b5_15.md",
+      "sha256": "sha256:3a24d8a79233e7b1dbaaad663aa9d8d04d06a8d6b6256ce070c2689b7a89716c",
+      "size": 2403
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/notes_f7f010b78016aeebd76e56d9283eb67f_49.md",
+      "sha256": "sha256:444de22a6a3db832fc1b12ac83cbd0b4bf060d2383ee72ce35c275a8753ae956",
+      "size": 4292
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2.md",
+      "sha256": "sha256:4206eadf4d298aa4d29d6c73564f9a99a215830746e7109e929294b6d84e51ae",
+      "size": 5105
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/yanbaopptmerge_SE05.pdf_7.md",
+      "sha256": "sha256:73596ee3595a3b3be19912fdef18e10c226a8b805afd785ecfbfe521f40e3227",
+      "size": 599
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-2/yanbaopptmerge_yanbaoPPT_145.md",
+      "sha256": "sha256:a96fd6513dfcf5cfd0df189918265e438afb1732f181a273822d8be2ae7df9ad",
+      "size": 491
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30.md",
+      "sha256": "sha256:3268f250d16409ad1c7462bf69c010273c1bba9b0206484e44419623eb87ef8b",
+      "size": 5956
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185.md",
+      "sha256": "sha256:9eeb58e2887c8beb962912beebea3fbd6a31423e62e9fc9aa2de15810022bb23",
+      "size": 5096
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170.md",
+      "sha256": "sha256:8c7e41fa3e83111faa834ec1f9a740d2f39642a93f8bfaf25816dbe9c3df7719",
+      "size": 4304
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128.md",
+      "sha256": "sha256:ce9859dfcbca39855e8b363990a295d58c270c8adae489e0de4d230038bb093a",
+      "size": 1443
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4.md",
+      "sha256": "sha256:c575e544818228919b21b01ca4cc21e4af4155552e9c0195f27f48809580d77b",
+      "size": 9744
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3.md",
+      "sha256": "sha256:5107471c9a05d0f828ba9cd14b3eff690bfa13a3c629c6ce33ee231d646d374f",
+      "size": 3737
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0.md",
+      "sha256": "sha256:c4cd1725b16881c52acefe8d5451d34c6cef0e95cf00ea2495fe2aa00ea194cf",
+      "size": 9354
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/jiaocaineedrop_Chapter9.pdf_46.md",
+      "sha256": "sha256:bbc4eac87aa0a5f6e8d3939d348e5fc94d970278c3d8432e1cbb233b6f4c3894",
+      "size": 2987
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5.md",
+      "sha256": "sha256:db170696cf934087331adacab9dd404e5f72166c339d830af996fcc931ee1aa9",
+      "size": 2540
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/jiaocaineedrop_jiaocai_needrop_en_1898.md",
+      "sha256": "sha256:da9c0122c822b964849c6498e3dbfeec612370be9decbabebbf81b70cb76faca",
+      "size": 6545
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/jiaocaineedrop_jiaocai_needrop_en_3361.md",
+      "sha256": "sha256:09de8afad9d9b2113be7c8ae27a37c4c2b6ec510c33cd22504221e4089d8b121",
+      "size": 3311
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.md",
+      "sha256": "sha256:5297b456282247c1b4d2d94808d0fb74f8947f09ba7289e739952163eecb7983",
+      "size": 26025
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.md",
+      "sha256": "sha256:1a23a79c09d00afd391fc76f3aa6c8471bc09d629db1255b7a03fe66cff487b3",
+      "size": 6590
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/notes_1ba14cb325bc448f7201b20502ecf2b5_15.md",
+      "sha256": "sha256:3a24d8a79233e7b1dbaaad663aa9d8d04d06a8d6b6256ce070c2689b7a89716c",
+      "size": 2403
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/notes_f7f010b78016aeebd76e56d9283eb67f_49.md",
+      "sha256": "sha256:444de22a6a3db832fc1b12ac83cbd0b4bf060d2383ee72ce35c275a8753ae956",
+      "size": 4292
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2.md",
+      "sha256": "sha256:4206eadf4d298aa4d29d6c73564f9a99a215830746e7109e929294b6d84e51ae",
+      "size": 5105
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/yanbaopptmerge_SE05.pdf_7.md",
+      "sha256": "sha256:816864e64492e2d252be339df842c99d2b35fd4d658f2d31ddf8a8e5fc63f5b3",
+      "size": 599
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/markdown-repeat-3/yanbaopptmerge_yanbaoPPT_145.md",
+      "sha256": "sha256:a96fd6513dfcf5cfd0df189918265e438afb1732f181a273822d8be2ae7df9ad",
+      "size": 491
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/official-partial-evaluation/repeat-1/metric-result.json",
+      "sha256": "sha256:3fd0bf72a61955b08f9c5c0f21fbcdb95490d72ed4db4d6377f0993ca5a57feb",
+      "size": 12994
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/official-partial-evaluation/repeat-2/metric-result.json",
+      "sha256": "sha256:ca9afb0e84e6b498c15d15493fa0d71a2e3b019f2a90fe32173b69699af0d3e3",
+      "size": 12991
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/official-partial-evaluation/repeat-3/metric-result.json",
+      "sha256": "sha256:1a9ec257e837487a6355c87e6f0f3077b84536e0e9578d198be58d0cf1e7a21e",
+      "size": 12996
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation/paddleocr-vl-1.6-fastdeploy-omnidoc-demo-18x3-clean/run-summary.json",
+      "sha256": "sha256:40d5079ddc999ba4abf40707da255082ed87f7462244bf3f7496de90d4fd9c92",
+      "size": 22311
+    },
+    {
+      "path": "D:/CodexProjects/ai-knowledge-compiler/benchmark/cache/omnidoc/demo_data/omnidocbench_demo/OmniDocBench_demo.json",
+      "sha256": "sha256:146690eae39d35ae95eff9d92889876eb45137285cb73cd5af451329411c9207",
+      "size": 1502441
+    }
+  ],
+  "limitations": [
+    "18-page demo cohort was already observed before this calibration study.",
+    "Custom page damage is deterministic TAVONEL development instrumentation, not an official OmniDocBench metric.",
+    "Primary repeat instability is a development proxy and would require replacement by a deployment-available uncertainty signal.",
+    "Paddle-vs-MinerU disagreement already incurs strong-parser observation cost on this cohort.",
+    "Entity, temporal, authority, dependency-blast-radius, and downstream-consumer risk dimensions are unavailable and therefore zero, not inferred from ground truth.",
+    "No production threshold or field SLO is established."
+  ],
+  "new_inference_performed": false,
+  "official_aggregate_snapshot": {
+    "primary": {
+      "formula_edit": 0.11361807442948028,
+      "reading_order_edit": 0.091270108297707,
+      "table_edit": 0.05188793071921827,
+      "table_structure_teds": 0.9383699633699635,
+      "table_teds": 0.9060647206933243,
+      "text_edit": 0.038208855307978
+    },
+    "strong": {
+      "formula_edit": 0.12297493624315398,
+      "reading_order_edit": 0.07669309996566243,
+      "table_edit": 0.022737127440760996,
+      "table_structure_teds": 0.9845238095238097,
+      "table_teds": 0.9596961750183709,
+      "text_edit": 0.03425784639018182
+    }
+  },
+  "page_count": 18,
+  "page_records": [
+    {
+      "current_semantic_risk": 0.0017116516600963582,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 2,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30",
+      "primary_critical_token_damage": 1.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.399252544529262,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.03880407124681932,
+        "critical_token_error": 1.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.03880407124681932,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.65,
+      "primary_repeat_instability": 0.001317523056653484,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": false,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.0027803762699543768,
+      "strong_critical_token_damage": 1.0,
+      "strong_damage": 0.398854961832061,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.03816793893129766,
+        "critical_token_error": 1.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.03816793893129766,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.0016485328058028308,
+      "strong_parser_benefit": 0.00039758269720102657
+    },
+    {
+      "current_semantic_risk": 0.0015964613845642522,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 44,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185",
+      "primary_critical_token_damage": 0.31818181818181823,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.21414806008461681,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.23913144728552763,
+        "critical_token_error": 0.31818181818181823,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.23913144728552763,
+        "table_semantic_error": 0.0892857142857143
+      },
+      "primary_detected_structural_criticality": 0.9475,
+      "primary_repeat_instability": 0.0008428150021070705,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": false,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.38334040249878765,
+      "strong_critical_token_damage": 0.3863636363636364,
+      "strong_damage": 0.25354029788236526,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.30132450331125826,
+        "critical_token_error": 0.3863636363636364,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.30132450331125826,
+        "table_semantic_error": 0.0714285714285714
+      },
+      "strong_disagreement_proxy": 0.4035759731621262,
+      "strong_parser_benefit": -0.03939223779774845
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 6,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.07241283511598834,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.1565495207667732,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.1565495207667732,
+        "table_semantic_error": 0.014285714285714235
+      },
+      "primary_detected_structural_criticality": 0.85,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": false,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.32857553130384837,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.1194017197529369,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.2646239554317549,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.2646239554317549,
+        "table_semantic_error": 0.014285714285714235
+      },
+      "strong_disagreement_proxy": 0.3865594485927628,
+      "strong_parser_benefit": -0.04698888463694856
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [],
+      "gt_critical_token_count": 0,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.1171875,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.1171875,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.1171875,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.09999999999999998,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": false,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.020886075949367085,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.14068441064638781,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.14068441064638781,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.14068441064638781,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.2088607594936709,
+      "strong_parser_benefit": -0.023496910646387814
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 103,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4",
+      "primary_critical_token_damage": 0.03883495145631066,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.04609872808821328,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.08272610372910416,
+        "critical_token_error": 0.03883495145631066,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.08272610372910416,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.9475,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": false,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.2709950449412307,
+      "strong_critical_token_damage": 0.46601941747572817,
+      "strong_damage": 0.3279022434217327,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.20431034482758625,
+        "critical_token_error": 0.46601941747572817,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.20431034482758625,
+        "table_semantic_error": 0.3860759493670886
+      },
+      "strong_disagreement_proxy": 0.2860106015210878,
+      "strong_parser_benefit": -0.2818035153335194
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 3,
+      "gt_has_formula": true,
+      "gt_has_table": false,
+      "page_key": "docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.08115165741440164,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.0990536277602524,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.1427297056199821,
+        "ordered_content_error": 0.0990536277602524,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.65,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": false,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.047167409293443645,
+      "strong_critical_token_damage": 0.6666666666666666,
+      "strong_damage": 0.2813438224451792,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.1098696461824954,
+        "critical_token_error": 0.6666666666666666,
+        "formula_semantic_error": 0.16190476190476188,
+        "ordered_content_error": 0.1098696461824954,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.07256524506683637,
+      "strong_parser_benefit": -0.20019216503077755
+    },
+    {
+      "current_semantic_risk": 0.004119969616248997,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 59,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0",
+      "primary_critical_token_damage": 0.45762711864406774,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.2214520534577008,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.1995433259801076,
+        "critical_token_error": 0.45762711864406774,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.1995433259801076,
+        "table_semantic_error": 0.05031446540880502
+      },
+      "primary_detected_structural_criticality": 0.96325,
+      "primary_repeat_instability": 0.0021408691928922843,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": true,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.3741270432750945,
+      "strong_critical_token_damage": 0.4915254237288136,
+      "strong_damage": 0.22034073492874415,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.19425837320574157,
+        "critical_token_error": 0.4915254237288136,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.19425837320574157,
+        "table_semantic_error": 0.02515723270440251
+      },
+      "strong_disagreement_proxy": 0.3857736302040344,
+      "strong_parser_benefit": 0.0011113185289566563
+    },
+    {
+      "current_semantic_risk": 0.009997986172252012,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 8,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "jiaocaineedrop_Chapter9.pdf_46",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.06696406327301929,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.15401734552794435,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.15401734552794435,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.96325,
+      "primary_repeat_instability": 0.0052032520325203295,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": true,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.2735889080214738,
+      "strong_critical_token_damage": 0.375,
+      "strong_damage": 0.19096685395376903,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.21422376409366872,
+        "critical_token_error": 0.375,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.21422376409366872,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.2765175609656278,
+      "strong_parser_benefit": -0.12400279068074974
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 4,
+      "gt_has_formula": true,
+      "gt_has_table": false,
+      "page_key": "jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.1223204522063034,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.1369812706573632,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.23978335795174788,
+        "ordered_content_error": 0.1369812706573632,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.9475,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": false,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.13455204460966547,
+      "strong_critical_token_damage": 0.25,
+      "strong_damage": 0.23341787242477627,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.17893217893217894,
+        "critical_token_error": 0.25,
+        "formula_semantic_error": 0.32249070631970256,
+        "ordered_content_error": 0.17893217893217894,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.14200743494423795,
+      "strong_parser_benefit": -0.11109742021847287
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 0,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "jiaocaineedrop_jiaocai_needrop_en_1898",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.015224913494809688,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.025882352941176467,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.025882352941176467,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.85,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": false,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.31813708856464196,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.017825311942958985,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.030303030303030276,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.030303030303030276,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.3742789277231082,
+      "strong_parser_benefit": -0.0026003984481492975
+    },
+    {
+      "current_semantic_risk": 0.0022706754061308045,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 1,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "jiaocaineedrop_jiaocai_needrop_en_3361",
+      "primary_critical_token_damage": 1.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.619092039800995,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.3905472636815921,
+        "critical_token_error": 1.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.3905472636815921,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.755,
+      "primary_repeat_instability": 0.0015048908954100604,
+      "primary_structure_flags": {
+        "formula_detected": true,
+        "layout_complex": true,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.21960144694314632,
+      "strong_critical_token_damage": 1.0,
+      "strong_damage": 0.576417704011065,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.322268326417704,
+        "critical_token_error": 1.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.322268326417704,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.28872366790582404,
+      "strong_parser_benefit": 0.042674335789930073
+    },
+    {
+      "current_semantic_risk": 0.001034838828947915,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [],
+      "gt_critical_token_count": 18,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1",
+      "primary_critical_token_damage": 0.8333333333333334,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.5639407882506041,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.40230526120096677,
+        "critical_token_error": 0.8333333333333334,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.40230526120096677,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.30000000000000004,
+      "primary_repeat_instability": 0.0017262213015708887,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": true,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.07625634815468936,
+      "strong_critical_token_damage": 0.8333333333333334,
+      "strong_damage": 0.5203748280605227,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.3325997248968363,
+        "critical_token_error": 0.8333333333333334,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.3325997248968363,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.2516062708815215,
+      "strong_parser_benefit": 0.04356596019008141
+    },
+    {
+      "current_semantic_risk": 0.0011418355722474073,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [],
+      "gt_critical_token_count": 1,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "newspaper_5e266dfd9c498cab274e12a7b4a75755_4",
+      "primary_critical_token_damage": 1.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.4307896057236029,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.08926336915776471,
+        "critical_token_error": 1.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.08926336915776471,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.30000000000000004,
+      "primary_repeat_instability": 0.00190487355871638,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": true,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.028715002503132508,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.07614472608340146,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.12183156173344234,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.12183156173344234,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.0922617154651995,
+      "strong_parser_benefit": 0.35464487964020147
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 0,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "notes_1ba14cb325bc448f7201b20502ecf2b5_15",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.1794522189925384,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.2781456953642384,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.2781456953642384,
+        "table_semantic_error": 0.038461538461538436
+      },
+      "primary_detected_structural_criticality": 0.895,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": true,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.274386845039019,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.1527705659817521,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.23278688524590163,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.23278688524590163,
+        "table_semantic_error": 0.038461538461538436
+      },
+      "strong_disagreement_proxy": 0.306577480490524,
+      "strong_parser_benefit": 0.026681653010786316
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 0,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "notes_f7f010b78016aeebd76e56d9283eb67f_49",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.07303146992431286,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.12415349887133187,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.12415349887133187,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.895,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": true,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.439727047146402,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.0738591400685835,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.12556053811659196,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.12556053811659196,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.4913151364764268,
+      "strong_parser_benefit": -0.0008276701442706397
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [
+        "semantic_role_criticality"
+      ],
+      "gt_critical_token_count": 2,
+      "gt_has_formula": false,
+      "gt_has_table": true,
+      "page_key": "yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.1470981099312095,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.12380952380952381,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.12380952380952381,
+        "table_semantic_error": 0.30645161290322576
+      },
+      "primary_detected_structural_criticality": 0.895,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": true,
+        "table_detected": true
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.21262430939226515,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.09102247792986011,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.08515815085158152,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.08515815085158152,
+        "table_semantic_error": 0.17741935483870963
+      },
+      "strong_disagreement_proxy": 0.2375690607734806,
+      "strong_parser_benefit": 0.05607563200134939
+    },
+    {
+      "current_semantic_risk": 0.0028301728618614136,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [],
+      "gt_critical_token_count": 0,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "yanbaopptmerge_SE05.pdf_7",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.1724137931034483,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.1724137931034483,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.1724137931034483,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.30000000000000004,
+      "primary_repeat_instability": 0.004728132387706863,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": true,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.12569846677474567,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.12328767123287676,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.12328767123287676,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.12328767123287676,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.4134615384615385,
+      "strong_parser_benefit": 0.049126121870571526
+    },
+    {
+      "current_semantic_risk": 0.0,
+      "current_semantic_risk_band": "low",
+      "current_semantic_risk_dominant_signals": [],
+      "gt_critical_token_count": 0,
+      "gt_has_formula": false,
+      "gt_has_table": false,
+      "page_key": "yanbaopptmerge_yanbaoPPT_145",
+      "primary_critical_token_damage": 0.0,
+      "primary_critical_token_repeat_instability": 0.0,
+      "primary_damage": 0.0736842105263158,
+      "primary_damage_components_mean": {
+        "content_sequence_error": 0.0736842105263158,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.0736842105263158,
+        "table_semantic_error": 0.0
+      },
+      "primary_detected_structural_criticality": 0.09999999999999998,
+      "primary_repeat_instability": 0.0,
+      "primary_structure_flags": {
+        "formula_detected": false,
+        "layout_complex": false,
+        "table_detected": false
+      },
+      "semantic_risk_with_strong_disagreement_counterfactual": 0.001960784313725494,
+      "strong_critical_token_damage": 0.0,
+      "strong_damage": 0.0736842105263158,
+      "strong_damage_components_mean": {
+        "content_sequence_error": 0.0736842105263158,
+        "critical_token_error": 0.0,
+        "formula_semantic_error": 0.0,
+        "ordered_content_error": 0.0736842105263158,
+        "table_semantic_error": 0.0
+      },
+      "strong_disagreement_proxy": 0.019607843137254943,
+      "strong_parser_benefit": 0.0
+    }
+  ],
+  "policy_results": [
+    {
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": 0.0,
+      "escalated_pages": 0,
+      "escalation_ratio": 0.0,
+      "estimated_parser_cost_usd": 0.012160800000000001,
+      "estimated_parser_latency_seconds_sequential": 63.4482,
+      "extra_cost_vs_always_primary": 0.0,
+      "extra_latency_vs_always_primary": 0.0,
+      "mean_critical_token_damage_on_critical_pages": 0.38733143513462753,
+      "mean_selected_parser_damage": 0.2008730579954079,
+      "observation_requires_strong_all_pages": false,
+      "page_count": 18,
+      "policy": "always_primary",
+      "regret_vs_page_oracle": 0.03190430465161542
+    },
+    {
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": -0.014229139400441487,
+      "escalated_pages": 18,
+      "escalation_ratio": 1.0,
+      "estimated_parser_cost_usd": 0.1197414,
+      "estimated_parser_latency_seconds_sequential": 624.7404,
+      "extra_cost_vs_always_primary": 0.1075806,
+      "extra_latency_vs_always_primary": 561.2922,
+      "mean_critical_token_damage_on_critical_pages": 0.4557423731306815,
+      "mean_selected_parser_damage": 0.21510219739584938,
+      "observation_requires_strong_all_pages": false,
+      "page_count": 18,
+      "policy": "always_strong",
+      "regret_vs_page_oracle": 0.04613344405205691
+    },
+    {
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": 0.0,
+      "escalated_pages": 0,
+      "escalation_ratio": 0.0,
+      "estimated_parser_cost_usd": 0.012160800000000001,
+      "estimated_parser_latency_seconds_sequential": 63.4482,
+      "extra_cost_vs_always_primary": 0.0,
+      "extra_latency_vs_always_primary": 0.0,
+      "mean_critical_token_damage_on_critical_pages": 0.38733143513462753,
+      "mean_selected_parser_damage": 0.2008730579954079,
+      "observation_requires_strong_all_pages": false,
+      "page_count": 18,
+      "policy": "semantic_risk>=0.25",
+      "regret_vs_page_oracle": 0.03190430465161542,
+      "signal": "current_semantic_risk",
+      "threshold": 0.25
+    },
+    {
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": 0.0,
+      "escalated_pages": 0,
+      "escalation_ratio": 0.0,
+      "estimated_parser_cost_usd": 0.012160800000000001,
+      "estimated_parser_latency_seconds_sequential": 63.4482,
+      "extra_cost_vs_always_primary": 0.0,
+      "extra_latency_vs_always_primary": 0.0,
+      "mean_critical_token_damage_on_critical_pages": 0.38733143513462753,
+      "mean_selected_parser_damage": 0.2008730579954079,
+      "observation_requires_strong_all_pages": false,
+      "page_count": 18,
+      "policy": "semantic_risk>=0.5",
+      "regret_vs_page_oracle": 0.03190430465161542,
+      "signal": "current_semantic_risk",
+      "threshold": 0.5
+    },
+    {
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": 0.0,
+      "escalated_pages": 0,
+      "escalation_ratio": 0.0,
+      "estimated_parser_cost_usd": 0.012160800000000001,
+      "estimated_parser_latency_seconds_sequential": 63.4482,
+      "extra_cost_vs_always_primary": 0.0,
+      "extra_latency_vs_always_primary": 0.0,
+      "mean_critical_token_damage_on_critical_pages": 0.38733143513462753,
+      "mean_selected_parser_damage": 0.2008730579954079,
+      "observation_requires_strong_all_pages": false,
+      "page_count": 18,
+      "policy": "semantic_risk>=0.55",
+      "regret_vs_page_oracle": 0.03190430465161542,
+      "signal": "current_semantic_risk",
+      "threshold": 0.55
+    },
+    {
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": 0.0,
+      "escalated_pages": 0,
+      "escalation_ratio": 0.0,
+      "estimated_parser_cost_usd": 0.012160800000000001,
+      "estimated_parser_latency_seconds_sequential": 63.4482,
+      "extra_cost_vs_always_primary": 0.0,
+      "extra_latency_vs_always_primary": 0.0,
+      "mean_critical_token_damage_on_critical_pages": 0.38733143513462753,
+      "mean_selected_parser_damage": 0.2008730579954079,
+      "observation_requires_strong_all_pages": false,
+      "page_count": 18,
+      "policy": "semantic_risk>=0.75",
+      "regret_vs_page_oracle": 0.03190430465161542,
+      "signal": "current_semantic_risk",
+      "threshold": 0.75
+    },
+    {
+      "counterfactual_cost_if_same_signal_were_available_from_negligible_cost_peer_usd": 0.105293,
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": -0.022831933695253964,
+      "escalated_pages": 14,
+      "escalation_ratio": 0.7777777777777778,
+      "estimated_parser_cost_usd": 0.1319022,
+      "estimated_parser_latency_seconds_sequential": 688.1886000000001,
+      "extra_cost_vs_always_primary": 0.1197414,
+      "extra_latency_vs_always_primary": 624.7404,
+      "mean_critical_token_damage_on_critical_pages": 0.4835201509084593,
+      "mean_selected_parser_damage": 0.22370499169066185,
+      "observation_requires_strong_all_pages": true,
+      "page_count": 18,
+      "policy": "strong_disagreement_proxy>=0.1",
+      "regret_vs_page_oracle": 0.05473623834686939,
+      "signal": "strong_disagreement_proxy",
+      "threshold": 0.1
+    },
+    {
+      "counterfactual_cost_if_same_signal_were_available_from_negligible_cost_peer_usd": 0.0986407,
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": -0.016659854794227713,
+      "escalated_pages": 13,
+      "escalation_ratio": 0.7222222222222222,
+      "estimated_parser_cost_usd": 0.1319022,
+      "estimated_parser_latency_seconds_sequential": 688.1886000000001,
+      "extra_cost_vs_always_primary": 0.1197414,
+      "extra_latency_vs_always_primary": 624.7404,
+      "mean_critical_token_damage_on_critical_pages": 0.462686817575126,
+      "mean_selected_parser_damage": 0.2175329127896356,
+      "observation_requires_strong_all_pages": true,
+      "page_count": 18,
+      "policy": "strong_disagreement_proxy>=0.2",
+      "regret_vs_page_oracle": 0.048564159445843136,
+      "signal": "strong_disagreement_proxy",
+      "threshold": 0.2
+    },
+    {
+      "counterfactual_cost_if_same_signal_were_available_from_negligible_cost_peer_usd": 0.0587269,
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": -0.0007161165342668141,
+      "escalated_pages": 7,
+      "escalation_ratio": 0.3888888888888889,
+      "estimated_parser_cost_usd": 0.1319022,
+      "estimated_parser_latency_seconds_sequential": 688.1886000000001,
+      "extra_cost_vs_always_primary": 0.1197414,
+      "extra_latency_vs_always_primary": 624.7404,
+      "mean_critical_token_damage_on_critical_pages": 0.3958381120735079,
+      "mean_selected_parser_damage": 0.2015891745296747,
+      "observation_requires_strong_all_pages": true,
+      "page_count": 18,
+      "policy": "strong_disagreement_proxy>=0.3",
+      "regret_vs_page_oracle": 0.03262042118588224,
+      "signal": "strong_disagreement_proxy",
+      "threshold": 0.3
+    },
+    {
+      "counterfactual_cost_if_same_signal_were_available_from_negligible_cost_peer_usd": 0.0321177,
+      "critical_token_pages": 12,
+      "damage_reduction_vs_always_primary": 0.0004947896626973369,
+      "escalated_pages": 3,
+      "escalation_ratio": 0.16666666666666666,
+      "estimated_parser_cost_usd": 0.1319022,
+      "estimated_parser_latency_seconds_sequential": 688.1886000000001,
+      "extra_cost_vs_always_primary": 0.1197414,
+      "extra_latency_vs_always_primary": 624.7404,
+      "mean_critical_token_damage_on_critical_pages": 0.39301325331644565,
+      "mean_selected_parser_damage": 0.20037826833271055,
+      "observation_requires_strong_all_pages": true,
+      "page_count": 18,
+      "policy": "strong_disagreement_proxy>=0.4",
+      "regret_vs_page_oracle": 0.031409514988918086,
+      "signal": "strong_disagreement_proxy",
+      "threshold": 0.4
+    }
+  ],
+  "receipt_sha256": "sha256:19b1ff62e1f2fbbaf6b4f73d232441d8d59e98d981a43bfa41cfcb164592980a",
+  "schema": "tavonel.semantic-risk.development-calibration.result.v1"
+}

@@ -1,0 +1,482 @@
+{
+  "all_pairs_equivalent": true,
+  "amendment_scope": "TRANSPORT_ONLY",
+  "changed_pair_count": 11,
+  "claim_boundary": "Prospective scientific protocol inherited unchanged from V01, with only predeclared transport amendments after V01/V02 produced no persisted corpus and no performance/equivalence result. Evidence scope remains the current typed-change-channel Core on a deterministic Wikipedia section projection; it is not OCR, ontology, legal/regulatory, or customer-data evidence.",
+  "classification": "PROSPECTIVE_PROTOCOL_WITH_PREDECLARED_TRANSPORT_ONLY_AMENDMENTS",
+  "cutoff": "2026-08-01T00:00:00Z",
+  "evidence_adequacy_pass": true,
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-03",
+  "external_gpu_cost_usd": 0.0,
+  "frozen_git_head": "a939f176bc533d79ed9a26dac3a47e52862dcc98",
+  "generated_at": "2026-08-30T19:44:15.559292+00:00",
+  "max_rebuild_fraction": 0.3333333333333333,
+  "mean_rebuild_fraction": 0.1468143086298593,
+  "mean_work_avoided_fraction": 0.8531856913701407,
+  "median_rebuild_fraction": 0.10661764705882354,
+  "pair_count": 12,
+  "performance_threshold_pre_registered": false,
+  "pre_fetch_seal_sha256": "sha256:d57901f6de3d2883d5be244ce7c45e3bc29e5a241724b2cec8f152bf86b9442b",
+  "protocol_sha256": "sha256:05382fc200cbd551d544ecff0f1d697eaad1bbe2437d0063317ebe8b138b193c",
+  "receipt_sha256": "sha256:e7514a30daac4e4ec0ef2689cce5ac094c2d852f25e982b3a1455aa979eb9aa0",
+  "records": [
+    {
+      "after_mw_sha1": "303254a44c807ca3ceafa907f75bb37759daa137",
+      "after_revision_id": 1365092381,
+      "after_sha256": "sha256:5f2a8eace1e468e40a88ff612279ae6d3a3f523eb494f885b115cda1d490e19e",
+      "after_timestamp": "2026-07-20T05:34:11Z",
+      "after_units": 32,
+      "artifact_count": 37,
+      "before_mw_sha1": "2eb0d0befb8ed1603d0eb2e284a4e5e0e6c118ee",
+      "before_revision_id": 1365089406,
+      "before_sha256": "sha256:e21e3fb710b0113650304a6138ee5f19dc549dfeaa079d17c58b711fc28706e3",
+      "before_timestamp": "2026-07-20T05:14:07Z",
+      "before_units": 32,
+      "change_channel_counts": {
+        "locator": 32,
+        "metadata": 32,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 32,
+        "metadata_changed": 32,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:6daa3b6567fb511298e4dcb5"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.08108108108108109,
+      "requested_title": "Database",
+      "resolved_title": "Database",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.918918918918919
+    },
+    {
+      "after_mw_sha1": "d536a2654090d72b3afd4ef349e07310b773f5d9",
+      "after_revision_id": 1361469206,
+      "after_sha256": "sha256:d31004146717f8862037b605de960a23f7f3f382b898c2f459f60c9c03bf77a7",
+      "after_timestamp": "2026-06-28T03:02:19Z",
+      "after_units": 13,
+      "artifact_count": 18,
+      "before_mw_sha1": "aba81d43aadf944856691abb78ba3fff024e2b9f",
+      "before_revision_id": 1360632567,
+      "before_sha256": "sha256:b25f1a35a2ec6be49f4e4606d8b5cf0975c28b395cc50a12d60c54a4f16fed2c",
+      "before_timestamp": "2026-06-22T18:01:25Z",
+      "before_units": 13,
+      "change_channel_counts": {
+        "locator": 13,
+        "metadata": 13
+      },
+      "change_kind_counts": {
+        "evidence_moved": 13,
+        "metadata_changed": 13
+      },
+      "changed_logical_id_count": 0,
+      "changed_logical_ids": [],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 0,
+      "rebuild_fraction": 0.0,
+      "requested_title": "Compiler",
+      "resolved_title": "Compiler",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 1.0
+    },
+    {
+      "after_mw_sha1": "7720192104e81b298a4a63c6bd7252b9164dfb03",
+      "after_revision_id": 1366134455,
+      "after_sha256": "sha256:c584bd4ad4217f5122a44f30aef2a7e8f1bfb0129fe7f8f473ceb0c33be2acdb",
+      "after_timestamp": "2026-07-26T13:34:35Z",
+      "after_units": 31,
+      "artifact_count": 36,
+      "before_mw_sha1": "af1e0b08216510b2ea674a3e8ec6c31a5919d1d5",
+      "before_revision_id": 1364197479,
+      "before_sha256": "sha256:d19bc760cdb81a9ec97ebb68b20ec49ec19a9bc8a60d090ef795a1bba19bf6b4",
+      "before_timestamp": "2026-07-15T02:49:26Z",
+      "before_units": 31,
+      "change_channel_counts": {
+        "locator": 31,
+        "metadata": 31,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 31,
+        "metadata_changed": 31,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:58c2865bd5c4bcf6d22cb40e"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.08333333333333333,
+      "requested_title": "Operating system",
+      "resolved_title": "Operating system",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.9166666666666666
+    },
+    {
+      "after_mw_sha1": "415b29a6d96ca1e4b9d5fef282a135f356715a2f",
+      "after_revision_id": 1344247039,
+      "after_sha256": "sha256:2e8424e2d21921efc3357664e903684284b4fc91017826110071a6b1e8e4e4d9",
+      "after_timestamp": "2026-03-19T06:47:29Z",
+      "after_units": 17,
+      "artifact_count": 22,
+      "before_mw_sha1": "cd3c0dcc5acdcebd2eeb4771dc9551abe07b1f77",
+      "before_revision_id": 1341838223,
+      "before_sha256": "sha256:2ce7e52823687f0e633fd8eb439a94624cf73f06df2f2c6fde7238d65274322b",
+      "before_timestamp": "2026-03-05T09:59:51Z",
+      "before_units": 17,
+      "change_channel_counts": {
+        "locator": 17,
+        "metadata": 17,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 17,
+        "metadata_changed": 17,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:f6d81d1ef0215779becff9fa"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.13636363636363635,
+      "requested_title": "Distributed computing",
+      "resolved_title": "Distributed computing",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.8636363636363636
+    },
+    {
+      "after_mw_sha1": "778696b937016646f93423af40af900dbfa208d5",
+      "after_revision_id": 1366531271,
+      "after_sha256": "sha256:f6b70c2974afd7ae4b01ea3594250c928f3ed329f16f5f1f4e60c7ec118c53c4",
+      "after_timestamp": "2026-07-28T15:14:33Z",
+      "after_units": 79,
+      "artifact_count": 84,
+      "before_mw_sha1": "d2baa4c173c6e03aa4d288b84fdb9993d36bbd68",
+      "before_revision_id": 1366420543,
+      "before_sha256": "sha256:cc5af4577be1efafed9bc4c82a41140bda485dcea8d03d1d98be23f450bd4b53",
+      "before_timestamp": "2026-07-27T22:49:12Z",
+      "before_units": 79,
+      "change_channel_counts": {
+        "locator": 79,
+        "metadata": 79,
+        "semantic": 3
+      },
+      "change_kind_counts": {
+        "evidence_moved": 79,
+        "metadata_changed": 79,
+        "modified_claim": 3
+      },
+      "changed_logical_id_count": 3,
+      "changed_logical_ids": [
+        "wiki-unit:4e9884e224fd429a77e261b9",
+        "wiki-unit:25a243771c6cb48079a40e34",
+        "wiki-unit:2e388628e4c3c594bd5229c3"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 6,
+      "rebuild_fraction": 0.07142857142857142,
+      "requested_title": "Computer security",
+      "resolved_title": "Computer security",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.9285714285714286
+    },
+    {
+      "after_mw_sha1": "9e1f6510db4c94cad7dade8443690c92fd761f5e",
+      "after_revision_id": 1365200359,
+      "after_sha256": "sha256:2126c04d6b7c7a2a33a6d0a084c80cfcf2b6cc8db6e8f9360ed5ad4ac6cd43be",
+      "after_timestamp": "2026-07-20T22:48:03Z",
+      "after_units": 29,
+      "artifact_count": 34,
+      "before_mw_sha1": "39eb4a54d5f064cc5fcfa5b1cb42a2c0c5b14d60",
+      "before_revision_id": 1357817665,
+      "before_sha256": "sha256:c38fc1d8dc2023b6ff75d845e6a0790d3f4a4d564bcc7a698061eb0bdd6e1031",
+      "before_timestamp": "2026-06-04T21:12:39Z",
+      "before_units": 29,
+      "change_channel_counts": {
+        "locator": 29,
+        "metadata": 29,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 29,
+        "metadata_changed": 29,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:96f2d0bccdbfab7c566a0e5e"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.08823529411764706,
+      "requested_title": "PostgreSQL",
+      "resolved_title": "PostgreSQL",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.9117647058823529
+    },
+    {
+      "after_mw_sha1": "41ed39f7c9c3fa5ec8db9693a318d06a37d54abe",
+      "after_revision_id": 1364362807,
+      "after_sha256": "sha256:4d135a8d510d5503591a5d825f0981d9d3cfa36718f42eae2d335803e98b60a2",
+      "after_timestamp": "2026-07-16T02:54:04Z",
+      "after_units": 11,
+      "artifact_count": 16,
+      "before_mw_sha1": "932d122093f53560d49151e816ab19f734120d52",
+      "before_revision_id": 1361726612,
+      "before_sha256": "sha256:4e35b2b5bb1846bb879fc8c9f61b44c6c22a7aa7b7c3cde3589bd4bf757181f8",
+      "before_timestamp": "2026-06-29T18:33:05Z",
+      "before_units": 11,
+      "change_channel_counts": {
+        "locator": 11,
+        "metadata": 11,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 11,
+        "metadata_changed": 11,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:c11c249359a37c0d80b36585"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.1875,
+      "requested_title": "SQLite",
+      "resolved_title": "SQLite",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.8125
+    },
+    {
+      "after_mw_sha1": "8a61400b29ea0b8151339c92bc057444d15047f6",
+      "after_revision_id": 1365157391,
+      "after_sha256": "sha256:d0ae7924d830deadf0173d2c974b64ee1ab4721036ff5ba896b1278fb992e43e",
+      "after_timestamp": "2026-07-20T16:42:17Z",
+      "after_units": 42,
+      "artifact_count": 47,
+      "before_mw_sha1": "23d6c905ea81a0269140b1587ba190c612829459",
+      "before_revision_id": 1365123686,
+      "before_sha256": "sha256:0803955e5c17ab0f970a6d87f452e757371e05b62c4e2ea8bba4ef90cd4d497f",
+      "before_timestamp": "2026-07-20T11:30:51Z",
+      "before_units": 42,
+      "change_channel_counts": {
+        "locator": 42,
+        "metadata": 42,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 42,
+        "metadata_changed": 42,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:9e33b45e06f86b7c511562b6"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.06382978723404255,
+      "requested_title": "Linux kernel",
+      "resolved_title": "Linux kernel",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.9361702127659575
+    },
+    {
+      "after_mw_sha1": "cbcbff1c9a9573c3c5698e63567fc72be417bd38",
+      "after_revision_id": 1362372495,
+      "after_sha256": "sha256:39c400f720fcb40736d3bddf2511a393b02951ab963751001d1ddd91a51577da",
+      "after_timestamp": "2026-07-03T14:34:27Z",
+      "after_units": 6,
+      "artifact_count": 10,
+      "before_mw_sha1": "ccafc094181db5a2e39b4c9246add7a53c17abd7",
+      "before_revision_id": 1362372074,
+      "before_sha256": "sha256:84a065e3de15754b104913ee015dc382f427a2d690160fa0fa389387e08d58d7",
+      "before_timestamp": "2026-07-03T14:30:35Z",
+      "before_units": 6,
+      "change_channel_counts": {
+        "locator": 6,
+        "metadata": 6,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 6,
+        "metadata_changed": 6,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:108eac89c323bd683dc154ce"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.3,
+      "requested_title": "Docker (software)",
+      "resolved_title": "Docker (software)",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.7
+    },
+    {
+      "after_mw_sha1": "5f8ba05f33215ec9a9aa65efc45453d493c92c26",
+      "after_revision_id": 1352523376,
+      "after_sha256": "sha256:fa945d150a9f6ea575b4672759e7662265eb1aff07dcf58bd65b7000ec376dfd",
+      "after_timestamp": "2026-05-04T18:07:45Z",
+      "after_units": 5,
+      "artifact_count": 9,
+      "before_mw_sha1": "2a79649bf127b493730b82ed903341624ada7b47",
+      "before_revision_id": 1352522820,
+      "before_sha256": "sha256:bce9034f12c1460db1f7e0f5b0fc5cc3c709a0fae9fe483f9c43db1d3efb49c3",
+      "before_timestamp": "2026-05-04T18:03:43Z",
+      "before_units": 5,
+      "change_channel_counts": {
+        "locator": 5,
+        "metadata": 5,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 5,
+        "metadata_changed": 5,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:f094cfb783eb46e0d254fac6"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.3333333333333333,
+      "requested_title": "Apache Kafka",
+      "resolved_title": "Apache Kafka",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.6666666666666666
+    },
+    {
+      "after_mw_sha1": "f1d3d5e634f671d4ef9ea0cf03bd0bce73845455",
+      "after_revision_id": 1366321617,
+      "after_sha256": "sha256:8b62471a6d59ad7ecfd6d7d724595b0d51695a31e5b728fe192a4a5078f5196a",
+      "after_timestamp": "2026-07-27T09:59:26Z",
+      "after_units": 19,
+      "artifact_count": 24,
+      "before_mw_sha1": "f9b7808b3d5f7eda46ca2e475f271d74ae5dea01",
+      "before_revision_id": 1366281480,
+      "before_sha256": "sha256:ef8edffa47091037b6d3a0dba8e52029eb71c35d749fc4e76007a32737850012",
+      "before_timestamp": "2026-07-27T04:06:09Z",
+      "before_units": 18,
+      "change_channel_counts": {
+        "locator": 16,
+        "metadata": 16,
+        "semantic": 1,
+        "structural": 2,
+        "unresolved": 2
+      },
+      "change_kind_counts": {
+        "evidence_moved": 16,
+        "identity_unresolved": 2,
+        "metadata_changed": 16,
+        "structure_changed": 2,
+        "unit_added": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:3b506accde503728f19c10cf"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 7,
+      "rebuild_fraction": 0.2916666666666667,
+      "requested_title": "Git",
+      "resolved_title": "Git",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 2,
+      "work_avoided_fraction": 0.7083333333333334
+    },
+    {
+      "after_mw_sha1": "8ed05e1e40f969399b2c6f0815b9bbad48031a7b",
+      "after_revision_id": 1365824569,
+      "after_sha256": "sha256:615a093362b87cb382b1b8d620589429dc3841d99539e38434a7eeb97cb40932",
+      "after_timestamp": "2026-07-24T17:03:03Z",
+      "after_units": 19,
+      "artifact_count": 24,
+      "before_mw_sha1": "0c0eb133022eb177f86a9ea60e54d795f71cc564",
+      "before_revision_id": 1364580989,
+      "before_sha256": "sha256:b3df306a0848d75231723f9ad5ac086498f137d30e74e3c7a67999c2261940f9",
+      "before_timestamp": "2026-07-17T09:53:50Z",
+      "before_units": 19,
+      "change_channel_counts": {
+        "locator": 19,
+        "metadata": 19,
+        "semantic": 1
+      },
+      "change_kind_counts": {
+        "evidence_moved": 19,
+        "metadata_changed": 19,
+        "modified_claim": 1
+      },
+      "changed_logical_id_count": 1,
+      "changed_logical_ids": [
+        "wiki-unit:51332ad1d1ffa7680bd632b8"
+      ],
+      "diverged": [],
+      "equivalent": true,
+      "missing_from_selective": [],
+      "rebuild_count": 3,
+      "rebuild_fraction": 0.125,
+      "requested_title": "Semantic Web",
+      "resolved_title": "Semantic Web",
+      "stale_left_behind": [],
+      "unresolved_identity_count": 0,
+      "work_avoided_fraction": 0.875
+    }
+  ],
+  "safety_gate_pass": true,
+  "schema": "tavonel.family-b.current-core-public-revision.result.v3",
+  "scientific_parameters_changed_from_v01": false,
+  "source": "English Wikipedia MediaWiki revision API",
+  "stale_left_behind_total": 0,
+  "supersedes_transport_of": [
+    "H3-B-CURRENT-CORE-PUBLIC-REVISION-01",
+    "H3-B-CURRENT-CORE-PUBLIC-REVISION-02"
+  ],
+  "total_artifacts": 361,
+  "total_rebuilt": 40,
+  "unresolved_identity_total": 2
+}

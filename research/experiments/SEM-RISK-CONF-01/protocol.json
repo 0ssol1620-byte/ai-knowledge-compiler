@@ -1,0 +1,200 @@
+{
+  "acceptance": {
+    "integrity": [
+      "protocol and selection manifests hash-verified",
+      "all selected pages exclude development cohort",
+      "inference workers receive no ground truth",
+      "no output overwrite/resume ambiguity"
+    ],
+    "lane_a": {
+      "critical_token_error_detection_recall_min": 0.8,
+      "minimum_evaluable_pages": 48,
+      "peer_signal_auroc_min": 0.65
+    },
+    "routing": {
+      "bootstrap_ci_report_required": true,
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 260831,
+      "point_damage_reduction_required": true,
+      "semantic_risk_critical_token_error_must_not_exceed_primary": true,
+      "semantic_risk_escalation_rate_max": 0.75,
+      "semantic_risk_mean_damage_must_not_exceed_primary": true,
+      "semantic_risk_table_error_must_not_exceed_primary": true
+    }
+  },
+  "claim_boundary": "Confirms (A) whether a deterministic source-native PDF parser can serve as a cheap, ground-truth-independent disagreement signal on born-digital PDFs and (B) whether a fixed failure-class specialist policy improves current OCR parsing on a fresh v1.6 stratified cohort. It does not prove universal routing across scans, handwriting, or all enterprise domains.",
+  "classification": "PROSPECTIVE_CONFIRMATORY_TWO_LANE",
+  "comparators": [
+    "primary_only",
+    "always_research_specialist",
+    "cheap_peer_disagreement_then_specialist_lane_a",
+    "semantic_risk_native_peer_then_failure_class_specialist_lane_a",
+    "semantic_risk_repeat_instability_then_failure_class_specialist_lane_b"
+  ],
+  "cost": {
+    "gpu_allowed_only_after_protocol_and_selection_seal_pass": true,
+    "hard_cap_usd": 500.0,
+    "lane_a_native_gpu_seconds": 0.0
+  },
+  "dataset": {
+    "current_v1_6_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+    "observed_metadata_only_universe": {
+      "current_images_first_tree_page": 1000,
+      "source_native_images": 981,
+      "source_native_ori_pdfs": 981
+    },
+    "repository": "opendatalab/OmniDocBench",
+    "source_native_pre_deletion_revision": "f5f559bddf50e36f7f9899d842d0006f13ce8afc",
+    "source_native_revision_resolution_rule": "first commit immediately older than the commit titled 'Delete folder ori_pdfs with huggingface_hub'"
+  },
+  "date_utc": "2026-08-31",
+  "development_exclusion": {
+    "count": 18,
+    "page_stems": [
+      "docstructbench_dianzishu_zhongwenzaixian-o.O-60599898.pdf_30",
+      "docstructbench_dianzishu_zhongwenzaixian-o.O-61520814.pdf_185",
+      "docstructbench_dianzishu_zhongwenzaixian-o.O-61522235.pdf_170",
+      "docstructbench_dianzishu_zhongwenzaixian-o.O-61569294.pdf_128",
+      "docstructbench_llm-raw-scihub-o.O-j.chroma.2005.05.085.pdf_4",
+      "docstructbench_llm-raw-scihub-o.O-j.physletb.2004.06.101.pdf_3",
+      "eastmoney_62b4149b1612ce28d20f26cd5c5b2e18f80b26fca6e4452e090376a2fe72eae3.pdf_0",
+      "jiaocaineedrop_Chapter9.pdf_46",
+      "jiaocaineedrop_Evans_PDE_Solution_Chapter_6_Second-Order_Elliptic_Equations.pdf_5",
+      "jiaocaineedrop_jiaocai_needrop_en_1898",
+      "jiaocaineedrop_jiaocai_needrop_en_3361",
+      "newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1",
+      "newspaper_5e266dfd9c498cab274e12a7b4a75755_4",
+      "notes_1ba14cb325bc448f7201b20502ecf2b5_15",
+      "notes_f7f010b78016aeebd76e56d9283eb67f_49",
+      "yanbaopptmerge_0c79d327060dbf9f1582d03c235dadb039533a19091d2c0d24f2ad95d267f79b.pdf_2",
+      "yanbaopptmerge_SE05.pdf_7",
+      "yanbaopptmerge_yanbaoPPT_145"
+    ],
+    "reason": "All pages used by SEM-RISK-DEV-CAL-01 are excluded before confirmatory selection.",
+    "sha256": "sha256:b0da58b9b1542b28eaf51ea542ec18ba5bc4f777104ca83f9aea226a8e6e11b3"
+  },
+  "evaluation": {
+    "ground_truth_isolation": "Inference outputs are frozen before the evaluator consumes annotation content. Selection code may read only the lane-B metadata whitelist and must not emit annotation text.",
+    "lane_a_signal_endpoint": {
+      "high_primary_damage_definition": "primary semantic damage >= 0.20 OR primary critical-token error > 0",
+      "report_auroc": true,
+      "report_average_precision": true,
+      "report_critical_token_disagreement_recall": true
+    },
+    "primary_metric": "custom_semantic_damage_v1_frozen_from_preconfirmatory_code",
+    "primary_metric_components": {
+      "content_sequence_error": 0.3,
+      "critical_token_error_if_present": 0.3,
+      "formula_semantic_error_if_present": 0.25,
+      "normalization": "divide by active component weights per page",
+      "ordered_content_error": 0.2,
+      "table_semantic_error_if_present": 0.35
+    },
+    "routing_error_definitions": {
+      "false_escalation": "policy escalates and specialist semantic damage exceeds primary semantic damage by > 0.02",
+      "false_safe": "policy does not escalate despite specialist_material_benefit",
+      "specialist_material_benefit": "eligible specialist reduces semantic damage by >= 0.05 OR lowers critical-token error by >= 0.25"
+    },
+    "secondary_metrics": [
+      "official_omnidocbench_text_edit",
+      "official_omnidocbench_formula_edit",
+      "official_omnidocbench_table_edit_or_teds",
+      "official_omnidocbench_reading_order_edit",
+      "critical_token_exact_recall",
+      "date_quantity_version_loss",
+      "escalation_rate",
+      "false_safe_rate",
+      "false_escalation_rate",
+      "latency_seconds",
+      "gpu_seconds",
+      "estimated_cost_usd"
+    ]
+  },
+  "experiment_id": "SEM-RISK-CONF-01",
+  "forbidden": {
+    "development_pages_in_confirmatory_cohort": true,
+    "ground_truth_visible_to_inference_workers": true,
+    "mineru_commercial_promotion_from_this_experiment": true,
+    "post_result_threshold_or_specialist_mapping_changes": true,
+    "threshold_selection_from_sem_risk_dev_cal_01": true
+  },
+  "parser_roles": {
+    "cheap_peer_lane_a": "native_document/pypdf deterministic source-native parser",
+    "formula_policy": "Formula presence alone never routes away from Paddle because development-only aggregate evidence did not establish MinerU as a formula specialist.",
+    "model_identity_binding": "exact candidate-registry.yaml entries at the frozen source hash plus run-summary model_revision/artifact_manifest_sha256",
+    "primary": "paddleocr-vl-1.6",
+    "primary_repeats_lane_a": 1,
+    "primary_repeats_lane_b": 3,
+    "research_specialist": "mineru-3.4.4-vlm",
+    "specialist_promotion_status": "research_comparator_only_license_review_required"
+  },
+  "routing_policy": {
+    "cheap_peer_disagreement_threshold": 0.35,
+    "compiler_consequence_defaults": {
+      "authority_significance": 0.0,
+      "dependency_blast_radius": 0.0,
+      "downstream_consumer_risk": 0.35,
+      "entity_criticality": 0.0,
+      "note": "benchmark has no real promoted-world dependency graph; nonzero graph consequences require a separate E2E fixture/experiment"
+    },
+    "critical_token_disagreement": "Jaccard disagreement of date/version/quantity token sets participates as a non-averaged warning axis",
+    "lane_a_error_signal": "independent source-native peer disagreement",
+    "lane_b_error_signal": "Paddle repeat instability across exactly 3 frozen inference repeats; repeat 1 is the primary output. Instability is measured without ground truth and is passed as parsing_uncertainty, not cross-model disagreement.",
+    "lane_b_instability_formula": "max(mean pairwise normalized token-sequence disagreement, critical-token set instability) across repeats",
+    "review_without_replacement": "high semantic risk with no eligible specialist retains primary output but is flagged for verification/review",
+    "semantic_risk_escalation_threshold": 0.25,
+    "semantic_risk_policy_version": "sem-risk-conf-01-fixed-v1",
+    "specialist_eligibility": "primary output indicates table or layout complexity; formula-only is excluded",
+    "threshold_origin": "predeclared semantic-risk band boundary / engineering prior, not fitted on development pages"
+  },
+  "selection": {
+    "cross_lane_disjoint": true,
+    "lane_a": {
+      "exclude_development_stems": true,
+      "ground_truth_used_for_selection": false,
+      "name": "born_digital_native_peer_signal",
+      "ranking": "ascending sha256(salt + NUL + page_stem)",
+      "salt": "tavonel-sem-risk-conf-01a-2026-08-31",
+      "sample_size": 64,
+      "universe": "intersection of ori_pdfs and images at source_native_pre_deletion_revision"
+    },
+    "lane_b": {
+      "exclude_development_stems": true,
+      "ground_truth_content_used_for_selection": false,
+      "name": "current_v1_6_failure_class_specialist",
+      "ranking": "within each declared subset, ascending sha256(salt + NUL + image_path)",
+      "salt": "tavonel-sem-risk-conf-01b-2026-08-31",
+      "sample_per_subset": 16,
+      "selection_metadata_whitelist": [
+        "page_info.image_path",
+        "page_info.page_attribute.subset"
+      ],
+      "subsets": [
+        "v1.5",
+        "equation_hard",
+        "layout_hard",
+        "table_hard"
+      ],
+      "total_sample_size": 64
+    }
+  },
+  "source_hashes": {
+    "benchmark/runners/native.py": "sha256:a1c94655492af9a81092d9ad7e18e102ba36c0ec3e68a0241786b90c1969b193",
+    "benchmark/runpod_eval/input_contract.py": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310",
+    "benchmark/runpod_eval/isolated_case_process.py": "sha256:05559dba43b6c250dcf8f077600f48e72dfd0238af3c137836e32d7667a34372",
+    "benchmark/runpod_eval/mineru_stage2.py": "sha256:e7d84e289d9ea1b123d4451243a185950af3bf236520eb92c54ea2ba80387c77",
+    "benchmark/runpod_eval/paddleocr_vl_stage2.py": "sha256:414b5b876f71c527e0c2ac3baadde37dca53fb9d49d5eb270501c5ba71c8f120",
+    "benchmark/v6/candidate-registry.yaml": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+    "packages/cir-python/src/akc_cir/semantic_risk.py": "sha256:cad8309c1a89ecdcb9390097a12e2886a77bf7a6a8dfd0894a51eb097b8a7704",
+    "packages/native-parsers/src/akc_native_parsers/pdf_parser.py": "sha256:91744bbf8c0d4bc182d5eb36399fa0bda863b946818dc990936a34e885bb51d3",
+    "packages/quality/src/akc_quality/agreement.py": "sha256:93d30d463cbc9f196aecf5924e12d6ea302ff81995b9c6c17d8afced3c89906a",
+    "packages/quality/src/akc_quality/semantic_signals.py": "sha256:0ab02a39c0b51e84d4157f0d7e25fa018a74117916048dce8459b270a25322ef",
+    "research/experiments/SEM-RISK-CONF-01/acquire_selected_inputs.py": "sha256:6c61899d5a388cd051d3c6e3811cdc4edcf0d0e3e8d6a4f91cee725d4d9e33d2",
+    "research/experiments/SEM-RISK-CONF-01/build_inference_manifests.py": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+    "research/experiments/SEM-RISK-CONF-01/build_selection_manifest.py": "sha256:8cdab0af1efb1a57a980962379e1fa3d78a8861d12effe6d1dcf9440fabb5a17",
+    "research/experiments/SEM-RISK-CONF-01/evaluate_confirmatory.py": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+    "research/experiments/SEM-RISK-CONF-01/freeze_protocol.py": "sha256:ec5eb488eea861833015325f29fc2a9e9581298e240bbd718419a911a2ae78a7",
+    "research/experiments/SEM-RISK-CONF-01/run_lane_a_native.py": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+    "tests/unit/test_sem_risk_confirmatory_protocol.py": "sha256:ca16d123c73f4036c52efbeb0eddf3c85052d8f61a758ab37918268da21c4d79"
+  }
+}

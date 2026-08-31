@@ -1,0 +1,71 @@
+{
+  "schema": "tavonel.family-b.current-core-public-revision.protocol.v3",
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-03",
+  "supersedes_transport_of": [
+    "H3-B-CURRENT-CORE-PUBLIC-REVISION-01",
+    "H3-B-CURRENT-CORE-PUBLIC-REVISION-02"
+  ],
+  "status": "PREPARED_BEFORE_V03_FETCH",
+  "prepared_at": "2026-08-31T04:42:00+09:00",
+  "amendment_scope": "TRANSPORT_ONLY",
+  "amendment_reason": "V01 persisted zero corpus files and produced no evaluation result because rapid sequential single-page requests received HTTP 429. V02 persisted zero corpus files and produced no evaluation result because MediaWiki rejects revision-window parameters such as rvstart/rvlimit when multiple pages are supplied (invalidparammix). V03 preserves every V01 scientific parameter and uses the API-supported single-page request shape with a predeclared polite request interval and bounded 429 Retry-After/backoff handling.",
+  "scientific_parameters_changed_from_v01": false,
+  "source": "English Wikipedia MediaWiki revision API",
+  "cutoff": "2026-08-01T00:00:00Z",
+  "titles": [
+    "Database",
+    "Compiler",
+    "Operating system",
+    "Distributed computing",
+    "Computer security",
+    "PostgreSQL",
+    "SQLite",
+    "Linux kernel",
+    "Docker (software)",
+    "Apache Kafka",
+    "Git",
+    "Semantic Web"
+  ],
+  "projection": {
+    "unit": "eligible MediaWiki section with normalized body length >= 120 characters",
+    "skip_headings": ["references", "external links", "see also", "further reading", "notes"],
+    "identity": "title + canonical heading path, with the live current-core logical identity resolver allowed to abstain",
+    "document_shape": "heading paths + block count + unit order",
+    "artifacts": "one section artifact per logical unit + one document index + deterministic four-bucket topic projections"
+  },
+  "frozen_safety_gates": {
+    "all_evaluated_pairs_equivalent": true,
+    "stale_left_behind_total": 0,
+    "minimum_changed_pair_count": 8
+  },
+  "performance_metrics_are_measurements_not_pass_gates": [
+    "rebuild_fraction",
+    "work_avoided_fraction",
+    "mean_rebuild_fraction",
+    "median_rebuild_fraction",
+    "max_rebuild_fraction"
+  ],
+  "claim_boundary": "Prospective scientific protocol inherited unchanged from V01, with only predeclared transport amendments after V01/V02 produced no persisted corpus and no performance/equivalence result. Evidence scope remains the current typed-change-channel Core on a deterministic Wikipedia section projection; it is not OCR, ontology, legal/regulatory, or customer-data evidence.",
+  "transport": {
+    "mode": "single_page_mediawiki_queries",
+    "minimum_inter_request_seconds": 2.0,
+    "retry_only_for_http_status": 429,
+    "maximum_attempts_per_title": 5,
+    "fallback_backoff_seconds_by_retry": [5.0, 10.0, 20.0, 40.0],
+    "respect_retry_after_header": true,
+    "maximum_retry_wait_seconds": 60.0,
+    "no_other_transport_parameter_changes_after_v03_seal": true
+  },
+  "cost_policy": {
+    "external_gpu_allowed": false,
+    "external_gpu_cost_usd": 0.0
+  },
+  "integrity": {
+    "v01_protocol_must_match_scientific_parameters": true,
+    "freeze_before_v03_fetch": true,
+    "runner_must_verify_v03_protocol_v01_evaluator_transport_lineage_and_entire_live_akc_cir_python_package_hashes_before_network": true,
+    "corpus_must_be_empty_before_first_v03_run": true,
+    "fetch_all_pairs_before_persisting_any_corpus": true,
+    "no_parameter_changes_after_v03_freeze": true
+  }
+}

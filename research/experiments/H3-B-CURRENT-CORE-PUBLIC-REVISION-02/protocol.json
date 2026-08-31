@@ -1,0 +1,62 @@
+{
+  "schema": "tavonel.family-b.current-core-public-revision.protocol.v2",
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-02",
+  "supersedes_transport_of": "H3-B-CURRENT-CORE-PUBLIC-REVISION-01",
+  "status": "PREPARED_BEFORE_V02_FETCH",
+  "prepared_at": "2026-08-31T04:40:00+09:00",
+  "amendment_scope": "TRANSPORT_ONLY",
+  "amendment_reason": "V01 produced no evaluation result and persisted zero corpus files because the sequential MediaWiki acquisition encountered HTTP 429 twice. V02 preserves the V01 scientific protocol exactly and changes only acquisition from per-title sequential requests to one batched MediaWiki request.",
+  "scientific_parameters_changed_from_v01": false,
+  "source": "English Wikipedia MediaWiki revision API",
+  "cutoff": "2026-08-01T00:00:00Z",
+  "titles": [
+    "Database",
+    "Compiler",
+    "Operating system",
+    "Distributed computing",
+    "Computer security",
+    "PostgreSQL",
+    "SQLite",
+    "Linux kernel",
+    "Docker (software)",
+    "Apache Kafka",
+    "Git",
+    "Semantic Web"
+  ],
+  "projection": {
+    "unit": "eligible MediaWiki section with normalized body length >= 120 characters",
+    "skip_headings": ["references", "external links", "see also", "further reading", "notes"],
+    "identity": "title + canonical heading path, with the live current-core logical identity resolver allowed to abstain",
+    "document_shape": "heading paths + block count + unit order",
+    "artifacts": "one section artifact per logical unit + one document index + deterministic four-bucket topic projections"
+  },
+  "frozen_safety_gates": {
+    "all_evaluated_pairs_equivalent": true,
+    "stale_left_behind_total": 0,
+    "minimum_changed_pair_count": 8
+  },
+  "performance_metrics_are_measurements_not_pass_gates": [
+    "rebuild_fraction",
+    "work_avoided_fraction",
+    "mean_rebuild_fraction",
+    "median_rebuild_fraction",
+    "max_rebuild_fraction"
+  ],
+  "claim_boundary": "Prospective scientific protocol inherited unchanged from V01, with a pre-declared transport-only amendment after V01 was acquisition-blocked before any persisted corpus or performance result. Evidence scope remains the current typed-change-channel Core on a deterministic Wikipedia section projection; it is not OCR, ontology, legal/regulatory, or customer-data evidence.",
+  "transport": {
+    "mode": "single_batched_mediawiki_query",
+    "expected_request_count": 1,
+    "retry_policy": "none_after_v02_seal"
+  },
+  "cost_policy": {
+    "external_gpu_allowed": false,
+    "external_gpu_cost_usd": 0.0
+  },
+  "integrity": {
+    "v01_protocol_must_match_scientific_parameters": true,
+    "freeze_before_v02_fetch": true,
+    "runner_must_verify_v02_protocol_runner_v01_evaluator_and_entire_live_akc_cir_python_package_hashes_before_network": true,
+    "corpus_must_be_empty_before_first_v02_run": true,
+    "no_parameter_changes_after_v02_freeze": true
+  }
+}

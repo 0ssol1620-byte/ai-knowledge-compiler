@@ -1,0 +1,24 @@
+{
+  "all_checks_passed": true,
+  "corpus_extraneous_files": [],
+  "git_head": "a939f176bc533d79ed9a26dac3a47e52862dcc98",
+  "ground_truth_absent": true,
+  "lane_a": {
+    "benchmark_id": "sem-risk-conf-01-lane-a",
+    "content_sha256": "sha256:86caebf9b0c5eb2a3dd833ce8fbcc27cb718c86014a5eb92fb7c69f256657f2c",
+    "contract_complete": true,
+    "dataset_revision": "f5f559bddf50e36f7f9899d842d0006f13ce8afc",
+    "input_count": 64
+  },
+  "lane_b": {
+    "benchmark_id": "sem-risk-conf-01-lane-b",
+    "content_sha256": "sha256:5dbabaf1130e352cc4a0f202a9455fb028f45b3c641c06a7e4dc05a9928985ec",
+    "contract_complete": true,
+    "dataset_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+    "input_count": 64
+  },
+  "receipt_sha256": "sha256:c299ba87da6018d4b03bb36ed23dd5fdc61987f8296eb1ae5b25c47d6a396075",
+  "repeat_shapes_legal": true,
+  "schema": "tavonel.sem-risk-conf.manifest-verification.v1",
+  "verified_at": "20260831T011449Z"
+}

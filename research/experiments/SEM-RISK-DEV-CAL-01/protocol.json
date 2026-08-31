@@ -1,0 +1,77 @@
+{
+  "schema": "tavonel.semantic-risk.development-calibration.v1",
+  "experiment_id": "SEM-RISK-DEV-CAL-01",
+  "classification": "RETROSPECTIVE_DEVELOPMENT_CALIBRATION_ONLY",
+  "prepared_at": "2026-08-31T04:55:00+09:00",
+  "claim_boundary": "This study reuses the already-observed 18-page OmniDocBench demo evidence from the August 1 parser evaluation. It is development calibration only. It is not fresh confirmatory evidence, a field SLO, a production threshold selection study, a customer-data benchmark, or patent novelty evidence.",
+  "gpu_policy": {
+    "new_inference_allowed": false,
+    "external_gpu_cost_usd": 0.0
+  },
+  "inputs": {
+    "ground_truth": "D:/CodexProjects/ai-knowledge-compiler/benchmark/cache/omnidoc/demo_data/omnidocbench_demo/OmniDocBench_demo.json",
+    "evidence_root": "D:/CodexProjects/ai-knowledge-compiler/artifacts/e2e-model-evaluation",
+    "required_pages": 18,
+    "required_repeats_per_model": 3,
+    "primary_family_prefix": "paddleocr-vl-1.",
+    "strong_family_prefix": "mineru-3.4.",
+    "strong_subdir": "mineru-vlm-c1-formal-18x3"
+  },
+  "measured_role_economics": {
+    "primary_latency_seconds_per_page": 3.5249,
+    "primary_cost_usd_per_page": 0.0006756,
+    "strong_latency_seconds_per_page": 34.7078,
+    "strong_cost_usd_per_page": 0.0066523
+  },
+  "custom_page_metric": {
+    "official_omnidocbench": false,
+    "description": "Deterministic page-level development damage built from normalized semantic-content sequence disagreement, exact critical-token preservation, GT table-token recall, GT formula-sequence agreement, and ordered semantic-content agreement. It is used only to compare parser/routing behavior within this 18-page development cohort.",
+    "components": {
+      "content_sequence_error_weight": 0.30,
+      "ordered_content_error_weight": 0.20,
+      "critical_token_error_weight_when_present": 0.30,
+      "table_semantic_error_weight_when_present": 0.35,
+      "formula_semantic_error_weight_when_present": 0.25
+    },
+    "conditional_weight_normalization": true
+  },
+  "deployment_feature_discipline": {
+    "ground_truth_forbidden_in_routing_features": true,
+    "current_engine_features": [
+      "primary_repeat_instability",
+      "primary_critical_token_repeat_instability",
+      "primary_detected_structural_criticality"
+    ],
+    "unavailable_dimensions_set_to_zero": [
+      "cross_model_disagreement_from_cheap_peer",
+      "entity_criticality",
+      "temporal_significance",
+      "authority_significance",
+      "dependency_blast_radius",
+      "downstream_consumer_risk"
+    ],
+    "strong_disagreement_proxy": "Paddle-vs-MinerU disagreement is reported separately as a counterfactual signal. It is not treated as free/deployment-available because obtaining it already requires the strong parser on this cohort."
+  },
+  "predeclared_thresholds": {
+    "semantic_risk": [0.25, 0.5, 0.55, 0.75],
+    "strong_disagreement_proxy": [0.1, 0.2, 0.3, 0.4]
+  },
+  "policies": [
+    "always_primary",
+    "always_strong",
+    "current_semantic_risk_threshold_grid",
+    "strong_disagreement_proxy_threshold_grid"
+  ],
+  "policy_metrics": [
+    "escalation_ratio",
+    "mean_selected_parser_damage",
+    "critical_token_damage",
+    "estimated_parser_cost_usd",
+    "estimated_parser_latency_seconds_sequential",
+    "damage_reduction_vs_always_primary",
+    "extra_cost_vs_always_primary",
+    "extra_latency_vs_always_primary",
+    "regret_vs_page_oracle"
+  ],
+  "threshold_selection_rule": "No production threshold is selected from this 18-page cohort. Results may identify only a candidate calibration region and failure modes for the next fresh frozen confirmatory study."
+}

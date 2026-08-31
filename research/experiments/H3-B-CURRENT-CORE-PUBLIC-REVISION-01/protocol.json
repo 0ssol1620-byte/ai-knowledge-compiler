@@ -1,0 +1,54 @@
+{
+  "schema": "tavonel.family-b.current-core-public-revision.protocol.v1",
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-01",
+  "status": "PREPARED_BEFORE_FETCH",
+  "prepared_at": "2026-08-31T04:30:00+09:00",
+  "research_question": "Does the current typed-change-channel selective recompilation core preserve full-rebuild equivalence without stale carry-over on a fresh, pre-registered set of real public document revisions, and what rebuild fraction does it achieve?",
+  "source": "English Wikipedia MediaWiki revision API",
+  "cutoff": "2026-08-01T00:00:00Z",
+  "titles": [
+    "Database",
+    "Compiler",
+    "Operating system",
+    "Distributed computing",
+    "Computer security",
+    "PostgreSQL",
+    "SQLite",
+    "Linux kernel",
+    "Docker (software)",
+    "Apache Kafka",
+    "Git",
+    "Semantic Web"
+  ],
+  "selection_rule": "Titles were fixed before any corpus fetch for this experiment and exclude every title used by the earlier local H1-B/H1-F public-revision work known at preparation time.",
+  "projection": {
+    "unit": "eligible MediaWiki section with normalized body length >= 120 characters",
+    "skip_headings": ["references", "external links", "see also", "further reading", "notes"],
+    "identity": "title + canonical heading path, with the live current-core logical identity resolver allowed to abstain",
+    "document_shape": "heading paths + block count + unit order",
+    "artifacts": "one section artifact per logical unit + one document index + deterministic four-bucket topic projections"
+  },
+  "frozen_safety_gates": {
+    "all_evaluated_pairs_equivalent": true,
+    "stale_left_behind_total": 0,
+    "minimum_changed_pair_count": 8
+  },
+  "performance_metrics_are_measurements_not_pass_gates": [
+    "rebuild_fraction",
+    "work_avoided_fraction",
+    "mean_rebuild_fraction",
+    "median_rebuild_fraction",
+    "max_rebuild_fraction"
+  ],
+  "claim_boundary": "Fresh prospective public-revision evidence for the current typed-change-channel Core on a deterministic Wikipedia section projection. It is not evidence of OCR quality, domain-specific legal/regulatory correctness, ontology quality, or production customer-data performance.",
+  "cost_policy": {
+    "external_gpu_allowed": false,
+    "external_gpu_cost_usd": 0.0
+  },
+  "integrity": {
+    "freeze_before_fetch": true,
+    "runner_must_verify_protocol_runner_and_live_core_hashes_before_network": true,
+    "corpus_must_be_empty_before_first_run": true,
+    "no_parameter_changes_after_freeze": true
+  }
+}

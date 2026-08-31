@@ -74,6 +74,7 @@ from .numeric_geometry import (
     match_numeric_geometry,
 )
 from .page_coverage import PageCoverage, validate_page_coverage
+from .semantic_signals import PeerSemanticRiskSignals, derive_peer_semantic_risk
 from .table_conservation import TableConservation, validate_table_conservation
 from .tables import table_numeric_fidelity, table_shape_fidelity, validate_table
 
@@ -116,6 +117,7 @@ __all__ = [
     "NumericResolutionState",
     "PageCoverage",
     "ParserNumericCell",
+    "PeerSemanticRiskSignals",
     "QualityEvaluation",
     "QualityFinding",
     "QualityStatus",
@@ -131,6 +133,7 @@ __all__ = [
     "compare_engine_outputs",
     "compare_numeric_tokens",
     "decide_autonomously",
+    "derive_peer_semantic_risk",
     "evaluate_quality",
     "extract_numeric_tokens",
     "markdown_anomalies",

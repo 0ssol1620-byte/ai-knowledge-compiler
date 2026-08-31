@@ -10,3 +10,19 @@
 *.zip binary
 *.zst binary
 
+# Frozen experiment artifacts are hash-bound evidence, not source. Their
+# sha256 values are recorded inside sealed receipts (protocol-freeze.json,
+# selection-seal.json, lane-a-native-freeze.json, the H3 V03 seal, ...) and
+# are re-verified by verify_frozen_integrity.py and verify_seal(). The
+# repository-wide `* text=auto eol=lf` rule above would rewrite CRLF to LF on
+# checkin, changing those bytes and silently breaking every seal that covers
+# them -- measured directly: SEM-RISK-CONF-02/protocol.json hashes
+# c8238f96... on disk (the value its freeze receipt records) but 38a88e5d...
+# after normalization. `-text` disables all end-of-line conversion so the
+# committed bytes are the sealed bytes.
+research/experiments/**/*.json -text
+research/experiments/**/*.py -text
+research/experiments/**/*.jsonl -text
+infra/runpod/v6/qualification/**/*.json -text
+
+

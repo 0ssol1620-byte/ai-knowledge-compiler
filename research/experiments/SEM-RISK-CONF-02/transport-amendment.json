@@ -1,0 +1,81 @@
+{
+  "amended_transport_rule": {
+    "download_retries": {
+      "attempts": 3,
+      "backoff_seconds": [
+        1.0,
+        2.0
+      ],
+      "other_http_statuses": "fail immediately",
+      "retry_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ]
+    },
+    "lane_a": "unchanged exact selected tree paths at source-native pre-deletion revision",
+    "lane_b": "paginate the complete exact-revision images tree, index by basename, and require exactly one tree path for every already-selected basename before any Lane B download",
+    "pagination": "follow RFC5988 Link rel=next until absent; fail on repeated cursor/url",
+    "resolution_fail_closed": true
+  },
+  "byte_identical_v01_artifacts": {
+    "build_inference_manifests.py": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+    "evaluate_confirmatory.py": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+    "protocol.json": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+    "receipts/protocol-freeze.json": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+    "receipts/selection-seal.json": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+    "run_lane_a_native.py": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+    "selection-manifest.json": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa"
+  },
+  "classification": "TRANSPORT_ONLY_AMENDMENT_BEFORE_CONFIRMATORY_OBSERVATION",
+  "evaluation_changed": false,
+  "gpu_inference_observed_before_amendment": false,
+  "ground_truth_observed_before_amendment": false,
+  "model_identity_changed": false,
+  "parent_protocol_sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "parent_selection_sha256": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+  "routing_policy_changed": false,
+  "schema": "tavonel.semantic-risk.confirmatory.transport-amendment.v1",
+  "scientific_experiment_id": "SEM-RISK-CONF-01",
+  "scientific_parameters_changed": false,
+  "selected_cases_changed": false,
+  "transport_source_hashes": {
+    "acquire_selected_inputs.py": "sha256:f49ab05241a24d0d61bda2dd908b98fe031e3ca375b441bc9b306b5ffb77f1c2",
+    "freeze_transport_amendment.py": "sha256:27080cdbf39cbe921f2db7f3ca84a4259f5819e79f12e32b155a009fa359049f"
+  },
+  "transport_version": "V02",
+  "v01_transport_failure": {
+    "cause": "current v1.6 annotation image_path is a basename while repository storage path is under images/",
+    "gpu_seconds": 0.0,
+    "ground_truth_acquired": false,
+    "http_status": 404,
+    "persisted_files": {
+      "lane_a_images": 64,
+      "lane_a_source_pdfs": 64,
+      "lane_b_images": 0
+    },
+    "result_rows": 0,
+    "stage": "input_acquisition"
+  },
+  "verified_v01_frozen_source_hashes": {
+    "benchmark/runners/native.py": "sha256:a1c94655492af9a81092d9ad7e18e102ba36c0ec3e68a0241786b90c1969b193",
+    "benchmark/runpod_eval/input_contract.py": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310",
+    "benchmark/runpod_eval/isolated_case_process.py": "sha256:05559dba43b6c250dcf8f077600f48e72dfd0238af3c137836e32d7667a34372",
+    "benchmark/runpod_eval/mineru_stage2.py": "sha256:e7d84e289d9ea1b123d4451243a185950af3bf236520eb92c54ea2ba80387c77",
+    "benchmark/runpod_eval/paddleocr_vl_stage2.py": "sha256:414b5b876f71c527e0c2ac3baadde37dca53fb9d49d5eb270501c5ba71c8f120",
+    "benchmark/v6/candidate-registry.yaml": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+    "packages/cir-python/src/akc_cir/semantic_risk.py": "sha256:cad8309c1a89ecdcb9390097a12e2886a77bf7a6a8dfd0894a51eb097b8a7704",
+    "packages/native-parsers/src/akc_native_parsers/pdf_parser.py": "sha256:91744bbf8c0d4bc182d5eb36399fa0bda863b946818dc990936a34e885bb51d3",
+    "packages/quality/src/akc_quality/agreement.py": "sha256:93d30d463cbc9f196aecf5924e12d6ea302ff81995b9c6c17d8afced3c89906a",
+    "packages/quality/src/akc_quality/semantic_signals.py": "sha256:0ab02a39c0b51e84d4157f0d7e25fa018a74117916048dce8459b270a25322ef",
+    "research/experiments/SEM-RISK-CONF-01/acquire_selected_inputs.py": "sha256:6c61899d5a388cd051d3c6e3811cdc4edcf0d0e3e8d6a4f91cee725d4d9e33d2",
+    "research/experiments/SEM-RISK-CONF-01/build_inference_manifests.py": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+    "research/experiments/SEM-RISK-CONF-01/build_selection_manifest.py": "sha256:8cdab0af1efb1a57a980962379e1fa3d78a8861d12effe6d1dcf9440fabb5a17",
+    "research/experiments/SEM-RISK-CONF-01/evaluate_confirmatory.py": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+    "research/experiments/SEM-RISK-CONF-01/freeze_protocol.py": "sha256:ec5eb488eea861833015325f29fc2a9e9581298e240bbd718419a911a2ae78a7",
+    "research/experiments/SEM-RISK-CONF-01/run_lane_a_native.py": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+    "tests/unit/test_sem_risk_confirmatory_protocol.py": "sha256:ca16d123c73f4036c52efbeb0eddf3c85052d8f61a758ab37918268da21c4d79"
+  }
+}

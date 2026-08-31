@@ -1,0 +1,17 @@
+{
+  "corpus_bytes_observed_before_seal": 0,
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-01",
+  "external_gpu_cost_usd": 0.0,
+  "git_head": "a939f176bc533d79ed9a26dac3a47e52862dcc98",
+  "hashes": {
+    "packages/cir-python/src/akc_cir/dependency.py": "sha256:41713fee6319abbdd5cc5fa7cc54f7481b2f5ceade10d5cfcbfa2ab59f006b72",
+    "packages/cir-python/src/akc_cir/identity.py": "sha256:cc42abe37c75d2239035a5bfcce6e84eb4ce249c73b994df69764169a2bf1c2d",
+    "packages/cir-python/src/akc_cir/recompilation.py": "sha256:35d38cef131cb5a8a1b8490bfba21fa4e597fe706d0c08090a149a09deb315ae",
+    "packages/cir-python/src/akc_cir/semantic_diff.py": "sha256:79cb4a1c17562d1f727ac9c7f3be423ba18b2a9338312087830b60fafa6a1d2d",
+    "research/experiments/H3-B-CURRENT-CORE-PUBLIC-REVISION-01/protocol.json": "sha256:6547cc67d82ac01f8ae6cc7f07d41e07960ff28476abac0c0fcf3adcd3e7890c",
+    "research/experiments/H3-B-CURRENT-CORE-PUBLIC-REVISION-01/run_experiment.py": "sha256:0d835e8e5d3242cb04fec2755da98b81774c721af78bae087b6b568a30249f88"
+  },
+  "schema": "tavonel.family-b.current-core-public-revision.pre-fetch-seal.v1",
+  "seal_sha256": "sha256:3fcfe708cee6bea5d774699074bb12265ee36d64e503c551f029e2636e1d77f0",
+  "sealed_at": "2026-08-30T19:32:53.220906+00:00"
+}

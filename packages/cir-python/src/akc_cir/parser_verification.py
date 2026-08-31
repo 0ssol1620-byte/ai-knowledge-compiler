@@ -15,6 +15,7 @@ from itertools import pairwise
 
 from .critical_tokens import verify_critical_tokens
 from .inspection import FailureCode
+from .semantic_risk import SemanticRiskAssessment
 
 __all__ = [
     "CrossPageFinding",
@@ -75,6 +76,8 @@ class VerificationDecision:
     run_cross_page_check: bool
     estimated_gpu_seconds: float
     estimated_cost_usd: float
+    effective_risk: float
+    risk_source: str
 
     @property
     def multi_parser(self) -> bool:
@@ -97,16 +100,31 @@ def select_verification_parsers(
     primary: ParserCapability,
     alternatives: Iterable[ParserCapability],
     *,
-    risk: float,
-    uncertainty: float,
+    risk: float | None = None,
+    uncertainty: float = 0.0,
     failure_codes: Iterable[FailureCode] = (),
     has_table: bool = False,
     has_image: bool = False,
     cross_page_risk: float = 0.0,
     gate: VerificationGate | None = None,
+    semantic_risk: SemanticRiskAssessment | None = None,
 ) -> VerificationDecision:
-    """Select only the capabilities justified by current risk and budget."""
-    if not 0.0 <= risk <= 1.0 or not 0.0 <= uncertainty <= 1.0:
+    """Select only the capabilities justified by current risk and budget.
+
+    ``semantic_risk`` is the preferred route. ``risk`` remains as a temporary
+    backwards-compatible scalar for callers that have not yet migrated. When
+    both are present, the explainable Semantic Risk Engine assessment is
+    authoritative and the decision records which source was used.
+    """
+    if semantic_risk is not None:
+        effective_risk = semantic_risk.expected_semantic_damage
+        risk_source = "semantic_risk_engine"
+    elif risk is not None:
+        effective_risk = risk
+        risk_source = "legacy_scalar"
+    else:
+        raise ValueError("either semantic_risk or legacy risk is required")
+    if not 0.0 <= effective_risk <= 1.0 or not 0.0 <= uncertainty <= 1.0:
         raise ValueError("risk and uncertainty must be within 0..1")
     if not 0.0 <= cross_page_risk <= 1.0:
         raise ValueError("cross_page_risk must be within 0..1")
@@ -115,11 +133,13 @@ def select_verification_parsers(
     force = bool(codes & _FORCE_VERIFY_CODES)
     needs_alt = (
         force
-        or risk >= limits.risk_threshold
+        or effective_risk >= limits.risk_threshold
         or uncertainty >= limits.uncertainty_threshold
     )
     visual = (has_table or has_image) and (
-        force or risk >= limits.risk_threshold or uncertainty >= limits.uncertainty_threshold
+        force
+        or effective_risk >= limits.risk_threshold
+        or uncertainty >= limits.uncertainty_threshold
     )
     cross_page = cross_page_risk >= limits.cross_page_risk_threshold or (
         FailureCode.F16_CROSS_PAGE in codes
@@ -169,6 +189,8 @@ def select_verification_parsers(
         run_cross_page_check=cross_page,
         estimated_gpu_seconds=gpu,
         estimated_cost_usd=cost,
+        effective_risk=effective_risk,
+        risk_source=risk_source,
     )
 
 

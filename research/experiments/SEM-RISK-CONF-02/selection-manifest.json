@@ -1,0 +1,792 @@
+{
+  "counts": {
+    "development_exclusions": 18,
+    "lane_a": 64,
+    "lane_b": 64,
+    "total": 128
+  },
+  "dataset": {
+    "current_annotation_sha256_selection_only": "sha256:a45cd84b04ad8b793e775089640e6b681209abea33ead54c1828ddca35fae496",
+    "current_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+    "source_native_revision": "f5f559bddf50e36f7f9899d842d0006f13ce8afc"
+  },
+  "experiment_id": "SEM-RISK-CONF-01",
+  "lane_a": [
+    {
+      "image_path": "images/newspaper_b615618f3cdb0f2c13ffb5865dea799c_1.jpg",
+      "page_stem": "newspaper_b615618f3cdb0f2c13ffb5865dea799c_1",
+      "rank_sha256": "00437bc1d87dda83c51bdebe3f82894e4e11956a56d2b8e20997a1511f1a146e",
+      "source_pdf_path": "ori_pdfs/newspaper_b615618f3cdb0f2c13ffb5865dea799c_1.pdf"
+    },
+    {
+      "image_path": "images/scihub_journal.pone.0166577.pdf_5.jpg",
+      "page_stem": "scihub_journal.pone.0166577.pdf_5",
+      "rank_sha256": "0059aae7ec8de391832d394508c09782918b946cbda6cc85e5e26fbe7e17acdf",
+      "source_pdf_path": "ori_pdfs/scihub_journal.pone.0166577.pdf_5.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_250.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_250",
+      "rank_sha256": "005bd0a52393aa6284bcdd2c7fc6e5d61f16cd434142772bd4d18b729c3f225a",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_250.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-dneu.20833.pdf_13.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-dneu.20833.pdf_13",
+      "rank_sha256": "00870015f569a719560dfd3b3ef6a51daecc643fc69d7def13f4c15bf7d76e3b",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-dneu.20833.pdf_13.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_1835.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_1835",
+      "rank_sha256": "00c753b9ab6439e025498fc56a743cbd8368013a6a4a07ee6d713aad206ba408",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_1835.pdf"
+    },
+    {
+      "image_path": "images/scihub_bloodadvances.2019030924.pdf_3.jpg",
+      "page_stem": "scihub_bloodadvances.2019030924.pdf_3",
+      "rank_sha256": "011d32ca030c359cbb5d99c90a95f8a7f254d57ed726257e4373c5a54433d942",
+      "source_pdf_path": "ori_pdfs/scihub_bloodadvances.2019030924.pdf_3.pdf"
+    },
+    {
+      "image_path": "images/newspaper_c3c88b76543e2caf044c9f7689f23ec9_1.jpg",
+      "page_stem": "newspaper_c3c88b76543e2caf044c9f7689f23ec9_1",
+      "rank_sha256": "011e4fe24685f16782cdcb853cc145d14f884efabb000df226813c5a5f87d667",
+      "source_pdf_path": "ori_pdfs/newspaper_c3c88b76543e2caf044c9f7689f23ec9_1.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_5473246b8da789b9bfdeef53a70c4d72afd480415d5cbcedb83d105856710328.pdf_8.jpg",
+      "page_stem": "yanbaopptmerge_5473246b8da789b9bfdeef53a70c4d72afd480415d5cbcedb83d105856710328.pdf_8",
+      "rank_sha256": "013a89263fae247aed8b03c41fc6fe9d3af8ff4365f191fb8016260fdd63b30f",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_5473246b8da789b9bfdeef53a70c4d72afd480415d5cbcedb83d105856710328.pdf_8.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_b2f600a88fc341bdd0b2b58b8bd4b0ab448277b06e167aa879b838e8139db19d.pdf_17.jpg",
+      "page_stem": "yanbaor2_b2f600a88fc341bdd0b2b58b8bd4b0ab448277b06e167aa879b838e8139db19d.pdf_17",
+      "rank_sha256": "018c4df7815bfe0a9acfb10de200d8a9bdb4d6bb359b4687c73403c16bebf23e",
+      "source_pdf_path": "ori_pdfs/yanbaor2_b2f600a88fc341bdd0b2b58b8bd4b0ab448277b06e167aa879b838e8139db19d.pdf_17.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_593a9a157e4d56a5a57eb14f1d1beec5.pdf_944.jpg",
+      "page_stem": "yanbaopptmerge_593a9a157e4d56a5a57eb14f1d1beec5.pdf_944",
+      "rank_sha256": "018fa88919ed264ab5d8b6ba24afb7ee73de2a38799a5936c37090a81dbbf9cc",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_593a9a157e4d56a5a57eb14f1d1beec5.pdf_944.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_ey-is-your-next-step-about-changing-direction-or-directing-change.pdf_4.jpg",
+      "page_stem": "yanbaor2_ey-is-your-next-step-about-changing-direction-or-directing-change.pdf_4",
+      "rank_sha256": "01bf61987f6dcfb7e856680be75f689d4a324edd5016564eb3fe83e98fa64d41",
+      "source_pdf_path": "ori_pdfs/yanbaor2_ey-is-your-next-step-about-changing-direction-or-directing-change.pdf_4.pdf"
+    },
+    {
+      "image_path": "images/notes_1ba14cb325bc448f7201b20502ecf2b5_96.jpg",
+      "page_stem": "notes_1ba14cb325bc448f7201b20502ecf2b5_96",
+      "rank_sha256": "01f8b84f9f8de3c0382c0f61aad04cc40b3217b8266b75557e0858c0748d0664",
+      "source_pdf_path": "ori_pdfs/notes_1ba14cb325bc448f7201b20502ecf2b5_96.pdf"
+    },
+    {
+      "image_path": "images/newspaper_17f81b80831d8d58564b9c8e3cf79261_1.jpg",
+      "page_stem": "newspaper_17f81b80831d8d58564b9c8e3cf79261_1",
+      "rank_sha256": "025dddc80b914014604ecb6546adc14ccc66bc9686adad866809f7a57e7f9c4c",
+      "source_pdf_path": "ori_pdfs/newspaper_17f81b80831d8d58564b9c8e3cf79261_1.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-s00128-007-9171-1.pdf_3.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-s00128-007-9171-1.pdf_3",
+      "rank_sha256": "027b6efbe7ec40f4ac75dc3a9183bee2e5aefca5b08e5cb8fca8f5f51dd09a79",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-s00128-007-9171-1.pdf_3.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-63685611.pdf_222.jpg",
+      "page_stem": "docstructbench_dianzishu_zhongwenzaixian-o.O-63685611.pdf_222",
+      "rank_sha256": "02baea9625cec6c1e3d3dc1be90c903c05d8c64bfcc353b55c932ab7571f3b0d",
+      "source_pdf_path": "ori_pdfs/docstructbench_dianzishu_zhongwenzaixian-o.O-63685611.pdf_222.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_2509.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_2509",
+      "rank_sha256": "02db3fa367c5f721991005f964b3c61c28b62efb2a282c69ce00ca341bf43c09",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_2509.pdf"
+    },
+    {
+      "image_path": "images/notes_f7f010b78016aeebd76e56d9283eb67f_8.jpg",
+      "page_stem": "notes_f7f010b78016aeebd76e56d9283eb67f_8",
+      "rank_sha256": "034d1fb85bc12b9d07b8b850262c99b7b2bd39caecaeadaa5a6765274be7a2f8",
+      "source_pdf_path": "ori_pdfs/notes_f7f010b78016aeebd76e56d9283eb67f_8.pdf"
+    },
+    {
+      "image_path": "images/notes_f7f010b78016aeebd76e56d9283eb67f_75.jpg",
+      "page_stem": "notes_f7f010b78016aeebd76e56d9283eb67f_75",
+      "rank_sha256": "036a6ff736cb53b33f32471f3ea48c13ccc60eda23d291cae54b30ed322fbc11",
+      "source_pdf_path": "ori_pdfs/notes_f7f010b78016aeebd76e56d9283eb67f_75.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_3013.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_3013",
+      "rank_sha256": "03f28da08ea34fec317ef1e86d221755e7b93bc960814163113ad72e5f0dd717",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_3013.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_335.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_335",
+      "rank_sha256": "049f96a5d36f647ecb50680af5e886a1c74db6549bc4934d380e9cac30de22c4",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_335.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-61520553.pdf_328.jpg",
+      "page_stem": "docstructbench_dianzishu_zhongwenzaixian-o.O-61520553.pdf_328",
+      "rank_sha256": "054a9a3d4064a67394e618533919ae686aff6e2303851eafdff3530ee9522957",
+      "source_pdf_path": "ori_pdfs/docstructbench_dianzishu_zhongwenzaixian-o.O-61520553.pdf_328.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_5175.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_5175",
+      "rank_sha256": "059172dab79ba274ecc7840cd8f3e7bdc240fe90a4dae0079124e65faa98b435",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_5175.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_2124.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_2124",
+      "rank_sha256": "05a617a67ff8a2d3dd65c2ede811bf629ac980cc96fd9f4dd543580c7704d3d7",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_2124.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_3685.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_3685",
+      "rank_sha256": "061b0bd15d4cb7265bcde3c30a9abb9df1733f122481019ab9fce1ffb8db39e1",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_3685.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_4660.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_4660",
+      "rank_sha256": "064edefeb6b0a4a02c216ffe79476466b953cba1bcba4c53fdcf8bd2b18dcef9",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_4660.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-bf00326833.pdf_3.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-bf00326833.pdf_3",
+      "rank_sha256": "0666747de630a57df633ac48a8cfe3ff50fc9bab94cd9e0314e32d266fd59e50",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-bf00326833.pdf_3.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_2652.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_2652",
+      "rank_sha256": "069befdf5c71e3d6c2dc81c9fb85f99d5f2f3380061735648b95d2f8a38b0d5e",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_2652.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_4330.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_4330",
+      "rank_sha256": "07e77d5e89a22d5177bf8f2a0d6f8f47be07895c59508cd6e1e5bb3a6c1bb597",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_4330.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-s00128-009-9772-y.pdf_1.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-s00128-009-9772-y.pdf_1",
+      "rank_sha256": "08012359c936f65730d3d7ce469a7bc315a21e84d70bcc412c14e2e295a3debd",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-s00128-009-9772-y.pdf_1.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_d4fc7cba428625974e93183edfccea73.pdf_89.jpg",
+      "page_stem": "yanbaopptmerge_d4fc7cba428625974e93183edfccea73.pdf_89",
+      "rank_sha256": "082ea683370657eee8f1fcd0a7a6c7d3747328dcf4c673da7b3e6f18dc8022c0",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_d4fc7cba428625974e93183edfccea73.pdf_89.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-ijc.22994.pdf_3.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-ijc.22994.pdf_3",
+      "rank_sha256": "0838d3373923a38cdfd60c42c56be62db46f884d636c606815854bca15911468",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-ijc.22994.pdf_3.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-the-eye-o.O-Player%27s%20Options%20-%20Halflings.pdf_11.jpg",
+      "page_stem": "docstructbench_llm-raw-the-eye-o.O-Player%27s%20Options%20-%20Halflings.pdf_11",
+      "rank_sha256": "08766c4a018b1ad4fe5991b43812337217f7dbb2e6da8f6f922e4037a43752e2",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-the-eye-o.O-Player%27s%20Options%20-%20Halflings.pdf_11.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-s0167-8655%2800%2900107-0.pdf_6.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-s0167-8655%2800%2900107-0.pdf_6",
+      "rank_sha256": "08c106229ac7bf1710592c93a2454dfd55a87f5f7671fc71e2a33f9dffce3428",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-s0167-8655%2800%2900107-0.pdf_6.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_922.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_922",
+      "rank_sha256": "08ec185d62fb7dfa1efca91cf5d32d898b028737dea969f93a22e298453d8447",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_922.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_yanbaoPPT_6148.jpg",
+      "page_stem": "yanbaor2_yanbaoPPT_6148",
+      "rank_sha256": "095cf704940b8dad51b55c363654000f1257615ca77ac24c91955de122ebf5ff",
+      "source_pdf_path": "ori_pdfs/yanbaor2_yanbaoPPT_6148.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_3930.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_3930",
+      "rank_sha256": "09ad3aef6b42ba6a0ea49bb57fd1e786f330963b6f4a46f305ef9a8fc89b8979",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_3930.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_1475.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_1475",
+      "rank_sha256": "09ad9527b13465190961e42b0956a1a26da3eab7f2bd57696db2abb713c385e5",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_1475.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_llm-raw-scihub-o.O-hup.777.pdf_7.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-hup.777.pdf_7",
+      "rank_sha256": "09ae43965a327fda8ab5c2629bcd9356ae06143f7aad2ad521082bf353900590",
+      "source_pdf_path": "ori_pdfs/docstructbench_llm-raw-scihub-o.O-hup.777.pdf_7.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_yanbaoPPT_5435.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_5435",
+      "rank_sha256": "09ba9f4c629bc556263e4f3d2919ebcb959b34407dc9699bd81c686d7eaf6d3b",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_yanbaoPPT_5435.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_yanbaoPPT_3302.jpg",
+      "page_stem": "yanbaor2_yanbaoPPT_3302",
+      "rank_sha256": "0a052a679609a5c93c955fc42b9a0727f7696b479e116966f061a30b2f9326d3",
+      "source_pdf_path": "ori_pdfs/yanbaor2_yanbaoPPT_3302.pdf"
+    },
+    {
+      "image_path": "images/scihub_s12935-018-0683-z.pdf_0.jpg",
+      "page_stem": "scihub_s12935-018-0683-z.pdf_0",
+      "rank_sha256": "0a1b970fdd2a146edcfec6473daa974b77ae866105e991d32269f57cdf145e81",
+      "source_pdf_path": "ori_pdfs/scihub_s12935-018-0683-z.pdf_0.pdf"
+    },
+    {
+      "image_path": "images/notes_f7f010b78016aeebd76e56d9283eb67f_7.jpg",
+      "page_stem": "notes_f7f010b78016aeebd76e56d9283eb67f_7",
+      "rank_sha256": "0a51a7f8133a4be2d4fd537448802c7e78317e2dd37e9ee6eb2d828189c2b87d",
+      "source_pdf_path": "ori_pdfs/notes_f7f010b78016aeebd76e56d9283eb67f_7.pdf"
+    },
+    {
+      "image_path": "images/jiaocai_P0-9.pdf_9.jpg",
+      "page_stem": "jiaocai_P0-9.pdf_9",
+      "rank_sha256": "0aa2ae2d5f2e4506d0db6205f3d67868add7fe05caf6a525970fcc70c913f98f",
+      "source_pdf_path": "ori_pdfs/jiaocai_P0-9.pdf_9.pdf"
+    },
+    {
+      "image_path": "images/notes_f7f010b78016aeebd76e56d9283eb67f_114.jpg",
+      "page_stem": "notes_f7f010b78016aeebd76e56d9283eb67f_114",
+      "rank_sha256": "0aaf3a7e5b25358d23fae22f74c09ad093e8ddb5862505e6a3582b491266a396",
+      "source_pdf_path": "ori_pdfs/notes_f7f010b78016aeebd76e56d9283eb67f_114.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_ee19df4a08e3d07ac1190446f5b3dd3f25438c661b87cf4fbb9040ac5fac443b.pdf_1.jpg",
+      "page_stem": "yanbaopptmerge_ee19df4a08e3d07ac1190446f5b3dd3f25438c661b87cf4fbb9040ac5fac443b.pdf_1",
+      "rank_sha256": "0ab76dc25ae0e8a3aafe9c97d0f0c7105404fe859535e049ad2707cb59e82dd2",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_ee19df4a08e3d07ac1190446f5b3dd3f25438c661b87cf4fbb9040ac5fac443b.pdf_1.pdf"
+    },
+    {
+      "image_path": "images/notes_f7f010b78016aeebd76e56d9283eb67f_94.jpg",
+      "page_stem": "notes_f7f010b78016aeebd76e56d9283eb67f_94",
+      "rank_sha256": "0ab7c86a3103e29b8569a04b17e224c53b049c17c00d2a9e6b29e8bc69a8376e",
+      "source_pdf_path": "ori_pdfs/notes_f7f010b78016aeebd76e56d9283eb67f_94.pdf"
+    },
+    {
+      "image_path": "images/scihub_iccwamtip51612.2020.9317329.pdf_4.jpg",
+      "page_stem": "scihub_iccwamtip51612.2020.9317329.pdf_4",
+      "rank_sha256": "0ae23a9cc989f6f186bb8cd79e9c84045671f790672edfc75d9bdaf764f54aab",
+      "source_pdf_path": "ori_pdfs/scihub_iccwamtip51612.2020.9317329.pdf_4.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_887.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_887",
+      "rank_sha256": "0af0ab56ba5f12b98432523b0735e08e215ee8b4627cdc3410ae9cffcbf77689",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_887.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_b5cf8249bdf8eebf7625f4b0e39ad38d684d7797ac7bf1617452cd0565ca28a2.pdf_29.jpg",
+      "page_stem": "yanbaor2_b5cf8249bdf8eebf7625f4b0e39ad38d684d7797ac7bf1617452cd0565ca28a2.pdf_29",
+      "rank_sha256": "0be6d9ce10774772394c8c9a253e59c1f9c0a7d43ee61e8a11283423b26e039f",
+      "source_pdf_path": "ori_pdfs/yanbaor2_b5cf8249bdf8eebf7625f4b0e39ad38d684d7797ac7bf1617452cd0565ca28a2.pdf_29.pdf"
+    },
+    {
+      "image_path": "images/yanbaopptmerge_903cf6cd7820b5463e95c5aaab9f16134f9853cd7963567497337527e73b9bcc.pdf_7.jpg",
+      "page_stem": "yanbaopptmerge_903cf6cd7820b5463e95c5aaab9f16134f9853cd7963567497337527e73b9bcc.pdf_7",
+      "rank_sha256": "0befc2a2bf9ea43429a9ed704a0486926097a4157f8e4152bef60db2ce95b628",
+      "source_pdf_path": "ori_pdfs/yanbaopptmerge_903cf6cd7820b5463e95c5aaab9f16134f9853cd7963567497337527e73b9bcc.pdf_7.pdf"
+    },
+    {
+      "image_path": "images/jiaocaineedrop_jiaocai_needrop_en_1920.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_1920",
+      "rank_sha256": "0c1e05633a1692269d601d812b7a48cfdb0ec13b533a8656e54eaef06bff5d65",
+      "source_pdf_path": "ori_pdfs/jiaocaineedrop_jiaocai_needrop_en_1920.pdf"
+    },
+    {
+      "image_path": "images/notes_f7f010b78016aeebd76e56d9283eb67f_97.jpg",
+      "page_stem": "notes_f7f010b78016aeebd76e56d9283eb67f_97",
+      "rank_sha256": "0c3b052953b81b882d897d080692415fbf100bb62e922e44ab098645c53cc55a",
+      "source_pdf_path": "ori_pdfs/notes_f7f010b78016aeebd76e56d9283eb67f_97.pdf"
+    },
+    {
+      "image_path": "images/newspaper_87769622e073730af94822416c60c710_1.jpg",
+      "page_stem": "newspaper_87769622e073730af94822416c60c710_1",
+      "rank_sha256": "0c46e1537820af016f070d02f815887414f0dba0d9fc86ddc9a801290106263c",
+      "source_pdf_path": "ori_pdfs/newspaper_87769622e073730af94822416c60c710_1.pdf"
+    },
+    {
+      "image_path": "images/newspaper_fe2c8b45b2a086cd75984640bb3080e1_1.jpg",
+      "page_stem": "newspaper_fe2c8b45b2a086cd75984640bb3080e1_1",
+      "rank_sha256": "0cd0936996f2c41df95daa8539689dfd28f9c59c800f68525367af64b884725c",
+      "source_pdf_path": "ori_pdfs/newspaper_fe2c8b45b2a086cd75984640bb3080e1_1.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-61521384.pdf_750.jpg",
+      "page_stem": "docstructbench_dianzishu_zhongwenzaixian-o.O-61521384.pdf_750",
+      "rank_sha256": "0ceac07eb2451e6fdc308a076d30cc25f50c6cd60839244c5971282eeead070e",
+      "source_pdf_path": "ori_pdfs/docstructbench_dianzishu_zhongwenzaixian-o.O-61521384.pdf_750.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-60832903.pdf_88.jpg",
+      "page_stem": "docstructbench_dianzishu_zhongwenzaixian-o.O-60832903.pdf_88",
+      "rank_sha256": "0d01d4efe47a37da1c73b567995884de6946f99c82fbb277e5e0356009782d7e",
+      "source_pdf_path": "ori_pdfs/docstructbench_dianzishu_zhongwenzaixian-o.O-60832903.pdf_88.pdf"
+    },
+    {
+      "image_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-61571884.pdf_94.jpg",
+      "page_stem": "docstructbench_dianzishu_zhongwenzaixian-o.O-61571884.pdf_94",
+      "rank_sha256": "0d3d53991b060a81c1b606c8ad4d37007ede3ac53c5cb292833ddb299e04fc7c",
+      "source_pdf_path": "ori_pdfs/docstructbench_dianzishu_zhongwenzaixian-o.O-61571884.pdf_94.pdf"
+    },
+    {
+      "image_path": "images/newspaper_e567840b2e327602422573ccdc1c4275_1.jpg",
+      "page_stem": "newspaper_e567840b2e327602422573ccdc1c4275_1",
+      "rank_sha256": "0d712ce2e96006e865e8806a0b838872cfbdb77a0cd7004090022f1065f061b9",
+      "source_pdf_path": "ori_pdfs/newspaper_e567840b2e327602422573ccdc1c4275_1.pdf"
+    },
+    {
+      "image_path": "images/scihub_s11661-013-1726-7.pdf_2.jpg",
+      "page_stem": "scihub_s11661-013-1726-7.pdf_2",
+      "rank_sha256": "0daf65d24315a03795afe43a306d07026ffd80bc2b468478bc0f6326257637e0",
+      "source_pdf_path": "ori_pdfs/scihub_s11661-013-1726-7.pdf_2.pdf"
+    },
+    {
+      "image_path": "images/newspaper_5e266dfd9c498cab274e12a7b4a75755_2.jpg",
+      "page_stem": "newspaper_5e266dfd9c498cab274e12a7b4a75755_2",
+      "rank_sha256": "0dc8d9caf5aa1d6c511b1cce7aef8932cb9bc94fce32b5dcca6d0cd4f82ffe33",
+      "source_pdf_path": "ori_pdfs/newspaper_5e266dfd9c498cab274e12a7b4a75755_2.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_0a47b1d6b03103a249101f13e89f2226a273a75378d8110d46eb42c1cfa65ffd.pdf_10.jpg",
+      "page_stem": "yanbaor2_0a47b1d6b03103a249101f13e89f2226a273a75378d8110d46eb42c1cfa65ffd.pdf_10",
+      "rank_sha256": "0e17530d69f93c41dbc53d8816c7988fb5bba0da534395cfc187fedec47a51dc",
+      "source_pdf_path": "ori_pdfs/yanbaor2_0a47b1d6b03103a249101f13e89f2226a273a75378d8110d46eb42c1cfa65ffd.pdf_10.pdf"
+    },
+    {
+      "image_path": "images/jiaocai_jiaocai_en_91.jpg",
+      "page_stem": "jiaocai_jiaocai_en_91",
+      "rank_sha256": "0e3a0815b016c8a0c5a2f6a56f81f2d0b741d49ad6eb53b8d749ede434e8e907",
+      "source_pdf_path": "ori_pdfs/jiaocai_jiaocai_en_91.pdf"
+    },
+    {
+      "image_path": "images/newspaper_0edcd83c195557b43279fa73edaa59aa_1.jpg",
+      "page_stem": "newspaper_0edcd83c195557b43279fa73edaa59aa_1",
+      "rank_sha256": "0e9e21c95e04bd91696714859d35eabbd460aea232f72d5f21cb438dd7d4ac95",
+      "source_pdf_path": "ori_pdfs/newspaper_0edcd83c195557b43279fa73edaa59aa_1.pdf"
+    },
+    {
+      "image_path": "images/yanbaor2_c1ba77569ecdcc4e0ce5903a503f817fe347683a893426dc4acefd8b8770f047.pdf_9.jpg",
+      "page_stem": "yanbaor2_c1ba77569ecdcc4e0ce5903a503f817fe347683a893426dc4acefd8b8770f047.pdf_9",
+      "rank_sha256": "0efa2a8442432c1f1fcbd23558d0d5989aa837c8dacfd924fd78fe19f3a64397",
+      "source_pdf_path": "ori_pdfs/yanbaor2_c1ba77569ecdcc4e0ce5903a503f817fe347683a893426dc4acefd8b8770f047.pdf_9.pdf"
+    }
+  ],
+  "lane_b": [
+    {
+      "image_path": "exam_paper_en-file-putnam-archive_2011_Solutions_2011s_page_003.png",
+      "page_stem": "exam_paper_en-file-putnam-archive_2011_Solutions_2011s_page_003",
+      "rank_sha256": "00061e248217c39dc7f7078f303bc176b122ce72a18fc8addddb3f450f55bc9e",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "PPT_all655920_page_008.png",
+      "page_stem": "PPT_all655920_page_008",
+      "rank_sha256": "0053bb7e65f885b41f6210ca670d11a34f88bbe5c95978edba5aa445be492cd3",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032.png",
+      "page_stem": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032",
+      "rank_sha256": "00995fb0dbe55a60d185a31e87912570919eacc76056606b39327453073a2f72",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "yanbaor2_cb862501e720c830960aa5387f65d10961604a63f0491bbdc7fb71257cbd2112.pdf_96.jpg",
+      "page_stem": "yanbaor2_cb862501e720c830960aa5387f65d10961604a63f0491bbdc7fb71257cbd2112.pdf_96",
+      "rank_sha256": "00c115f0f14195289574c31a82c0643ebf4bdfbf6d107a667b4d437b70ee51ef",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "exam_paper_en-file-putnam-archive_2006_Solutions_2006s_page_006.png",
+      "page_stem": "exam_paper_en-file-putnam-archive_2006_Solutions_2006s_page_006",
+      "rank_sha256": "01593602f617fac9ccbe7431c98582ac713d2d31293a72d0d87c98451d989af1",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "docstructbench_llm-raw-scihub-o.O-chem.200701412.pdf_10.jpg",
+      "page_stem": "docstructbench_llm-raw-scihub-o.O-chem.200701412.pdf_10",
+      "rank_sha256": "0184d274770d6df655b5d0ce64859ab5441bd2fb92cb66ef5524e44a72822fc5",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_2950.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_2950",
+      "rank_sha256": "01a9c99ceff8f40ec843f422adab4fafcb21c5a20269312ee7d14bc880d189af",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "jiaocaineedrop_jiaocai_needrop_en_3458.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_3458",
+      "rank_sha256": "01aae9dde044975b6c2f895e163248c0fc5402cc11f1f19165aa4303a2e4eda2",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "eastmoney_d0313ed730f58180b1f005a3607c2a77dc3672410e8f7ee1de3b814668da9bcb.pdf_5.jpg",
+      "page_stem": "eastmoney_d0313ed730f58180b1f005a3607c2a77dc3672410e8f7ee1de3b814668da9bcb.pdf_5",
+      "rank_sha256": "01dc0335baa9eb148169a06247a4acc69c3eb4631fa62ccf8e836c6393b09f19",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "jiaocaineedrop_chem-436205.pdf_793.jpg",
+      "page_stem": "jiaocaineedrop_chem-436205.pdf_793",
+      "rank_sha256": "01fc3e74869d60f43cd5a0aba92a22f109f5883fa8862c57ba9c78a8f2ba3294",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "jiaocaineedrop_jiaocai_needrop_en_2839.jpg",
+      "page_stem": "jiaocaineedrop_jiaocai_needrop_en_2839",
+      "rank_sha256": "02156e2d850a254497d16d1ebaff548bf98f392842922003b8768bcc8edcaf7c",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "yanbaopptmerge_c894b375daca22d041c8a35946295d0a73d6589ad7c3d1d39d8664a2666372bf.pdf_10.jpg",
+      "page_stem": "yanbaopptmerge_c894b375daca22d041c8a35946295d0a73d6589ad7c3d1d39d8664a2666372bf.pdf_10",
+      "rank_sha256": "022a18ab9e8a1828ac5bae835eef592f58cd6ba6b868ab4b77ba1bfdc9e1b1dd",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_120.jpg",
+      "page_stem": "yanbaopptmerge_yanbaoPPT_120",
+      "rank_sha256": "0248c8a642f7757d7f071ea6b7a36e89d2cc9a0908fa4bd1726dc7bb089ebc40",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "book_en_国外数学教材-An Excursion through Elementary Mathematics（初等数学漫游）-An excursion through elementary mathematics, Vol.3 (Caminha Muniz Neto A)_0119.png",
+      "page_stem": "book_en_国外数学教材-An Excursion through Elementary Mathematics（初等数学漫游）-An excursion through elementary mathematics, Vol.3 (Caminha Muniz Neto A)_0119",
+      "rank_sha256": "027af72c702f87ac144f9ba7b7b90e5da18eb75cfd03281932c9764c233fc3cb",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "yanbaor2_4862cd850679e945a98c54c8d4c37be0154b5790d2c32da35d0f5ca0be413693.pdf_9.jpg",
+      "page_stem": "yanbaor2_4862cd850679e945a98c54c8d4c37be0154b5790d2c32da35d0f5ca0be413693.pdf_9",
+      "rank_sha256": "02fe94781995367a0515b1b58bfe45cab50f7a86f6bbea6fff58a304cc713ed1",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "scihub_j.cbpb.2019.110324.pdf_6.jpg",
+      "page_stem": "scihub_j.cbpb.2019.110324.pdf_6",
+      "rank_sha256": "033ecc3324b7c8e70b269c9816224253fb764b6ab203111003215683427334fa",
+      "subset": "v1.5"
+    },
+    {
+      "image_path": "page-bb98165a-8033-4ea4-a527-58ac974f2c32.png",
+      "page_stem": "page-bb98165a-8033-4ea4-a527-58ac974f2c32",
+      "rank_sha256": "021a32f4828e90a3ab8b548c6ad0399c674f622ef06c18197f5af46dd13d74e9",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-affbb0cc-d616-481d-b493-80ed1ccb5a10.png",
+      "page_stem": "page-affbb0cc-d616-481d-b493-80ed1ccb5a10",
+      "rank_sha256": "028e607bfe2a946951b1124d4eb9d6063c6bf23357ec45c9316be3c4fb477710",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-062fc21c-6b9c-40be-8d0e-7a617509a9bc.png",
+      "page_stem": "page-062fc21c-6b9c-40be-8d0e-7a617509a9bc",
+      "rank_sha256": "0296477187226834b216a562249209b182ea692602ef641e1063af78a9c6d364",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-74c7629d-b064-4b8f-8667-bf943f5ba367.png",
+      "page_stem": "page-74c7629d-b064-4b8f-8667-bf943f5ba367",
+      "rank_sha256": "04b7a742e288dfcfa855e817977145acb6ff66af83dcdf7c60e4cb28a9846b14",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-67013be9-58e5-4842-809d-7a3c1fc91fc7.png",
+      "page_stem": "page-67013be9-58e5-4842-809d-7a3c1fc91fc7",
+      "rank_sha256": "0560bc8886a554a892e940bb0fdfb4ee27bd8795d7ce5565b4174f9810d70052",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-b2349b51-01db-4dc1-9e4a-58e52f5e4362.png",
+      "page_stem": "page-b2349b51-01db-4dc1-9e4a-58e52f5e4362",
+      "rank_sha256": "07eba866f0c63877dba313b03cdbcafeeaf012b317223fb8e1b4163718eac44f",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-aae359c6-5e6e-4e18-9187-2e9d55b6e9bd.png",
+      "page_stem": "page-aae359c6-5e6e-4e18-9187-2e9d55b6e9bd",
+      "rank_sha256": "0dae21163108a18d89f46b551fec944b709fc173cba2e0215ddface565346c20",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-404e0471-bd71-426a-8e5a-81b8327f88e5.png",
+      "page_stem": "page-404e0471-bd71-426a-8e5a-81b8327f88e5",
+      "rank_sha256": "1493afb5f4e98fe229543e51f852c2a56f816253fee211b3dafde7a484131588",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-0a262e27-b24d-4429-9b21-90563d4fada7.png",
+      "page_stem": "page-0a262e27-b24d-4429-9b21-90563d4fada7",
+      "rank_sha256": "16d5c9fbd8337802830846c6515e5a2719f2746b6e68af4e24b3da77db70f510",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-1c08a4a2-8163-44d3-93f0-9449457dbba3.png",
+      "page_stem": "page-1c08a4a2-8163-44d3-93f0-9449457dbba3",
+      "rank_sha256": "17988bdfdd34d6c2b94e06982dc970da5aa8fa71068480260c7446a8d5752a25",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-87c18f88-ea2f-4044-b092-02e9b2a7436d.png",
+      "page_stem": "page-87c18f88-ea2f-4044-b092-02e9b2a7436d",
+      "rank_sha256": "19d4341e440543926e7507fb60b47d733d8e0648701a19fd3de3f0235d9d60bf",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-9b70f2f0-2a0e-4337-8750-84e79503e939.png",
+      "page_stem": "page-9b70f2f0-2a0e-4337-8750-84e79503e939",
+      "rank_sha256": "1c6c27291a520d71f83d1c5bd2d1b4cf72c57a6cf9a70a6afc708c4f4496ed45",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-4b8f8a9d-e061-4207-a42e-ebf9b7090099.png",
+      "page_stem": "page-4b8f8a9d-e061-4207-a42e-ebf9b7090099",
+      "rank_sha256": "202188a9a00d0e398ffd9e3bd2fd9d65818b95cfc2ff613559f5a8e7faf24454",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-cdb92c2f-f43f-45ef-ace7-91d4664a7834.png",
+      "page_stem": "page-cdb92c2f-f43f-45ef-ace7-91d4664a7834",
+      "rank_sha256": "2167695cde16a5953d7aa9dbf89f2148fb5dd3e43e22eb5065e023966094b7fd",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-7050793e-109f-4066-be91-107f94b617b9.png",
+      "page_stem": "page-7050793e-109f-4066-be91-107f94b617b9",
+      "rank_sha256": "247648aabb7d4571600cd385632dd18e31cf703208e9f5b0007bb5ce470f9657",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-c1c135ad-427e-482b-b01c-05c0ccbc6e76.png",
+      "page_stem": "page-c1c135ad-427e-482b-b01c-05c0ccbc6e76",
+      "rank_sha256": "2527787f8ef1831db2072a0c46f4f2935520bc3f186081961f2987b6b5e8c249",
+      "subset": "equation_hard"
+    },
+    {
+      "image_path": "page-8f6792bd-b5e4-435e-b1b0-1b2daa3f7234.png",
+      "page_stem": "page-8f6792bd-b5e4-435e-b1b0-1b2daa3f7234",
+      "rank_sha256": "00461a69c45da62836b8a99fa4bbfe97203fbeb1b4a7f0a1eae876ba302f0fab",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-bd83d09b-302b-4cc6-999d-19fe668b6577.png",
+      "page_stem": "page-bd83d09b-302b-4cc6-999d-19fe668b6577",
+      "rank_sha256": "02ae022b3307f6477b14d71a58dad6eef1d74dc91e063c905c88f495ff730413",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-d271a2ab-4523-44c4-94b5-303bf54b69e9.png",
+      "page_stem": "page-d271a2ab-4523-44c4-94b5-303bf54b69e9",
+      "rank_sha256": "068f541b698a20e6d347fd1c3b17751b62ea3a64423704bf1c4f616f4d778405",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-2dc37c8b-1547-43dd-8643-fdbecfe5eea8.png",
+      "page_stem": "page-2dc37c8b-1547-43dd-8643-fdbecfe5eea8",
+      "rank_sha256": "099858b8339edfd4dac0f874ed6d0985148382a7a18acd3d2554b9b607c450e2",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-b342f5e6-cc5a-4920-b1b5-83f96bc476d8.png",
+      "page_stem": "page-b342f5e6-cc5a-4920-b1b5-83f96bc476d8",
+      "rank_sha256": "0b4e989c78bb5057919a732e230cc4e6eeaea88585fb832f4e0c17ef8e92a34d",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-b13fef06-6ae9-4b2d-a948-0340e03f97ce.png",
+      "page_stem": "page-b13fef06-6ae9-4b2d-a948-0340e03f97ce",
+      "rank_sha256": "0d9e4c8b4172fdde2a35eaf634c0e72131436e451549fff348bf6c2864c504d1",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-08172901-09b1-4698-827e-f7379ca6b531.png",
+      "page_stem": "page-08172901-09b1-4698-827e-f7379ca6b531",
+      "rank_sha256": "10fd9e70b4275c0b34af1a09354104321b5e4c6cd2785a248f5b0e5e063f25b4",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-961a543b-d09d-4fd8-944a-1a38d67bb3bc.png",
+      "page_stem": "page-961a543b-d09d-4fd8-944a-1a38d67bb3bc",
+      "rank_sha256": "121a0aa76a419254544b68dfead74d38c15f8c5449d5fe508eb5339e8c82f2c8",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-422d6037-0834-47e5-932a-408286b37ec5.png",
+      "page_stem": "page-422d6037-0834-47e5-932a-408286b37ec5",
+      "rank_sha256": "1283995ece3d7493d3f4b5dba31940de9969a4c786609d2393b45b7f33e3edfd",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-aee8f1d9-7240-4517-b615-389594556d57.png",
+      "page_stem": "page-aee8f1d9-7240-4517-b615-389594556d57",
+      "rank_sha256": "138670209e5466dda327b0bed46e610d4aba3d948875792df347929281a4861c",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-39abce32-298b-42ab-8c46-b4fbfbcaa674.png",
+      "page_stem": "page-39abce32-298b-42ab-8c46-b4fbfbcaa674",
+      "rank_sha256": "1b4a246417c6f31fd3619323c6fbcc98aa97e357e22d2b819d032802214a37c3",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-19300c18-7995-4099-a94c-b4c61d7622cb.png",
+      "page_stem": "page-19300c18-7995-4099-a94c-b4c61d7622cb",
+      "rank_sha256": "1d5e57feb27d1fb4a4c63499c8487eda507df0460749d7137d0b13ba0cae8dc5",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-5c7ed29b-b72b-4838-9536-a461adf3006d.png",
+      "page_stem": "page-5c7ed29b-b72b-4838-9536-a461adf3006d",
+      "rank_sha256": "2188fd4cedc18bf9d8c27148025b4c1910d4473766153f2ae0f8eb6159d3bd33",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-141c2c16-4b50-4c3b-a64b-3e2fd8bb4002.png",
+      "page_stem": "page-141c2c16-4b50-4c3b-a64b-3e2fd8bb4002",
+      "rank_sha256": "21b039eb0ef862a016cc90b824dff72fcfc5bf88a9a3266669029a43923a38a6",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-c018d221-68b3-4a14-84cd-c9abde2db3a4.png",
+      "page_stem": "page-c018d221-68b3-4a14-84cd-c9abde2db3a4",
+      "rank_sha256": "21dca8b9c4b40ea13b39c5e30d04388eab977da5ea41fd9b5b5434b81c078742",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-a0018d4b-a1a5-4f8b-872e-b5f5c05c6b36.png",
+      "page_stem": "page-a0018d4b-a1a5-4f8b-872e-b5f5c05c6b36",
+      "rank_sha256": "22e2230c6785a0144013452239777c082a510f1f53b294c7c35ddc698ff8c9d2",
+      "subset": "layout_hard"
+    },
+    {
+      "image_path": "page-3f8eed58-8b86-4f3a-958d-13671977d3c6.png",
+      "page_stem": "page-3f8eed58-8b86-4f3a-958d-13671977d3c6",
+      "rank_sha256": "01e2fce47a1f5ca840da880cd288175e44637bcc0640b069bb3a3423983fb495",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-fd04ea51-677c-4de2-8e8e-adfd791e2957.png",
+      "page_stem": "page-fd04ea51-677c-4de2-8e8e-adfd791e2957",
+      "rank_sha256": "035946f5aa09dd095a6eea4c725d9255b70374428fd80cdc912a4a022e3787b7",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-e6c5454d-90ad-495c-85db-a416b7cd6452.png",
+      "page_stem": "page-e6c5454d-90ad-495c-85db-a416b7cd6452",
+      "rank_sha256": "0a964d3c335d0f3a651105e572162e3bf54fd5a6b14441e87bf01815696fe362",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-458ab820-615f-42fe-af33-3a8fb15ad691.png",
+      "page_stem": "page-458ab820-615f-42fe-af33-3a8fb15ad691",
+      "rank_sha256": "0be673a43a646ded751c82db6e7d3c0ccfe64b69001b792c83a2b5d10848b791",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-9edf7687-029e-4e72-a9a6-c23faa1e1861.png",
+      "page_stem": "page-9edf7687-029e-4e72-a9a6-c23faa1e1861",
+      "rank_sha256": "0c661607f89b81d5bd3ae5d67cf4ee81ae0fb6e04ce68c2e2c8a153952c1288f",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-b4d4cf5b-0a0e-454b-8220-8c7f58402791.png",
+      "page_stem": "page-b4d4cf5b-0a0e-454b-8220-8c7f58402791",
+      "rank_sha256": "0e6ba80652a1937b3fced3a55e1e63dc9305a12b33716122abd571accd1ab9bc",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-f46e72b1-865d-43e6-ab94-afae16c5f178.png",
+      "page_stem": "page-f46e72b1-865d-43e6-ab94-afae16c5f178",
+      "rank_sha256": "1131092ad49bdf610b7407b0d09783793cb1f21668df4f1079bb24ecf1971654",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-c7792da7-4167-4f5c-a7ca-ec0f8833f83b.png",
+      "page_stem": "page-c7792da7-4167-4f5c-a7ca-ec0f8833f83b",
+      "rank_sha256": "11f17309550a19f5b1a1f9642c939fdf6577951c8e6cf8bbfee6614c66165f24",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-50ffe5d2-cd27-449a-a813-d4a8c44b12ea.png",
+      "page_stem": "page-50ffe5d2-cd27-449a-a813-d4a8c44b12ea",
+      "rank_sha256": "161e489635b44cef0d868e49fc572306514913c6e5e3ec6cd81ed795d1d79b22",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-91b20bf2-3ad5-41f4-b739-4cc4b18ab1eb.png",
+      "page_stem": "page-91b20bf2-3ad5-41f4-b739-4cc4b18ab1eb",
+      "rank_sha256": "17e2ab446c1c6551f237d33e962cde388eb930cb0e25d8891c4efcdfd27eff43",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-232d386f-6c9d-4b50-9463-89dedce995e5.png",
+      "page_stem": "page-232d386f-6c9d-4b50-9463-89dedce995e5",
+      "rank_sha256": "17f5bbd2517cbd66d5e4d490f1de8bbc782dc7364a38e6d94b9f31348ea4c1ed",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-2b4c4f44-c0de-41b6-9561-96195c233f47.png",
+      "page_stem": "page-2b4c4f44-c0de-41b6-9561-96195c233f47",
+      "rank_sha256": "18c8294f0c2caeffb04ba004d54724c0389e80365ac3b8d2fede2121f8a48307",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-28c45f5f-7e0d-464a-89ec-8de3a4abb927.png",
+      "page_stem": "page-28c45f5f-7e0d-464a-89ec-8de3a4abb927",
+      "rank_sha256": "1ad2c358a01cc14f0a973595a1c1c31f7111e88ee5514b642b830de272fbc9ca",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-69c15957-4d6d-485c-a244-04a1a8d29d37.png",
+      "page_stem": "page-69c15957-4d6d-485c-a244-04a1a8d29d37",
+      "rank_sha256": "1b84848c5fbbc4763d5159f0bc162446e8f3ab9c973742ea090b58f5a1ae75f2",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-632fad6b-6da9-4567-bd2d-a4763a03a314.png",
+      "page_stem": "page-632fad6b-6da9-4567-bd2d-a4763a03a314",
+      "rank_sha256": "1dfe87866b9905c87c336d83d1c107336069fad9697d2fa5e5d98a8bebfec757",
+      "subset": "table_hard"
+    },
+    {
+      "image_path": "page-0c1be55c-0b1b-4d62-b17d-ed752f9af9f2.png",
+      "page_stem": "page-0c1be55c-0b1b-4d62-b17d-ed752f9af9f2",
+      "rank_sha256": "204c6f2c65f63a4e8dafab481e6e6603dc04ff6e9a9dd6fcbbbe742d540d3d24",
+      "subset": "table_hard"
+    }
+  ],
+  "protocol_sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "selection_ground_truth_boundary": {
+    "annotation_content_emitted": false,
+    "lane_a": "tree metadata only; no ground truth",
+    "lane_b": "only page_info.image_path and page_info.page_attribute.subset consumed"
+  }
+}

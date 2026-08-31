@@ -1,0 +1,25 @@
+{
+  "dataset_current_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+  "dataset_source_native_revision": "f5f559bddf50e36f7f9899d842d0006f13ce8afc",
+  "development_exclusion_sha256": "sha256:b0da58b9b1542b28eaf51ea542ec18ba5bc4f777104ca83f9aea226a8e6e11b3",
+  "protocol_sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "source_hashes": {
+    "benchmark/runners/native.py": "sha256:a1c94655492af9a81092d9ad7e18e102ba36c0ec3e68a0241786b90c1969b193",
+    "benchmark/runpod_eval/input_contract.py": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310",
+    "benchmark/runpod_eval/isolated_case_process.py": "sha256:05559dba43b6c250dcf8f077600f48e72dfd0238af3c137836e32d7667a34372",
+    "benchmark/runpod_eval/mineru_stage2.py": "sha256:e7d84e289d9ea1b123d4451243a185950af3bf236520eb92c54ea2ba80387c77",
+    "benchmark/runpod_eval/paddleocr_vl_stage2.py": "sha256:414b5b876f71c527e0c2ac3baadde37dca53fb9d49d5eb270501c5ba71c8f120",
+    "benchmark/v6/candidate-registry.yaml": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+    "packages/cir-python/src/akc_cir/semantic_risk.py": "sha256:cad8309c1a89ecdcb9390097a12e2886a77bf7a6a8dfd0894a51eb097b8a7704",
+    "packages/native-parsers/src/akc_native_parsers/pdf_parser.py": "sha256:91744bbf8c0d4bc182d5eb36399fa0bda863b946818dc990936a34e885bb51d3",
+    "packages/quality/src/akc_quality/agreement.py": "sha256:93d30d463cbc9f196aecf5924e12d6ea302ff81995b9c6c17d8afced3c89906a",
+    "packages/quality/src/akc_quality/semantic_signals.py": "sha256:0ab02a39c0b51e84d4157f0d7e25fa018a74117916048dce8459b270a25322ef",
+    "research/experiments/SEM-RISK-CONF-01/acquire_selected_inputs.py": "sha256:6c61899d5a388cd051d3c6e3811cdc4edcf0d0e3e8d6a4f91cee725d4d9e33d2",
+    "research/experiments/SEM-RISK-CONF-01/build_inference_manifests.py": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+    "research/experiments/SEM-RISK-CONF-01/build_selection_manifest.py": "sha256:8cdab0af1efb1a57a980962379e1fa3d78a8861d12effe6d1dcf9440fabb5a17",
+    "research/experiments/SEM-RISK-CONF-01/evaluate_confirmatory.py": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+    "research/experiments/SEM-RISK-CONF-01/freeze_protocol.py": "sha256:ec5eb488eea861833015325f29fc2a9e9581298e240bbd718419a911a2ae78a7",
+    "research/experiments/SEM-RISK-CONF-01/run_lane_a_native.py": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+    "tests/unit/test_sem_risk_confirmatory_protocol.py": "sha256:ca16d123c73f4036c52efbeb0eddf3c85052d8f61a758ab37918268da21c4d79"
+  }
+}

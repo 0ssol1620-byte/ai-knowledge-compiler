@@ -1,0 +1,894 @@
+{
+  "all_checks_passed": true,
+  "checks": [
+    {
+      "expected": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "name": "protocol_sha256 matches protocol-freeze.json",
+      "observed": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "pass": true
+    },
+    {
+      "expected": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "name": "protocol_sha256 matches transport-amendment-freeze.json.parent_protocol_sha256",
+      "observed": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "pass": true
+    },
+    {
+      "expected": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "name": "protocol_sha256 matches acquisition-receipt.json.protocol_sha256",
+      "observed": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "pass": true
+    },
+    {
+      "expected": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "name": "selection_sha256 matches selection-seal.json",
+      "observed": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "pass": true
+    },
+    {
+      "expected": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "name": "selection_sha256 matches transport-amendment-freeze.json.parent_selection_sha256",
+      "observed": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "pass": true
+    },
+    {
+      "expected": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "name": "selection_sha256 matches acquisition-receipt.json.selection_sha256",
+      "observed": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "pass": true
+    },
+    {
+      "expected": "sha256:79434b2756543bedb2d7bf091d877e31992de90de30086731c417bc83a876ca0",
+      "name": "transport-amendment.json sha256 matches transport-amendment-freeze.json.transport_amendment_sha256",
+      "observed": "sha256:79434b2756543bedb2d7bf091d877e31992de90de30086731c417bc83a876ca0",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: build_inference_manifests.py (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: build_inference_manifests.py (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "name": "byte-identical artifact V01==V02: build_inference_manifests.py",
+      "observed": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "pass": true
+    },
+    {
+      "expected": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "name": "byte-identical artifact V01 matches recorded hash: build_inference_manifests.py",
+      "observed": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "pass": true
+    },
+    {
+      "expected": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "name": "byte-identical artifact V02 matches recorded hash: build_inference_manifests.py",
+      "observed": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: evaluate_confirmatory.py (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: evaluate_confirmatory.py (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "name": "byte-identical artifact V01==V02: evaluate_confirmatory.py",
+      "observed": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "pass": true
+    },
+    {
+      "expected": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "name": "byte-identical artifact V01 matches recorded hash: evaluate_confirmatory.py",
+      "observed": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "pass": true
+    },
+    {
+      "expected": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "name": "byte-identical artifact V02 matches recorded hash: evaluate_confirmatory.py",
+      "observed": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: protocol.json (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: protocol.json (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "name": "byte-identical artifact V01==V02: protocol.json",
+      "observed": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "pass": true
+    },
+    {
+      "expected": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "name": "byte-identical artifact V01 matches recorded hash: protocol.json",
+      "observed": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "pass": true
+    },
+    {
+      "expected": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "name": "byte-identical artifact V02 matches recorded hash: protocol.json",
+      "observed": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: receipts/protocol-freeze.json (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: receipts/protocol-freeze.json (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+      "name": "byte-identical artifact V01==V02: receipts/protocol-freeze.json",
+      "observed": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+      "pass": true
+    },
+    {
+      "expected": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+      "name": "byte-identical artifact V01 matches recorded hash: receipts/protocol-freeze.json",
+      "observed": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+      "pass": true
+    },
+    {
+      "expected": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+      "name": "byte-identical artifact V02 matches recorded hash: receipts/protocol-freeze.json",
+      "observed": "sha256:ed67251c1232ff5d05f8e8be9e46b51043b9ff5c128aa14cdaf486093cd7cfe2",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: receipts/selection-seal.json (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: receipts/selection-seal.json (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+      "name": "byte-identical artifact V01==V02: receipts/selection-seal.json",
+      "observed": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+      "pass": true
+    },
+    {
+      "expected": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+      "name": "byte-identical artifact V01 matches recorded hash: receipts/selection-seal.json",
+      "observed": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+      "pass": true
+    },
+    {
+      "expected": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+      "name": "byte-identical artifact V02 matches recorded hash: receipts/selection-seal.json",
+      "observed": "sha256:294eb12c339633eb4b7a2f07aa83491e047d825c4d8f5feb20408d0ffb3d2621",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: run_lane_a_native.py (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: run_lane_a_native.py (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "name": "byte-identical artifact V01==V02: run_lane_a_native.py",
+      "observed": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "pass": true
+    },
+    {
+      "expected": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "name": "byte-identical artifact V01 matches recorded hash: run_lane_a_native.py",
+      "observed": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "pass": true
+    },
+    {
+      "expected": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "name": "byte-identical artifact V02 matches recorded hash: run_lane_a_native.py",
+      "observed": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: selection-manifest.json (V01)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "byte-identical artifact exists: selection-manifest.json (V02)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "name": "byte-identical artifact V01==V02: selection-manifest.json",
+      "observed": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "pass": true
+    },
+    {
+      "expected": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "name": "byte-identical artifact V01 matches recorded hash: selection-manifest.json",
+      "observed": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "pass": true
+    },
+    {
+      "expected": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "name": "byte-identical artifact V02 matches recorded hash: selection-manifest.json",
+      "observed": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: benchmark/runners/native.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:a1c94655492af9a81092d9ad7e18e102ba36c0ec3e68a0241786b90c1969b193",
+      "name": "frozen source hash matches: benchmark/runners/native.py",
+      "observed": "sha256:a1c94655492af9a81092d9ad7e18e102ba36c0ec3e68a0241786b90c1969b193",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: benchmark/runpod_eval/input_contract.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310",
+      "name": "frozen source hash matches: benchmark/runpod_eval/input_contract.py",
+      "observed": "sha256:497bada5cba15af8d45a9aca243b58445b975fd84f11ac8d9863e897c51ba310",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: benchmark/runpod_eval/isolated_case_process.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:05559dba43b6c250dcf8f077600f48e72dfd0238af3c137836e32d7667a34372",
+      "name": "frozen source hash matches: benchmark/runpod_eval/isolated_case_process.py",
+      "observed": "sha256:05559dba43b6c250dcf8f077600f48e72dfd0238af3c137836e32d7667a34372",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: benchmark/runpod_eval/mineru_stage2.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:e7d84e289d9ea1b123d4451243a185950af3bf236520eb92c54ea2ba80387c77",
+      "name": "frozen source hash matches: benchmark/runpod_eval/mineru_stage2.py",
+      "observed": "sha256:e7d84e289d9ea1b123d4451243a185950af3bf236520eb92c54ea2ba80387c77",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: benchmark/runpod_eval/paddleocr_vl_stage2.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:414b5b876f71c527e0c2ac3baadde37dca53fb9d49d5eb270501c5ba71c8f120",
+      "name": "frozen source hash matches: benchmark/runpod_eval/paddleocr_vl_stage2.py",
+      "observed": "sha256:414b5b876f71c527e0c2ac3baadde37dca53fb9d49d5eb270501c5ba71c8f120",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: benchmark/v6/candidate-registry.yaml",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+      "name": "frozen source hash matches: benchmark/v6/candidate-registry.yaml",
+      "observed": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: packages/cir-python/src/akc_cir/semantic_risk.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:cad8309c1a89ecdcb9390097a12e2886a77bf7a6a8dfd0894a51eb097b8a7704",
+      "name": "frozen source hash matches: packages/cir-python/src/akc_cir/semantic_risk.py",
+      "observed": "sha256:cad8309c1a89ecdcb9390097a12e2886a77bf7a6a8dfd0894a51eb097b8a7704",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: packages/native-parsers/src/akc_native_parsers/pdf_parser.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:91744bbf8c0d4bc182d5eb36399fa0bda863b946818dc990936a34e885bb51d3",
+      "name": "frozen source hash matches: packages/native-parsers/src/akc_native_parsers/pdf_parser.py",
+      "observed": "sha256:91744bbf8c0d4bc182d5eb36399fa0bda863b946818dc990936a34e885bb51d3",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: packages/quality/src/akc_quality/agreement.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:93d30d463cbc9f196aecf5924e12d6ea302ff81995b9c6c17d8afced3c89906a",
+      "name": "frozen source hash matches: packages/quality/src/akc_quality/agreement.py",
+      "observed": "sha256:93d30d463cbc9f196aecf5924e12d6ea302ff81995b9c6c17d8afced3c89906a",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: packages/quality/src/akc_quality/semantic_signals.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:0ab02a39c0b51e84d4157f0d7e25fa018a74117916048dce8459b270a25322ef",
+      "name": "frozen source hash matches: packages/quality/src/akc_quality/semantic_signals.py",
+      "observed": "sha256:0ab02a39c0b51e84d4157f0d7e25fa018a74117916048dce8459b270a25322ef",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: research/experiments/SEM-RISK-CONF-01/acquire_selected_inputs.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:6c61899d5a388cd051d3c6e3811cdc4edcf0d0e3e8d6a4f91cee725d4d9e33d2",
+      "name": "frozen source hash matches: research/experiments/SEM-RISK-CONF-01/acquire_selected_inputs.py",
+      "observed": "sha256:6c61899d5a388cd051d3c6e3811cdc4edcf0d0e3e8d6a4f91cee725d4d9e33d2",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: research/experiments/SEM-RISK-CONF-01/build_inference_manifests.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "name": "frozen source hash matches: research/experiments/SEM-RISK-CONF-01/build_inference_manifests.py",
+      "observed": "sha256:e39f56ae68056bd1ee535fb7cd7497e03ab619a412a76fd7ec37e6566881bc36",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: research/experiments/SEM-RISK-CONF-01/build_selection_manifest.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:8cdab0af1efb1a57a980962379e1fa3d78a8861d12effe6d1dcf9440fabb5a17",
+      "name": "frozen source hash matches: research/experiments/SEM-RISK-CONF-01/build_selection_manifest.py",
+      "observed": "sha256:8cdab0af1efb1a57a980962379e1fa3d78a8861d12effe6d1dcf9440fabb5a17",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: research/experiments/SEM-RISK-CONF-01/evaluate_confirmatory.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "name": "frozen source hash matches: research/experiments/SEM-RISK-CONF-01/evaluate_confirmatory.py",
+      "observed": "sha256:5fc33e7e14bdba62d53872317cdf1d7cd03b6a5322faedaaa9d2c2e0cc7963bb",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: research/experiments/SEM-RISK-CONF-01/freeze_protocol.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:ec5eb488eea861833015325f29fc2a9e9581298e240bbd718419a911a2ae78a7",
+      "name": "frozen source hash matches: research/experiments/SEM-RISK-CONF-01/freeze_protocol.py",
+      "observed": "sha256:ec5eb488eea861833015325f29fc2a9e9581298e240bbd718419a911a2ae78a7",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: research/experiments/SEM-RISK-CONF-01/run_lane_a_native.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "name": "frozen source hash matches: research/experiments/SEM-RISK-CONF-01/run_lane_a_native.py",
+      "observed": "sha256:f9359adcebf200c855620b73c508f9c7dd9ec739f4a407681a76af021a91aabe",
+      "pass": true
+    },
+    {
+      "expected": true,
+      "name": "frozen source exists: tests/unit/test_sem_risk_confirmatory_protocol.py",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "sha256:ca16d123c73f4036c52efbeb0eddf3c85052d8f61a758ab37918268da21c4d79",
+      "name": "frozen source hash matches: tests/unit/test_sem_risk_confirmatory_protocol.py",
+      "observed": "sha256:ca16d123c73f4036c52efbeb0eddf3c85052d8f61a758ab37918268da21c4d79",
+      "pass": true
+    },
+    {
+      "expected": "sha256:dd87b9aea7fe9c3ee642aea23ff94507ed1409e84b697c8fe7f64095673ad3e6",
+      "name": "science_identity_sha256 recomputation matches transport-amendment-freeze.json",
+      "observed": "sha256:dd87b9aea7fe9c3ee642aea23ff94507ed1409e84b697c8fe7f64095673ad3e6",
+      "pass": true
+    },
+    {
+      "expected": {
+        "development_exclusions": 18,
+        "lane_a": 64,
+        "lane_b": 64,
+        "total": 128
+      },
+      "name": "selection-manifest.json counts",
+      "observed": {
+        "development_exclusions": 18,
+        "lane_a": 64,
+        "lane_b": 64,
+        "total": 128
+      },
+      "pass": true
+    },
+    {
+      "expected": 192,
+      "name": "acquisition-receipt.json file_count field",
+      "observed": 192,
+      "pass": true
+    },
+    {
+      "expected": 192,
+      "name": "acquisition-receipt.json files array length",
+      "observed": 192,
+      "pass": true
+    },
+    {
+      "expected": [],
+      "name": "all 192 inventory files exist on disk",
+      "observed": [],
+      "pass": true
+    },
+    {
+      "expected": [],
+      "name": "all 192 inventory files sha256 match recorded value",
+      "observed": [],
+      "pass": true
+    },
+    {
+      "expected": [],
+      "name": "all 192 inventory files byte size matches recorded value",
+      "observed": [],
+      "pass": true
+    },
+    {
+      "expected": 121465686,
+      "name": "sum of recorded byte sizes equals acquisition-receipt.json.total_bytes",
+      "observed": 121465686,
+      "pass": true
+    },
+    {
+      "expected": 121465686,
+      "name": "recorded total_bytes equals expected constant",
+      "observed": 121465686,
+      "pass": true
+    },
+    {
+      "expected": 121465686,
+      "name": "sum of on-disk observed byte sizes equals recorded total_bytes",
+      "observed": 121465686,
+      "pass": true
+    },
+    {
+      "expected": {
+        "a:image": 64,
+        "a:source_pdf": 64,
+        "b:image": 64
+      },
+      "name": "distribution by (lane, kind)",
+      "observed": {
+        "a:image": 64,
+        "a:source_pdf": 64,
+        "b:image": 64
+      },
+      "pass": true
+    },
+    {
+      "expected": [
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-60832903.pdf_88",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-61520553.pdf_328",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-61521384.pdf_750",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-61571884.pdf_94",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-63685611.pdf_222",
+        "docstructbench_llm-raw-scihub-o.O-bf00326833.pdf_3",
+        "docstructbench_llm-raw-scihub-o.O-dneu.20833.pdf_13",
+        "docstructbench_llm-raw-scihub-o.O-hup.777.pdf_7",
+        "docstructbench_llm-raw-scihub-o.O-ijc.22994.pdf_3",
+        "docstructbench_llm-raw-scihub-o.O-s00128-007-9171-1.pdf_3",
+        "docstructbench_llm-raw-scihub-o.O-s00128-009-9772-y.pdf_1",
+        "docstructbench_llm-raw-scihub-o.O-s0167-8655%2800%2900107-0.pdf_6",
+        "docstructbench_llm-raw-the-eye-o.O-Player%27s%20Options%20-%20Halflings.pdf_11",
+        "jiaocai_P0-9.pdf_9",
+        "jiaocai_jiaocai_en_91",
+        "jiaocaineedrop_jiaocai_needrop_en_1920",
+        "jiaocaineedrop_jiaocai_needrop_en_2124",
+        "jiaocaineedrop_jiaocai_needrop_en_250",
+        "jiaocaineedrop_jiaocai_needrop_en_2509",
+        "jiaocaineedrop_jiaocai_needrop_en_2652",
+        "jiaocaineedrop_jiaocai_needrop_en_3013",
+        "jiaocaineedrop_jiaocai_needrop_en_3685",
+        "jiaocaineedrop_jiaocai_needrop_en_887",
+        "jiaocaineedrop_jiaocai_needrop_en_922",
+        "newspaper_0edcd83c195557b43279fa73edaa59aa_1",
+        "newspaper_17f81b80831d8d58564b9c8e3cf79261_1",
+        "newspaper_5e266dfd9c498cab274e12a7b4a75755_2",
+        "newspaper_87769622e073730af94822416c60c710_1",
+        "newspaper_b615618f3cdb0f2c13ffb5865dea799c_1",
+        "newspaper_c3c88b76543e2caf044c9f7689f23ec9_1",
+        "newspaper_e567840b2e327602422573ccdc1c4275_1",
+        "newspaper_fe2c8b45b2a086cd75984640bb3080e1_1",
+        "notes_1ba14cb325bc448f7201b20502ecf2b5_96",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_114",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_7",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_75",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_8",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_94",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_97",
+        "scihub_bloodadvances.2019030924.pdf_3",
+        "scihub_iccwamtip51612.2020.9317329.pdf_4",
+        "scihub_journal.pone.0166577.pdf_5",
+        "scihub_s11661-013-1726-7.pdf_2",
+        "scihub_s12935-018-0683-z.pdf_0",
+        "yanbaopptmerge_5473246b8da789b9bfdeef53a70c4d72afd480415d5cbcedb83d105856710328.pdf_8",
+        "yanbaopptmerge_593a9a157e4d56a5a57eb14f1d1beec5.pdf_944",
+        "yanbaopptmerge_903cf6cd7820b5463e95c5aaab9f16134f9853cd7963567497337527e73b9bcc.pdf_7",
+        "yanbaopptmerge_d4fc7cba428625974e93183edfccea73.pdf_89",
+        "yanbaopptmerge_ee19df4a08e3d07ac1190446f5b3dd3f25438c661b87cf4fbb9040ac5fac443b.pdf_1",
+        "yanbaopptmerge_yanbaoPPT_1475",
+        "yanbaopptmerge_yanbaoPPT_1835",
+        "yanbaopptmerge_yanbaoPPT_335",
+        "yanbaopptmerge_yanbaoPPT_3930",
+        "yanbaopptmerge_yanbaoPPT_4330",
+        "yanbaopptmerge_yanbaoPPT_4660",
+        "yanbaopptmerge_yanbaoPPT_5175",
+        "yanbaopptmerge_yanbaoPPT_5435",
+        "yanbaor2_0a47b1d6b03103a249101f13e89f2226a273a75378d8110d46eb42c1cfa65ffd.pdf_10",
+        "yanbaor2_b2f600a88fc341bdd0b2b58b8bd4b0ab448277b06e167aa879b838e8139db19d.pdf_17",
+        "yanbaor2_b5cf8249bdf8eebf7625f4b0e39ad38d684d7797ac7bf1617452cd0565ca28a2.pdf_29",
+        "yanbaor2_c1ba77569ecdcc4e0ce5903a503f817fe347683a893426dc4acefd8b8770f047.pdf_9",
+        "yanbaor2_ey-is-your-next-step-about-changing-direction-or-directing-change.pdf_4",
+        "yanbaor2_yanbaoPPT_3302",
+        "yanbaor2_yanbaoPPT_6148"
+      ],
+      "name": "inventory lane_a page_stems match selection-manifest.json lane_a",
+      "observed": [
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-60832903.pdf_88",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-61520553.pdf_328",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-61521384.pdf_750",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-61571884.pdf_94",
+        "docstructbench_dianzishu_zhongwenzaixian-o.O-63685611.pdf_222",
+        "docstructbench_llm-raw-scihub-o.O-bf00326833.pdf_3",
+        "docstructbench_llm-raw-scihub-o.O-dneu.20833.pdf_13",
+        "docstructbench_llm-raw-scihub-o.O-hup.777.pdf_7",
+        "docstructbench_llm-raw-scihub-o.O-ijc.22994.pdf_3",
+        "docstructbench_llm-raw-scihub-o.O-s00128-007-9171-1.pdf_3",
+        "docstructbench_llm-raw-scihub-o.O-s00128-009-9772-y.pdf_1",
+        "docstructbench_llm-raw-scihub-o.O-s0167-8655%2800%2900107-0.pdf_6",
+        "docstructbench_llm-raw-the-eye-o.O-Player%27s%20Options%20-%20Halflings.pdf_11",
+        "jiaocai_P0-9.pdf_9",
+        "jiaocai_jiaocai_en_91",
+        "jiaocaineedrop_jiaocai_needrop_en_1920",
+        "jiaocaineedrop_jiaocai_needrop_en_2124",
+        "jiaocaineedrop_jiaocai_needrop_en_250",
+        "jiaocaineedrop_jiaocai_needrop_en_2509",
+        "jiaocaineedrop_jiaocai_needrop_en_2652",
+        "jiaocaineedrop_jiaocai_needrop_en_3013",
+        "jiaocaineedrop_jiaocai_needrop_en_3685",
+        "jiaocaineedrop_jiaocai_needrop_en_887",
+        "jiaocaineedrop_jiaocai_needrop_en_922",
+        "newspaper_0edcd83c195557b43279fa73edaa59aa_1",
+        "newspaper_17f81b80831d8d58564b9c8e3cf79261_1",
+        "newspaper_5e266dfd9c498cab274e12a7b4a75755_2",
+        "newspaper_87769622e073730af94822416c60c710_1",
+        "newspaper_b615618f3cdb0f2c13ffb5865dea799c_1",
+        "newspaper_c3c88b76543e2caf044c9f7689f23ec9_1",
+        "newspaper_e567840b2e327602422573ccdc1c4275_1",
+        "newspaper_fe2c8b45b2a086cd75984640bb3080e1_1",
+        "notes_1ba14cb325bc448f7201b20502ecf2b5_96",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_114",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_7",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_75",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_8",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_94",
+        "notes_f7f010b78016aeebd76e56d9283eb67f_97",
+        "scihub_bloodadvances.2019030924.pdf_3",
+        "scihub_iccwamtip51612.2020.9317329.pdf_4",
+        "scihub_journal.pone.0166577.pdf_5",
+        "scihub_s11661-013-1726-7.pdf_2",
+        "scihub_s12935-018-0683-z.pdf_0",
+        "yanbaopptmerge_5473246b8da789b9bfdeef53a70c4d72afd480415d5cbcedb83d105856710328.pdf_8",
+        "yanbaopptmerge_593a9a157e4d56a5a57eb14f1d1beec5.pdf_944",
+        "yanbaopptmerge_903cf6cd7820b5463e95c5aaab9f16134f9853cd7963567497337527e73b9bcc.pdf_7",
+        "yanbaopptmerge_d4fc7cba428625974e93183edfccea73.pdf_89",
+        "yanbaopptmerge_ee19df4a08e3d07ac1190446f5b3dd3f25438c661b87cf4fbb9040ac5fac443b.pdf_1",
+        "yanbaopptmerge_yanbaoPPT_1475",
+        "yanbaopptmerge_yanbaoPPT_1835",
+        "yanbaopptmerge_yanbaoPPT_335",
+        "yanbaopptmerge_yanbaoPPT_3930",
+        "yanbaopptmerge_yanbaoPPT_4330",
+        "yanbaopptmerge_yanbaoPPT_4660",
+        "yanbaopptmerge_yanbaoPPT_5175",
+        "yanbaopptmerge_yanbaoPPT_5435",
+        "yanbaor2_0a47b1d6b03103a249101f13e89f2226a273a75378d8110d46eb42c1cfa65ffd.pdf_10",
+        "yanbaor2_b2f600a88fc341bdd0b2b58b8bd4b0ab448277b06e167aa879b838e8139db19d.pdf_17",
+        "yanbaor2_b5cf8249bdf8eebf7625f4b0e39ad38d684d7797ac7bf1617452cd0565ca28a2.pdf_29",
+        "yanbaor2_c1ba77569ecdcc4e0ce5903a503f817fe347683a893426dc4acefd8b8770f047.pdf_9",
+        "yanbaor2_ey-is-your-next-step-about-changing-direction-or-directing-change.pdf_4",
+        "yanbaor2_yanbaoPPT_3302",
+        "yanbaor2_yanbaoPPT_6148"
+      ],
+      "pass": true
+    },
+    {
+      "expected": [
+        "PPT_all655920_page_008",
+        "book_en_国外数学教材-An Excursion through Elementary Mathematics（初等数学漫游）-An excursion through elementary mathematics, Vol.3 (Caminha Muniz Neto A)_0119",
+        "docstructbench_llm-raw-scihub-o.O-chem.200701412.pdf_10",
+        "eastmoney_d0313ed730f58180b1f005a3607c2a77dc3672410e8f7ee1de3b814668da9bcb.pdf_5",
+        "exam_paper_en-file-putnam-archive_2006_Solutions_2006s_page_006",
+        "exam_paper_en-file-putnam-archive_2011_Solutions_2011s_page_003",
+        "jiaocaineedrop_chem-436205.pdf_793",
+        "jiaocaineedrop_jiaocai_needrop_en_2839",
+        "jiaocaineedrop_jiaocai_needrop_en_3458",
+        "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032",
+        "page-062fc21c-6b9c-40be-8d0e-7a617509a9bc",
+        "page-08172901-09b1-4698-827e-f7379ca6b531",
+        "page-0a262e27-b24d-4429-9b21-90563d4fada7",
+        "page-0c1be55c-0b1b-4d62-b17d-ed752f9af9f2",
+        "page-141c2c16-4b50-4c3b-a64b-3e2fd8bb4002",
+        "page-19300c18-7995-4099-a94c-b4c61d7622cb",
+        "page-1c08a4a2-8163-44d3-93f0-9449457dbba3",
+        "page-232d386f-6c9d-4b50-9463-89dedce995e5",
+        "page-28c45f5f-7e0d-464a-89ec-8de3a4abb927",
+        "page-2b4c4f44-c0de-41b6-9561-96195c233f47",
+        "page-2dc37c8b-1547-43dd-8643-fdbecfe5eea8",
+        "page-39abce32-298b-42ab-8c46-b4fbfbcaa674",
+        "page-3f8eed58-8b86-4f3a-958d-13671977d3c6",
+        "page-404e0471-bd71-426a-8e5a-81b8327f88e5",
+        "page-422d6037-0834-47e5-932a-408286b37ec5",
+        "page-458ab820-615f-42fe-af33-3a8fb15ad691",
+        "page-4b8f8a9d-e061-4207-a42e-ebf9b7090099",
+        "page-50ffe5d2-cd27-449a-a813-d4a8c44b12ea",
+        "page-5c7ed29b-b72b-4838-9536-a461adf3006d",
+        "page-632fad6b-6da9-4567-bd2d-a4763a03a314",
+        "page-67013be9-58e5-4842-809d-7a3c1fc91fc7",
+        "page-69c15957-4d6d-485c-a244-04a1a8d29d37",
+        "page-7050793e-109f-4066-be91-107f94b617b9",
+        "page-74c7629d-b064-4b8f-8667-bf943f5ba367",
+        "page-87c18f88-ea2f-4044-b092-02e9b2a7436d",
+        "page-8f6792bd-b5e4-435e-b1b0-1b2daa3f7234",
+        "page-91b20bf2-3ad5-41f4-b739-4cc4b18ab1eb",
+        "page-961a543b-d09d-4fd8-944a-1a38d67bb3bc",
+        "page-9b70f2f0-2a0e-4337-8750-84e79503e939",
+        "page-9edf7687-029e-4e72-a9a6-c23faa1e1861",
+        "page-a0018d4b-a1a5-4f8b-872e-b5f5c05c6b36",
+        "page-aae359c6-5e6e-4e18-9187-2e9d55b6e9bd",
+        "page-aee8f1d9-7240-4517-b615-389594556d57",
+        "page-affbb0cc-d616-481d-b493-80ed1ccb5a10",
+        "page-b13fef06-6ae9-4b2d-a948-0340e03f97ce",
+        "page-b2349b51-01db-4dc1-9e4a-58e52f5e4362",
+        "page-b342f5e6-cc5a-4920-b1b5-83f96bc476d8",
+        "page-b4d4cf5b-0a0e-454b-8220-8c7f58402791",
+        "page-bb98165a-8033-4ea4-a527-58ac974f2c32",
+        "page-bd83d09b-302b-4cc6-999d-19fe668b6577",
+        "page-c018d221-68b3-4a14-84cd-c9abde2db3a4",
+        "page-c1c135ad-427e-482b-b01c-05c0ccbc6e76",
+        "page-c7792da7-4167-4f5c-a7ca-ec0f8833f83b",
+        "page-cdb92c2f-f43f-45ef-ace7-91d4664a7834",
+        "page-d271a2ab-4523-44c4-94b5-303bf54b69e9",
+        "page-e6c5454d-90ad-495c-85db-a416b7cd6452",
+        "page-f46e72b1-865d-43e6-ab94-afae16c5f178",
+        "page-fd04ea51-677c-4de2-8e8e-adfd791e2957",
+        "scihub_j.cbpb.2019.110324.pdf_6",
+        "yanbaopptmerge_c894b375daca22d041c8a35946295d0a73d6589ad7c3d1d39d8664a2666372bf.pdf_10",
+        "yanbaopptmerge_yanbaoPPT_120",
+        "yanbaopptmerge_yanbaoPPT_2950",
+        "yanbaor2_4862cd850679e945a98c54c8d4c37be0154b5790d2c32da35d0f5ca0be413693.pdf_9",
+        "yanbaor2_cb862501e720c830960aa5387f65d10961604a63f0491bbdc7fb71257cbd2112.pdf_96"
+      ],
+      "name": "inventory lane_b page_stems match selection-manifest.json lane_b",
+      "observed": [
+        "PPT_all655920_page_008",
+        "book_en_国外数学教材-An Excursion through Elementary Mathematics（初等数学漫游）-An excursion through elementary mathematics, Vol.3 (Caminha Muniz Neto A)_0119",
+        "docstructbench_llm-raw-scihub-o.O-chem.200701412.pdf_10",
+        "eastmoney_d0313ed730f58180b1f005a3607c2a77dc3672410e8f7ee1de3b814668da9bcb.pdf_5",
+        "exam_paper_en-file-putnam-archive_2006_Solutions_2006s_page_006",
+        "exam_paper_en-file-putnam-archive_2011_Solutions_2011s_page_003",
+        "jiaocaineedrop_chem-436205.pdf_793",
+        "jiaocaineedrop_jiaocai_needrop_en_2839",
+        "jiaocaineedrop_jiaocai_needrop_en_3458",
+        "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032",
+        "page-062fc21c-6b9c-40be-8d0e-7a617509a9bc",
+        "page-08172901-09b1-4698-827e-f7379ca6b531",
+        "page-0a262e27-b24d-4429-9b21-90563d4fada7",
+        "page-0c1be55c-0b1b-4d62-b17d-ed752f9af9f2",
+        "page-141c2c16-4b50-4c3b-a64b-3e2fd8bb4002",
+        "page-19300c18-7995-4099-a94c-b4c61d7622cb",
+        "page-1c08a4a2-8163-44d3-93f0-9449457dbba3",
+        "page-232d386f-6c9d-4b50-9463-89dedce995e5",
+        "page-28c45f5f-7e0d-464a-89ec-8de3a4abb927",
+        "page-2b4c4f44-c0de-41b6-9561-96195c233f47",
+        "page-2dc37c8b-1547-43dd-8643-fdbecfe5eea8",
+        "page-39abce32-298b-42ab-8c46-b4fbfbcaa674",
+        "page-3f8eed58-8b86-4f3a-958d-13671977d3c6",
+        "page-404e0471-bd71-426a-8e5a-81b8327f88e5",
+        "page-422d6037-0834-47e5-932a-408286b37ec5",
+        "page-458ab820-615f-42fe-af33-3a8fb15ad691",
+        "page-4b8f8a9d-e061-4207-a42e-ebf9b7090099",
+        "page-50ffe5d2-cd27-449a-a813-d4a8c44b12ea",
+        "page-5c7ed29b-b72b-4838-9536-a461adf3006d",
+        "page-632fad6b-6da9-4567-bd2d-a4763a03a314",
+        "page-67013be9-58e5-4842-809d-7a3c1fc91fc7",
+        "page-69c15957-4d6d-485c-a244-04a1a8d29d37",
+        "page-7050793e-109f-4066-be91-107f94b617b9",
+        "page-74c7629d-b064-4b8f-8667-bf943f5ba367",
+        "page-87c18f88-ea2f-4044-b092-02e9b2a7436d",
+        "page-8f6792bd-b5e4-435e-b1b0-1b2daa3f7234",
+        "page-91b20bf2-3ad5-41f4-b739-4cc4b18ab1eb",
+        "page-961a543b-d09d-4fd8-944a-1a38d67bb3bc",
+        "page-9b70f2f0-2a0e-4337-8750-84e79503e939",
+        "page-9edf7687-029e-4e72-a9a6-c23faa1e1861",
+        "page-a0018d4b-a1a5-4f8b-872e-b5f5c05c6b36",
+        "page-aae359c6-5e6e-4e18-9187-2e9d55b6e9bd",
+        "page-aee8f1d9-7240-4517-b615-389594556d57",
+        "page-affbb0cc-d616-481d-b493-80ed1ccb5a10",
+        "page-b13fef06-6ae9-4b2d-a948-0340e03f97ce",
+        "page-b2349b51-01db-4dc1-9e4a-58e52f5e4362",
+        "page-b342f5e6-cc5a-4920-b1b5-83f96bc476d8",
+        "page-b4d4cf5b-0a0e-454b-8220-8c7f58402791",
+        "page-bb98165a-8033-4ea4-a527-58ac974f2c32",
+        "page-bd83d09b-302b-4cc6-999d-19fe668b6577",
+        "page-c018d221-68b3-4a14-84cd-c9abde2db3a4",
+        "page-c1c135ad-427e-482b-b01c-05c0ccbc6e76",
+        "page-c7792da7-4167-4f5c-a7ca-ec0f8833f83b",
+        "page-cdb92c2f-f43f-45ef-ace7-91d4664a7834",
+        "page-d271a2ab-4523-44c4-94b5-303bf54b69e9",
+        "page-e6c5454d-90ad-495c-85db-a416b7cd6452",
+        "page-f46e72b1-865d-43e6-ab94-afae16c5f178",
+        "page-fd04ea51-677c-4de2-8e8e-adfd791e2957",
+        "scihub_j.cbpb.2019.110324.pdf_6",
+        "yanbaopptmerge_c894b375daca22d041c8a35946295d0a73d6589ad7c3d1d39d8664a2666372bf.pdf_10",
+        "yanbaopptmerge_yanbaoPPT_120",
+        "yanbaopptmerge_yanbaoPPT_2950",
+        "yanbaor2_4862cd850679e945a98c54c8d4c37be0154b5790d2c32da35d0f5ca0be413693.pdf_9",
+        "yanbaor2_cb862501e720c830960aa5387f65d10961604a63f0491bbdc7fb71257cbd2112.pdf_96"
+      ],
+      "pass": true
+    },
+    {
+      "expected": false,
+      "name": "acquisition-receipt.json ground_truth_acquired is False",
+      "observed": false,
+      "pass": true
+    },
+    {
+      "expected": 0.0,
+      "name": "acquisition-receipt.json gpu_seconds == 0.0",
+      "observed": 0.0,
+      "pass": true
+    },
+    {
+      "expected": 64,
+      "name": "acquisition-receipt.json lane_b_unique_transport_resolutions == 64",
+      "observed": 64,
+      "pass": true
+    },
+    {
+      "expected": "V02",
+      "name": "acquisition-receipt.json transport_version == V02",
+      "observed": "V02",
+      "pass": true
+    },
+    {
+      "expected": [],
+      "name": "corpus/ file set exactly equals acquisition-receipt.json 192-file path set (no extras)",
+      "observed": [],
+      "pass": true
+    },
+    {
+      "expected": [],
+      "name": "corpus/ file set exactly equals acquisition-receipt.json 192-file path set (no missing)",
+      "observed": [],
+      "pass": true
+    },
+    {
+      "expected": [],
+      "name": "no development-exclusion page_stem appears anywhere in corpus/",
+      "observed": [],
+      "pass": true
+    },
+    {
+      "expected": "recorded",
+      "name": "outputs/ directory existence snapshot (informational)",
+      "observed": true,
+      "pass": true
+    },
+    {
+      "expected": "recorded",
+      "name": "inference-manifests/ directory existence snapshot (informational)",
+      "observed": true,
+      "pass": true
+    }
+  ],
+  "corpus_extraneous_files": [],
+  "environment": {
+    "git_head": "a939f176bc533d79ed9a26dac3a47e52862dcc98",
+    "python_version": "3.13.0",
+    "sys_platform": "win32"
+  },
+  "git_head": "a939f176bc533d79ed9a26dac3a47e52862dcc98",
+  "ground_truth_absent": true,
+  "input_inventory": {
+    "distribution": {
+      "a:image": 64,
+      "a:source_pdf": 64,
+      "b:image": 64
+    },
+    "file_count": 192,
+    "hash_mismatches": [],
+    "missing_files": [],
+    "size_mismatches": [],
+    "total_bytes": 121465686
+  },
+  "receipt_sha256": "sha256:ab6f09fc7134e5a131b395a0e6d934167a85805feb2db7462c5bee36f84927ac",
+  "schema": "tavonel.sem-risk-conf.frozen-integrity-verification.v1",
+  "verified_at": "20260831T034651Z"
+}

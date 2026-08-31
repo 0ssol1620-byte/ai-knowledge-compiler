@@ -1,0 +1,11 @@
+{
+  "blocked_at": "2026-08-30T19:34:28.771330+00:00",
+  "corpus_files_persisted": 0,
+  "error": "HTTP Error 429: Too Many Requests",
+  "error_type": "HTTPError",
+  "experiment_id": "H3-B-CURRENT-CORE-PUBLIC-REVISION-01",
+  "external_gpu_cost_usd": 0.0,
+  "schema": "tavonel.family-b.current-core-public-revision.blocked.v1",
+  "seal_sha256": "sha256:3fcfe708cee6bea5d774699074bb12265ee36d64e503c551f029e2636e1d77f0",
+  "stage": "network_fetch_before_corpus_persist"
+}

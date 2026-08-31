@@ -1,0 +1,11 @@
+{
+  "counts": {
+    "development_exclusions": 18,
+    "lane_a": 64,
+    "lane_b": 64,
+    "total": 128
+  },
+  "current_annotation_sha256_selection_only": "sha256:a45cd84b04ad8b793e775089640e6b681209abea33ead54c1828ddca35fae496",
+  "protocol_sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "selection_sha256": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa"
+}

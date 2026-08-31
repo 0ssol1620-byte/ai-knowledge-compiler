@@ -261,6 +261,19 @@ from .semantic_diff import (
     UnitSnapshot,
     diff_documents,
 )
+from .semantic_risk import (
+    SemanticRiskAssessment,
+    SemanticRiskBand,
+    SemanticRiskFeatures,
+    assess_semantic_risk,
+)
+from .semantic_preservation import (
+    PreservationInvariant,
+    PreservationViolation,
+    SemanticEvidenceBinding,
+    SemanticPreservationReport,
+    verify_semantic_preservation,
+)
 from .shadow_audit import (
     ShadowAuditPolicy,
     ShadowAuditResult,

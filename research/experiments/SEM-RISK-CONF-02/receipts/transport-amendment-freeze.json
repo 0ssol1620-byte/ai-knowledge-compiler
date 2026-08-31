@@ -1,0 +1,11 @@
+{
+  "parent_protocol_sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "parent_selection_sha256": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+  "science_identity_sha256": "sha256:dd87b9aea7fe9c3ee642aea23ff94507ed1409e84b697c8fe7f64095673ad3e6",
+  "transport_amendment_sha256": "sha256:79434b2756543bedb2d7bf091d877e31992de90de30086731c417bc83a876ca0",
+  "transport_source_hashes": {
+    "acquire_selected_inputs.py": "sha256:f49ab05241a24d0d61bda2dd908b98fe031e3ca375b441bc9b306b5ffb77f1c2",
+    "freeze_transport_amendment.py": "sha256:27080cdbf39cbe921f2db7f3ca84a4259f5819e79f12e32b155a009fa359049f"
+  },
+  "transport_version": "V02"
+}

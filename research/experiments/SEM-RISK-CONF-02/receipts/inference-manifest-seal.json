@@ -1,0 +1,18 @@
+{
+  "experiment_id": "SEM-RISK-CONF-01",
+  "ground_truth_mounted": false,
+  "manifests": {
+    "a": "sha256:7ea8cb2e933b79996380ba3793334310f3985a43e83cd41938798ae94bd96b93",
+    "b": "sha256:f3d2508c9c4fae25294f002ed9e8559d2f7ebef5cc230bd651385a2aebf545e8"
+  },
+  "paddle_repeats": {
+    "lane_a": 1,
+    "lane_b": 3
+  },
+  "protocol_sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060",
+  "selection_sha256": "sha256:a7aace3e9149833134d56eaf54793cc1b6914baf6b0d3d7cd9e6c43c33ec94fa",
+  "specialist_repeats": {
+    "lane_a": 1,
+    "lane_b": 1
+  }
+}
