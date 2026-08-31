@@ -51,6 +51,8 @@ class QualificationPodSpec:
     volume_gb: int = 20
     allowed_cuda_versions: tuple[str, ...] = ("12.8", "12.9")
     vllm_cuda_compatibility: bool = False
+    requires_registry_auth: bool = False
+    container_registry_auth_id: str | None = None
 
     def __post_init__(self) -> None:
         if not re.fullmatch(r"folynta-qualification-[a-z0-9-]{3,45}", self.name):
@@ -75,6 +77,21 @@ class QualificationPodSpec:
             re.fullmatch(r"1[123]\.\d", item) for item in self.allowed_cuda_versions
         ):
             raise ContractError("qualification CUDA versions are invalid")
+        if self.container_registry_auth_id is not None:
+            auth_id = self.container_registry_auth_id
+            # Modest sanity check only -- not a full RunPod-ID-shape
+            # validator. This repo has no live access to confirm RunPod's
+            # exact `containerRegistryAuthId` format, so this only rejects
+            # the obviously wrong (empty, whitespace-bearing, unreasonably
+            # long) rather than asserting a precise shape.
+            if not auth_id or any(character.isspace() for character in auth_id) or len(
+                auth_id
+            ) > 256:
+                raise ContractError("qualification container_registry_auth_id is malformed")
+        if self.requires_registry_auth and not self.container_registry_auth_id:
+            raise ContractError(
+                "qualification image requires a non-empty container_registry_auth_id"
+            )
 
     @property
     def maximum_cost_usd(self) -> Decimal:
@@ -91,7 +108,7 @@ class QualificationPodSpec:
         }
         if self.vllm_cuda_compatibility:
             environment["VLLM_ENABLE_CUDA_COMPATIBILITY"] = "1"
-        return {
+        payload: dict[str, Any] = {
             "name": self.name,
             "imageName": self.image_name,
             "cloudType": "SECURE",
@@ -108,6 +125,14 @@ class QualificationPodSpec:
             "allowedCudaVersions": list(self.allowed_cuda_versions),
             "env": environment,
         }
+        if self.container_registry_auth_id is not None:
+            # RunPod resolves this server-side into the registered
+            # username/token pair -- never the credential itself. See the
+            # `create-container-registry-auth` RunPod API/MCP tool for how a
+            # caller obtains this opaque ID out of band, before it ever
+            # reaches this dataclass.
+            payload["containerRegistryAuthId"] = self.container_registry_auth_id
+        return payload
 
     def redacted_identity(self) -> dict[str, Any]:
         payload = self.provider_payload()
