@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 from datetime import UTC, datetime
@@ -87,6 +88,29 @@ def _request(
     )
 
 
+def _fragmented_document(native_id: str) -> ProductCoreDocument:
+    fragments = tuple(
+        f"Section {index}: TAVONEL reported verified revenue evidence for fiscal year 2025."
+        for index in range(30)
+    )
+    document = _document(native_id, "\n".join(fragments))
+    regions = tuple(
+        ProductCoreRegion(
+            region_id=f"region-{native_id}-{index}",
+            page_index0=0,
+            page_number1=1,
+            order=index,
+            block_type=BlockType.PARAGRAPH,
+            text=text,
+            bbox1000=BBox1000((100, 100 + index * 20, 900, 118 + index * 20)),
+            confidence=0.99,
+            authority="regulatory_filing",
+        )
+        for index, text in enumerate(fragments)
+    )
+    return document.model_copy(update={"regions": regions})
+
+
 def test_initial_compile_emits_region_bound_candidate_without_promoting() -> None:
     request = _request(
         (
@@ -160,6 +184,35 @@ def test_initial_compile_emits_region_bound_candidate_without_promoting() -> Non
         row["kind"] == "knowledge_view" and row["blueprint"] == "corporate-filings"
         for row in response.candidate.directory_plan
     )
+
+
+def test_fragmented_ocr_builds_context_chunks_and_materializes_knowledge_views() -> None:
+    response = ProductCoreCompiler(core_release_digest=RELEASE).compile(
+        _request((_fragmented_document("fragmented-filing"),), request_id="compile-fragments"),
+        input_sha256=_sha("fragmented-request"),
+    )
+
+    assert len(response.candidate.units) == 30
+    package = {file.path: file.content for file in response.candidate.package.files}
+    chunks = [json.loads(line) for line in package["rag/chunks.jsonl"].splitlines()]
+    assert 1 < len(chunks) < len(response.candidate.units)
+    assert all(len(chunk["text"]) >= 180 for chunk in chunks)
+    assert all(chunk["logicalIds"] and chunk["evidenceIds"] for chunk in chunks)
+    assert all(len(chunk["evidenceRefs"]) == len(chunk["evidenceIds"]) for chunk in chunks)
+    assert all(chunk["retrievalTerms"] for chunk in chunks)
+
+    relationships = list(csv.DictReader(package["graph/relationships.csv"].splitlines()))
+    predicates = {row["predicate"] for row in relationships}
+    assert {"contains", "supported_by"} <= predicates
+    assert predicates != {"links_to"}
+
+    architecture = json.loads(package["ontology/architecture-plan.json"])
+    assert all(f"obsidian/{view}.md" in package for view in architecture["root_views"])
+    assert all(f"obsidian/MOCs/{moc}.md" in package for moc in architecture["mocs"])
+    validation = json.loads(package["validation/report.json"])
+    assert validation["retrievalChunkCount"] == len(chunks)
+    assert validation["retrievalTinyChunkCount"] == 0
+    assert validation["retrievalEvidenceCoverage"] == 1.0
 
 
 def test_incremental_compile_abstains_on_ambiguous_identity_and_proves_equivalence() -> None:

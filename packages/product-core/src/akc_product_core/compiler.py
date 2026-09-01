@@ -60,7 +60,19 @@ from .contracts import (
     ProductCoreDocument,
     ProductCoreReceipt,
 )
-from .semantics import SemanticClaim, SemanticCompilation, SemanticSource, compile_semantics
+from .semantics import (
+    SemanticClaim,
+    SemanticCompilation,
+    SemanticSource,
+    authority_tier,
+    compile_semantics,
+    detect_language,
+    semantic_tokens,
+)
+
+_RETRIEVAL_MIN_CHARS = 180
+_RETRIEVAL_MAX_CHARS = 720
+_RETRIEVAL_TAIL_MAX_CHARS = 900
 
 
 def _stable_id(prefix: str, *parts: str) -> str:
@@ -95,6 +107,71 @@ def _snapshot(unit: PreviousUnit) -> UnitSnapshot:
 
 def _fingerprint(unit: UnitSnapshot, source_lineage: str) -> LogicalUnitFingerprint:
     return unit.fingerprint(source_lineage=source_lineage)
+
+
+def _retrieval_groups(units: list[PreviousUnit]) -> tuple[tuple[PreviousUnit, ...], ...]:
+    """Merge adjacent OCR regions into retrieval context without changing canonical identities."""
+
+    groups: list[list[PreviousUnit]] = []
+    current: list[PreviousUnit] = []
+    characters = 0
+    for unit in units:
+        same_scope = bool(
+            current
+            and current[0].source_id == unit.source_id
+            and current[0].source_version_id == unit.source_version_id
+            and current[0].page_number1 == unit.page_number1
+        )
+        projected = characters + (1 if current else 0) + len(unit.text.strip())
+        if current and (
+            not same_scope
+            or (characters >= _RETRIEVAL_MIN_CHARS and projected > _RETRIEVAL_MAX_CHARS)
+        ):
+            groups.append(current)
+            current = []
+            characters = 0
+        current.append(unit)
+        characters += (1 if characters else 0) + len(unit.text.strip())
+    if current:
+        groups.append(current)
+
+    if len(groups) >= 2:
+        tail = groups[-1]
+        previous = groups[-2]
+        tail_characters = sum(len(unit.text.strip()) for unit in tail) + max(0, len(tail) - 1)
+        combined_characters = (
+            sum(len(unit.text.strip()) for unit in (*previous, *tail))
+            + len(previous)
+            + len(tail)
+            - 1
+        )
+        same_scope = (
+            previous[0].source_id == tail[0].source_id
+            and previous[0].source_version_id == tail[0].source_version_id
+            and previous[0].page_number1 == tail[0].page_number1
+        )
+        if (
+            same_scope
+            and tail_characters < _RETRIEVAL_MIN_CHARS
+            and combined_characters <= _RETRIEVAL_TAIL_MAX_CHARS
+        ):
+            groups[-2] = [*previous, *tail]
+            groups.pop()
+    return tuple(tuple(group) for group in groups)
+
+
+def _link_predicate(source_kind: str, target_kind: str, link_index: int) -> str:
+    if source_kind == "document" and target_kind == "block":
+        return "contains"
+    if source_kind == "claim" and target_kind == "evidence":
+        return "supported_by"
+    if source_kind == "claim" and target_kind == "entity":
+        return "mentions"
+    if source_kind == "relation":
+        return "has_subject" if link_index == 0 else "has_object"
+    if source_kind == "validation_record" and target_kind == "claim":
+        return "flags"
+    return "links_to"
 
 
 class ProductCoreCompiler:
@@ -924,9 +1001,21 @@ class ProductCoreCompiler:
         ]
         for item in objects:
             ttl_lines.append(f"<urn:tavonel:{item['stableId']}> a tav:{item['kind']} .")
-            for link in item["links"]:
+            for link_index, link in enumerate(item["links"]):
+                predicate = _link_predicate(
+                    item["kind"],
+                    next(
+                        (
+                            candidate["kind"]
+                            for candidate in objects
+                            if candidate["stableId"] == link
+                        ),
+                        "object",
+                    ),
+                    link_index,
+                )
                 ttl_lines.append(
-                    f"<urn:tavonel:{item['stableId']}> tav:linksTo <urn:tavonel:{link}> ."
+                    f"<urn:tavonel:{item['stableId']}> tav:{predicate} <urn:tavonel:{link}> ."
                 )
         node_csv = (
             "id,kind,payload,verification_state\n"
@@ -943,18 +1032,23 @@ class ProductCoreCompiler:
             )
             + "\n"
         )
-        relation_rows = [
-            ",".join(
-                (
-                    self._csv(_stable_id("edge", item["stableId"], link)),
-                    self._csv(item["stableId"]),
-                    self._csv("links_to"),
-                    self._csv(link),
+        object_kind_by_id = {item["stableId"]: item["kind"] for item in objects}
+        relation_rows = []
+        for item in objects:
+            for link_index, link in enumerate(item["links"]):
+                predicate = _link_predicate(
+                    item["kind"], object_kind_by_id.get(link, "object"), link_index
                 )
-            )
-            for item in objects
-            for link in item["links"]
-        ]
+                relation_rows.append(
+                    ",".join(
+                        (
+                            self._csv(_stable_id("edge", item["stableId"], predicate, link)),
+                            self._csv(item["stableId"]),
+                            self._csv(predicate),
+                            self._csv(link),
+                        )
+                    )
+                )
         relation_csv = "id,subject_id,predicate,object_id\n" + "\n".join(relation_rows) + "\n"
         document_jsonl = "".join(
             canonical_json(
@@ -978,70 +1072,94 @@ class ProductCoreCompiler:
         claims_by_logical: defaultdict[str, list[SemanticClaim]] = defaultdict(list)
         for claim in semantics.claims:
             claims_by_logical[claim.logical_id].append(claim)
-        entity_names = {
-            entity.entity_id: entity.canonical_name for entity in semantics.entities
-        }
-        chunk_jsonl = "".join(
-            canonical_json(
+        entity_names = {entity.entity_id: entity.canonical_name for entity in semantics.entities}
+        chunk_records: list[dict[str, object]] = []
+        for group in _retrieval_groups(units):
+            text = "\n".join(unit.text.strip() for unit in group if unit.text.strip())
+            group_claims = [claim for unit in group for claim in claims_by_logical[unit.logical_id]]
+            bboxes = [
+                evidence_refs[unit.evidence_id].get("bbox1000")
+                for unit in group
+                if evidence_refs[unit.evidence_id].get("bbox1000")
+            ]
+            bbox = (
+                [
+                    min(item[0] for item in bboxes),
+                    min(item[1] for item in bboxes),
+                    max(item[2] for item in bboxes),
+                    max(item[3] for item in bboxes),
+                ]
+                if bboxes
+                else None
+            )
+            ranked_authorities = sorted(
+                (
+                    (
+                        *authority_tier(unit.authority or "unclassified"),
+                        unit.authority or "unclassified",
+                    )
+                    for unit in group
+                ),
+                key=lambda row: (-row[1], row[0], row[2]),
+            )
+            authority_name = ranked_authorities[0][2]
+            authority_name_tier, authority_score = authority_tier(authority_name)
+            logical_ids = list(dict.fromkeys(unit.logical_id for unit in group))
+            evidence_ids = list(dict.fromkeys(unit.evidence_id for unit in group))
+            evidence = [evidence_refs[evidence_id] for evidence_id in evidence_ids]
+            chunk_records.append(
                 {
-                    "chunkId": _stable_id("chunk", unit.logical_id),
-                    "logicalId": unit.logical_id,
-                    "text": unit.text,
-                    "sourceId": unit.source_id,
-                    "sourceVersionId": unit.source_version_id,
-                    "evidenceId": unit.evidence_id,
-                    "pageNumber1": unit.page_number1,
-                    "bbox1000": evidence_refs[unit.evidence_id].get("bbox1000"),
-                    "authority": unit.authority,
-                    "authorityTier": (
-                        claims_by_logical[unit.logical_id][0].authority_tier
-                        if claims_by_logical[unit.logical_id]
-                        else "unclassified"
-                    ),
-                    "authorityScore": (
-                        claims_by_logical[unit.logical_id][0].authority_score
-                        if claims_by_logical[unit.logical_id]
-                        else 0.0
-                    ),
-                    "claimIds": [claim.claim_id for claim in claims_by_logical[unit.logical_id]],
+                    "chunkId": _stable_id("chunk", *logical_ids),
+                    # Singular fields remain for consumers of the v2 wire contract.
+                    "logicalId": logical_ids[0],
+                    "logicalIds": logical_ids,
+                    "text": text,
+                    "sourceId": group[0].source_id,
+                    "sourceVersionId": group[0].source_version_id,
+                    "evidenceId": evidence_ids[0],
+                    "evidenceIds": evidence_ids,
+                    "evidenceRefs": evidence,
+                    "pageNumber1": group[0].page_number1,
+                    "bbox1000": bbox,
+                    "authority": authority_name,
+                    "authorityTier": authority_name_tier,
+                    "authorityScore": authority_score,
+                    "claimIds": list(dict.fromkeys(claim.claim_id for claim in group_claims)),
                     "entityIds": list(
                         dict.fromkeys(
-                            entity_id
-                            for claim in claims_by_logical[unit.logical_id]
-                            for entity_id in claim.entity_ids
+                            entity_id for claim in group_claims for entity_id in claim.entity_ids
                         )
                     ),
                     "entityNames": list(
                         dict.fromkeys(
                             entity_names[entity_id]
-                            for claim in claims_by_logical[unit.logical_id]
+                            for claim in group_claims
                             for entity_id in claim.entity_ids
                         )
                     ),
                     "languages": list(
                         dict.fromkeys(
-                            claim.language for claim in claims_by_logical[unit.logical_id]
+                            [detect_language(text), *(claim.language for claim in group_claims)]
                         )
                     ),
                     "temporalRefs": list(
                         dict.fromkeys(
                             temporal_ref
-                            for claim in claims_by_logical[unit.logical_id]
+                            for claim in group_claims
                             for temporal_ref in claim.temporal_refs
                         )
                     ),
                     "retrievalTerms": list(
                         dict.fromkeys(
-                            term
-                            for claim in claims_by_logical[unit.logical_id]
-                            for term in claim.retrieval_terms
+                            [
+                                *semantic_tokens(text),
+                                *(term for claim in group_claims for term in claim.retrieval_terms),
+                            ]
                         )
                     ),
                 }
             )
-            + "\n"
-            for unit in units
-        )
+        chunk_jsonl = "".join(canonical_json(chunk) + "\n" for chunk in chunk_records)
         provenance_jsonl = "".join(
             canonical_json(
                 {
@@ -1066,6 +1184,50 @@ class ProductCoreCompiler:
             )
             + "\n"
         )
+        source_links = "\n".join(
+            f"- [[Sources/{item.document_id}|{item.title}]]" for item in canonical_documents
+        )
+        entity_links = (
+            "\n".join(
+                f"- **{entity.canonical_name}** (`{entity.entity_type}`)"
+                for entity in semantics.entities
+            )
+            or "- No evidence-bound entities were extracted."
+        )
+        claim_links = (
+            "\n".join(
+                f"- {claim.text} ([[Sources/{claim.source_id}|source]])"
+                for claim in semantics.claims
+            )
+            or "- No evidence-bound claims were extracted."
+        )
+        view_files = {
+            f"obsidian/{view}.md": (
+                f"# {view}\n\n"
+                f"Blueprint: `{architecture.blueprint}`\n\n"
+                "## Evidence-bound entities\n\n"
+                f"{entity_links}\n\n"
+                "## Evidence-bound claims\n\n"
+                f"{claim_links}\n\n"
+                "## Sources\n\n"
+                f"{source_links}\n"
+            )
+            for view in architecture.root_views
+        }
+        moc_files = {
+            f"obsidian/MOCs/{moc}.md": (
+                f"# {moc} MOC\n\n"
+                f"- [[../{moc}|{moc} view]]\n"
+                "- [[../Home|Package home]]\n\n"
+                "## Source index\n\n"
+                + "\n".join(
+                    f"- [[../Sources/{item.document_id}|{item.title}]]"
+                    for item in canonical_documents
+                )
+                + "\n"
+            )
+            for moc in architecture.mocs
+        }
         claims_jsonl = "".join(
             canonical_json(claim.as_record()) + "\n" for claim in semantics.claims
         )
@@ -1130,10 +1292,24 @@ class ProductCoreCompiler:
                         sum(1 for claim in semantics.claims if claim.evidence_id)
                         / max(1, len(semantics.claims))
                     ),
+                    "retrievalChunkCount": len(chunk_records),
+                    "retrievalMeanCharacters": (
+                        sum(len(str(chunk["text"])) for chunk in chunk_records)
+                        / max(1, len(chunk_records))
+                    ),
+                    "retrievalTinyChunkCount": sum(
+                        1 for chunk in chunk_records if len(str(chunk["text"])) < 80
+                    ),
+                    "retrievalEvidenceCoverage": (
+                        sum(1 for chunk in chunk_records if chunk["evidenceIds"])
+                        / max(1, len(chunk_records))
+                    ),
                 }
             )
             + "\n",
         }
+        contents.update(view_files)
+        contents.update(moc_files)
         for item in canonical_documents:
             contents[f"obsidian/Sources/{item.document_id}.md"] = (
                 f"---\ndocument_id: {item.document_id}\n"
