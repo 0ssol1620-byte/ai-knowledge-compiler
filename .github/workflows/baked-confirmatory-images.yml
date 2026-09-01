@@ -123,26 +123,34 @@ jobs:
             sudo mkdir -p /mnt/runner-tmp
             sudo chmod 1777 /mnt/runner-tmp
             echo "TMPDIR=/mnt/runner-tmp" >> "$GITHUB_ENV"
-            # The runner writes its own worker diagnostics to the root disk,
-            # and on 2026-09-01 the paddle build died after 27 minutes with
-            #   System.IO.IOException: No space left on device :
-            #   '/home/runner/actions-runner/cached/.../\_diag/Worker_*.log'
-            # -- the runner ran out of room recording the build's output, not
-            # the build. That image emits far more log than MinerU because
-            # paddlepaddle-gpu and its CUDA wheels are enormous and pip is
-            # verbose about every one. Relocate the diagnostics onto the same
-            # larger disk so a chatty build cannot exhaust the root filesystem.
-            if [ -d /home/runner/actions-runner ]; then
-              sudo mkdir -p /mnt/runner-diag
-              sudo chmod 1777 /mnt/runner-diag
-              for diag in $(sudo find /home/runner/actions-runner -maxdepth 3 -type d -name _diag); do
-                sudo rm -rf -- "$diag"
-                sudo ln -sfn /mnt/runner-diag "$diag"
-                echo "relocated $diag -> /mnt/runner-diag"
-              done
-            fi
+            # NOT relocating the runner's own _diag directory. That was tried
+            # on 2026-09-01 and killed the runner: the job died 90 seconds in,
+            # mid-step, with no log and no annotation at all -- a worse failure
+            # than the disk exhaustion it was meant to prevent, because it
+            # destroyed the evidence too. The runner holds those log files
+            # open; deleting the directory out from under it and substituting
+            # a symlink is not survivable.
+            #
+            # The disk pressure that motivated it is addressed at the source
+            # instead: the Dockerfile's pip installs are quiet, which removes
+            # the per-package chatter and progress bars that produced most of
+            # the volume.
           fi
           df -h /
+          # The paddle build died once because the RUNNER ran out of root disk
+          # writing its own _diag logs -- not because the build needed space.
+          # Relocating _diag killed the runner outright, so the guard is here
+          # instead: assert the root filesystem has real headroom before a
+          # long build starts, and fail loudly now rather than 27 minutes in
+          # with an unreadable log. 10 GiB is the floor recorded in
+          # RUNTIME_QUALIFICATION notes for this workflow.
+          root_free_kib="$(df -Pk / | awk 'NR==2 {print $4}')"
+          root_free_gib=$(( root_free_kib / 1024 / 1024 ))
+          echo "root filesystem free: ${root_free_gib} GiB"
+          if [ "$root_free_gib" -lt 10 ]; then
+            echo "refusing to start: root free ${root_free_gib} GiB is below the 10 GiB floor" >&2
+            exit 28
+          fi
       - name: Resolve target-specific model identity
         id: model_identity
         shell: bash
