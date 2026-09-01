@@ -44,19 +44,34 @@ jobs:
         run: |
           set -euo pipefail
           df -h /
+          # The paddleocr image pulls several multi-hundred-MB CUDA wheels
+          # (nvidia-cublas-cu12 alone is 393 MB) plus a full paddlepaddle-gpu
+          # build. On 2026-09-01 this step freed 13G -> 33G and the build still
+          # died with "[Errno 28] No space left on device" partway through
+          # nvidia-cublas. The allow-list below is therefore wider than it was,
+          # and pip is told not to keep a second copy of every wheel it fetches.
           readonly targets=(
             /usr/local/lib/android
             /usr/share/dotnet
             /opt/ghc
             /opt/hostedtoolcache/CodeQL
+            /usr/local/.ghcup
+            /usr/local/share/powershell
+            /usr/local/share/chromium
+            /usr/local/lib/node_modules
+            /usr/share/swift
+            /usr/share/miniconda
           )
           for target in "${targets[@]}"; do
             case "$target" in
               /usr/local/lib/android|/usr/share/dotnet|/opt/ghc|/opt/hostedtoolcache/CodeQL) ;;
+              /usr/local/.ghcup|/usr/local/share/powershell|/usr/local/share/chromium) ;;
+              /usr/local/lib/node_modules|/usr/share/swift|/usr/share/miniconda) ;;
               *) echo "refusing unexpected cleanup target: $target" >&2; exit 64 ;;
             esac
             sudo rm -rf -- "$target"
           done
+          sudo apt-get clean
           docker system prune --all --force
           df -h /
       - name: Resolve target-specific model identity

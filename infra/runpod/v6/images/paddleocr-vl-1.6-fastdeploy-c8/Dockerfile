@@ -39,14 +39,21 @@ RUN apt-get update -qq \
 # order in benchmark/runpod_eval/remote_bootstrap_paddle_recovery.sh (venv
 # creation, paddlepaddle-gpu from the cu126 index, paddleocr[doc-parser], the
 # genai-server FastDeploy dependency installer, then a pinned protobuf).
+# --no-cache-dir on every install: without it pip keeps a second copy of every
+# wheel it downloads under ~/.cache/pip, and this layer pulls several
+# multi-hundred-MB CUDA wheels (nvidia-cublas-cu12 alone is 393 MB). A build on
+# 2026-09-01 died here with "[Errno 28] No space left on device" partway through
+# that download, on a runner where the cleanup step had already freed 13G -> 33G.
+# The sibling MinerU image already passes this flag; this one did not.
 RUN python3.11 -m venv /opt/folynta/venv \
-    && /opt/folynta/venv/bin/python -m pip install --upgrade 'pip==25.1.1' \
-    && /opt/folynta/venv/bin/python -m pip install \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --upgrade 'pip==25.1.1' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
          'paddlepaddle-gpu==3.2.1' \
          --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
-    && /opt/folynta/venv/bin/python -m pip install 'paddleocr[doc-parser]==3.7.0' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
     && /opt/folynta/venv/bin/paddleocr install_genai_server_deps fastdeploy \
-    && /opt/folynta/venv/bin/python -m pip install 'protobuf==6.33.6'
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
+    && rm -rf /root/.cache/pip
 
 # FastDeploy compatibility patch, copied verbatim (before/after hashes and the
 # sed expression) from remote_bootstrap_paddle_recovery.sh lines ~50-65: newer
