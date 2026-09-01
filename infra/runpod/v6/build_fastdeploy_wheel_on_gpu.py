@@ -255,20 +255,23 @@ def main() -> int:
                 "-o", "ConnectTimeout=30",
                 f"root@{host}", "bash -s",
             ],
-            # This repo is checked out with core.autocrlf=true, so the
-            # triple-quoted BUILD_SCRIPT carries CRLF. A remote bash reads the
-            # carriage returns literally and refuses the script outright, so
-            # normalise to LF at the call site rather than relying on how the
-            # file happens to be stored.
-            input=BUILD_SCRIPT.replace("\r\n", "\n"),
-            capture_output=True, text=True, timeout=3300,
+            # Send bytes, not text. With text=True, Windows opens the child's
+            # stdin in text mode and translates every "\n" we write into
+            # "\r\n" AFTER any normalisation we do here -- the remote bash then
+            # dies on "$'\r': command not found" no matter how clean the string
+            # was. Encoding explicitly and passing text=False sends exactly
+            # these bytes.
+            input=BUILD_SCRIPT.replace("\r\n", "\n").encode("utf-8"),
+            capture_output=True, timeout=3300,
         )
-        print(proc.stdout[-6000:])
+        stdout = proc.stdout.decode("utf-8", "replace")
+        stderr = proc.stderr.decode("utf-8", "replace")
+        print(stdout[-6000:])
         if proc.returncode != 0:
-            print(f"\nssh rc={proc.returncode}\n{proc.stderr[-1500:]}")
+            print(f"\nssh rc={proc.returncode}\n{stderr[-1500:]}")
 
         # Pull any wheel back before the pod dies.
-        if "WHEEL " in proc.stdout:
+        if "WHEEL " in stdout:
             OUT_DIR.mkdir(parents=True, exist_ok=True)
             subprocess.run(
                 [
