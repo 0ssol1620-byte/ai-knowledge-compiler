@@ -255,7 +255,13 @@ def main() -> int:
                 "-o", "ConnectTimeout=30",
                 f"root@{host}", "bash -s",
             ],
-            input=BUILD_SCRIPT, capture_output=True, text=True, timeout=3300,
+            # This repo is checked out with core.autocrlf=true, so the
+            # triple-quoted BUILD_SCRIPT carries CRLF. A remote bash reads the
+            # carriage returns literally and refuses the script outright, so
+            # normalise to LF at the call site rather than relying on how the
+            # file happens to be stored.
+            input=BUILD_SCRIPT.replace("\r\n", "\n"),
+            capture_output=True, text=True, timeout=3300,
         )
         print(proc.stdout[-6000:])
         if proc.returncode != 0:
