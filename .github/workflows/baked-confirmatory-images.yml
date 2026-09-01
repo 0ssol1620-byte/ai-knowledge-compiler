@@ -210,15 +210,35 @@ jobs:
           image_repository="ghcr.io/${GITHUB_REPOSITORY,,}/${TARGET}"
           echo "IMAGE_TAG=${image_repository}:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "IMAGE_REPOSITORY=${image_repository}" >> "$GITHUB_ENV"
-      - name: Bootstrap attestation-capable Buildx builder
+      - name: Bootstrap Buildx builder on the daemon storage
         shell: bash
         run: |
           set -euo pipefail
+          # The docker-container driver runs BuildKit inside its own container
+          # with its own /tmp, which is NOT the runner's relocated TMPDIR. On
+          # 2026-09-01 the paddle build completed all 18 stages and then died
+          # exporting the image:
+          #   ResourceExhausted: mount callback failed on
+          #   /tmp/containerd-mount*: failed to write compressed diff
+          #
+          # That /tmp lives inside the builder container, which means it sits
+          # on the Docker data-root -- already moved to /mnt. What actually ran
+          # out is the container's writable layer, so the fix is to stop
+          # writing the export through it: the docker driver uses the daemon
+          # directly, and the daemon's storage is on the larger disk.
+          #
+          # The docker-container driver was only needed for attestations, and
+          # this workflow already passes --provenance=false --sbom=false and
+          # generates its SBOM independently in a later step. So nothing is
+          # lost by using the default driver here.
           docker buildx create \
-            --driver docker-container \
+            --driver docker \
             --name folynta-confirmatory-builder \
-            --use
+            --use 2>/dev/null \
+            || docker buildx use default
           docker buildx inspect --bootstrap
+          docker info --format 'docker data-root: {{.DockerRootDir}}'
+          df -h /mnt
       - name: Build and push confirmatory image
         if: steps.arming_gate.outputs.armed == 'true'
         shell: bash
@@ -247,7 +267,9 @@ jobs:
           image_digest="$(jq -r '.["containerimage.digest"]' "${RUNNER_TEMP}/build-metadata.json")"
           [[ "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
           echo "IMAGE_DIGEST=${IMAGE_REPOSITORY}@${image_digest}" >> "$GITHUB_ENV"
-          docker buildx rm folynta-confirmatory-builder
+          # The docker driver has no builder container to remove; tolerate
+          # its absence so cleanup does not fail the run.
+          docker buildx rm folynta-confirmatory-builder 2>/dev/null || true
           docker system prune --all --force --volumes
           # syft re-expands the pushed image from the registry into TMPDIR to
           # walk its layers, and TMPDIR now shares /mnt with the daemon's
