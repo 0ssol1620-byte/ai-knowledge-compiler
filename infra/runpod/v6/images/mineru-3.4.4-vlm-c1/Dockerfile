@@ -43,6 +43,22 @@ ENV DEBIAN_FRONTEND=noninteractive \
     ARTIFACT_MANIFEST_SHA256=${ARTIFACT_MANIFEST_SHA256} \
     MINERU_API_MAX_CONCURRENT_REQUESTS=1
 
+# The base image ships two interpreters: `pip` resolves to the CUDA-enabled
+# python3.12 under /usr/local/lib/python3.12/dist-packages, while bare `python3`
+# resolves to the distro's python3.10. A build on 2026-09-01 installed
+# torch==2.8.0 successfully with `pip` and then failed the very next layer with
+# `PackageNotFoundError: No package metadata was found for torch`, because the
+# dependency assertion ran under 3.10 and could not see what 3.12 had installed.
+#
+# FOLYNTA_PYTHON pins every interpreter invocation in this image -- build-time
+# assertions, the artifact manifest tool, and the runtime verifier -- to the same
+# interpreter pip installs into. The sibling paddleocr image solves the same
+# problem with an explicit venv; this image cannot use one because MinerU is
+# installed against the base image's preinstalled CUDA torch build.
+ENV FOLYNTA_PYTHON=/usr/bin/python3.12
+RUN test -x "${FOLYNTA_PYTHON}" \
+    && "${FOLYNTA_PYTHON}" -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
+
 USER root
 RUN apt-get update -qq \
     && apt-get install -y -qq --no-install-recommends openssh-server git ca-certificates \
@@ -50,7 +66,7 @@ RUN apt-get update -qq \
     && mkdir -p /run/sshd /root/.ssh "${FOLYNTA_MODEL_ROOT}"
 
 # Pinned exactly as infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh:13-15.
-RUN pip install --no-cache-dir \
+RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir \
       --index-url https://download.pytorch.org/whl/cu128 \
       'torch==2.8.0' 'torchvision==0.23.0'
 
@@ -60,13 +76,13 @@ RUN git clone --filter=blob:none --no-checkout https://github.com/opendatalab/Mi
     && test "$(git -C "${FOLYNTA_SOURCE_ROOT}" rev-parse HEAD)" = "${SOURCE_REVISION}"
 
 # Pinned exactly as infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh:22-26.
-RUN pip install --no-cache-dir \
+RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir \
       'accelerate==1.14.0' \
       'transformers==4.57.3' \
       'mineru-vl-utils==1.0.5' \
       "${FOLYNTA_SOURCE_ROOT}[core]"
 
-RUN python3 - <<'PY'
+RUN "${FOLYNTA_PYTHON}" - <<'PY'
 from importlib.metadata import version
 
 pinned = {
@@ -85,7 +101,7 @@ version("mineru")
 PY
 
 # MODEL_REVISION only -- this is the weights snapshot, never the source checkout.
-RUN python3 - <<'PY'
+RUN "${FOLYNTA_PYTHON}" - <<'PY'
 import os
 from huggingface_hub import snapshot_download
 
@@ -101,12 +117,12 @@ RUN find "${FOLYNTA_MODEL_ROOT}" -type f -exec chmod 0444 {} +
 # manifest is content over the WEIGHTS revision (MODEL_REVISION), matching
 # benchmark/v6/candidate-registry.yaml mineru-3.4.4-vlm.identity.artifact_sha256.
 COPY benchmark/runpod_eval/artifact_manifest.py /opt/folynta/artifact_manifest.py
-RUN python3 /opt/folynta/artifact_manifest.py \
+RUN "${FOLYNTA_PYTHON}" /opt/folynta/artifact_manifest.py \
       --root "${FOLYNTA_MODEL_ROOT}" \
       --output /opt/folynta/model-artifact-manifest.json \
       --identity "opendatalab/MinerU2.5-Pro-2605-1.2B@${MODEL_REVISION}" \
       > /opt/folynta/model-artifact-manifest-receipt.json \
-    && python3 - <<'PY'
+    && "${FOLYNTA_PYTHON}" - <<'PY'
 import json
 import os
 
@@ -151,8 +167,8 @@ RUN chmod 0555 /opt/folynta/verify-runtime.sh /opt/folynta/start-ssh.sh \
       echo "weights_repository=opendatalab/MinerU2.5-Pro-2605-1.2B"; \
       echo "model_revision=${MODEL_REVISION}"; \
       echo "artifact_manifest_sha256=${ARTIFACT_MANIFEST_SHA256}"; \
-      python3 --version; \
-      python3 -m pip freeze | LC_ALL=C sort; \
+      "${FOLYNTA_PYTHON}" --version; \
+      "${FOLYNTA_PYTHON}" -m pip freeze | LC_ALL=C sort; \
     } > /opt/folynta/baked-runtime-receipt.txt \
     && chmod 0444 /opt/folynta/baked-runtime-receipt.txt \
     && sha256sum /opt/folynta/baked-runtime-receipt.txt | cut -d' ' -f1 > /opt/folynta/baked-runtime-receipt.sha256 \

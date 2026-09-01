@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Pinned to the interpreter pip installed into; see Dockerfile.
+: "${FOLYNTA_PYTHON:=/usr/bin/python3.12}"
+
 # Install-free runtime verification for the mineru-3.4.4-vlm-c1 baked image.
 # Everything this script checks was already installed/downloaded at build
 # time; this script only recomputes hashes and reads baked-in receipts. It
@@ -38,12 +41,12 @@ if [[ "$actual_source_revision" != "$SOURCE_REVISION" ]]; then
 fi
 
 # --- 2. model artifact manifest: MODEL_REVISION only, never SOURCE_REVISION. ---
-python3 "$ARTIFACT_MANIFEST_TOOL" \
+"${FOLYNTA_PYTHON}" "$ARTIFACT_MANIFEST_TOOL" \
   --root "$MODEL_ROOT" \
   --output "$OUT_DIR/model-artifact-manifest.json" \
   --identity "opendatalab/MinerU2.5-Pro-2605-1.2B@$MODEL_REVISION" \
   > "$OUT_DIR/model-artifact-manifest-receipt.json"
-python3 - "$OUT_DIR/model-artifact-manifest-receipt.json" "$ARTIFACT_MANIFEST_SHA256" <<'PY'
+"${FOLYNTA_PYTHON}" - "$OUT_DIR/model-artifact-manifest-receipt.json" "$ARTIFACT_MANIFEST_SHA256" <<'PY'
 import json
 import sys
 
@@ -55,7 +58,7 @@ if receipt["sha256"] != expected:
 PY
 
 # --- 3. installed package versions (no reinstall, read-only check). ---
-python3 - <<'PY'
+"${FOLYNTA_PYTHON}" - <<'PY'
 from importlib.metadata import version
 
 pinned = {
@@ -105,7 +108,7 @@ gpu_identity=$(nvidia-smi --query-gpu=name,uuid,driver_version,memory.total --fo
   echo "artifact_manifest_sha256=$ARTIFACT_MANIFEST_SHA256"
   echo "baked_runtime_receipt_file_sha256=$baked_receipt_actual_sha256"
   echo "provider_qualification_receipt_object_sha256_logged_only=${FOLYNTA_BAKED_RUNTIME_RECEIPT_SHA256:-<unset>}"
-  python3 --version
-  python3 -m pip freeze | LC_ALL=C sort
+  "${FOLYNTA_PYTHON}" --version
+  "${FOLYNTA_PYTHON}" -m pip freeze | LC_ALL=C sort
   echo "gpu=$gpu_identity"
 } > "$OUT_DIR/verify-runtime-receipt.txt"
