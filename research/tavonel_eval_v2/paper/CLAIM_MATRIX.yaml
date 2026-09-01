@@ -125,6 +125,14 @@ negative_findings:
     before payload on distinct metadata constraints without producing a compiler endpoint result;
     after the third observed refusal, another redesign would risk result-following adaptation
   evidence: C-35
+- id: N-18
+  finding: an evidence-adequacy gate can reject the cohort that would have produced the more
+    flattering headline number. A regulatory cohort whose pairs were largely byte-identical
+    non-substantive reissues yielded a higher mean work-avoided figure (96.12 per cent) than
+    its successor (88.66 per cent) precisely because most of its pairs had nothing to
+    recompile; the preregistered minimum-changed-pair gate refused it, and the successor
+    raised that threshold rather than lowering it
+  evidence: C-36
 claims:
 - id: C-01
   wording: On 34 revision pairs from two source families, a selective recompilation and a
@@ -911,6 +919,58 @@ claims:
     incorporates the predecessor authority sequence; the exact SFIR1 and SFIR2 failure receipts
     remain separately immutable and must not be collapsed into the SFIR3 reason.
   receipt_file_sha256: sha256:531773f0aa1877f82e324611383cc69d29b9ca5a699b63ca68299953548d7273
+- id: C-36
+  wording: 'On eleven prospectively frozen revision pairs drawn from eleven eCFR parts
+    across seven US federal regulators and six CFR titles, selective recompilation agreed
+    with full recomputation on every pair with zero stale artifacts escaping, and the
+    system''s semantic/non-semantic decision matched the publisher''s independently
+    assigned substantive flag on all eleven pairs.'
+  protocol: H3-B-REGULATORY-ECFR-02
+  receipt: research/experiments/H3-B-REGULATORY-ECFR-02/receipts/regulatory-revision-result.json
+  seal_receipt: research/experiments/H3-B-REGULATORY-ECFR-02/receipts/pre-fetch-seal.json
+  predecessor_receipt: research/experiments/H3-B-REGULATORY-ECFR-01/receipts/regulatory-revision-result.json
+  repository: 0ssol1620-byte/ai-knowledge-compiler
+  branch: agent/tavonel-vkc-research
+  commit: 05b6971
+  split: held_out
+  status: ESTABLISHED_POSITIVE
+  allowed:
+  - selective recompilation agreed with full recomputation on this eleven-pair regulatory
+    cohort, with zero stale artifacts
+  - typed change-channel separation held on a second, non-Wikipedia, production-shaped
+    revision family
+  - on this cohort the semantic/non-semantic decision agreed with an external, independently
+    assigned government label eleven times out of eleven
+  - the sealed H3-B-CURRENT-CORE-PUBLIC-REVISION-01 evaluator was reused byte-for-byte,
+    so the result is evidence about the corpus family rather than about a changed method
+  forbidden:
+  - the compiler is correct on arbitrary regulatory sources
+  - 88.66 per cent work avoided is a general rate across corpora
+  - agreement with the substantive flag establishes semantic correctness
+  - the V03 Wikipedia claim boundary is widened by this result
+  - OCR, ontology or customer-data performance is established
+  - the predecessor ECFR-01 adequacy failure is superseded or retracted
+  limitations:
+  - eleven pairs is a small cohort. The agreement figure is a count, not a calibrated
+    accuracy, and no confidence interval is claimed.
+  - the eCFR substantive flag is an editorial publisher annotation, not an adjudicated
+    semantic ground truth. It is reported as an independent comparison and was never
+    used to select pairs, tune anything, or gate the result.
+  - the predecessor instrument ECFR-01 PASSED both safety gates but FAILED its preregistered
+    evidence-adequacy gate at 5 changed pairs against a required 6, because six of its
+    pairs were byte-identical non-substantive reissues. That failure stands as its own
+    recorded result and is not superseded by C-36.
+  - ECFR-02 differs from ECFR-01 in selection only. The adequacy threshold was raised
+    from 6 to 8, not lowered; candidate screening used the versions endpoint's amendment
+    metadata alone, before this protocol was frozen and before any section content was
+    fetched for the selected parts.
+  - the mean work-avoided figure is computed over a cohort in which every pair changed.
+    It is this cohort's number and carries no cross-corpus generality.
+  - six identity resolutions abstained rather than force-matching, and are reported as
+    unresolved rather than counted as agreement.
+  external_gpu_cost_usd: 0.0
+  receipt_sha256_of_result: sha256:856504469e9fec5ef9fc1c2410db82f841f33cc87e00c6f2f5098ad2e2e17271
+  seal_sha256: sha256:32fb7403b5e36bd579bc122638d35b887552beafd29494f1723ccad523e645c8
 paper_readiness_gaps:
 - id: G-01
   gap: V2R4 is a positive held-out migration-closure result, but no positive end-to-end SourceFact

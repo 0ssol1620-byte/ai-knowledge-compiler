@@ -94,6 +94,22 @@ and spend $0 (C-35).
 > **No SFIR4 capacity, roster, endpoint or acceptance result is claimed in this
 > draft.** GPU use remains 0 seconds and spend $0.
 
+A separate strand asked whether the mechanism results hold outside the
+encyclopedia corpus they were developed on. Eleven prospectively frozen revision
+pairs from eleven eCFR parts, spanning seven US federal regulators, agreed with
+full recomputation on all eleven with zero stale artifacts, at 88.66% mean work
+avoided on a cohort in which every pair changed. eCFR was chosen because each
+revision record carries a publisher-assigned `substantive` flag — an outside
+answer to the question the compiler is being asked, which Wikipedia does not
+provide. The typed semantic/non-semantic decision matched that flag 11 times out
+of 11 while separating 94 semantic changes from 11,226 locator and metadata
+changes. The instrument that preceded it is the more useful half: its first
+cohort passed both safety gates, produced a *higher* headline figure (96.12%),
+and was rejected by its own preregistered evidence-adequacy gate because six of
+its pairs were byte-identical reissues with nothing to recompile. The successor
+changed selection only and raised that threshold rather than lowering it
+(C-36, N-18).
+
 ---
 
 ## 1. What this paper claims, and what it does not
@@ -218,6 +234,49 @@ and the target atom was recovered in every case where the envelope contained it
 (C-05). Two leakage controls were rejected by construction: one that injected a
 body token into the intent view, and one whose intent field differed across the
 two revisions.
+### 3.5 The same mechanism on regulation, against an outside label
+
+Everything above is development split, and §3.1's limitation — both build paths
+read the same canonical document — is why none of it can speak to the source.
+One later result is different in two ways worth stating here rather than
+burying in an appendix: it is held-out, and it is scored against a label this
+programme did not produce.
+
+Eleven revision pairs were drawn from eleven eCFR parts spanning seven US
+federal regulators and six CFR titles (FDA, EPA, OSHA, HHS/OCR, SEC, CFPB,
+NHTSA). Selective recompilation agreed with full recomputation on all eleven,
+with zero stale artifacts. Mean work avoided was 88.66% on a cohort in which
+every pair changed (C-36).
+
+The reason for choosing eCFR over the SEC filings used elsewhere in this
+programme is that each eCFR revision record carries a `substantive` boolean
+assigned by the publisher: did this amendment change regulatory substance, or
+was the section merely reissued. Wikipedia has no equivalent field. It is an
+outside answer to the question the compiler is being asked, and it was never
+used to select pairs, tune anything, or gate the result.
+
+TAVONEL's semantic/non-semantic decision matched that flag on 11 of 11 pairs,
+while separating 94 semantic changes from 11,226 locator and metadata changes
+in the same documents. Six identity resolutions abstained and are reported as
+unresolved rather than counted as agreement.
+
+**Three things this is not.** Eleven pairs is a count, not a calibrated
+accuracy, and no interval is claimed. The `substantive` flag is an editorial
+annotation rather than an adjudicated ground truth. And 88.66% is this cohort's
+number — the forbidden list on C-36 exists mainly to stop that figure being
+quoted as a rate.
+
+The instrument that preceded it failed, which is the part worth keeping. Its
+first cohort (title 21 only) passed both safety gates but missed its
+preregistered adequacy gate — 5 changed pairs against a required 6 — because
+six of its eleven pairs were non-substantive reissues returning byte-identical
+XML. Agreeing with the label on a byte-identical reissue tests nothing. The
+gate caught a cohort that would have produced a *higher* headline number
+(96.12%) on weaker evidence, and it is left on the record as its own result.
+The successor changed selection only, and raised the adequacy threshold from 6
+to 8 rather than lowering it (N-18).
+
+
 
 ---
 
