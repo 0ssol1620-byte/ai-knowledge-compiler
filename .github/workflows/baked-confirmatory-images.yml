@@ -73,6 +73,21 @@ jobs:
           done
           sudo apt-get clean
           docker system prune --all --force
+          # GitHub's ubuntu-24.04 runner carries a second, larger ephemeral
+          # disk at /mnt (~65G free) that the Docker daemon does not use by
+          # default. The MinerU image bakes a multi-GB safetensors checkout on
+          # top of a CUDA base and exhausted / even after the cleanup above --
+          # it reached the chmod on model.safetensors and died there. Moving
+          # the daemon's data-root onto /mnt gives the build the larger disk
+          # instead of the 72G root that also holds the runner's own toolchain.
+          if [ -d /mnt ]; then
+            df -h /mnt
+            sudo systemctl stop docker docker.socket || true
+            sudo mkdir -p /mnt/docker-data
+            printf '{ "data-root": "/mnt/docker-data" }\n' | sudo tee /etc/docker/daemon.json
+            sudo systemctl start docker
+            docker info --format 'docker data-root: {{.DockerRootDir}}'
+          fi
           df -h /
       - name: Resolve target-specific model identity
         id: model_identity

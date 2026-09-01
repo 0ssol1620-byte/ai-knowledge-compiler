@@ -51,7 +51,7 @@ RUN python3.11 -m venv /opt/folynta/venv \
          'paddlepaddle-gpu==3.2.1' \
          --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
-    && /opt/folynta/venv/bin/paddleocr install_genai_server_deps fastdeploy \
+    && PATH="/opt/folynta/venv/bin:${PATH}" /opt/folynta/venv/bin/paddleocr install_genai_server_deps fastdeploy \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
     && rm -rf /root/.cache/pip
 
