@@ -1,0 +1,87 @@
+{
+  "cases_evaluated": 49,
+  "clean_documents_with_violations": 0,
+  "closes_audit_section": "28-B",
+  "estimated_cost_usd": 0.0,
+  "experiment_id": "PRESERVATION-E2E-01",
+  "false_positive_rate": 0.0,
+  "gates": {
+    "cases_evaluated": {
+      "minimum": 32,
+      "pass": true,
+      "value": 49
+    },
+    "detection_rate_per_family": {
+      "minimum": 1.0,
+      "pass": false,
+      "value": {
+        "F1_MISSING_SOURCE_BLOCK": 1.0,
+        "F2_CROSS_VERSION_EVIDENCE": 0.367347,
+        "F3_DETACHED_TABLE_CELL": 1.0,
+        "F4_CRITICAL_TOKEN_DROPPED": 1.0
+      }
+    },
+    "false_positive_rate": {
+      "maximum": 0.0,
+      "pass": true,
+      "value": 0.0
+    },
+    "repair_locality_blocks_mean": {
+      "maximum": 0.5,
+      "pass": true,
+      "value": 0.021309
+    }
+  },
+  "generated_at": "2026-09-01T14:00:12.901785+00:00",
+  "gpu_seconds": 0.0,
+  "parser_output_source": "research/experiments/SEM-RISK-CONF-02/outputs/lane-a-native",
+  "parser_outputs_considered": 51,
+  "per_family": {
+    "F1_MISSING_SOURCE_BLOCK": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    },
+    "F2_CROSS_VERSION_EVIDENCE": {
+      "detected": 18,
+      "detection_rate": 0.367347,
+      "injected": 49
+    },
+    "F3_DETACHED_TABLE_CELL": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    },
+    "F4_CRITICAL_TOKEN_DROPPED": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    }
+  },
+  "repair_locality_blocks_mean": 0.021309,
+  "repair_locality_pages_mean": 0.057402,
+  "schema": "tavonel.preservation.fault-injection.result.v1",
+  "undetected_examples": [
+    {
+      "case_id": "docstructbench_dianzishu_zhongwenzaixian-o.O-61520553.pdf_328",
+      "fault": "F2_CROSS_VERSION_EVIDENCE"
+    },
+    {
+      "case_id": "docstructbench_dianzishu_zhongwenzaixian-o.O-61521384.pdf_750",
+      "fault": "F2_CROSS_VERSION_EVIDENCE"
+    },
+    {
+      "case_id": "docstructbench_dianzishu_zhongwenzaixian-o.O-61571884.pdf_94",
+      "fault": "F2_CROSS_VERSION_EVIDENCE"
+    },
+    {
+      "case_id": "docstructbench_llm-raw-scihub-o.O-hup.777.pdf_7",
+      "fault": "F2_CROSS_VERSION_EVIDENCE"
+    },
+    {
+      "case_id": "docstructbench_llm-raw-scihub-o.O-s0167-8655%2800%2900107-0.pdf_6",
+      "fault": "F2_CROSS_VERSION_EVIDENCE"
+    }
+  ],
+  "verdict": "FAIL"
+}

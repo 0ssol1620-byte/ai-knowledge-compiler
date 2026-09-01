@@ -1,0 +1,6 @@
+{
+  "protocol_sha256": "sha256:f776548098e028656efa8ee6515190d37f3e272373b308445f21f75068a30b98",
+  "runner_sha256": "sha256:7dd4422607cab94c8ee5c99ad50c2c9e4280a8971db205273b0223af738c772c",
+  "schema": "tavonel.preservation.fault-injection.seal.v2",
+  "sealed_at": "2026-09-01T14:02:00.329020+00:00"
+}

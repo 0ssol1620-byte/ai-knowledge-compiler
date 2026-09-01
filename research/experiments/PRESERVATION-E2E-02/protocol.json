@@ -1,0 +1,111 @@
+{
+  "schema": "tavonel.preservation.fault-injection.protocol.v2",
+  "experiment_id": "PRESERVATION-E2E-02",
+  "status": "PREPARED_BEFORE_RUN",
+  "prepared_at": "2026-09-02T00:15:00+09:00",
+  "closes_audit_section": "28-B",
+
+  "supersedes": {
+    "experiment_id": "PRESERVATION-E2E-01",
+    "verdict_there": "FAIL",
+    "what_failed": "F2_CROSS_VERSION_EVIDENCE detected 18 of 49 injections (0.367), against a preregistered minimum of 1.0.",
+    "diagnosis": "The failure was in the harness, not in the contract. The V01 injector always mutated blocks[0], but a case's bindings do not necessarily cite blocks[0]. Partitioning the 49 cases by whether the mutated block was cited gives a perfect diagonal: cited and detected 18, cited and missed 0, uncited and detected 0, uncited and missed 31. Every injection that was actually witnessed by a binding was caught; every miss was an injection into evidence no binding cited, which the contract is not asked to check.",
+    "why_v01_is_not_deleted": "The FAIL verdict and its receipt stay on the record. A harness defect that produced a real FAIL is evidence about how this measurement was built, and removing it would leave only the passing run visible.",
+    "v01_receipt": "research/experiments/PRESERVATION-E2E-01/receipts/result.json"
+  },
+
+  "question": "On canonical documents built from real parser output, does the Semantic Preservation Contract detect injected evidence faults in cited evidence, and is the repair scope it reports local to the damage?",
+
+  "change_from_v01": {
+    "only_change": "F2 now mutates the SourceRef of a block that some binding actually cites, selected as the first block appearing in any binding's source_block_ids, rather than unconditionally blocks[0].",
+    "unchanged": [
+      "F1, F3, F4 injectors are byte-identical to V01",
+      "document and binding construction is byte-identical to V01",
+      "the negative control is byte-identical to V01",
+      "all preregistered gate thresholds are byte-identical to V01"
+    ],
+    "gates_were_not_relaxed": true,
+    "note": "The gate F2 failed against is retained unchanged at 1.0. If the fix is wrong, this experiment fails the same gate again."
+  },
+
+  "inputs": {
+    "parser_outputs": "research/experiments/SEM-RISK-CONF-02/outputs/lane-a-native/",
+    "case_selection": "every case with status == completed and block_count >= 4, ordered by case_id; no sampling",
+    "provenance_note": "Read-only. Writes nothing into SEM-RISK-CONF-02 and consumes none of its inference budget."
+  },
+
+  "fault_families": [
+    {
+      "id": "F1_MISSING_SOURCE_BLOCK",
+      "invariant": "SOURCE_BLOCK_EXISTS",
+      "injection": "a binding cites a block id that is not present in the document",
+      "expected_detection": true
+    },
+    {
+      "id": "F2_CROSS_VERSION_EVIDENCE",
+      "invariant": "SOURCE_REF_SAME_VERSION",
+      "injection": "the SourceRef of a block that a binding cites is rewritten to a different document_version_id",
+      "expected_detection": true
+    },
+    {
+      "id": "F3_DETACHED_TABLE_CELL",
+      "invariant": "TABLE_CELL_BELONGS_TO_BLOCK",
+      "injection": "a binding cites a table cell that belongs to no attached source block",
+      "expected_detection": true
+    },
+    {
+      "id": "F4_CRITICAL_TOKEN_DROPPED",
+      "invariant": "CRITICAL_TOKEN_PRESENT",
+      "injection": "a declared critical token is removed from the evidence text it was drawn from",
+      "expected_detection": true
+    }
+  ],
+
+  "negative_control": {
+    "id": "N0_NO_FAULT",
+    "description": "the unmodified document, run through the same path",
+    "expected_detection": false
+  },
+
+  "additional_control_from_v01": {
+    "id": "N1_UNCITED_EVIDENCE_IS_NOT_CHECKED",
+    "description": "mutate the version of a block that no binding cites; the contract should stay silent",
+    "expected_detection": false,
+    "why": "V01's failure showed this behaviour accidentally. Stating it as an explicit expectation turns an artifact into a measured boundary: the contract's scope is cited evidence, and this control documents that it does not silently extend beyond it."
+  },
+
+  "metrics": {
+    "detection_rate_per_family": "detected / injected, reported separately for each fault family",
+    "false_positive_rate": "clean documents reporting any violation / clean documents",
+    "uncited_mutation_false_positive_rate": "N1 controls reporting any violation / N1 controls",
+    "repair_locality_blocks": "quarantined blocks / total blocks, per detected fault",
+    "repair_locality_pages": "quarantined pages / total pages, per detected fault"
+  },
+
+  "preregistered_gates": {
+    "detection_rate_min_per_family": 1.0,
+    "false_positive_rate_max": 0.0,
+    "uncited_mutation_false_positive_rate_max": 0.0,
+    "repair_locality_blocks_max_mean": 0.5,
+    "minimum_cases": 32
+  },
+
+  "forbidden": {
+    "changing_gates_after_seeing_results": true,
+    "excluding_cases_after_seeing_their_outcome": true,
+    "deleting_or_amending_the_v01_receipt": true,
+    "reporting_repair_locality_without_detection_rate": true,
+    "claiming_this_measures_parser_quality": true,
+    "claiming_this_generalizes_beyond_the_lane_a_corpus": true
+  },
+
+  "limitations": [
+    "Faults are injected synthetically; the detection rate is over injected faults, not over faults observed in the wild.",
+    "The corpus is Lane A born-digital pages; image-only pages are not represented.",
+    "Critical tokens are derived mechanically from evidence text rather than declared by a domain expert.",
+    "F3 injects a detached cell id rather than constructing a full table, so it exercises the cell-attachment check but not table reconstruction."
+  ],
+
+  "gpu_required": false,
+  "estimated_cost_usd": 0.0
+}

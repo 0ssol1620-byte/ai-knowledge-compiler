@@ -1,0 +1,74 @@
+{
+  "cases_evaluated": 49,
+  "clean_documents_with_violations": 0,
+  "closes_audit_section": "28-B",
+  "estimated_cost_usd": 0.0,
+  "experiment_id": "PRESERVATION-E2E-02",
+  "false_positive_rate": 0.0,
+  "gates": {
+    "cases_evaluated": {
+      "minimum": 32,
+      "pass": true,
+      "value": 49
+    },
+    "detection_rate_per_family": {
+      "minimum": 1.0,
+      "pass": true,
+      "value": {
+        "F1_MISSING_SOURCE_BLOCK": 1.0,
+        "F2_CROSS_VERSION_EVIDENCE": 1.0,
+        "F3_DETACHED_TABLE_CELL": 1.0,
+        "F4_CRITICAL_TOKEN_DROPPED": 1.0
+      }
+    },
+    "false_positive_rate": {
+      "maximum": 0.0,
+      "pass": true,
+      "value": 0.0
+    },
+    "repair_locality_blocks_mean": {
+      "maximum": 0.5,
+      "pass": true,
+      "value": 0.021021
+    },
+    "uncited_mutation_false_positive_rate": {
+      "maximum": 0.0,
+      "pass": true,
+      "value": 0.0
+    }
+  },
+  "generated_at": "2026-09-01T14:02:01.330281+00:00",
+  "gpu_seconds": 0.0,
+  "n1_uncited_controls": 45,
+  "n1_uncited_false_positives": 0,
+  "parser_output_source": "research/experiments/SEM-RISK-CONF-02/outputs/lane-a-native",
+  "parser_outputs_considered": 51,
+  "per_family": {
+    "F1_MISSING_SOURCE_BLOCK": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    },
+    "F2_CROSS_VERSION_EVIDENCE": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    },
+    "F3_DETACHED_TABLE_CELL": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    },
+    "F4_CRITICAL_TOKEN_DROPPED": {
+      "detected": 49,
+      "detection_rate": 1.0,
+      "injected": 49
+    }
+  },
+  "repair_locality_blocks_mean": 0.021021,
+  "repair_locality_pages_mean": 0.060021,
+  "schema": "tavonel.preservation.fault-injection.result.v2",
+  "uncited_mutation_false_positive_rate": 0.0,
+  "undetected_examples": [],
+  "verdict": "PASS"
+}
