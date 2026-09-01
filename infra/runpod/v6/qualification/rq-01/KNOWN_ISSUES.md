@@ -205,3 +205,31 @@ privileged/CAP_SYS_ADMIN-capable Pod (if RunPod offers one), or use a
 docker-in-docker base image rather than `ubuntu` plus an apt-installed
 buildah. Neither has been tested.
 
+## Observed CUDA versions on this account's hosts (context for INC-RUNPOD-02)
+
+Serverless worker logs for the `tavonel-foundation-ocr-gpu` endpoint, covering
+2026-08-29 11:43Z through 2026-09-01 22:13Z across 8 distinct workers, report
+exactly two CUDA versions in their container banners:
+
+```
+CUDA Version 12.4.1
+CUDA Version 12.6.3
+```
+
+Neither satisfies the `cuda>=12.8` requirement that the
+`runpod/pytorch@sha256:263d4144...` base image declares — the same requirement
+whose failure produced INC-RUNPOD-02's 23.6-hour billing zombie. That endpoint
+is unrelated to this lineage (it runs RapidOCR under onnxruntime, and it is a
+product surface rather than a research one), so this is not evidence about the
+rq-01 images. It is evidence about the *fleet*: hosts in the 12.4–12.6 range
+are routinely allocated on this account.
+
+Consequence for the qualification runs: `allowedCudaVersions` is not a
+formality that will always be satisfiable. A create constrained to
+`("12.8", "12.9")` may find no capacity at all, and a **refusal to place is
+the correct outcome** — it is the constraint doing its job, not a fault to
+work around. Do not respond to a placement failure by widening the allowed
+set: the image genuinely cannot start below 12.8, and a Pod that cannot start
+still bills.
+
+
