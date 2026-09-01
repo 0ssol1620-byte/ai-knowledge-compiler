@@ -85,7 +85,8 @@ RUN python3.11 -m venv /opt/folynta/venv \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
          'paddleformers==1.2.0' \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'setuptools>=68' 'wheel' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --no-build-isolation \
          'git+https://github.com/PaddlePaddle/FastDeploy.git@v2.3.0#egg=fastdeploy-gpu' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
     && rm -rf /root/.cache/pip
