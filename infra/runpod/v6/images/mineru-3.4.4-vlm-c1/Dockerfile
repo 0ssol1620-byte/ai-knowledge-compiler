@@ -85,16 +85,31 @@ RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir \
 RUN "${FOLYNTA_PYTHON}" - <<'PY'
 from importlib.metadata import version
 
+# torch and torchvision come from the cu128 wheel index, so their installed
+# versions carry a PEP 440 local version identifier ("2.8.0+cu128"). That
+# suffix is the CUDA build tag, not a different release, and it is exactly the
+# build this image is supposed to contain -- asserting bare equality against
+# "2.8.0" rejected the correct wheel on 2026-09-01.
+#
+# The public version (everything left of "+") is still compared exactly, so a
+# drift from 2.8.0 to 2.8.1 still fails. The local tag is compared separately
+# against the index this Dockerfile pins, so a CPU-only or cu126 wheel silently
+# substituted for the cu128 one also fails.
 pinned = {
-    "torch": "2.8.0",
-    "torchvision": "0.23.0",
-    "accelerate": "1.14.0",
-    "transformers": "4.57.3",
-    "mineru-vl-utils": "1.0.5",
+    "torch": ("2.8.0", "cu128"),
+    "torchvision": ("0.23.0", "cu128"),
+    "accelerate": ("1.14.0", None),
+    "transformers": ("4.57.3", None),
+    "mineru-vl-utils": ("1.0.5", None),
 }
-actual_pinned = {name: version(name) for name in pinned}
-if actual_pinned != pinned:
-    raise SystemExit(f"image dependency mismatch: {actual_pinned!r}")
+mismatches = {}
+for name, (expected_public, expected_local) in pinned.items():
+    installed = version(name)
+    public, _, local = installed.partition("+")
+    if public != expected_public or (local or None) != expected_local:
+        mismatches[name] = installed
+if mismatches:
+    raise SystemExit(f"image dependency mismatch: {mismatches!r}")
 # mineru is installed from the pinned SOURCE_REVISION checkout, not a released
 # version number, so it has no fixed version string to assert against.
 version("mineru")
