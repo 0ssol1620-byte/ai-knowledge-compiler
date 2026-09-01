@@ -39,7 +39,7 @@ from pathlib import Path
 CRED = Path(r"D:\Github_API.txt")
 REST = "https://rest.runpod.io/v1"
 GRAPHQL = "https://api.runpod.io/graphql"
-SSH_KEY = Path.home() / ".ssh" / "id_ed25519"
+SSH_KEY = Path.home() / ".ssh" / "tavonel_w6"
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = REPO_ROOT / "infra/runpod/v6/qualification/rq-01/fixtures/rq-01-smoke-001.png"
@@ -84,7 +84,7 @@ def find_by_name(k: str, name: str) -> list[str]:
     return [p["id"] for p in pods if p.get("name") == name and p.get("desiredStatus") != "TERMINATED"]
 
 
-def uptime_seconds(k: str, pod_id: str) -> int:
+def uptime_seconds(k: str, pod_id: str) -> int | None:
     payload = {
         "query": "query($id:String!){pod(input:{podId:$id}){runtime{uptimeInSeconds}}}",
         "variables": {"id": pod_id},
@@ -98,9 +98,13 @@ def uptime_seconds(k: str, pod_id: str) -> int:
         with urllib.request.urlopen(req, timeout=60) as resp:
             data = json.load(resp)
         pod = (data.get("data") or {}).get("pod") or {}
-        return int(((pod.get("runtime") or {}).get("uptimeInSeconds")) or 0)
     except Exception:  # noqa: BLE001
-        return 0
+        # Unknown is not zero -- see build_fastdeploy_wheel_on_gpu.py.
+        return None
+    runtime = pod.get("runtime")
+    if runtime is None:
+        return None
+    return int(runtime.get("uptimeInSeconds") or 0)
 
 
 def destroy(k: str, pod_id: str) -> None:
@@ -191,11 +195,11 @@ def main() -> int:
                 continue
             ip, pm = p.get("publicIp"), (p.get("portMappings") or {})
             up = uptime_seconds(k, pod_id)
-            if ip and pm.get("22") and up > 0:
+            if ip and pm.get("22") and up is not None and up > 0:
                 host, port = ip, int(pm["22"])
                 print(f"ready: ssh {host}:{port} uptime={up}s")
                 break
-            if p.get("desiredStatus") == "RUNNING" and up == 0:
+            if p.get("desiredStatus") == "RUNNING" and up == 0:  # definite zero only
                 waited = int(time.time() - (deadline - args.max_minutes * 60))
                 if waited > ZOMBIE_GRACE_SECONDS:
                     print(f"zombie gate: RUNNING with uptime 0 after {waited}s")
