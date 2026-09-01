@@ -105,16 +105,16 @@ RUN --mount=type=secret,id=gh_token \
  && echo '171a1a142fa1462f34c21270a0b11da7d921a9580c76673ab9a839d8a71dd5fe  /opt/folynta/fastdeploy_gpu-2.3.0-py3-none-any.whl' | sha256sum -c -
 
 RUN python3.11 -m venv /opt/folynta/venv \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --upgrade 'pip==25.1.1' \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off --upgrade 'pip==25.1.1' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off \
          'paddlepaddle-gpu==3.2.1' \
          --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off 'paddleocr[doc-parser]==3.7.0' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off \
          'paddleformers==1.2.0' \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off \
          /opt/folynta/fastdeploy_gpu-2.3.0-py3-none-any.whl \
-    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off 'protobuf==6.33.6' \
     && rm -rf /root/.cache/pip
 
 # Why fastdeploy-gpu and paddleformers are installed directly rather than via
