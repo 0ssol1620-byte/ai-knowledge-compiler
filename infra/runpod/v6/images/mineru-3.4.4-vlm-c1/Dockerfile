@@ -131,11 +131,35 @@ RUN find "${FOLYNTA_MODEL_ROOT}" -type f -exec chmod 0444 {} +
 # Assert the downloaded weights match the frozen artifact manifest hash. The
 # manifest is content over the WEIGHTS revision (MODEL_REVISION), matching
 # benchmark/v6/candidate-registry.yaml mineru-3.4.4-vlm.identity.artifact_sha256.
+#
+# --exclude-prefix .cache is REQUIRED, and omitting it is what failed the
+# 2026-09-01 build with
+#   artifact manifest sha256 mismatch:
+#     'sha256:99ee63b7...' != 'sha256:1611a889...'
+# The weights were never in question: the Hugging Face API for revision
+# bff20d4a reports exactly 13 files totalling 2,328,028,720 bytes, matching the
+# 2026-08-01 evaluation record byte for byte. What differed is that
+# snapshot_download also writes .cache/huggingface/ download metadata into
+# local_dir, so hashing it made the manifest a function of the huggingface_hub
+# release instead of the model.
+#
+# Both sibling bootstraps already exclude it for exactly this reason -- see
+# remote_bootstrap_paddle_recovery.sh:134-141 and
+# remote_bootstrap_deepseek_recovery.sh:18,69 ("varies across huggingface_hub
+# releases and is not model content"). This image was the one that did not.
+#
+# The frozen constant was right and this Dockerfile was wrong. Do NOT resolve a
+# mismatch here by editing ARTIFACT_MANIFEST_SHA256 to whatever a build
+# observed: that value is pinned in six places including the 2026-08-01
+# evaluation report, candidate-registry.yaml, rq-01/lineage.json and
+# rq-01/SECURITY_REVIEW.md, and rewriting it would silently sever the claim
+# that SEM-RISK-CONF-02 runs on the same model those results describe.
 COPY benchmark/runpod_eval/artifact_manifest.py /opt/folynta/artifact_manifest.py
 RUN "${FOLYNTA_PYTHON}" /opt/folynta/artifact_manifest.py \
       --root "${FOLYNTA_MODEL_ROOT}" \
       --output /opt/folynta/model-artifact-manifest.json \
       --identity "opendatalab/MinerU2.5-Pro-2605-1.2B@${MODEL_REVISION}" \
+      --exclude-prefix .cache \
       > /opt/folynta/model-artifact-manifest-receipt.json \
     && "${FOLYNTA_PYTHON}" - <<'PY'
 import json
