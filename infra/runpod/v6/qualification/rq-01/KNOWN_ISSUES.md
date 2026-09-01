@@ -371,6 +371,52 @@ lane cannot be reproduced at its frozen runtime identity. Options 2 and 3
 remain, and both change what the confirmatory run may claim; neither may be
 taken silently.
 
+### Option 3 attempted 2026-09-01: source build needs a GPU at build time
+
+Building from the tag looked viable on evidence, not hope. Three measurements
+said a source build satisfies every check that actually exists:
+
+* `benchmark/reports/paddleocr-vl-1.6-fastdeploy-runtime-manifest-2026-08-01.json`
+  pins `software.fastdeploy_gpu` as the **string** `"2.3.0"`; it hashes model
+  artifacts, not the wheel.
+* The image's dependency gate uses `importlib.metadata.version()` — also a
+  string comparison.
+* The single byte-level assertion is on a source file, and
+  `fastdeploy/input/text_processor.py` at tag `v2.3.0` hashes to exactly the
+  expected pre-patch value `b50570cb…a396d` (29,698 bytes, fetched from GitHub
+  raw at the tag).
+
+Two builds were run. Both reached the correct commit — pip cloned the repo and
+checked out `b8dd9d64cf8709d18741dc606afbe2e4d67b953a`, which is what the tag
+resolves to — and both failed in `setup.py`:
+
+| Attempt | Failure | Cause |
+|---|---|---|
+| 1 | `ModuleNotFoundError: No module named 'paddle'` | PEP 517 build isolation hid the venv's paddlepaddle from `setup.py` |
+| 2 | `ImportError: libcuda.so.1: cannot open shared object file` | `--no-build-isolation` let `setup.py` find paddle; importing paddle then needs the NVIDIA driver |
+
+The second failure is the wall. FastDeploy's `setup.py` imports `paddle` at
+build time to discover CUDA and compiler settings, and `paddle` cannot be
+imported without `libcuda.so.1`, which is supplied by the NVIDIA driver.
+GitHub Actions runners have no GPU and no driver. This is the same root cause
+that stopped `paddleocr install_genai_server_deps` earlier in the same image.
+
+**Why this is not worked around.** A stub `libcuda.so.1` or an `LD_PRELOAD`
+shim would get past the import. It would also mean the build queries a fake
+device for the architecture and compiler flags it bakes into the binary, and a
+binary built against fabricated device parameters cannot be claimed to be the
+runtime the 2026-08-01 measurements describe. That is precisely the class of
+shortcut INC-RUNPOD-01 exists to prohibit.
+
+**Where a source build could legitimately happen.** On GPU capacity — a RunPod
+pod with a real driver, building the wheel there and publishing it as a
+retained artifact. That is a real option and it is not blocked by anything
+except cost and sequencing. It is recorded here rather than attempted now,
+because it changes the build's trust boundary (the wheel would come from our
+own build host rather than the vendor) and that is a decision to make
+deliberately.
+
+
 
 
 
