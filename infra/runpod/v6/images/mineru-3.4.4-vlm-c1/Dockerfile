@@ -83,36 +83,61 @@ RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir \
       "${FOLYNTA_SOURCE_ROOT}[core]"
 # Security remediation, not a capability pin.
 #
-# The runpod/pytorch base image ships jupyter-server 2.17.0, which carries
-# GHSA-fcw5-x6j4-ccmp (CVE-2026-44727): stored XSS in the nbconvert handlers
-# via a missing sandbox CSP directive, CVSS:4.0 with high confidentiality,
-# integrity and availability impact, fixed in 2.20.0. It blocked this image's
-# Trivy gate (severity=CRITICAL, ignore-unfixed=true) on 2026-09-01.
+# The runpod/pytorch base image ships a Jupyter stack this runtime never uses.
+# Three packages in it carry CRITICAL advisories with fixes available, and they
+# blocked this image's Trivy gate (severity=CRITICAL, ignore-unfixed=true) on
+# 2026-09-01:
 #
-# This package is not ours and is not part of the frozen runtime identity: it
-# appears in neither verify-runtime.sh, the 2026-08-01 concurrency diagnostic
-# manifest, nor benchmark/v6/candidate-registry.yaml. Upgrading it therefore
-# cannot change what the confirmatory run may claim about running the same
-# runtime as the 2026-08-01 measurements.
+#   jupyter-server 2.17.0  GHSA-fcw5-x6j4-ccmp / CVE-2026-44727
+#                          stored XSS in the nbconvert handlers, missing
+#                          sandbox CSP directive          -> fixed in 2.20.0
+#   jupyterlab     4.4.9   GHSA-mqcg-5x36-vfcg / CVE-2026-42557
+#   notebook       7.4.2   command-linker attributes in HTML allow one-click
+#                          command execution from untrusted content, CVSS 9.6
+#                                                         -> 4.5.7 / 7.5.6
 #
-# The image never serves notebooks -- ENTRYPOINT is start-ssh.sh and the
-# vulnerable handlers are unreachable here. That is a reason the real-world
-# risk is low. It is NOT a reason to suppress the gate: the qualification
-# receipt asserts zero critical vulnerabilities, and an assertion that is
-# quietly false is worth less than no assertion at all.
+# None of these are ours. They arrive in the base image; this Dockerfile never
+# installs them. None is part of the frozen runtime identity: they appear in
+# neither verify-runtime.sh, the 2026-08-01 concurrency diagnostic manifest,
+# nor benchmark/v6/candidate-registry.yaml. Upgrading them therefore cannot
+# change what the confirmatory run may claim about running the same runtime as
+# the 2026-08-01 measurements -- unlike torch or transformers, which are pinned
+# above and must not move.
+#
+# The image never serves a Jupyter UI: ENTRYPOINT is start-ssh.sh and this is a
+# headless inference runtime, so all three attack surfaces are unreachable
+# here. That is a reason the real-world risk is low. It is NOT a reason to
+# suppress the gate: the qualification receipt asserts zero critical
+# vulnerabilities, and an assertion that is quietly false is worth less than no
+# assertion at all.
+#
+# Upgraded as one pip invocation so the resolver settles them together, then
+# verified inline -- a constraint that silently fails to apply must not pass as
+# remediation.
 RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir --upgrade \
       'jupyter-server>=2.20.0' \
+      'jupyterlab>=4.5.7' \
+      'notebook>=7.5.6' \
  && "${FOLYNTA_PYTHON}" - <<'PY'
 from importlib.metadata import version
 
-installed = version("jupyter_server")
-parts = tuple(int(p) for p in installed.split(".")[:2])
-if parts < (2, 20):
-    raise SystemExit(
-        f"jupyter-server {installed} still below the 2.20.0 fix for "
-        "GHSA-fcw5-x6j4-ccmp"
-    )
-print(f"jupyter-server {installed} clears GHSA-fcw5-x6j4-ccmp")
+required = {
+    "jupyter_server": (2, 20),
+    "jupyterlab": (4, 5, 7),
+    "notebook": (7, 5, 6),
+}
+problems = []
+for dist, minimum in required.items():
+    installed = version(dist)
+    parts = tuple(int(p) for p in installed.split(".")[: len(minimum)] if p.isdigit())
+    if parts < minimum:
+        problems.append(
+            f"{dist} {installed} below {'.'.join(str(n) for n in minimum)}"
+        )
+    else:
+        print(f"{dist} {installed} clears its advisory")
+if problems:
+    raise SystemExit("; ".join(problems))
 PY
 
 RUN "${FOLYNTA_PYTHON}" - <<'PY'
