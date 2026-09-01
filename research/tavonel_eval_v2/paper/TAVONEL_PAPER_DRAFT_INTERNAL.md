@@ -289,6 +289,57 @@ gate caught a cohort that would have produced a *higher* headline number
 (96.12%) on weaker evidence, and it is left on the record as its own result.
 The successor changed selection only, and raised the adequacy threshold from 6
 to 8 rather than lowering it (N-18).
+### 3.6 What the preservation contract catches, and how much it quarantines
+
+The preservation invariants had been tested, but on fixtures written to trip
+them — which establishes that the code runs, and very little about whether the
+contract survives contact with real structure. This result rebuilds every
+document from actual extraction output over the frozen Lane A corpus and
+injects faults into those.
+
+Across 49 documents and four fault families — a binding citing a block that is
+not there, evidence whose source reference points at a different document
+version, a table cell attached to no block, and a declared critical token
+deleted from the text it was drawn from — detection was 49 of 49 in every
+family. No unmodified document produced a violation (C-37).
+
+The number worth keeping is not the detection rate, which for deterministic
+structural invariants is closer to a correctness check than to a measurement.
+It is the quarantine scope: a single-block fault put a mean of 2.1% of blocks
+and 6.0% of pages into repair. That is the difference between repairing a
+region and reprocessing a document, and it is the claim the whole selective
+recompilation argument depends on.
+
+The first attempt failed, and the way it failed is the more useful part. F2 —
+cross-version evidence — was detected on only 18 of 49 injections against a
+preregistered minimum of 1.0, and the run was recorded as a FAIL. The
+temptation at that point is to read it as a contract gap. Partitioning the
+cases by whether the mutated block was actually cited by a binding gives:
+
+|                    | mutated block cited | not cited |
+| ------------------ | ------------------- | --------- |
+| violation fired    | 18                  | 0         |
+| no violation       | 0                   | 31        |
+
+A perfect diagonal. Every injection some binding witnessed was caught; every
+miss was a mutation of evidence nothing cited. The defect was in our injector,
+which always mutated the first block regardless of whether anything cited it,
+not in the contract. The second instrument changes that one line, leaves the
+failing gate at 1.0 so a wrong fix fails identically, and keeps the failing run
+on the record (N-19).
+
+That accident was then promoted into an explicit control. N1 mutates a block no
+binding cites and asserts the contract stays silent: 45 controls, zero fired.
+The contract's scope is cited evidence, and that boundary is now measured
+rather than inferred from a bug.
+
+**Three things this is not.** Every fault here was injected, so the detection
+rate is over synthetic corruption and says nothing about the distribution of
+faults in the wild. The parser outputs are inputs, not subjects: this measures
+the contract, not extraction quality. And the corpus is born-digital Lane A
+pages, so image-only content is entirely absent from the evidence.
+
+
 
 
 

@@ -133,6 +133,19 @@ negative_findings:
     recompile; the preregistered minimum-changed-pair gate refused it, and the successor
     raised that threshold rather than lowering it
   evidence: C-36
+- id: N-19
+  finding: a fault-injection harness can fail its own gate for a reason that is not a
+    defect in the system under test. PRESERVATION-E2E-01 detected 18 of 49 cross-version
+    injections against a preregistered minimum of 1.0 and was recorded as a FAIL. The
+    cause was that the injector always mutated the first block, while a document's
+    bindings do not necessarily cite the first block. Partitioning the cases by whether
+    the mutated block was cited produced a perfect diagonal of 18 detected and 0 missed
+    among cited mutations, 0 detected and 31 missed among uncited ones -- which located
+    the defect in the harness rather than the contract. The failing run is kept, the
+    gate was left at 1.0, and the accidental behaviour was promoted to an explicit
+    control (N1, 45 cases, 0 false positives) that now measures the contract's scope
+    boundary instead of hiding it
+  evidence: C-37
 claims:
 - id: C-01
   wording: On 34 revision pairs from two source families, a selective recompilation and a
@@ -989,6 +1002,51 @@ claims:
       implemented its own fetch path rather than reusing it.
     consequence: this is disclosed duplication of transport code, not a defect in the measured
       result. The two paths were not compared, so no claim is made that they agree.
+- id: C-37
+  wording: 'On 49 canonical documents built from real parser output over the frozen
+    Lane A corpus, the Semantic Preservation Contract detected every injected evidence
+    fault in all four fault families (49 of 49 in each of missing source block, cross-version
+    evidence, detached table cell, dropped critical token), reported no violation on
+    any unmodified document, and quarantined a mean of 2.1 per cent of blocks and 6.0
+    per cent of pages per detected fault.'
+  protocol: research/experiments/PRESERVATION-E2E-02/protocol.json
+  receipt: research/experiments/PRESERVATION-E2E-02/receipts/result.json
+  seal_receipt: research/experiments/PRESERVATION-E2E-02/receipts/pre-run-seal.json
+  predecessor_receipt: research/experiments/PRESERVATION-E2E-01/receipts/result.json
+  repository: ai-knowledge-compiler-vkc-research
+  branch: agent/tavonel-vkc-research
+  commit: b733f51ee98f0404e93bf541aeef74ef4ca747d7
+  split: held_out
+  status: ESTABLISHED_POSITIVE
+  closes_audit_section: 28-B
+  allowed:
+  - that the four preservation invariants are enforced rather than merely declared,
+    on documents whose structure came from real extraction output rather than from
+    fixtures authored to trip them
+  - that the repair scope reported on a single-block fault is local at about 2 per cent
+    of blocks and 6 per cent of pages, not the whole document
+  - that the contract stays silent on unmodified documents, so that a detection carries
+    information rather than being the detector's default state
+  - that the contract's scope is cited evidence, measured directly by the N1 control
+    rather than assumed
+  forbidden:
+  - claiming a detection rate against faults occurring in the wild; every fault here
+    was injected, and injected faults are not a sample of natural corruption
+  - claiming this measures parser or OCR quality; the parser outputs are inputs to
+    this experiment, not its subject
+  - generalising beyond the Lane A born-digital corpus; image-only pages are absent
+  - quoting the locality figures without the detection rates they are conditioned on
+  limitations:
+  - Fault injection is synthetic and mechanical. Critical tokens are drawn from the
+    evidence text by regular expression rather than declared by a domain expert.
+  - F3 injects a detached cell id rather than constructing a full table, so it
+    exercises cell attachment but not table reconstruction.
+  - 49 cases is a count, not a powered sample; no interval is claimed.
+  external_gpu_cost_usd: 0.0
+  gpu_seconds: 0.0
+  receipt_file_sha256: sha256:853f9e3c852749f29281c856048379c8ca873768edd98cae1c9d724acbffff54
+  seal_sha256: sha256:1b5f611769ea2f938f9f4bad14d3039d22d290e36864242c05ec8ff1f0ed525b
+  predecessor_receipt_sha256: sha256:79c15453389fb045be4bcf28d9d6b217f8577bada10362bb626c2b94b1456e73
 paper_readiness_gaps:
 - id: G-01
   gap: V2R4 is a positive held-out migration-closure result, but no positive end-to-end SourceFact
