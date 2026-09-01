@@ -286,5 +286,46 @@ Option 1 is the only one that keeps the frozen identity. Options 2 and 3 both
 change what the confirmatory run can claim and need explicit sign-off before
 any GPU spend.
 
+### Option 1 was attempted and could not be completed (2026-09-01)
+
+The 2026-08-01 Paddle bootstrap built its venv at
+`/workspace/folynta/venvs/paddle-fastdeploy-r1`, and `/workspace` is where a
+RunPod network volume mounts. Both volumes from that period still exist
+(`j5wfgniyjx` in US-KS-2, `o9eslyovmd` in EU-RO-1), so a preserved wheel or
+`fastdeploy_gpu-2.3.0.dist-info` was plausible. Two access routes were tried
+and both are closed:
+
+**Pod mount.** `infra/runpod/v6/scan_volumes_for_fastdeploy.py` creates a pod
+in the volume's datacenter, runs a bounded read-only inventory over SSH, then
+deletes and proves absence with a 404. Every create returned HTTP 500 across
+eight GPU types in both datacenters. That is placement, not the volumes: an
+unconstrained control create — no datacenter, no volume — succeeded on
+`NVIDIA GeForce RTX 4090` (HTTP 201, deleted, readback 404), and the same type
+pinned to either volume datacenter failed. RunPod currently has no capacity in
+US-KS-2 or EU-RO-1 for this account.
+
+**S3 gateway.** `infra/runpod/v6/read_volumes_over_s3.py` uses the volumes'
+S3-compatible endpoints, which need no pod and no GPU. Both endpoints are
+reachable and both reject every credential in the file with
+`SignatureDoesNotMatch: does not match any shared API key for specified user
+ID`. The REST API key is not an S3 credential, and the two `Access Key ID` /
+`Secret Access Key` pairs present are filed under **Cloudflare R2**, not
+RunPod. No RunPod S3 access key exists for this account yet.
+
+So option 1 is **untested, not refuted**. The volumes may well hold the wheel;
+we cannot currently look. Two things would unblock it, neither of which
+invents evidence:
+
+- create a RunPod S3 access key for this account and re-run
+  `read_volumes_over_s3.py` (no GPU, no cost); or
+- wait for capacity in US-KS-2 or EU-RO-1 and re-run
+  `scan_volumes_for_fastdeploy.py`.
+
+Until one of those happens, the Paddle lane stays blocked and no result may be
+reported for it. Recording "we could not look" is the honest state; it must
+not decay into "the artifact is gone", which is a different and unproven
+claim.
+
+
 
 
