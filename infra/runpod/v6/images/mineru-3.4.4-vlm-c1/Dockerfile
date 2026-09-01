@@ -81,6 +81,39 @@ RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir \
       'transformers==4.57.3' \
       'mineru-vl-utils==1.0.5' \
       "${FOLYNTA_SOURCE_ROOT}[core]"
+# Security remediation, not a capability pin.
+#
+# The runpod/pytorch base image ships jupyter-server 2.17.0, which carries
+# GHSA-fcw5-x6j4-ccmp (CVE-2026-44727): stored XSS in the nbconvert handlers
+# via a missing sandbox CSP directive, CVSS:4.0 with high confidentiality,
+# integrity and availability impact, fixed in 2.20.0. It blocked this image's
+# Trivy gate (severity=CRITICAL, ignore-unfixed=true) on 2026-09-01.
+#
+# This package is not ours and is not part of the frozen runtime identity: it
+# appears in neither verify-runtime.sh, the 2026-08-01 concurrency diagnostic
+# manifest, nor benchmark/v6/candidate-registry.yaml. Upgrading it therefore
+# cannot change what the confirmatory run may claim about running the same
+# runtime as the 2026-08-01 measurements.
+#
+# The image never serves notebooks -- ENTRYPOINT is start-ssh.sh and the
+# vulnerable handlers are unreachable here. That is a reason the real-world
+# risk is low. It is NOT a reason to suppress the gate: the qualification
+# receipt asserts zero critical vulnerabilities, and an assertion that is
+# quietly false is worth less than no assertion at all.
+RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir --upgrade \
+      'jupyter-server>=2.20.0' \
+ && "${FOLYNTA_PYTHON}" - <<'PY'
+from importlib.metadata import version
+
+installed = version("jupyter_server")
+parts = tuple(int(p) for p in installed.split(".")[:2])
+if parts < (2, 20):
+    raise SystemExit(
+        f"jupyter-server {installed} still below the 2.20.0 fix for "
+        "GHSA-fcw5-x6j4-ccmp"
+    )
+print(f"jupyter-server {installed} clears GHSA-fcw5-x6j4-ccmp")
+PY
 
 RUN "${FOLYNTA_PYTHON}" - <<'PY'
 from importlib.metadata import version
