@@ -1687,6 +1687,79 @@ Important limitations remain:
   GPU efficiency are unavailable.
 - All evidence and review reported here are internal. No independent external
   reviewer or replication has approved the manuscript.
+### 13.1 Threats to validity
+
+Limitations state what this work does not cover. Threats state how what it does
+cover could still be wrong. They are separated deliberately, because the second
+list is the one a hostile reader should be handed first.
+
+**Construct validity — are we measuring what we claim?**
+
+The preservation result (C-37) injects faults and reports that the contract
+catches them. Injected corruption is not a sample of natural corruption, and a
+detector tuned to the shapes we thought to inject would score identically to
+one that generalises. The four families were chosen from the contract's own
+declared invariants, which makes the test complete with respect to the
+specification and silent about faults the specification never anticipated. The
+locality figure is the more robust of the two numbers, because it measures a
+consequence — how much gets quarantined — rather than agreement with our own
+fault taxonomy.
+
+The regulatory result (C-36) scores TAVONEL's semantic/non-semantic decision
+against eCFR's `substantive` flag. That flag is an editorial annotation made by
+the publisher for regulatory bookkeeping, not an adjudicated ground truth for
+semantic change. Agreement on 11 of 11 is evidence that the two notions
+coincide on this cohort; it is not evidence that the flag is correct, nor that
+disagreement would have meant TAVONEL was wrong.
+
+**Internal validity — could the result come from something else?**
+
+Both headline results were produced by instruments whose first version failed.
+That is the honest history, and it is also the classic route to a false
+positive: iterate the instrument until the number is good. Two mechanisms
+constrain it here. The gates were never loosened between versions — ECFR's
+adequacy gate was raised from 6 to 8, and the preservation detection gate stayed
+at 1.0 — and the mechanical review in §28-G checks that property directly
+rather than trusting this paragraph. Neither mechanism rules out a subtler form
+of the same error: we chose which defect to look for after seeing a failure, and
+a different diagnosis might have led to a different fix.
+
+The preservation experiment reads parser outputs produced by the frozen
+SEM-RISK-CONF-02 instrument. Those outputs were frozen before ground truth was
+mounted, so they cannot encode knowledge of the preservation faults injected
+later. But they are not an independent corpus either: a systematic property of
+that extraction path — say, a paragraph segmentation habit — is inherited by
+every document this experiment builds.
+
+**External validity — does it transfer?**
+
+The regulatory cohort is 11 pairs from 11 parts. The preservation cohort is 49
+documents of born-digital English text. Neither supports an interval, and this
+paper claims none. Image-only pages, non-Latin scripts, and documents whose
+structure defeats the parser are absent from both, and the mechanism most likely
+to behave differently there is precisely the one being measured.
+
+The work-avoided figures are cohort means over cohorts we assembled. A corpus
+with a different edit-size distribution would produce a different number from
+the same system, which is why C-36 forbids quoting 88.66% as a rate.
+
+**Conclusion validity — is the inference sound?**
+
+Detection rates of 1.0 on deterministic structural invariants are closer to a
+correctness check than to a measurement, and reporting them as percentages
+invites reading them as classifier accuracy. They are not. The number that
+carries information is the quarantine fraction, and it is reported as a mean
+over 49 cases with no dispersion estimate — a small cohort summarised by a
+single statistic.
+
+**Reviewer independence**
+
+Every result here was produced, checked, and written up by the same programme.
+The §28-G review is mechanical and mutation-tested, which makes it harder to
+fool than prose, but it was also written by the party it audits. No external
+replication has been attempted.
+
+
 
 ## 14. Reproducibility and evidence lineage
 
