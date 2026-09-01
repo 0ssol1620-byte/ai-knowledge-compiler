@@ -312,19 +312,65 @@ ID`. The REST API key is not an S3 credential, and the two `Access Key ID` /
 `Secret Access Key` pairs present are filed under **Cloudflare R2**, not
 RunPod. No RunPod S3 access key exists for this account yet.
 
-So option 1 is **untested, not refuted**. The volumes may well hold the wheel;
-we cannot currently look. Two things would unblock it, neither of which
-invents evidence:
+### Option 1 was completed on 2026-09-01: the volumes are empty
 
-- create a RunPod S3 access key for this account and re-run
-  `read_volumes_over_s3.py` (no GPU, no cost); or
-- wait for capacity in US-KS-2 or EU-RO-1 and re-run
-  `scan_volumes_for_fastdeploy.py`.
+A later retry found capacity in EU-RO-1 and the volume was inspected. The
+scan created a pod on an RTX 4090 (HTTP 201), mounted `o9eslyovmd` at
+`/workspace`, ran a read-only inventory over SSH, then deleted the pod and
+proved its absence with a 404 read-back. The mount is empty:
 
-Until one of those happens, the Paddle lane stays blocked and no result may be
-reported for it. Recording "we could not look" is the honest state; it must
-not decay into "the artifact is gone", which is a different and unproven
-claim.
+```
+===ROOT===
+total 1
+drwxrwxrwx 2 root root  1 Aug 30 05:27 .
+drwxr-xr-x 1 root root 86 Sep  1 18:41 ..
+===FOLYNTA===      (empty)
+===FASTDEPLOY===   (empty)
+===WHEELS===       (empty)
+===DISTINFO===     (empty)
+===VENVS===        (empty)
+===DU===
+512     /workspace
+```
+
+512 bytes, no entries, and a root mtime of 2026-08-30 — after the 2026-08-01
+Paddle run. The venv that run built at
+`/workspace/folynta/venvs/paddle-fastdeploy-r1` is not there; the volume was
+cleared at some point between then and now.
+
+US-KS-2 (`j5wfgniyjx`) still has no capacity across eight GPU types and was
+not inspected. It is a cache volume from the same era with the same
+provisioning history, so it is unlikely to differ, but that is an inference
+and not a measurement.
+
+**Option 1 is therefore refuted for EU-RO-1 and untested for US-KS-2.** This
+supersedes the earlier "untested, not refuted" wording for the EU-RO-1 half:
+we did look, and the wheel is not there.
+
+### The upstream withdrawal is confirmed rigorously
+
+An earlier CDN probe returned 404 for both 2.3.0 and the 2.5.0 control, which
+proved only that the URL shape was wrong. Reading the index HTML gives the
+real form (`paddle-whl.cdn.bcebos.com`, `manylinux_2_28_x86_64`), and on that
+form:
+
+| URL | Result |
+|---|---|
+| `stable/cu126/.../fastdeploy_gpu-2.5.0-cp310-...-manylinux_2_28_x86_64.whl` | **200**, 1,765,435,821 bytes |
+| `stable/cu126/.../fastdeploy_gpu-2.3.0-cp310-...` | 404 |
+| `stable/cu126/.../fastdeploy_gpu-2.3.0-cp311-...` | 404 |
+| `stable/cu126/.../fastdeploy_gpu-2.3.0-cp312-...` | 404 |
+
+The control returning 200 from the identical prefix is what makes the 404s
+meaningful. The FastDeploy GitHub release for tag `v2.3.0` carries **0
+assets**, and PyPI has no `fastdeploy-gpu` project at all.
+
+**Conclusion: fastdeploy-gpu 2.3.0 is not retrievable from any public source
+we can reach, and the artifact that once held it locally is gone.** The Paddle
+lane cannot be reproduced at its frozen runtime identity. Options 2 and 3
+remain, and both change what the confirmatory run may claim; neither may be
+taken silently.
+
 
 
 
