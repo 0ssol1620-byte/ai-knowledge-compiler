@@ -82,6 +82,28 @@ RUN apt-get update -qq \
 # been the one-line fix; it would also void the runtime assertion, the patch
 # gate, and the claim that the confirmatory run uses the same runtime as the
 # 2026-08-01 measurements.
+# Fetch the rebuilt wheel through the authenticated release asset API.
+#
+# The repository is private, so the plain releases/download URL returns 404
+# (GitHub hides private content rather than answering 401). The asset API
+# endpoint with a bearer token and Accept: application/octet-stream returns the
+# bytes -- verified: HTTP 200, 1,121,709 bytes, sha256 171a1a142fa1462f...
+#
+# The token is a BuildKit secret mount, never an ARG or ENV, so it is not
+# written into any layer and does not appear in `docker history`. That is why
+# this is its own RUN: --mount is a directive on RUN and cannot appear midway
+# through a chained command.
+#
+# The digest is checked here, before the install step ever sees the file, so an
+# authenticated download of the wrong bytes fails closed.
+RUN --mount=type=secret,id=gh_token \
+    curl -fsSL \
+      -H "Authorization: Bearer $(cat /run/secrets/gh_token)" \
+      -H 'Accept: application/octet-stream' \
+      -o /opt/folynta/fastdeploy_gpu-2.3.0-py3-none-any.whl \
+      'https://api.github.com/repos/0ssol1620-byte/ai-knowledge-compiler/releases/assets/540096418' \
+ && echo '171a1a142fa1462f34c21270a0b11da7d921a9580c76673ab9a839d8a71dd5fe  /opt/folynta/fastdeploy_gpu-2.3.0-py3-none-any.whl' | sha256sum -c -
+
 RUN python3.11 -m venv /opt/folynta/venv \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --upgrade 'pip==25.1.1' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
@@ -90,12 +112,8 @@ RUN python3.11 -m venv /opt/folynta/venv \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
          'paddleformers==1.2.0' \
-    && curl -fsSL -o /tmp/fastdeploy_gpu-2.3.0-py3-none-any.whl \
-         'https://github.com/0ssol1620-byte/ai-knowledge-compiler/releases/download/fastdeploy-gpu-2.3.0-rebuild/fastdeploy_gpu-2.3.0-py3-none-any.whl' \
-    && echo '171a1a142fa1462f34c21270a0b11da7d921a9580c76673ab9a839d8a71dd5fe  /tmp/fastdeploy_gpu-2.3.0-py3-none-any.whl' | sha256sum -c - \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
-         /tmp/fastdeploy_gpu-2.3.0-py3-none-any.whl \
-    && rm -f /tmp/fastdeploy_gpu-2.3.0-py3-none-any.whl \
+         /opt/folynta/fastdeploy_gpu-2.3.0-py3-none-any.whl \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
     && rm -rf /root/.cache/pip
 

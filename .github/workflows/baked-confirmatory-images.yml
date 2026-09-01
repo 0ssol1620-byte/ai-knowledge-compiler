@@ -196,9 +196,22 @@ jobs:
       - name: Build and push confirmatory image
         if: steps.arming_gate.outputs.armed == 'true'
         shell: bash
+        env:
+          # Needed to fetch the rebuilt fastdeploy wheel from this repository's
+          # release assets; contents: read at job level covers it.
+          GH_ASSET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          # The paddle image fetches its rebuilt fastdeploy wheel from this
+          # repository's release assets, and the repository is private, so the
+          # download needs a token. Passed as a BuildKit secret so it is never
+          # written into a layer or visible in `docker history`, and removed
+          # from the runner as soon as the build returns.
+          umask 077
+          printf '%s' "${GH_ASSET_TOKEN}" > "${RUNNER_TEMP}/gh_token"
+          trap 'rm -f "${RUNNER_TEMP}/gh_token"' EXIT
           docker buildx build \
+            --secret id=gh_token,src="${RUNNER_TEMP}/gh_token" \
             --file "$DOCKERFILE_PATH" \
             --tag "$IMAGE_TAG" \
             --provenance=false \
