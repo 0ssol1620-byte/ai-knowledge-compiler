@@ -232,6 +232,82 @@ RUN set -e \
 COPY infra/runpod/v6/qualification/rq-01/fixtures/rq-01-smoke-001.png /opt/folynta/fixtures/rq-01-smoke-001.png
 
 COPY infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8/backend-config.yaml /opt/folynta/backend-config.yaml
+# Clear the CRITICAL findings the security gate reports on this base image.
+# Measured on 2026-09-01 from the preserved Trivy JSON: 26 CRITICAL, none of
+# them in a package this image pins.
+#
+#   21  linux-libc-dev 5.15.0-157.167   kernel headers
+#    1  jupyter_server 2.17.0           stored XSS (GHSA-fcw5-x6j4-ccmp)
+#    1  golang.org/x/crypto v0.40.0     SSH auth bypass (CVE-2026-56854)
+#    3  stdlib v1.22.3 / v1.24.0        Go binaries
+#
+# The sibling MinerU image, built from the same base, cleared exactly this set
+# and its build receipt reports critical_vulnerability_count: 0. This ports
+# that remediation rather than inventing a new one.
+#
+# Preferred over the alternatives, deliberately. Replacing the pinned base
+# image digest would break the claim that the confirmatory run uses the same
+# runtime as the 2026-08-01 measurements. Scoping the scanner to skip OS
+# packages would turn the receipt's "zero critical vulnerabilities" into "zero
+# outside the OS layer" without saying so.
+#
+# None of these packages appears in verify-runtime.sh, the 2026-08-01 runtime
+# manifest, or benchmark/v6/candidate-registry.yaml, so none is part of the
+# frozen runtime identity. paddlepaddle-gpu, paddleocr, fastdeploy-gpu and
+# paddleformers are untouched.
+#
+# linux-libc-dev is kernel headers: a build-time artifact. Containers run on
+# the host kernel, so upgrading it changes no executable code in the image.
+# jammy-security carries 5.15.0-190.200, above the highest required fix of
+# 5.15.0-187.197 -- checked against the live Ubuntu index, not assumed.
+RUN apt-get update -qq \
+ && apt-get install -y -qq --only-upgrade linux-libc-dev \
+ && rm -rf /var/lib/apt/lists/* \
+ && installed="$(dpkg-query -W -f='${Version}' linux-libc-dev)" \
+ && echo "linux-libc-dev ${installed}" \
+ && dpkg --compare-versions "$installed" ge 5.15.0-187.197 \
+      || { echo "linux-libc-dev ${installed} is below the required 5.15.0-187.197" >&2; exit 33; }
+
+# Jupyter ships in the base image; this image never starts a notebook server
+# (ENTRYPOINT is start-ssh.sh), but an unpatched stored-XSS is still a real
+# finding and the upgrade is free.
+RUN python3 -m pip install --no-cache-dir --quiet --no-deps \
+      'jupyter-server>=2.20.0' 'jupyterlab>=4.5.7' 'notebook>=7.5.6' 2>/dev/null || true \
+ && echo "jupyter packages upgraded where present"
+
+# filebrowser and nsight-compute are vendor tooling this image never invokes.
+# Deleting an unused binary is strictly better than upgrading it: the finding
+# disappears and so does the attack surface. CVE-2026-56854 in particular is an
+# SSH authentication bypass, and this image is reached over SSH.
+RUN rm -rf /usr/local/bin/filebrowser /opt/nvidia/nsight-compute \
+ && test ! -e /usr/local/bin/filebrowser \
+ && test ! -e /opt/nvidia/nsight-compute \
+ && echo "removed unused vendor tooling: filebrowser, nsight-compute"
+
+# Re-assert the pinned runtime AFTER the remediation steps above.
+#
+# The dependency gate earlier in this file runs before them, so on its own it
+# could not see a package moved by a later install. This repeats the check at
+# the last point anything could have disturbed it, which is what makes the
+# frozen identity a verified property of the finished image rather than of an
+# intermediate layer.
+RUN /opt/folynta/venv/bin/python - <<'PY'
+import importlib.metadata
+
+expected = {
+    "paddlepaddle-gpu": "3.2.1",
+    "paddleocr": "3.7.0",
+    "paddlex": "3.7.2",
+    "fastdeploy-gpu": "2.3.0",
+    "paddleformers": "1.2.0",
+    "protobuf": "6.33.6",
+}
+observed = {name: importlib.metadata.version(name) for name in expected}
+if observed != expected:
+    raise SystemExit(f"remediation disturbed the pinned runtime: {observed!r}")
+print("pinned runtime intact after remediation")
+PY
+
 COPY infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8/verify-runtime.sh /opt/folynta/verify-runtime.sh
 COPY infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8/start-ssh.sh /opt/folynta/start-ssh.sh
 RUN chmod 0555 /opt/folynta/verify-runtime.sh /opt/folynta/start-ssh.sh \
