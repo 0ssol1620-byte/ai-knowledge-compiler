@@ -51,9 +51,32 @@ RUN python3.11 -m venv /opt/folynta/venv \
          'paddlepaddle-gpu==3.2.1' \
          --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
-    && PATH="/opt/folynta/venv/bin:${PATH}" /opt/folynta/venv/bin/paddleocr install_genai_server_deps fastdeploy \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
+         'fastdeploy-gpu==2.3.0' \
+         'paddleformers==1.2.0' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
     && rm -rf /root/.cache/pip
+
+# Why fastdeploy-gpu and paddleformers are installed directly rather than via
+# `paddleocr install_genai_server_deps fastdeploy`, which is what
+# remote_bootstrap_paddle_recovery.sh:38 calls:
+#
+# That bootstrap runs ON A GPU POD. The installer imports paddle to inspect the
+# device before resolving what to install, and paddle's C extension links
+# against the NVIDIA driver. A GitHub Actions runner has no GPU and no driver,
+# so on 2026-09-01 the build reached that command and died with
+#   ImportError: libcuda.so.1: cannot open shared object file
+# That is structural, not a PATH or disk problem: the installer cannot run in
+# any GPU-less build environment, and the image build is necessarily GPU-less.
+#
+# The two packages named here are exactly the two that installer contributes,
+# at exactly the versions the bootstrap freezes and this image already asserts
+# below (fastdeploy-gpu 2.3.0, paddleformers 1.2.0 -- see the frozen runtime
+# check further down, and remote_bootstrap_paddle_recovery.sh:70-80). So this
+# does not relax the pin set; it reaches the same frozen versions by a route
+# that does not require a device at build time. If the assertion below ever
+# fails, that is the check catching a drift this substitution introduced, and
+# the substitution is what should be revisited -- not the assertion.
 
 # FastDeploy compatibility patch, copied verbatim (before/after hashes and the
 # sed expression) from remote_bootstrap_paddle_recovery.sh lines ~50-65: newer
