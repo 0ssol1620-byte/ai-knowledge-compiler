@@ -195,9 +195,9 @@ def main() -> int:
                 continue
             ip, pm = p.get("publicIp"), (p.get("portMappings") or {})
             up = uptime_seconds(k, pod_id)
-            if ip and pm.get("22") and up is not None and up > 0:
+            if ip and pm.get("22"):
                 host, port = ip, int(pm["22"])
-                print(f"ready: ssh {host}:{port} uptime={up}s")
+                print(f"ready: ssh {host}:{port} uptime={up if up is not None else 'unknown'}")
                 break
             if p.get("desiredStatus") == "RUNNING" and up == 0:  # definite zero only
                 waited = int(time.time() - (deadline - args.max_minutes * 60))

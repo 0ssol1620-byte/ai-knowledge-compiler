@@ -141,16 +141,31 @@ def uptime(k: str, pod_id: str) -> int | None:
     )
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
-            pod = (json.load(resp).get("data") or {}).get("pod") or {}
+            payload_out = json.load(resp)
     except Exception:  # noqa: BLE001
-        # Unknown is not zero. Returning 0 here once destroyed a healthy build
-        # pod: the query failed, the caller read it as "container never
-        # started", and the zombie gate deleted paid capacity that was mid
-        # build. Only a definite answer may drive that decision.
+        # Transport failure: no evidence either way. Returning 0 here once
+        # destroyed a healthy build pod mid-build, because the caller read it
+        # as "container never started".
         return None
+
+    if payload_out.get("errors"):
+        return None
+
+    data = payload_out.get("data")
+    if not isinstance(data, dict) or "pod" not in data:
+        return None
+
+    pod = data.get("pod")
+    if pod is None:
+        # The provider answered and says this pod does not exist.
+        return None
+
     runtime = pod.get("runtime")
     if runtime is None:
-        return None
+        # A real answer: the pod exists and its container has not started.
+        # This is the definite zero the zombie gate is for -- unlike the
+        # swallowed-exception zero, it is evidence.
+        return 0
     return int(runtime.get("uptimeInSeconds") or 0)
 
 
@@ -204,9 +219,12 @@ def main() -> int:
                 continue
             ip, pm = p.get("publicIp"), (p.get("portMappings") or {})
             up = uptime(k, pod_id)
-            if ip and pm.get("22") and up is not None and up > 0:
+            # A reachable SSH endpoint is itself proof the container is up;
+            # requiring a positive uptime as well let a lagging field hide a
+            # perfectly good pod.
+            if ip and pm.get("22"):
                 host, port = ip, int(pm["22"])
-                print(f"ready: {host}:{port} uptime={up}s")
+                print(f"ready: {host}:{port} uptime={up if up is not None else 'unknown'}")
                 break
             # Only a definite zero counts, and only a run of them. One failed
             # query must never be enough to destroy a running build.
