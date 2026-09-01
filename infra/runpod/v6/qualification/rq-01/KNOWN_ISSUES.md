@@ -232,4 +232,59 @@ work around. Do not respond to a placement failure by widening the allowed
 set: the image genuinely cannot start below 12.8, and a Pod that cannot start
 still bills.
 
+## INC-RUNPOD-05 — fastdeploy-gpu 2.3.0 has been withdrawn upstream (OPEN)
+
+**Status: blocking `paddleocr-vl-1.6-fastdeploy-c8`. Needs a decision, not a
+workaround.**
+
+The 2026-09-01 build failed with:
+
+```
+ERROR: No matching distribution found for fastdeploy-gpu==2.3.0
+```
+
+Measured, not inferred:
+
+| Source | Result |
+|---|---|
+| `pypi.org/pypi/fastdeploy-gpu/json` | HTTP 404 — project not on PyPI at all |
+| `paddlepaddle.org.cn/packages/stable/cu126/fastdeploy-gpu/` | HTTP 200, advertises **only 2.5.0** (cp310/cp311/cp312) |
+| `paddle-whl.cdn.bcebos.com/.../fastdeploy_gpu-2.3.0-cp311-...whl` | **HTTP 404** |
+| same, cp310 and cp312 | **HTTP 404** |
+| same, `fastdeploy_gpu-2.5.0-cp311-...whl` (control) | HTTP 200, 1,766,070,369 bytes |
+
+The 2.5.0 control returning 200 from the same URL shape establishes that the
+404s are the version being gone, not a malformed path or a dead host. The
+wheel has been withdrawn from both the index and the CDN behind it.
+
+This matters because 2.3.0 is not a casual pin. It is frozen in six places,
+including `benchmark/reports/paddleocr-vl-1.6-fastdeploy-runtime-manifest-2026-08-01.json`
+(the measured runtime of the 2026-08-01 evaluation),
+`remote_bootstrap_paddle_recovery.sh:75`, and this image's own
+`verify-runtime.sh` assertion. The image also carries a **version-specific
+source patch**: it verifies `fastdeploy/input/text_processor.py` against
+sha256 `b50570cb2c13f29f2a7f8803d6bdb3368111e906152425f9666d0ca4818a396d`
+before applying a `sed`. A 2.5.0 tree will not match that hash, so bumping the
+version silently invalidates the patch gate as well as the runtime assertion.
+
+**Do not resolve this by changing the pin to 2.5.0 and updating the hashes to
+match.** That produces a green build whose runtime differs from the one the
+2026-08-01 results describe, which is exactly the substitution SEM-RISK-CONF-02
+must be able to rule out. Options, in the order they should be considered:
+
+1. Locate a preserved 2.3.0 artifact (internal mirror, an existing pod image,
+   a cached wheel on a network volume) and pin it by digest. Preserves
+   identity; depends on an archive existing.
+2. Accept 2.5.0 as a **new, separately measured** runtime: re-derive the patch
+   hashes, update the assertion, and treat the resulting candidate as not
+   comparable to the 2026-08-01 Paddle numbers without a fresh baseline.
+3. Report the Paddle lane as blocked and proceed with the specialist lane
+   only, recording the reduced design. CONF-02's protocol names Paddle as
+   primary, so this changes the experiment and is not a silent option.
+
+Option 1 is the only one that keeps the frozen identity. Options 2 and 3 both
+change what the confirmatory run can claim and need explicit sign-off before
+any GPU spend.
+
+
 

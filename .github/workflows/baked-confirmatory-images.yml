@@ -87,6 +87,15 @@ jobs:
             printf '{ "data-root": "/mnt/docker-data" }\n' | sudo tee /etc/docker/daemon.json
             sudo systemctl start docker
             docker info --format 'docker data-root: {{.DockerRootDir}}'
+            # Moving only the daemon is not enough. syft re-expands the pushed
+            # image into TMPDIR to walk its layers, and on 2026-09-01 the
+            # MinerU SBOM step failed with "no space left on device" writing
+            # /tmp/stereoscope-*/oci-registry-image-* even though the image
+            # itself had built and pushed successfully. Point the later steps'
+            # scratch space at the same larger disk.
+            sudo mkdir -p /mnt/runner-tmp
+            sudo chmod 1777 /mnt/runner-tmp
+            echo "TMPDIR=/mnt/runner-tmp" >> "$GITHUB_ENV"
           fi
           df -h /
       - name: Resolve target-specific model identity
