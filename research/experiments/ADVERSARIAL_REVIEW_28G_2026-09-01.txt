@@ -1,0 +1,64 @@
+====================================================================
+ADVERSARIAL REVIEW -- audit section 28-G
+claims under review: C-36, C-37
+====================================================================
+
+Q1. Did any holdout leak?
+  [PASS] preservation used CONF-02 outputs read-only
+         source = research/experiments/SEM-RISK-CONF-02/outputs/lane-a-native; receipts written only under PRESERVATION-E2E-02/receipts/
+  [PASS] ECFR-02 forbids lowering its adequacy gate post-result
+         lowering_the_adequacy_gate_after_seeing_this_result = True
+  [PASS] ECFR-02 forbids using the outside label to select pairs
+         the substantive flag scores the result; it must not choose the cohort
+
+Q2. Was any threshold changed after seeing a result?
+  [PASS] ECFR adequacy gate was raised, not lowered
+         ECFR-01 required 6, ECFR-02 requires 8
+  [PASS] preservation detection gate unchanged after a FAIL
+         E2E-01 required 1.0, E2E-02 requires 1.0
+  [PASS] ECFR equivalence gate unchanged
+         True -> True
+  [PASS] ECFR stale-artifact gate unchanged
+         0 -> 0
+  [PASS] preservation false-positive gate unchanged
+         E2E-01 allowed 0.0, E2E-02 allows 0.0
+
+Q3. Was a transport amendment mislabeled?
+  [PASS] ECFR-02 declares evaluator reuse
+         protocol states the sealed V01 evaluator is reused unchanged
+  [PASS] E2E-02 states exactly what changed
+         only_change = F2 now mutates the SourceRef of a block that some binding actually cites, selected as the ...
+
+Q4. Was a development result presented as confirmatory?
+  [PASS] C-36 split is the one its evidence entitles it to
+         split = 'held_out', required 'held_out' because ECFR-02 selected its cohort from versions-endpoint metadata before the protocol was frozen; the substantive label scored the result and never chose the pairs
+  [PASS] C-37 split is the one its evidence entitles it to
+         split = 'held_out', required 'held_out' because PRESERVATION-E2E-02 reads frozen CONF-02 outputs it did not produce
+  [PASS] C-36 held_out entitlement still holds (selection is label-blind)
+         protocol forbids using the outside label to select pairs
+  [PASS] C-36 failing predecessor is retained and genuinely short of its gate
+         changed pairs 5 < adequacy gate 6; safety_gate_pass=True
+  [PASS] C-37 failing predecessor is retained
+         PRESERVATION-E2E-01 verdict=FAIL
+
+Q5. Is every headline number derivable from immutable receipts?
+  [PASS] C-36 receipt content hash matches its pin
+         research/experiments/H3-B-REGULATORY-ECFR-02/receipts/regulatory-revision-result.json
+         in receipt sha256:856504469e9fec5ef9fc1c2410db82f841f33cc87e00c6f2f5098ad2e2e17271
+         pinned    sha256:856504469e9fec5ef9fc1c2410db82f841f33cc87e00c6f2f5098ad2e2e17271
+  [PASS] C-37 receipt file hash matches its pin
+         research/experiments/PRESERVATION-E2E-02/receipts/result.json
+         on disk sha256:853f9e3c852749f29281c856048379c8ca873768edd98cae1c9d724acbffff54
+         pinned  sha256:853f9e3c852749f29281c856048379c8ca873768edd98cae1c9d724acbffff54
+
+====================================================================
+OUT OF SCOPE FOR THIS RUN (product control plane, not these claims):
+  - Can the graph mutate truth?
+  - Can an LLM mutate ontology?
+  - Can a PASS receipt from another job promote this candidate?
+  - Can unresolved identity silently force-match?
+
+NOTE: CONF-02 frozen integrity is verified separately by verify_frozen_integrity.py; run it alongside this review.
+
+====================================================================
+RESULT: all mechanical checks passed
