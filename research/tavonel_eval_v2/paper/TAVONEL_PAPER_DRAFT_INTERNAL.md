@@ -266,6 +266,20 @@ annotation rather than an adjudicated ground truth. And 88.66% is this cohort's
 number — the forbidden list on C-36 exists mainly to stop that figure being
 quoted as a rate.
 
+This is not the programme's first contact with eCFR, and the draft would be
+misleading if it implied otherwise. SFIR5's capacity census measured the
+regulation family on 2026-08-27 and it was the *only* family to meet the
+criterion — 859 candidates against a required 750, with 49 of 50 CFR titles
+enumerated to exhaustion and the fiftieth reserved and carrying no versions.
+That census nonetheless failed overall, because the criterion requires every
+family and the Wikipedia instrument enumerated nothing. The two results do not
+collide over the same bytes: SFIR5 stopped at metadata, and its outcome receipt
+records `payload_opened: false` and `corpus_spent: false`. One further
+disclosure belongs here rather than in a footnote: `ecfr_raw_part_cache.py`
+already existed, and this experiment's runner fetched its own way instead of
+reusing it. The two transport paths were never compared, so nothing is claimed
+about their agreement.
+
 The instrument that preceded it failed, which is the part worth keeping. Its
 first cohort (title 21 only) passed both safety gates but missed its
 preregistered adequacy gate — 5 changed pairs against a required 6 — because

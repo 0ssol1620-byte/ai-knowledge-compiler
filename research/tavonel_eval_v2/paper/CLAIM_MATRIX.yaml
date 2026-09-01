@@ -971,6 +971,24 @@ claims:
   external_gpu_cost_usd: 0.0
   receipt_sha256_of_result: sha256:856504469e9fec5ef9fc1c2410db82f841f33cc87e00c6f2f5098ad2e2e17271
   seal_sha256: sha256:32fb7403b5e36bd579bc122638d35b887552beafd29494f1723ccad523e645c8
+  relationship_to_sfir5:
+    note: C-36 is not the programme's first use of the eCFR family. SFIR5's capacity census
+      measured regulation_ecfr on 2026-08-27 and it was the only family to meet the criterion
+      (C=859, Q=687, 49 of 50 CFR titles enumerated to exhaustion; the remaining title is
+      reserved and carries no versions). That census failed overall on a different family.
+    no_corpus_collision: true
+    why_no_collision: the SFIR5 census was metadata-only. Its own outcome receipt records
+      acquisition_started false, payload_opened false, roster_frozen false and corpus_spent
+      false, so no eCFR payload was spent by it and ECFR-01/02 opening section XML does not
+      violate its spent identity.
+    sfir5_receipt: research/tavonel_eval_v2/receipts/sfir5-capacity-outcome.json
+    sfir5_receipt_sha256: sha256:d7ca53472316efc4f9fbee76968b0a4baf5587ed5a8588d232dd3a15d1a42763
+  disclosed_duplication:
+    finding: acquisition/ecfr_raw_part_cache.py already implemented a bounded, hash-checked
+      eCFR part cache against the same host before ECFR-01 was written. The ECFR-01/02 runner
+      implemented its own fetch path rather than reusing it.
+    consequence: this is disclosed duplication of transport code, not a defect in the measured
+      result. The two paths were not compared, so no claim is made that they agree.
 paper_readiness_gaps:
 - id: G-01
   gap: V2R4 is a positive held-out migration-closure result, but no positive end-to-end SourceFact
