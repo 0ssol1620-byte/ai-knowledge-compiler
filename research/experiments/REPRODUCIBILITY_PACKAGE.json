@@ -1,0 +1,202 @@
+{
+  "artifact_count": 29,
+  "artifacts": {
+    "28-G adversarial review": [
+      {
+        "bytes": 13750,
+        "path": "research/experiments/adversarial_review_28g.py",
+        "sha256": "sha256:e1c3002f8e37c8c3cf9913a72445f101a8ed223c33f3feb3bcf43f5b44c78865"
+      },
+      {
+        "bytes": 3688,
+        "path": "research/experiments/ADVERSARIAL_REVIEW_28G_2026-09-01.txt",
+        "sha256": "sha256:3cff0b2581c0fa82bb194d88c1fd748c101a33bc0d9249ca353458cdf82ab2de"
+      }
+    ],
+    "C-36 eCFR regulatory robustness": [
+      {
+        "bytes": 6118,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-01/protocol.json",
+        "sha256": "sha256:bb6131ecd66cf432b942614e5dda4ad722860bcb3ea18b41271f36bfe51ec6d7"
+      },
+      {
+        "bytes": 20587,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-01/run_experiment.py",
+        "sha256": "sha256:0a3a41e3b5fda1a0dae1bafe4fcc4658141d70284d214f4732380a44ef3e5b2b"
+      },
+      {
+        "bytes": 6233,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-01/receipts/pre-fetch-seal.json",
+        "sha256": "sha256:76b9b745db3396563a6a84582f331fdca5f4b769639747f79c237e37fe744884"
+      },
+      {
+        "bytes": 5167,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-01/receipts/regulatory-revision-result.json",
+        "sha256": "sha256:8f81b3854a9f2784bf8b2261deb155b0909cb1c1a192a764b7b90c9af550a3bd"
+      },
+      {
+        "bytes": 7840,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-02/protocol.json",
+        "sha256": "sha256:11aa9a15aaa301b18e8dc38583bf8ca49619a7f173a6a031a31bc5f6a7fab106"
+      },
+      {
+        "bytes": 20601,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-02/run_experiment.py",
+        "sha256": "sha256:344524ed7709b594cb6458158f4b800ab581cc6ce6b813b56d2baa07fc6853f0"
+      },
+      {
+        "bytes": 6233,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-02/receipts/pre-fetch-seal.json",
+        "sha256": "sha256:7e6d42148bf87e353728e350fa5ff8eaa27ac768b0f70545285669f912c73430"
+      },
+      {
+        "bytes": 5361,
+        "path": "research/experiments/H3-B-REGULATORY-ECFR-02/receipts/regulatory-revision-result.json",
+        "sha256": "sha256:d00d6fd8ebd621a8c045088ac69572a5bc207fc95f4f56ce58af99f516c31b5a"
+      },
+      {
+        "bytes": 21425,
+        "path": "research/experiments/H3-B-CURRENT-CORE-PUBLIC-REVISION-01/run_experiment.py",
+        "sha256": "sha256:0d835e8e5d3242cb04fec2755da98b81774c721af78bae087b6b568a30249f88"
+      }
+    ],
+    "C-37 preservation fault injection": [
+      {
+        "bytes": 5184,
+        "path": "research/experiments/PRESERVATION-E2E-01/protocol.json",
+        "sha256": "sha256:5e2f56aa36b4734f71f76a44255a38b206bb7940cbf874934d24b06c69ed8ebe"
+      },
+      {
+        "bytes": 14131,
+        "path": "research/experiments/PRESERVATION-E2E-01/run_experiment.py",
+        "sha256": "sha256:0fd8b6ba482a54f2a0583b35477363485dcc536762d1c151430a0d85ed94ecac"
+      },
+      {
+        "bytes": 303,
+        "path": "research/experiments/PRESERVATION-E2E-01/receipts/pre-run-seal.json",
+        "sha256": "sha256:d6c56df303a9ce8621d634c1be89487295d9be9dab9f9c82a9e3f1a12ad631c3"
+      },
+      {
+        "bytes": 2436,
+        "path": "research/experiments/PRESERVATION-E2E-01/receipts/result.json",
+        "sha256": "sha256:79c15453389fb045be4bcf28d9d6b217f8577bada10362bb626c2b94b1456e73"
+      },
+      {
+        "bytes": 5726,
+        "path": "research/experiments/PRESERVATION-E2E-02/protocol.json",
+        "sha256": "sha256:f776548098e028656efa8ee6515190d37f3e272373b308445f21f75068a30b98"
+      },
+      {
+        "bytes": 16614,
+        "path": "research/experiments/PRESERVATION-E2E-02/run_experiment.py",
+        "sha256": "sha256:7dd4422607cab94c8ee5c99ad50c2c9e4280a8971db205273b0223af738c772c"
+      },
+      {
+        "bytes": 303,
+        "path": "research/experiments/PRESERVATION-E2E-02/receipts/pre-run-seal.json",
+        "sha256": "sha256:1b5f611769ea2f938f9f4bad14d3039d22d290e36864242c05ec8ff1f0ed525b"
+      },
+      {
+        "bytes": 1956,
+        "path": "research/experiments/PRESERVATION-E2E-02/receipts/result.json",
+        "sha256": "sha256:853f9e3c852749f29281c856048379c8ca873768edd98cae1c9d724acbffff54"
+      },
+      {
+        "bytes": 9004,
+        "path": "packages/cir-python/src/akc_cir/semantic_preservation.py",
+        "sha256": "sha256:791570891ad40e606fe8087ca31896747dde6e0c1531a17b288175b713c81f15"
+      }
+    ],
+    "SEM-RISK-CONF-02 frozen instrument": [
+      {
+        "bytes": 11481,
+        "path": "research/experiments/SEM-RISK-CONF-02/protocol.json",
+        "sha256": "sha256:c8238f965492b1fe5fa761901bc9401f7766530bffd91320af49ca3b26aab060"
+      },
+      {
+        "bytes": 14444,
+        "path": "research/experiments/SEM-RISK-CONF-02/verify_frozen_integrity.py",
+        "sha256": "sha256:97b400dd80a662372417b95f02232b028050fe6d7653c0b882be13ab0b7a6f86"
+      },
+      {
+        "bytes": 9258,
+        "path": "research/experiments/SEM-RISK-CONF-02/receipts/lane-a-native-freeze.json",
+        "sha256": "sha256:f0929b236dbcc35ca6e7fd0b9bacaad94921a576a32cdcf8fd237a858f2127bf"
+      },
+      {
+        "bytes": 14864,
+        "path": "research/experiments/SEM-RISK-CONF-02/inference-manifests/lane-a-public-core.json",
+        "sha256": "sha256:7ea8cb2e933b79996380ba3793334310f3985a43e83cd41938798ae94bd96b93"
+      }
+    ],
+    "runtime image definitions": [
+      {
+        "bytes": 12087,
+        "path": "infra/runpod/v6/images/mineru-3.4.4-vlm-c1/Dockerfile",
+        "sha256": "sha256:a040c07747591742da454a11c3a55320a1d919b263180d472fb65ddbea4e0f8b"
+      },
+      {
+        "bytes": 10783,
+        "path": "infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8/Dockerfile",
+        "sha256": "sha256:5fa6c7af15e62837f594c30eb6f6b01f49544da9660b7cff2427aab0e735ae53"
+      },
+      {
+        "bytes": 16537,
+        "path": "infra/runpod/v6/qualification/rq-01/KNOWN_ISSUES.md",
+        "sha256": "sha256:f684c439456df6075b323d7451f78ac63370a1443e9cb9f9fc8e4e420aec69ed"
+      },
+      {
+        "bytes": 26874,
+        "path": "benchmark/v6/candidate-registry.yaml",
+        "sha256": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba"
+      },
+      {
+        "bytes": 11651,
+        "path": ".github/workflows/baked-confirmatory-images.yml",
+        "sha256": "sha256:62d42ebc110f48bb813fa32bb0579f7ef6487e12f12cf4c195004db954746e9f"
+      }
+    ]
+  },
+  "closes_audit_section": "28-E",
+  "environment": {
+    "note": "the experiments are pure-Python and GPU-free; the runtime image definitions are included for the GPU work that remains",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.13.0"
+  },
+  "estimated_cost_usd": 0.0,
+  "external_pins": {
+    "ecfr_api": {
+      "base": "https://www.ecfr.gov/api/versioner/v1",
+      "note": "eCFR serves current content; the receipts pin the fetched bytes by sha256 so a later upstream edit is detectable"
+    },
+    "mineru_model": {
+      "artifact_manifest_sha256": "sha256:1611a8892cc0e7e287d31c4a1b5af87652f0f6e4a3f80276b92b4c71f982de84",
+      "bytes": 2328028720,
+      "file_count": 13,
+      "repo_id": "opendatalab/MinerU2.5-Pro-2605-1.2B",
+      "revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+      "verification_note": "file count and byte total re-queried from the Hugging Face API on 2026-09-01 and matched the 2026-08-01 record exactly",
+      "verified_against": "benchmark/reports/mineru-3.4.4-vlm-concurrency-diagnostic-2026-08-01.json"
+    },
+    "mineru_source": {
+      "repo": "https://github.com/opendatalab/MinerU.git",
+      "revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7"
+    },
+    "paddle_runtime": {
+      "frozen_manifest": "benchmark/reports/paddleocr-vl-1.6-fastdeploy-runtime-manifest-2026-08-01.json",
+      "reason": "fastdeploy-gpu 2.3.0 withdrawn from PyPI and the vendor CDN; see INC-RUNPOD-05",
+      "status": "BLOCKED"
+    }
+  },
+  "generated_at": "2026-09-01T14:15:02.043637+00:00",
+  "gpu_seconds": 0.0,
+  "package_sha256": "sha256:5fc75f236513edaf61869b082138c6893e55cf690bbeb848e7c7c666d51570d6",
+  "repository": {
+    "branch": "agent/tavonel-vkc-research",
+    "commit": "a6a0083b2b7e342fee4033332f48edc2eb9e0e13",
+    "dirty": true,
+    "name": "ai-knowledge-compiler-vkc-research"
+  },
+  "schema": "tavonel.reproducibility-package.v1",
+  "scope": "artifacts required to reproduce the claims established in the 2026-09-01 session (C-36, C-37) and to audit the state of the blocked Paddle lane"
+}
