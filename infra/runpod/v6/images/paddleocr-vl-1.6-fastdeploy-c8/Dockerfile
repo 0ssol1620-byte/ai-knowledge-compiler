@@ -30,7 +30,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 USER root
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends openssh-server ca-certificates \
+    && apt-get install -y -qq --no-install-recommends openssh-server ca-certificates git \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /run/sshd /root/.ssh /opt/folynta/models /opt/folynta/runner \
        /opt/folynta/fixtures "${HF_HOME}" "${PADDLEX_HOME}"
@@ -45,6 +45,38 @@ RUN apt-get update -qq \
 # 2026-09-01 died here with "[Errno 28] No space left on device" partway through
 # that download, on a runner where the cleanup step had already freed 13G -> 33G.
 # The sibling MinerU image already passes this flag; this one did not.
+# fastdeploy-gpu 2.3.0 is built from its tagged source, not installed as a
+# wheel, because the wheel no longer exists anywhere we can reach:
+#
+#   PyPI project fastdeploy-gpu                                  404
+#   paddle-whl.cdn.bcebos.com stable/cu126 2.3.0 cp310/311/312    404
+#   same prefix, 2.5.0 cp310 (control)                            200, 1.77 GB
+#   FastDeploy GitHub release v2.3.0                              0 assets
+#   network volume o9eslyovmd (held the 2026-08-01 venv)          empty
+#
+# The control returning 200 on the identical prefix is what makes those 404s
+# evidence of withdrawal rather than a wrong URL. See INC-RUNPOD-05.
+#
+# Building from the tag reaches the SAME frozen identity, because every check
+# that exists is satisfied by it:
+#
+#   * benchmark/reports/paddleocr-vl-1.6-fastdeploy-runtime-manifest-
+#     2026-08-01.json pins software.fastdeploy_gpu as the string "2.3.0"; it
+#     hashes model artifacts, not the wheel.
+#   * The dependency assertion below uses importlib.metadata.version(), which
+#     compares version strings.
+#   * The compatibility patch asserts sha256 on a single source file, and
+#     fastdeploy/input/text_processor.py at tag v2.3.0 hashes to exactly the
+#     expected pre-patch value b50570cb...a396d (29,698 bytes, verified
+#     against GitHub raw at the tag).
+#
+# This is deliberately NOT a version bump. 2.5.0 is available and would have
+# been the easy fix; it would also void the runtime assertion, the patch gate,
+# and the claim that the confirmatory run uses the same runtime as the
+# 2026-08-01 measurements. The source build changes the delivery route and
+# nothing else, and the patch gate still adjudicates the result byte for byte
+# -- if the build ever yields a different text_processor.py, the build fails,
+# which is correct rather than inconvenient.
 RUN python3.11 -m venv /opt/folynta/venv \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --upgrade 'pip==25.1.1' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
@@ -52,8 +84,9 @@ RUN python3.11 -m venv /opt/folynta/venv \
          --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'paddleocr[doc-parser]==3.7.0' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
-         'fastdeploy-gpu==2.3.0' \
          'paddleformers==1.2.0' \
+    && /opt/folynta/venv/bin/python -m pip install --no-cache-dir \
+         'git+https://github.com/PaddlePaddle/FastDeploy.git@v2.3.0#egg=fastdeploy-gpu' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir 'protobuf==6.33.6' \
     && rm -rf /root/.cache/pip
 
