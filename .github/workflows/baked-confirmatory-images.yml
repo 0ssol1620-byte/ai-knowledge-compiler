@@ -212,6 +212,20 @@ jobs:
           severity: CRITICAL
           ignore-unfixed: true
           exit-code: "1"
+      - name: Publish the scan findings even when the gate fails
+        # Without this the scan JSON is lost whenever the gate trips, because
+        # the artifact upload runs only after a passing scan. Three rounds of
+        # remediation on 2026-09-01 were driven by inferring the findings from
+        # the SBOM instead of reading them, and the inference was wrong. Fixing
+        # a gate you cannot see is guesswork; this makes the evidence
+        # survive the failure it describes.
+        if: always() && steps.arming_gate.outputs.armed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: confirmatory-image-trivy-${{ inputs.target }}-${{ github.sha }}
+          path: ${{ runner.temp }}/confirmatory-image.trivy.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Create build-only integrity receipt
         if: steps.arming_gate.outputs.armed == 'true'
         shell: bash
