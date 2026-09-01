@@ -188,13 +188,13 @@
       "status": "BLOCKED"
     }
   },
-  "generated_at": "2026-09-01T14:15:02.043637+00:00",
+  "generated_at": "2026-09-01T14:15:15.468221+00:00",
   "gpu_seconds": 0.0,
-  "package_sha256": "sha256:5fc75f236513edaf61869b082138c6893e55cf690bbeb848e7c7c666d51570d6",
+  "package_sha256": "sha256:093069592c6a55dbf34af41b75e4e6438f1ee29b5e5165a090e849f6008cf325",
   "repository": {
     "branch": "agent/tavonel-vkc-research",
-    "commit": "a6a0083b2b7e342fee4033332f48edc2eb9e0e13",
-    "dirty": true,
+    "commit": "6ed713d28ac92e2afe4b806b887cff9c412d0bdf",
+    "dirty": false,
     "name": "ai-knowledge-compiler-vkc-research"
   },
   "schema": "tavonel.reproducibility-package.v1",
