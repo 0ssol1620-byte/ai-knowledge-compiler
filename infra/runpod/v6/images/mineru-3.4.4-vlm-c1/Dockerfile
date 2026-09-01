@@ -81,6 +81,59 @@ RUN "${FOLYNTA_PYTHON}" -m pip install --no-cache-dir \
       'transformers==4.57.3' \
       'mineru-vl-utils==1.0.5' \
       "${FOLYNTA_SOURCE_ROOT}[core]"
+# OS-layer remediation: kernel headers.
+#
+# The 2026-09-01 scan flagged 21 CRITICAL kernel CVEs against
+# linux-libc-dev 5.15.0-157.167 as shipped in the base image. The highest fix
+# any of them requires is 5.15.0-187.197, and jammy-security currently carries
+# 5.15.0-190.200 -- checked against the live Ubuntu package index, not assumed
+# -- so a single-package upgrade clears all 21.
+#
+# This is deliberately preferred over the two alternatives. Replacing the
+# pinned base image digest would break the claim that the confirmatory run
+# uses the same runtime as the 2026-08-01 measurements. Scoping the scanner to
+# skip OS packages would turn the receipt's "zero critical vulnerabilities"
+# into "zero outside the OS layer" without saying so.
+#
+# linux-libc-dev is kernel headers: a build-time artifact. Containers run on
+# the host kernel, so this upgrades no executable code in the image, and the
+# package is absent from verify-runtime.sh, the 2026-08-01 concurrency
+# diagnostic manifest and benchmark/v6/candidate-registry.yaml -- it is not
+# part of the frozen runtime identity.
+RUN apt-get update -qq \
+ && apt-get install -y -qq --only-upgrade linux-libc-dev \
+ && rm -rf /var/lib/apt/lists/* \
+ && installed="$(dpkg-query -W -f='${Version}' linux-libc-dev)" \
+ && echo "linux-libc-dev ${installed}" \
+ && dpkg --compare-versions "${installed}" ge "5.15.0-187.197" \
+      || { echo "linux-libc-dev ${installed} still below 5.15.0-187.197" >&2; exit 1; }
+
+# Attack-surface removal: delete vendor tooling this runtime never uses.
+#
+# The 2026-09-01 scan flagged four CRITICAL findings in binaries that arrive
+# in the runpod/pytorch base image and are referenced nowhere in this one:
+#
+#   /usr/local/bin/filebrowser        CVE-2026-56854  golang.org/x/crypto/ssh
+#                                     authentication bypass
+#                                     CVE-2025-68121  Go stdlib
+#   /opt/nvidia/nsight-compute        CVE-2024-24790, CVE-2025-68121
+#                                     Go stdlib in a bundled profiler plugin
+#
+# ENTRYPOINT is start-ssh.sh, which validates PUBLIC_KEY and execs sshd. No
+# script, no stage, and no runtime path in this image invokes either tool.
+#
+# Deletion beats upgrading: an unused binary that is gone has no attack
+# surface, and an SSH authentication-bypass binary sitting in PATH on a host we
+# reach over SSH is worth removing on the merits, independent of the gate.
+# Neither package is part of the frozen runtime identity -- neither appears in
+# verify-runtime.sh, the 2026-08-01 concurrency diagnostic manifest, nor
+# benchmark/v6/candidate-registry.yaml -- so removal cannot change what the
+# confirmatory run may claim about matching the 2026-08-01 runtime.
+RUN rm -rf /usr/local/bin/filebrowser /opt/nvidia/nsight-compute \
+ && test ! -e /usr/local/bin/filebrowser \
+ && test ! -e /opt/nvidia/nsight-compute \
+ && echo "removed unused vendor tooling: filebrowser, nsight-compute"
+
 # Security remediation, not a capability pin.
 #
 # The runpod/pytorch base image ships a Jupyter stack this runtime never uses.
