@@ -25,18 +25,17 @@ _NUMBER = re.compile(
     r"(?<![A-Za-z])[-+]?\d+(?:[.,]\d+)*(?:\s?(?:%|원|억원|만원|달러|USD|KRW|million|billion))?",
     re.IGNORECASE,
 )
-_TERMINAL_ASSERTION = re.compile(r"[.!\u3002\uff01]\s*$")
 _QUESTION_END = re.compile(r"[?\uff1f]\s*$")
 _ENGLISH_PREDICATE = re.compile(
     r"\b(?:is|are|was|were|be|been|has|have|had|does|do|did|will|would|shall|"
-    r"should|must|reported|shows?|demonstrates?|requires?|"
+    r"should|must|approved|published|reported|shows?|demonstrates?|requires?|"
     r"prohibits?|contains?|uses?|achieves?|supports?|causes?|improves?|reduces?|"
     r"increased|decreased)\b",
     re.IGNORECASE,
 )
 _CJK_PREDICATE_ENDING = re.compile(
     r"(?:이다|입니다|있다|없다|한다|했다|된다|됐다|하였다|보였다|나타났다|"
-    r"발표했다|증가했다|감소했다|해야|する|した|である|です|ます|"
+    r"발표했다|증가했다|감소했다|해야|다|する|した|である|です|ます|"
     r"是|为|有|无|显示|表明|增长|下降|必须|应当)$"
 )
 _METADATA_FRAGMENT = re.compile(
@@ -366,13 +365,11 @@ def _is_semantic_claim_candidate(value: str) -> bool:
         return False
     if _QUESTION_END.search(normalized):
         return False
-    if _TERMINAL_ASSERTION.search(normalized) or _ENGLISH_PREDICATE.search(normalized):
+    if _ENGLISH_PREDICATE.search(normalized):
         return True
     # Unfinished OCR lines remain available as evidence-bound retrieval chunks. They
     # do not become asserted graph claims merely because they are long.
-    return bool(
-        _CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f"))
-    )
+    return bool(_CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f")))
 
 
 def _tokens(value: str) -> tuple[str, ...]:

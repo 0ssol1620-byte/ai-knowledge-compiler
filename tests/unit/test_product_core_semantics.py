@@ -88,7 +88,7 @@ def test_headings_version_labels_and_layout_metadata_are_not_asserted_claims() -
             _source(
                 "layout-heavy-scan",
                 "NIST AI 100-1\nAIRMF 1.0\nExecutiveSummary\nMay 2025\n"
-                "Can AI help?\nPage 1\npage\":2,\n"
+                'Can AI help?\nPage 1\npage":2,\n'
                 "people's lives -from commerce and health to transportation and envi\n"
                 "ever, also pose risks that can negatively impact organizations\n"
                 "ronment and our planet.AI technologies can support growth\n"
@@ -104,6 +104,29 @@ def test_headings_version_labels_and_layout_metadata_are_not_asserted_claims() -
         "The evaluation uses a fixed multilingual evidence corpus without translation",
     ]
     assert not result.contradictions
+
+
+def test_numbered_filing_index_entries_are_not_asserted_claims() -> None:
+    result = compile_semantics(
+        (
+            _source(
+                "filing-index",
+                "3.원재료 및 생산설비.\n"
+                "13.매입채무 및 기타금융부채(연결).\n"
+                "특수관계자.\n"
+                "34.현금흐름표..\n"
+                "VII.주주에관한사항..\n"
+                "XII.\n"
+                "The board approved the policy.\n"
+                "계약 이행은 필수다.",
+            ),
+        )
+    )
+
+    assert [claim.text for claim in result.claims] == [
+        "The board approved the policy.",
+        "계약 이행은 필수다.",
+    ]
 
 
 def test_generic_page_numbers_never_create_contradiction_candidates() -> None:
