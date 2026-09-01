@@ -78,7 +78,12 @@ echo "===SOURCE HASH (pre-build)==="
 sha256sum fastdeploy/input/text_processor.py
 
 mkdir -p /tmp/wheels
-/opt/build/bin/python -m pip wheel . --no-build-isolation --no-deps -w /tmp/wheels 2>&1 | tail -25
+# setup.py reads FASTDEPLOY_VERSION and falls back to "2.3.0-dev", which pip
+# normalises to 2.3.0.dev0. The 2026-08-01 manifest pins the string "2.3.0",
+# and the image gate compares importlib.metadata.version() against it, so the
+# release version has to be declared explicitly -- this is the same value the
+# published wheel was built with, not a relabelling of a different tree.
+FASTDEPLOY_VERSION=2.3.0 /opt/build/bin/python -m pip wheel . --no-build-isolation --no-deps -w /tmp/wheels 2>&1 | tail -25
 
 echo "===RESULT==="
 ls -l /tmp/wheels/ || true
