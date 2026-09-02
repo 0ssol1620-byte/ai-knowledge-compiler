@@ -45,6 +45,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = REPO_ROOT / "infra/runpod/v6/qualification/rq-01/fixtures/rq-01-smoke-001.png"
 
 ZOMBIE_GRACE_SECONDS = 420
+FIXTURE = Path(__file__).resolve().parent / "qualification" / "rq-01" / "fixtures" / "rq-01-smoke-001.png"
+OUT_ROOT = Path(__file__).resolve().parent / "qualification" / "rq-01" / "smoke-sessions"
 GPU_CANDIDATES = (
     "NVIDIA GeForce RTX 4090",
     "NVIDIA L40S",
@@ -114,6 +116,36 @@ def destroy(k: str, pod_id: str) -> None:
           f"({'absence proven' if vs == 404 else 'ABSENCE NOT PROVEN'})")
 
 
+REMOTE_SMOKE = """
+set -eu
+export PYTHONHASHSEED=0
+fixture=/workspace/rq-01-smoke-001.png
+test -f "$fixture"
+sha256sum "$fixture"
+/opt/folynta/verify-runtime.sh
+for n in 1 2 3; do
+  out="/workspace/markdown-repeat-${n}"
+  rm -rf "$out"
+  mkdir -p "$out"
+  /opt/folynta/venv/bin/python - "$fixture" "$out" <<'PY'
+import sys, pathlib
+from paddleocr import PaddleOCRVL
+
+src, out = sys.argv[1], pathlib.Path(sys.argv[2])
+pipeline = PaddleOCRVL()
+for result in pipeline.predict(src):
+    result.save_to_markdown(save_path=str(out))
+written = sorted(p.name for p in out.glob("*.md"))
+if not written:
+    raise SystemExit(f"no markdown written to {out}")
+print("wrote", written)
+PY
+done
+ls -R /workspace/markdown-repeat-1 /workspace/markdown-repeat-2 /workspace/markdown-repeat-3
+echo SMOKE-OK
+"""
+
+
 def ssh(host: str, port: int, command: str, timeout: int = 900) -> subprocess.CompletedProcess:
     return subprocess.run(
         [
@@ -149,6 +181,7 @@ def main() -> int:
     ap.add_argument("--target", required=True, choices=("mineru", "paddle"))
     ap.add_argument("--workdir", type=Path, required=True)
     ap.add_argument("--max-minutes", type=int, default=45)
+    ap.add_argument("--smoke-timeout", type=int, default=2700)
     args = ap.parse_args()
 
     k = key()
@@ -209,14 +242,67 @@ def main() -> int:
             print("never became reachable")
             return 4
 
+        # Upload the frozen fixture, run the same prediction three times, and
+        # bring the output back. Sending stdin as BYTES is deliberate: on
+        # Windows subprocess text mode rewrites every \n to \r\n after any
+        # normalisation, and the remote bash then dies on $'\r'. Measured
+        # today: text=True turned a 0-CR payload into a 3-CR one.
+        up = subprocess.run(
+            [
+                "scp", "-i", str(SSH_KEY), "-P", str(port),
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                str(FIXTURE), f"root@{host}:/workspace/rq-01-smoke-001.png",
+            ],
+            capture_output=True, timeout=300,
+        )
+        if up.returncode != 0:
+            print("fixture upload failed:", up.stderr.decode("utf-8", "replace")[:400])
+            return 5
+
+        proc = subprocess.run(
+            [
+                "ssh", "-i", str(SSH_KEY), "-p", str(port),
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                "-o", "ConnectTimeout=30",
+                f"root@{host}", "bash -s",
+            ],
+            input=REMOTE_SMOKE.replace("\r\n", "\n").encode("utf-8"),
+            capture_output=True, timeout=args.smoke_timeout,
+        )
+        out = proc.stdout.decode("utf-8", "replace")
+        err = proc.stderr.decode("utf-8", "replace")
+        print(out[-4000:])
+        if proc.returncode != 0 or "SMOKE-OK" not in out:
+            print("smoke failed rc=%s" % proc.returncode)
+            print(err[-3000:])
+            return 6
+
+        session_dir = OUT_ROOT / f"session-{started_at.replace(':', '').replace('-', '')}"
+        for n in (1, 2, 3):
+            if not scp_back(host, port, f"/workspace/markdown-repeat-{n}",
+                            session_dir):
+                print(f"could not retrieve markdown-repeat-{n}")
+                return 7
+
+        # The layout runtime_smoke_baseline.py requires must exist locally
+        # before the pod is destroyed, while it is still possible to retry.
+        missing = [n for n in (1, 2, 3)
+                   if not list((session_dir / f"markdown-repeat-{n}").glob("*.md"))]
+        if missing:
+            print(f"repeat directories missing markdown: {missing}")
+            return 8
+
         print(json.dumps({
             "pod_id": pod_id,
             "started_at": started_at,
             "image_digest": args.image_digest,
-            "ssh": f"{host}:{port}",
+            "session_dir": str(session_dir),
+            "repeat_dirs": [str(session_dir / f"markdown-repeat-{n}") for n in (1, 2, 3)],
         }, indent=2))
-        print("\nPod is up. Run the three smoke repeats against it, then feed the\n"
-              "directories to runtime_smoke_baseline.py in a SEPARATE invocation.")
+        print("\nThree repeats captured. Seal them with runtime_smoke_baseline.py\n"
+              "in a SEPARATE invocation, as RUNTIME_QUALIFICATION.md requires.")
         return 0
     finally:
         destroy(k, pod_id)
