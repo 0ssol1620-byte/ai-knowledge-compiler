@@ -329,38 +329,6 @@ jobs:
           #   no such file or directory
           # So it is restored here, after the prune that removes it, rather
           # than only once at setup.
-          # Export the image as an OCI layout on disk so the SBOM and scan
-          # steps need neither the registry nor `docker save`.
-          #
-          # Measured, not assumed: the setup probe's own save created
-          # <data-root>/tmp, used it, and removed it one second later --
-          #   02:38:06  docker save works against the relocated data-root
-          #   02:38:07  tmp before prune: ABSENT
-          # -- so that directory is transient by design, and recreating it
-          # after the prune would fail identically on the next save. skopeo
-          # reads the image out of the daemon and writes an OCI directory
-          # without streaming a tar through that path.
-          if command -v skopeo >/dev/null 2>&1; then
-            rm -rf "${RUNNER_TEMP}/image-oci"
-            if skopeo copy --quiet "docker-daemon:${IMAGE_TAG}" \
-                 "oci:${RUNNER_TEMP}/image-oci:scan" 2>"${RUNNER_TEMP}/skopeo.err"; then
-              echo "IMAGE_OCI_DIR=${RUNNER_TEMP}/image-oci" >> "$GITHUB_ENV"
-              du -sh "${RUNNER_TEMP}/image-oci"
-              echo "exported OCI layout for the SBOM and scan steps"
-            else
-              echo "skopeo copy failed; steps fall back to the registry" >&2
-              cat "${RUNNER_TEMP}/skopeo.err" >&2 || true
-            fi
-          else
-            echo "skopeo not available; steps fall back to the registry" >&2
-          fi
-          # Keeping the image costs disk, and the SBOM and scan steps still
-          # need room. Report what is left so a later ENOSPC is attributable.
-          echo "after prune, image retained:"
-          if ! docker image inspect "$IMAGE_TAG" --format '  {{index .RepoDigests 0}}' 2>/dev/null; then
-            echo "  WARNING: image not present locally; the scan will pull"
-          fi
-          df -h / /mnt
           # syft re-expands the pushed image from the registry into TMPDIR to
           # walk its layers, and TMPDIR now shares /mnt with the daemon's
           # data-root. On 2026-09-01 that disk filled and the SBOM step failed
@@ -400,6 +368,17 @@ jobs:
           else
             echo "verify the local image is the pushed image: match"
           fi
+          # Nothing after this needs the daemon's copy. It is ~20 GB on the
+          # same filesystem the SBOM and scan steps use for scratch, and
+          # holding it there is what exhausted the disk:
+          #   write /mnt/docker-data/tmp/docker-export-.../blobs/sha256/...:
+          #   no space left on device
+          # The identity check above has already run, so removing it now
+          # cannot weaken what the later steps prove.
+          docker image rm "$IMAGE_TAG" >/dev/null 2>&1 || true
+          docker image prune --force >/dev/null 2>&1 || true
+          echo "freed the daemon copy; disk available to the SBOM and scan:"
+          df -h / /mnt
       - name: Generate independently downloadable SBOM
         if: steps.arming_gate.outputs.armed == 'true'
         uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
@@ -413,7 +392,7 @@ jobs:
           #   no space left on device
           # The step above verifies this local image is the pushed one, so the
           # SBOM still describes exactly what shipped.
-          image: ${{ env.IMAGE_OCI_DIR && format('oci-dir:{0}', env.IMAGE_OCI_DIR) || env.IMAGE_TAG }}
+          image: ${{ env.IMAGE_DIGEST }}
           format: spdx-json
           output-file: ${{ runner.temp }}/confirmatory-image.spdx.json
       - name: Scan immutable image digest
@@ -454,7 +433,7 @@ jobs:
           # Same on-disk OCI layout the SBOM step reads, when the export
           # succeeded; the tag (daemon) otherwise. Neither path pulls from the
           # registry, which is what reset mid-layer on this image.
-          image-ref: ${{ env.IMAGE_OCI_DIR && format('oci-dir:{0}', env.IMAGE_OCI_DIR) || env.IMAGE_TAG }}
+          image-ref: ${{ env.IMAGE_DIGEST }}
           format: json
           output: ${{ runner.temp }}/confirmatory-image.trivy.json
           severity: CRITICAL
