@@ -146,6 +146,26 @@ def destroy(k: str, pod_id: str) -> None:
 REMOTE_SMOKE = """
 set -eu
 export PYTHONHASHSEED=0
+
+# sshd does not hand its environment to the sessions it spawns, so the ENV
+# baked into the image is absent here and verify-runtime.sh refuses to run:
+#   MODEL_REVISION must be set (baked as an image ENV)
+#
+# The values are recovered from PID 1 -- the ENTRYPOINT, which does carry the
+# baked environment -- rather than passed in from the caller. Supplying them
+# over ssh would mean the qualification verifies the value I sent instead of
+# the one baked into the image, which would defeat the check entirely.
+while IFS= read -r -d '' kv; do
+  case "$kv" in
+    MODEL_REVISION=*|ARTIFACT_MANIFEST_SHA256=*|FOLYNTA_MODEL_ROOT=*|HF_HOME=*|PADDLEX_HOME=*|PADDLE_PDX_MODEL_SOURCE=*|MINERU_*=*)
+      export "$kv"
+      ;;
+  esac
+done < /proc/1/environ
+
+: "${MODEL_REVISION:?could not recover MODEL_REVISION from PID 1 environment}"
+echo "recovered MODEL_REVISION=${MODEL_REVISION}"
+
 fixture=/workspace/rq-01-smoke-001.png
 test -f "$fixture"
 sha256sum "$fixture"
