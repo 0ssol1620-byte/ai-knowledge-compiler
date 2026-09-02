@@ -111,9 +111,25 @@ jobs:
             df -h /mnt
             sudo systemctl stop docker docker.socket || true
             sudo mkdir -p /mnt/docker-data
+            # The daemon needs <data-root>/tmp for "docker save" streams. It
+            # creates the data-root itself but NOT this subdirectory, and syft
+            # reading via the docker: scheme failed with
+            #   unable to save image tar: stat /mnt/docker-data/tmp:
+            #   no such file or directory
+            sudo mkdir -p /mnt/docker-data/tmp
             printf '{ "data-root": "/mnt/docker-data" }\n' | sudo tee /etc/docker/daemon.json
             sudo systemctl start docker
             docker info --format 'docker data-root: {{.DockerRootDir}}'
+            # Prove the daemon can actually stream a save through its tmp dir
+            # before a 20-minute build depends on it. hello-world is ~20 KB.
+            docker pull -q hello-world >/dev/null 2>&1 || true
+            if docker save hello-world -o /dev/null 2>/dev/null; then
+              echo "docker save works against the relocated data-root"
+            else
+              echo "docker save is broken against /mnt/docker-data" >&2
+              ls -la /mnt/docker-data/ >&2 || true
+              exit 34
+            fi
             # Moving only the daemon is not enough. syft re-expands the pushed
             # image into TMPDIR to walk its layers, and on 2026-09-01 the
             # MinerU SBOM step failed with "no space left on device" writing
