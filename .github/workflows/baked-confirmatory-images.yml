@@ -343,6 +343,20 @@ jobs:
           # raised so the scan can finish. The severity gate is untouched:
           # a real CRITICAL still fails the build exactly as before.
           TRIVY_TIMEOUT: 30m
+          # Trivy's troubleshooting guide, "Running out of space during image
+          # scans": layers are processed in parallel by default, and "if each
+          # layer contains large files, disk space may be consumed rapidly...
+          # by specifying a small value such as --parallel 1, parallelism is
+          # reduced, which can mitigate the issue". This image ships the
+          # paddlepaddle CUDA runtime -- libpaddle.so, libphi_gpu.so and
+          # friends -- which is exactly that case.
+          #
+          # The guide's third suggestion, --skip-files/--skip-dirs, is
+          # deliberately NOT used: skipping the CUDA binaries would make the
+          # scan pass by not looking at them, and the receipt asserts zero
+          # critical vulnerabilities in the image rather than in a chosen
+          # subset of it.
+          TRIVY_PARALLEL: "1"
         with:
           # The local tag, verified above to resolve to IMAGE_DIGEST. Reading
           # from the daemon keeps paddle's largest layers off the network,
