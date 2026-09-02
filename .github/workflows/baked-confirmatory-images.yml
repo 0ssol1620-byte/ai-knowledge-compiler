@@ -318,7 +318,6 @@ jobs:
           # Record whether the prune is what removes <data-root>/tmp, rather
           # than assuming it. If tmp is present before and absent after, the
           # attribution is proven by this line alone.
-          if [ -d /mnt/docker-data/tmp ]; then echo "tmp before prune: present"; else echo "tmp before prune: ABSENT"; fi
           docker builder prune --all --force
           docker container prune --force
           docker volume prune --force
@@ -330,11 +329,31 @@ jobs:
           #   no such file or directory
           # So it is restored here, after the prune that removes it, rather
           # than only once at setup.
-          if [ -d /mnt/docker-data/tmp ]; then echo "tmp after prune:  present"; else echo "tmp after prune:  ABSENT (prune removed it)"; fi
-          sudo mkdir -p /mnt/docker-data/tmp
-          sudo chown root:root /mnt/docker-data/tmp
-          sudo chmod 700 /mnt/docker-data/tmp
-          test -d /mnt/docker-data/tmp && echo "data-root tmp restored after prune"
+          # Export the image as an OCI layout on disk so the SBOM and scan
+          # steps need neither the registry nor `docker save`.
+          #
+          # Measured, not assumed: the setup probe's own save created
+          # <data-root>/tmp, used it, and removed it one second later --
+          #   02:38:06  docker save works against the relocated data-root
+          #   02:38:07  tmp before prune: ABSENT
+          # -- so that directory is transient by design, and recreating it
+          # after the prune would fail identically on the next save. skopeo
+          # reads the image out of the daemon and writes an OCI directory
+          # without streaming a tar through that path.
+          if command -v skopeo >/dev/null 2>&1; then
+            rm -rf "${RUNNER_TEMP}/image-oci"
+            if skopeo copy --quiet "docker-daemon:${IMAGE_TAG}" \
+                 "oci:${RUNNER_TEMP}/image-oci:scan" 2>"${RUNNER_TEMP}/skopeo.err"; then
+              echo "IMAGE_OCI_DIR=${RUNNER_TEMP}/image-oci" >> "$GITHUB_ENV"
+              du -sh "${RUNNER_TEMP}/image-oci"
+              echo "exported OCI layout for the SBOM and scan steps"
+            else
+              echo "skopeo copy failed; steps fall back to the registry" >&2
+              cat "${RUNNER_TEMP}/skopeo.err" >&2 || true
+            fi
+          else
+            echo "skopeo not available; steps fall back to the registry" >&2
+          fi
           # Keeping the image costs disk, and the SBOM and scan steps still
           # need room. Report what is left so a later ENOSPC is attributable.
           echo "after prune, image retained:"
@@ -394,7 +413,7 @@ jobs:
           #   no space left on device
           # The step above verifies this local image is the pushed one, so the
           # SBOM still describes exactly what shipped.
-          image: docker:${{ env.IMAGE_TAG }}
+          image: ${{ env.IMAGE_OCI_DIR && format('oci-dir:{0}', env.IMAGE_OCI_DIR) || env.IMAGE_TAG }}
           format: spdx-json
           output-file: ${{ runner.temp }}/confirmatory-image.spdx.json
       - name: Scan immutable image digest
@@ -432,7 +451,10 @@ jobs:
           # The local tag, verified above to resolve to IMAGE_DIGEST. Reading
           # from the daemon keeps paddle's largest layers off the network,
           # which is what the registry stream reset on.
-          image-ref: ${{ env.IMAGE_TAG }}
+          # Same on-disk OCI layout the SBOM step reads, when the export
+          # succeeded; the tag (daemon) otherwise. Neither path pulls from the
+          # registry, which is what reset mid-layer on this image.
+          image-ref: ${{ env.IMAGE_OCI_DIR && format('oci-dir:{0}', env.IMAGE_OCI_DIR) || env.IMAGE_TAG }}
           format: json
           output: ${{ runner.temp }}/confirmatory-image.trivy.json
           severity: CRITICAL
