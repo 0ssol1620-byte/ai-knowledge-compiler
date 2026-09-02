@@ -104,6 +104,13 @@ RUN --mount=type=secret,id=gh_token \
       'https://api.github.com/repos/0ssol1620-byte/ai-knowledge-compiler/releases/assets/540096418' \
  && echo '171a1a142fa1462f34c21270a0b11da7d921a9580c76673ab9a839d8a71dd5fe  /opt/folynta/fastdeploy_gpu-2.3.0-py3-none-any.whl' | sha256sum -c -
 
+# pip retries and per-request timeout. A build on 2026-09-02 died at 219s with
+# "error: incomplete-download" fetching one of the multi-hundred-MB CUDA
+# wheels: a transient transfer failure, not a resolution or version problem.
+# The default single attempt makes a 20-minute build hostage to one dropped
+# connection. Nothing about which versions are installed changes.
+ENV PIP_RETRIES=5 PIP_TIMEOUT=60 PIP_DEFAULT_TIMEOUT=60
+
 RUN python3.11 -m venv /opt/folynta/venv \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off --upgrade 'pip==25.1.1' \
     && /opt/folynta/venv/bin/python -m pip install --no-cache-dir --quiet --progress-bar off \
