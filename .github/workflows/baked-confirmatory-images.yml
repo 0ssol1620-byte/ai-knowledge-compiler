@@ -297,13 +297,6 @@ jobs:
           echo "disk available to the SBOM step:"
           df -h / /mnt
           df -h /
-      - name: Generate independently downloadable SBOM
-        if: steps.arming_gate.outputs.armed == 'true'
-        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
-        with:
-          image: ${{ env.IMAGE_TAG }}
-          format: spdx-json
-          output-file: ${{ runner.temp }}/confirmatory-image.spdx.json
       - name: Confirm the local image matches the pushed digest
         if: steps.arming_gate.outputs.armed == 'true'
         shell: bash
@@ -331,6 +324,22 @@ jobs:
           else
             echo "verify the local image is the pushed image: match"
           fi
+      - name: Generate independently downloadable SBOM
+        if: steps.arming_gate.outputs.armed == 'true'
+        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+        with:
+          # The docker: scheme is explicit on purpose. syft's default for a
+          # bare tag is "use the Docker daemon, and silently fall back to
+          # pulling from the registry if it is not there" -- and that fallback
+          # re-downloaded ~15 GB of layers that were already local, then ran
+          # out of space expanding them into TMPDIR:
+          #   oci-registry: unable to populate layer cache ...
+          #   no space left on device
+          # The step above verifies this local image is the pushed one, so the
+          # SBOM still describes exactly what shipped.
+          image: docker:${{ env.IMAGE_TAG }}
+          format: spdx-json
+          output-file: ${{ runner.temp }}/confirmatory-image.spdx.json
       - name: Scan immutable image digest
         if: steps.arming_gate.outputs.armed == 'true'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -357,6 +366,11 @@ jobs:
           # critical vulnerabilities in the image rather than in a chosen
           # subset of it.
           TRIVY_PARALLEL: "1"
+          # Same root cause as the SBOM step: re-fetching an image that is
+          # already local. Trivy resolves a bare tag against the Docker daemon
+          # first, but only if it can reach it, so the socket is named
+          # explicitly rather than left to discovery.
+          TRIVY_DOCKER_HOST: unix:///var/run/docker.sock
         with:
           # The local tag, verified above to resolve to IMAGE_DIGEST. Reading
           # from the daemon keeps paddle's largest layers off the network,
