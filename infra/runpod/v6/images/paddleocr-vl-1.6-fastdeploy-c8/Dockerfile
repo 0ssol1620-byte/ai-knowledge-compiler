@@ -271,9 +271,14 @@ RUN apt-get update -qq \
 # Jupyter ships in the base image; this image never starts a notebook server
 # (ENTRYPOINT is start-ssh.sh), but an unpatched stored-XSS is still a real
 # finding and the upgrade is free.
-RUN python3 -m pip install --no-cache-dir --quiet --no-deps \
-      'jupyter-server>=2.20.0' 'jupyterlab>=4.5.7' 'notebook>=7.5.6' 2>/dev/null || true \
- && echo "jupyter packages upgraded where present"
+# The scan located the vulnerable copy exactly:
+#   usr/local/lib/python3.12/dist-packages/jupyter_server-2.17.0.dist-info
+# The previous attempt used `python3` and ended in `2>/dev/null || true`,
+# finished in 1.7 seconds, reported success, and left 2.17.0 in place. The
+# script addresses python3.12 explicitly, keeps stderr, and fails the build
+# if the upgrade does not take.
+COPY infra/runpod/v6/images/paddleocr-vl-1.6-fastdeploy-c8/upgrade-jupyter.sh /tmp/upgrade-jupyter.sh
+RUN sh /tmp/upgrade-jupyter.sh && rm -f /tmp/upgrade-jupyter.sh
 
 # filebrowser and nsight-compute are vendor tooling this image never invokes.
 # Deleting an unused binary is strictly better than upgrading it: the finding
