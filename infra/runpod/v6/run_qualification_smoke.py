@@ -193,6 +193,27 @@ PY
   echo "[$(date -u +%H:%M:%S)] repeat ${n} done"
 done
 ls -R /workspace/markdown-repeat-1 /workspace/markdown-repeat-2 /workspace/markdown-repeat-3
+
+# PaddleOCR-VL resolves its own cache and ignores FOLYNTA_MODEL_ROOT, so the
+# directory verify-runtime.sh checked is not necessarily the one that produced
+# these predictions. Assert they are the same bytes instead of assuming it --
+# otherwise the receipt attests to weights that played no part in the output.
+frozen_root="${FOLYNTA_MODEL_ROOT:-/opt/folynta/models/PaddleOCR-VL-1.6}"
+runtime_root="/root/.paddlex/official_models/PaddleOCR-VL-1.6"
+if [ -d "$runtime_root" ]; then
+  frozen_hash="$(find "$frozen_root" -maxdepth 1 -name '*.safetensors' -print0 | sort -z | xargs -0 sha256sum | awk '{print $1}' | sha256sum | awk '{print $1}')"
+  runtime_hash="$(find "$runtime_root" -maxdepth 1 -name '*.safetensors' -print0 | sort -z | xargs -0 sha256sum | awk '{print $1}' | sha256sum | awk '{print $1}')"
+  echo "frozen weights  : ${frozen_hash}"
+  echo "runtime weights : ${runtime_hash}"
+  if [ "$frozen_hash" != "$runtime_hash" ]; then
+    echo "the runtime loaded different weights than verify-runtime checked" >&2
+    exit 37
+  fi
+  echo "runtime weights match the frozen model root"
+else
+  echo "runtime loaded from the frozen root; no separate cache to compare"
+fi
+
 echo SMOKE-OK
 """
 
