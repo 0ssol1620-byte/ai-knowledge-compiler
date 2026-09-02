@@ -171,6 +171,7 @@ test -f "$fixture"
 sha256sum "$fixture"
 /opt/folynta/verify-runtime.sh
 for n in 1 2 3; do
+  echo "[$(date -u +%H:%M:%S)] repeat ${n} starting"
   out="/workspace/markdown-repeat-${n}"
   rm -rf "$out"
   mkdir -p "$out"
@@ -179,14 +180,17 @@ import sys, pathlib
 from paddleocr import PaddleOCRVL
 
 src, out = sys.argv[1], pathlib.Path(sys.argv[2])
+print("[load] constructing PaddleOCRVL", flush=True)
 pipeline = PaddleOCRVL()
+print("[load] ready", flush=True)
 for result in pipeline.predict(src):
     result.save_to_markdown(save_path=str(out))
 written = sorted(p.name for p in out.glob("*.md"))
 if not written:
     raise SystemExit(f"no markdown written to {out}")
-print("wrote", written)
+print("wrote", written, flush=True)
 PY
+  echo "[$(date -u +%H:%M:%S)] repeat ${n} done"
 done
 ls -R /workspace/markdown-repeat-1 /workspace/markdown-repeat-2 /workspace/markdown-repeat-3
 echo SMOKE-OK
@@ -228,7 +232,7 @@ def main() -> int:
     ap.add_argument("--target", required=True, choices=("mineru", "paddle"))
     ap.add_argument("--workdir", type=Path, required=True)
     ap.add_argument("--max-minutes", type=int, default=45)
-    ap.add_argument("--smoke-timeout", type=int, default=2700)
+    ap.add_argument("--smoke-timeout", type=int, default=5400)
     ap.add_argument("--registry-auth-id", default="cmtjrycbo002v10simv158uex",
                     help="RunPod container registry credential for private GHCR")
     args = ap.parse_args()
@@ -346,23 +350,47 @@ def main() -> int:
             print("fixture upload failed:", up.stderr.decode("utf-8", "replace")[:400])
             return 5
 
-        proc = subprocess.run(
-            [
-                "ssh", "-i", str(SSH_KEY), "-p", str(port),
-                "-o", "StrictHostKeyChecking=no",
-                "-o", "UserKnownHostsFile=/dev/null",
-                "-o", "ConnectTimeout=30",
-                f"root@{host}", "bash -s",
-            ],
-            input=REMOTE_SMOKE.replace("\r\n", "\n").encode("utf-8"),
-            capture_output=True, timeout=args.smoke_timeout,
-        )
-        out = proc.stdout.decode("utf-8", "replace")
-        err = proc.stderr.decode("utf-8", "replace")
-        print(out[-4000:])
+        # Stream to disk rather than buffering. subprocess.run with
+        # capture_output throws away everything it collected when it times
+        # out, and losing 45 minutes of GPU output to that is not acceptable:
+        # a timeout must still say how far the run got.
+        smoke_log = args.workdir / "smoke-run.log"
+        smoke_log.parent.mkdir(parents=True, exist_ok=True)
+        timed_out = False
+        with smoke_log.open("wb") as sink:
+            proc = subprocess.Popen(
+                [
+                    "ssh", "-i", str(SSH_KEY), "-p", str(port),
+                    "-o", "StrictHostKeyChecking=no",
+                    "-o", "UserKnownHostsFile=/dev/null",
+                    "-o", "ConnectTimeout=30",
+                    "-o", "ServerAliveInterval=30",
+                    f"root@{host}", "bash -s",
+                ],
+                stdin=subprocess.PIPE,
+                stdout=sink,
+                stderr=subprocess.STDOUT,
+            )
+            # Bytes, not text: Windows text mode reinserts CR after any
+            # normalisation and the remote bash dies on $'\r'.
+            proc.stdin.write(REMOTE_SMOKE.replace("\r\n", "\n").encode("utf-8"))
+            proc.stdin.close()
+            try:
+                proc.wait(timeout=args.smoke_timeout)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                proc.kill()
+                proc.wait(timeout=60)
+
+        out = smoke_log.read_text(encoding="utf-8", errors="replace")
+        print(out[-6000:])
+        print(f"(full smoke log: {smoke_log})")
+        if timed_out:
+            print(f"smoke timed out after {args.smoke_timeout}s; the log above "
+                  "shows the last completed step")
+            return 6
         if proc.returncode != 0 or "SMOKE-OK" not in out:
             print("smoke failed rc=%s" % proc.returncode)
-            print(err[-3000:])
             return 6
 
         session_dir = OUT_ROOT / f"session-{started_at.replace(':', '').replace('-', '')}"
