@@ -315,9 +315,26 @@ jobs:
           # container -- including this one -- so the later scan found
           # "local: <not present>" and fell back to pulling from GHCR, which is
           # exactly the transfer that keeps resetting mid-layer.
+          # Record whether the prune is what removes <data-root>/tmp, rather
+          # than assuming it. If tmp is present before and absent after, the
+          # attribution is proven by this line alone.
+          if [ -d /mnt/docker-data/tmp ]; then echo "tmp before prune: present"; else echo "tmp before prune: ABSENT"; fi
           docker builder prune --all --force
           docker container prune --force
           docker volume prune --force
+          # The daemon removes <data-root>/tmp during a prune and does not
+          # recreate it until it next needs it -- but "docker save" fails
+          # outright if it is missing. The save-probe in the setup step passed,
+          # then twenty minutes later syft died with
+          #   unable to save image tar: stat /mnt/docker-data/tmp:
+          #   no such file or directory
+          # So it is restored here, after the prune that removes it, rather
+          # than only once at setup.
+          if [ -d /mnt/docker-data/tmp ]; then echo "tmp after prune:  present"; else echo "tmp after prune:  ABSENT (prune removed it)"; fi
+          sudo mkdir -p /mnt/docker-data/tmp
+          sudo chown root:root /mnt/docker-data/tmp
+          sudo chmod 700 /mnt/docker-data/tmp
+          test -d /mnt/docker-data/tmp && echo "data-root tmp restored after prune"
           # Keeping the image costs disk, and the SBOM and scan steps still
           # need room. Report what is left so a later ENOSPC is attributable.
           echo "after prune, image retained:"
