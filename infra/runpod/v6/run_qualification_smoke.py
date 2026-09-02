@@ -197,7 +197,10 @@ def main() -> int:
             "cloudType": "SECURE",
             "gpuTypeIds": [gpu],
             "gpuCount": 1,
-            "containerDiskInGb": 60,
+            # 120 GB, not 60: the paddle image is 32.3 GB uncompressed per its
+            # Trivy metadata, and the container disk must hold the unpacked
+            # image plus the smoke output with room to spare.
+            "containerDiskInGb": 120,
             "ports": ["22/tcp"],
             "env": {"PUBLIC_KEY": pub},
             "allowedCudaVersions": ["12.8", "12.9"],
@@ -239,7 +242,23 @@ def main() -> int:
                     return 3
 
         if not host:
-            print("never became reachable")
+            # Say WHAT was observed, not just that it did not happen. A 32.3 GB
+            # image can take 10-25 minutes to pull before sshd ever starts, and
+            # that is indistinguishable from a broken pod unless the last
+            # observed state is reported.
+            s_last, p_last = call(k, "GET", f"/pods/{pod_id}")
+            up_last = uptime_seconds(k, pod_id)
+            print(f"never became reachable within {args.max_minutes} min")
+            if isinstance(p_last, dict):
+                print(json.dumps({
+                    "desiredStatus": p_last.get("desiredStatus"),
+                    "publicIp": p_last.get("publicIp"),
+                    "portMappings": p_last.get("portMappings"),
+                    "uptimeInSeconds": up_last,
+                    "lastStatusChange": p_last.get("lastStatusChange"),
+                }, indent=2))
+            print("if uptime is 0 or None the container had not started yet; "
+                  "retry with a larger --max-minutes before suspecting the image")
             return 4
 
         # Upload the frozen fixture, run the same prediction three times, and
