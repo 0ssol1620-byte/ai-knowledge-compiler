@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -111,6 +112,81 @@ def fetch_logs(k: str, pod_id: str) -> str:
                     return "\n".join(str(line) for line in value)
                 return str(value)
     return raw
+
+
+def _live_record(workdir: Path) -> Path:
+    return workdir / ".live-pod"
+
+
+def record_live(workdir: Path, pod_id: str) -> None:
+    """Persist the pod id so a killed process cannot leak a billing pod.
+
+    A finally block covers exceptions and normal exit. It does not cover
+    SIGTERM or a console close -- which is how a pod was left running at
+    $0.74/hr on 2026-09-02. This file outlives the process.
+    """
+    path = _live_record(workdir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(pod_id, encoding="utf-8")
+
+
+def clear_live(workdir: Path) -> None:
+    _live_record(workdir).unlink(missing_ok=True)
+
+
+def reconcile_previous(k: str, workdir: Path) -> None:
+    """Delete any pod a previous run failed to clean up, before starting."""
+    path = _live_record(workdir)
+    if not path.exists():
+        return
+    stale = path.read_text(encoding="utf-8").strip()
+    if not stale:
+        path.unlink(missing_ok=True)
+        return
+    print(f"reconciling pod left by a previous run: {stale}")
+    status, _ = call(k, "GET", f"/pods/{stale}")
+    if status == 404:
+        print("  already gone")
+        path.unlink(missing_ok=True)
+        return
+    destroy(k, stale)
+    status, _ = call(k, "GET", f"/pods/{stale}")
+    if status == 404:
+        print("  deleted; 404 read-back confirms absence")
+        path.unlink(missing_ok=True)
+    else:
+        print(f"  WARNING: still present (HTTP {status}); leaving the record "
+              "so the next run retries", flush=True)
+
+
+def install_signal_cleanup(k: str, workdir: Path) -> None:
+    """Delete the recorded pod on a polite kill, then re-raise.
+
+    Best effort and deliberately secondary to the on-disk record: a handler
+    that must run to prevent billing is one that will eventually not run.
+    """
+    import signal
+
+    def handler(signum, _frame):
+        pod_id = _live_record(workdir).read_text(encoding="utf-8").strip() \
+            if _live_record(workdir).exists() else ""
+        if pod_id:
+            print(f"\nsignal {signum}: deleting {pod_id} before exit", flush=True)
+            destroy(k, pod_id)
+            status, _ = call(k, "GET", f"/pods/{pod_id}")
+            if status == 404:
+                clear_live(workdir)
+                print("  404 read-back confirms absence", flush=True)
+        signal.signal(signum, signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    for name in ("SIGINT", "SIGTERM", "SIGBREAK"):
+        sig = getattr(signal, name, None)
+        if sig is not None:
+            try:
+                signal.signal(sig, handler)
+            except (ValueError, OSError):
+                pass
 
 
 def uptime_seconds(k: str, pod_id: str) -> int | None:
@@ -265,6 +341,9 @@ def main() -> int:
     started_at = datetime.now(UTC).isoformat()
 
     pod_id = None
+    reconcile_previous(k, args.workdir)
+    install_signal_cleanup(k, args.workdir)
+
     for gpu in GPU_CANDIDATES:
         spec = {
             "name": name,
@@ -292,11 +371,13 @@ def main() -> int:
         status, body = call(k, "POST", "/pods", spec)
         if status in (200, 201) and isinstance(body, dict) and body.get("id"):
             pod_id = body["id"]
+            record_live(args.workdir, pod_id)
             print(f"create HTTP {status} on {gpu} -> {pod_id}")
             break
         orphans = find_by_name(k, name)
         if orphans:
             pod_id = orphans[0]
+            record_live(args.workdir, pod_id)
             print(f"create HTTP {status} on {gpu}, reconciled orphan {pod_id}")
             break
         print(f"  {gpu:28s} HTTP {status}")
@@ -441,6 +522,9 @@ def main() -> int:
         return 0
     finally:
         destroy(k, pod_id)
+        status, _ = call(k, "GET", f"/pods/{pod_id}")
+        if status == 404:
+            clear_live(args.workdir)
         for leftover in find_by_name(k, name):
             print(f"  reconciling leftover {leftover}")
             destroy(k, leftover)
