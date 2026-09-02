@@ -270,7 +270,21 @@ jobs:
           # The docker driver has no builder container to remove; tolerate
           # its absence so cleanup does not fail the run.
           docker buildx rm folynta-confirmatory-builder 2>/dev/null || true
-          docker system prune --all --force --volumes
+          # Reclaim space WITHOUT deleting the image just built. The previous
+          # form used --all, which removes images not referenced by a running
+          # container -- including this one -- so the later scan found
+          # "local: <not present>" and fell back to pulling from GHCR, which is
+          # exactly the transfer that keeps resetting mid-layer.
+          docker builder prune --all --force
+          docker container prune --force
+          docker volume prune --force
+          # Keeping the image costs disk, and the SBOM and scan steps still
+          # need room. Report what is left so a later ENOSPC is attributable.
+          echo "after prune, image retained:"
+          if ! docker image inspect "$IMAGE_TAG" --format '  {{index .RepoDigests 0}}' 2>/dev/null; then
+            echo "  WARNING: image not present locally; the scan will pull"
+          fi
+          df -h / /mnt
           # syft re-expands the pushed image from the registry into TMPDIR to
           # walk its layers, and TMPDIR now shares /mnt with the daemon's
           # data-root. On 2026-09-01 that disk filled and the SBOM step failed
