@@ -138,7 +138,12 @@ jobs:
               echo "cannot pull hello-world; skipping the save probe" >&2
               echo "(a pull failure is a network problem, not a storage one)" >&2
             else
-              save_err="$(docker save hello-world -o /dev/null 2>&1)" && save_rc=0 || save_rc=$?
+              # Save to a real file, not /dev/null: the daemon rejects a
+              # device with "invalid output path ... got a device", which the
+              # first version of this probe misreported as a storage fault.
+              probe_tar="$(mktemp -p "${RUNNER_TEMP}" savecheck.XXXXXX.tar)"
+              save_err="$(docker save hello-world -o "$probe_tar" 2>&1)" && save_rc=0 || save_rc=$?
+              rm -f "$probe_tar"
               if [ "${save_rc:-0}" -eq 0 ]; then
                 echo "docker save works against the relocated data-root"
               else
