@@ -209,6 +209,8 @@ def main() -> int:
     ap.add_argument("--workdir", type=Path, required=True)
     ap.add_argument("--max-minutes", type=int, default=45)
     ap.add_argument("--smoke-timeout", type=int, default=2700)
+    ap.add_argument("--registry-auth-id", default="cmtjrycbo002v10simv158uex",
+                    help="RunPod container registry credential for private GHCR")
     args = ap.parse_args()
 
     k = key()
@@ -232,6 +234,15 @@ def main() -> int:
             "ports": ["22/tcp"],
             "env": {"PUBLIC_KEY": pub},
             "allowedCudaVersions": ["12.8", "12.9"],
+            # Both GHCR packages are private -- measured, not assumed. Without
+            # this the platform gets a 401 from the registry and kills the
+            # container before sshd starts, which presents as
+            #   desiredStatus EXITED / uptimeInSeconds null
+            #   "Exited by Runpod: ..."
+            # and is indistinguishable from a slow pull unless you check the
+            # package visibility. Publishing the images instead would be the
+            # wrong fix: they carry the frozen weights and the rebuilt wheel.
+            "containerRegistryAuthId": args.registry_auth_id,
         }
         status, body = call(k, "POST", "/pods", spec)
         if status in (200, 201) and isinstance(body, dict) and body.get("id"):
