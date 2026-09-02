@@ -290,6 +290,33 @@ jobs:
           image: ${{ env.IMAGE_TAG }}
           format: spdx-json
           output-file: ${{ runner.temp }}/confirmatory-image.spdx.json
+      - name: Confirm the local image matches the pushed digest
+        if: steps.arming_gate.outputs.armed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The scan below reads the image from the local daemon rather than
+          # re-pulling it, because pulling paddle's multi-hundred-MB CUDA
+          # layers from GHCR failed mid-stream:
+          #   libphi_gpu.so: failed to copy: stream error: stream ID 75;
+          #   PROTOCOL_ERROR; received from peer
+          #
+          # Scanning a local image is only equivalent if it IS the pushed
+          # image, so verify the local tag resolves to the digest that was
+          # published, and fail if it does not. Without this, "scan locally"
+          # would be a way to scan something other than what shipped.
+          local_digest="$(docker image inspect "$IMAGE_TAG" \
+            --format '{{index .RepoDigests 0}}' 2>/dev/null || true)"
+          echo "local:  ${local_digest:-<not present>}"
+          echo "pushed: ${IMAGE_DIGEST}"
+          if [ -z "$local_digest" ]; then
+            echo "local image absent; the scan will pull from the registry" >&2
+          elif [ "$local_digest" != "$IMAGE_DIGEST" ]; then
+            echo "local image does not match the pushed digest" >&2
+            exit 35
+          else
+            echo "verify the local image is the pushed image: match"
+          fi
       - name: Scan immutable image digest
         if: steps.arming_gate.outputs.armed == 'true'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -303,7 +330,10 @@ jobs:
           # a real CRITICAL still fails the build exactly as before.
           TRIVY_TIMEOUT: 30m
         with:
-          image-ref: ${{ env.IMAGE_DIGEST }}
+          # The local tag, verified above to resolve to IMAGE_DIGEST. Reading
+          # from the daemon keeps paddle's largest layers off the network,
+          # which is what the registry stream reset on.
+          image-ref: ${{ env.IMAGE_TAG }}
           format: json
           output: ${{ runner.temp }}/confirmatory-image.trivy.json
           severity: CRITICAL
