@@ -86,6 +86,33 @@ def find_by_name(k: str, name: str) -> list[str]:
     return [p["id"] for p in pods if p.get("name") == name and p.get("desiredStatus") != "TERMINATED"]
 
 
+def fetch_logs(k: str, pod_id: str) -> str:
+    """Container logs for a pod, best effort.
+
+    v1 has no logs path -- it answers 400 with a spec error naming the missing
+    route -- so this uses the v2 REST host, which does.
+    """
+    url = f"https://v2-rest.runpod.io/v2/pods/{pod_id}/logs"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {k}"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            raw = resp.read().decode("utf-8", "replace")
+    except Exception as exc:  # noqa: BLE001 - diagnostic path
+        return f"<could not fetch logs: {type(exc).__name__}: {exc}>"
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        return raw
+    if isinstance(parsed, dict):
+        for key in ("logs", "data", "output"):
+            if key in parsed:
+                value = parsed[key]
+                if isinstance(value, list):
+                    return "\n".join(str(line) for line in value)
+                return str(value)
+    return raw
+
+
 def uptime_seconds(k: str, pod_id: str) -> int | None:
     payload = {
         "query": "query($id:String!){pod(input:{podId:$id}){runtime{uptimeInSeconds}}}",
@@ -187,6 +214,7 @@ def main() -> int:
     k = key()
     name = f"folynta-qual-{args.target}"
     pub = SSH_KEY.with_suffix(".pub").read_text(encoding="utf-8").strip()
+    print(f"public key: {pub.split()[0] if pub.split() else '<empty>'} len={len(pub)}")
     started_at = datetime.now(UTC).isoformat()
 
     pod_id = None
@@ -249,6 +277,14 @@ def main() -> int:
             s_last, p_last = call(k, "GET", f"/pods/{pod_id}")
             up_last = uptime_seconds(k, pod_id)
             print(f"never became reachable within {args.max_minutes} min")
+            logs = fetch_logs(k, pod_id)
+            log_path = (args.workdir / "unreachable-pod-logs.txt")
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            log_path.write_text(logs, encoding="utf-8")
+            print("--- container logs (also written to "
+                  f"{log_path}) ---")
+            print(logs[-4000:])
+            print("--- end container logs ---")
             if isinstance(p_last, dict):
                 print(json.dumps({
                     "desiredStatus": p_last.get("desiredStatus"),
