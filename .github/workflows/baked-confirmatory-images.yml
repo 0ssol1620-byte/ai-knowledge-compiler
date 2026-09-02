@@ -117,18 +117,37 @@ jobs:
             #   unable to save image tar: stat /mnt/docker-data/tmp:
             #   no such file or directory
             sudo mkdir -p /mnt/docker-data/tmp
+            # The daemon runs as root and writes here itself, so ownership is
+            # set to match what it creates under a default data-root. Creating
+            # the directory as the runner user and leaving it that way is the
+            # other candidate cause of a save failure.
+            sudo chown root:root /mnt/docker-data /mnt/docker-data/tmp
+            sudo chmod 710 /mnt/docker-data
+            sudo chmod 700 /mnt/docker-data/tmp
             printf '{ "data-root": "/mnt/docker-data" }\n' | sudo tee /etc/docker/daemon.json
             sudo systemctl start docker
             docker info --format 'docker data-root: {{.DockerRootDir}}'
-            # Prove the daemon can actually stream a save through its tmp dir
-            # before a 20-minute build depends on it. hello-world is ~20 KB.
-            docker pull -q hello-world >/dev/null 2>&1 || true
-            if docker save hello-world -o /dev/null 2>/dev/null; then
-              echo "docker save works against the relocated data-root"
+            # Prove the daemon can actually stream a save through its tmp
+            # directory before a 20-minute build depends on it. hello-world is
+            # ~20 KB, so this costs about a second.
+            #
+            # The daemon's own stderr is kept: an earlier version of this probe
+            # discarded it with 2>/dev/null and reported "save is broken"
+            # without saying why, which is barely better than not checking.
+            if ! docker pull -q hello-world; then
+              echo "cannot pull hello-world; skipping the save probe" >&2
+              echo "(a pull failure is a network problem, not a storage one)" >&2
             else
-              echo "docker save is broken against /mnt/docker-data" >&2
-              ls -la /mnt/docker-data/ >&2 || true
-              exit 34
+              save_err="$(docker save hello-world -o /dev/null 2>&1)" && save_rc=0 || save_rc=$?
+              if [ "${save_rc:-0}" -eq 0 ]; then
+                echo "docker save works against the relocated data-root"
+              else
+                echo "docker save failed against /mnt/docker-data (rc=${save_rc})" >&2
+                echo "daemon said: ${save_err}" >&2
+                sudo ls -la /mnt/docker-data/ >&2 || true
+                sudo stat -c '%n owner=%U:%G mode=%a' /mnt/docker-data /mnt/docker-data/tmp >&2 || true
+                exit 34
+              fi
             fi
             # Moving only the daemon is not enough. syft re-expands the pushed
             # image into TMPDIR to walk its layers, and on 2026-09-01 the
