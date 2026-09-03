@@ -323,12 +323,13 @@ Core v3 deployment that implements one.
 
 Everything below was executed in this session.
 
-All research suites were re-run under the **project interpreter**; see the note
-below on why the first run did not count.
+The research verdict below is emitted by the repository's own instrument,
+`tools/repro/run_test_scopes.py`, not by a pytest invocation of mine. Two notes
+follow on why that distinction is not pedantry.
 
 | Suite | Result |
 |---|---|
-| Research `tests/unit` + `tests/integration` | **1,030 passed, 68 skipped, 0 failed** (281 s) |
+| Research, **full repository scope** | **3,196 collected, 3,128 passed, 0 failed, 0 errors, 68 skipped**, `repository_green: true` |
 | Product (`vitest run`) | **819 passed, 122 files, 0 failed** |
 | `ruff check` / `ruff format --check` | clean |
 | `mypy` (strict) on `akc_core_v3` | clean |
@@ -339,7 +340,28 @@ The 68 skips are legitimate: 66 in `test_superseded_receipt_contract.py`
 ("does not supersede anything") and 2 guarded by config freezes that make the
 pre-freeze refusal unreachable.
 
-### The repository's own guard caught this session
+### Only the full scope may be called the repository
+
+`TEST_SCOPE_STATUS.json` (receipt `sha256:7477a55f…2e28`) states the rule:
+
+> Only the 'full' scope may be called the repository. A green 'unit' scope does
+> not license the phrase; that substitution is exactly what P18 recorded. When
+> the full scope was not run, `repository_green` is False and
+> `repository_green_evaluated` is False — **absence of a run is not a pass.**
+
+An earlier draft of this document reported `tests/unit` + `tests/integration`
+(1,030 passed) in the position where a repository claim belongs. That is a narrow
+scope offered in place of the repository — the precise substitution the guard was
+built to refuse. The number was true; it was not the number being asked for.
+
+The full scope is 3,196 collected against that 1,030. The instrument was run,
+and `repository_green: true` is its output rather than my summary of it.
+
+The guard also proves it can say no: it refuses an injected failure and accepts a
+clean control on every run (`guard_is_live: true`). A scope-reporting guard that
+has never refused anything is an assertion, not a check.
+
+### The interpreter guard caught this session too
 
 The first research run was made with the system Python rather than the project
 venv. `docs/repro/TEST_SCOPE_SELF_TEST.json` recorded
@@ -349,9 +371,9 @@ venv. `docs/repro/TEST_SCOPE_SELF_TEST.json` recorded
 > site-packages. […] **A result from the wrong interpreter is not a result about
 > this repository.**
 
-So the first "1,018 passed" was not admissible evidence, and the suites were
-re-run under `.venv\Scripts\python.exe`. The regenerated artifact now records
-`is_project_interpreter: true`, and the number above is from that run.
+So the first "1,018 passed" was not admissible evidence, and everything was
+re-run under `.venv\Scripts\python.exe`. Both artifacts now record
+`is_project_interpreter: true`, and the verdict above is from that interpreter.
 
 The totals happen to agree, which is worth saying rather than hiding: the wrong
 interpreter did not change the outcome here. It changed whether the claim was
@@ -622,6 +644,9 @@ decision, not an agent one.**
 - Product revision route and package assembly
 - Both working trees clean of this session's work
 - Product `tsc --noEmit` fully clean, including a pre-existing error closed in passing
+- Repository green established by the repository's own instrument over the full
+  scope — 3,128 passed of 3,196 collected, zero failures — not by a narrow scope
+  offered in its place
 
 **Blocked, with the obstruction named**
 
@@ -651,6 +676,7 @@ decision, not an agent one.**
 | `research/tavonel_eval_v2/receipts/sfir10r4-incident-harness-teardown.json` | `sha256:89ecb962…2290` (superseded, retained) |
 | `research/tavonel_eval_v2/receipts/sfir10r4-incident-correction.json` | `sha256:6a0dc595…ce31` |
 | `research/tavonel_eval_v2/receipts/sfir10r4-seal-attempt.json` | `sha256:d453a3c5…a03d` |
+| `docs/repro/TEST_SCOPE_STATUS.json` (repository verdict) | `sha256:7477a55f…2e28` |
 
 ---
 

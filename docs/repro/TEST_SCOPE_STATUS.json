@@ -1,6 +1,6 @@
 {
   "closes": "P18 -- 'repository green' was written from a tests/unit run. The word is now emitted by this tool from a parsed summary of the scope actually executed.",
-  "generated_at": "2026-08-20T18:12:56.244765+00:00",
+  "generated_at": "2026-09-03T06:55:23.277961+00:00",
   "guard_is_live": true,
   "interpreter": {
     "is_project_interpreter": true,
@@ -21,23 +21,23 @@
       "green_reason": "zero failures and zero errors in this scope",
       "passed": 6,
       "skipped": 0,
-      "summary_line": "6 passed in 1.27s",
+      "summary_line": "6 passed in 0.28s",
       "test_scope": "__negative_control__"
     },
     "guard_accepted_clean": true,
     "guard_refused_injected": true,
     "injected_failure_scope": {
-      "collected": 2,
+      "collected": 1,
       "collected_source": "summed_outcomes",
-      "command": "-m pytest -q --tb=no -p no:randomly C:\\Users\\yspow\\AppData\\Local\\Temp\\tmp9rijugyj -p no:cacheprovider",
-      "errors": 0,
-      "exit_code": 1,
-      "failed": 1,
+      "command": "-m pytest -q --tb=no -p no:randomly C:\\Users\\yspow\\AppData\\Local\\Temp\\tmpfexr7tyi -p no:cacheprovider",
+      "errors": 1,
+      "exit_code": 2,
+      "failed": 0,
       "green": false,
-      "green_reason": "1 failed",
-      "passed": 1,
+      "green_reason": "1 errors",
+      "passed": 0,
       "skipped": 0,
-      "summary_line": "1 failed, 1 passed in 20.49s",
+      "summary_line": "1 error in 33.50s",
       "test_scope": "__positive_control__"
     },
     "purpose": "Prove the guard can say NO. A scope-reporting guard that has never refused anything is an assertion, not a check.",
@@ -48,7 +48,7 @@
     },
     "separates": true
   },
-  "receipt_sha256": "sha256:eb607f96d872b10c6a01311c835611ae14a237126e4393a3a6f6adb33077783d",
+  "receipt_sha256": "sha256:7477a55fb96c95e6c11eb8cf96b2adc4b40e01b9dbf54754005eef8b7fa22e28",
   "repository_green": true,
   "repository_green_evaluated": true,
   "repository_green_note": "Only the 'full' scope may be called the repository. A green 'unit' scope does not license the phrase; that substitution is exactly what P18 recorded. When the full scope was not run, repository_green is False and repository_green_evaluated is False -- absence of a run is not a pass.",
@@ -56,21 +56,7 @@
   "schema": "tavonel.test-scope-status.v1",
   "scopes": [
     {
-      "collected": 1058,
-      "collected_source": "summed_outcomes",
-      "command": "-m pytest -q --tb=no -p no:randomly tests/unit",
-      "errors": 0,
-      "exit_code": 0,
-      "failed": 0,
-      "green": true,
-      "green_reason": "zero failures and zero errors in this scope",
-      "passed": 990,
-      "skipped": 68,
-      "summary_line": "990 passed, 68 skipped in 90.61s (0:01:30)",
-      "test_scope": "unit"
-    },
-    {
-      "collected": 3119,
+      "collected": 3196,
       "collected_source": "summed_outcomes",
       "command": "-m pytest -q --tb=no -p no:randomly",
       "errors": 0,
@@ -78,9 +64,9 @@
       "failed": 0,
       "green": true,
       "green_reason": "zero failures and zero errors in this scope",
-      "passed": 3051,
+      "passed": 3128,
       "skipped": 68,
-      "summary_line": "3051 passed, 68 skipped, 1 warning in 767.80s (0:12:47)",
+      "summary_line": "3128 passed, 68 skipped, 1 warning in 1055.37s (0:17:35)",
       "test_scope": "full"
     }
   ]
