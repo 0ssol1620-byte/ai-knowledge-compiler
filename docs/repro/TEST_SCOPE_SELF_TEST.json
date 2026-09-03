@@ -1,6 +1,6 @@
 {
   "closes": "P18 -- 'repository green' was written from a tests/unit run. The word is now emitted by this tool from a parsed summary of the scope actually executed.",
-  "generated_at": "2026-09-03T06:43:52.220777+00:00",
+  "generated_at": "2026-09-03T07:15:40.203886+00:00",
   "guard_is_live": true,
   "interpreter": {
     "is_project_interpreter": true,
@@ -21,7 +21,7 @@
       "green_reason": "zero failures and zero errors in this scope",
       "passed": 6,
       "skipped": 0,
-      "summary_line": "6 passed in 0.30s",
+      "summary_line": "6 passed in 0.26s",
       "test_scope": "__negative_control__"
     },
     "guard_accepted_clean": true,
@@ -29,7 +29,7 @@
     "injected_failure_scope": {
       "collected": 2,
       "collected_source": "summed_outcomes",
-      "command": "-m pytest -q --tb=no -p no:randomly C:\\Users\\yspow\\AppData\\Local\\Temp\\tmp5dd2gtyk -p no:cacheprovider",
+      "command": "-m pytest -q --tb=no -p no:randomly C:\\Users\\yspow\\AppData\\Local\\Temp\\tmphvb_922t -p no:cacheprovider",
       "errors": 0,
       "exit_code": 1,
       "failed": 1,
@@ -37,7 +37,7 @@
       "green_reason": "1 failed",
       "passed": 1,
       "skipped": 0,
-      "summary_line": "1 failed, 1 passed in 20.22s",
+      "summary_line": "1 failed, 1 passed in 18.65s",
       "test_scope": "__positive_control__"
     },
     "purpose": "Prove the guard can say NO. A scope-reporting guard that has never refused anything is an assertion, not a check.",
@@ -48,7 +48,7 @@
     },
     "separates": true
   },
-  "receipt_sha256": "sha256:48549220fccca8266ce401eb9b4f896cf805a16a6566dab58720ebbe454c11e4",
+  "receipt_sha256": "sha256:e58255eaa90abc84d82ee9aed524866a6bd7167d99faca57ff522aaadd60acc2",
   "repository_green": false,
   "repository_green_evaluated": false,
   "repository_green_note": "Only the 'full' scope may be called the repository. A green 'unit' scope does not license the phrase; that substitution is exactly what P18 recorded. When the full scope was not run, repository_green is False and repository_green_evaluated is False -- absence of a run is not a pass.",
