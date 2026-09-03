@@ -264,7 +264,14 @@ def main() -> int:
     out = (canonical.with_name("TEST_SCOPE_SELF_TEST.json") if args.self_test
            else canonical)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    # newline="\n" because this artifact is cited by sha256. Path.write_text
+    # emits CRLF on Windows, git stores LF, and the digest of the file on disk
+    # then never matches the digest of the file anyone checks out.
+    out.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     if args.self_test:
         print(f"  self-test only: {canonical.name} left untouched")
 
