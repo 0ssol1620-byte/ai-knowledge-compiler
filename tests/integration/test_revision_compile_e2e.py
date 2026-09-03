@@ -517,6 +517,62 @@ def test_v1_to_v2_revision_over_http(endpoint):
     _write_fixture(request, wire_body, input_sha256, payload)
 
 
+def test_the_witness_chain_survives_the_revision(endpoint):
+    """Provenance is carried, not re-derived, and it is carried per artifact.
+
+    The chain the product rests on is raw source -> page and box -> canonical
+    unit -> source fact -> claim -> derived artifact. A revision is where that
+    chain is easiest to lose: the tempting implementation re-derives provenance
+    for everything it touches, and then an artifact nobody rebuilt quietly
+    acquires coordinates that were computed rather than observed.
+
+    So this asks both halves. What was carried forward must still point at the
+    page and box v1 recorded, byte for byte. What was rebuilt must point at v2's,
+    and specifically not at v1's.
+    """
+    address, workspace, prior = endpoint
+    v1_provenance = {artifact: _artifact_body(artifact, V1_CLAUSES) for artifact in ARTIFACTS}
+
+    status, payload, _body, _sha = _post(address, _build_request(prior))
+    assert status == 200, payload
+    recompiled = payload["revision"]["recompilation"]
+
+    # Carried forward: identical to v1, including every evidence id, page and box.
+    for artifact_id in recompiled["carriedForwardArtifactIds"]:
+        assert workspace.bodies[artifact_id] == v1_provenance[artifact_id]
+        for read in workspace.bodies[artifact_id]["reads"]:
+            before = next(
+                item
+                for item in v1_provenance[artifact_id]["reads"]
+                if item["logicalId"] == read["logicalId"]
+            )
+            assert read["provenance"] == before["provenance"]
+
+    # Rebuilt: the amended clause moved, so its witness moved with it. Every
+    # other unit inside a rebuilt artifact keeps the coordinates it always had --
+    # rebuilding an artifact must not re-derive provenance for the units in it
+    # that did not change.
+    for artifact_id in recompiled["rebuiltArtifactIds"]:
+        for read in recompiled["rebuiltArtifactBodies"][artifact_id]["reads"]:
+            before = next(
+                item
+                for item in v1_provenance[artifact_id]["reads"]
+                if item["logicalId"] == read["logicalId"]
+            )
+            if read["logicalId"] == "ku_payment":
+                assert read["provenance"]["bbox1000"] == [120, 356, 880, 388]
+                assert read["provenance"] != before["provenance"]
+            else:
+                assert read["provenance"] == before["provenance"]
+
+    # And the evidence id is bound to the page the clause is actually on, not to
+    # the unit alone -- a revision that moved a clause between pages and kept the
+    # old evidence id would still pass every digest check above.
+    payment = recompiled["rebuiltArtifactBodies"]["claim:payment"]["reads"][0]
+    assert payment["provenance"]["evidenceId"] == "ev_ku_payment_p2"
+    assert payment["provenance"]["pageNumber1"] == 2
+
+
 def test_the_receipt_seal_is_reproducible_from_the_response(endpoint):
     """The digest the Node client recomputes, recomputed here the other way."""
     address, _workspace, prior = endpoint
