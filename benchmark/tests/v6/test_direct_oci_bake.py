@@ -179,7 +179,9 @@ def test_daemonless_bake_preserves_base_and_appends_one_layer(tmp_path: Path) ->
     assert config["config"]["Entrypoint"] == ["/opt/folynta/start-ssh.sh"]  # type: ignore[index]
     assert config["config"]["ExposedPorts"] == {"22/tcp": {}, "8001/tcp": {}}  # type: ignore[index]
     assert "runtime_dependency_verification=required_at_gpu_qualification\n" in gzip.decompress(
-        (out / "blobs" / "sha256" / str(attestation["new_layer_digest"]).split(":", 1)[1]).read_bytes()
+        (
+            out / "blobs" / "sha256" / str(attestation["new_layer_digest"]).split(":", 1)[1]
+        ).read_bytes()
     ).decode("latin-1")
 
 

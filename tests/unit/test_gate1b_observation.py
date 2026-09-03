@@ -14,7 +14,9 @@ sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
-def snapshot(*, attempts: int, grants: int, backlog: int, claimable: int, zero: int, starved: int) -> bytes:
+def snapshot(
+    *, attempts: int, grants: int, backlog: int, claimable: int, zero: int, starved: int
+) -> bytes:
     q = 'queue="gpu_provider_invocations"'
     return (
         f"akc_claim_poll_attempts_total{{{q}}} {attempts}\n"

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Verify a TAVONEL Ovis runtime assembled on an immutable public vLLM base."""
 
+# ruff: noqa: S310, S603, S607, E501
+
 from __future__ import annotations
 
 import base64
@@ -76,7 +78,7 @@ def phase(name: str, **details: Any) -> None:
 
 def _handler() -> type[SimpleHTTPRequestHandler]:
     class QuietHandler(SimpleHTTPRequestHandler):
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+        def log_message(self, format: str, *args: object) -> None:
             return
 
     return QuietHandler
@@ -109,7 +111,7 @@ def download_bytes(url: str, *, timeout: int = 120) -> bytes:
         headers={"User-Agent": "tavonel-verified-assembly/1.0"},
         method="GET",
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - allowlisted HTTPS
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         return response.read()
 
 
@@ -253,7 +255,7 @@ def request_json(url: str, *, payload: dict[str, Any] | None = None, timeout: fl
         headers=headers,
         method="POST" if body else "GET",
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - localhost only
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read())
 
 
@@ -268,7 +270,7 @@ def wait_health(process: subprocess.Popen[str], deadline_seconds: int = 420) -> 
                 headers={"Accept": "*/*"},
                 method="GET",
             )
-            with urllib.request.urlopen(request, timeout=3) as response:  # noqa: S310 - localhost only
+            with urllib.request.urlopen(request, timeout=3) as response:
                 if 200 <= response.status < 300:
                     return
         except (urllib.error.URLError, TimeoutError):

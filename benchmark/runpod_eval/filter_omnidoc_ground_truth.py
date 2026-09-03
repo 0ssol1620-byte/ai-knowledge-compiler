@@ -271,7 +271,17 @@ def main() -> int:
         json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    print(json.dumps({"case_count": len(filenames), "subset_sha256": subset_sha256, "receipt_out": str(args.receipt_out)}, ensure_ascii=True, sort_keys=True))
+    print(
+        json.dumps(
+            {
+                "case_count": len(filenames),
+                "subset_sha256": subset_sha256,
+                "receipt_out": str(args.receipt_out),
+            },
+            ensure_ascii=True,
+            sort_keys=True,
+        )
+    )
     return 0
 
 

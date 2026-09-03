@@ -7,6 +7,8 @@ smoke, writes ``folynta.runtime-verification-evidence.v1``, and then serves the
 content-free evidence over HTTP until the qualification Pod is stopped.
 """
 
+# ruff: noqa: S310, S603, S607, E501
+
 from __future__ import annotations
 
 import base64
@@ -82,7 +84,7 @@ def phase(name: str, **details: Any) -> None:
 
 def _handler() -> type[SimpleHTTPRequestHandler]:
     class QuietHandler(SimpleHTTPRequestHandler):
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+        def log_message(self, format: str, *args: object) -> None:
             return
 
     return QuietHandler
@@ -131,7 +133,7 @@ def request_json(url: str, *, payload: dict[str, Any] | None = None, timeout: fl
     if body is not None:
         headers["Content-Type"] = "application/json"
     request = urllib.request.Request(url, data=body, headers=headers, method="POST" if body else "GET")
-    with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - localhost only
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read())
 
 
@@ -146,7 +148,7 @@ def wait_health(process: subprocess.Popen[str], deadline_seconds: int = 420) -> 
                 headers={"Accept": "*/*"},
                 method="GET",
             )
-            with urllib.request.urlopen(request, timeout=3) as response:  # noqa: S310 - localhost only
+            with urllib.request.urlopen(request, timeout=3) as response:
                 if 200 <= response.status < 300:
                     return
         except (urllib.error.URLError, TimeoutError):

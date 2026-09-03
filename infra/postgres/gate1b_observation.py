@@ -16,9 +16,9 @@ import hashlib
 import json
 import math
 import re
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable
 
 QUEUE = "gpu_provider_invocations"
 _REQUIRED = (

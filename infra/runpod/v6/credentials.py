@@ -34,7 +34,7 @@ class RunPodCredentialSet:
     _keys: tuple[str, ...]
 
     @classmethod
-    def from_environment(cls, *, required: bool = True) -> "RunPodCredentialSet":
+    def from_environment(cls, *, required: bool = True) -> RunPodCredentialSet:
         primary = _validate(os.environ.get(RUNPOD_KEY_ENV, ""), label=RUNPOD_KEY_ENV)
         fallback = _validate(
             os.environ.get(RUNPOD_FALLBACK_KEY_ENV, ""), label=RUNPOD_FALLBACK_KEY_ENV

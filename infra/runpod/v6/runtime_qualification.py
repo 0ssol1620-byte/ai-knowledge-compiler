@@ -283,7 +283,11 @@ def build_runtime_qualification(
         raise ContractError("runtime verification model revision does not match build receipt")
     if measured.model_artifact_sha256 != build.model_artifact_sha256:
         raise ContractError("runtime verification model artifact does not match build receipt")
-    if not (measured.identity_verified and measured.model_artifact_verified and measured.smoke_passed):
+    if not (
+        measured.identity_verified
+        and measured.model_artifact_verified
+        and measured.smoke_passed
+    ):
         raise ContractError("runtime verification evidence did not pass all qualification gates")
 
     qualification_generated_at = generated_at or datetime.now(UTC).isoformat()
@@ -330,7 +334,10 @@ def _read_object(path: Path) -> Mapping[str, Any]:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build a content-bound runtime qualification from immutable build and GPU evidence."
+        description=(
+            "Build a content-bound runtime qualification from immutable build "
+            "and GPU evidence."
+        )
     )
     parser.add_argument("--build-receipt", type=Path, required=True)
     parser.add_argument("--runtime-evidence", type=Path, required=True)

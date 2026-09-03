@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from akc_absorption.synthetic_corruption import CorruptionKind, generate_corruptions
 
-
 TEXT = "Header | Value\nWeight | -10 kg\nDate | 2026-08-15\nPrice | USD 1250"
 
 

@@ -43,7 +43,10 @@ def generate_corruptions(
     seed: int,
     nearby_page_text: str = "",
 ) -> tuple[SyntheticCorruption, ...]:
-    rng = random.Random(seed)
+    # A seeded PRNG is the requirement here, not a weakness: the corruptions
+    # have to be reproducible from the seed for the experiment to mean
+    # anything, and a cryptographic generator would make it unrepeatable.
+    rng = random.Random(seed)  # noqa: S311
     mutations: list[tuple[CorruptionKind, str, str]] = []
 
     def digit(match: re.Match[str]) -> str:
@@ -53,7 +56,9 @@ def generate_corruptions(
 
     mutations.append((CorruptionKind.DIGIT, _replace_first(r"\d", text, digit), "critical_token"))
 
-    signed = _replace_first(r"(?<!\w)([-+])(?=\s*\d)", text, lambda m: "+" if m.group(1) == "-" else "-")
+    signed = _replace_first(
+        r"(?<!\w)([-+])(?=\s*\d)", text, lambda m: "+" if m.group(1) == "-" else "-"
+    )
     if signed == text:
         signed = _replace_first(r"(?<!\w)(\d)", text, r"-\1")
     mutations.append((CorruptionKind.SIGN, signed, "critical_token"))

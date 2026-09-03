@@ -5,10 +5,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from statistics import median
-from typing import Sequence
 
 __all__ = [
     "AssuranceMetrics",
@@ -27,7 +27,9 @@ class ExperimentVariant(StrEnum):
     CALIBRATED = "calibrated"
     ADAPTIVE_RECOVERY = "adaptive_recovery"
     MULTI_PARSER = "multi_parser"
-    CRITICAL_TOKEN_VERIFIER = "critical_token_verifier"
+    # An experiment variant whose name contains "TOKEN", not a credential:
+    # this variant verifies critical tokens in the parsed text.
+    CRITICAL_TOKEN_VERIFIER = "critical_token_verifier"  # noqa: S105
 
 
 class ExperimentStage(StrEnum):
@@ -147,7 +149,9 @@ class ExperimentGuardrail:
         if stage is ExperimentStage.CPU:
             return GuardrailDecision(True, "CPU/synthetic validation is not externally billed")
         if not cpu_gate_green:
-            return GuardrailDecision(False, "CPU/synthetic gate must be GREEN before external GPU/API work")
+            return GuardrailDecision(
+                False, "CPU/synthetic gate must be GREEN before external GPU/API work"
+            )
         if stage is ExperimentStage.STAGE1_GPU:
             if samples > self.stage1_max_samples:
                 return GuardrailDecision(False, "Stage 1 sample cap exceeded")
@@ -168,7 +172,8 @@ class ExperimentGuardrail:
             return GuardrailDecision(True, "Stage 2 ablation is within hard guardrails")
         return GuardrailDecision(
             False,
-            "large benchmark requires an explicit higher-level budget/approval beyond automatic stages",
+            "large benchmark requires an explicit higher-level budget/approval "
+            "beyond automatic stages",
         )
 
 
@@ -179,7 +184,9 @@ def _reject_secret_fields(metadata: dict[str, object]) -> None:
     for key in metadata:
         folded = key.casefold()
         if any(marker in folded for marker in _SECRET_FIELD_MARKERS):
-            raise ValueError(f"secret-like field is forbidden in experiment receipt metadata: {key}")
+            raise ValueError(
+                f"secret-like field is forbidden in experiment receipt metadata: {key}"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,7 +207,7 @@ class ExperimentReceipt:
         corpus_id: str,
         observations: Sequence[ExperimentObservation],
         metadata: dict[str, object] | None = None,
-    ) -> "ExperimentReceipt":
+    ) -> ExperimentReceipt:
         if not corpus_id:
             raise ValueError("corpus_id is required")
         safe_metadata = dict(metadata or {})

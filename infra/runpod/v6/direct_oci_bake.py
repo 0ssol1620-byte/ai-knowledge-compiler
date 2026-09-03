@@ -23,9 +23,10 @@ import os
 import re
 import shutil
 import tarfile
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from benchmark.v6.contracts import canonical_sha256
 
@@ -46,7 +47,8 @@ class BakePins:
 
 
 def _canonical(value: object) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return encoded.encode("utf-8")
 
 
 def _sha_bytes(value: bytes) -> str:
@@ -108,7 +110,9 @@ def _copy_layout(base: Path, out: Path) -> None:
     shutil.copy2(base / "index.json", out / "index.json")
 
 
-def _tar_info(path: str, *, mode: int, size: int = 0, kind: bytes = tarfile.REGTYPE) -> tarfile.TarInfo:
+def _tar_info(
+    path: str, *, mode: int, size: int = 0, kind: bytes = tarfile.REGTYPE
+) -> tarfile.TarInfo:
     info = tarfile.TarInfo(path)
     info.type = kind
     info.mode = mode
@@ -173,7 +177,9 @@ def _build_layer(
     raw = uncompressed.getvalue()
     diff_id = _sha_bytes(raw)
     compressed_buffer = io.BytesIO()
-    with gzip.GzipFile(filename="", mode="wb", fileobj=compressed_buffer, mtime=0, compresslevel=6) as gz:
+    with gzip.GzipFile(
+        filename="", mode="wb", fileobj=compressed_buffer, mtime=0, compresslevel=6
+    ) as gz:
         gz.write(raw)
     compressed = compressed_buffer.getvalue()
     return compressed, diff_id, _sha_bytes(compressed), file_hashes
@@ -238,7 +244,9 @@ def bake(
     base_config = _read_json_blob(base_oci, str(base_manifest["config"]["digest"]))
     if base_config.get("architecture") != "amd64" or base_config.get("os") != "linux":
         raise RuntimeError("base OCI platform is not linux/amd64")
-    if len(base_manifest.get("layers") or []) != len(base_config.get("rootfs", {}).get("diff_ids", [])):
+    base_layers = base_manifest.get("layers") or []
+    base_diff_ids = base_config.get("rootfs", {}).get("diff_ids", [])
+    if len(base_layers) != len(base_diff_ids):
         raise RuntimeError("base layer/diff-id cardinality mismatch")
 
     source_digest = pins.base_image.rsplit("@", 1)[1]
@@ -254,7 +262,7 @@ def bake(
         f"model_safetensors_sha256={pins.model_sha256}\n"
         "runtime_dependency_verification=required_at_gpu_qualification\n"
         "bake_method=daemonless-oci-single-layer-v1\n"
-    ).encode("utf-8")
+    ).encode()
 
     _copy_layout(base_oci, output_oci)
     layer_bytes, diff_id, layer_digest, file_hashes = _build_layer(
@@ -348,7 +356,9 @@ def bake(
     }
     attestation["receipt_sha256"] = canonical_sha256(attestation)
     attestation_out.parent.mkdir(parents=True, exist_ok=True)
-    attestation_out.write_text(json.dumps(attestation, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    attestation_out.write_text(
+        json.dumps(attestation, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return attestation
 
 

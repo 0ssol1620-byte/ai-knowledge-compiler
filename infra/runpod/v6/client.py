@@ -20,7 +20,7 @@ from typing import Any, Final, Self
 import httpx
 
 from benchmark.v6.contracts import ContractError, canonical_sha256, require_sha256
-from infra.runpod.v6.credentials import RunPodCredentialSet
+from infra.runpod.v6.credentials import RUNPOD_KEY_ENV, RunPodCredentialSet
 
 MANAGEMENT_BASE_URL: Final = "https://api.runpod.io/v2"
 QUEUE_BASE_URL: Final = "https://api.runpod.ai/v2"
@@ -176,6 +176,9 @@ class EndpointCreateSpec:
             if not isinstance(value, str):
                 raise ContractError(f"endpoint environment value for {key} must be a string")
             if key == RUNPOD_KEY_ENV:
+                # The guard that stops the provider credential from being written
+                # into an endpoint's own environment, where anything running in
+                # the container could read it.
                 raise ContractError("RUNPOD_API_KEY may not be copied into endpoint environment")
             normalized_env[key] = value
         previous_tag = normalized_env.get("AKC_RUN_TAG") or normalized_env.get(

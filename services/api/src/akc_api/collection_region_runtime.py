@@ -88,15 +88,18 @@ class RegionAssuranceAttestation(BaseModel):
 
     @property
     def publishable(self) -> bool:
-        if self.parser_unresolved:
-            return False
-        if self.critical_token_checked and not self.critical_token_passed:
-            return False
-        if self.visual_round_trip_required and not self.visual_round_trip_passed:
-            return False
-        if self.cross_page_check_required and not self.cross_page_check_passed:
-            return False
-        return True
+        # One line per reason not to publish. Written as a ledger rather than a
+        # chain of early returns so that every rule has the same shape: in a
+        # fail-closed check, the condition that looks different from its
+        # neighbours is the one someone later edits without noticing it is the
+        # same kind of rule.
+        blockers = (
+            self.parser_unresolved,
+            self.critical_token_checked and not self.critical_token_passed,
+            self.visual_round_trip_required and not self.visual_round_trip_passed,
+            self.cross_page_check_required and not self.cross_page_check_passed,
+        )
+        return not any(blockers)
 
 
 class RegionOutputCandidate(BaseModel):
@@ -137,11 +140,13 @@ class RegionOutputCandidate(BaseModel):
                 for finding in self.findings
             ):
                 raise ValueError("promotable region output cannot carry hard/security findings")
-            if self.recovery_stage is RecoveryStage.SECOND_PARSER:
-                if self.assurance is None or self.assurance.parser_output_count < 2:
-                    raise ValueError(
-                        "second-parser promotion requires a compact multi-parser assurance attestation"
-                    )
+            if self.recovery_stage is RecoveryStage.SECOND_PARSER and (
+                self.assurance is None or self.assurance.parser_output_count < 2
+            ):
+                raise ValueError(
+                    "second-parser promotion requires a compact "
+                    "multi-parser assurance attestation"
+                )
             if self.assurance is not None and not self.assurance.publishable:
                 raise ValueError("region assurance attestation is not publishable")
         elif self.output_text is not None or self.output_sha256 is not None:

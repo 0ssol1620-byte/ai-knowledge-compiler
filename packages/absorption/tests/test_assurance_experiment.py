@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from akc_absorption.assurance_experiment import (
     ExperimentGuardrail,
     ExperimentObservation,

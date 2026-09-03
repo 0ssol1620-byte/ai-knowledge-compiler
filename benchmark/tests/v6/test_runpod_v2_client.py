@@ -78,6 +78,38 @@ def _spec() -> EndpointCreateSpec:
     )
 
 
+def test_the_provider_key_may_not_be_copied_into_an_endpoint_environment() -> None:
+    """The guard that stops the credential leaking into the container.
+
+    It was unreachable until now. `RUNPOD_KEY_ENV` was never imported into
+    `client.py`, so the comparison raised `NameError` rather than
+    `ContractError` -- and because it sits inside the loop over `env`, any
+    endpoint created with any environment variable at all crashed there. Nothing
+    caught it because no existing test passes an `env`.
+
+    The two assertions are separate on purpose: that an endpoint with ordinary
+    environment variables is accepted, and that this one name is refused. A
+    guard tested only by its refusal cannot tell you it stopped being reachable.
+    """
+    accepted = EndpointCreateSpec(
+        name="structara-env",
+        image=IMAGE,
+        gpu_pools=("ADA_24",),
+        run_tag=RUN_TAG,
+        env={"AKC_LOG_LEVEL": "info"},
+    )
+    assert accepted.env["AKC_LOG_LEVEL"] == "info"
+
+    with pytest.raises(ContractError, match="may not be copied into endpoint environment"):
+        EndpointCreateSpec(
+            name="structara-leak",
+            image=IMAGE,
+            gpu_pools=("ADA_24",),
+            run_tag=RUN_TAG,
+            env={"RUNPOD_API_KEY": "sk-should-never-be-copied"},
+        )
+
+
 def test_client_is_network_free_and_does_not_require_a_key_by_default(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

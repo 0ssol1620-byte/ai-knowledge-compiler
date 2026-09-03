@@ -115,7 +115,24 @@ def test_cli_exclusive_creates_qualification_receipt(tmp_path: Path) -> None:
     build.write_text(json.dumps(_build_receipt()), encoding="utf-8")
     evidence.write_text(json.dumps(_runtime_evidence()), encoding="utf-8")
 
-    assert main(["--build-receipt", str(build), "--runtime-evidence", str(evidence), "--output", str(output)]) == 0
+    argv = [
+        "--build-receipt",
+        str(build),
+        "--runtime-evidence",
+        str(evidence),
+        "--output",
+        str(output),
+    ]
+    assert main(argv) == 0
     BakedRuntimeQualification.from_mapping(json.loads(output.read_text(encoding="utf-8")))
     with pytest.raises(ContractError, match="already exists"):
-        main(["--build-receipt", str(build), "--runtime-evidence", str(evidence), "--output", str(output)])
+        main(
+            [
+                "--build-receipt",
+                str(build),
+                "--runtime-evidence",
+                str(evidence),
+                "--output",
+                str(output),
+            ]
+        )
