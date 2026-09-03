@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "hybrid-runtime@hybrid-runtime-marketplace": true
+  },
+  "disableWorkflows": false,
+  "workflowSizeGuideline": "small"
+}
