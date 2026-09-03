@@ -26,7 +26,16 @@ from akc_api.collection_retrieval_runtime import (
 )
 from akc_api.collection_semantic_runtime import search_collection_semantic_runtime
 from akc_api.database import get_session
-from akc_api.models import ArchitecturePlan, Collection, KnowledgeCompileRun, OutboxEvent
+from akc_api.models import (
+    ArchitecturePlan,
+    Block,
+    Collection,
+    DocumentVersion,
+    KnowledgeCompileRun,
+    KnowledgeNote,
+    OutboxEvent,
+    Page,
+)
 from akc_api.project_access import require_project_access
 from akc_api.security import Principal, get_principal
 
@@ -69,6 +78,14 @@ class CollectionRetrievalEmbeddingReceipt(_WireModel):
     source_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 
 
+class CollectionRetrievalCitation(_WireModel):
+    evidence_block_id: uuid.UUID
+    document_id: uuid.UUID
+    document_version_id: uuid.UUID
+    page_number: Annotated[int, Field(ge=1)]
+    bbox1000: tuple[int, int, int, int] | None
+
+
 class CollectionRetrievalHit(_WireModel):
     stable_id: Annotated[str, Field(min_length=1, max_length=240)]
     project_id: uuid.UUID
@@ -80,6 +97,9 @@ class CollectionRetrievalHit(_WireModel):
     hybrid_score: Annotated[float, Field(ge=0, le=1)] | None
     evidence_block_ids: tuple[uuid.UUID, ...]
     source_hash: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    title: Annotated[str, Field(min_length=1, max_length=200)]
+    content_markdown: Annotated[str, Field(min_length=1, max_length=2_000_000)]
+    citations: tuple[CollectionRetrievalCitation, ...]
     metadata: dict[str, Any]
 
 
@@ -303,6 +323,106 @@ async def search_collection_retrieval(
     ):
         raise _runtime_unavailable("COLLECTION_RETRIEVAL_RECEIPT_MISMATCH")
 
+    note_ids: list[uuid.UUID] = []
+    try:
+        note_ids = [
+            uuid.UUID(candidate.record.stable_id.removeprefix("note:"))
+            for candidate in candidates
+            if candidate.record.stable_id.startswith("note:")
+        ]
+    except ValueError as exc:
+        raise _runtime_unavailable("COLLECTION_RETRIEVAL_SOURCE_MISMATCH") from exc
+    if len(note_ids) != len(candidates):
+        raise _runtime_unavailable("COLLECTION_RETRIEVAL_SOURCE_MISMATCH")
+
+    notes = (
+        list(
+            await session.scalars(
+                select(KnowledgeNote).where(
+                    KnowledgeNote.tenant_id == principal.tenant_id,
+                    KnowledgeNote.project_id == collection.project_id,
+                    KnowledgeNote.id.in_(note_ids),
+                    KnowledgeNote.is_active.is_(True),
+                )
+            )
+        )
+        if note_ids
+        else []
+    )
+    notes_by_stable_id = {f"note:{note.id}": note for note in notes}
+    if any(
+        (note := notes_by_stable_id.get(candidate.record.stable_id)) is None
+        or set(note.evidence_block_ids)
+        != {str(block_id) for block_id in candidate.record.evidence_block_ids}
+        for candidate in candidates
+    ):
+        raise _runtime_unavailable("COLLECTION_RETRIEVAL_SOURCE_MISMATCH")
+
+    evidence_ids = {
+        block_id
+        for candidate in candidates
+        for block_id in candidate.record.evidence_block_ids
+    }
+    block_rows = (
+        (
+            await session.execute(
+                select(Block, Page)
+                .join(
+                    Page,
+                    (Page.tenant_id == Block.tenant_id) & (Page.id == Block.page_id),
+                )
+                .where(
+                    Block.tenant_id == principal.tenant_id,
+                    Block.id.in_(evidence_ids),
+                )
+            )
+        ).all()
+        if evidence_ids
+        else []
+    )
+    blocks_by_id = {block.id: (block, page) for block, page in block_rows}
+    note_document_versions = {
+        (note.document_id, note.document_version)
+        for note in notes
+        if note.document_id is not None and note.document_version is not None
+    }
+    document_versions = (
+        list(
+            await session.scalars(
+                select(DocumentVersion).where(
+                    DocumentVersion.tenant_id == principal.tenant_id,
+                    DocumentVersion.document_id.in_(
+                        [document_id for document_id, _ in note_document_versions]
+                    ),
+                )
+            )
+        )
+        if note_document_versions
+        else []
+    )
+    versions_by_document_revision = {
+        (version.document_id, version.version): version for version in document_versions
+    }
+    if len(blocks_by_id) != len(evidence_ids) or any(
+        (note.document_id, note.document_version) not in versions_by_document_revision
+        for note in notes
+    ):
+        raise _runtime_unavailable("COLLECTION_RETRIEVAL_CITATION_MISMATCH")
+
+    def citations_for(note: KnowledgeNote) -> tuple[CollectionRetrievalCitation, ...]:
+        version = versions_by_document_revision[(note.document_id, note.document_version)]
+        return tuple(
+            CollectionRetrievalCitation(
+                evidence_block_id=block_id,
+                document_id=block.document_id,
+                document_version_id=version.id,
+                page_number=page.page_number,
+                bbox1000=tuple(block.bbox1000) if block.bbox1000 is not None else None,
+            )
+            for block_id in (uuid.UUID(value) for value in note.evidence_block_ids)
+            for block, page in (blocks_by_id[block_id],)
+        )
+
     return CollectionRetrievalSearchResponse(
         collection_id=collection.id,
         project_id=collection.project_id,
@@ -329,6 +449,9 @@ async def search_collection_retrieval(
                 hybrid_score=candidate.hybrid_score,
                 evidence_block_ids=candidate.record.evidence_block_ids,
                 source_hash=candidate.record.source_hash,
+                title=notes_by_stable_id[candidate.record.stable_id].title,
+                content_markdown=notes_by_stable_id[candidate.record.stable_id].content_markdown,
+                citations=citations_for(notes_by_stable_id[candidate.record.stable_id]),
                 metadata=dict(candidate.record.metadata),
             )
             for candidate in candidates

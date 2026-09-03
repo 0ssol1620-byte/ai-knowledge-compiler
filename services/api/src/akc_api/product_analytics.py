@@ -55,8 +55,46 @@ PRODUCT_EVENT_PREFIX = "product."
 _WINDOW_DAYS = {"7d": 7, "30d": 30, "90d": 90}
 _AI_NOTE_ORIGINS = frozenset({"ai_summarized", "ai_inferred", "derived"})
 _FALLBACK_ROUTES = frozenset({"mistral_fallback"})
+_MASTERPLAN_EVENT_TYPES = frozenset(
+    {
+        "landing_demo_started",
+        "landing_demo_completed",
+        "explore_object_opened",
+        "explore_citation_opened",
+        "pricing_viewed",
+        "signup_started",
+        "source_added",
+        "connector_started",
+        "compile_started",
+        "compile_completed",
+        "review_opened",
+        "review_completed",
+        "world_opened",
+        "evidence_opened",
+        "ask_started",
+        "ask_cited_answer",
+        "package_downloaded",
+    }
+)
 _EVENT_ACTIONS = frozenset(
     {
+        "product.landing_demo_started",
+        "product.landing_demo_completed",
+        "product.explore_object_opened",
+        "product.explore_citation_opened",
+        "product.pricing_viewed",
+        "product.signup_started",
+        "product.source_added",
+        "product.connector_started",
+        "product.compile_started",
+        "product.compile_completed",
+        "product.review_opened",
+        "product.review_completed",
+        "product.world_opened",
+        "product.evidence_opened",
+        "product.ask_started",
+        "product.ask_cited_answer",
+        "product.package_downloaded",
         "product.estimate_viewed",
         "product.result_first_viewed",
         "product.project_revisited",
@@ -188,6 +226,23 @@ class ProductAnalyticsSnapshot(BaseModel):
 
 
 ProductEventType = Literal[
+    "landing_demo_started",
+    "landing_demo_completed",
+    "explore_object_opened",
+    "explore_citation_opened",
+    "pricing_viewed",
+    "signup_started",
+    "source_added",
+    "connector_started",
+    "compile_started",
+    "compile_completed",
+    "review_opened",
+    "review_completed",
+    "world_opened",
+    "evidence_opened",
+    "ask_started",
+    "ask_cited_answer",
+    "package_downloaded",
     "estimate_viewed",
     "result_first_viewed",
     "project_revisited",
@@ -223,7 +278,9 @@ class ProductAnalyticsEventCreate(BaseModel):
             self.document_id is not None,
             self.job_id is not None,
         ]
-        if self.event_type == "estimate_viewed":
+        if self.event_type in _MASTERPLAN_EVENT_TYPES:
+            valid_target = sum(identifiers) == 0
+        elif self.event_type == "estimate_viewed":
             valid_target = self.document_id is not None and sum(identifiers) == 1
         elif self.event_type == "result_first_viewed":
             valid_target = self.job_id is not None and sum(identifiers) == 1

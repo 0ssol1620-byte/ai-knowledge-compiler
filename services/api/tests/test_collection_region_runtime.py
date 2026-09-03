@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from akc_api.collection_region_runtime import (
+    RegionAssuranceAttestation,
     RegionOutputCandidate,
     RegionPromotionError,
     promoted_region_text_by_block,
@@ -28,7 +29,7 @@ from akc_api.models import (
     VerificationRecord,
 )
 from akc_api.settings import Settings
-from akc_quality import RecoveryStage
+from akc_quality import AgentFinding, FindingLevel, RecoveryStage
 from sqlalchemy import func, select
 
 
@@ -172,6 +173,104 @@ def _candidate(scope: dict[str, uuid.UUID | str]) -> RegionOutputCandidate:
         provider_revision="local-test-provider@1",
         attestation_sha256="a" * 64,
     )
+
+
+def _assurance(**updates: object) -> RegionAssuranceAttestation:
+    values: dict[str, object] = {
+        "verification_receipt_sha256": "b" * 64,
+        "parser_output_count": 2,
+        "parser_unresolved": False,
+        "critical_token_checked": True,
+        "critical_token_passed": True,
+        "critical_token_mismatch_count": 0,
+    }
+    values.update(updates)
+    return RegionAssuranceAttestation(**values)
+
+
+def test_second_parser_promotion_requires_publishable_assurance_attestation() -> None:
+    # Pydantic validation is independent of the database fixture; use the same
+    # stable fake ids/digests as a normal candidate contract.
+    output = "Verified value USD 1,250."
+    common = dict(
+        attempt_id=uuid.uuid4(),
+        route="second_parser",
+        status="auto_repaired",
+        source_block_id=uuid.uuid4(),
+        source_block_content_hash="c" * 64,
+        source_page_attempt_id=uuid.uuid4(),
+        output_text=output,
+        output_sha256=hashlib.sha256(output.encode()).hexdigest(),
+        recovery_stage=RecoveryStage.SECOND_PARSER,
+        independent_signal_count=2,
+        parser_revision="parser-a@1+parser-b@1",
+        model_revision="pinned@1",
+        provider_revision="test@1",
+        attestation_sha256="a" * 64,
+    )
+    with pytest.raises(ValueError, match="second-parser promotion requires"):
+        RegionOutputCandidate(**common)
+
+    candidate = RegionOutputCandidate(**common, assurance=_assurance())
+    assert candidate.assurance is not None and candidate.assurance.publishable
+
+
+def test_unresolved_or_failed_assurance_cannot_be_promoted() -> None:
+    output = "Verified value USD 1,250."
+    common = dict(
+        attempt_id=uuid.uuid4(),
+        route="second_parser",
+        status="auto_repaired",
+        source_block_id=uuid.uuid4(),
+        source_block_content_hash="c" * 64,
+        source_page_attempt_id=uuid.uuid4(),
+        output_text=output,
+        output_sha256=hashlib.sha256(output.encode()).hexdigest(),
+        recovery_stage=RecoveryStage.SECOND_PARSER,
+        independent_signal_count=2,
+        parser_revision="parser-a@1+parser-b@1",
+        model_revision="pinned@1",
+        provider_revision="test@1",
+        attestation_sha256="a" * 64,
+    )
+    with pytest.raises(ValueError, match="not publishable"):
+        RegionOutputCandidate(**common, assurance=_assurance(parser_unresolved=True))
+    with pytest.raises(ValueError, match="not publishable"):
+        RegionOutputCandidate(
+            **common,
+            assurance=_assurance(
+                critical_token_passed=False,
+                critical_token_mismatch_count=1,
+            ),
+        )
+
+
+def test_hard_finding_cannot_hide_behind_promotable_status() -> None:
+    output = "Verified value USD 1,250."
+    with pytest.raises(ValueError, match="hard/security"):
+        RegionOutputCandidate(
+            attempt_id=uuid.uuid4(),
+            route="overlap",
+            status="auto_repaired",
+            source_block_id=uuid.uuid4(),
+            source_block_content_hash="c" * 64,
+            source_page_attempt_id=uuid.uuid4(),
+            output_text=output,
+            output_sha256=hashlib.sha256(output.encode()).hexdigest(),
+            recovery_stage=RecoveryStage.OVERLAPPING_TILE,
+            independent_signal_count=2,
+            findings=(
+                AgentFinding(
+                    code="critical_token_mismatch",
+                    level=FindingLevel.HARD,
+                    source_refs=("receipt:critical-token",),
+                ),
+            ),
+            parser_revision="parser@1",
+            model_revision="model@1",
+            provider_revision="test@1",
+            attestation_sha256="a" * 64,
+        )
 
 
 @pytest.mark.asyncio

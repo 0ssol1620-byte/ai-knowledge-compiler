@@ -139,6 +139,11 @@ from akc_api.collection_semantic_runtime import (
     run_collection_semantic_runtime,
     semantic_blueprint_registry_sha256,
 )
+from akc_api.customer_pricing import (
+    ROUTED_PAGE_RATE_USD,
+    STANDARD_PAGE_RATE_USD,
+    customer_charge_quote,
+)
 from akc_api.database import get_session, set_rls_context
 from akc_api.idempotency import idempotent_mutation
 from akc_api.models import (
@@ -194,6 +199,7 @@ from akc_api.models import (
     VerificationRecord,
     utcnow,
 )
+from akc_api.plan_catalog import canonical_plan_code
 from akc_api.project_access import project_access_predicate
 from akc_api.security import Principal, get_principal, require_roles
 from akc_api.services import audit, credit_entry, estimate_document
@@ -660,9 +666,10 @@ def _upload_summary(row: CollectionUploadSession) -> CollectionUploadSummary:
 
 
 def _plan_tier(plan_code: str) -> PlanTier:
-    if plan_code.casefold() in {"team", "enterprise"}:
+    canonical = canonical_plan_code(plan_code)
+    if canonical in {"team", "scale", "enterprise"}:
         return PlanTier.TEAM
-    if plan_code.casefold() in {"personal", "pro"}:
+    if canonical == "developer":
         return PlanTier.PRO
     return PlanTier.FREE
 
@@ -1570,6 +1577,21 @@ def _processing_control_response(
         approved_preflight_sha256=str(job.requested_options["approved_preflight_sha256"]),
         approved_estimate_sha256=str(job.requested_options["approved_estimate_sha256"]),
         credit_hard_cap=Decimal(str(estimate.get("hard_cap", "0"))),
+        customer_charge_estimate_usd=Decimal(
+            str(estimate.get("customer_charge_estimate_usd", "0"))
+        ),
+        customer_charge_charged_usd=Decimal(
+            str(actual.get("customer_charge_charged_usd", "0"))
+        ),
+        customer_max_charge_usd=Decimal(
+            str(estimate.get("customer_max_charge_usd", "0"))
+        ),
+        standard_page_rate_usd=Decimal(
+            str(estimate.get("standard_page_rate_usd", STANDARD_PAGE_RATE_USD))
+        ),
+        routed_page_rate_usd=Decimal(
+            str(estimate.get("routed_page_rate_usd", ROUTED_PAGE_RATE_USD))
+        ),
         overage_policy=cast(Any, estimate.get("overage_policy", "stop_at_cap")),
         total_tasks=int(progress.get("total_tasks", 0)),
         completed_tasks=int(progress.get("completed_tasks", 0)),
@@ -3286,6 +3308,10 @@ def _estimate_response(
     preflight: CollectionPreflight,
 ) -> CollectionEstimateResponse:
     estimate = preflight.estimate
+    customer_quote = customer_charge_quote(
+        total_pages=int(estimate["billable_pages"]),
+        native_pages=int(estimate.get("route_mix", {}).get("native_pages", 0)),
+    )
     return CollectionEstimateResponse(
         collection_id=preflight.collection_id,
         preflight_id=preflight.id,
@@ -3307,6 +3333,11 @@ def _estimate_response(
             if estimate.get("reserve_ceiling") is not None
             else None
         ),
+        customer_charge_min_usd=customer_quote.minimum_usd,
+        customer_charge_estimate_usd=customer_quote.estimated_usd,
+        customer_charge_max_usd=customer_quote.maximum_usd,
+        standard_page_rate_usd=STANDARD_PAGE_RATE_USD,
+        routed_page_rate_usd=ROUTED_PAGE_RATE_USD,
         duration_p50_seconds=estimate.get("duration_p50_seconds"),
         duration_p95_seconds=estimate.get("duration_p95_seconds"),
         confidence=Decimal(str(estimate["confidence"])),
@@ -4754,6 +4785,21 @@ async def get_collection_events(
             credits_reserved=Decimal(str(cost_actual.get("reserved", "0"))),
             credits_consumed=Decimal(str(cost_actual.get("consumed", "0"))),
             credit_hard_cap=Decimal(str(cost_estimate.get("hard_cap", "0"))),
+            customer_charge_estimate_usd=Decimal(
+                str(cost_estimate.get("customer_charge_estimate_usd", "0"))
+            ),
+            customer_charge_charged_usd=Decimal(
+                str(cost_actual.get("customer_charge_charged_usd", "0"))
+            ),
+            customer_max_charge_usd=Decimal(
+                str(cost_estimate.get("customer_max_charge_usd", "0"))
+            ),
+            standard_page_rate_usd=Decimal(
+                str(cost_estimate.get("standard_page_rate_usd", STANDARD_PAGE_RATE_USD))
+            ),
+            routed_page_rate_usd=Decimal(
+                str(cost_estimate.get("routed_page_rate_usd", ROUTED_PAGE_RATE_USD))
+            ),
             terminal_result_ids=[
                 uuid.UUID(str(item)) for item in progress.get("terminal_result_ids", [])
             ],
@@ -5437,6 +5483,21 @@ async def _start_collection_processing(
             detail={"code": "COLLECTION_APPROVAL_HASH_MISMATCH"},
         )
     blueprint = _approved_blueprint(payload, preflight.estimate)
+    customer_quote = customer_charge_quote(
+        total_pages=int(preflight.estimate.get("billable_pages", 0)),
+        native_pages=int(preflight.estimate.get("route_mix", {}).get("native_pages", 0)),
+    )
+    customer_maximum = payload.customer_max_charge_usd or customer_quote.maximum_usd
+    if not customer_quote.estimated_usd <= customer_maximum <= customer_quote.maximum_usd:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "CUSTOMER_CHARGE_CAP_OUTSIDE_QUOTE",
+                "minimum": str(customer_quote.estimated_usd),
+                "maximum": str(customer_quote.maximum_usd),
+                "submitted": str(customer_maximum),
+            },
+        )
     approved_collection_reserve_ceiling = _money(estimate_run.reserve_ceiling)
     default_cap = (
         approved_collection_reserve_ceiling * Decimal("1.10")
@@ -5610,6 +5671,9 @@ async def _start_collection_processing(
             for key in payload.output_modules
         ],
         "credit_hard_cap": str(hard_cap),
+        "customer_max_charge_usd": str(customer_maximum),
+        "customer_charge_estimate_usd": str(customer_quote.estimated_usd),
+        "customer_charge_quote_max_usd": str(customer_quote.maximum_usd),
         "reserve_ceiling": str(reserve_ceiling),
         "approved_collection_reserve_ceiling": str(approved_collection_reserve_ceiling),
         "billing_scope_weight": billable_scope_weight,
@@ -5651,6 +5715,12 @@ async def _start_collection_processing(
             "collection_scope_weight": total_scope_weight,
             "hard_cap": str(hard_cap),
             "overage_policy": payload.overage_policy,
+            "customer_charge_min_usd": str(customer_quote.minimum_usd),
+            "customer_charge_estimate_usd": str(customer_quote.estimated_usd),
+            "customer_max_charge_usd": str(customer_maximum),
+            "customer_charge_quote_max_usd": str(customer_quote.maximum_usd),
+            "standard_page_rate_usd": str(STANDARD_PAGE_RATE_USD),
+            "routed_page_rate_usd": str(ROUTED_PAGE_RATE_USD),
         },
         cost_actual={
             "reserved": str(reserve_ceiling),

@@ -107,6 +107,12 @@ from akc_api.collection_retrieval_api import router as collection_retrieval_rout
 from akc_api.collection_retrieval_runtime import (
     build_collection_semantic_retrieval_runtime,
 )
+from akc_api.customer_pricing import (
+    ROUTED_PAGE_RATE_USD,
+    STANDARD_PAGE_RATE_USD,
+    capped_customer_charge,
+    customer_charge_quote,
+)
 from akc_api.database import Database, get_session, set_rls_context
 from akc_api.deletions import (
     DeletionTargetType,
@@ -186,6 +192,7 @@ from akc_api.parallel_api import router as parallel_runtime_router
 from akc_api.payment_routes import router as payment_router
 from akc_api.payments import build_payment_provider
 from akc_api.pdf_passwords import router as pdf_password_router
+from akc_api.plan_catalog import canonical_plan_code
 from akc_api.product_analytics import (
     ProductAnalyticsSnapshot,
     build_product_analytics_snapshot,
@@ -288,6 +295,7 @@ from akc_api.services import (
 from akc_api.settings import Settings, get_settings
 from akc_api.storage import (
     CompletedPart,
+    GpuObjectGrantNotSupportedError,
     LocalObjectStore,
     MultipartUploadNotFoundError,
     ObjectStore,
@@ -333,9 +341,10 @@ def _slug(name: str) -> str:
 
 
 def _plan_tier(plan_code: str) -> PlanTier:
-    if plan_code.casefold() in {"team", "enterprise"}:
+    canonical = canonical_plan_code(plan_code)
+    if canonical in {"team", "scale", "enterprise"}:
         return PlanTier.TEAM
-    if plan_code.casefold() in {"personal", "pro"}:
+    if canonical == "developer":
         return PlanTier.PRO
     return PlanTier.FREE
 
@@ -3768,6 +3777,10 @@ async def estimate(
         capability="read",
     )
     values = await estimate_document(session, document)
+    customer_quote = customer_charge_quote(
+        total_pages=int(values["total_pages"]),
+        native_pages=int(values["native_pages"]),
+    )
     return EstimateResponse(
         total_pages=values["total_pages"],
         native_pages=values["native_pages"],
@@ -3778,6 +3791,11 @@ async def estimate(
         figures=values["figures"],
         credit_min=values["expected"],
         credit_max=values["upper_bound"],
+        customer_charge_min_usd=customer_quote.minimum_usd,
+        customer_charge_estimate_usd=customer_quote.estimated_usd,
+        customer_charge_max_usd=customer_quote.maximum_usd,
+        standard_page_rate_usd=STANDARD_PAGE_RATE_USD,
+        routed_page_rate_usd=ROUTED_PAGE_RATE_USD,
         third_party_model_api=values["third_party_model_api"],
         expected_duration_min=values["expected_duration_min"],
         expected_duration_max=values["expected_duration_max"],
@@ -3867,6 +3885,21 @@ async def compile_document(
                 "maximum": str(payload.max_credits),
             },
         )
+    customer_quote = customer_charge_quote(
+        total_pages=int(values["total_pages"]),
+        native_pages=int(values["native_pages"]),
+    )
+    customer_maximum = payload.customer_max_charge_usd or customer_quote.maximum_usd
+    if not customer_quote.estimated_usd <= customer_maximum <= customer_quote.maximum_usd:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "CUSTOMER_CHARGE_CAP_OUTSIDE_QUOTE",
+                "minimum": str(customer_quote.estimated_usd),
+                "maximum": str(customer_quote.maximum_usd),
+                "submitted": str(customer_maximum),
+            },
+        )
     job_id = uuid.uuid4()
     dispatch_idempotency_key = idempotency_key or f"job:{job_id}"
     job = ProcessingJob(
@@ -3878,6 +3911,7 @@ async def compile_document(
         priority=queue_priority_for_plan(tenant.plan_code),
         requested_options={
             **payload.model_dump(mode="json"),
+            "customer_max_charge_usd": str(customer_maximum),
             "idempotency_key": dispatch_idempotency_key,
             "document_version": document.active_version,
             "document_version_id": f"{document.id}:v{document.active_version}",
@@ -3886,7 +3920,14 @@ async def compile_document(
                 "free_low" if queue_priority_for_plan(tenant.plan_code) == 1 else "standard"
             ),
         },
-        cost_estimate={key: str(value) for key, value in values.items()},
+        cost_estimate={
+            **{key: str(value) for key, value in values.items()},
+            "customer_charge_min_usd": str(customer_quote.minimum_usd),
+            "customer_charge_estimate_usd": str(customer_quote.estimated_usd),
+            "customer_charge_max_usd": str(customer_quote.maximum_usd),
+            "standard_page_rate_usd": str(STANDARD_PAGE_RATE_USD),
+            "routed_page_rate_usd": str(ROUTED_PAGE_RATE_USD),
+        },
         progress={"done": 0, "total": values["total_pages"]},
     )
     session.add(job)
@@ -4284,6 +4325,32 @@ async def _archived_job_snapshot_payload(
     used = sum(Decimal(row.credits) for row in ledger if row.entry_type == "consume")
     total = int(job.progress.get("total", len(pages) or 1))
     done = int(job.progress.get("done", 0))
+    completed_pages = sum(
+        str(page.get("status") or "").upper() == "COMPLETED" for page in pages
+    )
+    native_pages = sum(
+        str(page.get("status") or "").upper() == "COMPLETED"
+        and page.get("route") == "native"
+        for page in pages
+    )
+    customer_quote = customer_charge_quote(
+        total_pages=total,
+        native_pages=int(job.cost_estimate.get("native_pages", 0)),
+    )
+    actual_customer_quote = customer_charge_quote(
+        total_pages=completed_pages,
+        native_pages=native_pages,
+    )
+    approved_customer_maximum = Decimal(
+        str(
+            job.requested_options.get("customer_max_charge_usd")
+            or customer_quote.maximum_usd
+        )
+    )
+    customer_charged = capped_customer_charge(
+        calculated_usd=actual_customer_quote.estimated_usd,
+        approved_maximum_usd=approved_customer_maximum,
+    )
     started = _aware(job.started_at or job.created_at)
     finished = _aware(job.completed_at or utcnow())
     operational = await _job_operational_counters(
@@ -4311,6 +4378,15 @@ async def _archived_job_snapshot_payload(
                     )
                 )
             ),
+        },
+        "customer_charges": {
+            "currency": "USD",
+            "estimated": float(customer_quote.estimated_usd),
+            "charged": float(customer_charged),
+            "authorized": float(approved_customer_maximum),
+            "maximum": float(customer_quote.maximum_usd),
+            "standard_page_rate": float(STANDARD_PAGE_RATE_USD),
+            "routed_page_rate": float(ROUTED_PAGE_RATE_USD),
         },
     }
     return {
@@ -4355,10 +4431,8 @@ async def _archived_job_snapshot_payload(
             for review in reviews
         ],
         "summary": {
-            "completed_pages": sum(
-                str(page.get("status") or "").upper() == "COMPLETED" for page in pages
-            ),
-            "native_pages": sum(page.get("route") == "native" for page in pages),
+            "completed_pages": completed_pages,
+            "native_pages": native_pages,
             "ocr_pages": sum(
                 page.get("route") not in {None, "native", "unresolved", "quarantine"}
                 for page in pages
@@ -5244,6 +5318,68 @@ async def get_document_version_page_preview(
     if page is None:
         raise HTTPException(status_code=404, detail={"code": "PAGE_NOT_FOUND"})
     return await get_page_preview(page.id, request, principal, session)
+
+
+@router.get("/document-versions/{document_version_id}/source-capability")
+async def get_document_version_source_capability(
+    document_version_id: uuid.UUID,
+    request: Request,
+    principal: PrincipalDep,
+    session: SessionDep,
+) -> dict[str, Any]:
+    """Issue a short-lived, read-only URL for one active sanitized PDF."""
+
+    version = await session.scalar(
+        select(DocumentVersion).where(
+            DocumentVersion.tenant_id == principal.tenant_id,
+            DocumentVersion.id == document_version_id,
+        )
+    )
+    if version is None:
+        raise HTTPException(status_code=404, detail={"code": "DOCUMENT_VERSION_NOT_FOUND"})
+    document = await _tenant_document(
+        session,
+        principal.tenant_id,
+        version.document_id,
+        principal=principal,
+        capability="read",
+    )
+    if document.active_version != version.version or version.status == "archived":
+        raise HTTPException(status_code=409, detail={"code": "VERSION_SOURCE_NOT_AVAILABLE"})
+    source_file = (
+        await session.scalar(
+            select(SourceFile).where(
+                SourceFile.tenant_id == principal.tenant_id,
+                SourceFile.id == version.source_file_id,
+            )
+        )
+        if version.source_file_id is not None
+        else None
+    )
+    if (
+        source_file is None
+        or source_file.cdr_status != "sanitized"
+        or not source_file.sanitized_storage_key
+    ):
+        raise HTTPException(status_code=409, detail={"code": "SANITIZED_SOURCE_NOT_AVAILABLE"})
+    expires = min(request.app.state.settings.presigned_download_ttl_seconds, 300)
+    try:
+        target = await request.app.state.object_store.create_gpu_input_target(
+            bucket="source",
+            object_key=source_file.sanitized_storage_key,
+            expires=expires,
+        )
+    except GpuObjectGrantNotSupportedError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "SOURCE_READ_CAPABILITY_UNAVAILABLE"},
+        ) from exc
+    return {
+        "document_version_id": str(version.id),
+        "read_url": target.url,
+        "expires_in_seconds": expires,
+        "content_type": "application/pdf",
+    }
 
 
 @router.get("/proofs/{proof_id}/crop")
