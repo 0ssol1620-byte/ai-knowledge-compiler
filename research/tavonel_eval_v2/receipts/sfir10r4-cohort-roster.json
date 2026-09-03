@@ -1,0 +1,392 @@
+{
+  "accounting": {
+    "eligibility_dispositions": {
+      "ELIGIBLE": 65174,
+      "REJECTED_created_utc_on_or_before": 2225592,
+      "REJECTED_host_eq": 25576,
+      "REJECTED_last_activity_utc_on_or_after": 3038235,
+      "REJECTED_spdx_license_id_in": 31164781
+    },
+    "eligible_in_partition": 1060,
+    "rows_read": 37702060,
+    "unreadable": {
+      "NAME_WITH_OWNER_NOT_OWNER_SLASH_REPO": 39401,
+      "NO_LAST_ACTIVITY_TIMESTAMP": 1143301
+    }
+  },
+  "entries": [
+    {
+      "catalogue_address": "cheeriojs/cheerio",
+      "host_uuid": "2541284",
+      "record_id": "48626",
+      "selection_ordinal": 1,
+      "source_rank": 22
+    },
+    {
+      "catalogue_address": "immutable-js/immutable-js",
+      "host_uuid": "21413198",
+      "record_id": "20375",
+      "selection_ordinal": 2,
+      "source_rank": 21
+    },
+    {
+      "catalogue_address": "ramda/ramda",
+      "host_uuid": "10851820",
+      "record_id": "32188",
+      "selection_ordinal": 3,
+      "source_rank": 21
+    },
+    {
+      "catalogue_address": "faker-ruby/faker",
+      "host_uuid": "96395",
+      "record_id": "40183",
+      "selection_ordinal": 4,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "sequelize/sequelize",
+      "host_uuid": "790359",
+      "record_id": "91836",
+      "selection_ordinal": 5,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "avevlad/gulp-connect",
+      "host_uuid": "16125490",
+      "record_id": "104737",
+      "selection_ordinal": 6,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "joyent/node-http-signature",
+      "host_uuid": "2048781",
+      "record_id": "107067",
+      "selection_ordinal": 7,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "gruntjs/grunt-contrib-jasmine",
+      "host_uuid": "6490427",
+      "record_id": "19618",
+      "selection_ordinal": 8,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "sindresorhus/indent-string",
+      "host_uuid": "20576837",
+      "record_id": "20426",
+      "selection_ordinal": 9,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "sindresorhus/is-stream",
+      "host_uuid": "29436825",
+      "record_id": "20808",
+      "selection_ordinal": 10,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "sindresorhus/get-stream",
+      "host_uuid": "44264225",
+      "record_id": "2677137",
+      "selection_ordinal": 11,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "zemirco/json2csv",
+      "host_uuid": "4297695",
+      "record_id": "137922",
+      "selection_ordinal": 12,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "systemjs/builder",
+      "host_uuid": "19843509",
+      "record_id": "156016",
+      "selection_ordinal": 13,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "flot/flot",
+      "host_uuid": "1295612",
+      "record_id": "18696",
+      "selection_ordinal": 14,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "msiemens/tinydb",
+      "host_uuid": "11380094",
+      "record_id": "278351",
+      "selection_ordinal": 15,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "lepture/mistune",
+      "host_uuid": "16944764",
+      "record_id": "288436",
+      "selection_ordinal": 16,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "developit/preact-compat",
+      "host_uuid": "45793760",
+      "record_id": "3089084",
+      "selection_ordinal": 17,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "hyperium/mime",
+      "host_uuid": "23398922",
+      "record_id": "4758",
+      "selection_ordinal": 18,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "bevacqua/hash-sum",
+      "host_uuid": "39091372",
+      "record_id": "921237",
+      "selection_ordinal": 19,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "JetBrains/svg-sprite-loader",
+      "host_uuid": "40271714",
+      "record_id": "953205",
+      "selection_ordinal": 20,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "JodaOrg/joda-convert",
+      "host_uuid": "1729070",
+      "record_id": "175110",
+      "selection_ordinal": 21,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "coveralls-clients/coveralls-python",
+      "host_uuid": "8059786",
+      "record_id": "181976",
+      "selection_ordinal": 22,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "MrRio/jsPDF",
+      "host_uuid": "402046",
+      "record_id": "30205",
+      "selection_ordinal": 23,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "Codeception/base",
+      "host_uuid": "38139984",
+      "record_id": "841727",
+      "selection_ordinal": 24,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "chalk/wrap-ansi",
+      "host_uuid": "41053676",
+      "record_id": "972012",
+      "selection_ordinal": 25,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "thgh/rollup-plugin-scss",
+      "host_uuid": "69798837",
+      "record_id": "13949468",
+      "selection_ordinal": 26,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "feross/simple-peer",
+      "host_uuid": "21251069",
+      "record_id": "151607",
+      "selection_ordinal": 27,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "paulbutcher/ScalaMock",
+      "host_uuid": "2639404",
+      "record_id": "165081",
+      "selection_ordinal": 28,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "twitter/algebird",
+      "host_uuid": "5275507",
+      "record_id": "167056",
+      "selection_ordinal": 29,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "Yaffle/EventSource",
+      "host_uuid": "1475331",
+      "record_id": "18078",
+      "selection_ordinal": 30,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "imsky/holder",
+      "host_uuid": "4641606",
+      "record_id": "20075",
+      "selection_ordinal": 31,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "thephpleague/commonmark",
+      "host_uuid": "23768977",
+      "record_id": "27424",
+      "selection_ordinal": 32,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "ktorio/ktor",
+      "host_uuid": "40136600",
+      "record_id": "2829910",
+      "selection_ordinal": 33,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "rollbar/rollbar.js",
+      "host_uuid": "7136784",
+      "record_id": "32753",
+      "selection_ordinal": 34,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "hiddentao/squel",
+      "host_uuid": "3021048",
+      "record_id": "33975",
+      "selection_ordinal": 35,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "un33k/python-slugify",
+      "host_uuid": "6220331",
+      "record_id": "382619",
+      "selection_ordinal": 36,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "api-platform/core",
+      "host_uuid": "29501260",
+      "record_id": "51512",
+      "selection_ordinal": 37,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "SimenB/add-asset-html-webpack-plugin",
+      "host_uuid": "52669492",
+      "record_id": "5428727",
+      "selection_ordinal": 38,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "libp2p/js-libp2p-secio",
+      "host_uuid": "59320103",
+      "record_id": "10395423",
+      "selection_ordinal": 39,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "feross/beepbeep",
+      "host_uuid": "10470145",
+      "record_id": "124832",
+      "selection_ordinal": 40,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "astro/node-expat",
+      "host_uuid": "680541",
+      "record_id": "141339",
+      "selection_ordinal": 41,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "pa11y/pa11y",
+      "host_uuid": "8576730",
+      "record_id": "142967",
+      "selection_ordinal": 42,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "nmn/react-timeago",
+      "host_uuid": "23460330",
+      "record_id": "146249",
+      "selection_ordinal": 43,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "jsonresume/resume-schema",
+      "host_uuid": "21038508",
+      "record_id": "147919",
+      "selection_ordinal": 44,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "arhs/iban.js",
+      "host_uuid": "14591130",
+      "record_id": "20312",
+      "selection_ordinal": 45,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "typestack/routing-controllers",
+      "host_uuid": "43418793",
+      "record_id": "2356449",
+      "selection_ordinal": 46,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "volkanceylan/Serenity",
+      "host_uuid": "16404237",
+      "record_id": "2360641",
+      "selection_ordinal": 47,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "auth0/java-jwt",
+      "host_uuid": "17517521",
+      "record_id": "277949",
+      "selection_ordinal": 48,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "canvg/canvg",
+      "host_uuid": "27681516",
+      "record_id": "337928",
+      "selection_ordinal": 49,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "standard/standard-loader",
+      "host_uuid": "38748595",
+      "record_id": "3869463",
+      "selection_ordinal": 50,
+      "source_rank": 14
+    }
+  ],
+  "entry_count": 50,
+  "freeze_digest": "sha256:df6ca140c3a4a1b988d9a2f88b501b8cb6490498d3d802fa40523a3ae685cd2e",
+  "input_binding_digest": "sha256:d957bbd3b635d6c7070db67ad774ab09b1d6616ebfae1f98feaef8b3d8e66941",
+  "n": 50,
+  "partition": {
+    "count": 64,
+    "index": 4,
+    "predecessor_index": 3,
+    "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2"
+  },
+  "protocol_digest": "sha256:44cadd61df7bfcb60cd74edf619a946c219dc482183dcb790bd777b0d4b5f59d",
+  "roster_seal": "sha256:d48d5d28f502129e4b8258093fc43e4d128b28d6fc05cba435eae0b1c2dc00e3",
+  "schema": "tavonel.sfir10r4.cohort_roster.v1",
+  "selection_digest": "sha256:5ed768ce414f95fe42a061a87bb0946f652ac141386f7ce8f912be07706faf9a",
+  "spent_exclusion": {
+    "count": 0,
+    "host_uuids": [],
+    "reason": "SPENT_DEVELOPMENT_ROOT",
+    "why": "these identities have been looked at. That is a property of this study's history, not of the repository, and it is the only reason any identity is excluded."
+  },
+  "state": "SEALED",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R3",
+  "what_this_does_not_establish": "capacity, C, Q, or any model/compiler endpoint"
+}
