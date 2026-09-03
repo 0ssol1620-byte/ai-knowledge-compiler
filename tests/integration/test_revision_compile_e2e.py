@@ -198,6 +198,11 @@ def _artifact_body(artifact: str, clauses: tuple[Clause, ...]) -> dict[str, obje
     }
 
 
+def digest_of_text(content: str) -> str:
+    """The digest of raw content, which is what `artifact_content` produces."""
+    return "sha256:" + hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
 def _digest_of(body: dict[str, object]) -> str:
     encoded = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return "sha256:" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()
@@ -619,6 +624,44 @@ def test_a_rebuilt_body_that_does_not_match_its_sealed_digest_is_refused(world_v
         stop()
     assert status == 500
     assert payload == {"code": "CORE_V3_REBUILT_BODY_DIGEST_MISMATCH"}
+
+
+def test_a_rebuilt_artifact_may_be_raw_content_rather_than_a_document(world_v1):
+    """CSV, JSON Lines and Turtle are half of what a caller has to assemble.
+
+    Forcing them through JSON quoting so one convention could cover everything
+    would make a rebuilt file's digest differ from the digest of the file it
+    replaces, and the package it was rebuilt into would fail its own integrity
+    check for a reason that has nothing to do with the compile.
+    """
+    workspace, prior = world_v1
+    rows = {
+        artifact: "artifact,logical_id\n"
+        + "".join(f"{artifact},{unit}\n" for unit in READS[artifact])
+        for artifact in ARTIFACTS
+    }
+
+    def build(artifact: str) -> str:
+        return digest_of_text(rows[artifact])
+
+    resolve = _resolver(workspace, prior, V2_CLAUSES, materialise=lambda a: rows[a])
+    base = resolve(None)
+    service = RevisionService(
+        hmac_secret=HMAC_SECRET,
+        resolve=lambda request: replace(base, build=build, full_rebuild=None),
+        core_release_digest=CORE_RELEASE,
+    )
+    httpd, stop = serve(service)
+    try:
+        status, payload, _body, _sha = _post(httpd.server_address, _build_request(prior))
+    finally:
+        stop()
+    assert status == 200, payload
+    recompiled = payload["revision"]["recompilation"]
+    for artifact_id, artifact_body in recompiled["rebuiltArtifactBodies"].items():
+        assert isinstance(artifact_body, str)
+        assert artifact_body == rows[artifact_id]
+        assert digest_of_text(artifact_body) == recompiled["rebuiltDigests"][artifact_id]
 
 
 def test_an_unrepresented_source_fact_stops_the_activation(world_v1):
