@@ -14,6 +14,8 @@ cache="/workspace/folynta/cache/paddle-fastdeploy-r1"
 model_root="$cache/PaddleOCR-VL-1.6"
 state="$receipt_root/bootstrap-state.jsonl"
 service_log="$receipt_root/fastdeploy-service.log"
+SYSTEM_PYTHON="${SYSTEM_PYTHON:-$(command -v python3 || command -v python || true)}"
+test -n "$SYSTEM_PYTHON"
 model_revision="66317acc4c9fc17bd154591ce650735cd2855f3e"
 artifact_sha256="40ca2a90af83f79a9adf2d5ddb7e32187e6956e45e5730119595be7305e06a53"
 before_patch="b50570cb2c13f29f2a7f8803d6bdb3368111e906152425f9666d0ca4818a396d"
@@ -28,7 +30,7 @@ nvidia-smi --query-gpu=name,uuid,driver_version,memory.total \
   --format=csv,noheader,nounits >"$receipt_root/gpu-identity.txt"
 
 if [[ ! -x "$venv/bin/python" ]]; then
-  /usr/bin/python3.11 -m venv "$venv"
+  "$SYSTEM_PYTHON" -m venv "$venv"
   "$venv/bin/python" -m pip install --upgrade 'pip==25.1.1'
   "$venv/bin/python" -m pip install \
     'paddlepaddle-gpu==3.2.1' \

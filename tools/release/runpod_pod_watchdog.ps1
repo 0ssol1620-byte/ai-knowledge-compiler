@@ -6,6 +6,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$CredentialFile,
 
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_-]{1,63}$')]
+    [string]$CredentialLabel = 'Runpod',
+
     [Parameter(Mandatory = $true)]
     [string]$DeadlineUtc,
 
@@ -47,15 +50,16 @@ if (-not $receiptPath.StartsWith(
     throw 'Watchdog receipt must stay under benchmark/datasets/private'
 }
 
+$credentialPattern = '^\s*' + [regex]::Escape($CredentialLabel) + '\s*:'
 $line = Get-Content -LiteralPath $credentialPath |
-    Where-Object { $_ -match '^\s*Runpod\s*:' } |
+    Where-Object { $_ -match $credentialPattern } |
     Select-Object -First 1
 if (-not $line) {
-    throw 'Runpod credential label not found'
+    throw 'RunPod credential label not found'
 }
 $apiKey = ($line -split ':', 2)[1].Trim()
 if (-not $apiKey -or $apiKey -match '\s') {
-    throw 'Runpod credential malformed'
+    throw 'RunPod credential malformed'
 }
 $headers = @{
     Authorization = "Bearer $apiKey"
@@ -107,7 +111,7 @@ while ([DateTimeOffset]::UtcNow -lt $deadline) {
 # Pod in the middle of its run. That is exactly how a quality retry was lost at
 # 117 of 372 documents with all four workers busy. An unanswered probe is
 # unknown, and unknown stops rather than deletes.
-$busyState = 'idle'
+$busyState = 'unknown'
 if ($SshKey -and $KnownHosts) {
     # Resolve the address now rather than trusting one from provisioning time.
     $current = $null
@@ -128,6 +132,7 @@ if ($SshKey -and $KnownHosts) {
             -p $port4 "root@$host4" $RemoteBusyCommand 2>$null
         if ($LASTEXITCODE -eq 255) { $busyState = 'unknown' }
         elseif (@($probeOutput).Count -gt 0) { $busyState = 'busy' }
+        else { $busyState = 'idle' }
     }
 }
 elseif ($LivenessProbeCommand) {
@@ -138,7 +143,11 @@ elseif ($LivenessProbeCommand) {
     elseif (@($probeOutput).Count -gt 0) {
         $busyState = 'busy'
     }
+    else { $busyState = 'idle' }
 }
+# No liveness probe is deliberately left as 'unknown'. A deadline without a
+# probe is not permission to destroy a Pod: stop it to end GPU billing, then let
+# an explicit cleanup step delete it only after evidence/artifacts are safe.
 if ($busyState -ne 'idle') {
     try {
         $null = Invoke-RestMethod -Method Post -Uri "$uri/stop" `

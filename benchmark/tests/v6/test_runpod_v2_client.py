@@ -118,8 +118,35 @@ def test_client_is_network_free_and_does_not_require_a_key_by_default(
 
 def test_execute_requires_only_runpod_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("RUNPOD_API_KEY", raising=False)
+    monkeypatch.delenv("RUNPOD_API_KEY_FALLBACK", raising=False)
     with pytest.raises(ContractError, match="RUNPOD_API_KEY"):
         RunPodV2Client(execute=True)
+
+
+def test_read_auth_failure_can_fail_over_without_exposing_either_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("RUNPOD_API_KEY", "bad-primary")
+    monkeypatch.setenv("RUNPOD_API_KEY_FALLBACK", "good-fallback")
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        auth = request.headers["authorization"]
+        seen.append(auth)
+        if auth == "Bearer bad-primary":
+            return httpx.Response(401, json={"error": "unauthorized"})
+        return httpx.Response(
+            200,
+            json={"endpoints": []},
+            headers={"content-type": "application/json"},
+        )
+
+    client = RunPodV2Client(execute=True, transport=httpx.MockTransport(handler))
+    assert client.inventory_endpoints() == ()
+    assert client.credential_failover_count == 1
+    assert seen == ["Bearer bad-primary", "Bearer good-fallback"]
+    assert "bad-primary" not in repr(client)
+    assert "good-fallback" not in repr(client)
 
 
 def test_management_queue_and_billing_operations_follow_documented_v2_contract(

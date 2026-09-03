@@ -64,8 +64,24 @@ def test_the_reason_for_refusing_to_delete_is_written_down(source: str) -> None:
     assert "an unanswered probe is not proof of an idle Pod" in source
 
 
-def test_a_watchdog_without_a_probe_still_deletes(source: str) -> None:
-    # The backstop exists for Pods that are building or idling with no probe
-    # configured, and that case must keep deleting or the cost guard is gone.
-    assert "$busyState = 'idle'" in source
+def test_a_watchdog_without_a_probe_fails_closed_to_stop(source: str) -> None:
+    # No probe means liveness is unknown. The cost guard still stops the Pod,
+    # which releases the GPU, but it must never infer idle and delete data.
+    assert "$busyState = 'unknown'" in source
+    assert "No liveness probe is deliberately left as 'unknown'" in source
     assert "if ($LivenessProbeCommand) {" in source
+
+
+def test_a_successful_empty_probe_is_the_only_path_to_idle(source: str) -> None:
+    # 'idle' is earned by an answered probe with no busy output, not by default.
+    assert "$busyState = 'idle'" in source
+    assert source.count("else { $busyState = 'idle' }") >= 2
+
+
+def test_ssh_probe_re_resolves_provider_address_at_deadline(source: str) -> None:
+    # The provider GET must occur inside the deadline probe branch so a restarted
+    # Pod's new public address/port is used instead of a provisioning-time value.
+    branch = source[source.index("if ($SshKey -and $KnownHosts) {") :]
+    assert "Invoke-RestMethod -Method Get -Uri $uri" in branch
+    assert "$current.publicIp" in branch
+    assert "$current.portMappings.'22'" in branch

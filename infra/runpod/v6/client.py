@@ -9,7 +9,6 @@ duplicate paid work.
 
 from __future__ import annotations
 
-import os
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -21,11 +20,10 @@ from typing import Any, Final, Self
 import httpx
 
 from benchmark.v6.contracts import ContractError, canonical_sha256, require_sha256
+from infra.runpod.v6.credentials import RunPodCredentialSet
 
 MANAGEMENT_BASE_URL: Final = "https://api.runpod.io/v2"
 QUEUE_BASE_URL: Final = "https://api.runpod.ai/v2"
-RUNPOD_KEY_ENV: Final = "RUNPOD_API_KEY"
-
 _RESOURCE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _RUN_TAG_RE = re.compile(r"^v6-[a-z0-9][a-z0-9._-]{2,127}$")
 _IDEMPOTENCY_RE = re.compile(r"^idem-[0-9a-f]{64}$")
@@ -641,14 +639,13 @@ class RunPodV2Client:
             raise ContractError("timeout_seconds must be positive")
         self.execute = execute
         self._api_key: str | None = None
+        self._api_keys: tuple[str, ...] = ()
+        self._credential_failover_count = 0
         self._http: httpx.Client | None = None
         if execute:
-            api_key = os.environ.get(RUNPOD_KEY_ENV, "").strip()
-            if not api_key:
-                raise ContractError(
-                    "RUNPOD_API_KEY is required only when --execute enables provider access"
-                )
-            self._api_key = api_key
+            credentials = RunPodCredentialSet.from_environment(required=True)
+            self._api_keys = credentials.candidates
+            self._api_key = credentials.primary
             self._http = httpx.Client(
                 transport=transport,
                 timeout=httpx.Timeout(timeout_seconds),
@@ -664,6 +661,11 @@ class RunPodV2Client:
         """Provider retries are intentionally and immutably disabled."""
 
         return 0
+
+    @property
+    def credential_failover_count(self) -> int:
+        """Auth/read-rate-limit key switches; not ambiguous provider retries."""
+        return self._credential_failover_count
 
     def __enter__(self) -> Self:
         return self
@@ -985,26 +987,39 @@ class RunPodV2Client:
     ) -> object | None:
         if not self.execute or self._http is None or self._api_key is None:
             raise ContractError("provider access is disabled; pass --execute explicitly")
-        headers = {
-            "Accept": "application/json",
-            "Authorization": f"Bearer {self._api_key}",
-        }
-        if payload is not None:
-            headers["Content-Type"] = "application/json"
-        if extra_headers is not None:
-            headers.update(extra_headers)
-        try:
-            response = self._http.request(
-                method,
-                url,
-                headers=headers,
-                json=payload,
-                params=params,
-            )
-        except httpx.HTTPError as exc:
-            raise RunPodClientError(
-                f"RunPod transport failure for {method} {url}: {type(exc).__name__}"
-            ) from None
+        def request_with_key(api_key: str) -> httpx.Response:
+            headers = {
+                "Accept": "application/json",
+                "Authorization": f"Bearer {api_key}",
+            }
+            if payload is not None:
+                headers["Content-Type"] = "application/json"
+            if extra_headers is not None:
+                headers.update(extra_headers)
+            try:
+                return self._http.request(
+                    method,
+                    url,
+                    headers=headers,
+                    json=payload,
+                    params=params,
+                )
+            except httpx.HTTPError as exc:
+                raise RunPodClientError(
+                    f"RunPod transport failure for {method} {url}: {type(exc).__name__}"
+                ) from None
+
+        response = request_with_key(self._api_key)
+        can_failover = response.status_code in {401, 403} or (
+            response.status_code == 429 and method.upper() == "GET"
+        )
+        if can_failover and len(self._api_keys) > 1 and self._api_key == self._api_keys[0]:
+            # Authentication rejection is explicit, so retrying with a second
+            # credential cannot duplicate accepted work. Rate-limit failover is
+            # restricted to GET; paid/destructive mutations remain one-shot.
+            self._api_key = self._api_keys[1]
+            self._credential_failover_count += 1
+            response = request_with_key(self._api_key)
         if allow_not_found and response.status_code == 404:
             return None
         if response.status_code != expected_status:
