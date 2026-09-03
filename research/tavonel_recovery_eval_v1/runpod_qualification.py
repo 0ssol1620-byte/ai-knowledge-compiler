@@ -2,9 +2,10 @@
 """Bounded development-only RunPod qualification for TAVONEL-R.
 
 This is deliberately separate from historical release tooling. It reads the
-Runpod_B value only into process memory, never serializes it, uses only the
-already-spent qualification smoke input, and hard-deletes paid capacity after
-safe evidence collection or failure.
+Runpod_B value only into process memory, never serializes it, and uses only the
+already-spent qualification smoke input. Failure/deadline paths stop paid GPU
+capacity while preserving /workspace for bounded resume; deletion happens only
+after sealed success evidence or an explicit cleanup request.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ import shutil
 import subprocess
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -48,9 +50,22 @@ def _required_executable(name: str) -> str:
     return str(Path(resolved).resolve())
 
 
+def _required_ssh_keygen() -> str:
+    # Some Windows 11 installations expose System32 OpenSSH ssh-keygen on PATH
+    # but the binary returns 255 for ed25519 generation with no diagnostic. The
+    # Git-for-Windows implementation is independently bundled and was verified
+    # on this host. Prefer it when present, otherwise use the normal PATH lookup.
+    if os.name == "nt":
+        program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+        git_keygen = program_files / "Git" / "usr" / "bin" / "ssh-keygen.exe"
+        if git_keygen.is_file():
+            return str(git_keygen.resolve())
+    return _required_executable("ssh-keygen.exe")
+
+
 SSH_EXE = _required_executable("ssh.exe")
 SCP_EXE = _required_executable("scp.exe")
-SSH_KEYGEN_EXE = _required_executable("ssh-keygen.exe")
+SSH_KEYGEN_EXE = _required_ssh_keygen()
 
 
 class QualificationRefused(RuntimeError):
@@ -328,6 +343,41 @@ class Provider:
             raise QualificationRefused("RunPod creation response shape is invalid")
         return value
 
+    def stop_pod(self, pod_id: str) -> None:
+        # RunPod's Pod API exposes stop/start as explicit POST actions. Stopping
+        # releases paid GPU capacity while retaining the normal /workspace
+        # volume, which is the safe default for failed/expired qualification.
+        self._request("POST", f"/pods/{pod_id}/stop")
+        for _ in range(20):
+            pod = self.get_pod(pod_id)
+            if pod is None:
+                return
+            desired = str(pod.get("desiredStatus", "")).upper()
+            if desired in {"EXITED", "STOPPED"}:
+                return
+            time.sleep(3)
+        raise QualificationRefused("RunPod pod stop could not be verified")
+
+    def start_pod(self, pod_id: str) -> None:
+        self._request("POST", f"/pods/{pod_id}/start")
+
+    def pod_billing(self, pod_id: str, *, start_time: str | None = None) -> list[dict[str, Any]]:
+        query: dict[str, str] = {
+            "podId": pod_id,
+            "grouping": "podId",
+            "bucketSize": "hour",
+        }
+        if start_time:
+            query["startTime"] = start_time
+        path = "/billing/pods?" + urllib.parse.urlencode(query)
+        value = self._request("GET", path)
+        if not isinstance(value, list):
+            raise QualificationRefused("RunPod Pod billing response shape is invalid")
+        rows = [item for item in value if isinstance(item, dict)]
+        if any(str(item.get("podId", "")) not in {"", pod_id} for item in rows):
+            raise QualificationRefused("RunPod Pod billing response crossed pod identity")
+        return rows
+
     def delete_pod(self, pod_id: str) -> None:
         self._request("DELETE", f"/pods/{pod_id}")
         for _ in range(20):
@@ -391,6 +441,104 @@ def _write_state(paths: LocalPaths, value: dict[str, Any]) -> None:
     temp = paths.state.with_suffix(".tmp")
     temp.write_text(raw + "\n", encoding="utf-8")
     os.replace(temp, paths.state)
+
+
+def _parse_time(value: Any, *, label: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError as error:
+        raise QualificationRefused(f"qualification {label} timestamp is invalid") from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise QualificationRefused(f"qualification {label} timestamp must be timezone-aware")
+    return parsed
+
+
+def _consume_running_budget(state: dict[str, Any], *, now: datetime | None = None) -> float:
+    """Conservatively charge local wall time against the role's total GPU cap."""
+    current = now or datetime.now(UTC)
+    started_raw = state.get("running_started_at_utc")
+    if not started_raw:
+        return 0.0
+    started = _parse_time(started_raw, label="running start")
+    elapsed = max(0.0, (current - started).total_seconds())
+    remaining = float(state.get("remaining_gpu_seconds", MAX_RUNTIME_SECONDS))
+    state["remaining_gpu_seconds"] = max(0.0, remaining - elapsed)
+    state["gpu_seconds_consumed_local"] = float(
+        state.get("gpu_seconds_consumed_local", 0.0)
+    ) + elapsed
+    state["running_started_at_utc"] = None
+    return elapsed
+
+
+def _billing_snapshot(provider: Provider, state: dict[str, Any]) -> dict[str, Any]:
+    """Return Pod billing evidence, or an explicit unavailable result; never guess zero."""
+    pod_id = str(state.get("pod_id") or "")
+    try:
+        rows = provider.pod_billing(pod_id, start_time=str(state.get("started_at_utc") or "") or None)
+    except QualificationRefused as error:
+        return {
+            "status": "unavailable",
+            "reason": str(error),
+            "zero_spend_inferred": False,
+        }
+    amount = 0.0
+    billed_ms = 0
+    for row in rows:
+        try:
+            amount += float(row.get("amount") or 0.0)
+        except (TypeError, ValueError) as error:
+            raise QualificationRefused("RunPod Pod billing amount is invalid") from error
+        try:
+            billed_ms += int(row.get("timeBilledMs") or 0)
+        except (TypeError, ValueError) as error:
+            raise QualificationRefused("RunPod Pod billing duration is invalid") from error
+    return {
+        "status": "available",
+        "provider_reported_amount_usd": amount,
+        "provider_reported_time_billed_ms": billed_ms,
+        "row_count": len(rows),
+        "source": "runpod_pod_billing_api",
+        "zero_spend_inferred": False,
+    }
+
+
+def _stop_preserving_cache(
+    paths: LocalPaths,
+    state: dict[str, Any],
+    provider: Provider,
+    *,
+    phase: str,
+    event: str,
+    stderr_tail: str | None = None,
+) -> dict[str, Any]:
+    _consume_running_budget(state)
+    pod_id = str(state["pod_id"])
+    pod = provider.get_pod(pod_id)
+    if pod is not None and str(pod.get("desiredStatus", "")).upper() not in {
+        "EXITED",
+        "STOPPED",
+    }:
+        provider.stop_pod(pod_id)
+    billing = _billing_snapshot(provider, state)
+    state.update(
+        {
+            "phase": phase,
+            "provider_stopped": True,
+            "provider_deleted": False,
+            "last_pod_billing": billing,
+            "stopped_at_utc": utc_now(),
+        }
+    )
+    _write_state(paths, state)
+    fields: dict[str, Any] = {
+        "pod_id": pod_id,
+        "billing_status": billing["status"],
+        "remaining_gpu_seconds": state["remaining_gpu_seconds"],
+    }
+    if stderr_tail:
+        fields["stderr_tail"] = stderr_tail[-2000:]
+    _journal(paths, event, **fields)
+    return billing
 
 
 def _spawn_watchdog(role: str) -> int:
@@ -471,7 +619,61 @@ def _ssh_base(paths: LocalPaths, state: dict[str, Any]) -> list[str]:
     ]
 
 
+def _refresh_ssh_endpoint(paths: LocalPaths, state: dict[str, Any]) -> dict[str, Any]:
+    """Re-resolve the current SSH locator from the provider before every use.
+
+    RunPod may assign a different public address/port after stop/start. The Pod
+    id is the stable identity; a provisioning-time address is not.
+    """
+    pod_id = str(state.get("pod_id") or "")
+    if not pod_id:
+        raise QualificationRefused("qualification state has no pod identity")
+    provider = Provider(read_runpod_b())
+    pod = provider.get_pod(pod_id)
+    if pod is None:
+        raise QualificationRefused("qualification pod is absent while refreshing SSH endpoint")
+    if str(pod.get("desiredStatus", "")).upper() != "RUNNING":
+        raise QualificationRefused("qualification pod is not running while refreshing SSH endpoint")
+    host = str(pod.get("publicIp") or "")
+    port = _port22(pod)
+    if not host or port is None:
+        raise QualificationRefused("qualification provider has no current SSH endpoint")
+    old_host = str(state.get("host") or "")
+    try:
+        old_port = int(state.get("port") or 0)
+    except (TypeError, ValueError):
+        old_port = 0
+    if host != old_host or port != old_port:
+        # Host keys belong to an ephemeral container instance. Remove only the
+        # old provider-resolved host:port entry after the stable Pod id has been
+        # re-confirmed, then let StrictHostKeyChecking=accept-new record the new
+        # instance key on first connection.
+        if old_host and old_port:
+            subprocess.run(  # noqa: S603
+                [
+                    SSH_KEYGEN_EXE,
+                    "-R",
+                    f"[{old_host}]:{old_port}",
+                    "-f",
+                    str(paths.known_hosts),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        state.update({"host": host, "port": port})
+        _write_state(paths, state)
+        _journal(
+            paths,
+            "ssh_endpoint_refreshed",
+            pod_id=pod_id,
+            endpoint_changed=True,
+        )
+    return state
+
+
 def ssh(paths: LocalPaths, state: dict[str, Any], command: str, *, check: bool = True) -> str:
+    state = _refresh_ssh_endpoint(paths, state)
     # ssh.exe is fixed; remote commands are constructed from frozen local code/state.
     result = subprocess.run(  # noqa: S603
         [*_ssh_base(paths, state), command],
@@ -485,6 +687,7 @@ def ssh(paths: LocalPaths, state: dict[str, Any], command: str, *, check: bool =
 
 
 def scp(paths: LocalPaths, state: dict[str, Any], source: Path, destination: str) -> None:
+    state = _refresh_ssh_endpoint(paths, state)
     # scp.exe is fixed and source/destination are selected by this module only.
     result = subprocess.run(  # noqa: S603
         [
@@ -566,7 +769,7 @@ def _bootstrap_command(spec: RoleSpec) -> str:
     if spec.role == "strong":
         return (
             "chmod 700 /workspace/tavonel-r/runner/bootstrap.sh && "
-            "RECEIPT_ROOT=/workspace/tavonel-r/receipts PYTHON_BIN=/usr/bin/python3.11 "
+            "RECEIPT_ROOT=/workspace/tavonel-r/receipts SYSTEM_PYTHON=/usr/bin/python3.11 "
             "bash /workspace/tavonel-r/runner/bootstrap.sh && "
             "touch /workspace/tavonel-r/BOOTSTRAP_COMPLETE"
         )
@@ -599,8 +802,33 @@ def start(role: str) -> dict[str, Any]:
     pod_id = str(pod.get("id") or "")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{2,63}", pod_id):
         raise QualificationRefused("RunPod creation omitted a valid pod id")
+    created_at = datetime.now(UTC)
+    state = {
+        "schema": "tavonel.recovery.runpod_qualification_state.v1",
+        "role": role,
+        "phase": "provisioning",
+        "pod_id": pod_id,
+        "host": "",
+        "port": 0,
+        "hourly_rate_usd": None,
+        "base_image": spec.base_image,
+        "started_at_utc": created_at.isoformat(),
+        "running_started_at_utc": created_at.isoformat(),
+        "remaining_gpu_seconds": float(MAX_RUNTIME_SECONDS),
+        "gpu_seconds_consumed_local": 0.0,
+        "hard_deadline_utc": (created_at + timedelta(seconds=MAX_RUNTIME_SECONDS)).isoformat(),
+        "input_manifest_digest": canonical_digest(input_manifest),
+        "fresh_confirmatory_observation": False,
+        "provider_stopped": False,
+        "provider_deleted": False,
+    }
+    _write_state(paths, state)
     _journal(paths, "pod_created", pod_id=pod_id, role=role)
     try:
+        watchdog_pid = _spawn_watchdog(role)
+        state["watchdog_pid"] = watchdog_pid
+        _write_state(paths, state)
+        _journal(paths, "cost_watchdog_started", pod_id=pod_id, watchdog_pid=watchdog_pid)
         ready = wait_ssh_ready(provider, pod_id)
         rate = float(ready.get("costPerHr") or ready.get("adjustedCostPerHr") or 0.0)
         if rate <= 0 or rate > BASE_MAX_HOURLY_USD:
@@ -609,27 +837,15 @@ def start(role: str) -> dict[str, Any]:
         port = _port22(ready)
         if not host or port is None:
             raise QualificationRefused("qualification SSH address is unavailable")
-        state = {
-            "schema": "tavonel.recovery.runpod_qualification_state.v1",
-            "role": role,
-            "phase": "ssh_ready",
-            "pod_id": pod_id,
-            "host": host,
-            "port": port,
-            "hourly_rate_usd": rate,
-            "base_image": spec.base_image,
-            "started_at_utc": utc_now(),
-            "hard_deadline_utc": (
-                datetime.now(UTC) + timedelta(seconds=MAX_RUNTIME_SECONDS)
-            ).isoformat(),
-            "input_manifest_digest": canonical_digest(input_manifest),
-            "fresh_confirmatory_observation": False,
-        }
+        state.update(
+            {
+                "phase": "ssh_ready",
+                "host": host,
+                "port": port,
+                "hourly_rate_usd": rate,
+            }
+        )
         _write_state(paths, state)
-        watchdog_pid = _spawn_watchdog(role)
-        state["watchdog_pid"] = watchdog_pid
-        _write_state(paths, state)
-        _journal(paths, "cost_watchdog_started", pod_id=pod_id, watchdog_pid=watchdog_pid)
         _upload_common(paths, state, spec, smoke)
         remote_pid = _launch_remote(
             paths,
@@ -641,11 +857,23 @@ def start(role: str) -> dict[str, Any]:
         _write_state(paths, state)
         _journal(paths, "bootstrap_launched", pod_id=pod_id, remote_pid=remote_pid)
         return {"role": role, "phase": state["phase"], "pod_id": pod_id, "hourly_rate_usd": rate}
-    except Exception:
+    except Exception as error:
         try:
-            provider.delete_pod(pod_id)
-        finally:
-            _journal(paths, "pod_deleted_after_start_failure", pod_id=pod_id)
+            _stop_preserving_cache(
+                paths,
+                state,
+                provider,
+                phase="start_failed_stopped",
+                event="start_failure_stopped_cache_preserved",
+            )
+        except Exception as stop_error:
+            _journal(
+                paths,
+                "start_failure_stop_failed",
+                pod_id=pod_id,
+                original_error_type=type(error).__name__,
+                stop_error_type=type(stop_error).__name__,
+            )
         raise
 
 
@@ -668,15 +896,18 @@ def _strong_validate_and_launch_smoke(
     identity = f"{spec.model_id}@{spec.model_revision}"
     command = (
         "set -euo pipefail; "
-        "/usr/bin/python3.11 /workspace/tavonel-r/runner/artifact_manifest.py "
+        "/workspace/folynta/mineru-3.4.4-venv/bin/python "
+        "/workspace/tavonel-r/runner/artifact_manifest.py "
         "--root /workspace/folynta/models/MinerU2.5-Pro-2605-1.2B "
         "--output /workspace/tavonel-r/receipts/model-artifact.json "
+        "--root /workspace/folynta/models/MinerU2.5-Pro-2605-1.2B "
         f"--identity {json.dumps(identity)} --exclude-prefix .cache >/dev/null; "
         "observed=$(sha256sum /workspace/tavonel-r/receipts/model-artifact.json | cut -d' ' -f1); "
         f'test "$observed" = {spec.expected_model_manifest_sha256}; '
         "rm -rf /workspace/tavonel-r/smoke-output; "
         "env MINERU_MODEL_SOURCE=local MINERU_TOOLS_CONFIG_JSON=/root/mineru.json "
-        "MINERU_API_MAX_CONCURRENT_REQUESTS=1 timeout 900 /usr/local/bin/mineru "
+        "MINERU_API_MAX_CONCURRENT_REQUESTS=1 timeout 900 "
+        "/workspace/folynta/mineru-3.4.4-venv/bin/mineru "
         "-p /workspace/tavonel-r/input/input.jpg -o /workspace/tavonel-r/smoke-output "
         "-b vlm-engine -m ocr; "
         "find /workspace/tavonel-r/smoke-output -type f -name '*.md' -size +0c | grep -q .; "
@@ -743,6 +974,94 @@ def _collect_safe_evidence(
     return observed
 
 
+def _seal_qualification_receipt(
+    *,
+    role: str,
+    spec: RoleSpec,
+    paths: LocalPaths,
+    state: dict[str, Any],
+    provider: Provider,
+    observed: dict[str, Any],
+    billing: dict[str, Any],
+) -> dict[str, Any]:
+    for key in ("runtime_sha", "model_sha", "smoke_sha", "gpu"):
+        if not isinstance(observed.get(key), str) or not observed[key]:
+            raise QualificationRefused(f"stopped qualification state is missing {key}")
+    if observed["model_sha"] != spec.expected_model_manifest_sha256:
+        raise QualificationRefused("stopped qualification model identity no longer matches freeze")
+    smoke, input_manifest = qualification_input()
+    file_paths = (spec.bootstrap_relpath, spec.prompt_relpath, *spec.extra_pin_paths)
+    pins = pin_files(REPO, tuple(("runtime_input", path) for path in file_paths))
+    observed_runtime = {
+        "provider": "runpod_secure_cloud",
+        "pod_id": str(state["pod_id"]),
+        "gpu": observed["gpu"],
+        "hourly_rate_usd": float(state["hourly_rate_usd"]),
+        "runtime_identity_sha256": "sha256:" + observed["runtime_sha"],
+        "model_manifest_sha256": "sha256:" + observed["model_sha"],
+        "smoke_output_sha256": "sha256:" + observed["smoke_sha"],
+        "smoke_input_sha256": sha256_file(smoke),
+        "started_at_utc": state["started_at_utc"],
+        "completed_at_utc": state.get("evidence_collected_at_utc") or utc_now(),
+        "gpu_seconds_consumed_local": float(state["gpu_seconds_consumed_local"]),
+        "remaining_gpu_seconds": float(state["remaining_gpu_seconds"]),
+        "pod_billing": billing,
+        "fresh_confirmatory_observation": False,
+    }
+    attestation = RuntimeAttestation(
+        role=role,
+        model_id=spec.model_id,
+        model_revision=spec.model_revision,
+        base_image=spec.base_image,
+        base_image_digest=spec.base_image_digest,
+        model_artifact_digest=spec.model_artifact_digest,
+        prompt_schema_digest=sha256_file(REPO / spec.prompt_relpath),
+        file_pins=pins,
+        qualification_input_manifest_digest=canonical_digest(input_manifest),
+        observed_runtime=observed_runtime,
+    )
+    attestation.validate(REPO)
+    payload = attestation.as_dict()
+    payload["attestation_digest"] = attestation.digest()
+    receipt = RECEIPT_ROOT / f"{role}.json"
+    RECEIPT_ROOT.mkdir(parents=True, exist_ok=True)
+    try:
+        with receipt.open("x", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    except FileExistsError as error:
+        raise QualificationRefused("runtime qualification receipt already exists") from error
+
+    provider_deleted = False
+    try:
+        provider.delete_pod(str(state["pod_id"]))
+        provider_deleted = True
+    except QualificationRefused:
+        # The GPU is already stopped. A failed delete is a cleanup issue, not a
+        # reason to discard a fully sealed scientific qualification receipt.
+        provider_deleted = False
+    state.update(
+        {
+            "phase": "complete",
+            "provider_deleted": provider_deleted,
+            "attestation_digest": attestation.digest(),
+        }
+    )
+    _write_state(paths, state)
+    _journal(
+        paths,
+        "qualification_complete",
+        pod_id=str(state["pod_id"]),
+        attestation_digest=attestation.digest(),
+        provider_deleted=provider_deleted,
+    )
+    return {
+        "role": role,
+        "phase": "complete",
+        "attestation_digest": attestation.digest(),
+        "provider_deleted": provider_deleted,
+    }
+
+
 def finalize(role: str) -> dict[str, Any]:
     spec = discover_role_spec(role)
     paths = paths_for(role)
@@ -751,12 +1070,38 @@ def finalize(role: str) -> dict[str, Any]:
     provider = Provider(api_key)
     pod_id = str(state["pod_id"])
     phase = str(state["phase"])
-    if datetime.now(UTC) >= datetime.fromisoformat(str(state["hard_deadline_utc"])):
-        try:
-            provider.delete_pod(pod_id)
-        finally:
-            _journal(paths, "hard_deadline_cleanup", pod_id=pod_id)
-        raise QualificationRefused("qualification hard deadline reached; paid capacity deleted")
+    if phase == "complete":
+        return {
+            "role": role,
+            "phase": phase,
+            "attestation_digest": state.get("attestation_digest"),
+            "provider_deleted": bool(state.get("provider_deleted")),
+        }
+    if phase == "qualification_evidence_stopped":
+        observed = state.get("collected_safe_evidence")
+        billing = state.get("last_pod_billing")
+        if not isinstance(observed, dict) or not isinstance(billing, dict):
+            raise QualificationRefused("stopped qualification evidence state is incomplete")
+        return _seal_qualification_receipt(
+            role=role,
+            spec=spec,
+            paths=paths,
+            state=state,
+            provider=provider,
+            observed=observed,
+            billing=billing,
+        )
+    if datetime.now(UTC) >= _parse_time(state["hard_deadline_utc"], label="hard deadline"):
+        _stop_preserving_cache(
+            paths,
+            state,
+            provider,
+            phase="hard_deadline_stopped",
+            event="hard_deadline_stopped_cache_preserved",
+        )
+        raise QualificationRefused(
+            "qualification hard deadline reached; paid GPU stopped and cache preserved"
+        )
     if phase == "bootstrap_running":
         remote = _remote_process_state(
             paths,
@@ -773,11 +1118,17 @@ def finalize(role: str) -> dict[str, Any]:
                 "tail -80 /workspace/tavonel-r/qualification.stderr.log 2>/dev/null || true",
                 check=False,
             )
-            try:
-                provider.delete_pod(pod_id)
-            finally:
-                _journal(paths, "bootstrap_failed_cleanup", pod_id=pod_id, stderr_tail=tail[-2000:])
-            raise QualificationRefused("qualification bootstrap failed; paid capacity deleted")
+            _stop_preserving_cache(
+                paths,
+                state,
+                provider,
+                phase="bootstrap_failed_stopped",
+                event="bootstrap_failed_stopped_cache_preserved",
+                stderr_tail=tail,
+            )
+            raise QualificationRefused(
+                "qualification bootstrap failed; paid GPU stopped and cache preserved"
+            )
         smoke_pid = (
             _strong_validate_and_launch_smoke(paths, state, spec)
             if role == "strong"
@@ -803,73 +1154,37 @@ def finalize(role: str) -> dict[str, Any]:
                 "tail -120 /workspace/tavonel-r/qualification.stderr.log 2>/dev/null || true",
                 check=False,
             )
-            try:
-                provider.delete_pod(pod_id)
-            finally:
-                _journal(paths, "smoke_failed_cleanup", pod_id=pod_id, stderr_tail=tail[-2000:])
-            raise QualificationRefused("qualification smoke failed; paid capacity deleted")
+            _stop_preserving_cache(
+                paths,
+                state,
+                provider,
+                phase="smoke_failed_stopped",
+                event="smoke_failed_stopped_cache_preserved",
+                stderr_tail=tail,
+            )
+            raise QualificationRefused(
+                "qualification smoke failed; paid GPU stopped and cache preserved"
+            )
         observed = _collect_safe_evidence(paths, state, spec)
-        smoke, input_manifest = qualification_input()
-        file_paths = (spec.bootstrap_relpath, spec.prompt_relpath, *spec.extra_pin_paths)
-        pins = pin_files(REPO, tuple(("runtime_input", path) for path in file_paths))
-        observed_runtime = {
-            "provider": "runpod_secure_cloud",
-            "pod_id": pod_id,
-            "gpu": observed["gpu"],
-            "hourly_rate_usd": float(state["hourly_rate_usd"]),
-            "runtime_identity_sha256": "sha256:" + observed["runtime_sha"],
-            "model_manifest_sha256": "sha256:" + observed["model_sha"],
-            "smoke_output_sha256": "sha256:" + observed["smoke_sha"],
-            "smoke_input_sha256": sha256_file(smoke),
-            "started_at_utc": state["started_at_utc"],
-            "completed_at_utc": utc_now(),
-            "fresh_confirmatory_observation": False,
-        }
-        attestation = RuntimeAttestation(
-            role=role,
-            model_id=spec.model_id,
-            model_revision=spec.model_revision,
-            base_image=spec.base_image,
-            base_image_digest=spec.base_image_digest,
-            model_artifact_digest=spec.model_artifact_digest,
-            prompt_schema_digest=sha256_file(REPO / spec.prompt_relpath),
-            file_pins=pins,
-            qualification_input_manifest_digest=canonical_digest(input_manifest),
-            observed_runtime=observed_runtime,
-        )
-        attestation.validate(REPO)
-        payload = attestation.as_dict()
-        payload["attestation_digest"] = attestation.digest()
-        receipt = RECEIPT_ROOT / f"{role}.json"
-        RECEIPT_ROOT.mkdir(parents=True, exist_ok=True)
-        if receipt.exists():
-            raise QualificationRefused("runtime qualification receipt already exists")
-        receipt.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        provider.delete_pod(pod_id)
-        state.update(
-            {
-                "phase": "complete",
-                "provider_deleted": True,
-                "attestation_digest": attestation.digest(),
-            }
-        )
+        state["collected_safe_evidence"] = observed
+        state["evidence_collected_at_utc"] = utc_now()
         _write_state(paths, state)
-        _journal(
-            paths, "qualification_complete", pod_id=pod_id, attestation_digest=attestation.digest()
+        billing = _stop_preserving_cache(
+            paths,
+            state,
+            provider,
+            phase="qualification_evidence_stopped",
+            event="qualification_evidence_stopped_before_seal",
         )
-        return {
-            "role": role,
-            "phase": "complete",
-            "attestation_digest": attestation.digest(),
-            "provider_deleted": True,
-        }
-    if phase == "complete":
-        return {
-            "role": role,
-            "phase": phase,
-            "attestation_digest": state.get("attestation_digest"),
-            "provider_deleted": bool(state.get("provider_deleted")),
-        }
+        return _seal_qualification_receipt(
+            role=role,
+            spec=spec,
+            paths=paths,
+            state=state,
+            provider=provider,
+            observed=observed,
+            billing=billing,
+        )
     raise QualificationRefused(f"unsupported qualification phase: {phase}")
 
 
@@ -886,6 +1201,116 @@ def cleanup(role: str) -> dict[str, Any]:
     return {"role": role, "provider_deleted": True}
 
 
+_RESUMABLE_STOPPED_PHASES = frozenset(
+    {
+        "start_failed_stopped",
+        "bootstrap_failed_stopped",
+        "smoke_failed_stopped",
+        "hard_deadline_stopped",
+    }
+)
+
+
+def resume(role: str) -> dict[str, Any]:
+    """Resume the same stopped Pod/volume without resetting the GPU-time budget."""
+    authorize_qualification()
+    spec = discover_role_spec(role)
+    smoke, _ = qualification_input()
+    paths = paths_for(role)
+    state = _read_state(paths)
+    phase = str(state.get("phase") or "")
+    if phase not in _RESUMABLE_STOPPED_PHASES:
+        raise QualificationRefused(f"qualification phase is not resumable: {phase}")
+    remaining = float(state.get("remaining_gpu_seconds", 0.0))
+    if remaining <= 0:
+        raise QualificationRefused("qualification GPU-time budget is exhausted; resume refused")
+    provider = Provider(read_runpod_b())
+    pod_id = str(state.get("pod_id") or "")
+    pod = provider.get_pod(pod_id)
+    if pod is None:
+        raise QualificationRefused("stopped qualification pod is absent; duplicate creation refused")
+    try:
+        if str(pod.get("desiredStatus", "")).upper() != "RUNNING":
+            provider.start_pod(pod_id)
+        ready = wait_ssh_ready(provider, pod_id)
+        rate = float(ready.get("costPerHr") or ready.get("adjustedCostPerHr") or 0.0)
+        if rate <= 0 or rate > BASE_MAX_HOURLY_USD:
+            raise QualificationRefused("resumed qualification hourly rate exceeds frozen ceiling")
+        host = str(ready.get("publicIp") or "")
+        port = _port22(ready)
+        if not host or port is None:
+            raise QualificationRefused("resumed qualification SSH endpoint is unavailable")
+        # A restarted container may generate a new SSH host key even when the
+        # public endpoint happens to be reused. This known-host file belongs only
+        # to the exact qualification Pod, so reset it on an explicit resume.
+        paths.known_hosts.unlink(missing_ok=True)
+        now = datetime.now(UTC)
+        state.update(
+            {
+                "phase": "ssh_ready",
+                "host": host,
+                "port": port,
+                "hourly_rate_usd": rate,
+                "running_started_at_utc": now.isoformat(),
+                "hard_deadline_utc": (now + timedelta(seconds=remaining)).isoformat(),
+                "provider_stopped": False,
+                "stopped_at_utc": None,
+                "resume_count": int(state.get("resume_count", 0)) + 1,
+            }
+        )
+        watchdog_pid = _spawn_watchdog(role)
+        state["watchdog_pid"] = watchdog_pid
+        _write_state(paths, state)
+        _journal(
+            paths,
+            "qualification_resumed",
+            pod_id=pod_id,
+            remaining_gpu_seconds=remaining,
+            watchdog_pid=watchdog_pid,
+        )
+        _upload_common(paths, state, spec, smoke)
+        ssh(
+            paths,
+            state,
+            "rm -f /workspace/tavonel-r/BOOTSTRAP_COMPLETE "
+            "/workspace/tavonel-r/SMOKE_COMPLETE /workspace/tavonel-r/bootstrap.pid "
+            "/workspace/tavonel-r/smoke.pid",
+        )
+        remote_pid = _launch_remote(
+            paths,
+            state,
+            _bootstrap_command(spec),
+            "/workspace/tavonel-r/bootstrap.pid",
+        )
+        state.update({"phase": "bootstrap_running", "remote_pid": remote_pid})
+        _write_state(paths, state)
+        _journal(paths, "resume_bootstrap_launched", pod_id=pod_id, remote_pid=remote_pid)
+        return {
+            "role": role,
+            "phase": "bootstrap_running",
+            "pod_id": pod_id,
+            "remaining_gpu_seconds": remaining,
+        }
+    except Exception as error:
+        try:
+            _stop_preserving_cache(
+                paths,
+                state,
+                provider,
+                phase="start_failed_stopped",
+                event="resume_failure_stopped_cache_preserved",
+            )
+        except Exception as stop_error:
+            _journal(
+                paths,
+                "resume_failure_stop_failed",
+                pod_id=pod_id,
+                original_error_type=type(error).__name__,
+                stop_error_type=type(stop_error).__name__,
+            )
+        raise
+
+
 def watchdog(role: str) -> int:
     paths = paths_for(role)
     while True:
@@ -893,23 +1318,30 @@ def watchdog(role: str) -> int:
             state = _read_state(paths)
         except QualificationRefused:
             return 0
-        if str(state.get("phase")) in {"complete", "cleaned_up"}:
+        if str(state.get("phase")) in {
+            "complete",
+            "cleaned_up",
+            *_RESUMABLE_STOPPED_PHASES,
+            "qualification_evidence_stopped",
+        }:
             return 0
         deadline_raw = state.get("hard_deadline_utc")
         pod_id = str(state.get("pod_id") or "")
         if not deadline_raw or not pod_id:
             return 0
-        deadline = datetime.fromisoformat(str(deadline_raw))
+        deadline = _parse_time(deadline_raw, label="hard deadline")
         if datetime.now(UTC) < deadline:
             time.sleep(30)
             continue
         try:
             provider = Provider(read_runpod_b())
-            if provider.get_pod(pod_id) is not None:
-                provider.delete_pod(pod_id)
-            state.update({"phase": "hard_deadline_cleaned", "provider_deleted": True})
-            _write_state(paths, state)
-            _journal(paths, "hard_deadline_watchdog_cleanup", pod_id=pod_id)
+            _stop_preserving_cache(
+                paths,
+                state,
+                provider,
+                phase="hard_deadline_stopped",
+                event="hard_deadline_watchdog_stopped_cache_preserved",
+            )
         except Exception as error:  # pragma: no cover - final external backstop
             _journal(paths, "hard_deadline_watchdog_failed", error_type=type(error).__name__)
             return 3
@@ -941,6 +1373,21 @@ def plan(role: str) -> dict[str, Any]:
             "estimated_external_cost_usd": MAX_ESTIMATED_COST_USD,
             "max_hourly_rate_usd": BASE_MAX_HOURLY_USD,
         },
+        "provider_contract": {
+            "pod_api": "https://rest.runpod.io/v1",
+            "pod_billing_surface": "/billing/pods",
+            "serverless_billing_is_not_pod_billing": True,
+            "failure_default": "stop_preserve_workspace_before_delete",
+        },
+        "runtime_persistence": {
+            "volume_mount": "/workspace",
+            "volume_gb": 20,
+            "resume_supported": True,
+            "deadline_recomputed_from_remaining_gpu_seconds": True,
+            "strong_runtime_root": "/workspace/folynta/mineru-3.4.4-venv",
+            "strong_model_root": "/workspace/folynta/models/MinerU2.5-Pro-2605-1.2B",
+            "primary_runtime_root": "/workspace/folynta/paddle-fastdeploy-venv",
+        },
         "fresh_confirmatory_observation": False,
         "sensitive_material_included": False,
     }
@@ -949,7 +1396,7 @@ def plan(role: str) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("plan", "start", "advance", "cleanup", "watchdog"):
+    for name in ("plan", "start", "resume", "advance", "cleanup", "watchdog"):
         command = sub.add_parser(name)
         command.add_argument("--role", choices=("strong", "primary"), required=True)
     args = parser.parse_args(argv)
@@ -958,6 +1405,8 @@ def main(argv: list[str] | None = None) -> int:
             value = plan(args.role)
         elif args.command == "start":
             value = start(args.role)
+        elif args.command == "resume":
+            value = resume(args.role)
         elif args.command == "advance":
             value = finalize(args.role)
         elif args.command == "cleanup":

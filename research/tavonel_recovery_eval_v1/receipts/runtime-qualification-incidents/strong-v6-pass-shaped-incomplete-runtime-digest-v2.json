@@ -1,0 +1,14 @@
+{
+  "attempt": "v6-frozen-controller",
+  "defect": "PASS_SHAPED_EVIDENCE_WITH_INCOMPLETE_RUNTIME_DIGEST",
+  "fresh_confirmatory_observation": false,
+  "incident_digest": "sha256:55822be268678eee81df5a69f06552da60d7d07d1affe3ec4a25a0d9e58cf372",
+  "observed_runtime_sha256": "sha256:",
+  "provider_stopped": true,
+  "remaining_gpu_seconds": 7639.933548999999,
+  "role": "strong",
+  "schema": "tavonel.recovery.runtime_qualification_incident.v1",
+  "scientific_claim_eligible": false,
+  "state": "INVALID_INSTRUMENT",
+  "successor": "v7-integrity-checked-evidence"
+}

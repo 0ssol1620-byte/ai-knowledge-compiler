@@ -1,0 +1,16 @@
+{
+  "attempt": "v8-phase-instrumented-same-pod",
+  "fresh_confirmatory_observation": false,
+  "gpu_budget_debited_for_failed_start": false,
+  "incident_digest": "sha256:f15e9248db097728c5c70da68ef370e8c85c73bd4b7bdfce78ac59dd4c664533",
+  "new_pod_created": false,
+  "provider_desired_status": "EXITED",
+  "provider_http_status": 500,
+  "provider_stopped": true,
+  "remaining_gpu_seconds": 6781.892507,
+  "role": "strong",
+  "schema": "tavonel.recovery.runtime_qualification_operational_incident.v1",
+  "scientific_claim_eligible": false,
+  "state": "START_FAILED_PROVIDER_CAPACITY",
+  "successor": "v9-phase-new-pod-after-host-gpu-unavailable"
+}

@@ -109,20 +109,20 @@ def _decorate_strong(raw: str) -> str:
     text = raw
     text = _replace_once(
         text,
-        '"$PYTHON_BIN" -m pip install --no-cache-dir \\\n  --index-url https://download.pytorch.org/whl/cu128',
-        'phase TORCH_INSTALL_STARTED\n"$PYTHON_BIN" -m pip install --no-cache-dir \\\n  --index-url https://download.pytorch.org/whl/cu128',
+        '"$PYTHON_BIN" -m pip install \\\n  --index-url https://download.pytorch.org/whl/cu128',
+        'phase TORCH_INSTALL_STARTED\n"$PYTHON_BIN" -m pip install \\\n  --index-url https://download.pytorch.org/whl/cu128',
         label="strong torch start",
     )
     text = _replace_once(
         text,
-        'rm -rf "$SOURCE_ROOT"',
-        'phase TORCH_INSTALL_DONE\nphase MINERU_CLONE_STARTED\nrm -rf "$SOURCE_ROOT"',
-        label="strong clone start",
+        'if ! test -d "$SOURCE_ROOT/.git" ||',
+        'phase TORCH_INSTALL_DONE\nphase MINERU_SOURCE_CHECK_STARTED\nif ! test -d "$SOURCE_ROOT/.git" ||',
+        label="strong source check start",
     )
     text = _replace_once(
         text,
-        "\"$PYTHON_BIN\" -m pip install --no-cache-dir \\\n  'accelerate==1.14.0'",
-        "phase MINERU_CLONE_DONE\nphase MINERU_DEPS_STARTED\n\"$PYTHON_BIN\" -m pip install --no-cache-dir \\\n  'accelerate==1.14.0'",  # noqa: E501
+        "\"$PYTHON_BIN\" -m pip install \\\n  'accelerate==1.14.0'",
+        "phase MINERU_SOURCE_READY\nphase MINERU_DEPS_STARTED\n\"$PYTHON_BIN\" -m pip install \\\n  'accelerate==1.14.0'",  # noqa: E501
         label="strong deps start",
     )
     text = _replace_once(
@@ -154,12 +154,14 @@ def _decorate_primary(raw: str) -> str:
         'phase RUNTIME_INSTALL_STARTED\nif [[ ! -x "$venv/bin/python" ]]; then',
         label="primary runtime start",
     )
-    text = _replace_once(
-        text,
-        '/usr/bin/python3.11 -m venv "$venv"',
-        '"$PHASE_PYTHON" -m venv "$venv"',
-        label="primary python resolver",
+    # Production now resolves Python portably on-pod.  The diagnostic must
+    # verify that live contract rather than expecting the superseded hard-coded
+    # /usr/bin/python3.11 anchor.
+    portable_python = (
+        'SYSTEM_PYTHON="${SYSTEM_PYTHON:-$(command -v python3 || command -v python || true)}"'
     )
+    if text.count(portable_python) != 1:
+        raise QualificationRefused("diagnostic primary portable Python resolver drifted")
     text = _replace_once(
         text,
         "fi\n\n# PaddlePaddle 3.2.1 still reads FieldDescriptor.label",

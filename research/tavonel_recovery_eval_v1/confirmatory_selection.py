@@ -2,9 +2,12 @@
 """Outcome-blind fresh-cohort and evidence-split tooling for TAVONEL-R.
 
 Nothing in this module reads model outputs or evaluator scores. Candidate records
-are source/provenance metadata only. Selection is deterministic within three
-prospectively fixed source-family quotas and refuses a family shortfall instead
-of reallocating quota after seeing the available cohort.
+are source/provenance metadata only. Primary Stage 1 is the blueprint's 300-page
+two-lane result (Dr.DocBench + SEC); OpenDART is a separately sealed optional
+external-validity lane and can never become a hidden dependency of the primary
+result. Selection is deterministic within prospectively fixed source-family
+quotas and refuses a family shortfall instead of reallocating quota after seeing
+the available cohort.
 """
 
 from __future__ import annotations
@@ -22,10 +25,11 @@ SCHEMA = "tavonel.recovery.fresh_selection.v1"
 SELECTION_SALT = "TAVONEL-R-FRESH-STAGE1-EQUAL-FAMILY-2026-08-30"
 EVIDENCE_SPLIT_SALT = "TAVONEL-R-EVIDENCE-SPLIT-2026-08-30"
 STAGE1_FAMILY_QUOTAS: Mapping[str, int] = {
-    "drdocbench": 100,
-    "sec": 100,
-    "dart": 100,
+    "drdocbench": 150,
+    "sec": 150,
 }
+SECONDARY_DART_QUOTA = 100
+SUPPORTED_SOURCE_FAMILIES = frozenset((*STAGE1_FAMILY_QUOTAS, "dart"))
 
 # Outcome-like fields are illegal even when nested inside a candidate. Keeping
 # this list intentionally broad is preferable to silently admitting a post-hoc
@@ -128,7 +132,7 @@ class SourceCandidate:
         if missing:
             raise SelectionRefused(f"candidate is missing required fields: {missing}")
         family = str(record["source_family"]).casefold()
-        if family not in STAGE1_FAMILY_QUOTAS:
+        if family not in SUPPORTED_SOURCE_FAMILIES:
             raise SelectionRefused(f"unsupported source family: {family}")
         digest = str(record["source_sha256"])
         _require_sha256(digest, "source_sha256")
@@ -226,7 +230,8 @@ def select_stage1(
         if candidate.family_id in spent_families:
             excluded_family += 1
             continue
-        eligible[candidate.source_family].append(candidate)
+        if candidate.source_family in STAGE1_FAMILY_QUOTAS:
+            eligible[candidate.source_family].append(candidate)
 
     selected: list[SourceCandidate] = []
     for family, quota in STAGE1_FAMILY_QUOTAS.items():
@@ -261,6 +266,53 @@ def select_stage1(
         "selected_counts": dict(sorted(counts.items())),
         "entry_count": len(entries),
         "rights_caveats": dict(RIGHTS_CAVEATS),
+        "optional_secondary_lane": {
+            "source_family": "dart",
+            "quota": SECONDARY_DART_QUOTA,
+            "included_in_primary_result": False,
+        },
+        "entries": entries,
+        "scientific_outcomes_used_for_selection": False,
+    }
+    return {**body, "cohort_seal_digest": _canonical_digest(body)}
+
+
+def select_secondary_dart(
+    candidate_records: Sequence[Mapping[str, Any]], spent_manifest: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Seal the optional Korean external-validity lane without affecting Stage 1."""
+    _reject_forbidden_metadata(spent_manifest)
+    exact_spent = set(map(str, spent_manifest.get("exact_spent_ids", ())))
+    spent_families = set(map(str, spent_manifest.get("spent_family_ids", ())))
+    candidates = [SourceCandidate.from_record(row) for row in candidate_records]
+    ids = [row.stable_id for row in candidates]
+    if len(ids) != len(set(ids)):
+        raise SelectionRefused("candidate manifest contains duplicate stable page identities")
+    rows = [
+        row
+        for row in candidates
+        if row.source_family == "dart"
+        and row.stable_id not in exact_spent
+        and row.family_id not in spent_families
+    ]
+    rows.sort(key=lambda row: (_rank(row), row.stable_id))
+    if len(rows) < SECONDARY_DART_QUOTA:
+        raise SelectionRefused(
+            f"fresh family dart has {len(rows)} eligible pages, below frozen secondary quota "
+            f"{SECONDARY_DART_QUOTA}; secondary-lane shortfall cannot alter the primary cohort"
+        )
+    entries = [
+        {"selection_ordinal": index, **row.as_record()}
+        for index, row in enumerate(rows[:SECONDARY_DART_QUOTA], start=1)
+    ]
+    body = {
+        "schema": "tavonel.recovery.fresh_selection.dart_secondary.v1",
+        "selection_salt_digest": selection_salt_digest(),
+        "source_family": "dart",
+        "quota": SECONDARY_DART_QUOTA,
+        "included_in_primary_result": False,
+        "entry_count": len(entries),
+        "rights_caveat": RIGHTS_CAVEATS["dart"],
         "entries": entries,
         "scientific_outcomes_used_for_selection": False,
     }

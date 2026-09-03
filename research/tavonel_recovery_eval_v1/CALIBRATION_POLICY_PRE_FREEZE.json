@@ -21,12 +21,17 @@
   },
   "selection": {
     "stage1_equal_source_family_quota": {
-      "drdocbench": 100,
-      "sec": 100,
-      "dart": 100
+      "drdocbench": 150,
+      "sec": 150
     },
     "quota_reallocation_on_shortfall": false,
-    "outcome_derived_selection": false
+    "outcome_derived_selection": false,
+    "secondary_external_validity_lane": {
+      "source_family": "dart",
+      "quota": 100,
+      "included_in_primary_result": false,
+      "required_for_primary_result": false
+    }
   },
   "confirmatory_retuning_allowed": false
 }

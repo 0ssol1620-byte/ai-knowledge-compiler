@@ -1,0 +1,35 @@
+{
+  "chrome": {
+    "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "sha256:b6d40f55e48e61760335d18f46abcec929e1a11b8330e7f2b501037584af4aa4",
+    "version": "151.0.7922.174"
+  },
+  "rasterizer": {
+    "pillow": "12.3.0",
+    "pypdfium2": "5.13.0",
+    "python": "3.13.0",
+    "python_path": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_recovery_eval_v1\\.private\\sec-renderer-v1\\venv\\Scripts\\python.exe",
+    "python_sha256": "sha256:6f8c9878450765686ace476d2170b970761d68ace63f16092489c4c8bd5d7018"
+  },
+  "renderer_module_sha256": "sha256:53abe59c53ac5fa60698f831b3cdb2d565d61f156d620293fddef88e19182d20",
+  "renderer_qualification_digest": "sha256:924a2fed9f59694b6a5a19f4ee711dd611755bf202713d6f9414f80df7f6b2d8",
+  "repeatability_smoke": {
+    "exact_page_bytes_equal": true,
+    "fresh_confirmatory_observation": false,
+    "page_count": 2,
+    "page_sha256": [
+      "sha256:74d9787bb60d81e7df53c19ec422e62a13d9210a85114569bfb5ce4efe8025a2",
+      "sha256:79bd29fddabb14df9ebfa72112b57f07a165e43decd94b9d253f52ca954fd57d"
+    ],
+    "repeat_runs": 2
+  },
+  "schema": "tavonel.recovery.sec_renderer_qualification.v1",
+  "scientific_outcomes_observed": false,
+  "settings": {
+    "network_during_render": false,
+    "output_format": "PNG-RGB-compress_level_6",
+    "page_css": "@page { size: letter; margin: 0.5in; } html, body { background: white !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }",
+    "render_scale": 2.0
+  },
+  "state": "RENDERER_QUALIFIED"
+}

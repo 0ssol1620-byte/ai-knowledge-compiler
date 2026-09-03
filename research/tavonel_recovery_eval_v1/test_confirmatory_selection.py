@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import pytest
 from confirmatory_selection import (
+    SECONDARY_DART_QUOTA,
     STAGE1_FAMILY_QUOTAS,
     EvidenceAnchor,
     SelectionRefused,
     build_evidence_split,
     build_spent_manifest,
+    select_secondary_dart,
     select_stage1,
 )
 
@@ -35,14 +37,31 @@ def full_candidates():
     ]
 
 
-def test_equal_family_quota_is_deterministic_and_outcome_blind():
+def test_primary_stage1_quota_is_deterministic_and_outcome_blind():
     spent = build_spent_manifest(exact_spent_ids=(), spent_family_ids=())
     left = select_stage1(full_candidates(), spent)
     right = select_stage1(list(reversed(full_candidates())), spent)
     assert left["cohort_seal_digest"] == right["cohort_seal_digest"]
-    assert left["selected_counts"] == {"dart": 100, "drdocbench": 100, "sec": 100}
+    assert left["selected_counts"] == {"drdocbench": 150, "sec": 150}
     assert left["entry_count"] == 300
+    assert left["optional_secondary_lane"] == {
+        "source_family": "dart",
+        "quota": 100,
+        "included_in_primary_result": False,
+    }
     assert left["scientific_outcomes_used_for_selection"] is False
+
+
+def test_dart_is_sealed_separately_and_never_enters_primary_result():
+    spent = build_spent_manifest(exact_spent_ids=(), spent_family_ids=())
+    dart = [candidate("dart", index) for index in range(SECONDARY_DART_QUOTA + 10)]
+    primary = select_stage1(full_candidates() + dart, spent)
+    secondary = select_secondary_dart(dart, spent)
+    assert primary["entry_count"] == 300
+    assert all(row["source_family"] != "dart" for row in primary["entries"])
+    assert secondary["entry_count"] == 100
+    assert secondary["included_in_primary_result"] is False
+    assert all(row["source_family"] == "dart" for row in secondary["entries"])
 
 
 def test_outcome_fields_cannot_enter_candidate_selection():
