@@ -1,0 +1,63 @@
+{
+  "classes": {
+    "conflicting_evidence": {
+      "available": null,
+      "source": "requires two sources disagreeing on the same attribute",
+      "state": "UNDETERMINED",
+      "why": "the acquisition records one article per title and does not pair articles on a shared attribute, so real conflicts cannot be counted from this receipt. PROTOCOL_V2 includes this class only if real conflicts exist."
+    },
+    "multi_document": {
+      "available": null,
+      "source": "an answer requiring at least two source documents",
+      "state": "UNDETERMINED",
+      "why": "the corpus is one article per title; whether any question genuinely requires two of them is a property of the question set, which does not exist yet"
+    },
+    "provenance_sensitive": {
+      "available": 391,
+      "caveat": "counts pages that can carry a provenance question, not questions built and validated; the gold evidence location still has to be constructed",
+      "source": "each eligible page carries an exact before/after revision id and hash",
+      "state": "SUFFICIENT"
+    },
+    "revision_sensitive": {
+      "articles": 151,
+      "available": 293,
+      "source": "changed infobox attributes retained under the frozen three-per-article cap, selected by hash order fixed before any value was seen",
+      "state": "SUFFICIENT"
+    },
+    "simple_retrieval": {
+      "available": 2522,
+      "source": "unchanged infobox attributes -- the answer is the same in both revisions",
+      "state": "SUFFICIENT"
+    }
+  },
+  "control_class_sufficient": true,
+  "corpus": "corpus-v7",
+  "corpus_root_sha256": "sha256:d4eaf6fe9ac514536085b142c12f72c4f0108a80e5f2bd0b19414e78129a0e8f",
+  "endpoint_status": "NOT_RUN",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "frozen_minimums": {
+    "conflicting_evidence": 30,
+    "multi_document": 30,
+    "provenance_sensitive": 40,
+    "revision_sensitive": 60,
+    "simple_retrieval": 40
+  },
+  "generated_at": "2026-08-19T09:59:16.365839+00:00",
+  "governing_protocol": "PROTOCOL_V2_2026-08-19.md section 1",
+  "identity_module_modified": false,
+  "integrity_gates_passed": 11,
+  "min_articles_with_primary": 20,
+  "network_access": false,
+  "next_gate": "build the question set under PROTOCOL_V2 section 2's fixed templates, then measure section 3's leakage thresholds, and only then execute the three arms",
+  "primary_endpoint_class_sufficient": true,
+  "receipt_sha256": "sha256:bf343565051d5743f75e322b31b6bbd2e16e175abd797721618de42756f4a63b",
+  "schema": "tavonel.w6-v7-endpoint-sufficiency.v1",
+  "what_changed_since_v2": "v2 produced 0 revision-sensitive questions against a required 60, because the Family B corpora were consecutive revision pairs in which structured facts do not move. corpus-v7 uses snapshots 1,095+ days apart, which is the acquisition answer to that diagnosis rather than a looser parser.",
+  "what_this_is_not": [
+    "not a question set -- none has been built against corpus-v7",
+    "not a leakage measurement -- section 3's overlap thresholds are unmeasured",
+    "not a result -- the RAW / BASIC RAG / TAVONEL arms have not been run",
+    "not a claim that the endpoint will succeed; sufficiency is a precondition"
+  ]
+}

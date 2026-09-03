@@ -1,0 +1,1359 @@
+{
+  "ablation_result_reported": true,
+  "amendment_1": "R1/R2/R3 and R6 produced no separation. Their verdicts remain UNRESOLVED and their nulls are uncitable per protocol \u00a76. The structural reason is recorded in structural_analysis, including a mechanical proof that ranking element 6 duplicates element 3 for every admissible claim. See AMENDMENT_1_2026-08-19.md.",
+  "authority_module_sha256": "sha256:c25bc21f7472207f15e405b819d5feb1a628ebbb7e810cfc24c7e0858d17ae35",
+  "experiment": "H1-J-GOVERNANCE-FILTER-ABLATION-01",
+  "external_gpu_cost_usd": 0.0,
+  "fidelity_gate": {
+    "all_agree": true,
+    "rows": [
+      {
+        "agrees": true,
+        "filter": "F1",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R1",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F1",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R1",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 1,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F2",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R2",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F2",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R2",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F3",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R3",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F3",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R3",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F4",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "F4",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        },
+        "kind": "solitary",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "NO_CANDIDATE",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R4",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R5",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R6",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R7",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "R8",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "G1",
+        "harness_all_enabled": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": true,
+          "status": "CONFLICTED",
+          "value": null
+        },
+        "kind": "paired",
+        "real": {
+          "claim_id": null,
+          "permission_filtered": 0,
+          "required_review": true,
+          "status": "CONFLICTED",
+          "value": null
+        }
+      },
+      {
+        "agrees": true,
+        "filter": "NOOP",
+        "harness_all_enabled": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "kind": "control",
+        "real": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        }
+      }
+    ]
+  },
+  "filters_evaluated": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "G1",
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8"
+  ],
+  "filters_whose_control_did_not_separate": [
+    "R1",
+    "R2",
+    "R3",
+    "R6"
+  ],
+  "generated_at": "2026-08-19T02:51:39.495970+00:00",
+  "network_access": false,
+  "noop_control": {
+    "clean": true,
+    "per_filter": {
+      "F1": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "F2": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "F3": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "F4": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "G1": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R1": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R2": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R3": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R4": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R5": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R6": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R7": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      },
+      "R8": {
+        "ablated": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "baseline": {
+          "claim_id": "compliant",
+          "permission_filtered": 0,
+          "required_review": false,
+          "status": "RESOLVED",
+          "value": "24 months"
+        },
+        "unchanged": true
+      }
+    }
+  },
+  "per_filter_verdict": {
+    "F1": {
+      "citable": true,
+      "note": "masked in the paired state by a ranking element that restates it; the mask breaks when no compliant alternative exists, and then this filter is the only refusal",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        },
+        {
+          "class": "A",
+          "kind": "solitary",
+          "separated": true
+        }
+      ],
+      "verdict": "REDUNDANT_BUT_LOAD_BEARING"
+    },
+    "F2": {
+      "citable": true,
+      "note": "masked in the paired state by a ranking element that restates it; the mask breaks when no compliant alternative exists, and then this filter is the only refusal",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        },
+        {
+          "class": "A",
+          "kind": "solitary",
+          "separated": true
+        }
+      ],
+      "verdict": "REDUNDANT_BUT_LOAD_BEARING"
+    },
+    "F3": {
+      "citable": true,
+      "note": "masked in the paired state by a ranking element that restates it; the mask breaks when no compliant alternative exists, and then this filter is the only refusal",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        },
+        {
+          "class": "A",
+          "kind": "solitary",
+          "separated": true
+        }
+      ],
+      "verdict": "REDUNDANT_BUT_LOAD_BEARING"
+    },
+    "F4": {
+      "citable": true,
+      "note": "admits the violation in both states",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "A",
+          "kind": "paired",
+          "separated": true
+        },
+        {
+          "class": "A",
+          "kind": "solitary",
+          "separated": true
+        }
+      ],
+      "verdict": "ESSENTIAL"
+    },
+    "G1": {
+      "citable": true,
+      "note": "single-state filter; removal admits the violation",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "A",
+          "kind": "paired",
+          "separated": true
+        }
+      ],
+      "verdict": "ESSENTIAL"
+    },
+    "R1": {
+      "citable": false,
+      "note": "no change even with no alternative present; no blocker was identified, so this is class U, not class B",
+      "positive_control_separated": false,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        },
+        {
+          "class": "U",
+          "kind": "solitary",
+          "separated": false
+        }
+      ],
+      "verdict": "UNRESOLVED"
+    },
+    "R2": {
+      "citable": false,
+      "note": "no change even with no alternative present; no blocker was identified, so this is class U, not class B",
+      "positive_control_separated": false,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        },
+        {
+          "class": "U",
+          "kind": "solitary",
+          "separated": false
+        }
+      ],
+      "verdict": "UNRESOLVED"
+    },
+    "R3": {
+      "citable": false,
+      "note": "no change even with no alternative present; no blocker was identified, so this is class U, not class B",
+      "positive_control_separated": false,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        },
+        {
+          "class": "U",
+          "kind": "solitary",
+          "separated": false
+        }
+      ],
+      "verdict": "UNRESOLVED"
+    },
+    "R4": {
+      "citable": true,
+      "note": "single-state filter; removal admits the violation",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "A",
+          "kind": "paired",
+          "separated": true
+        }
+      ],
+      "verdict": "ESSENTIAL"
+    },
+    "R5": {
+      "citable": true,
+      "note": "single-state filter; removal admits the violation",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "A",
+          "kind": "paired",
+          "separated": true
+        }
+      ],
+      "verdict": "ESSENTIAL"
+    },
+    "R6": {
+      "citable": false,
+      "note": "single-state filter; no change and no blocker identified",
+      "positive_control_separated": false,
+      "rows": [
+        {
+          "class": "B_pending_blocker",
+          "kind": "paired",
+          "separated": false
+        }
+      ],
+      "verdict": "UNRESOLVED"
+    },
+    "R7": {
+      "citable": true,
+      "note": "single-state filter; removal admits the violation",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "A",
+          "kind": "paired",
+          "separated": true
+        }
+      ],
+      "verdict": "ESSENTIAL"
+    },
+    "R8": {
+      "citable": true,
+      "note": "single-state filter; removal admits the violation",
+      "positive_control_separated": true,
+      "rows": [
+        {
+          "class": "A",
+          "kind": "paired",
+          "separated": true
+        }
+      ],
+      "verdict": "ESSENTIAL"
+    }
+  },
+  "protocol_sha256": "sha256:fdce5e210b65a167d42ff8d5a15a14a546f7b41bd24ef2632fa216edde6e855e",
+  "raw_results": [
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "F1",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "cross-permission leak"
+    },
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "R1",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "cross-permission leak"
+    },
+    {
+      "ablated": {
+        "claim_id": "violating",
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "6 months"
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "A",
+      "filter": "F1",
+      "kind": "solitary",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "cross-permission leak"
+    },
+    {
+      "ablated": {
+        "claim_id": null,
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 1,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "U",
+      "filter": "R1",
+      "kind": "solitary",
+      "rationale": "no change even with no compliant alternative present, so no other filter can be the blocker; this is not class B and is reported as U",
+      "separated": false,
+      "violation_class": "cross-permission leak"
+    },
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "F2",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "temporally invalid claim answers as-of"
+    },
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "R2",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "temporally invalid claim answers as-of"
+    },
+    {
+      "ablated": {
+        "claim_id": "violating",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "6 months"
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "A",
+      "filter": "F2",
+      "kind": "solitary",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "temporally invalid claim answers as-of"
+    },
+    {
+      "ablated": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "U",
+      "filter": "R2",
+      "kind": "solitary",
+      "rationale": "no change even with no compliant alternative present, so no other filter can be the blocker; this is not class B and is reported as U",
+      "separated": false,
+      "violation_class": "temporally invalid claim answers as-of"
+    },
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "F3",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "wrong-scope answer"
+    },
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "R3",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "wrong-scope answer"
+    },
+    {
+      "ablated": {
+        "claim_id": "violating",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "6 months"
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "A",
+      "filter": "F3",
+      "kind": "solitary",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "wrong-scope answer"
+    },
+    {
+      "ablated": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "U",
+      "filter": "R3",
+      "kind": "solitary",
+      "rationale": "no change even with no compliant alternative present, so no other filter can be the blocker; this is not class B and is reported as U",
+      "separated": false,
+      "violation_class": "wrong-scope answer"
+    },
+    {
+      "ablated": {
+        "claim_id": "violating",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "6 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "A",
+      "filter": "F4",
+      "kind": "paired",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "excluded claim used"
+    },
+    {
+      "ablated": {
+        "claim_id": "violating",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "6 months"
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "NO_CANDIDATE",
+        "value": null
+      },
+      "class": "A",
+      "filter": "F4",
+      "kind": "solitary",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "excluded claim used"
+    },
+    {
+      "ablated": {
+        "claim_id": "violating",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "6 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "A",
+      "filter": "R4",
+      "kind": "paired",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "explicit override ignored"
+    },
+    {
+      "ablated": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": true,
+        "status": "CONFLICTED",
+        "value": null
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "A",
+      "filter": "R5",
+      "kind": "paired",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "lower authority outranks higher"
+    },
+    {
+      "ablated": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "B_pending_blocker",
+      "filter": "R6",
+      "kind": "paired",
+      "rationale": "no change in the paired state; the redundant blocker must be named by the solitary run before this may be called B",
+      "separated": false,
+      "violation_class": "less specific beats more specific"
+    },
+    {
+      "ablated": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": true,
+        "status": "CONFLICTED",
+        "value": null
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "A",
+      "filter": "R7",
+      "kind": "paired",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "withdrawn source beats active"
+    },
+    {
+      "ablated": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": true,
+        "status": "CONFLICTED",
+        "value": null
+      },
+      "baseline": {
+        "claim_id": "compliant",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "class": "A",
+      "filter": "R8",
+      "kind": "paired",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "staler claim beats newer"
+    },
+    {
+      "ablated": {
+        "claim_id": "tie_b",
+        "permission_filtered": 0,
+        "required_review": false,
+        "status": "RESOLVED",
+        "value": "24 months"
+      },
+      "baseline": {
+        "claim_id": null,
+        "permission_filtered": 0,
+        "required_review": true,
+        "status": "CONFLICTED",
+        "value": null
+      },
+      "class": "A",
+      "filter": "G1",
+      "kind": "paired",
+      "rationale": "removal changed the resolved answer; the violation is admitted",
+      "separated": true,
+      "violation_class": "unresolvable conflict silently resolved"
+    }
+  ],
+  "receipt_sha256": "sha256:d358b2a733990491dd8881dff4fe484d63be0ba860ce5b89045b6b929401f17b",
+  "redundancy_note": "R1/R2/R3 restate F1/F2/F3. A null in the paired state alone is class B_pending_blocker and is never reported as B without the solitary run naming the blocker.",
+  "result": "ABLATION_COMPLETE",
+  "schema": "tavonel.governance-filter-ablation.v1",
+  "structural_analysis": {
+    "R1_R2_R3_non_separation": "Ranking elements 1-3 restate admissibility filters F1-F3. With F1-F3 enabled the offending claim is already removed, so there is nothing for the ranking element to order and disabling it changes nothing. Ablating R1 meaningfully would require disabling F1 at the same time, which ablates two mechanisms at once and measures neither. These three are therefore UNMEASURED by this instrument, not shown to be inert.",
+    "R6_is_provably_redundant_with_R3": {
+      "all_equal_for_admissible_claims": true,
+      "claim_consequence": "The claim may not recite specificity as an independent ranking element contributing information beyond scope match. It is dead weight in the tuple for every claim that reaches it.",
+      "differ_only_when_disqualified": {
+        "admissible": false,
+        "scope_match": -1,
+        "specificity": 1
+      },
+      "probes": [
+        {
+          "equal": true,
+          "scope_dimensions": 0,
+          "scope_match": 0,
+          "specificity": 0
+        },
+        {
+          "equal": true,
+          "scope_dimensions": 1,
+          "scope_match": 1,
+          "specificity": 1
+        },
+        {
+          "equal": true,
+          "scope_dimensions": 2,
+          "scope_match": 2,
+          "specificity": 2
+        },
+        {
+          "equal": true,
+          "scope_dimensions": 3,
+          "scope_match": 3,
+          "specificity": 3
+        }
+      ],
+      "proof": "scope_match returns -1 on any dimension mismatch, otherwise it returns the count of matched dimensions, which is len(scope). specificity is defined as len(scope). Therefore for every claim admissible under F3 (scope_match >= 0), ranking element 3 and ranking element 6 carry the SAME VALUE. They can differ only when scope_match is -1, which F3 already disqualifies."
+    }
+  },
+  "supersedes": "receipts/governance-filter-ablation-attempt1-2026-08-19.json",
+  "uncitable_filters": [
+    "R1",
+    "R2",
+    "R3",
+    "R6"
+  ]
+}

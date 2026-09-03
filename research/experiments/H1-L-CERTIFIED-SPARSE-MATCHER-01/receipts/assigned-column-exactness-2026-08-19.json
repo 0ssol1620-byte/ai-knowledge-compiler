@@ -1,0 +1,31 @@
+{
+  "assigned_column_exact": true,
+  "blocked_policy_executed": false,
+  "cases": 19,
+  "cases_with_duplicate_previous_logical_ids": 0,
+  "closes": "assigned_column is the sixth per-row facet of the frozen contract and the only one footprint() never compared. Amendment 2 called it indirectly implied by logical_id and candidates, and the registry then claimed all twelve facets were compared. That claim was unsupported until this run.",
+  "column_divergences": 0,
+  "divergence_examples": [],
+  "experiment": "H1-L-CERTIFIED-SPARSE-MATCHER-01",
+  "extension_of": "receipts/exactness-2026-08-19.json",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T07:43:10.852006+00:00",
+  "identity_module_modified": false,
+  "instrument_liveness": {
+    "cases_producing_observations": 19,
+    "integer_columns_observed": 67,
+    "live": true,
+    "total_column_observations": 72,
+    "unassigned_rows_observed": 5,
+    "why_recorded": "Two empty observation lists compare equal, so a probe that never fired would yield the same zero. This programme has already voided an experiment on a non-separating instrument, so liveness is measured, not assumed."
+  },
+  "instrument_note": "No mutants of its own. It inherits separating power from the main H1-L run, whose winner_rotated mutant permutes assignments and separated on 10 cases -- the mutant most directly targeted at this facet.",
+  "method": "Subclass LogicalIdentityResolver and observe its two entry points -- decide_pair(partner=...) gives the column by object identity, resolve(unit, []) marks an unassigned row. identity.py is Protected Core and is not modified, and both policies call exactly these functions, so the column observed is the one the shipped code selected.",
+  "network_access": false,
+  "receipt_sha256": "sha256:0e24a666bcf055c391d3445bc8319c5fee6670cd139435552134af3b0c9abc7f",
+  "result": "ASSIGNED_COLUMN_EXACT",
+  "rows_with_unrecoverable_column": 0,
+  "schema": "tavonel.certified-sparse-assigned-column.v1",
+  "scope_limitation": "The corpus carries no duplicate previous logical ids, so this run does not exercise the case that makes the indirect argument fail. It establishes that the columns agree here; it does not establish that logical_id would have been an adequate proxy, and the facet stays measured directly rather than inferred.",
+  "why_indirect_was_insufficient": "logical_id is read from the partner, so two distinct previous units sharing a logical id are indistinguishable through it. Two policies could pair a row with different columns, agree on every facet footprint() compares, and still have paired different units."
+}

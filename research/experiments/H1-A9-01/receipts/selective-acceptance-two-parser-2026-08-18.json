@@ -1,0 +1,4762 @@
+{
+  "analysis": {
+    "0.02": {
+      "baseline_accept_everything": {
+        "coverage": 1.0,
+        "error_rate": 0.26262626262626265,
+        "error_rate_ci95": [
+          0.20202020202020202,
+          0.32323232323232326
+        ],
+        "errors_accepted": 52
+      },
+      "error_threshold_text_edit_distance": 0.02,
+      "signals": {
+        "critical_token_agreement": {
+          "concentration_ratio": 1.9609507640067914,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 52,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.26262626262626265,
+              "selective_error_rate_ci95": [
+                0.20707070707070707,
+                0.3282828282828283
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.4,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 8,
+              "errors_accepted": 44,
+              "fisher_exact_p_accepted_vs_abstained": 0.17886144502513565,
+              "selective_error_rate": 0.24719101123595505,
+              "selective_error_rate_ci95": [
+                0.1853932584269663,
+                0.3146067415730337
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.4,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 16,
+              "errors_accepted": 36,
+              "fisher_exact_p_accepted_vs_abstained": 0.04274780680527302,
+              "selective_error_rate": 0.22784810126582278,
+              "selective_error_rate_ci95": [
+                0.16455696202531644,
+                0.2974683544303797
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.3728813559322034,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 22,
+              "errors_accepted": 30,
+              "fisher_exact_p_accepted_vs_abstained": 0.03323970599891084,
+              "selective_error_rate": 0.2158273381294964,
+              "selective_error_rate_ci95": [
+                0.1510791366906475,
+                0.28776978417266186
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.34177215189873417,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 27,
+              "errors_accepted": 25,
+              "fisher_exact_p_accepted_vs_abstained": 0.04801326200250071,
+              "selective_error_rate": 0.21008403361344538,
+              "selective_error_rate_ci95": [
+                0.13445378151260504,
+                0.2857142857142857
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.3838383838383838,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 38,
+              "errors_accepted": 14,
+              "fisher_exact_p_accepted_vs_abstained": 0.00016933112202695616,
+              "selective_error_rate": 0.1414141414141414,
+              "selective_error_rate_ci95": [
+                0.0707070707070707,
+                0.21212121212121213
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.33613445378151263,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 40,
+              "errors_accepted": 12,
+              "fisher_exact_p_accepted_vs_abstained": 0.004820996880565579,
+              "selective_error_rate": 0.1518987341772152,
+              "selective_error_rate_ci95": [
+                0.0759493670886076,
+                0.22784810126582278
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.302158273381295,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 42,
+              "errors_accepted": 10,
+              "fisher_exact_p_accepted_vs_abstained": 0.05461916487730759,
+              "selective_error_rate": 0.1694915254237288,
+              "selective_error_rate_ci95": [
+                0.0847457627118644,
+                0.2711864406779661
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.3037974683544304,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 48,
+              "errors_accepted": 4,
+              "fisher_exact_p_accepted_vs_abstained": 0.00852345428340472,
+              "selective_error_rate": 0.1,
+              "selective_error_rate_ci95": [
+                0.025,
+                0.2
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.28651685393258425,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 51,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.028827543729842108,
+              "selective_error_rate": 0.05,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.15
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.18095238095238095,
+          "error_rate_low_agreement": 0.3548387096774194,
+          "median_split": 0.09090909090909091
+        },
+        "numeric_agreement": {
+          "concentration_ratio": 0.9448223733938019,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 52,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.26262626262626265,
+              "selective_error_rate_ci95": [
+                0.20202020202020202,
+                0.32323232323232326
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.15,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 3,
+              "errors_accepted": 49,
+              "fisher_exact_p_accepted_vs_abstained": 0.291212130277229,
+              "selective_error_rate": 0.2752808988764045,
+              "selective_error_rate_ci95": [
+                0.20786516853932585,
+                0.34269662921348315
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.225,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 9,
+              "errors_accepted": 43,
+              "fisher_exact_p_accepted_vs_abstained": 0.6881001515967327,
+              "selective_error_rate": 0.2721518987341772,
+              "selective_error_rate_ci95": [
+                0.20253164556962025,
+                0.34810126582278483
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.2711864406779661,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 16,
+              "errors_accepted": 36,
+              "fisher_exact_p_accepted_vs_abstained": 0.8613486260041181,
+              "selective_error_rate": 0.2589928057553957,
+              "selective_error_rate_ci95": [
+                0.18705035971223022,
+                0.33093525179856115
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.26582278481012656,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 21,
+              "errors_accepted": 31,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.2605042016806723,
+              "selective_error_rate_ci95": [
+                0.18487394957983194,
+                0.3445378151260504
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.25252525252525254,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 25,
+              "errors_accepted": 27,
+              "fisher_exact_p_accepted_vs_abstained": 0.8718226078119301,
+              "selective_error_rate": 0.2727272727272727,
+              "selective_error_rate_ci95": [
+                0.18181818181818182,
+                0.36363636363636365
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.25210084033613445,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 30,
+              "errors_accepted": 22,
+              "fisher_exact_p_accepted_vs_abstained": 0.7423119196932012,
+              "selective_error_rate": 0.27848101265822783,
+              "selective_error_rate_ci95": [
+                0.17721518987341772,
+                0.379746835443038
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.2517985611510791,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 35,
+              "errors_accepted": 17,
+              "fisher_exact_p_accepted_vs_abstained": 0.6003234217913802,
+              "selective_error_rate": 0.288135593220339,
+              "selective_error_rate_ci95": [
+                0.1694915254237288,
+                0.4067796610169492
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.25316455696202533,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 40,
+              "errors_accepted": 12,
+              "fisher_exact_p_accepted_vs_abstained": 0.5509511642090713,
+              "selective_error_rate": 0.3,
+              "selective_error_rate_ci95": [
+                0.175,
+                0.45
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.2752808988764045,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 49,
+              "errors_accepted": 3,
+              "fisher_exact_p_accepted_vs_abstained": 0.291212130277229,
+              "selective_error_rate": 0.15,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.3
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.27,
+          "error_rate_low_agreement": 0.25510204081632654,
+          "median_split": 0.6060606060606061
+        },
+        "text_agreement": {
+          "concentration_ratio": 1.1666666666666665,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 52,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.26262626262626265,
+              "selective_error_rate_ci95": [
+                0.20202020202020202,
+                0.32323232323232326
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.4,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 8,
+              "errors_accepted": 44,
+              "fisher_exact_p_accepted_vs_abstained": 0.17886144502513565,
+              "selective_error_rate": 0.24719101123595505,
+              "selective_error_rate_ci95": [
+                0.1853932584269663,
+                0.3146067415730337
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.25,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 10,
+              "errors_accepted": 42,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.26582278481012656,
+              "selective_error_rate_ci95": [
+                0.20253164556962025,
+                0.33544303797468356
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.22033898305084745,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 13,
+              "errors_accepted": 39,
+              "fisher_exact_p_accepted_vs_abstained": 0.48039832807176197,
+              "selective_error_rate": 0.2805755395683453,
+              "selective_error_rate_ci95": [
+                0.20863309352517986,
+                0.3597122302158273
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.27848101265822783,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 22,
+              "errors_accepted": 30,
+              "fisher_exact_p_accepted_vs_abstained": 0.7423119196932012,
+              "selective_error_rate": 0.25210084033613445,
+              "selective_error_rate_ci95": [
+                0.17647058823529413,
+                0.3277310924369748
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.2828282828282828,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 28,
+              "errors_accepted": 24,
+              "fisher_exact_p_accepted_vs_abstained": 0.628298393224386,
+              "selective_error_rate": 0.24242424242424243,
+              "selective_error_rate_ci95": [
+                0.16161616161616163,
+                0.3333333333333333
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.2605042016806723,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 31,
+              "errors_accepted": 21,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.26582278481012656,
+              "selective_error_rate_ci95": [
+                0.16455696202531644,
+                0.3670886075949367
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.2733812949640288,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 38,
+              "errors_accepted": 14,
+              "fisher_exact_p_accepted_vs_abstained": 0.7243799143140114,
+              "selective_error_rate": 0.23728813559322035,
+              "selective_error_rate_ci95": [
+                0.13559322033898305,
+                0.3389830508474576
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.2848101265822785,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 45,
+              "errors_accepted": 7,
+              "fisher_exact_p_accepted_vs_abstained": 0.2267735984317249,
+              "selective_error_rate": 0.175,
+              "selective_error_rate_ci95": [
+                0.075,
+                0.3
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.2808988764044944,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 50,
+              "errors_accepted": 2,
+              "fisher_exact_p_accepted_vs_abstained": 0.10795291113883303,
+              "selective_error_rate": 0.1,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.25
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.24242424242424243,
+          "error_rate_low_agreement": 0.2828282828282828,
+          "median_split": 0.9029078473091572
+        }
+      }
+    },
+    "0.05": {
+      "baseline_accept_everything": {
+        "coverage": 1.0,
+        "error_rate": 0.1111111111111111,
+        "error_rate_ci95": [
+          0.0707070707070707,
+          0.15656565656565657
+        ],
+        "errors_accepted": 22
+      },
+      "error_threshold_text_edit_distance": 0.05,
+      "signals": {
+        "critical_token_agreement": {
+          "concentration_ratio": 1.975806451612903,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 22,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.1111111111111111,
+              "selective_error_rate_ci95": [
+                0.0707070707070707,
+                0.15656565656565657
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.2,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 4,
+              "errors_accepted": 18,
+              "fisher_exact_p_accepted_vs_abstained": 0.24885003987731724,
+              "selective_error_rate": 0.10112359550561797,
+              "selective_error_rate_ci95": [
+                0.06179775280898876,
+                0.14606741573033707
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.2,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 8,
+              "errors_accepted": 14,
+              "fisher_exact_p_accepted_vs_abstained": 0.08594472413157063,
+              "selective_error_rate": 0.08860759493670886,
+              "selective_error_rate_ci95": [
+                0.05063291139240506,
+                0.13291139240506328
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.15254237288135594,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 9,
+              "errors_accepted": 13,
+              "fisher_exact_p_accepted_vs_abstained": 0.22715527395458654,
+              "selective_error_rate": 0.09352517985611511,
+              "selective_error_rate_ci95": [
+                0.050359712230215826,
+                0.14388489208633093
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.1518987341772152,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 12,
+              "errors_accepted": 10,
+              "fisher_exact_p_accepted_vs_abstained": 0.16733451823124362,
+              "selective_error_rate": 0.08403361344537816,
+              "selective_error_rate_ci95": [
+                0.04201680672268908,
+                0.14285714285714285
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.16161616161616163,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 16,
+              "errors_accepted": 6,
+              "fisher_exact_p_accepted_vs_abstained": 0.03985749638008557,
+              "selective_error_rate": 0.06060606060606061,
+              "selective_error_rate_ci95": [
+                0.020202020202020204,
+                0.1111111111111111
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.14285714285714285,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 17,
+              "errors_accepted": 5,
+              "fisher_exact_p_accepted_vs_abstained": 0.10617134173807802,
+              "selective_error_rate": 0.06329113924050633,
+              "selective_error_rate_ci95": [
+                0.012658227848101266,
+                0.12658227848101267
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.12949640287769784,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 18,
+              "errors_accepted": 4,
+              "fisher_exact_p_accepted_vs_abstained": 0.32195498332215544,
+              "selective_error_rate": 0.06779661016949153,
+              "selective_error_rate_ci95": [
+                0.01694915254237288,
+                0.13559322033898305
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.12658227848101267,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 20,
+              "errors_accepted": 2,
+              "fisher_exact_p_accepted_vs_abstained": 0.259315694297084,
+              "selective_error_rate": 0.05,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.125
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.12359550561797752,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 22,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.1365044435878235,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.0761904761904762,
+          "error_rate_low_agreement": 0.15053763440860216,
+          "median_split": 0.09090909090909091
+        },
+        "numeric_agreement": {
+          "concentration_ratio": 1.2244897959183672,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 22,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.1111111111111111,
+              "selective_error_rate_ci95": [
+                0.06565656565656566,
+                0.15656565656565657
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.05,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 1,
+              "errors_accepted": 21,
+              "fisher_exact_p_accepted_vs_abstained": 0.7050493323421341,
+              "selective_error_rate": 0.11797752808988764,
+              "selective_error_rate_ci95": [
+                0.07303370786516854,
+                0.16853932584269662
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.075,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 3,
+              "errors_accepted": 19,
+              "fisher_exact_p_accepted_vs_abstained": 0.576640678786468,
+              "selective_error_rate": 0.12025316455696203,
+              "selective_error_rate_ci95": [
+                0.06962025316455696,
+                0.17088607594936708
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.11864406779661017,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 7,
+              "errors_accepted": 15,
+              "fisher_exact_p_accepted_vs_abstained": 0.8086190593375229,
+              "selective_error_rate": 0.1079136690647482,
+              "selective_error_rate_ci95": [
+                0.05755395683453238,
+                0.15827338129496402
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.11392405063291139,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 9,
+              "errors_accepted": 13,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.1092436974789916,
+              "selective_error_rate_ci95": [
+                0.058823529411764705,
+                0.16806722689075632
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.12121212121212122,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 12,
+              "errors_accepted": 10,
+              "fisher_exact_p_accepted_vs_abstained": 0.8216377385927992,
+              "selective_error_rate": 0.10101010101010101,
+              "selective_error_rate_ci95": [
+                0.050505050505050504,
+                0.1717171717171717
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.1092436974789916,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 13,
+              "errors_accepted": 9,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.11392405063291139,
+              "selective_error_rate_ci95": [
+                0.05063291139240506,
+                0.189873417721519
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.11510791366906475,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 16,
+              "errors_accepted": 6,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.1016949152542373,
+              "selective_error_rate_ci95": [
+                0.03389830508474576,
+                0.1864406779661017
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.10759493670886076,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 17,
+              "errors_accepted": 5,
+              "fisher_exact_p_accepted_vs_abstained": 0.7794025709862971,
+              "selective_error_rate": 0.125,
+              "selective_error_rate_ci95": [
+                0.025,
+                0.225
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.11235955056179775,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 20,
+              "errors_accepted": 2,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.1,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.25
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.1,
+          "error_rate_low_agreement": 0.12244897959183673,
+          "median_split": 0.6060606060606061
+        },
+        "text_agreement": {
+          "concentration_ratio": 2.666666666666667,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 22,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.1111111111111111,
+              "selective_error_rate_ci95": [
+                0.06565656565656566,
+                0.15656565656565657
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.25,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 5,
+              "errors_accepted": 17,
+              "fisher_exact_p_accepted_vs_abstained": 0.05315349505830624,
+              "selective_error_rate": 0.09550561797752809,
+              "selective_error_rate_ci95": [
+                0.056179775280898875,
+                0.1404494382022472
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.125,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 5,
+              "errors_accepted": 17,
+              "fisher_exact_p_accepted_vs_abstained": 0.7794025709862971,
+              "selective_error_rate": 0.10759493670886076,
+              "selective_error_rate_ci95": [
+                0.056962025316455694,
+                0.15822784810126583
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.11864406779661017,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 7,
+              "errors_accepted": 15,
+              "fisher_exact_p_accepted_vs_abstained": 0.8086190593375229,
+              "selective_error_rate": 0.1079136690647482,
+              "selective_error_rate_ci95": [
+                0.05755395683453238,
+                0.16546762589928057
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.1518987341772152,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 12,
+              "errors_accepted": 10,
+              "fisher_exact_p_accepted_vs_abstained": 0.16733451823124362,
+              "selective_error_rate": 0.08403361344537816,
+              "selective_error_rate_ci95": [
+                0.03361344537815126,
+                0.13445378151260504
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.16161616161616163,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 16,
+              "errors_accepted": 6,
+              "fisher_exact_p_accepted_vs_abstained": 0.03985749638008557,
+              "selective_error_rate": 0.06060606060606061,
+              "selective_error_rate_ci95": [
+                0.020202020202020204,
+                0.1111111111111111
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.14285714285714285,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 17,
+              "errors_accepted": 5,
+              "fisher_exact_p_accepted_vs_abstained": 0.10617134173807802,
+              "selective_error_rate": 0.06329113924050633,
+              "selective_error_rate_ci95": [
+                0.012658227848101266,
+                0.12658227848101267
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.1366906474820144,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 19,
+              "errors_accepted": 3,
+              "fisher_exact_p_accepted_vs_abstained": 0.0883352613167849,
+              "selective_error_rate": 0.05084745762711865,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.11864406779661017
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.13291139240506328,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 21,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.05287875557018192,
+              "selective_error_rate": 0.025,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.075
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.12359550561797752,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 22,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.1365044435878235,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.06060606060606061,
+          "error_rate_low_agreement": 0.16161616161616163,
+          "median_split": 0.9029078473091572
+        }
+      }
+    },
+    "0.1": {
+      "baseline_accept_everything": {
+        "coverage": 1.0,
+        "error_rate": 0.06060606060606061,
+        "error_rate_ci95": [
+          0.025252525252525252,
+          0.09595959595959595
+        ],
+        "errors_accepted": 12
+      },
+      "error_threshold_text_edit_distance": 0.1,
+      "signals": {
+        "critical_token_agreement": {
+          "concentration_ratio": 1.5806451612903227,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 12,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.06060606060606061,
+              "selective_error_rate_ci95": [
+                0.030303030303030304,
+                0.09595959595959595
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.15,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 3,
+              "errors_accepted": 9,
+              "fisher_exact_p_accepted_vs_abstained": 0.10736047325951013,
+              "selective_error_rate": 0.05056179775280899,
+              "selective_error_rate_ci95": [
+                0.016853932584269662,
+                0.08426966292134831
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.125,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 5,
+              "errors_accepted": 7,
+              "fisher_exact_p_accepted_vs_abstained": 0.06900092287409701,
+              "selective_error_rate": 0.04430379746835443,
+              "selective_error_rate_ci95": [
+                0.012658227848101266,
+                0.08227848101265822
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.0847457627118644,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 5,
+              "errors_accepted": 7,
+              "fisher_exact_p_accepted_vs_abstained": 0.346670041314042,
+              "selective_error_rate": 0.050359712230215826,
+              "selective_error_rate_ci95": [
+                0.014388489208633094,
+                0.08633093525179857
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.0759493670886076,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 6,
+              "errors_accepted": 6,
+              "fisher_exact_p_accepted_vs_abstained": 0.5475792085532233,
+              "selective_error_rate": 0.05042016806722689,
+              "selective_error_rate_ci95": [
+                0.01680672268907563,
+                0.09243697478991597
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.08080808080808081,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 8,
+              "errors_accepted": 4,
+              "fisher_exact_p_accepted_vs_abstained": 0.37254802432531886,
+              "selective_error_rate": 0.04040404040404041,
+              "selective_error_rate_ci95": [
+                0.010101010101010102,
+                0.08080808080808081
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.06722689075630252,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 8,
+              "errors_accepted": 4,
+              "fisher_exact_p_accepted_vs_abstained": 0.7659892458033913,
+              "selective_error_rate": 0.05063291139240506,
+              "selective_error_rate_ci95": [
+                0.012658227848101266,
+                0.10126582278481013
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.06474820143884892,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 9,
+              "errors_accepted": 3,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.05084745762711865,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.11864406779661017
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.06329113924050633,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 10,
+              "errors_accepted": 2,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.05,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.125
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.06741573033707865,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 12,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.6148858744416993,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.047619047619047616,
+          "error_rate_low_agreement": 0.07526881720430108,
+          "median_split": 0.09090909090909091
+        },
+        "numeric_agreement": {
+          "concentration_ratio": 1.4285714285714284,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 12,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.06060606060606061,
+              "selective_error_rate_ci95": [
+                0.030303030303030304,
+                0.09595959595959595
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.05,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 1,
+              "errors_accepted": 11,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.06179775280898876,
+              "selective_error_rate_ci95": [
+                0.028089887640449437,
+                0.10112359550561797
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.05,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 2,
+              "errors_accepted": 10,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.06329113924050633,
+              "selective_error_rate_ci95": [
+                0.02531645569620253,
+                0.10126582278481013
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.0847457627118644,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 5,
+              "errors_accepted": 7,
+              "fisher_exact_p_accepted_vs_abstained": 0.346670041314042,
+              "selective_error_rate": 0.050359712230215826,
+              "selective_error_rate_ci95": [
+                0.014388489208633094,
+                0.08633093525179857
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.0759493670886076,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 6,
+              "errors_accepted": 6,
+              "fisher_exact_p_accepted_vs_abstained": 0.5475792085532233,
+              "selective_error_rate": 0.05042016806722689,
+              "selective_error_rate_ci95": [
+                0.01680672268907563,
+                0.09243697478991597
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.0707070707070707,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 7,
+              "errors_accepted": 5,
+              "fisher_exact_p_accepted_vs_abstained": 0.7672697857982299,
+              "selective_error_rate": 0.050505050505050504,
+              "selective_error_rate_ci95": [
+                0.010101010101010102,
+                0.10101010101010101
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.058823529411764705,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 7,
+              "errors_accepted": 5,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.06329113924050633,
+              "selective_error_rate_ci95": [
+                0.012658227848101266,
+                0.12658227848101267
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.05755395683453238,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 8,
+              "errors_accepted": 4,
+              "fisher_exact_p_accepted_vs_abstained": 0.7530916691209611,
+              "selective_error_rate": 0.06779661016949153,
+              "selective_error_rate_ci95": [
+                0.01694915254237288,
+                0.13559322033898305
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.056962025316455694,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 9,
+              "errors_accepted": 3,
+              "fisher_exact_p_accepted_vs_abstained": 0.7111574375306728,
+              "selective_error_rate": 0.075,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.175
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.06179775280898876,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 11,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.05,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.15
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.05,
+          "error_rate_low_agreement": 0.07142857142857142,
+          "median_split": 0.6060606060606061
+        },
+        "text_agreement": {
+          "concentration_ratio": 10.999999999999998,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 12,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.06060606060606061,
+              "selective_error_rate_ci95": [
+                0.030303030303030304,
+                0.09595959595959595
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.25,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 5,
+              "errors_accepted": 7,
+              "fisher_exact_p_accepted_vs_abstained": 0.0031774174733056174,
+              "selective_error_rate": 0.03932584269662921,
+              "selective_error_rate_ci95": [
+                0.011235955056179775,
+                0.07303370786516854
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.125,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 5,
+              "errors_accepted": 7,
+              "fisher_exact_p_accepted_vs_abstained": 0.06900092287409701,
+              "selective_error_rate": 0.04430379746835443,
+              "selective_error_rate_ci95": [
+                0.0189873417721519,
+                0.0759493670886076
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.1016949152542373,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 6,
+              "errors_accepted": 6,
+              "fisher_exact_p_accepted_vs_abstained": 0.18834714212442935,
+              "selective_error_rate": 0.04316546762589928,
+              "selective_error_rate_ci95": [
+                0.014388489208633094,
+                0.07913669064748201
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.11392405063291139,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 9,
+              "errors_accepted": 3,
+              "fisher_exact_p_accepted_vs_abstained": 0.014288214998346606,
+              "selective_error_rate": 0.025210084033613446,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.058823529411764705
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.1111111111111111,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 11,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.004968787868382841,
+              "selective_error_rate": 0.010101010101010102,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.030303030303030304
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.09243697478991597,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 11,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.0297262450425117,
+              "selective_error_rate": 0.012658227848101266,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0379746835443038
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.08633093525179857,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 12,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.019610991845320683,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.0759493670886076,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 12,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.13003490489704458,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.06741573033707865,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 12,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.6148858744416993,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.010101010101010102,
+          "error_rate_low_agreement": 0.1111111111111111,
+          "median_split": 0.9029078473091572
+        }
+      }
+    },
+    "0.2": {
+      "baseline_accept_everything": {
+        "coverage": 1.0,
+        "error_rate": 0.005050505050505051,
+        "error_rate_ci95": [
+          0.0,
+          0.015151515151515152
+        ],
+        "errors_accepted": 1
+      },
+      "error_threshold_text_edit_distance": 0.2,
+      "signals": {
+        "critical_token_agreement": {
+          "concentration_ratio": null,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.005050505050505051,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.015151515151515152
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.05,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.10101010101010101,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.025,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.20202020202020202,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.01694915254237288,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.29797979797979796,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.012658227848101266,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 0.398989898989899,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.010101010101010102,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.008403361344537815,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.007194244604316547,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.006329113924050633,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.0056179775280898875,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.0,
+          "error_rate_low_agreement": 0.010752688172043012,
+          "median_split": 0.09090909090909091
+        },
+        "numeric_agreement": {
+          "concentration_ratio": 0.0,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.005050505050505051,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.015151515151515152
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0056179775280898875,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.016853932584269662
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.006329113924050633,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0189873417721519
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.007194244604316547,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.02158273381294964
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.008403361344537815,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.025210084033613446
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.010101010101010102,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.030303030303030304
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.398989898989899,
+              "selective_error_rate": 0.012658227848101266,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0379746835443038
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.29797979797979796,
+              "selective_error_rate": 0.01694915254237288,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.05084745762711865
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.20202020202020202,
+              "selective_error_rate": 0.025,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.075
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 0.10101010101010101,
+              "selective_error_rate": 0.05,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.15
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.01,
+          "error_rate_low_agreement": 0.0,
+          "median_split": 0.6060606060606061
+        },
+        "text_agreement": {
+          "concentration_ratio": null,
+          "coverage_risk_curve": [
+            {
+              "abstained_error_rate": null,
+              "abstained_pages": 0,
+              "abstention_rate": 0.0,
+              "accepted_pages": 198,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.005050505050505051,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.015151515151515152
+              ],
+              "target_coverage": 1.0
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 20,
+              "abstention_rate": 0.10101010101010101,
+              "accepted_pages": 178,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0056179775280898875,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.016853932584269662
+              ],
+              "target_coverage": 0.9
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 40,
+              "abstention_rate": 0.20202020202020202,
+              "accepted_pages": 158,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.006329113924050633,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0189873417721519
+              ],
+              "target_coverage": 0.8
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 59,
+              "abstention_rate": 0.29797979797979796,
+              "accepted_pages": 139,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.007194244604316547,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.02158273381294964
+              ],
+              "target_coverage": 0.7
+            },
+            {
+              "abstained_error_rate": 0.0,
+              "abstained_pages": 79,
+              "abstention_rate": 0.398989898989899,
+              "accepted_pages": 119,
+              "errors_abstained": 0,
+              "errors_accepted": 1,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.008403361344537815,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.025210084033613446
+              ],
+              "target_coverage": 0.6
+            },
+            {
+              "abstained_error_rate": 0.010101010101010102,
+              "abstained_pages": 99,
+              "abstention_rate": 0.5,
+              "accepted_pages": 99,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.5
+            },
+            {
+              "abstained_error_rate": 0.008403361344537815,
+              "abstained_pages": 119,
+              "abstention_rate": 0.601010101010101,
+              "accepted_pages": 79,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.4
+            },
+            {
+              "abstained_error_rate": 0.007194244604316547,
+              "abstained_pages": 139,
+              "abstention_rate": 0.702020202020202,
+              "accepted_pages": 59,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.3
+            },
+            {
+              "abstained_error_rate": 0.006329113924050633,
+              "abstained_pages": 158,
+              "abstention_rate": 0.797979797979798,
+              "accepted_pages": 40,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.2
+            },
+            {
+              "abstained_error_rate": 0.0056179775280898875,
+              "abstained_pages": 178,
+              "abstention_rate": 0.898989898989899,
+              "accepted_pages": 20,
+              "errors_abstained": 1,
+              "errors_accepted": 0,
+              "fisher_exact_p_accepted_vs_abstained": 1.0,
+              "selective_error_rate": 0.0,
+              "selective_error_rate_ci95": [
+                0.0,
+                0.0
+              ],
+              "target_coverage": 0.1
+            }
+          ],
+          "error_rate_high_agreement": 0.0,
+          "error_rate_low_agreement": 0.010101010101010102,
+          "median_split": 0.9029078473091572
+        }
+      }
+    }
+  },
+  "anti_circularity": "agreement is computed from the two candidate outputs only; correctness comes from the official OmniDocBench evaluator run on both parsers under one evaluator revision, one config and one ground-truth file",
+  "arms_evaluated": [
+    "candidate_agreement_threshold",
+    "abstain_review_baseline"
+  ],
+  "arms_unavailable": {
+    "model_self_confidence_threshold": "not emitted by either frozen runtime",
+    "source_grounded_acceptance_receipt": "sources are scans with no native text"
+  },
+  "bootstrap_samples": 2000,
+  "bootstrap_seed": 20260818,
+  "experiment_id": "H1-A9-01",
+  "ground_truth_sha256": "sha256:c409ff87816f9ec3f7b269ca7a0067c04c792baf82b70a705811c077f82185cd",
+  "page_count": 198,
+  "pages": [
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "PPT_EnglishtoAmericanTransition_page_003.png",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.6375227686703097
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "PPT_EnglishtoAmericanTransition_page_005.png",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.9876543209876543
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "PPT_EnglishtoAmericanTransition_page_016.png",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.9167464114832536
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "PPT_EnglishtoAmericanTransition_page_017.png",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.6794948887552615
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_016.png",
+      "numeric_agreement": 0.038461538461538464,
+      "text_agreement": 0.0997229916897507
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_017.png",
+      "numeric_agreement": 0.05263157894736842,
+      "text_agreement": 0.28846153846153844
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_043.png",
+      "numeric_agreement": 0.07692307692307693,
+      "text_agreement": 0.20765027322404372
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0035971223021582736,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "docstructbench_dianzishu_zhongwenzaixian-o.O-61510863.pdf_73.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.539039039039039
+    },
+    {
+      "critical_token_agreement": 0.015873015873015872,
+      "edit_a": 0.20651629072681704,
+      "edit_b": 0.1518350930115636,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": true
+      },
+      "image_path": "docstructbench_llm-raw-scihub-o.O-chem.200701981.pdf_9.jpg",
+      "numeric_agreement": 0.9630484988452656,
+      "text_agreement": 0.8408759124087591
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.002230897936419409,
+      "edit_b": 0.03179029559397657,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "docstructbench_llm-raw-the-eye-o.O-Dragon%20Magazine%20-%20030.pdf_5.jpg",
+      "numeric_agreement": 0.10526315789473684,
+      "text_agreement": 0.8635321100917431
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "jiaocaineedrop_5f9c4ab08cac7457e9111a30e4664920607ea2c115a1433d7be98e97e64244ca.pdf_2.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.9141874462596733
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.009478672985781991,
+      "edit_b": 0.009478672985781991,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "jiaocaineedrop_7bc671081823aec9e2a6ef2a011c3fbb.pdf_20.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.8859357696566998
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "jiaocaineedrop_Chap11.pdf_10.jpg",
+      "numeric_agreement": 0.10714285714285714,
+      "text_agreement": 0.8318284424379232
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.11436413540713632,
+      "edit_b": 0.11344922232387923,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "jiaocaineedrop_bde81e42743067b574946698491d7f19.pdf_14.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.8134805345729227
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.016738030362008563,
+      "edit_b": 0.03659011288439081,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "jiaocaineedrop_unit2t03.pdf_63.jpg",
+      "numeric_agreement": 0.25,
+      "text_agreement": 0.9423019431988042
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0567133583874274,
+      "edit_b": 0.0625213529210796,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.11.18_page_030.png",
+      "numeric_agreement": 0.5263157894736842,
+      "text_agreement": 0.9423254586247856
+    },
+    {
+      "critical_token_agreement": 0.02127659574468085,
+      "edit_a": 0.0,
+      "edit_b": 0.018986102955568605,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.11.18_page_068.png",
+      "numeric_agreement": 0.3620689655172414,
+      "text_agreement": 0.003291934759838396
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.02452642073778664,
+      "edit_b": 0.02492025518341308,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.11.18_page_071.png",
+      "numeric_agreement": 0.15789473684210525,
+      "text_agreement": 0.11645889222029351
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.008467023172905526,
+      "edit_b": 0.008467023172905526,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.11.18_page_082.png",
+      "numeric_agreement": 0.53125,
+      "text_agreement": 0.724276321407224
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0,
+      "edit_b": 0.009324954388810055,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.11.25_page_068.png",
+      "numeric_agreement": 0.5,
+      "text_agreement": 0.9624980136659781
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.13941789435860583,
+      "edit_b": 0.14947897951850522,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.11.25_page_069.png",
+      "numeric_agreement": 0.35714285714285715,
+      "text_agreement": 0.9450398461115691
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0008812513769552765,
+      "edit_b": 0.022251597268120732,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.02_page_023.png",
+      "numeric_agreement": 0.5,
+      "text_agreement": 0.6927910630127422
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.1333956969130028,
+      "edit_b": 0.12890551917680074,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.02_page_031.png",
+      "numeric_agreement": 0.2564102564102564,
+      "text_agreement": 0.7900688298918387
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.06232956758862485,
+      "edit_b": 0.051215103434424585,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.02_page_056.png",
+      "numeric_agreement": 0.4666666666666667,
+      "text_agreement": 0.9594520116526257
+    },
+    {
+      "critical_token_agreement": 0.015873015873015872,
+      "edit_a": 0.014240837696335079,
+      "edit_b": 0.014240837696335079,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.02_page_062.png",
+      "numeric_agreement": 0.627906976744186,
+      "text_agreement": 0.9572422418510123
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.001723807699674392,
+      "edit_b": 0.03217774372725531,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.09_page_045.png",
+      "numeric_agreement": 0.46153846153846156,
+      "text_agreement": 0.8975115346796763
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0011895321173671688,
+      "edit_b": 0.010712160285657607,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.09_page_082.png",
+      "numeric_agreement": 0.4090909090909091,
+      "text_agreement": 0.973316002752504
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.04929051530993279,
+      "edit_b": 0.04929051530993279,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.16_page_019.png",
+      "numeric_agreement": 0.4,
+      "text_agreement": 0.9540876777251185
+    },
+    {
+      "critical_token_agreement": 0.03225806451612903,
+      "edit_a": 0.0006042296072507553,
+      "edit_b": 0.07352941176470588,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.16_page_026.png",
+      "numeric_agreement": 0.45901639344262296,
+      "text_agreement": 0.8481166464155528
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.04891110317743663,
+      "edit_b": 0.04891110317743663,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.16_page_037.png",
+      "numeric_agreement": 0.34782608695652173,
+      "text_agreement": 0.8237916144309793
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.0005473453749315818,
+      "edit_b": 0.028461959496442254,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.23_page_024.png",
+      "numeric_agreement": 0.5185185185185185,
+      "text_agreement": 0.9301432580121105
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.11779324055666004,
+      "edit_b": 0.021040424121935058,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2023.12.23_page_060.png",
+      "numeric_agreement": 0.92,
+      "text_agreement": 0.7702477131601789
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.00019327406262079628,
+      "edit_b": 0.00019327406262079628,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.02.24_page_007.png",
+      "numeric_agreement": 0.39473684210526316,
+      "text_agreement": 0.9342934293429342
+    },
+    {
+      "critical_token_agreement": 0.01818181818181818,
+      "edit_a": 0.000541858574911948,
+      "edit_b": 0.01842319154700623,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.02.24_page_008.png",
+      "numeric_agreement": 0.625,
+      "text_agreement": 0.914972458688032
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.02.24_page_033.png",
+      "numeric_agreement": 0.28,
+      "text_agreement": 0.9392595274735223
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.001250446588067167,
+      "edit_b": 0.001250446588067167,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.02.24_page_068.png",
+      "numeric_agreement": 0.22727272727272727,
+      "text_agreement": 0.975509334847732
+    },
+    {
+      "critical_token_agreement": 0.058823529411764705,
+      "edit_a": 0.0006190672719768881,
+      "edit_b": 0.0008254230293025176,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.03.02_page_025.png",
+      "numeric_agreement": 0.4375,
+      "text_agreement": 0.7321690876448507
+    },
+    {
+      "critical_token_agreement": 0.030303030303030304,
+      "edit_a": 0.0007012622720897616,
+      "edit_b": 0.0007012622720897616,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.03.02_page_028.png",
+      "numeric_agreement": 0.35294117647058826,
+      "text_agreement": 0.6575379980829796
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.020186335403726708,
+      "edit_b": 0.020186335403726708,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.03.02_page_031.png",
+      "numeric_agreement": 0.45454545454545453,
+      "text_agreement": 0.9487724268177526
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0023685457129322598,
+      "edit_b": 0.0021316911416390336,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.03.02_page_075.png",
+      "numeric_agreement": 0.5555555555555556,
+      "text_agreement": 0.9642689674575635
+    },
+    {
+      "critical_token_agreement": 0.0196078431372549,
+      "edit_a": 0.0018359853121175031,
+      "edit_b": 0.014279885760913913,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.03.09_page_029.png",
+      "numeric_agreement": 0.22580645161290322,
+      "text_agreement": 0.9471752924088372
+    },
+    {
+      "critical_token_agreement": 0.037037037037037035,
+      "edit_a": 0.005575379125780553,
+      "edit_b": 0.027207850133809098,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "magazine_TheEconomist.2024.03.09_page_079.png",
+      "numeric_agreement": 0.5555555555555556,
+      "text_agreement": 0.8843690496797646
+    },
+    {
+      "critical_token_agreement": 0.037037037037037035,
+      "edit_a": 0.03501945525291829,
+      "edit_b": 0.012719239523363235,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_019d4d5296ba8f1c21277d72fb0cf0db_1.jpg",
+      "numeric_agreement": 0.5714285714285714,
+      "text_agreement": 0.9498686764873815
+    },
+    {
+      "critical_token_agreement": 0.058823529411764705,
+      "edit_a": 0.014429683921209345,
+      "edit_b": 0.027949599083619703,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_01f020903d7bc4b3fc69f500f41eb77e_1.jpg",
+      "numeric_agreement": 0.9008264462809917,
+      "text_agreement": 0.9689250466791144
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.014631915866483767,
+      "edit_b": 0.05471726870903826,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_028a1dd5500fbd774e4d85df3c460c4d_1.jpg",
+      "numeric_agreement": 0.8253968253968254,
+      "text_agreement": 0.6699397748101598
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.018543768748295608,
+      "edit_b": 0.07973626373626373,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_02912feb79994ae24665509d964ad9ce_1.jpg",
+      "numeric_agreement": 0.7333333333333333,
+      "text_agreement": 0.6287578103509255
+    },
+    {
+      "critical_token_agreement": 0.047619047619047616,
+      "edit_a": 0.021871984560952074,
+      "edit_b": 0.07046332046332046,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_06b975dbc47dc2dc2a3a1468293f6a2c_1.jpg",
+      "numeric_agreement": 0.16883116883116883,
+      "text_agreement": 0.8614366103939093
+    },
+    {
+      "critical_token_agreement": 0.02564102564102564,
+      "edit_a": 0.00221606648199446,
+      "edit_b": 0.015881809787626964,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_0b86dae4d8f328a0e79d9ac394000dec_1.jpg",
+      "numeric_agreement": 0.8311688311688312,
+      "text_agreement": 0.9225599749941392
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.013115343154868847,
+      "edit_b": 0.12324131789848619,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_0ce88e1e131aef7a59d0533be36870de_1.jpg",
+      "numeric_agreement": 0.546875,
+      "text_agreement": 0.9027336300063573
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.029978296256104178,
+      "edit_b": 0.029978296256104178,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_0cfb8a42b5d4194d8c73dba0cdf6256c_1.jpg",
+      "numeric_agreement": 0.9186046511627907,
+      "text_agreement": 0.9762820133672443
+    },
+    {
+      "critical_token_agreement": 0.03225806451612903,
+      "edit_a": 0.01669941060903733,
+      "edit_b": 0.03405927624037989,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_14b9d21f7fed39fb42849e9cde233930_1.jpg",
+      "numeric_agreement": 0.7238095238095238,
+      "text_agreement": 0.6408148928696874
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.018717244821562267,
+      "edit_b": 0.02192326856003986,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_17f81b80831d8d58564b9c8e3cf79261_1.jpg",
+      "numeric_agreement": 0.6216216216216216,
+      "text_agreement": 0.7562399355877617
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.030220844633862844,
+      "edit_b": 0.034759012792350434,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.jpg",
+      "numeric_agreement": 0.883495145631068,
+      "text_agreement": 0.9750437828371279
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.002991623454327882,
+      "edit_b": 0.002991623454327882,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2140e879cd0d3c1b5ba2ea1e3a75aab6_1.jpg",
+      "numeric_agreement": 0.7058823529411765,
+      "text_agreement": 0.9486876330101679
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.04312267657992565,
+      "edit_b": 0.046468401486988845,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_26f4ed67a5e8922e7d42b35d317ebf4b_1.jpg",
+      "numeric_agreement": 0.6835443037974683,
+      "text_agreement": 0.9423667840815408
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.018675298804780877,
+      "edit_b": 0.02377988047808765,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a645bfcbcd473423581cd9f1ceb778e_1.jpg",
+      "numeric_agreement": 0.6349206349206349,
+      "text_agreement": 0.9687330953153738
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0010001666944490749,
+      "edit_b": 0.0010001666944490749,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_10.jpg",
+      "numeric_agreement": 0.9473684210526315,
+      "text_agreement": 0.7013162335470806
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.000980872976949485,
+      "edit_b": 0.000980872976949485,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_11.jpg",
+      "numeric_agreement": 0.75,
+      "text_agreement": 0.9041686308842346
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0019172391755871545,
+      "edit_b": 0.024924109282633007,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_12.jpg",
+      "numeric_agreement": 0.782608695652174,
+      "text_agreement": 0.9940960377853582
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.003947368421052632,
+      "edit_b": 0.003947368421052632,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_13.jpg",
+      "numeric_agreement": 0.9433962264150944,
+      "text_agreement": 0.9930210709971816
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0031561461794019936,
+      "edit_b": 0.0031561461794019936,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_14.jpg",
+      "numeric_agreement": 0.8857142857142857,
+      "text_agreement": 0.9938426145206035
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.003767069533825145,
+      "edit_b": 0.003767069533825145,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_15.jpg",
+      "numeric_agreement": 0.8,
+      "text_agreement": 0.9942348008385744
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0028020438437448493,
+      "edit_b": 0.0028020438437448493,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_16.jpg",
+      "numeric_agreement": 0.9571428571428572,
+      "text_agreement": 0.9828418230563003
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0008238589553468446,
+      "edit_b": 0.0008238589553468446,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_17.jpg",
+      "numeric_agreement": 0.7894736842105263,
+      "text_agreement": 0.98499629953576
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.004446724816145032,
+      "edit_b": 0.014195313836155294,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_3.jpg",
+      "numeric_agreement": 0.9298245614035088,
+      "text_agreement": 0.9935897435897436
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0020498804236419544,
+      "edit_b": 0.009053638537751964,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_4.jpg",
+      "numeric_agreement": 0.9594594594594594,
+      "text_agreement": 0.9932652919530653
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0011840324763193505,
+      "edit_b": 0.0011840324763193505,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_5.jpg",
+      "numeric_agreement": 0.9508196721311475,
+      "text_agreement": 0.9931278492209294
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.005319148936170213,
+      "edit_b": 0.015957446808510637,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_6.jpg",
+      "numeric_agreement": 0.9680851063829787,
+      "text_agreement": 0.9902182091798345
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.00097815454841865,
+      "edit_b": 0.00097815454841865,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_7.jpg",
+      "numeric_agreement": 0.926829268292683,
+      "text_agreement": 0.9933359989337598
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.005785264590777607,
+      "edit_b": 0.005785264590777607,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_8.jpg",
+      "numeric_agreement": 0.9655172413793104,
+      "text_agreement": 0.991219113743108
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0017001020061203672,
+      "edit_b": 0.031281876912614755,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_9.jpg",
+      "numeric_agreement": 0.9459459459459459,
+      "text_agreement": 0.9935060496274524
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.004975874547647768,
+      "edit_b": 0.018094089264173704,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2c69e142b52dbb30cac2cb11d3eb25e5_1.jpg",
+      "numeric_agreement": 0.7833333333333333,
+      "text_agreement": 0.547968657404359
+    },
+    {
+      "critical_token_agreement": 0.058823529411764705,
+      "edit_a": 0.013330757341576507,
+      "edit_b": 0.01352657004830918,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_2de954934f60ac538c5bd5dc40833a61_1.jpg",
+      "numeric_agreement": 0.7702702702702703,
+      "text_agreement": 0.9363313609467455
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.009620670698185816,
+      "edit_b": 0.010582737768004398,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_35352f94db65d19e097395380498ec15_1.jpg",
+      "numeric_agreement": 0.7252747252747253,
+      "text_agreement": 0.9486377339172971
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.004910557699052964,
+      "edit_b": 0.004910557699052964,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_354720d92a632709eb8e61795b191390_1.jpg",
+      "numeric_agreement": 0.640625,
+      "text_agreement": 0.963389731621937
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.007503192848020434,
+      "edit_b": 0.01532567049808429,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_35bdaa11dec104ccbdc9e19ac8527d21_1.jpg",
+      "numeric_agreement": 0.77,
+      "text_agreement": 0.9485189933202888
+    },
+    {
+      "critical_token_agreement": 0.02857142857142857,
+      "edit_a": 0.008719346049046322,
+      "edit_b": 0.017075386012715712,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_401c73055b88a62c479edd3d490cea8a_1.jpg",
+      "numeric_agreement": 0.6796116504854369,
+      "text_agreement": 0.8234777517564403
+    },
+    {
+      "critical_token_agreement": 0.01639344262295082,
+      "edit_a": 0.0025401069518716578,
+      "edit_b": 0.012165775401069518,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_41a09cb64841567c220d8cac3c1cc193_1.jpg",
+      "numeric_agreement": 0.788235294117647,
+      "text_agreement": 0.8930589849108368
+    },
+    {
+      "critical_token_agreement": 0.037037037037037035,
+      "edit_a": 0.023315710993628846,
+      "edit_b": 0.030504338394793926,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_4790b51e8fa793743699647c09a93ccb_1.jpg",
+      "numeric_agreement": 0.7714285714285715,
+      "text_agreement": 0.9680580976560194
+    },
+    {
+      "critical_token_agreement": 0.02040816326530612,
+      "edit_a": 0.004526024641689716,
+      "edit_b": 0.009538152610441768,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_4b4ad1f6cba28a4844d7ffa9306223a4_1.jpg",
+      "numeric_agreement": 0.2765957446808511,
+      "text_agreement": 0.8080224356250532
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.00516700498246909,
+      "edit_b": 0.01993723463171497,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_4cec63ef5a813c5a49dd8e577f3180e7_1.jpg",
+      "numeric_agreement": 0.4827586206896552,
+      "text_agreement": 0.9089972780107408
+    },
+    {
+      "critical_token_agreement": 0.01694915254237288,
+      "edit_a": 0.022530329289428077,
+      "edit_b": 0.07487001733102253,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_571a946262006cd89199b67353c408b8_1.jpg",
+      "numeric_agreement": 0.6842105263157895,
+      "text_agreement": 0.9238080869040435
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.002459419576979833,
+      "edit_b": 0.002951303492375799,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5a8b7563a3262beecbecd7ddd3ef8827_1.jpg",
+      "numeric_agreement": 0.7972972972972973,
+      "text_agreement": 0.9836854214599456
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.05349439171699741,
+      "edit_b": 0.12176687940880081,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5aedf678eff04d8ebac3692d54103e19_1.jpg",
+      "numeric_agreement": 0.7222222222222222,
+      "text_agreement": 0.9684856650946927
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.005868139454608215,
+      "edit_b": 0.006556245686680469,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5bba361b0a5ca11745edbef140e2a431_1.jpg",
+      "numeric_agreement": 0.7419354838709677,
+      "text_agreement": 0.9748423005565863
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.015932521087160263,
+      "edit_b": 0.06145768993205682,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5c4e17f22cdc19d414a3c521f631c899_1.jpg",
+      "numeric_agreement": 0.6486486486486487,
+      "text_agreement": 0.8219019431218634
+    },
+    {
+      "critical_token_agreement": 0.02564102564102564,
+      "edit_a": 0.09650793650793651,
+      "edit_b": 0.09587301587301587,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5d4b8e73eacbc6ecac0d7b1396fd01d7_1.jpg",
+      "numeric_agreement": 0.38095238095238093,
+      "text_agreement": 0.8672851956434046
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0006785411365564037,
+      "edit_b": 0.016793893129770993,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_2.jpg",
+      "numeric_agreement": 0.9411764705882353,
+      "text_agreement": 0.993595482404793
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_3.jpg",
+      "numeric_agreement": 0.7619047619047619,
+      "text_agreement": 0.699458602931467
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.02129249159506911,
+      "edit_b": 0.02129249159506911,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_4.jpg",
+      "numeric_agreement": 0.9452054794520548,
+      "text_agreement": 0.9769329025471486
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.004250600628349658,
+      "edit_b": 0.02346637102734664,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_5e8bcc55b922fd521a667c6ef01027d5_1.jpg",
+      "numeric_agreement": 0.43548387096774194,
+      "text_agreement": 0.9241827034546719
+    },
+    {
+      "critical_token_agreement": 0.03225806451612903,
+      "edit_a": 0.0035048590090807712,
+      "edit_b": 0.006372470925601402,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_635e4e6a64cf2ccfb2560f9b6dfe24b5_1.jpg",
+      "numeric_agreement": 0.4878048780487805,
+      "text_agreement": 0.9402898550724638
+    },
+    {
+      "critical_token_agreement": 0.023255813953488372,
+      "edit_a": 0.0033192516596258297,
+      "edit_b": 0.026855763427881714,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_6d2b5f833fe20785bc395f757524cb05_1.jpg",
+      "numeric_agreement": 0.4157303370786517,
+      "text_agreement": 0.9110205831903945
+    },
+    {
+      "critical_token_agreement": 0.02702702702702703,
+      "edit_a": 0.039908779931584946,
+      "edit_b": 0.05288598237133921,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_6fa919bfb48695bc785d9f326e3cdd36_1.jpg",
+      "numeric_agreement": 0.45348837209302323,
+      "text_agreement": 0.9010989010989011
+    },
+    {
+      "critical_token_agreement": 0.05263157894736842,
+      "edit_a": 0.007043331802174246,
+      "edit_b": 0.010258765885775532,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_73fc8720a9b2798307ba43a8b8e47b5e_1.jpg",
+      "numeric_agreement": 0.8155339805825242,
+      "text_agreement": 0.9025467775467776
+    },
+    {
+      "critical_token_agreement": 0.043478260869565216,
+      "edit_a": 0.01372581445344799,
+      "edit_b": 0.011760808348517476,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_74fc3b01b2cc4a7e6ca0f1af2b998187_1.jpg",
+      "numeric_agreement": 0.532051282051282,
+      "text_agreement": 0.743845456447451
+    },
+    {
+      "critical_token_agreement": 0.024390243902439025,
+      "edit_a": 0.03200849514563107,
+      "edit_b": 0.03200849514563107,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_75bb60c3be9959e1be400d6b8281fea1_1.jpg",
+      "numeric_agreement": 0.8173913043478261,
+      "text_agreement": 0.957782138110007
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.013007284079084287,
+      "edit_b": 0.06498194945848375,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_7746db2ad2ea24c827eac60244375bbf_1.jpg",
+      "numeric_agreement": 0.5151515151515151,
+      "text_agreement": 0.6899810964083176
+    },
+    {
+      "critical_token_agreement": 0.015873015873015872,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_8076765115f6c402e81c6bfb48139bc2_1.jpg",
+      "numeric_agreement": 0.3537117903930131,
+      "text_agreement": 0.512862171676144
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.02562302562302562,
+      "edit_b": 0.01855451493196678,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_87769622e073730af94822416c60c710_1.jpg",
+      "numeric_agreement": 0.7525773195876289,
+      "text_agreement": 0.948172620276688
+    },
+    {
+      "critical_token_agreement": 0.043478260869565216,
+      "edit_a": 0.025282238829702656,
+      "edit_b": 0.026713308952138654,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_95f2062735b213b3d7d471a48d5ec71b_1.jpg",
+      "numeric_agreement": 0.6352941176470588,
+      "text_agreement": 0.9469408479309469
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.004095563139931741,
+      "edit_b": 0.014846416382252559,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_9729b78cbf9f2820b9f257fff7e3171b_1.jpg",
+      "numeric_agreement": 0.8505747126436781,
+      "text_agreement": 0.9633753296220334
+    },
+    {
+      "critical_token_agreement": 0.02702702702702703,
+      "edit_a": 0.0035687453042824945,
+      "edit_b": 0.0215436493068565,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_9bb9e05d38b370251a4b0a8d070d1d55_1.jpg",
+      "numeric_agreement": 0.8194444444444444,
+      "text_agreement": 0.9672078955746578
+    },
+    {
+      "critical_token_agreement": 0.02564102564102564,
+      "edit_a": 0.011503811503811504,
+      "edit_b": 0.013721413721413722,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_9eafddb83b0f7f99c42ff364b080e2c1_1.jpg",
+      "numeric_agreement": 0.6422018348623854,
+      "text_agreement": 0.9435128483946661
+    },
+    {
+      "critical_token_agreement": 0.0053475935828877,
+      "edit_a": 0.011704433497536946,
+      "edit_b": 0.17769191741794482,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_015.png",
+      "numeric_agreement": 0.5728155339805825,
+      "text_agreement": 0.3907246944403649
+    },
+    {
+      "critical_token_agreement": 0.002932551319648094,
+      "edit_a": 0.022423827456350565,
+      "edit_b": 0.03588516746411483,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_019.png",
+      "numeric_agreement": 0.945750452079566,
+      "text_agreement": 0.7720457524555134
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.0031356509884117247,
+      "edit_b": 0.026587887740029542,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032.png",
+      "numeric_agreement": 0.5476190476190477,
+      "text_agreement": 0.9245073549819595
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.003966679888932963,
+      "edit_b": 0.010800842992623814,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_009.png",
+      "numeric_agreement": 0.28205128205128205,
+      "text_agreement": 0.6647322337609448
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.018976897689768978,
+      "edit_b": 0.018976897689768978,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_068.png",
+      "numeric_agreement": 0.2727272727272727,
+      "text_agreement": 0.009429127805677975
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.008104978772674644,
+      "edit_b": 0.07076923076923076,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_029.png",
+      "numeric_agreement": 0.2,
+      "text_agreement": 0.7417400881057269
+    },
+    {
+      "critical_token_agreement": 0.043478260869565216,
+      "edit_a": 0.06089221751872354,
+      "edit_b": 0.20107492886500158,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_058.png",
+      "numeric_agreement": 0.24050632911392406,
+      "text_agreement": 0.7018295056442195
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0,
+      "edit_b": 0.006339581036383682,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_NY Daily News_August 1@magazinesclubnew_page_007.png",
+      "numeric_agreement": 0.48,
+      "text_agreement": 0.6592363261093911
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.000957166786312515,
+      "edit_b": 0.037568796362766214,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_NY Daily News_August 1@magazinesclubnew_page_020.png",
+      "numeric_agreement": 0.423728813559322,
+      "text_agreement": 0.7897514470548178
+    },
+    {
+      "critical_token_agreement": 0.005917159763313609,
+      "edit_a": 0.0,
+      "edit_b": 0.10772605410675115,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_014.png",
+      "numeric_agreement": 0.6031746031746031,
+      "text_agreement": 0.8019720624486442
+    },
+    {
+      "critical_token_agreement": 0.03225806451612903,
+      "edit_a": 0.01287666433076384,
+      "edit_b": 0.01743167484232656,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_018.png",
+      "numeric_agreement": 0.5465116279069767,
+      "text_agreement": 0.7608819679833541
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.0043535045711798,
+      "edit_b": 0.009362072719355541,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_027.png",
+      "numeric_agreement": 0.3148148148148148,
+      "text_agreement": 0.7596161348209409
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.02201524132091448,
+      "edit_b": 0.011854360711261643,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_048.png",
+      "numeric_agreement": 0.175,
+      "text_agreement": 0.6763125258371228
+    },
+    {
+      "critical_token_agreement": 0.047619047619047616,
+      "edit_a": 0.0162839248434238,
+      "edit_b": 0.015459610027855153,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_051.png",
+      "numeric_agreement": 0.7,
+      "text_agreement": 0.6820423095275966
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.010613512813875226,
+      "edit_b": 0.02782811286564846,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_061.png",
+      "numeric_agreement": 0.38,
+      "text_agreement": 0.49311960542540073
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_001.png",
+      "numeric_agreement": 0.23333333333333334,
+      "text_agreement": 0.6075722500186692
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.0,
+      "edit_b": 0.007804581390634503,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_020.png",
+      "numeric_agreement": 0.28846153846153844,
+      "text_agreement": 0.9681279668116
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.00010447137484329294,
+      "edit_b": 0.005745925616381112,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_031.png",
+      "numeric_agreement": 0.7093023255813954,
+      "text_agreement": 0.8214592945960741
+    },
+    {
+      "critical_token_agreement": 0.043478260869565216,
+      "edit_a": 0.0392019600980049,
+      "edit_b": 0.11021069692058347,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_083.png",
+      "numeric_agreement": 0.11475409836065574,
+      "text_agreement": 0.31060438344033653
+    },
+    {
+      "critical_token_agreement": 0.023255813953488372,
+      "edit_a": 0.019296254256526674,
+      "edit_b": 0.040827876141967825,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_004.png",
+      "numeric_agreement": 0.38961038961038963,
+      "text_agreement": 0.7960008508827909
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.0003287310979618672,
+      "edit_b": 0.033049738219895285,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_009.png",
+      "numeric_agreement": 0.3142857142857143,
+      "text_agreement": 0.6528305070446301
+    },
+    {
+      "critical_token_agreement": 0.02564102564102564,
+      "edit_a": 0.14777896061163262,
+      "edit_b": 0.010536935321152336,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_018.png",
+      "numeric_agreement": 0.2916666666666667,
+      "text_agreement": 0.7056079069339145
+    },
+    {
+      "critical_token_agreement": 0.037037037037037035,
+      "edit_a": 0.011208724628900333,
+      "edit_b": 0.025806451612903226,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_021.png",
+      "numeric_agreement": 0.5151515151515151,
+      "text_agreement": 0.920455215519783
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 9.996001599360256e-05,
+      "edit_b": 0.007796881247501,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_003.png",
+      "numeric_agreement": 0.4788732394366197,
+      "text_agreement": 0.9203071017274472
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.008221721257127702,
+      "edit_b": 0.01458692481103302,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_011.png",
+      "numeric_agreement": 0.7183098591549296,
+      "text_agreement": 0.6446651387827859
+    },
+    {
+      "critical_token_agreement": 0.008849557522123894,
+      "edit_a": 0.13438221709006928,
+      "edit_b": 0.5761584718783163,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_025.png",
+      "numeric_agreement": 0.5111111111111111,
+      "text_agreement": 0.24363851968970798
+    },
+    {
+      "critical_token_agreement": 0.05263157894736842,
+      "edit_a": 0.0076242469879518075,
+      "edit_b": 0.09438866977411259,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_033.png",
+      "numeric_agreement": 0.5074626865671642,
+      "text_agreement": 0.9016946817305043
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0008804108584005869,
+      "edit_b": 0.0033763945977686436,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_015.png",
+      "numeric_agreement": 0.4,
+      "text_agreement": 0.9206650301272038
+    },
+    {
+      "critical_token_agreement": 0.05263157894736842,
+      "edit_a": 0.008213096559378468,
+      "edit_b": 0.012097669256381798,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_029.png",
+      "numeric_agreement": 0.4166666666666667,
+      "text_agreement": 0.7329825299936855
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.00010011012113324657,
+      "edit_b": 0.021924116528181,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_033.png",
+      "numeric_agreement": 0.3684210526315789,
+      "text_agreement": 0.5985651091037508
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0,
+      "edit_b": 0.03472791905933825,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_041.png",
+      "numeric_agreement": 0.23636363636363636,
+      "text_agreement": 0.8663942798774259
+    },
+    {
+      "critical_token_agreement": 0.010101010101010102,
+      "edit_a": 0.12728042840286813,
+      "edit_b": 0.06897202731191593,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "newspaper_TheWashingtonPost-2025-01-08@magazinesclubnew_page_042.png",
+      "numeric_agreement": 0.7564102564102564,
+      "text_agreement": 0.17225447541049851
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.000691085003455425,
+      "edit_b": 0.0035378376046250755,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_012.png",
+      "numeric_agreement": 0.7857142857142857,
+      "text_agreement": 0.986284289276808
+    },
+    {
+      "critical_token_agreement": 0.047619047619047616,
+      "edit_a": 0.021711899791231733,
+      "edit_b": 0.05281837160751566,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_021.png",
+      "numeric_agreement": 0.273972602739726,
+      "text_agreement": 0.7452207633172324
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.000145623998835008,
+      "edit_b": 0.018785495849716033,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_024.png",
+      "numeric_agreement": 0.18666666666666668,
+      "text_agreement": 0.6521648190755072
+    },
+    {
+      "critical_token_agreement": 0.018867924528301886,
+      "edit_a": 0.04734106357457017,
+      "edit_b": 0.21084198385236447,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_a105e3b0ddb10be6a596f76407c79180_1.jpg",
+      "numeric_agreement": 0.476027397260274,
+      "text_agreement": 0.8354474491218288
+    },
+    {
+      "critical_token_agreement": 0.02857142857142857,
+      "edit_a": 0.005822012752980316,
+      "edit_b": 0.028618602091359385,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_a15057349a86850e55b084c235fa2f22_1.jpg",
+      "numeric_agreement": 0.923728813559322,
+      "text_agreement": 0.9711617046117922
+    },
+    {
+      "critical_token_agreement": 0.02040816326530612,
+      "edit_a": 0.012147195426938193,
+      "edit_b": 0.015927730892666112,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_a7666484ee01a811247e52f784164cbb_1.jpg",
+      "numeric_agreement": 0.8689655172413793,
+      "text_agreement": 0.9704924810087334
+    },
+    {
+      "critical_token_agreement": 0.018867924528301886,
+      "edit_a": 0.05680990531682447,
+      "edit_b": 0.07086044830079537,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_a9c9e3816aa5cb6866d02c10273dc665_1.jpg",
+      "numeric_agreement": 0.5242718446601942,
+      "text_agreement": 0.8990121799175218
+    },
+    {
+      "critical_token_agreement": 0.047619047619047616,
+      "edit_a": 0.1153219920273988,
+      "edit_b": 0.011890739805934152,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "newspaper_b615618f3cdb0f2c13ffb5865dea799c_1.jpg",
+      "numeric_agreement": 0.847457627118644,
+      "text_agreement": 0.8899904474220949
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.02754275427542754,
+      "edit_b": 0.024513338139870222,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_bd75af5f4791aa56ef05ce2443e8a7e0_1.jpg",
+      "numeric_agreement": 0.7,
+      "text_agreement": 0.9392003445553083
+    },
+    {
+      "critical_token_agreement": 0.030303030303030304,
+      "edit_a": 0.0038910505836575876,
+      "edit_b": 0.009922178988326848,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_c0794b9574ba55a589418fa1ae160b9a_1.jpg",
+      "numeric_agreement": 0.6388888888888888,
+      "text_agreement": 0.9420560747663551
+    },
+    {
+      "critical_token_agreement": 0.058823529411764705,
+      "edit_a": 0.06565064478311841,
+      "edit_b": 0.06401564537157757,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_c3c88b76543e2caf044c9f7689f23ec9_1.jpg",
+      "numeric_agreement": 0.6813186813186813,
+      "text_agreement": 0.8013018534863195
+    },
+    {
+      "critical_token_agreement": 0.043478260869565216,
+      "edit_a": 0.010775357226516749,
+      "edit_b": 0.03894297635605007,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_c79c0c10a5df54b21bccad8f64063ffa_1.jpg",
+      "numeric_agreement": 0.6060606060606061,
+      "text_agreement": 0.903082064611957
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.011050758569020417,
+      "edit_b": 0.0181274528125584,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_c8e8e00e1b1a70aa44afd1fbdaf59430_1.jpg",
+      "numeric_agreement": 0.7303370786516854,
+      "text_agreement": 0.9626274065685164
+    },
+    {
+      "critical_token_agreement": 0.02564102564102564,
+      "edit_a": 0.04766118836915297,
+      "edit_b": 0.0891816569546491,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_c9e9b3e7b8a5f5a5b59304a9924c41b9_1.jpg",
+      "numeric_agreement": 0.8440366972477065,
+      "text_agreement": 0.9150457190357439
+    },
+    {
+      "critical_token_agreement": 0.02857142857142857,
+      "edit_a": 0.012556732223903177,
+      "edit_b": 0.09189514914130763,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_d1716a12000a38e1e4c0bf66309558db_1.jpg",
+      "numeric_agreement": 0.45121951219512196,
+      "text_agreement": 0.8880515997190115
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.023972602739726026,
+      "edit_b": 0.005136986301369863,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_d4ed0f39df940849b16439f49873ff5c_1.jpg",
+      "numeric_agreement": 0.8974358974358975,
+      "text_agreement": 0.9895664270809181
+    },
+    {
+      "critical_token_agreement": 0.03225806451612903,
+      "edit_a": 0.010377170225503891,
+      "edit_b": 0.07640803465931469,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_d6cd76e5afe881630173bd4921531a4b_1.jpg",
+      "numeric_agreement": 0.6483516483516484,
+      "text_agreement": 0.8963963963963963
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.018578352180936994,
+      "edit_b": 0.03860772154430886,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_d84e38031cf03d3fd4649910cf0ecce1_1.jpg",
+      "numeric_agreement": 0.6060606060606061,
+      "text_agreement": 0.9479571984435797
+    },
+    {
+      "critical_token_agreement": 0.015384615384615385,
+      "edit_a": 0.024897008776643383,
+      "edit_b": 0.020426446873320195,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_dd99f17cad0992a54fdf424b1c5e86ee_1.jpg",
+      "numeric_agreement": 0.8271604938271605,
+      "text_agreement": 0.9528066055601848
+    },
+    {
+      "critical_token_agreement": 0.034482758620689655,
+      "edit_a": 0.03619197482297404,
+      "edit_b": 0.0724238248354004,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e3842a5681ef54c62a58804adec06c3f_1.jpg",
+      "numeric_agreement": 0.8306878306878307,
+      "text_agreement": 0.8154038246697772
+    },
+    {
+      "critical_token_agreement": 0.06666666666666667,
+      "edit_a": 0.0020359059781602813,
+      "edit_b": 0.0012955765315565426,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e567840b2e327602422573ccdc1c4275_1.jpg",
+      "numeric_agreement": 0.7126436781609196,
+      "text_agreement": 0.9584946569614372
+    },
+    {
+      "critical_token_agreement": 0.058823529411764705,
+      "edit_a": 0.0024985585239285027,
+      "edit_b": 0.019411877762829138,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e6083de4647ef28434cb6a598b073ae4_1.jpg",
+      "numeric_agreement": 0.6290322580645161,
+      "text_agreement": 0.9450390279230707
+    },
+    {
+      "critical_token_agreement": 0.047619047619047616,
+      "edit_a": 0.01510113604876697,
+      "edit_b": 0.03404373097149183,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e62730aaeb9b509119e0c3699ac18201_1.jpg",
+      "numeric_agreement": 0.5925925925925926,
+      "text_agreement": 0.939784586193426
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.066268433824902,
+      "edit_b": 0.012507000186671644,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e6cb1ce916e0b7e120c84db53541a3d3_1.jpg",
+      "numeric_agreement": 0.9622641509433962,
+      "text_agreement": 0.9817413610985363
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.024335812964930925,
+      "edit_b": 0.02625146136677649,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e6ddb0246224fb8bd8788e6cc7839021_1.jpg",
+      "numeric_agreement": 0.9298245614035088,
+      "text_agreement": 0.9874570287094676
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0076735263341471925,
+      "edit_b": 0.008371119637251482,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e7246d706077d2064a6e667dfc73925e_1.jpg",
+      "numeric_agreement": 0.8313253012048193,
+      "text_agreement": 0.9638991791966296
+    },
+    {
+      "critical_token_agreement": 0.058823529411764705,
+      "edit_a": 0.06143740340030912,
+      "edit_b": 0.1780534351145038,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_e81b9b3561d4d4e865ff6713782fd432_1.jpg",
+      "numeric_agreement": 0.746031746031746,
+      "text_agreement": 0.9195936639118457
+    },
+    {
+      "critical_token_agreement": 0.02857142857142857,
+      "edit_a": 0.011804384485666104,
+      "edit_b": 0.10203054203725458,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_eb569707cf5621d4c71d5898216cdb17_1.jpg",
+      "numeric_agreement": 0.7586206896551724,
+      "text_agreement": 0.9335019339482297
+    },
+    {
+      "critical_token_agreement": 0.02857142857142857,
+      "edit_a": 0.02897196261682243,
+      "edit_b": 0.022722556547001452,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_ef5c785d9cc21ccf6b73d143f231b5c5_1.jpg",
+      "numeric_agreement": 0.9545454545454546,
+      "text_agreement": 0.9887429643527205
+    },
+    {
+      "critical_token_agreement": 0.030303030303030304,
+      "edit_a": 0.05179101072324892,
+      "edit_b": 0.08586083853702052,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_f1de032fb6a25cf85c85c15cb2d2a63a_1.jpg",
+      "numeric_agreement": 0.8651685393258427,
+      "text_agreement": 0.8296355387146632
+    },
+    {
+      "critical_token_agreement": 0.05263157894736842,
+      "edit_a": 0.00514317486794551,
+      "edit_b": 0.00514317486794551,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_f36d00fe3544ae72725aac9dc7f19aa8_1.jpg",
+      "numeric_agreement": 0.8333333333333334,
+      "text_agreement": 0.9631009615384616
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.015679087762166564,
+      "edit_b": 0.20140845070422536,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_fe2c8b45b2a086cd75984640bb3080e1_1.jpg",
+      "numeric_agreement": 0.6494845360824743,
+      "text_agreement": 0.6959100026162031
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.008392390898918314,
+      "edit_b": 0.008392390898918314,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_1.jpg",
+      "numeric_agreement": 0.9411764705882353,
+      "text_agreement": 0.9862213568968099
+    },
+    {
+      "critical_token_agreement": 0.07692307692307693,
+      "edit_a": 0.0005869692819409117,
+      "edit_b": 0.0005869692819409117,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_2.jpg",
+      "numeric_agreement": 0.9166666666666666,
+      "text_agreement": 0.9862285246795746
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0020984665052461663,
+      "edit_b": 0.0020984665052461663,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_3.jpg",
+      "numeric_agreement": 0.9482758620689655,
+      "text_agreement": 0.9932150313152401
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.006006552602839462,
+      "edit_b": 0.016927557335274845,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_5.jpg",
+      "numeric_agreement": 0.918918918918919,
+      "text_agreement": 0.9915817456801064
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.12861736334405144,
+      "edit_b": 0.7491961414790996,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "notes_9e951846094758afac08c620144e3a76_12.jpg",
+      "numeric_agreement": 0.875,
+      "text_agreement": 0.3002291825821238
+    },
+    {
+      "critical_token_agreement": 0.03225806451612903,
+      "edit_a": 0.11875,
+      "edit_b": 0.2694300518134715,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "notes_9e951846094758afac08c620144e3a76_14.jpg",
+      "numeric_agreement": 0.4375,
+      "text_agreement": 0.49696969696969695
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.16666666666666666,
+      "edit_b": 0.21585903083700442,
+      "error": {
+        "0.02": true,
+        "0.05": true,
+        "0.1": true,
+        "0.2": false
+      },
+      "image_path": "notes_9e951846094758afac08c620144e3a76_16.jpg",
+      "numeric_agreement": 0.3684210526315789,
+      "text_agreement": 0.22234392113910187
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.004213483146067416,
+      "edit_b": 0.06043956043956044,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "page-00b6ac57-4466-4eb0-937d-bb29a44fa0d3.png",
+      "numeric_agreement": 0.8461538461538461,
+      "text_agreement": 0.7057176196032672
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.0,
+      "edit_b": 0.0011123470522803114,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "page-6e75aef4-33d0-478a-a3a3-489c782bfa39.png",
+      "numeric_agreement": 0.46153846153846156,
+      "text_agreement": 0.8898969072164948
+    },
+    {
+      "critical_token_agreement": 0.1111111111111111,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "page-d127acc0-f8c9-4f01-8e87-b4c19be7cbb0.png",
+      "numeric_agreement": 0.11764705882352941,
+      "text_agreement": 0.9100691775557264
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_m3_Unit_1_Where_did_you_go.pdf_5.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.5146198830409356
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_1745.jpg",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.9951219512195122
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_1835.jpg",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.9925925925925926
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.010752688172043012,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_3215.jpg",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.8638132295719845
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_3290.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.5166666666666667
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.09523809523809523,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_4020.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.7538461538461538
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.00796812749003984,
+      "edit_b": 0.00796812749003984,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_4050.jpg",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.9915966386554622
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0311284046692607,
+      "edit_b": 0.14760147601476015,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_4125.jpg",
+      "numeric_agreement": 0.3333333333333333,
+      "text_agreement": 0.3441441441441441
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.25,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_4330.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.08
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_4380.jpg",
+      "numeric_agreement": 0.11764705882352941,
+      "text_agreement": 0.8083916083916084
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_4635.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.20498614958448755
+    },
+    {
+      "critical_token_agreement": 0.2,
+      "edit_a": 0.0,
+      "edit_b": 0.021406727828746176,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_495.jpg",
+      "numeric_agreement": 0.07142857142857142,
+      "text_agreement": 0.6790540540540541
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_5070.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.05
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.020202020202020204,
+      "edit_b": 0.020202020202020204,
+      "error": {
+        "0.02": true,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_5980.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.5891472868217055
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaopptmerge_yanbaoPPT_935.jpg",
+      "numeric_agreement": 1.0,
+      "text_agreement": 0.9887640449438202
+    },
+    {
+      "critical_token_agreement": 0.14285714285714285,
+      "edit_a": 0.00228310502283105,
+      "edit_b": 0.00228310502283105,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaor2_1cb2b2a2c6e3a1157a6f2876205bbeaa4d3958d0482e9cdc88dd2c002ed1ffc1.pdf_61.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.4193011647254576
+    },
+    {
+      "critical_token_agreement": 1.0,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaor2_bc193526614fd5857f7b5254e67bced76222cf3396b01e516303b92609a20075.pdf_14.jpg",
+      "numeric_agreement": 0.0,
+      "text_agreement": 0.7292817679558011
+    },
+    {
+      "critical_token_agreement": 0.09090909090909091,
+      "edit_a": 0.0,
+      "edit_b": 0.06844106463878327,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaor2_d599e33e54376640020110ac1733ccdde8c6323d5d5f0c3ca8cb395dc6e46cf5.pdf_7.jpg",
+      "numeric_agreement": 0.13793103448275862,
+      "text_agreement": 0.6557759626604434
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaor2_ec10ef335b55af1612e6ab51b5ebdff506d496da9eb8c17c74fe2751661c22f7.pdf_1.jpg",
+      "numeric_agreement": 0.8,
+      "text_agreement": 0.9592760180995475
+    },
+    {
+      "critical_token_agreement": 0.3333333333333333,
+      "edit_a": 0.0,
+      "edit_b": 0.0,
+      "error": {
+        "0.02": false,
+        "0.05": false,
+        "0.1": false,
+        "0.2": false
+      },
+      "image_path": "yanbaor2_ey-digital-state-tax-article.pdf_0.jpg",
+      "numeric_agreement": 0.5,
+      "text_agreement": 0.9827779020353389
+    }
+  ],
+  "pages_in_corpus": 200,
+  "pages_without_a_comparable_official_text_score": [
+    {
+      "image_path": "docstructbench_dianzishu_zhongwenzaixian-o.O-61513005.pdf_179.jpg",
+      "scored_by_a": false,
+      "scored_by_b": false
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_1020.jpg",
+      "scored_by_a": false,
+      "scored_by_b": false
+    }
+  ],
+  "parsers": {
+    "gated_system": "ovisocr2-0.9b-vllm-0.22.1",
+    "second_opinion": "mineru-3.4.4-vlm"
+  },
+  "schema": "tavonel.a9-selective-acceptance-two-parser.v1"
+}

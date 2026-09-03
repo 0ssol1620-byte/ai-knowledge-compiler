@@ -1,0 +1,166 @@
+{
+  "evidence_class": "controlled generated corpus; not a real document corpus",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T00:44:24.403339+00:00",
+  "identity_module_sha256": "sha256:aa36a742e43f5ad2a41758c1b9b494fb61f0495b2f42c2f0e07a844bf103ba99",
+  "legacy_ceiling_probe": {
+    "budget_s": 420.0,
+    "prior_observation": "H1-B measured-performance-v2 recorded MemoryError for the 10,000-unit full identity matching attempt; that receipt is the citation for the 10,000 ceiling, not a re-run here",
+    "steps": [
+      {
+        "elapsed_s": 53.84,
+        "outcome": "completed",
+        "units": 1500
+      },
+      {
+        "elapsed_s": 139.87,
+        "outcome": "completed",
+        "units": 2500
+      }
+    ]
+  },
+  "protocol_sha256": "sha256:1ccc1ed4c15a11d162a0d17e47123ed2428041386760315266f70e436a16a548",
+  "python": "3.13.0",
+  "receipt_sha256": "sha256:3f66fee82a114ee8d98241d30e6ab1a4f687cc4f665ec026022692604f361e8a",
+  "scaling": {
+    "100": {
+      "blocked": {
+        "mean_ms": 115.9494,
+        "n": 5,
+        "p50_ms": 100.3477,
+        "p95_ms": 155.8226,
+        "tracemalloc_peak_bytes": 318861
+      },
+      "legacy": {
+        "mean_ms": 308.5318,
+        "n": 5,
+        "p50_ms": 216.1442,
+        "p95_ms": 485.1298,
+        "tracemalloc_peak_bytes": 676008
+      },
+      "legacy_over_blocked_p50": 2.154,
+      "legacy_trials": 5,
+      "topology": "edited",
+      "units": 100
+    },
+    "1000": {
+      "blocked": {
+        "mean_ms": 903.3329,
+        "n": 5,
+        "p50_ms": 767.236,
+        "p95_ms": 1269.8504,
+        "tracemalloc_peak_bytes": 3198217
+      },
+      "legacy": {
+        "mean_ms": 36033.4417,
+        "n": 1,
+        "p50_ms": 36033.4417,
+        "p95_ms": 36033.4417,
+        "tracemalloc_peak_bytes": 65927792
+      },
+      "legacy_over_blocked_p50": 46.9653,
+      "legacy_trials": 1,
+      "topology": "edited",
+      "units": 1000
+    },
+    "10000": {
+      "blocked": {
+        "mean_ms": 13453.2265,
+        "n": 5,
+        "p50_ms": 12916.912,
+        "p95_ms": 18063.9821,
+        "tracemalloc_peak_bytes": 32850225
+      },
+      "legacy": "not attempted at this scale; see legacy_10000 probe",
+      "topology": "edited",
+      "units": 10000
+    },
+    "250": {
+      "blocked": {
+        "mean_ms": 321.6687,
+        "n": 5,
+        "p50_ms": 288.6082,
+        "p95_ms": 508.5047,
+        "tracemalloc_peak_bytes": 781456
+      },
+      "legacy": {
+        "mean_ms": 2181.1618,
+        "n": 5,
+        "p50_ms": 1927.7448,
+        "p95_ms": 2894.2045,
+        "tracemalloc_peak_bytes": 4136008
+      },
+      "legacy_over_blocked_p50": 6.6795,
+      "legacy_trials": 5,
+      "topology": "edited",
+      "units": 250
+    },
+    "2500": {
+      "blocked": {
+        "mean_ms": 1885.9709,
+        "n": 5,
+        "p50_ms": 1866.7165,
+        "p95_ms": 2025.2642,
+        "tracemalloc_peak_bytes": 8245491
+      },
+      "legacy": "not attempted at this scale; see legacy_10000 probe",
+      "topology": "edited",
+      "units": 2500
+    },
+    "500": {
+      "blocked": {
+        "mean_ms": 300.2174,
+        "n": 5,
+        "p50_ms": 295.1049,
+        "p95_ms": 316.431,
+        "tracemalloc_peak_bytes": 1623449
+      },
+      "legacy": {
+        "mean_ms": 7573.9596,
+        "n": 5,
+        "p50_ms": 8012.6409,
+        "p95_ms": 9003.2196,
+        "tracemalloc_peak_bytes": 16308072
+      },
+      "legacy_over_blocked_p50": 27.1518,
+      "legacy_trials": 5,
+      "topology": "edited",
+      "units": 500
+    },
+    "5000": {
+      "blocked": {
+        "mean_ms": 5724.4173,
+        "n": 5,
+        "p50_ms": 6114.3871,
+        "p95_ms": 7277.5231,
+        "tracemalloc_peak_bytes": 16953230
+      },
+      "legacy": "not attempted at this scale; see legacy_10000 probe",
+      "topology": "edited",
+      "units": 5000
+    },
+    "750": {
+      "blocked": {
+        "mean_ms": 471.766,
+        "n": 5,
+        "p50_ms": 467.3191,
+        "p95_ms": 496.1928,
+        "tracemalloc_peak_bytes": 2425664
+      },
+      "legacy": {
+        "mean_ms": 13395.1732,
+        "n": 1,
+        "p50_ms": 13395.1732,
+        "p95_ms": 13395.1732,
+        "tracemalloc_peak_bytes": 36380512
+      },
+      "legacy_over_blocked_p50": 28.6639,
+      "legacy_trials": 1,
+      "topology": "edited",
+      "units": 750
+    }
+  },
+  "schema": "tavonel.identity-matching-shadow-equivalence.v1",
+  "script_sha256": "sha256:1383313d5252295e722ce5ef933dba44e821c5d7a144b1313e4f6fdc87ebde36",
+  "seed": 20260819
+}

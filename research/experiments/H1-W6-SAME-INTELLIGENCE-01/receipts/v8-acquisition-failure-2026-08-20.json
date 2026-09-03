@@ -1,0 +1,91 @@
+{
+  "attempt_2": {
+    "classification": "SAME_COHORT_TRANSPORT_RECOVERY",
+    "invocation_proof": "receipts/v8-acquisition-attempt2-invocation-proof.json",
+    "quarantined_attempt_1_files_reused": false,
+    "same_cutoffs": true,
+    "same_title_manifest": true,
+    "same_transport_seal": true
+  },
+  "cause": {
+    "expression": "before_path.relative_to(EXP)",
+    "kind": "deterministic ValueError, not a transport failure and not a crash",
+    "prior_occurrence": "this is the same defect as the v6 acquisition failure, already recorded in docs/ip/claim-evidence-matrix.yaml and diagnosed in receipts/v6-acquisition-failure-diagnosis-2026-08-19.json. It was reproduced by an invocation, not by a change to sealed bytes.",
+    "site": "acquire_w6_v3.py:376",
+    "trigger": "the --corpus argument was repository-relative, so the page directory path is relative while EXP is absolute and relative_to() has nothing to strip",
+    "who_is_at_fault": "the invocation. No sealed byte changed, the transport freeze was not broken, and acquire_w6_v3.py and acquire_w6_v5_single_title.py were not edited."
+  },
+  "classification": "CONFIRMATORY_ACQUISITION_ATTEMPT_INVALID_TRANSPORT_INVOCATION",
+  "classification_note": "label set by founder direction on 2026-08-20. The prior label KNOWN_INVOCATION_DEFECT_REPRODUCED described the same facts; this one names the attempt's standing in the confirmatory protocol rather than only its cause.",
+  "died_utc": "2026-08-20T05:48:00Z",
+  "evidence_retained": {
+    "log": {
+      "file": "v8-acquisition-run1-failure.log",
+      "sha256": "sha256:9d976b4bcdd65011ccb93bf95608eb700bab896c2843f0c6e484871745751f62"
+    },
+    "quarantined_partial_corpus": {
+      "directory": "corpus-v8-holdout-failed-20260820T0548Z",
+      "files": [
+        {
+          "bytes": 93306,
+          "path": "corpus-v8-holdout-failed-20260820T0548Z/00002-717f39e67679/after.wikitext",
+          "sha256": "sha256:1222a305ed62951bf92a8e7fa2c587960fd051f5d635f2b812c836512ab7a772"
+        },
+        {
+          "bytes": 92290,
+          "path": "corpus-v8-holdout-failed-20260820T0548Z/00002-717f39e67679/before.wikitext",
+          "sha256": "sha256:e73394df9e775e1fd7ddc12c972ac6c5f94850a3de3c9481af85891f9557bde7"
+        }
+      ],
+      "why_retained": "the same rule that kept corpus-v5 and corpus-v6: a failed corpus is evidence about the failure. It is not deleted and it is not reused."
+    }
+  },
+  "exit_code": 1,
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-20T05:52:04.006602+00:00",
+  "gpu_note": "the H200 was idle-billing throughout at 0% utilization; acquisition uses no GPU. The pod was kept because a stop/recreate cannot be proven to preserve the attested runtime identity.",
+  "holdout_integrity": {
+    "boundary": "The confirmatory holdout cohort had been opened by the acquisition transport, but no question, score, arm result, threshold decision, cohort selection, or adaptive tuning was made from holdout observations. Attempt 2 is a transport recovery over the exact same sealed manifest and cutoffs.",
+    "holdout_status": "OPENED_BY_TRANSPORT_NO_OBSERVATION",
+    "is_a_new_holdout": false,
+    "new_title_selection_performed": false,
+    "observed_from_holdout": {
+      "adaptive_tuning": 0,
+      "arm_results": 0,
+      "cohort_selections": 0,
+      "questions": 0,
+      "scores": 0,
+      "threshold_decisions": 0
+    },
+    "wording_forbidden": [
+      "the holdout was not opened",
+      "the holdout was not read at all"
+    ],
+    "wording_forbidden_why": "the transport fetched titles from the sealed holdout cohort. Saying it was never opened would be false. What is true and narrower is that nothing was observed from it and nothing was adapted to it."
+  },
+  "receipt_sha256": "sha256:c776863140ac2eaaebce3fc143193d93130dbc9adea4e60b92b05d6fa853e415",
+  "recovery": {
+    "action": "fresh corpus directory, same frozen title manifest, same transport seal, same cutoffs, absolute --corpus path",
+    "resume_not_attempted": "the v6 audit found resume unsafe --- unconditional overwrite, non-atomic writes, no checkpoint. A fresh corpus is the protocol's answer and it is what was done.",
+    "scientific_rules_changed": false,
+    "sealed_bytes_changed": false,
+    "thresholds_changed": false
+  },
+  "run": "v8 holdout acquisition, attempt 1",
+  "schema": "tavonel.w6-v8-acquisition-failure.v1",
+  "started_utc": "2026-08-20T03:19:26.302725Z",
+  "supersedes": {
+    "reason": "adopt the founder's attempt classification and the corrected holdout boundary wording; no factual finding changed.",
+    "receipt": "v8-acquisition-failure-2026-08-20-superseded-20260820T0600Z.json",
+    "schema_conformance_note": "the superseded file is named under the key `receipt`, which is the key the repository's retraction contract reads. It was originally written as `file`; renaming it changed no filename, digest, reason or finding, and it is what makes this retraction checkable by tests/unit/test_superseded_receipt_contract.py rather than only readable by a person.",
+    "sha256": "sha256:f3f06d03344fd6eee21775b0ab6eb30cca895bf84217b2ef3348d93378417229"
+  },
+  "wall_minutes_approx": 149,
+  "what_the_run_actually_achieved": {
+    "fetch_phase": "completed --- the log records 'cohort 1: fetched 600/750 titles' and the run reached the write phase",
+    "mediawiki_429_retries": 149,
+    "rate_limit_note": "the entire 149 minutes was dominated by HTTP 429 backoff at 42-51 seconds per retry. The transport's backoff worked; it was slow, not broken. This is a throughput fact about the run, not a defect, and it is recorded because attempt 2 will pay it again.",
+    "write_phase": "died on the first eligible page directory"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "api_secret_delete_acknowledged": true,
+  "cleanup_stop_acknowledged": false,
+  "cleanup_terminate_acknowledged": true,
+  "completed_at_utc": "2026-08-15T22:23:42.088335+00:00",
+  "dockerfile_sha256": "sha256:cf3e66619340e5cc5b06e85c4e4e696b3c52d8444f3456e7aacde9345b3ebd50",
+  "failure_message": "builder Pod disappeared before evidence became terminal",
+  "failure_type": "RuntimeError",
+  "ghcr_secret_delete_acknowledged": true,
+  "guards": {
+    "controller_max_wait_seconds": 780,
+    "hourly_rate_ceiling_usd": 0.8,
+    "self_watchdog_seconds": 4200,
+    "volume_in_gb": 0
+  },
+  "image_tag": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:local-8d5c1cf980bcb8cc4135",
+  "model_artifact_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+  "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+  "passed": false,
+  "pod": {
+    "cpu_flavor_id": null,
+    "hourly_rate_usd": 0.74,
+    "id": "c0iijaqw0domvo",
+    "memory_in_gb": null,
+    "name": "tavonel-ovis-gpu-builder-221217",
+    "status": "RUNNING",
+    "vcpu_count": null
+  },
+  "provider_guards": {
+    "stop_after": "2026-08-15T23:22:19.168395+00:00",
+    "template_id": "runpod-torch-v280",
+    "terminate_after": "2026-08-15T23:32:19.168407+00:00"
+  },
+  "scanner_versions": {
+    "syft": "1.50.0",
+    "trivy": "0.72.0"
+  },
+  "schema": "tavonel.ovis-gpu-builder.v6",
+  "secrets": {
+    "ghcr": {
+      "id": "2svepe1l80",
+      "name": "tavonel-ghcr-20260815221217",
+      "value_exposed": false
+    },
+    "self_watchdog": {
+      "id": "fgohisygmy",
+      "name": "tavonel-runpod-self-20260815221217",
+      "value_exposed": false
+    }
+  },
+  "source_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "source_tree_sha256": "sha256:8d5c1cf980bcb8cc41351553adce7bc5ebc67744d1e55fcd29c4d8c6fe2059ed",
+  "started_at_utc": "2026-08-15T22:12:17.155644+00:00"
+}

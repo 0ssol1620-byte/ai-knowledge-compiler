@@ -1,0 +1,5 @@
+#REDIRECT [[Transformer (artificial intelligence)]]
+
+{{Redirect category shell|
+{{R from move}}
+}}

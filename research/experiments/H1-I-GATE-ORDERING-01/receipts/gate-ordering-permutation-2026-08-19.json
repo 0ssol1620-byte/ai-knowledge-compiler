@@ -1,0 +1,1731 @@
+{
+  "E1_null": true,
+  "E1_verdict_divergence_count": 0,
+  "E1_verdict_divergences": [],
+  "E2_cause_divergence_count": 0,
+  "E2_cause_divergences": [],
+  "E2_unsound_evaluation_count": 0,
+  "E2_unsound_evaluation_events": [],
+  "amendment_1": "The permutation arm cannot return a divergence unless the four checks are order-dependent. The positive control establishes whether this harness can detect an ordering effect at all. If it does not separate, the null is uncitable and the ordering question stays unmeasured. See AMENDMENT_1_2026-08-19.md.",
+  "evaluations": [
+    {
+      "first_failing_step": null,
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": null,
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": true,
+      "state": "S0"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "all_affected_dependencies_accounted_for",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S1"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S2"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "recompile_complete",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S3"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S4"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "no_stale_current_artifacts"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "equivalence_or_integrity_checks_pass",
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for",
+        "equivalence_or_integrity_checks_pass"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "recompile_complete",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "all_affected_dependencies_accounted_for",
+        "recompile_complete"
+      ],
+      "promotable": false,
+      "state": "S5"
+    },
+    {
+      "first_failing_step": "no_stale_current_artifacts",
+      "order": [
+        "no_stale_current_artifacts",
+        "equivalence_or_integrity_checks_pass",
+        "recompile_complete",
+        "all_affected_dependencies_accounted_for"
+      ],
+      "promotable": false,
+      "state": "S5"
+    }
+  ],
+  "experiment": "H1-I-GATE-ORDERING-01",
+  "external_gpu_cost_usd": 0.0,
+  "fidelity_gate": {
+    "all_agree": true,
+    "rows": [
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": null,
+          "promotable": true
+        },
+        "real_gate": {
+          "first_failing_step": null,
+          "promotable": true
+        },
+        "state": "S0"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "all_affected_dependencies_accounted_for",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "all_affected_dependencies_accounted_for",
+          "promotable": false
+        },
+        "state": "S1"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "state": "S2"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "state": "S3"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "state": "S4"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "state": "S5"
+      }
+    ]
+  },
+  "generated_at": "2026-08-19T02:31:29.760769+00:00",
+  "instrument_separates": true,
+  "narrowing_rule": "PROTOCOL section 4: E1 null means claim B1 element 7's recitation of order is NOT supported as affecting the admitted/refused outcome and the claim must be narrowed. Defending the ordering limitation on the strength of this null is prohibited.",
+  "narrowing_rule_triggered": true,
+  "network_access": false,
+  "null_is_citable": true,
+  "ordering_result_reported": true,
+  "permutations_per_state": 24,
+  "positive_control": {
+    "divergence_count": 12,
+    "examples": [
+      {
+        "cause": null,
+        "order": [
+          "all_affected_dependencies_accounted_for",
+          "equivalence_or_integrity_checks_pass",
+          "recompile_complete",
+          "no_stale_current_artifacts"
+        ],
+        "promotable": true
+      },
+      {
+        "cause": null,
+        "order": [
+          "all_affected_dependencies_accounted_for",
+          "equivalence_or_integrity_checks_pass",
+          "no_stale_current_artifacts",
+          "recompile_complete"
+        ],
+        "promotable": true
+      },
+      {
+        "cause": null,
+        "order": [
+          "all_affected_dependencies_accounted_for",
+          "no_stale_current_artifacts",
+          "equivalence_or_integrity_checks_pass",
+          "recompile_complete"
+        ],
+        "promotable": true
+      }
+    ],
+    "separates": true
+  },
+  "promotion_gate_module_sha256": "sha256:905e6387e8f984a6778dc379b4313c92a9ee95f3dfc5a2b9ad373d9518fce99b",
+  "protocol_sha256": "sha256:dc41b927a47e3c7a0ca09e6f1c0fc4c565da2855b69de7fcfc6b331b4fa78956",
+  "receipt_sha256": "sha256:2f6c87ffad79b899a11311dbc1a6219ac1b0ee7ec7c4ee46ef389666adec59c5",
+  "result": "ORDERING_NOT_LOAD_BEARING_FOR_VERDICT",
+  "schema": "tavonel.gate-ordering-ablation.v1",
+  "states_evaluated": 6,
+  "supersedes": {
+    "receipt": "receipts/gate-ordering-attempt1-void-2026-08-19.json",
+    "why": "Attempt 1 was voided by this same fidelity gate: the harness paraphrased _declares_structural against the wrong channel API and admitted S5, which the real gate refuses. The protocol was not amended; the harness now imports the system helper."
+  },
+  "supersedes_attempt2": "receipts/gate-ordering-attempt2-nonseparating-2026-08-19.json",
+  "total_evaluations": 144
+}

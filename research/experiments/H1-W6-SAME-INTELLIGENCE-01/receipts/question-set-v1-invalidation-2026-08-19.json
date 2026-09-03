@@ -1,0 +1,21 @@
+{
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T22:57:22.460711+00:00",
+  "not_done": "the threshold was NOT widened after seeing the result, and the token-overlap statistic was NOT retrofitted into the frozen acceptance set. It is recorded as a measurement, and v2 freezes it as a criterion from the start.",
+  "receipt_sha256": "sha256:72cc9bbd3c7b7d2246adaf3a67a626416507e9b9cb7ab9c85f2367ddce2d2999",
+  "schema": "tavonel.w6-question-set-invalidation.v1",
+  "status": "INVALID / SUPERSEDED development evidence — retained, not deleted",
+  "supersedes": {
+    "claim_being_corrected": "that the v1 655-query set constitutes a usable W6 question set. It does not, and no arm was ever run on it.",
+    "receipt": "baseline-validation-2026-08-19.json",
+    "sha256": "sha256:9d9f75526d330647df191dc803b60945ecb28c9b05122adbf9319e4972e12a2e"
+  },
+  "what_is_retained_as_valid": "the retriever itself. BM25 over 692 units with a 0.000 tie rate and clean score separation is a working retriever; nothing here is evidence against it. What is withdrawn is the question set, not the baseline implementation.",
+  "what_the_numbers_revealed": {
+    "median_query_oracle_token_overlap": 1.0,
+    "reading": "all eight frozen criteria passed and the question set was still invalid. Recall at the ceiling with every top-1 hit inside the oracle's own document, and a median query-to-oracle token overlap of 1.0, means every query word appears in the passage it targets: the task cannot fail, so it cannot separate arms. This is W5's degeneracy inverted -- that baseline could not discriminate, this one could not be wrong.",
+    "recall_at_1": 0.9969,
+    "same_document_top1_share": 1.0
+  },
+  "why_the_criteria_missed_it": "C7 tested verbatim substring containment. A query built from the oracle's own remaining sentences is a bag-of-words near-copy while containing no verbatim substring, so it passed trivially. A leakage criterion that only catches copying is not a leakage criterion."
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "tavonel.real-public-revision-holdout-confirmatory-protocol.v1",
+  "prepared_on": "2026-08-17",
+  "status": "FROZEN_BEFORE_CONFIRMATORY_FETCH",
+  "adapter": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v3.py",
+  "adapter_version": 3,
+  "base_receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-holdout-v2.json",
+  "diagnostic_extension": "research/experiments/H1-B-REAL-REVISION-01/extension-protocol-v1.json",
+  "diagnostic_extension_use": "development-only; its observed outcomes are excluded from confirmatory numerators and denominators",
+  "cutoff": "2026-07-01T00:00:00Z",
+  "titles": [
+    "Artificial general intelligence",
+    "Generative artificial intelligence",
+    "Gemini (chatbot)",
+    "Claude (language model)",
+    "Meta AI",
+    "Apple Intelligence",
+    "Robotics",
+    "Self-driving car",
+    "Solar power",
+    "Nuclear power",
+    "Space exploration",
+    "Mars"
+  ],
+  "selection_rule": "Fixed before any confirmatory fetch. Retain all twelve titles and both frozen revisions regardless of equivalence, change count, or rebuild fraction. Redirects are first-class semantic units under adapter v3.",
+  "primary_gate": {
+    "all_confirmatory_pairs_equivalent": true,
+    "confirmatory_stale_left_behind_total": 0
+  },
+  "generalization_strength_gate": {
+    "base_plus_confirmatory_rendered_semantic_changed_pair_count_min": 8,
+    "base_changed_pair_count_frozen": 5
+  },
+  "gpu_cost_usd": 0.0,
+  "claim_boundary": "Public real-revision semantic-projection holdout only. It supports selective/full semantic-artifact equivalence on the named revision pairs, not universal domain or production-persistence performance."
+}

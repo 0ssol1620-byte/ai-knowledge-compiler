@@ -1,0 +1,134 @@
+{
+  "arm_receipts": {
+    "entity_conditioned_gate": {
+      "file": "v8-entity-conditioned-gate-holdout.json",
+      "present": true,
+      "sha256": "sha256:3599f10efb9488a23595b8ad2fb38837524500fad927235ba3fa61264931252c"
+    },
+    "question_set": {
+      "file": "question-set-v8-holdout.json",
+      "present": true,
+      "sha256": "sha256:915f29f5439dce46a0c82fea8fc72f42e479ba1100366f12b8cba67d58b446ee"
+    },
+    "residual_overlap": {
+      "file": "v8-residual-overlap-holdout.json",
+      "present": true,
+      "sha256": "sha256:d7c190bf64281cbe03caf631f044fd47c47a0f8e24cf2e9af7cb860afd1d1939"
+    }
+  },
+  "arms_ran": false,
+  "corpus": {
+    "eligible_records": 391,
+    "excluded_records": 359,
+    "integrity_gate_passed": true,
+    "pairs_verified": 391,
+    "root_hash": "sha256:13bfe8600855a9d7eedf9ec32c337581eaed0edb6dbf1fcd60dde7e5191f73cd"
+  },
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "holdout_reuse_rule": "these titles are development data from this point forward. No threshold, template, retriever or decoding parameter may be tuned against them and the endpoint may not be recomputed on this holdout.",
+  "identity": {
+    "checkpoint_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "decoding": {
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      },
+      "max_tokens": 256,
+      "seed": 0,
+      "temperature": 0.0,
+      "tools": "off"
+    },
+    "model_attestation": "sha256:061363cd893d6cfcd56faa3d4dc3307901f5bd32d239ce45e66abff449bfeed0",
+    "model_file_manifest_sha256": "sha256:145d2c89df86bc61046eafcd58ffb3062bc733acc5aae578b667769e534d72e2",
+    "model_repository": "Qwen/Qwen3.6-27B",
+    "quantization": "none_bf16_from_checkpoint",
+    "runtime_image_digest": "runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+    "serving_runtime": "vllm",
+    "serving_runtime_version": "0.27.1",
+    "tokenizer_hash": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "wording_boundary": "the reasoning preamble is disabled in all four arms. This result may not be described as measuring this model with reasoning enabled; the preamble finding is a runtime observation under a 256-token budget with this checkpoint's default chat template, not a conclusion about the model's reasoning capability."
+  },
+  "negative_result_policy": "TAVONEL winning, TAVONEL not winning, nothing separating and a pre-arm gate refusing are all valid outcomes of this protocol. The benchmark is not iterated until one of them appears, and this seal is written whichever it is.",
+  "outcome_class": "CONFIRMATORY_PRE_ARM_GATE_FAILURE_ENDPOINT_NOT_RUN",
+  "outcome_class_note": "the structural taint and residual leakage gates passed on the holdout question set; the entity-conditioned baseline validity gate refused on exact_tie_rate = 0.1145 against a ceiling of 0.1 fixed before the holdout was opened. No arm was run and no answer was generated.",
+  "pod": {
+    "cost_per_hour_usd": 4.59,
+    "gpu": "NVIDIA H200",
+    "measured_gpu_cost_usd": 26.94,
+    "pod_id": "ffsyr4qa8603rl"
+  },
+  "receipt_sha256": "sha256:6d54dde78c2b3fcba65d651629718c83916473aac46b2d19117cc79b6bbaecf1",
+  "receipts": {
+    "acquisition": {
+      "file": "acquisition-v8-holdout.json",
+      "present": true,
+      "sha256": "sha256:cee6b398d28abd4221fca3688ce72ce6d22dd9e4f34be5b4985fde8201133fd8"
+    },
+    "acquisition_completion": {
+      "file": "acquisition-v8-holdout-completion.json",
+      "present": true,
+      "sha256": "sha256:e5858ceef491664d498c23c2310de4e9adfb2f96c31588c2b156482ef54e73b3"
+    },
+    "acquisition_integrity": {
+      "file": "v8-holdout-acquisition-integrity.json",
+      "present": true,
+      "sha256": "sha256:94f9596cbc13537d235c71983f305a80ad74cf54e40440a14d57371649951f3a"
+    },
+    "config_freeze": {
+      "file": "v8-config-freeze.json",
+      "present": true,
+      "sha256": "sha256:08a0ae93fe764d2866805614a74cee8554e4e3426da29bffefa48bc28fab00fd"
+    },
+    "development_seal": {
+      "file": "v7-development-seal-2026-08-19.json",
+      "present": true,
+      "sha256": "sha256:a1c927340c30d69faa000c6dbb3d9e3b36f6fdb331dbd2ab904fce153dd9fded"
+    },
+    "holdout_preflight": {
+      "file": "v8-holdout-preflight-2026-08-19.json",
+      "present": true,
+      "sha256": "sha256:53cd0fa3fe321bd0c3cf50bc7027bf1c10aa5795631ec7701161c16ed5c1129e"
+    },
+    "holdout_title_manifest": {
+      "file": "holdout-manifest-v8.json",
+      "present": true,
+      "sha256": "sha256:f298f82cfe1ef81147da58fb4a2c4cc7a05f7afaf765c67ea790c422637f92e1"
+    },
+    "model_attestation": {
+      "file": "v8-model-attestation.json",
+      "present": true,
+      "sha256": "sha256:6f31456a21a760849cf42cd229844182a2a46f707f82005be1f724e61f6e225e"
+    },
+    "runtime_attestation": {
+      "file": "v8-runtime-attestation.json",
+      "present": true,
+      "sha256": "sha256:60aef6b33bf895691241de2394b3bbc53741cb882f03e7dd3dd36fe0a335a743"
+    },
+    "runtime_feasibility": {
+      "file": "v8-runtime-feasibility-2026-08-20.json",
+      "present": true,
+      "sha256": "sha256:a183db917a041364798411116ad1f0bfc88d3725c1bdd83946c59b838baaea5b"
+    }
+  },
+  "run_class": "HOLDOUT_CONFIRMATORY",
+  "schema": "tavonel.w6-v8-endpoint-seal.v1",
+  "sealed_at": "2026-08-20T08:55:37.565045+00:00",
+  "source_hashes": {
+    "arms_v8.py": "sha256:c90229f77b3f194e8790d53f2530bc36f026a5e685bfb88b2226edcc8cbb35e5",
+    "attest_runtime_v8.py": "sha256:8f326508cfd1351194f16a0863a3823a2506cd7ac38f3ec673cd75f6f853200e",
+    "build_holdout_manifest_v8.py": "sha256:715712d315b0a8d7228325a8710da38bb5a50fee8a7b7f71c030733c70008797",
+    "build_question_set_v8.py": "sha256:4a45baaf9cf72349569d1509d30823b4d16fa892b9b349330898a14818d3c656",
+    "entity_conditioned_gate_v8.py": "sha256:250bb19e0aa3ecfe2d71b48e373df2c4e9a7fe245914cbb5ca95c750c5f76d2e",
+    "freeze_config_v8.py": "sha256:dcdfcea4637f7f8d47f670e077cdc46797c4d4a0ac528bfe44f2b724f42ea7b5",
+    "model_identity_v8.py": "sha256:bc4f077da4dd336397dc1bac6ecf18987dc9e1cb56447bf94c2c615e97c96d15",
+    "preflight_holdout_v8.py": "sha256:109337df2bf2c263a0def4af333ac37b48f57fa1fc4a88c3887d5831bcc48b40",
+    "residual_overlap_v8.py": "sha256:af83564d6d861bd4a7313667d31d70557e77635c7838935b9ec9fd874809d65a",
+    "run_arms_dev_v8.py": "sha256:5e2409c36061e02e278a9c8d285805b144ecd68b6217b4575f8a293feeb4fc7e",
+    "run_arms_holdout_v8.py": "sha256:09fb3d28b8c03fd55ed1d58de0723b280df354a9a18040c9de5958e33e9caf0d",
+    "scoring_v8.py": "sha256:98566bcc21c2d9591b75f39f5fa967c3f1ff2bf58edfb811535d9dfb72a918b1",
+    "seal_instrumentation_v8.py": "sha256:1e3431f470f7a86a88b6d21e9e498bd03711ff4bd729a18718518b960a3b261d",
+    "seal_w6_endpoint_v8.py": "sha256:185b1329970d93b23e0ca07aeaeef004985f46207f6a077a785bc856c8e3d2d6",
+    "taint_gate_v8.py": "sha256:083ba42611be0e941d7462b264a1f87a46141f09350ffc1117f3b28f53bd9dfe",
+    "verify_holdout_corpus_v8.py": "sha256:a420f62ff416a9a8ffdccb407536d4f840450cfa860c7595025b03a0bdf44f93",
+    "vllm_model_v8.py": "sha256:6ec3af44fc4c3faa1ec3b78a294a8682ea9acb428867928b06b2eeb9dbb61f75"
+  }
+}

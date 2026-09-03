@@ -1,0 +1,67 @@
+{
+  "environment": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python_version": "3.13.0",
+    "tz_env": null
+  },
+  "expected_outputs": {
+    "acquisition_receipt": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\acquisition-v7-2026-08-19.json",
+    "completion_sidecar": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\acquisition-v7-completion-2026-08-19.json",
+    "corpus_root": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\corpus-v7"
+  },
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "frozen_input_hashes": {
+    "protocol_v3_acquisition": "sha256:d5fa91de62576d84c5c4c0faedf7e01c7002814715c57b57a9fc402d11f84b47",
+    "protocol_v5_single_title_transport": "sha256:34b4e2fc44a2a3d6c0092dd6797158a8fee6a5d5aa3a60ec19aa62172eec4ffc",
+    "protocol_v6_recovery": "sha256:a755311508988373c0b46a653db74536f51d6ad08435d5262c0bd0a710f754cd",
+    "sealed_acquisition_script": "sha256:d46a577b9a14e335a9846fbc50d31ef4a4914406abfc738097417b199e26669e",
+    "single_title_freeze_seal": "sha256:f281489d12b999df933fc2be0fb6fe82d4ec8026ddf85acd4e2c717c7d923886",
+    "title_manifest_file": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc",
+    "title_manifest_receipt_sha256": "sha256:a78c476ad831a22f42881a11a4c3163e539709a6af6ba08a45c809ac8ce39144",
+    "wrapper_script": "sha256:2895a52c5d4a4e45d2be2fc38cab43bfba9b601969a5bb7a4731b3aa7ea1e9ea"
+  },
+  "generated_at": "2026-08-19T08:46:13.714725+00:00",
+  "invocation": {
+    "argv": [
+      "python",
+      "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\scripts\\acquire_w6_v5_single_title.py",
+      "acquire",
+      "--manifest",
+      "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\title-manifest-v3-2026-08-19.json",
+      "--seal",
+      "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\single-title-freeze-v5-2026-08-19.json",
+      "--corpus",
+      "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\corpus-v7",
+      "--output",
+      "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\acquisition-v7-2026-08-19.json",
+      "--sidecar",
+      "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\acquisition-v7-completion-2026-08-19.json"
+    ],
+    "argv_shell": "python D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\scripts\\acquire_w6_v5_single_title.py acquire --manifest D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\title-manifest-v3-2026-08-19.json --seal D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\single-title-freeze-v5-2026-08-19.json --corpus D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\corpus-v7 --output D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\acquisition-v7-2026-08-19.json --sidecar D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\receipts\\acquisition-v7-completion-2026-08-19.json",
+    "corpus_path_absolute": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\corpus-v7",
+    "corpus_path_is_absolute": true,
+    "cwd_at_launch": "D:\\CodexProjects\\ai-knowledge-compiler",
+    "why_absolute_matters": "A repository-relative --corpus is what raised ValueError at acquire_w6_v3.py:376 in both the v5 and v6 runs. The absolute path is the entire repair; the sealed script is byte-identical. See v6-acquisition-failure-diagnosis-2026-08-19.json."
+  },
+  "manifest_facts": {
+    "schema": "tavonel.w6-v3-title-manifest.v1",
+    "source_category": "Category:Featured articles",
+    "titles_in_manifest": 6987
+  },
+  "network_access": true,
+  "network_access_note": "the acquisition itself fetches; this recording script does not",
+  "outcome_deliberately_absent": "The run has not finished. Recording an expected outcome here would be the inference-promoted-to-measurement defect this programme has now recorded five times. The completion sidecar is the only thing that may report an outcome, and the integrity gates run before any endpoint evaluation.",
+  "process_identity": {
+    "note": "The v5 wrapper loads the v3 acquisition as a module in-process, so one PID covers the whole run. A second acquisition process would be a duplicate-run incident, which this programme has already had once.",
+    "pid": 33784,
+    "single_process": true,
+    "started_local": "2026-08-19T16:27:44"
+  },
+  "receipt_sha256": "sha256:5a7ed40c48998dfbce2a1c4fce27d267055b154f798eaa5971515c43a649d33d",
+  "run_state_at_record_time": "RUNNING",
+  "schema": "tavonel.w6-v7-launch-provenance.v1",
+  "seal_binding": "The wrapper verifies the seal before fetching anything and exits with 'frozen bytes changed: <key>' on any mismatch. The run therefore could not have started unless the hashes above matched the seal.",
+  "why_this_exists": "Exact historical invocation recovery stands at 1 of 23 experiments. That is not repairable backwards; the only available response is to record every subsequent run completely. This is that record for the v7 acquisition."
+}

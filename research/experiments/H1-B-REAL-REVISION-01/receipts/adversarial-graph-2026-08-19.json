@@ -1,0 +1,673 @@
+{
+  "cases_per_cell": 60,
+  "cells": {
+    "artifact_to_artifact": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 300,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 374,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 0,
+        "cases": 420,
+        "changed": 1080,
+        "equivalent_cases": 420,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated": 74,
+        "rebuilt": 1154,
+        "stale_promoted": 0
+      }
+    },
+    "cyclic": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 300,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 374,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 0,
+        "cases": 420,
+        "changed": 1080,
+        "equivalent_cases": 420,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated": 74,
+        "rebuilt": 1154,
+        "stale_promoted": 0
+      }
+    },
+    "direct": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 240,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 314,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 0,
+        "cases": 420,
+        "changed": 660,
+        "equivalent_cases": 420,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated": 74,
+        "rebuilt": 734,
+        "stale_promoted": 0
+      }
+    },
+    "mixed_channel": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 120,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 300,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 374,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 0,
+        "cases": 420,
+        "changed": 1080,
+        "equivalent_cases": 420,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated": 74,
+        "rebuilt": 1154,
+        "stale_promoted": 0
+      }
+    },
+    "multi_hop": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 240,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 240,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 180,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 180,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 360,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 434,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 0,
+        "cases": 420,
+        "changed": 1500,
+        "equivalent_cases": 420,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated": 74,
+        "rebuilt": 1574,
+        "stale_promoted": 0
+      }
+    },
+    "partial_edges": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 24,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 36,
+          "escape_artifacts": 24,
+          "escape_cases": 24,
+          "false_invalidated": 0,
+          "rebuilt": 96,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 240,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 314,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 24,
+        "cases": 420,
+        "changed": 660,
+        "equivalent_cases": 396,
+        "escape_artifacts": 24,
+        "escape_cases": 24,
+        "false_invalidated": 74,
+        "rebuilt": 710,
+        "stale_promoted": 0
+      }
+    },
+    "stale_declaration": {
+      "by_shape_class": {
+        "block_count": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "figure_order": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "heading_hierarchy": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "table_shape": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "text_only": {
+          "blocked_escape_cases": 19,
+          "cases": 60,
+          "changed": 120,
+          "equivalent_cases": 41,
+          "escape_artifacts": 19,
+          "escape_cases": 19,
+          "false_invalidated": 0,
+          "rebuilt": 101,
+          "stale_promoted": 0
+        },
+        "unit_reorder": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 60,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 0,
+          "rebuilt": 60,
+          "stale_promoted": 0
+        },
+        "unresolved_plus_structural": {
+          "blocked_escape_cases": 0,
+          "cases": 60,
+          "changed": 240,
+          "equivalent_cases": 60,
+          "escape_artifacts": 0,
+          "escape_cases": 0,
+          "false_invalidated": 74,
+          "rebuilt": 314,
+          "stale_promoted": 0
+        }
+      },
+      "total": {
+        "blocked_escape_cases": 19,
+        "cases": 420,
+        "changed": 660,
+        "equivalent_cases": 401,
+        "escape_artifacts": 19,
+        "escape_cases": 19,
+        "false_invalidated": 74,
+        "rebuilt": 715,
+        "stale_promoted": 0
+      }
+    }
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T22:08:26.270284+00:00",
+  "primary_criterion": "equivalence: the PRECISE selective result must equal an independent full rebuild artifact by artifact. A contained failure -- planner leaves an artifact stale, gate blocks the run -- is an equivalence FAILURE that was contained, and is not counted as a pass.",
+  "receipt_sha256": "sha256:c8202fa56e475dbb68991cd84684ea414eaa4400b52336b0a7ccb0836a5a59e1",
+  "schema": "tavonel.adversarial-graph-sweep.v1",
+  "seed": 20260821,
+  "shape_classes": [
+    "text_only",
+    "block_count",
+    "heading_hierarchy",
+    "table_shape",
+    "figure_order",
+    "unit_reorder",
+    "unresolved_plus_structural"
+  ],
+  "topologies": [
+    "direct",
+    "multi_hop",
+    "artifact_to_artifact",
+    "cyclic",
+    "mixed_channel",
+    "partial_edges",
+    "stale_declaration"
+  ]
+}

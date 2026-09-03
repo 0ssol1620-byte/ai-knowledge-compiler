@@ -1,0 +1,20 @@
+{
+  "all_input_hashes_verified": true,
+  "archive_bytes": 143226880,
+  "archive_member_count": 49,
+  "archive_sha256": "sha256:e26ab6606cd13c5ec59b20f004ad41c8dbfc06b3cada3f7b08575959bc4f4da2",
+  "benchmark_counts": {
+    "olmocr-bench": 21,
+    "omnidocbench": 8,
+    "parsebench": 19
+  },
+  "case_count": 48,
+  "generated_at": "2026-08-17T03:03:45.011982+00:00",
+  "ground_truth_in_bundle": false,
+  "ground_truth_mounted": false,
+  "manifest_content_sha256": "sha256:b34c01dbf940573663a0bcd1e18c2b11df9b6cf72014e27995c41cb26a924f59",
+  "manifest_sha256": "sha256:fb85e0d92a3252792aa39833c4624760c1ea9bb6ef7ff4c81a3f578da8100225",
+  "receipt_sha256": "sha256:56bf833afcfd5a2875d7f1eda606b1033d7485e056930c32c13b0029996ed9a2",
+  "schema": "tavonel.a9-a12-source-only-48-receipt.v1",
+  "selection_manifest_sha256": "sha256:51cb7fafb74cb3fc6485a32198dac190665a5d23e7a9082cae417d4d47eaf0cc"
+}

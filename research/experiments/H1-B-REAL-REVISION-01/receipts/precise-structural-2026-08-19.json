@@ -1,0 +1,64 @@
+{
+  "corpora": {
+    "confirmatory-v1": {
+      "arms": {
+        "always": {
+          "all_equivalent": true,
+          "false_invalidation_rate": 0.8046,
+          "needed": 17,
+          "rebuilt": 87,
+          "stale": 0
+        },
+        "legacy": {
+          "all_equivalent": true,
+          "false_invalidation_rate": 0.15,
+          "needed": 17,
+          "rebuilt": 20,
+          "stale": 0
+        },
+        "precise": {
+          "all_equivalent": true,
+          "false_invalidation_rate": 0.15,
+          "needed": 17,
+          "rebuilt": 20,
+          "stale": 0
+        }
+      },
+      "artifacts": 334,
+      "pairs": 11
+    },
+    "holdout-v2": {
+      "arms": {
+        "always": {
+          "all_equivalent": true,
+          "false_invalidation_rate": 0.0,
+          "needed": 17,
+          "rebuilt": 17,
+          "stale": 0
+        },
+        "legacy": {
+          "all_equivalent": true,
+          "false_invalidation_rate": 0.0,
+          "needed": 17,
+          "rebuilt": 17,
+          "stale": 0
+        },
+        "precise": {
+          "all_equivalent": true,
+          "false_invalidation_rate": 0.0,
+          "needed": 17,
+          "rebuilt": 17,
+          "stale": 0
+        }
+      },
+      "artifacts": 503,
+      "pairs": 12
+    }
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T19:48:42.102062+00:00",
+  "receipt_sha256": "sha256:d3ecdba5f6557eba33e30ea3d8fbe1943a3f95701716f1dc4d89da87389d35dc",
+  "schema": "tavonel.precise-structural-invalidation.v1",
+  "scope": "this shows precise invalidation removes the cost on THIS adapter, whose artifacts are genuinely all semantic. It does not show that production graphs are mostly semantic, nor that enabling structural propagation globally is cost-effective.",
+  "why_precise_differs": "the traversal was already channel-filtered; the cost came from DependencyEdge.channels defaulting to every channel, so an adapter that declares nothing asserts that every artifact depends on document shape. Every v3 artifact hashes sorted(logical_ids) plus normalised unit text, so none of them do."
+}

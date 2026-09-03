@@ -1,0 +1,29 @@
+{
+  "aborted_probe_note": "A 60-second foreground probe was run first to confirm the CLI and the seal verification pass. It was killed during the fetch phase before any write, leaving corpus-v6 empty - verified by listing. No partial pair was created by that probe.",
+  "action": "v6 acquisition launched in background",
+  "completion_criteria": [
+    "a completion sidecar receipt exists and records a return code",
+    "every pair directory contains all three files or is reported incomplete"
+  ],
+  "corpus_v5_untouched": true,
+  "endpoint_status_unchanged": "NOT_RUN",
+  "expected_duration": "hours; the v3 transport fetches one title per request",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "gates_satisfied_before_launch": {
+    "corpus_v5_completeness": "v5-corpus-completeness-2026-08-19.json -> 0 complete pairs",
+    "recovery_fixture": "recovery-fixture-2026-08-19.json -> all 5 audit predictions confirmed",
+    "recovery_protocol_frozen": "PROTOCOL_V6_RECOVERY_2026-08-19.md sha256 a755311508988373c0b46a653db74536f51d6ad08435d5262c0bd0a710f754cd",
+    "static_resume_audit": "acquisition-resume-audit-2026-08-19.json -> RESUME_UNSAFE_AS_IMPLEMENTED"
+  },
+  "generated_at": "2026-08-19T04:51:34.088662+00:00",
+  "if_it_dies_again": "It is a failed run and is recorded as one. Do NOT resume into corpus-v6 for the same reasons v5 could not be resumed; start corpus-v7 under this same frozen protocol.",
+  "manifest": "receipts/title-manifest-v3-2026-08-19.json",
+  "note_on_endpoint": "Acquisition completing does not evaluate the endpoint. Whether the frozen question set finds moved facts is a separate question that v2 already declared NOT RUN once rather than weaken. That declaration stands.",
+  "receipt_sha256": "sha256:c9807f4eecf4e1da4d3dd67a25807eeb4833b32af990160355ed55e141189643",
+  "schema": "tavonel.w6-v6-launch-record.v1",
+  "scientific_rules_changed": false,
+  "seal": "receipts/single-title-freeze-v5-2026-08-19.json",
+  "target_corpus": "corpus-v6",
+  "what_changed_vs_v5": "the destination directory, and nothing else"
+}

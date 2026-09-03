@@ -1,0 +1,26 @@
+{
+  "baseline_critical_packages": [
+    "linux-libc-dev"
+  ],
+  "baseline_critical_vulnerability_count": 18,
+  "baseline_scan_sha256": "sha256:902c6ef943dad7c5d5830a58a95fd06a17884af4d97860504eb92d1571a52803",
+  "critical_vulnerability_count": 0,
+  "generated_at": "2026-08-16T16:22:38.776420+00:00",
+  "image_manifest_digest": "sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+  "integrity_receipt_sha256": "sha256:3a0c3bf3be24b4abb95a52bd2087fd9a5c9d390e39993f8313de312b186b1a86",
+  "passed": true,
+  "public_benchmark_inference_allowed": false,
+  "receipt_sha256": "sha256:cc9c0ee551306305afb4630df9dbbb8706b4ee30e23488721bc2a4422d52bfc2",
+  "remediated_package": "linux-libc-dev",
+  "remediated_version": "5.15.0-187.197",
+  "remediation_package_source_receipt_sha256": "sha256:b15c0104d481493709e063000014a4e2000fe1496fa508fcdabc53b4230bd20b",
+  "sbom_component_count": 471,
+  "sbom_sha256": "sha256:93d3de7bb7afb15ffda1da8365d98b3cc46d4a159f7f5a380de6391e404fc5aa",
+  "scanner_binary_sha256": "sha256:5c233d1514d6fd91f7a4f834beb92070f8a9793c71801f7f2149a7b30f90b821",
+  "scanner_official_release_checksum_verified": true,
+  "scanner_version": "0.72.0",
+  "schema": "tavonel.windows-trivy-security.v28",
+  "trivy_db_next_update": "2026-08-17T06:57:04.970667859Z",
+  "trivy_db_updated_at": "2026-08-16T06:57:04.97066803Z",
+  "vulnerability_scan_sha256": "sha256:eeefcdb3831498407059232e9c4314c2df7c25446d816d4ea7b4cb0dd177d59e"
+}

@@ -1,0 +1,321 @@
+{
+  "arms": {
+    "default": {
+      "example_escapes": [
+        {
+          "artifacts": 7,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 8,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 6,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 4,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 5,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 7,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 4,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 5,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 7,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        },
+        {
+          "artifacts": 4,
+          "class": "structural_only",
+          "equivalent": false,
+          "falsely_invalidated": 0,
+          "gate_missed_an_escape": false,
+          "gate_promotable": false,
+          "genuinely_changed": 1,
+          "rebuilt": 0,
+          "stale_escaped": [
+            "artifact:reading-order:doc"
+          ]
+        }
+      ],
+      "per_class": {
+        "ambiguous": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 472,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 1600,
+          "rebuilt": 2072,
+          "stale_escaped": 0
+        },
+        "mixed": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 800,
+          "rebuilt": 800,
+          "stale_escaped": 0
+        },
+        "semantic_only": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 400,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 400,
+          "rebuilt": 800,
+          "stale_escaped": 0
+        },
+        "structural_only": {
+          "cases": 400,
+          "equivalent": 0,
+          "falsely_invalidated": 0,
+          "gate_blocked": 400,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 400,
+          "rebuilt": 0,
+          "stale_escaped": 400
+        },
+        "unchanged": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 0,
+          "rebuilt": 0,
+          "stale_escaped": 0
+        }
+      },
+      "total_gate_missed_an_escape": 0,
+      "total_stale_escaped": 400
+    },
+    "structural_always": {
+      "example_escapes": [],
+      "per_class": {
+        "ambiguous": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 472,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 1600,
+          "rebuilt": 2072,
+          "stale_escaped": 0
+        },
+        "mixed": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 800,
+          "rebuilt": 800,
+          "stale_escaped": 0
+        },
+        "semantic_only": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 400,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 400,
+          "rebuilt": 800,
+          "stale_escaped": 0
+        },
+        "structural_only": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 400,
+          "rebuilt": 400,
+          "stale_escaped": 0
+        },
+        "unchanged": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 0,
+          "rebuilt": 0,
+          "stale_escaped": 0
+        }
+      },
+      "total_gate_missed_an_escape": 0,
+      "total_stale_escaped": 0
+    },
+    "structural_precise": {
+      "example_escapes": [],
+      "per_class": {
+        "ambiguous": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 472,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 1600,
+          "rebuilt": 2072,
+          "stale_escaped": 0
+        },
+        "mixed": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 800,
+          "rebuilt": 800,
+          "stale_escaped": 0
+        },
+        "semantic_only": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 400,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 400,
+          "rebuilt": 800,
+          "stale_escaped": 0
+        },
+        "structural_only": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 400,
+          "rebuilt": 400,
+          "stale_escaped": 0
+        },
+        "unchanged": {
+          "cases": 400,
+          "equivalent": 400,
+          "falsely_invalidated": 0,
+          "gate_blocked": 0,
+          "gate_missed_an_escape": 0,
+          "genuinely_changed": 0,
+          "rebuilt": 0,
+          "stale_escaped": 0
+        }
+      },
+      "total_gate_missed_an_escape": 0,
+      "total_stale_escaped": 0
+    }
+  },
+  "cases_per_class": 400,
+  "classes": [
+    "unchanged",
+    "semantic_only",
+    "structural_only",
+    "mixed",
+    "ambiguous"
+  ],
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T22:00:20.384563+00:00",
+  "receipt_sha256": "sha256:9ef60973c5207a092dfa684c5c378f7a3fb1ba682d83a5a92b1e100598602c37",
+  "schema": "tavonel.recompilation-change-space-sweep.v1",
+  "seed": 20260819,
+  "what_this_answers": "whether selective recompilation equals a full rebuild across the change space rather than across one corpus. Ground truth is the full rebuild, computed independently of the plan, so neither direction of error can hide: a missed rebuild is a stale artifact escaping and an extra rebuild is wasted work.",
+  "what_this_is_not": "real data. The documents are generated, so this says nothing about real change distributions -- the corpora do that. It says the mechanism is correct on change classes the corpora happen not to contain, which is precisely what a corpus cannot say."
+}

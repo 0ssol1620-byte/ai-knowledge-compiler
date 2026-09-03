@@ -1,0 +1,101 @@
+{
+  "schema": "tavonel.research.preregistration.v1",
+  "experiment_id": "H1-A12-01",
+  "title": "Cause-conditioned recovery versus the fixed recovery ladder",
+  "status": "PREREGISTERED_PROTOCOL_NOT_RUN",
+  "prepared_on": "2026-08-16",
+  "patent_element": "Family A / A12",
+  "paper_track": "Beyond the Parser / cause-conditioned recovery follow-on",
+  "research_question": "At an equal per-case recovery budget, does explicitly separating operational/transient failures from semantic/model failures and restricting same-family retry for semantic failures improve trusted-output yield or cost per trusted output relative to the existing cost-ordered fixed ladder?",
+  "non_claims": [
+    "Unit tests are implementation evidence, not empirical proof that cause-conditioned recovery improves quality.",
+    "Historical aggregate EXP-0001/EXP-0002/EXP-0004 metrics do not identify counterfactual outcomes for unexecuted recovery operators.",
+    "Phase 0 policy-divergence analysis cannot support a quality, latency, or cost-performance claim.",
+    "No public, patent-performance, or paper-performance claim is authorized until Phase 1 produces frozen paired evidence and independent review."
+  ],
+  "implementation_under_test": {
+    "cause_conditioned_selector": "packages/cir-python/src/akc_cir/cause_conditioned_recovery.py",
+    "fixed_selector": "packages/cir-python/src/akc_cir/recovery_policy.py::select_recovery",
+    "source_grounded_acceptance": "packages/cir-python/src/akc_cir/recovery_policy.py::arbitrate",
+    "required_runtime_identity": "immutable qualified runtime; exact image/model/evaluator revisions frozen before Phase 1"
+  },
+  "failure_classes": {
+    "OPERATIONAL_TRANSIENT": "bounded same-family retry remains eligible",
+    "SEMANTIC_MODEL": "source-preserving deterministic repair may run, but same-family parser/model variation is ineligible; next eligible operator must be independent-family, source verifier, reconciliation, review, or fail-closed",
+    "SECURITY_POLICY": "blocked, never retried",
+    "STATE_INTEGRITY": "not guessed transient; existing fail-closed/reconciliation policy remains authoritative"
+  },
+  "phase_0": {
+    "name": "policy-divergence feasibility",
+    "gpu_spend_usd": 0,
+    "input_contract": "per-case rows containing case_id, failure_code, failure_signature, and observed recovery history; aggregate metrics are rejected",
+    "outputs": [
+      "failure-class counts",
+      "fixed-selector decision",
+      "cause-conditioned-selector decision",
+      "policy-divergence count and rate",
+      "estimated GPU/cost-unit difference from selected policy metadata"
+    ],
+    "performance_conclusion_allowed": false,
+    "go_to_phase_1_if": [
+      "a non-trivial set of public-corpus cases has policy divergence",
+      "the divergent cases can be reconstructed from immutable source/primary-output artifacts",
+      "both recovery arms are executable under the same frozen runtime/evaluator contract"
+    ]
+  },
+  "phase_1": {
+    "name": "paired intervention on policy-divergent cases",
+    "data": "public-source documents only; no customer documents",
+    "design": "paired same-case intervention",
+    "case_selection": "freeze the eligible case manifest before executing either recovery arm; stratify semantic/model failures by failure code and document family, with an operational/transient control stratum",
+    "held_constant": [
+      "source revision and source hash",
+      "primary parser/model output presented to recovery",
+      "failure finding and failure signature",
+      "per-case recovery budget",
+      "runtime image and model revisions",
+      "evaluator and source-grounded acceptance revisions",
+      "deterministic settings where supported"
+    ],
+    "execution_economy": [
+      "if fixed and cause-conditioned selectors choose the same action, execute it once and share the measured result between arms",
+      "only policy-divergent cases require two recovery executions",
+      "ground truth/evaluator labels never mount on GPU workers; GPU receives source-only inputs and outputs are scored locally"
+    ],
+    "primary_endpoint": "trusted-output rate among policy-divergent semantic/model cases",
+    "secondary_endpoints": [
+      "cost per trusted output",
+      "GPU seconds per trusted output",
+      "incremental recovery yield by FailureClass and FailureCode",
+      "abstention/review rate",
+      "catastrophic or newly introduced critical failure count",
+      "wall-clock latency"
+    ],
+    "trusted_output_definition": "the recovery output passes the frozen source-grounded acceptance contract and applicable official/local integrity evaluator without a newly introduced critical failure; parser/model self-confidence or candidate agreement alone can never make an output trusted",
+    "statistics": [
+      "paired same-case comparison",
+      "report numerator and denominator for every rate",
+      "bootstrap confidence interval for paired yield/cost deltas where sample size permits",
+      "break out results by failure class/code and document family",
+      "retain negative or null results"
+    ],
+    "pilot": {
+      "maximum_policy_divergent_cases": 100,
+      "nominal_gpu_spend_cap_usd": 3.0,
+      "hard_gpu_spend_cap_usd": 10.0,
+      "preferred_parallelism": 4,
+      "stop_before_spend_if": [
+        "formal immutable runtime is not READY/qualified",
+        "required source-only artifacts are missing or hash-mismatched",
+        "predicted pilot spend exceeds nominal cap without a smaller informative cohort",
+        "provider/runtime identity cannot be held constant across arms"
+      ],
+      "hard_cap_rule": "never exceed USD 10 without a new explicit founder authorization"
+    }
+  },
+  "claim_gate": {
+    "before_phase_1": "A12 IMPLEMENTED / EMPIRICAL BENEFIT WITHHELD",
+    "phase_1_failure": "retain null/negative result; do not tune the registered endpoint after observing outcomes",
+    "phase_1_success": "may support a narrowly scoped empirical statement only with corpus, denominator, runtime/evaluator revisions, confidence interval, and receipt hashes; external publication remains separately blocked by IP-2/publication controls"
+  }
+}

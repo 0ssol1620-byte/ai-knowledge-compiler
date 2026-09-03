@@ -1,0 +1,23 @@
+{
+  "schema": "tavonel.h1-a12-input-discovery.v1",
+  "experiment_id": "H1-A12-01",
+  "recorded_on": "2026-08-16",
+  "status": "WAITING_ON_PRIMARY_ATTEMPT_LOG",
+  "gpu_spend_usd": 0.0,
+  "observed": [
+    "The frozen EXP-0001/EXP-0002/EXP-0004 paper packs preserve aggregate metrics and source-receipt provenance but do not expose per-case counterfactual recovery-operator outcomes sufficient for A12 replay.",
+    "A repository search for failure_signature in tracked source found recovery-policy implementation/tests and the new H1-A12 protocol, not a frozen campaign per-attempt dataset.",
+    "A hidden JSON/JSONL/CSV search matched chatgpt2codex checkpoint metadata carrying source-code text, not primary campaign recovery-attempt rows.",
+    "benchmark/v6/cohorts/recovery-fault-injection-golden.json explicitly declares evidence_class=synthetic_contract_only and is excluded from empirical A12 performance evidence."
+  ],
+  "required_phase0_input": [
+    "case_id",
+    "failure_code",
+    "failure_signature",
+    "observed recovery history with policy_signature",
+    "frozen source/primary-output identity sufficient to reconstruct the decision point"
+  ],
+  "ruling": "Do not infer cause-conditioned recovery benefit from aggregate recovery totals. Phase 0 remains unrun until primary per-case attempt evidence is located or a new public-source paired campaign is executed.",
+  "performance_conclusion_allowed": false,
+  "next_action": "Search original campaign raw attempt/worker artifacts by immutable receipt references; if unavailable, construct a small preregistered public-source paired intervention rather than reconstructing missing history from aggregates."
+}

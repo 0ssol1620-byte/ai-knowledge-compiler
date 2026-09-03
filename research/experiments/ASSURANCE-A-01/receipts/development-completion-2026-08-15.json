@@ -1,0 +1,63 @@
+{
+  "schema_version": "tavonel.assurance-incremental-development-completion.v1",
+  "observed_date": "2026-08-15",
+  "status": "LOCAL_IMPLEMENTATION_GREEN_EXTERNAL_STAGE1_BLOCKED",
+  "local_gates": {
+    "final_consolidated_regression_passed": 263,
+    "final_consolidated_regression_failed": 0,
+    "collection_semantic_runtime_passed": 22,
+    "region_promotion_fence_passed": 5,
+    "production_recovery_registry_passed": 42,
+    "runpod_builder_qualification_budget_passed": 8,
+    "runtime_qualification_and_ready_promotion_post_hardening_passed": 14
+  },
+  "selective_recompilation": {
+    "suite_documents": 30,
+    "cases": 330,
+    "equivalent_cases": 330,
+    "stale_left_behind_total": 0,
+    "mean_rebuild_fraction": 0.12626262626262624,
+    "min_rebuild_fraction": 0.0,
+    "max_rebuild_fraction": 0.2222222222222222,
+    "historical_prior_core_mean_rebuild_fraction": 1.0,
+    "historical_comparison_boundary": "context_only_corpus_generation_has_changed"
+  },
+  "critical_token_synthetic_cpu_pilot": {
+    "samples": 240,
+    "silent_corruption_precision": 1.0,
+    "silent_corruption_recall": 1.0,
+    "claim_boundary": "synthetic_corruption_only_not_real_document_performance"
+  },
+  "runtime_admission_path": {
+    "immutable_build_receipt": true,
+    "bounded_builder_contract": true,
+    "qualification_only_gpu_contract": true,
+    "runtime_verification_evidence_contract": true,
+    "runtime_qualification_producer": true,
+    "deterministic_offline_ready_promotion": true,
+    "current_ready_ovis_specs": 0,
+    "current_build_required_ovis_specs": 4
+  },
+  "external_blockers": {
+    "github_latest_build_run_id": 31284919996,
+    "github_latest_build_blocker": "runner_root_enospc_in_worker_diag_during_checkout",
+    "github_previous_build_run_id": 30860545607,
+    "github_previous_build_blocker": "docker_volume_about_32g_failed_old_55g_preflight",
+    "local_workflow_disk_fix_present": true,
+    "local_workflow_fix_remotely_executed": false,
+    "runpod_provider_secret_injection_available_in_current_tunnel": false,
+    "local_oci_builder_available": false
+  },
+  "security": {
+    "changed_text_files_secret_scan_count": 51,
+    "secret_leak_pattern_categories": 0,
+    "credential_values_copied_to_repository": false
+  },
+  "execution": {
+    "paid_gpu_started_by_this_work": false,
+    "external_cost_usd_by_this_work": 0.0,
+    "commit_created_by_this_work": false,
+    "push_performed_by_this_work": false
+  },
+  "real_document_stage1_performance_claimed": false
+}

@@ -1,0 +1,143 @@
+{
+  "cells": {
+    "ambiguous": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 400,
+        "equivalent_cases": 400,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidations": 454,
+        "gate_missed_escape": 0,
+        "genuinely_changed": 1600,
+        "rebuilt": 2054
+      }
+    },
+    "cross_document_dependency": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 600,
+        "max_target_depth": 0,
+        "planned_artifacts": 600
+      }
+    },
+    "deep_chain_64": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 12800,
+        "max_target_depth": 0,
+        "planned_artifacts": 12800
+      }
+    },
+    "diamond_conflicting_channels_semantic": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 400,
+        "max_target_depth": 0,
+        "planned_artifacts": 400
+      }
+    },
+    "diamond_conflicting_channels_structural": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 400,
+        "max_target_depth": 0,
+        "planned_artifacts": 400
+      }
+    },
+    "mixed": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 400,
+        "equivalent_cases": 400,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidations": 0,
+        "gate_missed_escape": 0,
+        "genuinely_changed": 800,
+        "rebuilt": 800
+      }
+    },
+    "semantic_only": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 400,
+        "equivalent_cases": 400,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidations": 400,
+        "gate_missed_escape": 0,
+        "genuinely_changed": 400,
+        "rebuilt": 800
+      }
+    },
+    "structural_only": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 400,
+        "equivalent_cases": 400,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidations": 0,
+        "gate_missed_escape": 0,
+        "genuinely_changed": 400,
+        "rebuilt": 400
+      }
+    },
+    "unchanged": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 400,
+        "equivalent_cases": 400,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidations": 0,
+        "gate_missed_escape": 0,
+        "genuinely_changed": 0,
+        "rebuilt": 0
+      }
+    }
+  },
+  "change_cases_per_class": 400,
+  "change_generator_sha256": "sha256:526d01103fc895c2c0cda9c3fde92c4de159e83035ae2d8c3cbe4f96389c8e7e",
+  "dependency_core_sha256": "sha256:3cf21ec387e5fbe5f613bd789280db50a43c9454fc0517dc8040afc60f802cfb",
+  "evidence_class": "one-shot fresh-seed controlled holdout",
+  "external_gpu_cost_usd": 0.0,
+  "failed_cells": [],
+  "gate_missed_escape_total": 0,
+  "generated_at": "2026-08-18T23:26:23.746778+00:00",
+  "preregistration_file_sha256": "sha256:9f89bccafd82dfc78fefc26af3db7eadc5a070475063aa92655e8fdb1465b95b",
+  "primary_criterion": "every cell exact-equivalent to independent full rebuild; zero stale escapes",
+  "primary_success": true,
+  "promotion_gate_core_sha256": "sha256:905e6387e8f984a6778dc379b4313c92a9ee95f3dfc5a2b9ad373d9518fce99b",
+  "protocol_sha256": "sha256:d509d26844cd9da8e3eab05c68ae8483b9b25614a44c09941ddc5330aa3e2bde",
+  "receipt_sha256": "sha256:df691b3d4a6870c51dfabb0dd825d564455fb075eb89f7d53bdf10d224edfc39",
+  "recompilation_core_sha256": "sha256:8bf10015b8576d2892782ffe0cfa99ca5975531974c3131dcf3d5429d05892b4",
+  "runner_sha256": "sha256:0a57b2d82b3676cb713cda5207b8e888d1fca3fec35ee248f880913062b49748",
+  "schema": "tavonel.family-b-final-fresh-holdout.v1",
+  "seed": 292717663036780366096935648487663919218,
+  "seed_sha256": "sha256:8655614827f2b3d21065fb554577793fcfec9412df5d7b17087b06c66240c3a2",
+  "semantic_diff_core_sha256": "sha256:6e75aceb08e080b2f1f7e4f9fbb30887aa0916681cb66b44730e6ffd8767c24a",
+  "topology_cases_per_cell": 200,
+  "topology_generator_sha256": "sha256:9dc27bc19650a0b28a4430b4c8a81cc41c4379939e60561a65560ad1ee159bec"
+}

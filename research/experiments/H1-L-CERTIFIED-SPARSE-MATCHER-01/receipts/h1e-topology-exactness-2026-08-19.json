@@ -1,0 +1,55 @@
+{
+  "blocked_policy_executed": false,
+  "cases_per_cell": 10,
+  "cells": {
+    "duplicate_text_decoy": {
+      "cases": 10,
+      "divergences": 0
+    },
+    "edited": {
+      "cases": 10,
+      "divergences": 0
+    },
+    "near_tie": {
+      "cases": 10,
+      "divergences": 0
+    },
+    "reordered": {
+      "cases": 10,
+      "divergences": 0
+    },
+    "shared_identifier": {
+      "cases": 10,
+      "divergences": 0
+    },
+    "split_and_merge": {
+      "cases": 10,
+      "divergences": 0
+    },
+    "stable": {
+      "cases": 10,
+      "divergences": 0
+    }
+  },
+  "closes_declared_gap": "The H1-L protocol section 5 declared that its frozen corpus did not cover the H1-E cases. This is a SEPARATE run with its own receipt, not an edit to that corpus.",
+  "divergence_examples": [],
+  "exact_on_h1e_topologies": true,
+  "experiment": "H1-L-CERTIFIED-SPARSE-MATCHER-01",
+  "extension_of": "receipts/exactness-2026-08-19.json",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T04:46:27.314915+00:00",
+  "identity_module_modified": false,
+  "network_access": false,
+  "receipt_sha256": "sha256:ae97bf5b34f441dcbda8811f48160a14416ea27550c4367025b20655e5c9389d",
+  "result": "EXACT_ON_H1E_TOPOLOGIES",
+  "schema": "tavonel.certified-sparse-h1e-topology-exactness.v1",
+  "scope_note": "These are the same generators and seed that produced H1-E's 8 residual BLOCKED divergences, so the distributions are the ones that vetoed BLOCKED. This run does NOT reproduce those 8 specific divergences by index; it re-draws from the same seeded generators at this cell size and compares LEGACY against CERTIFIED_SPARSE.",
+  "seed": 20260819,
+  "seed_source_receipt": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+  "seed_source_receipt_sha256": "sha256:9e0799692fb1c6fd375527732402fd04af302ea33b433682eb5e00e852044cc9",
+  "topology_source": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/scripts/identity_shadow_equivalence.py",
+  "topology_source_sha256": "sha256:af9445446ff0b18217d1a6077f6efe7e382e3f980be3742d2600fccb6c4921c4",
+  "total_comparisons": 70,
+  "total_divergences": 0,
+  "units_per_side": 20
+}

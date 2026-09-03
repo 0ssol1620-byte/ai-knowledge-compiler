@@ -1,0 +1,62 @@
+{
+  "any_container_tooling": false,
+  "build_recipe_present_for_a12_candidates": false,
+  "container_tooling_available": {
+    "buildah": false,
+    "docker": false,
+    "img": false,
+    "kaniko": false,
+    "nerdctl": false,
+    "podman": false
+  },
+  "dockerfile_analysis": "The only first-party image recipe is infra/runpod/v6/images/ovisocr2-m1/Dockerfile, which is a DIFFERENT candidate. The two Apache-2.0 A12 candidates (paddleocr-vl-1.6, deepseek-ocr-2) have no build recipe in this repository. The mineru Dockerfiles under benchmark/datasets/private are upstream vendor files for a third candidate, not A12 build recipes.",
+  "dockerfiles_in_repo": [
+    "workers/cpu-document/Dockerfile",
+    "workers/gpu-hpd/Dockerfile",
+    "workers/gpu-knowledge/Dockerfile",
+    "workers/gpu-parser/Dockerfile",
+    "workers/gpu-unlimited/Dockerfile",
+    "services/api/Dockerfile",
+    "services/scheduler/Dockerfile",
+    "services/url-fetcher/Dockerfile",
+    "node_modules/.pnpm/node_modules/@akc/web/Dockerfile",
+    "infra/runpod/v6/images/ovisocr2-m1/Dockerfile",
+    "benchmark/datasets/private/mineru-source-79d6d8d/docker/china/Dockerfile",
+    "benchmark/datasets/private/mineru-source-79d6d8d/docker/global/Dockerfile",
+    "apps/web/Dockerfile",
+    ".chatgpt2codex/buildah-from-probe/Dockerfile",
+    ".chatgpt2codex/buildah-syntax-probe/Dockerfile",
+    ".chatgpt2codex/ovis-build-context-v10/Dockerfile",
+    ".chatgpt2codex/ovis-build-context-v11/Dockerfile",
+    ".chatgpt2codex/ovis-build-context-v12/Dockerfile",
+    ".chatgpt2codex/ovis-build-context-v7/Dockerfile",
+    ".chatgpt2codex/ovis-build-context-v8/Dockerfile"
+  ],
+  "experiment": "H1-A12-01",
+  "external_blocker_contract": {
+    "only_then": "GPU spend may be authorized; gpu_spend_authorized stays false until a real digest exists",
+    "then": "candidate-registry.yaml runtime.image_digest becomes non-null, execution_state leaves measured_partial_runtime_image_pending, and the readiness audit's formal_immutable_runtime_ready gate flips true",
+    "what": "build and publish an image for paddleocr-vl-1.6 and deepseek-ocr-2, then record the returned sha256 digest",
+    "who": "someone with a container build host and push rights to the target registry"
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T04:34:45.692872+00:00",
+  "gpu_spend_authorized": false,
+  "incremental_gpu_spend_usd": 0.0,
+  "network_access": false,
+  "note_on_prior_reclassification": "A12 was once recorded as blocked on a founder licence decision. That was corrected to BLOCKED_INTERNAL (runtime). This audit refines it once more: the runtime blocker is not merely internal work not yet done, it is EXTERNAL to this environment - no container runtime exists here to do it with.",
+  "purpose": "Exhaust every $0 path to the remaining A12 blocker (an exact immutable runtime image digest) and, if none exists, state the external blocker contract precisely.",
+  "receipt_sha256": "sha256:b82b9a729d2a32ae3c5299e9f392de9d8e4303985ec1f91ae1a1336dc653ebdc",
+  "remaining_blocker": "formal_immutable_runtime_not_ready",
+  "schema": "tavonel.a12-zero-cost-unblock-audit.v1",
+  "status": "BLOCKED_EXTERNAL_CONFIRMED_AT_ZERO_COST",
+  "what_a_digest_requires": "an actual image build AND publish to a registry; a digest is the hash of pushed content and cannot be authored by hand",
+  "zero_cost_paths_exhausted": [
+    "licence clearance - DONE, both candidates Apache-2.0, approved, commercial_use allowed",
+    "source-only bundle - DONE and hash-verified",
+    "same-family recovery recipe - DONE, frozen for all 48 cases, derived not authored",
+    "runtime readiness audit - DONE, v2 receipt",
+    "container build - IMPOSSIBLE HERE: no docker/podman/buildah/nerdctl on PATH",
+    "authoring a Dockerfile - possible but produces NO digest; the blocker is the digest, not the recipe, and an unbuilt untested recipe would be unverified scaffolding"
+  ]
+}

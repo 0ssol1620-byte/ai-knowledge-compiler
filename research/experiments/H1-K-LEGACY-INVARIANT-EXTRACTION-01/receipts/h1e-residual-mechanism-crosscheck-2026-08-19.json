@@ -1,0 +1,108 @@
+{
+  "all_examples_are_new_ambiguous_flip": true,
+  "consistency": "CONSISTENT",
+  "divergence_examples_available": 5,
+  "examples": [
+    {
+      "blocked": {
+        "logical_id": "n12a",
+        "match": "new",
+        "score": 0.0
+      },
+      "case": 3,
+      "cell": "split_and_merge",
+      "kind": "OTHER",
+      "legacy": {
+        "logical_id": null,
+        "match": "ambiguous",
+        "score": 0.8162
+      },
+      "position": 15
+    },
+    {
+      "blocked": {
+        "logical_id": null,
+        "match": "ambiguous",
+        "score": 0.8162
+      },
+      "case": 3,
+      "cell": "split_and_merge",
+      "kind": "OTHER",
+      "legacy": {
+        "logical_id": "n12b",
+        "match": "new",
+        "score": 0.0
+      },
+      "position": 16
+    },
+    {
+      "blocked": {
+        "logical_id": null,
+        "match": "ambiguous",
+        "score": 0.8039
+      },
+      "case": 8,
+      "cell": "split_and_merge",
+      "kind": "OTHER",
+      "legacy": {
+        "logical_id": "n24a",
+        "match": "new",
+        "score": 0.0
+      },
+      "position": 30
+    },
+    {
+      "blocked": {
+        "logical_id": "n24b",
+        "match": "new",
+        "score": 0.0
+      },
+      "case": 8,
+      "cell": "split_and_merge",
+      "kind": "OTHER",
+      "legacy": {
+        "logical_id": null,
+        "match": "ambiguous",
+        "score": 0.8039
+      },
+      "position": 31
+    },
+    {
+      "blocked": {
+        "logical_id": null,
+        "match": "ambiguous",
+        "score": 0.8162
+      },
+      "case": 9,
+      "cell": "split_and_merge",
+      "kind": "OTHER",
+      "legacy": {
+        "logical_id": "n48a",
+        "match": "new",
+        "score": 0.0
+      },
+      "position": 60
+    }
+  ],
+  "experiment": "H1-K-LEGACY-INVARIANT-EXTRACTION-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T04:45:33.009743+00:00",
+  "h1k_predicted_mechanism": "Under the global one-to-one assignment a row that loses a contended column is assigned nothing and returns NEW. When the candidate set is restricted or the window decomposed, that row wins the column locally and lands in the ambiguous band, returning AMBIGUOUS with logical_id=None.",
+  "network_access": false,
+  "note_on_count": "The receipt records 8 OTHER divergences and stores 5 examples. The analysis below covers the 5 stored examples, not all 8. It is a consistency check, not a proof over the full residual set.",
+  "patterns_observed": {
+    "ambiguous->new": 2,
+    "new->ambiguous": 3
+  },
+  "purpose": "Check whether H1-E's real residual divergences match the mechanism H1-K identified on constructed cases. No experiment re-run; this reads the existing pinned receipt.",
+  "receipt_sha256": "sha256:a5742dfbb785da5ba9418c188eda187617154fc22f04d1a1cb2d2e100f82d13a",
+  "receipts_modified": false,
+  "schema": "tavonel.h1e-residual-mechanism-crosscheck.v1",
+  "source_receipt": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+  "source_receipt_sha256": "sha256:9e0799692fb1c6fd375527732402fd04af302ea33b433682eb5e00e852044cc9",
+  "what_this_does_and_does_not_establish": {
+    "does": "H1-E's real residual divergences are the same NEW/AMBIGUOUS flip H1-K reproduced on constructed cases, in both directions (legacy NEW -> blocked AMBIGUOUS and legacy AMBIGUOUS -> blocked NEW).",
+    "does_not": "It does not wire the H1-E corpus into the H1-L exactness harness. That gap was declared in the H1-L protocol before the run and remains open. This is a consistency check over stored examples, not coverage."
+  },
+  "why_it_matters": "It closes the loop between the constructed explanation and the measured veto: the 8/8 future-path divergences in H1-E2 follow because AMBIGUOUS carries logical_id=None, so the next revision seeds a fresh identity."
+}

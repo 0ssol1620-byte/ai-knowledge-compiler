@@ -1,0 +1,32 @@
+{
+  "schema": "tavonel.h1-a12-production-path-reconciliation.v1",
+  "experiment_id": "H1-A12-01",
+  "recorded_on": "2026-08-16",
+  "status": "PRE_EXISTING_PRODUCTION_ORIENTED_CAUSE_SEPARATION_CONFIRMED",
+  "correction": "The initial A12 patent chart and first H1 preregistration understated the current repository. A production-oriented v6 scheduler path already separates semantic recovery from infrastructure retry and excludes the failed independent model family when choosing semantic recovery. The new CIR cause_conditioned_recovery adapter makes the classification/operator contract explicit and directly ablatable, but it is not the first implementation of the behavioral idea in this repository.",
+  "observed_code": [
+    "services/scheduler/src/akc_scheduler/autonomous_v6_pipeline.py::_recover_semantic",
+    "services/scheduler/src/akc_scheduler/autonomous_v6_pipeline.py::_retry_infrastructure",
+    "services/scheduler/src/akc_scheduler/autonomous_v6_pipeline.py::_accept_recovery",
+    "packages/parallel-runtime/src/akc_parallel_runtime/recovery.py",
+    "packages/parallel-runtime/src/akc_parallel_runtime/models.py::AttemptKind"
+  ],
+  "behavior": {
+    "semantic_failure": "schedules AttemptKind.RECOVERY, excludes the failed recipe independent family, and advances recovery scope/candidate family under a bounded recovery budget",
+    "infrastructure_failure": "schedules AttemptKind.RETRY, records infrastructure health/drain evidence, and retries on another worker/model family",
+    "recovery_acceptance": "binds base and repair independent-family identities plus source evidence into RecoveryCandidate before acceptance"
+  },
+  "verification": {
+    "command_scope": "three targeted tests from services/scheduler/tests/test_autonomous_v6_pipeline.py",
+    "tests": [
+      "test_semantic_failure_attempts_bounded_recovery_then_needs_review",
+      "test_semantic_recovery_escalates_exactly_one_scope_per_attempt",
+      "test_infrastructure_failure_retries_on_another_worker_and_model_family"
+    ],
+    "result": "PASS",
+    "pytest": "3/3 passed",
+    "duration_seconds": 105.77
+  },
+  "claim_boundary": "This confirms implementation behavior, not empirical superiority. The paired quality/cost ablation remains unrun.",
+  "gpu_spend_usd": 0.0
+}

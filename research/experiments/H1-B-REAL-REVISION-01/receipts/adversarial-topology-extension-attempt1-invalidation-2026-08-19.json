@@ -1,0 +1,11 @@
+{
+  "schema": "tavonel.superseded-receipt.v1",
+  "superseded_artifact": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-2026-08-19.json",
+  "status": "INVALIDATED_EXPERIMENT_HARNESS_MISMATCH",
+  "reason": "The frozen protocol defines the diamond's structural branch as STRUCTURAL-only. Attempt 1 nevertheless included the source unit's semantic text in that branch's independent full-oracle hash. Therefore a text-only semantic edit incorrectly changed the structural branch in ground truth, producing 200/200 apparent escapes that do not correspond to the preregistered topology. The Protected Core is not modified on this evidence. The failed receipt is retained; the harness alone is corrected to make the structural-only branch hash depend on structure, not semantic unit text, then the same frozen counts/seed/criterion are rerun.",
+  "result_used_for_claims": false,
+  "threshold_or_success_criterion_changed": false,
+  "seed_changed": false,
+  "cases_per_cell_changed": false,
+  "external_gpu_cost_usd": 0.0
+}

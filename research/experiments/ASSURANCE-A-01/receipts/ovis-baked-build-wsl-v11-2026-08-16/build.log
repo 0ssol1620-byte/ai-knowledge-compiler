@@ -1,0 +1,1 @@
+Error: creating build container: short-name "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05" did not resolve to an alias and no unqualified-search registries are defined in "/etc/containers/registries.conf"

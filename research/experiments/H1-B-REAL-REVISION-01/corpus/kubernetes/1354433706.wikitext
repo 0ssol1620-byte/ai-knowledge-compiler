@@ -1,0 +1,586 @@
+{{Short description|Open-source container software}}
+{{Overly detailed|date=October 2023}}
+{{Infobox software
+| title = Kubernetes (K8s)
+| name = Kubernetes
+| logo = Kubernetes logo without workmark.svg
+| logo size = 84px
+| caption = 
+| author = [[Google]]
+| developer = [[Cloud Native Computing Foundation]]
+| released = 0.2<ref name="github first-tagged-release">{{cite web |url=https://github.com/kubernetes/kubernetes/commit/a0abb3815755d6a77eed2d07bb0aa7d255e4e769 |title=v0.2 |work=github.com |date=2014-09-09 |access-date=2022-11-23 |archive-date=2022-11-23 |archive-url=https://web.archive.org/web/20221123093113/https://github.com/kubernetes/kubernetes/commit/a0abb3815755d6a77eed2d07bb0aa7d255e4e769 |url-status=live }}</ref> / {{Start date and age|2014|09|09|df=yes}}
+| latest_release_version = {{multiple releases
+  | branch1  = 1.36
+  | version1 = {{wikidata|property|preferred|references|P348|P548=Q2804309}}
+  | date1    = {{start date and age|{{wikidata|qualifier|preferred|single|P348|P548=Q2804309|P577}}}}
+
+  | branch2  = 1.35
+  | version2 = {{wikidata|property|preferred|references|P348|P548= Q6736813}}
+  | date2    = {{start date and age|{{wikidata|qualifier|preferred|single|P348|P548=Q2804309|P577}}}}
+
+  | branch3  = 1.34
+  | version3 = {{wikidata|property|preferred|references|P348|P548=Q6736813}}
+  | date3    = {{start date and age|{{wikidata|qualifier|preferred|single|P348|P548=Q6736813|P577}}}}
+}}
+| programming language = [[Go (programming language)|Go]]
+| genre = [[Computer cluster#Cluster management|Cluster management software]]
+| license = [[Apache License 2.0]]
+| website = {{Official URL}}
+}}
+
+'''Kubernetes''' ({{IPAc-en|,|k|(|j|)|uː|b|ər|ˈ|n|ɛ|t|ɪ|s|,_|-|ˈ|n|eɪ|t|ɪ|s|,_|-|ˈ|n|eɪ|t|iː|z|,_|-|ˈ|n|ɛ|t|iː|z}}), also known as '''K8s,''' is an [[open-source software|open-source]] [[containerization (computing)|container]] [[orchestration (computing)|orchestration]] system for automating [[software deployment]], scaling, and management.<ref>{{cite web |title=kubernetes/kubernetes |url=http://github.com/kubernetes/kubernetes/ |url-status=live |archive-url=https://web.archive.org/web/20170421035413/https://github.com/kubernetes/kubernetes |archive-date=2017-04-21 |access-date=2017-03-28 |website=GitHub |language=en-US}}</ref><ref name=":2">{{cite web |title=What is Kubernetes? |url=https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/ |access-date=2017-03-31 |website=Kubernetes |archive-date=2017-04-01 |archive-url=https://web.archive.org/web/20170401060041/https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/ |url-status=live}}</ref> Originally designed by [[Google]], the project is now maintained by a worldwide community of contributors, and the trademark is held by the [[Cloud Native Computing Foundation]].
+
+The name ''Kubernetes'' comes from the [[Ancient Greek]] term {{langx|grc|label=none|κυβερνήτης|kubernḗtēs}} {{gloss|mode=def|helmsman, pilot}}, which is also the origin of the words ''[[cybernetics]]'' and (through Latin) ''[[governor]]''. "Kubernetes" is often abbreviated with the [[numeronym|numerical contraction]] "K8s", meaning "the letter K, followed by 8 letters, followed by s".<ref>{{cite web |title=Overview Kubernetes|url=https://kubernetes.io/docs/concepts/overview/ |access-date=2022-01-04 |archive-url=https://archive.today/20230108084516/https://kubernetes.io/docs/concepts/overview/ |archive-date=2023-01-08 |website=Kubernetes |language=en}}</ref>
+
+Kubernetes assembles one or more computers, either [[virtual machine]]s or [[bare-metal server|bare metal]], into a [[computer cluster|cluster]] which can run workloads in containers. It works with various container runtimes, such as [[containerd]] and [[Cloud Native Computing Foundation#CRI-O|CRI-O]].<ref>{{cite web |title=Container runtimes |url=https://kubernetes.io/docs/setup/production-environment/container-runtimes/ |access-date=2021-11-14 |website=Kubernetes |language=en |archive-date=2019-07-18 |archive-url=https://web.archive.org/web/20190718012659/https://kubernetes.io/docs/setup/production-environment/container-runtimes/ |url-status=live}}</ref> Its suitability for running and managing workloads of all sizes and styles has led to its widespread adoption in clouds and data centers. There are multiple distributions of this platform—from [[independent software vendor]]s (ISVs) as well as hosted-on-cloud offerings from all the major public cloud vendors.<ref>{{cite web |title=Turnkey Cloud Solutions |url=https://kubernetes.io/docs/setup/production-environment/turnkey-solutions/ |access-date=July 25, 2023 |website=Kubernetes Documentation |archive-date=July 24, 2023 |archive-url=https://web.archive.org/web/20230724183919/https://kubernetes.io/docs/setup/production-environment/turnkey-solutions/ |url-status=live}}</ref>
+
+The software consists of a [[control plane]] and nodes on which the actual applications run. It includes tools like <code>kubeadm</code> and <code>kubectl</code> which can be used to interact with its [[REST]]-based API.<ref>{{cite web |title=The Kubernetes API |url=https://kubernetes.io/docs/concepts/overview/kubernetes-api/ |website=Kubernetes |access-date=26 April 2025 |url-status=live |archive-url=https://web.archive.org/web/20250330184809/https://kubernetes.io/docs/concepts/overview/kubernetes-api/ |archive-date=30 March 2025}}</ref>
+
+== History ==
+[[File:Kubernetes talk at Google Cloud Summit.jpg|thumb|Google Kubernetes Engine talk at 2017 Google Cloud Summit]]
+Kubernetes was announced by Google on June 6, 2014.<ref name=":3">{{cite magazine|title=Google Open Sources Its Secret Weapon in Cloud Computing|url=https://www.wired.com/2014/06/google-kubernetes/|url-status=live|magazine=Wired|archive-url=https://web.archive.org/web/20150910171929/http://www.wired.com/2014/06/google-kubernetes|archive-date=10 September 2015|access-date=24 September 2015|last1=Metz|first1=Cade}}</ref> The project was conceived and created by Google employees Joe Beda, Brendan Burns, and Craig McLuckie. Others at Google soon joined to help build the project including Ville Aikas, Dawn Chen, Brian Grant, Tim Hockin, and Daniel Smith.<ref>{{Cite magazine|url=https://www.wired.com/2015/06/google-kubernetes-says-future-cloud-computing/|title=Google Made Its Secret Blueprint Public to Boost Its Cloud|magazine=Wired|language=en-US|access-date=2016-06-27|url-status=live|archive-url=https://web.archive.org/web/20160701040235/http://www.wired.com/2015/06/google-kubernetes-says-future-cloud-computing/|archive-date=2016-07-01|last1=Metz|first1=Cade}}</ref><ref>{{Citation |title=The History of Kubernetes & the Community Behind It |last=Burns |first=Brendan |date=July 20, 2018 |url=https://kubernetes.io/blog/2018/07/20/the-history-of-kubernetes-the-community-behind-it/ |archive-url=https://web.archive.org/web/20220227112321/https://kubernetes.io/blog/2018/07/20/the-history-of-kubernetes-the-community-behind-it/|archive-date=2022-02-27 }}</ref> Other companies such as [[Red Hat]] and [[CoreOS]] joined the effort soon after, with notable contributors such as Clayton Coleman and [[Kelsey Hightower]].<ref name=":3" />
+
+The design and development of Kubernetes was inspired by Google's [[Borg (cluster manager)|Borg]] cluster manager and based on [[Promise theory|Promise Theory]].<ref>{{Citation |title=Kubernetes: The Documentary [PART 1] | date=21 January 2022 |url=https://www.youtube.com/watch?v=BE77h7dmoQU |access-date=2023-12-14 |language=en}}</ref><ref>{{Cite web |title=kelseyhightower/status/1527333243845873664 |url=https://twitter.com/kelseyhightower/status/1527333243845873664 |access-date=2023-12-14 |website=X (formerly Twitter) |language=en |archive-date=2022-05-19 |archive-url=https://web.archive.org/web/20220519170019/https://twitter.com/kelseyhightower/status/1527333243845873664 }}</ref> Many of its top contributors had previously worked on Borg;<ref name="borg_paper">{{cite journal|author1=Abhishek Verma|author2=Luis Pedrosa|author3=Madhukar R. Korupolu|author4=David Oppenheimer|author5=Eric Tune|author6=John Wilkes|title=Large-scale cluster management at Google with Borg|journal=Proceedings of the European Conference on Computer Systems (EuroSys)|date=April 21–24, 2015|url=https://research.google.com/pubs/pub43438.html|url-status=live|archive-url=https://web.archive.org/web/20170727090712/https://research.google.com/pubs/pub43438.html|archive-date=2017-07-27}}</ref><ref>{{Cite web|url=http://queue.acm.org/detail.cfm?id=2898444|title=Borg, Omega, and Kubernetes - ACM Queue|website=queue.acm.org|access-date=2016-06-27|url-status=live|archive-url=https://web.archive.org/web/20160709023750/http://queue.acm.org/detail.cfm?id=2898444|archive-date=2016-07-09}}</ref> they codenamed Kubernetes "{{Nowrap|Project 7}}" after the ''Star Trek'' ex-[[Borg]] character [[Seven of Nine]]<ref>{{Cite news|url=https://www.eweek.com/cloud/early-stage-startup-heptio-aims-to-make-kubernetes-friendly|title=Early Stage Startup Heptio Aims to Make Kubernetes Friendly|access-date=2016-12-06|archive-date=2023-07-18|archive-url=https://web.archive.org/web/20230718053920/https://www.eweek.com/cloud/early-stage-startup-heptio-aims-to-make-kubernetes-friendly/|url-status=live}}</ref> and gave its logo a seven-spoked ship's wheel (designed by Tim Hockin). Unlike Borg, which was written in [[C++]],<ref name="borg_paper" /> Kubernetes is written in the [[Go (programming language)|Go]] language.
+
+Kubernetes was announced in June, 2014 and version 1.0 was released on July 21, 2015.<ref>{{cite web|title=As Kubernetes Hits 1.0, Google Donates Technology To Newly Formed Cloud Native Computing Foundation|url=https://techcrunch.com/2015/07/21/as-kubernetes-hits-1-0-google-donates-technology-to-newly-formed-cloud-native-computing-foundation-with-ibm-intel-twitter-and-others/|website=TechCrunch|date=21 July 2015 |access-date=24 September 2015|url-status=live|archive-url=https://web.archive.org/web/20150923060338/http://techcrunch.com/2015/07/21/as-kubernetes-hits-1-0-google-donates-technology-to-newly-formed-cloud-native-computing-foundation-with-ibm-intel-twitter-and-others/|archive-date=23 September 2015}}</ref> Google worked with the [[Linux Foundation]] to form the Cloud Native Computing Foundation (CNCF)<ref>{{cite web|url=https://cncf.io/|title=Cloud Native Computing Foundation|url-status=live|archive-url=https://web.archive.org/web/20170703085502/https://www.cncf.io/|archive-date=2017-07-03}}</ref> and offered Kubernetes as the seed technology.
+
+Google was already offering a managed Kubernetes service, [[Google Cloud Platform|GKE]], and [[Red Hat]] was supporting Kubernetes as part of [[OpenShift]] since the inception of the Kubernetes project in 2014.<ref>{{cite web|url=https://www.redhat.com/en/blog/red-hat-and-google-collaborate-kubernetes-manage-docker-containers-scale|title=Red Hat and Google collaborate on Kubernetes to manage Docker containers at scale|date=2014-07-10|access-date=2022-08-06|archive-date=2019-07-02|archive-url=https://web.archive.org/web/20190702063905/https://www.redhat.com/en/blog/red-hat-and-google-collaborate-kubernetes-manage-docker-containers-scale|url-status=live}}</ref> In 2017, the principal competitors rallied around Kubernetes and announced adding native support for it:
+* [[VMware]] (proponent of [[Pivotal Cloud Foundry]])<ref>{{cite web|url=https://news.vmware.com/releases/vmware-and-pivotal-launch-pivotal-container-service-pks-and-collaborate-with-google-cloud-to-bring-kubernetes-to-enterprise-customers|title=VMware and Pivotal Launch Pivotal Container Service (PKS) and Collaborate with Google Cloud to Bring Kubernetes to Enterprise Customers|date=2017-08-29|access-date=2022-08-06|archive-date=2022-10-06|archive-url=https://web.archive.org/web/20221006123403/https://news.vmware.com/releases/vmware-and-pivotal-launch-pivotal-container-service-pks-and-collaborate-with-google-cloud-to-bring-kubernetes-to-enterprise-customers|url-status=live}}</ref> in August,
+* Mesosphere, Inc. (proponent of Marathon and [[Apache Mesos|Mesos]])<ref>{{cite web|url=https://techcrunch.com/2017/09/06/mesosphere-says-its-not-bowing-to-kubernetes|title=Mesosphere adds Kubernetes support to its data center operating system|first=Frederic|last=Lardinois|date=2017-09-06|access-date=2022-08-06|archive-date=2017-09-06|archive-url=https://web.archive.org/web/20170906225616/https://techcrunch.com/2017/09/06/mesosphere-says-its-not-bowing-to-kubernetes|url-status=live}}</ref> in September,
+* [[Docker, Inc.]] (proponent of [[Docker (software)|Docker]])<ref>{{Cite web|title=Docker Announces Enhancements to the Docker Platform to Simplify and Advance the Management of Kubernetes for Enterprise IT|url=https://www.docker.com/docker-news-and-press/docker-announces-enhancements-docker-platform-simplify-and-advance-management|archive-url=https://web.archive.org/web/20200926222104/https://www.docker.com/docker-news-and-press/docker-announces-enhancements-docker-platform-simplify-and-advance-management|date=2017-10-17|archive-date=2020-09-26|url-status=dead}}</ref> in October,
+* [[Microsoft Azure]]<ref>{{cite web|url=https://azure.microsoft.com/fr-fr/blog/introducing-azure-container-service-aks-managed-kubernetes-and-azure-container-registry-geo-replication/|title=Introducing AKS (managed Kubernetes) and Azure Container Registry improvements|first=Gabe|last=Monroy|date=2017-10-24|access-date=2022-08-06|archive-date=2018-02-07|archive-url=https://web.archive.org/web/20180207144021/https://azure.microsoft.com/fr-fr/blog/introducing-azure-container-service-aks-managed-kubernetes-and-azure-container-registry-geo-replication/|url-status=live}}</ref> also in October,
+* [[Amazon Web Services|AWS]] announced support for Kubernetes via the Elastic Kubernetes Service (EKS)<ref>{{Cite web|title=Introducing Amazon Elastic Container Service for Kubernetes (Preview)|url=https://aws.amazon.com/about-aws/whats-new/2017/11/introducing-amazon-elastic-container-service-for-kubernetes/|date=2017-11-29|access-date=2022-08-06|archive-date=2017-11-30|archive-url=https://web.archive.org/web/20171130083112/https://aws.amazon.com/about-aws/whats-new/2017/11/introducing-amazon-elastic-container-service-for-kubernetes/|url-status=live}}</ref> in November.
+* [[Cisco]] Elastic Kubernetes Service (EKS)<ref>{{Cite web|title=Introducing Cisco Elastic Container Service for Kubernetes (Preview)|url=https://www.cisco.com/site/us/en/products/computing/hybrid-cloud-operations/intersight-kubernetes-service/index.html|access-date=2025-02-06|archive-date=2025-02-14|archive-url=https://web.archive.org/web/20250214110615/https://www.cisco.com/site/us/en/products/computing/hybrid-cloud-operations/intersight-kubernetes-service/index.html|url-status=live}}</ref> in November.
+
+On March 6, 2018, Kubernetes Project reached ninth place in the list of [[GitHub]] projects by the number of [[Commit (version control)|commits]], and second place in authors and issues, after the [[Linux kernel]].<ref>{{cite web|url=https://www.cncf.io/blog/2018/03/06/kubernetes-first-cncf-project-graduate/|title=Kubernetes Is First CNCF Project To Graduate|access-date=3 December 2018|last=Conway|first=Sarah|website=[[Cloud Native Computing Foundation]]|date=6 March 2018|language=en|quote=Compared to the 1.5 million projects on GitHub, Kubernetes is No. 9 for commits and No. 2 for authors/issues, second only to Linux.|url-status=live|archive-url=https://web.archive.org/web/20181029081848/https://www.cncf.io/blog/2018/03/06/kubernetes-first-cncf-project-graduate/|archive-date=29 October 2018}}</ref>
+
+Until version 1.18, Kubernetes followed an N-2 support policy, meaning that the three most recent minor versions receive security updates and bug fixes.<ref>{{Cite web|title=Kubernetes version and version skew support policy|url=https://kubernetes.io/docs/setup/release/version-skew-policy/|access-date=2020-03-03|website=Kubernetes|archive-date=2019-07-16|archive-url=https://web.archive.org/web/20190716221040/https://kubernetes.io/docs/setup/release/version-skew-policy/|url-status=live}}</ref> Starting with version 1.19, Kubernetes follows an N-3 support policy.<ref name="increase_to_N-3_support">{{Cite web|date=26 August 2020|title=Kubernetes 1.19 Release Announcement > Increase Kubernetes support window to one year|url=https://kubernetes.io/blog/2020/08/26/kubernetes-release-1.19-accentuate-the-paw-sitive/#increase-kubernetes-support-window-to-one-year|access-date=2020-08-28|website=Kubernetes|archive-date=2020-08-28|archive-url=https://web.archive.org/web/20200828231015/https://kubernetes.io/blog/2020/08/26/kubernetes-release-1.19-accentuate-the-paw-sitive/#increase-kubernetes-support-window-to-one-year|url-status=live}}</ref>
+
+== Concepts ==
+[[File:kubernetes.png|thumb|Kubernetes architecture diagram]]
+
+Kubernetes defines a set of building blocks ("primitives") that collectively provide mechanisms that deploy, maintain, and scale applications based on [[Central processing unit|CPU]], memory or custom metrics.<ref>{{cite web |title=Configure Kubernetes Autoscaling With Custom Metrics |url=https://docs.bitnami.com/kubernetes/how-to/configure-autoscaling-custom-metrics/ |website=Bitnami |publisher=BitRock |access-date=27 December 2018 |date=15 November 2018 |archive-date=27 March 2019 |archive-url=https://web.archive.org/web/20190327101233/https://docs.bitnami.com/kubernetes/how-to/configure-autoscaling-custom-metrics/ |url-status=dead }}</ref> Kubernetes is [[Loose coupling|loosely coupled]] and extensible to meet the needs of different workloads. The internal components as well as extensions and containers that run on Kubernetes rely on the Kubernetes API.<ref name="do-intro">{{cite web|title=An Introduction to Kubernetes|url=https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes|website=DigitalOcean|access-date=24 September 2015|url-status=live|archive-url=https://web.archive.org/web/20151001183617/https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes|archive-date=1 October 2015}}</ref><ref>{{cite web|title=The Kubernetes API|url=https://kubernetes.io/docs/concepts/overview/kubernetes-api/|website=Kubernetes|access-date=26 April 2025|url-status=live|archive-url=https://web.archive.org/web/20250330184809/https://kubernetes.io/docs/concepts/overview/kubernetes-api/|archive-date=30 March 2025}}</ref>
+
+The platform exerts its control over compute and storage resources by defining resources as objects, which can then be managed as such.
+
+Kubernetes follows the [[primary/replica architecture]]. The components of Kubernetes can be divided into those that manage an individual [[Node (networking)|node]] and those that are part of the control plane.<ref name="do-intro" /><ref name=":0">{{cite web|title=Kubernetes Infrastructure|url=https://docs.openshift.org/latest/architecture/infrastructure_components/kubernetes_infrastructure.html|website=OpenShift Community Documentation|publisher=OpenShift|access-date=24 September 2015|url-status=live|archive-url=https://web.archive.org/web/20150706121423/https://docs.openshift.org/latest/architecture/infrastructure_components/kubernetes_infrastructure.html|archive-date=6 July 2015}}</ref>
+
+=== Control plane ===
+
+The Kubernetes master node handles the Kubernetes control plane of the cluster, managing its workload and directing communication across the system. The Kubernetes control plane consists of various components such as [[Transport Layer Security|TLS encryption]], [[role-based access control]] (RBAC) and a strong [[authentication]] method, network separation, each its own process, that can run both on a single master node or on multiple masters supporting [[high-availability cluster]]s.<ref name=":0" /> The various components of the Kubernetes control plane are as follows.<ref name=":7">{{cite web |title=Kubernetes Hardening Guide|url=https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF|website=[[United States Department of Defense]] |access-date=January 26, 2024}}</ref>
+
+==== Etcd ====
+[[Etcd]]<ref>{{Cite web |date=2021-10-01 |title=What Is etcd? {{!}} IBM |url=https://www.ibm.com/think/topics/etcd |access-date=2025-10-16 |website=www.ibm.com |language=en}}</ref> is a persistent, lightweight, distributed, [[key-value data store]] (originally developed as part of CoreOS). It reliably stores the configuration data of the cluster, representing the overall state of the cluster at any given point of time. Etcd favors consistency over availability in the event of a network partition (see [[CAP theorem]]). The consistency is crucial for correctly scheduling and operating services.
+
+==== API server ====
+The API server serves the Kubernetes [[API]] using [[JSON]] over [[HTTP]], which provides both the internal and external interface to Kubernetes.<ref name="do-intro" /><ref name=":1">{{Cite web|url=http://kamalmarhubi.com/blog/2015/09/06/kubernetes-from-the-ground-up-the-api-server/|title=Kubernetes from the ground up: API server|last=Marhubi|first=Kamal|date=2015-09-26|publisher=kamalmarhubi.com|access-date=2015-11-02|url-status=live|archive-url=https://web.archive.org/web/20151029131948/http://kamalmarhubi.com/blog/2015/09/06/kubernetes-from-the-ground-up-the-api-server/|archive-date=2015-10-29}}</ref> The API server processes, validates [[REST]] requests, and updates the state of the API objects in etcd, thereby allowing clients to configure workloads and containers across worker nodes.<ref>{{cite web |url= https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes |title= An Introduction to Kubernetes |access-date = 20 July 2018 |last= Ellingwood |first= Justin |date= 2 May 2018 |website= [[DigitalOcean]] |language = en |quote= One of the most important primary services is an API server. This is the main management point of the entire cluster as it allows a user to configure Kubernetes' workloads and organizational units. It is also responsible for making sure that the etcd store and the service details of deployed containers are in agreement. It acts as the bridge between various components to maintain cluster health and disseminate information and commands. |archive-url= https://web.archive.org/web/20180705232851/https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes |archive-date= 5 July 2018}}</ref> The API server uses etcd's watch API to monitor the cluster, roll out critical configuration changes, or restore any divergences of the state of the cluster back to the desired state as declared in etcd.
+
+As an example, a human operator may specify that three instances of a particular "pod" (see below) need to be running, and etcd stores this fact. If the Deployment controller finds that only two instances are running (conflicting with the etcd declaration),<ref name=":6">{{Cite web |title=Deployments |url=https://kubernetes.io/docs/concepts/workloads/controllers/deployment/ |access-date=2022-02-27 |website=Kubernetes |language=en |archive-date=2019-09-22 |archive-url=https://web.archive.org/web/20190922205826/https://kubernetes.io/docs/concepts/workloads/controllers/deployment/ |url-status=live }}</ref> it schedules the creation of an additional instance of that pod.<ref name=":0" />
+
+==== Scheduler ====
+The scheduler is an extensible component that selects the node that an unscheduled pod (the basic unit of workloads to be scheduled) runs on, based on resource availability and other constraints. The scheduler tracks resource allocation on each node to ensure that workload is not scheduled in excess of available resources. For this purpose, the scheduler must know the resource requirements, resource availability, and other user-provided constraints or policy directives such as quality-of-service, affinity/anti-affinity requirements, and data locality. The scheduler's role is to match resource "supply" to workload "demand".<ref>{{cite web|url=http://rancher.com/three-pillars-kubernetes-container-orchestration/|title=The Three Pillars of Kubernetes Container Orchestration - Rancher Labs|date=18 May 2017|website=rancher.com|access-date=22 May 2017|url-status=live|archive-url=https://web.archive.org/web/20170624022635/http://rancher.com/three-pillars-kubernetes-container-orchestration/|archive-date=24 June 2017}}</ref>
+
+Kubernetes allows running multiple schedulers within a single cluster. As such, scheduler [[Plug-in (computing)|plug-ins]] may be developed and installed as in-process extensions to the native vanilla scheduler by running it as a separate scheduler, as long as they conform to the Kubernetes scheduling framework.<ref>{{Cite web |title=Scheduling Framework |url=https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723190938/https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/ |url-status=live }}</ref> This allows cluster administrators to extend or modify the behavior of the default Kubernetes scheduler according to their needs.
+
+==== Controllers ====
+A controller is a reconciliation loop that drives the actual cluster state toward the desired state, communicating with the API server to create, update, and delete the resources it manages (e.g., pods or service endpoints).<ref name="coreos-replication-controller">{{cite web |url=https://coreos.com/kubernetes/docs/latest/replication-controller.html |title=Overview of a Replication Controller |work=Documentation |publisher=[[CoreOS]] |access-date=2015-11-02 |url-status=live |archive-url=https://web.archive.org/web/20150922010433/https://coreos.com/kubernetes/docs/latest/replication-controller.html |archive-date=2015-09-22 }}</ref><ref name=":1" />
+
+An example controller is a ReplicaSet controller, which handles replication and scaling by running a specified number of copies of a pod across the cluster. The controller also handles creating replacement pods if the underlying node fails.<ref name="coreos-replication-controller" /> Other controllers that are part of the core Kubernetes system include a DaemonSet controller for running exactly one pod on every machine (or some subset of machines), and a Job controller for running pods that run to completion (e.g. as part of a batch job).<ref name="exciting-experimental-features">{{cite web |url=http://www.livewyer.com/blog/2015/10/02/kubernetes-exciting-experimental-features |title=Kubernetes: Exciting Experimental Features |last=Sanders |first=Jake |work=Livewyer |date=2015-10-02 |access-date=2015-11-02 |url-status=live |archive-url=https://web.archive.org/web/20151020071601/http://www.livewyer.com/blog/2015/10/02/kubernetes-exciting-experimental-features |archive-date=2015-10-20 }}</ref> Labels selectors often form part of the controller's definition that specify the set of pods that a controller manages.<ref name="redhat-docker-and-kubernetes-training-labels-examples" />
+
+The controller manager is a single process that manages several core Kubernetes controllers (including the examples described above), is distributed as part of the standard Kubernetes installation and responding to the loss of nodes.<ref name=":7"/>
+
+Custom controllers may also be installed in the cluster, further allowing the behavior and API of Kubernetes to be extended when used in conjunction with custom resources (see [[#Custom resources, controllers and operators|custom resources, controllers and operators]] below).
+
+=== Nodes ===
+
+A node, also known as a worker or a minion, is a machine where containers (workloads) are deployed. Every node in the cluster must run a container [[Runtime system|runtime]], as well as the below-mentioned components, for communication with the primary network configuration of these containers.
+
+==== kubelet ====
+kubelet is responsible for the running state of each node, ensuring that all containers on the node are healthy. It takes care of starting, stopping, and maintaining application containers organized into pods as directed by the control plane.<ref name="do-intro" /><ref>{{Cite web|url=http://kamalmarhubi.com/blog/2015/08/27/what-even-is-a-kubelet/|title=What [..] is a Kubelet?|last=Marhubi|first=Kamal|date=2015-08-27|publisher=kamalmarhubi.com|access-date=2015-11-02|url-status=live|archive-url=https://web.archive.org/web/20151113064016/http://kamalmarhubi.com/blog/2015/08/27/what-even-is-a-kubelet/|archive-date=2015-11-13}}</ref> kubelet monitors the state of a pod, and if not in the desired state, the pod re-deploys to the same node. Node status is relayed every few seconds via heartbeat messages to the API server. Once the control plane detects a node failure, a higher-level controller is expected to observe this state change and launch pods on another healthy node.<ref>{{Cite web|title=Kubernetes Security {{!}} Issues and Best Practices {{!}} Snyk|url=https://snyk.io/learn/kubernetes-security/|access-date=2021-05-16|website=snyk.io|date=26 July 2020|language=en-US}}</ref>
+
+==== Container runtime ====
+A container runtime is responsible for the lifecycle of containers, including launching, reconciling and killing of containers. kubelet interacts with container runtimes via the Container Runtime Interface (CRI),<ref name=":4">{{Cite web |date=2016-12-19 |title=Introducing Container Runtime Interface (CRI) in Kubernetes |url=https://kubernetes.io/blog/2016/12/Container-Runtime-Interface-Cri-In-Kubernetes/ |access-date=2021-05-16 |website=Kubernetes |language=en |archive-date=2018-05-27 |archive-url=https://web.archive.org/web/20180527153236/https://kubernetes.io/blog/2016/12/Container-Runtime-Interface-Cri-In-Kubernetes/ |url-status=live }}</ref><ref>{{Cite web |title=Container Runtime Interface (CRI) |url=https://kubernetes.io/docs/concepts/architecture/cri/ |access-date=July 24, 2023 |website=Kubernetes Documentation |publisher= |archive-date=September 20, 2022 |archive-url=https://web.archive.org/web/20220920172847/https://kubernetes.io/docs/concepts/architecture/cri/ |url-status=live }}</ref> which [[Coupling (computer programming)|decouples]] the maintenance of core Kubernetes from the actual CRI implementation.
+
+Originally, kubelet interfaced exclusively with the [[Docker (software)|Docker]] runtime<ref>{{Cite web |date=10 October 2018 |title=Kubernetes v1.12: Introducing RuntimeClass |url=https://kubernetes.io/blog/2018/10/10/kubernetes-v1.12-introducing-runtimeclass/ |website=kubernetes.io |access-date=14 November 2018 |archive-date=31 March 2019 |archive-url=https://web.archive.org/web/20190331122008/https://kubernetes.io/blog/2018/10/10/kubernetes-v1.12-introducing-runtimeclass/ |url-status=live }}</ref> through a "dockershim". However, from November 2020<ref>{{cite web |title=Deprecate Dockershim - Kubernetes Github repository - PR 94624 |url=https://github.com/kubernetes/kubernetes/pull/94624 |website=Github.com |access-date=2022-09-30 |archive-date=2020-12-01 |archive-url=https://web.archive.org/web/20201201170033/https://github.com/kubernetes/kubernetes/pull/94624 |url-status=live }}</ref> up to April 2022, Kubernetes has deprecated the [[Shim (computing)|shim]] in favor of directly interfacing with the container through containerd, or replacing Docker with a runtime that is compliant with the Container Runtime Interface (CRI).<ref>{{Cite web |date=2 December 2020 |title=Don't Panic: Kubernetes and Docker |url=https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker/ |access-date=2020-12-22 |website=Kubernetes Blog |language=en |archive-date=2020-12-03 |archive-url=https://web.archive.org/web/20201203005547/https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker/ |url-status=live }}</ref><ref name=":4" /><ref>{{Cite web |title=kubernetes/community |url=https://github.com/kubernetes/community |access-date=2021-05-16 |website=GitHub |language=en |archive-date=2016-08-20 |archive-url=https://web.archive.org/web/20160820064314/https://github.com/kubernetes/community |url-status=live }}</ref> With the release of v1.24 in May 2022, the "dockershim" has been removed entirely.<ref>{{cite web |date=17 February 2022 |title=Updated: Dockershim Removal FAQ |url=https://kubernetes.io/blog/2022/02/17/dockershim-faq/ |website=Kubernetes Blog |access-date=16 March 2022 |archive-date=17 February 2022 |archive-url=https://web.archive.org/web/20220217175403/https://kubernetes.io/blog/2022/02/17/dockershim-faq/ |url-status=live }}</ref>
+
+Examples of popular container runtimes that are compatible with kubelet include [[containerd]] (initially supported via Docker) and [[Cloud Native Computing Foundation#CRI-O|CRI-O]].
+
+==== kube-proxy ====
+kube-proxy is an implementation of a [[Proxy server|network proxy]] and a [[Load balancing (computing)|load balancer]], and it supports the service abstraction along with the other networking operations.<ref name="do-intro" /> It is responsible for routing traffic to the appropriate container based on IP and port number of the incoming request.
+
+=== Namespaces ===
+
+In Kubernetes, namespaces are utilized to segregate the resources it handles into distinct and non-intersecting collections.<ref>{{Cite web|url=https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/|title=Namespaces|website=kubernetes.io|access-date=2019-10-06|archive-date=2019-10-03|archive-url=https://web.archive.org/web/20191003121640/https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/|url-status=live}}</ref> They are intended for use in environments with many users spread across multiple teams, or projects, or even separating environments like development, test, and production.
+
+=== Pods ===
+The basic scheduling unit in Kubernetes is a pod,<ref>{{Cite web|url=https://kubernetes.io/docs/concepts/workloads/pods/pod/|title=Pods|website=kubernetes.io|access-date=2018-12-17|archive-date=2019-05-08|archive-url=https://web.archive.org/web/20190508114418/https://kubernetes.io/docs/concepts/workloads/pods/pod/|url-status=live}}</ref> which consists of one or more containers that are guaranteed to be co-located on the same node.<ref name="do-intro" /> Each pod in Kubernetes is assigned a unique IP address within the cluster, allowing applications to use ports without the risk of conflict.<ref name="kubernetes-101-networking">{{cite web |url=http://www.dasblinkenlichten.com/kubernetes-101-networking/ |title=Kubernetes 101 – Networking |last=Langemak |first=Jon |work=Das Blinken Lichten |date=2015-02-11 |access-date=2015-11-02 |url-status=live |archive-url=https://web.archive.org/web/20151025035709/http://www.dasblinkenlichten.com/kubernetes-101-networking/ |archive-date=2015-10-25 }}</ref> Within the pod, all containers can reference each other.
+
+A container resides inside a pod. The container is the lowest level of a micro-service, which holds the running application, libraries, and their dependencies.
+
+=== Workloads ===
+Kubernetes supports several abstractions of workloads that are at a higher level over simple pods. This allows users to declaratively define and manage these high-level abstractions, instead of having to manage individual pods by themselves. Several of these abstractions, supported by a standard installation of Kubernetes, are described below.
+
+==== ReplicaSets, ReplicationControllers and Deployments ====
+A ReplicaSet's purpose is to maintain a stable set of replica pods running at any given time. As such, it is often used to guarantee the availability of a specified number of identical Pods.<ref name=":5">{{Cite web|url=https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/|title=ReplicaSet|website=kubernetes.io|language=en|access-date=2020-03-03|archive-date=2019-07-16|archive-url=https://web.archive.org/web/20190716232017/https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/|url-status=live}}</ref> The ReplicaSet can also be said to be a grouping mechanism that lets Kubernetes maintain the number of instances that have been declared for a given pod. The definition of a ReplicaSet uses a selector, whose evaluation will result in identifying all pods that are associated with it.
+
+A ReplicationController, similar to a ReplicaSet, serves the same purpose and behaves similarly to a ReplicaSet, which is to ensure that there will always be a specified number of pod replicas as desired. The ReplicationController workload was the predecessor of a ReplicaSet, but was eventually deprecated in favor of ReplicaSet to make use of set-based label selectors.<ref name=":5" />
+
+Deployments are a higher-level management mechanism for ReplicaSets. While the ReplicaSet controller manages the scale of the ReplicaSet, the Deployment controller manages what happens to the ReplicaSet {{En dash}} whether an update has to be rolled out, or rolled back, etc. When Deployments are scaled up or down, this results in the declaration of the ReplicaSet changing, and this change in the declared state is managed by the ReplicaSet controller.<ref name=":6" />
+
+==== StatefulSets ====
+StatefulSets are controllers that enforce the properties of uniqueness and ordering amongst instances of a pod, and can be used to run [[State (computer science)|stateful]] applications.<ref>{{Cite web |title=StatefulSets |url=https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/ |website=kubernetes.io}}</ref> While scaling stateless applications is only a matter of adding more running pods, doing so for stateful workloads is harder, because the state needs to be preserved if a pod is restarted. If the application is scaled up or down, the state may need to be redistributed.
+
+Databases are an example of stateful workloads. When run in high-availability mode, many databases come with the notion of a primary instance and secondary instances. In this case, the notion of ordering of instances is important. Other applications like [[Apache Kafka]] distribute the data amongst their brokers; hence, one broker is not the same as another. In this case, the notion of instance uniqueness is important.
+
+==== DaemonSets ====
+DaemonSets are responsible for ensuring that a pod is created on every single node in the cluster.<ref>{{Cite web |title=DaemonSet |url=https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/ |website=kubernetes.io |access-date=2019-11-16 |archive-date=2019-11-04 |archive-url=https://web.archive.org/web/20191104211457/https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/ |url-status=live }}</ref> Generally, most workloads scale in response to a desired replica count, depending on the availability and performance requirements as needed by the application. However, in other scenarios it may be necessary to deploy a pod to every single node in the cluster, scaling up the number of total pods as nodes are added and [[Garbage collection (computer science)|garbage collecting]] them as they are removed. This is particularly helpful for use cases where the workload has some dependency on the actual node or host machine, such as log collection, ingress controllers, and storage services.
+
+=== Services ===
+[[File:Pod-networking.png|thumb|Simplified view showing how Services interact with Pod networking in a Kubernetes cluster]]
+
+A Kubernetes service is a set of pods that work together, such as one tier of a [[Multitier architecture|multi-tier]] application. The set of pods that constitute a service are defined by a label selector.<ref name="do-intro" /> Kubernetes provides two modes of [[service discovery]], using environment variables or using Kubernetes DNS.<ref>{{Cite web|url=https://kubernetes.io/docs/concepts/services-networking/service/|title=Service|website=kubernetes.io|access-date=2018-11-21|archive-date=2019-05-08|archive-url=https://web.archive.org/web/20190508113526/https://kubernetes.io/docs/concepts/services-networking/service/|url-status=live}}</ref> Service discovery assigns a stable IP address and [[DNS name]] to the service, and load balances traffic in a [[Round-robin DNS|round-robin]] manner to network connections of that IP address among the pods matching the selector (even as failures cause the pods to move from machine to machine).<ref name="kubernetes-101-networking" /> By default a service is exposed inside a cluster (e.g., [[Front and back ends|back end]] pods might be grouped into a service, with requests from the front-end pods load-balanced among them), but a service can also be exposed outside a cluster (e.g., for clients to reach front-end pods).<ref name="kubernetes-101-external-access">{{cite web |url=http://www.dasblinkenlichten.com/kubernetes-101-external-access-into-the-cluster/ |title=Kubernetes 101 – External Access Into The Cluster |last=Langemak |first=Jon |work=Das Blinken Lichten |date=2015-02-15 |access-date=2015-11-02 |url-status=live |archive-url=https://web.archive.org/web/20151026035212/http://www.dasblinkenlichten.com/kubernetes-101-external-access-into-the-cluster/ |archive-date=2015-10-26 }}</ref>
+
+=== Volumes ===
+
+[[File system|Filesystems]] in the Kubernetes container provide [[ephemeral storage]], by default. This means that a restart of the pod will wipe out any data on such containers, and therefore, this form of storage is quite limiting in anything but trivial applications. A Kubernetes volume<ref>{{Cite web|url=https://kubernetes.io/docs/concepts/storage/volumes/|title=Volumes|website=kubernetes.io|access-date=2019-10-06|archive-date=2019-10-12|archive-url=https://web.archive.org/web/20191012132822/https://kubernetes.io/docs/concepts/storage/volumes/|url-status=live}}</ref> provides persistent storage that exists for the lifetime of the pod itself. This storage can also be used as shared disk space for containers within the pod. Volumes are mounted at specific mount points within the container, which are defined by the pod configuration, and cannot mount onto other volumes or link to other volumes. The same volume can be mounted at different points in the file system tree by different containers.
+
+=== ConfigMaps and Secrets ===
+
+A common application challenge is deciding where to store and manage configuration information, some of which may contain sensitive data. Configuration data can be anything as fine-grained as individual properties, or coarse-grained information like entire configuration files such as [[JSON]] or [[XML]] documents. Kubernetes provides two closely related mechanisms to deal with this need, known as ConfigMaps and Secrets, both of which allow for configuration changes to be made without requiring an application rebuild.
+
+The data from ConfigMaps and Secrets will be made available to every single instance of the application to which these objects have been bound via the Deployment. A Secret and/or a ConfigMap is sent to a node only if a pod on that node requires it, which will only be stored in memory on the node. Once the pod that depends on the Secret or ConfigMap is deleted, the in-memory copy of all bound Secrets and ConfigMaps are deleted as well.
+
+The data from a ConfigMap or Secret is accessible to the pod through one of the following ways:<ref>{{Cite web |title=ConfigMaps |url=https://kubernetes.io/docs/concepts/configuration/configmap/#mounted-configmaps-are-updated-automatically |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723175447/https://kubernetes.io/docs/concepts/configuration/configmap/#mounted-configmaps-are-updated-automatically |url-status=live }}</ref>
+
+# As [[environment variable]]s, which will be consumed by kubelet from the ConfigMap when the container is launched;
+# Mounted within a volume accessible within the container's filesystem, which supports automatic reloading without restarting the container.
+
+The biggest difference between a Secret and a ConfigMap is that Secrets are specifically designed for containing secure and confidential data, although they are not [[Data at rest#Encryption|encrypted at rest]] by default, and requires additional setup in order to fully secure the use of Secrets within the cluster.<ref>{{Cite web |title=Secrets |url=https://kubernetes.io/docs/concepts/configuration/secret/ |access-date=2023-07-23 |website=Kubernetes |language=en |archive-date=2023-07-22 |archive-url=https://web.archive.org/web/20230722192548/https://kubernetes.io/docs/concepts/configuration/secret/ |url-status=live }}</ref> Secrets are often used to store confidential or sensitive data like certificates, credentials to work with image registries, passwords, and [[Secure Shell|ssh]] keys.
+
+=== Labels and selectors ===
+
+Kubernetes enables clients (users or internal components) to attach keys called labels to any API object in the system, such as pods and [[#Kubernetes node|nodes]]. Correspondingly, label selectors are queries against labels that resolve to matching objects.<ref name="do-intro" /> When a service is defined, one can define the label selectors that will be used by the service router/load balancer to select the pod instances that the traffic will be routed to. Thus, simply changing the labels of the pods or changing the label selectors on the service can be used to control which pods get traffic and which don't, which can be used to support various deployment patterns like [[blue–green deployment]]s or [[A/B testing]]. This capability to dynamically control how services utilize implementing resources provides a loose coupling within the infrastructure.
+
+For example, if an application's pods have labels for a system <code>tier</code> (with values such as <code>frontend</code>, <code>backend</code>, for example) and a <code>release_track</code> (with values such as <code>[[Feature toggle#Canary release|canary]]</code>, <code>production</code>, for example), then an operation on all of <code>backend</code> and <code>canary</code> nodes can use a label selector, such as:<ref name="redhat-docker-and-kubernetes-training-labels-examples">{{cite web |url=http://christianposta.com/slides/docker/generated/day2.html#/label-examples |title=Intro: Docker and Kubernetes training - Day 2 |publisher=[[Red Hat]] |date=2015-10-20 |access-date=2015-11-02 |url-status=dead |archive-url=https://web.archive.org/web/20151029210659/http://christianposta.com/slides/docker/generated/day2.html#/label-examples |archive-date=2015-10-29 }}</ref>
+<blockquote><code>tier=backend AND release_track=canary</code></blockquote>
+
+Just like labels, field selectors also let one select Kubernetes resources. Unlike labels, the selection is based on the attribute values inherent to the resource being selected, rather than user-defined categorization. <code>metadata.name</code> and <code>metadata.namespace</code> are field selectors that will be present on all Kubernetes objects. Other selectors that can be used depend on the object/resource type.
+
+=== Add-ons ===
+
+Add-ons are additional features of the Kubernetes cluster implemented as applications running within it. The pods may be managed by Deployments, ReplicationControllers, and so on. There are many add-ons. Some of the more important are:
+
+; DNS
+: Cluster DNS is a DNS server, in addition to the other DNS server(s) in the environment, which serves DNS records for Kubernetes services. Containers started by Kubernetes automatically include this DNS server in their DNS searches.
+; Web UI
+: This is a general purpose, web-based UI for Kubernetes clusters. It allows administrators to manage and troubleshoot applications running in the cluster, as well as the cluster itself.
+; Resource monitoring
+: Container Resource Monitoring records metrics about containers in a central database, and provides a UI for browsing that data.
+; Cost monitoring
+: Kubernetes cost monitoring applications allow breakdown of costs by pods, nodes, namespaces, and labels.
+; Cluster-level logging
+: To prevent the loss of event data in the event of node or pod failures, container logs can be saved to a central log store with a search/browsing interface. Kubernetes provides no native storage for log data, but one can integrate many existing logging solutions into the Kubernetes cluster.
+
+=== Storage ===
+
+Containers emerged as a way to make software portable. The container contains all the packages needed to run a service. The provided file system makes containers extremely portable and easy to use in development. A container can be moved from development to test or production with no or relatively few configuration changes.
+
+Historically Kubernetes was suitable only for stateless services. However, many applications have a database, which requires persistence, leading to the creation of persistent storage for Kubernetes. Implementing persistent storage for containers is one of the top challenges of Kubernetes administrators, DevOps and cloud engineers. Containers may be ephemeral, but more and more of their data is not, so one needs to ensure the data's survival in case of container termination or hardware failure. When deploying containers with Kubernetes or containerized applications, organizations often realize that they need persistent storage. They need to provide fast and reliable storage for databases, root images and other data used by the containers.
+
+In addition to the landscape, the Cloud Native Computing Foundation (CNCF), has published other information about Kubernetes Persistent Storage including a blog helping to define the container attached storage pattern. This pattern can be thought of as one that uses Kubernetes itself as a component of the storage system or service.<ref>{{Cite web|date=2018-04-19|title=Container Attached Storage: A primer|url=https://www.cncf.io/blog/2018/04/19/container-attached-storage-a-primer/|access-date=2021-05-16|website=Cloud Native Computing Foundation|language=en-US|archive-date=2021-06-21|archive-url=https://web.archive.org/web/20210621071903/https://www.cncf.io/blog/2018/04/19/container-attached-storage-a-primer/|url-status=live}}</ref>
+
+More information about the relative popularity of these and other approaches can be found on the CNCF's landscape survey as well, which showed that OpenEBS {{En dash}} a Stateful Persistent Storage platform from Datacore Software,<ref>{{Cite web|title=Dataore Acquired MayaData original developer of OpenEBS|url=https://www.datacore.com/news-post/datacore-acquires-mayadata|website=datacore.com|date=18 November 2021 }}</ref> and Rook {{En dash}} a storage orchestration project {{En dash}} were the two projects most likely to be in evaluation as of the Fall of 2019.<ref>{{Cite web|title=CNCF SURVEY 2019|url=https://www.cncf.io/wp-content/uploads/2020/08/CNCF_Survey_Report.pdf|website=cncf.io}}</ref>
+
+Container Attached Storage is a type of data storage that emerged as Kubernetes gained prominence. The Container Attached Storage approach or pattern relies on Kubernetes itself for certain capabilities while delivering primarily block, file, object and interfaces to workloads running on Kubernetes.<ref>{{Cite web|date=2018-04-19|title=Container Attached Storage: A primer|url=https://www.cncf.io/blog/2018/04/19/container-attached-storage-a-primer/|access-date=2020-10-09|website=Cloud Native Computing Foundation|language=en-US}}</ref>
+
+Common attributes of Container Attached Storage include the use of extensions to Kubernetes, such as custom resource definitions, and the use of Kubernetes itself for functions that otherwise would be separately developed and deployed for storage or data management. Examples of functionality delivered by custom resource definitions or by Kubernetes itself include retry logic, delivered by Kubernetes itself, and the creation and maintenance of an inventory of available storage media and volumes, typically delivered via a custom resource definition.<ref>{{Cite web|title=Container Attached Storage {{!}} SNIA|url=https://www.snia.org/educational-library/container-attached-storage-2018|access-date=2020-10-09|website=www.snia.org}}</ref><ref>{{Cite web|title=Cloud Native Application Checklist: Cloud Native Storage|url=https://www.replex.io/blog/cloud-native-application-checklist-cloud-native-storage|access-date=2020-10-09|website=www.replex.io|language=en}}</ref>
+
+==== Container Storage Interface (CSI) ====
+
+In Kubernetes version 1.9, the initial Alpha release of Container Storage Interface (CSI) was introduced.<ref>{{Cite web|title=Introducing Container Storage Interface (CSI) Alpha for Kubernetes|url=https://kubernetes.io/blog/2018/01/introducing-container-storage-interface/|website=kubernetes.io|date=10 January 2018 }}</ref> Previously, storage volume plug-ins were included in the Kubernetes distribution. By creating a standardized CSI, the code required to interface with external storage systems was separated from the core Kubernetes code base. Just one year later, the CSI feature was made Generally Available (GA) in Kubernetes.<ref>{{Cite web|title=Container Storage Interface (CSI) for Kubernetes GA|url=https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/|website=kubernetes.io|date=15 January 2019|access-date=22 August 2022|archive-date=22 August 2022|archive-url=https://web.archive.org/web/20220822091050/https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/|url-status=live}}</ref>
+
+== API ==
+
+A key component of the Kubernetes control plane is the API Server, which exposes an HTTP API that can be invoked by other parts of the cluster as well as end users and external components. This API is a [[REST]] API and is declarative in nature, and is the same API exposed to the control plane.<ref>{{Citation |last=Marinescu |first=Dan C. |title=Chapter 8 - Cloud Hardware and Software |date=2018-01-01 |url=https://www.sciencedirect.com/science/article/pii/B978012812810700011X |work=Cloud Computing (Second Edition) |pages=281–319 |editor-last=Marinescu |editor-first=Dan C. |access-date=2023-11-08 |publisher=Morgan Kaufmann |doi=10.1016/b978-0-12-812810-7.00011-x |isbn=978-0-12-812810-7|url-access=subscription }}</ref> The API server is backed by etcd to store all records persistently.<ref>{{Cite web |title=Operating etcd clusters for Kubernetes |url=https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723223410/https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/ |url-status=live }}</ref>
+
+=== API objects ===
+In Kubernetes, all objects serve as the "[[Intent log|record of intent]]" of the cluster's state, and are able to define the desired state that the writer of the object wishes for the cluster to be in.<ref>{{Cite web |title=Objects In Kubernetes |url=https://kubernetes.io/docs/concepts/overview/working-with-objects/ |access-date=July 24, 2023 |website=Kubernetes Documentation}}</ref> As such, most Kubernetes objects have the same set of nested fields, as follows:
+
+* <code>spec</code>: Describes the desired state of the resource, which can be controlled by end users, or other higher-level controllers;
+* <code>status</code>: Describes the current state of the resource, which is actively updated by the controller of the resource.
+
+All objects in Kubernetes are subject to the same API conventions. Some of these include:
+
+* Must have the following metadata under the nested object field <code>metadata</code>:<ref>{{Cite web |title=API Conventions |url=https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#metadata |access-date=July 24, 2023 |website=[[GitHub]] |publisher=Kubernetes |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723223410/https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#metadata |url-status=live }}</ref>
+** <code>namespace</code>: a label that objects are subdivided into;
+** <code>name</code>: a string that uniquely identifies the object within the defined namespace;
+** <code>uid</code>: a unique string that is able to distinguish between objects with the same name across space and time (even across deletions and recreations with the same name).
+* May be managed by another controller, which is defined in the <code>metadata.ownerReferences</code> field:<ref>{{Cite web |title=Owners and Dependents |url=https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/ |access-date=July 24, 2023 |website=Kubernetes Documentation}}</ref>
+** At most one other object shall be the managing controller of the controllee object, which is defined by the <code>controller</code> field.
+* May be garbage collected if the owner is deleted:<ref>{{Cite web |title=Garbage Collection |url=https://kubernetes.io/docs/concepts/architecture/garbage-collection/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723223408/https://kubernetes.io/docs/concepts/architecture/garbage-collection/ |url-status=live }}</ref>
+** When an object is deleted, all dependent objects may also be deleted in a cascading fashion.
+
+=== Custom resources, controllers and operators ===
+The Kubernetes API can be extended using ''Custom Resources'', which represent objects that are not part of the standard Kubernetes installation. These custom resources are declared using ''Custom Resource Definitions'' (CRDs), which is a kind of resource that can be dynamically registered and unregistered without shutting down or restarting a cluster that is currently running.<ref>{{Cite web |title=Custom Resources |url=https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/ |access-date=July 24, 2023 |website=Kubernetes Documentation}}</ref>
+
+Custom controllers are another extension mechanism that interact with the Kubernetes API, similar to the default controllers in the standard pre-installed Kubernetes controller manager. These controllers may interact with custom resources to allow for a declarative API: users may declare the desired state of the system via the custom resources, and it is the responsibility of the custom controller to observe the change and reconcile it.
+
+The combination of custom resources and custom controllers are often referred to as a ''Kubernetes'' ''Operator''.<ref>{{Cite web |title=Operators |url=https://kubernetes.io/docs/concepts/extend-kubernetes/operator/ |access-date=January 12, 2025 |website=Kubernetes Documentation |archive-date=January 14, 2025 |archive-url=https://web.archive.org/web/20250114012204/https://kubernetes.io/docs/concepts/extend-kubernetes/operator/ |url-status=live }}</ref> The key use case for operators are to capture the aim of a human operator who is managing a service or set of services and to implement them using automation, and with a declarative API supporting this automation. Human operators who look after specific applications and services have deep knowledge of how the system ought to behave, how to deploy it, and how to react if there are problems.
+
+Examples of problems solved by operators include taking and restoring backups of that application's state, and handling upgrades of the application code alongside related changes such as database schemas or extra configuration settings. Several notable projects under the Cloud Native Computing Foundation's incubation program follow the operator pattern to extend Kubernetes, including Argo, Open Policy Agent and Istio.<ref>{{Cite web |title=Cloud Native Landscape |url=https://landscape.cncf.io/ |access-date=July 24, 2023 |website=[[Cloud Native Computing Foundation]] |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723181409/https://landscape.cncf.io/ |url-status=live }}</ref>
+
+=== API security ===
+Kubernetes defines the following strategies for controlling access to its API.<ref>{{Cite web |title=Controlling Access to the Kubernetes API |url=https://kubernetes.io/docs/concepts/security/controlling-access/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723223409/https://kubernetes.io/docs/concepts/security/controlling-access/ |url-status=live }}</ref>
+
+==== Transport security ====
+The Kubernetes API server listens on a [[Transmission Control Protocol|TCP port]] that serves [[HTTPS]] traffic, in order to enforce [[Transport Layer Security|transport layer security (TLS)]] using [[Certificate authority|CA certificates]].<ref name=":7"/>
+
+In older versions of Kubernetes, the API server supported listening on both HTTP and HTTPS ports (with the HTTP port number having no transport security whatsoever). This was deprecated in v1.10 and eventually dropped support in v1.20 of Kubernetes.<ref>{{Cite web |title=Remove the apiserver insecure port · Issue #91506 · kubernetes/kubernetes |url=https://github.com/kubernetes/kubernetes/issues/91506 |website=[[GitHub]]}}</ref>
+
+==== Authentication ====
+All requests made to the Kubernetes API server are expected to be authenticated, and supports several authentication strategies, some of which are listed below:<ref>{{Cite web |title=Authorization |url=https://kubernetes.io/docs/reference/access-authn-authz/authorization/ |access-date=July 24, 2023 |website=Kubernetes Documentation}}</ref>
+
+# [[X.509]] client certificates
+# Bearer tokens
+# Service account tokens, intended for programmatic API access
+
+Users are typically expected to indicate and define cluster URL details along with the necessary credentials in a ''kubeconfig'' file, which are natively supported by other Kubernetes tools like kubectl and the official Kubernetes client libraries.<ref>{{Cite web |title=Organizing Cluster Access Using kubeconfig Files |url=https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723223408/https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/ |url-status=live }}</ref>
+
+==== Authorization ====
+The Kubernetes API supports the following authorization modes:<ref>{{Cite web |title=Authorization Overview |url=https://kubernetes.io/docs/reference/access-authn-authz/authorization/ |access-date=July 24, 2023 |website=Kubernetes Documentation}}</ref>
+
+# ''Node authorization mode'': Grants a fixed list of operations of API requests that kubelets are allowed to perform, in order to function properly.
+# ''[[Attribute-based access control|Attribute-based access control (ABAC)]] mode'': Grants access rights to users through the use of defined access control policies which combine attributes together.
+# ''[[Role-based access control|Role-based access control (RBAC)]] mode'': Grants access rights to users based on roles that are granted to the user, where each role defines a list of actions that are allowed.
+# ''Webhook mode'': Queries a REST API service to determine if a user is authorized to perform a given action.<ref name=":7"/>
+
+=== API clients ===
+Kubernetes supports several official API clients:
+
+* kubectl: Command-line for interacting with the Kubernetes control plane<ref>{{Cite web |title=Command line tool (kubectl) |url=https://kubernetes.io/docs/reference/kubectl/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723094034/https://kubernetes.io/docs/reference/kubectl/ |url-status=live }}</ref>
+* Official client libraries maintained by Kubernetes for [[C (programming language)|C]], [[.NET]], [[Go (programming language)|Go]], [[Haskell]], [[Java (programming language)|Java]], [[JavaScript]], [[Perl]], [[Python (programming language)|Python]] and [[Ruby (programming language)|Ruby]]<ref>{{Cite web |title=Client Libraries |url=https://kubernetes.io/docs/reference/using-api/client-libraries/ |access-date=July 24, 2023 |website=Kubernetes Documentation |archive-date=July 23, 2023 |archive-url=https://web.archive.org/web/20230723223414/https://kubernetes.io/docs/reference/using-api/client-libraries/ |url-status=live }}</ref>
+
+=== Cluster API ===
+The same API design principles have been used to define an API to harness a program in order to create, configure, and manage Kubernetes clusters. This is called the Cluster API.<ref name="Cluster API">{{Cite web|url=https://cluster-api.sigs.k8s.io/|title=Introduction - The Cluster API Book|website=cluster-api.sigs.k8s.io}}</ref> A key concept embodied in the API is using [[Infrastructure as Software]], or the notion that the Kubernetes cluster infrastructure is itself a resource / object that can be managed just like any other Kubernetes resources. Similarly, machines that make up the cluster are also treated as a Kubernetes resource. The API has two pieces {{En dash}} the core API, and a provider implementation. The provider implementation consists of cloud-provider specific functions that let Kubernetes provide the cluster API in a fashion that is well-integrated with the cloud-provider's services and resources.<ref name=":7"/>
+
+== Uses ==
+
+Kubernetes is commonly used as a way to host a [[microservice]]-based implementation, because it and its associated ecosystem of tools provide all the capabilities needed to address key concerns of any [[Microservices#A comparison of platforms|microservice architecture]].
+
+== Criticism ==
+A common criticism of Kubernetes is that it is too complex. Google admitted this as well.<ref>{{Cite news |last=Anderson |first=Tim |date=2021-02-25 |title=Google admits Kubernetes container tech is so complex, it's had to roll out an Autopilot feature to do it all for you |url=https://www.theregister.com/2021/02/25/google_kubernetes_autopilot/ |work=[[The Register]]}}</ref>
+
+== Distributions ==
+Various vendors offer Kubernetes-based platforms or [[infrastructure as a service]] (IaaS) that deploy Kubernetes.<ref>{{Cite web|title=The 7 Most Popular Kubernetes Distributions|url=https://www.containiq.com/post/popular-kubernetes-distributions/|access-date=2021-12-28|language=en|archive-date=2021-07-25|archive-url=https://web.archive.org/web/20210725033056/https://www.containiq.com/post/popular-kubernetes-distributions/|url-status=dead}}</ref><ref>{{Cite web|last=MSV|first=Janakiram|title=Why Kubernetes Developer Ecosystem Needs A PaaS|url=https://www.forbes.com/sites/janakirammsv/2021/04/12/why-kubernetes-developer-ecosystem-needs-a-paas/|access-date=2021-05-16|website=Forbes|language=en|archive-date=2021-04-12|archive-url=https://web.archive.org/web/20210412041327/https://www.forbes.com/sites/janakirammsv/2021/04/12/why-kubernetes-developer-ecosystem-needs-a-paas/|url-status=live}}</ref>
+
+These are typically categorized according to open-source, commercial or managed distributions. Several notable distributions are listed below:<ref>{{Cite web|date=2022-01-03|title=5 Cloud Native Trends to Watch out for in 2022|url=https://thenewstack.io/5-cloud-native-trends-to-watch-out-for-in-2022/|access-date=2022-02-03|website=The New Stack|language=en-US}}</ref>
+
+=== Open-source distributions ===
+
+* [[Amazon (company)|Amazon]] EKS-D
+* k0s
+* k3s
+* [[SUSE S.A.|SUSE]] Rancher Kubernetes Engine (RKE)
+* OKD.IO The Community Distribution of Kubernetes that powers Red Hat OpenShift
+
+=== Commercial distributions ===
+
+* [[Nutanix]] Kubernetes Platform (formerly D2iQ Kubernetes Platform)<ref>{{Cite web|url=https://www.axios.com/2023/12/09/nutanix-acquires-d2iq|title=Scoop: Nutanix acquires assets of cloud server company D2iQ|first1=Kia|last1=Kokalitcheva|date=Dec 8, 2023|website=axios.com|access-date=August 8, 2025|archive-date=December 14, 2023|archive-url=https://web.archive.org/web/20231214011148/https://www.axios.com/2023/12/09/nutanix-acquires-d2iq|url-status=live}}</ref>
+* [[Mirantis]] Kubernetes Engine (formerly [[Docker, Inc.|Docker]] Enterprise)
+* [[Red Hat]] [[OpenShift]] 
+* [[VMware]] VKS (vSphere Kubernetes Service)
+* [[SUSE S.A.|SUSE]] Rancher (offers options of k3s and RKE2 Kubernetes distributions)
+
+=== Managed distributions ===
+
+* [[Alibaba Cloud]] ACK (Alibaba Cloud Container Service for Kubernetes)
+* [[Amazon (company)|Amazon]] EKS (Elastic Kubernetes Service)
+* [[Canonical (company)|Canonical]] MicroK8s and Charmed Kubernetes
+* [[DigitalOcean]] managed Kubernetes Service
+* [[Google]] GKE (Google Kubernetes Engine)
+* [[Huawei]] CCE (Huawei Cloud Container Engine)
+* [[IBM]] Cloud Kubernetes Services
+* [[Microsoft]] AKS (Azure Kubernetes Services)
+* [[Mirantis]] Kubernetes Engine with OpsCare Plus managed services
+* [[Oracle Cloud|Oracle]] Container Engine for Kubernetes
+* [[Wind River Systems]] Wind River Studio
+
+== Release timeline ==
+{| class="wikitable"
+|+ Release timeline
+|-
+! Version
+! Release date
+! End of Life date<ref name="k8s_patch_releases">{{cite web|date=4 May 2022|title=Kubernetes Patch Releases|website=[[GitHub]]|url=https://git.k8s.io/website/content/en/releases/patch-releases.md|access-date=2022-05-09|archive-date=2021-12-16|archive-url=https://web.archive.org/web/20211216023649/https://git.k8s.io/website/content/en/releases/patch-releases.md|url-status=live}}</ref>
+! Notes
+|-
+| {{Version |o | 1.0}}
+| 10 July 2015
+|
+| Original Release
+|-
+| {{Version |o | 1.1}}
+| 9 November 2015
+|
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2015/11/Kubernetes-1-1-Performance-Upgrades-Improved-Tooling-And-A-Growing-Community/|title=Kubernetes 1.1 Performance upgrades, improved tooling and a growing community|date=November 9, 2015|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123414/https://kubernetes.io/blog/2015/11/kubernetes-1-1-performance-upgrades-improved-tooling-and-a-growing-community/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.2}}
+| 16 March 2016
+| 23 October 2016
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2016/03/Kubernetes-1-2-Even-More-Performance-Upgrades-Plus-Easier-Application-Deployment-And-Management/|title=Kubernetes 1.2: Even more performance upgrades, plus easier application deployment and management|date=March 17, 2016|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123410/https://kubernetes.io/blog/2016/03/kubernetes-1-2-even-more-performance-upgrades-plus-easier-application-deployment-and-management/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.3}}
+| 1 July 2016
+| 1 November 2016
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2016/07/Kubernetes-1-3-Bridging-Cloud-Native-And-Enterprise-Workloads/|title=Kubernetes 1.3: Bridging Cloud Native and Enterprise Workloads|date=July 6, 2016|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123421/https://kubernetes.io/blog/2016/07/kubernetes-1-3-bridging-cloud-native-and-enterprise-workloads/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.4}}
+| 26 September 2016
+| 21 April 2017
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2016/09/Kubernetes-1-4-Making-It-Easy-To-Run-On-Kuberentes-Anywhere/|title=Kubernetes 1.4: Making it easy to run on Kubernetes anywhere|date=September 26, 2016|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123405/https://kubernetes.io/blog/2016/09/kubernetes-1-4-making-it-easy-to-run-on-kuberentes-anywhere/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.5}}
+| 12 December 2016
+| 1 October 2017
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2016/12/Kubernetes-1-5-Supporting-Production-Workloads/|title=Kubernetes 1.5: Supporting Production Workloads|date=December 13, 2016|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123431/https://kubernetes.io/blog/2016/12/kubernetes-1-5-supporting-production-workloads/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.6}}
+| 28 March 2017
+| 23 November 2017
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2017/03/Kubernetes-1-6-Multi-User-Multi-Workloads-At-Scale/|title=Kubernetes 1.6: Multi-user, Multi-workloads at Scale|date=March 28, 2017|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123406/https://kubernetes.io/blog/2017/03/kubernetes-1-6-multi-user-multi-workloads-at-scale/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.7}}
+| 30 June 2017
+| 4 April 2018
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2017/06/Kubernetes-1-7-Security-Hardening-Stateful-Application-Extensibility-Updates/|title=Kubernetes 1.7: Security Hardening, Stateful Application Updates and Extensibility|date=June 30, 2017|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123407/https://kubernetes.io/blog/2017/06/kubernetes-1-7-security-hardening-stateful-application-extensibility-updates/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.8}}
+| 28 August 2017
+| 12 July 2018
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2017/09/Kubernetes-18-Security-Workloads-And/|title=Kubernetes 1.8: Security, Workloads and Feature Depth|date=September 29, 2017|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123434/https://kubernetes.io/blog/2017/09/kubernetes-18-security-workloads-and/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.9}}
+| 15 December 2017
+| 29 September 2018
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2017/12/Kubernetes-19-Workloads-Expanded-Ecosystem/|title=Kubernetes 1.9: Apps Workloads GA and Expanded Ecosystem|date=December 15, 2017|website=kubernetes.io|access-date=January 13, 2024|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123429/https://kubernetes.io/blog/2017/12/kubernetes-19-workloads-expanded-ecosystem/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.10}}
+| 28 March 2018
+| 13 February 2019
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2018/03/26/kubernetes-1.10-stabilizing-storage-security-networking/|title=Kubernetes 1.10: Stabilizing Storage, Security, and Networking|date=March 26, 2018|website=kubernetes.io|access-date=January 30, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123409/https://kubernetes.io/blog/2018/03/26/kubernetes-1.10-stabilizing-storage-security-networking/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.11}}
+| 3 July 2018
+| 1 May 2019
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2018/06/27/kubernetes-1.11-release-announcement/|title=Kubernetes 1.11: In-Cluster Load Balancing and CoreDNS Plugin Graduate to General Availability|date=June 27, 2018|website=kubernetes.io}}</ref>
+|-
+| {{Version |o | 1.12}}
+| 27 September 2018
+| 8 July 2019
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2018/09/27/kubernetes-1.12-kubelet-tls-bootstrap-and-azure-virtual-machine-scale-sets-vmss-move-to-general-availability/|title=Kubernetes 1.12: Kubelet TLS Bootstrap and Azure Virtual Machine Scale Sets (VMSS) Move to General Availability|date=September 27, 2018|website=kubernetes.io|access-date=January 30, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123408/https://kubernetes.io/blog/2018/09/27/kubernetes-1.12-kubelet-tls-bootstrap-and-azure-virtual-machine-scale-sets-vmss-move-to-general-availability/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.13}}
+| 3 December 2018
+| 15 October 2019
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2018/12/03/kubernetes-1-13-release-announcement/|title=Kubernetes 1.13: Simplified Cluster Management with Kubeadm, Container Storage Interface (CSI), and CoreDNS as Default DNS are Now Generally Available|date=December 3, 2018|website=kubernetes.io|access-date=January 30, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123404/https://kubernetes.io/blog/2018/12/03/kubernetes-1-13-release-announcement/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.14}}
+| 25 March 2019
+| 11 December 2019
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2019/03/25/kubernetes-1-14-release-announcement/|title=Kubernetes 1.14: Production-level support for Windows Nodes, Kubectl Updates, Persistent Local Volumes GA|date=March 25, 2019|website=kubernetes.io|access-date=January 30, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123407/https://kubernetes.io/blog/2019/03/25/kubernetes-1-14-release-announcement/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.15}}
+| 20 June 2019
+| 6 May 2020
+|<ref>{{Cite web|url=https://kubernetes.io/blog/2019/06/19/kubernetes-1-15-release-announcement/|title=Kubernetes 1.15: Extensibility and Continuous Improvement|date=June 19, 2019|website=kubernetes.io|access-date=January 30, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123427/https://kubernetes.io/blog/2019/06/19/kubernetes-1-15-release-announcement/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.16}}
+| 22 October 2019
+| 2 September 2020
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2019/09/18/kubernetes-1-16-release-announcement/|title=Kubernetes 1.16: Custom Resources, Overhauled Metrics, and Volume Extensions|date=September 18, 2019|website=kubernetes.io|access-date=January 30, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123407/https://kubernetes.io/blog/2019/09/18/kubernetes-1-16-release-announcement/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.17}}
+| 9 December 2019
+| 13 January 2021
+|<ref>{{Cite web|url=https://kubernetes.io/blog/2019/12/09/kubernetes-1-17-release-announcement/|title=Kubernetes 1.17: Stability|date=December 9, 2019|website=kubernetes.io}}</ref>
+|-
+| {{Version |o | 1.18}}
+| 25 March 2020
+| 18 June 2021
+|<ref>{{Cite web|url=https://kubernetes.io/blog/2020/03/25/kubernetes-1-18-release-announcement/|title=Kubernetes 1.18: Fit & Finish|date=March 25, 2020|website=kubernetes.io|access-date=January 13, 2024|archive-date=January 13, 2024|archive-url=https://web.archive.org/web/20240113201519/https://kubernetes.io/blog/2020/03/25/kubernetes-1-18-release-announcement/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.19}}
+| 26 August 2020<ref name="k8s_1-19_release_announcement">{{Cite web|date=26 August 2020|title=Kubernetes 1.19 Release Announcement|url=https://kubernetes.io/blog/2020/08/26/kubernetes-release-1.19-accentuate-the-paw-sitive/|access-date=2020-08-28|website=Kubernetes|archive-date=2020-08-28|archive-url=https://web.archive.org/web/20200828231015/https://kubernetes.io/blog/2020/08/26/kubernetes-release-1.19-accentuate-the-paw-sitive/|url-status=live}}</ref>
+| 28 October 2021
+| From Kubernetes version 1.19 on, the support window has been extended to one year of full support plus two months of maintenance mode period.<ref name="increase_to_N-3_support" /><br /><ref>{{cite web | title=Kubernetes 1.19: Accentuate the Paw-sitive | website=Kubernetes | date=2020-08-26 | url=https://kubernetes.io/blog/2020/08/26/kubernetes-release-1.19-accentuate-the-paw-sitive/ | access-date=2024-01-13 | archive-date=2020-08-28 | archive-url=https://web.archive.org/web/20200828231015/https://kubernetes.io/blog/2020/08/26/kubernetes-release-1.19-accentuate-the-paw-sitive/ | url-status=live }}</ref>
+|-
+| {{Version |o | 1.20}}
+| 8 December 2020
+| 28 February 2022
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2020/12/08/kubernetes-1-20-release-announcement/|title=Kubernetes 1.20: The Raddest Release|date=December 8, 2020|website=kubernetes.io|access-date=December 9, 2020|archive-date=December 9, 2020|archive-url=https://web.archive.org/web/20201209130143/https://kubernetes.io/blog/2020/12/08/kubernetes-1-20-release-announcement/|url-status=live}}</ref>
+|-
+| {{Version |o | 1.21}}
+| 8 April 2021
+| 28 June 2022
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2021/04/08/kubernetes-1-21-release-announcement/|title=Kubernetes 1.21: Power to the Community|date=April 8, 2021|website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version |o | 1.22}}
+| 4 August 2021
+| 28 October 2022
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2021/08/04/kubernetes-1-22-release-announcement/|title=Kubernetes 1.22: Reaching New Peaks|date=August 4, 2021|website=kubernetes.io|access-date=September 7, 2021|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123405/https://kubernetes.io/blog/2021/08/04/kubernetes-1-22-release-announcement/|url-status=live}}</ref>
+|- class="sortbottom"
+|-
+| {{Version |o | 1.23}}
+| 7 December 2021
+| 28 February 2023
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2021/12/07/kubernetes-1-23-release-announcement/|title=Kubernetes 1.23: The Next Frontier|date=December 7, 2021|website=kubernetes.io|access-date=January 16, 2022|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123413/https://kubernetes.io/blog/2021/12/07/kubernetes-1-23-release-announcement/|url-status=live}}</ref>
+|- class="sortbottom"
+|-
+| {{Version |o | 1.24}}
+| 3 May 2022
+| 28 July 2023
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2022/05/03/kubernetes-1-24-release-announcement/|title=Kubernetes 1.24: Stargazer|date=May 3, 2022|website=kubernetes.io|access-date=May 9, 2022|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123407/https://kubernetes.io/blog/2022/05/03/kubernetes-1-24-release-announcement/|url-status=live}}</ref>
+|- class="sortbottom"
+|-
+| {{Version |o | 1.25}}
+| 23 August 2022
+| 27 October 2023
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2022/08/23/kubernetes-v1-25-release/|title=Kubernetes v1.25: Combiner|date=August 23, 2022|website=kubernetes.io|access-date=August 28, 2022|archive-date=October 6, 2022|archive-url=https://web.archive.org/web/20221006123428/https://kubernetes.io/blog/2022/08/23/kubernetes-v1-25-release/|url-status=live}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.26}}
+| 9 December 2022
+| 24 February 2024
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2022/12/09/kubernetes-v1-26-release/|title=Kubernetes v1.26: Electrifying|date=December 9, 2022|website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.27}}
+| 11 April 2023
+|28 June 2024
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2023/04/11/kubernetes-v1-27-release/|title=Kubernetes v1.27: Chill Vibes|date=April 11, 2023|website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.28}}
+| 15 August 2023
+|28 October 2024 
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2023/08/15/kubernetes-v1-28-release/|title=Kubernetes v1.28: Planternetes|date=August 15, 2023|website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.29}}
+| 13 December 2023
+|28 February 2025
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2023/12/13/kubernetes-v1-29-release/|title=Kubernetes v1.29: Mandala|date=December 13, 2023|website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.30}}
+| 17 April 2024
+|28 June 2025
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2024/04/17/kubernetes-v1-30-release/|title=Kubernetes v1.30: Uwubernetes|date=April 17, 2024|website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.31}}
+| 13 August 2024
+| 28 October 2025
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2024/08/13/kubernetes-v1-31-release/|title=Kubernetes v1.31: Elli |date=August 13, 2024 |website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|o|1.32}}
+| 11 December 2024
+| 28 February 2026 
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2024/12/11/kubernetes-v1-32-release/|title=Kubernetes v1.32: Penelope|date=December 11, 2024|website=kubernetes.io|access-date=January 2, 2025|archive-date=December 26, 2024|archive-url=https://web.archive.org/web/20241226150654/https://kubernetes.io/blog/2024/12/11/kubernetes-v1-32-release/|url-status=live}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|co|1.33}}
+| 23 April 2025
+| 28 June 2026
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2025/04/23/kubernetes-v1-33-release/|title=Kubernetes v1.33: Octarine |date=April 23, 2025 |website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|co|1.34}}
+| 27 August 2025
+| 27 October 2026
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/|title=Kubernetes v1.34: Of Wind & Will (O' WaW)|date=November 11, 2025 |website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|co|1.35}}
+| 17 December 2025
+| 28 February 2027
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2025/12/17/kubernetes-v1-35-release/|title=Kubernetes v1.35: Timbernetes (The World Tree Release)|date=December 17, 2025 |website=kubernetes.io}}</ref>
+|- class="sortbottom"
+|-
+| {{Version|c|1.36}}
+| 22 April 2026
+| 28 June 2027
+| <ref>{{Cite web|url=https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/|title=Kubernetes v1.36: ハル (Haru)|date=April 22, 2026 |website=kubernetes.io}}</ref>
+|- class="sortbottom"
+| colspan="4" | {{Version |l |show=111111}}
+|}
+
+=== Support windows ===
+The chart below visualizes the period for which each release is/was supported<ref name="k8s_patch_releases" />
+<!-- Syntax: https://en.wikipedia.org/wiki/Help:EasyTimeline_syntax -->
+<timeline>
+ImageSize  = width:1000 height:auto barincrement:35
+PlotArea   = left:100 right:50 bottom:30 top:10
+
+DateFormat = dd/mm/yyyy
+Period     = from:03/05/2022 till:30/06/2027
+TimeAxis   = orientation:horizontal
+ScaleMajor = unit:year increment:1 start:2023
+ScaleMinor = unit:month increment:1 start:01/06/2022
+
+Define $dx = 25 # shift text to right side of bar
+
+Colors =
+  id:out_of_support value:rgb(0.992,0.702,0.671) legend:Out_of_support
+  id:in-support     value:rgb(0.996,0.973,0.776) legend:In_support
+  id:latest         value:rgb(0.831,0.957,0.706) legend:Latest_stable_version
+  id:prerelease     value:rgb(0.996,0.82,0.627)  legend:Preview_version
+
+PlotData=
+  mark:(line,black)
+  fontsize:S
+  bar:1.36.x from:22/04/2026 till:28/06/2027 text:1.36.x color:latest
+  bar:1.35.x from:17/12/2025 till:28/02/2027 text:1.35.x color:in-support
+  bar:1.34.x from:27/08/2025 till:27/10/2026 text:1.34.x color:in-support
+  bar:1.33.x from:26/04/2025 till:28/06/2026 text:1.33.x color:in-support
+  bar:1.32.x from:11/12/2024 till:28/02/2026 text:1.32.x color:out_of_support
+  bar:1.31.x from:13/08/2024 till:28/10/2025 text:1.31.x color:out_of_support
+  bar:1.30.x from:17/04/2024 till:28/06/2025 text:1.30.x color:out_of_support
+  bar:1.29.x from:13/12/2023 till:28/02/2025 text:1.29.x color:out_of_support
+  bar:1.28.x from:15/08/2023 till:28/10/2024 text:1.28.x color:out_of_support
+  bar:1.27.x from:11/04/2023 till:30/05/2024 text:1.27.x color:out_of_support
+  bar:1.26.x from:09/12/2022 till:24/02/2024 text:1.26.x color:out_of_support
+  bar:1.25.x from:23/08/2022 till:27/10/2023 text:1.25.x color:out_of_support
+  bar:1.24.x from:03/05/2022 till:28/07/2023 text:1.24.x color:out_of_support
+</timeline>
+
+== See also ==
+* [[Docker (software)]]
+* [[List of cluster management software]]
+* [[Open Service Mesh]]
+* [[OpenShift]]
+
+== References ==
+{{Reflist|30em}}
+
+== External links ==
+* {{Official website}}
+* {{GitHub|kubernetes/kubernetes|Kubernetes}}
+
+{{Virtualization software}}
+{{Linux containers}}
+{{Google FOSS}}
+{{Authority control}}
+
+[[Category:2014 software]]
+[[Category:Cloud infrastructure]]
+[[Category:Containerization software]]
+[[Category:Free software for cloud computing]]
+[[Category:Free software programmed in Go]]
+[[Category:Linux containerization]]
+[[Category:Linux Foundation projects]]
+[[Category:Orchestration software]]
+[[Category:Software using the Apache license]]
+[[Category:Virtualization software for Linux]]

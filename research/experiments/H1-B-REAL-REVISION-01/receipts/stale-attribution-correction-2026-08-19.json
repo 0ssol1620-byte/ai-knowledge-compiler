@@ -1,0 +1,59 @@
+{
+  "actual_root_cause": "diff_documents records an AMBIGUOUS identity decision with logical_id=None and the prior candidates, then returns -- so the incoming unit appears in no change at all, not even as UNIT_ADDED. plan_recompilation seeds its unresolved traversal from the candidates alone, so anything derived from the incoming unit is reached by nothing, is labelled CURRENT, and is carried over stale.",
+  "benchmark_receipt": {
+    "receipt": "recompilation-fix-benchmark-2026-08-19.json",
+    "sha256": "sha256:911f1468bd430fff16fc10fec6b793cf3f73a5785a65543cb9d615b22af5151f"
+  },
+  "evidence_from_the_failing_pair": {
+    "artifacts_total": 75,
+    "artifacts_whose_bytes_differ": 5,
+    "block_count_before_after": [
+      69,
+      69
+    ],
+    "shared_units_whose_text_changed": 0,
+    "structural_change_present": "heading tree only",
+    "title": "Self-driving car",
+    "units_only_in_after": 1,
+    "units_only_in_before": 1
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T18:54:18.622128+00:00",
+  "lesson_recorded_rather_than_absorbed": "an acceptance suite that only asks 'did the failure go away' cannot tell a fix from a mask. The four-arm design exists because the single-arm result was green and wrong.",
+  "measured_attribution": {
+    "both": {
+      "all_equivalent": true,
+      "stale_left_behind_total": 0,
+      "total_artifacts": 334,
+      "total_rebuilt": 87
+    },
+    "legacy": {
+      "all_equivalent": false,
+      "stale_left_behind_total": 2,
+      "total_artifacts": 334,
+      "total_rebuilt": 18
+    },
+    "structural_only": {
+      "all_equivalent": true,
+      "stale_left_behind_total": 0,
+      "total_artifacts": 334,
+      "total_rebuilt": 87
+    },
+    "unresolved_incoming_only": {
+      "all_equivalent": true,
+      "stale_left_behind_total": 0,
+      "total_artifacts": 334,
+      "total_rebuilt": 20
+    }
+  },
+  "receipt_sha256": "sha256:b1ab9f314a88d246240fba644500f7e7d6b5fd035aa58a242d0b11a13514ee4c",
+  "schema": "tavonel.family-b-stale-attribution-correction.v1",
+  "supersedes": {
+    "claim_being_corrected": "reproduces_confirmatory_defect: true -- that the structural channel is the root cause of stale_left_behind = 2 on the confirmatory corpus",
+    "receipt": "structure-only-stale-diagnosis-2026-08-18.json",
+    "sha256": "sha256:ba444ddb6b2e479da706a3e723e11b21bb2c17c10e4f79fe2e4e104c58fc8ee7"
+  },
+  "what_still_stands": "the structural defect itself. A structure-only change carries no logical_id, cannot seed the traversal, and lets an artifact aggregated over document position be carried over stale. The synthetic reproduction demonstrates it and remains valid.",
+  "what_was_wrong": "the causal attribution to the real corpus. On the failing pair the block count did not move, the only structural change was the heading tree, and no artifact in that adapter's graph depends on heading structure.",
+  "why_the_wrong_fix_looked_right": "seeding every unit of the document on a structural change rebuilds enough to cover the missed artifact. The corpus went equivalent, the stale count went to zero, and the acceptance criteria passed -- while the defect that caused the failure was untouched. Measured apart, the structural channel rebuilds 87 of 334 artifacts against the identity fix's 20, for the same correctness."
+}

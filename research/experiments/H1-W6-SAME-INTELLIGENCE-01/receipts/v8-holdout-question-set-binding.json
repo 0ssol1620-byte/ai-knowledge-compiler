@@ -1,0 +1,54 @@
+{
+  "acquisition_accounting": {
+    "eligible": 391,
+    "excluded": 359,
+    "note": "acquisition and accounting evidence. None of it is an arm result.",
+    "titles_consumed": 750,
+    "unaccounted": 0,
+    "v7_title_overlap": 0
+  },
+  "acquisition_integrity_passed": true,
+  "acquisition_integrity_receipt_sha256": "sha256:94f9596cbc13537d235c71983f305a80ad74cf54e40440a14d57371649951f3a",
+  "acquisition_receipt_sha256": "sha256:cee6b398d28abd4221fca3688ce72ce6d22dd9e4f34be5b4985fde8201133fd8",
+  "boundary": "The sealed confirmatory cohort has been accessed by the transport and a question set has now been generated from it by the frozen generator. No score, arm result, threshold decision, cohort selection or adaptive tuning has been made from holdout observations.",
+  "config_freeze_receipt_sha256": "sha256:50611c7ce474c910dfdf0a9391c3ddcae2bdfcbeb599d3a27b794bd42105f33f",
+  "config_freeze_sha256": "sha256:08a0ae93fe764d2866805614a74cee8554e4e3426da29bffefa48bc28fab00fd",
+  "corpus_root_hash": "sha256:13bfe8600855a9d7eedf9ec32c337581eaed0edb6dbf1fcd60dde7e5191f73cd",
+  "counts": {
+    "articles_with_primary_at_acquisition": 162,
+    "documents_with_parsable_infoboxes": 265,
+    "eligible_pairs_in_corpus": 391,
+    "excluded_pairs_in_corpus": 359,
+    "primary_revision_sensitive_retained_at_acquisition": 290,
+    "question_count": 2548,
+    "revision_sensitive_primary": 185,
+    "simple_retrieval_controls": 2363,
+    "unchanged_controls_at_acquisition": 2363
+  },
+  "development_titles_overlap": 0,
+  "exclusions": {
+    "degenerate_value": 1,
+    "markup_only_not_primary_eligible": 16,
+    "markup_only_primary_eligible": 104,
+    "not_a_primary_retained_attribute": 47
+  },
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-20T08:52:21.464421+00:00",
+  "generator_sha256": {
+    "build_question_set_v2.py": "sha256:986ab0020940267de4210f246355e6e14581ff463aa535762a502d297cdfdb66",
+    "build_question_set_v8.py": "sha256:4a45baaf9cf72349569d1509d30823b4d16fa892b9b349330898a14818d3c656"
+  },
+  "holdout_status": "OPENED_BY_TRANSPORT_QUESTION_SET_BUILT_NO_OUTCOME_OBSERVATION",
+  "model_attestation_sha256": "sha256:6f31456a21a760849cf42cd229844182a2a46f707f82005be1f724e61f6e225e",
+  "question_set": {
+    "file": "question-set-v8-holdout.json",
+    "file_sha256": "sha256:915f29f5439dce46a0c82fea8fc72f42e479ba1100366f12b8cba67d58b446ee",
+    "receipt_sha256": "sha256:2f20b9a5c3648aec0df2709e18b69beeacfe0ae83326fdd29252a67c438ab48f",
+    "run_class": "HOLDOUT_CONFIRMATORY"
+  },
+  "receipt_sha256": "sha256:faf78a624bd9b54273831022194741d711058698879c675024b76e4fa7bca58d",
+  "run_class": "HOLDOUT_CONFIRMATORY",
+  "schema": "tavonel.w6-v8-holdout-question-set-binding.v1",
+  "why_this_receipt_exists": "the frozen question generator is not edited to record more than it already does. This binds the question set to the corpus root, the config freeze and the generator bytes, so the endpoint can name in one place everything upstream of its questions."
+}

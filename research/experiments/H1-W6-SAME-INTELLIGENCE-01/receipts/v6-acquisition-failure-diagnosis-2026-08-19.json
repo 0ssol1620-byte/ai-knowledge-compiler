@@ -1,0 +1,70 @@
+{
+  "absolute_corpus_succeeds": true,
+  "corpus_pair_state": {
+    "corpus_v5": {
+      "after_sha256": "sha256:f7b86106de9d2bf2f40cb4cdb6b395d2c672502d68e9adb66e057dace9639aa3",
+      "before_sha256": "sha256:cf9e842aeeb7a93c9c92397e126334139f0e47452d64d62ae682ddbec7c26399",
+      "directory": "00000-c29ae214bf37",
+      "files": [
+        "after.wikitext",
+        "before.wikitext"
+      ],
+      "metadata_json_present": false
+    },
+    "corpus_v6": {
+      "after_sha256": "sha256:f7b86106de9d2bf2f40cb4cdb6b395d2c672502d68e9adb66e057dace9639aa3",
+      "before_sha256": "sha256:cf9e842aeeb7a93c9c92397e126334139f0e47452d64d62ae682ddbec7c26399",
+      "directory": "00000-c29ae214bf37",
+      "files": [
+        "after.wikitext",
+        "before.wikitext"
+      ],
+      "metadata_json_present": false
+    }
+  },
+  "corpus_v5_modified": false,
+  "corpus_v6_modified": false,
+  "defect_location": "INVOCATION",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "frozen_bytes_change_required": false,
+  "generated_at": "2026-08-19T07:45:56.587414+00:00",
+  "invocation_probes": [
+    {
+      "corpus_arg": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v7",
+      "error": "'research\\\\experiments\\\\H1-W6-SAME-INTELLIGENCE-01\\\\corpus-v7\\\\00000-6add43886787\\\\before.wikitext' is not in the subpath of 'D:\\\\CodexProjects\\\\ai-knowledge-compiler\\\\research\\\\experiments\\\\H1-W6-SAME-INTELLIGENCE-01'",
+      "error_type": "ValueError",
+      "is_absolute": false,
+      "raises": true
+    },
+    {
+      "corpus_arg": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\experiments\\H1-W6-SAME-INTELLIGENCE-01\\corpus-v7",
+      "is_absolute": true,
+      "raises": false,
+      "relative_before_path": "corpus-v7/00000-6add43886787/before.wikitext"
+    }
+  ],
+  "latent_precondition_now_documented": "acquire_w6_v3.acquire() requires an absolute --corpus. It neither resolves nor validates the path, and the requirement surfaces only as an exception raised after two files are already on disk. Recorded as a known property of the frozen script; deliberately not repaired in it.",
+  "network_access": false,
+  "observed_error_summary": "ValueError: the corpus-v6 before.wikitext path 'is not in the subpath of' the absolute experiment root, because --corpus was given as a repository-relative path while EXP is resolved absolute.",
+  "observed_traceback_site": "scripts/acquire_w6_v3.py:376 before_path.relative_to(EXP)",
+  "receipt_sha256": "sha256:f6a6f2a778a4ea9f6c9e0cd6a100810892f5e3148af266e9d5dce6c494b1d4c7",
+  "relative_corpus_raises": true,
+  "schema": "tavonel.w6-acquisition-failure-diagnosis.v1",
+  "supersedes": {
+    "field": "checks.checkpointing.evidence",
+    "receipt": "acquisition-resume-audit-2026-08-19.json",
+    "scope": "A single-field retraction, not a wholesale one. The superseded receipt must still be read for its other findings, and the repository contract requires it to be cited only alongside this correction.",
+    "sha256": "sha256:917364758cbbc2b0ca95f3c97036c6acb41f5dce8772a7f0cf8e63a0c3aac623",
+    "superseded_text": "This matches the observed v5 death: 1 pair on disk, no completion sidecar.",
+    "why": "That signature was read as a kill. v6 reproduced it byte-for-byte with a traceback showing a deterministic ValueError, so the cause was a defect and not an interruption. The earlier receipt is NOT edited; this one refines it. Its other eleven checks are static properties of the script and are unaffected -- including state_after_exception=UNDEFINED, which described this failure mode correctly while the diagnosis named the wrong cause."
+  },
+  "trigger": "the v6 background acquisition exited 1 after ~5.5 hours of fetching",
+  "v5_and_v6_first_pair_byte_identical": true,
+  "what_this_does_not_establish": [
+    "that the acquisition will complete -- only that it will not fail at this site",
+    "that no other latent defect exists later in the cohort loop; no run has ever executed past the first eligible page write, so everything after it is untested",
+    "that the observed HTTP 429 rate limiting is survivable within a single run"
+  ],
+  "why_the_freeze_survives": "The sealed script is unchanged, so the wrapper's frozen-bytes check still passes and the manifest's acquisition_script_sha256 pin still holds. The repair is to pass --corpus as an absolute path. Editing the sealed script would have broken the seal to fix a defect that does not live in it."
+}

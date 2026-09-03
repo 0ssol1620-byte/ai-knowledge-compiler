@@ -1,0 +1,5 @@
+#REDIRECT [[Generative AI]]
+{{Rcat shell|
+{{R to initialism}}
+{{R from move}}
+}}

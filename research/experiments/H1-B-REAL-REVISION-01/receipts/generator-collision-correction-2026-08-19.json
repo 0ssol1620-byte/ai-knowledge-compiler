@@ -1,0 +1,19 @@
+{
+  "correction": "text_for() now draws without replacement within a case, so no two units share bytes and 'new' is always distinguishable from 'continuation'.",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T22:00:16.936107+00:00",
+  "generator_sha256": "sha256:526d01103fc895c2c0cda9c3fde92c4de159e83035ae2d8c3cbe4f96389c8e7e",
+  "how_it_was_found": "an unexplained planner escape in the `honest` declaration arm at seed 20260820, ambiguous case #56. Traced by dumping the diff: ku_incoming produced no change record of any kind because its text equalled prior ku_1's, so no artifact keyed on ku_incoming could ever be seeded.",
+  "not_done": "the affected cases were NOT removed and the seed was NOT changed to make the number go away. The generator was corrected and everything re-run.",
+  "receipt_sha256": "sha256:6b0073ab8d72cb74bcb838a21b87375fd22b947e8529d346efb9ba8b56161564",
+  "schema": "tavonel.generator-collision-correction.v1",
+  "superseded_results": {
+    "affected_receipts": [
+      "change-space-sweep-2026-08-19.json",
+      "declaration-mutation-2026-08-19.json"
+    ],
+    "note": "every change-space and declaration-mutation figure produced before this correction carried the collision. The `honest` arm's '1 stale escape' and the change-space sweep's '3 residual ambiguous escapes' are both explained by it and are withdrawn as system findings, while remaining on the record as harness findings."
+  },
+  "verdict": "GROUND-TRUTH MODEL DEFECT, not a defect in PRECISE, in unresolved identity handling, or in dependency construction. The system behaved correctly; the model of it did not.",
+  "what_was_wrong": "the change-space generator could draw, for a newly created unit, text byte-identical to an existing unit. The identity resolver then settles the new unit as a CONTINUATION of the existing one -- correctly -- which makes the generator's own label of 'new unit' unrecoverable from the data. The harness scored those cases anyway, by keying an artifact on the surface unit id rather than on resolved logical identity."
+}

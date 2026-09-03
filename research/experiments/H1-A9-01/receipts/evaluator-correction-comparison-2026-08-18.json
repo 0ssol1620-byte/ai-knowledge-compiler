@@ -1,0 +1,176 @@
+{
+  "after": {
+    "absolute_risk_reduction": 0.00811369892366777,
+    "abstained_pages": 101,
+    "abstained_rate_95_ci_wilson": [
+      0.06928651062322312,
+      0.1962721988966621
+    ],
+    "abstained_severe": 12,
+    "abstained_severe_rate": 0.1188118811881188,
+    "accepted_pages": 648,
+    "accepted_rate_95_ci_wilson": [
+      0.043019409720585586,
+      0.07946678938054572
+    ],
+    "accepted_severe": 38,
+    "accepted_severe_rate": 0.05864197530864197,
+    "baseline_severe_rate": 0.06675567423230974,
+    "coverage": 0.8651535380507344,
+    "fisher_exact_p": 0.03172070193228947,
+    "pages_tested": 749,
+    "rejects_at_alpha": true,
+    "relative_risk_reduction": 0.1215432098765432,
+    "risk_difference": 0.060169905879476834,
+    "risk_difference_95_ci_bootstrap": [
+      -0.00206270627062706,
+      0.12793362669600294
+    ],
+    "total_severe": 50
+  },
+  "before": {
+    "absolute_risk_reduction": 0.012621767294664493,
+    "abstained_pages": 101,
+    "abstained_rate_95_ci_wilson": [
+      0.0999267161245613,
+      0.24193758201663454
+    ],
+    "abstained_severe": 16,
+    "abstained_severe_rate": 0.15841584158415842,
+    "accepted_pages": 648,
+    "accepted_rate_95_ci_wilson": [
+      0.04830593861895478,
+      0.08645318077446841
+    ],
+    "accepted_severe": 42,
+    "accepted_severe_rate": 0.06481481481481481,
+    "baseline_severe_rate": 0.0774365821094793,
+    "coverage": 0.8651535380507344,
+    "fisher_exact_p": 0.002462537018016928,
+    "pages_tested": 749,
+    "rejects_at_alpha": true,
+    "relative_risk_reduction": 0.16299489144316734,
+    "risk_difference": 0.0936010267693436,
+    "risk_difference_95_ci_bootstrap": [
+      0.023912113433565578,
+      0.16753758709204256
+    ],
+    "total_severe": 58
+  },
+  "deltas": {
+    "abstained_severe_rate": -0.03960396039603961,
+    "accepted_severe_rate": -0.006172839506172839,
+    "fisher_exact_p": 0.029258164914272543,
+    "risk_difference": -0.03343112088986677,
+    "total_severe": -8
+  },
+  "determinism_receipt": "research\\experiments\\H1-A9-01\\receipts\\evaluator-determinism-2026-08-18.json",
+  "direction_unchanged": true,
+  "effect_magnitude": {
+    "reading": "the pre-registered decision rule is the Fisher exact test, and it still rejects. The bootstrap interval on the risk difference is a different and more conservative procedure over a 101-page abstained arm, and after the correction it includes zero. The association survives; a claim about its magnitude does not.",
+    "risk_difference_ci_excludes_zero_after": false,
+    "risk_difference_ci_excludes_zero_before": true,
+    "share_of_the_measured_effect_that_was_a_measurement_artefact": 0.35716617695070196
+  },
+  "fallback_rates_by_gate_decision": {
+    "after": {
+      "abstained_fallback_rate": 0.0,
+      "accepted_fallback_rate": 0.0,
+      "fallback_pages": 0
+    },
+    "before": {
+      "abstained_fallback_rate": 0.1188118811881188,
+      "accepted_fallback_rate": 0.033950617283950615,
+      "fallback_pages": 34
+    }
+  },
+  "gate_decisions_that_changed": [],
+  "generated_at": "2026-08-18T14:52:41.154177+00:00",
+  "independence_receipt": "research\\experiments\\H1-A9-01\\receipts\\fallback-independence-2026-08-18.json",
+  "primary_result_survives_the_correction": true,
+  "receipt_sha256": "sha256:f32d6275d91ec2074594dc68ba24f001e1177561905cd55c131db785b48ceda5",
+  "schema": "tavonel.a9-evaluator-correction-comparison.v1",
+  "severe_label_flips_caused_by_the_correction": {
+    "among_abstained_pages": 4,
+    "among_accepted_pages": 4,
+    "became_severe": 0,
+    "count": 8,
+    "pages": [
+      {
+        "accepted": true,
+        "after_edit": 0.029118773946360154,
+        "before_edit": 1.0,
+        "now_severe": false,
+        "page": "docstructbench_enbook-zlib-o.O-17208435.pdf_57.jpg",
+        "was_severe": true
+      },
+      {
+        "accepted": true,
+        "after_edit": 0.0,
+        "before_edit": 0.10885700148441366,
+        "now_severe": false,
+        "page": "exam_paper_en-file-putnam-archive_1991_Problems_1991_page_001.png",
+        "was_severe": true
+      },
+      {
+        "accepted": false,
+        "after_edit": 0.03986135181975736,
+        "before_edit": 0.26904376012965964,
+        "now_severe": false,
+        "page": "jiaocaineedrop_55196913.pdf_0.jpg",
+        "was_severe": true
+      },
+      {
+        "accepted": false,
+        "after_edit": 0.030468394724874944,
+        "before_edit": 0.3983384346305203,
+        "now_severe": false,
+        "page": "jiaocaineedrop_jiaocai_needrop_en_1290.jpg",
+        "was_severe": true
+      },
+      {
+        "accepted": true,
+        "after_edit": 0.02586206896551724,
+        "before_edit": 0.10891089108910891,
+        "now_severe": false,
+        "page": "jiaocaineedrop_jiaocai_needrop_en_2412.jpg",
+        "was_severe": true
+      },
+      {
+        "accepted": true,
+        "after_edit": 0.09975369458128079,
+        "before_edit": 0.44619105199516323,
+        "now_severe": false,
+        "page": "jiaocaineedrop_jiaocai_needrop_en_3458.jpg",
+        "was_severe": true
+      },
+      {
+        "accepted": false,
+        "after_edit": 0.00199203187250996,
+        "before_edit": 0.27099841521394613,
+        "now_severe": false,
+        "page": "page-e2fbf592-51f5-431a-8ae6-0c62e3349e89.png",
+        "was_severe": true
+      },
+      {
+        "accepted": false,
+        "after_edit": 0.047996041563582385,
+        "before_edit": 0.1273426237385872,
+        "now_severe": false,
+        "page": "page-f108020f-edc5-4a27-85d9-d9d9c5d67309.png",
+        "was_severe": true
+      }
+    ],
+    "stopped_being_severe": 8
+  },
+  "verdict": "the confirmatory result holds under a deterministic instrument",
+  "what_changed": "the evaluator only",
+  "what_did_not_change": [
+    "model outputs (both frozen 800-page runs, byte-identical files)",
+    "the gate and its operating point",
+    "the severe-error definition (text-block edit distance > 0.10)",
+    "holdout membership",
+    "the statistical test and alpha"
+  ],
+  "why_this_is_not_holdout_reuse": "the holdout was not re-selected, the gate was not re-tuned and the endpoint was not redefined. A defect was found in the measuring device -- one that was demonstrably correlated with the comparison being measured, not merely noisy -- and the same frozen evidence was measured again with the device repaired. Both readings are kept."
+}

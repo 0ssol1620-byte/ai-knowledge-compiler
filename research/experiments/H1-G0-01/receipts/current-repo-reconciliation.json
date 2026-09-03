@@ -1,0 +1,122 @@
+{
+  "schema": "tavonel.h1-g0-current-repo-reconciliation.v1",
+  "generated_at_kst": "2026-08-16T11:26:00+09:00",
+  "scope": "H1 critical-path capability lineage and migration authority",
+  "result": "PASS_WITH_HOLDS",
+  "status": "G0A_G0B_CRITICAL_PATH_LOCKED",
+  "non_authorizations": [
+    "no commit",
+    "no push",
+    "no production migration execution",
+    "no Canary B",
+    "no NOBYPASSRLS disarm",
+    "no destructive cleanup"
+  ],
+  "worktrees": [
+    {
+      "role": "current trust/incremental hardening integration",
+      "project": "ai-knowledge-compiler",
+      "branch": "agent/folynta-trust-integration-v1",
+      "head_short": "46edd908b83d",
+      "dirty": true,
+      "upstream_state": "ahead 39"
+    },
+    {
+      "role": "L1 live discovery implementation candidate",
+      "project": "ai-knowledge-compiler-l1",
+      "branch": "agent/tavonel-live-world-slice-l1",
+      "head_short": "0d5fbc85645a",
+      "intended_base_short": "0d5fbc85645a",
+      "dirty": true,
+      "ruling": "implementation exists only as unstaged work on the old I3 base; verify/rebase semantics before promotion"
+    },
+    {
+      "role": "authoritative collection-plane promotion rehearsal",
+      "project": "ai-knowledge-compiler-collection-plane-rehearsal",
+      "branch": "agent/tavonel-collection-plane-rehearsal",
+      "head_short": "59c74e344b4f",
+      "dirty": false,
+      "ruling": "authoritative collection migration/schema reference for L1 reconciliation"
+    },
+    {
+      "role": "protected-core promotion",
+      "project": "ai-knowledge-compiler-protected-core-promotion",
+      "branch": "agent/tavonel-protected-core-promotion",
+      "head_short": "576ef4acf978",
+      "dirty": false
+    },
+    {
+      "role": "W1 change/impact activation plan",
+      "project": "ai-knowledge-compiler-w1",
+      "branch": "agent/tavonel-w1-protected-core-activation",
+      "head_short": "341eb24a7066",
+      "dirty": false
+    },
+    {
+      "role": "E0 grounded ASK/evidence architecture",
+      "project": "ai-knowledge-compiler-e0",
+      "branch": "agent/tavonel-e0-ask-evidence",
+      "head_short": "3315f6ce4dbe",
+      "dirty": false
+    },
+    {
+      "role": "I4 common-core integration rehearsal",
+      "project": "ai-knowledge-compiler-integration-core",
+      "branch": "agent/tavonel-integration-core",
+      "head_short": "76f805d79352",
+      "dirty": true,
+      "ruling": "historical I4 PASS commit remains identifiable, but the worktree is no longer a clean baseline and must not be used as current clean evidence"
+    }
+  ],
+  "migration_authority": {
+    "authoritative_revision": "0023_v4_collections",
+    "authoritative_down_revision": "0023_trial_ingest",
+    "authoritative_follow_on": "0024_production_hybrid_retrieval and subsequent collection-plane chain",
+    "l1_candidate_revision": "0024_collection_discovery_slice",
+    "l1_candidate_down_revision": "0023_trial_ingest",
+    "overlapping_tables": [
+      "collections",
+      "collection_source_roots",
+      "collection_files",
+      "collection_events"
+    ],
+    "conflicts": [
+      "L1 forks from 0023_trial_ingest instead of descending from 0023_v4_collections",
+      "L1 recreates table names already owned by the authoritative collection migration",
+      "L1 Collection lifecycle is a reduced incompatible subset of the authoritative Collection model",
+      "L1 collection_events uses a narrower envelope and omits authoritative job/retention/index semantics",
+      "promoting both lineages would create duplicate migration/schema authority"
+    ],
+    "ruling": "BLOCK_L1_MIGRATION_PROMOTION",
+    "required_action": "retain/review L1 API-SSE-frontend behavior, but rebase it onto the authoritative collection schema/migration lineage and delete or supersede the duplicate L1 migration before any promotion"
+  },
+  "capability_status": {
+    "L1": "IMPLEMENTATION_EXISTS_UNVERIFIED_FOR_PROMOTION",
+    "W1": "CORE_AND_ACTIVATION_PLAN_EXIST_LIVE_S4_PENDING",
+    "E0": "ARCHITECTURE_EXISTS_LIVE_GROUNDED_ASK_PENDING",
+    "selective_recompile": "ENGINEERING_EVIDENCE_PASS_EXTERNAL_GENERALIZATION_WITHHELD",
+    "action_key": "CONTRACT_HARDENING_IN_PROGRESS",
+    "semantic_integrity": "CORE_IMPLEMENTED_REAL_HARD_CORPUS_QUALIFICATION_PENDING",
+    "gate1b": "OBSERVATION_TOOL_IMPLEMENTED_REAL_WORKLOAD_PENDING",
+    "ragflow_adapter": "NOT_IMPLEMENTED"
+  },
+  "selective_recompile_evidence": {
+    "receipt": "research/experiments/DIAG-B-01/receipts/production-semantic-channel-promotion.json",
+    "documents": 30,
+    "cases": 330,
+    "equivalent_cases": 330,
+    "stale_left_behind_total": 0,
+    "mean_rebuild_fraction": 0.12626262626262624,
+    "claim_ruling": "engineering invariant evidence is positive; independent preregistered real-family holdout and paired statistical evidence remain required before generalized external performance claims"
+  },
+  "next_execution_order": [
+    "verify collision-safe CompilationActionKey contract",
+    "reconcile L1 behavior onto authoritative collection-plane schema without its duplicate migration",
+    "run L1 focused backend/adapter/E2E verification after lineage reconciliation",
+    "close immutable runtime qualification/READY gate",
+    "run independent selective-recompile holdout and 100-300 hard-page reality pilot in parallel where ownership permits",
+    "activate minimal W1 change-impact slice",
+    "implement minimal grounded ASK plus consumption lineage",
+    "only then implement persistent CAS reads and RAGFlow/read-only MCP adapter"
+  ]
+}

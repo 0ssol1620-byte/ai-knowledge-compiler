@@ -1,0 +1,15 @@
+{
+  "candidate_count": 6987,
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T23:38:13.229523+00:00",
+  "receipt_sha256": "sha256:c2c50efbd33f78ac29df5102ba80aed69502732a6fe44674e37a9a354c39faba",
+  "schema": "tavonel.w6-v5-single-title-freeze.v1",
+  "scientific_rules_changed": false,
+  "transport_change": "multi-title revision query -> one-title revision query",
+  "v3_acquisition_script_sha256": "sha256:d46a577b9a14e335a9846fbc50d31ef4a4914406abfc738097417b199e26669e",
+  "v3_manifest_receipt_sha256": "sha256:a78c476ad831a22f42881a11a4c3163e539709a6af6ba08a45c809ac8ce39144",
+  "v3_manifest_sha256": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc",
+  "v3_protocol_sha256": "sha256:d5fa91de62576d84c5c4c0faedf7e01c7002814715c57b57a9fc402d11f84b47",
+  "v5_protocol_sha256": "sha256:34b4e2fc44a2a3d6c0092dd6797158a8fee6a5d5aa3a60ec19aa62172eec4ffc",
+  "v5_wrapper_sha256": "sha256:2895a52c5d4a4e45d2be2fc38cab43bfba9b601969a5bb7a4731b3aa7ea1e9ea"
+}
