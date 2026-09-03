@@ -790,3 +790,282 @@ def _write_fixture(request: dict, wire_body: bytes, input_sha256: str, payload: 
         encoding="utf-8",
         newline="\n",
     )
+
+
+# ---------------------------------------------------------------------------
+# activation -- the step the scenario claimed and no test performed
+
+
+class ActivationRefused(RuntimeError):
+    """A world was offered for activation and the store declined."""
+
+
+class WorldStore:
+    """The activation contract, modelled.
+
+    This is not PostgreSQL. Production activation is `promote_foundation_candidate`
+    with an advisory transaction lock and `FOR UPDATE`, and it has its own tests in
+    `supabase/tests/foundation_world_lifecycle.sql`.
+
+    What is modelled here is the part the *compile* path has to satisfy, because
+    until now the end-to-end scenario asserted only that activation was withheld
+    and never that it could be performed: activation is explicit rather than a
+    consequence of compiling, it is bound to the manifest the actor believed was
+    current, a candidate carrying open findings cannot be activated at all, and
+    the world being replaced is retained rather than overwritten.
+    """
+
+    def __init__(self) -> None:
+        self.versions: dict[str, dict[str, object]] = {}
+        self.active_manifest: str | None = None
+        self.events: list[tuple[str, str]] = []
+
+    def register(
+        self,
+        *,
+        world_state_id: str,
+        manifest_digest: str,
+        artifacts: dict[str, dict[str, object]],
+        lifecycle: str,
+        candidate_promotion: bool,
+    ) -> None:
+        if manifest_digest in self.versions:
+            raise ActivationRefused("a candidate is immutable once registered")
+        self.versions[manifest_digest] = {
+            "world_state_id": world_state_id,
+            "artifacts": artifacts,
+            "lifecycle": lifecycle,
+            "candidate_promotion": candidate_promotion,
+            "status": "candidate",
+        }
+
+    def activate(
+        self,
+        *,
+        manifest_digest: str,
+        expected_current_manifest: str | None,
+        actor: str,
+        reason: str,
+    ) -> None:
+        if manifest_digest not in self.versions:
+            raise ActivationRefused("no such candidate")
+        version = self.versions[manifest_digest]
+        if version["lifecycle"] != "candidate":
+            # review_required and rejected are not activatable. The Core said as
+            # much in the response; the store refuses independently rather than
+            # trusting the caller to have read it.
+            raise ActivationRefused(f"lifecycle {version['lifecycle']} is not activatable")
+        if version["candidate_promotion"] is not False:
+            raise ActivationRefused("a compile may not promote itself")
+        if expected_current_manifest != self.active_manifest:
+            # Optimistic concurrency. Somebody else activated between this actor
+            # reading the world and deciding to replace it, and that change would
+            # be silently lost.
+            raise ActivationRefused("active world moved since it was read")
+        if not reason.strip():
+            raise ActivationRefused("activation requires a stated reason")
+        if self.active_manifest is not None:
+            self.versions[self.active_manifest]["status"] = "superseded"
+        version["status"] = "active"
+        self.active_manifest = manifest_digest
+        self.events.append((actor, manifest_digest))
+
+    def read(self, artifact_id: str) -> dict[str, object]:
+        """Read through the active pointer, the only way a reader sees a world."""
+        if self.active_manifest is None:
+            raise ActivationRefused("no active world")
+        artifacts = self.versions[self.active_manifest]["artifacts"]
+        return artifacts[artifact_id]  # type: ignore[index]
+
+
+def _activated_world_v1() -> tuple[Workspace, PriorWorld, WorldStore]:
+    workspace = Workspace()
+    digests = workspace.full_build(V1_CLAUSES)
+    manifest = _digest_of({"world": "v1", "artifacts": digests})
+    prior = PriorWorld(
+        world_state_id="world-v1",
+        manifest_digest=manifest,
+        artifact_digests=digests,
+        source_sha256="sha256:" + "1" * 64,
+        units=[clause.snapshot() for clause in V1_CLAUSES],
+        shape=_shape(V1_CLAUSES),
+    )
+    store = WorldStore()
+    store.register(
+        world_state_id="world-v1",
+        manifest_digest=manifest,
+        artifacts={a: _artifact_body(a, V1_CLAUSES) for a in ARTIFACTS},
+        lifecycle="candidate",
+        candidate_promotion=False,
+    )
+    store.activate(
+        manifest_digest=manifest,
+        expected_current_manifest=None,
+        actor="reviewer@tavonel",
+        reason="initial review of the supply agreement",
+    )
+    return workspace, prior, store
+
+
+def _assemble_v2(store: WorldStore, prior: PriorWorld, payload: dict) -> str:
+    """Build World v2 the way a caller must: carry forward, take the rebuilt bytes."""
+    recompiled = payload["revision"]["recompilation"]
+    artifacts: dict[str, dict[str, object]] = {}
+    for artifact_id in recompiled["carriedForwardArtifactIds"]:
+        # Carried forward means the bytes already held, not a re-derivation, and
+        # the digest the Core returned must equal the one this side sent.
+        assert (
+            recompiled["carriedForwardDigests"][artifact_id] == prior.artifact_digests[artifact_id]
+        )
+        artifacts[artifact_id] = store.read(artifact_id)
+    for artifact_id, body in recompiled["rebuiltArtifactBodies"].items():
+        assert _digest_of(body) == recompiled["rebuiltDigests"][artifact_id]
+        artifacts[artifact_id] = body
+    assert set(artifacts) == set(ARTIFACTS), "the next world must cover every artifact"
+    manifest = payload["candidate"]["manifestDigest"]
+    store.register(
+        world_state_id=payload["candidate"]["worldStateId"],
+        manifest_digest=manifest,
+        artifacts=artifacts,
+        lifecycle=payload["candidate"]["lifecycle"],
+        candidate_promotion=payload["receipt"]["candidatePromotion"],
+    )
+    return manifest
+
+
+def test_the_scenario_end_to_end_including_both_activations():
+    """The whole claim, with the two activations actually performed.
+
+    Every other test here stops at the candidate and asserts that activation was
+    withheld. That is the fail-closed half, and it was the only half being tested:
+    the scenario said "compiled, reviewed and activated as World v1" and "a human
+    activates World v2", and nothing performed either step.
+
+    So this runs it. World v1 is activated by a named reviewer, the revision is
+    compiled against the world that is actually active, World v2 is assembled from
+    carried bytes plus rebuilt bytes, a human activates it against the manifest
+    they read, and the question is answered by reading through the active pointer
+    rather than out of the compiler workspace.
+    """
+    workspace, prior, store = _activated_world_v1()
+    v1_manifest = prior.manifest_digest
+
+    # Before the revision, the active world answers with the original term.
+    before = store.read("retrieval:payment")["reads"][0]
+    assert "30 days" in before["text"]
+
+    service = RevisionService(
+        hmac_secret=HMAC_SECRET,
+        resolve=_resolver(workspace, prior, V2_CLAUSES),
+        core_release_digest=CORE_RELEASE,
+    )
+    httpd, stop = serve(service)
+    try:
+        status, payload, _body, _sha = _post(httpd.server_address, _build_request(prior))
+    finally:
+        stop()
+    assert status == 200, payload
+    assert payload["revision"]["disposition"] == "promotable"
+    assert payload["receipt"]["candidatePromotion"] is False
+
+    v2_manifest = _assemble_v2(store, prior, payload)
+
+    # Still v1 until a person says otherwise. Compiling is not activating.
+    assert store.active_manifest == v1_manifest
+    assert "30 days" in store.read("retrieval:payment")["reads"][0]["text"]
+
+    store.activate(
+        manifest_digest=v2_manifest,
+        expected_current_manifest=v1_manifest,
+        actor="reviewer@tavonel",
+        reason="payment term amended from 30 to 45 days",
+    )
+
+    # The answer, read through the active pointer.
+    answer = store.read("retrieval:payment")["reads"][0]
+    assert "45 days" in answer["text"]
+    assert "30 days" not in answer["text"]
+    assert answer["provenance"]["pageNumber1"] == 2
+    assert answer["provenance"]["bbox1000"] == [120, 356, 880, 388]
+    assert answer["provenance"]["bbox1000"] != [120, 340, 880, 372]
+    assert answer["provenance"]["evidenceId"] == "ev_ku_payment_p2"
+
+    # Unrelated facts are unchanged and still carry the witness v1 recorded.
+    law = store.read("claim:law")["reads"][0]
+    assert law["provenance"] == _artifact_body("claim:law", V1_CLAUSES)["reads"][0]["provenance"]
+
+    # v1 is retained, not overwritten.
+    assert store.versions[v1_manifest]["status"] == "superseded"
+    assert store.versions[v2_manifest]["status"] == "active"
+    assert len(store.events) == 2
+
+
+def test_activation_is_refused_when_the_active_world_moved():
+    """Optimistic concurrency, at the activation boundary.
+
+    Two reviewers read World v1 and both decide to replace it. The second must
+    not silently discard the first, and the store refuses rather than resolving
+    it -- which of the two worlds should survive is not a question code can answer.
+    """
+    workspace, prior, store = _activated_world_v1()
+    service = RevisionService(
+        hmac_secret=HMAC_SECRET,
+        resolve=_resolver(workspace, prior, V2_CLAUSES),
+        core_release_digest=CORE_RELEASE,
+    )
+    httpd, stop = serve(service)
+    try:
+        _status, payload, _body, _sha = _post(httpd.server_address, _build_request(prior))
+    finally:
+        stop()
+    v2_manifest = _assemble_v2(store, prior, payload)
+
+    with pytest.raises(ActivationRefused, match="active world moved"):
+        store.activate(
+            manifest_digest=v2_manifest,
+            expected_current_manifest=_digest_of({"world": "a different one"}),
+            actor="second-reviewer@tavonel",
+            reason="racing the first reviewer",
+        )
+    assert store.active_manifest == prior.manifest_digest
+
+
+def test_a_candidate_with_an_open_finding_cannot_be_activated():
+    """The fail-closed half, now checked against a store that can say yes.
+
+    An assertion that activation was withheld means little from a store that has
+    never activated anything. This one has: it activated World v1 a few lines
+    earlier, and it still refuses this candidate.
+    """
+    workspace, prior, store = _activated_world_v1()
+    facts = [
+        *_source_facts(V2_CLAUSES),
+        SourceFact(
+            fact_id="sf-formula",
+            kind="UNSUPPORTED_CONSTRUCT",
+            state=SourceFactState.UNRESOLVED,
+            reason="no canonical representation for an expression tree",
+        ),
+    ]
+    service = RevisionService(
+        hmac_secret=HMAC_SECRET,
+        resolve=_resolver(workspace, prior, V2_CLAUSES, facts=facts),
+        core_release_digest=CORE_RELEASE,
+    )
+    httpd, stop = serve(service)
+    try:
+        _status, payload, _body, _sha = _post(httpd.server_address, _build_request(prior))
+    finally:
+        stop()
+    assert payload["candidate"]["lifecycle"] == "review_required"
+    v2_manifest = _assemble_v2(store, prior, payload)
+
+    with pytest.raises(ActivationRefused, match="not activatable"):
+        store.activate(
+            manifest_digest=v2_manifest,
+            expected_current_manifest=prior.manifest_digest,
+            actor="reviewer@tavonel",
+            reason="trying to activate over an unresolved source fact",
+        )
+    assert store.active_manifest == prior.manifest_digest
+    assert "30 days" in store.read("retrieval:payment")["reads"][0]["text"]
