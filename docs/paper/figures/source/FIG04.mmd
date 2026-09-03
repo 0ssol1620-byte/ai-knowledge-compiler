@@ -1,0 +1,15 @@
+flowchart TB
+  IN["Incoming unit"] --> CAND["Restricted candidate set<br/>path root · explicit id · anchors"]
+  CAND --> ASSIGN["Maximum-weight one-to-one assignment<br/>no prior unit claimed twice"]
+  ASSIGN --> CRIT{"critical signal<br/>has no value?"}
+  CRIT -->|yes| AMB["UNRESOLVED"]
+  CRIT -->|no| TIE{"top two within<br/>the tie band?"}
+  TIE -->|yes| AMB
+  TIE -->|no| BAND{"score band"}
+  BAND -->|"≥ merge bar"| M["MATCHED<br/>continues prior identity"]
+  BAND -->|"review band"| AMB
+  BAND -->|"below floor"| N["NEW identity"]
+  AMB --> PROP["No traversal seed ·<br/>not a modification ·<br/>not a removal"]
+
+  style AMB fill:#fff4e6,stroke:#e68a00,stroke-width:2px
+  style M fill:#e6f0ff,stroke:#06c

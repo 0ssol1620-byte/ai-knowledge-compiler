@@ -1,0 +1,58 @@
+{
+  "closes": "P18 -- 'repository green' was written from a tests/unit run. The word is now emitted by this tool from a parsed summary of the scope actually executed.",
+  "generated_at": "2026-08-27T14:49:03.109808+00:00",
+  "guard_is_live": true,
+  "interpreter": {
+    "is_project_interpreter": true,
+    "project_interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+    "project_venv_present": true,
+    "running_interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+    "why_it_matters": "The parser sandbox launches its child with -I, which excludes user site-packages. Dependencies installed there are invisible to it, and the child dies with PARSER_PROCESS_CRASH -- 24 failures that look like product defects. A result from the wrong interpreter is not a result about this repository."
+  },
+  "positive_control": {
+    "clean_scope": {
+      "collected": 6,
+      "collected_source": "summed_outcomes",
+      "command": "-m pytest -q --tb=no -p no:randomly tests/unit/test_migration_graph.py",
+      "errors": 0,
+      "exit_code": 0,
+      "failed": 0,
+      "green": true,
+      "green_reason": "zero failures and zero errors in this scope",
+      "passed": 6,
+      "skipped": 0,
+      "summary_line": "6 passed in 0.26s",
+      "test_scope": "__negative_control__"
+    },
+    "guard_accepted_clean": true,
+    "guard_refused_injected": true,
+    "injected_failure_scope": {
+      "collected": 2,
+      "collected_source": "summed_outcomes",
+      "command": "-m pytest -q --tb=no -p no:randomly C:\\Users\\yspow\\AppData\\Local\\Temp\\tmpf7d3qgn6 -p no:cacheprovider",
+      "errors": 0,
+      "exit_code": 1,
+      "failed": 1,
+      "green": false,
+      "green_reason": "1 failed",
+      "passed": 1,
+      "skipped": 0,
+      "summary_line": "1 failed, 1 passed in 16.51s",
+      "test_scope": "__positive_control__"
+    },
+    "purpose": "Prove the guard can say NO. A scope-reporting guard that has never refused anything is an assertion, not a check.",
+    "repository_verdict_controls": {
+      "full_scope_with_failure_refused": true,
+      "unit_green_alone_refused": true,
+      "why": "P18 was not a scope wrongly called green. It was a green NARROW scope called the repository. The verdict must refuse both a failing full scope and a green unit scope offered in its place."
+    },
+    "separates": true
+  },
+  "receipt_sha256": "sha256:0b52564b3f704b95fb1d51608d190dd55135b3ecdc530290846c4194aa4964ba",
+  "repository_green": false,
+  "repository_green_evaluated": false,
+  "repository_green_note": "Only the 'full' scope may be called the repository. A green 'unit' scope does not license the phrase; that substitution is exactly what P18 recorded. When the full scope was not run, repository_green is False and repository_green_evaluated is False -- absence of a run is not a pass.",
+  "repository_scope": "full",
+  "schema": "tavonel.test-scope-status.v1",
+  "scopes": []
+}

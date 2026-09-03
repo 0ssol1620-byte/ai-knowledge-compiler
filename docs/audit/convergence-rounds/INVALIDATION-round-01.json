@@ -1,0 +1,12 @@
+{
+  "consequence": "round-01 does not count toward the two consecutive clean rounds",
+  "correct_reading": "Those four are this round's human-pass findings. Round 1 therefore had material findings and was not clean.",
+  "generated_at": "2026-08-19T09:28:43.875727+00:00",
+  "invalidated_round_sha256": "sha256:beea7cff496153bed9a176b288f7982a94fdaaadbb989b9a3fafd33a8016b308",
+  "invalidates": "round-01.json",
+  "reason": "Pass A -- the human registry-vs-document read -- was recorded as 0 findings by passing --human-findings 0. No human read was performed at round time. The reads that WERE performed this session found P19 (two withdrawn limitations surviving in five surfaces), P20 (every published test figure describing the wrong interpreter), E7 (the amendment programme is net-broadening while recorded as hardening) and Reviewer D1 (four of five exactness nulls sharing one corpus). Assigning those to 'before the round' is a boundary drawn after seeing that it would make the round clean, which is the retrospective-criterion defect the protocol exists to prevent.",
+  "receipt_sha256": "sha256:330c9046fc3e19e37194d29559c033a4c8c7ec3d1b2fbfd2c36ab93f24462cf4",
+  "round_file_deleted": false,
+  "round_file_edited": false,
+  "schema": "tavonel.convergence-round-invalidation.v1"
+}

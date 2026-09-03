@@ -1,0 +1,44 @@
+# Receipts whose pinned code hash no longer matches live source, declared.
+#
+# A DRIFTED pin means: this receipt records a measurement made against a version
+# of a module that has since changed. That is a *fact about history*, not a
+# defect, and the repository's rule is that it is never removed by editing the
+# receipt.
+#
+# But an undeclared drift and a declared one are different risks. An undeclared
+# drift may mean a load-bearing claim is silently citing stale code. So every
+# drifted receipt must appear here with a reason and, where one exists, the
+# receipt that supersedes it. `tools/repro/build_experiment_manifest.py` splits
+# drift into declared-historical and undeclared, and treats only the undeclared
+# kind as a failure.
+#
+# Adding an entry here is not a way to silence a real problem. An entry asserts
+# that some *other* receipt now carries the claim, or that the claim explicitly
+# states the drift. Both are checkable, and the claim-evidence matrix is where
+# that check lands.
+
+schema: tavonel.historical-drift-register.v1
+as_of: 2026-08-19
+
+drifted_receipts:
+
+  - path: research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-2026-08-19.json
+    field: identity_module_sha256
+    reason: >-
+      Measured before ruff reformatted identity.py (import ordering and a noqa
+      directive). The equivalence phase was re-executed at the same seed against
+      the reformatted module and reproduced its decisions exactly, which is what
+      shows the reformat was behaviour-preserving.
+    superseded_by: research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json
+    claim_carrying: false
+
+  - path: research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/scaling-2026-08-19.json
+    field: identity_module_sha256
+    reason: >-
+      Timings measured before the same ruff reformat. They were deliberately NOT
+      re-measured: re-running a wall-clock sweep to chase a formatting-only hash
+      change spends hours to move no number. The behaviour-preservation evidence
+      is the equivalence re-run above.
+    superseded_by: null
+    claim_carrying: true
+    claim_states_the_drift: B-IDENTITY-SCALABILITY-MEASURED

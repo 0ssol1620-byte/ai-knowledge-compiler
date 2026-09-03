@@ -1,0 +1,24 @@
+flowchart TB
+  SRC["Source document<br/>revision"] --> EXT["Extraction<br/>(evidence-region bound)"]
+  EXT --> ID["Identity resolution<br/>one-to-one assignment"]
+  ID -->|"MATCHED / NEW"| DIFF["Change classification"]
+  ID -->|"UNRESOLVED"| ABST["Abstention<br/>propagates as unresolved"]
+  DIFF --> KINDS{"change kind"}
+  KINDS -->|semantic| DEP
+  KINDS -->|"structural<br/>(no content changed)"| DEP
+  KINDS -->|temporal| DEP
+  KINDS -->|authority| DEP
+  DEP["Typed dependency traversal<br/>only edges of the classified kind"] --> AFF["Affected set"]
+  AFF --> REC["Selective recompilation"]
+  REC --> CAND["CANDIDATE knowledge state"]
+  ABST -.->|"contributes no seed,<br/>is not a modification"| CAND
+  CAND --> GATE{"Verification gate<br/>order-invariant, fail-closed"}
+  GATE -->|"any check fails"| HOLD["Previous ACTIVE state<br/>stays in place"]
+  GATE -->|"all checks pass"| ACT["Single-event activation<br/>→ ACTIVE"]
+  ACT --> FILT["Consumption filter<br/>valid time · known time ·<br/>authority · permission"]
+  FILT --> AGENT["Agent / retrieval consumer"]
+  AGENT --> LIN["Consumption lineage record"]
+
+  style GATE fill:#ffe6e6,stroke:#c00,stroke-width:2px
+  style KINDS fill:#e6f0ff,stroke:#06c,stroke-width:2px
+  style HOLD fill:#fff4e6,stroke:#e68a00

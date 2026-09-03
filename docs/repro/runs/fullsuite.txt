@@ -1,0 +1,160 @@
+........................................................................ [  2%]
+........................................................................ [  5%]
+........................................................................ [  7%]
+........................................................................ [ 10%]
+........................................................................ [ 12%]
+........................................................................ [ 15%]
+........................................................................ [ 18%]
+........................................................................ [ 20%]
+........................................................................ [ 23%]
+........................................................................ [ 25%]
+........................................................................ [ 28%]
+........................................................................ [ 30%]
+........................................................................ [ 33%]
+........................................................................ [ 36%]
+........................................................................ [ 38%]
+......................ssssssssssssss.sssssssss.sssssss.s................ [ 41%]
+........................................................................ [ 43%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 54%]
+........................................................................ [ 56%]
+........................................................................ [ 59%]
+................................................FFF..FFFF.F...F...FF..FF [ 61%]
+FF...................................................................... [ 64%]
+................................................F.F.F..................F [ 67%]
+F....................................................................... [ 69%]
+FF..........FF.......................................................... [ 72%]
+........................................................................ [ 74%]
+........................................................................ [ 77%]
+........................................................................ [ 80%]
+........................................................................ [ 82%]
+........................................................................ [ 85%]
+........................................................................ [ 87%]
+........................................................................ [ 90%]
+........................................................................ [ 92%]
+........................................................................ [ 95%]
+........................................................................ [ 98%]
+.....................................................                    [100%]
+================================== FAILURES ===================================
+E   assert [True, True] == [False, True]
+      
+      At index 0 diff: True != False
+      Use -v to get more diff
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:263: assert [True, True] == [False, True]
+E   AssertionError: assert (<akc_api.models.CollectionProcessingTaskBinding object at 0x000001E465C9A5D0> is not None and 'active' == 'settled'
+      
+      - settled
+      + active)
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:522: AssertionError: assert (<akc_api.models.CollectionProcessingTaskBinding object at 0x000001E465C9A5D0> is not None and 'active' == 'settled'
+E   assert (<akc_api.models.AnalysisTask object at 0x000001E464C9B240> is not None and <akc_api.models.SourceFile object at 0x000001E461D3DF50> is not None and None is not None)
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:610: assert (<akc_api.models.AnalysisTask object at 0x000001E464C9B240> is not None and <akc_api.models.SourceFile object at 0x000001E461D3DF50> is not None and None is not None)
+E   AssertionError: ('queued', 'PARSER_PROCESS_CRASH')
+    assert None is not None
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:1286: AssertionError: ('queued', 'PARSER_PROCESS_CRASH')
+E   AssertionError: ('queued', 'PARSER_PROCESS_CRASH')
+    assert None is not None
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:1286: AssertionError: ('queued', 'PARSER_PROCESS_CRASH')
+E   assert None is not None
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:1516: assert None is not None
+E   AssertionError: assert (<akc_api.models.AnalysisTask object at 0x000001E465B085A0> is not None and 'queued' == 'dead_letter'
+      
+      - dead_letter
+      + queued)
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:1584: AssertionError: assert (<akc_api.models.AnalysisTask object at 0x000001E465B085A0> is not None and 'queued' == 'dead_letter'
+E   AssertionError: assert (<akc_api.models.AnalysisTask object at 0x000001E46489B8A0> is not None and 'queued' == 'completed'
+      
+      - completed
+      + queued)
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_analysis_isolation.py:1666: AssertionError: assert (<akc_api.models.AnalysisTask object at 0x000001E46489B8A0> is not None and 'queued' == 'completed'
+E   AssertionError: ('queued', 'PARSER_PROCESS_CRASH')
+    assert 'queued' == 'completed'
+      
+      - completed
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:271: AssertionError: ('queued', 'PARSER_PROCESS_CRASH')
+E   AssertionError: PARSER_PROCESS_CRASH
+    assert 'PARSER_PROCESS_CRASH' is None
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:679: AssertionError: PARSER_PROCESS_CRASH
+E   AssertionError: assert 'queued' == 'completed'
+      
+      - completed
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:994: AssertionError: assert 'queued' == 'completed'
+E   AssertionError: assert 'queued' == 'completed'
+      
+      - completed
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:1258: AssertionError: assert 'queued' == 'completed'
+E   IndexError: list index out of range
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:1293: IndexError: list index out of range
+E   assert None is not None
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:1379: assert None is not None
+E   assert (None is not None)
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_api_integration.py:1485: assert (None is not None)
+E   AssertionError: assert 'queued' == 'completed'
+      
+      - completed
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_document_version_api.py:243: AssertionError: assert 'queued' == 'completed'
+E   assert 0 == 1
+     +  where 0 = len([])
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_document_version_api.py:571: assert 0 == 1
+E   AssertionError: assert 'queued' == 'completed'
+      
+      - completed
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_document_version_api.py:786: AssertionError: assert 'queued' == 'completed'
+E   assert None is not None
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_email_verification_api.py:478: assert None is not None
+E   AssertionError: assert 'queued' == 'completed'
+      
+      - completed
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_email_verification_api.py:559: AssertionError: assert 'queued' == 'completed'
+E   AssertionError: assert 'queued' == 'dead_letter'
+      
+      - dead_letter
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_knowledge_batch_pdf_api.py:169: AssertionError: assert 'queued' == 'dead_letter'
+E   AssertionError: {"error":{"code":"BATCH_ANALYSIS_REQUIRED","message":"BATCH_ANALYSIS_REQUIRED","request_id":"req_c51c1ca1-11ca-4c72-b5a7-de07b7a8f22e","retryable":false,"details":{"document_ids":["9cca6def-93f9-4f6c-acb6-87f9ed8b5b57","3253dc42-20d5-4883-841a-5a62efc2fa1c"]}}}
+    assert 409 == 202
+     +  where 409 = <Response [409 Conflict]>.status_code
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_knowledge_batch_pdf_api.py:237: AssertionError: {"error":{"code":"BATCH_ANALYSIS_REQUIRED","message":"BATCH_ANALYSIS_REQUIRED","request_id":"req_c51c1ca1-11ca-4c72-b5a7-de07b7a8f22e","retryable":false,"details":{"document_ids":["9cca6def-93f9-4f6c-acb6-87f9ed8b5b57","3253dc42-20d5-4883-841a-5a62efc2fa1c"]}}}
+E   AssertionError: assert (<akc_api.models.AnalysisTask object at 0x000001E4712ADE10> is not None and 'queued' == 'completed'
+      
+      - completed
+      + queued)
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_native_nonpdf_worker_e2e.py:338: AssertionError: assert (<akc_api.models.AnalysisTask object at 0x000001E4712ADE10> is not None and 'queued' == 'completed'
+E   AssertionError: assert 'queued' == 'dead_letter'
+      
+      - dead_letter
+      + queued
+D:\CodexProjects\ai-knowledge-compiler\services\api\tests\test_native_nonpdf_worker_e2e.py:436: AssertionError: assert 'queued' == 'dead_letter'
+=========================== short test summary info ===========================
+FAILED services/api/tests/test_analysis_isolation.py::test_single_worker_concurrency_persists_one_result_and_tenant_safe_preview
+FAILED services/api/tests/test_analysis_isolation.py::test_shared_task_pause_is_binding_scoped_and_reuse_is_never_double_billed
+FAILED services/api/tests/test_analysis_isolation.py::test_credit_failure_retry_versions_plan_and_reconciles_ledger_once
+FAILED services/api/tests/test_analysis_isolation.py::test_scanned_input_fake_provider_admits_exact_inference_page_once[image]
+FAILED services/api/tests/test_analysis_isolation.py::test_scanned_input_fake_provider_admits_exact_inference_page_once[pdf]
+FAILED services/api/tests/test_analysis_isolation.py::test_sensitive_preview_is_masked_by_default_and_opt_out_is_explicit
+FAILED services/api/tests/test_analysis_isolation.py::test_hostile_text_is_dead_lettered_without_partial_rows
+FAILED services/api/tests/test_analysis_isolation.py::test_office_analysis_is_explicitly_no_preview
+FAILED services/api/tests/test_api_integration.py::test_cdr_preserves_original_and_binds_a_separate_parser_derivative
+FAILED services/api/tests/test_api_integration.py::test_native_vertical_slice_export_edit_and_verified_purge
+FAILED services/api/tests/test_api_integration.py::test_hundred_page_native_pdf_gate_one_journey
+FAILED services/api/tests/test_api_integration.py::test_visual_input_fails_closed_and_releases_reserved_credit
+FAILED services/api/tests/test_api_integration.py::test_concurrent_retry_idempotency_preserves_page_and_reserves_once
+FAILED services/api/tests/test_api_integration.py::test_concurrent_distinct_review_resolutions_commit_once_and_audit
+FAILED services/api/tests/test_api_integration.py::test_review_source_adoption_and_document_rule_require_a_fresh_preview
+FAILED services/api/tests/test_document_version_api.py::test_v2_replacement_archives_exact_v1_and_clears_current_projection
+FAILED services/api/tests/test_document_version_api.py::test_invalid_rejected_and_aborted_v2_leave_v1_untouched
+FAILED services/api/tests/test_document_version_api.py::test_reprocess_creates_same_source_processing_revision_with_version_diff
+FAILED services/api/tests/test_email_verification_api.py::test_failed_gpu_cap_creates_no_job
+FAILED services/api/tests/test_email_verification_api.py::test_worker_enforces_daily_page_cap_before_persisting_pages
+FAILED services/api/tests/test_knowledge_batch_pdf_api.py::test_encrypted_pdf_password_requeues_without_persisting_secret
+FAILED services/api/tests/test_knowledge_batch_pdf_api.py::test_batch_idempotency_and_knowledge_provenance_usage_cost_api
+FAILED services/api/tests/test_native_nonpdf_worker_e2e.py::test_six_native_formats_persist_structured_cir_and_provenance
+FAILED services/api/tests/test_native_nonpdf_worker_e2e.py::test_native_parser_error_code_reaches_analysis_task
+24 failed, 2734 passed, 31 skipped in 610.65s (0:10:10)

@@ -1,0 +1,19 @@
+flowchart LR
+  subgraph S1["Stage 1 — identity + change detection<br/>THE BOTTLENECK"]
+    direction TB
+    T1["100 units → 97.9 ms"]
+    T2["1,000 units → 10.48 s"]
+    T3["10,000 units → MemoryError"]
+    T1 --- T2 --- T3
+  end
+  subgraph S2["Stage 2 — selective recompile<br/>given a dirty set"]
+    direction TB
+    U1["1,000 units → 3.62× vs full rebuild"]
+    U2["10,000 units → 4.31× vs full rebuild"]
+    U3["~1% of artifacts rebuilt"]
+    U1 --- U2 --- U3
+  end
+  S1 -->|"dirty set"| S2
+
+  style S1 fill:#ffd6d6,stroke:#c00,stroke-width:2px
+  style S2 fill:#d9f2d9,stroke:#090

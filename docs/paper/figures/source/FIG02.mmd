@@ -1,0 +1,23 @@
+flowchart LR
+  subgraph BEFORE["Before — measured failure"]
+    direction TB
+    B1["Revision reorders units<br/>content unchanged"] --> B2["Content-level diff<br/>= empty"]
+    B2 --> B3["changed_logical_ids = ∅"]
+    B3 --> B4["Traversal seed empty<br/>→ visits nothing"]
+    B4 --> B5["Position-aggregated artifact<br/>NOT rebuilt"]
+    B5 --> B6["Carried forward as CURRENT<br/>-- STALE"]
+    B6 --> B7["Gate blocked the run<br/>equivalence had already failed"]
+  end
+  subgraph AFTER["After — structural channel"]
+    direction TB
+    A1["Revision reorders units<br/>content unchanged"] --> A2["DocumentShape.unit_order<br/>declares the order"]
+    A2 --> A3["STRUCTURAL change classified"]
+    A3 --> A4["Traversal seeded through<br/>structural edges"]
+    A4 --> A5["Shape-dependent artifact<br/>rebuilt"]
+    A5 --> A6["Fingerprint covers<br/>structural facts"]
+    A6 --> A7["Equivalent to full rebuild"]
+  end
+
+  style B6 fill:#ffd6d6,stroke:#c00,stroke-width:2px
+  style B7 fill:#fff4e6,stroke:#e68a00
+  style A7 fill:#d9f2d9,stroke:#090,stroke-width:2px

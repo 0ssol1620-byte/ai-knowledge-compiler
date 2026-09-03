@@ -1,0 +1,8 @@
+{
+  "drift": [
+    "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/scaling-2026-08-19.json::identity_module_sha256 -> DRIFTED",
+    "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-2026-08-19.json::identity_module_sha256 -> DRIFTED"
+  ],
+  "identity_sha256": "sha256:0b27e1b505d4684eaaf07aea0d6ffc1df3f30e4b8b1d95c5025f83572a05fafc",
+  "identity_mtime": 1787100536.7847998
+}

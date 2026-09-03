@@ -1,0 +1,12 @@
+# Hand-over packages — fail-closed, inherited from docs/ip/.gitignore.
+#
+# These directories contain copies of privileged claim-level material. docs/ip/ is
+# git-ignored under a fail-closed allowlist (founder instruction, 2026-08-11);
+# copying that material here and tracking it would defeat the control by
+# accident, which is precisely the failure the allowlist exists to prevent.
+#
+# Only this file is tracked. Regenerate a package with
+# `python tools/release/build_submission_package.py`, whose sources are the
+# canonical documents under docs/ and research/.
+*
+!.gitignore

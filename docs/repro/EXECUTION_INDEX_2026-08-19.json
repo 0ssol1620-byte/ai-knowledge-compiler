@@ -1,0 +1,2661 @@
+{
+  "environment_at_index_build": {
+    "dependency_files": [
+      {
+        "path": "pyproject.toml",
+        "present": true,
+        "sha256": "sha256:f256e8e899c4d93de714e2560265f7f03af2e8139f9c26430ba27aaefb61b4b7"
+      },
+      {
+        "path": "uv.lock",
+        "present": true,
+        "sha256": "sha256:01f6e8a4025b43f7ee1d65c2d40794be1be3fe9110574291dc48b974973b397f"
+      }
+    ],
+    "git_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+    "machine": "AMD64",
+    "manifest_environment": {
+      "dependencies": {
+        "available": true,
+        "method": "pip freeze at manifest time; not a lockfile",
+        "package_count": 264,
+        "sha256": "sha256:4fea1fd026458e9fb92d247702d310714343dfe63abf2e8d651fd27452885c2f"
+      },
+      "machine": "AMD64",
+      "note": "Single uninstrumented desktop host under unknown background load. Wall-clock figures are order-of-magnitude, not benchmarks.",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "python": "3.13.0"
+    },
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.13.0",
+    "warning": "This is the environment at index-build time. It is not asserted to be the historical environment of older receipts."
+  },
+  "exclusion_rules_path": "docs/repro/EXCLUSION_RULES_2026-08-19.md",
+  "exclusion_rules_sha256": "sha256:4ac7f15697f2d3f8902ff76dac0ed93b18d9c75c47cf9fdd9d7d8cb49ff04c42",
+  "experiments": [
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/ASSURANCE-A-01/scripts/prepare_stage1_hard_slice.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/ASSURANCE-A-01/scripts/prepare_stage1_hard_slice.py"
+          },
+          {
+            "command": "python research/experiments/ASSURANCE-A-01/scripts/run_cpu_assurance.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/ASSURANCE-A-01/scripts/run_cpu_assurance.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "ASSURANCE-A-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [
+        {
+          "path": "research/experiments/ASSURANCE-A-01/receipts/cpu-critical-token-pilot.json",
+          "sha256": "sha256:8d9f536c2b292abe1893266d798e8771aa31fadf4d3dc9695853aca6efec68f9"
+        },
+        {
+          "path": "research/experiments/ASSURANCE-A-01/receipts/development-completion-2026-08-15.json",
+          "sha256": "sha256:1ce6b738670cdba518ca4774156531f0bef2d798de9767409fcb48e88403c11f"
+        },
+        {
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-bake-v27.json",
+          "schema": "tavonel.daemonless-oci-bake-attestation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:8f325e63696a8e032144557931af31a88374d7617d0290f5f17fde1eb51c6e2b"
+        },
+        {
+          "generated_at": "2026-08-16T15:39:25.451815+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-bake-v28.json",
+          "schema": "tavonel.daemonless-oci-security-remediation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:5272096399f6747f656e5c0a5f686a5e90e331b8f13f412b46c50fc4d650b207"
+        },
+        {
+          "generated_at": "2026-08-16T06:28:33.334964+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-integrity-v27.json",
+          "schema": "tavonel.daemonless-oci-integrity.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:98bf79dd58feba01eb312cf7fc5c0a5b144f822caad029592628f32ba6989431"
+        },
+        {
+          "generated_at": "2026-08-16T15:40:53.982934+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-oci-integrity-v28.json",
+          "schema": "tavonel.daemonless-oci-composed-integrity.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:20a1e7ba35cf8a52b051f5fd1677cd09a92f78d2bf471f193746417fc01e33df"
+        },
+        {
+          "generated_at": "2026-08-16T06:55:50.132730+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-daemonless-source-provenance-v27.json",
+          "schema": "tavonel.daemonless-source-provenance.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:f46f66d0ad9d6fdc244246d7e5c1784c5f0a176183df0432cc110d05f23bc823"
+        },
+        {
+          "generated_at": "2026-08-16T16:31:24.405874+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-ghcr-publication-v28.json",
+          "schema": "tavonel.daemonless-ghcr-publication.v2",
+          "sha256": "sha256:a2871feb6a822b51ffc316a25f0132711797c9503076cb3585a3a7e83ccb4c3a"
+        },
+        {
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-vllm-server-smoke-2026-08-16.json",
+          "schema": "tavonel.ovis-vllm-server-smoke.v1",
+          "sha256": "sha256:baceab2ef6186a4348773af0a8018c209be0118524d94733aa5f8edf526879e2"
+        },
+        {
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-vllm-server-smoke-v2-2026-08-16.json",
+          "schema": "tavonel.ovis-vllm-server-smoke.v1",
+          "sha256": "sha256:a6f542ac11a1a3cc4c48b57445113b4de57c8e427c0bd818ce38d87af31b5cb5"
+        },
+        {
+          "generated_at": "2026-08-16T16:22:38.776420+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovis-windows-trivy-security-v28.json",
+          "schema": "tavonel.windows-trivy-security.v28",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:6a3abc0d35bd50f4fcb916c84646959b6fc717b3377c638d8c22ba54b0b84e11"
+        },
+        {
+          "generated_at": "2026-08-16T16:32:41.735950+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovisocr2-m1-daemonless-v28.build-receipt.json",
+          "schema": "folynta.baked-image-build-integrity.v1",
+          "sha256": "sha256:437f677c86b8de0b7054902bf1d037e77010b306c0eb7a2d611a43d99b7f4797"
+        },
+        {
+          "generated_at": "2026-08-17T01:24:09.207864+00:00",
+          "path": "research/experiments/ASSURANCE-A-01/receipts/ovisocr2-m1-verified-assembly-v29.runtime-qualification.json",
+          "schema": "tavonel.verified-runtime-assembly-qualification.v1",
+          "sha256": "sha256:c5339f22669e12b17d22cd0a88db571a86d0439b330b31cfeca22d89a550ab48"
+        },
+        {
+          "path": "research/experiments/ASSURANCE-A-01/receipts/runpod-stage1-preflight-2026-08-15.json",
+          "sha256": "sha256:002032d3194ec81cb170e045f82938dba460106dd9adc00197ea0541b43511bd"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/ASSURANCE-A-01/scripts/prepare_stage1_hard_slice.py",
+          "sha256": "sha256:0df3fd3f04b20666a1478b31fffdeaf5d31958181d847a715b4874f28ccce291"
+        },
+        {
+          "path": "research/experiments/ASSURANCE-A-01/scripts/run_cpu_assurance.py",
+          "sha256": "sha256:3c4f1fc17cf058627fd6b62e4a3850d6371a87a4ead6da17ec41bd83830cad40"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/DIAG-B-01/scripts/make_findings.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/DIAG-B-01/scripts/make_findings.py"
+          },
+          {
+            "command": "python research/experiments/DIAG-B-01/scripts/run_diagnostic.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/DIAG-B-01/scripts/run_diagnostic.py"
+          },
+          {
+            "command": "python research/experiments/DIAG-B-01/scripts/run_production_promotion_check.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/DIAG-B-01/scripts/run_production_promotion_check.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "DIAG-B-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [
+        {
+          "path": "research/experiments/DIAG-B-01/receipts/committed-bytes-verification.json",
+          "sha256": "sha256:416eb254689f432b68aba6321701091bd9699c9a6d6a9834fea6ab7eb53b2392"
+        },
+        {
+          "path": "research/experiments/DIAG-B-01/receipts/ip-track-family-b-section-5.md",
+          "sha256": "sha256:5f84afb891cb9068ba6576f7016d513594843f44b2a3beee93276bea00353166"
+        },
+        {
+          "path": "research/experiments/DIAG-B-01/receipts/production-semantic-channel-promotion.json",
+          "sha256": "sha256:04a194c12ae085f20d647fc0305529793dee658dd4f6021e5c35e7bc8deeb5ef"
+        },
+        {
+          "path": "research/experiments/DIAG-B-01/receipts/receipts.json",
+          "sha256": "sha256:cd84ddfeda338402e65fe223bc85e472a0e17b3c85f16f07edac18c3d0ab55e3"
+        },
+        {
+          "path": "research/experiments/DIAG-B-01/receipts/verdict.json",
+          "sha256": "sha256:84c5e2a8975ac157e8faf3c181e01e6c76173b234790916cfd7944c347672693"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/DIAG-B-01/scripts/make_findings.py",
+          "sha256": "sha256:c646284466263ce7e21a0e0f109b2481dea78e5107a28794d35c53efab5a6dff"
+        },
+        {
+          "path": "research/experiments/DIAG-B-01/scripts/run_diagnostic.py",
+          "sha256": "sha256:1bfef04cc97f74faad02269486ad7c8b3a8e2a8289ecd229074e30b0d1000bfa"
+        },
+        {
+          "path": "research/experiments/DIAG-B-01/scripts/run_production_promotion_check.py",
+          "sha256": "sha256:24a1d3469250ebebe9351c25c7095da8124f71e974481418d2c4ad7358265ea8"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/EXP-0101/scripts/compress_raw.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0101/scripts/compress_raw.py"
+          },
+          {
+            "command": "python research/experiments/EXP-0101/scripts/make_figures.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0101/scripts/make_figures.py"
+          },
+          {
+            "command": "python research/experiments/EXP-0101/scripts/make_tables.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0101/scripts/make_tables.py"
+          },
+          {
+            "command": "python research/experiments/EXP-0101/scripts/run_experiment.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0101/scripts/run_experiment.py"
+          },
+          {
+            "command": "python research/experiments/EXP-0101/scripts/verify_committed_bytes.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0101/scripts/verify_committed_bytes.py"
+          },
+          {
+            "command": "python research/experiments/EXP-0101/scripts/verify_receipts.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0101/scripts/verify_receipts.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "EXP-0101",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [
+        {
+          "path": "research/experiments/EXP-0101/receipts/canonical-finding.json",
+          "sha256": "sha256:b3b2ae60d74599283bc9c3b14f1b6b3e44e6a3ee5142638622379a1c6afe9383"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/clean-room-provenance.json",
+          "sha256": "sha256:0bc62179463139f1baba3843495e7f6cc6344fdd56ad9adeece5a81b8da4112b"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/committed-bytes-verification.json",
+          "sha256": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/ledger-ABS-B-01-opened.md",
+          "sha256": "sha256:1042bd743462e28c68cfc67ef2b8f53d07e524d49261b3d0833c374100be00ba"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/ledger-ABS-B-01-result.md",
+          "sha256": "sha256:3363302a34cc7346f2ecf1ff24ec940bc8a48eb6ef075d8b59c9dc4b2ad8b139"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/raw-evidence-manifest.json",
+          "sha256": "sha256:c4322b20127b5da1cd4689766f001405bed327f24cb683b3429a0cc4695ac8a4"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/receipts.json",
+          "sha256": "sha256:0a241aee270ce0125190151c2d1fbefd513076483edf2cf179f1601a0fbab31c"
+        },
+        {
+          "path": "research/experiments/EXP-0101/receipts/reproducibility.json",
+          "sha256": "sha256:c271a09c0611aa9eedac484e4fe5247d91ed8f497a406e4e34a2f9aefeae7ad4"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/EXP-0101/scripts/compress_raw.py",
+          "sha256": "sha256:61d9b7d0900ceb2222d771fba52b1906ea691cfc4722c41140d22e08951ffaf1"
+        },
+        {
+          "path": "research/experiments/EXP-0101/scripts/make_figures.py",
+          "sha256": "sha256:d51b77644e9ac338d4a125199bd98eb6aab4e484b75a2e713f2dec9029310f1b"
+        },
+        {
+          "path": "research/experiments/EXP-0101/scripts/make_tables.py",
+          "sha256": "sha256:ac8b051d1784e860cb1844a55c7150a7091c64f30bc1d2b9c74774cae6f83088"
+        },
+        {
+          "path": "research/experiments/EXP-0101/scripts/run_experiment.py",
+          "sha256": "sha256:7d3f184cce89b0f916f56c82773418521046db9172ae3a662415a6b8dd77cb0f"
+        },
+        {
+          "path": "research/experiments/EXP-0101/scripts/verify_committed_bytes.py",
+          "sha256": "sha256:5db8af5d13434ba6d4f1ca4d43d6393161b69e05ff47c9a6564bbd6e390447b1"
+        },
+        {
+          "path": "research/experiments/EXP-0101/scripts/verify_receipts.py",
+          "sha256": "sha256:d5d6f16c979a8370db0a4aff2e3b510dce506d54a923208596e0415651b2e7a3"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/EXP-0103/scripts/build_fixture.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/EXP-0103/scripts/build_fixture.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "EXP-0103",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [
+        {
+          "path": "research/experiments/EXP-0103/receipts/committed-bytes-verification.json",
+          "sha256": "sha256:75dfeb6283d3aa10c1b2c425dd2e859c8291a50829633e16835954a3072bb690"
+        },
+        {
+          "path": "research/experiments/EXP-0103/receipts/intake-0103-status.json",
+          "sha256": "sha256:0bacbeb54e28ca95d29a3ee187f78daac886b47cc2a94b3485608672392e7159"
+        },
+        {
+          "path": "research/experiments/EXP-0103/receipts/receipts.json",
+          "sha256": "sha256:477984be293f0ee2b2899e82e7e51aa87d6dbc29d3332adf6bfca9411697c018"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/EXP-0103/scripts/build_fixture.py",
+          "sha256": "sha256:a6c1d995c0d5b9e08a8e7a51111fe1458d35908162429fb357b4381fb56ff897"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          ".venv\\Scripts\\pytest.exe -q research\\experiments\\H1-A12-01\\tests\\test_analyze_policy_divergence.py benchmark\\tests\\v6\\test_identity_and_registry.py",
+          ".venv\\Scripts\\python.exe research\\experiments\\H1-A12-01\\scripts\\audit_runtime_readiness.py"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-A12-01/scripts/analyze_policy_divergence.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A12-01/scripts/analyze_policy_divergence.py"
+          },
+          {
+            "command": "python research/experiments/H1-A12-01/scripts/audit_runtime_readiness.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A12-01/scripts/audit_runtime_readiness.py"
+          },
+          {
+            "command": "python research/experiments/H1-A12-01/scripts/build_semantic_pilot_cohort.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A12-01/scripts/build_semantic_pilot_cohort.py"
+          },
+          {
+            "command": "python research/experiments/H1-A12-01/scripts/freeze_same_family_recipe.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A12-01/scripts/freeze_same_family_recipe.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-A12-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-A12-01/A12_BLOCKER_SCOPING_2026-08-18.md",
+          "sha256": "sha256:c0d1ad54c165272635b21a1961aafa4d542cdd46aefa55c8ef2251d2149ba6d2"
+        },
+        {
+          "path": "research/experiments/H1-A12-01/A12_RUNTIME_READINESS_AUDIT_2026-08-19.md",
+          "sha256": "sha256:8e6cb01bfd007efd4ac0dcdb1c7ee91b2a304fcf9c1cf751873a6fb707bc53f9"
+        },
+        {
+          "path": "research/experiments/H1-A12-01/INCIDENT_RECEIPT_OVERWRITE_2026-08-19.md",
+          "sha256": "sha256:7d709bd6c25e4aaf28d1e79a9897f281d4a46651113d120269697becab3eab43"
+        }
+      ],
+      "receipts": [
+        {
+          "path": "research/experiments/H1-A12-01/receipts/phase0-input-discovery.json",
+          "schema": "tavonel.h1-a12-input-discovery.v1",
+          "sha256": "sha256:134614798534b003fbe275458e005329d93934a80e8f8ed67f574a090741a1b2"
+        },
+        {
+          "path": "research/experiments/H1-A12-01/receipts/production-path-reconciliation.json",
+          "schema": "tavonel.h1-a12-production-path-reconciliation.v1",
+          "sha256": "sha256:d57803abd50dfce4c22242b8ddf89ff96f4a1e4b1fa90deb8d3dc168867e3017"
+        },
+        {
+          "generated_at": "2026-08-19T01:55:43.007803+00:00",
+          "path": "research/experiments/H1-A12-01/receipts/runtime-readiness-audit-2026-08-19.json",
+          "schema": "tavonel.a12-runtime-readiness-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:23e3eb234fde81a55c7552b7225aaab143f7dcc2acb430b9184ca20dfd63926a"
+        },
+        {
+          "generated_at": "2026-08-19T01:57:04.638832+00:00",
+          "path": "research/experiments/H1-A12-01/receipts/runtime-readiness-audit-v2-2026-08-19.json",
+          "schema": "tavonel.a12-runtime-readiness-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:1096ea7ca93074b6c2ae134abc865488ac748726dc40ac00f6d3b9abaae68d02"
+        },
+        {
+          "generated_at": "2026-08-19T01:57:04.393606+00:00",
+          "path": "research/experiments/H1-A12-01/receipts/same-family-recipe-freeze-2026-08-19.json",
+          "schema": "tavonel.a12-same-family-recipe-freeze.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:a268d10d74427a5b810d50ba2322935a78855f428a403eaaa0cd53b8504cf536"
+        },
+        {
+          "generated_at": "2026-08-19T04:34:45.692872+00:00",
+          "path": "research/experiments/H1-A12-01/receipts/zero-cost-unblock-audit-2026-08-19.json",
+          "schema": "tavonel.a12-zero-cost-unblock-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:b4f0526518b00ca67ee8f55592469c764d9a324cff1574a6fb9a1a521d2ca2e2"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-A12-01/scripts/analyze_policy_divergence.py",
+          "sha256": "sha256:fd83d3099d2b880ce7291f4d37f4b5e47e163128f04af690ee8bcc07303ab982"
+        },
+        {
+          "path": "research/experiments/H1-A12-01/scripts/audit_runtime_readiness.py",
+          "sha256": "sha256:965bdfcef618c9fcd423d6f14eb13b095fa44d51cc620d32e5ecd85c175f906b"
+        },
+        {
+          "path": "research/experiments/H1-A12-01/scripts/build_semantic_pilot_cohort.py",
+          "sha256": "sha256:fd6b5c3e454fb28d9fcd55e49941fb9b718dee80ee5cd6dd5898f851be174fff"
+        },
+        {
+          "path": "research/experiments/H1-A12-01/scripts/freeze_same_family_recipe.py",
+          "sha256": "sha256:3250b07e64a5f9a77a691c9c9b0ee8b5fb9a66b4c1782da17d46ba0c6c90784a"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/build_holdout_upload_bundle.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/build_holdout_upload_bundle.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/confidence_proxy_arm.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/confidence_proxy_arm.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/confirmatory_test.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/confirmatory_test.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/correction_locality.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/correction_locality.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/cost_quality_gating.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/cost_quality_gating.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/evaluator_aligned_instruments.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/evaluator_aligned_instruments.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/evaluator_correction_comparison.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/evaluator_correction_comparison.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/evaluator_determinism_contract.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/evaluator_determinism_contract.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/evaluator_version_receipt.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/evaluator_version_receipt.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/fallback_independence_test.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/fallback_independence_test.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/finalize_holdout_assembly_ready.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/finalize_holdout_assembly_ready.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/freeze_confirmatory_holdout.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/freeze_confirmatory_holdout.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/harvest_local_stage1_archive.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/harvest_local_stage1_archive.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/holdout_execution_log.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/holdout_execution_log.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/holdout_missed_forensics.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/holdout_missed_forensics.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/holdout_power_calculation.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/holdout_power_calculation.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/holdout_provenance_audit.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/holdout_provenance_audit.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/ink_coverage_verifier.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/ink_coverage_verifier.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/metric_reproducibility.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/metric_reproducibility.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/missed_case_forensics.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/missed_case_forensics.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/phase0_feasibility_audit.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/phase0_feasibility_audit.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/r4_marginal_analysis.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/r4_marginal_analysis.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/repaired_output_instruments.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/repaired_output_instruments.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/scored_page_criterion.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/scored_page_criterion.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/seal_discovery_set.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/seal_discovery_set.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/selective_acceptance_two_parser.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/selective_acceptance_two_parser.py"
+          },
+          {
+            "command": "python research/experiments/H1-A9-01/scripts/stage_holdout_slice.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-01/scripts/stage_holdout_slice.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-A9-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-A9-01/A9_CLAIM_TRIAGE_2026-08-18.md",
+          "sha256": "sha256:d7cec9d66d98d43d10ad8c6af2635dc1e7695732e2f6c26950783f533ab9888e"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/A9_CONFIRMATORY_PROTOCOL_2026-08-18.md",
+          "sha256": "sha256:143a09de96a0a927c45f5a4d0fc8b6f3598b57ba465ede1019f88954bab85288"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/A9_PATENT_EVIDENCE_MATRIX.md",
+          "sha256": "sha256:b20f19130fdeadab1b4e967e36de119af28ba12ea23d898b05589c2449718b25"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/A9_PROTOCOL_AMENDMENT_01_2026-08-18.md",
+          "sha256": "sha256:4f8482862f2f90b9468bfddc7ec7579d006c46406312bf4c996b53f849ce1f59"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/A9_PROTOCOL_AMENDMENT_02_2026-08-18.md",
+          "sha256": "sha256:b656e9a1e78a557b3e1156fd8cd69513d1803059202839d6e7ea8020b7350bd5"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/EVALUATOR_CORRECTION_2026-08-18.md",
+          "sha256": "sha256:f02fd9fe8e9f94456b03541a53c8b2f39b577a9d6bf2441c193ea7bfb1747e9f"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/OPERATIONAL_NOTES_2026-08-18.md",
+          "sha256": "sha256:023ca93619d382f9bc2dd1883608802992d55106ff234763f4db7a14e8fd9515"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/PAPER_SECTION_A9_2026-08-18.md",
+          "sha256": "sha256:b1d97690e389b899d996ae9320d48876c10c4481a32dd47cb9e1c4840375c9bf"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/R4_OPERATING_TIERS_2026-08-18.md",
+          "sha256": "sha256:43c0b8dbe5a35f0409f71b2307a1359bb5a809daee0b2d1f05d445a9b2634ffd"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/REPRODUCIBILITY_INDEX.md",
+          "sha256": "sha256:abc2b640b6fc4a6ea4b5f980974f5bb045297b0d45be4da5737303252709dfa7"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/SCAN_SOURCE_GROUNDED_DESIGN_2026-08-18.md",
+          "sha256": "sha256:7829239ac6b734f81e11785652b8f9cae81db8a30e49cbecbd53e39d3dc429d6"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/THREATS_TO_VALIDITY.md",
+          "sha256": "sha256:69de1ba5f327c19c2b59e27430d8cd296135d44834151ce83308256537c9ec23"
+        }
+      ],
+      "receipts": [
+        {
+          "path": "research/experiments/H1-A9-01/receipts/confidence-proxy-arm-2026-08-18.json",
+          "schema": "tavonel.a9-confidence-proxy-arm.v1",
+          "sha256": "sha256:35f02306617b98e9f7655038f3ef4c6e209dd17079a621234e902a1426b7b392"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/confirmatory-holdout-800-2026-08-18.json",
+          "schema": "tavonel.a9-confirmatory-holdout.v1",
+          "sha256": "sha256:9e71f34114026797c308797530ef660f27b34ab6dee1638bb0e4c98ccfc02c01"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/confirmatory-result-2026-08-18.json",
+          "schema": "tavonel.a9-confirmatory-result.v1",
+          "sha256": "sha256:aca7a20f0c99d29c056e67df03bfce48ce9860ecff90811c0d728d3d5dbbf7e0"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/confirmatory-result-deterministic-2026-08-18.json",
+          "schema": "tavonel.a9-confirmatory-result.v1",
+          "sha256": "sha256:ccb6965459bc0347cb133c18f292614d4e8010f8642a270e84c5b361e204a4f9"
+        },
+        {
+          "generated_at": "2026-08-18T13:15:10.985112+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/correction-locality-2026-08-18.json",
+          "schema": "tavonel.a9-correction-locality.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:40bf93fae2afe3ead4bf224c9e6c1786bedea76215ea165ecdb21ad215288b6f"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/discovery-set-seal-2026-08-18.json",
+          "schema": "tavonel.a9-discovery-set-seal.v1",
+          "sha256": "sha256:460d1a272ee5061cc573cc3c95034f1db070ce6114974f4586427cc2d94da737"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/evaluator-aligned-instruments-2026-08-18.json",
+          "schema": "tavonel.a9-evaluator-aligned-instruments.v1",
+          "sha256": "sha256:afcc813fbdcd1dc4bc4a38ad597344733a7cba2a3edc2985cb1baa458c5f3023"
+        },
+        {
+          "generated_at": "2026-08-18T14:52:41.154177+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/evaluator-correction-comparison-2026-08-18.json",
+          "schema": "tavonel.a9-evaluator-correction-comparison.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c8b7c97d5443058f92c77f3f2c7beb5c0fea33dc96f1dca797b20bdf369a9be2"
+        },
+        {
+          "generated_at": "2026-08-18T16:03:13.675780+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/evaluator-determinism-2026-08-18.json",
+          "schema": "tavonel.a9-evaluator-determinism-contract.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:aefcaed291051ead28b439936dfd4da4e1c0319d27d93667a272051f65e129be"
+        },
+        {
+          "generated_at": "2026-08-18T11:47:41.708789+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/evaluator-version-deterministic-v1.json",
+          "schema": "tavonel.a9-evaluator-version.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:265482c0d041d487269af1e27cb732bf48dbaf18f10c0fcfade3222a0e2a7df9"
+        },
+        {
+          "generated_at": "2026-08-18T11:28:36.935981+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/fallback-independence-2026-08-18.json",
+          "schema": "tavonel.a9-fallback-independence-test.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:d63e377a2ed1d124dc740bea86cbcc49d0aabed4f6289672ce192a68737bff57"
+        },
+        {
+          "generated_at": "2026-08-18T09:22:55.779658+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/holdout-execution-log-2026-08-18.json",
+          "schema": "tavonel.a9-holdout-execution-log.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:9bdd7193c37207349892509288b868536e843a2628aff56960c1b913a35111fa"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/holdout-forensics-2026-08-18.json",
+          "schema": "tavonel.a9-holdout-forensics.v1",
+          "sha256": "sha256:177e63bc70be7c7fde72e7b5bd3d598e5b590a5e84a6d655f45786761975f9d6"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/holdout-forensics-deterministic-2026-08-18.json",
+          "schema": "tavonel.a9-holdout-forensics.v1",
+          "sha256": "sha256:6f5c70dd1afbdab1213d202f1d2382165c479f5a73abcb628103e94b9c5b08b8"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/holdout-power-2026-08-18.json",
+          "schema": "tavonel.a9-holdout-power.v1",
+          "sha256": "sha256:8cea2d094d46eb4817153b86abd13995f81c8debe021eefe43b57a8c86397015"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/holdout-power-v2-2026-08-18.json",
+          "schema": "tavonel.a9-holdout-power.v1",
+          "sha256": "sha256:b68ef456b9ed892d031cc77c73f3f3bf9aa83694fd19cf4f1d66b9fb75e2cc98"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/holdout-provenance-audit-2026-08-18.json",
+          "schema": "tavonel.a9-holdout-provenance-audit.v1",
+          "sha256": "sha256:b232f48f397f35e2428c2f348de68a04f9856c913a04ed075cc028f7588aa910"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/ink-coverage-verifier-2026-08-18.json",
+          "schema": "tavonel.a9-ink-coverage-verifier.v1",
+          "sha256": "sha256:4b7f3d305584e14f0b97aecdd5ddf9726c4c4f5b3d89c26d3619c06cd674cb73"
+        },
+        {
+          "generated_at": "2026-08-18T11:04:41.216142+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/metric-reproducibility-2026-08-18.json",
+          "schema": "tavonel.a9-metric-reproducibility.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:d5d1a73872c6b03878f0a7c50747d9fa3044da498a8d62e527759c3ae68b968f"
+        },
+        {
+          "generated_at": "2026-08-18T18:32:57.144944+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/metric-reproducibility-deterministic-2026-08-18.json",
+          "schema": "tavonel.a9-metric-reproducibility.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c816e73ee1a3529b11128a1c92f0b620d52544427b1322b1bdec9e04c8bb4325"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/missed-case-forensics-2026-08-18.json",
+          "schema": "tavonel.a9-missed-case-forensics.v1",
+          "sha256": "sha256:4324c552decfcb01c7d3fa92617f17db20d99f1eda307011782d1ee41df33021"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/phase0-feasibility-2026-08-18.json",
+          "schema": "tavonel.research.phase0-feasibility.v1",
+          "sha256": "sha256:af3223cdb5181754bd37500fd2570905fccb8ad6184ad267e69dccf8d6dced78"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/phase0-input-discovery.json",
+          "schema": "tavonel.h1-a9-input-discovery.v1",
+          "sha256": "sha256:644dd18a527742ef493c44ffff53d8872f59436d06d7f4eb2c0201b6a82650e8"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/r4-confirmatory-2026-08-18.json",
+          "schema": "tavonel.a9-r4-marginal.v2",
+          "sha256": "sha256:0fb53e5039e0e7dd16aca7302414546e2e37d14627e71f43de9328627c7dfc7b"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/r4-confirmatory-deterministic-2026-08-18.json",
+          "schema": "tavonel.a9-r4-marginal.v2",
+          "sha256": "sha256:6e33b69eae53f063a1a93c30943b0af472a75b339e353f999e3d7da3a7b9ca5f"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/r4-cost-quality-gating-2026-08-18.json",
+          "schema": "tavonel.r4-cost-quality-gating.v1",
+          "sha256": "sha256:4b5b3a9ab5f2105fc5901db7d7e67c2dd4fd5a3d747179d66e36e4dc9a670b0e"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/r4-marginal-2026-08-18.json",
+          "schema": "tavonel.a9-r4-marginal.v2",
+          "sha256": "sha256:3a833e229ec58b078e4c6a3b544d7282f7cf4518f99d87a57e925f67814bf006"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/repaired-instruments-2026-08-18.json",
+          "schema": "tavonel.a9-repaired-output-instruments.v1",
+          "sha256": "sha256:3041e419994c3f187ab05bc2133122838c9bdbddfbb14598aa99a261c1263439"
+        },
+        {
+          "generated_at": "2026-08-18T09:03:01.191369+00:00",
+          "path": "research/experiments/H1-A9-01/receipts/scored-page-criterion-2026-08-18.json",
+          "schema": "tavonel.a9-scored-page-criterion.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:86f3c3a24b1408b47985bfeed6a1df2dd9a42a59d67da09ef47b9b7eb001dd3a"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/receipts/selective-acceptance-two-parser-2026-08-18.json",
+          "schema": "tavonel.a9-selective-acceptance-two-parser.v1",
+          "sha256": "sha256:86edd2b74bbb1fb242de2d5241a967f578c8e49f04e7b2f0eaeece5b6eef18f8"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-A9-01/scripts/build_holdout_upload_bundle.py",
+          "sha256": "sha256:b3f3eec2134405a442088ca72b87e473b00e41e2915f95e2bcb9ec71fdcc2204"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/confidence_proxy_arm.py",
+          "sha256": "sha256:1b04242e0f7313ee5491e35f4012a010d1d65c5d146f70f50aba769b3045d6b2"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/confirmatory_test.py",
+          "sha256": "sha256:88e5f13c9b7d0ce073e31f95dfc038bd131f814606482b8996071d7417a831c8"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/correction_locality.py",
+          "sha256": "sha256:cd0c0a5ba2b7ada9cc64d88cb5cb463e2a026444c8c2f7cb7628c78c87dc0610"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/cost_quality_gating.py",
+          "sha256": "sha256:c8a2709ae323a2755c0ae965ef1f9b9c81d5ff50ee98bbcdfcd9ba291a401e13"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/evaluator_aligned_instruments.py",
+          "sha256": "sha256:90936ddadd90c5e703fde04272443dbd1b98a7e8b7663b70b4afd6f525055b59"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/evaluator_correction_comparison.py",
+          "sha256": "sha256:7970b6db16c81c012e8335c5e44181aa87a0af62501c2d713ed98072027165fd"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/evaluator_determinism_contract.py",
+          "sha256": "sha256:5a1c689b2f7c61441ab7d75b29c43f6fb08e2ae5b4036bd1bbe8d34b461fcaef"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/evaluator_version_receipt.py",
+          "sha256": "sha256:146d6999c304543878886da81963a939539c1f59ea5e6b0836f662ba0369b93a"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/fallback_independence_test.py",
+          "sha256": "sha256:d2f18aab59cbcebf0e216d04bae91db3ea12ae1b4e927f091f91e1cbf2b7d9cf"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/finalize_holdout_assembly_ready.py",
+          "sha256": "sha256:8e090f1d5e583f25fabe48e6bae23c0eb7b9c9a4e7df68cc6d0fa676f9a9b865"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/freeze_confirmatory_holdout.py",
+          "sha256": "sha256:9ba73972efe27d09e642bb4423c80f5e0becc98e3fc1582fc478b8f467d625b0"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/harvest_local_stage1_archive.py",
+          "sha256": "sha256:f21bfbdae770cffec620086b60ed2df33bf23c59497d7b536f73bdb3fe7970ee"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/holdout_execution_log.py",
+          "sha256": "sha256:1d71d81aa5b811d28c4b0c2556ebd3348a34a185081d737e1e27b2dbaaac8532"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/holdout_missed_forensics.py",
+          "sha256": "sha256:c4d1953c6def1c3db5d124b28ed659e51cff25c3ea1b184f782fa8d1c885ff60"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/holdout_power_calculation.py",
+          "sha256": "sha256:a7c31ea4e2089514f121851208932d9be0b6fd3890d1c4d056be6ef6f97cb1c5"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/holdout_provenance_audit.py",
+          "sha256": "sha256:9be66f7aded8c0ac7263e2d190a7c877d2bf57e7f2200e6dcc79d944c9b79cb4"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/ink_coverage_verifier.py",
+          "sha256": "sha256:17b5c2a810b56ceaf6ed4fd54750f9a4c2ac0794cee5023ddb211871535bbab2"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/metric_reproducibility.py",
+          "sha256": "sha256:0509566ca28c2f0371798a947db5a20bbe891e83932df506c4e9c782c44fcc43"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/missed_case_forensics.py",
+          "sha256": "sha256:ad8c16dab7d71fd0b1bfc62eba53232b54324fc3b1ef3ac815b6af9c9f13b14c"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/phase0_feasibility_audit.py",
+          "sha256": "sha256:40b6759bb9310b916c669814fc2c2840ca2d78158073e607fd742dc5765f9233"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/r4_marginal_analysis.py",
+          "sha256": "sha256:11e91cff3b0e0f2924611a05b54e373acc4956ebe396d063170d2369e8502ef9"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/repaired_output_instruments.py",
+          "sha256": "sha256:ab92ba7dba195a35d10913e8de1b1702a377276876d6ad7aa54ced5a2a406153"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/scored_page_criterion.py",
+          "sha256": "sha256:f7152947d562a156699f0ad7572a6d6ae81872859dfaa39ddbe5f77d273dc168"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/seal_discovery_set.py",
+          "sha256": "sha256:6b23547cbf7af1745dab98031d7da86050b6268dee7d0f053ae727ed1f66ba0e"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/selective_acceptance_two_parser.py",
+          "sha256": "sha256:e89b720c1ce70d8a8674e9df8c409a8c5acebc9f971c5d82d320ebce3e856f0a"
+        },
+        {
+          "path": "research/experiments/H1-A9-01/scripts/stage_holdout_slice.py",
+          "sha256": "sha256:74fa2a49e0f70cae6575d73fc9f8e083e748885ae52ca9cfe3abe844f3870f98"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-A9-A12-SHARED-01/scripts/build_source_only_48.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-A9-A12-SHARED-01/scripts/build_source_only_48.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-A9-A12-SHARED-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-A9-A12-SHARED-01/scripts/build_source_only_48.py",
+          "sha256": "sha256:fe5dda012a7d49f08f754907892bf708f93540e1d0b75eaa5e5c7c6332f719d0"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/adversarial_graph_sweep.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/adversarial_graph_sweep.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/adversarial_topology_extension.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/adversarial_topology_extension.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/build_record_mutation_sweep.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/build_record_mutation_sweep.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/change_space_sweep.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/change_space_sweep.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/declaration_mutation_sweep.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/declaration_mutation_sweep.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/final_fresh_holdout.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/final_fresh_holdout.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/freeze_final_holdout_seed.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/freeze_final_holdout_seed.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency_v2.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency_v2.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/precise_structural_benchmark.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/precise_structural_benchmark.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/reproduce_structure_only_stale.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/reproduce_structure_only_stale.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_confirmatory_v1.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_confirmatory_v1.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_extension_v1.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_extension_v1.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v2.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v2.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v3.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v3.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/structural_channel_benchmark.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/structural_channel_benchmark.py"
+          },
+          {
+            "command": "python research/experiments/H1-B-REAL-REVISION-01/scripts/write_attribution_correction.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-B-REAL-REVISION-01/scripts/write_attribution_correction.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-B-REAL-REVISION-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/ADVERSARIAL_EXTENSION_PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:d51462afce8482aa8a9a63869c62ee4b99c9aad1cd89531ac8026049b977b206"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/ADVERSARIAL_GRAPH_2026-08-19.md",
+          "sha256": "sha256:c29388f9f1e52803888660e8c0f7ee8ead310db918793030f650f2fe0901d45d"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/BUILD_RECORD_TRUST_BOUNDARY_2026-08-19.md",
+          "sha256": "sha256:121fbcf574cf2d5397f7cd1a0dd59adb78a39592dabc758ede9179cf3827bc32"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/CHANGE_SPACE_SWEEP_2026-08-19.md",
+          "sha256": "sha256:79e8b8dbed97375161c391eacf41cf424ea9b60af34deae55638277f21652a7c"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/DECLARATION_MUTATION_2026-08-19.md",
+          "sha256": "sha256:a7f3355eb3a8db9e70b464e578c7053555a112bbf01adf917e5a3e579c714bf7"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/FINAL_FRESH_HOLDOUT_PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:d509d26844cd9da8e3eab05c68ae8483b9b25614a44c09941ddc5330aa3e2bde"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/PERFORMANCE_PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:ac618e1279b006a7c2d9d0bb06e0d12b0b9847c67453e5698ba8e360f4fe0d37"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/PERFORMANCE_PROTOCOL_V2_2026-08-19.md",
+          "sha256": "sha256:466fb771f396e00d8958cd87168f9bfcaa46a7d292bd307de2940b6fa6d48ac5"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/SELECTIVE_RECOMPILATION_EQUIVALENCE_2026-08-19.md",
+          "sha256": "sha256:7973ab4e3d8ce24a3c311046ddf9d810564586723e66cbaf9f2f324ecada3eef"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/STRUCTURAL_CHANNEL_COMPATIBILITY_CONTRACT.md",
+          "sha256": "sha256:e240c4785c8314da04fa47dfc9d376316a26827d8f8ff23526953dcc4f182e4f"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-18T22:08:26.270284+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-graph-2026-08-19.json",
+          "schema": "tavonel.adversarial-graph-sweep.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:6cd8faa992de88b9765a085674712d6877dcf09d8c79ba02ca178f7502ee0ada"
+        },
+        {
+          "generated_at": "2026-08-18T23:20:20.731693+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-2026-08-19.json",
+          "schema": "tavonel.family-b-adversarial-topology-extension.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:0242cabdda653ae9c4f5f20d645361ffa018ace890a0cbe0813978230292accf"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-attempt1-invalidation-2026-08-19.json",
+          "schema": "tavonel.superseded-receipt.v1",
+          "sha256": "sha256:bbd6a9c161fad6c24613df9157f999d69cb854e5581a31676cfae4b0c46c2ef1"
+        },
+        {
+          "generated_at": "2026-08-18T23:21:15.181008+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/adversarial-topology-extension-v2-2026-08-19.json",
+          "schema": "tavonel.family-b-adversarial-topology-extension.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:ae49d4ac52bb4b1a3828589ec2ecf28fd41428eaa0dda5a7111394ee70844555"
+        },
+        {
+          "generated_at": "2026-08-18T22:10:53.985678+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/build-record-mutation-2026-08-19.json",
+          "schema": "tavonel.build-record-mutation-sweep.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:39b70fcbba496fa60648a9fb24fd55e3167f06cbc73709df7a4f7ddcfc44f945"
+        },
+        {
+          "generated_at": "2026-08-18T22:00:20.384563+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/change-space-sweep-2026-08-19.json",
+          "schema": "tavonel.recompilation-change-space-sweep.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:3994e0eea1e7bb4748471affe7377c7a88ea0bdfeca5e8c549d0e591d371840d"
+        },
+        {
+          "generated_at": "2026-08-18T21:59:52.659300+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/declaration-mutation-2026-08-19.json",
+          "schema": "tavonel.declaration-mutation-sweep.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:606d0df1b50016a49f8d3ff19b77b263aaebdd9dec532529e41b96344743f7a1"
+        },
+        {
+          "generated_at": "2026-08-18T23:26:23.746778+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/final-fresh-holdout-2026-08-19.json",
+          "schema": "tavonel.family-b-final-fresh-holdout.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:fa91a9dd8d85e5168379a0e2b6129d2a61996a6b068d139f89744dbb97707e5c"
+        },
+        {
+          "generated_at": "2026-08-18T23:26:09.759495+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/final-fresh-holdout-preregistration-2026-08-19.json",
+          "schema": "tavonel.family-b-final-fresh-holdout-preregistration.v1",
+          "sha256": "sha256:9f89bccafd82dfc78fefc26af3db7eadc5a070475063aa92655e8fdb1465b95b"
+        },
+        {
+          "generated_at": "2026-08-18T22:00:16.936107+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/generator-collision-correction-2026-08-19.json",
+          "schema": "tavonel.generator-collision-correction.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:6efa73ae71b2400e05c32cb9ea71e7eb7351595ace6cffb3a8ff4d4c02cf4fb1"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/measured-performance-attempt1-incomplete-2026-08-19.json",
+          "schema": "tavonel.family-b-performance-attempt-incomplete.v1",
+          "sha256": "sha256:9b9e3798eb637799d1d26afbe9d63f05d5180c1c450a9e7ef32fc627ed5b3edc"
+        },
+        {
+          "generated_at": "2026-08-18T23:45:08.668997+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/measured-performance-v2-2026-08-19.json",
+          "schema": "tavonel.family-b-performance-v2.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:12863aa5b10bbb34230f8f547695b5491b3bbd85f71b54bd0c3b36e1f385dd56"
+        },
+        {
+          "generated_at": "2026-08-18T19:48:42.102062+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/precise-structural-2026-08-19.json",
+          "schema": "tavonel.precise-structural-invalidation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:58e226697f2afbcbf08354011be19a0f85ff2a4d95589f0a68fcaf20a271b8e9"
+        },
+        {
+          "generated_at": "2026-08-18T18:56:51.070056+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/recompilation-fix-benchmark-2026-08-19.json",
+          "schema": "tavonel.structural-channel-shadow-benchmark.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:634fa53d3f34d72a45aa654785d27511ac93d6a18b8a55b596a291bd7d74a14e"
+        },
+        {
+          "generated_at": "2026-08-18T18:54:18.622128+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/stale-attribution-correction-2026-08-19.json",
+          "schema": "tavonel.family-b-stale-attribution-correction.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:0572b92360bbe0bb61a737684bee11d36fc31ca9871619af9b107a9dd78caba6"
+        },
+        {
+          "generated_at": "2026-08-18T18:47:54.938296+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/structural-channel-shadow-benchmark-2026-08-19.json",
+          "schema": "tavonel.structural-channel-shadow-benchmark.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:3299a68366dac8673b10588b464445f8ca796fdda7e5adf5d9172a75e52d5e86"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/structure-only-stale-diagnosis-2026-08-18.json",
+          "schema": "tavonel.family-b-structure-only-stale-reproduction.v1",
+          "sha256": "sha256:ba444ddb6b2e479da706a3e723e11b21bb2c17c10e4f79fe2e4e104c58fc8ee7"
+        },
+        {
+          "generated_at": "2026-08-18T19:18:54.329526+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/untouched-holdout-extension-2026-08-19.json",
+          "schema": "tavonel.structural-channel-shadow-benchmark.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:43a60c7e9a8a847c68d0b43298442a7f120b5191d014d01d8f2b1d4c9c41ac59"
+        },
+        {
+          "generated_at": "2026-08-17T05:40:13.497712+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-confirmatory-v1.json",
+          "schema": "tavonel.real-public-revision-confirmatory.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:124ccfa972893c7b9619fa5347cfa96b0e5234df767d81229b9204c90ffbff94"
+        },
+        {
+          "generated_at": "2026-08-17T05:09:11.432686+00:00",
+          "path": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-holdout-v2.json",
+          "schema": "tavonel.real-public-revision-holdout.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c00be97389fdca61b9585cc2651362e33b30289a5404f8ba59dfd32ecefae87d"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/adversarial_graph_sweep.py",
+          "sha256": "sha256:299113fcb3e903794f7f1c703e885723050f5df3085f1ea1282815ecf679211f"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/adversarial_topology_extension.py",
+          "sha256": "sha256:9dc27bc19650a0b28a4430b4c8a81cc41c4379939e60561a65560ad1ee159bec"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/build_record_mutation_sweep.py",
+          "sha256": "sha256:6ba4f53ad5b906fed4054f4dd1e336a5b752874d47fd5d325ba01cc2c9be0636"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/change_space_sweep.py",
+          "sha256": "sha256:526d01103fc895c2c0cda9c3fde92c4de159e83035ae2d8c3cbe4f96389c8e7e"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/declaration_mutation_sweep.py",
+          "sha256": "sha256:ebbbb94ae03baa829a86d9edbb6d940fa63a16391cc706ff1dd801dc84b4ed1e"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/final_fresh_holdout.py",
+          "sha256": "sha256:0a57b2d82b3676cb713cda5207b8e888d1fca3fec35ee248f880913062b49748"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/freeze_final_holdout_seed.py",
+          "sha256": "sha256:2694b8117cc12e97dfaf4235b711b0640b26c9f067f8f77bb372e22127fd593a"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency.py",
+          "sha256": "sha256:070d6515d742c42f4cb7c797d8268addb4a9aea50ec1c3cad0f1a91ca536224c"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency_v2.py",
+          "sha256": "sha256:e76021750e5bd08fd97177d2774da85ac2cc681908214405bf5e1d02d36168dc"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/precise_structural_benchmark.py",
+          "sha256": "sha256:2037f91bc9283c6f2a328dfbd27b60c905e37f8ecd7e1158c10889f5477e1ff3"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/reproduce_structure_only_stale.py",
+          "sha256": "sha256:33e0179184a2735624c4ab1bfde3900a73958c5b87ae4039369ce2b9139d0106"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_confirmatory_v1.py",
+          "sha256": "sha256:acef16fae4e2e984df8061e809bf13351325dfc47d033248c6b4769de8cc4ec5"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_extension_v1.py",
+          "sha256": "sha256:a2eb042319c94bdd8267b805367b1a5df8c6b44c4bb291487fcfc01470008507"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout.py",
+          "sha256": "sha256:9df3acff0d57e0c33ceb3da3d4af4c6655aeb9edd830afab583ad32524dee105"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v2.py",
+          "sha256": "sha256:2ff884110c87f2fc462fe73cd07ecb24752d658ae1015235996c761ff43daeed"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/run_public_real_revision_holdout_v3.py",
+          "sha256": "sha256:a49848402affd26fc425b2f9ccbb4b5c9f0bf0cb1c11a0efbe64ca7f82fa0f9e"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/structural_channel_benchmark.py",
+          "sha256": "sha256:4776c7ea16091ce9ee5ef29c07756503e144e9f020a64b586c9434f401c693b7"
+        },
+        {
+          "path": "research/experiments/H1-B-REAL-REVISION-01/scripts/write_attribution_correction.py",
+          "sha256": "sha256:8f538bac5e0ebe366979a2e45c47b6043c4653349ed0f5729901b99e5abad2da"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-C-TEMPORAL-AUTHORITY-01/scripts/run_temporal_authority.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/scripts/run_temporal_authority.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-C-TEMPORAL-AUTHORITY-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:38744a9e8f6cd1375df4d630243383e65df34946731099c909213511c95a9e5a"
+        },
+        {
+          "path": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/RESULT_2026-08-19.md",
+          "sha256": "sha256:eb1bf22574ed34104ecf224f027e0c04d8ffef27f18735d4bef2e3aacd4c52aa"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-18T19:35:49.641079+00:00",
+          "path": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/receipts/temporal-authority-2026-08-19.json",
+          "schema": "tavonel.temporal-authority-comparison.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:a47d9fa492486f122d75782021c836dbe0164e3ecb5f94273c38cce40b499465"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/scripts/run_temporal_authority.py",
+          "sha256": "sha256:601447dbd5cf791e111816ef55dd151782e530732a2a31dae4af17dd2b2248b2"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-D-GOVERNANCE-LINEAGE-01/scripts/run_controlled_validation.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-D-GOVERNANCE-LINEAGE-01/scripts/run_controlled_validation.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-D-GOVERNANCE-LINEAGE-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-D-GOVERNANCE-LINEAGE-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:56579c9b372d6ca2cf4c24e1687010bcd63cacba13fb3a05d55ea7c1448177df"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-18T23:42:22.732534+00:00",
+          "path": "research/experiments/H1-D-GOVERNANCE-LINEAGE-01/receipts/controlled-validation-2026-08-19.json",
+          "schema": "tavonel.governance-temporal-lineage-controlled.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:9e7b1512a9ce2d4f3b71262b159b00badfb7f23ca366030451bf3df19c4ebeb8"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-D-GOVERNANCE-LINEAGE-01/scripts/run_controlled_validation.py",
+          "sha256": "sha256:6aa59b7f94faac12f3b69b35c7d9dd5246eda034a1184c0fe8ffbc1828e84748"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-E-IDENTITY-SCALABILITY-01/scripts/identity_shadow_equivalence.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/scripts/identity_shadow_equivalence.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-E-IDENTITY-SCALABILITY-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:21d28676150ccb9677f289378ad2e327d394d224e8260aca5701b5965f9b959e"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T00:47:38.324574+00:00",
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/divergence-attribution-2026-08-19.json",
+          "schema": "tavonel.identity-blocked-divergence-attribution.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:9756c7bd388c2b94164c46c3dfbbc7391ebe34cf973b587881649794aad7c46c"
+        },
+        {
+          "generated_at": "2026-08-19T00:44:24.403339+00:00",
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/scaling-2026-08-19.json",
+          "schema": "tavonel.identity-matching-shadow-equivalence.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:60972d02ee606f00cf9279da993d4471ccc120294d6d508b828df597e23ddca3"
+        },
+        {
+          "generated_at": "2026-08-19T00:37:23.138379+00:00",
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-2026-08-19.json",
+          "schema": "tavonel.identity-matching-shadow-equivalence.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:1347f21f8f911862dbe8f62e4cfaa91d1613b97e7d2ea81379390004c5a70654"
+        },
+        {
+          "generated_at": "2026-08-19T00:56:42.335057+00:00",
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+          "schema": "tavonel.identity-matching-shadow-equivalence.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:dc686db1054713225d650d956709ea2f4dcf50acae0f0fd0c17e1b5bdb44ed63"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/scripts/identity_shadow_equivalence.py",
+          "sha256": "sha256:af9445446ff0b18217d1a6077f6efe7e382e3f980be3742d2600fccb6c4921c4"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          ".venv\\Scripts\\python.exe research\\experiments\\H1-E2-TIE-PATH-DEPENDENCE-01\\scripts\\tie_path_dependence.py freeze --output research\\experiments\\H1-E2-TIE-PATH-DEPENDENCE-01\\receipts\\seal-amend1-2026-08-19.json",
+          ".venv\\Scripts\\python.exe research\\experiments\\H1-E2-TIE-PATH-DEPENDENCE-01\\scripts\\tie_path_dependence.py run --seal research\\experiments\\H1-E2-TIE-PATH-DEPENDENCE-01\\receipts\\seal-amend1-2026-08-19.json --output research\\experiments\\H1-E2-TIE-PATH-DEPENDENCE-01\\receipts\\path-dependence-amend1-2026-08-19.json"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/scripts/tie_path_dependence.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/scripts/tie_path_dependence.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-E2-TIE-PATH-DEPENDENCE-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/AMENDMENT_1_2026-08-19.md",
+          "sha256": "sha256:7f52ba3277e1d1b17fe07ddce74d17fcbf5d949894aa539e6212e956067b093e"
+        },
+        {
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:253008614814b4891c6cd3aed410a0a11317f6bb3cc96200a47a53926413e9b4"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T01:10:51.953153+00:00",
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/receipts/path-dependence-amend1-2026-08-19.json",
+          "schema": "tavonel.identity-tie-path-dependence.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:eea20f25624c223d76f2e928eacb2e4c7b8a8e328ee819b0f3ffed9005d07078"
+        },
+        {
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/receipts/seal-2026-08-19.json",
+          "schema": "tavonel.identity-tie-path-dependence-seal.v1",
+          "sha256": "sha256:9d8165aaa8fb732841eb6aeac2c38d3a9e0c3f3bf756615f8e10a40d9a3828d4"
+        },
+        {
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/receipts/seal-amend1-2026-08-19.json",
+          "schema": "tavonel.identity-tie-path-dependence-seal.v1",
+          "sha256": "sha256:51b1b379e0d77b282e356312f3a5b85f0c2c57a6a4fa4ba39e2f7c18118b6410"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/scripts/tie_path_dependence.py",
+          "sha256": "sha256:d097b76eb5c8ed2a9a5a060bd3d5c7e1d4eac9b66aab4a7a337da1df40fea903"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          ".venv\\Scripts\\python.exe research\\experiments\\H1-F-REAL-CORPUS-EQUIV-01\\scripts\\run_real_corpus_equivalence.py freeze --output research\\experiments\\H1-F-REAL-CORPUS-EQUIV-01\\receipts\\seal-2026-08-19.json",
+          ".venv\\Scripts\\python.exe research\\experiments\\H1-F-REAL-CORPUS-EQUIV-01\\scripts\\run_real_corpus_equivalence.py run --seal research\\experiments\\H1-F-REAL-CORPUS-EQUIV-01\\receipts\\seal-2026-08-19.json --output research\\experiments\\H1-F-REAL-CORPUS-EQUIV-01\\receipts\\all-stored-real-corpus-2026-08-19.json"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-F-REAL-CORPUS-EQUIV-01/scripts/run_real_corpus_equivalence.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/scripts/run_real_corpus_equivalence.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-F-REAL-CORPUS-EQUIV-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:6fde7e384d20d1ead653efd8b57a3525b38593fe3241bac92cdaa19f7286a430"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T01:16:58.538485+00:00",
+          "path": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/receipts/all-stored-real-corpus-2026-08-19.json",
+          "schema": "tavonel.h1f-real-corpus-equivalence.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:386d4b3075a148e98b103fbbf00679e2a938d1da8901a56cc07f579dda9799db"
+        },
+        {
+          "path": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/receipts/seal-2026-08-19.json",
+          "schema": "tavonel.h1f-real-corpus-equivalence-seal.v1",
+          "sha256": "sha256:c7bfdb2491a68f4db93a619cfbc1fced5e31099ea7ff6decb4295736998abe67"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-F-REAL-CORPUS-EQUIV-01/scripts/run_real_corpus_equivalence.py",
+          "sha256": "sha256:9950a401a472ff9fb8c75493559bea465abaa908d2e8f0229b9a61de4c9fa5a4"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-G-ATOMIC-PROMOTION-01/scripts/audit_atomic_promotion.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-G-ATOMIC-PROMOTION-01/scripts/audit_atomic_promotion.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-G-ATOMIC-PROMOTION-01",
+      "historical_exact_invocation": {
+        "recovered_records": [
+          {
+            "pointer": "/command",
+            "receipt_path": "research/experiments/H1-G-ATOMIC-PROMOTION-01/receipts/atomic-promotion-audit-2026-08-19.json",
+            "receipt_sha256": "sha256:f46568d01e6891f4d271b57efc016176dcf0c552cab7afdcf057bebbc2bfb4c3",
+            "value": [
+              "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+              "-m",
+              "pytest",
+              "-q",
+              "tests/unit/test_world_state.py",
+              "tests/unit/test_build_receipt.py"
+            ]
+          }
+        ],
+        "status": "RECOVERED_FROM_REPOSITORY_ARTIFACT",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-G-ATOMIC-PROMOTION-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:65e4c43cc7474b6cc3c8ab19a54b2d5b97d5b4a1e1127c50890dd693dae01295"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T01:40:24.584653+00:00",
+          "path": "research/experiments/H1-G-ATOMIC-PROMOTION-01/receipts/atomic-promotion-audit-2026-08-19.json",
+          "schema": "tavonel.atomic-promotion-contract-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:f46568d01e6891f4d271b57efc016176dcf0c552cab7afdcf057bebbc2bfb4c3"
+        },
+        {
+          "path": "research/experiments/H1-G-ATOMIC-PROMOTION-01/receipts/seal-2026-08-19.json",
+          "schema": "tavonel.atomic-promotion-audit-seal.v1",
+          "sha256": "sha256:4e0e9874748af183054695efc3eab2c45c130fc253f7f7d1895d0b25e4241133"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-G-ATOMIC-PROMOTION-01/scripts/audit_atomic_promotion.py",
+          "sha256": "sha256:cd54b3217d5b01eb65b0e9c93a196e6cab9cd5a772b68cccba10f3d37f402e17"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "NO_RUNNER_DISCOVERED",
+        "templates": [],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-G0-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [
+        {
+          "path": "research/experiments/H1-G0-01/receipts/current-repo-reconciliation.json",
+          "schema": "tavonel.h1-g0-current-repo-reconciliation.v1",
+          "sha256": "sha256:df8407700a44832c04c91d18e85834d28d346680f28a5458fc6524e1440789c0"
+        },
+        {
+          "path": "research/experiments/H1-G0-01/receipts/l1-reconciliation.json",
+          "schema": "tavonel.h1-l1-reconciliation.v1",
+          "sha256": "sha256:8a3870a520c8916b5b42c8803803dc0cad879086168c8b9403d5c3f3d903bffe"
+        }
+      ],
+      "scripts": []
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-H-CROSS-SOURCE-SURVEY-01/scripts/survey_version_pair_corpora.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-H-CROSS-SOURCE-SURVEY-01/scripts/survey_version_pair_corpora.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-H-CROSS-SOURCE-SURVEY-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T02:00:41.907931+00:00",
+          "path": "research/experiments/H1-H-CROSS-SOURCE-SURVEY-01/receipts/version-pair-survey-2026-08-19.json",
+          "schema": "tavonel.cross-source-version-pair-survey.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:2430d3e0f287c087079e68b46f5543e43f98f36215360a34a20c56dc7d83b625"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-H-CROSS-SOURCE-SURVEY-01/scripts/survey_version_pair_corpora.py",
+          "sha256": "sha256:5fed85f3b0e3bf6605732530dd1143d3c99156260e7d79f4350784d9d50022d0"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          "python research/experiments/H1-I-GATE-ORDERING-01/scripts/permute_gate_order.py"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-I-GATE-ORDERING-01/scripts/audit_check_independence.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-I-GATE-ORDERING-01/scripts/audit_check_independence.py"
+          },
+          {
+            "command": "python research/experiments/H1-I-GATE-ORDERING-01/scripts/permute_gate_order.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-I-GATE-ORDERING-01/scripts/permute_gate_order.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-I-GATE-ORDERING-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/AMENDMENT_1_2026-08-19.md",
+          "sha256": "sha256:5d5ff118ec650ff1dddc04bde633213a59d5e3584bd1780c90431683d1f06d1a"
+        },
+        {
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/AMENDMENT_2_2026-08-19.md",
+          "sha256": "sha256:73a18f4f1ffa1076343e89495cb61a983b91269730ba8f1418d20763e28d90bc"
+        },
+        {
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:dc41b927a47e3c7a0ca09e6f1c0fc4c565da2855b69de7fcfc6b331b4fa78956"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T02:43:29.594232+00:00",
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/receipts/check-independence-attempt1-falsepositive-2026-08-19.json",
+          "schema": "tavonel.gate-check-independence-static-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:99d967db77a72db718628ea022ac0407444d54db5bad9cb895deb19d3ade236b"
+        },
+        {
+          "generated_at": "2026-08-19T02:47:16.202554+00:00",
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/receipts/check-independence-static-audit-2026-08-19.json",
+          "schema": "tavonel.gate-check-independence-static-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:cebc7810f2addc81140853d2c2b217b403cf8125f72583beb1bfe13832de5386"
+        },
+        {
+          "generated_at": "2026-08-19T02:27:59.489783+00:00",
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/receipts/gate-ordering-attempt1-void-2026-08-19.json",
+          "schema": "tavonel.gate-ordering-ablation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:fac1f994ca62ad19c905e53d530d75f2a84deaec54278290199b61459579726b"
+        },
+        {
+          "generated_at": "2026-08-19T02:28:32.374862+00:00",
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/receipts/gate-ordering-attempt2-nonseparating-2026-08-19.json",
+          "schema": "tavonel.gate-ordering-ablation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c81b7fae82d460370a44963b0ef0248fb043465af560d136176e5d23736a1788"
+        },
+        {
+          "generated_at": "2026-08-19T02:31:29.760769+00:00",
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/receipts/gate-ordering-permutation-2026-08-19.json",
+          "schema": "tavonel.gate-ordering-ablation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:000885dd06b42abf5340b1f0cd4e072edb19769c32bf14c24e10c6f7cce09a46"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/scripts/audit_check_independence.py",
+          "sha256": "sha256:60eecfc9739a1c57d4d72ee5efd7f7f61c53a973fed1f0609c7a033251295252"
+        },
+        {
+          "path": "research/experiments/H1-I-GATE-ORDERING-01/scripts/permute_gate_order.py",
+          "sha256": "sha256:1055a68151d21b0f0acdcbb587bd228f7aa0562c56d73dacf0a58ebc2869fe3c"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "NO_RUNNER_DISCOVERED",
+        "templates": [],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-IP-HARDENING-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-IP-HARDENING-01/PATENT_PAPER_DELTA_2026-08-16.md",
+          "sha256": "sha256:d2f4a8d801d4ab5ce50dcdc2706eb7a5c5bb4b5c7d633ebe0f7d81f0f5361747"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-16T09:13:48.336551+00:00",
+          "path": "research/experiments/H1-IP-HARDENING-01/receipts/implementation-v2.json",
+          "schema": "tavonel.h1-ip-hardening-implementation-receipt.v1",
+          "sha256": "sha256:3ea4f2465b64278285399d9ab7de0a74ae4398011a2ef07d3b370516b1118ea9"
+        },
+        {
+          "generated_at": "2026-08-16T08:52:48.280721+00:00",
+          "path": "research/experiments/H1-IP-HARDENING-01/receipts/implementation.json",
+          "schema": "tavonel.h1-ip-hardening-implementation-receipt.v1",
+          "sha256": "sha256:6ae6469da4360bd3e6af2d212816897550762224e38afa19b3b6f1ead2995002"
+        },
+        {
+          "generated_at": "2026-08-16T09:37:08.214617+00:00",
+          "path": "research/experiments/H1-IP-HARDENING-01/receipts/reconciliation-v3.json",
+          "schema": "tavonel.h1-ip-paper-reconciliation.v3",
+          "sha256": "sha256:b875b686cfc031a335615ead53e54941601409f8687eb0bce8417f97af7ecbea"
+        }
+      ],
+      "scripts": []
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          "python research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/scripts/ablate_governance_filters.py"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/scripts/ablate_governance_filters.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/scripts/ablate_governance_filters.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-J-GOVERNANCE-FILTER-ABLATION-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/AMENDMENT_1_2026-08-19.md",
+          "sha256": "sha256:217f3692de1cc784444ceb7d7a98a547c1bb526b76956e94eb41a90c9c8fb478"
+        },
+        {
+          "path": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:fdce5e210b65a167d42ff8d5a15a14a546f7b41bd24ef2632fa216edde6e855e"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T02:51:39.495970+00:00",
+          "path": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/receipts/governance-filter-ablation-2026-08-19.json",
+          "schema": "tavonel.governance-filter-ablation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:0cd2ece957f84d94d6be158a2d5f16d2039c56a2d823b887f6935e8146be104d"
+        },
+        {
+          "generated_at": "2026-08-19T02:50:19.139767+00:00",
+          "path": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/receipts/governance-filter-ablation-attempt1-2026-08-19.json",
+          "schema": "tavonel.governance-filter-ablation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:2e8c690bd77c20a6e62c2e5967ca7f72fcd0846c0c7ccb99ae6efb7661e2fd00"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-J-GOVERNANCE-FILTER-ABLATION-01/scripts/ablate_governance_filters.py",
+          "sha256": "sha256:696e83e3396c334c7d14ec1aa4571d2c6e6b54de5b911103fc77651c664d54b3"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          "python research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/probe_legacy_invariants.py",
+          "python research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_candidates_semanticity.py",
+          "python research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_pruning_ceiling_lemma.py"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_candidates_semanticity.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_candidates_semanticity.py"
+          },
+          {
+            "command": "python research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_pruning_ceiling_lemma.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_pruning_ceiling_lemma.py"
+          },
+          {
+            "command": "python research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/probe_legacy_invariants.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/probe_legacy_invariants.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-K-LEGACY-INVARIANT-EXTRACTION-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/AMENDMENT_1_2026-08-19.md",
+          "sha256": "sha256:aee2dbb6ea1553e55d7ac29c2d34b7652f4d0d67ffb08f8b57b549a03d1f802c"
+        },
+        {
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/AMENDMENT_2_2026-08-19.md",
+          "sha256": "sha256:2d18da96f3898da25af28703b40e22fb583a5c08f0f108c79b32f5141ae42a04"
+        },
+        {
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/LEGACY_INVARIANTS_2026-08-19.md",
+          "sha256": "sha256:5338d03f7e4ecc22683ae4619d147bc373898b1a8fdf4fe9e6bd7cac976ea3d0"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T03:55:07.410715+00:00",
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/candidates-semanticity-audit-2026-08-19.json",
+          "schema": "tavonel.candidates-semanticity-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:cf668606559fed8ea9cc392c190b6737db7dfb586b84803750f42149ce2248c1"
+        },
+        {
+          "generated_at": "2026-08-19T04:45:33.009743+00:00",
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/h1e-residual-mechanism-crosscheck-2026-08-19.json",
+          "schema": "tavonel.h1e-residual-mechanism-crosscheck.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:6971566894fd69f30823848c2216e9ffa74613faa2921f617b3c0c9c0b047608"
+        },
+        {
+          "generated_at": "2026-08-19T03:36:43.046152+00:00",
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/legacy-invariant-probe-2026-08-19.json",
+          "schema": "tavonel.legacy-invariant-probe.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:320c069f8e7dd668b2b144cf8dfc45ba755a705cae779fb499d40f72cc1408b2"
+        },
+        {
+          "generated_at": "2026-08-19T03:56:59.340706+00:00",
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/pruning-ceiling-attempt1-mischaracterized-2026-08-19.json",
+          "schema": "tavonel.pruning-ceiling-lemma-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:4ef7a28ab4399b97e7969de834c42e7d69569e9cd2279d2c5a3af9b87e770345"
+        },
+        {
+          "generated_at": "2026-08-19T03:57:41.570763+00:00",
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/receipts/pruning-ceiling-lemma-audit-2026-08-19.json",
+          "schema": "tavonel.pruning-ceiling-lemma-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:7aa83ef744e7803b164a6b8c60bcb4ddbd7175dfaf3310a182ffa9c4c42f23a9"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_candidates_semanticity.py",
+          "sha256": "sha256:63961b08cc324e713be2842859d4ecae540ae38d668d7af3ab19fd239d502689"
+        },
+        {
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/audit_pruning_ceiling_lemma.py",
+          "sha256": "sha256:5286865124ad133115204a97669932a437d11429665f7a5f4d005d8f1a5aad5f"
+        },
+        {
+          "path": "research/experiments/H1-K-LEGACY-INVARIANT-EXTRACTION-01/scripts/probe_legacy_invariants.py",
+          "sha256": "sha256:a3b2c7bc3c4db30b6bf0a4a717ec6438c8b7a5041c6e93491e3e6435e43834a6"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_exactness.py",
+          "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_h1e_topologies.py",
+          "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_future_path.py",
+          "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_full_contract.py"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/certified_sparse.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/certified_sparse.py"
+          },
+          {
+            "command": "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_exactness.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_exactness.py"
+          },
+          {
+            "command": "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_full_contract.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_full_contract.py"
+          },
+          {
+            "command": "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_future_path.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_future_path.py"
+          },
+          {
+            "command": "python research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_h1e_topologies.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_h1e_topologies.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-L-CERTIFIED-SPARSE-MATCHER-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/AMENDMENT_1_2026-08-19.md",
+          "sha256": "sha256:e3243f236efebebefc0f110927b477cd2e2107528cff5395092fc92a350d35c3"
+        },
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/PROTOCOL_2026-08-19.md",
+          "sha256": "sha256:e259cc20447bf59e23934e8dac53be75a9ce5423dcc56f19943d5f25770bf481"
+        },
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/SEMANTIC_CONTRACT_2026-08-19.md",
+          "sha256": "sha256:836b4d92f1e869acf279c40401ec743e4d0e26c465bbe00868cdc6309d5b42cd"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T04:31:44.252285+00:00",
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/exactness-2026-08-19.json",
+          "schema": "tavonel.certified-sparse-exactness.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:062863e6a436ccfef5dba453ac57f64bcbb4523cdbab031e7ea02041229a3117"
+        },
+        {
+          "generated_at": "2026-08-19T04:29:30.033976+00:00",
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/exactness-attempt1-void-mutant-2026-08-19.json",
+          "schema": "tavonel.certified-sparse-exactness.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:7fef4423f9a7c7a2e5a7b082c025a08dd473334b686367b6d60c185875ac6f2c"
+        },
+        {
+          "generated_at": "2026-08-19T06:02:20.855939+00:00",
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/full-contract-exactness-2026-08-19.json",
+          "schema": "tavonel.certified-sparse-full-contract.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c0ab2e655a1e5ddb96ec97dc278aec13ab83f80de7de02a6c81e5be7c0103857"
+        },
+        {
+          "generated_at": "2026-08-19T05:59:26.133765+00:00",
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/future-path-exactness-2026-08-19.json",
+          "schema": "tavonel.certified-sparse-future-path.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:8645d075021d7a58d85d585c4e8d5080e0b05ae86d8e31e518b92795539dd413"
+        },
+        {
+          "generated_at": "2026-08-19T04:46:27.314915+00:00",
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/receipts/h1e-topology-exactness-2026-08-19.json",
+          "schema": "tavonel.certified-sparse-h1e-topology-exactness.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c86d76b02fc67816b6000f8f1c8f7f3549428b843e1a67c8aa677aa1673f24d0"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/certified_sparse.py",
+          "sha256": "sha256:6edfb280cc31fd3a9bfd4b1dcd943eac06e89408b3a146dc68bd9aac4583a2a9"
+        },
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_exactness.py",
+          "sha256": "sha256:535c54980c481f6556817607a78cf5fe754240f45ee6ba9b248479a244860f28"
+        },
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_full_contract.py",
+          "sha256": "sha256:842404c519307dc1d06835c4efd0146ee079502b66bd2e654ccb534c6e055ef0"
+        },
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_future_path.py",
+          "sha256": "sha256:812737971ec27058a0dfb19334e0805e8651e3f6c07651f66ff262090059d986"
+        },
+        {
+          "path": "research/experiments/H1-L-CERTIFIED-SPARSE-MATCHER-01/scripts/run_h1e_topologies.py",
+          "sha256": "sha256:6126439a6faee8724d5b49c1e0407e582049e5ef6052ca610f793a0002d7ce0d"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [],
+        "status": "TEMPLATE_ONLY",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/harvest_stage1_from_reattached_pod.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/harvest_stage1_from_reattached_pod.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/ovisocr2_stage1_hard200.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/ovisocr2_stage1_hard200.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/probe_stage1_host_startup_discriminator_v1.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/probe_stage1_host_startup_discriminator_v1.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v10_runtime_ready.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v10_runtime_ready.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v11_fast_fail_hosts.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v11_fast_fail_hosts.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v12_cuda_compat.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v12_cuda_compat.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v13_cuda_pin.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v13_cuda_pin.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v14_community.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v14_community.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v15_proxy_readiness.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v15_proxy_readiness.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v16_reattachable.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v16_reattachable.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v17_cuda_at_least.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v17_cuda_at_least.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v18_holdout_bundle.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v18_holdout_bundle.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v2.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v2.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v3.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v3.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v4_prefer_a.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v4_prefer_a.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v5_heartbeat.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v5_heartbeat.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v6_controlplane.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v6_controlplane.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v7_r2_verified.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v7_r2_verified.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v8_host_retry.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v8_host_retry.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v9_failure_evidence.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v9_failure_evidence.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/runpod_httpx_transport.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/runpod_httpx_transport.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/score_stage1_critical_tokens.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/score_stage1_critical_tokens.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_host_retry_watchdog.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_host_retry_watchdog.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v2_heartbeat.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v2_heartbeat.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v3_controlplane.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v3_controlplane.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v4_observability.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v4_observability.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v5_holdout.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v5_holdout.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_watchdog.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_watchdog.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage1_watchdog_v2.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage1_watchdog_v2.py"
+          },
+          {
+            "command": "python research/experiments/H1-STAGE1-200/scripts/stage_stage1_predictions_for_official_eval.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-STAGE1-200/scripts/stage_stage1_predictions_for_official_eval.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-STAGE1-200",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-STAGE1-200/STARTUP_BLOCKER_FINDINGS_2026-08-17.md",
+          "sha256": "sha256:9ed4a344753c454257f2d74c8b93da698b784363dcbf95cb17a69b6bca406583"
+        }
+      ],
+      "receipts": [],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/harvest_stage1_from_reattached_pod.py",
+          "sha256": "sha256:36b3a70f196f560efe755d21ade4cee0571b65e2f92047ff746b89e4160dbae9"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/ovisocr2_stage1_hard200.py",
+          "sha256": "sha256:8f8c7109a8e5c5e6467aaf5531d3d720f81c651af4b76344e30141ada1bea009"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/probe_stage1_host_startup_discriminator_v1.py",
+          "sha256": "sha256:915ab79c56e7f38836c5a8ac2cd5644ff2df0269dded3e511cbcb203cf3945c8"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2.py",
+          "sha256": "sha256:1c543a81dcc46cb4837b7110bcbbfe38aa8f4a0f14bee546b62e6c93c55c7145"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v10_runtime_ready.py",
+          "sha256": "sha256:4dc480b80e832e2dbee1fc5f80c1c3f023b414e6a35d37af9ed57a75a085087c"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v11_fast_fail_hosts.py",
+          "sha256": "sha256:b419ca12f141f2de51f6bef56a15764679d662d71294ff4a29b1efbdb0f59102"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v12_cuda_compat.py",
+          "sha256": "sha256:0bb596e226941b403a56437bc70e235ffc60ca9f01659af2722fa34035de56e9"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v13_cuda_pin.py",
+          "sha256": "sha256:dde719b645043784efa706254dcecc76bee3af7efe4e29038eb2e7884c8c8b22"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v14_community.py",
+          "sha256": "sha256:92f4309c393e760fdf732e0430e068c9a4ec35c519529613e5cbef610c4c47f4"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v15_proxy_readiness.py",
+          "sha256": "sha256:69b96780711ad22b4ac67647138213488cefa03d681677f0703c6239f93b28ab"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v16_reattachable.py",
+          "sha256": "sha256:6b3cee7049c710622db044ef1d786ed486686c4a9c84b08f99936647d8d887e5"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v17_cuda_at_least.py",
+          "sha256": "sha256:7fed089c7cd3f5dfe1ee95637a1fbc5d0b562d38dbfb7ac6da19c375555ffff2"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v18_holdout_bundle.py",
+          "sha256": "sha256:c4f4849e2d305b505a250f87fdeb56a76f4299e5474379da10a8b85a2256bada"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v2.py",
+          "sha256": "sha256:082d89ade49b62c45b63c36474d01f02ea189e663c68eee0cc2814b71864f244"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v3.py",
+          "sha256": "sha256:b2ebaa97b4cc8144cefb7188ccbc2573abe6e17666760faafd0ba8559d86a701"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v4_prefer_a.py",
+          "sha256": "sha256:b2ef7a7958be22934ad2277c6c5a1178dfa9f1574d1fa0f5fa6c8a9afccb04a7"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v5_heartbeat.py",
+          "sha256": "sha256:a8ded9743476db5cefd91ac793e6293d41122e56e6c2086e9e5f2c8ac76560da"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v6_controlplane.py",
+          "sha256": "sha256:776bb82e8967ea51fa45de2454036b7dd0a9ff0b6032f203801bd235afb80656"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v7_r2_verified.py",
+          "sha256": "sha256:9d73f9d4ceae6214ad6a4adcc5888071dcf020cedffa96dd57d6dc324d116a74"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v8_host_retry.py",
+          "sha256": "sha256:54fa30fcd54c9834c13ba99b5a6e0c2d0548e5e56a53e67e1cb439e85f8194a6"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/run_stage1_v29_r2_v9_failure_evidence.py",
+          "sha256": "sha256:e1a04d7679010c8482569889f8291a1aa1b708f0b7683716279d7745b71262da"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/runpod_httpx_transport.py",
+          "sha256": "sha256:d1025a60ef20df1149845269a51fca6550715c076032f96e1c32a6c2ca6aa103"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/score_stage1_critical_tokens.py",
+          "sha256": "sha256:8ca69e03949d3ee95376a8b1c14006d9f94f41c0b8d86f13804a7bbe916de75b"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_host_retry_watchdog.py",
+          "sha256": "sha256:a21143f3c3364c1bc89819c465671560a7aebe80bb43b93dffbae0b8b6c540f4"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver.py",
+          "sha256": "sha256:970268961a1dd00edc5fbc5d86def807643cf3300748c72c0c3dfca35ab9dd56"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v2_heartbeat.py",
+          "sha256": "sha256:c601be37240179e969f3e3fc6c190e3e9d69602a4363cabc9b459e5d944748b2"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v3_controlplane.py",
+          "sha256": "sha256:684b0df945318dc65fff8e2897481cd4b9a75a6704b69dcab1bdd6648466c30e"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v4_observability.py",
+          "sha256": "sha256:334ce2ba5d02ac1b447869d94b455f23c8f3b890f45a8af3355bbd959e2944da"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_same_pod_driver_v5_holdout.py",
+          "sha256": "sha256:8f134a432c61a3df0a9b1ae4d3332f79cfcbbb1d0f24ca9fedc22ccc203e8e65"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_watchdog.py",
+          "sha256": "sha256:7b7d83f346e5a661da62c4ffe3f310a361a12300da6093d37c22e1bac3f22ec9"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage1_watchdog_v2.py",
+          "sha256": "sha256:0ed50fd7f90f6b9ae99b1a19a0c8697420e59bcc1111216ecbab04cff120ff34"
+        },
+        {
+          "path": "research/experiments/H1-STAGE1-200/scripts/stage_stage1_predictions_for_official_eval.py",
+          "sha256": "sha256:a8b2f22f81a62cf4f6be47bbcd939e70a36de5328114838344d1bf7f35c44420"
+        }
+      ]
+    },
+    {
+      "current_reproduction": {
+        "cwd": "D:\\CodexProjects\\ai-knowledge-compiler",
+        "exact_current_session_commands": [
+          "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/recovery_fixture.py"
+        ],
+        "status": "EXACT_CURRENT_SESSION_COMMANDS_RECORDED",
+        "templates": [
+          {
+            "command": "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v3.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v3.py"
+          },
+          {
+            "command": "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v4_transport.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v4_transport.py"
+          },
+          {
+            "command": "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v5_single_title.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v5_single_title.py"
+          },
+          {
+            "command": "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/build_question_set_v2.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/build_question_set_v2.py"
+          },
+          {
+            "command": "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/recovery_fixture.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/recovery_fixture.py"
+          },
+          {
+            "command": "python research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/validate_baseline.py --output <receipt path>",
+            "note": "argument list is the script's own argparse; see --help. Scripts that take a frozen manifest or seal require those paths too.",
+            "script": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/validate_baseline.py"
+          }
+        ],
+        "warning": "Templates are conveniences derived from current scripts and are not evidence of the historical invocation."
+      },
+      "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+      "historical_exact_invocation": {
+        "recovered_records": [],
+        "status": "NOT_RECOVERABLE_FROM_REPOSITORY",
+        "warning": "No command is invented from argparse/help text when the historical invocation is absent."
+      },
+      "protocols": [
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/BASELINE_ACCEPTANCE_2026-08-19.md",
+          "sha256": "sha256:9d6409dca9941918aa5e03f68e80e4b7c8c3df3a548f46f53557cee2f000678a"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/BASELINE_VALIDATION_RESULT_2026-08-19.md",
+          "sha256": "sha256:77a8e9c986f6e548113ef44698918aa2e707618e790b016e4308151fd1c1ddbd"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/PROTOCOL_V2_2026-08-19.md",
+          "sha256": "sha256:2e50ad03c7b7aadea580dc4ab10d26c3e281b8074cbc9d419068efb329800565"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/PROTOCOL_V3_ACQUISITION_2026-08-19.md",
+          "sha256": "sha256:d5fa91de62576d84c5c4c0faedf7e01c7002814715c57b57a9fc402d11f84b47"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/PROTOCOL_V4_TRANSPORT_AMENDMENT_2026-08-19.md",
+          "sha256": "sha256:1c0419bd8ecddd0afd86ef208900e8fd28ad909280ccbf429f4341e3c401fb0e"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/PROTOCOL_V5_SINGLE_TITLE_TRANSPORT_2026-08-19.md",
+          "sha256": "sha256:34b4e2fc44a2a3d6c0092dd6797158a8fee6a5d5aa3a60ec19aa62172eec4ffc"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/PROTOCOL_V6_RECOVERY_2026-08-19.md",
+          "sha256": "sha256:a755311508988373c0b46a653db74536f51d6ad08435d5262c0bd0a710f754cd"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/QUESTION_SET_V2_RESULT_2026-08-19.md",
+          "sha256": "sha256:7e7a60608d497e6a1e58889a6eff6cc1ab9c97b41190ef0ef2c2474ec4ed2676"
+        }
+      ],
+      "receipts": [
+        {
+          "generated_at": "2026-08-19T04:33:00.787056+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-resume-audit-2026-08-19.json",
+          "schema": "tavonel.w6-acquisition-resume-audit.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:917364758cbbc2b0ca95f3c97036c6acb41f5dce8772a7f0cf8e63a0c3aac623"
+        },
+        {
+          "generated_at": "2026-08-18T22:52:14.288072+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/baseline-validation-2026-08-19.json",
+          "schema": "tavonel.w6-baseline-validation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:9d9f75526d330647df191dc803b60945ecb28c9b05122adbf9319e4972e12a2e"
+        },
+        {
+          "generated_at": "2026-08-18T22:57:22.460711+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v1-invalidation-2026-08-19.json",
+          "schema": "tavonel.w6-question-set-invalidation.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:e6ddf01bab667920396ed475e3881df1572f7215ef2d0b772b36844ac2e46234"
+        },
+        {
+          "generated_at": "2026-08-18T22:58:53.973599+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v2-2026-08-19.json",
+          "schema": "tavonel.w6-question-set.v2",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:7dcd9f85b088a179e1882bf156ae23598a375f815c979747439b492314bee4b2"
+        },
+        {
+          "generated_at": "2026-08-19T04:41:51.542664+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/recovery-fixture-2026-08-19.json",
+          "schema": "tavonel.w6-recovery-fixture.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:f1e3088c344461fbc6b7489370f5220eeb0190229cf65ab08f96657fb0c5d4d6"
+        },
+        {
+          "generated_at": "2026-08-18T23:38:13.229523+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/single-title-freeze-v5-2026-08-19.json",
+          "schema": "tavonel.w6-v5-single-title-freeze.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:f281489d12b999df933fc2be0fb6fe82d4ec8026ddf85acd4e2c717c7d923886"
+        },
+        {
+          "generated_at": "2026-08-18T23:22:04.173953+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/title-manifest-v3-2026-08-19.json",
+          "schema": "tavonel.w6-v3-title-manifest.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc"
+        },
+        {
+          "generated_at": "2026-08-18T23:36:58.732173+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/transport-freeze-v4-2026-08-19.json",
+          "schema": "tavonel.w6-v4-transport-freeze.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:04537206ac5c7f2a58a71000f8fa7b1fd6d77b08f619136965210a2650c53b6e"
+        },
+        {
+          "generated_at": "2026-08-19T04:42:09.590288+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v5-corpus-completeness-2026-08-19.json",
+          "schema": "tavonel.w6-v5-corpus-completeness.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:a71f810adda3d172c464d0c9aba47fd42850d768ff8809b16302709193075436"
+        },
+        {
+          "generated_at": "2026-08-19T03:34:22.596895+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v5-health-check-2026-08-19.json",
+          "schema": "tavonel.w6-v5-health-check.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:e066ed6ed524cfbc3d6c8c2a0624ebb768b6ff47e2ca75138ee3bb7d8dbfa00e"
+        },
+        {
+          "generated_at": "2026-08-19T04:51:34.088662+00:00",
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v6-launch-record-2026-08-19.json",
+          "schema": "tavonel.w6-v6-launch-record.v1",
+          "self_hash_recomputes": true,
+          "sha256": "sha256:c14f702219737c3d4d0c717e9fdb74c67a3e9ba81b4f336a7eb005d5a9610bf8"
+        }
+      ],
+      "scripts": [
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v3.py",
+          "sha256": "sha256:d46a577b9a14e335a9846fbc50d31ef4a4914406abfc738097417b199e26669e"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v4_transport.py",
+          "sha256": "sha256:f82ae95908f76ef83caeda2f31037a48ab7fee72c3219bc68e059dcf1d64f61f"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/acquire_w6_v5_single_title.py",
+          "sha256": "sha256:2895a52c5d4a4e45d2be2fc38cab43bfba9b601969a5bb7a4731b3aa7ea1e9ea"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/build_question_set_v2.py",
+          "sha256": "sha256:986ab0020940267de4210f246355e6e14581ff463aa535762a502d297cdfdb66"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/recovery_fixture.py",
+          "sha256": "sha256:81bae63fc2c791a04489c751b5080a21899d27d0c7892d6cc441b34775feacb9"
+        },
+        {
+          "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/scripts/validate_baseline.py",
+          "sha256": "sha256:0f3fef83c675167ff5a4cfa51dd4e6ce3ae91d250415b4fe35bafc647246aa98"
+        }
+      ]
+    }
+  ],
+  "generated_at": "2026-08-19T06:04:38.191790+00:00",
+  "index_sha256": "sha256:02bc8eec24cc0591a8f976bf148c39c8201fcd4acaf4b443e22eab0380860bc1",
+  "manifest_file_sha256": "sha256:5770aec9aa485f9d8a4e0b0d3ee49797314c3ef3b8934c30e1c19e8a966fda12",
+  "manifest_path": "docs/repro/EXPERIMENT_MANIFEST.json",
+  "manifest_self_sha256": "sha256:35f5568173e99081a759514160131c8abc2c722e6fec001418a2b8af0c2c52d0",
+  "purpose": "Per-experiment separation of current reproducibility from historical exact invocation recovery; closes X8 without fabricating missing commands.",
+  "schema": "tavonel.execution-index.v1",
+  "session_execution_log_path": "docs/repro/SESSION_EXECUTION_LOG_2026-08-19.md",
+  "session_execution_log_sha256": "sha256:d45c99e08f7a91b0a5b717a307b4e439cda0e25dd4d28ff8122c686e05933237",
+  "summary": {
+    "experiment_count": 23,
+    "experiments_with_exact_current_session_commands": 8,
+    "experiments_with_repository_recovered_historical_invocation": 1,
+    "experiments_without_recoverable_historical_invocation": 22,
+    "historical_invocation_completeness": "PARTIAL",
+    "interpretation": "A current reproduction route exists for many experiments, but the repository does not preserve every older exact command. Missing history remains explicit."
+  }
+}

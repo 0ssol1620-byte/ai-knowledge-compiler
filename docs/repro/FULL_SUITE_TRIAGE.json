@@ -1,0 +1,233 @@
+{
+  "cluster_count": 1,
+  "failure_clusters": [
+    {
+      "category": "D",
+      "category_name": "ENVIRONMENT_DEPENDENT",
+      "disposition": "No code change. Run the suite with the project interpreter. `-I` is the sandbox boundary for hostile documents and is not relaxed; no test was edited, skipped or marked xfail.",
+      "distinct_assertion_shapes": [
+        {
+          "count": 5,
+          "shape": "AssertionError: assert 'queued' == 'completed'",
+          "tests": [
+            "services/api/tests/test_api_integration.py::test_hundred_page_native_pdf_gate_one_journey",
+            "services/api/tests/test_api_integration.py::test_visual_input_fails_closed_and_releases_reserved_credit",
+            "services/api/tests/test_document_version_api.py::test_v2_replacement_archives_exact_v1_and_clears_current_projection",
+            "services/api/tests/test_document_version_api.py::test_reprocess_creates_same_source_processing_revision_with_version_diff",
+            "services/api/tests/test_email_verification_api.py::test_worker_enforces_daily_page_cap_before_persisting_pages"
+          ]
+        },
+        {
+          "count": 3,
+          "shape": "AssertionError: ('queued', 'PARSER_PROCESS_CRASH')",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_scanned_input_fake_provider_admits_exact_inference_page_once[image]",
+            "services/api/tests/test_analysis_isolation.py::test_scanned_input_fake_provider_admits_exact_inference_page_once[pdf]",
+            "services/api/tests/test_api_integration.py::test_cdr_preserves_original_and_binds_a_separate_parser_derivative"
+          ]
+        },
+        {
+          "count": 3,
+          "shape": "assert None is not None",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_sensitive_preview_is_masked_by_default_and_opt_out_is_explicit",
+            "services/api/tests/test_api_integration.py::test_concurrent_distinct_review_resolutions_commit_once_and_audit",
+            "services/api/tests/test_email_verification_api.py::test_failed_gpu_cap_creates_no_job"
+          ]
+        },
+        {
+          "count": 2,
+          "shape": "AssertionError: assert (<OBJ> is not None and 'queued' == 'completed'",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_office_analysis_is_explicitly_no_preview",
+            "services/api/tests/test_native_nonpdf_worker_e2e.py::test_six_native_formats_persist_structured_cir_and_provenance"
+          ]
+        },
+        {
+          "count": 2,
+          "shape": "AssertionError: assert 'queued' == 'dead_letter'",
+          "tests": [
+            "services/api/tests/test_knowledge_batch_pdf_api.py::test_encrypted_pdf_password_requeues_without_persisting_secret",
+            "services/api/tests/test_native_nonpdf_worker_e2e.py::test_native_parser_error_code_reaches_analysis_task"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "assert [True, True] == [False, True]",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_single_worker_concurrency_persists_one_result_and_tenant_safe_preview"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "AssertionError: assert (<OBJ> is not None and 'active' == 'settled'",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_shared_task_pause_is_binding_scoped_and_reuse_is_never_double_billed"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "assert (<OBJ> is not None and <OBJ> is not None and None is not None)",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_credit_failure_retry_versions_plan_and_reconciles_ledger_once"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "AssertionError: assert (<OBJ> is not None and 'queued' == 'dead_letter'",
+          "tests": [
+            "services/api/tests/test_analysis_isolation.py::test_hostile_text_is_dead_lettered_without_partial_rows"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "AssertionError: PARSER_PROCESS_CRASH",
+          "tests": [
+            "services/api/tests/test_api_integration.py::test_native_vertical_slice_export_edit_and_verified_purge"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "IndexError: list index out of range",
+          "tests": [
+            "services/api/tests/test_api_integration.py::test_concurrent_retry_idempotency_preserves_page_and_reserves_once"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "assert (None is not None)",
+          "tests": [
+            "services/api/tests/test_api_integration.py::test_review_source_adoption_and_document_rule_require_a_fresh_preview"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "assert 0 == 1",
+          "tests": [
+            "services/api/tests/test_document_version_api.py::test_invalid_rejected_and_aborted_v2_leave_v1_untouched"
+          ]
+        },
+        {
+          "count": 1,
+          "shape": "AssertionError: {\"error\":{\"code\":\"BATCH_ANALYSIS_REQUIRED\",\"message\":\"BATCH_ANALYSIS_REQUIRED\",\"request_id\":\"req_c51c1ca1-11ca-4c72-b5a7-de07b7a8f22e\",\"retryabl",
+          "tests": [
+            "services/api/tests/test_knowledge_batch_pdf_api.py::test_batch_idempotency_and_knowledge_provenance_usage_cost_api"
+          ]
+        }
+      ],
+      "evidence": {
+        "causal_isolation": [
+          {
+            "command": "python -E -P -m akc_worker_document.sandbox_runner",
+            "result": "imports cleanly"
+          },
+          {
+            "command": "python -E -P -s -m akc_worker_document.sandbox_runner",
+            "result": "ModuleNotFoundError: No module named 'starlette'"
+          },
+          {
+            "command": ".venv python -I -c 'import akc_worker_document.sandbox_runner'",
+            "result": "IMPORT OK"
+          }
+        ],
+        "differential_run": {
+          "global": "24 failed, 2734 passed, 31 skipped in 610.65s (0:10:10)",
+          "project_venv": "2758 passed, 36 skipped, 1 warning in 781.48s (0:13:01)"
+        }
+      },
+      "first_responsible_change": "None identifiable in this repository. The condition is where the dependencies were installed, not a commit here. No git evidence is offered, and the word 'pre-existing' is therefore not used.",
+      "id": "CLUSTER-SANDBOX-USERSITE",
+      "regression_coverage": "tools/repro/run_test_scopes.py records the running interpreter and withholds repository_green when it is not the project one, verified by four controls in the same execution.",
+      "root_cause": "`-I` implies `-s`, excluding user site-packages. Under the global interpreter the dependencies live there, so the child cannot import them and exits non-zero.",
+      "root_code_path": "workers/cpu-document/src/akc_worker_document/worker.py -- the sandbox child is launched with `-I`; failure surfaces at worker.py:1510 as AnalysisAttemptError('PARSER_PROCESS_CRASH')",
+      "test_count": 24,
+      "tests": [
+        "services/api/tests/test_analysis_isolation.py::test_credit_failure_retry_versions_plan_and_reconciles_ledger_once",
+        "services/api/tests/test_analysis_isolation.py::test_hostile_text_is_dead_lettered_without_partial_rows",
+        "services/api/tests/test_analysis_isolation.py::test_office_analysis_is_explicitly_no_preview",
+        "services/api/tests/test_analysis_isolation.py::test_scanned_input_fake_provider_admits_exact_inference_page_once[image]",
+        "services/api/tests/test_analysis_isolation.py::test_scanned_input_fake_provider_admits_exact_inference_page_once[pdf]",
+        "services/api/tests/test_analysis_isolation.py::test_sensitive_preview_is_masked_by_default_and_opt_out_is_explicit",
+        "services/api/tests/test_analysis_isolation.py::test_shared_task_pause_is_binding_scoped_and_reuse_is_never_double_billed",
+        "services/api/tests/test_analysis_isolation.py::test_single_worker_concurrency_persists_one_result_and_tenant_safe_preview",
+        "services/api/tests/test_api_integration.py::test_cdr_preserves_original_and_binds_a_separate_parser_derivative",
+        "services/api/tests/test_api_integration.py::test_concurrent_distinct_review_resolutions_commit_once_and_audit",
+        "services/api/tests/test_api_integration.py::test_concurrent_retry_idempotency_preserves_page_and_reserves_once",
+        "services/api/tests/test_api_integration.py::test_hundred_page_native_pdf_gate_one_journey",
+        "services/api/tests/test_api_integration.py::test_native_vertical_slice_export_edit_and_verified_purge",
+        "services/api/tests/test_api_integration.py::test_review_source_adoption_and_document_rule_require_a_fresh_preview",
+        "services/api/tests/test_api_integration.py::test_visual_input_fails_closed_and_releases_reserved_credit",
+        "services/api/tests/test_document_version_api.py::test_invalid_rejected_and_aborted_v2_leave_v1_untouched",
+        "services/api/tests/test_document_version_api.py::test_reprocess_creates_same_source_processing_revision_with_version_diff",
+        "services/api/tests/test_document_version_api.py::test_v2_replacement_archives_exact_v1_and_clears_current_projection",
+        "services/api/tests/test_email_verification_api.py::test_failed_gpu_cap_creates_no_job",
+        "services/api/tests/test_email_verification_api.py::test_worker_enforces_daily_page_cap_before_persisting_pages",
+        "services/api/tests/test_knowledge_batch_pdf_api.py::test_batch_idempotency_and_knowledge_provenance_usage_cost_api",
+        "services/api/tests/test_knowledge_batch_pdf_api.py::test_encrypted_pdf_password_requeues_without_persisting_secret",
+        "services/api/tests/test_native_nonpdf_worker_e2e.py::test_native_parser_error_code_reaches_analysis_task",
+        "services/api/tests/test_native_nonpdf_worker_e2e.py::test_six_native_formats_persist_structured_cir_and_provenance"
+      ],
+      "why_one_cluster_not_many": "The assertion shapes differ because they are downstream observations of the same unfinished analysis task, not independent defects. Every one resolves when the interpreter is corrected and none resolves without it."
+    }
+  ],
+  "full_suite": {
+    "collected": 2794,
+    "exit_code": 0,
+    "failed": 0,
+    "interpreter": "project venv",
+    "passed": 2758,
+    "retained_copy": "docs/repro/runs/fullsuite-venv2.txt",
+    "skipped": 36,
+    "source": "C:\\Users\\yspow\\AppData\\Local\\Temp\\claude\\D--CodexProjects-ai-knowledge-compiler\\c0da6064-96ac-4c7f-b6e2-06f1c2a55833\\scratchpad\\fullsuite-venv2.txt",
+    "source_sha256": "sha256:b970e7c0cc5f701d11b2504272ade896c4b302073fd4e207785ac94a3b9f9159",
+    "summary_line": "2758 passed, 36 skipped, 1 warning in 781.48s (0:13:01)"
+  },
+  "generated_at": "2026-08-19T11:18:42.688838+00:00",
+  "global_interpreter_run": {
+    "collected": 2789,
+    "failed": 24,
+    "passed": 2734,
+    "retained_copy": "docs/repro/runs/fullsuite.txt",
+    "skipped": 31,
+    "source": "C:\\Users\\yspow\\AppData\\Local\\Temp\\claude\\D--CodexProjects-ai-knowledge-compiler\\c0da6064-96ac-4c7f-b6e2-06f1c2a55833\\scratchpad\\fullsuite.txt",
+    "source_sha256": "sha256:fd1060e3db088c8ec3a0a2ccc388149125786b8efa19bee81929ac487ee352c4",
+    "summary_line": "24 failed, 2734 passed, 31 skipped in 610.65s (0:10:10)"
+  },
+  "new_under_venv": [],
+  "persisting_under_venv": [],
+  "receipt_sha256": "sha256:3f5489fd323031f96954660a41851399363cbc683148d8a51520ee0c3aed53c8",
+  "repository_green_allowed": true,
+  "repository_green_rule": "FULL failed must be 0, no cluster may remain UNKNOWN, and the classifier's own positive control must separate in the same execution. This field states whether the phrase is permitted; the phrase itself is emitted only by tools/repro/run_test_scopes.py, from a scope it actually ran.",
+  "resolved_by_correct_interpreter": 24,
+  "schema": "tavonel.full-suite-triage.v2",
+  "second_defect_found_while_diagnosing": {
+    "category": "D",
+    "consequence": "Under it, `import akc_worker_document` resolves to the other repository. The test process masks this by inserting this repository's paths first; a subprocess launched with -I has no such insertion.",
+    "status": "reported, not repaired -- another checkout's install is the operator's call",
+    "what": "The global interpreter carries _editable_impl_ai_knowledge_compiler.pth pointing at a SIBLING checkout, D:/CodexProjects/ai-knowledge-compiler-collection-plane-rehearsal."
+  },
+  "signature_alignment": {
+    "global": "traceback lines and the short summary are both in execution order and were zipped; 24 traceback lines for 24 failures",
+    "venv": "traceback lines and the short summary are both in execution order and were zipped; 0 traceback lines for 0 failures"
+  },
+  "taxonomy": {
+    "A": "REGRESSION_INTRODUCED_THIS_PROGRAM",
+    "B": "REAL_PRODUCT_DEFECT",
+    "C": "STALE_TEST_EXPECTATION",
+    "D": "ENVIRONMENT_DEPENDENT",
+    "E": "OPTIONAL_DEPENDENCY",
+    "F": "INTENTIONAL_CONTRACT_CHANGE",
+    "G": "TEST_HARNESS_DEFECT",
+    "H": "UNKNOWN"
+  },
+  "triage_detector_control": {
+    "clean_run_green_allowed": true,
+    "clean_run_unknown_clusters": 0,
+    "injected_run_green_allowed": false,
+    "injected_run_unknown_clusters": 1,
+    "separates": true,
+    "what_it_does_not_prove": "nothing about whether the real clusters' root causes are correctly attributed; that rests on the causal isolation recorded in each cluster's evidence",
+    "what_it_proves": "the classifier opens an UNKNOWN cluster and withholds the green verdict for a failure the environment mechanism does not explain, and does neither on an otherwise identical clean run"
+  },
+  "unknown_clusters": 0
+}

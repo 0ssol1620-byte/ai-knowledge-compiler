@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph G["Global assignment — LEGACY"]
+        direction TB
+        G1["rows n1, n2 both score highest<br/>against the same prior unit u1"]
+        G2["maximum-weight matching<br/>awards u1 to exactly one row"]
+        G3["the losing row is assigned<br/><b>nothing</b>"]
+        G4["classification: <b>NEW</b><br/>logical_id = fresh seed"]
+        G1 --> G2 --> G3 --> G4
+    end
+    subgraph L["Same window, decomposed"]
+        direction TB
+        L1["window split into components"]
+        L2["the losing row is now alone<br/>and <b>wins</b> u1 locally"]
+        L3["score lands in the review band"]
+        L4["classification: <b>AMBIGUOUS</b><br/>logical_id = <b>None</b>"]
+        L1 --> L2 --> L3 --> L4
+    end
+    G4 --> D{"same input,<br/>different history"}
+    L4 --> D
+    D --> F["next revision has no id to continue<br/><b>lineage fork, permanent</b>"]
