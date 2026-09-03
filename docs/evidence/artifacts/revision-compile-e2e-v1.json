@@ -1,0 +1,198 @@
+{
+  "coreReleaseDigest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "inputSha256": "sha256:95d68d3adc6f40e76476268aa42e1372482a6f27c20532346804fc75ed8cd45b",
+  "producedBy": "tests/integration/test_revision_compile_e2e.py",
+  "request": {
+    "collectionId": "collection-contract",
+    "documents": {
+      "changed": [
+        {
+          "connectorType": "foundation-r2",
+          "contentSha256": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "immutableObjectKey": "immutable/pilot/pilot/doc-contract/v2/sanitized.pdf",
+          "nativeId": "doc-contract",
+          "ocrObjectKey": "immutable/pilot/pilot/doc-contract/v2/ocr.json",
+          "pageCount": 6,
+          "previousContentSha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "sourceFilename": "contract.pdf",
+          "title": "Supply agreement"
+        }
+      ],
+      "unchanged": []
+    },
+    "idempotencyKey": "revision-7fae87d80c70858dc3a7ba3e646eaed259981e61",
+    "previousWorld": {
+      "coreOutputSha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "manifestDigest": "sha256:d70b0c265643f231466f52a63a1413c414025f350d827287ae1f954698dbd388",
+      "worldStateId": "world-v1"
+    },
+    "priorArtifactBindings": [
+      {
+        "artifactId": "claim:address",
+        "contentSha256": "sha256:60c743e1bdea545a3a909386fe200751435e97b5bebb9eabbebe1928f040f312"
+      },
+      {
+        "artifactId": "claim:law",
+        "contentSha256": "sha256:71e008e1f917f4f188c6e1f14c602c1309f9099ce49ce5336b28ee333219ed6f"
+      },
+      {
+        "artifactId": "claim:payment",
+        "contentSha256": "sha256:bd4d0202e6f12e4c75e65cee9bae89d9e1ea5c6ffb68dc450175f67456d1161e"
+      },
+      {
+        "artifactId": "claim:signatories",
+        "contentSha256": "sha256:2a63232a673e9bb4e3d170688c8884d2550ac19fe67df031d0cb1a3f51909149"
+      },
+      {
+        "artifactId": "graph:relations",
+        "contentSha256": "sha256:e61bd49737e917187246d1b9c0fcb99772735199fee7be6443fc46896a3ca839"
+      },
+      {
+        "artifactId": "retrieval:payment",
+        "contentSha256": "sha256:f17ee76bfb6b47a3f6d694c66e95190bd92dfed22859ce89cd20dc5f8b8cb0fc"
+      },
+      {
+        "artifactId": "summary:contract",
+        "contentSha256": "sha256:6237014e959b1c4e52209ded97e4836d3f5c25c86ab9f535798ff3b2e39d3e97"
+      }
+    ],
+    "requestId": "core-rev-e2e",
+    "requestedAt": "2026-09-03T00:00:00.000Z",
+    "route": {
+      "maxCostCredits": 10,
+      "maxLatencyMs": 90000,
+      "operationClass": "revision_compile",
+      "privacyPolicy": "foundation_synthetic_only",
+      "qualityRequirement": "high_assurance"
+    },
+    "schemaVersion": "tavonel.product_core.compile_request.v3",
+    "tenantId": "pilot",
+    "workspaceId": "pilot"
+  },
+  "requestBody": "{\"schemaVersion\":\"tavonel.product_core.compile_request.v3\",\"requestId\":\"core-rev-e2e\",\"idempotencyKey\":\"revision-7fae87d80c70858dc3a7ba3e646eaed259981e61\",\"tenantId\":\"pilot\",\"workspaceId\":\"pilot\",\"collectionId\":\"collection-contract\",\"requestedAt\":\"2026-09-03T00:00:00.000Z\",\"route\":{\"operationClass\":\"revision_compile\",\"qualityRequirement\":\"high_assurance\",\"maxCostCredits\":10,\"maxLatencyMs\":90000,\"privacyPolicy\":\"foundation_synthetic_only\"},\"previousWorld\":{\"worldStateId\":\"world-v1\",\"manifestDigest\":\"sha256:d70b0c265643f231466f52a63a1413c414025f350d827287ae1f954698dbd388\",\"coreOutputSha256\":\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"},\"documents\":{\"changed\":[{\"nativeId\":\"doc-contract\",\"connectorType\":\"foundation-r2\",\"immutableObjectKey\":\"immutable/pilot/pilot/doc-contract/v2/sanitized.pdf\",\"ocrObjectKey\":\"immutable/pilot/pilot/doc-contract/v2/ocr.json\",\"contentSha256\":\"sha256:2222222222222222222222222222222222222222222222222222222222222222\",\"previousContentSha256\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\"title\":\"Supply agreement\",\"sourceFilename\":\"contract.pdf\",\"pageCount\":6}],\"unchanged\":[]},\"priorArtifactBindings\":[{\"artifactId\":\"claim:address\",\"contentSha256\":\"sha256:60c743e1bdea545a3a909386fe200751435e97b5bebb9eabbebe1928f040f312\"},{\"artifactId\":\"claim:law\",\"contentSha256\":\"sha256:71e008e1f917f4f188c6e1f14c602c1309f9099ce49ce5336b28ee333219ed6f\"},{\"artifactId\":\"claim:payment\",\"contentSha256\":\"sha256:bd4d0202e6f12e4c75e65cee9bae89d9e1ea5c6ffb68dc450175f67456d1161e\"},{\"artifactId\":\"claim:signatories\",\"contentSha256\":\"sha256:2a63232a673e9bb4e3d170688c8884d2550ac19fe67df031d0cb1a3f51909149\"},{\"artifactId\":\"graph:relations\",\"contentSha256\":\"sha256:e61bd49737e917187246d1b9c0fcb99772735199fee7be6443fc46896a3ca839\"},{\"artifactId\":\"retrieval:payment\",\"contentSha256\":\"sha256:f17ee76bfb6b47a3f6d694c66e95190bd92dfed22859ce89cd20dc5f8b8cb0fc\"},{\"artifactId\":\"summary:contract\",\"contentSha256\":\"sha256:6237014e959b1c4e52209ded97e4836d3f5c25c86ab9f535798ff3b2e39d3e97\"}]}",
+  "response": {
+    "candidate": {
+      "lifecycle": "candidate",
+      "manifestDigest": "sha256:ce1413e2cf314464c282354cd724770fa1ccc2d8e92c2ffdba18d3cadb74d112",
+      "parentWorldStateId": "world-v1",
+      "reviewReasons": [],
+      "worldStateId": "world-8cd94611ebe915287e477bfa"
+    },
+    "receipt": {
+      "candidatePromotion": false,
+      "coreReleaseDigest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "inputSha256": "sha256:95d68d3adc6f40e76476268aa42e1372482a6f27c20532346804fc75ed8cd45b",
+      "matchingPolicy": "legacy",
+      "outputSha256": "sha256:ca430783c986b27f59ad2f8a0843aa5afb3e194b275f06b23b6104f32c2aacdd",
+      "requestId": "core-rev-e2e"
+    },
+    "revision": {
+      "changeId": "chg_aaa7de322479b09d6653c9e6635b533f",
+      "disposition": "promotable",
+      "equivalence": "passed",
+      "identity": {
+        "ambiguous": 0,
+        "continued": 4,
+        "new": 0,
+        "units": [
+          {
+            "changeFingerprint": "chf_dba3bfd65e751b9c99d67c5ca8cec7eb",
+            "changeState": "semantic",
+            "changeStates": [
+              "semantic"
+            ],
+            "identityContinuity": "continued",
+            "identityFingerprint": "idf_76b62b408bb5eaa8dd6b2f0ba7d6f4fc",
+            "identityRelation": "SAME_AS_VERSION",
+            "logicalUnitId": "ku_payment",
+            "previousLogicalUnitId": "ku_payment"
+          },
+          {
+            "changeFingerprint": "chf_66752560bd7e15f92797d11a636367c1",
+            "changeState": "unchanged",
+            "changeStates": [
+              "unchanged"
+            ],
+            "identityContinuity": "continued",
+            "identityFingerprint": "idf_25f05beca720c99acce403c1446eaeeb",
+            "identityRelation": "SAME_AS_VERSION",
+            "logicalUnitId": "ku_law",
+            "previousLogicalUnitId": "ku_law"
+          },
+          {
+            "changeFingerprint": "chf_4459f37e17c1842229258ac449a090f2",
+            "changeState": "unchanged",
+            "changeStates": [
+              "unchanged"
+            ],
+            "identityContinuity": "continued",
+            "identityFingerprint": "idf_b029d73f9c3379335a4283ec58c98d80",
+            "identityRelation": "SAME_AS_VERSION",
+            "logicalUnitId": "ku_address",
+            "previousLogicalUnitId": "ku_address"
+          },
+          {
+            "changeFingerprint": "chf_0838175add120fb08cefe6ce086d8fa5",
+            "changeState": "unchanged",
+            "changeStates": [
+              "unchanged"
+            ],
+            "identityContinuity": "continued",
+            "identityFingerprint": "idf_a9987cc7a08b4c9360939f9c60bc9e60",
+            "identityRelation": "SAME_AS_VERSION",
+            "logicalUnitId": "ku_signatories",
+            "previousLogicalUnitId": "ku_signatories"
+          }
+        ],
+        "unresolved": 0
+      },
+      "impact": {
+        "affectedArtifactIds": [
+          "claim:payment",
+          "graph:relations",
+          "retrieval:payment",
+          "summary:contract"
+        ],
+        "unresolvedArtifactIds": []
+      },
+      "previousManifestDigest": "sha256:d70b0c265643f231466f52a63a1413c414025f350d827287ae1f954698dbd388",
+      "previousWorldStateId": "world-v1",
+      "recompilation": {
+        "carriedForwardArtifactIds": [
+          "claim:address",
+          "claim:law",
+          "claim:signatories"
+        ],
+        "carriedForwardDigests": {
+          "claim:address": "sha256:60c743e1bdea545a3a909386fe200751435e97b5bebb9eabbebe1928f040f312",
+          "claim:law": "sha256:71e008e1f917f4f188c6e1f14c602c1309f9099ce49ce5336b28ee333219ed6f",
+          "claim:signatories": "sha256:2a63232a673e9bb4e3d170688c8884d2550ac19fe67df031d0cb1a3f51909149"
+        },
+        "quarantinedArtifactIds": [],
+        "rebuiltArtifactIds": [
+          "claim:payment",
+          "graph:relations",
+          "retrieval:payment",
+          "summary:contract"
+        ],
+        "rebuiltArtifacts": 4,
+        "totalArtifacts": 7,
+        "workAvoidedArtifacts": 3
+      },
+      "sourceFacts": {
+        "coveragePermille": 1000,
+        "failClosed": [],
+        "sourceFaithful": true
+      },
+      "typedChanges": {
+        "semantic": 1,
+        "unchanged": 3
+      },
+      "unresolvedChannels": []
+    },
+    "runtime": "tavonel-python-core-v2",
+    "schemaVersion": "tavonel.product_core.compile_response.v3",
+    "status": "completed"
+  },
+  "schema": "tavonel.evidence.revision_compile_e2e.v1"
+}

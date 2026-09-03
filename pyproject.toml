@@ -88,6 +88,7 @@ packages = [
   "packages/domain-packs/src/akc_domain_packs",
   "packages/parallel-runtime/src/akc_parallel_runtime",
   "services/api/src/akc_api",
+  "services/core-v3/src/akc_core_v3",
   "services/url-fetcher/src/akc_url_fetcher",
   "services/scheduler/src/akc_scheduler",
   "workers/cpu-document/src/akc_worker_document",
