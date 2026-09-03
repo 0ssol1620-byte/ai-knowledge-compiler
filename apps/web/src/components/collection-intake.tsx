@@ -12,7 +12,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { listProjects } from "@/lib/api-client";
+import { listProjects, recordProductAnalyticsEvent } from "@/lib/api-client";
+import { formatUsd } from "@/lib/customer-pricing";
 import {
   prepareConnectedCollection,
   controlCollectionUpload,
@@ -159,20 +160,19 @@ const COPY = {
     ruleUpper: "Rule upper estimate",
     preflightHash: "Preflight evidence hash",
     unavailable: "Unavailable",
-    creditUnit: "credits",
     start: "Start processing",
-    starting: "Reserving credits and starting…",
+    starting: "Authorizing the maximum charge and starting…",
     approval: "Processing starts only after explicit approval of the sampled estimate and hard cap.",
     approvalTitle: "Approve the processing reservation",
     approvalConsent:
-      "I reviewed the sampled estimate, immutable evidence hashes, refund policy, and maximum credit reservation.",
-    hardCap: "Maximum credit reservation",
+      "I reviewed the sampled estimate, immutable evidence hashes, release policy, and maximum charge.",
+    hardCap: "Maximum charge (USD)",
     overagePolicy: "If the maximum is reached",
     stopAtCap: "Stop automatically",
     allowTenPercent: "Allow up to 10% more",
     continueWithinBalance: "Continue on the lowest-cost route within balance",
     sampledRequired: "A sampled-ready estimate is required before approval.",
-    invalidHardCap: "The maximum must be at least the recommended reserve ceiling.",
+    invalidHardCap: "Choose an amount between the estimated charge and routed-page ceiling.",
     blueprint: "Knowledge architecture",
     blueprintReason: "Recommendation evidence",
     blueprintRegistry: "Registry hash",
@@ -277,20 +277,19 @@ const COPY = {
     ruleUpper: "규칙 상한 견적",
     preflightHash: "사전분석 근거 해시",
     unavailable: "사용 불가",
-    creditUnit: "크레딧",
     start: "처리 시작",
-    starting: "크레딧을 예약하고 처리를 시작하는 중…",
+    starting: "최대 청구액을 승인하고 처리를 시작하는 중…",
     approval: "샘플 견적과 최대 한도를 명시적으로 승인한 뒤에만 처리가 시작됩니다.",
     approvalTitle: "처리 예약 승인",
     approvalConsent:
-      "샘플 견적, 변경 불가 근거 해시, 환불 정책과 최대 크레딧 예약량을 확인했습니다.",
-    hardCap: "최대 크레딧 예약량",
+      "샘플 견적, 변경 불가 근거 해시, 해제 정책과 최대 청구액을 확인했습니다.",
+    hardCap: "최대 청구액 (USD)",
     overagePolicy: "최대치 도달 시",
     stopAtCap: "자동 중단",
     allowTenPercent: "최대 10% 추가 허용",
     continueWithinBalance: "잔액 안에서 최저 비용 경로로 계속",
     sampledRequired: "승인하려면 sampled-ready 견적이 필요합니다.",
-    invalidHardCap: "최대치는 권장 예약 상한 이상이어야 합니다.",
+    invalidHardCap: "예상 청구액과 routed-page 상한 사이의 금액을 선택하세요.",
     blueprint: "지식 아키텍처",
     blueprintReason: "추천 근거",
     blueprintRegistry: "레지스트리 해시",
@@ -341,6 +340,7 @@ export function CollectionIntake({
   const [serverPaused, setServerPaused] = useState(false);
   const [approved, setApproved] = useState(false);
   const [hardCap, setHardCap] = useState("");
+  const [customerMaxCharge, setCustomerMaxCharge] = useState("");
   const [overagePolicy, setOveragePolicy] =
     useState<CollectionOveragePolicy>("stop_at_cap");
   const [startError, setStartError] = useState<string>();
@@ -375,7 +375,7 @@ export function CollectionIntake({
     ) &&
     approved &&
     (connectedResult?.preflight
-      ? validHardCap(connectedResult.preflight, hardCap)
+      ? validCustomerMaximum(connectedResult.preflight, customerMaxCharge)
       : false);
 
   useEffect(
@@ -449,6 +449,7 @@ export function CollectionIntake({
     setServerPaused(false);
     setApproved(false);
     setHardCap("");
+    setCustomerMaxCharge("");
     setSelectedBlueprintId("");
     setStartError(undefined);
   }
@@ -556,6 +557,7 @@ export function CollectionIntake({
         const nextEstimate = result.preflight.estimate;
         const ceiling = nextEstimate.reserve_ceiling ?? nextEstimate.p95_credits;
         setHardCap(ceiling === null ? "" : String(ceiling));
+        setCustomerMaxCharge(String(nextEstimate.customer_charge_max_usd));
         setSelectedBlueprintId(nextEstimate.knowledge_blueprint_id);
         setApproved(false);
         setStartError(undefined);
@@ -563,6 +565,11 @@ export function CollectionIntake({
       setRecoveryCandidate(undefined);
       setRecoveryNotice(undefined);
       setPhase(result.blocker ? "upload_blocked" : "server_preflight_ready");
+      if (!result.blocker) {
+        void recordProductAnalyticsEvent({ event_type: "source_added" }).catch(
+          () => undefined,
+        );
+      }
     } catch (error) {
       if (controller.signal.aborted) {
         setPhase("paused");
@@ -631,7 +638,7 @@ export function CollectionIntake({
       !preflight ||
       !blueprint ||
       !approved ||
-      !validHardCap(preflight, hardCap)
+      !validCustomerMaximum(preflight, customerMaxCharge)
     ) {
       return;
     }
@@ -643,6 +650,7 @@ export function CollectionIntake({
         preflightSha256: preflight.output_sha256,
         estimateSha256: preflight.estimate.estimate_sha256,
         hardCapCredits: hardCap,
+        customerMaxChargeUsd: customerMaxCharge,
         overagePolicy,
         knowledgeBlueprintId: blueprint.id,
         knowledgeBlueprintRegistrySha256:
@@ -650,6 +658,9 @@ export function CollectionIntake({
         knowledgeBlueprintModuleSha256: blueprint.module_sha256,
         outputModules: preflight.estimate.output_modules,
       });
+      void recordProductAnalyticsEvent({ event_type: "compile_started" }).catch(
+        () => undefined,
+      );
       setPhase("processing_started");
       router.push(
         `/workspace?collection=${encodeURIComponent(connectedResult.collectionId)}`,
@@ -1030,11 +1041,10 @@ export function CollectionIntake({
               <dt>{copy.p50}</dt>
               <dd>
                 {connectedResult?.preflight?.estimate.status === "sampled_ready"
-                  ? formatRuleCredits(
-                      connectedResult.preflight.estimate.p50_credits,
+                  ? formatCustomerPrice(
+                      connectedResult.preflight.estimate.customer_charge_min_usd,
                       locale,
                       copy.unavailable,
-                      copy.creditUnit,
                     )
                   : copy.notMeasured}
               </dd>
@@ -1043,11 +1053,10 @@ export function CollectionIntake({
               <dt>{copy.p95}</dt>
               <dd>
                 {connectedResult?.preflight?.estimate.status === "sampled_ready"
-                  ? formatRuleCredits(
-                      connectedResult.preflight.estimate.p95_credits,
+                  ? formatCustomerPrice(
+                      connectedResult.preflight.estimate.customer_charge_estimate_usd,
                       locale,
                       copy.unavailable,
-                      copy.creditUnit,
                     )
                   : copy.notMeasured}
               </dd>
@@ -1059,11 +1068,10 @@ export function CollectionIntake({
                 connectedResult.preflight.estimate.reserve_ceiling === null ||
                 connectedResult.preflight.estimate.reserve_ceiling === undefined
                   ? copy.notReserved
-                  : formatRuleCredits(
-                      connectedResult.preflight.estimate.reserve_ceiling,
+                  : formatCustomerPrice(
+                      connectedResult.preflight.estimate.customer_charge_max_usd,
                       locale,
                       copy.unavailable,
-                      copy.creditUnit,
                     )}
               </dd>
             </div>
@@ -1162,22 +1170,20 @@ export function CollectionIntake({
                 <div>
                   <dt>{copy.ruleLower}</dt>
                   <dd>
-                    {formatRuleCredits(
-                      connectedResult.preflight.estimate.p50_credits,
+                    {formatCustomerPrice(
+                      connectedResult.preflight.estimate.customer_charge_min_usd,
                       locale,
                       copy.unavailable,
-                      copy.creditUnit,
                     )}
                   </dd>
                 </div>
                 <div>
                   <dt>{copy.ruleUpper}</dt>
                   <dd>
-                    {formatRuleCredits(
-                      connectedResult.preflight.estimate.p95_credits,
+                    {formatCustomerPrice(
+                      connectedResult.preflight.estimate.customer_charge_estimate_usd,
                       locale,
                       copy.unavailable,
-                      copy.creditUnit,
                     )}
                   </dd>
                 </div>
@@ -1251,11 +1257,12 @@ export function CollectionIntake({
                   <input
                     type="number"
                     inputMode="decimal"
-                    min={String(estimate?.reserve_ceiling ?? estimate?.p95_credits ?? 0)}
-                    step="0.001"
-                    value={hardCap}
+                    min={Number(estimate?.customer_charge_estimate_usd ?? 0)}
+                    max={Number(estimate?.customer_charge_max_usd ?? 0)}
+                    step="0.01"
+                    value={customerMaxCharge}
                     onChange={(event) => {
-                      setHardCap(event.currentTarget.value);
+                      setCustomerMaxCharge(event.currentTarget.value);
                       setApproved(false);
                     }}
                   />
@@ -1285,7 +1292,10 @@ export function CollectionIntake({
                 </p>
               )}
               {estimate?.status === "sampled_ready" &&
-                !validHardCap(connectedResult.preflight, hardCap) && (
+                !validCustomerMaximum(
+                  connectedResult.preflight,
+                  customerMaxCharge,
+                ) && (
                   <p className="collection-approval-warning" role="alert">
                     {copy.invalidHardCap}
                   </p>
@@ -1347,9 +1357,9 @@ function isResumableBlocker(
   );
 }
 
-function validHardCap(
+function validCustomerMaximum(
   preflight: CollectionPreflightResult,
-  hardCap: string,
+  customerMaximum: string,
 ): boolean {
   const estimate = preflight.estimate;
   if (estimate.status !== "sampled_ready") return false;
@@ -1359,17 +1369,16 @@ function validHardCap(
     return false;
   }
   if (estimate.output_modules.length === 0) return false;
-  const parsed = Number(hardCap);
-  const requiredValue = estimate.reserve_ceiling ?? estimate.p95_credits;
-  if (requiredValue === null) return false;
-  const required = Number(requiredValue);
+  const parsed = Number(customerMaximum);
+  const required = Number(estimate.customer_charge_estimate_usd);
+  const maximum = Number(estimate.customer_charge_max_usd);
   return (
-    hardCap.trim().length > 0 &&
+    customerMaximum.trim().length > 0 &&
     Number.isFinite(parsed) &&
-    parsed >= 0 &&
     Number.isFinite(required) &&
-    required >= 0 &&
-    parsed >= required
+    Number.isFinite(maximum) &&
+    parsed >= required &&
+    parsed <= maximum
   );
 }
 
@@ -1407,16 +1416,13 @@ function formatBytes(bytes: number, locale: StructaraLocale): string {
   }).format(value)} ${units[index]}`;
 }
 
-function formatRuleCredits(
+function formatCustomerPrice(
   value: string | number | null,
   locale: StructaraLocale,
   unavailable: string,
-  creditUnit: string,
 ): string {
   if (value === null) return unavailable;
   const numeric = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numeric)) return unavailable;
-  return `${formatLocaleNumber(locale, numeric, {
-    maximumFractionDigits: 3,
-  })} ${creditUnit}`;
+  return formatUsd(numeric, localeLanguageTag(locale));
 }

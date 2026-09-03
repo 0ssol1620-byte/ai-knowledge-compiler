@@ -1,8 +1,7 @@
 "use client";
 
-import { CreditCard, Warning } from "@phosphor-icons/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { FileText, Warning } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 
 import { apiRequest, ApiError } from "@/lib/api-client";
 
@@ -11,21 +10,6 @@ interface CreditPack {
   amount_minor: number;
   currency: string;
   credits: string | number;
-}
-
-interface Checkout {
-  id: string;
-  provider: string;
-  provider_checkout_id?: string | null;
-  pack_code: string;
-  amount_minor: number;
-  currency: string;
-  credits: string | number;
-  status: string;
-  checkout_url?: string | null;
-  expires_at: string;
-  completed_at?: string | null;
-  created_at: string;
 }
 
 interface Payment {
@@ -42,8 +26,6 @@ interface Payment {
 }
 
 export function BillingManagement() {
-  const queryClient = useQueryClient();
-  const [checkout, setCheckout] = useState<Checkout>();
   const packs = useQuery({
     queryKey: ["billing", "credit-packs"],
     queryFn: () => apiRequest<CreditPack[]>("/v1/billing/credit-packs"),
@@ -55,42 +37,37 @@ export function BillingManagement() {
     queryKey: ["billing", "payments"],
     queryFn: () => apiRequest<Payment[]>("/v1/billing/payments?limit=20"),
   });
-  const createCheckout = useMutation({
-    mutationFn: (packCode: string) =>
-      apiRequest<Checkout>("/v1/billing/checkouts", {
-        method: "POST",
-        idempotencyKey: crypto.randomUUID(),
-        body: JSON.stringify({ pack_code: packCode }),
-      }),
-    onSuccess: (value) => {
-      setCheckout(value);
-      void queryClient.invalidateQueries({ queryKey: ["billing", "payments"] });
-    },
-  });
-
   const paymentsUnavailable =
     packs.error instanceof ApiError &&
     packs.error.code === "PAYMENTS_UNAVAILABLE";
 
   return (
     <div className="billing-management">
+      <div className="honest-state compact">
+        <FileText size={20} aria-hidden="true" />
+        <p>
+          Customer processing is quoted at $0.04 per standard page and never
+          above $0.06 per routed page. Page-priced checkout is not enabled in
+          this environment, so no legacy credit pack can be purchased here.
+        </p>
+      </div>
       {paymentsUnavailable ? (
         <div className="honest-state compact">
           <Warning size={20} aria-hidden="true" />
           <p>
             No verified payment provider is connected to this environment.
-            Credit purchases remain unavailable rather than simulated.
+            Page-priced purchases remain unavailable rather than simulated.
           </p>
         </div>
       ) : packs.isPending ? (
         <div className="honest-state compact" aria-busy="true">
           <span className="spinner" aria-hidden="true" />
-          <p>Loading available credit packs.</p>
+          <p>Loading the internal billing catalog.</p>
         </div>
       ) : packs.isError ? (
         <div className="honest-state compact">
           <Warning size={20} aria-hidden="true" />
-          <p>Credit packs could not be loaded: {packs.error.message}</p>
+          <p>The internal billing catalog could not be loaded: {packs.error.message}</p>
           <button
             type="button"
             className="secondary-button compact"
@@ -100,59 +77,18 @@ export function BillingManagement() {
           </button>
         </div>
       ) : (
-        <div className="credit-pack-grid">
-          {packs.data.map((pack) => (
-            <article className="credit-pack-card" key={pack.code}>
-              <CreditCard size={18} aria-hidden="true" />
-              <strong>{Number(pack.credits).toLocaleString()} credits</strong>
-              <span>{formatMoney(pack.amount_minor, pack.currency)}</span>
-              <button
-                type="button"
-                className="secondary-button compact"
-                disabled={createCheckout.isPending}
-                onClick={() => {
-                  setCheckout(undefined);
-                  createCheckout.mutate(pack.code);
-                }}
-              >
-                {createCheckout.isPending
-                  ? "Preparing checkout…"
-                  : "Continue to checkout"}
-              </button>
-            </article>
-          ))}
-        </div>
-      )}
-
-      {createCheckout.isError && (
-        <p className="form-error" role="alert">
-          Checkout could not be prepared: {createCheckout.error.message}
-        </p>
-      )}
-      {checkout && (
-        <div className="checkout-evidence" role="status">
-          <div>
-            <strong>Checkout {checkout.status}</strong>
-            <small>
-              {checkout.provider} · Expires{" "}
-              {new Date(checkout.expires_at).toLocaleString("en-US")}
-            </small>
+        <details className="billing-internal-catalog">
+          <summary>Advanced · legacy internal units</summary>
+          <div className="credit-pack-grid">
+            {packs.data.map((pack) => (
+              <article className="credit-pack-card" key={pack.code}>
+                <strong>{Number(pack.credits).toLocaleString()} internal units</strong>
+                <span>{formatMoney(pack.amount_minor, pack.currency)} legacy catalog amount</span>
+                <small>Not available for checkout</small>
+              </article>
+            ))}
           </div>
-          {safeCheckoutUrl(checkout.checkout_url) ? (
-            <a
-              className="primary-button compact"
-              href={safeCheckoutUrl(checkout.checkout_url)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open payment provider
-            </a>
-          ) : (
-            <span className="status-badge neutral">
-              Checkout URL unavailable
-            </span>
-          )}
-        </div>
+        </details>
       )}
 
       <div className="team-subsection">
@@ -176,12 +112,12 @@ export function BillingManagement() {
               <div className="payment-row" key={payment.id}>
                 <span>
                   <strong>
-                    {Number(payment.credits).toLocaleString()} credits
+                    {formatMoney(payment.amount_minor, payment.currency)}
                   </strong>
                   <small>
-                    {payment.provider} ·{" "}
-                    {formatMoney(payment.amount_minor, payment.currency)}
+                    {payment.provider} · confirmed payment
                   </small>
+                  <details><summary>Advanced receipt</summary>{Number(payment.credits).toLocaleString()} internal units</details>
                 </span>
                 <span className="status-badge neutral">{payment.status}</span>
                 <time dateTime={payment.paid_at ?? payment.created_at}>
@@ -206,15 +142,5 @@ function formatMoney(amountMinor: number, currency: string): string {
     }).format(amountMinor / 100);
   } catch {
     return `${amountMinor} ${currency.toUpperCase()} (minor units)`;
-  }
-}
-
-function safeCheckoutUrl(value: string | null | undefined): string | undefined {
-  if (!value) return undefined;
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === "https:" ? parsed.toString() : undefined;
-  } catch {
-    return undefined;
   }
 }

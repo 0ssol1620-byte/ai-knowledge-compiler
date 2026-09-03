@@ -74,7 +74,10 @@ export default defineConfig({
   },
   projects,
   webServer: {
-    command: "pnpm dev",
+    // Release evidence must exercise the optimized artifact. Dev-mode route
+    // compilation can trigger Fast Refresh between sequential navigations and
+    // invalidate the very browser state the matrix is measuring.
+    command: "pnpm build && pnpm start",
     url: "http://127.0.0.1:3000",
     env: {
       NEXT_PUBLIC_AKC_DEMO_MODE: "true",

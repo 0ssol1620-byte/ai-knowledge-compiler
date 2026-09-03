@@ -11,9 +11,10 @@ import {
 } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { apiRequest } from "@/lib/api-client";
+import { apiRequest, recordProductAnalyticsEvent } from "@/lib/api-client";
+import { WorldSourcePreview } from "@/components/workspace/world-source-preview";
 import { demoReviews } from "@/lib/demo-data";
 import type { StructaraLocale } from "@/lib/locale";
 import {
@@ -45,12 +46,12 @@ const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 const REVIEW_COPY = {
   en: {
     loading: "Loading the integrity ledger…",
-    title: "Legacy integrity decisions",
+    title: "Review",
     loadError: "The integrity ledger could not be loaded",
     retry: "Retry",
-    breadcrumbReview: "Integrity",
+    breadcrumbReview: "Review",
     sample: "Interactive sample",
-    connected: "Connected integrity ledger",
+    connected: "Connected review queue",
     openSuffix: "open",
     completion: "Completion summary",
     auditUnavailable:
@@ -78,7 +79,7 @@ const REVIEW_COPY = {
     revision: "Revision",
     evidenceLinks: "Evidence links",
     exactContext: "Exact source context · no synthetic confidence score",
-    decisionRequired: "Optional evidence decision",
+    decisionRequired: "Why review?",
     currentResult: "CURRENT RESULT",
     reviewRequired: "Unresolved",
     candidateComparison: "candidate comparison",
@@ -103,12 +104,12 @@ const REVIEW_COPY = {
   },
   ko: {
     loading: "무결성 원장을 불러오는 중…",
-    title: "레거시 무결성 결정",
+    title: "검토",
     loadError: "무결성 원장을 불러올 수 없습니다",
     retry: "다시 시도",
-    breadcrumbReview: "무결성",
+    breadcrumbReview: "검토",
     sample: "인터랙티브 샘플",
-    connected: "연결된 무결성 원장",
+    connected: "연결된 검토 대기열",
     openSuffix: "개 미해결",
     completion: "완료 요약",
     auditUnavailable:
@@ -135,7 +136,7 @@ const REVIEW_COPY = {
     revision: "리비전",
     evidenceLinks: "근거 링크",
     exactContext: "정확한 원본 맥락 · 합성 confidence 점수 없음",
-    decisionRequired: "선택적 근거 결정",
+    decisionRequired: "검토가 필요한 이유",
     currentResult: "현재 결과",
     reviewRequired: "미해결",
     candidateComparison: "후보 비교",
@@ -185,6 +186,15 @@ export function ReviewStudio({
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [scopePreview, setScopePreview] = useState<ReviewScopePreview>();
   const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const openedEventRecorded = useRef(false);
+
+  useEffect(() => {
+    if (!jobId || openedEventRecorded.current) return;
+    openedEventRecorded.current = true;
+    void recordProductAnalyticsEvent({ event_type: "review_opened" }).catch(
+      () => undefined,
+    );
+  }, [jobId]);
 
   const snapshot = useQuery({
     queryKey: ["review-studio", jobId],
@@ -212,6 +222,9 @@ export function ReviewStudio({
   );
   const selectedBlock = selectedPage?.blocks.find(
     (block) => block.id === selected?.block_id,
+  );
+  const selectedSourceRef = selectedBlock?.source_refs.find(
+    (sourceRef) => sourceRef.bbox1000 !== undefined,
   );
   const sourceValue =
     selectedBlock?.source_text ||
@@ -269,6 +282,11 @@ export function ReviewStudio({
         },
         ...current,
       ]);
+      if (!DEMO_MODE && openItems.length === 1) {
+        void recordProductAnalyticsEvent({
+          event_type: "review_completed",
+        }).catch(() => undefined);
+      }
       const nextItem = openItems.find((candidate) => candidate.id !== item.id);
       if (nextItem) selectItem(nextItem);
     } catch (reason) {
@@ -415,11 +433,11 @@ export function ReviewStudio({
   if (!DEMO_MODE && !jobId) {
     return (
       <div className="simple-page">
-        <h1>Legacy integrity decisions</h1>
+        <h1>Review</h1>
         <div className="honest-state panel">
           <FileMagnifyingGlass size={26} aria-hidden="true" />
           <div>
-            <h2>Open a compiled job to inspect its integrity evidence</h2>
+            <h2>Open a compiled job to review source-bound decisions</h2>
             <p>
               The dedicated studio requires a job snapshot so every decision can
               be persisted against an exact document version.
@@ -584,6 +602,14 @@ export function ReviewStudio({
               </Link>
             </header>
             <div className="review-paper">
+              {selectedSourceRef?.bbox1000 && (
+                <WorldSourcePreview
+                  documentVersionId={selectedSourceRef.document_version_id}
+                  pageNumber={selectedSourceRef.page_number}
+                  bbox1000={selectedSourceRef.bbox1000}
+                  label={snapshot.data?.document.filename || documentTitle}
+                />
+              )}
               <span>
                 {snapshot.data?.document.filename || "canonical-source.pdf"}
               </span>
@@ -632,14 +658,14 @@ export function ReviewStudio({
               </header>
 
               <section>
-                <span>{copy.currentResult}</span>
+                <span>{copy.currentResult} · {copy.decisionRequired}</span>
                 <strong>
                   {selected.candidates?.[1]?.value ||
                     selectedBlock?.markdown ||
                     copy.reviewRequired}
                 </strong>
                 <small>
-                  {selectedBlock?.origin
+                  {selected.message} · {selectedBlock?.origin
                     ? publicOriginLabel(selectedBlock.origin, locale)
                     : copy.candidateComparison}
                 </small>

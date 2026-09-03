@@ -74,7 +74,7 @@
       "url": [
         "http://127.0.0.1:3000/",
         "http://127.0.0.1:3000/product",
-        "http://127.0.0.1:3000/benchmarks",
+        "http://127.0.0.1:3000/security",
         "http://127.0.0.1:3000/pricing"
       ],
       "numberOfRuns": 3,

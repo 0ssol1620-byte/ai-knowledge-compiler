@@ -59,8 +59,11 @@ export function ProcessingSceneWorkbench({
   const canvasPanel = (
     <PageCanvas page={selected} projection={projection} copy={copy} />
   );
-  const knowledgePanel = (
-    <KnowledgeRail scene={scene} projection={projection} copy={copy} />
+  const structurePanel = (
+    <StructureRail page={selected} projection={projection} copy={copy} />
+  );
+  const worldPanel = (
+    <WorldRail scene={scene} projection={projection} copy={copy} />
   );
 
   if (mobile) {
@@ -68,7 +71,8 @@ export function ProcessingSceneWorkbench({
       <section className={styles.mobileStack} aria-label={copy.sceneView}>
         {sourcePanel}
         {canvasPanel}
-        {knowledgePanel}
+        {structurePanel}
+        {worldPanel}
       </section>
     );
   }
@@ -79,16 +83,20 @@ export function ProcessingSceneWorkbench({
         orientation="horizontal"
         id="folynta-processing-scene"
       >
-        <FolyntaResizablePanel id="source" defaultSize="26" minSize="20">
+        <FolyntaResizablePanel id="source" defaultSize="20" minSize="16">
           {sourcePanel}
         </FolyntaResizablePanel>
         <FolyntaResizableHandle withHandle />
-        <FolyntaResizablePanel id="page" defaultSize="47" minSize="34">
+        <FolyntaResizablePanel id="page" defaultSize="34" minSize="26">
           {canvasPanel}
         </FolyntaResizablePanel>
         <FolyntaResizableHandle withHandle />
-        <FolyntaResizablePanel id="knowledge" defaultSize="27" minSize="20">
-          {knowledgePanel}
+        <FolyntaResizablePanel id="structure" defaultSize="20" minSize="16">
+          {structurePanel}
+        </FolyntaResizablePanel>
+        <FolyntaResizableHandle withHandle />
+        <FolyntaResizablePanel id="world" defaultSize="26" minSize="18">
+          {worldPanel}
         </FolyntaResizablePanel>
       </FolyntaResizableGroup>
     </section>
@@ -112,7 +120,7 @@ function SourceRail({
   return (
     <article className={styles.rail}>
       <header className={styles.panelHeader}>
-        <span>01 · {copy.collection}</span>
+        <span>01 · SOURCES</span>
         <strong>
           {scene
             ? copy.sourceSummary(scene.clusters.length, scene.total_pages)
@@ -203,7 +211,7 @@ function PageCanvas({
   return (
     <article className={styles.canvasPanel}>
       <header className={styles.panelHeader}>
-        <span>02 · {copy.pageIntelligence}</span>
+        <span>02 · READ</span>
         <strong>
           {page
             ? `${copy.page(page.page_number)} · ${page.status}`
@@ -266,7 +274,45 @@ function PageCanvas({
   );
 }
 
-function KnowledgeRail({
+function StructureRail({
+  page,
+  projection,
+  copy,
+}: {
+  page: ScenePage | null;
+  projection: ProcessingSceneModel;
+  copy: (typeof COPY)[keyof typeof COPY];
+}) {
+  const projected = page
+    ? projection.pages.find((item) => item.id === page.page_id)
+    : projection.pages[0];
+  const structure = [
+    [copy.regions, projected?.regionIds ?? []],
+    [copy.blocks, projected?.blockIds ?? []],
+    [copy.tables, projected?.tableIds ?? []],
+  ] as const;
+  return (
+    <article className={styles.rail}>
+      <header className={styles.panelHeader}>
+        <span>03 · STRUCTURE</span>
+        <strong>{copy.structureBody}</strong>
+      </header>
+      <dl className={styles.knowledgeCounts}>
+        {structure.map(([label, ids]) => (
+          <div key={label}><dt>{label}</dt><dd>{ids.length}</dd></div>
+        ))}
+      </dl>
+      <ol className={styles.milestones} aria-label={copy.milestones}>
+        {projection.milestones.slice(-6).map((milestone) => (
+          <li key={milestone.id}><span /><div><strong>{milestone.kind}</strong><small>#{milestone.sequence}</small></div></li>
+        ))}
+      </ol>
+      {projection.milestones.length === 0 ? <p className={styles.empty}>{copy.noMilestones}</p> : null}
+    </article>
+  );
+}
+
+function WorldRail({
   scene,
   projection,
   copy,
@@ -295,8 +341,8 @@ function KnowledgeRail({
   return (
     <article className={styles.rail}>
       <header className={styles.panelHeader}>
-        <span>03 · {copy.knowledge}</span>
-        <strong>{copy.knowledgeBody}</strong>
+        <span>04 · WORLD</span>
+        <strong>{copy.worldBody}</strong>
       </header>
       <dl className={styles.knowledgeCounts}>
         {deltas.map(([label, value]) => (
@@ -306,6 +352,15 @@ function KnowledgeRail({
           </div>
         ))}
       </dl>
+      <ol className={styles.milestones} aria-label={copy.actualWorldObjects}>
+        {[
+          ...(knowledge?.note_ids ?? []).map((id) => [copy.notes, id] as const),
+          ...(knowledge?.entity_ids ?? []).map((id) => [copy.entities, id] as const),
+          ...(knowledge?.relation_ids ?? []).map((id) => [copy.relations, id] as const),
+        ].slice(0, 12).map(([kind, id]) => (
+          <li key={`${kind}:${id}`}><span /><div><strong>{kind}</strong><small title={id}>{id.slice(0, 12)}</small></div></li>
+        ))}
+      </ol>
       <div
         className={styles.integritySummary}
         data-alert={Boolean(
@@ -331,19 +386,8 @@ function KnowledgeRail({
           </small>
         </span>
       </div>
-      <ol className={styles.milestones} aria-label={copy.milestones}>
-        {projection.milestones.slice(-6).map((milestone) => (
-          <li key={milestone.id}>
-            <span />
-            <div>
-              <strong>{milestone.kind}</strong>
-              <small>#{milestone.sequence}</small>
-            </div>
-          </li>
-        ))}
-      </ol>
-      {projection.milestones.length === 0 ? (
-        <p className={styles.empty}>{copy.noMilestones}</p>
+      {!knowledge || (knowledge.note_ids.length + knowledge.entity_ids.length + knowledge.relation_ids.length === 0) ? (
+        <p className={styles.empty}>{copy.noWorldObjects}</p>
       ) : null}
     </article>
   );
@@ -378,7 +422,11 @@ const COPY = {
       proofs: "Proofs",
     },
     knowledge: "Knowledge formation",
-    knowledgeBody: "Only persisted deltas enter this rail.",
+    structureBody: "Persisted regions, blocks, tables, and milestones only.",
+    worldBody: "Only persisted World IDs enter this rail.",
+    regions: "Regions",
+    blocks: "Blocks",
+    tables: "Tables",
     notes: "Notes",
     entities: "Entities",
     relations: "Relations",
@@ -389,6 +437,8 @@ const COPY = {
     noBlockers: "No persisted blocker code",
     milestones: "Persisted milestones",
     noMilestones: "No persisted milestone is available yet.",
+    actualWorldObjects: "Actual persisted World objects",
+    noWorldObjects: "No persisted World objects yet. No graph is synthesized.",
   },
   ko: {
     sceneView: "실시간 처리 장면",
@@ -417,7 +467,11 @@ const COPY = {
       proofs: "근거",
     },
     knowledge: "지식 형성",
-    knowledgeBody: "저장된 변화만 이 레일에 반영합니다.",
+    structureBody: "저장된 영역, 블록, 표, 마일스톤만 표시합니다.",
+    worldBody: "저장된 World ID만 표시합니다.",
+    regions: "영역",
+    blocks: "블록",
+    tables: "표",
     notes: "노트",
     entities: "엔터티",
     relations: "관계",
@@ -428,5 +482,7 @@ const COPY = {
     noBlockers: "저장된 차단 코드 없음",
     milestones: "저장된 마일스톤",
     noMilestones: "아직 저장된 마일스톤이 없습니다.",
+    actualWorldObjects: "실제 저장된 World 객체",
+    noWorldObjects: "저장된 World 객체가 없습니다. 그래프를 합성하지 않습니다.",
   },
 } as const;

@@ -52,7 +52,7 @@ function DemoSettingsPage() {
           </a>
           <a href="#billing">
             <CreditCard size={16} />
-            Plan & credits
+            Plan & usage
           </a>
         </nav>
 

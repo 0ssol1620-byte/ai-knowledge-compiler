@@ -89,11 +89,13 @@ export function ExportDialog({
   onClose,
   onExport,
   onVaultPreview,
+  onDownload,
   summary,
 }: {
   open: boolean;
   onClose: () => void;
   onExport?: (profiles: string[]) => Promise<ExportCreated>;
+  onDownload?: () => void;
   onVaultPreview?: (
     exportId: string,
     vault: File,
@@ -140,6 +142,7 @@ export function ExportDialog({
       if (vault && onVaultPreview) {
         setPreview(await onVaultPreview(result.exportId, vault, policy));
       } else {
+        onDownload?.();
         window.location.assign(apiAbsoluteUrl(result.downloadUrl));
         onClose();
       }
@@ -314,9 +317,10 @@ export function ExportDialog({
             <button
               type="button"
               className="primary-button"
-              onClick={() =>
-                window.location.assign(apiAbsoluteUrl(created.downloadUrl))
-              }
+              onClick={() => {
+                onDownload?.();
+                window.location.assign(apiAbsoluteUrl(created.downloadUrl));
+              }}
             >
               <DownloadSimple size={16} aria-hidden="true" />
               Download validated package

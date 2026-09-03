@@ -5,8 +5,6 @@ import {
   Bell,
   BracketsCurly,
   CaretDown,
-  CreditCard,
-  Flask,
   FolderOpen,
   GearSix,
   House,
@@ -31,30 +29,30 @@ import { normalizeSessionResponse, type SessionProfile } from "@/lib/session";
 
 const navigation = [
   { href: "/app/home", label: "Home", icon: House },
-  { href: "/app/projects", label: "Projects", icon: FolderOpen },
-  { href: "/quick-convert", label: "Documents", icon: Lightning },
-  { href: "/app/knowledge-bases", label: "Knowledge", icon: TreeStructure },
-  { href: "/app/jobs", label: "Jobs", icon: Pulse },
-  { href: "/app/exports", label: "Exports", icon: Flask },
+  { href: "/intake", label: "Sources", icon: FolderOpen },
+  { href: "/review", label: "Review", icon: ShieldCheck },
+  { href: "/knowledge-bases", label: "World", icon: TreeStructure },
+  { href: "/ask", label: "Ask", icon: MagnifyingGlass },
 ] as const;
 
 const secondaryNavigation = [
-  { href: "/app/api", label: "API", icon: BracketsCurly },
-  { href: "/app/usage", label: "Usage", icon: CreditCard },
-  { href: "/app/settings/security", label: "Security", icon: ShieldCheck },
+  { href: "/app/settings/integrations", label: "Connections", icon: Lightning },
+  { href: "/activity", label: "Activity", icon: Pulse },
+  { href: "/app/api", label: "Developer", icon: BracketsCurly },
   { href: "/settings", label: "Settings", icon: GearSix },
 ] as const;
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
 
 const COMMAND_ENTRIES = [
-  ["/quick-convert", "Upload documents", "U"],
-  ["/projects", "Open projects", "P"],
-  ["/knowledge-bases", "Search entities", "E"],
+  ["/app/home", "Open Home", "H"],
+  ["/intake", "Add sources", "S"],
+  ["/knowledge-bases", "Explore World", "W"],
   ["/review", "Open Review Studio", "R"],
-  ["/benchmarks", "Run benchmark", "B"],
-  ["/settings", "Workspace settings", "S"],
-  ["/", "Product site", "H"],
+  ["/ask", "Ask a World", "A"],
+  ["/activity", "Open Activity", "J"],
+  ["/settings", "Workspace settings", ","],
+  ["/", "Product site", "M"],
 ] as const satisfies ReadonlyArray<readonly [string, string, string]>;
 
 export function AuthenticatedShell({ children }: { children: ReactNode }) {
@@ -69,6 +67,7 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<SessionProfile>();
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
+  const [privacyMode, setPrivacyMode] = useState(false);
   const setSession = useAuthStore((state) => state.setSession);
 
   useEffect(() => {
@@ -184,7 +183,13 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
     .toUpperCase();
 
   return (
-    <div className={clsx("app-frame", collapsed && "sidebar-collapsed")}>
+    <div
+      className={clsx(
+        "app-frame",
+        collapsed && "sidebar-collapsed",
+        privacyMode && "privacy-mode",
+      )}
+    >
       {DEMO_MODE && (
         <div className="demo-mode-banner" role="status">
           Demo workspace · No documents are processed and no credits are used.
@@ -306,16 +311,20 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
             </button>
           </div>
           <div className="topbar-actions">
-            <div className="credit-chip" title="Available credits">
-              <span>
-                {DEMO_MODE
-                  ? "Demo"
-                  : profile
-                    ? (profile.creditBalance?.toLocaleString() ?? "—")
-                    : "—"}
-              </span>
-              <small>credits</small>
-            </div>
+            <Link href="/knowledge-bases" className="topbar-status-link">
+              <small>WORLD</small><strong>Open current state</strong>
+            </Link>
+            <Link href="/activity" className="topbar-status-link">
+              <small>ACTIVITY</small><strong>Inspect receipts</strong>
+            </Link>
+            <button
+              type="button"
+              className="privacy-mode-toggle"
+              aria-pressed={privacyMode}
+              onClick={() => setPrivacyMode((value) => !value)}
+            >
+              {privacyMode ? "Show content" : "Privacy mode"}
+            </button>
             <Link
               className="icon-button"
               href="/notices"
@@ -347,10 +356,11 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
         <nav className="mobile-app-nav" aria-label="Mobile navigation">
           {(
             [
-              { href: "/home", label: "Overview", icon: House },
-              { href: "/projects", label: "Projects", icon: FolderOpen },
-              { href: "/activity", label: "Activity", icon: Pulse },
-              { href: "/settings", label: "Account", icon: GearSix },
+              { href: "/app/home", label: "Home", icon: House },
+              { href: "/intake", label: "Sources", icon: FolderOpen },
+              { href: "/knowledge-bases", label: "World", icon: TreeStructure },
+              { href: "/ask", label: "Ask", icon: MagnifyingGlass },
+              { href: "/settings", label: "More", icon: GearSix },
             ] as const
           ).map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href);

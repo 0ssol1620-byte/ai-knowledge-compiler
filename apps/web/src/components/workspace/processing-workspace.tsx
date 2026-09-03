@@ -177,7 +177,7 @@ function DemoProcessingWorkspace() {
             <span>
               {processingStarted
                 ? `Paused demo · ${availablePages} of ${totalPages} pages available`
-                : "No credits are used before approval."}
+                : "No charge is made before approval."}
             </span>
           </div>
         </div>
@@ -210,21 +210,21 @@ function DemoProcessingWorkspace() {
         <div className="cost-meter">
           <span>
             <small>Estimated</small>
-            <strong>42</strong>
+            <strong>$0.42</strong>
           </span>
           <span>
             <small>Used</small>
-            <strong>31</strong>
+            <strong>$0.31</strong>
           </span>
           <span>
             <small>Reserved</small>
-            <strong>7</strong>
+            <strong>$0.07</strong>
           </span>
           <span>
             <small>Maximum</small>
-            <strong>48</strong>
+            <strong>$0.48</strong>
           </span>
-          <em>credits</em>
+          <em>USD</em>
         </div>
       </section>
 
@@ -515,21 +515,21 @@ function EstimateDialog({
         </div>
         <div className="estimate-credit">
           <div>
-            <span>Estimated credits</span>
+            <span>Estimated charge</span>
             <strong>
-              {demoEstimate.credit_min}–{demoEstimate.credit_max}
+              ${demoEstimate.customer_charge_min_usd.toFixed(2)}–${demoEstimate.customer_charge_estimate_usd.toFixed(2)}
             </strong>
           </div>
           <p>
-            Reserve up to <strong>{demoEstimate.credit_max} credits</strong>.
-            Unused credits are returned immediately.
+            Authorize up to <strong>${demoEstimate.customer_charge_max_usd.toFixed(2)}</strong>.
+            Unused authorization is released immediately.
           </p>
         </div>
         <label className="consent-check">
           <input ref={consentRef} type="checkbox" defaultChecked />
           <span>
-            I reviewed the {demoEstimate.credit_max}-credit maximum reservation
-            and automatic return policy for failed pages.
+            I reviewed the ${demoEstimate.customer_charge_max_usd.toFixed(2)} maximum
+            charge and automatic release policy for failed pages.
           </span>
         </label>
         <div className="modal-actions">

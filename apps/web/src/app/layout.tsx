@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
 
 import { AppShell } from "@/components/app-shell";
+import { LocaleProvider } from "@/components/locale-provider";
 import { Providers } from "@/components/providers";
+import { getRequestLocale } from "@/lib/locale-server";
 import { wantedSans } from "./fonts";
 
 // Token layer first (§6.1), then the four legacy sheets in their existing
@@ -74,12 +77,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  const locale = await getRequestLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={wantedSans.variable}
       suppressHydrationWarning
     >
@@ -88,8 +92,11 @@ export default function RootLayout({
           Skip to main content
         </a>
         <Providers>
-          <AppShell>{children}</AppShell>
+          <LocaleProvider locale={locale}>
+            <AppShell>{children}</AppShell>
+          </LocaleProvider>
         </Providers>
+        {process.env.VERCEL === "1" && <Analytics />}
       </body>
     </html>
   );

@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 
+import { useStructaraLocale } from "@/components/locale-provider";
+
 /**
  * A recording of the ingest path actually running.
  *
@@ -31,18 +33,20 @@ import { useRef, useState } from "react";
  * necessary.
  */
 export function TrialRunFilm() {
+  const { locale } = useStructaraLocale();
+  const korean = locale === "ko";
   const video = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
   return (
     <section className="tv-film" id="watch">
       <div className="tv-film-copy">
-        <p className="tv-film-eyebrow">Recorded, not animated</p>
-        <h2>Watch a filing go through the gate.</h2>
+        <p className="tv-film-eyebrow">{korean ? "애니메이션이 아닌 실제 기록" : "Recorded, not animated"}</p>
+        <h2>{korean ? "공시 문서가 처리 게이트를 통과하는 과정을 확인하세요." : "Watch a filing go through the gate."}</h2>
         <p className="tv-film-lead">
-          A three-page public filing dropped on the page above. Security
-          scanning and preflight run before anything reads the document, and the
-          page count at the end is what the parser counted.
+          {korean
+            ? "위 화면에 3페이지 공개 공시를 넣었습니다. 문서를 읽기 전에 보안 검사와 사전 분석이 실행되며, 마지막 페이지 수는 파서가 실제로 센 결과입니다."
+            : "A three-page public filing dropped on the page above. Security scanning and preflight run before anything reads the document, and the page count at the end is what the parser counted."}
         </p>
       </div>
 
@@ -73,15 +77,14 @@ export function TrialRunFilm() {
             onClick={() => void video.current?.play()}
           >
             <span aria-hidden="true">▶</span>
-            Play the run · 13 seconds, no sound
+            {korean ? "실행 재생 · 13초 · 무음" : "Play the run · 13 seconds, no sound"}
           </button>
         )}
 
         <figcaption className="tv-film-caption">
-          Real run against the live ingest API. It covers upload, security
-          scanning and preflight — five of the eight pipeline stages. Extraction,
-          knowledge construction and packaging run on workers behind an account
-          and are not shown here.
+          {korean
+            ? "실제 수집 API 실행 기록입니다. 8개 파이프라인 단계 중 업로드, 보안 검사, 사전 분석까지 5개 단계를 다룹니다. 추출, 지식 구성, 패키징은 계정 뒤의 워커에서 실행되므로 여기에는 표시하지 않습니다."
+            : "Real run against the live ingest API. It covers upload, security scanning and preflight — five of the eight pipeline stages. Extraction, knowledge construction and packaging run on workers behind an account and are not shown here."}
         </figcaption>
       </figure>
     </section>

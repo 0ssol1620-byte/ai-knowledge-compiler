@@ -42,6 +42,8 @@ import {
   type CollectionProcessingRun,
   type CollectionState,
 } from "@/lib/collection-runtime-client";
+import { recordProductAnalyticsEvent } from "@/lib/api-client";
+import { formatUsd } from "@/lib/customer-pricing";
 import { projectProcessingScene } from "@/lib/processing-scene-model";
 import {
   collectionEventStage,
@@ -93,6 +95,7 @@ export function CollectionProcessingTheater({
   const [collectionScene, setCollectionScene] =
     useState<CollectionScene | null>(null);
   const eventBuffer = useRef<CollectionEvent[]>([]);
+  const completionEventRecorded = useRef(false);
   const sequence = useRef(
     Math.max(
       initialSnapshot?.latest_sequence ?? 0,
@@ -100,6 +103,16 @@ export function CollectionProcessingTheater({
     ),
   );
   const terminal = snapshot ? terminalCollectionState(snapshot.status) : false;
+
+  useEffect(() => {
+    if (snapshot?.status !== "COMPLETED" || completionEventRecorded.current) {
+      return;
+    }
+    completionEventRecorded.current = true;
+    void recordProductAnalyticsEvent({ event_type: "compile_completed" }).catch(
+      () => undefined,
+    );
+  }, [snapshot?.status]);
 
   const mergeEvents = useCallback((incoming: readonly CollectionEvent[]) => {
     if (incoming.length === 0) return;
@@ -366,7 +379,7 @@ export function CollectionProcessingTheater({
     try {
       const recovered = await retryCollectionProcessing(
         collectionId,
-        retryRequiresHigherCap ? retryHardCap : undefined,
+        retryRequiresHigherCap ? String(proposedHardCap) : undefined,
       );
       setRun(recovered);
       await reconcile();
@@ -508,7 +521,7 @@ export function CollectionProcessingTheater({
                   type="number"
                   inputMode="decimal"
                   min={Number.isFinite(currentHardCap) ? currentHardCap : 0}
-                  step="0.01"
+                  step="0.000001"
                   value={retryHardCap}
                   aria-label={copy.newHardCap}
                   aria-describedby="collection-recovery-cap-hint"
@@ -516,7 +529,9 @@ export function CollectionProcessingTheater({
                 />
                 <small id="collection-recovery-cap-hint">
                   {copy.hardCapHint(
-                    String(run?.hard_cap_credits ?? snapshot.credit_hard_cap),
+                    formatInternalUnits(
+                      run?.hard_cap_credits ?? snapshot.credit_hard_cap,
+                    ),
                   )}
                 </small>
               </label>
@@ -782,12 +797,25 @@ export function CollectionProcessingTheater({
                 <h2 id="collection-credit-title">{copy.credits}</h2>
               </header>
               <dl className="collection-credit-ledger">
-                <Credit label={copy.reserved} value={run?.credits_reserved} />
-                <Credit label={copy.consumed} value={run?.credits_consumed} />
-                <Credit label={copy.refunded} value={run?.credits_refunded} />
-                <Credit label={copy.released} value={run?.credits_released} />
-                <Credit label={copy.hardCap} value={run?.hard_cap_credits} />
+                <Credit
+                  label={copy.estimated}
+                  value={snapshot?.customer_charge_estimate_usd}
+                />
+                <Credit
+                  label={copy.consumed}
+                  value={snapshot?.customer_charge_charged_usd}
+                />
+                <Credit
+                  label={copy.hardCap}
+                  value={snapshot?.customer_max_charge_usd}
+                />
               </dl>
+              <details className="collection-cost-advanced">
+                <summary>{copy.advancedReceipt}</summary>
+                <code>
+                  {copy.internalUnits}: reserved {run?.credits_reserved ?? "—"} · consumed {run?.credits_consumed ?? "—"} · refunded {run?.credits_refunded ?? "—"} · released {run?.credits_released ?? "—"} · cap {run?.hard_cap_credits ?? "—"}
+                </code>
+              </details>
               <p className="collection-policy-note">
                 <ShieldCheck size={16} weight="fill" aria-hidden="true" />
                 {run?.overage_policy ?? copy.policyPending}
@@ -832,12 +860,37 @@ export function CollectionProcessingTheater({
         </>
       )}
 
+      {snapshot?.status === "COMPLETED" && (
+        <section className="collection-world-ready" aria-labelledby="collection-world-ready-title">
+          <div>
+            <p>{copy.worldReadyEyebrow}</p>
+            <h2 id="collection-world-ready-title">{copy.worldReady}</h2>
+          </div>
+          <dl>
+            <CompletionMetric label={copy.sources} value={snapshot.upload?.total_files} locale={locale} />
+            <CompletionMetric label={copy.objects} value={collectionScene ? collectionScene.knowledge.entity_count + collectionScene.knowledge.note_count : undefined} locale={locale} />
+            <CompletionMetric label={copy.relationships} value={collectionScene?.knowledge.relation_count} locale={locale} />
+            <CompletionMetric label={copy.evidenceClaims} value={collectionScene?.knowledge.note_count} locale={locale} />
+            <CompletionMetric label={copy.reviewItems} value={collectionScene?.integrity.unresolved_count} locale={locale} />
+          </dl>
+          <nav aria-label={copy.worldReadyActions}>
+            <Link className="primary-button" href={`/knowledge-bases?collection=${collectionId}`}>{copy.exploreWorld}</Link>
+            <Link className="secondary-button" href={`/integrity?collection=${collectionId}`}>{copy.reviewItems}</Link>
+            <Link className="secondary-button" href={`/ask?collection=${collectionId}`}>{copy.askWorld}</Link>
+            <Link className="secondary-button" href={`/exports?collection=${collectionId}`}>{copy.downloadPackage}</Link>
+          </nav>
+        </section>
+      )}
+
       <footer className="collection-theater-footer">
         <Link href={`/integrity?collection=${collectionId}`}>
           {copy.integrity}
         </Link>
         <Link href={`/knowledge-bases?collection=${collectionId}`}>
           {copy.knowledge}
+        </Link>
+        <Link href={`/ask?collection=${collectionId}`}>
+          Ask this World
         </Link>
       </footer>
     </div>
@@ -965,9 +1018,31 @@ function Credit({
   return (
     <div>
       <dt>{label}</dt>
-      <dd>{value ?? "—"}</dd>
+      <dd>{formatCharge(value)}</dd>
     </div>
   );
+}
+
+function CompletionMetric({
+  label,
+  value,
+  locale,
+}: {
+  label: string;
+  value: number | undefined;
+  locale: StructaraLocale;
+}) {
+  return <div><dt>{label}</dt><dd>{value === undefined ? "Unavailable" : formatLocaleNumber(locale, value)}</dd></div>;
+}
+
+function formatCharge(value: string | number | undefined): string {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? formatUsd(amount) : "—";
+}
+
+function formatInternalUnits(value: string | number | undefined): string {
+  const units = Number(value);
+  return Number.isFinite(units) ? `${units} units` : "—";
 }
 
 function processingStages(
@@ -1095,15 +1170,29 @@ const COPY = {
     duplicateFiles: "Duplicates",
     failedFiles: "Failed",
     manifestHash: "Manifest SHA-256",
-    credits: "Credit ledger",
+    credits: "Cost receipt",
     evidence: "Event evidence",
-    reserved: "Reserved",
-    consumed: "Consumed",
+    estimated: "Estimated",
+    reserved: "Internal reserved",
+    consumed: "Charged",
     refunded: "Refunded",
     released: "Released",
-    hardCap: "Hard cap",
+    hardCap: "Maximum charge",
+    advancedReceipt: "Advanced receipt",
+    internalUnits: "Internal routing units · not customer currency",
     policyPending: "Overage policy pending",
     noEvents: "No persisted collection event is available yet.",
+    worldReadyEyebrow: "Processing complete",
+    worldReady: "Your Compiled World is ready",
+    worldReadyActions: "Compiled World actions",
+    sources: "Sources",
+    objects: "Objects",
+    relationships: "Relationships",
+    evidenceClaims: "Evidence-bound claims",
+    reviewItems: "Review items",
+    exploreWorld: "Explore World",
+    askWorld: "Ask your World",
+    downloadPackage: "Download package",
     pause: "Pause processing",
     resume: "Resume processing",
     applying: "Applying…",
@@ -1115,9 +1204,9 @@ const COPY = {
     recoveryTitle: "Resume from the last verified checkpoint",
     recoveryBody:
       "FOLYNTA will create an idempotent retry from durable evidence and keep the approved credit boundary.",
-    newHardCap: "New approved hard cap",
+    newHardCap: "New internal routing cap",
     hardCapHint: (current: string) =>
-      `Enter a value above the previous ${current}-credit cap. This explicitly approves the new limit.`,
+      `Enter an internal cap above the previous ${current}. The approved customer dollar maximum does not change.`,
     creditRecoveryBody:
       "The approved overage needs more available credits. Add credits first; the retry remains idempotent and keeps the same evidence boundary.",
     addCredits: "Open credit balance",
@@ -1180,15 +1269,29 @@ const COPY = {
     duplicateFiles: "중복",
     failedFiles: "실패",
     manifestHash: "매니페스트 SHA-256",
-    credits: "크레딧 원장",
+    credits: "비용 영수증",
     evidence: "이벤트 근거",
-    reserved: "예약",
-    consumed: "사용",
+    estimated: "예상 청구액",
+    reserved: "내부 예약량",
+    consumed: "청구 금액",
     refunded: "환불",
     released: "해제",
-    hardCap: "최대 한도",
+    hardCap: "최대 청구액",
+    advancedReceipt: "고급 영수증",
+    internalUnits: "내부 라우팅 단위 · 고객 통화 아님",
     policyPending: "초과 정책 대기 중",
     noEvents: "아직 저장된 컬렉션 이벤트가 없습니다.",
+    worldReadyEyebrow: "처리 완료",
+    worldReady: "컴파일된 World가 준비되었습니다",
+    worldReadyActions: "컴파일된 World 작업",
+    sources: "소스",
+    objects: "객체",
+    relationships: "관계",
+    evidenceClaims: "근거 연결 주장",
+    reviewItems: "검토 항목",
+    exploreWorld: "World 탐색",
+    askWorld: "World에 질문",
+    downloadPackage: "패키지 다운로드",
     pause: "처리 일시정지",
     resume: "처리 재개",
     applying: "적용 중…",
@@ -1200,9 +1303,9 @@ const COPY = {
     recoveryTitle: "마지막 검증 지점에서 다시 시작",
     recoveryBody:
       "저장된 근거를 기준으로 중복 실행 없이 재시도하며, 승인된 크레딧 한도를 그대로 지킵니다.",
-    newHardCap: "새 승인 크레딧 한도",
+    newHardCap: "새 내부 라우팅 한도",
     hardCapHint: (current: string) =>
-      `기존 ${current} 크레딧보다 큰 값을 입력하면 새 한도를 명시적으로 승인합니다.`,
+      `기존 내부 한도 ${current}보다 큰 값을 입력합니다. 고객이 승인한 달러 상한은 바뀌지 않습니다.`,
     creditRecoveryBody:
       "승인된 초과 처리를 계속하려면 사용 가능한 크레딧이 더 필요합니다. 먼저 충전한 뒤 같은 근거와 한도 정책으로 안전하게 재시도하세요.",
     addCredits: "크레딧 잔액 확인",

@@ -207,6 +207,11 @@ export interface PreflightEstimate {
   figures: number;
   credit_min: number;
   credit_max: number;
+  customer_charge_min_usd: number;
+  customer_charge_estimate_usd: number;
+  customer_charge_max_usd: number;
+  standard_page_rate_usd: number;
+  routed_page_rate_usd: number;
   third_party_model_api: boolean;
   expected_duration_min: number;
   expected_duration_max: number;

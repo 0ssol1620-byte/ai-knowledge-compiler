@@ -1,21 +1,24 @@
-import type { Metadata, Route } from "next";
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import {
-  type CompatibilityQuery,
-  integrityCompatibilityTarget,
-} from "@/lib/integrity-compatibility";
+import { ReviewStudio } from "@/components/review-studio";
 import { getRequestLocale } from "@/lib/locale-server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
-  return { title: locale === "ko" ? "무결성 콘솔" : "Integrity Console" };
+  return { title: locale === "ko" ? "검토" : "Review" };
 }
 
-export default async function ReviewCompatibilityPage({
+export default async function ReviewPage({
   searchParams,
 }: {
-  searchParams: Promise<CompatibilityQuery>;
+  searchParams: Promise<{ job?: string; document?: string }>;
 }) {
-  redirect(integrityCompatibilityTarget(await searchParams) as Route);
+  const [query, locale] = await Promise.all([searchParams, getRequestLocale()]);
+  return (
+    <ReviewStudio
+      jobId={query.job ?? null}
+      documentId={query.document ?? "unselected"}
+      locale={locale}
+    />
+  );
 }

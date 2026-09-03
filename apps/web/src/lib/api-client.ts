@@ -127,6 +127,26 @@ export async function analyzeDocument(
 }
 
 type ProductAnalyticsEvent =
+  | {
+      event_type:
+        | "landing_demo_started"
+        | "landing_demo_completed"
+        | "explore_object_opened"
+        | "explore_citation_opened"
+        | "pricing_viewed"
+        | "signup_started"
+        | "source_added"
+        | "connector_started"
+        | "compile_started"
+        | "compile_completed"
+        | "review_opened"
+        | "review_completed"
+        | "world_opened"
+        | "evidence_opened"
+        | "ask_started"
+        | "ask_cited_answer"
+        | "package_downloaded";
+    }
   | { event_type: "estimate_viewed"; document_id: string }
   | { event_type: "result_first_viewed"; job_id: string }
   | {

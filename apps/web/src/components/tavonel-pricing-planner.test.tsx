@@ -6,26 +6,25 @@ import { TavonelPricingPlanner } from "@/components/tavonel-pricing-planner";
 afterEach(cleanup);
 
 describe("TavonelPricingPlanner", () => {
-  it("switches audience without hiding the estimator", () => {
+  it("shows every page-based plan without hiding the estimator", () => {
     render(<TavonelPricingPlanner />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Teams" }));
 
     expect(screen.getByRole("heading", { name: "Team" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Business" })).toBeVisible();
-    expect(screen.getByRole("slider", { name: /Monthly pages/ })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Scale" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Enterprise" })).toBeVisible();
+    expect(screen.getByRole("slider", { name: /Detected pages/ })).toBeVisible();
   });
 
-  it("updates the bounded credit estimate from page volume", () => {
+  it("updates the bounded dollar estimate from page volume", () => {
     render(<TavonelPricingPlanner />);
 
-    fireEvent.change(screen.getByRole("slider", { name: /Monthly pages/ }), {
-      target: { value: "50000" },
+    fireEvent.change(screen.getByRole("slider", { name: /Detected pages/ }), {
+      target: { value: "5000" },
     });
 
-    expect(screen.getByText("50,000")).toBeVisible();
-    expect(screen.getByText("Business")).toBeVisible();
-    expect(screen.getByText("68,200–87,200")).toBeVisible();
-    expect(screen.getByText("87,200 credits")).toBeVisible();
+    expect(screen.getByText("5,000")).toBeVisible();
+    expect(screen.getByText("$200.00")).toBeVisible();
+    expect(screen.getByText("$211.00")).toBeVisible();
+    expect(screen.getByText("$300.00")).toBeVisible();
   });
 });

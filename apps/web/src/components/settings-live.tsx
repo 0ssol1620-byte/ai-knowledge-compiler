@@ -172,7 +172,7 @@ export function SettingsLive() {
           {canManageBilling && (
             <a href="#billing">
               <CreditCard size={16} aria-hidden="true" />
-              Credits & billing
+              Usage & billing
             </a>
           )}
           {canManage && (
@@ -385,7 +385,7 @@ export function SettingsLive() {
             <section className="settings-section" id="billing">
               <header>
                 <div>
-                  <h2>Credits & billing</h2>
+                  <h2>Compile usage & billing</h2>
                   <p>
                     Only payment ledger entries confirmed by business checkout
                     and signed webhooks are shown.

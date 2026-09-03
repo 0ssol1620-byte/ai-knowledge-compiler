@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
 
 /**
  * §20 evidence pass. One project per verification viewport (see
@@ -13,13 +15,48 @@ import { expect, test } from "@playwright/test";
 const ROUTES = [
   "/",
   "/product",
-  "/benchmarks",
+  "/product/knowledge-compiler",
+  "/product/document-understanding",
+  "/product/compiled-world",
+  "/solutions/ai-ready-knowledge",
+  "/integrations",
   "/security",
   "/pricing",
   "/quick-convert",
   "/app/home",
+  "/ask",
+  "/knowledge-bases",
   "/documents/sample-dart/processing",
 ] as const;
+
+const CAPTURE_ROUTES = [
+  ["marketing-home", "/"],
+  ["product-overview", "/product"],
+  ["workspace-home", "/app/home"],
+  ["compiled-world", "/knowledge-bases"],
+] as const;
+
+test("captures marketing and product visual evidence", async ({ page }, testInfo) => {
+  const outputDirectory = path.join(
+    process.cwd(),
+    "artifacts",
+    "visual-qa",
+    "2026-09-02",
+    testInfo.project.name,
+  );
+  await mkdir(outputDirectory, { recursive: true });
+
+  for (const [name, route] of CAPTURE_ROUTES) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    await page.screenshot({
+      path: path.join(outputDirectory, `${name}.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
+  }
+});
 
 for (const route of ROUTES) {
   test(`${route} has no horizontal overflow`, async ({ page }) => {
@@ -90,11 +127,18 @@ test("public routes log no console errors", async ({ page }) => {
     }
   });
 
-  for (const route of ["/", "/product", "/benchmarks"]) {
+  for (const route of ["/", "/product", "/integrations", "/pricing"]) {
     await page.goto(route, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
   }
 
   expect(errors).toEqual([]);
   expect(failedRequests).toEqual([]);
+});
+
+test("unapproved proof routes stay unpublished", async ({ page }) => {
+  for (const route of ["/customers", "/benchmarks", "/research/experiments"]) {
+    const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    expect(response?.status(), route).toBe(404);
+  }
 });

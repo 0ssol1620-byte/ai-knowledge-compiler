@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+test.describe.configure({ timeout: 120_000 });
+
+test.beforeEach(async ({ context }) => {
+  await context.addCookies([
+    { name: "akc_locale", value: "en", url: "http://127.0.0.1:3000" },
+  ]);
+});
+
 const representativeRoutes = [
   "/",
   "/product/verify",
@@ -9,7 +17,7 @@ const representativeRoutes = [
   "/quick-convert",
   "/intake",
   "/integrity",
-  "/benchmarks",
+  "/pricing",
   "/projects",
   "/workspace",
   "/knowledge-bases",
@@ -45,9 +53,21 @@ test("representative public and product surfaces remain usable across the releas
         name: "Mobile processing views",
       });
       await expect(views).toBeVisible();
-      await views.getByRole("button", { name: "Source" }).click();
+      const sourceView = views.getByRole("button", { name: "Source" });
+      await expect
+        .poll(async () => {
+          await sourceView.click();
+          return sourceView.getAttribute("aria-pressed");
+        })
+        .toBe("true");
       await expect(page.getByLabel("Source document")).toBeVisible();
-      await views.getByRole("button", { name: "Result" }).click();
+      const resultView = views.getByRole("button", { name: "Result" });
+      await expect
+        .poll(async () => {
+          await resultView.click();
+          return resultView.getAttribute("aria-pressed");
+        })
+        .toBe("true");
       await expect(page.getByLabel("Markdown output")).toBeVisible();
     }
 

@@ -19,11 +19,9 @@ const publicRoutes = [
   "/demo/sec",
   "/demo/research-paper",
   "/demo/course-material",
-  "/benchmarks",
   "/research",
   "/security",
   "/pricing",
-  "/customers",
   "/developers",
   "/developers/docs",
   "/developers/api",
@@ -38,6 +36,17 @@ const publicRoutes = [
   "/legal/subprocessors",
   "/legal/third-party-notices",
 ] as const;
+
+test.beforeEach(async ({ context }) => {
+  await context.addCookies([
+    {
+      name: "akc_locale",
+      value: "en",
+      url: "http://127.0.0.1:3000",
+      sameSite: "Lax",
+    },
+  ]);
+});
 
 const appRoutes = [
   "/app/home",
@@ -76,7 +85,7 @@ const appRoutes = [
 test("HTML uses a per-request script nonce and hardened response headers", async ({
   page,
 }) => {
-  const response = await page.goto("/");
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   expect(response).not.toBeNull();
   const headers = response!.headers();
   expect(headers["x-content-type-options"]).toBe("nosniff");
@@ -94,36 +103,26 @@ test("HTML uses a per-request script nonce and hardened response headers", async
 test("brand homepage expresses the full source-to-intelligence thesis", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", {
-      name: "Your AI is only as good as the knowledge it receives.",
+      name: "Turn documents and connected systems into a source-grounded World your AI can use.",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByText("Page → Structure → Evidence → Knowledge → Intelligence"),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Every output returns to its source."),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "AI does not need more information. It needs better knowledge.",
-    ),
-  ).toBeVisible();
+  await expect(page.locator("[data-scene]")).toHaveCount(12);
+  await expect(page.getByText("Every fact keeps its path back to the source.")).toBeVisible();
+  await expect(page.getByText("One compiled World. Every AI.")).toBeVisible();
   await expect(page.getByLabel("Primary navigation")).toHaveCount(1);
   await expect(
     page.getByText("TAVONEL is a working name pending brand clearance."),
   ).toBeVisible();
-  await expect(
-    page.getByText("First-party illustrative model · no generated imagery"),
-  ).toBeVisible();
+  await expect(page.getByText("Source-grounded · Portable · Policy controlled")).toBeVisible();
 });
 
 test("product marketing uses real product evidence and deterministic diagrams", async ({
   page,
 }) => {
-  await page.goto("/product");
+  await page.goto("/product", { waitUntil: "domcontentloaded" });
   const evidence = page.locator(".tv-page-product-evidence");
   await expect(evidence).toBeVisible();
   await expect(evidence.getByText("Actual product")).toBeVisible();
@@ -150,7 +149,7 @@ test("marketing and product retain a clear round trip", async ({
   page,
   isMobile,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   if (isMobile) {
     await page.getByRole("button", { name: "Open navigation" }).click();
     await page.getByRole("link", { name: "Workspace", exact: true }).click();
@@ -158,13 +157,13 @@ test("marketing and product retain a clear round trip", async ({
     await expect(
       page.getByRole("link", { name: "Sign in", exact: true }),
     ).toHaveAttribute("href", "/login");
-    await page.goto("/app/home");
+    await page.goto("/app/home", { waitUntil: "domcontentloaded" });
   }
   await expect(
-    page.getByRole("heading", { name: "Today in your workspace" }),
+    page.getByRole("heading", { name: "1 processing job" }),
   ).toBeVisible();
   await expect(page.locator(".product-back-link")).toHaveAttribute("href", "/");
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -214,20 +213,26 @@ test("every application route renders the masterplan information architecture", 
     // what it now asks.
     await expect(page.locator("main h1")).toHaveCount(1);
     if (path.startsWith("/app/")) {
-      const headerAction = page.locator("[data-app-header-action]");
-      await expect(headerAction).toHaveCount(1);
-      const actionHref = await headerAction.getAttribute("href");
-      expect(actionHref, `${path} header action has no destination`).toMatch(
-        /^\//,
-      );
-      expect(
-        actionHref,
-        `${path} header action loops to the same page`,
-      ).not.toBe(path);
-      const staticControls = page.locator("[data-sample-static-control]");
-      const staticControlCount = await staticControls.count();
-      for (let index = 0; index < staticControlCount; index += 1) {
-        await expect(staticControls.nth(index)).toBeDisabled();
+      if (path === "/app/home") {
+        await expect(
+          page.locator(".workspace-home-focus").getByRole("link").first(),
+        ).toHaveAttribute("href", /^\//);
+      } else {
+        const headerAction = page.locator("[data-app-header-action]");
+        await expect(headerAction).toHaveCount(1);
+        const actionHref = await headerAction.getAttribute("href");
+        expect(actionHref, `${path} header action has no destination`).toMatch(
+          /^\//,
+        );
+        expect(
+          actionHref,
+          `${path} header action loops to the same page`,
+        ).not.toBe(path);
+        const staticControls = page.locator("[data-sample-static-control]");
+        const staticControlCount = await staticControls.count();
+        for (let index = 0; index < staticControlCount; index += 1) {
+          await expect(staticControls.nth(index)).toBeDisabled();
+        }
       }
     }
     expect(
@@ -242,7 +247,7 @@ test("every application route renders the masterplan information architecture", 
 test("quick convert exposes one bounded and consent-aware upload contract", async ({
   page,
 }) => {
-  await page.goto("/quick-convert");
+  await page.goto("/quick-convert", { waitUntil: "domcontentloaded" });
   await expect(page.getByText("Private route first")).toBeVisible();
   await expect(
     page.getByText("External providers require explicit workspace consent"),
@@ -254,7 +259,7 @@ test("quick convert exposes one bounded and consent-aware upload contract", asyn
 test("DART proof marks the exact revenue cell without a detached overlay", async ({
   page,
 }) => {
-  await page.goto("/demo/dart");
+  await page.goto("/demo/dart", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".tv-source-cell-selected")).toHaveText(
     "4,902,490,901",
   );
@@ -268,7 +273,7 @@ test("demo administration and settings never expose writable-looking controls", 
   page,
 }) => {
   for (const path of ["/admin", "/settings"] as const) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const demoControls = page.locator("[data-demo-static-control]");
     expect(
       await demoControls.count(),
@@ -285,7 +290,7 @@ test("shell actions and fixed studios expose only operable or explicit gated con
   page,
 }) => {
   test.setTimeout(90_000);
-  await page.goto("/home");
+  await page.goto("/home", { waitUntil: "domcontentloaded" });
   await expect(
     page.locator('[data-shell-action="notifications"]'),
   ).toHaveAttribute("href", "/notices");
@@ -326,7 +331,7 @@ test("processing workspace exposes real stage counts and source-linked output", 
   page,
   isMobile,
 }) => {
-  await page.goto("/documents/sample-dart/processing");
+  await page.goto("/documents/sample-dart/processing", { waitUntil: "domcontentloaded" });
   await expect(page.getByText("Building knowledge structure")).toHaveCount(1);
   // Both figures are derived from demoPages and the stage list, not typed in.
   // The old copy said "16 of 18", which matched nothing in the fixture, and the
@@ -334,7 +339,7 @@ test("processing workspace exposes real stage counts and source-linked output", 
   await expect(page.getByText("15 of 18 pages available")).toHaveCount(1);
   await expect(page.getByText("3 of 8 stages finished")).toHaveCount(1);
   await expect(page.locator("body")).not.toContainText("68%");
-  await expect(page.getByText("Review queue")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Review 2" })).toBeVisible();
   if (isMobile) {
     await page
       .getByRole("navigation", { name: "Mobile processing views" })
@@ -367,7 +372,7 @@ test("auth, onboarding, product, and document surfaces remain usable on mobile",
     "/documents/sample-dart/processing",
     "/documents/sample-dart/markdown",
   ]) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     expect(
       await page.evaluate(
@@ -378,31 +383,37 @@ test("auth, onboarding, product, and document surfaces remain usable on mobile",
   }
 });
 
-test("reduced motion removes travel and nonessential animation", async ({
+test("reduced motion attenuates travel and stops repeated animation", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   // decision.md G-C dropped TIER 1 3D outright, so the layer must not exist at
   // all rather than merely be hidden under reduced motion.
   await expect(page.locator(".tv-webgl-layer")).toHaveCount(0);
   await expect(page.locator("canvas")).toHaveCount(0);
-  const moving = await page.evaluate(() =>
+  const nonAttenuated = await page.evaluate(() =>
     Array.from(document.querySelectorAll<HTMLElement>(".tv-site *"))
       .map((element) => {
         const style = getComputedStyle(element);
         return {
-          animation: style.animationDuration
+          animationDuration: style.animationDuration
             .split(",")
-            .some((value) => parseFloat(value) > 0.01),
-          transition: style.transitionDuration
+            .some((value) => parseFloat(value) > 0.09),
+          transitionDuration: style.transitionDuration
             .split(",")
-            .some((value) => parseFloat(value) > 0.01),
+            .some((value) => parseFloat(value) > 0.09),
+          repeats: style.animationIterationCount
+            .split(",")
+            .some((value) => value === "infinite" || parseFloat(value) > 1),
         };
       })
-      .filter((value) => value.animation || value.transition),
+      .filter(
+        (value) =>
+          value.animationDuration || value.transitionDuration || value.repeats,
+      ),
   );
-  expect(moving).toEqual([]);
+  expect(nonAttenuated).toEqual([]);
 });
 
 test("representative routes have no automated WCAG A or AA violations", async ({

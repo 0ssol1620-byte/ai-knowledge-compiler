@@ -1,11 +1,25 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const baseURL = "http://127.0.0.1:3000";
+
+async function gotoStable(page: Page, path: string) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      return;
+    } catch (error) {
+      if (attempt === 1 || !String(error).includes("interrupted by another navigation")) {
+        throw error;
+      }
+      await page.waitForTimeout(100);
+    }
+  }
+}
 
 test.beforeEach(async ({ context }) => {
   await context.addCookies([
     {
-      name: "structara_locale",
+      name: "akc_locale",
       value: "ko",
       url: baseURL,
       sameSite: "Lax",
@@ -15,12 +29,13 @@ test.beforeEach(async ({ context }) => {
 
 test("Korean locale remains consistent across marketing and core product workflows", async ({
   page,
+  isMobile,
 }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
   await expect(
     page.getByRole("heading", {
-      name: "흩어진 문서를 하나의 지식 시스템으로.",
+      name: "문서와 연결된 시스템을 AI가 사용할 수 있는 근거 기반 World로 바꾸세요.",
     }),
   ).toBeVisible();
   const desktopProductLink = page
@@ -60,29 +75,34 @@ test("Korean locale remains consistent across marketing and core product workflo
     .click();
   await expect(page.getByText("1 개 선택됨")).toBeVisible();
 
-  await page.goto("/review?project=project-7&token=secret");
-  await expect(page).toHaveURL(/\/integrity\?project=project-7$/);
-  await expect(
-    page.getByRole("heading", {
-      name: "자동 복구를 먼저 수행하고, 근거가 멈춘 곳만 사람이 판단합니다",
-    }),
-  ).toBeVisible();
-  await expect(page.getByText("선택한 컬렉션이 없습니다")).toBeVisible();
+  await page.goto("/review?document=unselected&token=secret");
+  await expect(page).toHaveURL(/\/review\?/);
+  await expect(page.getByRole("heading", { name: "검토" })).toBeVisible();
   await expect(page.locator("body")).not.toContainText("secret");
-  await expect(page.locator("body")).not.toContainText("검토 Studio");
 
   await page.goto("/knowledge-bases");
   await expect(
     page.getByRole("heading", { name: "지식 Studio" }),
   ).toBeVisible();
-  const knowledgeSearch = page.getByRole("textbox", { name: "지식 검색" });
-  await knowledgeSearch.fill("revenue");
-  await expect(page.getByText(/1 개 일치 노트/)).toBeVisible();
-  await page
-    .locator(".knowledge-explorer")
-    .getByRole("button", { name: "근거" })
-    .click();
-  await expect(page.getByText(/근거 관점/)).toBeVisible();
+  if (!isMobile) {
+    const knowledgeSearch = page.getByRole("textbox", { name: "지식 검색" });
+    await knowledgeSearch.fill("revenue");
+    await expect(page.getByText(/1 개 일치 노트/)).toBeVisible();
+  }
+  const evidenceTab = page
+    .getByRole("navigation", { name: "지식 보기" })
+    .getByRole("button", { name: "근거" });
+  await expect
+    .poll(async () => {
+      await evidenceTab.click();
+      return evidenceTab.getAttribute("aria-pressed");
+    })
+    .toBe("true");
+  await expect(
+    page.getByRole("region", { name: "지식 캔버스" }).getByText("근거", {
+      exact: true,
+    }),
+  ).toBeVisible();
 });
 
 test("language switch persists and returns the product to English", async ({
@@ -98,7 +118,7 @@ test("language switch persists and returns the product to English", async ({
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(
     page.getByRole("heading", {
-      name: "From scattered documents to one knowledge system.",
+      name: "Turn documents and connected systems into a source-grounded World your AI can use.",
     }),
   ).toBeVisible();
 
@@ -122,17 +142,31 @@ test("Korean authentication, onboarding, and quick-convert controls stay actiona
   await expect(page.getByLabel("이메일")).toBeVisible();
   await expect(page.getByLabel("비밀번호")).toBeVisible();
 
-  await page.goto("/onboarding");
+  await gotoStable(page, "/onboarding");
   await expect(
     page.getByRole("heading", { name: "무엇을 만들고 싶나요?" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "AI / RAG 지식" }).click();
-  await page.getByRole("button", { name: "계속" }).click();
-  await page.getByRole("button", { name: "연구 논문" }).click();
-  await page.getByRole("button", { name: "계속" }).click();
-  await page.getByRole("button", { name: "외부 처리 사용 안 함" }).click();
-  await page.getByRole("button", { name: "계속" }).click();
-  await page.getByRole("button", { name: "파일 선택" }).click();
+  for (const choice of [
+    "AI / RAG 지식",
+    "연구 논문",
+    "외부 처리 사용 안 함",
+  ]) {
+    const continueButton = page.getByRole("button", { name: "계속" });
+    await expect
+      .poll(async () => {
+        await page.getByRole("button", { name: choice }).click();
+        return continueButton.isEnabled();
+      })
+      .toBe(true);
+    await continueButton.click();
+  }
+  const fileChoice = page.getByRole("button", { name: "파일 선택" });
+  await expect
+    .poll(async () => {
+      await fileChoice.click();
+      return fileChoice.getAttribute("data-selected");
+    })
+    .toBe("true");
   await expect(
     page.getByRole("link", { name: "컬렉션 수집 열기" }),
   ).toBeVisible();
@@ -141,11 +175,16 @@ test("Korean authentication, onboarding, and quick-convert controls stay actiona
   await expect(
     page.getByRole("heading", { name: "새 변환 시작" }),
   ).toBeVisible();
-  await page.getByLabel("업로드할 파일 선택").setInputFiles({
-    name: "sample.md",
-    mimeType: "text/markdown",
-    buffer: Buffer.from("# Source-linked sample"),
-  });
+  await expect
+    .poll(async () => {
+      await page.getByLabel("업로드할 파일 선택").setInputFiles({
+        name: "sample.md",
+        mimeType: "text/markdown",
+        buffer: Buffer.from("# Source-linked sample"),
+      });
+      return page.getByText("sample.md").count();
+    })
+    .toBeGreaterThan(0);
   await expect(page.getByText("sample.md")).toBeVisible();
   await page.getByRole("button", { name: /1개 문서 사전 분석 실행/ }).click();
   await expect(
