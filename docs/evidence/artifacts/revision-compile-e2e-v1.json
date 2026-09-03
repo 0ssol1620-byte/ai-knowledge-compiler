@@ -83,7 +83,7 @@
       "coreReleaseDigest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       "inputSha256": "sha256:95d68d3adc6f40e76476268aa42e1372482a6f27c20532346804fc75ed8cd45b",
       "matchingPolicy": "legacy",
-      "outputSha256": "sha256:ca430783c986b27f59ad2f8a0843aa5afb3e194b275f06b23b6104f32c2aacdd",
+      "outputSha256": "sha256:f76a8e5d4b9fc2c7e350d22bd3afa3b5f60880dbd77c457abcfbe08588f3b044",
       "requestId": "core-rev-e2e"
     },
     "revision": {
@@ -169,6 +169,140 @@
           "claim:signatories": "sha256:2a63232a673e9bb4e3d170688c8884d2550ac19fe67df031d0cb1a3f51909149"
         },
         "quarantinedArtifactIds": [],
+        "rebuiltArtifactBodies": {
+          "claim:payment": {
+            "artifact": "claim:payment",
+            "reads": [
+              {
+                "logicalId": "ku_payment",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    356,
+                    880,
+                    388
+                  ],
+                  "evidenceId": "ev_ku_payment_p2",
+                  "pageNumber1": 2
+                },
+                "text": "Payment is due within 45 days of invoice."
+              }
+            ]
+          },
+          "graph:relations": {
+            "artifact": "graph:relations",
+            "reads": [
+              {
+                "logicalId": "ku_payment",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    356,
+                    880,
+                    388
+                  ],
+                  "evidenceId": "ev_ku_payment_p2",
+                  "pageNumber1": 2
+                },
+                "text": "Payment is due within 45 days of invoice."
+              },
+              {
+                "logicalId": "ku_law",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    210,
+                    880,
+                    242
+                  ],
+                  "evidenceId": "ev_ku_law_p4",
+                  "pageNumber1": 4
+                },
+                "text": "This agreement is governed by the laws of the Republic of Korea."
+              },
+              {
+                "logicalId": "ku_address",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    560,
+                    880,
+                    592
+                  ],
+                  "evidenceId": "ev_ku_address_p1",
+                  "pageNumber1": 1
+                },
+                "text": "Registered office: 12 Sejong-daero, Jung-gu, Seoul."
+              },
+              {
+                "logicalId": "ku_signatories",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    120,
+                    880,
+                    152
+                  ],
+                  "evidenceId": "ev_ku_signatories_p5",
+                  "pageNumber1": 5
+                },
+                "text": "Signed by the authorised representatives of both parties."
+              }
+            ]
+          },
+          "retrieval:payment": {
+            "artifact": "retrieval:payment",
+            "reads": [
+              {
+                "logicalId": "ku_payment",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    356,
+                    880,
+                    388
+                  ],
+                  "evidenceId": "ev_ku_payment_p2",
+                  "pageNumber1": 2
+                },
+                "text": "Payment is due within 45 days of invoice."
+              }
+            ]
+          },
+          "summary:contract": {
+            "artifact": "summary:contract",
+            "reads": [
+              {
+                "logicalId": "ku_payment",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    356,
+                    880,
+                    388
+                  ],
+                  "evidenceId": "ev_ku_payment_p2",
+                  "pageNumber1": 2
+                },
+                "text": "Payment is due within 45 days of invoice."
+              },
+              {
+                "logicalId": "ku_law",
+                "provenance": {
+                  "bbox1000": [
+                    120,
+                    210,
+                    880,
+                    242
+                  ],
+                  "evidenceId": "ev_ku_law_p4",
+                  "pageNumber1": 4
+                },
+                "text": "This agreement is governed by the laws of the Republic of Korea."
+              }
+            ]
+          }
+        },
         "rebuiltArtifactIds": [
           "claim:payment",
           "graph:relations",
@@ -176,6 +310,12 @@
           "summary:contract"
         ],
         "rebuiltArtifacts": 4,
+        "rebuiltDigests": {
+          "claim:payment": "sha256:332e0fa2488292867d0ee8dd7ac2b2485613c31b18945af7cc466d4e02f18e2a",
+          "graph:relations": "sha256:07dc02e19d1bbf9b2021798047f5daecc632c524e3cc74e1cb1a540445f4d537",
+          "retrieval:payment": "sha256:9ffb1a7972c3ff7d2658dfbda3cf4af4d475b42ecad7806dbd88ea15b4ab64ac",
+          "summary:contract": "sha256:7d9d956652de2f06d6d9dae42574418ca612beb5a42ae93959336771c4f2b6b0"
+        },
         "totalArtifacts": 7,
         "workAvoidedArtifacts": 3
       },

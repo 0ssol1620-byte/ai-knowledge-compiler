@@ -77,6 +77,15 @@ class SourceResolution:
     build: Callable[[str], str]
     full_rebuild: Callable[[], Mapping[str, str]] | None = None
     source_facts: Sequence[SourceFact] = field(default_factory=tuple)
+    #: Returns the body of an artifact the compile rebuilt.
+    #:
+    #: Without this the response is digests all the way down, and a caller
+    #: holding the previous world has no way to assemble the next one: it can
+    #: carry forward what did not change, because it already has those bytes,
+    #: and it has nothing at all for what did. Supplying the bodies here keeps
+    #: the assembly digest-bound -- every body is checked against the digest the
+    #: receipt seals -- instead of making the caller trust a second channel.
+    materialise: Callable[[str], Any] | None = None
 
 
 SourceResolver = Callable[[Mapping[str, Any]], SourceResolution]
@@ -203,7 +212,11 @@ class RevisionService:
             source_facts=resolution.source_facts,
             full_rebuild=resolution.full_rebuild,
         )
-        payload = self._seal(request, body, result)
+        try:
+            rebuilt_bodies = _materialise(resolution, result)
+        except RevisionRefused as refusal:
+            return refusal.status, {"code": refusal.code}
+        payload = self._seal(request, body, result, rebuilt_bodies)
         status = 200 if payload["status"] != "rejected" else 422
         return status, payload
 
@@ -212,8 +225,9 @@ class RevisionService:
         request: Mapping[str, Any],
         body: bytes,
         result: RevisionCompileResult,
+        rebuilt_bodies: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        revision = _revision_body(result)
+        revision = _revision_body(result, rebuilt_bodies)
         # Status and lifecycle are derived from the disposition rather than set
         # beside it, so the two cannot drift apart into a response the client
         # refuses for a reason that has nothing to do with the compile.
@@ -246,7 +260,30 @@ class RevisionService:
         }
 
 
-def _revision_body(result: RevisionCompileResult) -> dict[str, Any]:
+def _materialise(
+    resolution: SourceResolution, result: RevisionCompileResult
+) -> dict[str, Any] | None:
+    """Collect the bodies of the rebuilt artifacts, and check each one.
+
+    A body that does not hash to the digest the compile recorded is refused
+    rather than sent. Shipping it would seal a receipt whose digests describe
+    one set of bytes and whose bodies are another, and the caller would have no
+    way to tell which half was wrong.
+    """
+    if resolution.materialise is None:
+        return None
+    bodies: dict[str, Any] = {}
+    for artifact_id in result.rebuilt_artifact_ids:
+        artifact_body = resolution.materialise(artifact_id)
+        if digest(canonicalize(artifact_body)) != result.state[artifact_id]:
+            raise RevisionRefused("CORE_V3_REBUILT_BODY_DIGEST_MISMATCH", 500)
+        bodies[artifact_id] = artifact_body
+    return bodies
+
+
+def _revision_body(
+    result: RevisionCompileResult, rebuilt_bodies: dict[str, Any] | None = None
+) -> dict[str, Any]:
     units = [
         {
             "logicalUnitId": unit.logical_unit_id,
@@ -305,6 +342,12 @@ def _revision_body(result: RevisionCompileResult) -> dict[str, Any]:
             "carriedForwardArtifactIds": carried,
             "quarantinedArtifactIds": list(result.quarantined_artifact_ids),
             "carriedForwardDigests": {artifact: result.state[artifact] for artifact in carried},
+            "rebuiltDigests": {
+                artifact: result.state[artifact] for artifact in result.rebuilt_artifact_ids
+            },
+            # The bodies of what was rebuilt, when a resolver can produce them.
+            # Named apart from `rebuiltArtifacts`, which is the count.
+            **({"rebuiltArtifactBodies": rebuilt_bodies} if rebuilt_bodies is not None else {}),
         },
         "sourceFacts": {
             # Permille rather than a ratio: the digest refuses floats, and a

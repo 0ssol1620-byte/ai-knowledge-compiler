@@ -287,7 +287,14 @@ def world_v1() -> tuple[Workspace, PriorWorld]:
     return workspace, prior
 
 
-def _resolver(workspace: Workspace, prior: PriorWorld, after: tuple[Clause, ...], *, facts=None):
+def _resolver(
+    workspace: Workspace,
+    prior: PriorWorld,
+    after: tuple[Clause, ...],
+    *,
+    facts=None,
+    materialise=None,
+):
     def resolve(request):
         return SourceResolution(
             previous=prior,
@@ -298,6 +305,7 @@ def _resolver(workspace: Workspace, prior: PriorWorld, after: tuple[Clause, ...]
             graph=_graph(),
             artifacts=ARTIFACTS,
             build=workspace.builder(after),
+            materialise=materialise or (lambda artifact: workspace.bodies[artifact]),
             full_rebuild=workspace.oracle(after),
             source_facts=_source_facts(after) if facts is None else facts,
         )
@@ -480,6 +488,18 @@ def test_v1_to_v2_revision_over_http(endpoint):
     assert payload["receipt"]["candidatePromotion"] is False
     assert payload["candidate"]["parentWorldStateId"] == "world-v1"
 
+    # The rebuilt bodies travel with the receipt that seals their digests, so a
+    # caller holding World v1 can assemble World v2 without trusting a second
+    # channel: carry forward the bytes it already has, take these for the rest.
+    recompiled = payload["revision"]["recompilation"]
+    assert set(recompiled["rebuiltArtifactBodies"]) == set(recompiled["rebuiltArtifactIds"])
+    for artifact_id, artifact_body in recompiled["rebuiltArtifactBodies"].items():
+        assert _digest_of(artifact_body) == recompiled["rebuiltDigests"][artifact_id]
+    assert not set(recompiled["rebuiltDigests"]) & set(recompiled["carriedForwardDigests"])
+    amended = recompiled["rebuiltArtifactBodies"]["claim:payment"]["reads"][0]
+    assert "45 days" in amended["text"]
+    assert amended["provenance"]["bbox1000"] == [120, 356, 880, 388]
+
     # STEP 14-16 -- the answer, and the citation.
     answer = workspace.bodies["retrieval:payment"]["reads"][0]
     assert "45 days" in answer["text"]
@@ -568,6 +588,37 @@ def test_a_request_naming_a_world_the_resolver_cannot_produce_is_refused(endpoin
     status, payload, _body, _sha = _post(address, request)
     assert status == 409
     assert payload["code"] == "CORE_V3_PRIOR_WORLD_NOT_RESOLVED"
+
+
+def test_a_rebuilt_body_that_does_not_match_its_sealed_digest_is_refused(world_v1):
+    """The bodies are only worth carrying if they cannot disagree with the seal.
+
+    A materialiser that returns something other than what the builder hashed is
+    the realistic version of this failure: a cache serving a previous revision's
+    bytes, or a read from the wrong key. The receipt would still be internally
+    consistent -- its digests describe the compile that happened -- while the
+    bodies beside it describe a different one, and the caller assembling the
+    next world from those bodies has no way to notice.
+    """
+    workspace, prior = world_v1
+
+    def stale(artifact: str) -> dict[str, object]:
+        # v1's bytes for the clause that changed: the exact thing a stale read
+        # would hand back, and the exact thing the digest check has to catch.
+        return _artifact_body(artifact, V1_CLAUSES)
+
+    service = RevisionService(
+        hmac_secret=HMAC_SECRET,
+        resolve=_resolver(workspace, prior, V2_CLAUSES, materialise=stale),
+        core_release_digest=CORE_RELEASE,
+    )
+    httpd, stop = serve(service)
+    try:
+        status, payload, _body, _sha = _post(httpd.server_address, _build_request(prior))
+    finally:
+        stop()
+    assert status == 500
+    assert payload == {"code": "CORE_V3_REBUILT_BODY_DIGEST_MISMATCH"}
 
 
 def test_an_unrepresented_source_fact_stops_the_activation(world_v1):
