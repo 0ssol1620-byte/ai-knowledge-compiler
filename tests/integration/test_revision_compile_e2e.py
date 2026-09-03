@@ -1,23 +1,19 @@
-"""World v1, a source revision, World v2 -- over a real socket, end to end.
+"""The revision wire: the envelope, the refusals, and the cross-language seal.
 
-This is the scenario the product claim rests on, and it is run here rather than
-described:
-
-    Contract_v1.pdf is compiled, reviewed and activated as World v1.
-    The payment clause is amended from 30 days to 45 days.
-    Contract_v2.pdf is compiled against World v1.
-    Only what reads that clause is rebuilt; everything else is carried forward.
-    The result is compared against an independently written full rebuild.
-    Every source fact is accounted for.
-    A human activates World v2.
-    Asking "What is the payment term?" answers 45 days, and the citation opens
-    the page and box the amended clause occupies in v2 -- not in v1.
-
-The compile half runs through `akc_core_v3.RevisionService` over HTTP on
-loopback, signed exactly the way `dispatchProductCoreRevision` signs it in
+This suite drives `akc_core_v3.RevisionService` over HTTP on loopback, signed
+exactly the way `dispatchProductCoreRevision` signs it in
 `nextjs/lib/core-runtime-revision.ts`. Nothing here calls `compile_revision`
 directly, because the thing being tested is the contract between two processes
 and calling the function would skip it.
+
+The world it revises is built by a fixture, and that is now deliberate rather
+than a limitation. **The scenario itself lives in
+`test_full_compile_chain_e2e.py`**, where World v1 is produced by the real
+initial-compile service from real stored OCR. What is left here is the half that
+a hand-built world tests better: every way the wire can be wrong. A fixture makes
+those cases exact -- a body that does not match its digest, a prior world that
+moved, a replayed timestamp -- and each of them would be awkward to provoke
+through a real compile.
 
 The response is written to a fixture that the Node client's cross-language test
 validates with its real validator. That is what closes the loop: the bytes a
@@ -57,6 +53,7 @@ from akc_cir.revision_compile import (  # noqa: E402
 from akc_cir.semantic_diff import DocumentShape, UnitSnapshot  # noqa: E402
 from akc_core_v3.server import ROUTE, serve  # noqa: E402
 from akc_core_v3.service import RevisionService, SourceResolution  # noqa: E402
+from world_activation import ActivationRefused, WorldStore  # noqa: E402
 
 HMAC_SECRET = "e2e-revision-secret-that-is-long-enough-32+"
 CORE_RELEASE = "sha256:" + "e" * 64
@@ -790,92 +787,6 @@ def _write_fixture(request: dict, wire_body: bytes, input_sha256: str, payload: 
         encoding="utf-8",
         newline="\n",
     )
-
-
-# ---------------------------------------------------------------------------
-# activation -- the step the scenario claimed and no test performed
-
-
-class ActivationRefused(RuntimeError):
-    """A world was offered for activation and the store declined."""
-
-
-class WorldStore:
-    """The activation contract, modelled.
-
-    This is not PostgreSQL. Production activation is `promote_foundation_candidate`
-    with an advisory transaction lock and `FOR UPDATE`, and it has its own tests in
-    `supabase/tests/foundation_world_lifecycle.sql`.
-
-    What is modelled here is the part the *compile* path has to satisfy, because
-    until now the end-to-end scenario asserted only that activation was withheld
-    and never that it could be performed: activation is explicit rather than a
-    consequence of compiling, it is bound to the manifest the actor believed was
-    current, a candidate carrying open findings cannot be activated at all, and
-    the world being replaced is retained rather than overwritten.
-    """
-
-    def __init__(self) -> None:
-        self.versions: dict[str, dict[str, object]] = {}
-        self.active_manifest: str | None = None
-        self.events: list[tuple[str, str]] = []
-
-    def register(
-        self,
-        *,
-        world_state_id: str,
-        manifest_digest: str,
-        artifacts: dict[str, dict[str, object]],
-        lifecycle: str,
-        candidate_promotion: bool,
-    ) -> None:
-        if manifest_digest in self.versions:
-            raise ActivationRefused("a candidate is immutable once registered")
-        self.versions[manifest_digest] = {
-            "world_state_id": world_state_id,
-            "artifacts": artifacts,
-            "lifecycle": lifecycle,
-            "candidate_promotion": candidate_promotion,
-            "status": "candidate",
-        }
-
-    def activate(
-        self,
-        *,
-        manifest_digest: str,
-        expected_current_manifest: str | None,
-        actor: str,
-        reason: str,
-    ) -> None:
-        if manifest_digest not in self.versions:
-            raise ActivationRefused("no such candidate")
-        version = self.versions[manifest_digest]
-        if version["lifecycle"] != "candidate":
-            # review_required and rejected are not activatable. The Core said as
-            # much in the response; the store refuses independently rather than
-            # trusting the caller to have read it.
-            raise ActivationRefused(f"lifecycle {version['lifecycle']} is not activatable")
-        if version["candidate_promotion"] is not False:
-            raise ActivationRefused("a compile may not promote itself")
-        if expected_current_manifest != self.active_manifest:
-            # Optimistic concurrency. Somebody else activated between this actor
-            # reading the world and deciding to replace it, and that change would
-            # be silently lost.
-            raise ActivationRefused("active world moved since it was read")
-        if not reason.strip():
-            raise ActivationRefused("activation requires a stated reason")
-        if self.active_manifest is not None:
-            self.versions[self.active_manifest]["status"] = "superseded"
-        version["status"] = "active"
-        self.active_manifest = manifest_digest
-        self.events.append((actor, manifest_digest))
-
-    def read(self, artifact_id: str) -> dict[str, object]:
-        """Read through the active pointer, the only way a reader sees a world."""
-        if self.active_manifest is None:
-            raise ActivationRefused("no active world")
-        artifacts = self.versions[self.active_manifest]["artifacts"]
-        return artifacts[artifact_id]  # type: ignore[index]
 
 
 def _activated_world_v1() -> tuple[Workspace, PriorWorld, WorldStore]:

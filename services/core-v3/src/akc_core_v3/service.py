@@ -1,8 +1,9 @@
 """The v3 revision-compile endpoint: verify, compile, seal, refuse.
 
-The division of labour is deliberate and narrow. This module owns the wire: the
-HMAC, the input digest, the request shape, the response shape and the output
-seal. It does not own where units come from -- a `SourceResolver` supplies those,
+The division of labour is deliberate and narrow. This module owns the revision
+compile: the request shape it requires, the response shape, the output seal and
+every refusal along the way. The signed envelope it shares with the initial path
+lives in `wire.py`. It does not own where units come from -- a `SourceResolver` supplies those,
 because in production they come from object storage and in a test they come from
 a fixture, and a service that reached for a bucket itself could not be driven by
 the end-to-end test that has to prove the client and the compiler agree.
@@ -15,8 +16,6 @@ forever.
 
 from __future__ import annotations
 
-import hmac
-import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from hashlib import sha256
@@ -33,28 +32,37 @@ from akc_cir.revision_compile import (
 )
 from akc_cir.semantic_diff import DocumentShape, UnitSnapshot
 
-from .contract import canonicalize, digest
+from .contract import artifact_content, canonicalize, digest
+from .wire import (
+    MAX_CLOCK_SKEW_SECONDS,
+    REQUEST_SCHEMA,
+    RESPONSE_SCHEMA,
+    RUNTIME,
+    SIGNED_FIELDS,
+    CompileRefused,
+    check_release_digest,
+    require,
+    verify_envelope,
+)
 
-REQUEST_SCHEMA = "tavonel.product_core.compile_request.v3"
-RESPONSE_SCHEMA = "tavonel.product_core.compile_response.v3"
-RUNTIME = "tavonel-python-core-v2"
+#: Kept under its original name: it is the exception the revision path raises and
+#: the one every caller here already catches. It is now the shared envelope
+#: refusal, so a wire refusal and a compile refusal are the same type -- which is
+#: what lets `handle` turn either into the same one-line response.
+RevisionRefused = CompileRefused
 
-#: The signature covers these three, joined by newlines, exactly as the client
-#: builds them in `dispatchProductCoreRevision`.
-SIGNED_FIELDS = ("timestamp", "requestId", "inputSha256")
-
-#: Requests older than this are refused whatever their signature says. A valid
-#: signature on a replayed body is still a replay.
-MAX_CLOCK_SKEW_SECONDS = 300
-
-
-class RevisionRefused(RuntimeError):
-    """A refusal with a code the Product can act on."""
-
-    def __init__(self, code: str, status: int = 400) -> None:
-        super().__init__(code)
-        self.code = code
-        self.status = status
+__all__ = [
+    "MAX_CLOCK_SKEW_SECONDS",
+    "REQUEST_SCHEMA",
+    "RESPONSE_SCHEMA",
+    "RUNTIME",
+    "SIGNED_FIELDS",
+    "RevisionRefused",
+    "RevisionService",
+    "SourceResolution",
+    "SourceResolver",
+    "artifact_content",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,11 +99,6 @@ class SourceResolution:
 SourceResolver = Callable[[Mapping[str, Any]], SourceResolution]
 
 
-def _require(condition: object, code: str, status: int = 400) -> None:
-    if not condition:
-        raise RevisionRefused(code, status)
-
-
 class RevisionService:
     def __init__(
         self,
@@ -105,12 +108,8 @@ class RevisionService:
         core_release_digest: str,
         now: Callable[[], float] | None = None,
     ) -> None:
-        _require(len(hmac_secret) >= 32, "CORE_V3_HMAC_SECRET_TOO_SHORT", 500)
-        _require(
-            core_release_digest.startswith("sha256:") and len(core_release_digest) == 71,
-            "CORE_V3_RELEASE_DIGEST_INVALID",
-            500,
-        )
+        require(len(hmac_secret) >= 32, "CORE_V3_HMAC_SECRET_TOO_SHORT", 500)
+        check_release_digest(core_release_digest)
         self._secret = hmac_secret.encode("utf-8")
         self._resolve = resolve
         self._release = core_release_digest
@@ -123,56 +122,22 @@ class RevisionService:
     # -- wire ---------------------------------------------------------------
 
     def verify(self, headers: Mapping[str, str], body: bytes) -> Mapping[str, Any]:
-        lower = {key.lower(): value for key, value in headers.items()}
-        timestamp = lower.get("x-tavonel-core-timestamp", "")
-        request_id = lower.get("x-tavonel-core-request-id", "")
-        input_sha256 = lower.get("x-tavonel-input-sha256", "")
-        signature = lower.get("x-tavonel-core-signature", "")
-        _require(timestamp.isdigit(), "CORE_V3_TIMESTAMP_INVALID", 401)
-        _require(request_id, "CORE_V3_REQUEST_ID_MISSING", 401)
-        _require(
-            abs(self._now() - int(timestamp)) <= MAX_CLOCK_SKEW_SECONDS,
-            "CORE_V3_TIMESTAMP_OUT_OF_WINDOW",
-            401,
-        )
-        expected = "sha256:" + sha256(body).hexdigest()
-        _require(
-            hmac.compare_digest(input_sha256, expected),
-            "CORE_V3_INPUT_DIGEST_MISMATCH",
-            401,
-        )
-        expected_signature = hmac.new(
-            self._secret,
-            f"{timestamp}\n{request_id}\n{input_sha256}".encode(),
-            sha256,
-        ).hexdigest()
-        _require(
-            hmac.compare_digest(signature, expected_signature),
-            "CORE_V3_SIGNATURE_INVALID",
-            401,
-        )
-        try:
-            parsed = json.loads(body.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise RevisionRefused("CORE_V3_BODY_NOT_JSON", 400) from error
-        _require(isinstance(parsed, dict), "CORE_V3_BODY_NOT_JSON")
-        request: dict[str, Any] = parsed
-        _require(request.get("schemaVersion") == REQUEST_SCHEMA, "CORE_V3_SCHEMA_UNSUPPORTED")
-        _require(request.get("requestId") == request_id, "CORE_V3_REQUEST_ID_MISMATCH", 401)
-        route = request.get("route") or {}
-        _require(
-            route.get("operationClass") == "revision_compile",
-            "CORE_V3_OPERATION_CLASS_UNSUPPORTED",
+        request = verify_envelope(
+            secret=self._secret,
+            now=self._now,
+            headers=headers,
+            body=body,
+            operation_class="revision_compile",
         )
         previous = request.get("previousWorld") or {}
-        _require(previous.get("worldStateId"), "CORE_V3_PRIOR_WORLD_MISSING")
-        _require(previous.get("manifestDigest"), "CORE_V3_PRIOR_WORLD_MISSING")
-        _require(previous.get("coreOutputSha256"), "CORE_V3_PRIOR_WORLD_MISSING")
+        require(previous.get("worldStateId"), "CORE_V3_PRIOR_WORLD_MISSING")
+        require(previous.get("manifestDigest"), "CORE_V3_PRIOR_WORLD_MISSING")
+        require(previous.get("coreOutputSha256"), "CORE_V3_PRIOR_WORLD_MISSING")
         documents = request.get("documents") or {}
-        _require(isinstance(documents.get("changed"), list), "CORE_V3_DOCUMENTS_INVALID")
-        _require(isinstance(documents.get("unchanged"), list), "CORE_V3_DOCUMENTS_INVALID")
-        _require(documents["changed"], "CORE_V3_NO_CHANGED_DOCUMENT")
-        _require(
+        require(isinstance(documents.get("changed"), list), "CORE_V3_DOCUMENTS_INVALID")
+        require(isinstance(documents.get("unchanged"), list), "CORE_V3_DOCUMENTS_INVALID")
+        require(documents["changed"], "CORE_V3_NO_CHANGED_DOCUMENT")
+        require(
             isinstance(request.get("priorArtifactBindings"), list),
             "CORE_V3_PRIOR_ARTIFACTS_INVALID",
         )
@@ -258,18 +223,6 @@ class RevisionService:
                 "candidatePromotion": False,
             },
         }
-
-
-def artifact_content(body: Any) -> str:
-    """The bytes an artifact body stands for.
-
-    A string body is the content itself. Half the package a caller assembles is
-    CSV, JSON Lines and Turtle, and wrapping those in JSON quoting to force one
-    convention would make the digest of a rebuilt file disagree with the digest
-    of the file it replaces. Anything else is a document, and its content is its
-    canonical form -- the same form the receipt is sealed over.
-    """
-    return body if isinstance(body, str) else canonicalize(body)
 
 
 def _materialise(

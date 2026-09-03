@@ -53,3 +53,15 @@ def canonicalize(value: Any) -> str:
 
 def digest(payload: str) -> str:
     return "sha256:" + hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def artifact_content(body: Any) -> str:
+    """The bytes an artifact body stands for.
+
+    A string body is the content itself. Half the package a caller assembles is
+    CSV, JSON Lines and Turtle, and wrapping those in JSON quoting to force one
+    convention would make the digest of a rebuilt file disagree with the digest
+    of the file it replaces. Anything else is a document, and its content is its
+    canonical form -- the same form the receipt is sealed over.
+    """
+    return body if isinstance(body, str) else canonicalize(body)

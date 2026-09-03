@@ -19,16 +19,21 @@ from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
+from .initial import InitialCompileService
 from .service import RevisionService
 
 ROUTE = "/v3/revision-compile"
+INITIAL_ROUTE = "/v3/initial-compile"
 
 #: A revision request is metadata plus digests. Anything larger is not one, and
 #: reading it before finding that out is the cheapest denial of service there is.
 MAX_BODY_BYTES = 4 * 1024 * 1024
 
 
-def make_handler(service: RevisionService) -> type[BaseHTTPRequestHandler]:
+def make_handler(
+    service: RevisionService | None = None,
+    initial: InitialCompileService | None = None,
+) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
         server_version = "tavonel-core-v3"
@@ -44,7 +49,13 @@ def make_handler(service: RevisionService) -> type[BaseHTTPRequestHandler]:
             self.wfile.write(body)
 
         def do_POST(self) -> None:
-            if self.path != ROUTE:
+            # One handler, two routes, and each one only answers for the service
+            # it was given. A route served by a missing service returns 404
+            # rather than 500: from the caller's side an endpoint that is not
+            # deployed and an endpoint that is not mounted are the same fact.
+            handlers = {ROUTE: service, INITIAL_ROUTE: initial}
+            chosen = handlers.get(self.path)
+            if chosen is None:
                 self._send(404, {"code": "CORE_V3_ROUTE_UNKNOWN"})
                 return
             try:
@@ -56,7 +67,7 @@ def make_handler(service: RevisionService) -> type[BaseHTTPRequestHandler]:
                 self._send(413, {"code": "CORE_V3_BODY_SIZE_INVALID"})
                 return
             body = self.rfile.read(length)
-            status, payload = service.handle(dict(self.headers.items()), body)
+            status, payload = chosen.handle(dict(self.headers.items()), body)
             self._send(status, payload)
 
         def do_GET(self) -> None:
@@ -71,13 +82,16 @@ def make_handler(service: RevisionService) -> type[BaseHTTPRequestHandler]:
 
 
 def serve(
-    service: RevisionService,
+    service: RevisionService | None = None,
     *,
+    initial: InitialCompileService | None = None,
     host: str = "127.0.0.1",
     port: int = 0,
 ) -> tuple[ThreadingHTTPServer, Callable[[], None]]:
     """Start the endpoint on a background thread and return it with a stopper."""
-    httpd = ThreadingHTTPServer((host, port), make_handler(service))
+    if service is None and initial is None:
+        raise ValueError("serve() needs at least one service to mount")
+    httpd = ThreadingHTTPServer((host, port), make_handler(service, initial))
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
 
