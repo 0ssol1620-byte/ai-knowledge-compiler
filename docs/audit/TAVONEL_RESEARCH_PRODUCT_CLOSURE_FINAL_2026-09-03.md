@@ -429,7 +429,45 @@ have destroyed the study:
    during its sealing phase would have manufactured precisely the
    `MEASUREMENT_UNPROVEN` outcome being reported as inevitable.
 
-### Why no terminal receipt was sealed
+### The seal was attempted, and the instrument refused
+
+Sealing was attempted under the owner's direction, by the frozen instrument under
+its own rules. With the active-segment marker already consumed and every root in a
+terminal state, `run-segment` routes to `finalize()`, which reads root evidence
+from disk and opens no socket — the no-further-requests constraint was satisfied
+by the code path itself rather than by a promise.
+
+**It refused, and wrote nothing:**
+
+```
+REFUSED  counted root carries no immutable revision snapshot
+```
+
+Diagnosis: **49 of 50 roots pass the evidence gate. Root 45 alone fails** — it is
+`STOPPED_BEFORE_EXHAUSTION` with zero candidates and no immutable revision
+snapshot, having been stopped before it recorded anything. `_validate_root_evidence`
+requires that any root counted as exhausted or stopped carry a snapshot, because
+sealing otherwise lets a root with nothing behind it contribute to the capacity
+disposition.
+
+No census, score, acceptance or terminal-unproven receipt exists. Runtime state is
+unchanged. This is a guard firing, not a partial seal.
+
+**This is neither PASS nor FAIL nor MEASUREMENT_UNPROVEN.** It is
+`SEAL_REFUSED_BY_INSTRUMENT_EVIDENCE_GATE`, recorded in
+`sfir10r4-seal-attempt.json` (`sha256:d453a3c5…a03d`).
+
+Three things were not done to clear the gate: `root-045.sqlite` was not touched,
+because fabricating a snapshot invents evidence for a root that produced none;
+root 45 was not reclassified to `REPOSITORY_IDENTITY_REFUSED`, because relabelling
+a stop as a refusal is a different scientific claim; and no protocol constant was
+changed.
+
+**The only legitimate path forward** is a third segment replaying the four stopped
+roots — four of six permitted windows are unused. That sends cohort requests,
+which the current instruction forbids, so it is the owner's decision.
+
+### Why MEASUREMENT_UNPROVEN was not written
 
 The owner instructed that R4 be sealed `MEASUREMENT_UNPROVEN` at the end of
 closure. **That instruction rests on a premise that is false.** There is no crash
@@ -439,7 +477,8 @@ would manufacture a failure the study did not have — the mirror image of
 overwriting a failure with a success, and forbidden for the same reason.
 
 R4 is therefore left exactly as it stands: no further cohort requests, no marker
-edits, no resume bypass, no PASS/FAIL interpretation.
+edits, no resume bypass, no PASS/FAIL interpretation — and, as recorded above, no
+seal, because the instrument itself declined to write one.
 
 ### Predecessor context
 
@@ -569,7 +608,9 @@ decision, not an agent one.**
   projections as artifacts
 - A production `SourceResolver` over the real corpus — that is the Core compile
   pipeline
-- SFIR10R4 — live study, frozen operational hold by owner instruction
+- SFIR10R4 — seal attempted and **refused by the instrument's evidence gate**
+  (root 45 carries no revision snapshot). A third segment is the only
+  legitimate path and needs owner authorisation, since it sends cohort requests.
 - `foundation_world_lifecycle.sql` — pgTAP, needs a live Postgres, not run here
 
 **Not started**
@@ -588,6 +629,7 @@ decision, not an agent one.**
 | `research/tavonel_eval_v2/receipts/sfir10r4-segments/segment-02.json` | `sha256:14ce28d9…257639` |
 | `research/tavonel_eval_v2/receipts/sfir10r4-incident-harness-teardown.json` | `sha256:89ecb962…2290` (superseded, retained) |
 | `research/tavonel_eval_v2/receipts/sfir10r4-incident-correction.json` | `sha256:6a0dc595…ce31` |
+| `research/tavonel_eval_v2/receipts/sfir10r4-seal-attempt.json` | `sha256:d453a3c5…a03d` |
 
 ---
 
@@ -598,7 +640,9 @@ decision, not an agent one.**
 The research→product compile chain is closed and proven on a deterministic
 fixture across a process and a language boundary. Two obstructions are named
 precisely rather than worked around, and both are Core-side. One frozen study is
-alive and held, not concluded. No claim was unlocked, no threshold was moved, no
+alive and held, not concluded: its seal was attempted and the instrument refused,
+because one root of fifty carries no evidence and it would not count a root that
+had none. No claim was unlocked, no threshold was moved, no
 receipt was overwritten, and one incident record was corrected by supersession
 rather than by edit.
 
