@@ -323,10 +323,12 @@ Core v3 deployment that implements one.
 
 Everything below was executed in this session.
 
+All research suites were re-run under the **project interpreter**; see the note
+below on why the first run did not count.
+
 | Suite | Result |
 |---|---|
-| Research unit (`tests/unit`) | **1,018 passed, 68 skipped, 0 failed** (281 s) |
-| Research integration (`tests/integration`) | **12 passed** |
+| Research `tests/unit` + `tests/integration` | **1,030 passed, 68 skipped, 0 failed** (281 s) |
 | Product (`vitest run`) | **819 passed, 122 files, 0 failed** |
 | `ruff check` / `ruff format --check` | clean |
 | `mypy` (strict) on `akc_core_v3` | clean |
@@ -336,6 +338,25 @@ Everything below was executed in this session.
 The 68 skips are legitimate: 66 in `test_superseded_receipt_contract.py`
 ("does not supersede anything") and 2 guarded by config freezes that make the
 pre-freeze refusal unreachable.
+
+### The repository's own guard caught this session
+
+The first research run was made with the system Python rather than the project
+venv. `docs/repro/TEST_SCOPE_SELF_TEST.json` recorded
+`is_project_interpreter: false`, and that file states the rule plainly:
+
+> The parser sandbox launches its child with `-I`, which excludes user
+> site-packages. […] **A result from the wrong interpreter is not a result about
+> this repository.**
+
+So the first "1,018 passed" was not admissible evidence, and the suites were
+re-run under `.venv\Scripts\python.exe`. The regenerated artifact now records
+`is_project_interpreter: true`, and the number above is from that run.
+
+The totals happen to agree, which is worth saying rather than hiding: the wrong
+interpreter did not change the outcome here. It changed whether the claim was
+allowed to count, and the guard was right to stop it. That guard exists because
+this exact mistake once produced 24 failures that looked like product defects.
 
 **One pre-existing error was found and closed.**
 `components/pdf-evidence-viewer.tsx(38,34): Cannot find module 'pdfjs-dist'` was
