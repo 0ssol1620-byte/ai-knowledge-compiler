@@ -822,7 +822,16 @@ def build() -> dict[str, Any]:
 
 def main() -> int:
     receipt = build()
-    RECEIPT.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    # `newline="\n"` rather than the platform default. `.gitattributes` normalises
+    # this file to LF, so a Windows run that wrote CRLF would leave the tree dirty
+    # on every regeneration and make "the receipt is unchanged" unreadable as a
+    # signal. The digest is over the canonical JSON and not the file bytes, so
+    # this is about the diff, not about the hash.
+    RECEIPT.write_text(
+        json.dumps(receipt, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     core = receipt["deterministic"]
     print(f"status: {core['status']}")
     for gap in core["blockedBy"]:
