@@ -42,11 +42,52 @@ if [ ! -f "$GUARD" ]; then
   exit 1
 fi
 
-PY=python
-command -v "$PY" >/dev/null 2>&1 || PY=python3
-command -v "$PY" >/dev/null 2>&1 || {
-  echo "pre-commit: no python interpreter; cannot run the IP privilege guard." >&2
-  exit 1
-}
+# WHY THE INTERPRETER IS SEARCHED FOR RATHER THAN NAMED
+#   Git Bash on Windows carries neither `python` nor `python3` on its PATH, so
+#   naming them was the same as having no guard at all -- every commit from that
+#   shell died here, and the tempting way out is --no-verify, which is exactly
+#   the escape this hook exists to close. The repository's own .venv is tried
+#   first because it is the one interpreter a clone is guaranteed to have set up;
+#   `py` comes last because the Windows launcher needs an argument to pick a
+#   version and so cannot be treated like the others.
+#
+#   Each candidate is EXECUTED, not merely located. `command -v python` succeeds
+#   on a stock Windows against a Microsoft Store stub that then refuses to run,
+#   which would turn a fail-closed control into a confusing failure at the wrong
+#   line. The probe also asserts Python 3: the guard's `from __future__ import
+#   annotations` would not survive a Python 2 that happened to answer first.
+#
+#   The guard imports only the standard library, so any working Python 3 runs it
+#   correctly; the ordering below is about reliability, not compatibility.
 
+PY=""
+PYARG=""
+for candidate in \
+  "$TOPLEVEL/.venv/Scripts/python.exe" \
+  "$TOPLEVEL/.venv/bin/python" \
+  python3 \
+  python
+do
+  if "$candidate" -c "import sys; sys.exit(0 if sys.version_info[0] >= 3 else 1)" \
+      >/dev/null 2>&1; then
+    PY="$candidate"
+    break
+  fi
+done
+
+if [ -z "$PY" ] && py -3 -c "import sys" >/dev/null 2>&1; then
+  PY=py
+  PYARG=-3
+fi
+
+if [ -z "$PY" ]; then
+  echo "pre-commit: no working python 3; cannot run the IP privilege guard." >&2
+  echo "  tried .venv/Scripts/python.exe, .venv/bin/python, python3, python, py -3" >&2
+  echo "  Refusing the commit: a guard that cannot run is not a passing guard." >&2
+  exit 1
+fi
+
+if [ -n "$PYARG" ]; then
+  exec "$PY" "$PYARG" "$GUARD" --staged
+fi
 exec "$PY" "$GUARD" --staged
