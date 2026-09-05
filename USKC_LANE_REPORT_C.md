@@ -7,7 +7,7 @@ Worktree `D:\CodexProjects\uskc-lanes\core-c-reader-sdk`, base core `d9db24c`.
 
 - Branch: `agent/uskc-c-reader-sdk`
 - SDK + doc commit: `d6a7203`
-- Branch tip (this report is the second commit): recorded below after push
+- Report commit / branch tip pushed: `5dd15a6` (`5dd15a6cf86ea61bf74ed980b97bf26b45faf910`)
 - No PR, no merge, no deploy, no migration. Core repo — no Vercel preview applies.
 
 ## 2. Files created / modified
@@ -128,6 +128,20 @@ Found 2 errors in 2 files (checked 269 source files)
 
 `git status --short` before commit showed exactly `M pyproject.toml`,
 `?? docs/architecture/reader-provider-plane.md`, `?? packages/readers/`.
+
+**One side effect worth naming:** running `pytest tests/unit` rewrites
+`docs/repro/TEST_SCOPE_SELF_TEST.json` — a test in that scope regenerates it.
+That file is outside this lane's ownership row, so the change was reverted with
+`git checkout --` and is **not** in either commit. In a worktree it regenerates
+with `"project_venv_present": false` and `"is_project_interpreter": false`,
+because the worktree has no `.venv` of its own even though the run used the
+project interpreter. That is a worktree artefact of the self-test's detection,
+not a real interpreter regression — but any lane that commits this file from a
+worktree would publish a false negative about the interpreter guard.
+
+`git push -u origin agent/uskc-c-reader-sdk` — exit **0**:
+`* [new branch]      agent/uskc-c-reader-sdk -> agent/uskc-c-reader-sdk`.
+Production deploy 안 함. Core repo이므로 Preview deployment도 생성되지 않음.
 
 ### Gates not run, with the reason
 
