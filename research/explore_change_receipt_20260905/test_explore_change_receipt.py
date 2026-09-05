@@ -65,6 +65,20 @@ def test_the_receipt_digest_is_over_the_receipt(committed: dict[str, Any]) -> No
     assert committed["deterministicSha256"] == expected
 
 
+def test_the_readme_quotes_the_digest_the_receipt_actually_has(
+    committed: dict[str, Any],
+) -> None:
+    """The README prints the digest as a citation, so a stale one is a false claim.
+
+    It went stale once already, in the commit that repaired F2: the receipt was
+    regenerated and the number beside it was not.
+    """
+    readme = (HERE / "README.md").read_text(encoding="utf-8")
+    assert committed["deterministicSha256"] in readme
+    quoted = {line.strip() for line in readme.splitlines() if line.strip().startswith("sha256:")}
+    assert quoted == {committed["deterministicSha256"]}, quoted
+
+
 def test_every_input_file_hashes_to_what_the_receipt_says(committed: dict[str, Any]) -> None:
     recorded = committed["deterministic"]["inputs"]
     assert recorded, "the receipt names no inputs"
@@ -250,7 +264,7 @@ def test_the_unchanged_documents_are_carried_forward(rebuilt: dict[str, Any]) ->
 
 
 def test_splitting_the_document_id_costs_the_whole_manual(rebuilt: dict[str, Any]) -> None:
-    """Finding F2, measured: with one id per revision nothing of the manual carries."""
+    """Gap F2, the artifact half: with one id per revision nothing of the manual carries."""
     shared, split = rebuilt["runs"][1], rebuilt["runs"][2]
     assert shared["documentIdPolicy"] == "one id across both revisions"
     assert split["documentIdPolicy"] == "one id per revision"
@@ -269,6 +283,172 @@ def test_splitting_the_document_id_costs_the_whole_manual(rebuilt: dict[str, Any
         for artifact in quarantined
     )
     assert any("manual" in artifact for artifact in quarantined)
+
+
+# ---------------------------------------------------------------------------
+# F2 and F5 -- the identity half, and the guard against describing it from a label
+#
+# The first version of this receipt asserted, in prose, that with one id per
+# revision "no unit continues and the manual is reported replaced rather than
+# amended", while `identityCounts.continued` beside it read 9 and nothing
+# anywhere reported a replacement. The tests below exist so that class of claim
+# fails rather than ships: every number F2 states is recomputed from the run's
+# own records, and the label it was read off is shown not to mean what it was
+# read to mean.
+
+
+def _continued(run: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        unit for unit in run["revision"]["units"] if unit["identityContinuity"] == "continued"
+    ]
+
+
+def test_the_continued_label_is_not_a_match_count(rebuilt: dict[str, Any]) -> None:
+    """Finding F5, from the records rather than from the summary.
+
+    Both runs report the same `continued` tally. Only one of them has a
+    predecessor behind every unit of it, and the difference is the document id.
+    """
+    shared, split = rebuilt["runs"][1], rebuilt["runs"][2]
+    assert shared["revision"]["identityCounts"]["continued"] == 9
+    assert split["revision"]["identityCounts"]["continued"] == 9
+
+    with_predecessor = [unit for unit in _continued(split) if unit.get("previousLogicalUnitId")]
+    without = [unit for unit in _continued(split) if not unit.get("previousLogicalUnitId")]
+    assert len(without) == 3, "the split run is supposed to lose three predecessors"
+    assert len(with_predecessor) == 6
+    # And every one that lost it lost the relation too: the record says nothing
+    # about the lineage at all, rather than saying it is unknown.
+    for unit in without:
+        assert "identityRelation" not in unit, unit["logicalUnitId"]
+        assert "manual" in unit["logicalUnitId"], unit["logicalUnitId"]
+    # The shared run is the control: same tally, every predecessor present.
+    assert all(unit.get("previousLogicalUnitId") for unit in _continued(shared))
+    assert all(unit["identityRelation"] == "SAME_AS_VERSION" for unit in _continued(shared))
+
+
+def test_the_identity_breakdown_in_the_receipt_matches_the_records(
+    rebuilt: dict[str, Any],
+) -> None:
+    """The block F2 is written from is recomputed here from the units beside it."""
+    for index in (1, 2):
+        run = rebuilt["runs"][index]
+        recorded = run["revision"]["identityContinuity"]
+        continued = _continued(run)
+        without = sorted(
+            unit["logicalUnitId"] for unit in continued if not unit.get("previousLogicalUnitId")
+        )
+        assert recorded["continued"] == len(continued) == run["revision"]["identityCounts"][
+            "continued"
+        ], run["run"]
+        assert recorded["continuedWithoutRecordedPredecessor"] == len(without), run["run"]
+        assert recorded["continuedWithoutRecordedPredecessorIds"] == without, run["run"]
+        assert (
+            recorded["continuedWithRecordedPredecessor"] == len(continued) - len(without)
+        ), run["run"]
+
+
+def test_the_resolver_did_match_across_the_document_id_change(
+    rebuilt: dict[str, Any],
+) -> None:
+    """Gap F2, part 1: the correspondence is in the diff, not in the label.
+
+    A change carrying a logical id that belongs to the before world and not to
+    the after world is a match the resolver made -- that branch is reached only
+    after the decision's id resolved to a prior unit. An after-unit with no
+    counterpart is reported `unit_added` instead, so the absence of any such
+    record is the other half of the same statement.
+    """
+    split = rebuilt["runs"][2]
+    after = {unit["logicalUnitId"] for unit in split["revision"]["units"]}
+    changes = split["revision"]["diffChanges"]
+    assert changes, "the split run recorded no diff"
+    assert not [change for change in changes if change["kind"] == "unit_added"]
+
+    cross = [
+        change
+        for change in changes
+        if change.get("logical_id") and change["logical_id"] not in after
+    ]
+    assert len(cross) == 4, [change["kind"] for change in cross]
+    assert {change["logical_id"] for change in cross} == {
+        "ku_fp200-maintenance-manual-clause-rev-b_1_1",
+        "ku_fp200-maintenance-manual-clause-rev-b_3_1",
+        "ku_fp200-maintenance-manual-clause-rev-b_4_1",
+    }
+    # The unsettled unit names its predecessor as the candidate, which is the
+    # same statement from the other side.
+    (unresolved,) = [change for change in changes if change["kind"] == "identity_unresolved"]
+    assert unresolved["candidates"] == ["ku_fp200-maintenance-manual-clause-rev-b_2_1"]
+
+    # Same diff, different ids: the shared run attributes everything to ids that
+    # exist in both worlds, so nothing is "cross" there.
+    shared = rebuilt["runs"][1]
+    shared_after = {unit["logicalUnitId"] for unit in shared["revision"]["units"]}
+    assert not [
+        change
+        for change in shared["revision"]["diffChanges"]
+        if change.get("logical_id") and change["logical_id"] not in shared_after
+    ]
+    assert [change["kind"] for change in shared["revision"]["diffChanges"]] == [
+        change["kind"] for change in changes
+    ]
+
+
+def test_what_the_split_id_actually_broke_is_the_impact_path(
+    rebuilt: dict[str, Any],
+) -> None:
+    """Gap F2, part 3. The failure is downstream of identity and it fails closed."""
+    split = rebuilt["runs"][2]
+    assert split["revision"]["impact"]["affectedArtifactIds"] == []
+    assert split["plan"]["stale"] == []
+    assert split["revision"]["unresolvedChannels"] == ["locator"]
+    (facet,) = split["plan"]["facetResolutions"]
+    assert facet["verdict"] == "unresolved"
+    assert "not a node in the dependency graph" in facet["reason"]
+    # Six artifacts a full rebuild produces are never built by the selective one.
+    missing = split["equivalence"]["missing_from_selective"]
+    assert len(missing) == 6
+    assert all("manual" in artifact for artifact in missing)
+    # The shared run is the control again: the same change routes to real work.
+    shared = rebuilt["runs"][1]
+    assert shared["revision"]["impact"]["affectedArtifactIds"]
+    assert shared["equivalence"]["missing_from_selective"] == []
+
+
+def test_f2_states_the_numbers_its_own_run_measured(rebuilt: dict[str, Any]) -> None:
+    """The guard the first version of this receipt did not have.
+
+    F2's prose is generated from the runs, so it cannot drift from them. This
+    asserts the generation actually happened: every count the sentence gives is
+    recomputed here and looked for in the string, and the retracted claim is
+    checked for by name.
+    """
+    (f2,) = [gap for gap in rebuilt["blockedBy"] if gap["id"] == "F2"]
+    observed = f2["observedState"]
+    split = rebuilt["runs"][2]
+    breakdown = split["revision"]["identityContinuity"]
+
+    assert f"reads {split['revision']['identityCounts']['continued']} in BOTH runs" in observed
+    assert f"only {breakdown['continuedWithRecordedPredecessor']} do" in observed
+    assert f"{breakdown['continuedWithoutRecordedPredecessor']} carry neither" in observed
+    assert (
+        f"builds the {len(split['equivalence']['missing_from_selective'])} manual artifacts"
+        in observed
+    )
+    for unit_id in breakdown["continuedWithoutRecordedPredecessorIds"]:
+        assert unit_id in observed
+
+    # The claim that was refuted by the block beside it. It must not come back,
+    # in F2 or anywhere else in the receipt.
+    assert "no unit continues" not in canonical(rebuilt)
+
+
+def test_f5_is_recorded_as_a_finding_with_its_line_numbers(rebuilt: dict[str, Any]) -> None:
+    (f5,) = [finding for finding in rebuilt["findings"] if finding["id"] == "F5"]
+    assert f5["kind"] == "correctness"
+    assert any("revision_compile.py:883" in where for where in f5["where"])
+    assert f5["notFixedHere"]
 
 
 def test_the_receipt_states_that_no_core_file_was_modified(rebuilt: dict[str, Any]) -> None:
