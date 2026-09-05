@@ -452,6 +452,96 @@ def test_f5_is_recorded_as_a_finding_with_its_line_numbers(rebuilt: dict[str, An
     assert f5["notFixedHere"]
 
 
+def test_f5_counts_the_changes_and_the_ids_as_two_populations(
+    rebuilt: dict[str, Any],
+) -> None:
+    """The guard F5 did not have, over the class of error F5 is itself about.
+
+    F5's `measured` was the last hand-typed figure in the findings block: it read
+    "three changes ... attributed to revision-B logical ids" where the run has
+    four changes over three ids. Three was the id count wearing the change
+    count's label -- the same conflation as round 2's "10 regions of the 4
+    documents", and invisible to every test here because those compared machine
+    values to machine values while this string compared to nothing.
+
+    So both populations are recomputed from `diffChanges` and both must appear.
+    The id count alone passing is what happened last time, so the change count is
+    asserted to be the larger of the two and the two are asserted to differ:
+    a sentence that quoted 3 for both would be green again otherwise.
+    """
+    (f5,) = [finding for finding in rebuilt["findings"] if finding["id"] == "F5"]
+    measured = f5["measured"]
+    split, shared = rebuilt["runs"][2], rebuilt["runs"][1]
+
+    after = {unit["logicalUnitId"] for unit in split["revision"]["units"]}
+    cross = [
+        change
+        for change in split["revision"]["diffChanges"]
+        if change.get("logical_id") and change["logical_id"] not in after
+    ]
+    ids = {str(change["logical_id"]) for change in cross}
+    assert len(cross) > len(ids), "this fixture no longer has a unit with two changes"
+
+    assert f"{len(cross)} changes of the revision-C manual" in measured
+    assert f"on {len(ids)} revision-B logical ids" in measured
+    # Each kind is named with its own count, so a breakdown cannot be invented.
+    for kind in {str(change["kind"]) for change in cross}:
+        count = len([change for change in cross if change["kind"] == kind])
+        assert f"{count} {kind}" in measured, kind
+    for logical_id in sorted(ids):
+        assert logical_id in measured
+
+    split_identity = split["revision"]["identityContinuity"]
+    shared_identity = shared["revision"]["identityContinuity"]
+    assert (
+        f"{split_identity['continuedWithoutRecordedPredecessor']} of "
+        f"{split_identity['continued']} continued units" in measured
+    )
+    assert (
+        f"{shared_identity['continuedWithRecordedPredecessor']} of "
+        f"{shared_identity['continued']} with one" in measured
+    )
+    assert f"'continued: {shared_identity['continued']}'" in f5["consequence"]
+
+    # The retracted sentence, barred by name across the whole receipt in both
+    # spellings, so it cannot come back in another field.
+    text = canonical(rebuilt)
+    for retracted in ("three changes of the revision-C manual", "3 changes of the revision-C"):
+        assert retracted not in text, retracted
+
+
+def test_every_finding_and_the_summary_state_counts_their_runs_measured(
+    rebuilt: dict[str, Any],
+) -> None:
+    """F3, F4 and the headline were typed too; they happened to be right.
+
+    "Happened to be right" is not a property a hash-bound record should rely on,
+    and F5 is the demonstration that it does not hold. Each count below is
+    recomputed from the run the sentence cites.
+    """
+    shared = rebuilt["runs"][1]
+    stale = shared["equivalence"]["stale_left_behind"]
+    quarantined = shared["selectiveRebuild"]["quarantined"]
+    disposition = shared["revision"]["disposition"]
+
+    (f3,) = [finding for finding in rebuilt["findings"] if finding["id"] == "F3"]
+    assert f"names {len(stale)} claims" in f3["measured"]
+    for artifact in stale:
+        assert artifact in f3["measured"]
+    assert f"holds all {len(shared['staleLeftBehindWitness'])} bodies" in f3["measured"]
+
+    (f4,) = [finding for finding in rebuilt["findings"] if finding["id"] == "F4"]
+    assert f"{len(quarantined)} quarantined artifacts" in f4["measured"]
+    for artifact in quarantined:
+        assert artifact in f4["measured"]
+    assert f"a {disposition} disposition" in f4["measured"]
+
+    summary = rebuilt["summary"]
+    assert f"{shared['selectiveRebuild']['counts']['quarantined']} artifacts are " in summary
+    assert f"equivalence fails on {len(stale)} claims" in summary
+    assert f"the revision is {disposition} rather than promotable" in summary
+
+
 def test_the_receipt_states_that_no_core_file_was_modified(rebuilt: dict[str, Any]) -> None:
     assert rebuilt["protectedCoreModified"] is False
     assert rebuilt["coreFilesModified"] == []
@@ -535,6 +625,40 @@ def test_the_readme_carries_the_populations_the_runs_measured(
     # The exact conflation the review caught, barred by name in either spelling.
     for retracted in ("ten regions of the four documents", "10 regions of the 4 documents"):
         assert retracted not in readme.lower(), retracted
+
+    # And the round-3 one, in the direction the README had right while the
+    # receipt had it wrong. Neither file may say it again.
+    assert "three changes of the revision-c manual" not in readme.lower()
+
+
+def test_the_readme_cost_table_is_the_one_the_runs_measured(
+    committed: dict[str, Any],
+) -> None:
+    """The ten cells of the F2 cost table, recomputed from the two runs.
+
+    That table is the densest set of figures in the lane and every cell of it was
+    typed by hand, beside a receipt whose prose was generated. `readme_assertions`
+    cannot reach a table -- a fragment match would pass on a row that had drifted
+    into a neighbouring column -- so the rows are parsed and compared cell for
+    cell against `build_receipt.readme_cost_table`.
+    """
+    readme = (HERE / "README.md").read_text(encoding="utf-8")
+    rows: list[tuple[str, tuple[str, str]]] = []
+    for line in readme.splitlines():
+        stripped = line.strip()
+        if not (stripped.startswith("|") and stripped.endswith("|")):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) == 3:
+            rows.append((cells[0], (cells[1], cells[2])))
+    assert rows, "the README no longer has a three-column table"
+
+    for fragment, expected in build_receipt.readme_cost_table(
+        committed["deterministic"]
+    ).items():
+        matched = [values for label, values in rows if fragment in label]
+        assert len(matched) == 1, f"{fragment!r} matched {len(matched)} rows"
+        assert matched[0] == expected, (fragment, matched[0], expected)
 
 
 def test_the_receipt_does_not_claim_the_site_publishes_a_revision_b(

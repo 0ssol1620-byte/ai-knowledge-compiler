@@ -5,7 +5,7 @@
     "lane": "change-receipt",
     "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
     "status": "blocked",
-    "summary": "The core chain cannot compile the FP-200 fixture the site publishes: its source resolver builds units only from printed clause numbers, the fixture is unnumbered prose, every region fails closed and the compile is refused before a world exists. Compiling a clause-form restatement through the same unmodified services reaches the end of the chain and does not pass it -- the amended clause's identity is unsettled, two artifacts are quarantined, the revision is review_required rather than promotable, and full-rebuild equivalence fails on two claims that were carried forward with a stale bounding box. No full-rebuild equivalence PASS exists on this fixture from either run, so nothing here may be wired into /explore as an equivalence result.",
+    "summary": "The core chain cannot compile the FP-200 fixture the site publishes: its source resolver builds units only from printed clause numbers, the fixture is unnumbered prose, every region fails closed and the compile is refused before a world exists. Compiling a clause-form restatement through the same unmodified services reaches the end of the chain and does not pass it -- the amended clause's identity is unsettled, 2 artifacts are quarantined, the revision is review_required rather than promotable, and full-rebuild equivalence fails on 2 claims that were carried forward with a stale bounding box. No full-rebuild equivalence PASS exists on this fixture from either run, so nothing here may be wired into /explore as an equivalence result.",
     "equivalencePassAvailable": false,
     "blockedBy": [
       {
@@ -14,10 +14,10 @@
         "function": "akc_core_v3.sources.canonicalise_document",
         "file": "services/core-v3/src/akc_core_v3/sources.py:457-495 (the _CLAUSE / _HEADING branches), refusing at :576",
         "requiredInputShape": "a region matching _CLAUSE (a number containing at least one dot, then the clause body) beneath a region matching _HEADING (a number, then a heading of at most 60 characters containing no full stop)",
-        "actualInputShape": "unnumbered prose paragraphs; no region of any of the four FP-200 documents carries a printed clause number",
-        "observedState": "UNRESOLVED_SOURCE_FACT with kind UNNUMBERED_PARAGRAPH on every region, in both populations. The revision-B world compiles 3 documents and 10 regions: 0 units out, refused with CORE_V3_NO_RESOLVABLE_UNIT. Handing resolve_sources the whole fixture instead -- 4 documents, 14 regions, the revision-C manual included -- resolves 0 units and refuses with CORE_V3_NO_RESOLVABLE_UNIT. The four-document figure is the one to quote for the corpus; the three-document one is what run 1 compiled.",
+        "actualInputShape": "unnumbered prose paragraphs; no region of any of the 4 FP-200 documents carries a printed clause number",
+        "observedState": "UNRESOLVED_SOURCE_FACT with kind UNNUMBERED_PARAGRAPH on every region, in both populations. The revision-B world compiles 3 documents and 10 regions: 0 units out, refused with CORE_V3_NO_RESOLVABLE_UNIT. Handing resolve_sources the whole fixture instead -- 4 documents, 14 regions, the revision-C manual included -- resolves 0 units and refuses with CORE_V3_NO_RESOLVABLE_UNIT. The 4-document figure is the one to quote for the corpus; the 3-document one is what run 1 compiled.",
         "refusal": "CORE_V3_NO_RESOLVABLE_UNIT raised by resolve_sources",
-        "evidence": "runs[0] for the three-document world, runs[0].wholeFixtureResolverCheck for all four"
+        "evidence": "runs[0] for the 3-document world, runs[0].wholeFixtureResolverCheck for all 4"
       },
       {
         "id": "F2",
@@ -52,7 +52,7 @@
           "note": "At this commit the site publishes one manual at one revision and declares no revision-B file and no -rev-b document id anywhere under nextjs/. Contract section 4.3 has the explore lane add fp-200-maintenance-manual-revB.pdf; whether that file gets its own document id is a choice nobody has made yet. This fixture made one so the cost could be measured -- it is not a report of the site's state."
         },
         "openQuestionNotFinding": "whether the explore lane should give its revision-B file its own document id at all. The cheaper answer is runs[1] -- one id, two versions -- and it is still available at zero cost, because the file does not exist yet.",
-        "observedState": "measured in runs[1] against runs[2], which differ in the document id and in nothing else. The resolver's match survives the id change; nothing keyed by the id does. (1) The correspondence was made: runs[2].revision.diffChanges attributes changes of the revision-C manual to 3 revision-B logical ids (ku_fp200-maintenance-manual-clause-rev-b_1_1, ku_fp200-maintenance-manual-clause-rev-b_3_1, ku_fp200-maintenance-manual-clause-rev-b_4_1) and names ku_fp200-maintenance-manual-clause-rev-b_2_1 as the identity candidate for the remaining revision-C unit, and no unit_added is emitted anywhere in the run -- an unmatched after-unit would leave by that exit (semantic_diff.py:809-822). (2) The record cannot express it: revision.identityCounts.continued reads 9 in BOTH runs and is not a match count. In runs[1] 9 of 9 carry a previousLogicalUnitId and SAME_AS_VERSION; in runs[2] only 6 do, and 3 carry neither (ku_fp200-maintenance-manual-clause-rev-c_1_1, ku_fp200-maintenance-manual-clause-rev-c_3_1, ku_fp200-maintenance-manual-clause-rev-c_4_1), because revision_compile._unit_records looks the predecessor up by the after-unit's own logical id (revision_compile.py:883). See finding F5. (3) Nothing downstream of the id survives: the changes name ids that are not nodes of the after world's dependency graph, so plan.facetResolutions returns verdict 'unresolved' with that reason, impact.affectedArtifactIds is [], plan.stale is [], the selective rebuild never builds the 6 manual artifacts a full rebuild produces (equivalence.missing_from_selective), and collection:directory is carried forward stale and diverges.",
+        "observedState": "measured in runs[1] against runs[2], which differ in the document id and in nothing else. The resolver's match survives the id change; nothing keyed by the id does. (1) The correspondence was made: runs[2].revision.diffChanges attributes 4 changes of the revision-C manual (3 evidence_moved and 1 modified_claim) to 3 revision-B logical ids (ku_fp200-maintenance-manual-clause-rev-b_1_1, ku_fp200-maintenance-manual-clause-rev-b_3_1, ku_fp200-maintenance-manual-clause-rev-b_4_1) and names ku_fp200-maintenance-manual-clause-rev-b_2_1 as the identity candidate for the remaining revision-C unit, and no unit_added is emitted anywhere in the run -- an unmatched after-unit would leave by that exit (semantic_diff.py:809-822). (2) The record cannot express it: revision.identityCounts.continued reads 9 in BOTH runs and is not a match count. In runs[1] 9 of 9 carry a previousLogicalUnitId and SAME_AS_VERSION; in runs[2] only 6 do, and 3 carry neither (ku_fp200-maintenance-manual-clause-rev-c_1_1, ku_fp200-maintenance-manual-clause-rev-c_3_1, ku_fp200-maintenance-manual-clause-rev-c_4_1), because revision_compile._unit_records looks the predecessor up by the after-unit's own logical id (revision_compile.py:883). See finding F5. (3) Nothing downstream of the id survives: the changes name ids that are not nodes of the after world's dependency graph, so plan.facetResolutions returns verdict 'unresolved' with that reason, impact.affectedArtifactIds is [], plan.stale is [], the selective rebuild never builds the 6 manual artifacts a full rebuild produces (equivalence.missing_from_selective), and collection:directory is carried forward stale and diverges.",
         "refusal": null,
         "evidence": "runs[1] versus runs[2]; specifically their revision.diffChanges, revision.identityContinuity, plan.facetResolutions and equivalence.missing_from_selective. runs[0].siteBaseline for what the site declares at 9a7a93d."
       }
@@ -68,7 +68,7 @@
           "services/core-v3/src/akc_core_v3/projections.py:208-218 -- the claim body embeds unit.provenance(), which is page, bbox, evidenceId and regionId",
           "services/core-v3/src/akc_core_v3/projections.py:66-71 -- the comment states the intent: a claim does not go stale when the evidence moves"
         ],
-        "measured": "runs[1].equivalence.stale_left_behind names two claims; runs[1].staleLeftBehindWitness holds both bodies, whose text is byte-identical and whose bbox1000 differs",
+        "measured": "runs[1].equivalence.stale_left_behind names 2 claims (claim:ku_fp200-maintenance-manual_3_1, claim:ku_fp200-maintenance-manual_4_1); runs[1].staleLeftBehindWitness holds all 2 bodies, whose text is byte-identical and whose bbox1000 differs",
         "notFixedHere": "projections.py belongs to no lane in this campaign and changing artifact sensitivity is an architecture decision; reported, not touched"
       },
       {
@@ -79,7 +79,7 @@
         "where": [
           "packages/cir-python/src/akc_cir/identity.py:252-256 -- MERGE_THRESHOLD 0.92, NEW_IDENTITY_THRESHOLD 0.75, declared a bootstrap band and not a calibrated operating point"
         ],
-        "measured": "runs[1].revision.units, the record whose identityContinuity is 'ambiguous', carries its own identityReason; the consequence is two quarantined artifacts and a review_required disposition",
+        "measured": "runs[1].revision.units, the record whose identityContinuity is 'ambiguous', carries its own identityReason; the consequence is 2 quarantined artifacts (claim:ku_fp200-maintenance-manual_2_1, retrieval:ku_fp200-maintenance-manual_2_1) and a review_required disposition",
         "notFixedHere": "CLAUDE.md: no threshold in this repository is calibrated and none may be moved to make a run pass"
       },
       {
@@ -92,8 +92,8 @@
           "packages/cir-python/src/akc_cir/revision_compile.py:883 -- prior = before_by_id.get(logical_id), where logical_id is the AFTER unit's id and before_by_id is keyed by the BEFORE units' ids",
           "packages/cir-python/src/akc_cir/revision_compile.py:888-897 -- previousLogicalUnitId and SAME_AS_VERSION are emitted only when that lookup hits, so a cross-id match yields neither; the decision's own matched id, which the diff still carries, is not consulted"
         ],
-        "measured": "runs[2].revision.diffChanges shows the match was made -- three changes of the revision-C manual are attributed to revision-B logical ids and no unit_added is emitted -- while runs[2].revision.identityContinuity records 3 of 9 continued units with no previousLogicalUnitId. runs[1], where the ids are shared, records 9 of 9 with one. The two runs differ in the document id and in nothing else.",
-        "consequence": "any consumer reading the unit records -- an earlier revision of this very receipt included -- cannot tell a matched continuation from an unmatched one, and 'continued: 9' reads as nine matches in both runs. That is how the first version of F2 came to state the opposite of its own data.",
+        "measured": "runs[2].revision.diffChanges shows the match was made -- 4 changes of the revision-C manual (3 evidence_moved and 1 modified_claim), on 3 revision-B logical ids (ku_fp200-maintenance-manual-clause-rev-b_1_1, ku_fp200-maintenance-manual-clause-rev-b_3_1, ku_fp200-maintenance-manual-clause-rev-b_4_1), and no unit_added is emitted -- while runs[2].revision.identityContinuity records 3 of 9 continued units with no previousLogicalUnitId. runs[1], where the ids are shared, records 9 of 9 with one. The two runs differ in the document id and in nothing else. The change count and the id count are different numbers over the same match: ku_fp200-maintenance-manual-clause-rev-b_1_1 carries 2.",
+        "consequence": "any consumer reading the unit records -- an earlier revision of this very receipt included -- cannot tell a matched continuation from an unmatched one, and 'continued: 9' reads as 9 matches in both runs. That is how the first version of F2 came to state the opposite of its own data.",
         "notFixedHere": "akc_cir.revision_compile is not named in CLAUDE.md's Protected Core list, but it composes four modules that are (identity, semantic_diff, dependency, recompilation) and it belongs to no lane in this campaign. Carrying the decision's matched id into the record changes what every revision receipt says about lineage. Reported, not touched."
       }
     ],
@@ -180,7 +180,7 @@
         "unitsResolved": 0,
         "regionsSeen": 10,
         "documentsCompiled": 3,
-        "population": "the three documents of the revision-B world: the revision-B manual and the two the site publishes unchanged. The revision-C manual is not in this world and its regions are NOT in regionsSeen -- see wholeFixtureResolverCheck for the four-document number.",
+        "population": "the 3 documents of the revision-B world: the revision-B manual and the 2 the site publishes unchanged. The revision-C manual is not in this world and its regions are NOT in regionsSeen -- see wholeFixtureResolverCheck for the 4-document number.",
         "sourceFactLedger": [
           {
             "documentId": "fp200-maintenance-manual",
@@ -1628,7 +1628,7 @@
     ],
     "siteFixtureUnitsResolved": 0
   },
-  "deterministicSha256": "sha256:1e6cfa76ec1af26304a1193046b0b8d5d4d34da2c044ebf59de6cba0ba5f3541",
+  "deterministicSha256": "sha256:a4a39aa31a25811642cd74792bf4dd165a6bfc3ae4d1b9a125b0e2e0f3953e8e",
   "environment": {
     "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
     "interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",

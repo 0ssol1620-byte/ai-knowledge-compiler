@@ -53,6 +53,7 @@ import hmac
 import json
 import platform
 import sys
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -535,6 +536,7 @@ def run_site_fixture_verbatim() -> dict[str, Any]:
 
     status, payload = chain.compile_initial(documents, request_id="site-fixture-initial")
     ledger = _fact_ledger(corpus, documents)
+    whole = _whole_fixture_refusal(entries)
     return {
         "run": "site_fixture_verbatim",
         "question": (
@@ -557,14 +559,18 @@ def run_site_fixture_verbatim() -> dict[str, Any]:
         "unitsResolved": sum(int(item["units"]) for item in ledger),
         "regionsSeen": sum(int(item["regions"]) for item in ledger),
         "documentsCompiled": len(documents),
+        # Counted from the list above and from the whole-fixture check beside it.
+        # Every other figure in this run is derived; a hand-typed "three" here
+        # would be the one number in the record with nothing behind it.
         "population": (
-            "the three documents of the revision-B world: the revision-B manual and "
-            "the two the site publishes unchanged. The revision-C manual is not in "
-            "this world and its regions are NOT in regionsSeen -- see "
-            "wholeFixtureResolverCheck for the four-document number."
+            f"the {len(documents)} documents of the revision-B world: the revision-B "
+            f"manual and the {len(documents) - 1} the site publishes unchanged. The "
+            "revision-C manual is not in this world and its regions are NOT in "
+            "regionsSeen -- see wholeFixtureResolverCheck for the "
+            f"{whole['documentsSeen']}-document number."
         ),
         "sourceFactLedger": ledger,
-        "wholeFixtureResolverCheck": _whole_fixture_refusal(entries),
+        "wholeFixtureResolverCheck": whole,
         "siteBaseline": site_baseline(),
     }
 
@@ -864,8 +870,8 @@ def run_clause_form(*, shared_document_id: bool) -> dict[str, Any]:
 # the receipt
 
 
-def _matched_across_the_id_change(run: Mapping[str, Any]) -> list[str]:
-    """The before-world ids the diff attributed a change of the after world to.
+def _changes_attributed_to_before_ids(run: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """The changes of the after world the diff attributed to a BEFORE-world id.
 
     A change whose `logical_id` belongs to the BEFORE world is a correspondence
     the resolver made: the emitting branch reaches it only after
@@ -874,15 +880,35 @@ def _matched_across_the_id_change(run: Mapping[str, Any]) -> list[str]:
     two `UNIT_ADDED` exits above it instead. So this list is the machine-readable
     answer to "did identity survive the document-id change", and it is derived
     from the diff rather than from the `continued` label, which cannot say.
+
+    Two populations live in this list and they are not the same size: the
+    changes, and the distinct ids they name. One unit can be the subject of more
+    than one change -- here `_1_1` is both a `modified_claim` and an
+    `evidence_moved` -- so the change count exceeds the id count. F5 stated the
+    id count and called it the change count; that is why the two are now
+    separate functions rather than one.
     """
     after = {unit["logicalUnitId"] for unit in run["revision"]["units"]}
-    return sorted(
-        {
-            str(change["logical_id"])
-            for change in run["revision"]["diffChanges"]
-            if change.get("logical_id") and change["logical_id"] not in after
-        }
-    )
+    return [
+        change
+        for change in run["revision"]["diffChanges"]
+        if change.get("logical_id") and change["logical_id"] not in after
+    ]
+
+
+def _matched_across_the_id_change(run: Mapping[str, Any]) -> list[str]:
+    """The distinct before-world ids those changes name -- an id count, not a change count."""
+    return sorted({str(change["logical_id"]) for change in _changes_attributed_to_before_ids(run)})
+
+
+def _by_kind(changes: Sequence[Mapping[str, Any]]) -> str:
+    """The kind breakdown of a change list, counted from the changes themselves.
+
+    Reads `3 evidence_moved and 1 modified_claim`. Written here so the prose that
+    quotes it cannot name a kind the diff did not emit, or a count it did not have.
+    """
+    counted = Counter(str(change["kind"]) for change in changes)
+    return " and ".join(f"{count} {kind}" for kind, count in sorted(counted.items()))
 
 
 def _f1_observed_state(site: Mapping[str, Any]) -> str:
@@ -915,8 +941,9 @@ def _f1_observed_state(site: Mapping[str, Any]) -> str:
         f"Handing resolve_sources the whole fixture instead -- "
         f"{whole['documentsSeen']} documents, {whole['regionsSeen']} regions, the "
         f"revision-C manual included -- resolves {whole['unitsCanonicalised']} units "
-        f"and refuses with {whole['refusalCode']}. The four-document figure is the "
-        "one to quote for the corpus; the three-document one is what run 1 compiled."
+        f"and refuses with {whole['refusalCode']}. The "
+        f"{whole['documentsSeen']}-document figure is the one to quote for the corpus; "
+        f"the {site['documentsCompiled']}-document one is what run 1 compiled."
     )
 
 
@@ -967,6 +994,7 @@ def _f2_observed_state(shared: Mapping[str, Any], split: Mapping[str, Any]) -> s
     shared_identity = shared["revision"]["identityContinuity"]
     split_identity = split["revision"]["identityContinuity"]
     changes = split["revision"]["diffChanges"]
+    cross_changes = _changes_attributed_to_before_ids(split)
     cross = _matched_across_the_id_change(split)
     added = [change for change in changes if change["kind"] == "unit_added"]
     # Every clause below is derived, and the two the sentence leans hardest on
@@ -987,7 +1015,9 @@ def _f2_observed_state(shared: Mapping[str, Any], split: Mapping[str, Any]) -> s
         "measured in runs[1] against runs[2], which differ in the document id and "
         "in nothing else. The resolver's match survives the id change; nothing "
         "keyed by the id does. (1) The correspondence was made: "
-        "runs[2].revision.diffChanges attributes changes of the revision-C manual "
+        "runs[2].revision.diffChanges attributes "
+        f"{len(cross_changes)} changes of the revision-C manual "
+        f"({_by_kind(cross_changes)}) "
         f"to {len(cross)} revision-B logical ids ({', '.join(cross)}) and names "
         f"{', '.join(candidates)} as the identity candidate for the remaining "
         "revision-C unit, and no unit_added is emitted anywhere in the run -- an "
@@ -1014,6 +1044,115 @@ def _f2_observed_state(shared: Mapping[str, Any], split: Mapping[str, Any]) -> s
     )
 
 
+def _f3_measured(shared: Mapping[str, Any]) -> str:
+    """F3's evidence, counted from the equivalence report and the witness beside it."""
+    stale = list(shared["equivalence"]["stale_left_behind"])
+    witness = shared["staleLeftBehindWitness"]
+    assert stale, "runs[1] reported nothing stale_left_behind"
+    assert all(str(artifact).startswith("claim:") for artifact in stale), stale
+    assert len(witness) == len(stale), (len(witness), len(stale))
+    return (
+        f"runs[1].equivalence.stale_left_behind names {len(stale)} claims "
+        f"({', '.join(stale)}); runs[1].staleLeftBehindWitness holds all "
+        f"{len(witness)} bodies, whose text is byte-identical and whose bbox1000 differs"
+    )
+
+
+def _f4_measured(shared: Mapping[str, Any]) -> str:
+    """F4's consequence, counted from the rebuild rather than typed beside it."""
+    quarantined = list(shared["selectiveRebuild"]["quarantined"])
+    return (
+        "runs[1].revision.units, the record whose identityContinuity is "
+        "'ambiguous', carries its own identityReason; the consequence is "
+        f"{len(quarantined)} quarantined artifacts ({', '.join(quarantined)}) and a "
+        f"{shared['revision']['disposition']} disposition"
+    )
+
+
+def _f5_measured(shared: Mapping[str, Any], split: Mapping[str, Any]) -> str:
+    """F5's evidence, with each count beside the set it was counted over.
+
+    The sentence this replaces was hand-typed and read "three changes of the
+    revision-C manual are attributed to revision-B logical ids". Three is the
+    number of distinct before-world ids; the number of changes is four, because
+    `_1_1` is the subject of two of them. It was the only figure in the findings
+    block still typed, the README beside it said four, and no test could see the
+    disagreement -- which is the same asymmetry F5 itself is about. Both
+    populations are now derived and named.
+    """
+    cross_changes = _changes_attributed_to_before_ids(split)
+    cross_ids = _matched_across_the_id_change(split)
+    added = [
+        change for change in split["revision"]["diffChanges"] if change["kind"] == "unit_added"
+    ]
+    # Asserted, not trusted: if the resolver ever stops matching here, this must
+    # fail rather than keep printing that the match was made.
+    assert cross_changes, "no change was attributed to a before-world id"
+    assert not added, f"the diff reported {len(added)} unit_added change(s)"
+    shared_identity = shared["revision"]["identityContinuity"]
+    split_identity = split["revision"]["identityContinuity"]
+    # Why the two counts differ, named rather than asserted: the ids that carry
+    # more than one change are the whole of the gap between them.
+    repeated = sorted(
+        f"{logical_id} carries {count}"
+        for logical_id, count in Counter(
+            str(change["logical_id"]) for change in cross_changes
+        ).items()
+        if count > 1
+    )
+    gap = (
+        "The change count and the id count are different numbers over the same "
+        f"match: {'; '.join(repeated)}."
+        if repeated
+        else "Each matched id carries exactly one change here, so the two counts agree."
+    )
+    return (
+        "runs[2].revision.diffChanges shows the match was made -- "
+        f"{len(cross_changes)} changes of the revision-C manual "
+        f"({_by_kind(cross_changes)}), on {len(cross_ids)} revision-B logical ids "
+        f"({', '.join(cross_ids)}), and no unit_added is emitted -- while "
+        "runs[2].revision.identityContinuity records "
+        f"{split_identity['continuedWithoutRecordedPredecessor']} of "
+        f"{split_identity['continued']} continued units with no "
+        "previousLogicalUnitId. runs[1], where the ids are shared, records "
+        f"{shared_identity['continuedWithRecordedPredecessor']} of "
+        f"{shared_identity['continued']} with one. The two runs differ in the "
+        f"document id and in nothing else. {gap}"
+    )
+
+
+def _f5_consequence(shared: Mapping[str, Any], split: Mapping[str, Any]) -> str:
+    """F5's consequence. The label it is about writes its own number."""
+    continued = shared["revision"]["identityContinuity"]["continued"]
+    assert continued == split["revision"]["identityContinuity"]["continued"]
+    return (
+        "any consumer reading the unit records -- an earlier revision of this "
+        "very receipt included -- cannot tell a matched continuation from an "
+        f"unmatched one, and 'continued: {continued}' reads as {continued} matches "
+        "in both runs. That is how the first version of F2 came to state the "
+        "opposite of its own data."
+    )
+
+
+def _summary(shared: Mapping[str, Any]) -> str:
+    """The headline, with its two counts taken from the run that produced them."""
+    quarantined = shared["selectiveRebuild"]["counts"]["quarantined"]
+    stale = shared["equivalence"]["stale_left_behind"]
+    return (
+        "The core chain cannot compile the FP-200 fixture the site publishes: its "
+        "source resolver builds units only from printed clause numbers, the fixture "
+        "is unnumbered prose, every region fails closed and the compile is refused "
+        "before a world exists. Compiling a clause-form restatement through the same "
+        "unmodified services reaches the end of the chain and does not pass it -- the "
+        f"amended clause's identity is unsettled, {quarantined} artifacts are "
+        f"quarantined, the revision is {shared['revision']['disposition']} rather than "
+        f"promotable, and full-rebuild equivalence fails on {len(stale)} claims that "
+        "were carried forward with a stale bounding box. No full-rebuild equivalence "
+        "PASS exists on this fixture from either run, so nothing here may be wired "
+        "into /explore as an equivalence result."
+    )
+
+
 def canonical(payload: object) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -1032,19 +1171,7 @@ def deterministic() -> dict[str, Any]:
         "lane": "change-receipt",
         "akcCommit": AKC_COMMIT,
         "status": "blocked",
-        "summary": (
-            "The core chain cannot compile the FP-200 fixture the site publishes: its "
-            "source resolver builds units only from printed clause numbers, the fixture "
-            "is unnumbered prose, every region fails closed and the compile is refused "
-            "before a world exists. Compiling a clause-form restatement through the same "
-            "unmodified services reaches the end of the chain and does not pass it -- the "
-            "amended clause's identity is unsettled, two artifacts are quarantined, the "
-            "revision is review_required rather than promotable, and full-rebuild "
-            "equivalence fails on two claims that were carried forward with a stale "
-            "bounding box. No full-rebuild equivalence PASS exists on this fixture from "
-            "either run, so nothing here may be wired into /explore as an equivalence "
-            "result."
-        ),
+        "summary": _summary(shared_id),
         "equivalencePassAvailable": False,
         "blockedBy": [
             {
@@ -1059,14 +1186,16 @@ def deterministic() -> dict[str, Any]:
                     "then a heading of at most 60 characters containing no full stop)"
                 ),
                 "actualInputShape": (
-                    "unnumbered prose paragraphs; no region of any of the four FP-200 "
+                    "unnumbered prose paragraphs; no region of any of the "
+                    f"{site['wholeFixtureResolverCheck']['documentsSeen']} FP-200 "
                     "documents carries a printed clause number"
                 ),
                 "observedState": _f1_observed_state(site),
                 "refusal": "CORE_V3_NO_RESOLVABLE_UNIT raised by resolve_sources",
                 "evidence": (
-                    "runs[0] for the three-document world, "
-                    "runs[0].wholeFixtureResolverCheck for all four"
+                    f"runs[0] for the {site['documentsCompiled']}-document world, "
+                    "runs[0].wholeFixtureResolverCheck for all "
+                    f"{site['wholeFixtureResolverCheck']['documentsSeen']}"
                 ),
             },
             {
@@ -1120,11 +1249,7 @@ def deterministic() -> dict[str, Any]:
                     "-- the comment states the intent: a claim does not go stale when "
                     "the evidence moves",
                 ],
-                "measured": (
-                    "runs[1].equivalence.stale_left_behind names two claims; "
-                    "runs[1].staleLeftBehindWitness holds both bodies, whose text is "
-                    "byte-identical and whose bbox1000 differs"
-                ),
+                "measured": _f3_measured(shared_id),
                 "notFixedHere": (
                     "projections.py belongs to no lane in this campaign and changing "
                     "artifact sensitivity is an architecture decision; reported, not "
@@ -1144,11 +1269,7 @@ def deterministic() -> dict[str, Any]:
                     "-- MERGE_THRESHOLD 0.92, NEW_IDENTITY_THRESHOLD 0.75, declared a "
                     "bootstrap band and not a calibrated operating point",
                 ],
-                "measured": (
-                    "runs[1].revision.units, the record whose identityContinuity is "
-                    "'ambiguous', carries its own identityReason; the consequence is two "
-                    "quarantined artifacts and a review_required disposition"
-                ),
+                "measured": _f4_measured(shared_id),
                 "notFixedHere": (
                     "CLAUDE.md: no threshold in this repository is calibrated and none "
                     "may be moved to make a run pass"
@@ -1178,22 +1299,8 @@ def deterministic() -> dict[str, Any]:
                     "decision's own matched id, which the diff still carries, is not "
                     "consulted",
                 ],
-                "measured": (
-                    "runs[2].revision.diffChanges shows the match was made -- three "
-                    "changes of the revision-C manual are attributed to revision-B "
-                    "logical ids and no unit_added is emitted -- while "
-                    "runs[2].revision.identityContinuity records 3 of 9 continued units "
-                    "with no previousLogicalUnitId. runs[1], where the ids are shared, "
-                    "records 9 of 9 with one. The two runs differ in the document id "
-                    "and in nothing else."
-                ),
-                "consequence": (
-                    "any consumer reading the unit records -- an earlier revision of "
-                    "this very receipt included -- cannot tell a matched continuation "
-                    "from an unmatched one, and 'continued: 9' reads as nine matches in "
-                    "both runs. That is how the first version of F2 came to state the "
-                    "opposite of its own data."
-                ),
+                "measured": _f5_measured(shared_id, split_id),
+                "consequence": _f5_consequence(shared_id, split_id),
                 "notFixedHere": (
                     "akc_cir.revision_compile is not named in CLAUDE.md's Protected "
                     "Core list, but it composes four modules that are (identity, "
@@ -1226,9 +1333,13 @@ def readme_assertions(core: Mapping[str, Any]) -> dict[str, str]:
     that renames a denominator now fails a test instead of shipping. This is not
     a spell-checker: only figures whose wrong version would mislead are listed.
     """
-    site = core["runs"][0]
+    site, shared, split = core["runs"][0], core["runs"][1], core["runs"][2]
     whole = site["wholeFixtureResolverCheck"]
     baseline = site["siteBaseline"]
+    cross_changes = _changes_attributed_to_before_ids(split)
+    cross_ids = _matched_across_the_id_change(split)
+    shared_identity = shared["revision"]["identityContinuity"]
+    split_identity = split["revision"]["identityContinuity"]
     return {
         # The exact conflation the round-2 review caught: 10 regions belong to
         # the 3-document world, not to the 4-document fixture.
@@ -1244,6 +1355,117 @@ def readme_assertions(core: Mapping[str, Any]) -> dict[str, str]:
         "site_manual_revisions": (
             f"{len(baseline['manualRevisionsPublished'])} manual revision"
         ),
+        # The round-3 conflation, in the file that had it right while the receipt
+        # had it wrong: a change count and an id count over the same match.
+        "matched_change_population": (
+            f"{len(cross_changes)} changes of the revision-C manual, on "
+            f"{len(cross_ids)} revision-B logical ids"
+        ),
+        "matched_change_kinds": _by_kind(cross_changes),
+        # The lineage the record drops, and the control run beside it.
+        "split_lineage_population": (
+            f"{split_identity['continuedWithoutRecordedPredecessor']} of "
+            f"{split_identity['continued']} continued units"
+        ),
+        "shared_lineage_population": (
+            f"{shared_identity['continuedWithRecordedPredecessor']} of "
+            f"{shared_identity['continued']} have one"
+        ),
+        # What splitting the id costs, in the two places the README states it in
+        # prose rather than in the table the test below parses.
+        "split_missing_population": (
+            f"the {len(split['equivalence']['missing_from_selective'])} revision-C manual artifacts"
+        ),
+        "split_quarantined_population": (
+            f"{split['selectiveRebuild']['counts']['quarantined']} artifacts are quarantined"
+        ),
+        "stale_left_behind_population": (
+            f"{len(shared['equivalence']['stale_left_behind'])} artifacts as `stale_left_behind`"
+        ),
+        # The headline paragraph, which restates the receipt's own summary. Both
+        # fragments carry a word from the sentence so that the split run's larger
+        # count cannot satisfy them as a substring.
+        "shared_quarantined_population": (
+            f"with {shared['selectiveRebuild']['counts']['quarantined']} artifacts quarantined"
+        ),
+        "shared_stale_population": (
+            f"on {len(shared['equivalence']['stale_left_behind'])} claims that were "
+            "carried forward"
+        ),
+        # The label the whole of F5 is about, in the two places the README quotes
+        # it away from the table.
+        "continued_label": (
+            f"{shared['revision']['identityContinuity']['continued']} units are labelled "
+            "`continued` in both runs"
+        ),
+        "continued_label_quoted": (
+            f"`continued: {shared['revision']['identityContinuity']['continued']}` is the number"
+        ),
+    }
+
+
+def readme_cost_table(core: Mapping[str, Any]) -> dict[str, tuple[str, str]]:
+    """The F2 cost table in the README, derived from the two runs it compares.
+
+    Ten hand-typed cells sat in that table with nothing checking them, next to a
+    receipt where every neighbouring figure was generated. `readme_assertions`
+    covers prose; a table is not prose, so it gets its own derivation and
+    `test_the_readme_cost_table_is_the_one_the_runs_measured` parses the rows out
+    of the file and compares cell for cell.
+
+    Keyed by an ASCII fragment of the row label rather than the label itself: the
+    labels carry ellipses and backticks, and a test that matched them exactly
+    would fail on a typographic edit while a wrong number went through.
+    """
+    shared, split = core["runs"][1], core["runs"][2]
+
+    def cell_continued(run: Mapping[str, Any], field: str) -> str:
+        return str(run["revision"]["identityContinuity"][field])
+
+    def cell_cross(run: Mapping[str, Any]) -> str:
+        changes = _changes_attributed_to_before_ids(run)
+        if not changes:
+            return "0"
+        return f"{len(changes)}, on {len(_matched_across_the_id_change(run))} ids"
+
+    def cell_equivalence(run: Mapping[str, Any]) -> str:
+        stale = [str(artifact) for artifact in run["equivalence"]["stale_left_behind"]]
+        if stale and all(artifact.startswith("claim:") for artifact in stale):
+            return f"fails on {len(stale)} claims"
+        return "fails on " + ", ".join(f"`{artifact}`" for artifact in stale)
+
+    return {
+        "identityCounts.continued": (
+            cell_continued(shared, "continued"),
+            cell_continued(split, "continued"),
+        ),
+        "with a recorded predecessor": (
+            cell_continued(shared, "continuedWithRecordedPredecessor"),
+            cell_continued(split, "continuedWithRecordedPredecessor"),
+        ),
+        "absent)": (
+            cell_continued(shared, "continuedWithoutRecordedPredecessor"),
+            cell_continued(split, "continuedWithoutRecordedPredecessor"),
+        ),
+        "diff changes attributed": (cell_cross(shared), cell_cross(split)),
+        "impact.affectedArtifactIds": (
+            str(len(shared["revision"]["impact"]["affectedArtifactIds"])),
+            str(len(split["revision"]["impact"]["affectedArtifactIds"])),
+        ),
+        "plan.stale": (str(len(shared["plan"]["stale"])), str(len(split["plan"]["stale"]))),
+        "artifacts carried over": (
+            str(shared["selectiveRebuild"]["counts"]["carriedOver"]),
+            str(split["selectiveRebuild"]["counts"]["carriedOver"]),
+        ),
+        "artifacts quarantined": (
+            str(shared["selectiveRebuild"]["counts"]["quarantined"]),
+            str(split["selectiveRebuild"]["counts"]["quarantined"]),
+        ),
+        "the selective one never builds": (
+            str(len(shared["equivalence"]["missing_from_selective"])),
+            str(len(split["equivalence"]["missing_from_selective"])),
+        ),
+        "equivalence": (cell_equivalence(shared), cell_equivalence(split)),
     }
 
 
