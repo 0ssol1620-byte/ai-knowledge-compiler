@@ -455,3 +455,82 @@ def test_the_receipt_states_that_no_core_file_was_modified(rebuilt: dict[str, An
     assert rebuilt["protectedCoreModified"] is False
     assert rebuilt["coreFilesModified"] == []
     assert rebuilt["status"] == "blocked"
+
+
+# ---------------------------------------------------------------------------
+# the population a number was measured over, and whose fixture it is
+#
+# Both classes of error below shipped once. The receipt was hash-bound,
+# byte-reproducible and green when they did, because every test compared machine
+# values to machine values. These compare a written sentence to the run it cites,
+# and a claim about another repository to that repository.
+
+
+def test_the_whole_fixture_refusal_is_measured_and_not_inferred(
+    rebuilt: dict[str, Any],
+) -> None:
+    """A world holds three documents; the fixture holds four. Both are counted.
+
+    `runs[0]` compiles the revision-B world, so its ten regions are ten regions
+    of three documents. Any sentence about "the four documents" needs the wider
+    number, and the wider number is a real call into `resolve_sources` rather
+    than an inference from the narrow one.
+    """
+    run = rebuilt["runs"][0]
+    whole = run["wholeFixtureResolverCheck"]
+
+    assert run["documentsCompiled"] == 3
+    assert run["regionsSeen"] == 10
+    assert whole["documentsSeen"] == 4
+    assert whole["regionsSeen"] == 14
+    assert whole["regionsSeen"] != run["regionsSeen"], (
+        "the two populations must stay distinguishable; if they ever coincide, "
+        "the sentences that name them stop being checkable"
+    )
+
+    # Recomputed from the fixture on disk rather than from the receipt.
+    entries = _entries("site-fixture.inputs.json")
+    assert whole["documentIds"] == sorted(entries)
+    assert whole["regionsSeen"] == sum(len(entry["regions"]) for entry in entries.values())
+
+    # And the wider population refuses for the same reason, which is the claim
+    # the README makes about the corpus.
+    assert whole["outcome"] == "refused"
+    assert whole["refusalCode"] == "CORE_V3_NO_RESOLVABLE_UNIT"
+    assert whole["unitsResolved"] == 0
+    assert whole["unitsCanonicalised"] == 0
+
+
+def test_f1_states_each_count_beside_the_set_it_was_counted_over(
+    rebuilt: dict[str, Any],
+) -> None:
+    """F1's observed state is generated from both populations, not typed."""
+    (f1,) = [gap for gap in rebuilt["blockedBy"] if gap["id"] == "F1"]
+    observed = f1["observedState"]
+    run = rebuilt["runs"][0]
+    whole = run["wholeFixtureResolverCheck"]
+
+    assert f"{run['documentsCompiled']} documents and {run['regionsSeen']} regions" in observed
+    assert f"{whole['documentsSeen']} documents, {whole['regionsSeen']} regions" in observed
+    assert "UNNUMBERED_PARAGRAPH" in observed
+    assert "UNRESOLVED_SOURCE_FACT" in observed
+
+
+def test_the_readme_carries_the_populations_the_runs_measured(
+    committed: dict[str, Any],
+) -> None:
+    """The README is the file a founder reads, so its counts are enforced too.
+
+    Every false statement this lane has shipped landed here: a retracted
+    conclusion, then a stale digest, then a count printed against the wrong
+    population. `build_receipt.readme_assertions` derives the fragments that
+    would mislead if they went wrong, and this asserts the file contains each
+    one verbatim.
+    """
+    readme = (HERE / "README.md").read_text(encoding="utf-8")
+    for label, fragment in build_receipt.readme_assertions(committed["deterministic"]).items():
+        assert fragment in readme, f"README no longer states {label}: {fragment!r}"
+
+    # The exact conflation the review caught, barred by name in either spelling.
+    for retracted in ("ten regions of the four documents", "10 regions of the 4 documents"):
+        assert retracted not in readme.lower(), retracted

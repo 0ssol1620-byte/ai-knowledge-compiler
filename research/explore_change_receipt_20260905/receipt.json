@@ -15,9 +15,9 @@
         "file": "services/core-v3/src/akc_core_v3/sources.py:457-495 (the _CLAUSE / _HEADING branches), refusing at :576",
         "requiredInputShape": "a region matching _CLAUSE (a number containing at least one dot, then the clause body) beneath a region matching _HEADING (a number, then a heading of at most 60 characters containing no full stop)",
         "actualInputShape": "unnumbered prose paragraphs; no region of any of the four FP-200 documents carries a printed clause number",
-        "observedState": "UNRESOLVED_SOURCE_FACT / UNNUMBERED_PARAGRAPH on every region",
+        "observedState": "UNRESOLVED_SOURCE_FACT with kind UNNUMBERED_PARAGRAPH on every region, in both populations. The revision-B world compiles 3 documents and 10 regions: 0 units out, refused with CORE_V3_NO_RESOLVABLE_UNIT. Handing resolve_sources the whole fixture instead -- 4 documents, 14 regions, the revision-C manual included -- resolves 0 units and refuses with CORE_V3_NO_RESOLVABLE_UNIT. The four-document figure is the one to quote for the corpus; the three-document one is what run 1 compiled.",
         "refusal": "CORE_V3_NO_RESOLVABLE_UNIT raised by resolve_sources",
-        "evidence": "runs[0]"
+        "evidence": "runs[0] for the three-document world, runs[0].wholeFixtureResolverCheck for all four"
       },
       {
         "id": "F2",
@@ -153,6 +153,8 @@
         ],
         "unitsResolved": 0,
         "regionsSeen": 10,
+        "documentsCompiled": 3,
+        "population": "the three documents of the revision-B world: the revision-B manual and the two the site publishes unchanged. The revision-C manual is not in this world and its regions are NOT in regionsSeen -- see wholeFixtureResolverCheck for the four-document number.",
         "sourceFactLedger": [
           {
             "documentId": "fp200-maintenance-manual",
@@ -238,7 +240,140 @@
               }
             ]
           }
-        ]
+        ],
+        "wholeFixtureResolverCheck": {
+          "question": "and if the resolver is handed the whole fixture at once rather than one world's worth of it, does anything survive",
+          "documentIds": [
+            "fp200-change-notice-cn-2026-03",
+            "fp200-maintenance-manual-rev-b",
+            "fp200-maintenance-manual-rev-c",
+            "fp200-service-log-2026"
+          ],
+          "documentsSeen": 4,
+          "regionsSeen": 14,
+          "unitsResolved": 0,
+          "unitsCanonicalised": 0,
+          "outcome": "refused",
+          "refusalCode": "CORE_V3_NO_RESOLVABLE_UNIT",
+          "sourceFactLedger": [
+            {
+              "documentId": "fp200-maintenance-manual-rev-b",
+              "sourceSha256": "sha256:1738896a4f79d2dc06930ccccb78940c579b0a91d80487afc56155beb9b11c5a",
+              "regions": 4,
+              "units": 0,
+              "facts": [
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-b-fp200-maintenance-manual-rev-b-p1-r0",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-b-fp200-maintenance-manual-rev-b-p1-r1",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-b-fp200-maintenance-manual-rev-b-p1-r2",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-b-fp200-maintenance-manual-rev-b-p1-r3",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                }
+              ]
+            },
+            {
+              "documentId": "fp200-maintenance-manual-rev-c",
+              "sourceSha256": "sha256:e8772bf183ab5bb284ab5da62870609ebd79b4bf5bec51ed70c68e2fe4ee48e4",
+              "regions": 4,
+              "units": 0,
+              "facts": [
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-c-fp200-maintenance-manual-rev-c-p1-r0",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-c-fp200-maintenance-manual-rev-c-p1-r1",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-c-fp200-maintenance-manual-rev-c-p1-r2",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-maintenance-manual-rev-c-fp200-maintenance-manual-rev-c-p1-r3",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                }
+              ]
+            },
+            {
+              "documentId": "fp200-change-notice-cn-2026-03",
+              "sourceSha256": "sha256:50ebc0931467f3770edc54318a6f19e88f0a17d3fbd0389acc4ec89567cc86bf",
+              "regions": 3,
+              "units": 0,
+              "facts": [
+                {
+                  "factId": "sf-fp200-change-notice-cn-2026-03-fp200-change-notice-cn-2026-03-p1-r0",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-change-notice-cn-2026-03-fp200-change-notice-cn-2026-03-p1-r1",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-change-notice-cn-2026-03-fp200-change-notice-cn-2026-03-p1-r2",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                }
+              ]
+            },
+            {
+              "documentId": "fp200-service-log-2026",
+              "sourceSha256": "sha256:6190995ab7f69629704b8c1a2ea03c1759d570cd3e61dd98d92ef4556574d95e",
+              "regions": 3,
+              "units": 0,
+              "facts": [
+                {
+                  "factId": "sf-fp200-service-log-2026-fp200-service-log-2026-p1-r0",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-service-log-2026-fp200-service-log-2026-p1-r1",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                },
+                {
+                  "factId": "sf-fp200-service-log-2026-fp200-service-log-2026-p1-r2",
+                  "kind": "UNNUMBERED_PARAGRAPH",
+                  "state": "UNRESOLVED_SOURCE_FACT",
+                  "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "run": "clause_form_shared_document_id",
@@ -1442,7 +1577,7 @@
     ],
     "siteFixtureUnitsResolved": 0
   },
-  "deterministicSha256": "sha256:23f55e10c28c674bf9b290a31aa224d17d7ac9a2bbc777baf378056b463959db",
+  "deterministicSha256": "sha256:5aaa8c496d725fb8dd5b3db1535950f0de6f4942d4b4408039d49b4de542ae2d",
   "environment": {
     "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
     "interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",

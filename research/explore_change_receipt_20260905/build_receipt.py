@@ -18,11 +18,14 @@ receipt about nothing.
 
 **The headline result is a refusal.** The FP-200 corpus the site publishes is
 unnumbered prose, and `akc_core_v3.sources.canonicalise_document` builds units
-only from printed clause numbers under printed numbered headings. Every region
-of all four documents resolves to `UNNUMBERED_PARAGRAPH` /
-`UNRESOLVED_SOURCE_FACT`, no unit survives, and `resolve_sources` refuses with
-`CORE_V3_NO_RESOLVABLE_UNIT`. That is run 1, and it is the deliverable: a named
-gap with the run behind it rather than an assertion.
+only from printed clause numbers under printed numbered headings. Run 1 compiles
+the revision-B world -- three documents, ten regions -- and every one of those
+regions resolves to `UNNUMBERED_PARAGRAPH` / `UNRESOLVED_SOURCE_FACT`; the same
+run then hands `resolve_sources` all four fixture documents at once, fourteen
+regions, and nothing survives that either. `CORE_V3_NO_RESOLVABLE_UNIT` both
+times. Both populations are recorded and both are derived, because a count
+printed beside the wrong set is the mistake this lane's prose has now made
+twice, and neither time did a green test notice.
 
 Runs 2 and 3 exist to say *where* the boundary is, because "blocked" on its own
 does not distinguish a resolver that cannot read the shape from a chain that
@@ -80,9 +83,21 @@ from akc_cir.revision_compile import (  # noqa: E402
 from akc_core_v3.initial import InitialCompileService  # noqa: E402
 from akc_core_v3.resolver import InMemoryWorldArchive, ProductionSourceResolver  # noqa: E402
 from akc_core_v3.service import RevisionService  # noqa: E402
-from akc_core_v3.sources import canonicalise_document, load_document  # noqa: E402
+from akc_core_v3.sources import (  # noqa: E402
+    SourceResolutionRefused,
+    canonicalise_document,
+    load_document,
+    resolve_sources,
+)
 
-__all__ = ["build", "document_reference", "input_manifest", "main", "ocr_record"]
+__all__ = [
+    "build",
+    "document_reference",
+    "input_manifest",
+    "main",
+    "ocr_record",
+    "readme_assertions",
+]
 
 #: The core commit this receipt describes. Section 0 of the lane contract.
 AKC_COMMIT = "26bb8926334246bbc666d6cc5abbb7291dac53f1"
@@ -372,6 +387,50 @@ def _fact_ledger(corpus: Corpus, documents: Sequence[Mapping[str, Any]]) -> list
     return ledger
 
 
+def _whole_fixture_refusal(entries: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
+    """Hand `resolve_sources` all four fixture documents at once, and record it.
+
+    The compile above is a *world*, so it takes three documents: a revision-B
+    world does not contain revision C. That makes its ten regions the wrong
+    denominator for any sentence about "the four documents", which is exactly
+    the sentence this README kept writing. So the wider population is measured
+    here instead of inferred: same resolver, same corpus, all four documents,
+    fourteen regions, and whatever comes back comes back.
+    """
+    corpus = Corpus({entry["ocrJsonKey"]: ocr_record(entry) for entry in entries.values()})
+    documents = [
+        document_reference(
+            entry,
+            native_id=str(entry["documentId"]),
+            title=str(entry["documentId"]),
+        )
+        for entry in entries.values()
+    ]
+    ledger = _fact_ledger(corpus, documents)
+    refusal: str | None = None
+    resolved_units = 0
+    try:
+        resolved = resolve_sources(corpus, documents)
+    except SourceResolutionRefused as refused:
+        refusal = refused.code
+    else:
+        resolved_units = len(resolved.units)
+    return {
+        "question": (
+            "and if the resolver is handed the whole fixture at once rather than one "
+            "world's worth of it, does anything survive"
+        ),
+        "documentIds": sorted(str(entry["documentId"]) for entry in entries.values()),
+        "documentsSeen": len(documents),
+        "regionsSeen": sum(int(item["regions"]) for item in ledger),
+        "unitsResolved": resolved_units,
+        "unitsCanonicalised": sum(int(item["units"]) for item in ledger),
+        "outcome": "refused" if refusal else "resolved",
+        "refusalCode": refusal,
+        "sourceFactLedger": ledger,
+    }
+
+
 def run_site_fixture_verbatim() -> dict[str, Any]:
     """Compile the revision-B world from the documents the site publishes."""
     entries = {entry["documentId"]: entry for entry in _load("site-fixture.inputs.json")}
@@ -417,7 +476,15 @@ def run_site_fixture_verbatim() -> dict[str, Any]:
         ],
         "unitsResolved": sum(int(item["units"]) for item in ledger),
         "regionsSeen": sum(int(item["regions"]) for item in ledger),
+        "documentsCompiled": len(documents),
+        "population": (
+            "the three documents of the revision-B world: the revision-B manual and "
+            "the two the site publishes unchanged. The revision-C manual is not in "
+            "this world and its regions are NOT in regionsSeen -- see "
+            "wholeFixtureResolverCheck for the four-document number."
+        ),
         "sourceFactLedger": ledger,
+        "wholeFixtureResolverCheck": _whole_fixture_refusal(entries),
     }
 
 
@@ -737,6 +804,41 @@ def _matched_across_the_id_change(run: Mapping[str, Any]) -> list[str]:
     )
 
 
+def _f1_observed_state(site: Mapping[str, Any]) -> str:
+    """F1's outcome, with each count beside the set it was counted over.
+
+    Two populations, because there are two and conflating them is how the
+    founder-facing sentence went wrong: the compile is a world (three documents)
+    and the resolver check is the whole fixture (four). Neither number is typed.
+    """
+    whole = site["wholeFixtureResolverCheck"]
+    kinds = sorted(
+        {
+            str(fact["kind"])
+            for document in whole["sourceFactLedger"]
+            for fact in document["facts"]
+        }
+    )
+    states = sorted(
+        {
+            str(fact["state"])
+            for document in whole["sourceFactLedger"]
+            for fact in document["facts"]
+        }
+    )
+    return (
+        f"{' / '.join(states)} with kind {' / '.join(kinds)} on every region, in both "
+        f"populations. The revision-B world compiles {site['documentsCompiled']} "
+        f"documents and {site['regionsSeen']} regions: "
+        f"{site['unitsResolved']} units out, refused with {site['refusalCode']}. "
+        f"Handing resolve_sources the whole fixture instead -- "
+        f"{whole['documentsSeen']} documents, {whole['regionsSeen']} regions, the "
+        f"revision-C manual included -- resolves {whole['unitsCanonicalised']} units "
+        f"and refuses with {whole['refusalCode']}. The four-document figure is the "
+        "one to quote for the corpus; the three-document one is what run 1 compiled."
+    )
+
+
 def _f2_observed_state(shared: Mapping[str, Any], split: Mapping[str, Any]) -> str:
     """F2's finding, formatted from the two runs rather than typed beside them.
 
@@ -843,9 +945,12 @@ def deterministic() -> dict[str, Any]:
                     "unnumbered prose paragraphs; no region of any of the four FP-200 "
                     "documents carries a printed clause number"
                 ),
-                "observedState": "UNRESOLVED_SOURCE_FACT / UNNUMBERED_PARAGRAPH on every region",
+                "observedState": _f1_observed_state(site),
                 "refusal": "CORE_V3_NO_RESOLVABLE_UNIT raised by resolve_sources",
-                "evidence": "runs[0]",
+                "evidence": (
+                    "runs[0] for the three-document world, "
+                    "runs[0].wholeFixtureResolverCheck for all four"
+                ),
             },
             {
                 "id": "F2",
@@ -982,6 +1087,34 @@ def deterministic() -> dict[str, Any]:
         "inputs": input_manifest(),
         "runs": runs,
         "siteFixtureUnitsResolved": site["unitsResolved"],
+    }
+
+
+def readme_assertions(core: Mapping[str, Any]) -> dict[str, str]:
+    """Fragments the README must contain verbatim, each derived from a run.
+
+    The README is the only file a founder actually reads, and it is where every
+    one of this lane's false statements has landed: round 1 put a retracted
+    conclusion in it, round 2 a stale digest, round 3 a count beside the wrong
+    population. The receipt's own prose was made underivable-by-hand in round 2
+    and stopped drifting; the README was not, and drifted again.
+
+    So the load-bearing counts are generated here and `test_the_readme_carries_
+    the_populations_the_runs_measured` asserts each string is present. A README
+    that renames a denominator now fails a test instead of shipping. This is not
+    a spell-checker: only figures whose wrong version would mislead are listed.
+    """
+    site = core["runs"][0]
+    whole = site["wholeFixtureResolverCheck"]
+    return {
+        # The exact conflation the round-2 review caught: 10 regions belong to
+        # the 3-document world, not to the 4-document fixture.
+        "compiled_population": (
+            f"{site['regionsSeen']} regions of the {site['documentsCompiled']} documents"
+        ),
+        "whole_fixture_population": (
+            f"{whole['regionsSeen']} regions of the {whole['documentsSeen']} documents"
+        ),
     }
 
 
