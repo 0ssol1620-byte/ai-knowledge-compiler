@@ -1,0 +1,1338 @@
+{
+  "deterministic": {
+    "schema": "tavonel.research.explore_change_receipt.v1",
+    "campaign": "TAVONEL-CATEGORY-LEADERSHIP-20260905-V1",
+    "lane": "change-receipt",
+    "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
+    "status": "blocked",
+    "summary": "The core chain cannot compile the FP-200 fixture the site publishes: its source resolver builds units only from printed clause numbers, the fixture is unnumbered prose, every region fails closed and the compile is refused before a world exists. Compiling a clause-form restatement through the same unmodified services reaches the end of the chain and does not pass it -- the amended clause's identity is unsettled, two artifacts are quarantined, the revision is review_required rather than promotable, and full-rebuild equivalence fails on two claims that were carried forward with a stale bounding box. No full-rebuild equivalence PASS exists on this fixture from either run, so nothing here may be wired into /explore as an equivalence result.",
+    "equivalencePassAvailable": false,
+    "blockedBy": [
+      {
+        "id": "F1",
+        "gap": "unit-extraction",
+        "function": "akc_core_v3.sources.canonicalise_document",
+        "file": "services/core-v3/src/akc_core_v3/sources.py:457-495 (the _CLAUSE / _HEADING branches), refusing at :576",
+        "requiredInputShape": "a region matching _CLAUSE (a number containing at least one dot, then the clause body) beneath a region matching _HEADING (a number, then a heading of at most 60 characters containing no full stop)",
+        "actualInputShape": "unnumbered prose paragraphs; no region of any of the four FP-200 documents carries a printed clause number",
+        "observedState": "UNRESOLVED_SOURCE_FACT / UNNUMBERED_PARAGRAPH on every region",
+        "refusal": "CORE_V3_NO_RESOLVABLE_UNIT raised by resolve_sources",
+        "evidence": "runs[0]"
+      },
+      {
+        "id": "F2",
+        "gap": "document-identity-across-revisions",
+        "function": "akc_core_v3.sources.canonicalise_document",
+        "file": "services/core-v3/src/akc_core_v3/sources.py:498 -- logical_id = ku_{document_id}_{clause}",
+        "requiredInputShape": "one nativeId for the manual with two contentSha256 versions; logical_id is ku_{document_id}_{clause}, so the document id is what carries identity across a revision",
+        "actualInputShape": "the site publishes revision B and revision C as two files whose documentIds differ (fp200-maintenance-manual-rev-b / -rev-c)",
+        "observedState": "measured in runs[2]: with one id per revision no unit continues and the manual is reported replaced rather than amended",
+        "refusal": null,
+        "evidence": "runs[1] versus runs[2]"
+      }
+    ],
+    "findings": [
+      {
+        "id": "F3",
+        "kind": "correctness",
+        "severity": "high",
+        "title": "a claim artifact declares semantic sensitivity and carries locator fields in its body, so a clause that keeps its words and moves on the page is carried forward with a stale bounding box",
+        "where": [
+          "services/core-v3/src/akc_core_v3/projections.py:230 -- channels[claim_id(unit)] = _SEMANTIC",
+          "services/core-v3/src/akc_core_v3/projections.py:208-218 -- the claim body embeds unit.provenance(), which is page, bbox, evidenceId and regionId",
+          "services/core-v3/src/akc_core_v3/projections.py:66-71 -- the comment states the intent: a claim does not go stale when the evidence moves"
+        ],
+        "measured": "runs[1].equivalence.stale_left_behind names two claims; runs[1].staleLeftBehindWitness holds both bodies, whose text is byte-identical and whose bbox1000 differs",
+        "notFixedHere": "projections.py belongs to no lane in this campaign and changing artifact sensitivity is an architecture decision; reported, not touched"
+      },
+      {
+        "id": "F4",
+        "kind": "expected-behaviour",
+        "severity": "informational",
+        "title": "the amended clause's identity is AMBIGUOUS with a single candidate: the uncalibrated review band abstaining as designed, not a defect",
+        "where": [
+          "packages/cir-python/src/akc_cir/identity.py:252-256 -- MERGE_THRESHOLD 0.92, NEW_IDENTITY_THRESHOLD 0.75, declared a bootstrap band and not a calibrated operating point"
+        ],
+        "measured": "runs[1].revision.units, the record whose identityContinuity is 'ambiguous', carries its own identityReason; the consequence is two quarantined artifacts and a review_required disposition",
+        "notFixedHere": "CLAUDE.md: no threshold in this repository is calibrated and none may be moved to make a run pass"
+      }
+    ],
+    "protectedCoreModified": false,
+    "coreFilesModified": [],
+    "inputs": [
+      {
+        "path": "inputs/clause-form/fp-200-change-notice-clause-CN-2026-03.pdf",
+        "bytes": "1132",
+        "sha256": "sha256:e0d9764c476841466fec83a2c0db0c47b014fec38839223799164dff6638b005"
+      },
+      {
+        "path": "inputs/clause-form/fp-200-maintenance-manual-clause-revB.pdf",
+        "bytes": "1399",
+        "sha256": "sha256:86165deff559682416a7a1f436ba06a86f476be24b9a172d0d3babd50b07f18f"
+      },
+      {
+        "path": "inputs/clause-form/fp-200-maintenance-manual-clause-revC.pdf",
+        "bytes": "1504",
+        "sha256": "sha256:062c056d7d2275dfd5ea3bcd3f7625339888e72b9f8f90e48963fefd753cee5a"
+      },
+      {
+        "path": "inputs/clause-form/fp-200-service-log-clause-2026.pdf",
+        "bytes": "1118",
+        "sha256": "sha256:5dc12ec6e5e6df9be2f885a0524279de545b35d47fdb4114f5f9be33a4e08e36"
+      },
+      {
+        "path": "inputs/clause-form.inputs.json",
+        "bytes": "16025",
+        "sha256": "sha256:bccf0e4493befd82d49d979408617517f917e6c21bf7b839b7ccf19c2a40502f"
+      },
+      {
+        "path": "inputs/fp-200-change-notice-CN-2026-03.pdf",
+        "bytes": "965",
+        "sha256": "sha256:50ebc0931467f3770edc54318a6f19e88f0a17d3fbd0389acc4ec89567cc86bf"
+      },
+      {
+        "path": "inputs/fp-200-maintenance-manual-revB.pdf",
+        "bytes": "1182",
+        "sha256": "sha256:1738896a4f79d2dc06930ccccb78940c579b0a91d80487afc56155beb9b11c5a"
+      },
+      {
+        "path": "inputs/fp-200-maintenance-manual-revC.pdf",
+        "bytes": "1287",
+        "sha256": "sha256:e8772bf183ab5bb284ab5da62870609ebd79b4bf5bec51ed70c68e2fe4ee48e4"
+      },
+      {
+        "path": "inputs/fp-200-service-log-2026.pdf",
+        "bytes": "990",
+        "sha256": "sha256:6190995ab7f69629704b8c1a2ea03c1759d570cd3e61dd98d92ef4556574d95e"
+      },
+      {
+        "path": "inputs/site-fixture.inputs.json",
+        "bytes": "10103",
+        "sha256": "sha256:c0974f8e40be63b9f4cea19320128e4abf45df0c63e0c6bf901f177037773696"
+      }
+    ],
+    "runs": [
+      {
+        "run": "site_fixture_verbatim",
+        "question": "does the core chain compile the FP-200 documents the site publishes, as they are written",
+        "corpusIsSiteFixture": true,
+        "wireableIntoExplore": false,
+        "outcome": "refused",
+        "httpStatus": 422,
+        "refusalCode": "CORE_V3_NO_RESOLVABLE_UNIT",
+        "documents": [
+          {
+            "nativeId": "fp200-maintenance-manual",
+            "sourceFilename": "fp-200-maintenance-manual-revB.pdf",
+            "contentSha256": "sha256:1738896a4f79d2dc06930ccccb78940c579b0a91d80487afc56155beb9b11c5a"
+          },
+          {
+            "nativeId": "fp200-change-notice-cn-2026-03",
+            "sourceFilename": "fp-200-change-notice-CN-2026-03.pdf",
+            "contentSha256": "sha256:50ebc0931467f3770edc54318a6f19e88f0a17d3fbd0389acc4ec89567cc86bf"
+          },
+          {
+            "nativeId": "fp200-service-log-2026",
+            "sourceFilename": "fp-200-service-log-2026.pdf",
+            "contentSha256": "sha256:6190995ab7f69629704b8c1a2ea03c1759d570cd3e61dd98d92ef4556574d95e"
+          }
+        ],
+        "unitsResolved": 0,
+        "regionsSeen": 10,
+        "sourceFactLedger": [
+          {
+            "documentId": "fp200-maintenance-manual",
+            "sourceSha256": "sha256:1738896a4f79d2dc06930ccccb78940c579b0a91d80487afc56155beb9b11c5a",
+            "regions": 4,
+            "units": 0,
+            "facts": [
+              {
+                "factId": "sf-fp200-maintenance-manual-fp200-maintenance-manual-rev-b-p1-r0",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-maintenance-manual-fp200-maintenance-manual-rev-b-p1-r1",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-maintenance-manual-fp200-maintenance-manual-rev-b-p1-r2",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-maintenance-manual-fp200-maintenance-manual-rev-b-p1-r3",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              }
+            ]
+          },
+          {
+            "documentId": "fp200-change-notice-cn-2026-03",
+            "sourceSha256": "sha256:50ebc0931467f3770edc54318a6f19e88f0a17d3fbd0389acc4ec89567cc86bf",
+            "regions": 3,
+            "units": 0,
+            "facts": [
+              {
+                "factId": "sf-fp200-change-notice-cn-2026-03-fp200-change-notice-cn-2026-03-p1-r0",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-change-notice-cn-2026-03-fp200-change-notice-cn-2026-03-p1-r1",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-change-notice-cn-2026-03-fp200-change-notice-cn-2026-03-p1-r2",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              }
+            ]
+          },
+          {
+            "documentId": "fp200-service-log-2026",
+            "sourceSha256": "sha256:6190995ab7f69629704b8c1a2ea03c1759d570cd3e61dd98d92ef4556574d95e",
+            "regions": 3,
+            "units": 0,
+            "facts": [
+              {
+                "factId": "sf-fp200-service-log-2026-fp200-service-log-2026-p1-r0",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-service-log-2026-fp200-service-log-2026-p1-r1",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              },
+              {
+                "factId": "sf-fp200-service-log-2026-fp200-service-log-2026-p1-r2",
+                "kind": "UNNUMBERED_PARAGRAPH",
+                "state": "UNRESOLVED_SOURCE_FACT",
+                "reason": "paragraph carries no clause number, so it has no anchor that would survive a re-typeset; giving it a positional identity would break the moment the document is reflowed"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "run": "clause_form_shared_document_id",
+        "question": "does the unmodified core chain carry one clause amendment through identity, impact, selective rebuild and equivalence",
+        "corpusIsSiteFixture": false,
+        "wireableIntoExplore": false,
+        "caveat": "The corpus is a clause-form restatement written for this receipt. It is not the FP-200 documents the site serves, no PDF of it is published, and this result is not an equivalence claim about /explore.",
+        "documentIdPolicy": "one id across both revisions",
+        "outcome": "compiled",
+        "httpStatus": 200,
+        "initial": {
+          "worldStateId": "world-81e41022cc4ba70cac614f8c",
+          "manifestDigest": "sha256:81e41022cc4ba70cac614f8ce205c2f4b006441060f57524283dc5467ce75975",
+          "lifecycle": "candidate",
+          "status": "completed",
+          "sourceSha256": "sha256:2f0b3ee383f814c46b8d7c4e02d6a1df522f55e6456b0db453251882c74e7f0a",
+          "artifactCount": 27,
+          "artifactDigests": {
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:92b509b688e890df4bcf1887585f079eae0046d92f391654d2f63a83942e01de",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:581b6374671075ae0b9159049cfa4bab4617e85540149bc729a291839a736bf8",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:be78f0d8bb2628447f79580f7e72090d49ca577afdf0d852189fbe1b0bda4fe0",
+            "claim:ku_fp200-maintenance-manual_1_1": "sha256:75c7dff5782fbae21cd1dab3460fbc6015df9d02e29af39b86ab9741b1081e06",
+            "claim:ku_fp200-maintenance-manual_2_1": "sha256:9300c95ab157bd047c965f6b3e7be19675f52896cac925abae5a6b7a3bd72bbc",
+            "claim:ku_fp200-maintenance-manual_3_1": "sha256:cf5dc93e4930e1f875ea8d514d1b2d0910c1e54c2ff19a7a0a3ab002fab8aaba",
+            "claim:ku_fp200-maintenance-manual_4_1": "sha256:acff8702bde8357a78948dfa63e810d52df45f58e5fa2b4a50d8ef25f24809af",
+            "claim:ku_fp200-service-log-2026_1_1": "sha256:bfb933f57ba551ffb15bd40c920ce5d044c2056c367f0762fa0c4c45900220be",
+            "claim:ku_fp200-service-log-2026_2_1": "sha256:3ad2d89008e2524c99baed71758be76509c6efbc8e53d3b236a6043f700170e8",
+            "claim:ku_fp200-service-log-2026_3_1": "sha256:aa9098c500102cda3cce5f0197bb02b7bcf646344a3487319ff49dfb3d79a4b0",
+            "collection:directory": "sha256:698c7f0e6a317e9ac904f4dc6529cfd6eaf4a5ca251bf2b5c7e39207bc551fb9",
+            "collection:ontology": "sha256:e9cdbfb2ec251c20c1da6bc4d468709048b7fccd089225e753dbd4b8cb34efe3",
+            "collection:retrieval-index": "sha256:63b85429007da730819d54db0c20ae8398b9b17a687fd89aa638895e6feec92b",
+            "graph:relations": "sha256:14f415277476bcd920355f5b69065406c094037b8683f043929127674350d32b",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:0c92a22b185769e15aaa37ba06100e74386dcbbe0ca4c0144172c591d678cfda",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:818011cb6df8a34816684323e4a1c2ed7cb6a823e7ec2120c95a5a0ba4bcbadf",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:691cdb0b23aeb68c7a87ef574235779fd27f49162a43cdfc9766b490d3905267",
+            "retrieval:ku_fp200-maintenance-manual_1_1": "sha256:d7913ae5d451db156fb079b82d033d4f0bafbfedbcf7ea10bf596f1df8a88299",
+            "retrieval:ku_fp200-maintenance-manual_2_1": "sha256:9bd4a7c22b37a88ee833ce358a39d00564a16bc55ca61e68bb74ab4bc87f2859",
+            "retrieval:ku_fp200-maintenance-manual_3_1": "sha256:382c4f8395700cd24f528c64755c5a7973dcbf8e45335d41355cc263f71e517f",
+            "retrieval:ku_fp200-maintenance-manual_4_1": "sha256:45dc01ad6ab71661f4d39fa6baa91be8cf597b7a0c3f48b2644da90ef46f8745",
+            "retrieval:ku_fp200-service-log-2026_1_1": "sha256:8d28556e057ee5b33e11b952fb82d06e65ae8c22b4c65507aadab7d254cd25f8",
+            "retrieval:ku_fp200-service-log-2026_2_1": "sha256:ebd24f8b78186e812cb3bef400c63f21d4c67071900bc71f8c0f3fcbe1a96c2d",
+            "retrieval:ku_fp200-service-log-2026_3_1": "sha256:584b565332a6c5d356ccdd695838dc46cc0f4b25eeecdfd666444b966f2c015d",
+            "summary:fp200-change-notice-cn-2026-03": "sha256:3132c261762a9c4a90b28f444ec5a39f8437f2f50c7ac37a7ef7965a20d6ad76",
+            "summary:fp200-maintenance-manual": "sha256:d8fc2de3ad3a01b2438a7b306bc39c01a97ecd5333afb637be4f08742a06182c",
+            "summary:fp200-service-log-2026": "sha256:f888b15f266b5be0d56948087904aa8b5adfb9a4c20731d49e634c6d72fed233"
+          },
+          "sourceFacts": {
+            "coveragePermille": 1000,
+            "sourceFaithful": true,
+            "failClosed": [],
+            "tally": {
+              "REPRESENTED_IN_COMPILED_STATE": 30,
+              "RECOGNIZED_BUT_UNREPRESENTED": 0,
+              "IGNORED_BY_PREDECLARED_POLICY": 0,
+              "UNRESOLVED_SOURCE_FACT": 0
+            },
+            "failClosedStates": [
+              "RECOGNIZED_BUT_UNREPRESENTED",
+              "UNRESOLVED_SOURCE_FACT"
+            ]
+          }
+        },
+        "revisionResolvedKeys": [
+          "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-change-notice-clause-CN-2026-03.pdf#text-layer",
+          "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revC.pdf#text-layer",
+          "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-service-log-clause-2026.pdf#text-layer"
+        ],
+        "revision": {
+          "changeId": "chg_5508ecdd3709692ff09bae042a7ae773",
+          "worldStateId": "world-de5dea388254b5a49d74a9b6",
+          "parentWorldStateId": "world-81e41022cc4ba70cac614f8c",
+          "manifestDigest": "sha256:db2183c3f51b23fca3e47c821f72b13f1ab38aedd57457de0510e8791f570762",
+          "lifecycle": "review_required",
+          "status": "review_required",
+          "disposition": "review_required",
+          "reviewReasons": [
+            "2 artifact(s) quarantined",
+            "1 unit identity(ies) unsettled",
+            "untyped unit change: unresolved",
+            "full-rebuild equivalence failed on 2 artifact(s)"
+          ],
+          "candidatePromotion": false,
+          "identityCounts": {
+            "continued": 9,
+            "new": 0,
+            "ambiguous": 1,
+            "unresolved": 0
+          },
+          "typedChanges": {
+            "unchanged": 6,
+            "semantic": 1,
+            "locator": 3,
+            "unresolved": 1
+          },
+          "unresolvedChannels": [],
+          "changedUnits": [
+            "ku_fp200-maintenance-manual_1_1",
+            "ku_fp200-maintenance-manual_2_1",
+            "ku_fp200-maintenance-manual_3_1",
+            "ku_fp200-maintenance-manual_4_1"
+          ],
+          "units": [
+            {
+              "logicalUnitId": "ku_fp200-change-notice-cn-2026-03_1_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_b455bc437ac64f64ae9d13edbad54bd4",
+              "changeFingerprint": "chf_0e34a8b0848d140f993d61cb6e20e84c",
+              "previousLogicalUnitId": "ku_fp200-change-notice-cn-2026-03_1_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-change-notice-cn-2026-03_2_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_3577792a90526115ec9eb81433e0292b",
+              "changeFingerprint": "chf_7adcb6b0f26dfff33f196c06837d3f29",
+              "previousLogicalUnitId": "ku_fp200-change-notice-cn-2026-03_2_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-change-notice-cn-2026-03_3_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_b5e057029ed8c404a52b5061bc6fedcc",
+              "changeFingerprint": "chf_a1477a9dc7a812ba386d2f877c59e421",
+              "previousLogicalUnitId": "ku_fp200-change-notice-cn-2026-03_3_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual_1_1",
+              "identityContinuity": "continued",
+              "changeState": "semantic",
+              "changeStates": [
+                "semantic",
+                "locator"
+              ],
+              "identityFingerprint": "idf_41068b58db69da99975f8388e3991862",
+              "changeFingerprint": "chf_b2ac8df5418553c9e6d66649899bc922",
+              "previousLogicalUnitId": "ku_fp200-maintenance-manual_1_1",
+              "identityRelation": "SAME_AS_VERSION",
+              "identityReason": "anchor changed within the same page"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual_2_1",
+              "identityContinuity": "ambiguous",
+              "changeState": "unresolved",
+              "changeStates": [
+                "unresolved"
+              ],
+              "identityFingerprint": "idf_f20fc70becf2b525d901c015abb69ad3",
+              "changeFingerprint": "chf_7f8cadf81a12e443034f7599820cdd96",
+              "identityCandidates": [
+                "ku_fp200-maintenance-manual_2_1"
+              ],
+              "identityReason": "score 0.90 sits in the review band between 0.75 and 0.92"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual_3_1",
+              "identityContinuity": "continued",
+              "changeState": "locator",
+              "changeStates": [
+                "locator"
+              ],
+              "identityFingerprint": "idf_9c7e47273cb7f48591f5b2c668f4c318",
+              "changeFingerprint": "chf_d490c9b25a023b0cbf4b2d2fece160ca",
+              "previousLogicalUnitId": "ku_fp200-maintenance-manual_3_1",
+              "identityRelation": "SAME_AS_VERSION",
+              "identityReason": "anchor changed within the same page"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual_4_1",
+              "identityContinuity": "continued",
+              "changeState": "locator",
+              "changeStates": [
+                "locator"
+              ],
+              "identityFingerprint": "idf_2cde1d2fd2781c76544c2f4bd239df06",
+              "changeFingerprint": "chf_9caaf39c7c9523868b87f42ccc71246e",
+              "previousLogicalUnitId": "ku_fp200-maintenance-manual_4_1",
+              "identityRelation": "SAME_AS_VERSION",
+              "identityReason": "anchor changed within the same page"
+            },
+            {
+              "logicalUnitId": "ku_fp200-service-log-2026_1_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_98e7a1d569b25367c01b48bed00d2796",
+              "changeFingerprint": "chf_84fc8874f49836357b935a45ed07839f",
+              "previousLogicalUnitId": "ku_fp200-service-log-2026_1_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-service-log-2026_2_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_31e9db5aa08afa7f0f5b05b7ea714530",
+              "changeFingerprint": "chf_987d4f552def05d0344b6474472c7f87",
+              "previousLogicalUnitId": "ku_fp200-service-log-2026_2_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-service-log-2026_3_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_726d2894a40dd7c334a67f66ede7e886",
+              "changeFingerprint": "chf_067c63697439dfa0ed33dc25ef3f7bc9",
+              "previousLogicalUnitId": "ku_fp200-service-log-2026_3_1",
+              "identityRelation": "SAME_AS_VERSION"
+            }
+          ],
+          "impact": {
+            "affectedArtifactIds": [
+              "claim:ku_fp200-maintenance-manual_1_1",
+              "collection:ontology",
+              "collection:retrieval-index",
+              "graph:relations",
+              "retrieval:ku_fp200-maintenance-manual_1_1",
+              "retrieval:ku_fp200-maintenance-manual_3_1",
+              "retrieval:ku_fp200-maintenance-manual_4_1",
+              "summary:fp200-maintenance-manual"
+            ],
+            "unresolvedArtifactIds": [
+              "claim:ku_fp200-maintenance-manual_2_1",
+              "retrieval:ku_fp200-maintenance-manual_2_1"
+            ]
+          },
+          "sourceFacts": {
+            "coveragePermille": 1000,
+            "sourceFaithful": true,
+            "failClosed": []
+          },
+          "artifactDigests": {
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:92b509b688e890df4bcf1887585f079eae0046d92f391654d2f63a83942e01de",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:581b6374671075ae0b9159049cfa4bab4617e85540149bc729a291839a736bf8",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:be78f0d8bb2628447f79580f7e72090d49ca577afdf0d852189fbe1b0bda4fe0",
+            "claim:ku_fp200-maintenance-manual_1_1": "sha256:6bec9a6d512ce4e8c14c793cc917d7686e877814ea71d6d75f0fb38e9bb9eedf",
+            "claim:ku_fp200-maintenance-manual_2_1": "sha256:39785ae0d1f3551b39bc210a585184fd61c24474b12252e3a9d4d17aacaf7a12",
+            "claim:ku_fp200-maintenance-manual_3_1": "sha256:cf5dc93e4930e1f875ea8d514d1b2d0910c1e54c2ff19a7a0a3ab002fab8aaba",
+            "claim:ku_fp200-maintenance-manual_4_1": "sha256:acff8702bde8357a78948dfa63e810d52df45f58e5fa2b4a50d8ef25f24809af",
+            "claim:ku_fp200-service-log-2026_1_1": "sha256:bfb933f57ba551ffb15bd40c920ce5d044c2056c367f0762fa0c4c45900220be",
+            "claim:ku_fp200-service-log-2026_2_1": "sha256:3ad2d89008e2524c99baed71758be76509c6efbc8e53d3b236a6043f700170e8",
+            "claim:ku_fp200-service-log-2026_3_1": "sha256:aa9098c500102cda3cce5f0197bb02b7bcf646344a3487319ff49dfb3d79a4b0",
+            "collection:directory": "sha256:698c7f0e6a317e9ac904f4dc6529cfd6eaf4a5ca251bf2b5c7e39207bc551fb9",
+            "collection:ontology": "sha256:0f7b14b52ca8e3cfad9f94a828f56ecf52d86ce1acd295d8566dd212f97fb609",
+            "collection:retrieval-index": "sha256:8869f32399ba339b13d34f01485f7820e434963b22eded7a8fa03c6e399a0e11",
+            "graph:relations": "sha256:14f415277476bcd920355f5b69065406c094037b8683f043929127674350d32b",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:0c92a22b185769e15aaa37ba06100e74386dcbbe0ca4c0144172c591d678cfda",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:818011cb6df8a34816684323e4a1c2ed7cb6a823e7ec2120c95a5a0ba4bcbadf",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:691cdb0b23aeb68c7a87ef574235779fd27f49162a43cdfc9766b490d3905267",
+            "retrieval:ku_fp200-maintenance-manual_1_1": "sha256:4d5b23d0d591cab0128c5b7e59055201bbed057a789bf84efdd807a66e1d2cab",
+            "retrieval:ku_fp200-maintenance-manual_2_1": "sha256:5938874a42e3a104756226c6176e6426e343df805b03e211d56e599ef819c182",
+            "retrieval:ku_fp200-maintenance-manual_3_1": "sha256:da4bc61af2c29996247024ccfa8c90efc0680701739d81f979f1680ef5af9148",
+            "retrieval:ku_fp200-maintenance-manual_4_1": "sha256:0d7e02a22f340e16e48a2448be7fb483e878babac47e4cfb78fe441a29cd5dd7",
+            "retrieval:ku_fp200-service-log-2026_1_1": "sha256:8d28556e057ee5b33e11b952fb82d06e65ae8c22b4c65507aadab7d254cd25f8",
+            "retrieval:ku_fp200-service-log-2026_2_1": "sha256:ebd24f8b78186e812cb3bef400c63f21d4c67071900bc71f8c0f3fcbe1a96c2d",
+            "retrieval:ku_fp200-service-log-2026_3_1": "sha256:584b565332a6c5d356ccdd695838dc46cc0f4b25eeecdfd666444b966f2c015d",
+            "summary:fp200-change-notice-cn-2026-03": "sha256:3132c261762a9c4a90b28f444ec5a39f8437f2f50c7ac37a7ef7965a20d6ad76",
+            "summary:fp200-maintenance-manual": "sha256:ec71b40672580e82ee5da832da6293d82098d26fd1d5004f75963c7c31b24762",
+            "summary:fp200-service-log-2026": "sha256:f888b15f266b5be0d56948087904aa8b5adfb9a4c20731d49e634c6d72fed233"
+          }
+        },
+        "plan": {
+          "changeId": "chg_5508ecdd3709692ff09bae042a7ae773",
+          "totalArtifacts": 27,
+          "toRebuild": [
+            "claim:ku_fp200-maintenance-manual_1_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual_1_1",
+            "retrieval:ku_fp200-maintenance-manual_3_1",
+            "retrieval:ku_fp200-maintenance-manual_4_1",
+            "summary:fp200-maintenance-manual",
+            "claim:ku_fp200-maintenance-manual_2_1",
+            "retrieval:ku_fp200-maintenance-manual_2_1"
+          ],
+          "stale": [
+            "claim:ku_fp200-maintenance-manual_1_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual_1_1",
+            "retrieval:ku_fp200-maintenance-manual_3_1",
+            "retrieval:ku_fp200-maintenance-manual_4_1",
+            "summary:fp200-maintenance-manual"
+          ],
+          "unresolved": [
+            "claim:ku_fp200-maintenance-manual_2_1",
+            "retrieval:ku_fp200-maintenance-manual_2_1"
+          ],
+          "workAvoided": 17,
+          "cyclesDetected": [],
+          "truncatedAtDepth": false,
+          "facetResolutions": [
+            {
+              "change_channel": "locator",
+              "dependency_channel": "locator",
+              "verdict": "seed_set",
+              "seeds": [
+                "ku_fp200-maintenance-manual_1_1",
+                "ku_fp200-maintenance-manual_3_1",
+                "ku_fp200-maintenance-manual_4_1"
+              ],
+              "dependents": [
+                "collection:retrieval-index",
+                "retrieval:ku_fp200-maintenance-manual_1_1",
+                "retrieval:ku_fp200-maintenance-manual_3_1",
+                "retrieval:ku_fp200-maintenance-manual_4_1"
+              ],
+              "reason": "4 artifact(s) declared sensitive to 'locator' reached from ['ku_fp200-maintenance-manual_1_1', 'ku_fp200-maintenance-manual_3_1', 'ku_fp200-maintenance-manual_4_1']"
+            }
+          ]
+        },
+        "selectiveRebuild": {
+          "rebuilt": [
+            "claim:ku_fp200-maintenance-manual_1_1",
+            "claim:ku_fp200-maintenance-manual_2_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual_1_1",
+            "retrieval:ku_fp200-maintenance-manual_2_1",
+            "retrieval:ku_fp200-maintenance-manual_3_1",
+            "retrieval:ku_fp200-maintenance-manual_4_1",
+            "summary:fp200-maintenance-manual"
+          ],
+          "carriedOver": [
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1",
+            "claim:ku_fp200-maintenance-manual_3_1",
+            "claim:ku_fp200-maintenance-manual_4_1",
+            "claim:ku_fp200-service-log-2026_1_1",
+            "claim:ku_fp200-service-log-2026_2_1",
+            "claim:ku_fp200-service-log-2026_3_1",
+            "collection:directory",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1",
+            "retrieval:ku_fp200-service-log-2026_1_1",
+            "retrieval:ku_fp200-service-log-2026_2_1",
+            "retrieval:ku_fp200-service-log-2026_3_1",
+            "summary:fp200-change-notice-cn-2026-03",
+            "summary:fp200-service-log-2026"
+          ],
+          "quarantined": [
+            "claim:ku_fp200-maintenance-manual_2_1",
+            "retrieval:ku_fp200-maintenance-manual_2_1"
+          ],
+          "unnecessaryRebuild": [
+            "graph:relations"
+          ],
+          "counts": {
+            "totalArtifacts": 29,
+            "rebuilt": 10,
+            "carriedOver": 17,
+            "quarantined": 2,
+            "workAvoided": 19
+          }
+        },
+        "fullRebuild": {
+          "artifactDigests": {
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:92b509b688e890df4bcf1887585f079eae0046d92f391654d2f63a83942e01de",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:581b6374671075ae0b9159049cfa4bab4617e85540149bc729a291839a736bf8",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:be78f0d8bb2628447f79580f7e72090d49ca577afdf0d852189fbe1b0bda4fe0",
+            "claim:ku_fp200-maintenance-manual_1_1": "sha256:6bec9a6d512ce4e8c14c793cc917d7686e877814ea71d6d75f0fb38e9bb9eedf",
+            "claim:ku_fp200-maintenance-manual_2_1": "sha256:39785ae0d1f3551b39bc210a585184fd61c24474b12252e3a9d4d17aacaf7a12",
+            "claim:ku_fp200-maintenance-manual_3_1": "sha256:d97d758ea1f896b27b1354f9fb26df4b3fd97fc707bb8070965a8039f899daa8",
+            "claim:ku_fp200-maintenance-manual_4_1": "sha256:47a96bed210292d4f1886e1be158bf180f272f232103fad51b5dd2c069903a20",
+            "claim:ku_fp200-service-log-2026_1_1": "sha256:bfb933f57ba551ffb15bd40c920ce5d044c2056c367f0762fa0c4c45900220be",
+            "claim:ku_fp200-service-log-2026_2_1": "sha256:3ad2d89008e2524c99baed71758be76509c6efbc8e53d3b236a6043f700170e8",
+            "claim:ku_fp200-service-log-2026_3_1": "sha256:aa9098c500102cda3cce5f0197bb02b7bcf646344a3487319ff49dfb3d79a4b0",
+            "collection:directory": "sha256:698c7f0e6a317e9ac904f4dc6529cfd6eaf4a5ca251bf2b5c7e39207bc551fb9",
+            "collection:ontology": "sha256:0f7b14b52ca8e3cfad9f94a828f56ecf52d86ce1acd295d8566dd212f97fb609",
+            "collection:retrieval-index": "sha256:8869f32399ba339b13d34f01485f7820e434963b22eded7a8fa03c6e399a0e11",
+            "graph:relations": "sha256:14f415277476bcd920355f5b69065406c094037b8683f043929127674350d32b",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:0c92a22b185769e15aaa37ba06100e74386dcbbe0ca4c0144172c591d678cfda",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:818011cb6df8a34816684323e4a1c2ed7cb6a823e7ec2120c95a5a0ba4bcbadf",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:691cdb0b23aeb68c7a87ef574235779fd27f49162a43cdfc9766b490d3905267",
+            "retrieval:ku_fp200-maintenance-manual_1_1": "sha256:4d5b23d0d591cab0128c5b7e59055201bbed057a789bf84efdd807a66e1d2cab",
+            "retrieval:ku_fp200-maintenance-manual_2_1": "sha256:5938874a42e3a104756226c6176e6426e343df805b03e211d56e599ef819c182",
+            "retrieval:ku_fp200-maintenance-manual_3_1": "sha256:da4bc61af2c29996247024ccfa8c90efc0680701739d81f979f1680ef5af9148",
+            "retrieval:ku_fp200-maintenance-manual_4_1": "sha256:0d7e02a22f340e16e48a2448be7fb483e878babac47e4cfb78fe441a29cd5dd7",
+            "retrieval:ku_fp200-service-log-2026_1_1": "sha256:8d28556e057ee5b33e11b952fb82d06e65ae8c22b4c65507aadab7d254cd25f8",
+            "retrieval:ku_fp200-service-log-2026_2_1": "sha256:ebd24f8b78186e812cb3bef400c63f21d4c67071900bc71f8c0f3fcbe1a96c2d",
+            "retrieval:ku_fp200-service-log-2026_3_1": "sha256:584b565332a6c5d356ccdd695838dc46cc0f4b25eeecdfd666444b966f2c015d",
+            "summary:fp200-change-notice-cn-2026-03": "sha256:3132c261762a9c4a90b28f444ec5a39f8437f2f50c7ac37a7ef7965a20d6ad76",
+            "summary:fp200-maintenance-manual": "sha256:ec71b40672580e82ee5da832da6293d82098d26fd1d5004f75963c7c31b24762",
+            "summary:fp200-service-log-2026": "sha256:f888b15f266b5be0d56948087904aa8b5adfb9a4c20731d49e634c6d72fed233"
+          }
+        },
+        "equivalence": {
+          "equivalent": false,
+          "compared": 27,
+          "diverged": [
+            "claim:ku_fp200-maintenance-manual_3_1",
+            "claim:ku_fp200-maintenance-manual_4_1"
+          ],
+          "missing_from_selective": [],
+          "unexpectedly_rebuilt": [],
+          "stale_left_behind": [
+            "claim:ku_fp200-maintenance-manual_3_1",
+            "claim:ku_fp200-maintenance-manual_4_1"
+          ]
+        },
+        "staleLeftBehindWitness": [
+          {
+            "artifactId": "claim:ku_fp200-maintenance-manual_3_1",
+            "carriedForwardDigest": "sha256:cf5dc93e4930e1f875ea8d514d1b2d0910c1e54c2ff19a7a0a3ab002fab8aaba",
+            "fullRebuildDigest": "sha256:d97d758ea1f896b27b1354f9fb26df4b3fd97fc707bb8070965a8039f899daa8",
+            "carriedForwardBody": {
+              "artifact": "claim:ku_fp200-maintenance-manual_3_1",
+              "reads": [
+                {
+                  "logicalId": "ku_fp200-maintenance-manual_3_1",
+                  "text": "Before replacing the mechanical seal, isolate the unit and fully depressurise the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.",
+                  "provenance": {
+                    "evidenceId": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-b-p1-r5",
+                    "pageNumber1": 1,
+                    "bbox1000": [
+                      111,
+                      237,
+                      744,
+                      285
+                    ],
+                    "documentId": "fp200-maintenance-manual",
+                    "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r5"
+                  }
+                }
+              ]
+            },
+            "fullRebuildBody": {
+              "artifact": "claim:ku_fp200-maintenance-manual_3_1",
+              "reads": [
+                {
+                  "logicalId": "ku_fp200-maintenance-manual_3_1",
+                  "text": "Before replacing the mechanical seal, isolate the unit and fully depressurise the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.",
+                  "provenance": {
+                    "evidenceId": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-c-p1-r5",
+                    "pageNumber1": 1,
+                    "bbox1000": [
+                      111,
+                      255,
+                      744,
+                      303
+                    ],
+                    "documentId": "fp200-maintenance-manual",
+                    "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r5"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "artifactId": "claim:ku_fp200-maintenance-manual_4_1",
+            "carriedForwardDigest": "sha256:acff8702bde8357a78948dfa63e810d52df45f58e5fa2b4a50d8ef25f24809af",
+            "fullRebuildDigest": "sha256:47a96bed210292d4f1886e1be158bf180f272f232103fad51b5dd2c069903a20",
+            "carriedForwardBody": {
+              "artifact": "claim:ku_fp200-maintenance-manual_4_1",
+              "reads": [
+                {
+                  "logicalId": "ku_fp200-maintenance-manual_4_1",
+                  "text": "The pump is rated for continuous duty at 2.4 MPa discharge pressure, and inspection points are listed in table 12.1.",
+                  "provenance": {
+                    "evidenceId": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-b-p1-r7",
+                    "pageNumber1": 1,
+                    "bbox1000": [
+                      111,
+                      334,
+                      721,
+                      365
+                    ],
+                    "documentId": "fp200-maintenance-manual",
+                    "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r7"
+                  }
+                }
+              ]
+            },
+            "fullRebuildBody": {
+              "artifact": "claim:ku_fp200-maintenance-manual_4_1",
+              "reads": [
+                {
+                  "logicalId": "ku_fp200-maintenance-manual_4_1",
+                  "text": "The pump is rated for continuous duty at 2.4 MPa discharge pressure, and inspection points are listed in table 12.1.",
+                  "provenance": {
+                    "evidenceId": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-c-p1-r7",
+                    "pageNumber1": 1,
+                    "bbox1000": [
+                      111,
+                      352,
+                      721,
+                      382
+                    ],
+                    "documentId": "fp200-maintenance-manual",
+                    "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r7"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "sealedResponseAgreesWithDirectCompile": true
+      },
+      {
+        "run": "clause_form_split_document_id",
+        "question": "what does giving each revision its own document id cost",
+        "corpusIsSiteFixture": false,
+        "wireableIntoExplore": false,
+        "caveat": "The corpus is a clause-form restatement written for this receipt. It is not the FP-200 documents the site serves, no PDF of it is published, and this result is not an equivalence claim about /explore.",
+        "documentIdPolicy": "one id per revision",
+        "outcome": "compiled",
+        "httpStatus": 200,
+        "initial": {
+          "worldStateId": "world-79c608ac4609a90821f78132",
+          "manifestDigest": "sha256:79c608ac4609a90821f78132121c14b8978c93bc1cdf609805c3ee9a7149a252",
+          "lifecycle": "candidate",
+          "status": "completed",
+          "sourceSha256": "sha256:a2d6300f9c3638b3e970a0bf8bf45f058ab4da6323b736f82ddf801bbdcc4787",
+          "artifactCount": 27,
+          "artifactDigests": {
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:92b509b688e890df4bcf1887585f079eae0046d92f391654d2f63a83942e01de",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:581b6374671075ae0b9159049cfa4bab4617e85540149bc729a291839a736bf8",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:be78f0d8bb2628447f79580f7e72090d49ca577afdf0d852189fbe1b0bda4fe0",
+            "claim:ku_fp200-maintenance-manual-clause-rev-b_1_1": "sha256:435f90bee20ad29a62ef06e33b38268b64105c5d2a377d62a82d72acf0a1141b",
+            "claim:ku_fp200-maintenance-manual-clause-rev-b_2_1": "sha256:8a34a826eb167bd960f4f0de3b2825dcff9f181c52c6bca039ba617cbe26877a",
+            "claim:ku_fp200-maintenance-manual-clause-rev-b_3_1": "sha256:a45cedf094df42ea8c8655c5d0bc18d6cfaf8bcf17d9cf7271d1c1afd8a762d6",
+            "claim:ku_fp200-maintenance-manual-clause-rev-b_4_1": "sha256:15619dfe38222522b4f292e1555951a301048882fd263374de19ebdc63cc21ca",
+            "claim:ku_fp200-service-log-2026_1_1": "sha256:bfb933f57ba551ffb15bd40c920ce5d044c2056c367f0762fa0c4c45900220be",
+            "claim:ku_fp200-service-log-2026_2_1": "sha256:3ad2d89008e2524c99baed71758be76509c6efbc8e53d3b236a6043f700170e8",
+            "claim:ku_fp200-service-log-2026_3_1": "sha256:aa9098c500102cda3cce5f0197bb02b7bcf646344a3487319ff49dfb3d79a4b0",
+            "collection:directory": "sha256:6bfda7ea52684323980afdad6d2963d7c84b9478b5c27551f6f16c524b783126",
+            "collection:ontology": "sha256:05f076563c1c7f227f4b11a31f80824246896ee3ff6b613b35388afff57266c5",
+            "collection:retrieval-index": "sha256:4563af64460a013ba2d4c552ed006f05ae3fc345500ec2cba5d4f830ac7b0b88",
+            "graph:relations": "sha256:f3e8c4d2e7e515912cea083306e7611a35b6be860858f882345aa8ddf67aab8f",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:0c92a22b185769e15aaa37ba06100e74386dcbbe0ca4c0144172c591d678cfda",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:818011cb6df8a34816684323e4a1c2ed7cb6a823e7ec2120c95a5a0ba4bcbadf",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:691cdb0b23aeb68c7a87ef574235779fd27f49162a43cdfc9766b490d3905267",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-b_1_1": "sha256:9310633094bec61a2b661f9bc3c28101c1a59dfc8343963f6f169b2ac82abe1f",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-b_2_1": "sha256:4a62495289127c2fe4d773a7aefb133281b06aacc6f1e4c1d37cf06c7c9e63af",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-b_3_1": "sha256:328dc3f6a1357fe3efecdd62b71a49e548db22d56d40b51dc7dd15e29b8821db",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-b_4_1": "sha256:bb1f8bd84d18f2d804872ba7cce72fa490642134389e5bce372be9e11334bdb8",
+            "retrieval:ku_fp200-service-log-2026_1_1": "sha256:8d28556e057ee5b33e11b952fb82d06e65ae8c22b4c65507aadab7d254cd25f8",
+            "retrieval:ku_fp200-service-log-2026_2_1": "sha256:ebd24f8b78186e812cb3bef400c63f21d4c67071900bc71f8c0f3fcbe1a96c2d",
+            "retrieval:ku_fp200-service-log-2026_3_1": "sha256:584b565332a6c5d356ccdd695838dc46cc0f4b25eeecdfd666444b966f2c015d",
+            "summary:fp200-change-notice-cn-2026-03": "sha256:3132c261762a9c4a90b28f444ec5a39f8437f2f50c7ac37a7ef7965a20d6ad76",
+            "summary:fp200-maintenance-manual-clause-rev-b": "sha256:87951660d30c8d1fbc91dcee6fbc15d1d9e66f759a47774aea3220f0f5c10937",
+            "summary:fp200-service-log-2026": "sha256:f888b15f266b5be0d56948087904aa8b5adfb9a4c20731d49e634c6d72fed233"
+          },
+          "sourceFacts": {
+            "coveragePermille": 1000,
+            "sourceFaithful": true,
+            "failClosed": [],
+            "tally": {
+              "REPRESENTED_IN_COMPILED_STATE": 30,
+              "RECOGNIZED_BUT_UNREPRESENTED": 0,
+              "IGNORED_BY_PREDECLARED_POLICY": 0,
+              "UNRESOLVED_SOURCE_FACT": 0
+            },
+            "failClosedStates": [
+              "RECOGNIZED_BUT_UNREPRESENTED",
+              "UNRESOLVED_SOURCE_FACT"
+            ]
+          }
+        },
+        "revisionResolvedKeys": [
+          "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-change-notice-clause-CN-2026-03.pdf#text-layer",
+          "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revC.pdf#text-layer",
+          "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-service-log-clause-2026.pdf#text-layer"
+        ],
+        "revision": {
+          "changeId": "chg_4b50937353d639ee04ddae0940fb1c5b",
+          "worldStateId": "world-7ce02acc61f459622da3cda1",
+          "parentWorldStateId": "world-79c608ac4609a90821f78132",
+          "manifestDigest": "sha256:0637ef160cce87fac5a99e5c3626cab97320a31868ba3af27090cb5835b67b1a",
+          "lifecycle": "review_required",
+          "status": "review_required",
+          "disposition": "review_required",
+          "reviewReasons": [
+            "unresolved change channels: locator",
+            "12 artifact(s) quarantined",
+            "1 unit identity(ies) unsettled",
+            "untyped unit change: unresolved",
+            "full-rebuild equivalence failed on 7 artifact(s)"
+          ],
+          "candidatePromotion": false,
+          "identityCounts": {
+            "continued": 9,
+            "new": 0,
+            "ambiguous": 1,
+            "unresolved": 0
+          },
+          "typedChanges": {
+            "unchanged": 9,
+            "unresolved": 1
+          },
+          "unresolvedChannels": [
+            "locator"
+          ],
+          "changedUnits": [
+            "ku_fp200-maintenance-manual-clause-rev-c_2_1"
+          ],
+          "units": [
+            {
+              "logicalUnitId": "ku_fp200-change-notice-cn-2026-03_1_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_b455bc437ac64f64ae9d13edbad54bd4",
+              "changeFingerprint": "chf_0e34a8b0848d140f993d61cb6e20e84c",
+              "previousLogicalUnitId": "ku_fp200-change-notice-cn-2026-03_1_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-change-notice-cn-2026-03_2_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_3577792a90526115ec9eb81433e0292b",
+              "changeFingerprint": "chf_7adcb6b0f26dfff33f196c06837d3f29",
+              "previousLogicalUnitId": "ku_fp200-change-notice-cn-2026-03_2_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-change-notice-cn-2026-03_3_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_b5e057029ed8c404a52b5061bc6fedcc",
+              "changeFingerprint": "chf_a1477a9dc7a812ba386d2f877c59e421",
+              "previousLogicalUnitId": "ku_fp200-change-notice-cn-2026-03_3_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual-clause-rev-c_1_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_41068b58db69da99975f8388e3991862",
+              "changeFingerprint": "chf_1e00cc637c88ca550bae2b3c85af7edb"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual-clause-rev-c_2_1",
+              "identityContinuity": "ambiguous",
+              "changeState": "unresolved",
+              "changeStates": [
+                "unresolved"
+              ],
+              "identityFingerprint": "idf_f20fc70becf2b525d901c015abb69ad3",
+              "changeFingerprint": "chf_d9471e59a27d7307b6e2948a679d8100",
+              "identityCandidates": [
+                "ku_fp200-maintenance-manual-clause-rev-b_2_1"
+              ],
+              "identityReason": "score 0.90 sits in the review band between 0.75 and 0.92"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual-clause-rev-c_3_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_9c7e47273cb7f48591f5b2c668f4c318",
+              "changeFingerprint": "chf_14189121e5df5c9b80000aec959c335c"
+            },
+            {
+              "logicalUnitId": "ku_fp200-maintenance-manual-clause-rev-c_4_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_2cde1d2fd2781c76544c2f4bd239df06",
+              "changeFingerprint": "chf_7f7a41c5eddbc2579a82ef93eb79122b"
+            },
+            {
+              "logicalUnitId": "ku_fp200-service-log-2026_1_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_98e7a1d569b25367c01b48bed00d2796",
+              "changeFingerprint": "chf_84fc8874f49836357b935a45ed07839f",
+              "previousLogicalUnitId": "ku_fp200-service-log-2026_1_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-service-log-2026_2_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_31e9db5aa08afa7f0f5b05b7ea714530",
+              "changeFingerprint": "chf_987d4f552def05d0344b6474472c7f87",
+              "previousLogicalUnitId": "ku_fp200-service-log-2026_2_1",
+              "identityRelation": "SAME_AS_VERSION"
+            },
+            {
+              "logicalUnitId": "ku_fp200-service-log-2026_3_1",
+              "identityContinuity": "continued",
+              "changeState": "unchanged",
+              "changeStates": [
+                "unchanged"
+              ],
+              "identityFingerprint": "idf_726d2894a40dd7c334a67f66ede7e886",
+              "changeFingerprint": "chf_067c63697439dfa0ed33dc25ef3f7bc9",
+              "previousLogicalUnitId": "ku_fp200-service-log-2026_3_1",
+              "identityRelation": "SAME_AS_VERSION"
+            }
+          ],
+          "impact": {
+            "affectedArtifactIds": [],
+            "unresolvedArtifactIds": [
+              "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+              "collection:ontology",
+              "collection:retrieval-index",
+              "graph:relations",
+              "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+              "summary:fp200-maintenance-manual-clause-rev-c"
+            ]
+          },
+          "sourceFacts": {
+            "coveragePermille": 1000,
+            "sourceFaithful": true,
+            "failClosed": []
+          },
+          "artifactDigests": {
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:92b509b688e890df4bcf1887585f079eae0046d92f391654d2f63a83942e01de",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:581b6374671075ae0b9159049cfa4bab4617e85540149bc729a291839a736bf8",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:be78f0d8bb2628447f79580f7e72090d49ca577afdf0d852189fbe1b0bda4fe0",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_1_1": "MISSING_NOT_PLANNED_AND_NO_PRIOR_VALUE",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1": "sha256:152ae63efebf93372a8bd99508a2c338c779a78851712e71a2f20d8402d9069e",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_3_1": "MISSING_NOT_PLANNED_AND_NO_PRIOR_VALUE",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_4_1": "MISSING_NOT_PLANNED_AND_NO_PRIOR_VALUE",
+            "claim:ku_fp200-service-log-2026_1_1": "sha256:bfb933f57ba551ffb15bd40c920ce5d044c2056c367f0762fa0c4c45900220be",
+            "claim:ku_fp200-service-log-2026_2_1": "sha256:3ad2d89008e2524c99baed71758be76509c6efbc8e53d3b236a6043f700170e8",
+            "claim:ku_fp200-service-log-2026_3_1": "sha256:aa9098c500102cda3cce5f0197bb02b7bcf646344a3487319ff49dfb3d79a4b0",
+            "collection:directory": "sha256:6bfda7ea52684323980afdad6d2963d7c84b9478b5c27551f6f16c524b783126",
+            "collection:ontology": "sha256:f2c2aecb970da20fe0514085f7e4105a64bb6fa782e328aa70940d21e93a1d43",
+            "collection:retrieval-index": "sha256:c92955df5fcfa7bd18eec32e25398fbc3bfa1a9af049feae6ae7c1cb457f0c5e",
+            "graph:relations": "sha256:a3d5a0cdf6cfece76f693c8e0fa088afb24901c7e74eeb50908fd5afc01506df",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:0c92a22b185769e15aaa37ba06100e74386dcbbe0ca4c0144172c591d678cfda",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:818011cb6df8a34816684323e4a1c2ed7cb6a823e7ec2120c95a5a0ba4bcbadf",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:691cdb0b23aeb68c7a87ef574235779fd27f49162a43cdfc9766b490d3905267",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_1_1": "MISSING_NOT_PLANNED_AND_NO_PRIOR_VALUE",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1": "sha256:45e8fb76e4f0db2a708cf9d07f898f7d053ac85a95f000b24582001fb370784b",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_3_1": "MISSING_NOT_PLANNED_AND_NO_PRIOR_VALUE",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_4_1": "MISSING_NOT_PLANNED_AND_NO_PRIOR_VALUE",
+            "retrieval:ku_fp200-service-log-2026_1_1": "sha256:8d28556e057ee5b33e11b952fb82d06e65ae8c22b4c65507aadab7d254cd25f8",
+            "retrieval:ku_fp200-service-log-2026_2_1": "sha256:ebd24f8b78186e812cb3bef400c63f21d4c67071900bc71f8c0f3fcbe1a96c2d",
+            "retrieval:ku_fp200-service-log-2026_3_1": "sha256:584b565332a6c5d356ccdd695838dc46cc0f4b25eeecdfd666444b966f2c015d",
+            "summary:fp200-change-notice-cn-2026-03": "sha256:3132c261762a9c4a90b28f444ec5a39f8437f2f50c7ac37a7ef7965a20d6ad76",
+            "summary:fp200-maintenance-manual-clause-rev-c": "sha256:1817ef392b13c84cd0b4e9223257ec9929b2e5ba2af78833ce37de544159fed9",
+            "summary:fp200-service-log-2026": "sha256:f888b15f266b5be0d56948087904aa8b5adfb9a4c20731d49e634c6d72fed233"
+          }
+        },
+        "plan": {
+          "changeId": "chg_4b50937353d639ee04ddae0940fb1c5b",
+          "totalArtifacts": 27,
+          "toRebuild": [
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "summary:fp200-maintenance-manual-clause-rev-c"
+          ],
+          "stale": [],
+          "unresolved": [
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "summary:fp200-maintenance-manual-clause-rev-c"
+          ],
+          "workAvoided": 21,
+          "cyclesDetected": [],
+          "truncatedAtDepth": false,
+          "facetResolutions": [
+            {
+              "change_channel": "locator",
+              "dependency_channel": "locator",
+              "verdict": "unresolved",
+              "seeds": [
+                "ku_fp200-maintenance-manual-clause-rev-b_1_1",
+                "ku_fp200-maintenance-manual-clause-rev-b_3_1",
+                "ku_fp200-maintenance-manual-clause-rev-b_4_1"
+              ],
+              "dependents": [],
+              "reason": "the changed unit is not a node in the dependency graph, so no reader could be checked; this is not evidence that none exists"
+            }
+          ]
+        },
+        "selectiveRebuild": {
+          "rebuilt": [
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "summary:fp200-maintenance-manual-clause-rev-c"
+          ],
+          "carriedOver": [
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1",
+            "claim:ku_fp200-service-log-2026_1_1",
+            "claim:ku_fp200-service-log-2026_2_1",
+            "claim:ku_fp200-service-log-2026_3_1",
+            "collection:directory",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1",
+            "retrieval:ku_fp200-service-log-2026_1_1",
+            "retrieval:ku_fp200-service-log-2026_2_1",
+            "retrieval:ku_fp200-service-log-2026_3_1",
+            "summary:fp200-change-notice-cn-2026-03",
+            "summary:fp200-service-log-2026"
+          ],
+          "quarantined": [
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_1_1",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_3_1",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_4_1",
+            "collection:ontology",
+            "collection:retrieval-index",
+            "graph:relations",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_1_1",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_3_1",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_4_1",
+            "summary:fp200-maintenance-manual-clause-rev-c"
+          ],
+          "unnecessaryRebuild": [],
+          "counts": {
+            "totalArtifacts": 33,
+            "rebuilt": 6,
+            "carriedOver": 15,
+            "quarantined": 12,
+            "workAvoided": 27
+          }
+        },
+        "fullRebuild": {
+          "artifactDigests": {
+            "claim:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:92b509b688e890df4bcf1887585f079eae0046d92f391654d2f63a83942e01de",
+            "claim:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:581b6374671075ae0b9159049cfa4bab4617e85540149bc729a291839a736bf8",
+            "claim:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:be78f0d8bb2628447f79580f7e72090d49ca577afdf0d852189fbe1b0bda4fe0",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_1_1": "sha256:174c0cc07d7ba736d943a9ed1cffcfde6626683fe221fb07710d08811ff06197",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_2_1": "sha256:152ae63efebf93372a8bd99508a2c338c779a78851712e71a2f20d8402d9069e",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_3_1": "sha256:3bee95768471f0d9d6d8cfe3439063e5eac01d4c8fede7f100fda746d54bbcd5",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_4_1": "sha256:73b7a6ef4dc02c5b9b0b8b99ae9ad2d8738d26de04024c1507789f244caef160",
+            "claim:ku_fp200-service-log-2026_1_1": "sha256:bfb933f57ba551ffb15bd40c920ce5d044c2056c367f0762fa0c4c45900220be",
+            "claim:ku_fp200-service-log-2026_2_1": "sha256:3ad2d89008e2524c99baed71758be76509c6efbc8e53d3b236a6043f700170e8",
+            "claim:ku_fp200-service-log-2026_3_1": "sha256:aa9098c500102cda3cce5f0197bb02b7bcf646344a3487319ff49dfb3d79a4b0",
+            "collection:directory": "sha256:0c30999e1ad1aec8ccea141b6367f8e3842c140d4451a87d389de0740ab179ab",
+            "collection:ontology": "sha256:f2c2aecb970da20fe0514085f7e4105a64bb6fa782e328aa70940d21e93a1d43",
+            "collection:retrieval-index": "sha256:c92955df5fcfa7bd18eec32e25398fbc3bfa1a9af049feae6ae7c1cb457f0c5e",
+            "graph:relations": "sha256:a3d5a0cdf6cfece76f693c8e0fa088afb24901c7e74eeb50908fd5afc01506df",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_1_1": "sha256:0c92a22b185769e15aaa37ba06100e74386dcbbe0ca4c0144172c591d678cfda",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_2_1": "sha256:818011cb6df8a34816684323e4a1c2ed7cb6a823e7ec2120c95a5a0ba4bcbadf",
+            "retrieval:ku_fp200-change-notice-cn-2026-03_3_1": "sha256:691cdb0b23aeb68c7a87ef574235779fd27f49162a43cdfc9766b490d3905267",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_1_1": "sha256:c4445d8e15993ee18b54edcde730d44c7084bb19553ea24126b9a79bf8441e68",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_2_1": "sha256:45e8fb76e4f0db2a708cf9d07f898f7d053ac85a95f000b24582001fb370784b",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_3_1": "sha256:520140848131147d05eb2ad5dd3c241af4d7870292a569d7ec3b0af2ffb10e49",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_4_1": "sha256:7b7970a51063b8689156d3df581dff31868b3091c8e862ca7cc126c81b678049",
+            "retrieval:ku_fp200-service-log-2026_1_1": "sha256:8d28556e057ee5b33e11b952fb82d06e65ae8c22b4c65507aadab7d254cd25f8",
+            "retrieval:ku_fp200-service-log-2026_2_1": "sha256:ebd24f8b78186e812cb3bef400c63f21d4c67071900bc71f8c0f3fcbe1a96c2d",
+            "retrieval:ku_fp200-service-log-2026_3_1": "sha256:584b565332a6c5d356ccdd695838dc46cc0f4b25eeecdfd666444b966f2c015d",
+            "summary:fp200-change-notice-cn-2026-03": "sha256:3132c261762a9c4a90b28f444ec5a39f8437f2f50c7ac37a7ef7965a20d6ad76",
+            "summary:fp200-maintenance-manual-clause-rev-c": "sha256:1817ef392b13c84cd0b4e9223257ec9929b2e5ba2af78833ce37de544159fed9",
+            "summary:fp200-service-log-2026": "sha256:f888b15f266b5be0d56948087904aa8b5adfb9a4c20731d49e634c6d72fed233"
+          }
+        },
+        "equivalence": {
+          "equivalent": false,
+          "compared": 27,
+          "diverged": [
+            "collection:directory"
+          ],
+          "missing_from_selective": [
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_1_1",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_3_1",
+            "claim:ku_fp200-maintenance-manual-clause-rev-c_4_1",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_1_1",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_3_1",
+            "retrieval:ku_fp200-maintenance-manual-clause-rev-c_4_1"
+          ],
+          "unexpectedly_rebuilt": [],
+          "stale_left_behind": [
+            "collection:directory"
+          ]
+        },
+        "staleLeftBehindWitness": [
+          {
+            "artifactId": "collection:directory",
+            "carriedForwardDigest": "sha256:6bfda7ea52684323980afdad6d2963d7c84b9478b5c27551f6f16c524b783126",
+            "fullRebuildDigest": "sha256:0c30999e1ad1aec8ccea141b6367f8e3842c140d4451a87d389de0740ab179ab",
+            "carriedForwardBody": {
+              "projection": "collection:directory",
+              "schema": "tavonel.collection_projection.directory.v1",
+              "documents": [
+                {
+                  "documentId": "fp200-change-notice-cn-2026-03",
+                  "title": "FP-200 change notice CN-2026-03",
+                  "sections": [
+                    {
+                      "heading": "1. Document",
+                      "clauses": [
+                        "1.1"
+                      ]
+                    },
+                    {
+                      "heading": "2. Interval change",
+                      "clauses": [
+                        "2.1"
+                      ]
+                    },
+                    {
+                      "heading": "3. Superseded revision",
+                      "clauses": [
+                        "3.1"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "documentId": "fp200-maintenance-manual-clause-rev-b",
+                  "title": "FP-200 maintenance manual",
+                  "sections": [
+                    {
+                      "heading": "1. Document",
+                      "clauses": [
+                        "1.1"
+                      ]
+                    },
+                    {
+                      "heading": "2. Service interval",
+                      "clauses": [
+                        "2.1"
+                      ]
+                    },
+                    {
+                      "heading": "3. Seal replacement",
+                      "clauses": [
+                        "3.1"
+                      ]
+                    },
+                    {
+                      "heading": "4. Duty rating",
+                      "clauses": [
+                        "4.1"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "documentId": "fp200-service-log-2026",
+                  "title": "FP-200 service log 2026",
+                  "sections": [
+                    {
+                      "heading": "1. Document",
+                      "clauses": [
+                        "1.1"
+                      ]
+                    },
+                    {
+                      "heading": "2. Seal replacement",
+                      "clauses": [
+                        "2.1"
+                      ]
+                    },
+                    {
+                      "heading": "3. Next service",
+                      "clauses": [
+                        "3.1"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "fullRebuildBody": {
+              "projection": "collection:directory",
+              "schema": "tavonel.collection_projection.directory.v1",
+              "documents": [
+                {
+                  "documentId": "fp200-change-notice-cn-2026-03",
+                  "title": "FP-200 change notice CN-2026-03",
+                  "sections": [
+                    {
+                      "heading": "1. Document",
+                      "clauses": [
+                        "1.1"
+                      ]
+                    },
+                    {
+                      "heading": "2. Interval change",
+                      "clauses": [
+                        "2.1"
+                      ]
+                    },
+                    {
+                      "heading": "3. Superseded revision",
+                      "clauses": [
+                        "3.1"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "documentId": "fp200-maintenance-manual-clause-rev-c",
+                  "title": "FP-200 maintenance manual",
+                  "sections": [
+                    {
+                      "heading": "1. Document",
+                      "clauses": [
+                        "1.1"
+                      ]
+                    },
+                    {
+                      "heading": "2. Service interval",
+                      "clauses": [
+                        "2.1"
+                      ]
+                    },
+                    {
+                      "heading": "3. Seal replacement",
+                      "clauses": [
+                        "3.1"
+                      ]
+                    },
+                    {
+                      "heading": "4. Duty rating",
+                      "clauses": [
+                        "4.1"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "documentId": "fp200-service-log-2026",
+                  "title": "FP-200 service log 2026",
+                  "sections": [
+                    {
+                      "heading": "1. Document",
+                      "clauses": [
+                        "1.1"
+                      ]
+                    },
+                    {
+                      "heading": "2. Seal replacement",
+                      "clauses": [
+                        "2.1"
+                      ]
+                    },
+                    {
+                      "heading": "3. Next service",
+                      "clauses": [
+                        "3.1"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "sealedResponseAgreesWithDirectCompile": true
+      }
+    ],
+    "siteFixtureUnitsResolved": 0
+  },
+  "deterministicSha256": "sha256:2a9606ca4e2114db0f9d1de61be2e12fdf63eeed73e2dfd38c477b62aa74e748",
+  "environment": {
+    "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
+    "interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+    "pythonVersion": "3.13.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "command": "python research/explore_change_receipt_20260905/build_receipt.py",
+    "note": "Recorded for provenance and deliberately outside the digest above: an interpreter path is a property of the machine, not of the compile."
+  }
+}
