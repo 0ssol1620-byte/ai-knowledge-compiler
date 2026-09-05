@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tavonel.evidence_locator.v2",
+  "title": "TAVONEL EvidenceLocator v2 (frozen contract, 2026-09-06)",
+  "description": "Polymorphic, source-specific evidence locator. Discriminated on locatorKind. Every locator binds to one SourceVersion and one SourceRepresentation; a locator that cannot be resolved against that representation is UNRESOLVED and the knowledge citing it is not promotable (fail closed). The legacy page+bbox1000 evidence of the current product is exactly the `pdf` variant.",
+  "type": "object",
+  "required": ["schemaVersion", "locatorId", "sourceVersionId", "representationId", "locatorKind"],
+  "properties": {
+    "schemaVersion": { "const": "tavonel.evidence_locator.v2" },
+    "locatorId": { "$ref": "#/$defs/Identifier" },
+    "sourceVersionId": { "$ref": "#/$defs/Identifier" },
+    "representationId": { "$ref": "#/$defs/Identifier" },
+    "locatorKind": { "enum": ["pdf", "image", "docx", "xlsx", "pptx", "email", "json", "xml", "code", "cad", "media", "database", "api"] },
+    "contentDigest": { "$ref": "#/$defs/Sha256" },
+    "excerpt": { "type": "string", "maxLength": 2000 }
+  },
+  "oneOf": [
+    { "properties": { "locatorKind": { "const": "pdf" }, "page": { "type": "integer", "minimum": 1 }, "bbox1000": { "$ref": "#/$defs/BBox1000" }, "objectId": { "type": "string" } }, "required": ["page", "bbox1000"] },
+    { "properties": { "locatorKind": { "const": "image" }, "bbox1000": { "$ref": "#/$defs/BBox1000" }, "imageId": { "type": "string" } }, "required": ["bbox1000"] },
+    { "properties": { "locatorKind": { "const": "docx" }, "sectionId": { "type": "string" }, "paragraphId": { "type": "string" }, "runId": { "type": "string" }, "tableId": { "type": "string" }, "cellId": { "type": "string" }, "commentId": { "type": "string" }, "footnoteId": { "type": "string" } },
+      "anyOf": [ { "required": ["paragraphId"] }, { "required": ["tableId", "cellId"] }, { "required": ["commentId"] }, { "required": ["footnoteId"] } ] },
+    { "properties": { "locatorKind": { "const": "xlsx" }, "workbook": { "type": "string" }, "sheet": { "type": "string", "minLength": 1 }, "cell": { "$ref": "#/$defs/A1Cell" }, "range": { "$ref": "#/$defs/A1Range" }, "formula": { "type": "string" }, "namedRange": { "type": "string" }, "tableId": { "type": "string" }, "chartId": { "type": "string" } },
+      "required": ["sheet"], "anyOf": [ { "required": ["cell"] }, { "required": ["range"] }, { "required": ["namedRange"] }, { "required": ["tableId"] }, { "required": ["chartId"] } ] },
+    { "properties": { "locatorKind": { "const": "pptx" }, "slideNumber1": { "type": "integer", "minimum": 1 }, "slideId": { "type": "string" }, "shapeId": { "type": "string" }, "chartId": { "type": "string" }, "seriesId": { "type": "string" }, "textRange": { "$ref": "#/$defs/OffsetRange" } },
+      "anyOf": [ { "required": ["slideId"] }, { "required": ["slideNumber1"] } ] },
+    { "properties": { "locatorKind": { "const": "email" }, "messageId": { "type": "string", "minLength": 1 }, "threadId": { "type": "string" }, "mimePart": { "type": "string" }, "bodyOffset": { "$ref": "#/$defs/OffsetRange" }, "attachmentId": { "type": "string" } }, "required": ["messageId"] },
+    { "properties": { "locatorKind": { "const": "json" }, "pointer": { "type": "string", "pattern": "^(/([^/~]|~0|~1)*)*$", "description": "RFC 6901 JSON Pointer; empty string is the whole document" } }, "required": ["pointer"] },
+    { "properties": { "locatorKind": { "const": "xml" }, "xpath": { "type": "string", "minLength": 1 }, "nodeId": { "type": "string" } }, "required": ["xpath"] },
+    { "properties": { "locatorKind": { "const": "code" }, "repository": { "type": "string" }, "commitSha": { "type": "string", "pattern": "^[0-9a-f]{7,64}$" }, "filePath": { "type": "string", "minLength": 1 }, "language": { "type": "string" }, "symbolId": { "type": "string" }, "span": { "$ref": "#/$defs/LineColSpan" } }, "required": ["commitSha", "filePath", "span"] },
+    { "properties": { "locatorKind": { "const": "cad" }, "modelId": { "type": "string", "minLength": 1 }, "entityId": { "type": "string", "minLength": 1, "description": "native object id / GUID" }, "layer": { "type": "string" }, "assemblyPath": { "type": "array", "items": { "type": "string" } }, "geometryRef": { "type": "string" }, "viewLocator": { "type": "string" } }, "required": ["modelId", "entityId"] },
+    { "properties": { "locatorKind": { "const": "media" }, "startMs": { "type": "integer", "minimum": 0 }, "endMs": { "type": "integer", "minimum": 0 }, "speakerId": { "type": "string" }, "frameNumber": { "type": "integer", "minimum": 0 }, "trackId": { "type": "string" } }, "required": ["startMs", "endMs"] },
+    { "properties": { "locatorKind": { "const": "database" }, "datasourceVersion": { "type": "string", "minLength": 1 }, "table": { "type": "string", "minLength": 1 }, "primaryKey": { "type": "object", "minProperties": 1 }, "fieldPath": { "type": "string" }, "querySnapshotDigest": { "$ref": "#/$defs/Sha256" } }, "required": ["datasourceVersion", "table", "primaryKey"] },
+    { "properties": { "locatorKind": { "const": "api" }, "endpoint": { "type": "string", "minLength": 1 }, "responseDigest": { "$ref": "#/$defs/Sha256" }, "fieldPath": { "type": "string" }, "fetchedAt": { "type": "string", "format": "date-time" } }, "required": ["endpoint", "responseDigest"] }
+  ],
+  "$defs": {
+    "Identifier": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$" },
+    "Sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "BBox1000": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 1000 }, "minItems": 4, "maxItems": 4, "description": "[x1,y1,x2,y2] on a 0..1000 grid; x1<x2 and y1<y2 (positive area) — enforced by code, not expressible here" },
+    "A1Cell": { "type": "string", "pattern": "^\\$?[A-Z]{1,3}\\$?[1-9][0-9]{0,6}$" },
+    "A1Range": { "type": "string", "pattern": "^\\$?[A-Z]{1,3}\\$?[1-9][0-9]{0,6}:\\$?[A-Z]{1,3}\\$?[1-9][0-9]{0,6}$" },
+    "OffsetRange": { "type": "object", "required": ["start", "end"], "properties": { "start": { "type": "integer", "minimum": 0 }, "end": { "type": "integer", "minimum": 0 } } },
+    "LineColSpan": { "type": "object", "required": ["startLine", "startCol", "endLine", "endCol"], "properties": { "startLine": { "type": "integer", "minimum": 1 }, "startCol": { "type": "integer", "minimum": 0 }, "endLine": { "type": "integer", "minimum": 1 }, "endCol": { "type": "integer", "minimum": 0 } } }
+  }
+}

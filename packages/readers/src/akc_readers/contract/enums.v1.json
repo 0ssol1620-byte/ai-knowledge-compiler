@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tavonel.uskc.enums.v1",
+  "title": "TAVONEL Universal Source Knowledge Compiler — frozen enumerations (contract v1, 2026-09-06)",
+  "description": "Both repositories copy these value lists verbatim (TS union types / Python StrEnum) and carry a test that the copy equals this file. A lane that needs a new value writes the proposal in its report; it does not add the value.",
+  "SourceFamily": [
+    "document", "spreadsheet", "presentation", "image", "email", "structured_data", "web", "code",
+    "cad_2d", "cad_3d", "bim", "audio", "video", "archive", "database", "api", "unknown"
+  ],
+  "CapabilityStatus": [
+    "VERIFIED_NATIVE", "VERIFIED_HYBRID", "BEST_EFFORT", "METADATA_ONLY", "REVIEW_REQUIRED", "UNSUPPORTED"
+  ],
+  "CapabilityStatusAcceptedAtUpload": ["VERIFIED_NATIVE", "VERIFIED_HYBRID", "BEST_EFFORT", "METADATA_ONLY"],
+  "RepresentationKind": ["original", "native", "rendered", "ocr", "visual", "normalized", "canonical_ir"],
+  "ReaderFeature": [
+    "native_text", "layout", "tables", "formula", "comments", "track_changes", "chart_data",
+    "geometry", "assembly", "acl", "thread", "timestamp", "ast", "dependency_graph"
+  ],
+  "LocatorKind": [
+    "pdf", "image", "docx", "xlsx", "pptx", "email", "json", "xml", "code", "cad", "media", "database", "api"
+  ],
+  "ReaderRegistryStatus": ["candidate", "qualified", "retired"],
+  "FailureClass": [
+    "UNSUPPORTED_FORMAT", "ENCRYPTED_SOURCE", "CORRUPT_SOURCE", "MALWARE_QUARANTINED", "PARSER_TIMEOUT",
+    "PARSER_OOM", "EMPTY_OUTPUT", "NATIVE_VISUAL_DISAGREEMENT", "LAYOUT_FAILURE", "TABLE_FAILURE",
+    "FORMULA_FAILURE", "TEXT_OMISSION", "IDENTITY_UNRESOLVED", "EVIDENCE_BROKEN", "ACL_UNRESOLVED",
+    "SOURCE_DELETED", "RECEIPT_MISMATCH", "PRESERVATION_FAILED", "EQUIVALENCE_FAILED", "PROVIDER_UNAVAILABLE"
+  ],
+  "PrivacyPolicy": ["foundation_synthetic_only", "approved_customer_data"],
+  "CustomerDataPrecondition": [
+    "tenant_isolation_suite_passed",
+    "encryption_at_rest_verified",
+    "encryption_in_transit_verified",
+    "connector_credentials_in_secret_manager",
+    "no_secrets_in_receipts_or_logs_verified",
+    "malware_scan_and_quarantine_active",
+    "archive_bomb_limits_enforced",
+    "compile_receipts_signed_and_audited",
+    "deletion_tombstone_propagation_verified",
+    "retention_controls_configured",
+    "data_export_and_delete_available",
+    "audit_log_active",
+    "least_privilege_connector_scopes_verified",
+    "per_provider_isolation_verified",
+    "dpa_and_privacy_notice_published",
+    "per_source_acl_preserved",
+    "founder_approval_receipt_recorded"
+  ]
+}
