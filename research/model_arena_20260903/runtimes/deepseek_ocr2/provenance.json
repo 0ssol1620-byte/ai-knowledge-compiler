@@ -1,0 +1,40 @@
+{
+  "model_key": "deepseek_ocr2",
+  "framework_floor_audit": {
+    "audited_at": "2026-09-03",
+    "checkpoint": {
+      "config_json": "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2/raw/aaa02f3811945a91062062994c5c4a3f4c0af2b0/config.json",
+      "model_type": "deepseek_vl_v2",
+      "architectures": [
+        "DeepseekOCR2ForCausalLM"
+      ],
+      "auto_map": true,
+      "declared_transformers_version": "4.46.3"
+    },
+    "required": "model card: torch==2.6.0, transformers==4.46.3, tokenizers==0.20.3, flash-attn==2.7.3 (--no-build-isolation), tested on python 3.12.9 + CUDA 11.8. model_type deepseek_vl_v2 is not transformers-native; it is loaded from the checkpoint's auto_map with trust_remote_code.",
+    "image_ships": "pytorch/pytorch:2.6.0-cuda11.8-cudnn9-devel - torch 2.6.0 / CUDA 11.8, asserted by bootstrap.sh; the image ships no transformers, so bootstrap.sh installs the card's exact pins",
+    "action": "no pin change - the four card pins are already exact in bootstrap.sh and the Dockerfile. bootstrap.sh gains an architecture preflight that resolves the checkpoint through AutoConfig(trust_remote_code=True) rather than assuming the remote code loads.",
+    "evidence": [
+      "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2",
+      "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2/raw/aaa02f3811945a91062062994c5c4a3f4c0af2b0/config.json"
+    ]
+  },
+  "cuda_floor": {
+    "min_cuda_version": "11.8",
+    "source": "base image CUDA runtime",
+    "cuda_version_evidence": "image config",
+    "observed": {
+      "base_image": "pytorch/pytorch:2.6.0-cuda11.8-cudnn9-devel@sha256:01fe58a7663aff1dc7407043abbc524a9a9d149933cf4f9e4edb59bf1285079e",
+      "image_config_digest": "sha256:8d8f916f1de02bc03d65cea3d83b9002adc4fe73ff4bf46982adb81258a23fa8",
+      "CUDA_VERSION": "11.8.0",
+      "NVIDIA_REQUIRE_CUDA": "cuda>=11.8",
+      "PYTORCH_VERSION": "2.6.0",
+      "image_tag_states": "cuda11.8",
+      "bootstrap_asserts": "torch 2.6.0 / torch.version.cuda 11.8"
+    },
+    "vendor_documented_floor": "none published: the vendor documents no driver floor beyond the image's own CUDA runtime",
+    "url": "https://hub.docker.com/layers/pytorch/pytorch/2.6.0-cuda11.8-cudnn9-devel/images/sha256-01fe58a7663aff1dc7407043abbc524a9a9d149933cf4f9e4edb59bf1285079e",
+    "read_at": "2026-09-04",
+    "rationale": "min_cuda_version is the lowest CUDA version a RunPod host may report for this runtime to start. It is sent as the create payload's allowedCudaVersions -- every version RunPod lists at or above it -- because pod 3xag0y00rgoj4n ran this campaign's CUDA 12.9 image on a host reporting cudaVersion 12.8 and died in torch._C._cuda_init with CUDA error 804 after the pod was already billing. Read anonymously from the pinned image's own OCI config blob at the digest runtime.json pins; nothing is inferred from the image name."
+  }
+}

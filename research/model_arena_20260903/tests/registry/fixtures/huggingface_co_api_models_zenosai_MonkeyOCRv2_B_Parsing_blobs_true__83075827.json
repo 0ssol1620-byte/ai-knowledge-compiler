@@ -1,0 +1,220 @@
+{
+  "_id": "6a52347b87d9c2d2b0d41c93",
+  "author": "zenosai",
+  "cardData": {
+    "datasets": [
+      "zenosai/MonkeyDocv2"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "pipeline_tag": "image-text-to-text"
+  },
+  "config": {
+    "architectures": [
+      "MonkeyOCRv2ForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_monkeyocrv2.MonkeyOCRv2Config",
+      "AutoModelForCausalLM": "modeling_monkeyocrv2.MonkeyOCRv2ForCausalLM"
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+    "model_type": "monkeyocrv2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "createdAt": "2026-07-11T12:18:03.000Z",
+  "disabled": false,
+  "downloads": 1775,
+  "gated": false,
+  "id": "zenosai/MonkeyOCRv2-B-Parsing",
+  "lastModified": "2026-08-12T15:48:50.000Z",
+  "library_name": "transformers",
+  "likes": 14,
+  "model-index": null,
+  "modelId": "zenosai/MonkeyOCRv2-B-Parsing",
+  "pipeline_tag": "image-text-to-text",
+  "private": false,
+  "safetensors": {
+    "parameters": {
+      "BF16": 877939456
+    },
+    "total": 877939456
+  },
+  "sha": "2419139b7bcd3fda2689b2a83167172afba91c8b",
+  "siblings": [
+    {
+      "blobId": "da1840caa0c36cd8bf5542ec2198d658633c247a",
+      "rfilename": ".eval_results/mdpbench.yaml",
+      "size": 5005
+    },
+    {
+      "blobId": "5880b15336a11c19d9e1f1e1e357f2f2dee39a8e",
+      "rfilename": ".eval_results/real5_omnidocbench.yaml",
+      "size": 1416
+    },
+    {
+      "blobId": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+      "rfilename": ".gitattributes",
+      "size": 1570
+    },
+    {
+      "blobId": "d08dc023c2ecb0a42f872ac8cdee4b090494e8ac",
+      "rfilename": "README.md",
+      "size": 47152
+    },
+    {
+      "blobId": "b54f9135e44c1e81047e8d05cb027af8bc039eed",
+      "rfilename": "added_tokens.json",
+      "size": 707
+    },
+    {
+      "blobId": "01907e75f287237eba2817736d7b6f8640a3f0d0",
+      "rfilename": "args.json",
+      "size": 50063
+    },
+    {
+      "blobId": "124386803f142761528f710e77ae483f5f8c4fc4",
+      "rfilename": "chat_template.jinja",
+      "size": 5292
+    },
+    {
+      "blobId": "612fb7d19b0abbd1560a5df970e8506b18795c8d",
+      "rfilename": "config.json",
+      "size": 2186
+    },
+    {
+      "blobId": "c8aef0bbcb1886f2576105631dd4ba4bd76be99d",
+      "rfilename": "configuration_monkeyocrv2.py",
+      "size": 3156
+    },
+    {
+      "blobId": "9e289a1aca21d66f216b0912f192963e60ff573e",
+      "rfilename": "generation_config.json",
+      "size": 214
+    },
+    {
+      "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+      "rfilename": "merges.txt",
+      "size": 1671853
+    },
+    {
+      "blobId": "31838d9790a188988d396a63f02ceae2f8636937",
+      "lfs": {
+        "pointerSize": 135,
+        "sha256": "0267fdc991c9be02cf1b60405f77fe0629d084970ad9d6d08163feda3d470284",
+        "size": 1755925032
+      },
+      "rfilename": "model.safetensors",
+      "size": 1755925032
+    },
+    {
+      "blobId": "2a3d6076552d020d2338bca53499ba35e06aa67a",
+      "rfilename": "modeling_monkeyocrv2.py",
+      "size": 5550
+    },
+    {
+      "blobId": "b314038cf7a00de589f526a2684e76b00fbfcb69",
+      "rfilename": "modeling_monkeyocrv2_vision.py",
+      "size": 19941
+    },
+    {
+      "blobId": "66a3172ec6f6371b474a9e6ed994e8c0c68a2e23",
+      "lfs": {
+        "pointerSize": 132,
+        "sha256": "d243b62c3a14bd854539a3b6eebbf69b7716f38f9c7bfe0270d74b2b3e702b55",
+        "size": 4823415
+      },
+      "rfilename": "preprocessor1.pth",
+      "size": 4823415
+    },
+    {
+      "blobId": "82043bd728bc02e342c244de13e95677354cae76",
+      "lfs": {
+        "pointerSize": 134,
+        "sha256": "27712ba877dfdf325d22ddb9f79467c7998da7e57b9d6fcc4b96b7722ac6b505",
+        "size": 288533650
+      },
+      "rfilename": "preprocessor2.pth",
+      "size": 288533650
+    },
+    {
+      "blobId": "ee327baecc79f0a599819c12f545d93f453bdee9",
+      "rfilename": "preprocessor_config.json",
+      "size": 449
+    },
+    {
+      "blobId": "1bf5bd9149bfd4c448f7106b9d46f4c234e95ba5",
+      "rfilename": "processor_config.json",
+      "size": 139
+    },
+    {
+      "blobId": "ac23c0aaa2434523c494330aeb79c58395378103",
+      "rfilename": "special_tokens_map.json",
+      "size": 613
+    },
+    {
+      "blobId": "cd71f61a15a522601badb3dc960d800d9cb3766c",
+      "lfs": {
+        "pointerSize": 133,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "size": 11422654
+      },
+      "rfilename": "tokenizer.json",
+      "size": 11422654
+    },
+    {
+      "blobId": "dc767287cd37a0b3fdbb7fef5651e0b4a7d7ab44",
+      "rfilename": "tokenizer_config.json",
+      "size": 5540
+    },
+    {
+      "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+      "rfilename": "vocab.json",
+      "size": 2776833
+    }
+  ],
+  "spaces": [
+    "zenosai/MonkeyOCRv2"
+  ],
+  "tags": [
+    "transformers",
+    "safetensors",
+    "monkeyocrv2",
+    "text-generation",
+    "image-text-to-text",
+    "conversational",
+    "custom_code",
+    "dataset:zenosai/MonkeyDocv2",
+    "arxiv:2607.11562",
+    "arxiv:2404.10690",
+    "arxiv:2403.04473",
+    "arxiv:2405.06706",
+    "license:apache-2.0",
+    "eval-results",
+    "region:us"
+  ],
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_monkeyocrv2.MonkeyOCRv2ForCausalLM",
+    "pipeline_tag": "text-generation"
+  },
+  "usedStorage": 2060704751,
+  "widgetData": [
+    {
+      "text": "Hi, what can you help me with?"
+    },
+    {
+      "text": "What is 84 * 3 / 2?"
+    },
+    {
+      "text": "Tell me an interesting fact about the universe!"
+    },
+    {
+      "text": "Explain quantum computing in simple terms."
+    }
+  ]
+}

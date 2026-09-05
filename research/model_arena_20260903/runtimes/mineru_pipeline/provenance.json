@@ -1,0 +1,119 @@
+{
+  "model_key": "mineru_pipeline",
+  "resolved_at": "2026-09-03T00:00:00Z",
+  "resolution_method": "official_github_and_huggingface_read_only",
+  "model_revision_resolution": {
+    "source": "https://huggingface.co/api/models/opendatalab/PDF-Extract-Kit-1.0",
+    "field": "sha",
+    "value": "ed6b654c018d742e65a17671e379c5e6ecc87ec9",
+    "repository_last_modified": "2026-06-15T10:21:17.000Z",
+    "why_this_repository": "mineru/utils/enum_class.py::ModelPath.pipeline_root_hf at the pinned code revision"
+  },
+  "model_revision_cross_check": {
+    "source": "benchmark/v6/candidate-registry.yaml (mineru-3.4.4-pipeline)",
+    "recorded_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+    "agrees": null,
+    "explanation": "The v6 registry pins the MinerU *code* revision, not the weights repository. There is no prior weights-repository pin to compare against. The code pin is carried separately as runtime_source_revision, where it is superseded by a later 3.4.x tag of the same repository."
+  },
+  "base_image_digest": "sha256:a230095847e93bd4df9888b33dab956fa9504537b828a23657d2b26fed57b5c9",
+  "base_image_digest_source": "registry-1.docker.io manifest for vllm/vllm-openai:v0.21.0, anonymous pull token, 2026-09-03. This is the base MinerU's own docker/global/Dockerfile uses.",
+  "runtime_source_repository": "opendatalab/MinerU",
+  "runtime_source_revision": "fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883",
+  "runtime_source_release_tag": "mineru-3.4.5-released",
+  "upstream_version_discrepancy": {
+    "declared_package_version_at_pinned_commit": "3.4.4",
+    "release_tag": "mineru-3.4.5-released",
+    "explanation": "Upstream tagged 3.4.5 without bumping mineru/version.py, which still reads 3.4.4 at fbb1257a. The 3.4.5 changes are a DOCX table-cell fix and a PDF surrogate-pair fix, neither of which touches PNG page parsing. Record the git sha in every provenance receipt; a report that quotes mineru.__version__ will read 3.4.4 and that is upstream's number, not an error to correct."
+  },
+  "runtime_dependency_pins": {
+    "mineru": "git+https://github.com/opendatalab/MinerU.git@fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883#egg=mineru[core]",
+    "transformers": "4.57.3",
+    "accelerate": "1.14.0",
+    "mineru-vl-utils": "1.0.5",
+    "huggingface_hub": "0.35.3",
+    "source": "MinerU pyproject.toml at the pinned revision publishes only >= constraints; these exact versions are the ones the FOLYNTA 2026-08 bootstrap recorded in infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh."
+  },
+  "weights_detail": {
+    "largest_file_bytes": 810036696,
+    "downloaded_subtrees": [
+      "models/Layout/PP-DocLayoutV2",
+      "models/MFR/unimernet_hf_small_2503",
+      "models/MFR/pp_formulanet_plus_m",
+      "models/OCR/paddleocr_torch",
+      "models/TabRec/SlanetPlus/slanet-plus.onnx",
+      "models/TabRec/UnetStructure/unet.onnx",
+      "models/TabCls/paddle_table_cls/PP-LCNet_x1_0_table_cls.onnx"
+    ],
+    "downloaded_subtree_bytes": 2595586833,
+    "downloaded_file_count": 40,
+    "subtree_source": "mineru/cli/models_download.py::download_pipeline_models at the pinned revision",
+    "repository_largest_file_not_used": "models/MFR/UniMERNet/pytorch_model.bin (3,750,208,149 bytes) is the largest file in the repository but the pipeline backend does not download it.",
+    "pp_ocrv6_files_present": [
+      "models/OCR/paddleocr_torch/ch_PP-OCRv6_small_det_infer.safetensors",
+      "models/OCR/paddleocr_torch/ch_PP-OCRv6_medium_rec_infer.safetensors",
+      "models/OCR/paddleocr_torch/ch_PP-OCRv6_small_rec_infer.safetensors"
+    ],
+    "source": "https://huggingface.co/api/models/opendatalab/PDF-Extract-Kit-1.0?blobs=true (siblings[].lfs.sha256)"
+  },
+  "license_notes": "The pinned pyproject.toml declares license = \"LicenseRef-MinerU-Open-Source-License\", not a standard SPDX identifier; benchmark/v6/candidate-registry.yaml recorded it as AGPL-3.0-or-upstream-current with commercial_use unknown. status 'verified' here means the licence identity was read from the pinned source, not that commercial use is cleared. Whether it is acceptable is a founder decision. The weights repository PDF-Extract-Kit-1.0 carries its own separate terms.",
+  "historical_evidence": {
+    "scope": "omnidocbench-demo-18x3 (masterplan section 5.1)",
+    "seconds_per_page": 6.959,
+    "text_edit": 0.036507,
+    "formula_edit": 0.153424,
+    "table_teds": 0.890803,
+    "structure_teds": 0.946825,
+    "reading_order": 0.095701,
+    "note": "18-page controlled subset, not a leaderboard result, and not a promotion scope."
+  },
+  "quoted_vendor_claims": {
+    "omnidocbench_ocr_accuracy_gain_vs_3_3": "~11%",
+    "ocr_speed_gain_vs_3_3": "~100%",
+    "note": "Quoted from the MinerU 3.4 changelog, never reproduced by this campaign."
+  },
+  "to_verify_in_canary": [
+    "model_revision_cross_check.agrees is null: the v6 registry pin is a code revision and this field pins the weights repository, so there is nothing to compare. The code pin is cross-checked separately under runtime_source_revision.",
+    "Confirm PP-OCRv6 is the OCR model the pipeline actually selects. models/OCR/paddleocr_torch contains PP-OCRv4, v5 and v6 files side by side; record the file the run loaded. Do not take 'MinerU 3.4 uses PP-OCRv6' on faith - inferring capability from a version name is exactly what the constitution forbids.",
+    "MinerU probes huggingface.co at import time when MINERU_MODEL_SOURCE is unset (models_download_utils.resolve_auto_model_source). The image sets it to local; confirm no outbound request is made during inference.",
+    "lang is 'ch', MinerU's own default, applied identically to all three benchmarks. Confirm on a Latin-script canary page before the full run; a per-benchmark override would break the fair-comparison contract (section 6.1) and is not applied.",
+    "Record importlib.metadata.version('mineru') and the git sha from /opt/arena/receipts/mineru-git-revision.txt - expect 3.4.4 and fbb1257a, per upstream_version_discrepancy above.",
+    "gpu_pool_priority entries are RunPod gpuTypeId strings taken from masterplan section 13.3; confirm each against the provider catalog snapshot.",
+    "The v0.21.0 base ships its own transformers and this image pins 4.57.3 on top. vLLM is present but unused by the pipeline backend; if a dependency conflict surfaces, the fix is a different base image, never an unpinned upgrade."
+  ],
+  "framework_floor_audit": {
+    "audited_at": "2026-09-03",
+    "checkpoint": {
+      "config_json": "absent - see config_json_note",
+      "config_json_note": "opendatalab/PDF-Extract-Kit-1.0 at ed6b654c has no top-level config.json - the repository root holds only models/, README.md and .gitattributes, and each pipeline stage carries its own config under models/. There is no single model_type to check, so the preflight checks the toolkit and the model directories instead.",
+      "model_type": "absent - no single checkpoint",
+      "architectures": [
+        "absent - no single checkpoint"
+      ]
+    },
+    "required": "MinerU 3.4.5 pyproject [pipeline] extra: transformers >= 4.57.3, < 5.0.0 and torch >= 2.6.0, < 3",
+    "image_ships": "vllm/vllm-openai:v0.21.0 - its transformers version is unknown from evidence (requirements/common.txt bounds transformers >= 4.56.0, < 5 rather than pinning one), which is why bootstrap.sh installs transformers==4.57.3 exactly",
+    "action": "no pin change - bootstrap.sh and the Dockerfile already install transformers==4.57.3, accelerate==1.14.0 and mineru-vl-utils==1.0.5 exactly, which satisfies both the model's floor and the image's bound. bootstrap.sh gains an architecture preflight that asserts those pins, imports mineru.cli.common.do_parse and checks every pipeline model directory is on disk.",
+    "evidence": [
+      "https://github.com/opendatalab/MinerU/blob/fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883/pyproject.toml",
+      "https://huggingface.co/opendatalab/PDF-Extract-Kit-1.0/tree/ed6b654c018d742e65a17671e379c5e6ecc87ec9",
+      "https://github.com/vllm-project/vllm/blob/v0.21.0/requirements/common.txt"
+    ]
+  },
+  "cuda_floor": {
+    "min_cuda_version": "13.0",
+    "source": "base image CUDA runtime",
+    "cuda_version_evidence": "image config",
+    "observed": {
+      "base_image": "vllm/vllm-openai:v0.21.0@sha256:a230095847e93bd4df9888b33dab956fa9504537b828a23657d2b26fed57b5c9",
+      "image_config_digest": "sha256:2497255b1272ba3ae9581acd51349f840038f228d0709cd9f6a142d39008d290",
+      "CUDA_VERSION": "13.0.2",
+      "NVIDIA_REQUIRE_CUDA": "cuda>=13.0",
+      "image_label_ai_vllm_image_tag": "vllm/vllm-openai:v0.21.0"
+    },
+    "vendor_documented_floor": "none published: the vendor documents no driver floor beyond the image's own CUDA runtime",
+    "url": "https://hub.docker.com/layers/vllm/vllm-openai/v0.21.0/images/sha256-a230095847e93bd4df9888b33dab956fa9504537b828a23657d2b26fed57b5c9",
+    "read_at": "2026-09-04",
+    "capacity_note": "13.0 is the newest CUDA version RunPod filters on, so allowedCudaVersions is the single entry [\"13.0\"]. A capacity refusal for this model is a real refusal, not a placement that could be widened.",
+    "rationale": "min_cuda_version is the lowest CUDA version a RunPod host may report for this runtime to start. It is sent as the create payload's allowedCudaVersions -- every version RunPod lists at or above it -- because pod 3xag0y00rgoj4n ran this campaign's CUDA 12.9 image on a host reporting cudaVersion 12.8 and died in torch._C._cuda_init with CUDA error 804 after the pod was already billing. Read anonymously from the pinned image's own OCI config blob at the digest runtime.json pins; nothing is inferred from the image name."
+  }
+}

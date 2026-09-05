@@ -1,0 +1,52 @@
+# Generated campaign data never enters git.
+# Whitelist = code + registries + thin leaderboard/STATUS under reports/*/
+
+inputs/
+gt/
+queue/
+runs/
+frozen_outputs/
+scores/
+failures/
+tavonel/
+bundles/
+cost/
+receipts/
+evidence/
+.hybrid-agent/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+.private/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.tmp
+*.pid
+*.log
+
+# Heavy report trees (raw evaluator dumps)
+reports/**/omnidoc_raw/
+reports/**/olmocr_raw/
+reports/**/parsebench_raw/
+reports/**/*.out.log
+reports/**/*.err.log
+reports/**/*.log
+reports/**/*.pid
+
+# Default: ignore report contents, then re-include thin artifacts + drivers
+reports/**
+!reports/
+!reports/*/
+!reports/*/_*.py
+!reports/*/comparison_*.md
+!reports/*/comparison_*.json
+!reports/*/STATUS*.md
+!reports/*/NOTES.md
+!reports/*/corpus_coverage*.md
+!reports/*/corpus_coverage*.json
+!reports/*/coverage_pct*.json
+!reports/*/chain_state.json
+!reports/*/STATUS_CHAIN.md
+!reports/*/git_whitelist_manifest.txt

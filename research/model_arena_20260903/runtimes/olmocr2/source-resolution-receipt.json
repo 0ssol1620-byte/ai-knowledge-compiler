@@ -1,0 +1,59 @@
+{
+  "base_image": {
+    "digest": "sha256:2c908d5a84ed251b6a17d179f42d06df1aff353007779ac5eecd8a0ea3fe9331",
+    "ref": "vllm/vllm-openai:v0.11.2"
+  },
+  "campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+  "checkpoint": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGeneration"
+    ],
+    "file_count": 20,
+    "hf_main_head": "40bd7202494b8264ee17ada08b401b5aab7a9ce1",
+    "largest_file": {
+      "name": "model-00001-of-00003.safetensors",
+      "sha256": "sha256:5d5550dbb21e309786fde9a151442181562cf9dc23141116a4e46e3e815b0d02",
+      "size_bytes": 4940102568
+    },
+    "last_modified": "2026-02-19T17:30:13.000Z",
+    "license_tag": "apache-2.0",
+    "pinned_revision": "40bd7202494b8264ee17ada08b401b5aab7a9ce1",
+    "repo": "allenai/olmOCR-2-7B-1025-FP8",
+    "source_url": "https://huggingface.co/api/models/allenai/olmOCR-2-7B-1025-FP8?blobs=true",
+    "weights_total_bytes": 10061929760,
+    "weights_total_gb": 10.06
+  },
+  "cross_check": {
+    "candidate_registry": "benchmark/v6/candidate-registry.yaml",
+    "runtime_json_agrees": true
+  },
+  "generated_at": "2026-09-03T06:33:55+00:00",
+  "method": "read-only HTTPS GET against the official APIs; no weights downloaded",
+  "model_key": "olmocr2",
+  "not_verified": [
+    "RunPod gpuTypeId strings in gpu_pool_priority (lane B1 owns the catalog snapshot)",
+    "any throughput, VRAM or quality figure -- the canary measures those"
+  ],
+  "resolved_at": "2026-09-03",
+  "runtime_repository": {
+    "commit": "1e139a5ea61f1668164e6b63357d7284a8391615",
+    "dockerfile_from": "vllm/vllm-openai:v0.11.2",
+    "gpu_extra": {
+      "torch": ">=2.7.0",
+      "transformers": "4.57.3",
+      "vllm": "0.11.2"
+    },
+    "license": "Apache-2.0",
+    "license_file_present": true,
+    "pipeline_defaults": {
+      "max_model_len": 16384,
+      "max_tokens": 8000,
+      "served_model_name": "olmocr",
+      "target_longest_image_dim": 1288,
+      "temperature_first_attempt": 0.0
+    },
+    "tag": "v0.4.27",
+    "url": "https://github.com/allenai/olmocr"
+  },
+  "schema": "tavonel.arena.c3_source_resolution.v1"
+}

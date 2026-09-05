@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:build:image-receipt:v1",
+  "title": "TAVONEL arena runtime-image build receipt",
+  "description": "Emitted by build_on_pod.sh after a real buildah build + push on a temporary RunPod builder pod (masterplan section 38 Runtime Provenance). A receipt is evidence that a build happened; it is not runtime qualification (no GPU inference was run) and does not by itself authorize a canary -- that still requires the model's own canary PASS (ARENA_CONTRACT section 5).",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "sha256_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "sha256_prefixed_or_null": {
+      "anyOf": [
+        { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.build.image-receipt.v1" },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr"
+      ]
+    },
+    "dockerfile_sha256": { "$ref": "#/$defs/sha256_digest" },
+    "context_tree_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "sha256 over sorted (relative_path, file_sha256) pairs of every file actually sent to buildah as build context (i.e. after .dockerignore), so the receipt proves what was really built, not just what the repo looked like."
+    },
+    "base_image_digest": { "$ref": "#/$defs/sha256_digest" },
+    "image_digest": {
+      "$ref": "#/$defs/sha256_digest",
+      "description": "the digest buildah reported after push, resolved by a follow-up registry GET, never merely echoed back from the push client."
+    },
+    "image_tag": {
+      "type": "string",
+      "pattern": "^ghcr\\.io/[a-z0-9._-]+/[a-z0-9._-]+/[a-z0-9_]+:[a-z0-9._-]+$"
+    },
+    "built_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "builder_pod_id": { "type": "string", "minLength": 1 },
+    "buildah_version": { "type": "string", "minLength": 1 },
+    "sbom_sha256": { "$ref": "#/$defs/sha256_prefixed_or_null" },
+    "sbom_tool": { "type": ["string", "null"] },
+    "vulnerability_scan_sha256": { "$ref": "#/$defs/sha256_prefixed_or_null" },
+    "vulnerability_scan_tool": { "type": ["string", "null"] },
+    "critical_vulnerability_count": { "type": ["integer", "null"], "minimum": 0 },
+    "runtime_qualification_required": { "const": true },
+    "paid_capacity_ready": { "const": false }
+  },
+  "required": [
+    "schema", "model_key", "dockerfile_sha256", "context_tree_sha256",
+    "base_image_digest", "image_digest", "image_tag", "built_at",
+    "builder_pod_id", "buildah_version", "sbom_sha256", "sbom_tool",
+    "vulnerability_scan_sha256", "vulnerability_scan_tool",
+    "critical_vulnerability_count", "runtime_qualification_required",
+    "paid_capacity_ready"
+  ]
+}

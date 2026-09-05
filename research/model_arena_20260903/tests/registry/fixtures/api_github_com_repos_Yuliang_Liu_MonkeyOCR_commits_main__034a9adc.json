@@ -1,0 +1,101 @@
+{
+  "author": {
+    "avatar_url": "https://avatars.githubusercontent.com/u/34134635?v=4",
+    "events_url": "https://api.github.com/users/Yuliang-Liu/events{/privacy}",
+    "followers_url": "https://api.github.com/users/Yuliang-Liu/followers",
+    "following_url": "https://api.github.com/users/Yuliang-Liu/following{/other_user}",
+    "gists_url": "https://api.github.com/users/Yuliang-Liu/gists{/gist_id}",
+    "gravatar_id": "",
+    "html_url": "https://github.com/Yuliang-Liu",
+    "id": 34134635,
+    "login": "Yuliang-Liu",
+    "node_id": "MDQ6VXNlcjM0MTM0NjM1",
+    "organizations_url": "https://api.github.com/users/Yuliang-Liu/orgs",
+    "received_events_url": "https://api.github.com/users/Yuliang-Liu/received_events",
+    "repos_url": "https://api.github.com/users/Yuliang-Liu/repos",
+    "site_admin": false,
+    "starred_url": "https://api.github.com/users/Yuliang-Liu/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/Yuliang-Liu/subscriptions",
+    "type": "User",
+    "url": "https://api.github.com/users/Yuliang-Liu",
+    "user_view_type": "public"
+  },
+  "comments_url": "https://api.github.com/repos/Yuliang-Liu/MonkeyOCR/commits/7aace39ca43d5d226277a9450ae1b5d1dba0a46d/comments",
+  "commit": {
+    "author": {
+      "date": "2026-07-20T13:41:34Z",
+      "email": "34134635+Yuliang-Liu@users.noreply.github.com",
+      "name": "Yuliang Liu"
+    },
+    "comment_count": 0,
+    "committer": {
+      "date": "2026-07-20T13:41:34Z",
+      "email": "noreply@github.com",
+      "name": "GitHub"
+    },
+    "message": "Revise copyright to license and commercial use section\n\nUpdated copyright section to include licensing information and commercial use terms.",
+    "tree": {
+      "sha": "87ce4b14c2a9bacf226399e1900ed69e06e4c692",
+      "url": "https://api.github.com/repos/Yuliang-Liu/MonkeyOCR/git/trees/87ce4b14c2a9bacf226399e1900ed69e06e4c692"
+    },
+    "url": "https://api.github.com/repos/Yuliang-Liu/MonkeyOCR/git/commits/7aace39ca43d5d226277a9450ae1b5d1dba0a46d",
+    "verification": {
+      "payload": "tree 87ce4b14c2a9bacf226399e1900ed69e06e4c692\nparent bdebaa8f3a6c7acc51dfe61f0f8d2a66c86fa51b\nauthor Yuliang Liu <34134635+Yuliang-Liu@users.noreply.github.com> 1784554894 -0400\ncommitter GitHub <noreply@github.com> 1784554894 -0400\n\nRevise copyright to license and commercial use section\n\nUpdated copyright section to include licensing information and commercial use terms.",
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqXiWOCRC1aQ7uu5UhlAAAgUwQAJMTcWCZbNKuWJEL6xYf7FDx\nokeexYLWP0YVif2y7cscLB5pTkL4jNpQec29CiQ+dn9znLwdPzhqxlYeS/sPTZoX\nKwoCHtOiQ055UP625wwdWiygqvNR8sO2bEj6TZ6vN7dA0/oUZLpIipoojgmiGNRx\nUF5Ts5pL1brk89+hSUv1KP804CVEcNutRPaTlEJnL0U2QtyMAh4PCSjqrXIxNEZf\nzydXk4zQ9y5BeNE5NUi9IL6qAWQ7HxknkNzyCniauGVqjTMGMnFi3DQcGshw06Iw\n5nAAUKTKR4kZNtTvYegIBr2IyRuji/2S3dq3Pl3ZaMnfB69DQB/tcwbC6ecZtBOU\nGPdX195zxmr0eN6z+edlVFJVXzJ1kP1PxHcOvrGvY9xjW6FxZaNtLN4zQQ+HoGOP\nKZwP/+UnkwtDI+m5NpqsHpR4ASVx6ZCtMU0ww45MYK56fhnDAhM3wlGjlhItPIau\nLVpT9LtZQwjxzk4AdCZ/rbUSKoPlshAXqs2atMfXn59hapvdaTqaOHiPOiMEowgg\nL6ewj46+E2fXTo0uCj9uA+AjGjiS/niS/3uK/8ok4Omb+7u4PpciWXWXutMQ0QMO\nXkeGPjnmhs73OhUlNKRMdRa+Zk+XT5GG2zX9FS8CyRw3NYVDZX1hott3yFRe4u4v\ntz8Gw18JPX6y6hVH0oL7\n=Lf7M\n-----END PGP SIGNATURE-----\n",
+      "verified": true,
+      "verified_at": "2026-07-20T13:41:35Z"
+    }
+  },
+  "committer": {
+    "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+    "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+    "followers_url": "https://api.github.com/users/web-flow/followers",
+    "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+    "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+    "gravatar_id": "",
+    "html_url": "https://github.com/web-flow",
+    "id": 19864447,
+    "login": "web-flow",
+    "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+    "organizations_url": "https://api.github.com/users/web-flow/orgs",
+    "received_events_url": "https://api.github.com/users/web-flow/received_events",
+    "repos_url": "https://api.github.com/users/web-flow/repos",
+    "site_admin": false,
+    "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+    "type": "User",
+    "url": "https://api.github.com/users/web-flow",
+    "user_view_type": "public"
+  },
+  "files": [
+    {
+      "additions": 8,
+      "blob_url": "https://github.com/Yuliang-Liu/MonkeyOCR/blob/7aace39ca43d5d226277a9450ae1b5d1dba0a46d/README.md",
+      "changes": 10,
+      "contents_url": "https://api.github.com/repos/Yuliang-Liu/MonkeyOCR/contents/README.md?ref=7aace39ca43d5d226277a9450ae1b5d1dba0a46d",
+      "deletions": 2,
+      "filename": "README.md",
+      "patch": "@@ -1273,5 +1273,11 @@ We would like to thank [MinerU](https://github.com/opendatalab/MinerU), [DocLayo\n ## Limitation\n Currently, MonkeyOCR do not yet fully support for photographed text, handwritten content, Traditional Chinese characters, or multilingual text. We plan to consider adding support for these features in future public releases. Additionally, our model is deployed on a single GPU, so if too many users upload files at the same time, issues like \u201cThis application is currently busy\u201d may occur. The processing time shown on the demo page does not reflect computation time alone\u2014it also includes result uploading and other overhead. During periods of high traffic, this time may be longer. The inference speeds of MonkeyOCR, MinerU, and Qwen2.5 VL-7B were measured on an H800 GPU.\n \n-## Copyright\n-Please don\u2019t hesitate to share your valuable feedback \u2014 it\u2019s a key motivation that drives us to continuously improve our framework. Note: Our model is intended for academic research and non-commercial use only. If you are interested in faster (smaller) or stronger one, please contact us at xbai@hust.edu.cn or ylliu@hust.edu.cn.\n+## License and Commercial Use\n+\n+The source code in this repository is released under the Apache License 2.0.\n+\n+The MonkeyOCR v1 model weights are provided for academic research and non-commercial evaluation only. Commercial deployment, SaaS integration, redistribution, or production use requires a separate written commercial license.\n+\n+For commercial licensing inquiries, please contact xbai@hust.edu.cn or ylliu@hust.edu.cn.\n+",
+      "raw_url": "https://github.com/Yuliang-Liu/MonkeyOCR/raw/7aace39ca43d5d226277a9450ae1b5d1dba0a46d/README.md",
+      "sha": "cb3ad21916f7151e2fb1bfd484ca4e185edec546",
+      "status": "modified"
+    }
+  ],
+  "html_url": "https://github.com/Yuliang-Liu/MonkeyOCR/commit/7aace39ca43d5d226277a9450ae1b5d1dba0a46d",
+  "node_id": "C_kwDOO1HEOdoAKDdhYWNlMzljYTQzZDVkMjI2Mjc3YTk0NTBhZTFiNWQxZGJhMGE0NmQ",
+  "parents": [
+    {
+      "html_url": "https://github.com/Yuliang-Liu/MonkeyOCR/commit/bdebaa8f3a6c7acc51dfe61f0f8d2a66c86fa51b",
+      "sha": "bdebaa8f3a6c7acc51dfe61f0f8d2a66c86fa51b",
+      "url": "https://api.github.com/repos/Yuliang-Liu/MonkeyOCR/commits/bdebaa8f3a6c7acc51dfe61f0f8d2a66c86fa51b"
+    }
+  ],
+  "sha": "7aace39ca43d5d226277a9450ae1b5d1dba0a46d",
+  "stats": {
+    "additions": 8,
+    "deletions": 2,
+    "total": 10
+  },
+  "url": "https://api.github.com/repos/Yuliang-Liu/MonkeyOCR/commits/7aace39ca43d5d226277a9450ae1b5d1dba0a46d"
+}

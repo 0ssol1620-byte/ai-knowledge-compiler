@@ -1,0 +1,15 @@
+{
+  "deepseek_ocr2_grounding_markdown_v1": "sha256:00a105b332827a249e76115332aef75dfdf7578e026c25fef1a35662a81efa32",
+  "glm_ocr_official_sdk_task_prompts_v1": "sha256:3d62ac2e6e72a4064fdbbc5d8b045111133f663fb774e9eb0483933f36cf5e67",
+  "hpd_parsing_document_parsing_with_fork_v1": "sha256:df8124c5dbc24b50ce15a23f84d4b277d6a79179a2522339cbabcb8e3eb9033d",
+  "infinity_parser2_flash_doc2json_v1": "sha256:a1c4c81e3bce7b2eb6534231962187ed766af7d450867c61fd474a5e897fcb2c",
+  "infinity_parser2_pro_doc2json_v1": "sha256:a1c4c81e3bce7b2eb6534231962187ed766af7d450867c61fd474a5e897fcb2c",
+  "mineru_pipeline_no_prompt": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "mineru_vlm_no_prompt": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "monkeyocrv2_b_official_pipeline_prompts_v1": "sha256:3384d4732fd91113b9f7989e488dba575f65225d745a30b797364e12df47dca4",
+  "olmocr2_no_anchoring_v4_yaml_v1": "sha256:c12f21aca8c6c5599cea6176edd974b7ea6a05cf451497abd6370dd449db3979",
+  "opus5_transcription_v1": "sha256:2a8741532324e1fb6be192253eb3a19301a3eb49ef0c8764bf97505382d263ee",
+  "ovisocr2_page_markdown_v1": "sha256:de9617f877f6110d22adf1a6ba2a96221189dc246fb1fef161e408d37bff5267",
+  "paddleocr_vl_1_6_pipeline_internal": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "unlimited_ocr_document_parsing_v1": "sha256:a210f5b991d35d2a9a7d6c6160f54165c0ae96e02fbfdd1bc38400232021c303"
+}
