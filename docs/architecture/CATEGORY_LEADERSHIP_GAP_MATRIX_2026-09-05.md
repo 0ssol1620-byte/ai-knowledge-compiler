@@ -884,21 +884,47 @@ it would have to invent versus what it could read.
 1. `research/model_arena_20260903/` is **git-untracked working-tree state** in
    the core repository. It is not part of `26bb892`. A receipt cited from an
    untracked path is not a receipt a third party can fetch. It is also *moving*
-   while this document is being written: two readings on 2026-09-05 counted 27
-   and then 28 `scores/<model>/<benchmark>/` directories. Every count in this
-   section is therefore stamped with the time it was taken, and none of them is
-   load-bearing.
-2. The campaign is **incomplete**. Read at `2026-09-05T09:30Z`, `scores/` held
-   28 `<model>/<benchmark>/` directories: all 28 carry `evaluator_input/`, and
-   the 10 `omnidoc` pairs also carry an `evaluator_raw/` whose sole content is
-   `omnidoc-config.yaml` — the evaluator's configuration, not its output.
+   while this document is being written: successive readings on 2026-09-05
+   counted 27, then 28 `scores/<model>/<benchmark>/` directories, and 28 again at
+   both `11:27Z` and `11:39Z`. `reports/`
+   carries directories named for today's date (`full_compare_20260905`,
+   `partial_score_20260905`, `empty_audit_20260905`), so the campaign is being
+   worked while this is read; this document does not claim to know when any of
+   them appeared. Every count in this section is therefore stamped with the time
+   it was taken, and none of them is load-bearing.
+2. The campaign is **partially scored, and the scores are not in the canonical
+   score root.** Read at `2026-09-05T11:27Z` and again at `11:39Z`, the
+   campaign's top-level `scores/` held 28 `<model>/<benchmark>/` directories: all
+   28 carry `evaluator_input/`, and the 10 `omnidoc` pairs also carry an
+   `evaluator_raw/` whose sole content
+   is `omnidoc-config.yaml` — the evaluator's configuration, not its output.
    `ARENA_CONTRACT.md:201` declares `evaluator_input/`, `evaluator_raw/` and
-   `summary.json` as the three parts of a scored pair, and names `summary.json`
-   as where the official metrics live. **A recursive search under `scores/`
-   finds zero `summary.json` and zero `scores.json`** — that is the load-bearing
-   fact, it does not depend on any count above, and it holds at every reading:
-   no metric has been scored, so there is nothing to publish and no `metrics[]`
-   to fill.
+   `summary.json` as the three parts of a scored pair; `:203` names
+   `summary.json` as where the official metrics live. A recursive search under
+   that top-level `scores/` finds zero `summary.json` and zero `scores.json`, at
+   this reading.
+   **That is a fact about one directory, not about the campaign**, and the
+   previous revision of this document read it as the second. A search of the
+   *whole* campaign directory finds nine, under a second directory also named
+   `scores/`: six at
+   `reports/triple_overlap_20260904/score_root/scores/<model>/<benchmark>/summary.json`
+   and three at `.../score_root/scores/<model>/scores.json` — the layout
+   `ARENA_CONTRACT.md:201` specifies, rooted at a report instead of at the
+   campaign. Three of the six carry `"status": "SCORED"` with a populated
+   `metrics` object (four OmniDocBench metric names) and a `missing_metrics`
+   entry explaining that the evaluator publishes no single overall figure; the
+   other three carry the contract's own `"status": "EVALUATOR_BLOCKED"`
+   (`ARENA_CONTRACT.md:208`) for ParseBench. **Metrics have been produced** — for
+   three model keys, on one benchmark, over an overlap subset.
+   None of that makes a figure publishable, and the reasons are stronger than
+   the ones this document gave before. The tree is untracked. The scored set is
+   a partial overlap subset: `reports/triple_overlap_20260904/STATUS.json`
+   records one model frozen `--allow-incomplete`, ParseBench not scored (that
+   file's own words: a `Levenshtein` DLL `ImportError` on a Windows `uv` 3.12
+   venv) and olmOCR deferred — so it cannot satisfy §4.4's `denominator` and
+   `comparisonBasis` as a same-condition result today. And publishing any arena figure is a founder
+   decision (§5). **No metric value is restated anywhere in this document**, and
+   that restraint is now a choice rather than a description of an empty tree.
 3. Nothing in this section is a benchmark result, and nothing here may be
    published. Publishing any arena number is a founder decision (§5).
 
@@ -922,26 +948,41 @@ it would have to invent versus what it could read.
 | `worldDigest` | — arena does not compile a World | **absent** |
 | `runReceiptDigest` | `receipts/<kind>-<model>.json`; `receipts/manifest-hash-cache.json`; `authorization_receipt_sha256` per receipt | yes |
 | `date` | `started_at` / `finished_at` per receipt; `campaign_manifest.created_at` | yes |
-| `metrics[]` | `scores/<model>/<benchmark>/summary.json` | **absent — none exist yet** |
+| `metrics[]` | `scores/<model>/<benchmark>/summary.json` — none under the campaign's own `scores/`; six under `reports/triple_overlap_20260904/score_root/scores/`, three of them `"status": "SCORED"` with a populated `metrics` object, three `"EVALUATOR_BLOCKED"` | partial — produced for three model keys on one benchmark, in a report-scoped score root, over an overlap subset |
 | `comparisonBasis` | `model_registry.json` → `models.<key>.historical_evidence` is explicitly third-party and carries a `scope_warning`; `historical_evaluator_pins` pins the evaluator revision used for those | maps to `"quoted"`, never `"same_condition"` |
 | `publishedFailures[]` | `receipts/incidents/`, `receipts/waivers/`, per-receipt `fail_reasons` / `empty_output_pages`, `FOUNDER_EXCLUDE_INFINITY_2026-09-04.md`. `ARENA_CONTRACT.md:139` also declares `failures/errors.jsonl`, and that directory is **empty** | yes, with one contract path unwritten |
 
 **What this shows.** Of the twenty-one fields §4.4 requires: fourteen have a
-direct source, one has a source with a gap (`publishedFailures[]`), two are
-partial (`inputMode`, `rawResultDigest`), one can only ever be `"quoted"`
-(`comparisonBasis`), and three are absent.
+direct source, one has a source with a gap (`publishedFailures[]`), three are
+partial (`inputMode`, `rawResultDigest`, `metrics[]`), one can only ever be
+`"quoted"` (`comparisonBasis`), and two are absent.
 
-The three absent ones are the three that matter most. `compilerVersion` and
-`worldDigest` are missing because the arena measures **parsers**, not the
-Knowledge Compiler — it never compiles a World, so there is no world digest to
-record. `metrics[]` is missing because the campaign has not produced a score. A
-§4.4 record built from these receipts today would be a parser benchmark wearing a
-compiler benchmark's schema, and §37's whole point is that those are different
-things.
+The two absent ones are the two that matter most, and they are absent by
+construction rather than by incompleteness. `compilerVersion` and `worldDigest`
+are missing because the arena measures **parsers**, not the Knowledge Compiler —
+it never compiles a World, so there is no world digest to record. No amount of
+further scoring produces them. A §4.4 record built from these receipts today
+would be a parser benchmark wearing a compiler benchmark's schema, and §37's
+whole point is that those are different things.
+
+`metrics[]` is the field that moved. The previous revision of this section
+called it absent because the campaign's own `scores/` is empty; caution 2 above
+records why that reading was wrong. It is `partial` rather than `yes` for three
+reasons that a benchmark record must state and cannot: the scored pairs live in
+a report-scoped score root rather than the canonical one, one benchmark is
+`EVALUATOR_BLOCKED` and a third deferred, and the denominator is an overlap
+subset rather than the population `campaign_manifest.json` declares. Each of
+those is a §4.4 `denominator` or `comparisonBasis` problem, not a missing value.
 
 **Consequence for the benchmarks lane.** `qualifiedBenchmarkRecords()` returning
 empty on this branch is the correct state, not a placeholder. The page publishes
-the protocol.
+the protocol. This is unchanged by the discovery that scored summaries exist:
+a record that cannot state its denominator as the declared population, cannot
+claim `"same_condition"`, and cites an untracked path is exactly what
+`validateBenchmarkReceipt()` is specified to reject. The correct state is empty
+*because* the validator would refuse the only candidate — which is a stronger
+statement than "there is nothing to validate", and the one the lane should
+carry.
 
 ---
 
@@ -1001,15 +1042,20 @@ Partner destinations are `ABSENT`.
 
 ## 5. Founder decisions this matrix could not make
 
-The first eight each block a row above; the ninth blocks nothing in particular
-and possibly everything. None is an agent's call under `CLAUDE.md` or lane
-contract §7.
+The first eight each block a row above; the ninth and tenth block nothing in
+particular and possibly everything. None is an agent's call under `CLAUDE.md` or
+lane contract §7.
 
 1. **Branch strategy for `feature/revision-compile-v1`.** It is local-only, 87
    commits behind `origin/main`, and holds the only product-side revision route.
    Rebase, cherry-pick or abandon — row 3 cannot advance until this is answered.
-2. **Whether to publish any Model Arena figure, and when.** The campaign is
-   incomplete and untracked; §3 explains what a record would and would not say.
+2. **Whether to publish any Model Arena figure, and when.** This changed on
+   2026-09-05: the campaign *has* produced scored summaries (three model keys,
+   one benchmark, an overlap subset, in a report-scoped score root — §3 caution
+   2), so the decision is live rather than moot. It was previously recorded here
+   and in this lane's earlier report as blocked by there being no metric at all,
+   and that was wrong. Nothing may be published until the founder answers; §3
+   explains what a record would and would not be able to say.
 3. **Main-branch protection and the first release tag** on the site repository
    (row 8). The `github-trust` lane writes the `gh api` commands; running them is
    a founder action.
@@ -1030,6 +1076,14 @@ contract §7.
    this campaign — so the call is whether the rule reaches them. Either way the
    `repository_green: true` receipt of 2026-09-03 and today's run disagree, and
    one of the two needs correcting.
+10. **Whether to grant a lane ownership to commit the citation checker** as a
+    repository gate. This lane owns exactly one file, so §6's check is described
+    in prose and its scale cannot be shown — a count of it would be a hand-typed
+    number and is therefore withheld under lane contract §1. Five rounds have now
+    shown that a self-reported integrity check drifts wider than the check
+    underneath it whenever nobody re-derives it, including in the paragraph that
+    reports the check. A committed gate is the only thing that ends that loop,
+    and it is worth more than this document.
 
 ---
 
@@ -1041,11 +1095,30 @@ is an account of **what was walked**, not a guarantee about what is true. The tw
 are not the same, and every error this file has carried has lived in the gap
 between them — which is why the account is written as a list of classes with
 their known blind spots rather than as a verdict. Rounds 1–3 ran a machine check
-of **281 assertions in six classes** — 1 to 6 below; round 4 re-derived a named
-subset by hand, named class 7, and is described at the end. Core paths were read
-from the worktree at `26bb892`; site paths with `git show origin/main:<path>`;
-arena paths from the untracked working tree, which is why they are marked as
-such throughout §3.
+covering classes 1 to 6 below; round 4 re-derived a named subset by hand and
+named class 7; round 5 is described at the end. Core paths were read from the
+worktree at `26bb892`; site paths with `git show origin/main:<path>`; arena paths
+from the untracked working tree, which is why they are marked as such throughout
+§3.
+
+**How many assertions that check held is `not_yet`, and will stay `not_yet`
+until the checker is committed.** Earlier revisions of this section stated a
+total for rounds 1–3 and a per-round split of it. Those were hand-typed
+self-reports: the checker is not a committed artifact (see the end of this
+section), no file under `docs/repro/` or `research/` carries the figures, and
+this branch's whole diff is one markdown file — so no reader could re-derive any
+of them, and lane contract §1 says a value that would have to be typed by hand
+is not shown at all. They are removed rather than restated, and nothing replaces
+them, because the honest replacement for an unauditable number is no number.
+
+What the section still states, and why each survives the same rule: the
+*classes* below, which say what kind of thing was checked rather than how much;
+the *named* checks further down, each carrying the command that reproduces it;
+the prose counts about source files, which any reader can recount from the two
+named refs; and the errors found, which are enumerated by kind in the same
+sentence that counts them, so the count is read off the enumeration rather than
+taken on trust. A reader who wants to know the size of the check should ask for
+the checker, not for the number — §5 item 10.
 
 1. **`path:line`** — the file must exist, the line must exist, and the line must
    contain the text this document says is there.
@@ -1094,8 +1167,9 @@ assertion. Row 6 is now `IMPLEMENTED`, and the lesson is the narrower one — wh
 a citation turns out not to say what a row needs, the honest move is to regrade
 the row, not to re-describe the citation until it fits.
 
-Six of the 281 assertions are *computed*, not merely looked up, because some
-rows make claims that a lookup cannot defend:
+Four of the checks rounds 1–3 ran are *computed*, not merely looked up, because
+some rows make claims that a lookup cannot defend. They are listed rather than
+counted in the abstract, so the list itself is the count:
 
 - Row 18 enumerates six pack ids and seven blueprint directories. The check
   compares the enumeration against the actual directory listing, so a pack added
@@ -1123,6 +1197,10 @@ next reader re-runs rather than trusts:
 - §3's arena directory claim: `find scores -mindepth 2 -maxdepth 2 -type d`,
   then `-mindepth 3` grouped by basename, then `ls` of each `evaluator_raw/` →
   28 pairs, 10 `evaluator_raw/`, each holding only `omnidoc-config.yaml`.
+  Reproduced unchanged at `11:27Z` and `11:39Z`. **This is the one whose
+  universe was wrong** — it is rooted at `scores/`, and round 5 found the
+  campaign holds a second directory of that name (caution 2, and the fourth trap
+  below).
 - Row 6's "no test asserts this":
   `git grep -nE "history|WorldHistoryEntry|activatedAt|activationCount"
   origin/main -- 'nextjs/**/*.test.ts' 'nextjs/e2e/*.ts'` → seven hits, six of
@@ -1132,20 +1210,39 @@ next reader re-runs rather than trusts:
   two in `e2e/ultimate-blueprint.spec.ts`, of which `:40` is
   `toHaveCount(1)` — the repository asserts the claim itself.
 
+Round 5 added two, and states the universe of each rather than leaving it in the
+command:
+
+- §3's "no scores exist" claim, over the universe *the whole campaign
+  directory* rather than `scores/`:
+  `find . \( -name summary.json -o -name scores.json \) -print` from
+  `research/model_arena_20260903/` → nine files, all under
+  `reports/triple_overlap_20260904/score_root/scores/`. Rooted at `scores/`
+  instead, the same command returns zero. Both results are correct; only one
+  answers the question the document was asking.
+- The status of those nine, read with `json.load` and printing keys and
+  `status` only — never a metric value: three `"SCORED"`, three
+  `"EVALUATOR_BLOCKED"`, three per-model `scores.json`. Reading a metric to
+  confirm it exists is not publishing it; putting its value in this file would
+  be, so no value appears here.
+
 A note on cost, since it decides whether anyone re-runs this: the `"not
 activated"` scan was first written as one `git show` per file over the whole
 site tree. That is thousands of subprocesses and does not finish in a usable
 time. One `git grep` over the ref answers the same question in one call. A check
 nobody will wait for is a check nobody runs.
 
-The check found four errors on its first run at 185 assertions, and all four are
-fixed above: three line numbers had drifted by one or two lines, and one absence
-was reported as a presence. The 56 assertions added in the second round passed
-on their first run. The 40 added in the third round — 11 new `path:line`
-pointers, 14 attributions, 2 negative attributions, 11 counts and 2 computed —
-found no error *in the classes it walked*: every count this document asserts in
-prose (12, 14, 25, 21, 25 and 47 tests; 400, 91 and 89 lines; 7 connector files)
-recomputed to the stated value.
+The check found four errors on its first run, and all four are fixed above:
+three line numbers had drifted by one or two lines, and one absence was reported
+as a presence. The second round's additions passed on their first run. The third
+round's additions — new `path:line` pointers, attributions, negative
+attributions, counts, and two computed checks — found no error *in the classes
+it walked*: every count this document asserts in prose (12, 14, 25, 21, 25 and
+47 tests; 400, 91 and 89 lines; 7 connector files) recomputed to the stated
+value. Those prose counts stay stated, because each is a count over a file in
+one of the two named refs and any reader can recount it. The counts that were
+removed from this section were of a different kind — measurements of a check
+that exists nowhere but in this paragraph.
 
 **That is not the same as "no further error", which is what the previous
 revision of this paragraph said.** Round 4 re-derived the citations from the refs
@@ -1160,24 +1257,49 @@ came back false. Both were in the committed file, and both are corrected above:
   `nextjs/app/api/contact/route.ts:14`. `nextjs/components/contact-form.tsx:54`
   carries the same category, and `public/fonts/OFL.txt:16` carries the word.
 
-Neither changes a grade or a founder decision — the load-bearing arena fact
-(zero `summary.json`, zero `scores.json`) is true at every reading, and row 19
-stays `ABSENT` — but the defect was never the two sentences. It was the
+Neither of those two changed a grade or a founder decision — row 19 stays
+`ABSENT` — but the defect was never the two sentences. It was the
 self-assessment: "no further error" is an invitation to stop re-checking, and a
 reader who accepts it inherits whatever the check did not walk. Both errors were
-class-7 exhaustiveness claims that rounds 1–3 resolved with a lookup. What round
-4 actually re-derived, by hand, is bounded and worth naming so the next reader
-knows what is still untested by anybody: every citation in rows 2, 6 and 19 and
-in §3's three cautions; every `path:line` in the World History and version-diff
-chain (`world-read-model.ts`, `world-version-diff.ts`, `world-version-diff.tsx`,
+class-7 exhaustiveness claims that rounds 1–3 resolved with a lookup.
+
+**Round 5 then found that round 4's own class-7 sweep had missed one, and this
+one does change a founder decision.** Round 4 listed "§3's `scores/` tree" among
+the exhaustiveness claims it had re-derived, and reported the arena fact as
+*load-bearing and true at every reading*: zero `summary.json`, zero
+`scores.json`. Re-run at `2026-09-05T11:27Z` from the campaign root rather than
+from `scores/`, the same search finds nine — six `summary.json` and three
+`scores.json` under `reports/triple_overlap_20260904/score_root/scores/`, three
+of the six `"status": "SCORED"`. §3 caution 2 now carries the correction, the
+`metrics[]` row moved from `absent` to `partial`, and founder decision 2 moved
+from moot to live. The mechanism is worth stating exactly, because it is *not*
+the mechanism round 4 named: round 4 said an "only" is a claim about a set that
+a per-citation lookup cannot see, and then computed this set correctly — over
+the wrong universe. `scores/` was read as the name of one directory when it is
+the name of two, and a recursive search rooted at the first cannot report the
+second. **Computing the set is not enough; the universe the set is drawn from
+has to be stated and justified too.** A search scoped by a bare directory name
+in a tree where that name repeats is a lookup wearing a set check's clothes.
+
+That is the third consecutive round in which the round before it declared a
+class covered and the next round found an instance inside it. What round 4
+re-derived, by hand, is still worth naming so the next reader knows what is
+untested by anybody — but it is now named as *what was attempted*, not as what
+holds: every citation in rows 2, 6 and 19 and in §3's three cautions; every
+`path:line` in the World History and version-diff chain
+(`world-read-model.ts`, `world-version-diff.ts`, `world-version-diff.tsx`,
 `world-version-diff.test.ts`, `world-store.test.ts`, `world-studio-ultimate.tsx`,
 `workspace/page.tsx`, `world-lifecycle.spec.ts`); and every exhaustiveness claim
 anywhere in the file — row 1's single `INTERACTIVE SAMPLE` badge, row 6's
 `"not activated"`, row 13's only webhook route, row 14's absent SHACL engine and
 absent OWL 2 / PROV-O / OpenLineage, row 19's "partner", §3's `scores/` tree, and
-§5's "only product-side revision route". Everything outside that list still rests
-on rounds 1–3. Two errors are worth recording separately, because both are traps
-for anyone verifying this file by hand. The first is from round one:
+§5's "only product-side revision route". Round 5 re-ran the four named commands
+above and all four reproduced exactly; the failure was in the fifth, unlisted
+assumption underneath one of them. Everything outside that list still rests on
+rounds 1–3. Four traps are worth recording separately, because each is silent —
+each one lets a wrong answer look like a right one. (The previous revision
+introduced this list as "two" and then listed three; that is fixed here too, and
+it is the same defect in miniature.) The first is from round one:
 
 > `git show origin/main:nextjs/app/api/collections/[id]/revise/route.ts`
 > **exits 0 and prints nothing** when the path does not exist. The bracket is
@@ -1205,18 +1327,35 @@ errors possible:
 > one" and "contains X only" — and those are exactly the sentences a reader
 > leans on, because they are the ones that close an enquiry.
 
+The fourth is from round five, and it is what survives after you take the third
+one seriously:
+
+> Computing the set is not enough. A set check also has a **universe**, and the
+> universe is usually implicit — a directory you rooted the search at, a
+> pathspec, a ref. `find scores -name summary.json` computes a set perfectly and
+> answers the wrong question if `scores/` names two directories in that tree.
+> The universe must be stated beside the claim, or the claim is only as good as
+> an assumption nobody wrote down. Prefer a search rooted at the widest
+> plausible scope, then narrow it in writing.
+
 The checker itself is not committed — this lane owns exactly one file — so the
 check is described here rather than shipped. It is a table of
 `(repo, path, line, expected substring)` tuples; a list of paths that must
 exist and a list that must not; the attribution, negative-attribution and count
-tables added in round three; and the ten computed assertions above (six from
-rounds 1–3, four re-derived by hand in round four). Anyone re-deriving it should
-start from the three traps quoted above, because all three are silent when you
-get them wrong. Committing it as a repository gate is worth doing and needs an
-ownership grant this lane does not have — and the gate is worth more than the
-document it would guard, because §6's real finding across four rounds is that a
-self-reported integrity check drifts wider than the check underneath it every
-time nobody re-derives it.
+tables added in round three; and the computed checks listed above — the four
+from rounds 1–3, the four re-derived by hand in round four, and the two round
+five added, each with its command. Anyone re-deriving it should start from the
+four traps quoted above,
+because all four are silent when you get them wrong, and should state the
+universe of every set check as the fourth one requires. Committing it as a
+repository gate is worth doing and needs an ownership grant this lane does not
+have (§5 item 10) — and the gate is worth more than the document it would guard,
+because §6's real finding across five rounds is that a self-reported integrity
+check drifts wider than the check underneath it every time nobody re-derives it.
+The removal of this section's assertion totals is the same finding applied to
+itself: a count of a check that only its author can see is a self-report, and
+three consecutive revisions of this document — the ones rounds 3, 4 and 5 each
+inherited — were wrong about how much of themselves had been verified.
 
 ---
 
@@ -1228,12 +1367,19 @@ time nobody re-derives it.
   live Postgres and were not executed here or in the 2026-09-03 closure.
 - It does not grade the site's runtime behaviour. Everything site-side was read
   from `git show origin/main:<path>`; no browser was opened.
-- It does not restate any arena metric, cost or vendor score as a result. There
-  are no scored metrics to restate (§3).
+- It does not restate any arena metric, cost or vendor score as a result.
+  Scored metrics **do** exist in the campaign's working tree (§3 caution 2) —
+  the previous revision said there were none, and was wrong — so this is now a
+  restraint rather than an empty statement: no metric value from
+  `reports/triple_overlap_20260904/score_root/` appears anywhere in this file.
 - It does not say every citation in it has been verified. §6 says which classes
-  were walked, in which round, and what each class cannot see. Rounds 1, 3 and 4
-  each found errors in text the preceding revision presented as checked, so the
-  prior on a fifth round finding something is not zero.
+  were walked, in which round, and what each class cannot see. Rounds 3, 4 and 5
+  each found errors in text the preceding revision presented as checked — three
+  rounds in a row, and round 1's own first run found four more before anything
+  was committed — so the prior on a sixth round finding something is higher than
+  "not zero". Read this file as good-faith current best evidence, never as
+  closed. Round 5's error was the most consequential so far: it moved a founder
+  decision from moot to live.
 - It supersedes `docs/audit/TAVONEL_RESEARCH_PRODUCT_CLOSURE_FINAL_2026-09-03.md`
   on exactly two rows — claim 1 "v1 compile" and the production `SourceResolver`,
   both closed by `cfe46b8` — and on nothing else.
