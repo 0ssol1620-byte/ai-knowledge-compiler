@@ -87,8 +87,19 @@ Priorities are the blueprint §56 matrix, verbatim.
 | 18 | Domain packs | P3 | `TESTED` (library) · `ABSENT` (surface) | core `packages/domain-packs/` |
 | 19 | Partner ecosystem | P3 | `ABSENT` | — |
 
-The rows follow, each with the pointers, the test or receipt, the nearest
-contract, and the smallest next step that would move the status one notch.
+The rows follow. Lane contract §5 requires four elements per row — file pointers
+as `path:line`, the test or receipt that backs the status, the nearest ADR or
+contract, and the smallest next step — and every one of the nineteen carries all
+four. Two of them are sometimes null, and a null is written out with its reason
+rather than omitted, because an omitted element and an empty one are different
+claims. **Backed by** reads "nothing tests this" on the four rows where nothing
+does — 7, 8, 11 and 19 — and each of those names what *is* tested nearby, so an
+untested capability is not confused with an untested neighbourhood; row 17 is the
+mixed case, where the guard against the claim is tested and the posture behind it
+does not exist. **Smallest next step** is empty on three rows and
+for three different reasons: row 15 waits on a founder decision (§5), row 16 is a
+deliberate refusal to build ahead of demand, and row 19 is blocked by the
+ordering in blueprint §55 rather than by cost.
 
 ---
 
@@ -253,6 +264,12 @@ retired inbound URLs." `/benchmarks` does not appear in
 "Reproduce before comparing" rule; `/reproducibility` and `/evidence` exist.
 There is no benchmark registry, no receipt validator, no metric taxonomy.
 
+**Backed by.** The absence is asserted, not merely observed:
+`nextjs/e2e/ultimate-mobile-a11y.spec.ts:35` requires `/benchmarks` to answer
+404, and `nextjs/lib/public-copy-purge.test.ts:66` carries the route as a
+`noindex` exemption. The route is a deliberate, tested 404 — activating it will
+break a test, which is the correct way for a stub to behave.
+
 **Nearest contract.** Lane contract §4.4 — `BenchmarkReceipt`,
 `validateBenchmarkReceipt()`, `qualifiedBenchmarkRecords()`; blueprint §37–§39.
 
@@ -311,6 +328,14 @@ Ed25519-signed ZIP — `nextjs/README.md` line 9, `nextjs/lib/export-signing.ts:
 OpenLineage are **not** exported (row 14). A page that lists all nine as
 capabilities would be an overclaim.
 
+**Backed by.** Nothing tests the page's content, because it has none. What is
+tested is that the stub stays out of the public surface while it is a stub:
+`nextjs/lib/production-hardening.test.ts:103` asserts the route is absent from
+`llms.txt`, and `nextjs/app/robots.ts:5` disallows it. The `COPY_SURFACES` entry
+at `nextjs/lib/brand-copy.test.ts:59` passes over a six-line file, so it is a
+guard that will bind later, not evidence now — the distinction matters, because
+a vacuous pass reads identically to a real one in a test report.
+
 **Nearest contract.** Blueprint §7, §8, §45–§46, §63.
 
 **Smallest next step.** Write the eight clauses with a state label per clause
@@ -327,15 +352,21 @@ workflows `ci.yml`, `codeql.yml`, `foundation-ocr-image.yml`, `launch-qa.yml`,
 `operations-smoke.yml`. There is **no** `PULL_REQUEST_TEMPLATE.md`. `SECURITY.md`
 exists. Two tags exist and both are operational safety points
 (`safety/pre-integration-20260831-221008`, `safety/pre-rebase2-221712`) — there
-is no version tag and no release. `ci.yml` runs `pnpm check`, `pnpm test`,
-`pnpm build`.
+is no version tag and no release. `.github/workflows/ci.yml:21–23` runs
+`pnpm check`, `pnpm test`, `pnpm build`, and `:36–38` repeats the same three in a
+second job.
 
 **Core repo at `26bb892`.** Root has `README.md`, `LICENSE`, `SECURITY.md`,
 `CONTRIBUTING.md`; `.github/` has `pull_request_template.md`, issue templates,
 and seven workflows including `release-gates.yml` and `security.yml`. The
-`LICENSE` reads "All rights reserved" — proprietary, no grant.
+`LICENSE:3` reads "All rights reserved." — proprietary, no grant.
 
-**Backed by.** Nothing tests governance posture; this row is file presence.
+**Backed by.** Nothing tests governance posture; this row is file presence, and
+most of its pointers are therefore paths without line numbers — a file that does
+not exist has no line to cite. The three pointers above that *do* carry lines
+(`ci.yml:21–23`, `:36–38`, core `LICENSE:3`) are the row's only content claims;
+everything else is an existence claim, checked with `git ls-tree -r --name-only`
+rather than by opening a file (see §6 for why that distinction matters here).
 
 **Nearest contract.** Blueprint §43, §55, §64.
 
@@ -420,6 +451,16 @@ into the claims compiled from it, so nothing can answer "which compiled claims
 must stop being answerable because a source ACL changed". A world does not record
 who may read each object, and no revoke path touches a compiled world.
 
+**Backed by.** Nothing, and the shape of that nothing is the finding. Each of
+the three neighbours above has its own test — tenant RLS by
+`supabase/tests/tenant_rls.sql` and `tenant_rls_matrix.sql` (pgTAP, not executed
+here), enterprise RBAC by `nextjs/lib/enterprise-contracts.test.ts:5`
+("keeps security and billing duties separate"), credential revocation by
+`nextjs/lib/developer-auth.test.ts:125` ("revokes API access when the key
+creator leaves the pilot allowlist") — and not one of them asserts anything
+about a *compiled claim*. The coverage is real and it stops at the compiler's
+door. There is no test to cite because there is no behaviour to test.
+
 **Nearest contract.** `CLAUDE.md`: "Never let an ACL revoke wait for a background
 reindex." Blueprint §34.
 
@@ -477,6 +518,13 @@ Deltas are applied when a client pushes a batch; nothing subscribes to a source.
 **Backed by.** `nextjs/lib/connector-contract.test.ts` and seven
 `connector-oauth*.test.ts` files.
 
+**Nearest contract.** The published OpenAPI document, not an internal type:
+`nextjs/app/api/openapi/route.ts:209` declares `/connections/{id}/sync`, `:211`
+names the operation `applyConnectionBatch` and `:212` binds it to the
+`connections:sync` scope. So the cursor chain is a public commitment — which is
+also why the missing half is a *push* problem and not a schema problem.
+Blueprint §55 puts "connector delta/webhook" in the 30–90 day band.
+
 **Smallest next step.** A freshness surface that shows, per connection, the
 cursor's age — the data is already in the chain, and staleness is currently
 invisible.
@@ -529,6 +577,20 @@ regions at `:10` (`us | eu | apac`) — a **policy field**, not a deployment.
 no SCIM endpoint is served. The row cannot advance without an identity provider
 and a founder decision on which one.
 
+**Backed by.** `nextjs/lib/enterprise-contracts.test.ts:20` ("fails closed when
+SAML metadata or its secret reference is missing") and `:26` ("accepts metadata
+and an external secret reference without accepting secret fields"). Read them
+for what they are: both test the *shape and refusals of a configuration record*.
+Neither verifies a SAML assertion, because nothing in the repository does. A
+reader who sees "SSO tests pass" and infers working SSO has inverted the result.
+
+**Nearest contract.** `docs/enterprise/EXTERNAL_GATES.md:5` — the "Identity"
+section, five named gates ending at `:11` with "Set
+`ENTERPRISE_SAML_PROVIDER_ENABLED=true` … only after provider verification is
+persisted", which is the same gate `enterprise-contracts.ts:123` reads at
+runtime. `docs/enterprise/README.md:18` states the non-claim in the repository's
+own words. Blueprint §41.
+
 **Smallest next step.** None available to an agent. See §5.
 
 ---
@@ -542,8 +604,24 @@ No customer-managed key path, no dedicated-deployment path.
 deployment-level Ed25519 key (`nextjs/lib/export-signing.ts:73`), configured from
 environment, never customer-supplied.
 
+**Backed by.** `nextjs/lib/enterprise-contracts.test.ts:33` ("accepts bounded
+governance policy and rejects no-region policies") — which tests that the policy
+is *recorded and bounded*, and is the whole of the coverage. Nothing tests
+enforcement, because there is no enforcement plane to test. The row is `ABSENT`
+rather than `IMPLEMENTED` precisely because a validated policy field and a
+customer-managed key are different objects.
+
+**Nearest contract.** `docs/enterprise/EXTERNAL_GATES.md:17` ("Provision
+physical US/EU/APAC storage and compute paths before offering region selection")
+and `:18` ("Provision dedicated network, database, storage, worker and
+observability resources before assigning a deployment reference"). The contract
+already says the recorded field must not be sold as the capability, which is
+what this row is checking. Blueprint §41.
+
 **Smallest next step.** Do not build this before a design partner asks for it in
-writing; blueprint §55 puts it in the 3–6 month band and the code agrees.
+writing; blueprint §55 puts it in the 3–6 month band and the code agrees. If
+anything is done sooner, it is making the two policy fields self-describing in
+the console so a recorded preference cannot be read as a provisioned one.
 
 ---
 
@@ -563,34 +641,110 @@ What does exist: `SECURITY.md`, `/security`, `/trust`, `/subprocessors`,
 **This row is a strength, recorded as one.** The absence is published rather than
 hidden, and it is the absence a test protects.
 
+**Backed by.** The two assertions named above —
+`nextjs/e2e/ultimate-blueprint.spec.ts:62` and
+`nextjs/lib/category-guide.test.ts:124`. Nothing backs the compliance posture
+itself, because there is no posture: no audit, no certificate, no artifact.
+
+**Nearest contract.** `docs/enterprise/EXTERNAL_GATES.md:26` — "Establish
+security program ownership, evidence retention and SOC 2/ISO 27001 readiness
+assessment" — with `docs/enterprise/README.md:18` naming SOC 2 and ISO 27001
+among the things the package explicitly does not claim. Blueprint §40 and §41,
+the latter closing with the rule this row is graded against: certification is
+never implied before it is obtained.
+
+**Smallest next step.** Make the guard general rather than per-page. Both
+assertions are bound to one page each — `/security` and the category guide — so
+a new page could claim SOC 2 and trip neither. `nextjs/lib/brand-copy.test.ts:63`
+already runs a `BARRED` substring list over all 33 `COPY_SURFACES`, lowercased,
+and that list holds six marketing phrases and no certification term. Adding
+`"soc 2"` and `"iso 27001"` to it is two lines and passes today: no copy surface
+currently contains either string. Do **not** add `"certified"` — it appears twice
+in `nextjs/components/opening-film.tsx` (`:73`, `:385`) as fixture text inside a
+synthetic document ("Total certified"), and that file is locked by lane contract
+§1, so the broader term would fail the build against content nobody may edit.
+
 ---
 
 ### 18 · Domain packs — P3 — `TESTED` as a library, `ABSENT` as a surface
 
 **Where.** `packages/domain-packs/src/akc_domain_packs/domain-packs.yaml`
-declares packs (`study_pack`, `research_pack`, …) with `note_types`,
-`knowledge_profile`, `export_profiles`, `quality_rules`
+declares six packs — `study_pack`, `research_pack`, `work_project_pack`,
+`legal_contract_pack`, `technical_support_pack` (`:81`), `archive_book_pack` —
+each with `note_types`, `knowledge_profile`, `export_profiles`, `quality_rules`
 (`severity`, `autonomous_outcome`, `evaluator`) and `forbidden_claims`.
 `registry.py:75` `DomainPack`, `:103` `DomainPackRegistry`, `:134`
 `builtin_domain_packs`, `:190` `validate_user_schema` with `:129`
-`SchemaPolicyError`. Blueprints exist for `corporate-filings`,
-`course-materials`, `generic-mixed-corpus`.
+`SchemaPolicyError`. Seven blueprints ship beside them:
+`corporate-filings`, `course-materials`, `generic-mixed-corpus`,
+`legal-contracts`, `personal-knowledge`, `research-library` and
+`technical-documentation`.
 
 **Backed by.** `packages/domain-packs/tests/test_domain_packs.py`,
 `test_blueprints.py`.
 
 **Not surfaced.** No reference to any pack in the site repository.
 
+**Nearest contract.** `docs/adr/ADR-005-quality-gate-boundaries.md` — the pack
+`quality_rules` speak its vocabulary (`hard_fail`, `review_required`) and inherit
+its rule that an override is permitted only through a versioned policy record
+carrying corpus version, approval, effective date and rollback target. That
+matters here: a domain pack is an override surface, so shipping one without a
+policy record would breach the ADR. Blueprint §44 (the wedge) and §55 (6–12
+month band).
+
+**Smallest next step.** Bind the pack that already matches the wedge, rather
+than building a pack surface. §44 names version-sensitive technical knowledge —
+maintenance manuals, SOPs, change notices — and both halves already exist for
+it: `technical_support_pack` (`domain-packs.yaml:81`, whose rules are
+`command_verbatim` at `hard_fail` and `warning_evidence` at `review_required`)
+and the `technical-documentation` blueprint, whose declared validators are
+`source_coverage, procedure_order, version_identity, relation_evidence`
+(`blueprints/technical-documentation/module.yaml:12`). `version_identity` and
+`procedure_order` are the FP-200 revision problem written down as validators.
+Run one of them over the `/explore` sample and see whether it holds. That is a
+measurement, not a feature, and it is the cheapest thing on this row.
+
 This row is further along than its P3 priority suggests, and the matrix records
-that rather than smoothing it to match the plan.
+that rather than smoothing it to match the plan — the wedge's own pack is
+already in the tree, unused.
 
 ---
 
 ### 19 · Partner ecosystem — P3 — `ABSENT`
 
-No partner integration, destination adapter or listing exists. The only
-occurrence of "partner" in the site application is an enquiry category in
-`nextjs/app/api/contact/route.ts`.
+**Where.** Nowhere. No partner integration, destination adapter, certification
+path or listing exists in either repository. The only occurrence of "partner" in
+the site application is an enquiry category — `nextjs/app/api/contact/route.ts:14`,
+`partnership: "Partnership"`.
+
+**What a partner would build on, and it already exists.** The distribution
+substrate is real: a published OpenAPI 3.1 document
+(`nextjs/app/api/openapi/route.ts:30`), a CLI and an MCP server shipped as
+static assets (`nextjs/public/developer/tavonel-cli.mjs`,
+`nextjs/public/developer/tavonel-mcp.mjs`), and the portable export formats of
+row 14. What is absent is a partner *programme* — an adapter contract, a
+certification path, a listing — not the interface one would integrate against.
+The distinction decides the cost of this row, and it is why `ABSENT` here is
+cheaper to close than `ABSENT` on rows 11 or 16.
+
+**Backed by.** Nothing tests a partner surface, because none exists. The
+substrate under it is tested: `nextjs/lib/developer-distribution.test.ts:29`
+("publishes one version across CLI, MCP, and the update channel") and `:44`
+("completes a real MCP initialize and exposes read-only tools only") — note the
+second, which fixes the current integration boundary at read-only.
+
+**Nearest contract.** `docs/adr/ADR-002-akmp-1.0.md`, the portable knowledge
+format a third party would consume, together with the OpenAPI document above.
+Blueprint §55 places "partner ecosystem" in the 6–12 month band, beside "public
+ontology/export spec" and "third-party interoperability".
+
+**Smallest next step.** None yet, and the ordering is the reason rather than the
+priority. §55 sequences the export spec ahead of the ecosystem, and row 14 shows
+that spec is *published but never validated* — nothing in either repository runs
+a SHACL engine over an export. A partner integrating against an unchecked spec
+inherits every drift in it silently. Close row 14's validator first; that step
+is already written there and is worth about a day.
 
 ---
 
@@ -740,7 +894,7 @@ or lane contract §7.
 A gap matrix is worth nothing if its pointers drift, and a `path:line` that does
 not resolve is a fabricated citation whether or not anyone meant it. Every
 pointer in this document was therefore machine-checked before it was committed:
-185 assertions — each `path:line` must exist **and** the line must contain the
+241 assertions — each `path:line` must exist **and** the line must contain the
 text this document says is there, each "exists" claim must resolve, each "absent"
 claim must not, and §3's two load-bearing absences (an empty `failures/`, zero
 scored `summary.json`) are asserted rather than assumed, so a later campaign run
@@ -749,10 +903,28 @@ from the worktree at `26bb892`; site paths with `git show origin/main:<path>`;
 arena paths from the untracked working tree, which is why they are marked as
 such throughout §3.
 
-That check found four errors on its first run, and all four are fixed above:
-three line numbers had drifted by one or two lines, and one absence was reported
-as a presence. The last one is worth recording, because it is a trap for anyone
-verifying this file by hand:
+Four of those assertions are *computed*, not merely looked up, because two rows
+make claims that a lookup cannot defend:
+
+- Row 18 enumerates six pack ids and seven blueprint directories. The check
+  compares the enumeration against the actual directory listing, so a pack added
+  or renamed upstream fails the check instead of quietly making the row
+  incomplete — which is the defect this round was fixing.
+- Row 17's next step asserts that adding `"soc 2"` and `"iso 27001"` to
+  `BARRED` passes today, and that adding `"certified"` does not. The check reads
+  all 33 `COPY_SURFACES`, confirms none contains the first two, and confirms the
+  third hits exactly one file — `components/opening-film.tsx`, which lane
+  contract §1 locks. A recommendation that would break the build is worth
+  catching before someone follows it.
+
+The check found four errors on its first run at 185 assertions, and all four are
+fixed above: three line numbers had drifted by one or two lines, and one absence
+was reported as a presence. The 56 assertions added in the second round — the
+per-row elements that completed rows 5, 7, 8, 11, 13 and 15–19 against lane
+contract §5 — passed on their first run, which is the expected outcome of writing
+the pointer and the check together rather than the pointer first. The error worth
+recording is from the first round, because it is a trap for anyone verifying this
+file by hand:
 
 > `git show origin/main:nextjs/app/api/collections/[id]/revise/route.ts`
 > **exits 0 and prints nothing** when the path does not exist. The bracket is
@@ -762,9 +934,11 @@ verifying this file by hand:
 
 The checker itself is not committed — this lane owns exactly one file — so the
 check is described here rather than shipped. It is a table of
-`(repo, path, line, expected substring)` tuples and three loops; anyone
-re-deriving it should start from the `git ls-tree` rule above, because that is
-the part that is easy to get wrong and silent when you do.
+`(repo, path, line, expected substring)` tuples, a list of paths that must
+exist, a list that must not, and the four computed assertions above; anyone
+re-deriving it should start from the `git ls-tree` rule, because that is the
+part that is easy to get wrong and silent when you do. Committing it as a repo
+gate is worth doing and needs an ownership grant this lane does not have.
 
 ---
 
