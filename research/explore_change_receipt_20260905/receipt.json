@@ -25,10 +25,36 @@
         "function": "akc_core_v3.sources.canonicalise_document",
         "file": "services/core-v3/src/akc_core_v3/sources.py:498 -- logical_id = ku_{document_id}_{clause}",
         "requiredInputShape": "one nativeId for the manual with two contentSha256 versions; logical_id is ku_{document_id}_{clause}, and every artifact id, dependency-graph node and impact seed is built from the logical id in turn, so the document id is what carries a unit's identity across a revision everywhere below the resolver",
-        "actualInputShape": "the site publishes revision B and revision C as two files whose documentIds differ (fp200-maintenance-manual-rev-b / -rev-c)",
+        "actualInputShape": "NOT a condition of production. At site commit 9a7a93d3478214b718d8d1afc3b108a900415fd6 (0ssol1620-byte/tavonel-saas-foundation, the commit the lane contract section 0 pins) nextjs/public/explore-sample/ holds 3 files declaring fp200-maintenance-manual-rev-c, fp200-change-notice-cn-2026-03, fp200-service-log-2026: 1 manual revision, fp200-maintenance-manual-rev-c. There is no revision-B file and no -rev-b document id anywhere under nextjs/. Contract section 4.3 has the explore lane add fp-200-maintenance-manual-revB.pdf; whether it is given its own document id is unchosen and free. This fixture chose one -- fp200-maintenance-manual-rev-b (fp-200-maintenance-manual-revB.pdf, written by render_fixture.mjs) -- so runs[2] measures the shape that choice would produce, and runs[1] measures the alternative (one document id, two contentSha256 versions), which is the shape the resolver is built for and costs nothing to adopt. Read the two runs as a comparison of two open options, not as a report of a mismatch the site already has.",
+        "siteBaseline": {
+          "siteCommit": "9a7a93d3478214b718d8d1afc3b108a900415fd6",
+          "siteRepository": "0ssol1620-byte/tavonel-saas-foundation",
+          "publishedFilenames": [
+            "fp-200-maintenance-manual-revC.pdf",
+            "fp-200-change-notice-CN-2026-03.pdf",
+            "fp-200-service-log-2026.pdf"
+          ],
+          "publishedDocumentIds": [
+            "fp200-maintenance-manual-rev-c",
+            "fp200-change-notice-cn-2026-03",
+            "fp200-service-log-2026"
+          ],
+          "manualRevisionsPublished": [
+            "fp200-maintenance-manual-rev-c"
+          ],
+          "addedByThisLane": [
+            {
+              "documentId": "fp200-maintenance-manual-rev-b",
+              "filename": "fp-200-maintenance-manual-revB.pdf",
+              "writtenBy": "render_fixture.mjs"
+            }
+          ],
+          "note": "At this commit the site publishes one manual at one revision and declares no revision-B file and no -rev-b document id anywhere under nextjs/. Contract section 4.3 has the explore lane add fp-200-maintenance-manual-revB.pdf; whether that file gets its own document id is a choice nobody has made yet. This fixture made one so the cost could be measured -- it is not a report of the site's state."
+        },
+        "openQuestionNotFinding": "whether the explore lane should give its revision-B file its own document id at all. The cheaper answer is runs[1] -- one id, two versions -- and it is still available at zero cost, because the file does not exist yet.",
         "observedState": "measured in runs[1] against runs[2], which differ in the document id and in nothing else. The resolver's match survives the id change; nothing keyed by the id does. (1) The correspondence was made: runs[2].revision.diffChanges attributes changes of the revision-C manual to 3 revision-B logical ids (ku_fp200-maintenance-manual-clause-rev-b_1_1, ku_fp200-maintenance-manual-clause-rev-b_3_1, ku_fp200-maintenance-manual-clause-rev-b_4_1) and names ku_fp200-maintenance-manual-clause-rev-b_2_1 as the identity candidate for the remaining revision-C unit, and no unit_added is emitted anywhere in the run -- an unmatched after-unit would leave by that exit (semantic_diff.py:809-822). (2) The record cannot express it: revision.identityCounts.continued reads 9 in BOTH runs and is not a match count. In runs[1] 9 of 9 carry a previousLogicalUnitId and SAME_AS_VERSION; in runs[2] only 6 do, and 3 carry neither (ku_fp200-maintenance-manual-clause-rev-c_1_1, ku_fp200-maintenance-manual-clause-rev-c_3_1, ku_fp200-maintenance-manual-clause-rev-c_4_1), because revision_compile._unit_records looks the predecessor up by the after-unit's own logical id (revision_compile.py:883). See finding F5. (3) Nothing downstream of the id survives: the changes name ids that are not nodes of the after world's dependency graph, so plan.facetResolutions returns verdict 'unresolved' with that reason, impact.affectedArtifactIds is [], plan.stale is [], the selective rebuild never builds the 6 manual artifacts a full rebuild produces (equivalence.missing_from_selective), and collection:directory is carried forward stale and diverges.",
         "refusal": null,
-        "evidence": "runs[1] versus runs[2]; specifically their revision.diffChanges, revision.identityContinuity, plan.facetResolutions and equivalence.missing_from_selective"
+        "evidence": "runs[1] versus runs[2]; specifically their revision.diffChanges, revision.identityContinuity, plan.facetResolutions and equivalence.missing_from_selective. runs[0].siteBaseline for what the site declares at 9a7a93d."
       }
     ],
     "findings": [
@@ -128,7 +154,7 @@
     "runs": [
       {
         "run": "site_fixture_verbatim",
-        "question": "does the core chain compile the FP-200 documents the site publishes, as they are written",
+        "question": "does the core chain compile the FP-200 documents in the site's own form, as they are written",
         "corpusIsSiteFixture": true,
         "wireableIntoExplore": false,
         "outcome": "refused",
@@ -373,6 +399,31 @@
               ]
             }
           ]
+        },
+        "siteBaseline": {
+          "siteCommit": "9a7a93d3478214b718d8d1afc3b108a900415fd6",
+          "siteRepository": "0ssol1620-byte/tavonel-saas-foundation",
+          "publishedFilenames": [
+            "fp-200-maintenance-manual-revC.pdf",
+            "fp-200-change-notice-CN-2026-03.pdf",
+            "fp-200-service-log-2026.pdf"
+          ],
+          "publishedDocumentIds": [
+            "fp200-maintenance-manual-rev-c",
+            "fp200-change-notice-cn-2026-03",
+            "fp200-service-log-2026"
+          ],
+          "manualRevisionsPublished": [
+            "fp200-maintenance-manual-rev-c"
+          ],
+          "addedByThisLane": [
+            {
+              "documentId": "fp200-maintenance-manual-rev-b",
+              "filename": "fp-200-maintenance-manual-revB.pdf",
+              "writtenBy": "render_fixture.mjs"
+            }
+          ],
+          "note": "At this commit the site publishes one manual at one revision and declares no revision-B file and no -rev-b document id anywhere under nextjs/. Contract section 4.3 has the explore lane add fp-200-maintenance-manual-revB.pdf; whether that file gets its own document id is a choice nobody has made yet. This fixture made one so the cost could be measured -- it is not a report of the site's state."
         }
       },
       {
@@ -1577,7 +1628,7 @@
     ],
     "siteFixtureUnitsResolved": 0
   },
-  "deterministicSha256": "sha256:5aaa8c496d725fb8dd5b3db1535950f0de6f4942d4b4408039d49b4de542ae2d",
+  "deterministicSha256": "sha256:1e6cfa76ec1af26304a1193046b0b8d5d4d34da2c044ebf59de6cba0ba5f3541",
   "environment": {
     "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
     "interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",

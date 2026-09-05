@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -534,3 +535,91 @@ def test_the_readme_carries_the_populations_the_runs_measured(
     # The exact conflation the review caught, barred by name in either spelling.
     for retracted in ("ten regions of the four documents", "10 regions of the 4 documents"):
         assert retracted not in readme.lower(), retracted
+
+
+def test_the_receipt_does_not_claim_the_site_publishes_a_revision_b(
+    rebuilt: dict[str, Any],
+) -> None:
+    """`actualInputShape` sits opposite `requiredInputShape` in a hash-bound record.
+
+    Stating this lane's own fixture there as production's shape reads as a
+    measured mismatch with a shipped system. It is not one: the file does not
+    exist at the pinned site commit, and the id was written by
+    `render_fixture.mjs`. The whole receipt is searched, not just F2.
+    """
+    text = canonical(rebuilt)
+    for retracted in (
+        "the site publishes revision B and revision C",
+        "the two ids the site's filenames imply",
+        "may keep publishing revision",
+    ):
+        assert retracted not in text, retracted
+
+    (f2,) = [gap for gap in rebuilt["blockedBy"] if gap["id"] == "F2"]
+    baseline = f2["siteBaseline"]
+    assert baseline["siteCommit"] == build_receipt.SITE_COMMIT
+    assert baseline["manualRevisionsPublished"] == ["fp200-maintenance-manual-rev-c"]
+    assert [entry["documentId"] for entry in baseline["addedByThisLane"]] == [
+        "fp200-maintenance-manual-rev-b"
+    ]
+    assert build_receipt.SITE_COMMIT[:7] in f2["actualInputShape"]
+    assert "NOT a condition of production" in f2["actualInputShape"]
+    assert f2["openQuestionNotFinding"]
+
+
+def _site_repo() -> Path | None:
+    candidate = Path("D:/CodexProjects/tavonel-saas-foundation")
+    return candidate if (candidate / ".git").exists() else None
+
+
+def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """One read-only git command in the site checkout.
+
+    S603 is silenced once here rather than at three call sites: `git` is resolved
+    from PATH deliberately -- this is a developer-machine check, not a service --
+    and every argument below is a literal or `SITE_COMMIT`, a 40-hex constant in
+    this repository. Nothing reaches it from a document, a request or an
+    environment variable, which is the shape the rule is guarding against.
+    """
+    command = ["git", *args]
+    return subprocess.run(  # noqa: S603
+        command, cwd=repo, capture_output=True, text=True
+    )
+
+
+def test_the_site_baseline_matches_the_site_commit(rebuilt: dict[str, Any]) -> None:
+    """Read the claim about the other repository back out of that repository.
+
+    Skipped rather than faked when the site checkout is absent, because the
+    alternative — asserting the pinned strings against themselves — is the
+    circularity this suite exists to avoid. The receipt stays reproducible
+    without the site repo; only this check needs it.
+    """
+    repo = _site_repo()
+    if repo is None:
+        pytest.skip("the site checkout is not on this machine; nothing to compare against")
+
+    baseline = rebuilt["runs"][0]["siteBaseline"]
+    commit = baseline["siteCommit"]
+
+    listing = _git(
+        repo, "ls-tree", "-r", "--name-only", commit, "--", "nextjs/public/explore-sample"
+    )
+    if listing.returncode != 0:
+        pytest.skip(f"site commit {commit[:7]} is not in this checkout")
+
+    names = sorted(line.rsplit("/", 1)[-1] for line in listing.stdout.split() if line)
+    assert names == sorted(baseline["publishedFilenames"]), names
+
+    declared = _git(repo, "show", f"{commit}:nextjs/lib/explore-sample.inputs.json")
+    assert declared.returncode == 0, declared.stderr
+    site_entries: list[dict[str, Any]] = json.loads(declared.stdout)
+    ids = [str(entry["documentId"]) for entry in site_entries]
+    assert ids == baseline["publishedDocumentIds"], ids
+
+    # The half that matters most: the id this fixture uses for revision B is not
+    # the site's, and nothing at that commit says otherwise.
+    for entry in baseline["addedByThisLane"]:
+        assert entry["documentId"] not in ids
+    grep = _git(repo, "grep", "-l", "-i", "-e", "rev-b", "-e", "revB", commit, "--", "nextjs")
+    assert grep.returncode == 1, f"the site now names a revision B: {grep.stdout}"

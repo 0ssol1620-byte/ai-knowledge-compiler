@@ -32,10 +32,12 @@ does not distinguish a resolver that cannot read the shape from a chain that
 cannot do the job. They compile a clause-form restatement -- the same sentences
 under printed clause numbers -- through the same unmodified services. Run 2
 gives the manual one document id across both revisions, which is what identity
-continuity requires; run 3 gives it the two ids the site's filenames imply, and
-measures what that costs. Neither is the fixture the site serves, both say so in
-their own record, and neither may be wired into `/explore` as an equivalence
-result.
+continuity requires; run 3 gives it two, one per revision. Run 3's shape is a
+*choice nobody has made yet*, not a condition: at site commit 9a7a93d there is
+no revision-B file and no `-rev-b` document id anywhere under `nextjs/`, so what
+run 3 measures is the cost of an option still open to the explore lane. Neither
+run compiles the fixture the site serves, both say so in their own record, and
+neither may be wired into `/explore` as an equivalence result.
 
 No core module is modified by this file or by anything it imports. Determinism:
 every request id, idempotency key and `requestedAt` is fixed, and the envelope
@@ -97,6 +99,7 @@ __all__ = [
     "main",
     "ocr_record",
     "readme_assertions",
+    "site_baseline",
 ]
 
 #: The core commit this receipt describes. Section 0 of the lane contract.
@@ -125,10 +128,31 @@ REQUESTED_AT = "2026-03-05T00:00:00.000Z"
 #: the same unit as clause 2.1 of revision B rather than a new one.
 MANUAL = "fp200-maintenance-manual"
 
+#: `fp200-maintenance-manual-rev-c` is the site's own id, copied out of its
+#: committed `explore-sample.inputs.json`. `fp200-maintenance-manual-rev-b` is
+#: **not**: `render_fixture.mjs` wrote it, because at `SITE_COMMIT` the site has
+#: no revision-B file to have named. `site_baseline()` derives that distinction
+#: rather than restating it, and a test checks it against the site checkout.
 MANUAL_REV_B = "fp200-maintenance-manual-rev-b"
 MANUAL_REV_C = "fp200-maintenance-manual-rev-c"
 CLAUSE_MANUAL_REV_B = "fp200-maintenance-manual-clause-rev-b"
 CLAUSE_MANUAL_REV_C = "fp200-maintenance-manual-clause-rev-c"
+
+#: `origin/main` of `0ssol1620-byte/tavonel-saas-foundation`, the site commit the
+#: lane contract's section 0 pins and the one every statement here about "the
+#: site" was checked against. Production serves it.
+SITE_COMMIT = "9a7a93d3478214b718d8d1afc3b108a900415fd6"
+
+#: Everything `nextjs/public/explore-sample/` holds at `SITE_COMMIT`. Three
+#: files, one manual, one revision. Their bytes are vendored under `inputs/` and
+#: `render_fixture.mjs` refuses to copy any of them whose sha256 does not equal
+#: the `inputSha256` the site committed beside it, so this tuple is checked at
+#: fixture-build time and again by the test suite.
+SITE_PUBLISHED_FILENAMES = (
+    "fp-200-maintenance-manual-revC.pdf",
+    "fp-200-change-notice-CN-2026-03.pdf",
+    "fp-200-service-log-2026.pdf",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -155,6 +179,56 @@ def input_manifest() -> list[dict[str, str]]:
         for path in sorted(INPUTS.rglob("*"))
         if path.is_file()
     ]
+
+
+def site_baseline() -> dict[str, Any]:
+    """What the site publishes at `SITE_COMMIT`, and which document id is ours.
+
+    F2 turns on a document id, and the first version of this receipt asserted a
+    document id the site does not have -- it read `-rev-b` as a fact about
+    production when `render_fixture.mjs` had invented it two files earlier. The
+    split is derived here rather than described: the three entries whose
+    filenames are in `SITE_PUBLISHED_FILENAMES` were copied out of the site's own
+    committed `explore-sample.inputs.json` and carry the site's `documentId`;
+    anything else in the fixture was written by this lane. A reader never has to
+    take the distinction on trust, and `test_the_site_baseline_matches_the_site_
+    commit` re-reads the whole block out of the site checkout at `SITE_COMMIT`.
+    """
+    entries = _load("site-fixture.inputs.json")
+    by_filename = {entry["sanitizedKey"].rsplit("/", 1)[-1]: entry for entry in entries}
+    published = [by_filename[name] for name in SITE_PUBLISHED_FILENAMES]
+    ours = [
+        entry
+        for name, entry in sorted(by_filename.items())
+        if name not in SITE_PUBLISHED_FILENAMES
+    ]
+    return {
+        "siteCommit": SITE_COMMIT,
+        "siteRepository": "0ssol1620-byte/tavonel-saas-foundation",
+        "publishedFilenames": list(SITE_PUBLISHED_FILENAMES),
+        "publishedDocumentIds": [str(entry["documentId"]) for entry in published],
+        "manualRevisionsPublished": [
+            str(entry["documentId"])
+            for entry in published
+            if "maintenance-manual" in str(entry["documentId"])
+        ],
+        "addedByThisLane": [
+            {
+                "documentId": str(entry["documentId"]),
+                "filename": entry["sanitizedKey"].rsplit("/", 1)[-1],
+                "writtenBy": "render_fixture.mjs",
+            }
+            for entry in ours
+        ],
+        "note": (
+            "At this commit the site publishes one manual at one revision and "
+            "declares no revision-B file and no -rev-b document id anywhere under "
+            "nextjs/. Contract section 4.3 has the explore lane add "
+            "fp-200-maintenance-manual-revB.pdf; whether that file gets its own "
+            "document id is a choice nobody has made yet. This fixture made one so "
+            "the cost could be measured -- it is not a report of the site's state."
+        ),
+    }
 
 
 class Corpus:
@@ -432,7 +506,13 @@ def _whole_fixture_refusal(entries: Mapping[str, Mapping[str, Any]]) -> dict[str
 
 
 def run_site_fixture_verbatim() -> dict[str, Any]:
-    """Compile the revision-B world from the documents the site publishes."""
+    """Compile the revision-B world: two documents the site publishes, one it does not.
+
+    The change notice and the service log are the site's own bytes. The
+    revision-B manual is this lane's, written to contract section 4.3's
+    description of the file the explore lane will add -- the site has no such
+    file at `SITE_COMMIT`. Both facts are in `siteBaseline` on the run.
+    """
     entries = {entry["documentId"]: entry for entry in _load("site-fixture.inputs.json")}
     corpus = Corpus({entry["ocrJsonKey"]: ocr_record(entry) for entry in entries.values()})
     chain = Chain(corpus)
@@ -458,7 +538,7 @@ def run_site_fixture_verbatim() -> dict[str, Any]:
     return {
         "run": "site_fixture_verbatim",
         "question": (
-            "does the core chain compile the FP-200 documents the site publishes, "
+            "does the core chain compile the FP-200 documents in the site's own form, "
             "as they are written"
         ),
         "corpusIsSiteFixture": True,
@@ -485,6 +565,7 @@ def run_site_fixture_verbatim() -> dict[str, Any]:
         ),
         "sourceFactLedger": ledger,
         "wholeFixtureResolverCheck": _whole_fixture_refusal(entries),
+        "siteBaseline": site_baseline(),
     }
 
 
@@ -839,6 +920,42 @@ def _f1_observed_state(site: Mapping[str, Any]) -> str:
     )
 
 
+def _f2_actual_input_shape(site: Mapping[str, Any]) -> str:
+    """What the site really publishes, derived from the vendored declaration.
+
+    An earlier version of this field asserted that the site publishes revision B
+    and revision C as two files with two document ids. It publishes neither. The
+    id `fp200-maintenance-manual-rev-b` was written by this lane's own fixture
+    renderer, and a hash-bound `actualInputShape` sitting opposite
+    `requiredInputShape` reads as a measured mismatch with production, which is
+    the strongest thing a receipt can accidentally say. So the field now states
+    the site's declaration, names the commit it was read at, and says whose
+    choice the second id is.
+    """
+    baseline = site["siteBaseline"]
+    published = ", ".join(baseline["publishedDocumentIds"])
+    ours = ", ".join(
+        f"{entry['documentId']} ({entry['filename']}, written by {entry['writtenBy']})"
+        for entry in baseline["addedByThisLane"]
+    )
+    manuals = baseline["manualRevisionsPublished"]
+    return (
+        f"NOT a condition of production. At site commit {baseline['siteCommit']} "
+        f"({baseline['siteRepository']}, the commit the lane contract section 0 pins) "
+        f"nextjs/public/explore-sample/ holds {len(baseline['publishedFilenames'])} "
+        f"files declaring {published}: {len(manuals)} manual revision, "
+        f"{' and '.join(manuals)}. There is no revision-B file and no -rev-b document "
+        "id anywhere under nextjs/. Contract section 4.3 has the explore lane add "
+        "fp-200-maintenance-manual-revB.pdf; whether it is given its own document id "
+        f"is unchosen and free. This fixture chose one -- {ours} -- so runs[2] "
+        "measures the shape that choice would produce, and runs[1] measures the "
+        "alternative (one document id, two contentSha256 versions), which is the "
+        "shape the resolver is built for and costs nothing to adopt. Read the two "
+        "runs as a comparison of two open options, not as a report of a mismatch "
+        "the site already has."
+    )
+
+
 def _f2_observed_state(shared: Mapping[str, Any], split: Mapping[str, Any]) -> str:
     """F2's finding, formatted from the two runs rather than typed beside them.
 
@@ -965,16 +1082,21 @@ def deterministic() -> dict[str, Any]:
                     "in turn, so the document id is what carries a unit's identity "
                     "across a revision everywhere below the resolver"
                 ),
-                "actualInputShape": (
-                    "the site publishes revision B and revision C as two files whose "
-                    "documentIds differ (fp200-maintenance-manual-rev-b / -rev-c)"
+                "actualInputShape": _f2_actual_input_shape(site),
+                "siteBaseline": site["siteBaseline"],
+                "openQuestionNotFinding": (
+                    "whether the explore lane should give its revision-B file its own "
+                    "document id at all. The cheaper answer is runs[1] -- one id, two "
+                    "versions -- and it is still available at zero cost, because the "
+                    "file does not exist yet."
                 ),
                 "observedState": _f2_observed_state(shared_id, split_id),
                 "refusal": None,
                 "evidence": (
                     "runs[1] versus runs[2]; specifically their revision.diffChanges, "
                     "revision.identityContinuity, plan.facetResolutions and "
-                    "equivalence.missing_from_selective"
+                    "equivalence.missing_from_selective. runs[0].siteBaseline for what "
+                    "the site declares at 9a7a93d."
                 ),
             },
         ],
@@ -1106,6 +1228,7 @@ def readme_assertions(core: Mapping[str, Any]) -> dict[str, str]:
     """
     site = core["runs"][0]
     whole = site["wholeFixtureResolverCheck"]
+    baseline = site["siteBaseline"]
     return {
         # The exact conflation the round-2 review caught: 10 regions belong to
         # the 3-document world, not to the 4-document fixture.
@@ -1114,6 +1237,12 @@ def readme_assertions(core: Mapping[str, Any]) -> dict[str, str]:
         ),
         "whole_fixture_population": (
             f"{whole['regionsSeen']} regions of the {whole['documentsSeen']} documents"
+        ),
+        # The claim the round-2 review caught in the other direction: what the
+        # site actually publishes, and at which commit it was read.
+        "site_commit": baseline["siteCommit"][:7],
+        "site_manual_revisions": (
+            f"{len(baseline['manualRevisionsPublished'])} manual revision"
         ),
     }
 

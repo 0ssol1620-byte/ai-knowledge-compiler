@@ -55,13 +55,13 @@ stops containing them.
 | `receipt.json` | Every run, with digests. `deterministic` is byte-stable; `environment` is not and is excluded from the digest. |
 | `build_receipt.py` | Drives the real core services and writes `receipt.json`. Compiles nothing itself. |
 | `render_fixture.mjs` | Writes every file under `inputs/`, after proving it reproduces a PDF the site has already committed. |
-| `inputs/` | The four site-form documents and the four clause-form ones, plus the OCR records fed to the core. |
+| `inputs/` | Four site-form documents — the site's own three, plus the revision-B manual this lane rendered because the site has none — and four clause-form ones, with the OCR records fed to the core. |
 | `test_explore_change_receipt.py` | Reproduces the receipt and re-derives its claims from the artifacts. |
 
 The receipt digests itself. `deterministicSha256` is a sha256 over the canonical
 JSON of the `deterministic` block and reads
 
-    sha256:5aaa8c496d725fb8dd5b3db1535950f0de6f4942d4b4408039d49b4de542ae2d
+    sha256:1e6cfa76ec1af26304a1193046b0b8d5d4d34da2c044ebf59de6cba0ba5f3541
 
 at this commit. `test_the_receipt_digest_is_over_the_receipt` recomputes it from
 the bytes beside it and `test_the_receipt_is_reproduced_byte_for_byte` re-runs
@@ -106,15 +106,42 @@ not a research lane's edit. No file outside this directory was touched.
 
 ## Gap F2 — document identity across revisions
 
-**Where.** `sources.py:498` — `logical_id = f"ku_{document_id}_{identifier}"`.
-The document id is what carries a unit's identity across a revision, and every
-artifact id is built from the logical id in turn.
+*Read the next paragraph before the table. F2 is a fork in a decision that is
+still open, not a defect in something already shipped, and the first version of
+this section said the opposite.*
 
-**The mismatch.** The site publishes revision B and revision C as two files with
-two document ids (`fp200-maintenance-manual-rev-b`, `…-rev-c`). The core models a
-revision as one document id at two `contentSha256` versions, and the id is what
-every artifact id, dependency-graph node and impact seed is built from below the
-resolver. Handing it two ids does *not* look like a delete-plus-add to the
+**What the site actually publishes, checked rather than remembered.** At site
+commit **9a7a93d** — `origin/main` of `0ssol1620-byte/tavonel-saas-foundation`,
+the commit §0 of the lane contract pins and the one production serves —
+`nextjs/public/explore-sample/` holds three PDFs and
+`nextjs/lib/explore-sample.inputs.json` declares three document ids:
+`fp200-maintenance-manual-rev-c`, `fp200-change-notice-cn-2026-03`,
+`fp200-service-log-2026`. That is **1 manual revision**. There is no revision-B
+PDF and no `-rev-b` id anywhere under `nextjs/` — `git grep -i "rev-b\|revB"
+9a7a93d -- nextjs` returns nothing.
+
+**So `fp200-maintenance-manual-rev-b` is this lane's, not the site's.**
+`render_fixture.mjs` wrote both the revision-B PDF and that id, because contract
+§4.3 has the *explore* lane add `fp-200-maintenance-manual-revB.pdf` and it does
+not say what document id the file gets. Nobody has chosen. An earlier version of
+this section, and of `blockedBy[F2].actualInputShape` beside it, stated the
+two-id shape as a present fact about production; in a hash-bound record sitting
+opposite `requiredInputShape` that reads as a measured mismatch with a shipped
+system, which is close to the worst thing a receipt can say by accident.
+`runs[0].siteBaseline` now derives the split — which entries were copied from
+the site's own committed declaration and which this lane wrote — and a test
+re-reads it out of the site checkout at 9a7a93d.
+
+**What F2 is, then.** `sources.py:498` builds `logical_id =
+f"ku_{document_id}_{identifier}"`, so the document id is what carries a unit's
+identity across a revision, and every artifact id, dependency-graph node and
+impact seed is built from the logical id in turn. The core models a revision as
+**one** document id at two `contentSha256` versions. The explore lane can give
+revision B that same id (`runs[1]`) or its own (`runs[2]`). Both options are
+free today. The table below is what the second one costs, measured — and the
+cheaper answer is still available, because the file does not exist yet.
+
+Handing the core two ids does *not* look like a delete-plus-add to the
 resolver — the measurement below is the point of this section, and it says
 otherwise — but it does mean nothing under the resolver can find its way from the
 old unit to the new one.
@@ -122,7 +149,7 @@ old unit to the new one.
 **What it costs, measured.** `runs[1]` and `runs[2]` differ in exactly this and
 nothing else:
 
-| | one id across both revisions | one id per revision |
+| | option A: one id, two versions (`runs[1]`) | option B: one id per revision (`runs[2]`) |
 |---|---|---|
 | `identityCounts.continued` | 9 | 9 |
 | …of those, with a recorded predecessor | 9 | 6 |
@@ -360,9 +387,10 @@ the manifest are known to come from the same compile.
 
 **It proves**
 
-- the FP-200 corpus as the site publishes it cannot reach the core compiler at
-  `26bb892`, and the refusal is the resolver's, not this lane's — the test
-  re-raises it straight out of `resolve_sources`;
+- the FP-200 corpus in the form the site publishes it — its own three documents
+  at 9a7a93d, and a fourth written to the same layout — cannot reach the core
+  compiler at `26bb892`, and the refusal is the resolver's, not this lane's:
+  the test re-raises it straight out of `resolve_sources`, over all four;
 - the four documents' bytes are what the receipt says they are; every digest in
   `inputs` is recomputed from disk by the test;
 - on the clause-form restatement the chain runs end to end and **does not**
@@ -378,6 +406,9 @@ the manifest are known to come from the same compile.
 - anything about production scale, cost or latency. 10 regions of the 3
   documents in the compile, 14 regions of the 4 documents at the resolver, all
   in-process;
+- **anything about how the site publishes revision B, because it does not.** At
+  9a7a93d there is 1 manual revision and no `-rev-b` id. `runs[2]` prices an
+  option the explore lane has not taken; it does not report a condition;
 - that F3 reproduces outside this fixture. It is one re-typeset on one corpus.
   It is a defect with a mechanism and a witness, not a measured rate;
 - **that lineage is safe when the document id changes.** The resolver's match is
@@ -414,14 +445,24 @@ saying so.
    The `explore` lane generates the same document from the same sentence and
    freezes its digest. If the two lanes read it differently the digests differ
    and one of them is wrong. Pin it once.
-4. **Whether F5 is scheduled, and whether the site may keep publishing revision
-   B and revision C as two document ids.** The two questions are the same
-   question. With two ids the compile fails closed and says so — that half is
-   safe — but the receipt cannot show the lineage the resolver established, so
-   no revision receipt in the system can be read as evidence of continuity
-   across a re-identified document. Fixing it means carrying the decision's
-   matched id into `UnitRevisionRecord`, which changes what every revision
-   receipt says. Not this lane's file, and not this lane's call.
+4. **Whether the `explore` lane should give its revision-B file its own document
+   id at all — and, separately, whether F5 is scheduled.** The first question is
+   open and cheap: at 9a7a93d the site publishes 1 manual revision and no
+   revision-B file, so nothing has to be migrated and either shape can be chosen
+   for free. `runs[1]` is one id at two versions and everything works; `runs[2]`
+   is one id per revision and the table above is the bill. An earlier version of
+   this list asked whether the site "may keep publishing" two ids, which
+   presupposed a condition that does not exist and quietly hid the cheaper
+   answer. The recommendation this receipt supports is **one document id, two
+   `contentSha256` versions** — but it is the founder's call, not the lane's.
+   The second question stands whichever way the first goes, because a document
+   *will* be re-identified eventually: with two ids the compile fails closed and
+   says so — that half is safe — but the receipt cannot show the lineage the
+   resolver established, so no revision receipt in the system can be read as
+   evidence of continuity across a re-identified document. Fixing that means
+   carrying the decision's matched id into `UnitRevisionRecord`, which changes
+   what every revision receipt says. Not this lane's file, and not this lane's
+   call.
 5. **Whether the revision-B world may contain the change notice at all.** The
    notice announces the 2,000-hour interval, so a world whose manual says 1,500
    already disagrees with itself. The core does not resolve that here — authority
