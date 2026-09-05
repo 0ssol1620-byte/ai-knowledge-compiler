@@ -1,0 +1,39 @@
+%PDF-1.4
+1 0 obj
+<</Type /Catalog /Pages 2 0 R>>
+endobj
+2 0 obj
+<</Type /Pages /Kids [3 0 R] /Count 1>>
+endobj
+3 0 obj
+<</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R>>>> /Contents 5 0 R>>
+endobj
+4 0 obj
+<</Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding>>
+endobj
+5 0 obj
+<</Length 731>>
+stream
+BT /F1 13 Tf 66 762 Td (Scheduled maintenance for feedwater pump FP-200,) Tj ET
+BT /F1 13 Tf 66 747 Td (revision C.) Tj ET
+BT /F1 10.5 Tf 66 721 Td (Perform the full service procedure every 2,000 operating hours. This interval) Tj ET
+BT /F1 10.5 Tf 66 706 Td (replaces the 1,500 hour interval published in revision B.) Tj ET
+BT /F1 10.5 Tf 66 680 Td (Before replacing the mechanical seal, isolate the unit and fully depressurise) Tj ET
+BT /F1 10.5 Tf 66 665 Td (the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.) Tj ET
+BT /F1 10.5 Tf 66 639 Td (The pump is rated for continuous duty at 2.4 MPa discharge pressure, and) Tj ET
+BT /F1 10.5 Tf 66 624 Td (inspection points are listed in table 12.1.) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000056 00000 n 
+0000000111 00000 n 
+0000000231 00000 n 
+0000000326 00000 n 
+trailer
+<</Size 6 /Root 1 0 R>>
+startxref
+1105
+%%EOF

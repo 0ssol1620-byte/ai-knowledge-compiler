@@ -1,0 +1,39 @@
+%PDF-1.4
+1 0 obj
+<</Type /Catalog /Pages 2 0 R>>
+endobj
+2 0 obj
+<</Type /Pages /Kids [3 0 R] /Count 1>>
+endobj
+3 0 obj
+<</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R>>>> /Contents 5 0 R>>
+endobj
+4 0 obj
+<</Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding>>
+endobj
+5 0 obj
+<</Length 577>>
+stream
+BT /F1 13 Tf 66 762 Td (1. Document) Tj ET
+BT /F1 10.5 Tf 66 736 Td (1.1 Change notice CN-2026-03 for feedwater pump FP-200, revision C.) Tj ET
+BT /F1 10.5 Tf 66 710 Td (2. Interval change) Tj ET
+BT /F1 10.5 Tf 66 684 Td (2.1 The service interval moves from 1,500 operating hours to 2,000 operating) Tj ET
+BT /F1 10.5 Tf 66 669 Td (hours with effect from revision C.) Tj ET
+BT /F1 10.5 Tf 66 643 Td (3. Superseded revision) Tj ET
+BT /F1 10.5 Tf 66 617 Td (3.1 Revision B is superseded and must not be used to schedule work on this) Tj ET
+BT /F1 10.5 Tf 66 602 Td (pump.) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000056 00000 n 
+0000000111 00000 n 
+0000000231 00000 n 
+0000000326 00000 n 
+trailer
+<</Size 6 /Root 1 0 R>>
+startxref
+951
+%%EOF

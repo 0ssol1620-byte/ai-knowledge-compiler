@@ -1,0 +1,498 @@
+[
+  {
+    "documentId": "fp200-maintenance-manual-clause-rev-b",
+    "versionKey": "86165deff559682416a7a1f436ba06a86f476be24b9a172d0d3babd50b07f18f",
+    "sanitizedKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revB.pdf",
+    "ocrJsonKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revB.pdf#text-layer",
+    "pageCount": 1,
+    "text": "1. Document\n1.1 Scheduled maintenance for feedwater pump FP-200, revision B.\n2. Service interval\n2.1 Perform the full service procedure every 1,500 operating hours.\n3. Seal replacement\n3.1 Before replacing the mechanical seal, isolate the unit and fully depressurise the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.\n4. Duty rating\n4.1 The pump is rated for continuous duty at 2.4 MPa discharge pressure, and inspection points are listed in table 12.1.",
+    "inputSha256": "sha256:86165deff559682416a7a1f436ba06a86f476be24b9a172d0d3babd50b07f18f",
+    "sourceImmutableKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revB.pdf",
+    "regions": [
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r0",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 0,
+        "blockType": "paragraph",
+        "text": "1. Document",
+        "bbox1000": [
+          111,
+          80,
+          235,
+          95
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r1",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 1,
+        "blockType": "paragraph",
+        "text": "1.1 Scheduled maintenance for feedwater pump FP-200, revision B.",
+        "bbox1000": [
+          111,
+          113,
+          642,
+          126
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r2",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 2,
+        "blockType": "paragraph",
+        "text": "2. Service interval",
+        "bbox1000": [
+          111,
+          144,
+          251,
+          157
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r3",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 3,
+        "blockType": "paragraph",
+        "text": "2.1 Perform the full service procedure every 1,500 operating hours.",
+        "bbox1000": [
+          111,
+          175,
+          635,
+          188
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r4",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 4,
+        "blockType": "paragraph",
+        "text": "3. Seal replacement",
+        "bbox1000": [
+          111,
+          206,
+          268,
+          219
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r5",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 5,
+        "blockType": "paragraph",
+        "text": "3.1 Before replacing the mechanical seal, isolate the unit and fully depressurise the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.",
+        "bbox1000": [
+          111,
+          237,
+          744,
+          285
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r6",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 6,
+        "blockType": "paragraph",
+        "text": "4. Duty rating",
+        "bbox1000": [
+          111,
+          303,
+          216,
+          316
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-b-p1-r7",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 7,
+        "blockType": "paragraph",
+        "text": "4.1 The pump is rated for continuous duty at 2.4 MPa discharge pressure, and inspection points are listed in table 12.1.",
+        "bbox1000": [
+          111,
+          334,
+          721,
+          365
+        ],
+        "confidence": 1,
+        "authority": "official"
+      }
+    ]
+  },
+  {
+    "documentId": "fp200-maintenance-manual-clause-rev-c",
+    "versionKey": "062c056d7d2275dfd5ea3bcd3f7625339888e72b9f8f90e48963fefd753cee5a",
+    "sanitizedKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revC.pdf",
+    "ocrJsonKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revC.pdf#text-layer",
+    "pageCount": 1,
+    "text": "1. Document\n1.1 Scheduled maintenance for feedwater pump FP-200, revision C.\n2. Service interval\n2.1 Perform the full service procedure every 2,000 operating hours. This interval replaces the 1,500 hour interval published in revision B.\n3. Seal replacement\n3.1 Before replacing the mechanical seal, isolate the unit and fully depressurise the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.\n4. Duty rating\n4.1 The pump is rated for continuous duty at 2.4 MPa discharge pressure, and inspection points are listed in table 12.1.",
+    "inputSha256": "sha256:062c056d7d2275dfd5ea3bcd3f7625339888e72b9f8f90e48963fefd753cee5a",
+    "sourceImmutableKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-maintenance-manual-clause-revC.pdf",
+    "regions": [
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r0",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 0,
+        "blockType": "paragraph",
+        "text": "1. Document",
+        "bbox1000": [
+          111,
+          80,
+          235,
+          95
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r1",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 1,
+        "blockType": "paragraph",
+        "text": "1.1 Scheduled maintenance for feedwater pump FP-200, revision C.",
+        "bbox1000": [
+          111,
+          113,
+          643,
+          126
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r2",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 2,
+        "blockType": "paragraph",
+        "text": "2. Service interval",
+        "bbox1000": [
+          111,
+          144,
+          251,
+          157
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r3",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 3,
+        "blockType": "paragraph",
+        "text": "2.1 Perform the full service procedure every 2,000 operating hours. This interval replaces the 1,500 hour interval published in revision B.",
+        "bbox1000": [
+          111,
+          175,
+          673,
+          205
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r4",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 4,
+        "blockType": "paragraph",
+        "text": "3. Seal replacement",
+        "bbox1000": [
+          111,
+          224,
+          268,
+          236
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r5",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 5,
+        "blockType": "paragraph",
+        "text": "3.1 Before replacing the mechanical seal, isolate the unit and fully depressurise the casing. Confirm zero pressure at gauge PG-11 before removing any fastener.",
+        "bbox1000": [
+          111,
+          255,
+          744,
+          303
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r6",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 6,
+        "blockType": "paragraph",
+        "text": "4. Duty rating",
+        "bbox1000": [
+          111,
+          321,
+          216,
+          334
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-maintenance-manual-clause-rev-c-p1-r7",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 7,
+        "blockType": "paragraph",
+        "text": "4.1 The pump is rated for continuous duty at 2.4 MPa discharge pressure, and inspection points are listed in table 12.1.",
+        "bbox1000": [
+          111,
+          352,
+          721,
+          382
+        ],
+        "confidence": 1,
+        "authority": "official"
+      }
+    ]
+  },
+  {
+    "documentId": "fp200-change-notice-clause-cn-2026-03",
+    "versionKey": "e0d9764c476841466fec83a2c0db0c47b014fec38839223799164dff6638b005",
+    "sanitizedKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-change-notice-clause-CN-2026-03.pdf",
+    "ocrJsonKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-change-notice-clause-CN-2026-03.pdf#text-layer",
+    "pageCount": 1,
+    "text": "1. Document\n1.1 Change notice CN-2026-03 for feedwater pump FP-200, revision C.\n2. Interval change\n2.1 The service interval moves from 1,500 operating hours to 2,000 operating hours with effect from revision C.\n3. Superseded revision\n3.1 Revision B is superseded and must not be used to schedule work on this pump.",
+    "inputSha256": "sha256:e0d9764c476841466fec83a2c0db0c47b014fec38839223799164dff6638b005",
+    "sourceImmutableKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-change-notice-clause-CN-2026-03.pdf",
+    "regions": [
+      {
+        "regionId": "fp200-change-notice-clause-cn-2026-03-p1-r0",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 0,
+        "blockType": "paragraph",
+        "text": "1. Document",
+        "bbox1000": [
+          111,
+          80,
+          235,
+          95
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-change-notice-clause-cn-2026-03-p1-r1",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 1,
+        "blockType": "paragraph",
+        "text": "1.1 Change notice CN-2026-03 for feedwater pump FP-200, revision C.",
+        "bbox1000": [
+          111,
+          113,
+          668,
+          126
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-change-notice-clause-cn-2026-03-p1-r2",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 2,
+        "blockType": "paragraph",
+        "text": "2. Interval change",
+        "bbox1000": [
+          111,
+          144,
+          251,
+          157
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-change-notice-clause-cn-2026-03-p1-r3",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 3,
+        "blockType": "paragraph",
+        "text": "2.1 The service interval moves from 1,500 operating hours to 2,000 operating hours with effect from revision C.",
+        "bbox1000": [
+          111,
+          175,
+          714,
+          205
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-change-notice-clause-cn-2026-03-p1-r4",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 4,
+        "blockType": "paragraph",
+        "text": "3. Superseded revision",
+        "bbox1000": [
+          111,
+          224,
+          291,
+          236
+        ],
+        "confidence": 1,
+        "authority": "official"
+      },
+      {
+        "regionId": "fp200-change-notice-clause-cn-2026-03-p1-r5",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 5,
+        "blockType": "paragraph",
+        "text": "3.1 Revision B is superseded and must not be used to schedule work on this pump.",
+        "bbox1000": [
+          111,
+          255,
+          708,
+          285
+        ],
+        "confidence": 1,
+        "authority": "official"
+      }
+    ]
+  },
+  {
+    "documentId": "fp200-service-log-clause-2026",
+    "versionKey": "5dc12ec6e5e6df9be2f885a0524279de545b35d47fdb4114f5f9be33a4e08e36",
+    "sanitizedKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-service-log-clause-2026.pdf",
+    "ocrJsonKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-service-log-clause-2026.pdf#text-layer",
+    "pageCount": 1,
+    "text": "1. Document\n1.1 Service log for feedwater pump FP-200, January to March 2026.\n2. Seal replacement\n2.1 The mechanical seal on FP-200 was replaced on 14 February 2026 after the unit was depressurised.\n3. Next service\n3.1 The next full service falls due at 2,000 operating hours from the February visit.",
+    "inputSha256": "sha256:5dc12ec6e5e6df9be2f885a0524279de545b35d47fdb4114f5f9be33a4e08e36",
+    "sourceImmutableKey": "research/explore_change_receipt_20260905/inputs/clause-form/fp-200-service-log-clause-2026.pdf",
+    "regions": [
+      {
+        "regionId": "fp200-service-log-clause-2026-p1-r0",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 0,
+        "blockType": "paragraph",
+        "text": "1. Document",
+        "bbox1000": [
+          111,
+          80,
+          235,
+          95
+        ],
+        "confidence": 1,
+        "authority": "informal"
+      },
+      {
+        "regionId": "fp200-service-log-clause-2026-p1-r1",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 1,
+        "blockType": "paragraph",
+        "text": "1.1 Service log for feedwater pump FP-200, January to March 2026.",
+        "bbox1000": [
+          111,
+          113,
+          643,
+          126
+        ],
+        "confidence": 1,
+        "authority": "informal"
+      },
+      {
+        "regionId": "fp200-service-log-clause-2026-p1-r2",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 2,
+        "blockType": "paragraph",
+        "text": "2. Seal replacement",
+        "bbox1000": [
+          111,
+          144,
+          268,
+          157
+        ],
+        "confidence": 1,
+        "authority": "informal"
+      },
+      {
+        "regionId": "fp200-service-log-clause-2026-p1-r3",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 3,
+        "blockType": "paragraph",
+        "text": "2.1 The mechanical seal on FP-200 was replaced on 14 February 2026 after the unit was depressurised.",
+        "bbox1000": [
+          111,
+          175,
+          737,
+          205
+        ],
+        "confidence": 1,
+        "authority": "informal"
+      },
+      {
+        "regionId": "fp200-service-log-clause-2026-p1-r4",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 4,
+        "blockType": "paragraph",
+        "text": "3. Next service",
+        "bbox1000": [
+          111,
+          224,
+          228,
+          236
+        ],
+        "confidence": 1,
+        "authority": "informal"
+      },
+      {
+        "regionId": "fp200-service-log-clause-2026-p1-r5",
+        "pageIndex0": 0,
+        "pageNumber1": 1,
+        "order": 5,
+        "blockType": "paragraph",
+        "text": "3.1 The next full service falls due at 2,000 operating hours from the February visit.",
+        "bbox1000": [
+          111,
+          255,
+          709,
+          285
+        ],
+        "confidence": 1,
+        "authority": "informal"
+      }
+    ]
+  }
+]
