@@ -10,8 +10,8 @@ chain. It was also told that if the chain cannot consume the fixture without
 touching Protected Core, the deliverable is the gap, named exactly.
 
 **That is what happened. There is no equivalence receipt. There are two gaps and
-two findings, all four measured rather than argued, and `receipt.json` holds the
-runs behind them.**
+three findings, all five measured rather than argued, and `receipt.json` holds
+the runs behind them.**
 
 ---
 
@@ -47,7 +47,7 @@ equivalence result, and there is no `PASS` to show.
 The receipt digests itself. `deterministicSha256` is a sha256 over the canonical
 JSON of the `deterministic` block and reads
 
-    sha256:2a9606ca4e2114db0f9d1de61be2e12fdf63eeed73e2dfd38c477b62aa74e748
+    sha256:23f55e10c28c674bf9b290a31aa224d17d7ac9a2bbc777baf378056b463959db
 
 at this commit. `test_the_receipt_digest_is_over_the_receipt` recomputes it from
 the bytes beside it and `test_the_receipt_is_reproduced_byte_for_byte` re-runs
@@ -92,25 +92,74 @@ artifact id is built from the logical id in turn.
 
 **The mismatch.** The site publishes revision B and revision C as two files with
 two document ids (`fp200-maintenance-manual-rev-b`, `…-rev-c`). The core models a
-revision as one document id at two `contentSha256` versions. Handing it the two
-ids describes a collection in which one manual was deleted and another appeared.
+revision as one document id at two `contentSha256` versions, and the id is what
+every artifact id, dependency-graph node and impact seed is built from below the
+resolver. Handing it two ids does *not* look like a delete-plus-add to the
+resolver — the measurement below is the point of this section, and it says
+otherwise — but it does mean nothing under the resolver can find its way from the
+old unit to the new one.
 
 **What it costs, measured.** `runs[1]` and `runs[2]` differ in exactly this and
 nothing else:
 
 | | one id across both revisions | one id per revision |
 |---|---|---|
-| units continued | 9 | 9 |
+| `identityCounts.continued` | 9 | 9 |
+| …of those, with a recorded predecessor | 9 | 6 |
+| …with none (`previousLogicalUnitId` absent) | 0 | 3 |
+| diff changes attributed to a *before*-world id | 0 | 4, on 3 ids |
+| `impact.affectedArtifactIds` | 8 | 0 |
+| `plan.stale` | 8 | 0 |
 | artifacts carried over | 17 | 15 |
 | artifacts quarantined | 2 | 12 |
+| artifacts a full rebuild produces and the selective one never builds | 0 | 6 |
 | equivalence | fails on 2 claims | fails on `collection:directory` |
 
-The interesting half is that *identity survives the id change* — the resolver
-matches on heading path and clause anchor, so nine units still continue — while
-the **artifact layer does not**: every artifact of the manual is withheld, along
-with the three collection projections that read every unit. Identity is
-anchored on structure; artifact reuse is anchored on the document id. A caller
-that changes the id keeps its lineage and loses its incremental compile.
+**Read the first row carefully; an earlier version of this file did not.** Nine
+units are *labelled* `continued` in both runs, and that number is not a count of
+matches. `IdentityContinuity.CONTINUED` is the else branch of
+`revision_compile._unit_records` (`revision_compile.py:876–882`): every
+after-unit the diff did not name as added and did not leave unsettled gets it,
+predecessor found or not. The rows underneath are the ones with content, and
+`receipt.json` now carries them as `revision.identityContinuity` so the bare
+count cannot be read as a result again.
+
+**What actually happened, from `revision.diffChanges`.** The resolver *did* match
+across the id change. In `runs[2]` all four changes to the revision-C manual —
+one `modified_claim` and three `evidence_moved` — are attributed to the
+**revision-B** logical ids
+(`ku_…-clause-rev-b_1_1`, `_3_1`, `_4_1`), and the unsettled unit
+`ku_…-clause-rev-c_2_1` names `ku_…-clause-rev-b_2_1` as its single candidate.
+Nothing is reported `unit_added` anywhere in the run — and an after-unit with no
+counterpart leaves by exactly that exit (`semantic_diff.py:809–822`). So the
+correspondence was made. The diff is structurally identical to `runs[1]`'s; only
+the ids it names differ.
+
+**And then nothing keyed by the id survives it.** Two things break, one visible
+and one silent:
+
+- *Downstream.* The changes name before-world ids, which are not nodes of the
+  after world's dependency graph. `plan.facetResolutions` returns verdict
+  `unresolved` with the planner's own reason — "the changed unit is not a node in
+  the dependency graph, so no reader could be checked; this is not evidence that
+  none exists" — `impact.affectedArtifactIds` is empty, `plan.stale` is empty,
+  every artifact the planner names lands in `plan.unresolved` instead, and the
+  selective rebuild never builds the six revision-C manual artifacts that a full
+  rebuild produces (`equivalence.missing_from_selective`). Twelve artifacts are quarantined and
+  the world is not promotable, so that much is fail-closed and loud. One thing is
+  not: `collection:directory` is carried forward and **diverges** from the full
+  rebuild — the same silent-staleness class as F3, caught here only because this
+  run had a full-rebuild oracle beside it.
+- *In the record.* `_unit_records` looks the predecessor up by the **after**
+  unit's own logical id (`revision_compile.py:883`), so the match the resolver
+  just made is dropped: three units come out `continued` with no
+  `previousLogicalUnitId` and no `SAME_AS_VERSION`. That is finding **F5** below,
+  and it is why the first version of this section got F2 backwards.
+
+The one-line answer for a founder: **splitting the id mostly stops the
+incremental compile and says so, leaves one collection projection stale without
+saying so, and loses the lineage from the record — so "identity is safe, only
+rebuild cost is at stake" is not a conclusion this run supports.**
 
 ---
 
@@ -182,6 +231,50 @@ The consequence travels: `claim:` and `retrieval:` for clause 2.1 are quarantine
 rather than rebuilt or reused, and the disposition is `review_required`. The
 world a person would be offered here is one the compiler has already said needs
 review. That is the state machine working.
+
+---
+
+## Finding F5 — a match that was made and not written down
+
+This one was found by an adversarial review of the first version of this
+receipt, and the receipt was the thing it was found in. It is recorded here
+rather than quietly fixed, because the defect is in the core and the wrong
+sentence was mine.
+
+`revision_compile._unit_records` builds one record per unit of the new version.
+Three lines decide what it says about lineage:
+
+- `revision_compile.py:876–882` — the continuity label. Not unresolved and not
+  added means `CONTINUED`. Nothing about a predecessor enters this decision.
+- `revision_compile.py:883` — `prior = before_by_id.get(logical_id)`, where
+  `logical_id` is the **after** unit's id and `before_by_id` is keyed by the
+  **before** units' ids.
+- `revision_compile.py:888–897` — `previousLogicalUnitId` and
+  `SAME_AS_VERSION` are emitted only if that lookup hits.
+
+When the document id changes, the lookup cannot hit, even though the resolver
+matched the unit and the diff is still carrying the matched id. So the record
+says `continued` and says nothing else, and the lineage that was established is
+absent from the receipt that is supposed to attest to it.
+
+**Measured.** `runs[2]`: 3 of 9 continued units have no `previousLogicalUnitId`,
+while `diffChanges` shows every one of them matched. `runs[1]`, identical but for
+the id: 9 of 9 have one.
+
+**Why it matters beyond this receipt.** `continued: 9` is the number a UI, a
+report or a founder reads. It is the same 9 in a run where every unit has a
+predecessor and in a run where a third of them do not, and the sealed service
+response does not separate them either: `service.py:284–294` tallies the labels,
+and `service.py:260–265` omits `previousLogicalUnitId` and `identityRelation`
+from a unit record when they are absent rather than saying so. The first version of
+this document read that 9 as nine matches and drew the opposite conclusion from
+it. That is the failure mode, demonstrated on the only reader available.
+
+**Not fixed here.** `akc_cir.revision_compile` is not named in `CLAUDE.md`'s
+Protected Core list, but it composes four modules that are — `identity`,
+`semantic_diff`, `dependency`, `recompilation` — and it belongs to no lane in
+this campaign. Carrying the decision's matched id into the record changes what
+every revision receipt in the system says about lineage. Reported, not touched.
 
 ---
 
@@ -266,6 +359,10 @@ the manifest are known to come from the same compile.
   in-process;
 - that F3 reproduces outside this fixture. It is one re-typeset on one corpus.
   It is a defect with a mechanism and a witness, not a measured rate;
+- **that lineage is safe when the document id changes.** The resolver's match is
+  visible in the diff and absent from the unit record, so what a consumer of the
+  receipt can see is *not* the lineage — that is F5, and it is the reason the
+  first version of this file drew the opposite conclusion;
 - that any threshold here is right. None is calibrated, and F4 is an abstention
   inside a band nobody has fitted to a corpus.
 
@@ -296,7 +393,15 @@ saying so.
    The `explore` lane generates the same document from the same sentence and
    freezes its digest. If the two lanes read it differently the digests differ
    and one of them is wrong. Pin it once.
-4. **Whether the revision-B world may contain the change notice at all.** The
+4. **Whether F5 is scheduled, and whether the site may keep publishing revision
+   B and revision C as two document ids.** The two questions are the same
+   question. With two ids the compile fails closed and says so — that half is
+   safe — but the receipt cannot show the lineage the resolver established, so
+   no revision receipt in the system can be read as evidence of continuity
+   across a re-identified document. Fixing it means carrying the decision's
+   matched id into `UnitRevisionRecord`, which changes what every revision
+   receipt says. Not this lane's file, and not this lane's call.
+5. **Whether the revision-B world may contain the change notice at all.** The
    notice announces the 2,000-hour interval, so a world whose manual says 1,500
    already disagrees with itself. The core does not resolve that here — authority
    and conflict resolution are a different module — and the fixture keeps the

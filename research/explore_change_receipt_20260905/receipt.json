@@ -24,11 +24,11 @@
         "gap": "document-identity-across-revisions",
         "function": "akc_core_v3.sources.canonicalise_document",
         "file": "services/core-v3/src/akc_core_v3/sources.py:498 -- logical_id = ku_{document_id}_{clause}",
-        "requiredInputShape": "one nativeId for the manual with two contentSha256 versions; logical_id is ku_{document_id}_{clause}, so the document id is what carries identity across a revision",
+        "requiredInputShape": "one nativeId for the manual with two contentSha256 versions; logical_id is ku_{document_id}_{clause}, and every artifact id, dependency-graph node and impact seed is built from the logical id in turn, so the document id is what carries a unit's identity across a revision everywhere below the resolver",
         "actualInputShape": "the site publishes revision B and revision C as two files whose documentIds differ (fp200-maintenance-manual-rev-b / -rev-c)",
-        "observedState": "measured in runs[2]: with one id per revision no unit continues and the manual is reported replaced rather than amended",
+        "observedState": "measured in runs[1] against runs[2], which differ in the document id and in nothing else. The resolver's match survives the id change; nothing keyed by the id does. (1) The correspondence was made: runs[2].revision.diffChanges attributes changes of the revision-C manual to 3 revision-B logical ids (ku_fp200-maintenance-manual-clause-rev-b_1_1, ku_fp200-maintenance-manual-clause-rev-b_3_1, ku_fp200-maintenance-manual-clause-rev-b_4_1) and names ku_fp200-maintenance-manual-clause-rev-b_2_1 as the identity candidate for the remaining revision-C unit, and no unit_added is emitted anywhere in the run -- an unmatched after-unit would leave by that exit (semantic_diff.py:809-822). (2) The record cannot express it: revision.identityCounts.continued reads 9 in BOTH runs and is not a match count. In runs[1] 9 of 9 carry a previousLogicalUnitId and SAME_AS_VERSION; in runs[2] only 6 do, and 3 carry neither (ku_fp200-maintenance-manual-clause-rev-c_1_1, ku_fp200-maintenance-manual-clause-rev-c_3_1, ku_fp200-maintenance-manual-clause-rev-c_4_1), because revision_compile._unit_records looks the predecessor up by the after-unit's own logical id (revision_compile.py:883). See finding F5. (3) Nothing downstream of the id survives: the changes name ids that are not nodes of the after world's dependency graph, so plan.facetResolutions returns verdict 'unresolved' with that reason, impact.affectedArtifactIds is [], plan.stale is [], the selective rebuild never builds the 6 manual artifacts a full rebuild produces (equivalence.missing_from_selective), and collection:directory is carried forward stale and diverges.",
         "refusal": null,
-        "evidence": "runs[1] versus runs[2]"
+        "evidence": "runs[1] versus runs[2]; specifically their revision.diffChanges, revision.identityContinuity, plan.facetResolutions and equivalence.missing_from_selective"
       }
     ],
     "findings": [
@@ -55,6 +55,20 @@
         ],
         "measured": "runs[1].revision.units, the record whose identityContinuity is 'ambiguous', carries its own identityReason; the consequence is two quarantined artifacts and a review_required disposition",
         "notFixedHere": "CLAUDE.md: no threshold in this repository is calibrated and none may be moved to make a run pass"
+      },
+      {
+        "id": "F5",
+        "kind": "correctness",
+        "severity": "medium",
+        "title": "a unit the resolver matched across a document-id change is recorded 'continued' with no predecessor and no relation: the record looks the predecessor up by the after-unit's own logical id, so a lineage that was established is not written down",
+        "where": [
+          "packages/cir-python/src/akc_cir/revision_compile.py:876-882 -- the continuity label is the else branch: an after-unit that is neither unresolved nor added is CONTINUED, found predecessor or not",
+          "packages/cir-python/src/akc_cir/revision_compile.py:883 -- prior = before_by_id.get(logical_id), where logical_id is the AFTER unit's id and before_by_id is keyed by the BEFORE units' ids",
+          "packages/cir-python/src/akc_cir/revision_compile.py:888-897 -- previousLogicalUnitId and SAME_AS_VERSION are emitted only when that lookup hits, so a cross-id match yields neither; the decision's own matched id, which the diff still carries, is not consulted"
+        ],
+        "measured": "runs[2].revision.diffChanges shows the match was made -- three changes of the revision-C manual are attributed to revision-B logical ids and no unit_added is emitted -- while runs[2].revision.identityContinuity records 3 of 9 continued units with no previousLogicalUnitId. runs[1], where the ids are shared, records 9 of 9 with one. The two runs differ in the document id and in nothing else.",
+        "consequence": "any consumer reading the unit records -- an earlier revision of this very receipt included -- cannot tell a matched continuation from an unmatched one, and 'continued: 9' reads as nine matches in both runs. That is how the first version of F2 came to state the opposite of its own data.",
+        "notFixedHere": "akc_cir.revision_compile is not named in CLAUDE.md's Protected Core list, but it composes four modules that are (identity, semantic_diff, dependency, recompilation) and it belongs to no lane in this campaign. Carrying the decision's matched id into the record changes what every revision receipt says about lineage. Reported, not touched."
       }
     ],
     "protectedCoreModified": false,
@@ -452,6 +466,55 @@
               "changeFingerprint": "chf_067c63697439dfa0ed33dc25ef3f7bc9",
               "previousLogicalUnitId": "ku_fp200-service-log-2026_3_1",
               "identityRelation": "SAME_AS_VERSION"
+            }
+          ],
+          "identityContinuity": {
+            "continued": 9,
+            "continuedWithRecordedPredecessor": 9,
+            "continuedWithoutRecordedPredecessor": 0,
+            "continuedWithoutRecordedPredecessorIds": [],
+            "note": "`continued` is a label, not a match count. A unit here with no previousLogicalUnitId was matched by the resolver or not -- this field cannot say which, and diffChanges is where to look."
+          },
+          "diffChanges": [
+            {
+              "kind": "modified_claim",
+              "channel": "semantic",
+              "logical_id": "ku_fp200-maintenance-manual_1_1",
+              "before": "Scheduled maintenance for feedwater pump FP-200, revision B.",
+              "after": "Scheduled maintenance for feedwater pump FP-200, revision C."
+            },
+            {
+              "kind": "evidence_moved",
+              "channel": "locator",
+              "logical_id": "ku_fp200-maintenance-manual_1_1",
+              "before": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-b-p1-r1",
+              "after": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-c-p1-r1",
+              "detail": "anchor changed within the same page"
+            },
+            {
+              "kind": "identity_unresolved",
+              "channel": "unresolved",
+              "logical_id": "ku_fp200-maintenance-manual_2_1",
+              "detail": "score 0.90 sits in the review band between 0.75 and 0.92",
+              "candidates": [
+                "ku_fp200-maintenance-manual_2_1"
+              ]
+            },
+            {
+              "kind": "evidence_moved",
+              "channel": "locator",
+              "logical_id": "ku_fp200-maintenance-manual_3_1",
+              "before": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-b-p1-r5",
+              "after": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-c-p1-r5",
+              "detail": "anchor changed within the same page"
+            },
+            {
+              "kind": "evidence_moved",
+              "channel": "locator",
+              "logical_id": "ku_fp200-maintenance-manual_4_1",
+              "before": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-b-p1-r7",
+              "after": "ev_fp200-maintenance-manual_fp200-maintenance-manual-clause-rev-c-p1-r7",
+              "detail": "anchor changed within the same page"
             }
           ],
           "impact": {
@@ -963,6 +1026,59 @@
               "identityRelation": "SAME_AS_VERSION"
             }
           ],
+          "identityContinuity": {
+            "continued": 9,
+            "continuedWithRecordedPredecessor": 6,
+            "continuedWithoutRecordedPredecessor": 3,
+            "continuedWithoutRecordedPredecessorIds": [
+              "ku_fp200-maintenance-manual-clause-rev-c_1_1",
+              "ku_fp200-maintenance-manual-clause-rev-c_3_1",
+              "ku_fp200-maintenance-manual-clause-rev-c_4_1"
+            ],
+            "note": "`continued` is a label, not a match count. A unit here with no previousLogicalUnitId was matched by the resolver or not -- this field cannot say which, and diffChanges is where to look."
+          },
+          "diffChanges": [
+            {
+              "kind": "modified_claim",
+              "channel": "semantic",
+              "logical_id": "ku_fp200-maintenance-manual-clause-rev-b_1_1",
+              "before": "Scheduled maintenance for feedwater pump FP-200, revision B.",
+              "after": "Scheduled maintenance for feedwater pump FP-200, revision C."
+            },
+            {
+              "kind": "evidence_moved",
+              "channel": "locator",
+              "logical_id": "ku_fp200-maintenance-manual-clause-rev-b_1_1",
+              "before": "ev_fp200-maintenance-manual-clause-rev-b_fp200-maintenance-manual-clause-rev-b-p1-r1",
+              "after": "ev_fp200-maintenance-manual-clause-rev-c_fp200-maintenance-manual-clause-rev-c-p1-r1",
+              "detail": "anchor changed within the same page"
+            },
+            {
+              "kind": "identity_unresolved",
+              "channel": "unresolved",
+              "logical_id": "ku_fp200-maintenance-manual-clause-rev-c_2_1",
+              "detail": "score 0.90 sits in the review band between 0.75 and 0.92",
+              "candidates": [
+                "ku_fp200-maintenance-manual-clause-rev-b_2_1"
+              ]
+            },
+            {
+              "kind": "evidence_moved",
+              "channel": "locator",
+              "logical_id": "ku_fp200-maintenance-manual-clause-rev-b_3_1",
+              "before": "ev_fp200-maintenance-manual-clause-rev-b_fp200-maintenance-manual-clause-rev-b-p1-r5",
+              "after": "ev_fp200-maintenance-manual-clause-rev-c_fp200-maintenance-manual-clause-rev-c-p1-r5",
+              "detail": "anchor changed within the same page"
+            },
+            {
+              "kind": "evidence_moved",
+              "channel": "locator",
+              "logical_id": "ku_fp200-maintenance-manual-clause-rev-b_4_1",
+              "before": "ev_fp200-maintenance-manual-clause-rev-b_fp200-maintenance-manual-clause-rev-b-p1-r7",
+              "after": "ev_fp200-maintenance-manual-clause-rev-c_fp200-maintenance-manual-clause-rev-c-p1-r7",
+              "detail": "anchor changed within the same page"
+            }
+          ],
           "impact": {
             "affectedArtifactIds": [],
             "unresolvedArtifactIds": [
@@ -1326,7 +1442,7 @@
     ],
     "siteFixtureUnitsResolved": 0
   },
-  "deterministicSha256": "sha256:2a9606ca4e2114db0f9d1de61be2e12fdf63eeed73e2dfd38c477b62aa74e748",
+  "deterministicSha256": "sha256:23f55e10c28c674bf9b290a31aa224d17d7ac9a2bbc777baf378056b463959db",
   "environment": {
     "akcCommit": "26bb8926334246bbc666d6cc5abbb7291dac53f1",
     "interpreter": "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",

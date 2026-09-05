@@ -71,7 +71,12 @@ from akc_cir.recompilation import (  # noqa: E402
     RecompilationPlan,
     verify_equivalence,
 )
-from akc_cir.revision_compile import RevisionCompileResult, compile_revision  # noqa: E402
+from akc_cir.revision_compile import (  # noqa: E402
+    IdentityContinuity,
+    RevisionCompileResult,
+    UnitRevisionRecord,
+    compile_revision,
+)
 from akc_core_v3.initial import InitialCompileService  # noqa: E402
 from akc_core_v3.resolver import InMemoryWorldArchive, ProductionSourceResolver  # noqa: E402
 from akc_core_v3.service import RevisionService  # noqa: E402
@@ -432,6 +437,43 @@ def _selective_sets(
     return selective, carried
 
 
+def _identity_breakdown(records: Sequence[UnitRevisionRecord]) -> dict[str, Any]:
+    """Split the `continued` tally by whether a predecessor was actually recorded.
+
+    `IdentityContinuity.CONTINUED` is the *else* branch of
+    `akc_cir.revision_compile._unit_records` (revision_compile.py:876-882): an
+    after-unit the diff did not name as added and did not leave unsettled gets
+    the label whether or not a predecessor was found for it.
+    `previousLogicalUnitId` and `identityRelation` are then filled only when the
+    after-unit's OWN logical id is present in the before world
+    (revision_compile.py:883-897), so a unit the resolver matched *across* a
+    document-id change is labelled `continued` and carries neither field.
+
+    The bare count is therefore not a count of matches, and reading it as one is
+    wrong in exactly the case gap F2 is about. This block exists so it cannot be
+    read that way again: an earlier revision of this receipt described F2 from
+    the label alone and said the opposite of what the run shows.
+    """
+    continued = [unit for unit in records if unit.continuity is IdentityContinuity.CONTINUED]
+    with_predecessor = sorted(
+        unit.logical_unit_id for unit in continued if unit.previous_logical_unit_id
+    )
+    without = sorted(
+        unit.logical_unit_id for unit in continued if not unit.previous_logical_unit_id
+    )
+    return {
+        "continued": len(continued),
+        "continuedWithRecordedPredecessor": len(with_predecessor),
+        "continuedWithoutRecordedPredecessor": len(without),
+        "continuedWithoutRecordedPredecessorIds": without,
+        "note": (
+            "`continued` is a label, not a match count. A unit here with no "
+            "previousLogicalUnitId was matched by the resolver or not -- this "
+            "field cannot say which, and diffChanges is where to look."
+        ),
+    }
+
+
 def _plan_record(plan: RecompilationPlan) -> dict[str, Any]:
     return {
         "changeId": plan.change_id,
@@ -450,9 +492,11 @@ def run_clause_form(*, shared_document_id: bool) -> dict[str, Any]:
     """Compile revision B, then revise it to revision C, over the restatement.
 
     `shared_document_id` is the whole difference between run 2 and run 3. With
-    it, the manual keeps one id across both revisions and clause 2.1 continues;
-    without it, revision C is a different document and every unit of the manual
-    is new. Both are run rather than argued.
+    it, the manual keeps one id across both revisions; without it, revision C
+    carries the id its filename implies. Both are run rather than argued, and
+    what the second one costs is measured in the records rather than predicted
+    here -- an earlier revision of this docstring said "every unit of the manual
+    is new", and the run says otherwise.
     """
     entries = {entry["documentId"]: entry for entry in _load("clause-form.inputs.json")}
     corpus = Corpus({entry["ocrJsonKey"]: ocr_record(entry) for entry in entries.values()})
@@ -633,6 +677,16 @@ def run_clause_form(*, shared_document_id: bool) -> dict[str, Any]:
             # drops `identityReason`, which is the only place the resolver says
             # why it declined to settle an identity.
             "units": [record.as_record() for record in result.units],
+            # `identityCounts` above is a tally of labels. This is the split that
+            # says how many of them have a predecessor behind them, and it is
+            # what F2 turns on.
+            "identityContinuity": _identity_breakdown(result.units),
+            # The diff, serialised by the core rather than summarised here. It is
+            # the only place the correspondence the resolver made is visible: a
+            # change attributed to a BEFORE logical id is a match across the id
+            # change, and an unmatched after-unit would appear as `unit_added`
+            # instead (semantic_diff.py:809-822).
+            "diffChanges": [change.as_record() for change in result.diff.changes],
             "impact": revision["impact"],
             "sourceFacts": revision["sourceFacts"],
             "artifactDigests": dict(result.state),
@@ -662,6 +716,85 @@ def run_clause_form(*, shared_document_id: bool) -> dict[str, Any]:
 # the receipt
 
 
+def _matched_across_the_id_change(run: Mapping[str, Any]) -> list[str]:
+    """The before-world ids the diff attributed a change of the after world to.
+
+    A change whose `logical_id` belongs to the BEFORE world is a correspondence
+    the resolver made: the emitting branch reaches it only after
+    `by_logical[decision.logical_id]` resolved to a prior unit
+    (semantic_diff.py:815-822). An after-unit with no counterpart leaves by the
+    two `UNIT_ADDED` exits above it instead. So this list is the machine-readable
+    answer to "did identity survive the document-id change", and it is derived
+    from the diff rather than from the `continued` label, which cannot say.
+    """
+    after = {unit["logicalUnitId"] for unit in run["revision"]["units"]}
+    return sorted(
+        {
+            str(change["logical_id"])
+            for change in run["revision"]["diffChanges"]
+            if change.get("logical_id") and change["logical_id"] not in after
+        }
+    )
+
+
+def _f2_observed_state(shared: Mapping[str, Any], split: Mapping[str, Any]) -> str:
+    """F2's finding, formatted from the two runs rather than typed beside them.
+
+    The first version of this receipt carried a hand-written sentence here that
+    the block underneath it refuted -- it said no unit continues, while
+    `identityCounts.continued` read 9. Deriving the sentence is the repair: the
+    prose cannot drift from the measurement if the measurement writes it.
+    """
+    shared_identity = shared["revision"]["identityContinuity"]
+    split_identity = split["revision"]["identityContinuity"]
+    changes = split["revision"]["diffChanges"]
+    cross = _matched_across_the_id_change(split)
+    added = [change for change in changes if change["kind"] == "unit_added"]
+    # Every clause below is derived, and the two the sentence leans hardest on
+    # are asserted rather than trusted: if the resolver ever stops matching here,
+    # this function must fail rather than keep printing that it matched.
+    assert cross, "no change was attributed to a before-world id"
+    assert not added, f"the diff reported {len(added)} unit_added change(s)"
+    candidates = sorted(
+        {
+            candidate
+            for change in changes
+            if change["kind"] == "identity_unresolved"
+            for candidate in change.get("candidates", [])
+        }
+    )
+    missing = split["equivalence"]["missing_from_selective"]
+    return (
+        "measured in runs[1] against runs[2], which differ in the document id and "
+        "in nothing else. The resolver's match survives the id change; nothing "
+        "keyed by the id does. (1) The correspondence was made: "
+        "runs[2].revision.diffChanges attributes changes of the revision-C manual "
+        f"to {len(cross)} revision-B logical ids ({', '.join(cross)}) and names "
+        f"{', '.join(candidates)} as the identity candidate for the remaining "
+        "revision-C unit, and no unit_added is emitted anywhere in the run -- an "
+        "unmatched after-unit would leave by that exit "
+        "(semantic_diff.py:809-822). (2) The record cannot express it: "
+        f"revision.identityCounts.continued reads {shared_identity['continued']} "
+        "in BOTH runs and is not a match count. In runs[1] "
+        f"{shared_identity['continuedWithRecordedPredecessor']} of "
+        f"{shared_identity['continued']} carry a previousLogicalUnitId and "
+        f"SAME_AS_VERSION; in runs[2] only "
+        f"{split_identity['continuedWithRecordedPredecessor']} do, and "
+        f"{split_identity['continuedWithoutRecordedPredecessor']} carry neither "
+        f"({', '.join(split_identity['continuedWithoutRecordedPredecessorIds'])}), "
+        "because revision_compile._unit_records looks the predecessor up by the "
+        "after-unit's own logical id (revision_compile.py:883). See finding F5. "
+        "(3) Nothing downstream of the id survives: the changes name ids that are "
+        "not nodes of the after world's dependency graph, so "
+        "plan.facetResolutions returns verdict 'unresolved' with that reason, "
+        f"impact.affectedArtifactIds is {split['revision']['impact']['affectedArtifactIds']}, "
+        f"plan.stale is {split['plan']['stale']}, the selective rebuild never "
+        f"builds the {len(missing)} manual artifacts a full rebuild produces "
+        "(equivalence.missing_from_selective), and collection:directory is "
+        "carried forward stale and diverges."
+    )
+
+
 def canonical(payload: object) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -673,7 +806,7 @@ def deterministic() -> dict[str, Any]:
         run_clause_form(shared_document_id=True),
         run_clause_form(shared_document_id=False),
     ]
-    site = runs[0]
+    site, shared_id, split_id = runs
     return {
         "schema": "tavonel.research.explore_change_receipt.v1",
         "campaign": "TAVONEL-CATEGORY-LEADERSHIP-20260905-V1",
@@ -722,19 +855,22 @@ def deterministic() -> dict[str, Any]:
                 "-- logical_id = ku_{document_id}_{clause}",
                 "requiredInputShape": (
                     "one nativeId for the manual with two contentSha256 versions; "
-                    "logical_id is ku_{document_id}_{clause}, so the document id is what "
-                    "carries identity across a revision"
+                    "logical_id is ku_{document_id}_{clause}, and every artifact id, "
+                    "dependency-graph node and impact seed is built from the logical id "
+                    "in turn, so the document id is what carries a unit's identity "
+                    "across a revision everywhere below the resolver"
                 ),
                 "actualInputShape": (
                     "the site publishes revision B and revision C as two files whose "
                     "documentIds differ (fp200-maintenance-manual-rev-b / -rev-c)"
                 ),
-                "observedState": (
-                    "measured in runs[2]: with one id per revision no unit continues "
-                    "and the manual is reported replaced rather than amended"
-                ),
+                "observedState": _f2_observed_state(shared_id, split_id),
                 "refusal": None,
-                "evidence": "runs[1] versus runs[2]",
+                "evidence": (
+                    "runs[1] versus runs[2]; specifically their revision.diffChanges, "
+                    "revision.identityContinuity, plan.facetResolutions and "
+                    "equivalence.missing_from_selective"
+                ),
             },
         ],
         "findings": [
@@ -789,6 +925,55 @@ def deterministic() -> dict[str, Any]:
                 "notFixedHere": (
                     "CLAUDE.md: no threshold in this repository is calibrated and none "
                     "may be moved to make a run pass"
+                ),
+            },
+            {
+                "id": "F5",
+                "kind": "correctness",
+                "severity": "medium",
+                "title": (
+                    "a unit the resolver matched across a document-id change is "
+                    "recorded 'continued' with no predecessor and no relation: the "
+                    "record looks the predecessor up by the after-unit's own logical "
+                    "id, so a lineage that was established is not written down"
+                ),
+                "where": [
+                    "packages/cir-python/src/akc_cir/revision_compile.py:876-882 "
+                    "-- the continuity label is the else branch: an after-unit that is "
+                    "neither unresolved nor added is CONTINUED, found predecessor or "
+                    "not",
+                    "packages/cir-python/src/akc_cir/revision_compile.py:883 "
+                    "-- prior = before_by_id.get(logical_id), where logical_id is the "
+                    "AFTER unit's id and before_by_id is keyed by the BEFORE units' ids",
+                    "packages/cir-python/src/akc_cir/revision_compile.py:888-897 "
+                    "-- previousLogicalUnitId and SAME_AS_VERSION are emitted only when "
+                    "that lookup hits, so a cross-id match yields neither; the "
+                    "decision's own matched id, which the diff still carries, is not "
+                    "consulted",
+                ],
+                "measured": (
+                    "runs[2].revision.diffChanges shows the match was made -- three "
+                    "changes of the revision-C manual are attributed to revision-B "
+                    "logical ids and no unit_added is emitted -- while "
+                    "runs[2].revision.identityContinuity records 3 of 9 continued units "
+                    "with no previousLogicalUnitId. runs[1], where the ids are shared, "
+                    "records 9 of 9 with one. The two runs differ in the document id "
+                    "and in nothing else."
+                ),
+                "consequence": (
+                    "any consumer reading the unit records -- an earlier revision of "
+                    "this very receipt included -- cannot tell a matched continuation "
+                    "from an unmatched one, and 'continued: 9' reads as nine matches in "
+                    "both runs. That is how the first version of F2 came to state the "
+                    "opposite of its own data."
+                ),
+                "notFixedHere": (
+                    "akc_cir.revision_compile is not named in CLAUDE.md's Protected "
+                    "Core list, but it composes four modules that are (identity, "
+                    "semantic_diff, dependency, recompilation) and it belongs to no "
+                    "lane in this campaign. Carrying the decision's matched id into the "
+                    "record changes what every revision receipt says about lineage. "
+                    "Reported, not touched."
                 ),
             },
         ],
