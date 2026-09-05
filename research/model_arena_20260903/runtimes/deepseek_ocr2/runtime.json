@@ -1,0 +1,61 @@
+{
+  "model_key": "deepseek_ocr2",
+  "display_name": "DeepSeek-OCR-2",
+  "model_repo": "deepseek-ai/DeepSeek-OCR-2",
+  "model_revision": "aaa02f3811945a91062062994c5c4a3f4c0af2b0",
+  "official_runtime": "transformers",
+  "runtime_version": "4.46.3",
+  "base_image": "pytorch/pytorch:2.6.0-cuda11.8-cudnn9-devel@sha256:01fe58a7663aff1dc7407043abbc524a9a9d149933cf4f9e4edb59bf1285079e",
+  "gpu_min_vram_gb": 24,
+  "gpu_count_min": 1,
+  "gpu_pool_priority": [
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA A40"
+  ],
+  "max_concurrency_per_worker": 1,
+  "shard_size_hint": 25,
+  "per_page_timeout_seconds": 900,
+  "prompt_id": "deepseek_ocr2_grounding_markdown_v1",
+  "prompt_kind": "text",
+  "min_cuda_version": "11.8",
+  "inference_config": {
+    "attn_implementation": "flash_attention_2",
+    "base_size": 1024,
+    "crop_mode": true,
+    "dtype": "bfloat16",
+    "entrypoint": "AutoModel.infer(eval_mode=True)",
+    "eval_mode": true,
+    "image_size": 768,
+    "max_new_tokens": 8192,
+    "no_repeat_ngram_size": 35,
+    "temperature": 0.0
+  },
+  "weights_strategy": "baked",
+  "runtime_mode_allowed": [
+    "baked",
+    "bootstrap"
+  ],
+  "weights": {
+    "repo": "deepseek-ai/DeepSeek-OCR-2",
+    "revision": "aaa02f3811945a91062062994c5c4a3f4c0af2b0",
+    "largest_file": "model-00001-of-000001.safetensors",
+    "largest_file_sha256": "sha256:d8ff67a424ba6f4dd077885eb9d6a05d2537e76fe5491f0e2a9b712f8c8870fa"
+  },
+  "official_source_urls": [
+    "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2",
+    "https://huggingface.co/api/models/deepseek-ai/DeepSeek-OCR-2?blobs=true",
+    "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2/blob/aaa02f3811945a91062062994c5c4a3f4c0af2b0/README.md",
+    "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2/blob/aaa02f3811945a91062062994c5c4a3f4c0af2b0/modeling_deepseekocr2.py",
+    "https://github.com/deepseek-ai/DeepSeek-OCR-2/tree/2f3699ebbb96fa8af32212e8c170f2cc28730fad",
+    "https://github.com/deepseek-ai/DeepSeek-OCR-2/blob/2f3699ebbb96fa8af32212e8c170f2cc28730fad/requirements.txt",
+    "https://github.com/deepseek-ai/DeepSeek-OCR-2/blob/2f3699ebbb96fa8af32212e8c170f2cc28730fad/DeepSeek-OCR2-master/DeepSeek-OCR2-hf/run_dpsk_ocr2.py",
+    "https://github.com/deepseek-ai/DeepSeek-OCR-2/blob/2f3699ebbb96fa8af32212e8c170f2cc28730fad/DeepSeek-OCR2-master/DeepSeek-OCR2-vllm/config.py",
+    "https://github.com/deepseek-ai/DeepSeek-OCR-2/blob/2f3699ebbb96fa8af32212e8c170f2cc28730fad/DeepSeek-OCR2-master/DeepSeek-OCR2-vllm/run_dpsk_ocr2_eval_batch.py"
+  ],
+  "license": {
+    "id": "Apache-2.0",
+    "url": "https://huggingface.co/deepseek-ai/DeepSeek-OCR-2/blob/aaa02f3811945a91062062994c5c4a3f4c0af2b0/LICENSE.txt",
+    "status": "approved"
+  },
+  "notes": "Prompt sha256 sha256:00a105b332827a249e76115332aef75dfdf7578e026c25fef1a35662a81efa32 over the DeepSeek-OCR2-vllm/config.py PROMPT '<image>\\n<|grounding|>Convert the document to markdown.'; the HF model card prints the same prompt with a trailing space (sha256:a7e799e8c5c81073d707c01e12c7850d693ac14168a878ccfb3b4f70a6a49b58) and the adapter rejects that variant. Official alternative runtime: the vLLM OmniDocBench batch script (run_dpsk_ocr2_eval_batch.py) with vLLM V0 (VLLM_USE_V1=0), block_size 256, max_model_len 8192, gpu_memory_utilization 0.7, NoRepeatNGramLogitsProcessor(ngram_size=40, window_size=90, whitelist {128821, 128822}); it is not used because the arena worker serves one page per request and that script's only advantage is cross-page batching, and because its vendored model code would have to be copied into the image. max_new_tokens, no_repeat_ngram_size and temperature are fixed inside the checkpoint's remote code eval_mode branch, not passed by the adapter; they are recorded so the inference_config hash covers them. min_crops/max_crops (2/6) exist only in the vLLM config; the Transformers path derives the crop grid inside infer() from base_size/image_size/crop_mode. Base image ships Python 3.11 while the model card was tested on 3.12.9 - deviation recorded, the canary must confirm. Apache-2.0 is a copyright grant only: it is not patent freedom to operate. Canary must set max_concurrency_per_worker and shard_size_hint; 1 and 25 are conservative starting points from the 47.2 s/page historical 18-page measurement in masterplan section 5.1. Framework-floor audit (2026-09-03, after the GLM-OCR canary died on an unrecognised model_type): the required framework floor, what the pinned base image actually ships, the action taken and the evidence URLs are recorded in provenance.json under framework_floor_audit. bootstrap.sh asserts the pinned framework versions and that the framework recognises this checkpoint's architecture before anything starts."
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:pod-ledger:v1",
+  "title": "TAVONEL arena pod cost ledger entry",
+  "description": "Masterplan section 42 plus the ARENA_CONTRACT section 3.3 additions. A pod still running has null for the timestamps it has not reached.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "ts": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "ts_or_null": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "seconds": { "type": "number", "minimum": 0 },
+    "usd": { "type": "number", "minimum": 0 }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.pod-ledger.v1" },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro",
+        "infinity_parser2_flash", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription"
+      ]
+    },
+    "runtime_mode": { "enum": ["baked", "bootstrap", "subscription"] },
+    "pod_id": { "type": "string", "minLength": 1 },
+    "gpu_type": { "type": "string", "minLength": 1 },
+    "data_center_id": { "type": ["string", "null"] },
+    "listed_rate_usd_per_hour": {
+      "$ref": "#/$defs/usd",
+      "description": "Per-GPU rate. A pod with gpu_count > 1 pays this rate times gpu_count, not this rate total."
+    },
+    "gpu_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How many GPUs this pod was provisioned with (D57). Not required, so a row written before this field existed still validates; readers should treat an absent value as 1."
+    },
+    "price_snapshot_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+
+    "provisioned_at": { "$ref": "#/$defs/ts" },
+    "model_ready_at": { "$ref": "#/$defs/ts_or_null" },
+    "last_job_finished_at": { "$ref": "#/$defs/ts_or_null" },
+    "terminated_at": { "$ref": "#/$defs/ts_or_null" },
+
+    "billed_seconds": { "$ref": "#/$defs/seconds" },
+    "model_loading_seconds": { "$ref": "#/$defs/seconds" },
+    "useful_inference_seconds": { "$ref": "#/$defs/seconds" },
+    "retry_seconds": { "$ref": "#/$defs/seconds" },
+    "idle_seconds": { "$ref": "#/$defs/seconds" },
+
+    "estimated_provider_cost_usd": { "$ref": "#/$defs/usd" },
+    "useful_cost_usd": { "$ref": "#/$defs/usd" },
+    "wasted_cost_usd": { "$ref": "#/$defs/usd" }
+  },
+  "required": [
+    "billed_seconds", "campaign_id", "estimated_provider_cost_usd", "gpu_type",
+    "idle_seconds", "listed_rate_usd_per_hour", "model_key",
+    "model_loading_seconds", "pod_id", "price_snapshot_sha256",
+    "provisioned_at", "retry_seconds", "runtime_mode", "schema",
+    "useful_cost_usd", "useful_inference_seconds", "wasted_cost_usd"
+  ]
+}

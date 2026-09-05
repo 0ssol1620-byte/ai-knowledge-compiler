@@ -1,0 +1,197 @@
+{
+  "author": {
+    "avatar_url": "https://avatars.githubusercontent.com/u/21275753?v=4",
+    "events_url": "https://api.github.com/users/Bobholamovic/events{/privacy}",
+    "followers_url": "https://api.github.com/users/Bobholamovic/followers",
+    "following_url": "https://api.github.com/users/Bobholamovic/following{/other_user}",
+    "gists_url": "https://api.github.com/users/Bobholamovic/gists{/gist_id}",
+    "gravatar_id": "",
+    "html_url": "https://github.com/Bobholamovic",
+    "id": 21275753,
+    "login": "Bobholamovic",
+    "node_id": "MDQ6VXNlcjIxMjc1NzUz",
+    "organizations_url": "https://api.github.com/users/Bobholamovic/orgs",
+    "received_events_url": "https://api.github.com/users/Bobholamovic/received_events",
+    "repos_url": "https://api.github.com/users/Bobholamovic/repos",
+    "site_admin": false,
+    "starred_url": "https://api.github.com/users/Bobholamovic/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/Bobholamovic/subscriptions",
+    "type": "User",
+    "url": "https://api.github.com/users/Bobholamovic",
+    "user_view_type": "public"
+  },
+  "comments_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/commits/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/comments",
+  "commit": {
+    "author": {
+      "date": "2026-07-22T11:58:12Z",
+      "email": "mhlin425@whu.edu.cn",
+      "name": "Lin Manhui"
+    },
+    "comment_count": 0,
+    "committer": {
+      "date": "2026-07-22T11:58:12Z",
+      "email": "noreply@github.com",
+      "name": "GitHub"
+    },
+    "message": "Update README (#18272)",
+    "tree": {
+      "sha": "099081756acf84074cd40d77196592347e74105c",
+      "url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/git/trees/099081756acf84074cd40d77196592347e74105c"
+    },
+    "url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/git/commits/2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+    "verification": {
+      "payload": "tree 099081756acf84074cd40d77196592347e74105c\nparent 422ce151eef0864f39774e7d2e1c7bb9d90a413d\nauthor Lin Manhui <mhlin425@whu.edu.cn> 1784721492 +0900\ncommitter GitHub <noreply@github.com> 1784721492 +0800\n\nUpdate README (#18272)",
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqYLBUCRC1aQ7uu5UhlAAAM3YQAG8sFFKdLNwbXyylbG/8AU/1\nLir4UkXbUELkCyhgnpING61Y5lLWsMb3rjp6JxCPGrPE8c3qYU20h8MSBYZ/Semt\nMBLlJaekzrLi50QJuXQ0OfI9vEWdUZ29ZSkbZlTCkMBUn6Zo1Xa8KUKbuGVugNwb\nxjNDlwIZTlAD03yGvObl/HXKeOY41EhEtL+2NrUAcbs81moTGQbPi9f2nFWfNxXG\n8DzuGzh5byu6okYuepLUksAryUpMk4JwRhkR6GdOgNM0CZhAQL0xE/HTVtpOK+Mt\nUqjxo+L4bMqXtsXVBwwcDuw6ZVSJH3l5NFJmnNHT3eiJL/8W7gU4L76kDjcCAiwc\ntJ6TNlUFjWP0fIi6CTYUU2MZ5pBiUUPQXz3GcT8Lz0yTQ29ux3RshloonXwOWtnq\nh/ujmS5blaBfKYJeiVUZWfYF3BOBKjjgHadieY/lXvbG8aofeMZAF4s3Bxu2eAbU\npaPQwiAzYgTYssY17mVSsslQysWLh5VHU2Mg6W8EQUOXo00lHD/Y4SrM/7h17Hqc\nfQBeXu7GOSdNVIchY3ry0Iu46rB/LbHr+6NhHfHXQVkCFZW6SdZeU/ORW1VyA47q\n7jeQ7YadBkcFYalfWw0aQD8wg/ScGDU6/dS5pAKAvHseDFYUOBiqD+Rh+fTQ0gu+\nmgjS9xDu0AaO8rl+VjPO\n=numT\n-----END PGP SIGNATURE-----\n",
+      "verified": true,
+      "verified_at": "2026-07-22T11:58:12Z"
+    }
+  },
+  "committer": {
+    "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+    "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+    "followers_url": "https://api.github.com/users/web-flow/followers",
+    "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+    "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+    "gravatar_id": "",
+    "html_url": "https://github.com/web-flow",
+    "id": 19864447,
+    "login": "web-flow",
+    "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+    "organizations_url": "https://api.github.com/users/web-flow/orgs",
+    "received_events_url": "https://api.github.com/users/web-flow/received_events",
+    "repos_url": "https://api.github.com/users/web-flow/repos",
+    "site_admin": false,
+    "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+    "type": "User",
+    "url": "https://api.github.com/users/web-flow",
+    "user_view_type": "public"
+  },
+  "files": [
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/README.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/README.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "README.md",
+      "patch": "@@ -62,7 +62,14 @@ English | [\u7b80\u4f53\u4e2d\u6587](./readme/README_cn.md) | [\u7e41\u9ad4\u4e2d\u6587](./readme/README\n \n ## \ud83d\udce3 Recent updates\n \n-### \ud83d\udd25 2026.06.11: Release of PaddleOCR 3.7.0\n+### \ud83d\udd25 2026.07.22: HPD-Parsing is now available\n+- **HPD-Parsing** is a lightweight vision-language model designed for high-throughput document parsing. It adopts a hierarchical parallel decoding paradigm and Progressive Multi-Token Prediction (P-MTP), achieving a peak throughput of 4,752 tokens/s on public benchmarks while maintaining competitive parsing accuracy.\n+- HPD-Parsing supports both OpenAI-compatible serving and local inference through a customized vLLM runtime, making it suitable for document parsing scenarios with high demands on inference efficiency and deployment throughput.\n+- See the [HPD-Parsing usage tutorial](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html) for environment setup, serving, and local inference instructions.\n+\n+<details>\n+<summary><strong>2026.06.11: Release of PaddleOCR 3.7.0</strong></summary>\n+\n - PP-OCRv6 highlights:\n \n     - **Accuracy boost**: Medium tier achieves +4.6% detection and +5.1% recognition over PP-OCRv5_server, surpassing mainstream VLMs (Qwen3-VL-235B, GPT-5.5) with only 34.5M parameters.\n@@ -72,6 +79,8 @@ English | [\u7b80\u4f53\u4e2d\u6587](./readme/README_cn.md) | [\u7e41\u9ad4\u4e2d\u6587](./readme/README\n     - **Three tiers for all scenarios**: tiny (1.5M) / small (7.7M) / medium (34.5M) for edge, mobile, and server deployment.\n     - **Model availability**: All models are available on [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) and [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6).\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: Release of PaddleOCR 3.6.0</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/README.md",
+      "sha": "589a9eedf7c0037bbfbe2095d0160f93688adc72",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ar.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_ar.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_ar.md",
+      "patch": "@@ -63,7 +63,14 @@\n \n ## \ud83d\udce3 \u0622\u062e\u0631 \u0627\u0644\u062a\u062d\u062f\u064a\u062b\u0627\u062a\n \n-### \ud83d\udd25 2026.06.11: \u0625\u0635\u062f\u0627\u0631 PaddleOCR 3.7.0\n+### \ud83d\udd25 2026.07.22: \u0623\u0635\u0628\u062d HPD-Parsing \u0645\u062a\u0627\u062d\u0627\u064b\n+- **HPD-Parsing** \u0647\u0648 \u0646\u0645\u0648\u0630\u062c \u0631\u0624\u064a\u0629-\u0644\u063a\u0629 \u062e\u0641\u064a\u0641 \u0645\u0635\u0645\u0645 \u0644\u062a\u062d\u0644\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0639\u0627\u0644\u064a \u0627\u0644\u0625\u0646\u062a\u0627\u062c\u064a\u0629. \u064a\u0639\u062a\u0645\u062f \u0639\u0644\u0649 \u0646\u0645\u0648\u0630\u062c \u0641\u0643 \u062a\u0631\u0645\u064a\u0632 \u0647\u0631\u0645\u064a \u0645\u062a\u0648\u0627\u0632\u064a \u0648 Progressive Multi-Token Prediction (P-MTP)\u060c \u0648\u064a\u062d\u0642\u0642 \u0630\u0631\u0648\u0629 \u0625\u0646\u062a\u0627\u062c\u064a\u0629 \u062a\u0628\u0644\u063a 4,752 tokens/s \u0639\u0644\u0649 \u0627\u0644\u0645\u0639\u0627\u064a\u064a\u0631 \u0627\u0644\u0645\u0631\u062c\u0639\u064a\u0629 \u0627\u0644\u0639\u0627\u0645\u0629 \u0645\u0639 \u0627\u0644\u062d\u0641\u0627\u0638 \u0639\u0644\u0649 \u062f\u0642\u0629 \u062a\u062d\u0644\u064a\u0644 \u062a\u0646\u0627\u0641\u0633\u064a\u0629.\n+- \u064a\u062f\u0639\u0645 HPD-Parsing \u0627\u0644\u0627\u0633\u062a\u062f\u0644\u0627\u0644 \u0627\u0644\u062e\u062f\u0645\u064a \u0627\u0644\u0645\u062a\u0648\u0627\u0641\u0642 \u0645\u0639 OpenAI \u0648\u0627\u0644\u0627\u0633\u062a\u062f\u0644\u0627\u0644 \u0627\u0644\u0645\u062d\u0644\u064a \u0639\u0628\u0631 runtime \u0645\u062e\u0635\u0635 \u0645\u0646 vLLM\u060c \u0645\u0645\u0627 \u064a\u062c\u0639\u0644\u0647 \u0645\u0646\u0627\u0633\u0628\u0627\u064b \u0644\u0633\u064a\u0646\u0627\u0631\u064a\u0648\u0647\u0627\u062a \u062a\u062d\u0644\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0630\u0627\u062a \u0627\u0644\u0645\u062a\u0637\u0644\u0628\u0627\u062a \u0627\u0644\u0639\u0627\u0644\u064a\u0629 \u0644\u0643\u0641\u0627\u0621\u0629 \u0627\u0644\u0627\u0633\u062a\u062f\u0644\u0627\u0644 \u0648\u0625\u0646\u062a\u0627\u062c\u064a\u0629 \u0627\u0644\u0646\u0634\u0631.\n+- \u0631\u0627\u062c\u0639 [\u062f\u0644\u064a\u0644 \u0627\u0633\u062a\u062e\u062f\u0627\u0645 HPD-Parsing](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html) \u0644\u0645\u0639\u0631\u0641\u0629 \u0625\u0639\u062f\u0627\u062f \u0627\u0644\u0628\u064a\u0626\u0629 \u0648\u0627\u0644\u0627\u0633\u062a\u062f\u0644\u0627\u0644 \u0627\u0644\u062e\u062f\u0645\u064a \u0648\u0627\u0644\u0627\u0633\u062a\u062f\u0644\u0627\u0644 \u0627\u0644\u0645\u062d\u0644\u064a.\n+\n+<details>\n+<summary><strong>2026.06.11: \u0625\u0635\u062f\u0627\u0631 PaddleOCR 3.7.0</strong></summary>\n+\n - \u0623\u0628\u0631\u0632 \u0645\u0632\u0627\u064a\u0627 PP-OCRv6:\n \n     - **\u062a\u062d\u0633\u064a\u0646 \u0627\u0644\u062f\u0642\u0629**: \u064a\u062d\u0642\u0642 \u0627\u0644\u0637\u0631\u0627\u0632 medium \u062a\u062d\u0633\u064a\u0646\u0627\u064b +4.6% \u0641\u064a \u0627\u0644\u0643\u0634\u0641 \u0648+5.1% \u0641\u064a \u0627\u0644\u062a\u0639\u0631\u0641 \u0645\u0642\u0627\u0631\u0646\u0629 \u0628\u0640 PP-OCRv5_server\u060c \u0645\u062a\u0641\u0648\u0642\u0627\u064b \u0639\u0644\u0649 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0644\u063a\u0648\u064a\u0629 \u0627\u0644\u0628\u0635\u0631\u064a\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629 \u0628\u0640 34.5M \u0645\u0639\u0644\u0645\u0629 \u0641\u0642\u0637.\n@@ -73,6 +80,8 @@\n     - **\u062b\u0644\u0627\u062b\u0629 \u0645\u0633\u062a\u0648\u064a\u0627\u062a \u0644\u062c\u0645\u064a\u0639 \u0627\u0644\u0633\u064a\u0646\u0627\u0631\u064a\u0648\u0647\u0627\u062a**: tiny (1.5M) / small (7.7M) / medium (34.5M) \u0644\u0644\u0623\u062c\u0647\u0632\u0629 \u0627\u0644\u0637\u0631\u0641\u064a\u0629 \u0648\u0627\u0644\u0645\u062d\u0645\u0648\u0644\u0629 \u0648\u0627\u0644\u062e\u0648\u0627\u062f\u0645.\n     - **\u062a\u0648\u0641\u0631 \u0627\u0644\u0646\u0645\u0627\u0630\u062c**: \u062c\u0645\u064a\u0639 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0645\u062a\u0627\u062d\u0629 \u0639\u0644\u0649 [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) \u0648 [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6).\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: \u0625\u0635\u062f\u0627\u0631 PaddleOCR 3.6.0</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ar.md",
+      "sha": "08076dff54da488a0fc11a779d83ed7d90d00c79",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_cn.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_cn.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_cn.md",
+      "patch": "@@ -61,7 +61,14 @@\n \n ## \ud83d\udce3 \u6700\u65b0\u52a8\u6001\n \n-### \ud83d\udd25 2026.06.11: PaddleOCR 3.7.0 \u53d1\u5e03\n+### \ud83d\udd25 2026.07.22: HPD-Parsing \u65b0\u589e\u4e0a\u7ebf\n+- **HPD-Parsing** \u662f\u9762\u5411\u9ad8\u541e\u5410\u6587\u6863\u89e3\u6790\u7684\u8f7b\u91cf\u7ea7\u89c6\u89c9\u8bed\u8a00\u6a21\u578b\u3002\u5b83\u91c7\u7528\u5c42\u7ea7\u5e76\u884c\u89e3\u7801\u8303\u5f0f\u548c\u6e10\u8fdb\u5f0f\u591a token \u9884\u6d4b\uff08P-MTP\uff09\uff0c\u5728\u516c\u5f00\u57fa\u51c6\u4e0a\u8fbe\u5230 4,752 tokens/s \u7684\u5cf0\u503c\u541e\u5410\uff0c\u540c\u65f6\u4fdd\u6301\u6709\u7ade\u4e89\u529b\u7684\u89e3\u6790\u7cbe\u5ea6\u3002\n+- HPD-Parsing \u57fa\u4e8e\u5b9a\u5236\u7248 vLLM \u8fd0\u884c\u65f6\uff0c\u652f\u6301 OpenAI \u517c\u5bb9\u670d\u52a1\u5316\u8c03\u7528\u548c\u672c\u5730\u63a8\u7406\uff0c\u9002\u7528\u4e8e\u5bf9\u63a8\u7406\u6548\u7387\u548c\u90e8\u7f72\u541e\u5410\u8981\u6c42\u8f83\u9ad8\u7684\u6587\u6863\u89e3\u6790\u573a\u666f\u3002\n+- \u67e5\u770b [HPD-Parsing \u4f7f\u7528\u6559\u7a0b](https://www.paddleocr.ai/latest/version3.x/pipeline_usage/HPD-Parsing.html)\uff0c\u4e86\u89e3\u73af\u5883\u51c6\u5907\u3001\u670d\u52a1\u5316\u90e8\u7f72\u4e0e\u672c\u5730\u63a8\u7406\u8bf4\u660e\u3002\n+\n+<details>\n+<summary><strong>2026.06.11: PaddleOCR 3.7.0 \u53d1\u5e03</strong></summary>\n+\n - PP-OCRv6 \u6838\u5fc3\u4eae\u70b9\u5982\u4e0b\uff1a\n \n     - **\u7cbe\u5ea6\u5168\u9762\u63d0\u5347**\uff1amedium \u6863\u76f8\u6bd4 PP-OCRv5_server \u68c0\u6d4b\u7cbe\u5ea6\u63d0\u5347 4.6%\u3001\u8bc6\u522b\u7cbe\u5ea6\u63d0\u5347 5.1%\uff0c\u4ee5\u4ec5 34.5M \u53c2\u6570\u8d85\u8d8a Qwen3-VL-235B\u3001GPT-5.5 \u7b49\u4e3b\u6d41\u89c6\u89c9\u8bed\u8a00\u5927\u6a21\u578b\u3002\n@@ -71,6 +78,8 @@\n     - **\u4e09\u6863\u6a21\u578b\u8986\u76d6\u5168\u573a\u666f**\uff1atiny\uff081.5M\uff09/ small\uff087.7M\uff09/ medium\uff0834.5M\uff09\u5206\u522b\u9762\u5411\u7aef\u4fa7/\u79fb\u52a8\u7aef/\u670d\u52a1\u7aef\u90e8\u7f72\u3002\n     - **\u6a21\u578b\u83b7\u53d6**\uff1a\u6240\u6709\u6a21\u578b\u5747\u53ef\u901a\u8fc7 [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) \u548c [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6) \u83b7\u53d6\u3002\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: PaddleOCR 3.6.0 \u53d1\u5e03</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_cn.md",
+      "sha": "0c99b17eae5505880958a3291de787720f1c9bea",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_es.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_es.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_es.md",
+      "patch": "@@ -61,7 +61,14 @@\n \n ## \ud83d\udce3 Actualizaciones recientes\n \n-### \ud83d\udd25 2026.06.11: Lanzamiento de PaddleOCR 3.7.0\n+### \ud83d\udd25 2026.07.22: HPD-Parsing ya est\u00e1 disponible\n+- **HPD-Parsing** es un modelo ligero de visi\u00f3n-lenguaje dise\u00f1ado para el an\u00e1lisis de documentos de alto rendimiento. Adopta un paradigma de decodificaci\u00f3n paralela jer\u00e1rquica y Progressive Multi-Token Prediction (P-MTP), alcanzando un rendimiento m\u00e1ximo de 4,752 tokens/s en benchmarks p\u00fablicos mientras mantiene una precisi\u00f3n de an\u00e1lisis competitiva.\n+- HPD-Parsing admite serving compatible con OpenAI e inferencia local mediante un runtime vLLM personalizado, por lo que es adecuado para escenarios de an\u00e1lisis de documentos con altas exigencias de eficiencia de inferencia y rendimiento de despliegue.\n+- Consulta el [tutorial de uso de HPD-Parsing](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html) para la preparaci\u00f3n del entorno, el serving y la inferencia local.\n+\n+<details>\n+<summary><strong>2026.06.11: Lanzamiento de PaddleOCR 3.7.0</strong></summary>\n+\n - Aspectos destacados de PP-OCRv6:\n \n     - **Mejora de precisi\u00f3n**: El nivel medium logra +4.6% en detecci\u00f3n y +5.1% en reconocimiento sobre PP-OCRv5_server, superando a los principales VLMs (Qwen3-VL-235B, GPT-5.5) con solo 34.5M par\u00e1metros.\n@@ -71,6 +78,8 @@\n     - **Tres niveles para todos los escenarios**: tiny (1.5M) / small (7.7M) / medium (34.5M) para despliegue en edge, m\u00f3vil y servidor.\n     - **Disponibilidad de modelos**: Todos los modelos est\u00e1n disponibles en [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) y [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6).\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: Lanzamiento de PaddleOCR 3.6.0</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_es.md",
+      "sha": "f185409bb707464e1a15716a4e0cd2d213ba8fc9",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_fr.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_fr.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_fr.md",
+      "patch": "@@ -61,7 +61,14 @@\n \n ## \ud83d\udce3 Mises \u00e0 jour r\u00e9centes\n \n-### \ud83d\udd25 2026.06.11 : Publication de PaddleOCR 3.7.0\n+### \ud83d\udd25 2026.07.22 : HPD-Parsing est disponible\n+- **HPD-Parsing** est un mod\u00e8le vision-langage l\u00e9ger con\u00e7u pour l'analyse de documents \u00e0 haut d\u00e9bit. Il adopte un d\u00e9codage parall\u00e8le hi\u00e9rarchique et Progressive Multi-Token Prediction (P-MTP), atteignant un d\u00e9bit maximal de 4,752 tokens/s sur des benchmarks publics tout en conservant une pr\u00e9cision d'analyse comp\u00e9titive.\n+- HPD-Parsing prend en charge le serving compatible OpenAI et l'inf\u00e9rence locale via un runtime vLLM personnalis\u00e9, ce qui le rend adapt\u00e9 aux sc\u00e9narios d'analyse de documents exigeants en efficacit\u00e9 d'inf\u00e9rence et en d\u00e9bit de d\u00e9ploiement.\n+- Consultez le [tutoriel d'utilisation de HPD-Parsing](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html) pour la pr\u00e9paration de l'environnement, le serving et l'inf\u00e9rence locale.\n+\n+<details>\n+<summary><strong>2026.06.11 : Publication de PaddleOCR 3.7.0</strong></summary>\n+\n - Points forts de PP-OCRv6 :\n \n     - **Am\u00e9lioration de la pr\u00e9cision** : Le niveau medium atteint +4.6% en d\u00e9tection et +5.1% en reconnaissance par rapport \u00e0 PP-OCRv5_server, surpassant les principaux VLMs (Qwen3-VL-235B, GPT-5.5) avec seulement 34.5M param\u00e8tres.\n@@ -71,6 +78,8 @@\n     - **Trois niveaux pour tous les sc\u00e9narios** : tiny (1.5M) / small (7.7M) / medium (34.5M) pour le d\u00e9ploiement edge, mobile et serveur.\n     - **Disponibilit\u00e9 des mod\u00e8les** : Tous les mod\u00e8les sont disponibles sur [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) et [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6).\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28 : Publication de PaddleOCR 3.6.0</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_fr.md",
+      "sha": "2ecc12cf49c60fba9220112ca7f89ad27f7ad9d7",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ja.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_ja.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_ja.md",
+      "patch": "@@ -62,7 +62,14 @@\n \n ## \ud83d\udce3 \u6700\u65b0\u60c5\u5831\n \n-### \ud83d\udd25 2026.06.11: PaddleOCR 3.7.0\u30ea\u30ea\u30fc\u30b9\n+### \ud83d\udd25 2026.07.22: HPD-Parsing \u304c\u5229\u7528\u53ef\u80fd\u306b\u306a\u308a\u307e\u3057\u305f\n+- **HPD-Parsing** \u306f\u3001\u9ad8\u30b9\u30eb\u30fc\u30d7\u30c3\u30c8\u306a\u6587\u66f8\u89e3\u6790\u5411\u3051\u306b\u8a2d\u8a08\u3055\u308c\u305f\u8efd\u91cf\u306a\u8996\u899a\u8a00\u8a9e\u30e2\u30c7\u30eb\u3067\u3059\u3002\u968e\u5c64\u578b\u4e26\u5217\u30c7\u30b3\u30fc\u30c9\u3068 Progressive Multi-Token Prediction\uff08P-MTP\uff09\u3092\u63a1\u7528\u3057\u3001\u7af6\u4e89\u529b\u306e\u3042\u308b\u89e3\u6790\u7cbe\u5ea6\u3092\u7dad\u6301\u3057\u306a\u304c\u3089\u3001\u516c\u958b\u30d9\u30f3\u30c1\u30de\u30fc\u30af\u3067\u6700\u5927 4,752 tokens/s \u306e\u30b9\u30eb\u30fc\u30d7\u30c3\u30c8\u3092\u9054\u6210\u3057\u307e\u3059\u3002\n+- HPD-Parsing \u306f\u30ab\u30b9\u30bf\u30e0 vLLM \u30e9\u30f3\u30bf\u30a4\u30e0\u3092\u901a\u3058\u3066\u3001OpenAI \u4e92\u63db\u306e\u30b5\u30fc\u30d3\u30f3\u30b0\u3068\u30ed\u30fc\u30ab\u30eb\u63a8\u8ad6\u306e\u4e21\u65b9\u3092\u30b5\u30dd\u30fc\u30c8\u3057\u3001\u63a8\u8ad6\u52b9\u7387\u3068\u30c7\u30d7\u30ed\u30a4\u30b9\u30eb\u30fc\u30d7\u30c3\u30c8\u304c\u91cd\u8996\u3055\u308c\u308b\u6587\u66f8\u89e3\u6790\u30b7\u30ca\u30ea\u30aa\u306b\u9069\u3057\u3066\u3044\u307e\u3059\u3002\n+- \u74b0\u5883\u69cb\u7bc9\u3001\u30b5\u30fc\u30d3\u30f3\u30b0\u3001\u30ed\u30fc\u30ab\u30eb\u63a8\u8ad6\u306e\u624b\u9806\u306f [HPD-Parsing \u4f7f\u7528\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html) \u3092\u53c2\u7167\u3057\u3066\u304f\u3060\u3055\u3044\u3002\n+\n+<details>\n+<summary><strong>2026.06.11: PaddleOCR 3.7.0\u30ea\u30ea\u30fc\u30b9</strong></summary>\n+\n - PP-OCRv6\u306e\u4e3b\u306a\u7279\u5fb4\uff1a\n \n     - **\u7cbe\u5ea6\u5411\u4e0a**: medium\u30c6\u30a3\u30a2\u306fPP-OCRv5_server\u3068\u6bd4\u8f03\u3057\u3066\u691c\u51fa+4.6%\u3001\u8a8d\u8b58+5.1%\u3092\u9054\u6210\u300134.5M\u30d1\u30e9\u30e1\u30fc\u30bf\u306e\u307f\u3067\u4e3b\u8981VLM\uff08Qwen3-VL-235B\u3001GPT-5.5\uff09\u3092\u4e0a\u56de\u308b\u3002\n@@ -72,6 +79,8 @@\n     - **\u5168\u30b7\u30ca\u30ea\u30aa\u5bfe\u5fdc3\u30c6\u30a3\u30a2**: tiny\uff081.5M\uff09/ small\uff087.7M\uff09/ medium\uff0834.5M\uff09\u3067\u30a8\u30c3\u30b8\u304b\u3089\u30b5\u30fc\u30d0\u30fc\u307e\u3067\u5bfe\u5fdc\u3002\n     - **\u30e2\u30c7\u30eb\u5165\u624b**: \u5168\u30e2\u30c7\u30eb\u306f [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) \u304a\u3088\u3073 [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6) \u3067\u516c\u958b\u4e2d\u3002\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: PaddleOCR 3.6.0\u30ea\u30ea\u30fc\u30b9</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ja.md",
+      "sha": "6ff478cb011d766874a713da9c956ce00959f632",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ko.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_ko.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_ko.md",
+      "patch": "@@ -62,7 +62,14 @@\n \n ## \ud83d\udce3 \ucd5c\uadfc \uc5c5\ub370\uc774\ud2b8\n \n-### \ud83d\udd25 2026.06.11: PaddleOCR 3.7.0 \ucd9c\uc2dc\n+### \ud83d\udd25 2026.07.22: HPD-Parsing \uc0ac\uc6a9 \uac00\ub2a5\n+- **HPD-Parsing** \uc740 \ub192\uc740 \ucc98\ub9ac\ub7c9\uc758 \ubb38\uc11c \ubd84\uc11d\uc744 \uc704\ud574 \uc124\uacc4\ub41c \uacbd\ub7c9 \ube44\uc804-\uc5b8\uc5b4 \ubaa8\ub378\uc785\ub2c8\ub2e4. \uacc4\uce35\uc801 \ubcd1\ub82c \ub514\ucf54\ub529 \ud328\ub7ec\ub2e4\uc784\uacfc Progressive Multi-Token Prediction(P-MTP)\uc744 \uc801\uc6a9\ud558\uc5ec, \uacbd\uc7c1\ub825 \uc788\ub294 \ubd84\uc11d \uc815\ud655\ub3c4\ub97c \uc720\uc9c0\ud558\uba74\uc11c \uacf5\uac1c \ubca4\uce58\ub9c8\ud06c\uc5d0\uc11c \ucd5c\ub300 4,752 tokens/s \ucc98\ub9ac\ub7c9\uc744 \ub2ec\uc131\ud569\ub2c8\ub2e4.\n+- HPD-Parsing\uc740 \ub9de\ucda4\ud615 vLLM \ub7f0\ud0c0\uc784\uc744 \ud1b5\ud574 OpenAI \ud638\ud658 \uc11c\ube59\uacfc \ub85c\uceec \ucd94\ub860\uc744 \ubaa8\ub450 \uc9c0\uc6d0\ud558\uba70, \ucd94\ub860 \ud6a8\uc728\uacfc \ubc30\ud3ec \ucc98\ub9ac\ub7c9 \uc694\uad6c\uac00 \ub192\uc740 \ubb38\uc11c \ubd84\uc11d \uc2dc\ub098\ub9ac\uc624\uc5d0 \uc801\ud569\ud569\ub2c8\ub2e4.\n+- \ud658\uacbd \uc124\uc815, \uc11c\ube59, \ub85c\uceec \ucd94\ub860 \ubc29\ubc95\uc740 [HPD-Parsing \uc0ac\uc6a9 \ud29c\ud1a0\ub9ac\uc5bc](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html)\uc744 \ucc38\uace0\ud558\uc138\uc694.\n+\n+<details>\n+<summary><strong>2026.06.11: PaddleOCR 3.7.0 \ucd9c\uc2dc</strong></summary>\n+\n - PP-OCRv6 \uc8fc\uc694 \ud2b9\uc9d5:\n \n     - **\uc815\ud655\ub3c4 \ud5a5\uc0c1**: medium \ud2f0\uc5b4\uac00 PP-OCRv5_server \ub300\ube44 \uac80\ucd9c +4.6%, \uc778\uc2dd +5.1% \ub2ec\uc131, 34.5M \ud30c\ub77c\ubbf8\ud130\ub9cc\uc73c\ub85c \uc8fc\ub958 VLM(Qwen3-VL-235B, GPT-5.5)\uc744 \ub2a5\uac00.\n@@ -72,6 +79,8 @@\n     - **\uc804 \uc2dc\ub098\ub9ac\uc624 3\ub2e8\uacc4 \ubaa8\ub378**: tiny(1.5M) / small(7.7M) / medium(34.5M)\uc73c\ub85c \uc5e3\uc9c0\ubd80\ud130 \uc11c\ubc84\uae4c\uc9c0 \ub300\uc751.\n     - **\ubaa8\ub378 \ub2e4\uc6b4\ub85c\ub4dc**: \ubaa8\ub4e0 \ubaa8\ub378\uc740 [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) \ubc0f [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6)\uc5d0\uc11c \uc81c\uacf5\ub429\ub2c8\ub2e4.\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: PaddleOCR 3.6.0 \ucd9c\uc2dc</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ko.md",
+      "sha": "26ce4c62b2cda83a80b67c18375ac4c2700db5c1",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ru.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_ru.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_ru.md",
+      "patch": "@@ -61,7 +61,14 @@\n \n ## \ud83d\udce3 \u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f\n \n-### \ud83d\udd25 2026.06.11: \u0412\u044b\u043f\u0443\u0441\u043a PaddleOCR 3.7.0\n+### \ud83d\udd25 2026.07.22: HPD-Parsing \u0442\u0435\u043f\u0435\u0440\u044c \u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d\n+- **HPD-Parsing** \u2014 \u044d\u0442\u043e \u043b\u0435\u0433\u043a\u0430\u044f vision-language \u043c\u043e\u0434\u0435\u043b\u044c \u0434\u043b\u044f \u0432\u044b\u0441\u043e\u043a\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0433\u043e \u0440\u0430\u0437\u0431\u043e\u0440\u0430 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432. \u041e\u043d\u0430 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442 \u0438\u0435\u0440\u0430\u0440\u0445\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u043f\u0430\u0440\u0430\u043b\u043b\u0435\u043b\u044c\u043d\u043e\u0435 \u0434\u0435\u043a\u043e\u0434\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 \u0438 Progressive Multi-Token Prediction (P-MTP), \u0434\u043e\u0441\u0442\u0438\u0433\u0430\u044f \u043f\u0438\u043a\u043e\u0432\u043e\u0433\u043e throughput 4,752 tokens/s \u043d\u0430 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u044b\u0445 \u0431\u0435\u043d\u0447\u043c\u0430\u0440\u043a\u0430\u0445 \u043f\u0440\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0438 \u043a\u043e\u043d\u043a\u0443\u0440\u0435\u043d\u0442\u043d\u043e\u0439 \u0442\u043e\u0447\u043d\u043e\u0441\u0442\u0438 \u0440\u0430\u0437\u0431\u043e\u0440\u0430.\n+- HPD-Parsing \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 OpenAI-\u0441\u043e\u0432\u043c\u0435\u0441\u0442\u0438\u043c\u044b\u0439 serving \u0438 \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u043d\u0444\u0435\u0440\u0435\u043d\u0441 \u0447\u0435\u0440\u0435\u0437 \u043a\u0430\u0441\u0442\u043e\u043c\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439 runtime vLLM, \u0447\u0442\u043e \u0434\u0435\u043b\u0430\u0435\u0442 \u0435\u0433\u043e \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0449\u0438\u043c \u0434\u043b\u044f \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0435\u0432 \u0440\u0430\u0437\u0431\u043e\u0440\u0430 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432 \u0441 \u0432\u044b\u0441\u043e\u043a\u0438\u043c\u0438 \u0442\u0440\u0435\u0431\u043e\u0432\u0430\u043d\u0438\u044f\u043c\u0438 \u043a \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438 \u0438\u043d\u0444\u0435\u0440\u0435\u043d\u0441\u0430 \u0438 throughput \u0440\u0430\u0437\u0432\u0435\u0440\u0442\u044b\u0432\u0430\u043d\u0438\u044f.\n+- \u0421\u043c. [\u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u043f\u043e \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u044e HPD-Parsing](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/HPD-Parsing.html) \u0434\u043b\u044f \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f, serving \u0438 \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u0438\u043d\u0444\u0435\u0440\u0435\u043d\u0441\u0430.\n+\n+<details>\n+<summary><strong>2026.06.11: \u0412\u044b\u043f\u0443\u0441\u043a PaddleOCR 3.7.0</strong></summary>\n+\n - \u041a\u043b\u044e\u0447\u0435\u0432\u044b\u0435 \u043e\u0441\u043e\u0431\u0435\u043d\u043d\u043e\u0441\u0442\u0438 PP-OCRv6:\n \n     - **\u041f\u043e\u0432\u044b\u0448\u0435\u043d\u0438\u0435 \u0442\u043e\u0447\u043d\u043e\u0441\u0442\u0438**: \u0443\u0440\u043e\u0432\u0435\u043d\u044c medium \u0434\u043e\u0441\u0442\u0438\u0433\u0430\u0435\u0442 +4.6% \u0434\u0435\u0442\u0435\u043a\u0446\u0438\u0438 \u0438 +5.1% \u0440\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u0432\u0430\u043d\u0438\u044f \u043f\u043e \u0441\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u044e \u0441 PP-OCRv5_server, \u043f\u0440\u0435\u0432\u043e\u0441\u0445\u043e\u0434\u044f \u0432\u0435\u0434\u0443\u0449\u0438\u0435 VLM (Qwen3-VL-235B, GPT-5.5) \u0441 \u0432\u0441\u0435\u0433\u043e 34.5M \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430\u043c\u0438.\n@@ -71,6 +78,8 @@\n     - **\u0422\u0440\u0438 \u0443\u0440\u043e\u0432\u043d\u044f \u0434\u043b\u044f \u0432\u0441\u0435\u0445 \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0435\u0432**: tiny (1.5M) / small (7.7M) / medium (34.5M) \u0434\u043b\u044f \u043f\u0435\u0440\u0438\u0444\u0435\u0440\u0438\u0438, \u043c\u043e\u0431\u0438\u043b\u044c\u043d\u044b\u0445 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432 \u0438 \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u0432.\n     - **\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0441\u0442\u044c \u043c\u043e\u0434\u0435\u043b\u0435\u0439**: \u0412\u0441\u0435 \u043c\u043e\u0434\u0435\u043b\u0438 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b \u043d\u0430 [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) \u0438 [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6).\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: \u0412\u044b\u043f\u0443\u0441\u043a PaddleOCR 3.6.0</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_ru.md",
+      "sha": "2280e19462d1f1f6233fe818810d0f123f43aaf7",
+      "status": "modified"
+    },
+    {
+      "additions": 10,
+      "blob_url": "https://github.com/PaddlePaddle/PaddleOCR/blob/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_tcn.md",
+      "changes": 11,
+      "contents_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/contents/readme%2FREADME_tcn.md?ref=2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+      "deletions": 1,
+      "filename": "readme/README_tcn.md",
+      "patch": "@@ -60,7 +60,14 @@\n \n ## \ud83d\udce3 \u6700\u65b0\u52d5\u614b\n \n-### \ud83d\udd25 2026.06.11: PaddleOCR 3.7.0 \u767c\u5e03\n+### \ud83d\udd25 2026.07.22: HPD-Parsing \u65b0\u589e\u4e0a\u7dda\n+- **HPD-Parsing** \u662f\u9762\u5411\u9ad8\u541e\u5410\u6587\u6a94\u89e3\u6790\u7684\u8f15\u91cf\u7d1a\u8996\u89ba\u8a9e\u8a00\u6a21\u578b\u3002\u5b83\u63a1\u7528\u5c64\u7d1a\u4e26\u884c\u89e3\u78bc\u7bc4\u5f0f\u548c\u6f38\u9032\u5f0f\u591a token \u9810\u6e2c\uff08P-MTP\uff09\uff0c\u5728\u516c\u958b\u57fa\u6e96\u4e0a\u9054\u5230 4,752 tokens/s \u7684\u5cf0\u503c\u541e\u5410\uff0c\u540c\u6642\u4fdd\u6301\u5177\u7af6\u722d\u529b\u7684\u89e3\u6790\u7cbe\u5ea6\u3002\n+- HPD-Parsing \u57fa\u65bc\u5b9a\u5236\u7248 vLLM \u904b\u884c\u6642\uff0c\u652f\u6301 OpenAI \u517c\u5bb9\u670d\u52d9\u5316\u8abf\u7528\u548c\u672c\u5730\u63a8\u7406\uff0c\u9069\u7528\u65bc\u5c0d\u63a8\u7406\u6548\u7387\u548c\u90e8\u7f72\u541e\u5410\u8981\u6c42\u8f03\u9ad8\u7684\u6587\u6a94\u89e3\u6790\u5834\u666f\u3002\n+- \u67e5\u770b [HPD-Parsing \u4f7f\u7528\u6559\u7a0b](https://www.paddleocr.ai/latest/version3.x/pipeline_usage/HPD-Parsing.html)\uff0c\u4e86\u89e3\u74b0\u5883\u6e96\u5099\u3001\u670d\u52d9\u5316\u90e8\u7f72\u8207\u672c\u5730\u63a8\u7406\u8aaa\u660e\u3002\n+\n+<details>\n+<summary><strong>2026.06.11: PaddleOCR 3.7.0 \u767c\u5e03</strong></summary>\n+\n - PP-OCRv6 \u6838\u5fc3\u4eae\u9ede\u5982\u4e0b\uff1a\n \n     - **\u7cbe\u5ea6\u5168\u9762\u63d0\u5347**\uff1amedium \u6a94\u76f8\u6bd4 PP-OCRv5_server \u6aa2\u6e2c\u7cbe\u5ea6\u63d0\u5347 4.6%\u3001\u8b58\u5225\u7cbe\u5ea6\u63d0\u5347 5.1%\uff0c\u4ee5\u50c5 34.5M \u53c3\u6578\u8d85\u8d8a Qwen3-VL-235B\u3001GPT-5.5 \u7b49\u4e3b\u6d41\u8996\u89ba\u8a9e\u8a00\u5927\u6a21\u578b\u3002\n@@ -70,6 +77,8 @@\n     - **\u4e09\u6a94\u6a21\u578b\u8986\u84cb\u5168\u5834\u666f**\uff1atiny\uff081.5M\uff09/ small\uff087.7M\uff09/ medium\uff0834.5M\uff09\u5206\u5225\u9762\u5411\u7aef\u5074/\u79fb\u52d5\u7aef/\u670d\u52d9\u7aef\u90e8\u7f72\u3002\n     - **\u6a21\u578b\u53d6\u5f97**\uff1a\u6240\u6709\u6a21\u578b\u5747\u53ef\u900f\u904e [HuggingFace](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) \u548c [ModelScope](https://www.modelscope.cn/collections/PaddlePaddle/PP-OCRv6) \u53d6\u5f97\u3002\n \n+</details>\n+\n <details>\n <summary><strong>2026.05.28: PaddleOCR 3.6.0 \u767c\u5e03</strong></summary>\n ",
+      "raw_url": "https://github.com/PaddlePaddle/PaddleOCR/raw/2661c7c0ef5c613e8f93c6e93b2e052399f0f854/readme%2FREADME_tcn.md",
+      "sha": "a4ed62ed686bd8cd0cae257651d330508e7803cf",
+      "status": "modified"
+    }
+  ],
+  "html_url": "https://github.com/PaddlePaddle/PaddleOCR/commit/2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+  "node_id": "C_kwDOD6JSOtoAKDI2NjFjN2MwZWY1YzYxM2U4ZjkzYzZlOTNiMmUwNTIzOTlmMGY4NTQ",
+  "parents": [
+    {
+      "html_url": "https://github.com/PaddlePaddle/PaddleOCR/commit/422ce151eef0864f39774e7d2e1c7bb9d90a413d",
+      "sha": "422ce151eef0864f39774e7d2e1c7bb9d90a413d",
+      "url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/commits/422ce151eef0864f39774e7d2e1c7bb9d90a413d"
+    }
+  ],
+  "sha": "2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+  "stats": {
+    "additions": 90,
+    "deletions": 9,
+    "total": 99
+  },
+  "url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/commits/2661c7c0ef5c613e8f93c6e93b2e052399f0f854"
+}

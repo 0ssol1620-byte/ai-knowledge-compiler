@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:build:build-plan:v1",
+  "title": "TAVONEL arena runtime-image build plan",
+  "description": "build/build_plan.json (lane F). One entry per GPU model_key (arena.constants.GPU_MODEL_KEYS -- everything except opus5_subscription, which is not a GPU runtime). Dry-run planning data only; nothing here authorizes a paid build.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr"
+      ]
+    },
+    "sha256_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "gb": { "type": ["number", "null"], "minimum": 0 },
+    "model_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model_key": { "$ref": "#/$defs/model_key" },
+        "dockerfile": { "type": "string", "pattern": "^runtimes/[a-z0-9_]+/Dockerfile$" },
+        "context": { "type": "string", "minLength": 1 },
+        "base_image": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": ["string", "null"] },
+            "tag": { "type": ["string", "null"] },
+            "digest": {
+              "anyOf": [{ "$ref": "#/$defs/sha256_digest" }, { "type": "null" }]
+            },
+            "resolved_at": { "type": ["string", "null"] },
+            "resolution_method": { "type": "string" },
+            "resolution_detail": { "type": "string" },
+            "resolve_command": { "type": "string" }
+          },
+          "required": ["name", "tag", "digest"]
+        },
+        "base_image_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "entrypoint": {
+              "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "null" }
+              ]
+            },
+            "cmd": {
+              "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "null" }
+              ]
+            },
+            "python_on_path": { "type": ["string", "null"] },
+            "inspected_at": { "type": ["string", "null"] },
+            "source": { "type": ["string", "null"] },
+            "resolved": { "type": "boolean" },
+            "detail": { "type": "string", "minLength": 1 }
+          },
+          "required": [
+            "entrypoint", "cmd", "python_on_path", "inspected_at", "source",
+            "resolved", "detail"
+          ]
+        },
+        "registry_target": {
+          "type": "string",
+          "pattern": "^ghcr\\.io/[a-z0-9._-]+/[a-z0-9._-]+/[a-z0-9_]+$"
+        },
+        "estimated_image_gb": { "$ref": "#/$defs/gb" },
+        "estimated_build_minutes": { "type": ["integer", "null"], "minimum": 0 },
+        "builder_pod": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "minLength": 1 },
+            "disk_gb": { "type": "integer", "minimum": 1 },
+            "gpu_required": { "const": false },
+            "note": { "type": "string" }
+          },
+          "required": ["type", "disk_gb", "gpu_required"]
+        },
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "strategy": { "enum": ["baked", "volume_cache", "boot_download", "unknown"] },
+            "size_gb": { "$ref": "#/$defs/gb" },
+            "size_gb_reason": { "type": "string", "minLength": 1 }
+          },
+          "required": ["strategy", "size_gb", "size_gb_reason"]
+        },
+        "estimate_confidence": { "enum": ["low", "unmeasured_placeholder", "none"] },
+        "estimate_method": { "type": "string" },
+        "dockerfile_copies_prompt_registry": { "type": ["boolean", "null"] },
+        "runtime_mode_allowed": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "enum": ["baked", "bootstrap"] },
+              "minItems": 1
+            },
+            { "type": "null" }
+          ]
+        },
+        "risks": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "required": [
+        "model_key", "dockerfile", "context", "base_image", "base_image_config",
+        "registry_target", "estimated_image_gb", "estimated_build_minutes",
+        "builder_pod", "weights", "estimate_confidence", "estimate_method",
+        "dockerfile_copies_prompt_registry", "runtime_mode_allowed", "risks"
+      ]
+    }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.build_plan.v1" },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "registry_namespace": { "type": "string", "pattern": "^ghcr\\.io/[a-z0-9._-]+/[a-z0-9._-]+$" },
+    "offline": { "type": "boolean" },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "paddleocr_vl_1_6": { "$ref": "#/$defs/model_plan" },
+        "mineru_pipeline": { "$ref": "#/$defs/model_plan" },
+        "mineru_vlm": { "$ref": "#/$defs/model_plan" },
+        "deepseek_ocr2": { "$ref": "#/$defs/model_plan" },
+        "ovisocr2": { "$ref": "#/$defs/model_plan" },
+        "unlimited_ocr": { "$ref": "#/$defs/model_plan" },
+        "infinity_parser2_pro": { "$ref": "#/$defs/model_plan" },
+        "monkeyocrv2_b": { "$ref": "#/$defs/model_plan" },
+        "olmocr2": { "$ref": "#/$defs/model_plan" },
+        "hpd_parsing": { "$ref": "#/$defs/model_plan" },
+        "glm_ocr": { "$ref": "#/$defs/model_plan" }
+      },
+      "required": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr"
+      ]
+    }
+  },
+  "required": ["schema", "generated_at", "campaign_id", "registry_namespace", "models"]
+}

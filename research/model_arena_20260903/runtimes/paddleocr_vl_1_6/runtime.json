@@ -1,0 +1,71 @@
+{
+  "schema": "tavonel.arena.runtime.v1",
+  "model_key": "paddleocr_vl_1_6",
+  "display_name": "PaddleOCR-VL 1.6 (0.9B) - official doc-parser pipeline + vLLM VLM service",
+  "model_repo": "PaddlePaddle/PaddleOCR-VL-1.6",
+  "model_revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+  "runtime_repository": "PaddlePaddle/PaddleOCR",
+  "runtime_revision": "0006f7874c334ce9c0f497d8b6cce9cdc0b7363d",
+  "official_runtime": "paddle",
+  "runtime_version": "paddleocr 3.6.0 doc_parser pipeline (pipeline_version v1.6, the release default) with the VLM stage served by `paddleocr genai_server --backend vllm`; both come from the official image unmodified - it ships paddleocr[doc-parser]==3.6.0 with paddlex[serving]==3.6.1 and paddlepaddle-gpu==3.2.1 (image config label org.opencontainers.image.version=0006f78-ppocr3.6-pdx3.6, revision 0006f78 = PaddleOCR tag v3.6.0), and v3.6.0 is the release that shipped PaddleOCR-VL-1.6. No paddleocr/paddlex version is installed over the image.",
+  "base_image": "ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/paddleocr-vl:paddleocr3.6-nvidia-gpu@sha256:ad0b1f056a76967f9191cd06398e8babb21b49a4673a28c3de5fd31f481884db",
+  "gpu_min_vram_gb": 24,
+  "gpu_count_min": 1,
+  "gpu_pool_priority": [
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA RTX A6000",
+    "NVIDIA A40"
+  ],
+  "max_concurrency_per_worker": 1,
+  "shard_size_hint": 200,
+  "per_page_timeout_seconds": 600,
+  "prompt_id": "paddleocr_vl_1_6_pipeline_internal",
+  "prompt_kind": "none",
+  "min_cuda_version": "12.8",
+  "inference_config": {
+    "entrypoint": "paddleocr.PaddleOCRVL(...).predict(image_path)",
+    "pipeline_version": "v1.6",
+    "device": "gpu:0",
+    "vl_rec_backend": "vllm-server",
+    "vl_rec_server_url": "http://127.0.0.1:8118/v1",
+    "vl_rec_api_model_name": "PaddleOCR-VL-1.6-0.9B",
+    "vl_rec_max_concurrency": 8,
+    "genai_server": {
+      "command": "paddleocr genai_server",
+      "backend": "vllm",
+      "host": "127.0.0.1",
+      "port": 8118,
+      "model_name": "PaddleOCR-VL-1.6-0.9B",
+      "backend_config": null,
+      "ready_timeout_seconds": 1200,
+      "ready_probe": "http://127.0.0.1:8118/v1/models",
+      "managed_by": "entrypoint"
+    },
+    "layout_detection_model_name": null,
+    "layout_detection_model_dir": null,
+    "prompt_text_expected": ""
+  },
+  "weights_strategy": "baked",
+  "runtime_mode_allowed": [
+    "baked",
+    "bootstrap"
+  ],
+  "official_source_urls": [
+    "https://github.com/PaddlePaddle/PaddleOCR/blob/v3.6.0/docs/version3.x/algorithm/PaddleOCR-VL/PaddleOCR-VL-1.6.en.md",
+    "https://github.com/PaddlePaddle/PaddleOCR/blob/v3.6.0/docs/version3.x/pipeline_usage/PaddleOCR-VL.en.md",
+    "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6",
+    "https://github.com/PaddlePaddle/PaddleOCR/releases/tag/v3.6.0"
+  ],
+  "license": {
+    "id": "Apache-2.0",
+    "url": "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6",
+    "status": "verified"
+  },
+  "weights": {
+    "repo": "PaddlePaddle/PaddleOCR-VL-1.6",
+    "revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+    "largest_file": "model.safetensors",
+    "largest_file_sha256": "sha256:85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db"
+  },
+  "notes": "The official docs open by warning that running the 0.9B VLM alone through Transformers, vLLM, SGLang or FastDeploy is NOT equivalent to the PaddleOCR-VL pipeline and produces degraded or hallucinated output. The production path used here is the documented split: the PaddleOCR client keeps layout analysis and the rest of the workflow, and only the VLM stage is delegated to a `paddleocr genai_server --backend vllm` service on loopback. max_concurrency_per_worker is 1 page at a time; block-level parallelism inside a page comes from vl_rec_max_concurrency, matching the historical FOLYNTA c8 configuration. base_image is the official PaddleOCR-VL image, taken unmodified. It is pinned by the version tag the pipeline documentation documents (`paddleocr<major>.<minor>-nvidia-gpu`) plus the digest an anonymous Harbor token read returned on 2026-09-03; `latest-nvidia-gpu` and `0006f78-ppocr3.6-pdx3.6-nvidia-gpu` resolve to the same digest today, and the version tag is used because `latest-*` moves. This file previously claimed the image's paddleocr 3.6.0 predated PaddleOCR-VL-1.6 and installed `paddleocr[doc-parser]==3.7.0` over it. That was wrong and the overlay is removed: PaddleOCR v3.6.0 IS the release that shipped PaddleOCR-VL-1.6 (release notes 2026-05-28), its docs give `pipeline_version` the values v1/v1.5/v1.6 with v1.6 the default, and the image's own build history downloads `PaddleOCR-VL-1.6_infer.tar` and defaults its genai server to `--model_name PaddleOCR-VL-1.6-0.9B`. v3.7.0 released PP-OCRv6, a separate non-VL OCR family, and changes nothing for this pipeline. The Baidu registry publishes no paddleocr3.7-* image on any of paddleocr-vl, paddleocr-genai-vllm-server or paddleocr-genai-fastdeploy-server (full anonymous tag listings, 2026-09-03), so there is nothing newer to move to; every enumeration is recorded in provenance.json. The build and the bootstrap now install only what the official image genuinely lacks and the docs name for it: the prebuilt FlashAttention 2.8.2 wheel (the image ships no nvcc) and `paddleocr install_genai_server_deps vllm`, plus huggingface_hub for the arena's own pinned weight fetch. Both assert the image's paddleocr/paddlex versions fail-closed instead of assuming them. D19/D34 (2026-09-03 second integration pass): this runtime DOES start a model server (`paddleocr genai_server --backend vllm` on loopback), so process ownership lives in entrypoint.sh: the entrypoint renders the launch plan from adapter.py --print-server-plan, starts the server, polls genai_server.ready_probe until it answers (deadline 1200 s, the D19 floor), then runs the worker as a child and traps its own exit to stop the server. The adapter attaches to that server when ARENA_MODEL_SERVER_MANAGED_BY=entrypoint and still starts its own only when nothing else did. prompt_kind is \"none\": the prompt is fixed inside the official pipeline, adapter.py refuses a non-empty prompt_text, and the registry file is empty. model_repo @ model_revision was re-verified read-only on 2026-09-03 (Hugging Face revision API); runtime_revision is PaddleOCR tag v3.6.0 = commit 0006f787, which the image's own `org.opencontainers.image.revision=0006f78` label confirms it was built from. Framework-floor audit (2026-09-03, after the GLM-OCR canary died on an unrecognised model_type): the required framework floor, what the pinned base image actually ships, the action taken and the evidence URLs are recorded in provenance.json under framework_floor_audit. bootstrap.sh asserts the pinned framework versions and that the framework recognises this checkpoint's architecture before anything starts."
+}

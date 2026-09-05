@@ -1,0 +1,42 @@
+{
+  "schema": "tavonel.arena.opus-price-snapshot.v1",
+  "campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+  "model_id": "claude-opus-5",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "captured_at": "2026-09-03T00:00:00Z",
+  "source": "anthropic_official_announcement",
+  "source_urls": [
+    "https://www.anthropic.com/news/claude-opus-5"
+  ],
+  "quoted_text": "$5 per million input tokens and $25 per million output tokens (the same as Opus 4.8).",
+  "prices": {
+    "input_per_mtok_usd": 5.0,
+    "output_per_mtok_usd": 25.0,
+    "cache_write_per_mtok_usd": null,
+    "cache_read_per_mtok_usd": null
+  },
+  "null_reasons": {
+    "cache_write_per_mtok_usd": "Not published on the fetched Anthropic sources on 2026-09-03; not inferred from other models' cache multipliers (masterplan rule: never invent data to satisfy a schema).",
+    "cache_read_per_mtok_usd": "Not published on the fetched Anthropic sources on 2026-09-03; not inferred from other models' cache multipliers."
+  },
+  "fetch_log": [
+    {
+      "url": "https://www.anthropic.com/pricing",
+      "result": "301 redirect to https://claude.com/pricing"
+    },
+    {
+      "url": "https://claude.com/pricing",
+      "result": "subscription plan pricing only; no per-token API table in the fetched content"
+    },
+    {
+      "url": "https://www.anthropic.com/news/claude-opus-5",
+      "result": "OK - input/output list prices and API model id claude-opus-5"
+    }
+  ],
+  "warnings": [
+    "api_equivalent_list_price_usd is a LIST-PRICE EQUIVALENT for a run that was billed to a Claude Pro/Max subscription. It is not an invoice amount and must never be presented as one (masterplan section 22).",
+    "Cache-token prices are null, so api_equivalent_list_price_usd covers only uncached input and output tokens. Receipts carry cache token counts separately and flag the run as price-incomplete when cache tokens are non-zero.",
+    "This snapshot must be re-fetched if the campaign runs after 2026-09-03; prices are a point-in-time capture, not a contract."
+  ]
+}
