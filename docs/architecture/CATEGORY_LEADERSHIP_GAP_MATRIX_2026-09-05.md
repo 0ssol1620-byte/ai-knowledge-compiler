@@ -50,6 +50,29 @@ committed run of the repository's own instrument is
 the twelve tests in that file are *not* inside the 3,199. No number in this
 document should be read as covering them.
 
+**A second caution about that receipt**, recorded because the gate runs for this
+revision walked into it rather than because the lane went looking. `tests/unit`
+alone, run twice in a fresh worktree at this branch with the project
+interpreter, reports **7 failed, 1,005 passed, 74 skipped, exit 1**. Two of the
+seven need working-tree material that a worktree does not have — the git-ignored
+`docs/ip/ELEMENT_SUPPORT_BINDINGS.yaml` and the untracked
+`research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v7/` — and say nothing
+about the repository. The other five are
+`tests/unit/test_superseded_receipt_contract.py`, which compares a
+`supersedes.sha256` in `research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/`
+against the bytes of the receipt it retracts; those bytes hash identically to
+their git blobs at this commit, so the mismatch is in the commit, not in the
+checkout. Both files landed together at `69c4f0c` (2026-09-03T12:02:47+09:00),
+about four hours *before* the receipt was generated (`07:25:53Z` = 16:25 KST),
+which leaves the receipt's `repository_green: true` and these five failures
+disagreeing about the same tree. Whether the 3,199 collected included them was
+not established here, and this lane did not chase it: it is outside the lane and
+would mean running suites in the main checkout, which the lane contract forbids
+touching. **No grade in §2 depends on that receipt** — §1 cites it only to date
+the last committed run, and every grade is read from test *content*, not from a
+passing run. The discrepancy is a founder item (§5), not a finding of this
+document.
+
 `PROVEN` is deliberately almost empty. `CLAUDE.md` states the rule this matrix
 obeys: tests show the code does what its author intended, and nothing here shows
 a threshold is right. `CalibrationTable.calibrated` is `False`.
@@ -974,8 +997,9 @@ Partner destinations are `ABSENT`.
 
 ## 5. Founder decisions this matrix could not make
 
-Each of these blocks a row above, and none is an agent's call under `CLAUDE.md`
-or lane contract §7.
+The first eight each block a row above; the ninth blocks nothing in particular
+and possibly everything. None is an agent's call under `CLAUDE.md` or lane
+contract §7.
 
 1. **Branch strategy for `feature/revision-compile-v1`.** It is local-only, 87
    commits behind `origin/main`, and holds the only product-side revision route.
@@ -994,6 +1018,14 @@ or lane contract §7.
 7. **Calibration corpus for the identity thresholds** (§69 line 11).
    `CalibrationTable.calibrated` refuses to be set true without one being named.
 8. **Whether "Ontology Studio" means authoring or validation** (row 9).
+9. **Whether the five `test_superseded_receipt_contract` failures are
+   stop-the-line** (§1). `CLAUDE.md` lists "source or evidence hash mismatch"
+   among the conditions that halt feature work. These are internal H1 experiment
+   receipts under `research/experiments/`, not artifacts under
+   `docs/evidence/artifacts/` backing a public claim, and the mismatch predates
+   this campaign — so the call is whether the rule reaches them. Either way the
+   `repository_green: true` receipt of 2026-09-03 and today's run disagree, and
+   one of the two needs correcting.
 
 ---
 
