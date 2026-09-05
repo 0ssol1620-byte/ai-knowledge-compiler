@@ -12,6 +12,7 @@ from .collection_events import (
 )
 from .errors import ErrorEnvelope
 from .events import ProcessingEvent
+from .evidence_locator import EvidenceLocatorUnion
 from .exports import ExportManifest, QualityReport, RagChunk, SourceMap
 from .knowledge import DocumentClassification, KnowledgeBundle, KnowledgeNote, RelationAssertion
 from .knowledge_model import CanonicalKnowledgeModel, CanonicalKnowledgeObject
@@ -25,6 +26,7 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "collection-event": CollectionEventEnvelope,
     "processing-event": ProcessingEvent,
     "error-envelope": ErrorEnvelope,
+    "evidence-locator": EvidenceLocatorUnion,
     "document-classification": DocumentClassification,
     "knowledge-note": KnowledgeNote,
     "knowledge-bundle": KnowledgeBundle,
