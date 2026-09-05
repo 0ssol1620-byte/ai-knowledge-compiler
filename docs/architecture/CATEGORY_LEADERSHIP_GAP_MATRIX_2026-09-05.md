@@ -51,13 +51,16 @@ the twelve tests in that file are *not* inside the 3,199. No number in this
 document should be read as covering them.
 
 **A second caution about that receipt**, recorded because the gate runs for this
-revision walked into it rather than because the lane went looking. `tests/unit`
-alone, run three times in a fresh worktree at this branch with the project
+document walked into it rather than because the lane went looking. `tests/unit`
+alone, run five times in a fresh worktree at this branch with the project
 interpreter, reported **8 failed / 1,004 passed** on the first run and **7
-failed / 1,005 passed** on the second and third, all with 74 skipped and exit 1.
-The suite is therefore not deterministic here, and the eighth was not identified
-— which is itself worth knowing before anyone quotes a count from it. The seven
-that repeat fall into two groups. Two need working-tree material that a
+failed / 1,005 passed** on each of the four after it, all with 74 skipped and
+exit 1. The eighth failure has not recurred in four consecutive runs and was
+never identified; `pytest-randomly` is not installed, so test ordering does not
+explain it (the environment carries `pytest`, `pytest-asyncio` and `pytest-cov`,
+nothing that shuffles). Treat the suite as non-deterministic here rather than
+quoting a stable count from it. The seven are identical across the four runs
+that reported seven, and fall into two groups. Two need working-tree material that a
 worktree does not have — the git-ignored
 `docs/ip/ELEMENT_SUPPORT_BINDINGS.yaml` and the untracked
 `research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v7/` — and say nothing
