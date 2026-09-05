@@ -68,11 +68,11 @@ Priorities are the blueprint §56 matrix, verbatim.
 | # | Item | P | Status | Where it lives |
 |---|---|---|---|---|
 | 1 | Explore redesign | P0 | `IMPLEMENTED` | site `nextjs/app/explore/page.tsx`, `components/explore-compiled-world.tsx` |
-| 2 | Change / Impact UI | P0 | `ABSENT` (public) · `TESTED` (workspace lens) | site `components/world-version-diff.tsx` |
+| 2 | Change / Impact UI | P0 | `ABSENT` (public) · `TESTED` (diff engine) · `IMPLEMENTED` (workspace lens) | site `lib/world-version-diff.ts`, `components/world-version-diff.tsx` |
 | 3 | Selective recompile production path | P0 | `TESTED` (core) · `BLOCKED` (product) | core `akc_cir/recompilation.py`, `services/core-v3/` |
 | 4 | Equivalence proof | P0 | `TESTED` | core `akc_cir/recompilation.py:649` |
 | 5 | Benchmark route | P0 | `ABSENT` | site `nextjs/app/benchmarks/page.tsx` |
-| 6 | World History | P0 | `TESTED` | site `lib/world-read-model.ts:118`, `components/world-version-diff.tsx` |
+| 6 | World History | P0 | `IMPLEMENTED` | site `lib/world-read-model.ts:118`, `components/world-version-diff.tsx` |
 | 7 | Compiler Contract page | P0 | `ABSENT` | site `nextjs/app/product/continuous-knowledge/page.tsx` |
 | 8 | GitHub trust surface | P0 | `ABSENT` (site) · `IMPLEMENTED` (core) | site repo root; core repo root |
 | 9 | Ontology Studio | P1 | `TESTED` (viewer) · `ABSENT` (studio) | site `components/world-ontology-viewer.tsx` |
@@ -92,18 +92,20 @@ as `path:line`, the test or receipt that backs the status, the nearest ADR or
 contract, and the smallest next step — and every one of the nineteen carries all
 four. Two of them are sometimes null, and a null is written out with its reason
 rather than omitted, because an omitted element and an empty one are different
-claims. Where a **Backed by** names a test file *without* a line number, §6's
-attribution check asserts the file actually contains what the sentence around it
-claims; a bare filename used to be the one citation shape nothing verified, and
-one false attribution got through that gap before it was closed. **Backed by**
-reads "nothing tests this" on the four rows where nothing
-does — 7, 8, 11 and 19 — and each of those names what *is* tested nearby, so an
-untested capability is not confused with an untested neighbourhood; row 17 is the
-mixed case, where the guard against the claim is tested and the posture behind it
-does not exist. **Smallest next step** is empty on three rows and
-for three different reasons: row 15 waits on a founder decision (§5), row 16 is a
-deliberate refusal to build ahead of demand, and row 19 is blocked by the
-ordering in blueprint §55 rather than by cost.
+claims. Every **Backed by** that names a test file states, per file, what that
+file actually asserts. That is not a stylistic preference: §6's attribution check
+can only bind where the prose makes a checkable claim, and a bare list of
+filenames makes none, so it passes vacuously. Two false attributions reached a
+committed revision of this file through exactly that shape — row 1's
+`ultimate-mobile-a11y.spec.ts` and row 2's `world-lifecycle.spec.ts` — and both
+are corrected above. **Backed by** reads "nothing tests this" on the five rows
+where nothing does — 6, 7, 8, 11 and 19 — and each of those names what *is*
+tested nearby, so an untested capability is not confused with an untested
+neighbourhood; row 17 is the mixed case, where the guard against the claim is
+tested and the posture behind it does not exist. **Smallest next step** is empty
+on three rows and for three different reasons: row 15 waits on a founder decision
+(§5), row 16 is a deliberate refusal to build ahead of demand, and row 19 is
+blocked by the ordering in blueprint §55 rather than by cost.
 
 ---
 
@@ -159,7 +161,7 @@ depends on the second world existing; nothing else does.
 
 ---
 
-### 2 · Change / Impact UI — P0 — `ABSENT` on the public site, `TESTED` in the workspace
+### 2 · Change / Impact UI — P0 — `ABSENT` (public) · `TESTED` (diff engine) · `IMPLEMENTED` (lens)
 
 **Where.** The diff engine is `nextjs/lib/world-version-diff.ts:124`
 (`diffWorldVersions`) and `:182` (`countChanges`). It is rendered by
@@ -167,8 +169,9 @@ depends on the second world existing; nothing else does.
 Studio "Versions" lens — `nextjs/components/world-studio-ultimate.tsx:30`
 declares the lens, `:137` mounts the panel. The panel reads `model.history`
 (`:48`), fetches the other manifest through
-`/api/v1/world/${id}?manifest=` (`:69`), and says
-"No persisted World history is available" when there is none (`:107`).
+`/api/v1/world/${id}?manifest=` (`:69` opens the `fetch`, `:70` carries the
+URL), and says "No persisted World history is available" when there is none
+(`:107`).
 
 **Not present.** `WorkspaceSurface` at
 `nextjs/components/workspace-ultimate-shell.tsx:12` is
@@ -176,8 +179,28 @@ declares the lens, `:137` mounts the panel. The panel reads `model.history`
 "developer" | "activity" | "settings"`. There is no `"changes"` surface and no
 Change Inbox. On the public site there is no change/impact surface at all.
 
-**Backed by.** `nextjs/lib/world-version-diff.test.ts`;
-`nextjs/e2e/world-lifecycle.spec.ts`.
+**Backed by**, with what each file asserts, because the two halves of this row
+are not equally covered. `nextjs/lib/world-version-diff.test.ts` splits into two
+`describe` blocks that are different kinds of evidence. The first,
+`"comparing two versions of a World"` (`:71`), is six behavioural tests over
+`diffWorldVersions` on constructed read models — the changed object and what
+about it changed (`:72`), rewritten package files (`:82`), a correction that
+touched no evidence and no relation (`:95`), a version identical to itself
+(`:107`), a moved bounding box behind unchanged words (`:113`), and a promotion
+that must not be reported as a change to every object (`:128`). That is the
+`TESTED` in this row's status, and it covers the engine only. The second,
+`"where the comparison is shown"` (`:140`), `readFileSync`s three component
+sources and greps them for strings — `:146`/`:147` that the studio source contains
+`"<WorldVersionDiffPanel"` and not `"className={styles.historyList}"`,
+`:151`/`:152` that the panel fetches `?manifest=` and `/api/v1/reviews`,
+`:156`/`:157` that the rollback button sits under the diff. Source-text greps
+catch a deletion; they do not render the lens, so the UI half of this row is
+`IMPLEMENTED`, not `TESTED`. **Nothing drives the Versions lens in a browser.**
+`nextjs/e2e/world-lifecycle.spec.ts` was cited here in an earlier revision and
+should not have been: it contains no occurrence of `diff`, `impact`, `lens`,
+`compare` or `comparison`, and its three tests are governed promotion and
+rollback, review-required packages, and OCR operator-review receipts. It is
+removed from this row.
 
 **Nearest contract.** Lane contract §4.5 (workspace `changes` surface);
 blueprint §30–§33.
@@ -304,32 +327,55 @@ validate today.
 
 ---
 
-### 6 · World History — P0 — `TESTED`
+### 6 · World History — P0 — `IMPLEMENTED`
 
 **Where.** `nextjs/lib/world-read-model.ts:118` `WorldHistoryEntry` —
 `version`, `manifestDigest`, `status` (`active | candidate | superseded`),
 `activatedAt: ReadValue<string>`, `activationCount: ReadValue<number>`.
-`:179` carries `history` on `WorldReadModel`. Rendered at
-`nextjs/components/world-version-diff.tsx:127`, which prints
-`entry.activatedAt.value` when the state is `read` and the literal string
-`"not activated"` otherwise. The `ReadValue` wrapper is what keeps this row
-honest: a version with no activation timestamp says so instead of showing a
-plausible date.
+`:179` carries `history` on `WorldReadModel`. It is built at `:526` by mapping
+the persisted version rows (`:530`, `:531` wrap `last_activated_at` and
+`activation_count` in `read()`), and at `:533` — when the artifact's own manifest
+digest is *not* among those rows — a leading `candidate` entry is unshifted whose
+`activatedAt` and `activationCount` are `notYet("Candidate has not been
+activated.")` (`:538`). That branch is the only producer of a non-`read` state on
+this field, and it is what the renderer at
+`nextjs/components/world-version-diff.tsx:127` turns into the literal string
+`"not activated"` instead of `entry.activatedAt.value`. The `ReadValue` wrapper
+is what keeps this row honest: a version with no activation timestamp says so
+instead of showing a plausible date.
 
-**Backed by**, with what each file actually asserts — the three are not equally
-close to this row, and the previous revision of this line did not say so.
-`nextjs/e2e/world-lifecycle.spec.ts:159` and `:160` drive the surface with a
-versions fixture carrying `last_activated_at` and `activation_count`, the two
-fields named above. `nextjs/lib/world-version-diff.test.ts:147` asserts the
-comparison *replaces* the history list rather than rendering beside it.
-`nextjs/lib/world-read-model.test.ts` is the read model's fail-closed suite (six
-tests; `:99` is the `not_yet` discipline for review and receipts) and asserts
-nothing about `history` — it backs the type this row's field lives on, not the
-field itself. **No test asserts the `"not activated"` fallback**: that literal
-occurs exactly once in the repository, at
-`nextjs/components/world-version-diff.tsx:127`. So the honesty behaviour
-described above is `IMPLEMENTED`, and this row's `TESTED` covers the history
-data contract and its rendering, not the fallback. Server-side lifecycle:
+**Backed by.** Nothing tests this row, and two earlier revisions of this line
+said otherwise. A repository-wide search of every `nextjs/**/*.test.ts` and
+`nextjs/e2e/*.ts` at `origin/main` for `history`, `WorldHistoryEntry`,
+`activatedAt` or `activationCount` returns seven hits, six of which are the word
+"history" in an unrelated comment or test name (changelog, foundation jobs, the
+job-worker route, the production-route surface, the public-copy purge, the
+retrieval guard). The seventh is
+`nextjs/lib/world-version-diff.test.ts:147` — `expect(studio).not.toContain(
+"className={styles.historyList}")`, a `readFileSync` source-string assertion that
+the *studio* does **not** render a history list, which is evidence about
+placement and not about this row's behaviour. **No test constructs a
+`WorldHistoryEntry`, renders the version list, or asserts the `"not activated"`
+fallback**; that literal occurs exactly once in the repository, at
+`nextjs/components/world-version-diff.tsx:127`. Two earlier citations are
+withdrawn here rather than quietly dropped. `nextjs/e2e/world-lifecycle.spec.ts`
+`:159`/`:160` do carry `last_activated_at` and `activation_count` — but in the
+mock payload for `/api/collections/${id}/world`, which feeds the *workspace
+lifecycle panel* (`nextjs/app/workspace/page.tsx:2227`, "Activated N time(s)"),
+not `WorldReadModel.history`; the same spec mocks `/api/v1/world/${id}` to
+`{ model: null }`, so the panel this row describes renders its empty state and
+never its list. And `nextjs/lib/world-read-model.test.ts` (six tests; `:99` is
+the `not_yet` discipline for review and receipts) asserts nothing about
+`history`.
+
+**What *is* tested nearby**, so an untested capability is not read as an
+untested neighbourhood. `nextjs/lib/world-store.test.ts:194` ("rejects malformed
+retained version metadata from the database") drives
+`listFoundationWorldVersions` over a version row whose `first_promoted_at` is
+`"not-a-timestamp"` and requires `WORLD_VERSION_BINDING_INVALID` — the
+server-side version list is fail-closed against bad metadata. That is the layer
+*below* `WorldHistoryEntry`; the mapping onto it at
+`nextjs/lib/world-read-model.ts:530`/`:531` has no test. Server-side lifecycle:
 `supabase/migrations/0007_foundation_world_lifecycle.sql` and
 `supabase/tests/foundation_world_lifecycle.sql` (pgTAP, `select plan(28)` —
 **requires a live Postgres and was not executed here or in the 2026-09-03
@@ -337,8 +383,15 @@ closure**).
 
 **Nearest contract.** Lane contract §4.5.
 
-**Smallest next step.** Surface it outside the Versions lens; the data contract
-needs nothing.
+**Smallest next step.** One unit test that builds a `WorldReadModel` whose
+`context.versions` does not contain the artifact's own manifest digest, and
+asserts the leading history entry comes back `status: "candidate"` with
+`activatedAt.state === "not_yet"` and the reason `"Candidate has not been
+activated."` — the `:533`–`:539` branch above. That is the cheapest thing on this
+row, it is the only path that reaches the `"not activated"` string, and it moves
+the row to `TESTED` without touching the product. Surfacing history outside the
+Versions lens is the second step, not the first: the honesty behaviour is
+exactly the part nothing holds today.
 
 ---
 
@@ -547,9 +600,12 @@ OAuth connectors have their own sync route and a secret vault
 (`supabase/migrations/0013_connector_oauth.sql`, `0016_oauth_secret_vault.sql`,
 `0018_oauth_callback_state_binding.sql`).
 
-**Not present.** No inbound webhook receiver for any connector — the only
-webhook route in the repository is `nextjs/app/api/paddle/webhook/route.ts`.
-Deltas are applied when a client pushes a batch; nothing subscribes to a source.
+**Not present.** No inbound webhook receiver for any connector. Enumerating all
+74 `route.ts` files under `nextjs/app/api` at `origin/main` finds exactly two
+inbound-callback routes, and neither is one: `paddle/webhook/route.ts` is
+billing, and `v1/oauth-connectors/callback/[provider]/route.ts` is an
+authorization redirect, not a change notification. Deltas are applied when a
+client pushes a batch; nothing subscribes to a source.
 
 **Backed by.** `nextjs/lib/connector-contract.test.ts` and seven
 `connector-oauth*.test.ts` files.
@@ -750,9 +806,14 @@ already in the tree, unused.
 ### 19 · Partner ecosystem — P3 — `ABSENT`
 
 **Where.** Nowhere. No partner integration, destination adapter, certification
-path or listing exists in either repository. The only occurrence of "partner" in
-the site application is an enquiry category — `nextjs/app/api/contact/route.ts:14`,
-`partnership: "Partnership"`.
+path or listing exists in either repository. "partner" occurs three times under
+`nextjs/` at `origin/main`, and all three are the same contact-form enquiry
+category: `nextjs/app/api/contact/route.ts:14` (`partnership: "Partnership"`),
+`nextjs/components/contact-form.tsx:54` (the matching `<option>`), and one
+sentence of the SIL Open Font License in `nextjs/public/fonts/OFL.txt:16`. An
+earlier revision of this line said "the only occurrence" and named the route
+alone; the form that submits to it is the same category, and the third is not
+product copy at all.
 
 **What a partner would build on, and it already exists.** The distribution
 substrate is real: a published OpenAPI 3.1 document
@@ -795,12 +856,22 @@ it would have to invent versus what it could read.
 
 1. `research/model_arena_20260903/` is **git-untracked working-tree state** in
    the core repository. It is not part of `26bb892`. A receipt cited from an
-   untracked path is not a receipt a third party can fetch.
-2. The campaign is **incomplete**. `scores/<model>/<benchmark>/` contains
-   `evaluator_input/` only; a recursive search under `scores/` finds **zero**
-   `summary.json` and **zero** `scores.json`. Per `ARENA_CONTRACT.md:201`,
-   `summary.json` is where the official metrics live. **No metric has been
-   scored, so there is nothing to publish and no `metrics[]` to fill.**
+   untracked path is not a receipt a third party can fetch. It is also *moving*
+   while this document is being written: two readings on 2026-09-05 counted 27
+   and then 28 `scores/<model>/<benchmark>/` directories. Every count in this
+   section is therefore stamped with the time it was taken, and none of them is
+   load-bearing.
+2. The campaign is **incomplete**. Read at `2026-09-05T09:30Z`, `scores/` held
+   28 `<model>/<benchmark>/` directories: all 28 carry `evaluator_input/`, and
+   the 10 `omnidoc` pairs also carry an `evaluator_raw/` whose sole content is
+   `omnidoc-config.yaml` — the evaluator's configuration, not its output.
+   `ARENA_CONTRACT.md:201` declares `evaluator_input/`, `evaluator_raw/` and
+   `summary.json` as the three parts of a scored pair, and names `summary.json`
+   as where the official metrics live. **A recursive search under `scores/`
+   finds zero `summary.json` and zero `scores.json`** — that is the load-bearing
+   fact, it does not depend on any count above, and it holds at every reading:
+   no metric has been scored, so there is nothing to publish and no `metrics[]`
+   to fill.
 3. Nothing in this section is a benchmark result, and nothing here may be
    published. Publishing any arena number is a founder decision (§5).
 
@@ -929,24 +1000,43 @@ or lane contract §7.
 ## 6. How the citations in this file were checked
 
 A gap matrix is worth nothing if its citations drift, and a `path:line` that does
-not resolve is a fabricated citation whether or not anyone meant it. The
-citations here were machine-checked before this file was committed: **281
-assertions**, in six classes. Core paths were read from the worktree at
-`26bb892`; site paths with `git show origin/main:<path>`; arena paths from the
-untracked working tree, which is why they are marked as such throughout §3.
+not resolve is a fabricated citation whether or not anyone meant it. What follows
+is an account of **what was walked**, not a guarantee about what is true. The two
+are not the same, and every error this file has carried has lived in the gap
+between them — which is why the account is written as a list of classes with
+their known blind spots rather than as a verdict. Rounds 1–3 ran a machine check
+of **281 assertions in six classes** — 1 to 6 below; round 4 re-derived a named
+subset by hand, named class 7, and is described at the end. Core paths were read
+from the worktree at `26bb892`; site paths with `git show origin/main:<path>`;
+arena paths from the untracked working tree, which is why they are marked as
+such throughout §3.
 
 1. **`path:line`** — the file must exist, the line must exist, and the line must
    contain the text this document says is there.
 2. **Existence** — each "this file exists" claim resolves.
 3. **Absence** — each "this file does not exist" claim still does not.
 4. **Attribution** — a file named in a **Backed by** *without* a line number
-   must contain the content the sentence around it claims. Added in round 3;
-   see below for why.
+   must contain the content the sentence around it claims. Added in round 3.
+   **The class binds only where the prose makes a per-file claim**, and that is
+   its blind spot: a **Backed by** that is a bare list of filenames claims
+   nothing, so the class has nothing to test and the citation passes *vacuously*
+   — which is not the same as passing. Round 4 found row 2 in exactly that shape,
+   citing `world-lifecycle.spec.ts` for a Change/Impact UI the spec never
+   mentions. Every **Backed by** in this file now states what each file it names
+   asserts, so the class has something to bind to.
 5. **Negative attribution** — where this document says a file asserts *nothing*
    about a subject, the file must not mention it.
 6. **Counts** — every number stated in prose (tests per file, lines per file,
    how many `connector-oauth*.test.ts` files there are) is recounted from the
    source rather than trusted.
+7. **Exhaustiveness** — "the only", "exactly once", "contains X only", "zero",
+   "nothing in either repository" are claims about a whole *set*, and a lookup
+   cannot defend one: the check has to compute the set and compare. Named in
+   round 4, after two such claims came back false. The class was not absent
+   before — rounds 1–3 computed row 6's `"not activated"` exactly this way — it
+   was applied to one claim and not to the others, which is worse than absent,
+   because an inconsistently applied class reads from the outside like a
+   consistent one.
 
 **The guarantee in the previous revision was wider than the check underneath
 it.** It said every pointer was machine-checked and that each must exist and
@@ -956,13 +1046,17 @@ not exist, and a false attribution in that blind spot passed silently. One did:
 row 1 listed `nextjs/e2e/ultimate-mobile-a11y.spec.ts` among the specs holding
 "explore assertions", and that spec contains no reference to explore at all. The
 list had been copied from lane contract §5's grep hint as though the hint were a
-finding. Both halves are now fixed — row 1 says what each spec really asserts,
-and the check grew the three classes that make the guarantee true rather than
-the guarantee shrink to match a weaker check. Reading the same way through the
-rest of the file found one more, smaller instance: row 6 cited three test files
-for World History, of which `world-read-model.test.ts` asserts nothing about
-`history`, and no test at all asserts the `"not activated"` fallback. Row 6 now
-says so, and its grade is scoped to what is actually covered.
+finding. Both halves were then fixed — row 1 says what each spec really asserts,
+and the check grew three classes rather than the guarantee shrinking to match a
+weaker check. Reading the same way through the rest of the file found a second
+instance in row 6, which cited three test files for World History; that revision
+dropped `world-read-model.test.ts` from the claim and scoped the grade. **Round 4
+showed the scoping had not gone far enough.** Neither surviving citation
+exercised the row either: the e2e fixture drives a different route and a
+different panel, and the unit-test line is a `readFileSync` source-string
+assertion. Row 6 is now `IMPLEMENTED`, and the lesson is the narrower one — when
+a citation turns out not to say what a row needs, the honest move is to regrade
+the row, not to re-describe the citation until it fits.
 
 Six of the 281 assertions are *computed*, not merely looked up, because some
 rows make claims that a lookup cannot defend:
@@ -985,6 +1079,23 @@ rows make claims that a lookup cannot defend:
 - Row 13's "seven `connector-oauth*.test.ts` files" is a directory count, not a
   remembered number.
 
+Round 4 added four more, by hand, and recorded the command beside each so the
+next reader re-runs rather than trusts:
+
+- Row 19's "partner" claim:
+  `git grep -in partner origin/main -- nextjs` → three hits, not one.
+- §3's arena directory claim: `find scores -mindepth 2 -maxdepth 2 -type d`,
+  then `-mindepth 3` grouped by basename, then `ls` of each `evaluator_raw/` →
+  28 pairs, 10 `evaluator_raw/`, each holding only `omnidoc-config.yaml`.
+- Row 6's "no test asserts this":
+  `git grep -nE "history|WorldHistoryEntry|activatedAt|activationCount"
+  origin/main -- 'nextjs/**/*.test.ts' 'nextjs/e2e/*.ts'` → seven hits, six of
+  them the word "history" in unrelated prose.
+- Row 1's "single `INTERACTIVE SAMPLE` badge":
+  `git grep -n "INTERACTIVE SAMPLE" origin/main -- nextjs` → one in a component,
+  two in `e2e/ultimate-blueprint.spec.ts`, of which `:40` is
+  `toHaveCount(1)` — the repository asserts the claim itself.
+
 A note on cost, since it decides whether anyone re-runs this: the `"not
 activated"` scan was first written as one `git show` per file over the whole
 site tree. That is thousands of subprocesses and does not finish in a usable
@@ -996,11 +1107,41 @@ fixed above: three line numbers had drifted by one or two lines, and one absence
 was reported as a presence. The 56 assertions added in the second round passed
 on their first run. The 40 added in the third round — 11 new `path:line`
 pointers, 14 attributions, 2 negative attributions, 11 counts and 2 computed —
-found **no further error**, which is worth stating plainly: every count this
-document asserts in prose (12, 14, 25, 21, 25 and 47 tests; 400, 91 and 89
-lines; 7 connector files) recomputed to the stated value. The one defect in the
-class was the one already reported. Two errors are worth recording, because both
-are traps for anyone verifying this file by hand. The first is from round one:
+found no error *in the classes it walked*: every count this document asserts in
+prose (12, 14, 25, 21, 25 and 47 tests; 400, 91 and 89 lines; 7 connector files)
+recomputed to the stated value.
+
+**That is not the same as "no further error", which is what the previous
+revision of this paragraph said.** Round 4 re-derived the citations from the refs
+independently, and two content claims of exactly the classes §6 says are covered
+came back false. Both were in the committed file, and both are corrected above:
+
+- §3 said `scores/<model>/<benchmark>/` contains `evaluator_input/` **only**.
+  Ten of the 28 pairs also carry `evaluator_raw/`, and `ARENA_CONTRACT.md:201`
+  — cited on the next line of this very document — declares `evaluator_raw/` as
+  part of the contract. The document contradicted the file it was quoting.
+- Row 19 said the **only** occurrence of "partner" in the site application is
+  `nextjs/app/api/contact/route.ts:14`. `nextjs/components/contact-form.tsx:54`
+  carries the same category, and `public/fonts/OFL.txt:16` carries the word.
+
+Neither changes a grade or a founder decision — the load-bearing arena fact
+(zero `summary.json`, zero `scores.json`) is true at every reading, and row 19
+stays `ABSENT` — but the defect was never the two sentences. It was the
+self-assessment: "no further error" is an invitation to stop re-checking, and a
+reader who accepts it inherits whatever the check did not walk. Both errors were
+class-7 exhaustiveness claims that rounds 1–3 resolved with a lookup. What round
+4 actually re-derived, by hand, is bounded and worth naming so the next reader
+knows what is still untested by anybody: every citation in rows 2, 6 and 19 and
+in §3's three cautions; every `path:line` in the World History and version-diff
+chain (`world-read-model.ts`, `world-version-diff.ts`, `world-version-diff.tsx`,
+`world-version-diff.test.ts`, `world-store.test.ts`, `world-studio-ultimate.tsx`,
+`workspace/page.tsx`, `world-lifecycle.spec.ts`); and every exhaustiveness claim
+anywhere in the file — row 1's single `INTERACTIVE SAMPLE` badge, row 6's
+`"not activated"`, row 13's only webhook route, row 14's absent SHACL engine and
+absent OWL 2 / PROV-O / OpenLineage, row 19's "partner", §3's `scores/` tree, and
+§5's "only product-side revision route". Everything outside that list still rests
+on rounds 1–3. Two errors are worth recording separately, because both are traps
+for anyone verifying this file by hand. The first is from round one:
 
 > `git show origin/main:nextjs/app/api/collections/[id]/revise/route.ts`
 > **exits 0 and prints nothing** when the path does not exist. The bracket is
@@ -1018,14 +1159,28 @@ nothing about it looks wrong:
 > *before* it reports coverage, or its coverage number is measuring the wrong
 > set.
 
+The third is from round four, and it is the one that made both of that round's
+errors possible:
+
+> An **"only"** is a claim about a set, and a checker that resolves citations
+> one at a time cannot see a set. Every class in the table above answers "does
+> this pointer resolve?"; none answers "is this the last one?". A document can
+> pass every assertion in every class and still be wrong about "the only", "just
+> one" and "contains X only" — and those are exactly the sentences a reader
+> leans on, because they are the ones that close an enquiry.
+
 The checker itself is not committed — this lane owns exactly one file — so the
 check is described here rather than shipped. It is a table of
 `(repo, path, line, expected substring)` tuples; a list of paths that must
 exist and a list that must not; the attribution, negative-attribution and count
-tables added in round three; and the six computed assertions above. Anyone
-re-deriving it should start from the two traps quoted above, because both are
-silent when you get them wrong. Committing it as a repository gate is worth
-doing and needs an ownership grant this lane does not have.
+tables added in round three; and the ten computed assertions above (six from
+rounds 1–3, four re-derived by hand in round four). Anyone re-deriving it should
+start from the three traps quoted above, because all three are silent when you
+get them wrong. Committing it as a repository gate is worth doing and needs an
+ownership grant this lane does not have — and the gate is worth more than the
+document it would guard, because §6's real finding across four rounds is that a
+self-reported integrity check drifts wider than the check underneath it every
+time nobody re-derives it.
 
 ---
 
@@ -1039,6 +1194,10 @@ doing and needs an ownership grant this lane does not have.
   from `git show origin/main:<path>`; no browser was opened.
 - It does not restate any arena metric, cost or vendor score as a result. There
   are no scored metrics to restate (§3).
+- It does not say every citation in it has been verified. §6 says which classes
+  were walked, in which round, and what each class cannot see. Rounds 1, 3 and 4
+  each found errors in text the preceding revision presented as checked, so the
+  prior on a fifth round finding something is not zero.
 - It supersedes `docs/audit/TAVONEL_RESEARCH_PRODUCT_CLOSURE_FINAL_2026-09-03.md`
   on exactly two rows — claim 1 "v1 compile" and the production `SourceResolver`,
   both closed by `cfe46b8` — and on nothing else.
