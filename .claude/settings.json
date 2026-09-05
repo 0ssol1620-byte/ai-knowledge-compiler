@@ -1,9 +1,4 @@
 {
-  "enabledPlugins": {
-    "ui-ux-pro-max@ui-ux-pro-max-skill": false,
-    "taste-skill@taste-skill": false,
-    "frontend-design@claude-plugins-official": false
-  },
   "disableWorkflows": false,
   "workflowSizeGuideline": "small"
 }
