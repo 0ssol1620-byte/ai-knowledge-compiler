@@ -52,9 +52,13 @@ document should be read as covering them.
 
 **A second caution about that receipt**, recorded because the gate runs for this
 revision walked into it rather than because the lane went looking. `tests/unit`
-alone, run twice in a fresh worktree at this branch with the project
-interpreter, reports **7 failed, 1,005 passed, 74 skipped, exit 1**. Two of the
-seven need working-tree material that a worktree does not have — the git-ignored
+alone, run three times in a fresh worktree at this branch with the project
+interpreter, reported **8 failed / 1,004 passed** on the first run and **7
+failed / 1,005 passed** on the second and third, all with 74 skipped and exit 1.
+The suite is therefore not deterministic here, and the eighth was not identified
+— which is itself worth knowing before anyone quotes a count from it. The seven
+that repeat fall into two groups. Two need working-tree material that a
+worktree does not have — the git-ignored
 `docs/ip/ELEMENT_SUPPORT_BINDINGS.yaml` and the untracked
 `research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v7/` — and say nothing
 about the repository. The other five are
