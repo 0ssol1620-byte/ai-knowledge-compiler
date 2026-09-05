@@ -92,7 +92,11 @@ as `path:line`, the test or receipt that backs the status, the nearest ADR or
 contract, and the smallest next step — and every one of the nineteen carries all
 four. Two of them are sometimes null, and a null is written out with its reason
 rather than omitted, because an omitted element and an empty one are different
-claims. **Backed by** reads "nothing tests this" on the four rows where nothing
+claims. Where a **Backed by** names a test file *without* a line number, §6's
+attribution check asserts the file actually contains what the sentence around it
+claims; a bare filename used to be the one citation shape nothing verified, and
+one false attribution got through that gap before it was closed. **Backed by**
+reads "nothing tests this" on the four rows where nothing
 does — 7, 8, 11 and 19 — and each of those names what *is* tested nearby, so an
 untested capability is not confused with an untested neighbourhood; row 17 is the
 mixed case, where the guard against the claim is tested and the posture behind it
@@ -113,10 +117,29 @@ over three committed PDFs) and refuses to load if the result stops matching the
 frozen digest at `:34`, checked at `:90`
 (`sha256:929153d4d0ad1dd6e7a52e3aebdab45747c9792b64869dbb636c969ab1c79abc`).
 
-**Backed by.** `nextjs/lib/explore-sample.test.ts`, plus explore assertions in
-`nextjs/e2e/ultimate-blueprint.spec.ts`, `e2e/ultimate-mobile-a11y.spec.ts`,
-`e2e/ux-polish.spec.ts`. The digest guard is the strongest thing here: it makes
-the page fail the build rather than render a world nobody compiled.
+**Backed by.** `nextjs/lib/explore-sample.test.ts` (the compile and the frozen
+digest), and the two e2e specs that actually assert explore:
+`nextjs/e2e/ultimate-blueprint.spec.ts:7` (the landing CTA `Explore a Compiled
+World`) and `:19` (`page.goto("/explore")` ahead of the Source/World
+assertions); `nextjs/e2e/ux-polish.spec.ts:5` (`/explore` inside
+`PUBLIC_PATHS`) and `:48` ("Explore reaches the actual interactive instrument
+without a hero-length detour"). The digest guard is the strongest thing here: it
+makes the page fail the build rather than render a world nobody compiled.
+
+**A correction, because it changes what the `explore` lane will find.**
+`nextjs/e2e/ultimate-mobile-a11y.spec.ts` carries **no explore assertion at
+all** — a case-insensitive search over all 89 lines returns nothing. Its five
+tests cover the public proof routes (including the `/benchmarks` 404 this
+document cites at `:35` in row 5), mobile Runs, the Activity audit endpoint, the
+command palette, and screenshot capture. Lane contract §5 instructs the
+`explore` lane to "update/replace explore assertions in
+`e2e/ultimate-blueprint.spec.ts`, `e2e/ultimate-mobile-a11y.spec.ts`,
+`e2e/ux-polish.spec.ts` (grep)". In the third file there is nothing to update,
+so for that file the instruction means **add** mobile explore coverage, not
+revise it — and a lane that greps first and finds nothing should not conclude it
+is in the wrong repository. An earlier revision of this row reproduced the
+contract's three-file list as though it were a verified finding; it was not.
+§6 records the check that now makes that class of error fail.
 
 **Why not `TESTED` for the row as written.** The row is "Explore redesign" —
 blueprint §15–§29's three-act interactive film. What exists is the *predecessor*:
@@ -293,11 +316,24 @@ validate today.
 honest: a version with no activation timestamp says so instead of showing a
 plausible date.
 
-**Backed by.** `nextjs/lib/world-read-model.test.ts`;
-`nextjs/lib/world-version-diff.test.ts`; `nextjs/e2e/world-lifecycle.spec.ts`.
-Server-side lifecycle: `supabase/migrations/0007_foundation_world_lifecycle.sql`
-and `supabase/tests/foundation_world_lifecycle.sql` (pgTAP — **requires a live
-Postgres and was not executed here or in the 2026-09-03 closure**).
+**Backed by**, with what each file actually asserts — the three are not equally
+close to this row, and the previous revision of this line did not say so.
+`nextjs/e2e/world-lifecycle.spec.ts:159` and `:160` drive the surface with a
+versions fixture carrying `last_activated_at` and `activation_count`, the two
+fields named above. `nextjs/lib/world-version-diff.test.ts:147` asserts the
+comparison *replaces* the history list rather than rendering beside it.
+`nextjs/lib/world-read-model.test.ts` is the read model's fail-closed suite (six
+tests; `:99` is the `not_yet` discipline for review and receipts) and asserts
+nothing about `history` — it backs the type this row's field lives on, not the
+field itself. **No test asserts the `"not activated"` fallback**: that literal
+occurs exactly once in the repository, at
+`nextjs/components/world-version-diff.tsx:127`. So the honesty behaviour
+described above is `IMPLEMENTED`, and this row's `TESTED` covers the history
+data contract and its rendering, not the fallback. Server-side lifecycle:
+`supabase/migrations/0007_foundation_world_lifecycle.sql` and
+`supabase/tests/foundation_world_lifecycle.sql` (pgTAP, `select plan(28)` —
+**requires a live Postgres and was not executed here or in the 2026-09-03
+closure**).
 
 **Nearest contract.** Lane contract §4.5.
 
@@ -859,7 +895,8 @@ six export formats signed with Ed25519, an offline verifier CLI
 (`nextjs/scripts/verify-signed-export.mjs`, `pnpm verify:export`) and a read-only
 stdio MCP server shipped as readable source
 (`nextjs/public/developer/tavonel-mcp.mjs`, 400 lines, with
-`nextjs/lib/mcp-server.test.ts`) that refuses to start if any tool is not a read.
+`nextjs/lib/mcp-server.test.ts:76` "exposes no tool that writes" and `:85`
+"refuses to start if a write tool is added").
 Partner destinations are `ABSENT`.
 
 ---
@@ -891,20 +928,44 @@ or lane contract §7.
 
 ## 6. How the citations in this file were checked
 
-A gap matrix is worth nothing if its pointers drift, and a `path:line` that does
-not resolve is a fabricated citation whether or not anyone meant it. Every
-pointer in this document was therefore machine-checked before it was committed:
-241 assertions — each `path:line` must exist **and** the line must contain the
-text this document says is there, each "exists" claim must resolve, each "absent"
-claim must not, and §3's two load-bearing absences (an empty `failures/`, zero
-scored `summary.json`) are asserted rather than assumed, so a later campaign run
-turns this file red instead of leaving it quietly wrong. Core paths were read
-from the worktree at `26bb892`; site paths with `git show origin/main:<path>`;
-arena paths from the untracked working tree, which is why they are marked as
-such throughout §3.
+A gap matrix is worth nothing if its citations drift, and a `path:line` that does
+not resolve is a fabricated citation whether or not anyone meant it. The
+citations here were machine-checked before this file was committed: **281
+assertions**, in six classes. Core paths were read from the worktree at
+`26bb892`; site paths with `git show origin/main:<path>`; arena paths from the
+untracked working tree, which is why they are marked as such throughout §3.
 
-Four of those assertions are *computed*, not merely looked up, because two rows
-make claims that a lookup cannot defend:
+1. **`path:line`** — the file must exist, the line must exist, and the line must
+   contain the text this document says is there.
+2. **Existence** — each "this file exists" claim resolves.
+3. **Absence** — each "this file does not exist" claim still does not.
+4. **Attribution** — a file named in a **Backed by** *without* a line number
+   must contain the content the sentence around it claims. Added in round 3;
+   see below for why.
+5. **Negative attribution** — where this document says a file asserts *nothing*
+   about a subject, the file must not mention it.
+6. **Counts** — every number stated in prose (tests per file, lines per file,
+   how many `connector-oauth*.test.ts` files there are) is recounted from the
+   source rather than trusted.
+
+**The guarantee in the previous revision was wider than the check underneath
+it.** It said every pointer was machine-checked and that each must exist and
+contain its attributed text — but the check only ever walked class 1. A file
+named without a line number carried no line to check, so classes 4, 5 and 6 did
+not exist, and a false attribution in that blind spot passed silently. One did:
+row 1 listed `nextjs/e2e/ultimate-mobile-a11y.spec.ts` among the specs holding
+"explore assertions", and that spec contains no reference to explore at all. The
+list had been copied from lane contract §5's grep hint as though the hint were a
+finding. Both halves are now fixed — row 1 says what each spec really asserts,
+and the check grew the three classes that make the guarantee true rather than
+the guarantee shrink to match a weaker check. Reading the same way through the
+rest of the file found one more, smaller instance: row 6 cited three test files
+for World History, of which `world-read-model.test.ts` asserts nothing about
+`history`, and no test at all asserts the `"not activated"` fallback. Row 6 now
+says so, and its grade is scoped to what is actually covered.
+
+Six of the 281 assertions are *computed*, not merely looked up, because some
+rows make claims that a lookup cannot defend:
 
 - Row 18 enumerates six pack ids and seven blueprint directories. The check
   compares the enumeration against the actual directory listing, so a pack added
@@ -916,15 +977,30 @@ make claims that a lookup cannot defend:
   third hits exactly one file — `components/opening-film.tsx`, which lane
   contract §1 locks. A recommendation that would break the build is worth
   catching before someone follows it.
+- Row 6's claim that `"not activated"` is written in one place is computed with
+  a single `git grep -l -F` over `nextjs/`, and the result must be exactly
+  `components/world-version-diff.tsx`. If a test ever asserts that string, this
+  check goes red and the row's caveat should be deleted — a check that fails
+  when the code improves is doing its job.
+- Row 13's "seven `connector-oauth*.test.ts` files" is a directory count, not a
+  remembered number.
+
+A note on cost, since it decides whether anyone re-runs this: the `"not
+activated"` scan was first written as one `git show` per file over the whole
+site tree. That is thousands of subprocesses and does not finish in a usable
+time. One `git grep` over the ref answers the same question in one call. A check
+nobody will wait for is a check nobody runs.
 
 The check found four errors on its first run at 185 assertions, and all four are
 fixed above: three line numbers had drifted by one or two lines, and one absence
-was reported as a presence. The 56 assertions added in the second round — the
-per-row elements that completed rows 5, 7, 8, 11, 13 and 15–19 against lane
-contract §5 — passed on their first run, which is the expected outcome of writing
-the pointer and the check together rather than the pointer first. The error worth
-recording is from the first round, because it is a trap for anyone verifying this
-file by hand:
+was reported as a presence. The 56 assertions added in the second round passed
+on their first run. The 40 added in the third round — 11 new `path:line`
+pointers, 14 attributions, 2 negative attributions, 11 counts and 2 computed —
+found **no further error**, which is worth stating plainly: every count this
+document asserts in prose (12, 14, 25, 21, 25 and 47 tests; 400, 91 and 89
+lines; 7 connector files) recomputed to the stated value. The one defect in the
+class was the one already reported. Two errors are worth recording, because both
+are traps for anyone verifying this file by hand. The first is from round one:
 
 > `git show origin/main:nextjs/app/api/collections/[id]/revise/route.ts`
 > **exits 0 and prints nothing** when the path does not exist. The bracket is
@@ -932,13 +1008,24 @@ file by hand:
 > "success". Existence must be decided from `git ls-tree -r --name-only`, never
 > from that exit code.
 
+The second is from round three, and it is the more dangerous of the two because
+nothing about it looks wrong:
+
+> A citation with **no line number cannot fail a `path:line` check**. It is not
+> skipped with a warning; it is not in the table at all. So a document can be
+> "fully verified" and still attribute a behaviour to a file that has no trace
+> of it. Any checker of this kind must decide what to do with bare filenames
+> *before* it reports coverage, or its coverage number is measuring the wrong
+> set.
+
 The checker itself is not committed — this lane owns exactly one file — so the
 check is described here rather than shipped. It is a table of
-`(repo, path, line, expected substring)` tuples, a list of paths that must
-exist, a list that must not, and the four computed assertions above; anyone
-re-deriving it should start from the `git ls-tree` rule, because that is the
-part that is easy to get wrong and silent when you do. Committing it as a repo
-gate is worth doing and needs an ownership grant this lane does not have.
+`(repo, path, line, expected substring)` tuples; a list of paths that must
+exist and a list that must not; the attribution, negative-attribution and count
+tables added in round three; and the six computed assertions above. Anyone
+re-deriving it should start from the two traps quoted above, because both are
+silent when you get them wrong. Committing it as a repository gate is worth
+doing and needs an ownership grant this lane does not have.
 
 ---
 
