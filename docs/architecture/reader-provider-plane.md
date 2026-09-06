@@ -37,7 +37,7 @@ Honest description of `legacy_pdf_v1`:
 
 | Claim | Reality |
 |---|---|
-| Tier | `BEST_EFFORT`. No §27 qualification receipt exists, so no reader in this package is `VERIFIED_NATIVE` or `VERIFIED_HYBRID`, and `ReaderCapability` refuses to construct one without a receipt digest. |
+| Tier | `BEST_EFFORT`. No §27 qualification receipt exists, so no reader in this package is `VERIFIED_NATIVE` or `VERIFIED_HYBRID`. A VERIFIED tier must carry a receipt **path, sha256 and date** (`ReaderCapability` refuses less), and `register()` must find that file in this repository and re-digest it — a sha256-shaped string alone is refused. |
 | Features | `native_text`, `layout` only. It does not reconstruct tables, formulas, comments or tracked changes, so it declares none of them. `ReaderRegistry.register()` refuses a provider that declares `tables` here — that refusal is a test. |
 | Scanned PDFs | Not handled. This is the *native* path (blueprint §14.1). §14.2's page-image → OCR → specialist chain is not in this package and no OCR provider is registered. The registry has no visual reader; `VisualReaderProvider` exists as the frozen shape of §9's optional half and has no implementation. |
 | Evidence | `pdf` locators, and only for blocks that carry a real `bbox1000`. A block without a rectangle yields **no** locator rather than a guessed one. |
@@ -95,16 +95,32 @@ it claims:
    registry cannot witness it (fail closed);
 3. every `provider.probe_samples()` entry is inspected, `can_read` must return
    true, `extract_native` must succeed;
-4. **per capability, not across their union**: a capability must be exercised by
-   at least one probe sample whose inspected MIME and source family it matches,
-   and every feature *that capability* declares must appear in the
-   `NativeExtraction.observed_features()` of the samples that matched it —
-   derived from concrete output fields (text, `bbox1000`, `table_id`, `formula`),
-   never from the declaration. A capability no sample exercises is refused, so a
-   feature witnessed on a `.txt` can never qualify a PDF capability;
+4. **per MIME pattern and per source family** — not per capability, and not
+   across their union (contract §8.1): *every* pattern a capability declares must
+   be matched by at least one probe sample, *every* source family it declares
+   must be the inspected family of at least one sample, and every feature *that
+   capability* declares must appear in the `NativeExtraction.observed_features()`
+   of the samples that matched it — derived from concrete output fields (text,
+   `bbox1000`, `table_id`, `formula`), never from the declaration. Folding
+   `text/plain` and `application/pdf` into one capability therefore no longer
+   lets the `.txt` probe qualify the PDF half, and that is why `plain_text_v1`
+   ships a `.md` probe beside its `.txt` one;
 5. every emitted locator must validate against the bundled verbatim copy of
-   `evidence-locator.v2.schema.json`;
-6. `health_check()` must be healthy.
+   `evidence-locator.v2.schema.json` **and address the probe sample it came
+   from** — same ids, a kind that can address that MIME, a page inside it;
+6. a `VERIFIED_NATIVE` / `VERIFIED_HYBRID` capability must name a §27
+   qualification receipt that exists in this repository. The model requires all
+   three of path, sha256 and date; `register()` then opens the file and compares
+   the digest. A sha256-shaped string is not a receipt — without this check a
+   provider self-declaring `VERIFIED_NATIVE` with `sha256:000…0` registers and
+   outranks every honest `BEST_EFFORT` reader in `_STATUS_RANK`;
+7. `health_check()` must be healthy.
+
+**Ceiling on globs, recorded not hidden:** a glob pattern (`*`, `image/*`) is
+witnessed by whatever sample matches it, so one sample of a family admits the
+whole family's MIME types — the declared *families* are what get checked one by
+one. Listing concrete patterns is what makes a registration mean something, and
+both shipped providers declare concrete patterns only.
 
 **Known ceiling:** `PROBEABLE_FEATURES` is four of the fourteen frozen
 `ReaderFeature` values. A provider that genuinely produces `comments`,
@@ -140,6 +156,14 @@ refusal. Fields that were measured are measured; fields that were not are `None`
 `read()` verifies the extraction before it becomes an accepted receipt, for the
 same reason registration probes a declaration:
 
+- the **inspection is re-derived from the bytes** inside `read()`. A caller may
+  pass one, but it is a cross-check, never the decision: an inspection that
+  disagrees with the bytes is `RECEIPT_MISMATCH`. A stale or forged inspection
+  used to make the registry accept a source the inspector refuses, and to
+  publish a security refusal as ordinary corruption in the class lane F consumes;
+- the resolved provider's own `can_read(source, inspection)` must also say yes →
+  otherwise `UNSUPPORTED_FORMAT`. Resolution matches a *declaration*; `can_read`
+  is the provider looking at these bytes, and both must agree;
 - `sourceVersionId`, `representationId` and `providerId` on the output must equal
   the ones asked for → otherwise `RECEIPT_MISMATCH`;
 - `outputDigest` is recomputed with `digest_units()` — the one definition
@@ -149,9 +173,20 @@ same reason registration probes a declaration:
   `FORMULA_FAILURE`, `TEXT_OMISSION`, else `PRESERVATION_FAILED`). A declaration
   never satisfies a requirement;
 - every locator the output carries (emitted or attached to a unit) must validate
-  against the frozen schema → otherwise `EVIDENCE_BROKEN`. Registration-time
-  validation alone was not enough: locator ids come from the *caller's*
-  `sourceVersionId`/`representationId`, which registration never sees.
+  against the frozen schema **and be bound to the source actually read**:
+  - its `sourceVersionId` / `representationId` must be this source's →
+    otherwise `RECEIPT_MISMATCH`. The schema only says a locator is well
+    *formed*; it cannot say whose source it names, so a locator citing
+    `SRC-OTHER-TENANT-9999` used to ride out on an accepted run;
+  - its `locatorKind` must be one the inspected MIME can carry
+    (`_ADMISSIBLE_LOCATOR_KINDS`; a MIME absent from that table admits none, which
+    is why plain text carries no locator) → otherwise `EVIDENCE_BROKEN`;
+  - its `page`, when it has one, must lie inside the source's inspected
+    `page_like_units` → otherwise `EVIDENCE_BROKEN`. A `pdf` locator with page
+    999,999 on a `.txt` was accepted before this.
+
+  Registration-time validation alone was not enough: locator ids come from the
+  *caller's* `sourceVersionId`/`representationId`, which registration never sees.
 
 `$/source`, `$/page` and `$/accepted knowledge unit` are therefore **not
 computable** from these receipts yet: the cost half is null on purpose rather
@@ -187,6 +222,14 @@ constitution's "separate operational failure from semantic failure" violation.
 A source whose bytes do not decode as the text they were detected as (a CP949
 tail past the 8 KB sniff window, say) is `CORRUPT_SOURCE`, not
 `PROVIDER_UNAVAILABLE`.
+
+**A wrong reader is not an unavailable one.** `SEMANTIC_FAILURE_CLASSES`
+(`RECEIPT_MISMATCH`, `EVIDENCE_BROKEN`) charges a *separate* counter,
+`ReaderHealth.semantic_strikes`, and never the breaker: a provider that binds its
+output or its evidence to the wrong source is defective, and hiding it behind
+`PROVIDER_UNAVAILABLE` would misname the defect. Nothing acts on the counter
+automatically — de-registration is a manual act in P0 (contract §8.1), and the
+threshold that would make it automatic is a decision, not a default.
 
 **Ceiling, recorded not hidden:** Python cannot kill a worker thread, so a
 timed-out reader runs to completion in the background. That leaks a CPU second,

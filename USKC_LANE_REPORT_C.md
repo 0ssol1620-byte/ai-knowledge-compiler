@@ -9,8 +9,11 @@ Worktree `D:\CodexProjects\uskc-lanes\core-c-reader-sdk`, base core `d9db24c`.
 - SDK + doc commit: `d6a7203`
 - Report commit: `5dd15a6` (`5dd15a6cf86ea61bf74ed980b97bf26b45faf910`), SHA note `11c5a94`
 - **Repair-pass commit: `f82fd57` (`f82fd57b1afdfd66094be9d7f4ceaed8d4278375`)** —
-  see the Repair section at the end of this file. The commit that records this
-  line follows it and is the branch tip.
+  see the Repair section at the end of this file. The commit that records that
+  line was `63d9245e187ade32c4fb1da910bb171d49a9715c`.
+- **Repair round 2 (2026-09-06): `88878dd`** (the four code findings + 13 failure-path
+  tests) and the doc/report commit that follows it, which is the branch tip. See
+  "Repair round 2" at the end of this file.
 - No PR, no merge, no deploy, no migration. Core repo — no Vercel preview applies.
 
 ## 2. Files created / modified
@@ -91,7 +94,10 @@ Success: no issues found in 6 source files
 
 ### Gate 3 — `PY -m pytest tests/unit -q -p no:randomly`
 
-exit **1** — **7 pre-existing failures, none in this lane's scope.**
+exit **1** — **7 failures, none in this lane's scope, none of them pre-existing
+on `main`.** ("Pre-existing" was true only relative to this lane's own first pass
+in the same worktree; all seven are artifacts of running the CI scope *inside a
+worktree* — see the struck escalation below.)
 
 ```
 FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[stale-attribution-correction-2026-08-19.json]
@@ -114,11 +120,23 @@ E         The retraction no longer applies to these bytes, so the retracted clai
 ```
 
 None of these tests import `akc_readers`, and no file they read is touched by
-this branch (`git status` shows three paths, all listed in §2). **They are
-nonetheless a `CLAUDE.md` "stop the line" class — evidence hash mismatch — and
-the founder should see them:** five retraction receipts point at digests that no
-longer match the bytes on disk, which by that test's own words means the
-retracted claim is live again. Not this lane's to fix.
+this branch (`git status` shows three paths, all listed in §2).
+
+> **Struck in repair round 2 (contract §8.1, "Withdrawn stop-the-line").** This
+> paragraph originally escalated the seven failures to the founder as a
+> `CLAUDE.md` "source or evidence hash mismatch" stop-the-line, on the strength
+> of the test's own wording that "the retracted claim is live again". That
+> diagnosis was wrong and I did not check the baseline before publishing it. The
+> same tests pass in the **main checkout at the same commit** (the orchestrator
+> measured 1,017 passed, 1 environment-dependent tooling failure). Five of the
+> seven are a CRLF-vs-LF working-tree artifact — the receipt's declared digest
+> `ba444ddb…` is the CRLF rendering of the bytes that a fresh worktree checks out
+> as LF (`522d8a5c…`, the git blob's own sha256) — and the other two fail because
+> `.gitignore:157` excludes `research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v7/`,
+> which exists only in the main checkout. **No evidence was overwritten and no
+> retracted claim is live.** The integrator adds an `eol=lf` attribute for the
+> receipt paths only if the committed blobs are LF and a fresh worktree then
+> hashes identically (§8.1). Nothing here is the founder's to act on.
 
 ### Gate 3b — `PY -m mypy packages services` (the CI mypy scope)
 
@@ -249,8 +267,14 @@ Production deploy 안 함. Core repo이므로 Preview deployment도 생성되지
 3. **`ENCRYPTED_SOURCE` has no `FailureCode`.** Should F-codes gain an
    encryption code (so recovery policy can act on it), or does §45 stay the only
    vocabulary that expresses it?
-4. **§27 qualification.** No `VERIFIED_*` tier can exist anywhere in the product
-   until a qualification receipt is produced and committed. Who runs that suite,
+4. **§27 qualification.** No `VERIFIED_*` tier can exist **in this registry**
+   until a qualification receipt is produced and committed: since repair round 2
+   the tier requires a receipt path, a sha256 and a date, and `register()` opens
+   that file in this repository and re-digests it. (As first written this item
+   said "anywhere in the product", which was a claim about code that did not
+   exist: the registry then accepted any 64-hex string and `resolve()` published
+   `VERIFIED_NATIVE` on it. It does not any more, and the scope of the sentence
+   is this package — no other package is bound by it.) Who runs that suite,
    against which corpus, and where do the receipts live?
 5. **Timeout kill.** A timed-out reader thread runs to completion (Python cannot
    kill a thread). Accept the leaked CPU second, or move reader execution into
@@ -381,6 +405,12 @@ toward it. A capability no sample exercises is refused.
 Tests: `test_a_capability_no_probe_sample_exercises_is_refused` (the reviewer's
 two-faced provider, txt + pdf) and `test_a_capability_with_its_own_probe_sample_registers`
 (the fix refuses over-claiming, not multi-capability providers as such).
+
+> **Superseded in repair round 2.** "A capability no sample exercises is refused"
+> was true only when the over-claim was *split across* capabilities. Folded into
+> one capability's `mime_patterns` / `source_families` it was neither refused nor
+> witnessed. Witnessing is now per MIME pattern and per source family — see
+> R2-1 below.
 
 ## R4 — `read()` never verified the extraction against the source
 
@@ -604,3 +634,258 @@ coverage gate cannot move because `akc_readers` is deliberately outside
 `[tool.coverage.run] source`; `tools/repro/run_test_scopes.py --scopes full`
 runs `research/model_arena_20260903` paths this lane must not touch while the
 Arena chain is live).
+
+---
+
+# Repair round 2 (2026-09-06, `REPAIR2_FINDINGS_2026-09-06.json` key `C`)
+
+Two `blocker` and two `major` code findings, one `major` doc finding, and a list
+of contradicted report claims. **Every one is accepted and fixed; none is
+disputed.** I reproduced each before changing anything. Scope was not widened
+beyond the findings, the statements the reviewer contradicted, and the two
+rulings contract §8.1 addresses to this lane.
+
+The four code fixes landed in **one commit**, not one per finding, because they
+overlap inside `registry.py` (the same import block, the same `register()` loop
+and the same `_verify_output()` call site); splitting them would have meant
+fabricating a history in which each half compiled alone. The commit body names
+all four. The doc and report corrections are a second commit.
+
+## R2-1 — Probe witnessing was per capability, not per MIME pattern
+
+*(blocker, `registry.py:225`; ruling §8.1 "C registration and read path")*
+
+`register()` marked a capability `exercised` as soon as **one** probe sample
+matched **any** of its patterns. A capability declaring
+`("text/plain", "application/pdf")` with a single `probe.txt` therefore
+registered, won `resolve()` for a real PDF, and produced an ACCEPTED §44 receipt
+whose "native text" was the PDF's raw header bytes. The same hole let a
+`mime_patterns=("*",)` capability declaring four source families be fully
+qualified by one 18-byte `.txt`, after which `entries()` published all four in
+`ReaderRegistryEntry.qualified_source_families` — a §22 field named *qualified*
+filled from a declaration.
+
+Fix: witnessing is now **per declared MIME pattern and per declared source
+family**. Every pattern must be matched by at least one probe sample, every
+family must be the inspected family of at least one sample, and only the samples
+that matched a capability contribute features to it. `plain_text_v1` consequently
+ships a second probe sample (`probe.md`) — before this, `text/markdown` was in
+the shipped registry on the `.txt` sample's back, exactly the shape the finding
+describes.
+
+Recorded ceiling (doc, "Ceiling on globs"): a glob is still witnessed by whatever
+sample matches it, so `*` plus one family is one sample away from that family's
+MIME types. The declared *families* are what get checked one by one. Both shipped
+providers declare concrete patterns only.
+
+Tests: `test_a_mime_pattern_no_probe_sample_exercises_is_refused` (the reviewer's
+folded two-MIME capability), `test_a_source_family_no_probe_sample_exercises_is_refused`
+(the wildcard-over-four-families provider), `test_every_published_qualified_family_was_witnessed_by_a_probe`
+and `test_plain_text_probes_every_mime_pattern_it_declares`.
+
+## R2-2 — `_verify_output` never bound a locator to the source
+
+*(blocker, `registry.py:556`; ruling §8.1)*
+
+Locators were only **shape**-validated against the frozen schema. Nothing
+compared a locator's `sourceVersionId` / `representationId` with the source being
+read, its kind with the source's MIME, or its page with the source's pages — so
+an accepted run could carry evidence pointing at another tenant's source version,
+or a `pdf` locator with page 999,999 on a `text/plain` file that has no pages.
+
+Fix: `_verify_locator_binding()` runs after schema validation on every locator an
+accepted run carries, and at registration on every probe locator:
+
+- ids not this source's → `RECEIPT_MISMATCH`;
+- `locatorKind` not admissible for the inspected MIME → `EVIDENCE_BROKEN`. The
+  table (`_ADMISSIBLE_LOCATOR_KINDS`) is fail-closed: a MIME absent from it
+  admits **no** locator, which is why `plain_text_v1` emits none;
+- `page` outside the inspected `page_like_units` → `EVIDENCE_BROKEN`.
+
+Tests: `test_a_locator_naming_another_source_is_refused_and_strikes_semantically`,
+`test_a_locator_kind_that_cannot_address_the_source_is_refused`,
+`test_a_locator_page_outside_the_source_is_refused`.
+
+Per §8.1, a run that binds to the wrong source is refused **and counted on a
+separate semantic strike counter** (`SEMANTIC_FAILURE_CLASSES` →
+`ReaderHealth.semantic_strikes`), never on the operational circuit breaker: a
+wrong reader is not an unavailable worker, and `PROVIDER_UNAVAILABLE` would
+misname the defect. Nothing acts on the counter — de-registration is manual in
+P0, and the test asserts `circuit_open is False` after a strike.
+
+## R2-3 — `read()` trusted the caller's inspection and never called `can_read()`
+
+*(major, `registry.py:338`; ruling §8.1)*
+
+The inspection was taken on trust: never re-derived from the bytes, never bound
+to the source version, and `can_read()` was used only at registration. A forged
+or stale inspection made the registry accept a source the inspector refuses, and
+downgraded a security refusal to ordinary corruption — the string lane F consumes
+as audit vocabulary (contract §4.6).
+
+Fix: `read()` re-derives the inspection with `inspect_source(source)`. The
+`inspection` keyword is now optional and is a **cross-check**: one that disagrees
+with the bytes is refused `RECEIPT_MISMATCH` before any reader is called. The
+resolved provider's own `can_read(source, inspection)` must then also say yes, or
+the run is refused `UNSUPPORTED_FORMAT` — resolution matches a declaration,
+`can_read` looks at these bytes, and both must agree.
+
+Tests: `test_a_caller_inspection_that_disagrees_with_the_bytes_is_refused` (the
+reviewer's `resume.docx`: honest inspection `corrupt=True`, forged one refused,
+no inspection at all → `CORRUPT_SOURCE`), `test_a_provider_that_declines_the_source_at_can_read_is_refused`.
+
+## R2-4 — A VERIFIED tier was accepted on any sha256-shaped string
+
+*(major, `models.py:96`; ruling §8.1)*
+
+`ReaderCapability` checked only that a VERIFIED tier carried *something*
+sha256-shaped. Nothing checked the receipt exists, and the model carried no date
+although contract §1 requires "a §27 qualification receipt (sha256 of a committed
+receipt) **and a date**". A provider self-declaring `VERIFIED_NATIVE` with
+`sha256:000…0` registered, and `resolve()` published `VERIFIED_NATIVE`,
+outranking every honest `BEST_EFFORT` reader in `_STATUS_RANK`.
+
+Fix: the tier now carries `qualification_receipt` + `qualification_receipt_path`
++ `qualified_at`, all three required for a VERIFIED status and refused for any
+other status; `register()` resolves the path under **this repository**, refuses a
+path that escapes it or does not exist, and re-digests the bytes. A model cannot
+touch a disk, so the existence check is where the provider enters the registry.
+
+This is a deliberate deviation from the §4.4 sketch's two-field
+`ReaderCapability`, made because §8.1 requires "path + sha256 + date"; §8.1 is
+newer than §4.4 and binding for this round. Nothing in the campaign consumes the
+Python `ReaderCapability` shape yet (lane D derives manifest v1 from the live
+site pipeline, §7 R-4), so no other lane is affected.
+
+Tests: `test_a_verified_tier_needs_a_receipt_path_and_a_date_not_only_a_digest`,
+`test_a_verified_tier_whose_receipt_is_not_committed_is_refused`,
+`test_a_verified_tier_whose_receipt_digest_does_not_match_is_refused`, and
+`test_a_verified_tier_backed_by_a_committed_file_registers` — the last one proves
+the check is not vacuous by pointing at a real committed file
+(`contract/enums.v1.json`) with its real digest. That file stands in for a §27
+receipt in a test and **no qualification is claimed**; no receipt exists in this
+repository and none was created.
+
+## R2-5 — The doc claimed a guarantee the code did not make
+
+*(major, `docs/architecture/reader-provider-plane.md:104`)*
+
+"A capability no sample exercises is refused, so a feature witnessed on a `.txt`
+can never qualify a PDF capability" was false for the folded-capability shape.
+The registration section now describes per-pattern and per-family witnessing, the
+locator binding, the `can_read` step, the qualification-receipt rule and the glob
+ceiling. The sentence at :151-155 that gave the run-time check's reason ("locator
+ids come from the caller's `sourceVersionId`/`representationId`, which
+registration never sees") now sits above the comparison it names, which the
+run-time check previously never made.
+
+## Contradicted claims, corrected in place
+
+| Claim | Where | Correction |
+|---|---|---|
+| stop-the-line escalation of the 7 `tests/unit` failures | §3 Gate 3 | **Struck** per §8.1. CRLF-vs-LF worktree artifact (5) + git-ignored corpus absent from worktrees (2); the same tests pass in the main checkout at the same commit. No evidence was overwritten. |
+| "7 **pre-existing** failures" | §3 Gate 3 heading | Qualified: pre-existing only against this lane's own first pass in the same worktree, not against `main`. |
+| "A capability no sample exercises is refused" | Repair §R3 | Marked superseded; true per pattern and per family since R2-1. |
+| "No `VERIFIED_*` tier can exist anywhere in the product until a qualification receipt is produced and committed" | §6 question 4 | Rewritten: it is now true **of this registry** and enforced (R2-4); as written it described code that did not exist. |
+| "this lane emits locators … validated against its own verbatim copy" (§5.5) and the §44 receipt table | §5, doc | Still true, and now stronger: validation is shape **plus** binding at both registration and run time. |
+
+Everything else the reviewer checked and confirmed stands unchanged: both frozen
+artifacts are byte-identical to `contract/` and match `SHA256SUMS`; the seven
+enums equal the frozen value lists in order; `pyproject.toml` carries exactly the
+two allowed rows with `[tool.coverage.run]` untouched; no Protected Core module,
+`research/**`, `docs/evidence/**` or `packages/contracts/**` path is in the diff;
+no barred phrase, no VERIFIED entry, no activation flag, no hand-typed preserved
+list, no roadmap row; every commit carries both required trailers.
+
+## Files changed in repair round 2
+
+| Path | Change |
+|---|---|
+| `packages/readers/src/akc_readers/registry.py` | per-pattern/per-family witnessing; `_verify_qualification_receipt`; `_verify_locator_binding` (registration + run); `read()` re-derives the inspection and calls `can_read`; `SEMANTIC_FAILURE_CLASSES` and the strike counter |
+| `packages/readers/src/akc_readers/models.py` | `ReaderCapability` receipt path + date; `ReaderHealth.semantic_strikes` |
+| `packages/readers/src/akc_readers/providers.py` | `plain_text_v1` probes `text/markdown` as well as `text/plain` |
+| `packages/readers/src/akc_readers/__init__.py` | exports `SEMANTIC_FAILURE_CLASSES` |
+| `packages/readers/tests/test_reader_plane.py` | 13 new failure-path tests (43 → 56) |
+| `docs/architecture/reader-provider-plane.md` | registration, run-verification, breaker/strike and tier sections corrected |
+| `USKC_LANE_REPORT_C.md` | this section and the in-place corrections above |
+
+No new dependency. No file outside the lane's §3 ownership row (plus this report,
+written at the orchestrator's instruction) was touched. Nothing was enabled;
+`research/model_arena_20260903/**` was neither read nor run.
+
+## Repair round 2 gates
+
+Every gate from the first report rerun from the worktree with the project
+interpreter (`D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe` =
+`PY`).
+
+### R2 gate 1 — `PY -m pytest packages/readers/tests -q -p no:randomly`
+
+exit **0**
+
+```
+........................................................                 [100%]
+56 passed in 2.25s
+```
+
+(43 before this round, 56 after: 13 new failure-path tests.)
+
+### R2 gate 2a — `PY -m ruff check packages/readers`, `packages`, and `--extend-select RUF100`
+
+exit **0** for all three.
+
+```
+All checks passed!
+```
+
+### R2 gate 2b — `PY -m mypy packages/readers`
+
+exit **0**
+
+```
+Success: no issues found in 6 source files
+```
+
+### R2 gate 3 — `PY -m pytest tests/unit -q -p no:randomly`
+
+exit **1** — the **same 7 failures, the same node ids**, unchanged by this round;
+1,005 passed (was 1,005), nothing new failed. They are the worktree artifacts
+§8.1 withdrew as a stop-the-line, not a defect of this branch.
+
+```
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[stale-attribution-correction-2026-08-19.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[question-set-v1-invalidation-2026-08-19.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[v6-acquisition-failure-diagnosis-2026-08-19.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[v8-acquisition-failure-2026-08-20.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[v8-post-open-instrumentation.json]
+FAILED tests/unit/test_verification_tooling_controls.py::test_the_shipped_bindings_all_validate
+FAILED tests/unit/test_w6_v8_confirmatory.py::test_the_dry_run_exercises_the_confirmatory_harness_on_development_data
+7 failed, 1005 passed, 74 skipped in 164.12s (0:02:44)
+```
+
+The `docs/repro/TEST_SCOPE_SELF_TEST.json` side effect appeared again and was
+reverted with `git checkout --`; it is in no commit.
+
+### R2 gate 3b — `PY -m mypy packages services` (the CI mypy scope)
+
+exit **1** — the same 2 pre-existing errors, neither in this lane's files.
+
+```
+packages\absorption\src\akc_absorption\synthetic_corruption.py:36: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+services\api\src\akc_api\collection_retrieval_api.py:413: error: Invalid index type "tuple[UUID | None, int | None]" for "dict[tuple[UUID, int], DocumentVersion]"; expected type "tuple[UUID, int]"  [index]
+Found 2 errors in 2 files (checked 269 source files)
+```
+
+### R2 gate 4 — `git status` / push
+
+Working tree clean except the intended files. The two gates the earlier passes
+skipped are skipped again for the same reasons (`akc_readers` is deliberately
+outside `[tool.coverage.run] source` and this lane may not add a third
+`pyproject.toml` row; `tools/repro/run_test_scopes.py --scopes full` runs
+`research/model_arena_20260903` paths this lane must not touch while the Arena
+chain is live).
+
+Repair round 2 commits: `88878dd` (the four code findings + 13 tests) and the
+doc/report commit that follows it, which is the branch tip and the pushed SHA
+recorded at the top of this file. Production deploy 안 함. Core repo이므로
+Preview deployment도 생성되지 않음.
