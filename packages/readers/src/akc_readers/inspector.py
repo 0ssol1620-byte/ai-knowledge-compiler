@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import io
 import zipfile
+import zlib
 from typing import Final
 
 from akc_native_parsers.models import ParserLimits, StructuredParseError
@@ -245,13 +246,32 @@ def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -
                 data=data,
                 limits=limits or ParserLimits(),
             )
-        except StructuredParseError as error:
-            review.append(error.code)
-            if error.code in {"ARCHIVE_ENCRYPTED_ENTRY", "ENCRYPTED_PDF"}:
-                encrypted = True
-            elif not encrypted:
-                # A file already known to be locked is not also called corrupt:
-                # validate_source() cannot see past the encryption.
+        except (
+            StructuredParseError,
+            zipfile.BadZipFile,
+            zlib.error,
+            EOFError,
+            NotImplementedError,
+            OSError,
+            ValueError,
+        ) as error:
+            # `validate_source()` classifies what it recognises; a decompressor
+            # failing underneath it does not. This inspector promises never to
+            # raise for hostile input, and that promise is the reason
+            # `ReaderRegistry.read()` can call it outside its own try. So the
+            # second boundary is here: anything the scan raises that is not a
+            # `StructuredParseError` is recorded as an unreadable archive
+            # member and the source is corrupt, never a traceback.
+            if isinstance(error, StructuredParseError):
+                review.append(error.code)
+                if error.code in {"ARCHIVE_ENCRYPTED_ENTRY", "ENCRYPTED_PDF"}:
+                    encrypted = True
+                elif not encrypted:
+                    # A file already known to be locked is not also called
+                    # corrupt: validate_source() cannot see past the encryption.
+                    corrupted = True
+            else:
+                review.append(f"ARCHIVE_MEMBER_UNREADABLE:{type(error).__name__}")
                 corrupted = True
 
     confidence = 0.0

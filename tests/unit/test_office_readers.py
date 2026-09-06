@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import hashlib
 import io
+import struct
 import zipfile
+import zlib
 from collections.abc import Callable
 from pathlib import Path
 
@@ -123,6 +125,83 @@ def _password_protected_office() -> bytes:
         + "EncryptedPackage".encode("utf-16-le")
         + b"\x00" * 100
     )
+
+
+# -- byte-level hostile OOXML packages ---------------------------------
+#
+# Every fixture below is `probe_docx_bytes()` with a few bytes of
+# `word/document.xml` rewritten, so the package is a real DOCX in every other
+# respect and the only thing under test is what happens when a member cannot be
+# decompressed. Before the guard in `akc_native_parsers.security._read_member`,
+# each of these left the reader plane as a raw `zipfile`/`zlib` exception rather
+# than as a receipt: `_malformed_docx_part()` above only covers a member that
+# decompresses cleanly and then fails to parse as XML.
+
+_DOCUMENT_PART = b"word/document.xml"
+
+
+def _local_headers(data: bytes, name: bytes) -> list[int]:
+    offsets, cursor = [], 0
+    while (index := data.find(b"PK\x03\x04", cursor)) >= 0:
+        length = struct.unpack_from("<H", data, index + 26)[0]
+        if data[index + 30 : index + 30 + length] == name:
+            offsets.append(index)
+        cursor = index + 4
+    return offsets
+
+
+def _central_headers(data: bytes, name: bytes) -> list[int]:
+    offsets, cursor = [], 0
+    while (index := data.find(b"PK\x01\x02", cursor)) >= 0:
+        length = struct.unpack_from("<H", data, index + 28)[0]
+        if data[index + 46 : index + 46 + length] == name:
+            offsets.append(index)
+        cursor = index + 4
+    return offsets
+
+
+def _local_name_mismatch() -> bytes:
+    """The local header names a member the central directory does not."""
+    data = bytearray(probe_docx_bytes())
+    for offset in _local_headers(bytes(data), _DOCUMENT_PART):
+        start = offset + 30
+        data[start : start + len(_DOCUMENT_PART)] = b"word/documenX.xml"
+    return bytes(data)
+
+
+def _unsupported_compression_method() -> bytes:
+    """Method 20 (deflate64/zstd territory) — declared, not implemented."""
+    data = bytearray(probe_docx_bytes())
+    for offset in _local_headers(bytes(data), _DOCUMENT_PART):
+        struct.pack_into("<H", data, offset + 8, 20)
+    for offset in _central_headers(bytes(data), _DOCUMENT_PART):
+        struct.pack_into("<H", data, offset + 10, 20)
+    return bytes(data)
+
+
+def _corrupted_deflate_stream() -> bytes:
+    """35 flipped bytes inside the member's compressed payload."""
+    data = bytearray(probe_docx_bytes())
+    offset = _local_headers(bytes(data), _DOCUMENT_PART)[0]
+    name_length = struct.unpack_from("<H", data, offset + 26)[0]
+    extra_length = struct.unpack_from("<H", data, offset + 28)[0]
+    start = offset + 30 + name_length + extra_length
+    for index in range(start + 5, start + 40):
+        data[index] ^= 0xFF
+    return bytes(data)
+
+
+def _central_directory_size_lie() -> bytes:
+    """The central directory understates the member's uncompressed size.
+
+    `ZipFile.read` then stops short of the deflate stream's end and the CRC it
+    computes is not the one recorded — `BadZipFile("Bad CRC-32 ...")`.
+    """
+    data = bytearray(probe_docx_bytes())
+    for offset in _central_headers(bytes(data), _DOCUMENT_PART):
+        struct.pack_into("<I", data, offset + 24, 10)
+    return bytes(data)
+
 
 
 # -- registration ------------------------------------------------------
@@ -444,3 +523,61 @@ def test_a_docx_footnote_becomes_a_unit_with_a_footnote_locator() -> None:
     assert footnotes[0].locator is not None
     assert footnotes[0].locator["footnoteId"] == "2"
     validate_evidence_locator(footnotes[0].locator)
+
+
+@pytest.mark.parametrize(
+    ("case", "builder"),
+    [
+        ("local/central filename mismatch", _local_name_mismatch),
+        ("unsupported compression method", _unsupported_compression_method),
+        ("corrupted deflate stream", _corrupted_deflate_stream),
+        ("central-directory size lie", _central_directory_size_lie),
+    ],
+)
+def test_an_undecompressable_package_member_is_a_receipt_not_an_exception(
+    case: str,
+    builder: Callable[[], bytes],
+) -> None:
+    """G-C5: hostile input leaves the reader plane classified, never raised.
+
+    Each of these four packages passes every structural check the validator
+    makes from the ZIP directory alone and only fails when a member is actually
+    decompressed. `ReaderRegistry.read()` calls `inspect_source()` outside its
+    own `try`, so an exception raised there is not caught anywhere: a caller got
+    a traceback where the contract promises a `FailureClass`.
+    """
+    payload = builder()
+    output, receipt = _registry().read(
+        _input(payload, filename="memo.docx", declared_mime=DOCX_MIME)
+    )
+    assert output is None
+    assert receipt.accepted is False
+    assert receipt.failure_class is FailureClass.CORRUPT_SOURCE, case
+
+    # And the inspector itself — the half of the path that is outside the
+    # registry's exception handling — describes the source rather than raising.
+    inspection = inspect_source(_input(payload, filename="memo.docx", declared_mime=DOCX_MIME))
+    assert inspection.corrupted is True
+    assert "INVALID_OFFICE_ARCHIVE" in inspection.review_reasons
+
+
+def test_the_inspector_never_raises_even_for_an_unclassified_scan_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The second boundary, exercised directly.
+
+    `_read_member` classifies every decompression failure the current library
+    set produces, so nothing reaches the inspector's non-`StructuredParseError`
+    branch today. That branch is what keeps "inspect_source never raises" true
+    of a *future* scan failure as well, and an unexercised promise is not one.
+    """
+
+    def _raise(**_: object) -> None:
+        raise zlib.error("invalid code lengths set")
+
+    monkeypatch.setattr("akc_readers.inspector.validate_source", _raise)
+    inspection = inspect_source(
+        _input(probe_docx_bytes(), filename="memo.docx", declared_mime=DOCX_MIME)
+    )
+    assert inspection.corrupted is True
+    assert "ARCHIVE_MEMBER_UNREADABLE:error" in inspection.review_reasons
