@@ -543,6 +543,21 @@ class NativePptxV1(_NativeOfficeV1):
     cell carries its **table shape's** bbox — a containing region, not the
     cell's own rectangle (`pptx_parser.py` `_add_shape`, pre-existing).
 
+    **A slide title has no `shapeId`.** The parser gives the title placeholder
+    block the native id `pptx/slide/NNNN` and then skips that shape in the shape
+    walk, so the title's unit carries a slide-only anchor — measured on
+    `tests/fixtures/office_corpus/pptx/01-title-and-body.pptx`, `Quarterly
+    review` arrives as `{"slideNumber1": 1}` with no `shapeId`, boxed at the
+    title shape's own rectangle (50, 40, 950, 207), while the body placeholder
+    beside it gets `shapeId` `0001`. The title is also absent from
+    `pptx_shape_reading_order`. A consumer keying units by `shapeId` will not
+    find it.
+
+    **A shape lying entirely off the slide gets `bbox1000=None`**, not a
+    rectangle clamped into the corner it does not occupy; its text is still
+    emitted at its `shapeId`. A shape that only overflows the slide edge is
+    clipped to the slide, which is a real containing region and is kept.
+
     Two more facts a consumer would otherwise get wrong. A text shape holding
     several paragraphs yields **one unit per paragraph**, every one of them
     carrying the same `shapeId` and the same bbox — the shape's, because a
