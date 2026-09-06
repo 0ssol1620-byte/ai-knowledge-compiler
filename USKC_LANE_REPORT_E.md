@@ -17,10 +17,10 @@ Created:
 |---|---|
 | `packages/contracts/schemas/evidence-locator.v2.schema.json` | Verbatim copy, sha256 `13608314b63dfba8aef94de5cafc47d3712d0ed2a134a7a00e0f7aad4f8ff9c6` (matches `contract/SHA256SUMS`). |
 | `packages/contracts/schemas/uskc-enums.v1.json` | Verbatim copy, sha256 `3c668dc9c22289b27a7d0dd8b072cf23fa0511fd8fe888875770171e664f11d1` (matches `contract/SHA256SUMS`). |
-| `packages/cir-python/src/akc_cir/evidence_locator.py` | 13-variant pydantic discriminated union, `LocatorKind`, `from_legacy`/`to_legacy`, `locator_anchor_id`, `parse_locator`, `EvidenceLocatorUnion`. |
+| `packages/cir-python/src/akc_cir/evidence_locator.py` | 13-variant pydantic discriminated union, `LocatorKind`, `from_legacy`/`to_legacy`, `anchor_id` + `locator_anchor_id`, `parse_locator`, `EvidenceLocatorUnion`. |
 | `packages/cir-python/src/akc_cir/evidence_locator_resolvers.py` | `FailureClass`, `Resolved`/`Unresolved`, `LocatorResolver` protocol, `PdfLocatorResolver`, `JsonLocatorResolver`, `XlsxLocatorResolver`, `resolve_locator`. |
-| `tests/unit/test_evidence_locator.py` | 36 tests. |
-| `tests/unit/test_evidence_locator_resolvers.py` | 37 tests. |
+| `tests/unit/test_evidence_locator.py` | **60 tests.** (This row read "36 tests" from the first push and was never updated; 60 is measured on the tree at repair round 3 with `--collect-only`.) |
+| `tests/unit/test_evidence_locator_resolvers.py` | **69 tests.** (Same correction; the row read "37 tests".) |
 | `tests/fixtures/evidence_locator/{build_fixtures.py,sample.json,sample.xlsx,sample.pdf,corrupt.bin}` | Synthetic fixtures + reproducible builder (pinned zip mtimes, LF). |
 | `docs/architecture/evidence-locator-v2.md` | Design, what the resolvers prove, what is deferred. |
 | `USKC_LANE_REPORT_E.md` | This file. |
@@ -40,6 +40,10 @@ Interpreter: `D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe` (
 
 **Import resolution check.** `python -c "import akc_cir; print(akc_cir.__file__)"` from the worktree prints the **main checkout** path — the venv carries an editable install pointing at `D:\CodexProjects\ai-knowledge-compiler`. Under `pytest` run from the worktree, `pythonpath` in `pyproject.toml` wins and it prints
 `D:\CodexProjects\uskc-lanes\core-e-evidence-locator\packages\cir-python\src\akc_cir\__init__.py` — verified with a throwaway test before trusting any run. For the two non-pytest commands (`scripts/generate_contract_types.py`) `PYTHONPATH` was set explicitly to the worktree's `packages/cir-python/src` and the worktree root; that is stated in the command below.
+
+> **SUPERSEDED by §12.4** (repair round 3). Every row in this table is the
+> first-push measurement, kept as the historical record of what was run then.
+> The gate results that describe the tree as it now stands are §12.4's.
 
 | # | Command (cwd = worktree) | Exit | Output tail |
 |---|---|---|---|
@@ -100,7 +104,7 @@ Coverage: ~~this lane adds ~330 statements to `akc_cir` and 73 tests that exerci
 
 ## 6. Open questions for the founder
 
-1. **Two anchor-id algorithms now exist** — `identity.evidence_id()` (page-based, Protected Core) and `locator_anchor_id()` (path-based, new). A source that has both a page-like unit and a native object id needs one canonical convention *before* anything indexes on either, or identity collisions become a real bug class. Which is authoritative, and when?
+1. ~~**Two anchor-id algorithms now exist** — which is authoritative, and when?~~ **Not a question. Decided and implemented in repair round 3** (contract §8.1, restated in §8.2 as "implemented, not discussed"): **the locator kind decides.** `anchor_id(locator)` is the one entry point — `pdf` takes Protected Core's `identity.evidence_id()`, every non-paginated kind takes `locator_anchor_id()`. A v2 `pdf` locator and the `SourceRef` it wraps therefore carry the *same* evidence identity, which is what founder resolution B-3 ("stored identity/hash compatibility preserved") requires; `test_the_pdf_anchor_id_is_the_legacy_evidence_id` pins that equality against `evidence_id()` directly. `identity.py` is untouched. See §12.3.
 2. **Is `sourceVersionId == document_version_id` permanent or interim?** This lane implements it as the interim identity alias (contract §7 R-8). Reversing it later is a data migration.
 3. **Does an evidence excerpt get stored at all?** `Resolved.excerpt` is capped at the schema's 2,000 characters while `Resolved.digest` covers the whole resolved unit. If excerpts are ever persisted or shown, whether a 2,000-character slice of customer content may be stored is a privacy decision, not an engineering one.
 4. **The `pdf` locator resolves to a page, not to a box.** The site currently says "Exact bbox" / "evidence back to the page" (`home-page-client.tsx`, pinned by `brand-copy.test.ts`). Blueprint §30.2 wants "exact source location" generalised per source. Nothing in this lane changes copy, but the copy and the capability should be reconciled before either is published as a claim.
@@ -119,7 +123,7 @@ Coverage: ~~this lane adds ~330 statements to `akc_cir` and 73 tests that exerci
 
 **This paragraph was false as first written and is corrected here, not only in the appendix.** It claimed "73 tests; every `Unresolved` branch … are all covered". At the time it was written the suite was 85 tests and four `Unresolved`-producing branches had no test at all. Repair round 2 closed them; the claim is now measured rather than asserted.
 
-Code exists · tests and **failure paths** pass — **98 tests**, and **100% statement and branch coverage** over `akc_cir.evidence_locator` and `akc_cir.evidence_locator_resolvers` (gate 4 in §11.3, `--cov-report=term-missing` with no missing lines), so every `Unresolved` branch, the corrupt/encrypted/missing/mismatched cases and the "wrong variant handed to a resolver" case are covered, and the claim can be re-measured in one command · ruff and mypy clean · TS regenerated and type-checks · doc written and names what is missing · nothing enabled, nothing deployed, no Protected Core touched, no dependency added. Coverage is not proof: it says every branch ran once on committed synthetic fixtures, not that the thresholds or the fixtures are right. **This session does not approve its own result** — independent review is the orchestrator's step.
+Code exists · tests and **failure paths** pass — **129 tests** (`60 + 69`, re-measured on the tree at repair round 3; this line read "98 tests" at the end of round 2 and the number is restated, not carried), and **100% statement and branch coverage** over `akc_cir.evidence_locator` and `akc_cir.evidence_locator_resolvers` (gate 4 in §12.4, `--cov-report=term-missing` with no missing lines), so every `Unresolved` branch, the corrupt/encrypted/missing/mismatched cases and the "wrong variant handed to a resolver" case are covered, and the claim can be re-measured in one command · ruff and mypy clean · TS regenerated and type-checks · doc written and names what is missing · nothing enabled, nothing deployed, no Protected Core touched, no dependency added. Coverage is not proof: it says every branch ran once on committed synthetic fixtures, not that the thresholds or the fixtures are right. **This session does not approve its own result** — independent review is the orchestrator's step.
 
 ## 9. Push
 
@@ -168,10 +172,16 @@ nothing, in exactly the case that dominates the product's own corpus
 `FailureClass.EMPTY_OUTPUT` existed and was never used.
 
 Fix: `_resolved(text, anchor)` returns `Unresolved(EMPTY_OUTPUT, ...)` when the
-resolved text is empty. One change, all four call sites (pdf page, json
-pointer, xlsx cell, xlsx range); each passes the anchor description so the
-detail names what was empty. An **absent** cell stays `EVIDENCE_BROKEN` —
-absent and empty are different facts.
+resolved text is empty. One change in one shared helper; each caller passes the
+anchor description so the detail names what was empty. An **absent** cell stays
+`EVIDENCE_BROKEN` — absent and empty are different facts.
+
+> **Corrected in repair round 3.** This paragraph said "all four call sites
+> (pdf page, json pointer, xlsx cell, xlsx range)". Three of them moved. The
+> `json` call site did **not**: it passes `canonical_json(value)`, which
+> renders `null`, `""`, `{}` and `[]` as non-empty tokens, so `_resolved` never
+> saw an empty string there and the guard was unreachable for that kind. §12
+> below implements §8.2's JSON emptiness rule as its own test.
 
 Tests: `test_a_page_with_no_extractable_text_is_empty_output_not_a_digest_of_nothing`
 (two blank pages, plus the borrowed-receipt case: page 2 carrying page 1's
@@ -273,6 +283,8 @@ is a default, not a lock).
   over the two new modules. The requirement is met; the report line was not.
 
 ### Gates rerun (all of them, this pass)
+
+> **SUPERSEDED by §12.4** (repair round 3). Historical record of repair round 1.
 
 | # | Command | Exit | Tail |
 |---|---|---|---|
@@ -390,9 +402,17 @@ against the other. `if not text` was the wrong emptiness test.
 
 Fixed per §8.1 ("`EMPTY_OUTPUT` covers whitespace-only content"):
 `_resolved` now tests `text.strip()`. One change in the one shared helper, so
-all four call sites (pdf page, json pointer, xlsx cell, xlsx range) move
-together. The digest still covers the text as read — stripping decides
-emptiness, it does not normalise the evidence.
+every call site that hands it extracted text moves together.
+
+> **Corrected in repair round 3.** This paragraph claimed the change moved
+> "all four call sites (pdf page, json pointer, xlsx cell, xlsx range)". It
+> moved three. `json` hands `_resolved` the output of `canonical_json`, which
+> is never the empty string — `null`, `""`, `{}` and `[]` all render as
+> non-empty tokens — so the guard was **unreachable** for `json` and every
+> empty JSON anchor still resolved to a shared digest. §12 fixes it.
+
+The digest still covers the text as read — stripping decides emptiness, it does
+not normalise the evidence.
 
 Tests: `test_a_page_whose_only_text_is_whitespace_is_empty_output` (the two
 PDFs above, plus the borrowed `sha256(" ")` receipt refused against the second)
@@ -442,6 +462,8 @@ held.
 
 ### 11.4 Gates rerun — all of them, this pass
 
+> **SUPERSEDED by §12.4** (repair round 3). Historical record of repair round 2.
+
 Interpreter `PY` = `D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe`, cwd = worktree.
 
 | # | Command | Exit | Output tail |
@@ -481,5 +503,178 @@ merge, no migration, no deploy, no Protected Core module touched,
 `research/model_arena_20260903/**` never read, imported, written or run.
 Production deploy 안 함. Git push로 Preview deployment는 자동 생성됨 — 단, 이
 레인은 core repo라 Preview 대상이 아님.
+
+**This session still does not approve its own result.**
+
+---
+
+## 12. Repair round 3 (2026-09-06, final — contract §8.2 "E — one boundary guard")
+
+Four items. Two code fixes with the failure-path tests that would have caught
+them, one ruling implemented, and the report's own numbers re-measured against
+the tree. Nothing here re-asks a founder resolution or an orchestrator ruling.
+
+### 12.1 BLOCKER — an exception escaped `resolve_locator`
+
+`JsonLocatorResolver` caught `UnicodeDecodeError` and `json.JSONDecodeError`.
+Neither covers what the stdlib actually does with hostile JSON:
+
+- `json.loads(b'{"x": NaN}')` **succeeds** and returns `float("nan")`. The
+  failure comes later, out of `canonical_json` (`allow_nan=False`), as a
+  `ValueError`. Same for `Infinity` and `-Infinity`.
+- `json.loads(b"[" * 5000 + b"]" * 5000)` raises `RecursionError` from the
+  scanner. (Measured on this interpreter: 2,000 levels still parse, 5,000
+  raise. The test constructs the bytes, so nothing large is committed.)
+
+Both left `resolve_locator` as a traceback. A resolver that crashes on hostile
+bytes is not fail closed, and "every document is hostile data" is a CLAUDE.md
+runtime invariant.
+
+Fixed per §8.2 — **one** guard at the single dispatch boundary, not a wider
+`except` in each resolver:
+
+```python
+try:
+    result = resolver.resolve(locator, data)
+except Exception as exc:
+    return Unresolved(
+        FailureClass.CORRUPT_SOURCE,
+        f"{locator.locator_kind} resolver raised {type(exc).__name__}",
+    )
+```
+
+Root-cause placement, not symptom placement: every current resolver and every
+resolver written later behind the same `LocatorResolver` protocol routes
+through this one call, so the guard also covers the classes nobody has
+enumerated yet. The narrower classes stay where they give a better reason — a
+non-UTF-8 body still reports through the `UnicodeDecodeError` branch, an
+encrypted PDF is still `ENCRYPTED_SOURCE`, a refused package still maps through
+`_PACKAGE_FAILURE`. `RecursionError` is a subclass of `RuntimeError`, so the
+same clause catches it; it needs no second branch.
+
+Tests (`tests/unit/test_evidence_locator_resolvers.py`):
+
+| Test | What it would have caught |
+|---|---|
+| `test_json_the_stdlib_parses_but_cannot_be_canonicalised_is_corrupt_source` | `NaN`, `Infinity`, `-Infinity` (`ValueError`) and a 5,000-deep array (`RecursionError`), each asserting the exception class is named in the detail |
+| `test_any_exception_a_resolver_raises_is_unresolved_not_a_traceback` | a resolver raising an arbitrary `OSError`, injected with `monkeypatch.setitem` on the dispatch table — it tests the boundary, not any one resolver |
+| `test_json_bytes_that_are_not_utf8_are_corrupt_source` (existing) | still reports through the narrower branch, so the new guard did not swallow a better reason |
+
+### 12.2 MAJOR — the whitespace `EMPTY_OUTPUT` guard was unreachable for `json`
+
+Repair round 1 said the `_resolved` emptiness fix moved "all four call sites".
+It moved three. The `json` resolver hands `_resolved` the output of
+`canonical_json(value)`, and that is **never** the empty string: `null`, `""`,
+`{}` and `[]` render as the tokens `null`, `""`, `{}` and `[]`. So every empty
+JSON anchor in every document resolved to one shared digest — a `sha256("{}")`
+`contentDigest` taken from one source verifies against an unrelated one, which
+is the "receipt that proves nothing" the pdf and xlsx paths already refuse. The
+false sentence is corrected in place at §10 R-E-2 and §11.2, not only here.
+
+Implemented per §8.2 as its own predicate rather than by bending the shared
+text guard:
+
+- `null`, `""`, a whitespace-only string, `{}`, `[]` → `EMPTY_OUTPUT`
+- numbers and booleans are **content**, `0` / `false` / `0.0` included — those
+  are values a source actually states, and their digests differ
+
+Tests: `test_a_json_anchor_that_holds_nothing_is_empty_output` (eight cases —
+the five shapes behind a pointer, plus `{}`, `[]` and `null` as the whole
+document through the empty pointer), `test_a_falsy_json_number_or_boolean_is_content_not_emptiness`
+(the line is *holds nothing*, not *is falsy*), and
+`test_a_borrowed_empty_json_receipt_cannot_verify` (a `sha256("{}")`
+`contentDigest` offered against a different document, refused).
+
+### 12.3 MAJOR — the §8.1 anchor-id convention, implemented and decided
+
+§8.1 closed the question this report had left open at §6 q1, and §8.2 says to
+implement it rather than discuss it. Done:
+
+```python
+anchor_id(locator) -> str
+#  pdf         -> identity.evidence_id(document_version, page_number1, bbox1000)
+#  every other -> locator_anchor_id(locator)
+```
+
+One entry point; the locator kind decides. `identity.py` is **not** modified —
+`anchor_id` calls it. The consequence that matters is compatibility: a v2 `pdf`
+locator and the legacy `SourceRef` it wraps now carry the *same* evidence
+identity, which is what founder resolution B-3 ("stored identity/hash
+compatibility preserved") requires.
+`test_the_pdf_anchor_id_is_the_legacy_evidence_id` builds a real
+`document_version_id()` and asserts `anchor_id(from_legacy(ref))` equals
+`evidence_id(document_version, page_number1, bbox1000)` — the equality itself,
+not a proxy for it. `test_every_non_paginated_kind_anchors_on_the_path_digest`
+covers the other twelve kinds.
+
+Two facts stated plainly rather than left implicit, each with a test:
+
+- **No fallback.** `evidence_id()` refuses a document version that is not a
+  `dv_` id, and `anchor_id` passes that refusal through. Falling back to the
+  path digest would issue a *second* identity for one `pdf` anchor, which is
+  exactly the collision class §8.1 closes.
+  `test_a_pdf_anchor_id_needs_a_real_document_version` pins the refusal.
+- **`locatorId` is a record identifier, not the anchor identity.** It has to be
+  derivable for every `sourceVersionId` shape, including this campaign's
+  `documents.id` alias and the repo's own `tests/unit/conftest.py` fixture
+  (`docver_001`), which contract §4.5 requires `from_legacy` to round-trip. So
+  `from_legacy` still defaults it from `locator_anchor_id`. Keeping the two
+  distinct is what lets the anchor convention be strict without breaking the
+  adapter's contract.
+
+`docs/architecture/evidence-locator-v2.md` §"Anchor identity" is rewritten as
+**decided (contract §8.1), implemented**; the previous "known risk … a
+founder/architecture decision, not a lane decision" paragraph is gone.
+
+### 12.4 Gates rerun — all of them, this round (supersedes §3, §10 and §11.4)
+
+Interpreter `PY` = `D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe`
+(the project interpreter §2 requires); cwd = the worktree.
+
+| # | Command | Exit | Output tail |
+|---|---|---|---|
+| 1 | `PY -m pytest tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py -q -p no:randomly` | **0** | `129 passed in 4.19s` (60 + 69; was 98) |
+| 2a | `PY -m ruff check packages/cir-python/src/akc_cir/evidence_locator.py packages/cir-python/src/akc_cir/evidence_locator_resolvers.py packages/cir-python/src/akc_cir/schema.py tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py tests/fixtures/evidence_locator/build_fixtures.py` | **0** | `All checks passed!` |
+| 2b | `PY -m mypy packages/cir-python/src/akc_cir/` | **0** | `Success: no issues found in 43 source files` |
+| 3 | `PY -m pytest tests/unit -q -p no:randomly` | **1** | `7 failed, 1134 passed, 74 skipped in 132.33s (0:02:12)` — exit code captured with `echo "PYTEST_EXIT=$?"`, not inferred. The same seven as round 2: five `test_superseded_receipt_contract::test_a_supersedes_pointer_resolves_and_pins_bytes[…]`, `test_verification_tooling_controls::test_the_shipped_bindings_all_validate`, and `test_w6_v8_confirmatory::test_the_dry_run_…` (`FileNotFoundError` on a git-ignored `research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v7/…` file absent from a fresh worktree). §8.1 withdrew the stop-the-line: worktree artifacts, not evidence mismatches. None imports or is imported by anything this lane touches; §2 gate 3 says not to fix them. |
+| 4 | `PY -m pytest <lane tests> -q -p no:randomly --cov=akc_cir.evidence_locator --cov=akc_cir.evidence_locator_resolvers --cov-report=term-missing` | **0** | `TOTAL 461 0 104 0 100%` · `2 files skipped due to complete coverage` · `Required test coverage of 80.0% reached. Total coverage: 100.00%` — the new boundary guard, `_json_is_empty`'s content branch and both `anchor_id` branches are covered, not merely present |
+| 5 | `PYTHONPATH=<worktree>/packages/cir-python/src;<worktree> PY scripts/generate_contract_types.py --check` | **0** | `generated contracts are current: packages\contracts\src\generated-contracts.ts, packages\contracts\schemas\collection-event.schema.json` — the contract drift check. No TS moved: `anchor_id` is a function, not a field, and the JSON guards are behavioural |
+| 6 | `tsc -p packages/contracts/tsconfig.json --noEmit` (main checkout's pinned typescript 5.9.3; core worktrees have no `node_modules`) | **0** | (no output) |
+| 7 | `git status --porcelain` | **0** | clean after `git checkout -- docs/repro/TEST_SCOPE_SELF_TEST.json`, which gate 3 rewrites as a side effect (§7 F-4) and which is in no commit of this lane |
+
+### 12.5 Report numbers re-measured against the tree
+
+| Claim | Was | Is, measured |
+|---|---|---|
+| `tests/unit/test_evidence_locator.py` | "36 tests" (first push, never updated) | **60** (`--collect-only`) |
+| `tests/unit/test_evidence_locator_resolvers.py` | "37 tests" | **69** |
+| §8 definition-of-done total | "98 tests" (end of round 2) | **129** |
+| Gate tables | three tables, none marked | §3, §10 and §11.4 each carry a **SUPERSEDED by §12.4** marker; §12.4 is the tree as it stands |
+| §6 q1 (two anchor-id algorithms) | an open founder question | struck; decided by §8.1 and implemented in §12.3 |
+| §10 R-E-2 / §11.2 "all four call sites" | false | corrected in place, with the reason the `json` site could not move |
+
+### 12.6 Files touched in repair round 3
+
+`packages/cir-python/src/akc_cir/evidence_locator.py` ·
+`packages/cir-python/src/akc_cir/evidence_locator_resolvers.py` ·
+`tests/unit/test_evidence_locator.py` ·
+`tests/unit/test_evidence_locator_resolvers.py` ·
+`docs/architecture/evidence-locator-v2.md` · `USKC_LANE_REPORT_E.md`. All six
+are in the §3 ownership row.
+
+Commits, in order: `856812c` (the JSON boundary guard and the JSON emptiness
+rule — 12.1 and 12.2 land in one commit because they are the same two files at
+adjacent lines, and splitting them would have meant splitting a hunk rather
+than shipping a smaller change), `636c556` (the anchor-id convention), and the
+commit carrying this section. Every commit carries the two required trailers.
+`git log --oneline d9db24c..HEAD` is authoritative; the pushed SHA is in the
+structured lane result.
+
+No new dependency. Nothing enabled — `approved_customer_data` is untouched and
+this lane has no path to it. No PR, no merge, no migration, no deploy. No
+Protected Core module edited: `identity.py` is imported and called, never
+changed. `research/model_arena_20260903/**` never read, imported, written or
+run. Production deploy 안 함. Git push로 Preview deployment는 자동 생성됨 —
+단, 이 레인은 core repo라 Preview 대상이 아님.
 
 **This session still does not approve its own result.**
