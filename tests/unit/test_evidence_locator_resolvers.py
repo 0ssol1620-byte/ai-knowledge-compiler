@@ -26,6 +26,7 @@ from akc_cir.evidence_locator_resolvers import (
     resolve_locator,
 )
 from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "evidence_locator"
 BASE = {
@@ -458,3 +459,72 @@ def test_an_encrypted_package_member_is_encrypted_source_not_corruption() -> Non
     result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), bytes(data))
     unresolved = expect_unresolved(result, FailureClass.ENCRYPTED_SOURCE)
     assert "ARCHIVE_ENCRYPTED_ENTRY" in unresolved.detail
+
+
+def _pdf_with_one_text_run(body: str) -> bytes:
+    writer = PdfWriter()
+    font_reference = writer._add_object(
+        DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Font"),
+                NameObject("/Subtype"): NameObject("/Type1"),
+                NameObject("/BaseFont"): NameObject("/Helvetica"),
+            }
+        )
+    )
+    page = writer.add_blank_page(width=612, height=792)
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font_reference})}
+    )
+    stream = DecodedStreamObject()
+    stream.set_data(body.encode("ascii"))
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue()
+
+
+def test_a_page_whose_only_text_is_whitespace_is_empty_output() -> None:
+    """Whitespace holds nothing, and it digests identically across documents.
+
+    Two structurally different PDFs whose only text run is a single space
+    resolved to the same digest before this guard, so a ``contentDigest``
+    receipt taken from one verified against the other — the "receipt that
+    proves nothing" the module refuses.
+    """
+    first = _pdf_with_one_text_run("BT /F1 12 Tf 10 100 Td ( ) Tj ET")
+    second = _pdf_with_one_text_run("BT /F1 24 Tf 50 50 Td ( ) Tj ET")
+    assert first != second  # different documents, identical extracted text
+    for blob in (first, second):
+        result = resolve_locator(
+            locator(locatorKind="pdf", page=1, bbox1000=[10, 10, 900, 100]), blob
+        )
+        expect_unresolved(result, FailureClass.EMPTY_OUTPUT)
+    borrowed_receipt = resolve_locator(
+        locator(
+            locatorKind="pdf",
+            page=1,
+            bbox1000=[10, 10, 900, 100],
+            contentDigest=sha256_digest(" "),
+        ),
+        second,
+    )
+    expect_unresolved(borrowed_receipt, FailureClass.EMPTY_OUTPUT)
+
+
+@pytest.mark.parametrize("anchor", [{"cell": "A1"}, {"range": "A1:A1"}])
+def test_a_cell_that_holds_only_whitespace_is_empty_output(anchor: dict[str, str]) -> None:
+    data = _minimal_xlsx(
+        f'<worksheet xmlns="{_MAIN}"><sheetData><row r="1">'
+        '<c r="A1" t="s"><v>0</v></c><c r="B1"><v>7</v></c>'
+        '<c r="C1" t="inlineStr"><is><t>inline</t></is></c>'
+        "</row></sheetData></worksheet>",
+        f'<sst xmlns="{_MAIN}" count="1" uniqueCount="1">'
+        '<si><t xml:space="preserve">   </t></si></sst>',
+    )
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", **anchor), data)
+    expect_unresolved(result, FailureClass.EMPTY_OUTPUT)
+    for cell, excerpt in (("B1", "7"), ("C1", "inline")):
+        populated = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell=cell), data)
+        assert isinstance(populated, Resolved)
+        assert populated.excerpt == excerpt

@@ -109,8 +109,13 @@ def _resolved(text: str, anchor: str) -> Resolution:
     empty cell of every document, so ``Resolved("")`` would hand back a
     ``contentDigest`` that verifies against any other empty anchor — a receipt
     that proves nothing. That is ``EMPTY_OUTPUT``, not evidence.
+
+    Whitespace is nothing: a page whose only text is a space, and a cell
+    holding ``" "``, digest identically across unrelated documents in exactly
+    the same way. ``str.strip()`` decides; the digest still covers the text as
+    read, because that is what a later verification will re-read.
     """
-    if not text:
+    if not text.strip():
         return Unresolved(FailureClass.EMPTY_OUTPUT, f"{anchor} holds no extractable content")
     return Resolved(excerpt=text[:EXCERPT_MAX_CHARS], digest=sha256_digest(text))
 
