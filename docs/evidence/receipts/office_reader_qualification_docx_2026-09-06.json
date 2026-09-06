@@ -14,7 +14,7 @@
     "sha256": "sha256:5ff2377ac408ab339b2b659e90540ebb144ec70863641869be69d90a9242b3ab"
   },
   "runtime": {
-    "digest": "sha256:36ceaa3b832d0bcaace29434a24a82ae9167dbce4c79483a73b9958773665bd2",
+    "digest": "sha256:74636cc6c25efb7ce53210de03821729f074161581356770801f106d2647426b",
     "python": "3.13.0"
   },
   "rows": [
