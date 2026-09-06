@@ -31,6 +31,7 @@ from .models import (
     SourceInspection,
     digest_units,
 )
+from .office import NativeDocxV1, NativePptxV1, NativeXlsxV1
 from .providers import LegacyPdfV1, PlainTextV1
 from .registry import (
     OPERATIONAL_FAILURE_CLASSES,
@@ -55,7 +56,10 @@ __all__ = [
     "FailureClass",
     "LegacyPdfV1",
     "LocatorKind",
+    "NativeDocxV1",
     "NativeExtraction",
+    "NativePptxV1",
+    "NativeXlsxV1",
     "PlainTextV1",
     "ReaderCapability",
     "ReaderFeature",
