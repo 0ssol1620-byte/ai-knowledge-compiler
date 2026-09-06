@@ -23,8 +23,10 @@ from tests.fixtures.office_corpus.build_office_corpus import (
     write_expected,
 )
 from tools.office.qualify_office_readers import (
+    EVIDENCE_ITEMS,
     OBSERVERS,
     UNOBSERVABLE,
+    _evidence,
     build_receipt,
     receipt_path,
     serialise,
@@ -74,13 +76,54 @@ def test_the_committed_receipt_matches_a_fresh_run(source_format: str) -> None:
 
 
 @pytest.mark.parametrize("source_format", FORMATS)
-def test_the_receipt_status_follows_from_its_rows(source_format: str) -> None:
-    """A status above BEST_EFFORT requires every row to pass. No exceptions."""
+def test_the_receipt_status_follows_from_its_rows_and_its_evidence(source_format: str) -> None:
+    """Founder ruling G-6: six kinds of evidence, or the tier does not move.
+
+    The rows alone used to decide the status, so the day the last expected row
+    passed this tool would have minted a `VERIFIED_NATIVE` receipt whose
+    `website` and `performance` evidence was absent — the P0 false success
+    contract §4 names. The six-item block is now part of the receipt and part of
+    the rule.
+    """
     receipt = json.loads(receipt_path(source_format).read_text(encoding="utf-8"))
     failed = [row for row in receipt["rows"] if not row["pass"]]
     assert receipt["totals"]["failed"] == len(failed)
-    assert receipt["status"] == ("BEST_EFFORT" if failed else "VERIFIED_NATIVE")
     assert receipt["failedCapabilities"] == sorted({row["capability"] for row in failed})
+
+    evidence = receipt["evidence"]
+    assert list(evidence) == list(EVIDENCE_ITEMS)
+    assert set(evidence.values()) <= {"PASS", "FAIL", "ABSENT"}
+    for item, value in evidence.items():
+        assert receipt["evidenceNotes"][item].strip(), item
+        if value == "PASS" and item in receipt.get("evidenceCitations", {}):
+            assert receipt["evidenceCitations"][item], item
+
+    verified = not failed and all(value == "PASS" for value in evidence.values())
+    assert receipt["status"] == ("VERIFIED_NATIVE" if verified else "BEST_EFFORT")
+    if any(value != "PASS" for value in evidence.values()):
+        assert receipt["status"] == "BEST_EFFORT"
+
+
+@pytest.mark.parametrize("source_format", FORMATS)
+def test_this_tool_cannot_mint_a_verified_receipt_even_with_every_row_passing(
+    source_format: str,
+) -> None:
+    """The guard is proved on the case that would trip it, not only on today's.
+
+    Today every family fails rows, so `BEST_EFFORT` would also be the answer
+    with the old rule. What changed is what happens when C-4 closes the last
+    row: the website sequence and the performance figures are still absent, and
+    the status must not move on their behalf.
+    """
+    receipt = json.loads(receipt_path(source_format).read_text(encoding="utf-8"))
+    all_passing = [{**row, "pass": True} for row in receipt["rows"]]
+    evidence = _evidence(all_passing)
+
+    assert evidence["structural"] == "PASS"
+    assert evidence["locator"] == "PASS"
+    assert evidence["website"] == "ABSENT"
+    assert evidence["performance"] == "ABSENT"
+    assert any(value != "PASS" for value in evidence.values())
 
 
 def test_every_expected_capability_has_an_observer_or_a_stated_reason() -> None:

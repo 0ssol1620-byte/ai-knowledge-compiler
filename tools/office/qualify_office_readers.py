@@ -17,9 +17,15 @@ a comment's author, a deleted phrase — is *not recoverable by a caller*, so th
 row that asks for it fails. Those rows are marked ``unobservable`` with the
 reason, and they are the lane's C-4 list.
 
-*The status rule is the contract's, not a judgement.* Every row for a format
-passes → ``VERIFIED_NATIVE``; anything less → ``BEST_EFFORT``. The manifest is
-never edited to move that line.
+*The status rule is the contract's, not a judgement.* Founder ruling G-6
+(contract §4) requires six kinds of evidence in a family's own receipt before
+it may say ``VERIFIED_NATIVE``: structural preservation, source locator
+correctness, the website full sequence, malformed-input behaviour, measured
+performance, and deterministic output. This tool measures the first two and
+cites committed tests for the fourth and sixth; the website sequence and the
+performance figures are lane C-5 and are recorded as ``ABSENT``. So every
+receipt this tool writes is ``BEST_EFFORT`` by construction, and the manifest
+is never edited to move that line.
 
 Determinism: the only clock is ``--generated-at``, which defaults to the date in
 the receipt filename. Everything else is a function of the committed bytes.
@@ -297,6 +303,141 @@ OBSERVERS: dict[str, Observer] = {
 
 
 # --------------------------------------------------------------------------
+# the six-item evidence block (contract §4, founder ruling G-6)
+# --------------------------------------------------------------------------
+
+#: Promotion to `VERIFIED_NATIVE` needs all six of these in the family's own
+#: receipt. This tool measures two of them and cites committed tests for two
+#: more; `website` (upload -> CDR -> native read -> compile -> evidence UI on a
+#: Preview) and `performance` (p50/p95 per file-size class) are lane C-5 work
+#: and no artifact here measures them. They are `ABSENT`, never "not
+#: applicable", so the receipt states the gap rather than hiding it.
+EVIDENCE_ITEMS: tuple[str, ...] = (
+    "structural",
+    "locator",
+    "website",
+    "malformed",
+    "performance",
+    "deterministic",
+)
+
+#: Capabilities whose observed value is *selected by an EvidenceLocator v2
+#: anchor* — the sheet/cell, paragraphId, tableId+cellId, commentId,
+#: footnoteId, slideNumber1 or shapeId a unit carries. A failing row here is
+#: counted against the `locator` item. That is deliberately the conservative
+#: reading: this receipt cannot separate a wrong anchor from correct addressing
+#: of content the reader got wrong, so it never records the more flattering of
+#: the two. `docx_equation_formula` is excluded because it reads a unit field,
+#: not an anchor, and the unobservable rows are excluded because they select
+#: nothing at all.
+LOCATOR_KEYED: frozenset[str] = frozenset(
+    {
+        "xlsx_sheet_names",
+        "xlsx_cell_values",
+        "xlsx_formula_text",
+        "xlsx_table_range",
+        "xlsx_chart_title",
+        "xlsx_chart_series_names",
+        "docx_body_paragraphs",
+        "docx_equation_text",
+        "docx_headers_footers",
+        "docx_table_cells",
+        "docx_comment_text",
+        "docx_footnotes",
+        "pptx_slide_units",
+        "pptx_shape_reading_order",
+        "pptx_table_cells",
+    }
+)
+
+#: The committed tests that measure an evidence item this tool does not run
+#: itself. `_cited_tests` checks each one is really in the tree; a citation that
+#: has been renamed or deleted demotes its item to `ABSENT` rather than leaving
+#: a `PASS` standing on a test that no longer exists.
+_READER_TESTS = "tests/unit/test_office_readers.py"
+_CORPUS_TESTS = "tests/unit/test_office_qualification.py"
+
+EVIDENCE_CITATIONS: dict[str, tuple[tuple[str, str], ...]] = {
+    "malformed": tuple(
+        (_READER_TESTS, name)
+        for name in (
+            "test_an_undecompressable_package_member_is_a_receipt_not_an_exception",
+            "test_a_malformed_main_part_is_refused_not_partially_extracted",
+            "test_a_zip_bomb_office_package_is_refused_not_partially_extracted",
+            "test_an_external_relationship_is_refused_not_partially_extracted",
+            "test_macro_enabled_bytes_are_refused_not_partially_extracted",
+            "test_a_password_protected_office_container_is_locked_not_corrupt",
+        )
+    ),
+    "deterministic": (
+        (_CORPUS_TESTS, "test_the_corpus_rebuilds_to_the_committed_bytes"),
+        (_CORPUS_TESTS, "test_the_committed_receipt_matches_a_fresh_run"),
+        (_READER_TESTS, "test_probe_samples_are_byte_deterministic"),
+    ),
+}
+
+EVIDENCE_NOTES: dict[str, str] = {
+    "structural": (
+        "measured here: every expected-manifest row for this family, from the provider's "
+        "own ExtractedUnit stream over the committed corpus."
+    ),
+    "locator": (
+        "measured here: the rows whose observed value is selected by an EvidenceLocator v2 "
+        "anchor. A row whose value differs is counted as a miss, because this receipt "
+        "cannot tell a wrong anchor from a right anchor over wrong content."
+    ),
+    "website": (
+        "ABSENT: the full upload -> CDR -> native read -> compile -> evidence UI sequence on "
+        "a Preview deployment is lane C-5. Nothing in this repository measures it, and no "
+        "test here is a substitute for it."
+    ),
+    "malformed": (
+        "not measured by this tool; the committed tests named in evidenceCitations are, and "
+        "they run in the CI unit scope. They cover an undecompressable package member, a "
+        "malformed main part, a zip bomb, an external relationship, macro-enabled bytes and "
+        "a password-protected container, each asserted through ReaderRegistry.read()."
+    ),
+    "performance": (
+        "ABSENT: no p50/p95 per file-size class has been measured for these readers. A "
+        "timing taken on this machine would not be a receipt."
+    ),
+    "deterministic": (
+        "not measured by this tool; the committed tests named in evidenceCitations are. They "
+        "rebuild the corpus to the committed bytes and re-run this qualifier against the "
+        "committed receipt."
+    ),
+}
+
+
+def _cited_tests(item: str, repo_root: Path = REPO_ROOT) -> list[str]:
+    """The citations for one evidence item, or an empty list if any is gone."""
+    citations = EVIDENCE_CITATIONS.get(item, ())
+    if not citations:
+        return []
+    found: list[str] = []
+    for relative, test_name in citations:
+        path = repo_root / relative
+        if not path.is_file() or f"def {test_name}(" not in path.read_text(encoding="utf-8"):
+            return []
+        found.append(f"{relative}::{test_name}")
+    return found
+
+
+def _evidence(rows: Sequence[dict[str, Any]], repo_root: Path = REPO_ROOT) -> dict[str, str]:
+    """The six-item block. `ABSENT` is a value, not a missing key."""
+    locator_rows = [row for row in rows if row["capability"] in LOCATOR_KEYED]
+    evidence = {
+        "structural": "PASS" if all(row["pass"] for row in rows) else "FAIL",
+        "locator": "PASS" if all(row["pass"] for row in locator_rows) else "FAIL",
+        "website": "ABSENT",
+        "malformed": "PASS" if _cited_tests("malformed", repo_root) else "ABSENT",
+        "performance": "ABSENT",
+        "deterministic": "PASS" if _cited_tests("deterministic", repo_root) else "ABSENT",
+    }
+    return {item: evidence[item] for item in EVIDENCE_ITEMS}
+
+
+# --------------------------------------------------------------------------
 # the run
 # --------------------------------------------------------------------------
 
@@ -372,7 +513,12 @@ def build_receipt(
 
     passed = sum(1 for row in rows if row["pass"])
     failed = [row for row in rows if not row["pass"]]
-    status = CapabilityStatus.VERIFIED_NATIVE if not failed else CapabilityStatus.BEST_EFFORT
+    evidence = _evidence(rows)
+    status = (
+        CapabilityStatus.VERIFIED_NATIVE
+        if not failed and all(value == "PASS" for value in evidence.values())
+        else CapabilityStatus.BEST_EFFORT
+    )
     return {
         "schemaVersion": RECEIPT_SCHEMA,
         "format": source_format,
@@ -395,11 +541,18 @@ def build_receipt(
         "rows": rows,
         "totals": {"rows": len(rows), "passed": passed, "failed": len(failed)},
         "failedCapabilities": sorted({str(row["capability"]) for row in failed}),
+        "evidence": evidence,
+        "evidenceNotes": EVIDENCE_NOTES,
+        "evidenceCitations": {
+            item: _cited_tests(item) for item in EVIDENCE_ITEMS if _cited_tests(item)
+        },
         "status": status.value,
         "statusRule": (
-            "VERIFIED_NATIVE only when every row passes (lane contract C-3). Any failing "
-            "row keeps the capability at BEST_EFFORT and is listed verbatim as a known "
-            "limitation."
+            "VERIFIED_NATIVE requires all six evidence items PASS in this receipt "
+            "(lane contract §4, founder ruling G-6); C-3 supplies at most four, so "
+            "this tool never mints one. Every expected row must also pass, and a failing "
+            "row is listed verbatim as a known limitation. A receipt claiming "
+            "VERIFIED_NATIVE with any ABSENT item is a P0 false success."
         ),
     }
 
