@@ -93,11 +93,15 @@ it claims:
 1. duplicate `provider_id` → refused;
 2. any declared feature outside `PROBEABLE_FEATURES` → refused, because the
    registry cannot witness it (fail closed);
-3. `provider.probe_sample()` is inspected, `can_read` must return true,
-   `extract_native` must succeed;
-4. every declared feature must appear in `NativeExtraction.observed_features()`,
-   which is derived from concrete output fields — text, `bbox1000`, `table_id`,
-   `formula` — never from the declaration;
+3. every `provider.probe_samples()` entry is inspected, `can_read` must return
+   true, `extract_native` must succeed;
+4. **per capability, not across their union**: a capability must be exercised by
+   at least one probe sample whose inspected MIME and source family it matches,
+   and every feature *that capability* declares must appear in the
+   `NativeExtraction.observed_features()` of the samples that matched it —
+   derived from concrete output fields (text, `bbox1000`, `table_id`, `formula`),
+   never from the declaration. A capability no sample exercises is refused, so a
+   feature witnessed on a `.txt` can never qualify a PDF capability;
 5. every emitted locator must validate against the bundled verbatim copy of
    `evidence-locator.v2.schema.json`;
 6. `health_check()` must be healthy.
@@ -120,7 +124,7 @@ refusal. Fields that were measured are measured; fields that were not are `None`
 | source version | `source_version_id`, `representation_id` | yes |
 | reader/model revision | `reader_revision` | yes |
 | runtime digest | `runtime_digest` | yes — see below |
-| input/output digest | `input_digest`, `output_digest` | yes (`output_digest` null on failure) |
+| input/output digest | `input_digest`, `output_digest` | yes — both **recomputed**, never accepted from the provider's assertion (`output_digest` null on failure) |
 | start/end | `started_at`, `ended_at` | yes |
 | queue/wait | `queue_wait_ms` | caller-supplied; 0 in-process |
 | retries | `retries` | 0 — the registry does not retry in P0 |
@@ -130,6 +134,24 @@ refusal. Fields that were measured are measured; fields that were not are `None`
 | provider cost | `provider_cost_usd` | **null** — no price snapshot exists |
 | accepted/rejected | `accepted` | yes |
 | escalation reason | `escalation_reason` | yes |
+
+### A run is a probe too
+
+`read()` verifies the extraction before it becomes an accepted receipt, for the
+same reason registration probes a declaration:
+
+- `sourceVersionId`, `representationId` and `providerId` on the output must equal
+  the ones asked for → otherwise `RECEIPT_MISMATCH`;
+- `outputDigest` is recomputed with `digest_units()` — the one definition
+  providers also call → otherwise `RECEIPT_MISMATCH`;
+- every `required_features` entry must be in the output's **observed** features →
+  otherwise the matching class (`LAYOUT_FAILURE`, `TABLE_FAILURE`,
+  `FORMULA_FAILURE`, `TEXT_OMISSION`, else `PRESERVATION_FAILED`). A declaration
+  never satisfies a requirement;
+- every locator the output carries (emitted or attached to a unit) must validate
+  against the frozen schema → otherwise `EVIDENCE_BROKEN`. Registration-time
+  validation alone was not enough: locator ids come from the *caller's*
+  `sourceVersionId`/`representationId`, which registration never sees.
 
 `$/source`, `$/page` and `$/accepted knowledge unit` are therefore **not
 computable** from these receipts yet: the cost half is null on purpose rather
@@ -141,6 +163,12 @@ behind a stdlib/pypdf reader; this is a real pin of the real runtime, not a
 stand-in for an image digest. A containerised reader supplies its image digest
 instead.
 
+For `legacy_pdf_v1` the library pins are the `pypdf` version **and a sha256 over
+every `.py` source of the wrapped `akc_native_parsers` package** — that package
+ships no version metadata in this monorepo, and a pin that did not move when the
+wrapped code moved would misattribute a later Arena receipt to the wrong code.
+What it does *not* cover: non-Python assets, and pypdf beyond its version string.
+
 ## Timeout and circuit breaker
 
 `extract_native` runs in a one-worker `ThreadPoolExecutor` with
@@ -149,6 +177,16 @@ counts a breaker failure; `failure_threshold` consecutive failures open the
 circuit for `cooldown_seconds`, during which `resolve()` returns
 `REVIEW_REQUIRED` + `PROVIDER_UNAVAILABLE` rather than a silent fallback to
 another reader.
+
+**Only an operational fault charges the breaker.** `OPERATIONAL_FAILURE_CLASSES`
+is exactly `{PARSER_TIMEOUT, PARSER_OOM, PROVIDER_UNAVAILABLE}`. A source that is
+empty, corrupt, encrypted, hostile, mis-digested or missing a required feature is
+the *source's* failure and leaves the breaker untouched — otherwise three blank
+uploads would report a working stdlib reader as unavailable, which is exactly the
+constitution's "separate operational failure from semantic failure" violation.
+A source whose bytes do not decode as the text they were detected as (a CP949
+tail past the 8 KB sniff window, say) is `CORRUPT_SOURCE`, not
+`PROVIDER_UNAVAILABLE`.
 
 **Ceiling, recorded not hidden:** Python cannot kill a worker thread, so a
 timed-out reader runs to completion in the background. That leaks a CPU second,
@@ -208,8 +246,24 @@ member, and never raises for hostile input: an unknown binary comes back as
 
 `akc_native_parsers.security.validate_source()` is wrapped, not forked: for the
 seven extensions it covers, its `StructuredParseError` codes become review
-reasons and (via `PARSE_ERROR_TO_CLASS`) a frozen failure class.
-`security.py` is not edited — contract §7 R-3.
+reasons on the inspection. The inspector itself sets only the two facts it can
+stand behind (`encrypted`, `corrupted`); `resolve()` is where those reasons
+become a frozen class, and a code that `PARSE_ERROR_TO_CLASS` maps to
+`MALWARE_QUARANTINED` (active content, unsafe XML, archive-bomb limits) is
+published as `MALWARE_QUARANTINED`, never as ordinary `CORRUPT_SOURCE` — lane F
+reads these strings as its audit vocabulary. `security.py` is not edited —
+contract §7 R-3.
+
+**Encrypted Office packages.** A ZIP-level encryption bit is only one of the two
+shapes. An ECMA-376 password-protected `.docx`/`.xlsx`/`.pptx` is not a ZIP at
+all: it is an OLE/CFB container whose directory names an `EncryptedPackage`
+stream (MS-OFFCRYPTO). The inspector sniffs the CFB magic and that UTF-16LE
+name and reports `encrypted` with `OOXML_ENCRYPTED_PACKAGE`, so a locked file is
+refused as `ENCRYPTED_SOURCE` rather than mislabelled `CORRUPT_SOURCE` through
+`validate_source()`'s `MAGIC_MISMATCH`. The source family stays `unknown` — a
+`.doc`, an `.xls` and an `.msg` are all CFB too, and guessing which would be an
+invention. The committed test is a *signature* test built from those two byte
+sequences; no real password-protected Office file is committed or claimed.
 
 `confidence` is a **structural-completeness** score, not a calibrated probability
 and not a quality score. It counts which detection steps concluded something.
@@ -222,8 +276,9 @@ score".
 Locators are emitted as plain dicts and validated with `jsonschema` against the
 bundled verbatim copy of `evidence-locator.v2.schema.json` (sha256
 `13608314b63dfba8aef94de5cafc47d3712d0ed2a134a7a00e0f7aad4f8ff9c6`, pinned by a
-test). Lane E owns the Python pydantic model of the union; this package does not
-import it.
+test) at **both** ends: once when a provider registers, and again on every
+accepted run, over the emitted locators and the ones attached to units. Lane E
+owns the Python pydantic model of the union; this package does not import it.
 
 **Gap:** the frozen `LocatorKind` list has **no plain-text variant**, and every
 existing variant needs an anchor a `.txt` has not got (a page, a commit sha, a

@@ -13,9 +13,10 @@ import io
 import re
 from datetime import UTC, datetime
 from functools import cache
+from pathlib import Path
 from typing import Any
 
-from akc_cir.base import canonical_json, sha256_digest
+import akc_native_parsers
 from akc_native_parsers import ParseContext, ParserLimits, parse_pdf_to_cir
 from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
@@ -29,14 +30,11 @@ from .models import (
     ReaderHealth,
     ReaderInput,
     SourceInspection,
+    digest_units,
     inprocess_runtime_digest,
 )
 
 _PARAGRAPH_BREAK = re.compile(r"\r?\n[ \t]*\r?\n")
-
-
-def _digest_units(units: tuple[ExtractedUnit, ...]) -> str:
-    return sha256_digest(canonical_json([unit.model_dump(mode="json") for unit in units]))
 
 
 def _locator_id(*parts: str) -> str:
@@ -99,7 +97,7 @@ class PlainTextV1:
             source_version_id=source.source_version_id,
             representation_id=source.representation_id,
             units=frozen,
-            output_digest=_digest_units(frozen),
+            output_digest=digest_units(frozen),
         )
 
     def emit_evidence_locators(self, output: NativeExtraction) -> tuple[dict[str, Any], ...]:
@@ -122,17 +120,36 @@ class PlainTextV1:
             checked_at=datetime.now(UTC),
         )
 
-    def probe_sample(self) -> ReaderInput:
+    def probe_samples(self) -> tuple[ReaderInput, ...]:
         data = b"Probe paragraph one.\n\nProbe paragraph two.\n"
-        return ReaderInput(
-            source_version_id="probe-plain-text-v1",
-            tenant_id="probe",
-            representation_id="probe-representation",
-            filename="probe.txt",
-            declared_mime="text/plain",
-            content_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
-            data=data,
+        return (
+            ReaderInput(
+                source_version_id="probe-plain-text-v1",
+                tenant_id="probe",
+                representation_id="probe-representation",
+                filename="probe.txt",
+                declared_mime="text/plain",
+                content_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
+                data=data,
+            ),
         )
+
+
+@cache
+def _wrapped_parser_digest() -> str:
+    """sha256 over the wrapped parser package's own Python sources.
+
+    `legacy_pdf_v1`'s behaviour comes from `akc_native_parsers`, which ships no
+    version metadata inside this monorepo. Pinning only python + pypdf would
+    leave the registry entry unchanged when the code the reader actually runs
+    changes, and a §22 entry that does not move with its code is not a pin.
+    """
+    root = Path(akc_native_parsers.__file__).parent
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob("*.py")):
+        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
+        digest.update(path.read_bytes())
+    return "sha256:" + digest.hexdigest()
 
 
 @cache
@@ -177,7 +194,12 @@ class LegacyPdfV1:
         from pypdf import __version__ as pypdf_version
 
         return inprocess_runtime_digest(
-            {"reader": self.provider_id, "revision": self.revision, "pypdf": pypdf_version}
+            {
+                "reader": self.provider_id,
+                "revision": self.revision,
+                "pypdf": pypdf_version,
+                "akc_native_parsers": _wrapped_parser_digest(),
+            }
         )
 
     def capabilities(self) -> tuple[ReaderCapability, ...]:
@@ -250,7 +272,7 @@ class LegacyPdfV1:
             source_version_id=source.source_version_id,
             representation_id=source.representation_id,
             units=frozen,
-            output_digest=_digest_units(frozen),
+            output_digest=digest_units(frozen),
         )
 
     def emit_evidence_locators(self, output: NativeExtraction) -> tuple[dict[str, Any], ...]:
@@ -268,16 +290,18 @@ class LegacyPdfV1:
             checked_at=datetime.now(UTC),
         )
 
-    def probe_sample(self) -> ReaderInput:
+    def probe_samples(self) -> tuple[ReaderInput, ...]:
         data = _probe_pdf_bytes()
-        return ReaderInput(
-            source_version_id="probe-legacy-pdf-v1",
-            tenant_id="probe",
-            representation_id="probe-representation",
-            filename="probe.pdf",
-            declared_mime="application/pdf",
-            content_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
-            data=data,
+        return (
+            ReaderInput(
+                source_version_id="probe-legacy-pdf-v1",
+                tenant_id="probe",
+                representation_id="probe-representation",
+                filename="probe.pdf",
+                declared_mime="application/pdf",
+                content_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
+                data=data,
+            ),
         )
 
 

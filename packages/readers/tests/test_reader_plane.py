@@ -28,6 +28,7 @@ from akc_readers import (
     ReaderRegistryStatus,
     SourceFamily,
     SourceInspection,
+    digest_units,
     inspect_source,
     validate_evidence_locator,
 )
@@ -91,7 +92,7 @@ def _registry() -> ReaderRegistry:
 def test_inspector_ignores_the_extension_and_reads_the_magic_bytes() -> None:
     inspection = inspect_source(
         _input(
-            LegacyPdfV1().probe_sample().data,
+            LegacyPdfV1().probe_samples()[0].data,
             filename="invoice.txt",
             declared_mime="text/plain",
         )
@@ -200,7 +201,7 @@ def test_plain_text_emits_no_locator_because_the_frozen_kinds_have_no_text_varia
 
 def test_legacy_pdf_locators_validate_against_the_frozen_schema() -> None:
     provider = LegacyPdfV1()
-    sample = provider.probe_sample()
+    sample = provider.probe_samples()[0]
     locators = provider.emit_evidence_locators(provider.extract_native(sample))
     assert locators
     for locator in locators:
@@ -437,8 +438,276 @@ def test_source_inspection_is_the_blueprint_field_set() -> None:
 
 def test_extraction_features_are_observed_never_declared() -> None:
     provider = LegacyPdfV1()
-    output: NativeExtraction = provider.extract_native(provider.probe_sample())
+    output: NativeExtraction = provider.extract_native(provider.probe_samples()[0])
     observed: Any = output.observed_features()
     assert ReaderFeature.NATIVE_TEXT in observed
     assert ReaderFeature.LAYOUT in observed
     assert ReaderFeature.TABLES not in observed
+
+
+# -- repair pass: the failure paths the review found open ----------------
+
+
+def test_blank_sources_never_take_a_healthy_reader_offline() -> None:
+    """Semantic failure is not operational failure (CLAUDE.md runtime invariant).
+
+    Three whitespace-only uploads used to open the breaker and report a working
+    stdlib reader as PROVIDER_UNAVAILABLE for the next 30 seconds.
+    """
+    registry = _registry()
+    blank = _input(b"   \n\n  \n", filename="blank.txt", declared_mime="text/plain")
+    for _ in range(3):
+        _, receipt = registry.read(blank, inspection=inspect_source(blank))
+        assert receipt.failure_class is FailureClass.EMPTY_OUTPUT
+
+    assert all(item.circuit_open is False for item in registry.health())
+    good = _input(b"Real paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+    output, receipt = registry.read(good, inspection=inspect_source(good))
+    assert output is not None
+    assert receipt.accepted is True
+
+
+def test_a_source_that_is_not_utf8_is_the_sources_failure_not_the_readers() -> None:
+    """The 8 KB text sniff cannot see a CP949 tail; the run must still be honest."""
+    data = b"legacy note line\n" * 600 + "프로젝트 요약".encode("cp949")
+    source = _input(data, filename="notes.txt", declared_mime="text/plain")
+    inspection = inspect_source(source)
+    assert inspection.detected_mime == "text/plain"
+
+    registry = _registry()
+    for _ in range(3):
+        output, receipt = registry.read(source, inspection=inspection)
+        assert output is None
+        assert receipt.failure_class is FailureClass.CORRUPT_SOURCE
+        assert receipt.escalation_reason is not None
+        assert receipt.escalation_reason.startswith("UnicodeDecodeError")
+    assert all(item.circuit_open is False for item in registry.health())
+
+
+class _TwoFacedText(PlainTextV1):
+    """Declares PDF tables on the strength of a .txt probe."""
+
+    provider_id = "two_faced_v1"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=("text/plain",),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+            ReaderCapability(
+                mime_patterns=("application/pdf",),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.TABLES,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        units = tuple(unit.model_copy(update={"table_id": "t1"}) for unit in output.units)
+        return output.model_copy(
+            update={"units": units, "output_digest": digest_units(units)}
+        )
+
+
+def test_a_capability_no_probe_sample_exercises_is_refused() -> None:
+    with pytest.raises(ReaderRegistrationError, match="no probe sample exercises: application/pdf"):
+        ReaderRegistry().register(_TwoFacedText())
+
+
+class _TwoSampleText(PlainTextV1):
+    """The legitimate multi-capability shape: one probe sample per capability."""
+
+    provider_id = "two_sample_text_v1"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=("text/plain",),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+            ReaderCapability(
+                mime_patterns=("text/markdown",),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+    def probe_samples(self) -> tuple[ReaderInput, ...]:
+        markdown = b"# Probe\n\nProbe body.\n"
+        return (
+            *super().probe_samples(),
+            _input(markdown, filename="probe.md", declared_mime="text/markdown"),
+        )
+
+
+def test_a_capability_with_its_own_probe_sample_registers() -> None:
+    registry = ReaderRegistry()
+    registry.register(_TwoSampleText())
+    assert [entry.reader_id for entry in registry.entries()] == ["two_sample_text_v1"]
+
+
+def test_an_invalid_evidence_locator_is_refused_at_read_time_not_only_at_registration() -> None:
+    """The frozen schema's Identifier pattern rejects a slash-bearing id."""
+    registry = _registry()
+    data = LegacyPdfV1().probe_samples()[0].data
+    source = ReaderInput(
+        source_version_id="tenant/9f21 doc#3",
+        tenant_id="tenant-test",
+        representation_id="rep 1/2",
+        filename="report.pdf",
+        declared_mime="application/pdf",
+        content_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
+        data=data,
+    )
+    output, receipt = registry.read(source, inspection=inspect_source(source))
+    assert output is None
+    assert receipt.failure_class is FailureClass.EVIDENCE_BROKEN
+    assert receipt.escalation_reason is not None
+    assert "evidence locator" in receipt.escalation_reason
+
+
+class _WrongSource(PlainTextV1):
+    provider_id = "wrong_source_v1"
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        if source.filename == "probe.txt":
+            return output
+        return output.model_copy(
+            update={
+                "source_version_id": "SOME-OTHER-SOURCE-VERSION",
+                "representation_id": "SOME-OTHER-REPRESENTATION",
+            }
+        )
+
+
+def test_an_extraction_bound_to_another_source_is_refused() -> None:
+    registry = ReaderRegistry()
+    registry.register(_WrongSource())
+    source = _input(b"Paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+    output, receipt = registry.read(source, inspection=inspect_source(source))
+    assert output is None
+    assert receipt.failure_class is FailureClass.RECEIPT_MISMATCH
+
+
+class _LyingDigest(PlainTextV1):
+    provider_id = "lying_digest_v1"
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        if source.filename == "probe.txt":
+            return output
+        return output.model_copy(update={"output_digest": "sha256:" + "f" * 64})
+
+
+def test_a_self_asserted_output_digest_is_recomputed_not_believed() -> None:
+    registry = ReaderRegistry()
+    registry.register(_LyingDigest())
+    source = _input(b"Paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+    output, receipt = registry.read(source, inspection=inspect_source(source))
+    assert output is None
+    assert receipt.failure_class is FailureClass.RECEIPT_MISMATCH
+    assert receipt.output_digest is None
+
+
+class _ClaimsLayout(PlainTextV1):
+    """Its probe carries a bbox; its real output does not."""
+
+    provider_id = "claims_layout_v1"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=("text/plain",),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT, ReaderFeature.LAYOUT),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        if source.filename != "probe.txt":
+            return output
+        units = tuple(
+            unit.model_copy(update={"bbox1000": (0, 0, 100, 100)}) for unit in output.units
+        )
+        return output.model_copy(
+            update={"units": units, "output_digest": digest_units(units)}
+        )
+
+
+def test_a_required_feature_absent_from_the_output_is_refused() -> None:
+    registry = ReaderRegistry()
+    registry.register(_ClaimsLayout())
+    source = _input(b"Paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+    output, receipt = registry.read(
+        source, inspection=inspect_source(source), required_features=[ReaderFeature.LAYOUT]
+    )
+    assert output is None
+    assert receipt.failure_class is FailureClass.LAYOUT_FAILURE
+
+
+def test_the_legacy_pdf_runtime_digest_pins_the_wrapped_parser_source() -> None:
+    """A §22 pin that ignores the code the reader runs is not a pin."""
+    from akc_readers.providers import _wrapped_parser_digest
+
+    digest = _wrapped_parser_digest()
+    assert digest.startswith("sha256:")
+    moved = LegacyPdfV1().runtime_digest
+    assert moved != PlainTextV1().runtime_digest
+    _wrapped_parser_digest.cache_clear()
+    assert _wrapped_parser_digest() == digest  # deterministic over the same tree
+
+
+def test_active_content_is_published_as_malware_not_as_ordinary_corruption() -> None:
+    payload = io.BytesIO()
+    with zipfile.ZipFile(payload, "w") as archive:
+        archive.writestr(
+            "[Content_Types].xml",
+            '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/'
+            'package/2006/content-types"/>',
+        )
+        archive.writestr("_rels/.rels", '<?xml version="1.0"?><Relationships/>')
+        archive.writestr("xl/workbook.xml", '<?xml version="1.0"?><workbook/>')
+        archive.writestr("xl/vbaProject.bin", b"\x00macro\x00")
+    source = _input(
+        payload.getvalue(),
+        filename="book.xlsx",
+        declared_mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    inspection = inspect_source(source)
+    assert "OFFICE_ACTIVE_CONTENT" in inspection.review_reasons
+    resolution = _registry().resolve(inspection)
+    assert resolution.status is CapabilityStatus.REVIEW_REQUIRED
+    assert resolution.failure_class is FailureClass.MALWARE_QUARANTINED
+
+
+def test_a_cfb_office_container_holding_an_encrypted_package_is_locked_not_corrupt() -> None:
+    """MS-OFFCRYPTO signature test, not a real Office file.
+
+    A password-protected .docx is an OLE/CFB container, never a ZIP, so the
+    ZIP-level encryption bit never fires for it. The bytes below carry the CFB
+    magic and the UTF-16LE ``EncryptedPackage`` directory name that a real one
+    carries; nothing else about them is claimed to be a genuine Office file.
+    """
+    data = (
+        b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        + b"\x00" * 500
+        + "EncryptedPackage".encode("utf-16-le")
+        + b"\x00" * 100
+    )
+    source = _input(data, filename="salary.docx", declared_mime=DOCX_MIME)
+    inspection = inspect_source(source)
+    assert inspection.encrypted is True
+    assert inspection.corrupted is False
+    assert "OOXML_ENCRYPTED_PACKAGE" in inspection.review_reasons
+    resolution = _registry().resolve(inspection)
+    assert resolution.failure_class is FailureClass.ENCRYPTED_SOURCE

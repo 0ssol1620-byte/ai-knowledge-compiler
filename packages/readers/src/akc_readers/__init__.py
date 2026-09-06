@@ -9,6 +9,7 @@ from .enums import (
     FAILURE_CLASSES_WITHOUT_FAILURE_CODE,
     FAILURE_CODE_TO_CLASS,
     FAILURE_CODES_WITHOUT_FAILURE_CLASS,
+    FEATURE_TO_FAILURE_CLASS,
     CapabilityStatus,
     FailureClass,
     LocatorKind,
@@ -28,9 +29,11 @@ from .models import (
     ReaderResolution,
     ReaderRun,
     SourceInspection,
+    digest_units,
 )
 from .providers import LegacyPdfV1, PlainTextV1
 from .registry import (
+    OPERATIONAL_FAILURE_CLASSES,
     ReaderProvider,
     ReaderRegistrationError,
     ReaderRegistry,
@@ -43,6 +46,8 @@ __all__ = [
     "FAILURE_CLASSES_WITHOUT_FAILURE_CODE",
     "FAILURE_CODES_WITHOUT_FAILURE_CLASS",
     "FAILURE_CODE_TO_CLASS",
+    "FEATURE_TO_FAILURE_CLASS",
+    "OPERATIONAL_FAILURE_CLASSES",
     "CapabilityStatus",
     "ExtractedUnit",
     "FailureClass",
@@ -65,6 +70,7 @@ __all__ = [
     "SourceFamily",
     "SourceInspection",
     "VisualReaderProvider",
+    "digest_units",
     "inspect_source",
     "validate_evidence_locator",
 ]

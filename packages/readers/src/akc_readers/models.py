@@ -175,6 +175,15 @@ PROBEABLE_FEATURES: frozenset[ReaderFeature] = frozenset(
 )
 
 
+def digest_units(units: tuple[ExtractedUnit, ...]) -> str:
+    """The one definition of an extraction's output digest.
+
+    Providers compute it and ``ReaderRegistry.read()`` recomputes it, so a
+    self-asserted digest never enters a §44 receipt unverified.
+    """
+    return sha256_digest(canonical_json([unit.model_dump(mode="json") for unit in units]))
+
+
 class ReaderHealth(ContractModel):
     provider_id: NonEmptyStr
     healthy: bool
@@ -285,5 +294,6 @@ __all__ = [
     "ReaderResolution",
     "ReaderRun",
     "SourceInspection",
+    "digest_units",
     "inprocess_runtime_digest",
 ]

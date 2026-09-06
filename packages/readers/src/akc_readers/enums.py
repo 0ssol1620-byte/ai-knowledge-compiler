@@ -215,6 +215,18 @@ PARSE_ERROR_TO_CLASS: dict[str, FailureClass] = {
     "PDF_PARSE_FAILED": FailureClass.CORRUPT_SOURCE,
 }
 
+#: What a run failed at when the caller required a feature the output does not
+#: carry. ``read()`` compares ``required_features`` against the *observed*
+#: features of the extraction, so a declaration alone never satisfies a
+#: requirement. A feature with no specific class falls back to
+#: ``PRESERVATION_FAILED``.
+FEATURE_TO_FAILURE_CLASS: dict[ReaderFeature, FailureClass] = {
+    ReaderFeature.NATIVE_TEXT: FailureClass.TEXT_OMISSION,
+    ReaderFeature.LAYOUT: FailureClass.LAYOUT_FAILURE,
+    ReaderFeature.TABLES: FailureClass.TABLE_FAILURE,
+    ReaderFeature.FORMULA: FailureClass.FORMULA_FAILURE,
+}
+
 __all__ = [
     "CAPABILITY_STATUS_ACCEPTED_AT_UPLOAD",
     "ENUMS_JSON",
@@ -222,6 +234,7 @@ __all__ = [
     "FAILURE_CLASSES_WITHOUT_FAILURE_CODE",
     "FAILURE_CODES_WITHOUT_FAILURE_CLASS",
     "FAILURE_CODE_TO_CLASS",
+    "FEATURE_TO_FAILURE_CLASS",
     "PARSE_ERROR_TO_CLASS",
     "VERIFIED_STATUSES",
     "CapabilityStatus",

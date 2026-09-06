@@ -18,8 +18,18 @@ from akc_native_parsers.security import validate_source
 from .enums import SourceFamily
 from .models import ReaderInput, SourceInspection
 
+_OLE_STORAGE_MIME: Final = "application/x-ole-storage"
+
+#: MS-OFFCRYPTO: an ECMA-376 password-protected Office file is not a ZIP at all
+#: — it is an OLE/CFB container whose directory names an ``EncryptedPackage``
+#: stream, and CFB stores directory names in UTF-16LE. Without this check a real
+#: password-protected .docx sniffs as `MAGIC_MISMATCH` and is published as
+#: corrupt when it is merely locked.
+_ENCRYPTED_PACKAGE_NAME: Final[bytes] = "EncryptedPackage".encode("utf-16-le")
+
 _MAGIC_MIME: Final[tuple[tuple[bytes, str], ...]] = (
     (b"%PDF-", "application/pdf"),
+    (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1", _OLE_STORAGE_MIME),
     (b"\x89PNG\r\n\x1a\n", "image/png"),
     (b"\xff\xd8\xff", "image/jpeg"),
     (b"GIF87a", "image/gif"),
@@ -166,6 +176,14 @@ def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -
         has_native_structure = None if corrupted else True
         has_visual_content = None if corrupted else True
         container_hit = not corrupted
+    elif detected == _OLE_STORAGE_MIME:
+        # The family stays UNKNOWN: .doc, .xls, .msg and an encrypted OOXML
+        # package are all CFB, and guessing which is exactly the invention the
+        # constitution forbids. No reader claims it, so it fails closed.
+        container = "ole"
+        if _ENCRYPTED_PACKAGE_NAME in data:
+            encrypted = True
+            review.append("OOXML_ENCRYPTED_PACKAGE")
     elif detected:
         family = _MIME_FAMILY.get(detected, SourceFamily.UNKNOWN)
         if family is SourceFamily.IMAGE:
@@ -200,7 +218,9 @@ def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -
             review.append(error.code)
             if error.code in {"ARCHIVE_ENCRYPTED_ENTRY", "ENCRYPTED_PDF"}:
                 encrypted = True
-            else:
+            elif not encrypted:
+                # A file already known to be locked is not also called corrupt:
+                # validate_source() cannot see past the encryption.
                 corrupted = True
 
     confidence = 0.0

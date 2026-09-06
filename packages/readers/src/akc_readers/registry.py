@@ -18,6 +18,7 @@ from concurrent.futures import TimeoutError as FutureTimeoutError
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from fnmatch import fnmatchcase
+from functools import cache
 from typing import Any, Protocol, runtime_checkable
 
 import jsonschema
@@ -26,6 +27,7 @@ from akc_router.providers import ProviderUnavailableError
 
 from .enums import (
     EVIDENCE_LOCATOR_SCHEMA_JSON,
+    FEATURE_TO_FAILURE_CLASS,
     PARSE_ERROR_TO_CLASS,
     CapabilityStatus,
     FailureClass,
@@ -43,6 +45,7 @@ from .models import (
     ReaderResolution,
     ReaderRun,
     SourceInspection,
+    digest_units,
 )
 
 #: Preference order when several providers can read the same source. It is a
@@ -59,6 +62,19 @@ DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_FAILURE_THRESHOLD = 3
 DEFAULT_COOLDOWN_SECONDS = 30.0
 
+#: Only an **operational** fault charges a provider's circuit breaker. A source
+#: that is empty, corrupt, encrypted or hostile is the *source's* failure, and
+#: taking a healthy reader offline for it would break the constitution's
+#: "separate operational failure from semantic failure" invariant — three blank
+#: customer files must never make a working reader PROVIDER_UNAVAILABLE.
+OPERATIONAL_FAILURE_CLASSES: frozenset[FailureClass] = frozenset(
+    {
+        FailureClass.PARSER_TIMEOUT,
+        FailureClass.PARSER_OOM,
+        FailureClass.PROVIDER_UNAVAILABLE,
+    }
+)
+
 
 class ReaderRegistrationError(ValueError):
     """A provider declared something the registry could not witness."""
@@ -66,7 +82,7 @@ class ReaderRegistrationError(ValueError):
 
 @runtime_checkable
 class ReaderProvider(Protocol):
-    """Blueprint §9. `probe_sample` is what makes a declaration checkable."""
+    """Blueprint §9. `probe_samples` is what makes a declaration checkable."""
 
     @property
     def provider_id(self) -> str: ...
@@ -89,7 +105,10 @@ class ReaderProvider(Protocol):
 
     def health_check(self) -> ReaderHealth: ...
 
-    def probe_sample(self) -> ReaderInput: ...
+    def probe_samples(self) -> tuple[ReaderInput, ...]:
+        """One sample per capability, at least. A capability no sample
+        exercises cannot be witnessed, so registration refuses it."""
+        ...
 
 
 class VisualReaderProvider(ReaderProvider, Protocol):
@@ -100,9 +119,15 @@ class VisualReaderProvider(ReaderProvider, Protocol):
     def extract_visual(self, rendered: NativeExtraction) -> NativeExtraction: ...
 
 
+@cache
+def _locator_validator() -> jsonschema.protocols.Validator:
+    schema = frozen_contract(EVIDENCE_LOCATOR_SCHEMA_JSON)
+    return jsonschema.validators.validator_for(schema)(schema)
+
+
 def validate_evidence_locator(locator: dict[str, Any]) -> None:
     """Validate one locator against the frozen EvidenceLocator v2 schema."""
-    jsonschema.validate(locator, frozen_contract(EVIDENCE_LOCATOR_SCHEMA_JSON))
+    _locator_validator().validate(locator)
 
 
 @dataclass
@@ -163,32 +188,54 @@ class ReaderRegistry:
                 + ", ".join(sorted(unprobeable))
             )
 
-        sample = provider.probe_sample()
-        inspection = provider.inspect(sample)
-        if not provider.can_read(sample, inspection):
+        samples = tuple(provider.probe_samples())
+        if not samples:
             raise ReaderRegistrationError(
-                f"{provider.provider_id} cannot read its own probe sample"
+                f"{provider.provider_id} supplies no probe sample; nothing can be witnessed"
             )
-        try:
-            output = provider.extract_native(sample)
-        except Exception as error:
-            raise ReaderRegistrationError(
-                f"{provider.provider_id} probe extraction failed: {type(error).__name__}"
-            ) from error
-        observed = output.observed_features()
-        missing = declared - observed
-        if missing:
-            raise ReaderRegistrationError(
-                f"{provider.provider_id} declares features its probe did not produce: "
-                + ", ".join(sorted(missing))
-            )
-        for locator in provider.emit_evidence_locators(output):
-            try:
-                validate_evidence_locator(locator)
-            except jsonschema.ValidationError as error:
+        probes: list[tuple[SourceInspection, NativeExtraction]] = []
+        for sample in samples:
+            inspection = provider.inspect(sample)
+            if not provider.can_read(sample, inspection):
                 raise ReaderRegistrationError(
-                    f"{provider.provider_id} emitted an invalid evidence locator: {error.message}"
+                    f"{provider.provider_id} cannot read its own probe sample {sample.filename}"
+                )
+            try:
+                output = provider.extract_native(sample)
+            except Exception as error:
+                raise ReaderRegistrationError(
+                    f"{provider.provider_id} probe extraction failed: {type(error).__name__}"
                 ) from error
+            for locator in provider.emit_evidence_locators(output):
+                try:
+                    validate_evidence_locator(locator)
+                except jsonschema.ValidationError as error:
+                    raise ReaderRegistrationError(
+                        f"{provider.provider_id} emitted an invalid evidence locator: "
+                        f"{error.message}"
+                    ) from error
+            probes.append((inspection, output))
+
+        # Per capability, not across the union: a feature witnessed on a .txt
+        # probe never qualifies a PDF capability that declares it.
+        for capability in capabilities:
+            observed: set[ReaderFeature] = set()
+            exercised = False
+            for inspection, output in probes:
+                if _capability_matches(capability, inspection, frozenset()):
+                    exercised = True
+                    observed |= output.observed_features()
+            if not exercised:
+                raise ReaderRegistrationError(
+                    f"{provider.provider_id} declares a capability no probe sample exercises: "
+                    + ", ".join(capability.mime_patterns)
+                )
+            missing = set(capability.features) - observed
+            if missing:
+                raise ReaderRegistrationError(
+                    f"{provider.provider_id} declares features its probe did not produce: "
+                    + ", ".join(sorted(missing))
+                )
 
         health = provider.health_check()
         if not health.healthy:
@@ -249,7 +296,7 @@ class ReaderRegistry:
         if inspection.corrupted:
             return ReaderResolution(
                 status=CapabilityStatus.REVIEW_REQUIRED,
-                failure_class=FailureClass.CORRUPT_SOURCE,
+                failure_class=_corruption_class(inspection.review_reasons),
                 reasons=inspection.review_reasons,
             )
 
@@ -301,6 +348,7 @@ class ReaderRegistry:
         Always returns a §44 receipt, including for every refusal.
         """
         started_at = self._clock()
+        required = frozenset(required_features)
         input_digest = "sha256:" + hashlib.sha256(source.data).hexdigest()
 
         def receipt(
@@ -342,7 +390,7 @@ class ReaderRegistry:
                 escalation_reason="sourceVersion contentSha256 does not digest the bytes supplied",
             )
 
-        resolution = self.resolve(inspection, required_features)
+        resolution = self.resolve(inspection, required)
         if resolution.provider_id is None:
             return None, receipt(
                 provider_id="registry",
@@ -362,6 +410,10 @@ class ReaderRegistry:
 
         try:
             output, cpu_seconds = self._call_with_timeout(provider, source)
+            verdict = _verify_output(output, source, provider, required)
+            if verdict is not None:
+                failure, escalation = verdict
+                output = None
         except FutureTimeoutError:
             failure, escalation = FailureClass.PARSER_TIMEOUT, "extract_native exceeded the timeout"
         except MemoryError:
@@ -369,12 +421,16 @@ class ReaderRegistry:
         except StructuredParseError as error:
             failure = PARSE_ERROR_TO_CLASS.get(error.code, FailureClass.CORRUPT_SOURCE)
             escalation = error.code
+        except UnicodeDecodeError as error:
+            # The source's own bytes are not what they were detected to be. That
+            # is a source failure, not a fault of the reader that reported it.
+            failure, escalation = FailureClass.CORRUPT_SOURCE, f"UnicodeDecodeError: {error.reason}"
         except ProviderUnavailableError as error:
             failure, escalation = FailureClass.PROVIDER_UNAVAILABLE, str(error)
         except Exception as error:
             failure, escalation = FailureClass.PROVIDER_UNAVAILABLE, type(error).__name__
 
-        if output is not None and not output.units:
+        if failure is None and output is not None and not output.units:
             failure, escalation = FailureClass.EMPTY_OUTPUT, "reader produced no units"
             output = None
 
@@ -389,9 +445,10 @@ class ReaderRegistry:
                 cpu_seconds=cpu_seconds,
             )
 
-        entry.breaker.failures += 1
-        if entry.breaker.failures >= self._failure_threshold:
-            entry.breaker.opened_at = self._clock()
+        if failure in OPERATIONAL_FAILURE_CLASSES:
+            entry.breaker.failures += 1
+            if entry.breaker.failures >= self._failure_threshold:
+                entry.breaker.opened_at = self._clock()
         return None, receipt(
             provider_id=provider.provider_id,
             revision=provider.revision,
@@ -419,6 +476,20 @@ class ReaderRegistry:
             return pool.submit(call).result(timeout=self._timeout_seconds)
 
 
+def _capability_matches(
+    capability: ReaderCapability,
+    inspection: SourceInspection,
+    required: frozenset[ReaderFeature],
+) -> bool:
+    return (
+        inspection.source_family in capability.source_families
+        and any(
+            fnmatchcase(inspection.detected_mime, pattern) for pattern in capability.mime_patterns
+        )
+        and required.issubset(capability.features)
+    )
+
+
 def _best_capability(
     capabilities: Iterable[ReaderCapability],
     inspection: SourceInspection,
@@ -428,19 +499,74 @@ def _best_capability(
     for capability in capabilities:
         if capability.qualification_status not in _STATUS_RANK:
             continue
-        if inspection.source_family not in capability.source_families:
-            continue
-        if not any(
-            fnmatchcase(inspection.detected_mime, pattern) for pattern in capability.mime_patterns
-        ):
-            continue
-        if not required.issubset(capability.features):
+        if not _capability_matches(capability, inspection, required):
             continue
         if best is None or _STATUS_RANK[capability.qualification_status] < _STATUS_RANK[
             best.qualification_status
         ]:
             best = capability
     return best
+
+
+def _corruption_class(reasons: Iterable[str]) -> FailureClass:
+    """A security refusal is never published as ordinary corruption.
+
+    `validate_source()` reports active content, unsafe XML and archive-bomb
+    limits through the same `corrupted` fact as a truncated file; the frozen
+    class must still say which one it was (lane F reads these strings).
+    """
+    malware = FailureClass.MALWARE_QUARANTINED
+    if any(PARSE_ERROR_TO_CLASS.get(reason) is malware for reason in reasons):
+        return malware
+    return FailureClass.CORRUPT_SOURCE
+
+
+def _verify_output(
+    output: NativeExtraction,
+    source: ReaderInput,
+    provider: ReaderProvider,
+    required: frozenset[ReaderFeature],
+) -> tuple[FailureClass, str] | None:
+    """Check the extraction against the source that was asked for.
+
+    Registration is a probe, not a declaration — and so is a run: the ids, the
+    output digest, the required features and every locator are verified here
+    rather than trusted from the provider's own assertion.
+    """
+    if (
+        output.source_version_id != source.source_version_id
+        or output.representation_id != source.representation_id
+        or output.provider_id != provider.provider_id
+    ):
+        return (
+            FailureClass.RECEIPT_MISMATCH,
+            "extraction is bound to a different source version, representation or provider",
+        )
+    if output.output_digest != digest_units(output.units):
+        return FailureClass.RECEIPT_MISMATCH, "outputDigest does not digest the units returned"
+    missing = required - output.observed_features()
+    if missing:
+        first = sorted(missing)[0]
+        return (
+            FEATURE_TO_FAILURE_CLASS.get(
+                ReaderFeature(first), FailureClass.PRESERVATION_FAILED
+            ),
+            "required feature absent from the output: " + ", ".join(sorted(missing)),
+        )
+    seen: set[int] = set()
+    carried = (
+        *provider.emit_evidence_locators(output),
+        *(unit.locator for unit in output.units if unit.locator is not None),
+    )
+    for locator in carried:
+        if id(locator) in seen:
+            continue
+        seen.add(id(locator))
+        try:
+            validate_evidence_locator(locator)
+        except jsonschema.ValidationError as error:
+            return FailureClass.EVIDENCE_BROKEN, f"invalid evidence locator: {error.message}"
+    return None
 
 
 _REGISTRY_RUNTIME_DIGEST = "sha256:" + hashlib.sha256(b"akc_readers.registry/uskc-p0").hexdigest()
@@ -450,6 +576,7 @@ __all__ = [
     "DEFAULT_COOLDOWN_SECONDS",
     "DEFAULT_FAILURE_THRESHOLD",
     "DEFAULT_TIMEOUT_SECONDS",
+    "OPERATIONAL_FAILURE_CLASSES",
     "ReaderProvider",
     "ReaderRegistrationError",
     "ReaderRegistry",
