@@ -84,6 +84,8 @@ INVALID_LOCATORS: dict[str, dict[str, Any]] = {
                    "contentDigest": "sha256:notahexdigest"},
     "database-empty-key": {**BASE, "locatorId": "x10", "locatorKind": "database",
                            "datasourceVersion": "v1", "table": "t", "primaryKey": {}},
+    "pptx-without-anchor": {**BASE, "locatorId": "x11", "locatorKind": "pptx",
+                            "shapeId": "sh-1"},
 }
 
 
@@ -244,6 +246,19 @@ def test_a_source_ref_the_pdf_variant_cannot_carry_is_refused_not_silently_dropp
         from_legacy(reference, representation_id="rep_0004")
 
 
+def test_a_media_span_that_ends_before_it_starts_is_refused_by_the_model_only(
+    frozen_schema: jsonschema.Draft202012Validator,
+) -> None:
+    """The frozen schema cannot compare two of its own fields, so it accepts a
+    reversed span. The model is the boundary that refuses it — recorded here
+    because §7 F-6 already notes the schema is the looser of the two."""
+    payload = {**BASE, "locatorId": "x12", "locatorKind": "media",
+               "startMs": 5000, "endMs": 1000}
+    assert frozen_schema.is_valid(payload)
+    with pytest.raises(ValueError, match="startMs must not exceed endMs"):
+        parse_locator(payload)
+
+
 def test_the_default_serialization_validates_against_the_frozen_schema(
     frozen_schema: jsonschema.Draft202012Validator,
 ) -> None:
@@ -257,6 +272,7 @@ def test_the_default_serialization_validates_against_the_frozen_schema(
         frozen_schema.validate(json.loads(locator.model_dump_json()))
         frozen_schema.validate(locator.model_dump(mode="json"))
         frozen_schema.validate(json.loads(EvidenceLocatorUnion(locator).model_dump_json()))
+        frozen_schema.validate(EvidenceLocatorUnion(locator).model_dump(mode="json"))
     # exclude_none is a default, not a lock: an explicit False still produces
     # the null-bearing payload, and that one is what the schema refuses.
     minimal = parse_locator(VALID_LOCATORS["json"])

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from akc_cir import evidence_locator_resolvers as resolvers
 from akc_cir.base import sha256_digest
 from akc_cir.evidence_locator import EVIDENCE_LOCATOR_SCHEMA, AnyEvidenceLocator, parse_locator
 from akc_cir.evidence_locator_resolvers import (
@@ -461,6 +462,76 @@ def test_an_encrypted_package_member_is_encrypted_source_not_corruption() -> Non
     assert "ARCHIVE_ENCRYPTED_ENTRY" in unresolved.detail
 
 
+def test_a_sheet_the_workbook_relationships_do_not_name_is_evidence_broken() -> None:
+    """`<sheet r:id="rId9">` with no rId9 in the rels part: the anchor is broken."""
+    data = _ooxml_package(
+        {
+            "xl/workbook.xml": (
+                f'<workbook xmlns="{_MAIN}" xmlns:r="{_OFFICE_REL}"><sheets>'
+                '<sheet name="Revenue" sheetId="1" r:id="rId9"/></sheets></workbook>'
+            ),
+            "xl/_rels/workbook.xml.rels": (
+                f'<Relationships xmlns="{_PKG_REL}"><Relationship Id="rId1" '
+                f'Type="{_OFFICE_REL}/worksheet" Target="worksheets/sheet1.xml"/>'
+                "</Relationships>"
+            ),
+            "xl/worksheets/sheet1.xml": f'<worksheet xmlns="{_MAIN}"/>',
+        }
+    )
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), data)
+    unresolved = expect_unresolved(result, FailureClass.EVIDENCE_BROKEN)
+    assert "no package relationship" in unresolved.detail
+
+
+def test_a_package_part_over_the_resolver_limit_is_refused(
+    monkeypatch: pytest.MonkeyPatch, xlsx_bytes: bytes
+) -> None:
+    """The 8 MiB per-part cap, exercised by lowering it rather than by shipping
+    an 8 MiB fixture. The guard reads ``ZipInfo.file_size`` — the declared size,
+    before any part is decompressed — so nothing here depends on the number."""
+    monkeypatch.setattr(resolvers, "_MAX_PART_BYTES", 8)
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), xlsx_bytes)
+    unresolved = expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+    assert "over the resolver limit" in unresolved.detail
+
+
+class _BrokenPageTree:
+    """A ``PdfReader`` that constructs and then fails, as hostile PDFs do."""
+
+    is_encrypted = False
+
+    @property
+    def pages(self) -> list[Any]:
+        raise ValueError("page tree is a cycle")
+
+
+class _BrokenContentStream:
+    is_encrypted = False
+
+    class _Page:
+        def extract_text(self) -> str:
+            raise ValueError("content stream is not decodable")
+
+    @property
+    def pages(self) -> list[Any]:
+        return [self._Page()]
+
+
+@pytest.mark.parametrize("reader", [_BrokenPageTree, _BrokenContentStream])
+def test_a_pdf_that_fails_after_it_opens_is_corrupt_source_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch, reader: type
+) -> None:
+    """``pypdf`` raises lazily: the reader opens, then the page tree or the
+    content stream blows up. Both are ``CORRUPT_SOURCE``, never an exception
+    out of ``resolve_locator``."""
+    monkeypatch.setattr(resolvers, "PdfReader", lambda *_a, **_k: reader())
+    result = resolve_locator(
+        locator(locatorKind="pdf", page=1, bbox1000=[10, 10, 900, 100]), b"%PDF-1.7"
+    )
+    unresolved = expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+    assert "ValueError" in unresolved.detail
+
+
 def _pdf_with_one_text_run(body: str) -> bytes:
     writer = PdfWriter()
     font_reference = writer._add_object(
@@ -528,3 +599,37 @@ def test_a_cell_that_holds_only_whitespace_is_empty_output(anchor: dict[str, str
         populated = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell=cell), data)
         assert isinstance(populated, Resolved)
         assert populated.excerpt == excerpt
+
+
+def test_cells_the_sheet_cannot_supply_a_value_for_are_absent_not_guessed() -> None:
+    """Every shape ``_cell_text`` gives up on lands in the one honest place: the
+    cell is not in the map, so the anchor is ``EVIDENCE_BROKEN``. A boolean cell
+    is the one shape that does resolve, and had no test."""
+    data = _minimal_xlsx(
+        f'<worksheet xmlns="{_MAIN}"><sheetData><row r="1">'
+        '<c r="A1" t="inlineStr"></c>'  # inlineStr with no <is>
+        '<c r="B1" t="s"></c>'  # shared string with no <v>
+        '<c r="C1" t="s"><v>99</v></c>'  # shared index past the table
+        '<c t="b"><v>1</v></c>'  # no cell reference at all
+        '<c r="E1" t="b"><v>1</v></c>'
+        "</row></sheetData></worksheet>",
+        f'<sst xmlns="{_MAIN}" count="1" uniqueCount="1"><si><t>only</t></si></sst>',
+    )
+    for reference in ("A1", "B1", "C1", "D1"):
+        result = resolve_locator(
+            locator(locatorKind="xlsx", sheet="Revenue", cell=reference), data
+        )
+        expect_unresolved(result, FailureClass.EVIDENCE_BROKEN)
+    boolean = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="E1"), data)
+    assert isinstance(boolean, Resolved)
+    assert boolean.excerpt == "TRUE"
+
+
+def test_a_range_endpoint_that_is_not_an_a1_reference_is_refused() -> None:
+    """Unreachable through ``resolve_locator`` — ``A1Range`` pins the same
+    pattern the helper re-checks — so the guard is tested where it lives. It
+    stays because the day the two patterns drift, this is the branch that
+    decides between ``Unresolved`` and a wrong cell."""
+    with pytest.raises(resolvers._XlsxError) as raised:
+        resolvers._range_references("ZZZZ1", "A1")
+    assert raised.value.reason is FailureClass.EVIDENCE_BROKEN
