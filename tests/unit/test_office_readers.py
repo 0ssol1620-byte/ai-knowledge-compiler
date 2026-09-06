@@ -650,3 +650,129 @@ def test_a_blank_layout_slide_emits_no_text_the_package_does_not_contain() -> No
             assert token in slide_xml, (
                 f"{unit.unit_id} reports {unit.text!r}, which the slide XML does not contain"
             )
+
+
+# -- review round 3: name-keyed scan, MemoryError, off-slide bbox ------
+
+
+def _dtd_in_a_renamed_part(source: bytes, part: str) -> bytes:
+    """A real OOXML package whose main part is renamed away from `.xml`.
+
+    `[Content_Types].xml` gets a `Default Extension="dat"` plus a retargeted
+    `Override`, and every `.rels` target is rewritten, so the package still
+    resolves to the same main part through the same relationship — only the
+    member's *name* changed. That part then carries a DTD with an internal
+    entity. Nothing here executes: the entity is inert text, and the point is
+    only that a name-keyed DTD scan never looks at the member that holds it.
+    """
+    renamed = part.removesuffix(".xml") + ".dat"
+    out = io.BytesIO()
+    with (
+        zipfile.ZipFile(io.BytesIO(source)) as original,
+        zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as target,
+    ):
+        for info in original.infolist():
+            payload = original.read(info.filename)
+            name = info.filename
+            if name == part:
+                name = renamed
+                head, _, tail = payload.partition(b"?>")
+                doctype = b'<!DOCTYPE part [ <!ENTITY injected "harmless" > ]>'
+                payload = head + b"?>" + doctype + tail if tail else doctype + payload
+            elif name == "[Content_Types].xml":
+                payload = payload.replace(f"/{part}".encode(), f"/{renamed}".encode())
+                payload = payload.replace(
+                    b'<Default Extension="xml"',
+                    b'<Default Extension="dat" ContentType="application/xml"/>'
+                    b'<Default Extension="xml"',
+                    1,
+                )
+            elif name.endswith(".rels"):
+                payload = payload.replace(part.encode(), renamed.encode())
+                payload = payload.replace(
+                    part.rsplit("/", 1)[-1].encode(), renamed.rsplit("/", 1)[-1].encode()
+                )
+            target.writestr(name, payload)
+    return out.getvalue()
+
+
+@pytest.mark.parametrize(
+    ("part", "filename", "mime", "source"),
+    [
+        ("word/document.xml", "memo.docx", DOCX_MIME, probe_docx_bytes),
+        ("xl/worksheets/sheet1.xml", "budget.xlsx", XLSX_MIME, probe_xlsx_bytes),
+    ],
+)
+def test_a_dtd_in_a_renamed_part_is_quarantined_not_read(
+    part: str,
+    filename: str,
+    mime: str,
+    source: Callable[[], bytes],
+) -> None:
+    """The DTD scan is keyed on content, not on the member's name.
+
+    Before this guard the scan ran only over members whose name ended `.xml` or
+    `.rels`, so renaming the main part to `.dat` — a rename Word and Excel both
+    still open, because the content types and the relationship point at the new
+    name — carried a `<!DOCTYPE`/`<!ENTITY>` past `OOXML_UNSAFE_XML` and the
+    package was ACCEPTED. A rename must not turn a quarantine into a read.
+    """
+    payload = _dtd_in_a_renamed_part(source(), part)
+    inspection = inspect_source(_input(payload, filename=filename, declared_mime=mime))
+    assert "OOXML_UNSAFE_XML" in inspection.review_reasons
+
+    output, receipt = _registry().read(_input(payload, filename=filename, declared_mime=mime))
+    assert output is None
+    assert receipt.accepted is False
+    assert receipt.failure_class is FailureClass.MALWARE_QUARANTINED
+
+
+def test_an_exhausted_parser_is_an_operational_failure_not_a_corrupt_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """CLAUDE.md: a pod that died and a model that was wrong are different.
+
+    `parse_non_pdf_to_cir`'s blanket `except Exception` caught `MemoryError`
+    too and re-raised it as `DOCX_PARSE_FAILED`, which the registry publishes as
+    `CORRUPT_SOURCE` — an operational failure billed to the customer's file, and
+    invisible to the registry's own `PARSER_OOM` branch.
+    """
+
+    def _exhaust(*_: object, **__: object) -> None:
+        raise MemoryError
+
+    registry = _registry()  # registration probes first, on unpatched parsers
+    monkeypatch.setattr("akc_native_parsers.parser.parse_docx", _exhaust)
+    output, receipt = registry.read(
+        _input(probe_docx_bytes(), filename="memo.docx", declared_mime=DOCX_MIME)
+    )
+    assert output is None
+    assert receipt.failure_class is FailureClass.PARSER_OOM
+
+
+def test_a_shape_entirely_off_the_slide_gets_no_bbox_and_keeps_its_text() -> None:
+    """A clamped off-slide rectangle is a fabricated bbox (CLAUDE.md).
+
+    A text box at (-3in, -3in) sized 2in x 1in lies wholly outside a 10x7.5in
+    slide. The clamp turned it into `(0, 0, 1, 1)` — a one-per-mille box in the
+    top-left corner the shape does not occupy — and the unit then declared the
+    `layout` evidence it does not have. The text is still evidence and is still
+    emitted at its `shapeId`; only the invented rectangle is gone.
+    """
+    from pptx import Presentation
+    from pptx.util import Inches
+
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    slide.shapes.add_textbox(Inches(1), Inches(1), Inches(2), Inches(1)).text_frame.text = "On"
+    slide.shapes.add_textbox(Inches(-3), Inches(-3), Inches(2), Inches(1)).text_frame.text = "Off"
+    payload = io.BytesIO()
+    presentation.save(payload)
+
+    output = NativePptxV1().extract_native(
+        _input(payload.getvalue(), filename="deck.pptx", declared_mime=PPTX_MIME)
+    )
+    units = {unit.text: unit for unit in output.units}
+    assert units["Off"].bbox1000 is None
+    assert (units["Off"].locator or {}).get("shapeId") == "0001"
+    assert units["On"].bbox1000 is not None

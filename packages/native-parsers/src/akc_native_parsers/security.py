@@ -247,10 +247,13 @@ def _validate_office_archive(
             if entry.is_dir():
                 continue
             folded_name = entry.filename.replace("\\", "/").casefold()
-            is_xml = folded_name.endswith((".xml", ".rels"))
-            if not is_xml:
-                continue
             payload = _read_member(archive, entry)
+            # XML-ness is decided by content, never by the member name. Renaming
+            # `word/document.xml` to `word/document.dat` and retargeting the
+            # content types and the relationship leaves a package the readers
+            # still parse, so a name-keyed scan lets its DTD straight through.
+            if not (folded_name.endswith((".xml", ".rels")) or payload.lstrip()[:1] == b"<"):
+                continue
             upper = payload.upper()
             if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
                 raise StructuredParseError("OOXML_UNSAFE_XML")
