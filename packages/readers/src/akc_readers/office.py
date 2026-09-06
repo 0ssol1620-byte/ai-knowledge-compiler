@@ -53,7 +53,6 @@ import zipfile
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from importlib.metadata import version
-from pathlib import Path
 from typing import Any, ClassVar, Final
 
 import jsonschema
@@ -239,16 +238,20 @@ class _NativeOfficeV1:
     def extract_native(self, source: ReaderInput) -> NativeExtraction:
         # The filename decides nothing. `parse_non_pdf_to_cir` gates on the
         # extension and the declared MIME before it reads a byte, so it is
-        # handed the extension the **content** implies and the inspector's
-        # detected MIME; the caller's stem is kept only for provenance. A source
-        # whose content is not this provider's format is refused here rather
-        # than parsed as some other format under this provider's name.
+        # handed a **fixed** name whose extension the content implies, plus the
+        # inspector's detected MIME — the same `source.<ext>` `inspector.py`
+        # already uses. Threading the caller's stem through here let the
+        # caller's filename decide readability: a valid workbook named `..` has
+        # an empty stem, so the call was refused `EXTENSION_NOT_ALLOWED`, and
+        # the stem reached nothing a caller could see (`NativeExtraction` has
+        # no source filename). A source whose content is not this provider's
+        # format is refused here rather than parsed as some other format under
+        # this provider's name.
         detected = self.inspect(source).detected_mime
         if detected != self.mime:
             raise StructuredParseError("MIME_MISMATCH")
-        stem = Path(source.filename).stem or "source"
         document = parse_non_pdf_to_cir(
-            filename=f"{stem}.{self.extension}",
+            filename=f"source.{self.extension}",
             declared_mime=detected,
             data=source.data,
             # Campaign identity alias (contract §7 R-8): one SourceVersion per

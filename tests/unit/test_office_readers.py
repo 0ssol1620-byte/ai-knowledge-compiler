@@ -405,6 +405,22 @@ def test_a_content_detected_xlsx_named_report_bin_is_read() -> None:
     assert any((unit.locator or {}).get("cell") == "A1" for unit in output.units)
 
 
+def test_a_workbook_whose_filename_has_no_usable_stem_is_still_read() -> None:
+    """`..` is a filename with an empty stem, and the bytes are a valid workbook.
+
+    The provider used to hand `parse_non_pdf_to_cir` the caller's stem, so an
+    empty one produced `.xlsx` — refused by `validate_upload_bytes` as
+    `EXTENSION_NOT_ALLOWED` and surfaced as `CORRUPT_SOURCE`. The filename
+    decides nothing about readability.
+    """
+    output, receipt = _registry().read(
+        _input(probe_xlsx_bytes(), filename="..", declared_mime=XLSX_MIME)
+    )
+    assert receipt.accepted is True
+    assert receipt.provider_id == "native_xlsx_v1"
+    assert output is not None
+
+
 def test_a_declared_mime_that_lies_does_not_decide_the_reader() -> None:
     source = _input(probe_docx_bytes(), filename="deck.pptx", declared_mime=XLSX_MIME)
     inspection = inspect_source(source)
