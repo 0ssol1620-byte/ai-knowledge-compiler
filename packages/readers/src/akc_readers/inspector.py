@@ -99,8 +99,26 @@ _MIME_FAMILY: Final[dict[str, SourceFamily]] = {
     **_TEXT_MIME_FAMILY,
 }
 
-_VALIDATED_EXTENSIONS: Final[frozenset[str]] = frozenset(
-    {".docx", ".pptx", ".xlsx", ".html", ".htm", ".srt", ".vtt"}
+#: Which **content-detected** MIME gets the hostile-source scan, and the
+#: extension `validate_source()` needs in order to run it. Selection is by
+#: signature, never by the filename (contract §8.2): `book.xlsx` renamed
+#: `book.bin` is still an OOXML package by content, is still scanned, and still
+#: publishes `OFFICE_ACTIVE_CONTENT` → `MALWARE_QUARANTINED`. HWPX and ODF are
+#: absent because `validate_source()` does not cover them; `.srt`/`.vtt` are
+#: absent because they have no content signature to select them by.
+_CONTENT_SCANNED_MIME: Final[dict[str, str]] = {
+    mime: f".{kind}" for _, kind, mime, _ in _ZIP_PACKAGE if kind in {"docx", "pptx", "xlsx"}
+} | {"text/html": ".html"}
+
+#: Same markers `akc_native_parsers.security` uses, so a file this inspector
+#: calls HTML is a file `validate_source()` also accepts as HTML.
+_HTML_MARKERS: Final[tuple[str, ...]] = (
+    "<!doctype html",
+    "<html",
+    "<head",
+    "<body",
+    "<main",
+    "<article",
 )
 
 _MAX_COMPRESSION_RATIO: Final[float] = 100.0
@@ -117,12 +135,13 @@ def _normalized_mime(declared: str) -> str:
     return declared.split(";", 1)[0].strip().casefold()
 
 
-def _decodes_as_text(data: bytes) -> bool:
+def _sniff_text(data: bytes) -> str | None:
+    """The decoded prefix of a text-like source, or None if it is binary."""
     try:
         text = data[:_TEXT_SNIFF_BYTES].decode("utf-8-sig")
     except UnicodeDecodeError:
-        return False
-    return "\x00" not in text
+        return None
+    return None if "\x00" in text else text
 
 
 def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -> SourceInspection:
@@ -188,9 +207,16 @@ def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -
         family = _MIME_FAMILY.get(detected, SourceFamily.UNKNOWN)
         if family is SourceFamily.IMAGE:
             has_native_text, has_visual_content = False, True
-    elif _decodes_as_text(data):
-        detected = _EXTENSION_TEXT_MIME.get(extension) or (
-            declared if declared in _TEXT_MIME_FAMILY else "text/plain"
+    elif (sniffed := _sniff_text(data)) is not None:
+        # HTML is decided by its markup, not by `.html`: the scan below is
+        # selected from `detected`, so an extension-derived MIME would put the
+        # filename back in charge of a security decision.
+        head = sniffed.lstrip()[:4096].casefold()
+        detected = (
+            "text/html"
+            if any(marker in head for marker in _HTML_MARKERS)
+            else _EXTENSION_TEXT_MIME.get(extension)
+            or (declared if declared in _TEXT_MIME_FAMILY else "text/plain")
         )
         family = _TEXT_MIME_FAMILY.get(detected, SourceFamily.DOCUMENT)
         has_native_text = bool(data.strip())
@@ -206,11 +232,16 @@ def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -
     if extension and detected and _EXTENSION_TEXT_MIME.get(extension, detected) != detected:
         review.append("EXTENSION_MISMATCH")
 
-    if extension in _VALIDATED_EXTENSIONS:
+    scan_extension = _CONTENT_SCANNED_MIME.get(detected)
+    if scan_extension is not None:
         try:
+            # `validate_source()` keys off the extension and the declared MIME,
+            # so it is fed the ones the **content** implies rather than the ones
+            # the uploader typed. Before this, `book.xlsx` renamed `book.bin`
+            # skipped the hostile-archive scan and published as an ordinary ZIP.
             validate_source(
-                filename=source.filename,
-                declared_mime=source.declared_mime,
+                filename=f"source{scan_extension}",
+                declared_mime=detected,
                 data=data,
                 limits=limits or ParserLimits(),
             )

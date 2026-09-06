@@ -32,6 +32,7 @@ from akc_readers import (
     inspect_source,
     validate_evidence_locator,
 )
+from akc_readers import registry as registry_module
 from akc_readers.registry import _REPO_ROOT
 from pydantic import ValidationError
 
@@ -70,6 +71,21 @@ def _docx_bytes() -> bytes:
         )
         archive.writestr("_rels/.rels", '<?xml version="1.0"?><Relationships/>')
         archive.writestr("word/document.xml", '<?xml version="1.0"?><document/>')
+    return payload.getvalue()
+
+
+def _macro_xlsx_bytes() -> bytes:
+    """An OOXML spreadsheet package carrying a VBA project (active content)."""
+    payload = io.BytesIO()
+    with zipfile.ZipFile(payload, "w") as archive:
+        archive.writestr(
+            "[Content_Types].xml",
+            '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/'
+            'package/2006/content-types"/>',
+        )
+        archive.writestr("_rels/.rels", '<?xml version="1.0"?><Relationships/>')
+        archive.writestr("xl/workbook.xml", '<?xml version="1.0"?><workbook/>')
+        archive.writestr("xl/vbaProject.bin", b"\x00macro\x00")
     return payload.getvalue()
 
 
@@ -673,18 +689,8 @@ def test_the_legacy_pdf_runtime_digest_pins_the_wrapped_parser_source() -> None:
 
 
 def test_active_content_is_published_as_malware_not_as_ordinary_corruption() -> None:
-    payload = io.BytesIO()
-    with zipfile.ZipFile(payload, "w") as archive:
-        archive.writestr(
-            "[Content_Types].xml",
-            '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/'
-            'package/2006/content-types"/>',
-        )
-        archive.writestr("_rels/.rels", '<?xml version="1.0"?><Relationships/>')
-        archive.writestr("xl/workbook.xml", '<?xml version="1.0"?><workbook/>')
-        archive.writestr("xl/vbaProject.bin", b"\x00macro\x00")
     source = _input(
-        payload.getvalue(),
+        _macro_xlsx_bytes(),
         filename="book.xlsx",
         declared_mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
@@ -751,15 +757,15 @@ def test_a_mime_pattern_no_probe_sample_exercises_is_refused() -> None:
         ReaderRegistry().register(_FoldedGreedyText())
 
 
-class _WildcardText(PlainTextV1):
-    """`mime_patterns=("*",)` over four families, witnessed by one `.txt`."""
+class _ExtraFamilyText(PlainTextV1):
+    """Concrete patterns, four families, witnessed by two `text/*` probes."""
 
-    provider_id = "aaa_wildcard_v1"
+    provider_id = "aaa_extra_family_v1"
 
     def capabilities(self) -> tuple[ReaderCapability, ...]:
         return (
             ReaderCapability(
-                mime_patterns=("*",),
+                mime_patterns=("text/plain", "text/markdown"),
                 source_families=(
                     SourceFamily.DOCUMENT,
                     SourceFamily.SPREADSHEET,
@@ -775,7 +781,7 @@ class _WildcardText(PlainTextV1):
 def test_a_source_family_no_probe_sample_exercises_is_refused() -> None:
     """`ReaderRegistryEntry.qualified_source_families` must mean witnessed."""
     with pytest.raises(ReaderRegistrationError, match="source family no probe sample exercises"):
-        ReaderRegistry().register(_WildcardText())
+        ReaderRegistry().register(_ExtraFamilyText())
 
 
 def test_every_published_qualified_family_was_witnessed_by_a_probe() -> None:
@@ -907,7 +913,7 @@ def test_a_locator_page_outside_the_source_is_refused() -> None:
 
 def test_a_caller_inspection_that_disagrees_with_the_bytes_is_refused() -> None:
     """A forged or stale inspection used to buy acceptance for a refused source."""
-    source = _input(b"Confidential paragraph.\n", filename="resume.docx", declared_mime=DOCX_MIME)
+    source = _input(_docx_bytes()[:-64], filename="resume.docx", declared_mime=DOCX_MIME)
     honest = inspect_source(source)
     assert honest.corrupted is True
 
@@ -996,3 +1002,112 @@ def test_a_verified_tier_backed_by_a_committed_file_registers() -> None:
     registry = ReaderRegistry()
     registry.register(provider)
     assert [entry.reader_id for entry in registry.entries()] == ["zzz_verified_v1"]
+
+
+# -- repair round 3: the failure paths the third review found open -------
+
+
+class _SelfWitnessingPdf(PlainTextV1):
+    """Declares `application/pdf`, probes with a `.txt`, calls it a PDF.
+
+    Registration used to classify probe samples with `provider.inspect()`, so a
+    provider witnessed its own declaration: these text bytes qualified the
+    `application/pdf` pattern, and `resolve()` then handed real PDFs to a
+    reader that can only decode UTF-8.
+    """
+
+    provider_id = "aaa_self_witnessing_v1"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=("application/pdf",),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+    def inspect(self, source: ReaderInput) -> SourceInspection:
+        return inspect_source(source).model_copy(update={"detected_mime": "application/pdf"})
+
+    def probe_samples(self) -> tuple[ReaderInput, ...]:
+        return super().probe_samples()[:1]
+
+
+def test_a_provider_that_classifies_its_own_probe_sample_is_refused() -> None:
+    with pytest.raises(ReaderRegistrationError, match="differently from the registry"):
+        ReaderRegistry().register(_SelfWitnessingPdf())
+
+
+class _WildcardText(PlainTextV1):
+    """One capability, one pattern, whatever the pattern happens to be."""
+
+    provider_id = "aaa_wildcard_v1"
+    pattern = "*"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=(self.pattern,),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+
+@pytest.mark.parametrize("pattern", ["*", "text/*", "text/plai?", "text/[pm]lain", "TEXT/PLAIN"])
+def test_a_non_concrete_mime_pattern_is_refused_at_registration(pattern: str) -> None:
+    """A glob is self-witnessing: one `.txt` probe matched every MIME there is."""
+    provider = _WildcardText()
+    provider.pattern = pattern
+    with pytest.raises(ReaderRegistrationError, match="non-concrete MIME pattern"):
+        ReaderRegistry().register(provider)
+
+
+def test_resolution_matches_a_mime_exactly_and_never_as_a_glob() -> None:
+    """The registry has no glob matcher left, so no capability can grow one."""
+    assert not any(name.startswith("fnmatch") for name in vars(registry_module))
+    inspection = inspect_source(
+        _input(b"plain body\n", filename="note.txt", declared_mime="text/plain")
+    )
+    smuggled = inspection.model_copy(update={"detected_mime": "text/plain-and-more"})
+    assert _registry().resolve(smuggled).status is CapabilityStatus.UNSUPPORTED
+
+
+def test_the_hostile_archive_scan_follows_the_content_not_the_filename() -> None:
+    """`book.xlsx` renamed `book.bin` used to skip the scan and pass as a ZIP."""
+    source = _input(
+        _macro_xlsx_bytes(), filename="book.bin", declared_mime="application/octet-stream"
+    )
+    inspection = inspect_source(source)
+    assert inspection.detected_mime.endswith("spreadsheetml.sheet")
+    assert "OFFICE_ACTIVE_CONTENT" in inspection.review_reasons
+    resolution = _registry().resolve(inspection)
+    assert resolution.status is CapabilityStatus.REVIEW_REQUIRED
+    assert resolution.failure_class is FailureClass.MALWARE_QUARANTINED
+
+
+def test_html_is_detected_by_its_markup_not_by_its_extension() -> None:
+    """The scan is selected from the detected MIME, so detection cannot be
+    extension-driven for the one text subtype that gets scanned."""
+    page = b"<!DOCTYPE html>\n<html><body><p>hello</p></body></html>\n"
+    inspection = inspect_source(
+        _input(page, filename="page.bin", declared_mime="application/octet-stream")
+    )
+    assert inspection.detected_mime == "text/html"
+    assert inspection.source_family is SourceFamily.WEB
+
+
+def test_a_verified_tier_whose_receipt_is_untracked_is_refused() -> None:
+    """On disk is not committed. A provider can write a file; it cannot commit one."""
+    receipt = _REPO_ROOT / "uskc-c-untracked-receipt.json"
+    receipt.write_bytes(b'{"qualification": "not committed"}')
+    try:
+        digest = "sha256:" + hashlib.sha256(receipt.read_bytes()).hexdigest()
+        provider = _verified_pdf(receipt.name, digest)
+        with pytest.raises(ReaderRegistrationError, match="not tracked by git"):
+            ReaderRegistry().register(provider)
+    finally:
+        receipt.unlink()

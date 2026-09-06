@@ -10,6 +10,8 @@ router already gives an unavailable parser.
 from __future__ import annotations
 
 import hashlib
+import re
+import subprocess
 import time
 import uuid
 from collections.abc import Callable, Iterable
@@ -17,7 +19,6 @@ from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from fnmatch import fnmatchcase
 from functools import cache
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
@@ -111,6 +112,14 @@ _ADMISSIBLE_LOCATOR_KINDS: dict[str, frozenset[LocatorKind]] = {
     "image/tiff": frozenset({LocatorKind.IMAGE}),
     "image/bmp": frozenset({LocatorKind.IMAGE}),
 }
+
+
+#: A capability names **concrete** lowercase `type/subtype` MIME values only
+#: (contract §8.2). A glob is self-witnessing: `*` matches whatever probe sample
+#: the provider happens to ship, so one `.txt` used to qualify a reader for every
+#: MIME in existence. The pattern below admits no `*`, `?` or `[`, which is why
+#: matching is plain equality everywhere below and `fnmatch` is gone.
+_CONCRETE_MIME = re.compile(r"[a-z0-9][a-z0-9!#$&^_.+-]*/[a-z0-9][a-z0-9!#$&^_.+-]*")
 
 
 class ReaderRegistrationError(ValueError):
@@ -218,6 +227,13 @@ class ReaderRegistry:
             raise ReaderRegistrationError(
                 f"{provider.provider_id} declares no capability; nothing can be probed"
             )
+        for capability in capabilities:
+            for pattern in capability.mime_patterns:
+                if _CONCRETE_MIME.fullmatch(pattern) is None:
+                    raise ReaderRegistrationError(
+                        f"{provider.provider_id} declares a non-concrete MIME pattern "
+                        f"{pattern!r}; a capability names concrete lowercase MIME types only"
+                    )
         declared = {feature for capability in capabilities for feature in capability.features}
         unprobeable = declared - PROBEABLE_FEATURES
         if unprobeable:
@@ -237,7 +253,17 @@ class ReaderRegistry:
 
         probes: list[tuple[SourceInspection, NativeExtraction]] = []
         for sample in samples:
-            inspection = provider.inspect(sample)
+            # The **registry's** inspector classifies the probe (contract §8.2):
+            # witnessing measured by the same component that classifies a real
+            # source. `provider.inspect()` is consulted only to check agreement —
+            # before this, a provider could hand back "text/plain" for a PDF
+            # sample and witness a `text/plain` pattern with bytes that are not.
+            inspection = inspect_source(sample)
+            if provider.inspect(sample) != inspection:
+                raise ReaderRegistrationError(
+                    f"{provider.provider_id} inspects its own probe sample "
+                    f"{sample.filename} differently from the registry"
+                )
             if not provider.can_read(sample, inspection):
                 raise ReaderRegistrationError(
                     f"{provider.provider_id} cannot read its own probe sample {sample.filename}"
@@ -276,14 +302,9 @@ class ReaderRegistry:
             for inspection, output in probes:
                 if inspection.source_family not in capability.source_families:
                     continue
-                matched = {
-                    pattern
-                    for pattern in capability.mime_patterns
-                    if fnmatchcase(inspection.detected_mime, pattern)
-                }
-                if not matched:
+                if inspection.detected_mime not in capability.mime_patterns:
                     continue
-                patterns |= matched
+                patterns.add(inspection.detected_mime)
                 families.add(inspection.source_family)
                 observed |= output.observed_features()
             unwitnessed = [item for item in capability.mime_patterns if item not in patterns]
@@ -590,9 +611,7 @@ def _capability_matches(
 ) -> bool:
     return (
         inspection.source_family in capability.source_families
-        and any(
-            fnmatchcase(inspection.detected_mime, pattern) for pattern in capability.mime_patterns
-        )
+        and inspection.detected_mime in capability.mime_patterns
         and required.issubset(capability.features)
     )
 
@@ -633,8 +652,10 @@ def _verify_qualification_receipt(provider_id: str, capability: ReaderCapability
 
     Contract §8.1: "a `VERIFIED_*` capability requires a receipt that exists on
     disk under the repo (path + sha256 + date) — a sha-shaped string alone is
-    refused." Nothing else stands between a self-declared `VERIFIED_NATIVE` and
-    the top of `_STATUS_RANK`.
+    refused." §8.2 closes the rest of it: the file must be **git-tracked**.
+    Present on disk is not committed — a file the provider wrote itself at
+    registration time is on disk, and it qualified the tier. Nothing else stands
+    between a self-declared `VERIFIED_NATIVE` and the top of `_STATUS_RANK`.
     """
     declared = capability.qualification_receipt_path or ""
     path = (_REPO_ROOT / declared).resolve()
@@ -643,12 +664,31 @@ def _verify_qualification_receipt(provider_id: str, capability: ReaderCapability
             f"{provider_id} claims {capability.qualification_status} but no qualification "
             f"receipt is committed at {declared!r}"
         )
+    if not _is_git_tracked(declared):
+        raise ReaderRegistrationError(
+            f"{provider_id} qualification receipt {declared!r} is not tracked by git; "
+            "an untracked file is not a committed receipt"
+        )
     digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
     if digest != capability.qualification_receipt:
         raise ReaderRegistrationError(
             f"{provider_id} qualification receipt {declared!r} digests {digest}, not the "
             f"declared {capability.qualification_receipt}"
         )
+
+
+def _is_git_tracked(repo_relative_path: str) -> bool:
+    """`git ls-files --error-unmatch` on this checkout. No git, no tier."""
+    try:
+        completed = subprocess.run(  # noqa: S603 - fixed argv; the path is `--`-separated
+            ["git", "ls-files", "--error-unmatch", "--", repo_relative_path],  # noqa: S607
+            cwd=_REPO_ROOT,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return False
+    return completed.returncode == 0
 
 
 def _verify_locator_binding(
