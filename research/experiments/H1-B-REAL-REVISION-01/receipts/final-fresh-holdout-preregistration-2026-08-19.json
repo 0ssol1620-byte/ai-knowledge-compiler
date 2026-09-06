@@ -1,0 +1,19 @@
+{
+  "change_cases_per_class": 400,
+  "change_generator_sha256": "sha256:526d01103fc895c2c0cda9c3fde92c4de159e83035ae2d8c3cbe4f96389c8e7e",
+  "dependency_core_sha256": "sha256:3cf21ec387e5fbe5f613bd789280db50a43c9454fc0517dc8040afc60f802cfb",
+  "external_gpu_cost_usd": 0.0,
+  "freeze_helper_sha256": "sha256:2694b8117cc12e97dfaf4235b711b0640b26c9f067f8f77bb372e22127fd593a",
+  "generated_at": "2026-08-18T23:26:09.759495+00:00",
+  "primary_criterion": "every cell exact-equivalent to independent full rebuild; zero stale escapes",
+  "promotion_gate_core_sha256": "sha256:905e6387e8f984a6778dc379b4313c92a9ee95f3dfc5a2b9ad373d9518fce99b",
+  "protocol_sha256": "sha256:d509d26844cd9da8e3eab05c68ae8483b9b25614a44c09941ddc5330aa3e2bde",
+  "recompilation_core_sha256": "sha256:8bf10015b8576d2892782ffe0cfa99ca5975531974c3131dcf3d5429d05892b4",
+  "runner_sha256": "sha256:0a57b2d82b3676cb713cda5207b8e888d1fca3fec35ee248f880913062b49748",
+  "schema": "tavonel.family-b-final-fresh-holdout-preregistration.v1",
+  "seed_disclosed_before_run": false,
+  "seed_sha256": "sha256:8655614827f2b3d21065fb554577793fcfec9412df5d7b17087b06c66240c3a2",
+  "semantic_diff_core_sha256": "sha256:6e75aceb08e080b2f1f7e4f9fbb30887aa0916681cb66b44730e6ffd8767c24a",
+  "topology_cases_per_cell": 200,
+  "topology_generator_sha256": "sha256:9dc27bc19650a0b28a4430b4c8a81cc41c4379939e60561a65560ad1ee159bec"
+}

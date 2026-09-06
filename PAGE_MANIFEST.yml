@@ -16,7 +16,7 @@ status_semantics:
     never be presented as production-ready or as completed processing.
 
 release_review:
-  reviewed_at: 2026-08-03
+  reviewed_at: 2026-09-01
   state: repository_verified_production_reject
   current_evidence:
     eslint: pass
@@ -55,12 +55,24 @@ routes:
       surface: marketing,
       status: complete,
     }
+  - { path: /product/knowledge-compiler, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /product/document-understanding, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /product/compiled-world, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /product/grounded-ai, priority: P1, wave: 1, surface: marketing, status: complete }
+  - { path: /solutions/ai-ready-knowledge, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /solutions/document-intelligence, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /solutions/knowledge-graph, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /solutions/source-grounded-assistants, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /solutions/knowledge-operations, priority: P0, wave: 1, surface: marketing, status: complete }
+  - { path: /integrations, priority: P0, wave: 1, surface: marketing, status: complete, gate: actual_supported_sources_only }
+  - { path: /enterprise, priority: P1, wave: 1, surface: marketing, status: complete, gate: qualified_scope_no_unverified_claims }
   - {
       path: /product/compile,
       priority: P0,
       wave: 1,
       surface: marketing,
-      status: complete,
+      status: partial,
+      gate: legacy_compatibility_not_public_ia,
     }
   - {
       path: /product/convert,
@@ -154,7 +166,8 @@ routes:
       priority: P0,
       wave: 1,
       surface: marketing,
-      status: complete,
+      status: partial,
+      gate: noindex_until_approved_result_evidence,
     }
   - {
       path: /film,
@@ -190,7 +203,8 @@ routes:
       priority: P2,
       wave: 5,
       surface: editorial,
-      status: complete,
+      status: partial,
+      gate: noindex_until_consented_customer_evidence,
     }
   - {
       path: /developers,
@@ -331,6 +345,22 @@ routes:
       surface: product,
       status: partial,
       gate: deployable_package_and_live_graph_evidence,
+    }
+  - {
+      path: /ask,
+      priority: P0,
+      wave: 9,
+      surface: product,
+      status: partial,
+      gate: active_collection_attested_retrieval_required,
+    }
+  - {
+      path: /activity,
+      priority: P0,
+      wave: 9,
+      surface: product,
+      status: complete,
+      gate: compatibility_redirect_to_persisted_job_activity,
     }
   - {
       path: /onboarding,

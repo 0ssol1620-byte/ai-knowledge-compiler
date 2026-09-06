@@ -31,9 +31,13 @@ jobs:
         with:
           build-mount-path: /var/lib/docker
           build-mount-path-ownership: root:root
-          root-reserve-mb: 8192
-          temp-reserve-mb: 100
-          swap-size-mb: 2048
+          # Run 31284919996 proved that an 8 GiB root reserve can starve the
+          # GitHub runner itself: its _diag log hit ENOSPC before checkout
+          # completed. Keep materially more root headroom while still moving the
+          # Docker store onto the dedicated volume.
+          root-reserve-mb: 16384
+          temp-reserve-mb: 1024
+          swap-size-mb: 1024
           remove-dotnet: "true"
           remove-android: "true"
           remove-haskell: "true"
@@ -44,8 +48,13 @@ jobs:
         run: |
           set -euo pipefail
           sudo systemctl restart docker
-          available_kb="$(df --output=avail /var/lib/docker | tail -1)"
-          test "$available_kb" -ge 57671680
+          root_available_kb="$(df --output=avail / | tail -1)"
+          docker_available_kb="$(df --output=avail /var/lib/docker | tail -1)"
+          # Refuse a long model build if either the runner filesystem or Docker
+          # store is unsafe. The old 55 GiB Docker floor prevented run
+          # 30860545607 from measuring the actual build requirement at all.
+          test "$root_available_kb" -ge 10485760
+          test "$docker_available_kb" -ge 41943040
           df -h / /var/lib/docker
 
       - name: Check out the exact source commit

@@ -39,6 +39,7 @@ def render_config(
     workers: int,
     quick_match_timeout_seconds: int = 60,
     page_match_timeout_seconds: int = 90,
+    deterministic_matching: bool = False,
 ) -> str:
     return f"""end2end_eval:
   metrics:
@@ -59,6 +60,7 @@ def render_config(
       data_path: '{yaml_path(prediction)}'
     match_method: quick_match
     match_workers: {workers}
+    deterministic_matching: {'true' if deterministic_matching else 'false'}
     quick_match_truncated_timeout_sec: {quick_match_timeout_seconds}
     match_timeout_sec: {page_match_timeout_seconds}
     timeout_fallback_max_chunk_span: 10
@@ -211,18 +213,38 @@ def extract_official_failures(
                     f"{source_name}"
                 )
             observed_stems.add(stem)
+            below_official_floor = False
             if metric == "teds":
                 if not isinstance(raw_value, dict) or "TEDS" not in raw_value:
                     raise ValueError(f"official table TEDS payload is invalid: {raw_location}")
                 official_value = float(raw_value["TEDS"])
                 score = official_value
                 failed = official_value < 1.0 - 1e-12
+                # OmniDocBench computes TEDS as `1 - APTED_distance / max(n_nodes)`
+                # (src/metrics/table_metric.py). APTED's cost model charges node
+                # *content* substitution on top of structural insert/delete, so the
+                # distance can exceed the node count and the published metric can
+                # fall below zero. Measured 2026-08-18: one table in
+                # newspaper_TheBostonGlobe-2025-1-8...page_025 scored -0.1086.
+                # The value is reported as the official evaluator produced it. It is
+                # not clamped -- clamping would silently improve a published number --
+                # and it is not dropped, because a heavily over-generated table is a
+                # real failure and belongs in the evidence.
+                below_official_floor = official_value < 0.0
+                if below_official_floor:
+                    score = official_value
+                elif not 0.0 <= score <= 1.0:
+                    raise ValueError(
+                        f"official OmniDocBench score is outside [0,1]: {raw_location}"
+                    )
             else:
                 official_value = float(raw_value)
                 score = 1.0 - official_value
                 failed = official_value > 1e-12
-            if not 0.0 <= score <= 1.0:
-                raise ValueError(f"official OmniDocBench score is outside [0,1]: {raw_location}")
+                if not 0.0 <= score <= 1.0:
+                    raise ValueError(
+                        f"official OmniDocBench score is outside [0,1]: {raw_location}"
+                    )
             if failed:
                 failures.append(
                     {
@@ -234,6 +256,7 @@ def extract_official_failures(
                         "official_value": official_value,
                         "score": score,
                         "higher_is_better": higher_is_better,
+                        "below_official_floor": below_official_floor,
                     }
                 )
     evidence = {
@@ -269,6 +292,7 @@ def run_evaluation(
     workers: int,
     quick_match_timeout_seconds: int,
     page_match_timeout_seconds: int,
+    deterministic_matching: bool = False,
 ) -> dict[str, object]:
     if quick_match_timeout_seconds < 1:
         raise ValueError("quick-match timeout must be positive")
@@ -331,6 +355,7 @@ def run_evaluation(
                 workers=workers,
                 quick_match_timeout_seconds=quick_match_timeout_seconds,
                 page_match_timeout_seconds=page_match_timeout_seconds,
+                deterministic_matching=deterministic_matching,
             ),
             encoding="utf-8",
         )
@@ -413,6 +438,7 @@ def run_evaluation(
         "ground_truth_sha256": sha256_file(ground_truth),
         "source_manifest_sha256": sha256_file(source_manifest),
         "stall_recovery_policy": {
+            "deterministic_matching": deterministic_matching,
             "normal_match_method": "quick_match",
             "quick_match_timeout_seconds": quick_match_timeout_seconds,
             "page_match_timeout_seconds": page_match_timeout_seconds,
@@ -436,6 +462,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source-manifest", required=True, type=Path)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument(
+        "--deterministic-matching",
+        action="store_true",
+        help=(
+            "score with the exact matcher on every page and no wall-clock "
+            "fallback, so the same bytes always produce the same score. "
+            "Requires an evaluator checkout that honours the flag. Off by "
+            "default so that artifacts produced before the correction stay "
+            "reproducible under the terms they were produced."
+        ),
+    )
     parser.add_argument("--quick-match-timeout-seconds", type=int, default=60)
     parser.add_argument("--page-match-timeout-seconds", type=int, default=90)
     return parser.parse_args()
@@ -451,6 +488,7 @@ def main() -> int:
         source_manifest=args.source_manifest.resolve(),
         repeats=args.repeats,
         workers=args.workers,
+        deterministic_matching=args.deterministic_matching,
         quick_match_timeout_seconds=args.quick_match_timeout_seconds,
         page_match_timeout_seconds=args.page_match_timeout_seconds,
     )

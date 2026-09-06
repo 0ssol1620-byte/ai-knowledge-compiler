@@ -25,7 +25,7 @@ def utc_now() -> str:
 
 
 def read_runpod_key(path: Path) -> str:
-    pattern = re.compile(r"^\s*Runpod\s*[:=]\s*(.+?)\s*$", re.IGNORECASE)
+    pattern = re.compile(r"^\s*Runpod(?:_[AB])?\s*[:=]\s*(.+?)\s*$", re.IGNORECASE)
     for line in path.read_text(encoding="utf-8-sig").splitlines():
         match = pattern.match(line)
         if match and len(match.group(1).strip()) >= 20:

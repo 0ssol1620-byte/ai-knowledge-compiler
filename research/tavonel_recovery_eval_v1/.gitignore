@@ -1,0 +1,9 @@
+# Paper 2 machine-local / secret-adjacent runtime state
+.private/
+__pycache__/
+.pytest_cache/
+
+# Fresh source acquisition and model outputs are bound by manifests/receipts,
+# not committed as raw corpora or transient inference bytes.
+acquired/
+work/

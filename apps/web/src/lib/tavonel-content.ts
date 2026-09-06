@@ -141,7 +141,7 @@ export const PUBLIC_PAGES: Record<string, TavonelPage> = Object.fromEntries(
         },
       ],
       { label: "Explore the proof demo", href: "/demo/dart" },
-      { label: "Read the methodology", href: "/benchmarks" },
+      { label: "Read the research notes", href: "/research" },
     ),
     page(
       "/product/knowledge",
@@ -402,7 +402,7 @@ export const PUBLIC_PAGES: Record<string, TavonelPage> = Object.fromEntries(
         label: "Open interactive proof",
         href: "/documents/sample-dart/processing",
       },
-      { label: "Read the disclaimer", href: "/benchmarks" },
+      { label: "Read the research notes", href: "/research" },
     ),
     page(
       "/demo/sec",
@@ -529,7 +529,7 @@ export const PUBLIC_PAGES: Record<string, TavonelPage> = Object.fromEntries(
           body: "A portable path from blocks to notes, entities, and relations.",
         },
       ],
-      { label: "Explore benchmarks", href: "/benchmarks" },
+      { label: "Explore public proof", href: "/demo/dart" },
     ),
     page(
       "/security",
@@ -840,7 +840,10 @@ export const PUBLIC_PAGES: Record<string, TavonelPage> = Object.fromEntries(
           body: "This contact route never requests customer documents.",
         },
       ],
-      { label: "Open contact form", href: "mailto:sales@example.invalid" },
+      {
+        label: "Open contact form",
+        href: "/company/contact#contact-form",
+      },
     ),
     page(
       "/legal/privacy",
@@ -936,6 +939,99 @@ export const PUBLIC_PAGES: Record<string, TavonelPage> = Object.fromEntries(
     ),
   ].map((definition) => [definition.path, definition]),
 );
+
+const competitivePublicPages = [
+  page(
+    "/product/knowledge-compiler", "product", "Knowledge Compiler",
+    "Compile documents into a source-verifiable World.",
+    "TAVONEL reads, structures, connects, and packages knowledge without breaking the path back to the source.",
+    "One compiler contract spans intake, evidence, review, World, Ask, and portable output.",
+    [
+      { title: "Read", body: "Recover pages, regions, tables, figures, formulas, and reading order from the sanitized source." },
+      { title: "Structure", body: "Create typed sections, entities, claims, relations, and evidence bindings." },
+      { title: "Compile", body: "Materialize a versioned World and portable package from the same verified model." },
+    ],
+    { label: "Inspect product proof", href: "/demo/dart" }, { label: "Start evaluation", href: "/signup" },
+  ),
+  page(
+    "/product/document-understanding", "product", "Document understanding",
+    "Understand the page before generating an answer.",
+    "Native text, OCR, layout, tables, figures, and source coordinates become one reviewable document model.",
+    "Every displayed region is backed by an observed page, block, and bounding box.",
+    [
+      { title: "Secure intake", body: "Validate type, size, policy, retention, and external-processing boundaries before compute." },
+      { title: "Page-aware reading", body: "Route only pages that require OCR or precision escalation." },
+      { title: "Source inspection", body: "Open the actual authorized page preview with its persisted bbox overlay." },
+    ],
+    { label: "See the source proof", href: "/demo/dart" },
+  ),
+  page(
+    "/product/compiled-world", "product", "Compiled World",
+    "A knowledge system, not a pile of chunks.",
+    "Explore actual objects, relations, ontology, evidence, versions, and files from one active World.",
+    "No node, edge, or citation appears without its corresponding persisted identifier.",
+    [
+      { title: "Graph", body: "Navigate actual semantic objects and relation records with filters and progressive loading." },
+      { title: "Directory and ontology", body: "Read the knowledge architecture and the classes and properties that govern it." },
+      { title: "Evidence and versions", body: "Return to source pages and compare retained World revisions." },
+    ],
+    { label: "Explore the World demo", href: "/demo/dart" },
+  ),
+  page(
+    "/product/grounded-ai", "product", "Grounded AI",
+    "Ask a World that can show its work.",
+    "Retrieval runs against the active World and citations return to the exact authorized source region.",
+    "When evidence is insufficient, the product abstains instead of completing the sentence from guesswork.",
+    [
+      { title: "Evidence-first retrieval", body: "Search only attested records from the authenticated tenant and active collection." },
+      { title: "Clickable citations", body: "Open the source document, page, and bounding box behind each result." },
+      { title: "Fail-closed answers", body: "Unavailable or mismatched evidence produces an explicit abstention state." },
+    ],
+    { label: "Open Ask", href: "/ask" },
+  ),
+  ...([
+    ["ai-ready-knowledge", "AI-ready knowledge", "Turn governed source material into reusable knowledge for AI systems."],
+    ["document-intelligence", "Document intelligence", "Recover complex documents with exact page-level evidence."],
+    ["knowledge-graph", "Knowledge graph", "Connect evidence-backed objects and relations across documents."],
+    ["source-grounded-assistants", "Source-grounded assistants", "Give assistants an active World with clickable citations and abstention."],
+    ["knowledge-operations", "Knowledge operations", "Operate review, versions, connectors, budgets, and activity as one system."],
+  ] as const).map(([slug, title, intro]) => page(
+    `/solutions/${slug}`, "solution", "Solutions", title, intro,
+    "The outcome, proof surface, and operating boundary stay visible together.",
+    [
+      { title: "Source", body: "Begin with tenant-authorized files or connected sources and an explicit processing boundary." },
+      { title: "Compiled outcome", body: "Produce actual structured objects, relations, evidence, and portable artifacts." },
+      { title: "Operational proof", body: "Inspect events, review decisions, costs, versions, and source citations." },
+    ],
+    { label: "Inspect product proof", href: "/demo/dart" }, { label: "Talk to the team", href: "/company/contact" },
+  )),
+  page(
+    "/integrations", "product", "Integrations",
+    "Connect sources without hiding their operating state.",
+    "OAuth sources, local files, API/MCP, and infrastructure connectors report whether they are available, require configuration, or remain unavailable.",
+    "A connector logo is never treated as evidence of a configured production path.",
+    [
+      { title: "OAuth sources", body: "Google Drive and Microsoft source connections use scoped authorization and revocable credentials when configured." },
+      { title: "Local and API", body: "Local files, browser upload, API, and MCP preserve explicit tenant and secret boundaries." },
+      { title: "Infrastructure", body: "Object storage and repository sources expose setup and sync state instead of a decorative availability claim." },
+    ],
+    { label: "Open Connections", href: "/app/settings/integrations" }, { label: "Read integration docs", href: "/developers/docs" },
+  ),
+  page(
+    "/enterprise", "solution", "Enterprise",
+    "Govern the path from source to activated knowledge.",
+    "Identity, policy, audit, region, retention, deployment, and support are qualified against the contracted environment.",
+    "Only controls proven in the selected deployment are represented as available.",
+    [
+      { title: "Identity and access", body: "SSO, SAML, SCIM, RBAC, and project-level access for qualified deployments." },
+      { title: "Data controls", body: "Custom retention, region, external processing, VPC/BYOC, and dedicated runtime options." },
+      { title: "Operational assurance", body: "Audit export, support boundaries, throughput, routing policy, and SLA terms." },
+    ],
+    { label: "Talk to sales", href: "/company/contact" }, { label: "Review security", href: "/security" },
+  ),
+] satisfies TavonelPage[];
+
+Object.assign(PUBLIC_PAGES, Object.fromEntries(competitivePublicPages.map((definition) => [definition.path, definition])));
 
 export const APP_PAGE_COPY: Record<
   string,

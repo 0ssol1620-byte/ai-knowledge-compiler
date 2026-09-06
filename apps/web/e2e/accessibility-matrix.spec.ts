@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.describe.configure({ timeout: 120_000 });
+
 const coreRoutes = [
   "/",
   "/intake",

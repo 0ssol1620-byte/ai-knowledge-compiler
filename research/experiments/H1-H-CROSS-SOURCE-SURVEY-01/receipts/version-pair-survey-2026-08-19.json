@@ -1,0 +1,337 @@
+{
+  "cross_source_arm_possible_offline": false,
+  "definition_enforced": "A version pair is two documents in an explicit amendment or revision relationship verifiable from the artifacts themselves. Two filings by the same issuer in different years are NOT a version pair.",
+  "explicitly_forbidden": [
+    "Pairing two annual filings from different years and calling the later one a revision of the earlier.",
+    "Inferring an amendment relationship from filename similarity, directory adjacency or filing date ordering.",
+    "Presenting the existing English-Wikipedia result as cross-source or as arbitrary-document external validity."
+  ],
+  "external_gpu_cost_usd": 0.0,
+  "filing_survey": {
+    "explicit_amendment_relationships": [],
+    "filing_shaped_file_count": 613,
+    "filing_shaped_files": [
+      "apps/web/e2e/visual-baselines/desktop/linux/visual-regression.spec.ts/dart-public-proof.png",
+      "apps/web/e2e/visual-baselines/desktop/win32/visual-regression.spec.ts/dart-public-proof.png",
+      "apps/web/public/proof-sources/dart-jtc-2026-q1.pdf",
+      "apps/web/scripts/capture-dart-proof-assets.mjs",
+      "apps/web/src/lib/dart-public-fixture.ts",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-EVIDENCE-RECEIPT-1440x900-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-GRAPH-1440x900-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-MARKDOWN-1440x900-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-MOBILE-390x844-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-ORIGINAL-1440x900-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-PROOF-1440x900-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-ROUTE-1920x1080-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-SOURCE-CELL-1440x900-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-TABLET-1024x768-v01.webp",
+      "assets/public-proof/dart/TAV-PROOF-T0-DART-EN-VAULT-1440x900-v01.webp",
+      "benchmark/acquire_dart.py",
+      "benchmark/datasets/acquired/public-core/omnidocbench/images/jiaocai_c1-cn-10-q-06-lys.pdf_2.jpg",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page1.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page22.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page23.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page25.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page26.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page27.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page28.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page3.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page30.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page43.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page45.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page50.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page51.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page57.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page59.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Apple 10-k_page76.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page1.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page107.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page30.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page39.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page48.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page49.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page50.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page51.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Coca Cola 10-k_page68.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page1.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page106.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page107.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page113.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page118.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page122.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page136.pdf",
+      "benchmark/datasets/acquired/public-core/parsebench/docs/table/Goldman Sachs 10-k_page137.pdf"
+    ]
+  },
+  "generated_at": "2026-08-19T02:00:41.907931+00:00",
+  "method": "offline filesystem survey; no network access; no document fetched",
+  "network_access": false,
+  "question": "Do inputs exist in this repository for a cross-source-family equivalence arm, i.e. a second document family with verifiable amendment/revision relationships?",
+  "receipt_sha256": "sha256:63f9cc788c612387ef98d1e55e665a3fccba2208305be8536d29e29fe5c58cae",
+  "result": "NOT_AVAILABLE_OFFLINE",
+  "revision_pair_directories": [
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/artificial-intelligence",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361649994.wikitext",
+        "1361732815.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/bitcoin",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1360619806.wikitext",
+        "1361514018.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/climate-change",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361488978.wikitext",
+        "1361489017.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/crispr",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1360230905.wikitext",
+        "1360349445.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/cryptography",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1357808216.wikitext",
+        "1360559240.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/json",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361217962.wikitext",
+        "1361497738.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/kubernetes",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1354433706.wikitext",
+        "1360700465.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/large-language-model",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361035550.wikitext",
+        "1361036555.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/machine-learning",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1358805808.wikitext",
+        "1360517605.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/quantum-computing",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1358350125.wikitext",
+        "1359355643.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/rust-programming-language",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1360879280.wikitext",
+        "1360880191.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus/world-wide-web",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1360958450.wikitext",
+        "1360958522.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/apple-intelligence",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1360401846.wikitext",
+        "1361861233.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/artificial-general-intelligence",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1359202414.wikitext",
+        "1360613399.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/gemini-chatbot",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1315073110.wikitext",
+        "1321440491.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/generative-artificial-intelligence",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1344855241.wikitext",
+        "1353263291.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/mars",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1359030760.wikitext",
+        "1361752460.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/meta-ai",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1358672110.wikitext",
+        "1359589737.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/nuclear-power",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361012325.wikitext",
+        "1361551444.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/robotics",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361282534.wikitext",
+        "1361656029.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/self-driving-car",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1359295324.wikitext",
+        "1359295913.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/solar-power",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1360548467.wikitext",
+        "1361935996.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1/space-exploration",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1353934477.wikitext",
+        "1360088280.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-extension-v1/chatgpt",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361416928.wikitext",
+        "1361471466.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-extension-v1/deep-learning",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1359107695.wikitext",
+        "1360514956.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-extension-v1/gpt-4",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1352140250.wikitext",
+        "1358825976.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-extension-v1/openai",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1361542786.wikitext",
+        "1361543171.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    },
+    {
+      "directory": "research/experiments/H1-B-REAL-REVISION-01/corpus-extension-v1/transformer-deep-learning-architecture",
+      "relationship_evidence": "revision id encoded in artifact name",
+      "revision_artifacts": [
+        "1321307104.wikitext",
+        "1321393463.wikitext"
+      ],
+      "source_family": "english_wikipedia"
+    }
+  ],
+  "revision_pair_directory_count": 28,
+  "schema": "tavonel.cross-source-version-pair-survey.v1",
+  "source_families_found": [
+    "english_wikipedia"
+  ],
+  "what_would_unblock": [
+    "A second source family whose artifacts carry an explicit amendment or supersession pointer to the document they revise.",
+    "For SEC: paired original and amended filings (e.g. 10-K and 10-K/A) resolved by accession number, where the amendment relationship is read from the filing index rather than inferred.",
+    "For DART: paired original and correction reports resolved by rcept_no.",
+    "Acquisition must be outcome-independent: the pair list is frozen before any equivalence result is computed, exactly as the W6 title manifest was."
+  ]
+}

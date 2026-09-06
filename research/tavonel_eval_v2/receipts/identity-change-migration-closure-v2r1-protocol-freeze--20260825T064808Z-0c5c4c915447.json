@@ -1,0 +1,51 @@
+{
+  "acceptance_semantics_sha256": "sha256:11d759493e2f47a59770d401ab7186be3916fdfe3116d3da961213d939ff0838",
+  "estimated_cost_usd": 0.0,
+  "exclusion_policy_sha256": "sha256:fd9ee9f2d4f27647f38b9ca903ba875924efc2cf9f97bd447e68b20c480a70d5",
+  "frozen_before_any_candidate_pair_was_read": true,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "prior_rung": {
+    "frame_module_sha256": "sha256:c4b504100aa04106a8c6a9a2ef30c037aa3ea0c6f9b0f21e65796ae252fcede5",
+    "receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-acquisition-frame-freeze--20260825T063736Z-eb47b3b794f4.json",
+    "run_id": "20260825T063736Z-eb47b3b794f4",
+    "rung": 0,
+    "rung_name": "acquisition_frame"
+  },
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+  "protocol_path": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1.yaml",
+  "protocol_sha256": "sha256:66cf1920b892bba32179d371b5ba5b8d944e4c532824a4b6603377f2e32f27ba",
+  "provenance": {
+    "generated_at": "2026-08-25T06:48:08.425152+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1.yaml",
+    "protocol_sha256": "sha256:66cf1920b892bba32179d371b5ba5b8d944e4c532824a4b6603377f2e32f27ba",
+    "receipt_stem": "identity-change-migration-closure-v2r1-protocol-freeze",
+    "run_id": "20260825T064808Z-0c5c4c915447",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:4e5492b145ea24639fb9619f826d938f5a2aeed33036c7931c532161ed28aa68"
+  },
+  "quarantine_channel": {
+    "observed_unresolved_kinds": [
+      "identity_unresolved"
+    ],
+    "production_record": "identity_unresolved",
+    "verification": "executed the repaired diff path and observed the kinds emitted on production's UNRESOLVED channel",
+    "verified_against_production": true
+  },
+  "receipt_sha256": "sha256:dcfcc1d4402e048587ea54d7f39949e1bcda8f5c7e06aa39cffc8ec1822b5f59",
+  "rung": 1,
+  "rung_name": "protocol",
+  "schema": "tavonel.v2.protocol_freeze.v3",
+  "supersedes": {
+    "permitted_because": "no V2R1 acquisition artifact existed and no rung after the protocol had frozen, both checked mechanically. This path is unreachable once a single pair has landed.",
+    "preserved": true,
+    "protocol_file_changed": true,
+    "receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-protocol-freeze--20260825T063937Z-d8da0f3bb857.json",
+    "run_id": "20260825T063937Z-d8da0f3bb857",
+    "superseded_protocol_sha256": "sha256:6dd0e03316f0c15f814a1750645cb052356c0b537b1be6df471e5ba16ae229ad",
+    "why": "rung 0 was superseded to add the source roots the first frame omitted, and the derived draft additionally pointed its manifest_contract at the ABANDONED V2 enumeration -- which would have had this study read another study's manifest or write into preserved evidence. Both corrections were made before any acquisition existed."
+  }
+}

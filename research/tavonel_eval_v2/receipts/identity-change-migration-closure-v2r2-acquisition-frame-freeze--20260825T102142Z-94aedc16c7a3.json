@@ -1,0 +1,670 @@
+{
+  "frame_declaration": {
+    "burn_scope_read_and_found_none": {
+      "p4c": "acquisition/sources_p4c.py contains no burn, spent or confirmatory-reuse declaration of any kind; its frozen SELECTION_RULE speaks only to cohort construction. Declared burn scope: NONE_DECLARED. Reported exactly and generalised into nothing. Its individual disposition is moot regardless -- one lineage cannot constitute a confirmatory cohort."
+    },
+    "cache_identity": {
+      "historical_p4i_artifacts": "UNTOUCHED. Not rewritten, not re-keyed, not migrated.",
+      "key": "sha256 over the full, untruncated lineage/source identity tuple, plus the revision's raw content digest. No truncation anywhere in the path.",
+      "raw_bytes_retained": "every side stores its RAW fetched bytes alongside the canonical document, so a canonicalisation defect can be repaired by RECOMPUTING rather than by re-fetching. INC-V2-058.3 is what the alternative costs: a re-canonicalisation that had to re-read the sources destroyed `known_at` across 564 documents and the corpus was discarded.",
+      "readable_slug_is": "a LABEL only, never a key, never compared for identity",
+      "scheme": "content_addressed",
+      "still_required": "structural collision detection, raw digest verification, canonical digest verification, and whole-collision-group exclusion. A better key reduces collisions; it does not license skipping the check that finds them.",
+      "truncation": "FORBIDDEN in any identity-bearing position"
+    },
+    "container_cap": {
+      "git_docs": 5,
+      "regulation_ecfr": 4,
+      "sec_edgar": 4
+    },
+    "excluded_families": {
+      "encyclopedia_wikipedia": "SFI3 root family. Metadata-only disjointness from SFI3 roots is not reliably provable for it, and expanding an SFI3 category to make it provable is forbidden -- that would spend the prospective confirmatory material of another study to buy a disjointness argument here."
+    },
+    "excluded_sets": [
+      {
+        "id": "v2r1_spent_285",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1's frozen universe. The run executed exactly once and its corpus is SPENT. That it was adjudicated an invalid instrument does not un-spend the material: the lineages were measured, their outcomes were read, and a cohort whose results are known cannot be a prospective confirmatory denominator. All 285 are excluded by name."
+      },
+      {
+        "id": "sfi1_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V1's own frame and executor"
+      },
+      {
+        "id": "sfi2_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V2's own frame and executor"
+      },
+      {
+        "id": "retrospective_538",
+        "why": "the retrospective migration-safety regression cohort, reclassified by founder ruling as retrospective rather than prospective qualification"
+      },
+      {
+        "id": "sfi2_forensic_14",
+        "why": "the fourteen cases that DIAGNOSED the INC-V2-037 defect. A case used to find a defect cannot certify its repair."
+      },
+      {
+        "id": "v1_closure_514",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1's universe. V1 is a permanent FAIL and its universe may never become a positive migration-closure denominator after repair."
+      },
+      {
+        "id": "vbc1_probe",
+        "why": "sources_vbc1_probe.py declares BEFORE use that every lineage listed there is spent the moment the probe reports, and that it is not the confirmatory cohort and must never become it, with burned_after_use=True and not_the_confirmatory_cohort=True. That burn is GLOBAL for confirmatory reuse."
+      },
+      {
+        "id": "earlier_identity_measurements",
+        "why": "any lineage an earlier identity closure or identity regression already measured; burned for THIS question specifically"
+      },
+      {
+        "id": "sfi3_all",
+        "why": "SFI3 roots and every SFI3 lineage, payload and expansion. SFI3 is the next study's prospective confirmatory material and opening any of it here would spend it."
+      },
+      {
+        "id": "contract_declared_spent",
+        "why": "any source whose OWN predeclared contract says it is spent for confirmatory reuse. Read that contract; do not assume, and do not generalise from another corpus's contract."
+      }
+    ],
+    "families": [
+      "git_docs",
+      "regulation_ecfr",
+      "sec_edgar"
+    ],
+    "families_required": 3,
+    "family_floor": {
+      "git_docs": 40,
+      "regulation_ecfr": 40,
+      "sec_edgar": 25
+    },
+    "family_quota": {
+      "git_docs": 170,
+      "regulation_ecfr": 130,
+      "sec_edgar": 160
+    },
+    "family_share": {
+      "git_docs": 0.37,
+      "regulation_ecfr": 0.28,
+      "sec_edgar": 0.35
+    },
+    "floor": 200,
+    "forbidden_in_selection": [
+      "inspecting revision content in order to choose a candidate",
+      "inspecting any identity outcome",
+      "probing for ambiguity",
+      "probing for changed facets",
+      "acquiring until a quarantine case appears",
+      "removing a pair after seeing its outcome",
+      "adding a pair after seeing any outcome",
+      "replacing a family after seeing its yield",
+      "adjusting a quota, the floor or a threshold after acquisition",
+      "adding an ignore entry",
+      "sizing a quota from V2R1's realised admission yield"
+    ],
+    "integrity_rejection": {
+      "canonical_digest": "recomputed for every revision side; a mismatch rejects the pair",
+      "canonical_shape": "both sides must canonicalise into the shape production's `selective_build.snapshots` reads. V2R1's first eCFR canonicalisation invented `heading_path` with no `heading` and no `text_sha256`, which made 106 pairs unmeasurable for a reason unrelated to the migration (INC-V2-058.2). The shape is mirrored field-for-field from `canonical_document`, never reinvented per family.",
+      "collision_groups": "collisions are detected STRUCTURALLY. If a cache-key or slug collision makes provenance ambiguous, the ENTIRE collision group is excluded -- never whichever member is convenient. Every exclusion is named and counted.",
+      "identical_sides": "a pair whose two sides carry the same raw digest is rejected as not a revision pair. This is a metadata-level identity check, not a content judgement about whether anything meaningful changed.",
+      "parse": "both sides must parse and yield at least 3 canonical units",
+      "raw_digest": "recomputed for every revision side; a mismatch rejects the pair"
+    },
+    "order_salt": ":icmc-v2r2",
+    "primary_target": 460,
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+    "quota_basis": {
+      "basis": "grammar breadth and PROBED container capacity: 35 repositories x 5, 34 CFR parts x 4, and issuers above CIK 8177 x 4",
+      "explicitly_not_basis": "violation rate, pass yield, closure outcome, or any V1 / V2R1 observation including V2R1's realised admission yield",
+      "floor_prior": "FLOOR=200 is carried forward from the founder ruling as a PRE-MEASUREMENT COHORT SUFFICIENCY GATE. V1's published 8/514 sized it as a sample-size planning prior and appears nowhere else: not in a quota, not in a numerator, not in a denominator, not in the scorer.",
+      "frozen_before": "any V2R2 fetch, any V2R2 diff, any V2R2 score",
+      "redistribution": "forbidden; an under-delivering family is reported short"
+    },
+    "source_roots": {
+      "git_docs": {
+        "container_count": 35,
+        "containers": [
+          "strimzi/strimzi-kafka-operator",
+          "hasura/graphql-engine",
+          "appwrite/appwrite",
+          "dbt-labs/docs.getdbt.com",
+          "great-expectations/great_expectations",
+          "open-telemetry/opentelemetry.io",
+          "openfaas/docs",
+          "tektoncd/website",
+          "open-policy-agent/opa",
+          "spiffe/spiffe.io",
+          "gruntwork-io/terragrunt",
+          "opentofu/opentofu",
+          "chef/chef-web-docs",
+          "apache/pulsar-site",
+          "apache/flink-web",
+          "apache/druid-website-src",
+          "neo4j/docs-cypher",
+          "surrealdb/docs.surrealdb.com",
+          "typesense/typesense-website",
+          "vespa-engine/documentation",
+          "keploy/docs",
+          "novuhq/docs",
+          "formbricks/formbricks",
+          "PostHog/posthog.com",
+          "plausible/docs",
+          "matomo-org/developer-documentation",
+          "sveltejs/svelte.dev",
+          "nuxt/nuxt.com",
+          "nodejs/nodejs.org",
+          "golang/website",
+          "tailwindlabs/tailwindcss.com",
+          "radix-ui/website",
+          "micropython/micropython",
+          "espressif/esp-idf",
+          "raspberrypi/documentation"
+        ],
+        "roots": [
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "strimzi",
+            "prefix": "documentation",
+            "repo": "strimzi-kafka-operator"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "hasura",
+            "prefix": "docs/docs",
+            "repo": "graphql-engine"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "BSD-3-Clause",
+            "owner": "appwrite",
+            "prefix": "docs",
+            "repo": "appwrite"
+          },
+          {
+            "branch": "current",
+            "license_metadata": "Apache-2.0",
+            "owner": "dbt-labs",
+            "prefix": "website/docs",
+            "repo": "docs.getdbt.com"
+          },
+          {
+            "branch": "develop",
+            "license_metadata": "Apache-2.0",
+            "owner": "great-expectations",
+            "prefix": "docs",
+            "repo": "great_expectations"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "CC-BY-4.0",
+            "owner": "open-telemetry",
+            "prefix": "content/en/docs",
+            "repo": "opentelemetry.io"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "MIT",
+            "owner": "openfaas",
+            "prefix": "docs",
+            "repo": "docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "tektoncd",
+            "prefix": "content/en/docs",
+            "repo": "website"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "open-policy-agent",
+            "prefix": "docs",
+            "repo": "opa"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "spiffe",
+            "prefix": "content/docs",
+            "repo": "spiffe.io"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "gruntwork-io",
+            "prefix": "docs",
+            "repo": "terragrunt"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MPL-2.0",
+            "owner": "opentofu",
+            "prefix": "website/docs",
+            "repo": "opentofu"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "chef",
+            "prefix": "content",
+            "repo": "chef-web-docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "apache",
+            "prefix": "docs",
+            "repo": "pulsar-site"
+          },
+          {
+            "branch": "asf-site",
+            "license_metadata": "Apache-2.0",
+            "owner": "apache",
+            "prefix": "docs",
+            "repo": "flink-web"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "apache",
+            "prefix": "docs",
+            "repo": "druid-website-src"
+          },
+          {
+            "branch": "dev",
+            "license_metadata": "Apache-2.0",
+            "owner": "neo4j",
+            "prefix": "modules",
+            "repo": "docs-cypher"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "surrealdb",
+            "prefix": "src/content",
+            "repo": "docs.surrealdb.com"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "typesense",
+            "prefix": "docs-site",
+            "repo": "typesense-website"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "vespa-engine",
+            "prefix": "en",
+            "repo": "documentation"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "keploy",
+            "prefix": "versioned_docs",
+            "repo": "docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "novuhq",
+            "prefix": "content",
+            "repo": "docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "formbricks",
+            "prefix": "docs",
+            "repo": "formbricks"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "PostHog",
+            "prefix": "contents/docs",
+            "repo": "posthog.com"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "CC-BY-SA-4.0",
+            "owner": "plausible",
+            "prefix": "docs",
+            "repo": "docs"
+          },
+          {
+            "branch": "live",
+            "license_metadata": "NOASSERTION",
+            "owner": "matomo-org",
+            "prefix": "docs",
+            "repo": "developer-documentation"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "sveltejs",
+            "prefix": "apps/svelte.dev/content",
+            "repo": "svelte.dev"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "nuxt",
+            "prefix": "content",
+            "repo": "nuxt.com"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "nodejs",
+            "prefix": "apps/site/pages/en",
+            "repo": "nodejs.org"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "BSD-3-Clause",
+            "owner": "golang",
+            "prefix": "_content",
+            "repo": "website"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "tailwindlabs",
+            "prefix": "src/docs",
+            "repo": "tailwindcss.com"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "radix-ui",
+            "prefix": "data",
+            "repo": "website"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "micropython",
+            "prefix": "docs",
+            "repo": "micropython"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "espressif",
+            "prefix": "docs/en",
+            "repo": "esp-idf"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "CC-BY-SA-4.0",
+            "owner": "raspberrypi",
+            "prefix": "documentation/asciidoc",
+            "repo": "documentation"
+          }
+        ]
+      },
+      "regulation_ecfr": {
+        "container_count": 34,
+        "containers": [
+          "7-1400",
+          "7-273",
+          "7-3560",
+          "9-310",
+          "14-139",
+          "14-145",
+          "15-30",
+          "19-181",
+          "21-1141",
+          "21-888",
+          "22-126",
+          "23-771",
+          "24-203",
+          "25-273",
+          "26-54",
+          "28-16",
+          "29-2590",
+          "29-4022",
+          "30-57",
+          "32-310",
+          "33-151",
+          "37-401",
+          "38-21",
+          "39-3001",
+          "40-745",
+          "41-102-38",
+          "43-10",
+          "45-1321",
+          "46-28",
+          "47-20",
+          "48-215",
+          "49-390",
+          "49-659",
+          "50-300"
+        ],
+        "roots": [
+          {
+            "part": "1400",
+            "subject": "Payment limitation and eligibility",
+            "title": "7"
+          },
+          {
+            "part": "273",
+            "subject": "Food and nutrition service certification",
+            "title": "7"
+          },
+          {
+            "part": "3560",
+            "subject": "Direct multi-family housing loans and grants",
+            "title": "7"
+          },
+          {
+            "part": "310",
+            "subject": "Post-mortem inspection",
+            "title": "9"
+          },
+          {
+            "part": "139",
+            "subject": "Certification of airports",
+            "title": "14"
+          },
+          {
+            "part": "145",
+            "subject": "Repair stations",
+            "title": "14"
+          },
+          {
+            "part": "30",
+            "subject": "Foreign trade regulations",
+            "title": "15"
+          },
+          {
+            "part": "181",
+            "subject": "USMCA rules of origin",
+            "title": "19"
+          },
+          {
+            "part": "1141",
+            "subject": "Cigarette and smokeless tobacco labelling",
+            "title": "21"
+          },
+          {
+            "part": "888",
+            "subject": "Orthopedic devices",
+            "title": "21"
+          },
+          {
+            "part": "126",
+            "subject": "Prohibited exports and sales to certain countries",
+            "title": "22"
+          },
+          {
+            "part": "771",
+            "subject": "Environmental impact and related procedures",
+            "title": "23"
+          },
+          {
+            "part": "203",
+            "subject": "Single family mortgage insurance",
+            "title": "24"
+          },
+          {
+            "part": "273",
+            "subject": "Education contracts under Johnson-O Malley",
+            "title": "25"
+          },
+          {
+            "part": "54",
+            "subject": "Pension excise taxes",
+            "title": "26"
+          },
+          {
+            "part": "16",
+            "subject": "Production or disclosure of material or information",
+            "title": "28"
+          },
+          {
+            "part": "2590",
+            "subject": "Group health plan requirements",
+            "title": "29"
+          },
+          {
+            "part": "4022",
+            "subject": "Benefits payable in terminated single-employer plans",
+            "title": "29"
+          },
+          {
+            "part": "57",
+            "subject": "Safety and health standards for underground metal mines",
+            "title": "30"
+          },
+          {
+            "part": "310",
+            "subject": "Protection of privacy and access to records",
+            "title": "32"
+          },
+          {
+            "part": "151",
+            "subject": "Vessels carrying oil and noxious liquid substances",
+            "title": "33"
+          },
+          {
+            "part": "401",
+            "subject": "Rights to inventions made by contractors",
+            "title": "37"
+          },
+          {
+            "part": "21",
+            "subject": "Veteran readiness and employment",
+            "title": "38"
+          },
+          {
+            "part": "3001",
+            "subject": "Rules of practice and procedure",
+            "title": "39"
+          },
+          {
+            "part": "745",
+            "subject": "Lead-based paint poisoning prevention",
+            "title": "40"
+          },
+          {
+            "part": "102-38",
+            "subject": "Sale of personal property",
+            "title": "41"
+          },
+          {
+            "part": "10",
+            "subject": "Native American graves protection and repatriation",
+            "title": "43"
+          },
+          {
+            "part": "1321",
+            "subject": "Grants to state and community programs on aging",
+            "title": "45"
+          },
+          {
+            "part": "28",
+            "subject": "Requirements for commercial fishing industry vessels",
+            "title": "46"
+          },
+          {
+            "part": "20",
+            "subject": "Commercial mobile radio services",
+            "title": "47"
+          },
+          {
+            "part": "215",
+            "subject": "Contracting by negotiation",
+            "title": "48"
+          },
+          {
+            "part": "390",
+            "subject": "Federal motor carrier safety regulations, general",
+            "title": "49"
+          },
+          {
+            "part": "659",
+            "subject": "Rail fixed guideway systems state safety oversight",
+            "title": "49"
+          },
+          {
+            "part": "300",
+            "subject": "International fisheries regulations",
+            "title": "50"
+          }
+        ]
+      },
+      "sec_edgar": {
+        "container_count": null,
+        "containers": "RULE",
+        "rule": {
+          "availability_probe": "26 of the first 30 issuers above CIK 8177 carry at least one amendment pair, 146 pairs among those 30, so the quota is reachable well inside the ordered universe",
+          "distinct_ciks_at_declaration": 7998,
+          "forms": [
+            "10-K",
+            "10-Q",
+            "20-F",
+            "8-K"
+          ],
+          "order": "ascending by CIK above the start, which is stable and not chosen by us",
+          "pair_construction": "a source document is (CIK, base form, period of report). An amendment pair exists where the same (CIK, base form, period) carries both an original filing and its /A amendment. Both sides are named by accession number from the submissions API -- metadata only.",
+          "start_after_cik": 8177,
+          "stopping": "walk in CIK order until the family quota is met or the universe ends",
+          "submissions_api": "https://data.sec.gov/submissions/CIK##########.json",
+          "universe": "https://www.sec.gov/files/company_tickers.json",
+          "universe_size_at_declaration": 10403,
+          "why_start_after": "8177 is the highest CIK V2R1 admitted. Starting strictly above it makes the SEC family container-disjoint from V2R1 by construction, matching the treatment of the other two families, rather than relying on lineage-level exclusion alone."
+        }
+      }
+    },
+    "traversal": {
+      "attrition": "a candidate lost to fetch failure, parse failure or integrity rejection is RECORDED with its reason and never silently replaced. The realised count is whatever survives; the gate is FLOOR.",
+      "container_cap": "per-family, from CONTAINER_CAP -- repository, CFR part, issuer -- so no single container dominates the cohort",
+      "duplicate_rule": "deduplicate by lineage id, keeping the first occurrence in traversal order. A lineage reachable from two containers is admitted once.",
+      "insufficient_cohort": "if fewer than FLOOR pairs are admitted, or fewer than FAMILIES_REQUIRED families clear their FAMILY_FLOOR, the study STOPS as INSUFFICIENT_COHORT. It does not proceed with a power disclaimer beside a verdict, and it does not pad after measuring outcomes.",
+      "order": "families in the order FAMILIES declares; within a family, containers sorted lexicographically by container id; within a container, source documents sorted lexicographically by source id. Deterministic, and reproducible from this file without a fetch.",
+      "oversampling": "construct up to PRIMARY_TARGET candidates in this order, then filter. Over-selection precedes every outcome. Padding after measurement is forbidden without exception.",
+      "pair_construction": "one revision pair per source document: the two most recent DISTINCT revisions by the source's own revision metadata, before-side older. Ties broken by the lexicographically smallest revision identifier. Chosen without reading either revision's content.",
+      "stopping_rule": "stop when the family quota is met or the family's declared roots are exhausted, whichever comes first. NEVER 'keep acquiring until a quarantine case appears', and never 'until the cohort looks balanced' -- a stopping rule that reads the outcome makes selection a function of the result."
+    }
+  },
+  "frame_declaration_digest": "sha256:cf1aef512a8c2df8c56a41f9aaa74ff1f3f0c52063c8a7be8cd6d9da20274b6d",
+  "frame_module": "research/tavonel_eval_v2/acquisition/sources_v2r2.py",
+  "frame_module_sha256": "sha256:0caf7cf4acf3aef83c53fd7c03047fc877638ac76b23af65634b685278977cd3",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+  "provenance": {
+    "generated_at": "2026-08-25T10:21:42.224971+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2.yaml",
+    "protocol_sha256": "sha256:56bbe4c43f15d918483b3e7ff4941edc5a08246cec2a361e734c2f593793a48c",
+    "receipt_stem": "identity-change-migration-closure-v2r2-acquisition-frame-freeze",
+    "run_id": "20260825T102142Z-94aedc16c7a3",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:057590219602876e0fe2ebe9ec2e186aa6283e726ebf8f39a8434ab03b96d223",
+  "rung": 0,
+  "sealed_before_acquisition": true,
+  "why_rung_0_exists": "V2R1 acquires its own material, so the rules deciding what to acquire are sealed before any content exists. V1 and the abandoned V2 drew from an existing cache and had no equivalent obligation."
+}

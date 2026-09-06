@@ -1,0 +1,101 @@
+{
+  "backend_authority": {
+    "branch": "agent/folynta-trust-integration-v1",
+    "migration": "0023_v4_collections",
+    "producer": "services/api/src/akc_api/collection_api.py:file.discovered.v1",
+    "producer_payload_fields": [
+      "collection_id",
+      "source_root_id",
+      "discovered_files",
+      "discovered_bytes",
+      "manifest_revision"
+    ],
+    "project": "ai-knowledge-compiler",
+    "ruling": "KEEP_AUTHORITATIVE",
+    "transport": "GET /v1/collections/{collection_id}/events/stream"
+  },
+  "claim_ruling": "Do not claim L1 REAL LIVE WORLD-SEMANTIC SLICE PASS until the authoritative backend and mounted Product App are exercised together in one same-lineage/browser E2E evidence run.",
+  "gates": {
+    "adapter_maps_only_proven_field": true,
+    "capability_level_live_sample_split_implemented": true,
+    "duplicate_migration_excluded": true,
+    "no_synthetic_live_payload": true,
+    "product_event_contract_supported": true,
+    "projection_supports_discovery_count": true,
+    "real_backend_source_identified": true,
+    "real_transport_identified": true,
+    "replay_cursor_tests": true,
+    "same_lineage_live_browser_e2e": false,
+    "scope_mismatch_negative_test": true
+  },
+  "generated_at_kst": "2026-08-16T12:17:30+09:00",
+  "non_authorizations": [
+    "no commit",
+    "no push",
+    "no migration execution",
+    "no production rollout"
+  ],
+  "old_l1_worktree": {
+    "adapter_tests_node_environment": {
+      "failed": 0,
+      "passed": 9
+    },
+    "backend_tests": {
+      "classification": "behavior evidence only; does not authorize its duplicate migration",
+      "failed": 0,
+      "passed": 4
+    },
+    "branch": "agent/tavonel-live-world-slice-l1",
+    "dirty": true,
+    "head_short": "0d5fbc85645a",
+    "migration_ruling": "BLOCK_L1_MIGRATION_PROMOTION",
+    "project": "ai-knowledge-compiler-l1"
+  },
+  "product_app": {
+    "behavior": [
+      "explicit collection UUID selection",
+      "authoritative SSE frame validation",
+      "file.discovered.v1 only",
+      "backend discovered_files normalized to ProductEvent files_discovered",
+      "envelope/payload collection identity parity",
+      "live mode only for discovery projection",
+      "sequence dedupe and after_sequence resume",
+      "malformed JSON never advances cursor",
+      "SAMPLE WORLD remains authoritative for WORLD/SOURCE/CHANGE/ASK while discovery field is separately labeled live"
+    ],
+    "branch": "agent/tavonel-product-app",
+    "combined_l1_adapter_tests": {
+      "failed": 0,
+      "passed": 14
+    },
+    "compatibility_adapter_tests_after_alignment": {
+      "failed": 0,
+      "passed": 9
+    },
+    "contract_regression": {
+      "failed": 0,
+      "l1_adapter_tests": 14,
+      "product_event_tests": 13,
+      "total_passed": 56,
+      "world_projection_tests": 29
+    },
+    "current_contract": "ProductEvent requires top-level collection_id; I2 scope union is not silently imported",
+    "implemented_files": [
+      "apps/web/src/lib/live-collection-event-source-product.ts",
+      "apps/web/src/lib/live-collection-event-source-product.test.ts",
+      "apps/web/src/app/app/world/live-discovery.module.css",
+      "apps/web/src/app/app/world/layout.tsx"
+    ],
+    "new_adapter_tests": {
+      "failed": 0,
+      "passed": 5
+    },
+    "project": "ai-knowledge-compiler-product-app",
+    "typescript_typecheck": "PASS",
+    "typescript_typecheck_exit_code": 0
+  },
+  "reason": "backend/transport authority and Product-App normalization are reconciled; same-lineage live browser E2E remains pending",
+  "result": "PARTIAL",
+  "schema": "tavonel.h1-l1-reconciliation.v1",
+  "status": "L1_RECONCILED_IMPLEMENTATION_CANDIDATE"
+}

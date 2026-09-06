@@ -1,0 +1,323 @@
+{
+  "authority": {
+    "active_over_withdrawn": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "equal_conflict": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "evidence_override": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "inapplicable_high_authority": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "narrow_scope": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "no_candidate": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "override_without_evidence": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "permission_hidden": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "regulatory_over_contract": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "temporal_window": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    }
+  },
+  "cases_per_cell": 500,
+  "evidence_scope": "controlled mechanism correctness only; no automatic temporal extraction or real-world frequency/generalization claim",
+  "external_gpu_cost_usd": 0.0,
+  "failed_cells": [],
+  "generated_at": "2026-08-18T23:42:22.732534+00:00",
+  "lineage": {
+    "decoy_consumption": {
+      "failures": [],
+      "numeric": {
+        "false_impact": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "missed": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "stale_precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "stale_recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "deep_chain_64": {
+      "failures": [],
+      "numeric": {
+        "final_depth": {
+          "max": 64.0,
+          "mean": 64.0,
+          "min": 64.0
+        },
+        "precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "locator_relocation": {
+      "failures": [],
+      "numeric": {
+        "precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "provenance_reconstruction": {
+      "failures": [],
+      "numeric": {
+        "false_provenance": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "semantic_chain_consumption": {
+      "failures": [],
+      "numeric": {
+        "false_impact": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "missed": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "stale_precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "stale_recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "temporal_channel": {
+      "failures": [],
+      "numeric": {
+        "precision": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "recall": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    }
+  },
+  "primary_success": true,
+  "protocol_sha256": "sha256:56579c9b372d6ca2cf4c24e1687010bcd63cacba13fb3a05d55ea7c1448177df",
+  "receipt_sha256": "sha256:d795fbc00ded02ea1a7e4c636d7de08845c262f0f0b47ac4039b2701cbc43897",
+  "schema": "tavonel.governance-temporal-lineage-controlled.v1",
+  "script_sha256": "sha256:6aa59b7f94faac12f3b69b35c7d9dd5246eda034a1184c0fe8ffbc1828e84748",
+  "seed": 2026081908,
+  "temporal": {
+    "backdated_late_recording": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "nonoverlap_no_contradiction": {
+      "failures": [],
+      "numeric": {
+        "contradictions": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "overlap_contradiction": {
+      "failures": [],
+      "numeric": {
+        "contradictions": {
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        }
+      },
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "replay_both_axes": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "superseded_known_time": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    },
+    "unknown_validity_policy": {
+      "failures": [],
+      "numeric": {},
+      "totals": {
+        "cases": 500,
+        "passed": 500
+      }
+    }
+  }
+}

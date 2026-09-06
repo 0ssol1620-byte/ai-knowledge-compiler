@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
 import type { StructaraLocale } from "@/lib/locale";
+import { recordPublicProductEvent } from "@/lib/public-product-analytics";
 
 const PHASES = [
   "collect",
@@ -69,6 +70,8 @@ export function StructaraLiveDemo({
   const [announcement, setAnnouncement] = useState("");
   const rootRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const startedEventRecorded = useRef(false);
+  const completedEventRecorded = useRef(false);
   const phase = PHASES[phaseIndex]!;
   const labels = LABELS[locale];
   const copy = COPY[locale];
@@ -102,11 +105,25 @@ export function StructaraLiveDemo({
 
   useEffect(() => {
     if (paused || reducedMotion || !inView || !documentVisible) return;
+    if (!startedEventRecorded.current) {
+      startedEventRecorded.current = true;
+      recordPublicProductEvent("landing_demo_started");
+    }
     const id = window.setInterval(() => {
       setPhaseIndex((current) => (current + 1) % PHASES.length);
     }, 2400);
     return () => window.clearInterval(id);
   }, [paused, reducedMotion, inView, documentVisible]);
+
+  useEffect(() => {
+    if (
+      phase !== "package" ||
+      !startedEventRecorded.current ||
+      completedEventRecorded.current
+    ) return;
+    completedEventRecorded.current = true;
+    recordPublicProductEvent("landing_demo_completed");
+  }, [phase]);
 
   function selectPhase(nextIndex: number, announce = true) {
     setPhaseIndex(nextIndex);
@@ -220,7 +237,7 @@ export function StructaraLiveDemo({
           id={`st-live-panel-${phase}`}
           role="tabpanel"
           aria-labelledby={`st-live-tab-${phase}`}
-          tabIndex={0}
+          tabIndex={-1}
         >
           <header>
             <span className="st-live-status">

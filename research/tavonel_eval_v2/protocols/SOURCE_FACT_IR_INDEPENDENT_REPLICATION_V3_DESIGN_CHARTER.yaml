@@ -1,0 +1,85 @@
+schema: tavonel.sfir3.pre_census_design_charter.v1
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V3
+status: DRAFT_PRE_CENSUS
+study_role: fresh prospective independent replication after terminal pre-payload SFIR2 chronology refusal
+result_blind: true
+gpu_authorized: false
+
+family_authorities:
+  git_docs: GITHUB_REPOSITORY_METADATA_API_V1
+  regulation_ecfr: ECFR_VERSIONER_METADATA_API_V1
+  encyclopedia_wikipedia: MEDIAWIKI_PAGE_REVISION_METADATA_API_V1
+
+candidate_fields: [discovery_root_id, root_container_id, lineage_id, family, container_id, alias_ids, payload_ref, revision_id, revision_timestamp, capability_exercise]
+
+pagination_contract:
+  maximum_retries_per_request: 5
+  retryable_http_statuses: [429, 500, 502, 503, 504]
+  zero_candidate_http_statuses: [404, 409, 451]
+  terminal_http_statuses: [401, 403]
+  require_complete_pagination: true
+  refuse_on_cap_before_exhaustion: true
+
+capacity_rule:
+  formula: Q_f=min(1000,floor(0.8*C_f))
+  minimum_c_per_family: 750
+  minimum_q_per_family: 600
+
+source_selection:
+  selection_salt: sfir3-capacity-v1:2026-08-26:chronology-tolerant-independent-replication
+  git_repositories: [tensorflow/tensorflow, keras-team/keras, apache/arrow, kubernetes/kubernetes, ansible/ansible, redis/redis, mongodb/mongo, denoland/deno, llvm/llvm-project, eclipse-openj9/openj9, fastapi/fastapi, tiangolo/typer, agronholm/anyio, python/importlib_metadata, pyca/cryptography, paramiko/paramiko, fabric/fabric, boto/boto3, aws/aws-cli, googleapis/python-api-core, googleapis/google-cloud-python, microsoft/TypeScript, facebook/react, vuejs/core, nestjs/nest, expressjs/express, webpack/webpack, babel/babel, pnpm/pnpm, yarnpkg/berry]
+  ecfr_titles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+  wikipedia_categories: [Astronomy, Physics, Chemistry, Biology, Mathematics, Statistics, Geology, Meteorology, Oceanography, Ecology, Genetics, Neuroscience, Immunology, Virology, Pharmacology, Surgery, Architecture, Economics, Sociology, Psychology, Anthropology, Linguistics, Philosophy, Political science, Law, Education, Engineering, Electronics, Telecommunications, Transportation]
+
+prospective_root_policy:
+  continue_as_zero_candidate: [HTTP_404, HTTP_409, HTTP_451, UNAVAILABLE_ROOT, TRUNCATED_OR_INCOMPLETE_ENUMERATION, SNAPSHOT_DRIFT_DURING_ENUMERATION]
+  terminal_refusal: [AUTHENTICATED_HTTP_401, AUTHENTICATED_HTTP_403, RATE_LIMIT_EXHAUSTION, MALFORMED_RESPONSE, UNKNOWN_PARTIAL_STATE]
+  zero_schema: ZERO_CANDIDATE_ROOT_DISPOSITION
+  count_rule: C counts candidates only from roots dispositioned COMPLETE
+  exhaustive_dispositions_required: true
+  response_and_snapshot_refs_required: true
+
+resource_bounds:
+  metadata_response_bytes: 16777216
+  metadata_read_block_bytes: 65536
+  ecfr_version_records_per_title: 100000
+  ecfr_version_aggregate_state_bytes: 67108864
+  acquisition_payload_bytes: 2000000
+  acquisition_max_workers: 16
+  acquisition_in_flight_per_worker: 2
+  acquisition_payload_cache_total_bytes: 17179869184
+  observation_spool_total_bytes: 8589934592
+  scientific_evidence_per_file_bytes: 33554432
+  ecfr_raw_part_bytes: 268435456
+  ecfr_total_cache_bytes: 8589934592
+
+spent_identity_rule:
+  exact_predecessors: [sfir2 comprehensive spent authority, sfir2 frozen charter, sfir2 terminal failure receipt]
+  spent_receipt_sha256: sha256:89806ddf659e3bb296fbb3e3eaece4e11d6d669ad7598ad71b4e49b140c46d31
+  charter_receipt_sha256: sha256:d54ef39bc569ab1482655fadd83e54bf07c6c212f719ec6e5a2172b6585e6a31
+  failure_receipt_sha256: sha256:83b43161d056087318aa02d24c8621688b38881b254f12949f8e73caa242dbde
+  reserve_all_sfir2_git_roots: true
+  reserve_unreached_sfir2_wikipedia_roots: false
+  reserve_unreached_ecfr_title_part_wildcard: false
+  families_not_reached: [regulation_ecfr, encyclopedia_wikipedia]
+  full_historical_disjointness_required: true
+
+endpoint_rule:
+  primary_exercised_and_met: [E1, E2, E3, E4, E5, E6, E7, E9]
+  veto_only: E8
+  E8_required_violations: 0
+  no_skip: [E5, E6, E9]
+
+analysis_floor:
+  total_pairs: 300
+  families: 3
+  per_family_pairs: 60
+  capability_exercising_pairs: {E5: 29, E6: 29, E9: 29}
+
+stopping_rules:
+  - any pre-freeze payload, diff, SourceFact, endpoint outcome, or score terminates SFIR3
+  - capacity shortfall terminates SFIR3 without roster, acquisition, score, or GPU
+  - no root, threshold, cap, family, endpoint, or disposition-policy change after charter freeze
+  - malformed or unknown partial metadata terminates rather than becoming zero candidates
+  - Git ancestry pairs with equal or nonmonotonic commit timestamps are deterministically ineligible and skipped, never a root or family refusal
+  - every emitted candidate still requires distinct immutable revisions and strictly increasing canonical UTC timestamps

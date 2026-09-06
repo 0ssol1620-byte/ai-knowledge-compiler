@@ -3,9 +3,12 @@
 Importing or testing this directory does not inspect credentials, call RunPod,
 create paid resources, or change an endpoint. `client.py` is the production REST
 adapter, but every operation remains a network-free dry run until `--execute`
-is explicitly present. Execute mode reads only `RUNPOD_API_KEY` from the process
-environment; the key is withheld from representations, receipts, provider error
-bodies, and exception messages.
+is explicitly present. Execute mode reads `RUNPOD_API_KEY` and may also read the
+optional `RUNPOD_API_KEY_FALLBACK` from the process environment. Neither value is
+serialized: keys are withheld from representations, receipts, provider error
+bodies, and exception messages. The fallback is attempted only after an explicit
+401/403 rejection, or after HTTP 429 on a GET. Rate-limited writes are never
+replayed with the fallback because an ambiguous paid mutation must remain one-shot.
 
 The model pool registry keeps incompatible model families in separate cache and
 image identities. Every pool is disabled until its exact model revision,
@@ -85,6 +88,8 @@ New-Item -ItemType Directory -Force -Path $EvidenceRoot
   create --spec 'D:\secure\endpoint-spec.json' --idempotency-key 'idem-<64hex>'
 
 # Real inventory/create only after RUNPOD_API_KEY is injected into this process.
+# RUNPOD_API_KEY_FALLBACK is optional and follows the non-ambiguous failover rule
+# above. Neither value belongs in the receipt directory or command arguments.
 .\.venv\Scripts\python.exe -m infra.runpod.v6 --execute `
   --receipt-out "$EvidenceRoot\00-inventory-before.json" inventory
 .\.venv\Scripts\python.exe -m infra.runpod.v6 --execute `
@@ -126,3 +131,32 @@ IDs. It contains no credential.
 The JSONL ledger is the authoritative resume source; status, accepted billing,
 provider billing, hard stops, delete intent/acknowledgement, and terminal
 provider-absence hashes are chained without overwriting failed attempts.
+
+### Offline runtime promotion
+
+Building an image and qualifying it are not permission to hand-edit a Pod spec
+to `READY`. First bind the immutable image-build receipt to the measured
+qualification-only GPU evidence:
+
+```powershell
+.\.venv\Scripts\python.exe -m infra.runpod.v6.runtime_qualification `
+  --build-receipt 'D:\evidence\baked-image-build.json' `
+  --runtime-evidence 'D:\evidence\runtime-verification.json' `
+  --output 'D:\evidence\runtime-qualification.json'
+```
+
+Then bind that passed `folynta.baked-runtime-qualification.v1` receipt to the
+BUILD_REQUIRED spec deterministically:
+
+```powershell
+.\.venv\Scripts\python.exe -m infra.runpod.v6 `
+  --receipt-out 'D:\evidence\runtime-promotion.json' `
+  promote-runtime `
+  --spec 'infra\runpod\v6\specs\folynta-ovis-m1-vllm-0.22.1-cu129-a40.json' `
+  --qualification 'D:\evidence\runtime-qualification.json' `
+  --ready-spec-out 'D:\evidence\folynta-ovis-m1-a40.READY.json'
+```
+
+This command never contacts RunPod and rejects `--execute`. The resulting READY
+spec remains unusable unless its embedded qualification passes the same
+content-bound image/GPU/CUDA checks in `PodCreateSpec.require_ready()`.

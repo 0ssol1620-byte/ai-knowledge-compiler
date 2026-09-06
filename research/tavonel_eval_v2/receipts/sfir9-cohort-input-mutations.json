@@ -1,0 +1,196 @@
+{
+  "all_baselines_green": true,
+  "baselines_digest": "sha256:064102779f90894691c5033a76057f600dddb7d0c445b655a5cb9d70e0f8a9ef",
+  "components_run": 1,
+  "components_with_no_survivor": 1,
+  "mutations_declared": 43,
+  "mutations_killed": 43,
+  "results": [
+    {
+      "baseline_tests_selected": 35,
+      "component": "cohort_input",
+      "mutations_declared": 43,
+      "mutations_killed": 43,
+      "outcomes": [
+        {
+          "mutation": "C1 an absent member is bound anyway",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C2 a member whose bytes changed is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C3 the recorded digest is copied instead of recomputed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C4 only the first chunk is hashed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C5 the size is compared instead of the digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C6 an absent snapshot receipt is skipped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C7 the recomputed digest is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C8 the pinned digest is not recorded beside it",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C9 a reader that differs from the commit is bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C10 a reader imported from elsewhere is bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C11 a reader with no recorded origin is bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C12 the origin is recorded without being resolved",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C13 a missing reader is skipped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C14 the reader list is narrowed to one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C15 the blob id is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C16 a git failure is assumed away",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C17 an absent frame receipt is skipped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C18 a frame composed against other bytes is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C19 a predicate naming an identity field is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20 the identity fields become available to a predicate",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20a the allowed field set is restated instead of read",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20b the key that actually filters stops being treated as identity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20c the eligibility fields are not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C21 only the first predicate is checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C22 the independence check is dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C23 a frame the same age as the protocol counts as older",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C24 the comparison is reversed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C25 the newest adding commit is taken as the age",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C26 a path with no adding commit is given an age",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C27 the frame receipt is not bound by its bytes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C28 the predicates are not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C29 the independence timestamps are not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C30 the binding stops saying what it does not inherit",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C31 the coincidence in N is presented as an inheritance",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C32 the predicates are restated in code instead of read",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C33 the binding digest is not recomputed on verify",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C34 the digest covers itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C35 verification passes with problems recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C36 an empty reader list verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C37 an empty predicate list verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C38 a member digest that is not the pinned one verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C39 a refused binding exits zero",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C40 the binding claims an authority it does not have",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_cohort_input.py"
+    }
+  ],
+  "schema": "tavonel.sfir9.mutation_baselines.v1",
+  "why_a_missing_anchor_is_a_survivor": "a table entry whose text is no longer in the file has stopped testing anything. Skipping it would let a component drift out from under its own mutations while the score stayed green.",
+  "why_a_red_baseline_is_refused": "against a failing suite every mutation looks killed, so the score would be a perfect 100% that measured nothing."
+}

@@ -1,0 +1,95 @@
+{
+  "attempt": 2,
+  "attempt_classification": "SAME_COHORT_TRANSPORT_RECOVERY",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-20T08:00:15.735709+00:00",
+  "holdout_integrity": {
+    "adaptive_tuning": 0,
+    "arm_results_observed": 0,
+    "boundary": "The sealed confirmatory cohort has been accessed by the transport, but no question, score, arm result, threshold decision, cohort selection, or adaptive tuning has been made from holdout observations.",
+    "cohort_selections": 0,
+    "holdout_status": "OPENED_BY_TRANSPORT_NO_OUTCOME_OBSERVATION",
+    "is_a_new_holdout": false,
+    "new_title_selection_performed": false,
+    "questions_observed": 0,
+    "scores_observed": 0,
+    "threshold_decisions": 0
+  },
+  "invocation_proof": {
+    "established": [
+      "corpus_arg_is_absolute",
+      "all_path_args_absolute",
+      "line_376_relative_to_succeeds",
+      "attempt_1_negative_control_fails"
+    ],
+    "file": "v8-acquisition-attempt2-invocation-proof.json",
+    "sha256": "sha256:9250b12bba91e4a64392a4fef31ac2338708c0e904b4e21623c6b364d7f3712d"
+  },
+  "not_started": {
+    "attempt_3": true,
+    "why": "the standing instruction is that a second concurrent acquisition must not be launched. Attempt 3 is authorised only once attempt 2 is confirmed not to have succeeded, and it is not confirmed --- it is still running."
+  },
+  "observed_state": {
+    "acquisition_receipt_present": false,
+    "comparable_attempt_1_timing": "attempt 1 reached its write phase at about 149 minutes, having spent the interval in MediaWiki 429 backoff. Attempt 2 at 129 minutes with an empty corpus is on the same trajectory, not behind it.",
+    "completion_sidecar_present": false,
+    "corpus_directories": 0,
+    "corpus_files": 0,
+    "elapsed_minutes_at_observation": 129,
+    "observed_at_utc": "2026-08-20T07:58:00Z",
+    "stdout_log_bytes": 0,
+    "stdout_log_note": "python block-buffers stdout to a file. Attempt 1's log was also 0 bytes for its first two hours and only materialised at the crash, so 0 bytes is consistent with a running process and is not evidence of failure."
+  },
+  "probable_source_of_the_discrepancy": "the launch shell reported 'RELAUNCHED pid=51400'. That is the shell job's pid, not the acquisition worker's; the OS processes are 35072 and 7536. A liveness check against 51400, or against attempt 1's dead pids 26100/28064, would correctly report ABSENT while attempt 2 is running. This is offered as the likely explanation and is not asserted as proven.",
+  "process_evidence": {
+    "delta_over_45s": {
+      "kernel_mode_100ns": 156250,
+      "user_mode_100ns": 312500,
+      "user_mode_seconds": 0.03125,
+      "working_set_bytes": 270336
+    },
+    "interpretation": "CPU time in both modes and the working set advanced between samples and the worker holds open sockets. This is a running, network-bound process, not a zombie and not a stale table entry.",
+    "open_sockets_held_by_worker": 11,
+    "processes": [
+      {
+        "parent_name": "nohup.exe",
+        "pid": 35072,
+        "ppid": 24948,
+        "role": "launcher stub",
+        "started_utc": "2026-08-20T05:49:55.636671Z"
+      },
+      {
+        "parent_name": "python.exe",
+        "pid": 7536,
+        "ppid": 35072,
+        "role": "acquisition worker",
+        "started_utc": "2026-08-20T05:49:55.645480Z"
+      }
+    ],
+    "source": "Win32_Process via CIM, sampled twice 45 seconds apart",
+    "worker_samples": [
+      {
+        "at_utc": "2026-08-20T07:58:37.274297Z",
+        "kernel_mode_100ns": 8593750,
+        "user_mode_100ns": 73593750,
+        "working_set_bytes": 169095168
+      },
+      {
+        "at_utc": "2026-08-20T07:59:22.434575Z",
+        "kernel_mode_100ns": 8750000,
+        "user_mode_100ns": 73906250,
+        "working_set_bytes": 169365504
+      }
+    ]
+  },
+  "receipt_sha256": "sha256:960952aacdf6320c50a0dc10e28c17817a8a510da06aa0b62b23adb482043d3a",
+  "schema": "tavonel.w6-v8-acquisition-attempt2-liveness.v1",
+  "session_coupling_finding": {
+    "consequence": "no launcher change is being made mid-flight. Detaching the launcher further would mean killing a running acquisition to prove a point about launchers.",
+    "id": "W6-V8-ACQ-01",
+    "observation": "the acquisition worker's parent chain is nohup.exe -> python.exe, and it survived the Claude Code session boundary that marked the earlier background shell tasks stopped. Attempt 1 died from a deterministic ValueError, not from teardown; attempt 2 has now outlived a session transition."
+  },
+  "verdict": "ATTEMPT_2_ALIVE_AND_PROGRESSING",
+  "why_this_receipt_exists": "an independent observation reported that no attempt-2 acquisition process existed and asked for an evidence-level disposition before authorising an attempt 3. The machine reports the opposite: the process exists and is doing work. A third acquisition was therefore NOT started, because two concurrent acquisitions writing the same corpus would be far worse than a stalled one."
+}

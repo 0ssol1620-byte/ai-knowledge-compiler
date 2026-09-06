@@ -7,6 +7,7 @@ import posixpath
 import re
 import stat
 import zipfile
+import zlib
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
@@ -147,6 +148,32 @@ def _looks_like_html(source: str) -> bool:
     )
 
 
+def _read_member(archive: zipfile.ZipFile, entry: zipfile.ZipInfo) -> bytes:
+    """Decompress one package member, or refuse the package.
+
+    ``ZipFile.read`` is where a hostile OOXML package stops being a directory
+    listing and starts being a decompressor: a local/central name disagreement,
+    an unimplemented compression method, a corrupted deflate stream and a lying
+    size field each raise a *different* exception class out of ``zipfile`` and
+    ``zlib``. Unwrapped, those escaped this module's ``StructuredParseError``
+    contract and travelled up through the inspector and the reader registry as
+    raw tracebacks, so a caller saw a crash where the fail-closed rule promises
+    a classified refusal. ``INVALID_OFFICE_ARCHIVE`` is already the code this
+    module raises for a package whose ZIP structure cannot be trusted.
+    """
+    try:
+        return archive.read(entry)
+    except (
+        zipfile.BadZipFile,
+        zlib.error,
+        EOFError,
+        NotImplementedError,
+        OSError,
+        ValueError,
+    ) as exc:
+        raise StructuredParseError("INVALID_OFFICE_ARCHIVE") from exc
+
+
 def _validate_office_archive(
     data: bytes,
     extension: str,
@@ -214,16 +241,19 @@ def _validate_office_archive(
                 folded_name = entry.filename.replace("\\", "/").casefold()
                 if folded_name not in allowed_workbooks:
                     raise StructuredParseError("OFFICE_EMBEDDED_OBJECT")
-                _validate_office_archive(archive.read(entry), ".xlsx", limits)
+                _validate_office_archive(_read_member(archive, entry), ".xlsx", limits)
 
         for entry in entries:
             if entry.is_dir():
                 continue
             folded_name = entry.filename.replace("\\", "/").casefold()
-            is_xml = folded_name.endswith((".xml", ".rels"))
-            if not is_xml:
+            payload = _read_member(archive, entry)
+            # XML-ness is decided by content, never by the member name. Renaming
+            # `word/document.xml` to `word/document.dat` and retargeting the
+            # content types and the relationship leaves a package the readers
+            # still parse, so a name-keyed scan lets its DTD straight through.
+            if not (folded_name.endswith((".xml", ".rels")) or payload.lstrip()[:1] == b"<"):
                 continue
-            payload = archive.read(entry)
             upper = payload.upper()
             if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
                 raise StructuredParseError("OOXML_UNSAFE_XML")
@@ -244,7 +274,7 @@ def _chart_workbook_relationship_targets(
         if not re.fullmatch(r"ppt/charts/_rels/chart\d+\.xml\.rels", folded_name):
             continue
         try:
-            root = SafeElementTree.fromstring(archive.read(entry))
+            root = SafeElementTree.fromstring(_read_member(archive, entry))
         except (DefusedXmlException, SafeElementTree.ParseError) as exc:
             raise StructuredParseError("OOXML_UNSAFE_XML") from exc
         for relationship in root:

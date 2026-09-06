@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-adjudication--20260825T094904Z-2abd1efe37e4.json",
+  "points_to_file_sha256": "sha256:899cc9f7d4c79e191710eda0ab3d26b9104e29f54b311032309fc2bc7c8dba03",
+  "run_id": "20260825T094904Z-2abd1efe37e4",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "identity-change-migration-closure-v2r1-adjudication",
+  "updated_at": "2026-08-25T09:49:04.500214+00:00"
+}

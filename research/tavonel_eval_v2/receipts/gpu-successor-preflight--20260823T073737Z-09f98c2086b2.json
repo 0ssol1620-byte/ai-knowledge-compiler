@@ -1,0 +1,213 @@
+{
+  "authorisation_note": "the founder authorised, in advance, that on a fresh held-out PASS the successor study may run without a further founder wait, under <=6 GPU hours and <=$40. This receipt is not that authorisation; it is what the authorisation is conditional on, and it has not run any model.",
+  "blocking_gates": [
+    "G_GSP_COHORT_FEASIBILITY",
+    "G_GSP_HELD_OUT_PASS_PRESENT",
+    "G_GSP_MODEL_PINNED"
+  ],
+  "budget": {
+    "gpu_hours": 6.0,
+    "hard_spend_cap_usd": 40.0
+  },
+  "closed_endpoint": {
+    "protocol": "MODEL_ENDPOINT_V1",
+    "stop_record": "STOP-V2-005"
+  },
+  "design": {
+    "arms": [
+      "TYPED_REPRESENTATION",
+      "TEXT_ONLY_BASELINE"
+    ],
+    "cohort_floor": 120,
+    "context_budget_tokens": 4096,
+    "determinism_repeats": 2,
+    "eligible_kinds": [
+      "REFERENCE_TARGET",
+      "LANGUAGE",
+      "EFFECTIVE_TIME",
+      "APPLICABILITY"
+    ]
+  },
+  "ended_at": "2026-08-23T07:37:37.772816+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_GSP_CAPABILITY_NOT_INFERRED_FROM_NAME": {
+      "detail": {
+        "capability_claimed": false,
+        "reason": "no pinned registry evidence distinct from the model name was supplied; a name is not a capability and none is inferred from it",
+        "repository": ""
+      },
+      "passed": true
+    },
+    "G_GSP_COHORT_FEASIBILITY": {
+      "detail": {
+        "by_kind": {
+          "APPLICABILITY": 0,
+          "EFFECTIVE_TIME": 0,
+          "LANGUAGE": 0,
+          "REFERENCE_TARGET": 0
+        },
+        "eligible_count": 0,
+        "feasible": false,
+        "floor": 120,
+        "manifest": "research/tavonel_eval_v2/artifacts/development/typed_fact_cohort.json",
+        "manifest_present": false,
+        "reason": "no cohort manifest exists yet. This is reported as infeasible, not as unknown, because a floor comparison against a manifest that does not exist can only ever be honestly zero."
+      },
+      "passed": false
+    },
+    "G_GSP_CONTEXT_BUDGET_FEASIBLE": {
+      "detail": {
+        "context_budget_tokens": 4096,
+        "estimated_prompt_tokens": 2048,
+        "estimated_total_tokens": 2304,
+        "feasible": true,
+        "max_new_tokens": 256
+      },
+      "passed": true
+    },
+    "G_GSP_COST_WITHIN_CAP": {
+      "detail": {
+        "arithmetic": {
+          "estimated_cost_usd": "0.1536 x 2.5 = 0.38",
+          "estimated_gpu_hours": "553.0 / 3600 = 0.1536",
+          "estimated_seconds": "1105920 / 2000.0 = 553.0",
+          "tokens_per_item": "2048 + 256 = 2304",
+          "total_calls": "120 x 2 x 2 = 480",
+          "total_tokens": "480 x 2304 = 1105920"
+        },
+        "cap_gpu_hours": 6.0,
+        "cap_usd": 40.0,
+        "estimated_cost_usd": 0.384,
+        "estimated_gpu_hours": 0.15360000000000001,
+        "inputs": {
+          "arms": 2,
+          "cohort_size": 120,
+          "declared_assumption": {
+            "gpu_hourly_rate_usd": 2.5,
+            "tokens_per_second": 2000.0
+          },
+          "max_new_tokens": 256,
+          "prompt_tokens": 2048,
+          "repeats": 2
+        },
+        "within_cap": true,
+        "within_hours_cap": true,
+        "within_usd_cap": true
+      },
+      "passed": true
+    },
+    "G_GSP_EXCLUDES_CLOSED_ENDPOINT": {
+      "detail": {
+        "clean": true,
+        "forbidden_endpoint_id": "MODEL_ENDPOINT_V1",
+        "forbidden_scorer_classes": [
+          "CURRENT_ONLY",
+          "SUPERSEDED_ONLY",
+          "BOTH",
+          "NO_MATCH"
+        ],
+        "forbidden_stop_record": "STOP-V2-005",
+        "is_forbidden_endpoint": false,
+        "requires_value_transition_between_revisions": false,
+        "scorer_class_overlap": [],
+        "scorer_classes": [
+          "REPRESENTATION_CORRECT",
+          "REPRESENTATION_INCORRECT",
+          "REFUSED"
+        ],
+        "study_id": "SOURCE_FACT_PROPAGATION_MODEL_V1",
+        "why_this_avoids_the_closed_endpoint": "MODEL_ENDPOINT_V1 needed a value that moved between two revisions of one lineage; a complete walk of 2,271 lineages found that three times. This design's eligibility is a property of a single revision's typed representation, never of a transition between two, so the scarcity that closed the exact-value endpoint does not apply to it by construction."
+      },
+      "passed": true
+    },
+    "G_GSP_HELD_OUT_PASS_PRESENT": {
+      "held_out_study_stem": "sfi2-native-provenance",
+      "passed": false,
+      "receipt": null,
+      "rule": "GPU inference is not permitted until a fresh held-out SOURCE_FACT_IR study PASSES. Absence is a hard block."
+    },
+    "G_GSP_MATERIALIZER_READY": {
+      "detail": {
+        "importable": true,
+        "module": "context_builder",
+        "present_attributes": [
+          "fit_to_budget",
+          "prompt_parts",
+          "TOTAL_PROMPT_TOKENS",
+          "schedule"
+        ],
+        "ready": true,
+        "required_attributes": [
+          "fit_to_budget",
+          "prompt_parts",
+          "TOTAL_PROMPT_TOKENS",
+          "schedule"
+        ]
+      },
+      "passed": true
+    },
+    "G_GSP_MODEL_PINNED": {
+      "detail": {
+        "capability": {
+          "capability_claimed": false,
+          "reason": "no pinned registry evidence distinct from the model name was supplied; a name is not a capability and none is inferred from it",
+          "repository": ""
+        },
+        "not_resolved_to_latest": true,
+        "pinned_by_exact_revision": false,
+        "repository": "",
+        "revision": "",
+        "tokenizer_file_sha256": ""
+      },
+      "passed": false
+    },
+    "G_GSP_NO_GPU_YET": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_GSP_RUNTIME_IMAGE_PINNABLE": {
+      "detail": {
+        "form": "repository@sha256:<64 hex>, never a floating tag",
+        "matches_pinned_digest_form": true,
+        "runtime_image_digest": "runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35"
+      },
+      "passed": true
+    },
+    "G_GSP_TOKENIZER_PARITY_BATTERY_AVAILABLE": {
+      "detail": {
+        "battery_digest": "sha256:a0a66a696260fa58f48bab7802f9beb7430d1c937c1c64aaf1252469a75d57ee",
+        "deterministic": true,
+        "probe_classes": [
+          "regression",
+          "unicode",
+          "number_and_version",
+          "special_tokens",
+          "long_context_boundary"
+        ]
+      },
+      "passed": true
+    }
+  },
+  "gpu_seconds": 0,
+  "provenance": {
+    "generated_at": "2026-08-23T07:37:37.795035+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "gpu-successor-preflight",
+    "run_id": "20260823T073737Z-09f98c2086b2",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/gpu_successor_preflight.py",
+    "tool_sha256": "sha256:f5d5aa2573f67aafd43dce19c9e9b7b76bdf04a2d1a8683357f8e9a809fa42de"
+  },
+  "receipt_sha256": "sha256:ca11fdb6eb8ee23bdd77bcfc9565393160ab38d03c64c8918694e297f6c77d8c",
+  "schema": "tavonel.v2.gpu_successor_preflight.v1",
+  "split": "development",
+  "started_at": "2026-08-23T07:37:37.725027+00:00",
+  "study_id": "SOURCE_FACT_PROPAGATION_MODEL_V1",
+  "supersedes": null,
+  "verdict": "BLOCKED"
+}

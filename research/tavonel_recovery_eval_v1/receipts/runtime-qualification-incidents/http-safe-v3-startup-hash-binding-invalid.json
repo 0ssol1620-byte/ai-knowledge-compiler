@@ -1,0 +1,21 @@
+{
+  "attempt": "v3-persisted-safe",
+  "evidence_class": "DEVELOPMENT_RUNTIME_QUALIFICATION_ONLY",
+  "fresh_confirmatory_observation": false,
+  "incident_digest": "sha256:33d5ee2eb5f34f13bca5000981885366c6dbda56bf396d0c27e978d65ae2eae5",
+  "pod_billing": {
+    "provider_reported_amount_usd": 0.0,
+    "provider_reported_time_billed_ms": 0,
+    "row_count": 0,
+    "source": "runpod_pod_billing_api",
+    "status": "available",
+    "zero_spend_inferred": false
+  },
+  "provider_stopped": true,
+  "reason": "startup_script_sha256 described legacy pre-transform bytes instead of the final startup bytes sent to RunPod",
+  "remaining_gpu_seconds": 10146.319296,
+  "role": "strong",
+  "schema": "tavonel.recovery.runtime_qualification_incident.v1",
+  "scientific_qualification_usable": false,
+  "state": "INVALID_INSTRUMENT"
+}

@@ -1,0 +1,128 @@
+{
+  "closure_digest": "sha256:c2e2763e7beb31a75b984aaacca796c1a18c6893ba4636983de60868391e322a",
+  "cohort": {
+    "basis": "OBSERVED_REPOSITORY_ARTIFACT_ABSENCE",
+    "history_add_commits": [],
+    "never_opened": true,
+    "scope": "establishes that no SFIR10 roster artifact exists in this repository's working tree or Git history; it does not prove the absence of every possible unrecorded external action",
+    "working_tree_exists": false
+  },
+  "cohort_input_binding_digest": "sha256:7ecd6bdee298861c0eedeaaaa001e72e4e5fd169d420c7cb179c8a508f268ed8",
+  "frozen_components_rechecked": [
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_protocol.py",
+      "sha256_at_closure": "sha256:4c37d1c215d7dd74889393d5aad3b21f9b693920691ded0377bed3175b347d1c",
+      "sha256_at_freeze": "sha256:4c37d1c215d7dd74889393d5aad3b21f9b693920691ded0377bed3175b347d1c"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_transport.py",
+      "sha256_at_closure": "sha256:addf405b9e202212ffa9ed3ffce47e13d240cd2f08f60079e0c2401fff589927",
+      "sha256_at_freeze": "sha256:addf405b9e202212ffa9ed3ffce47e13d240cd2f08f60079e0c2401fff589927"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_runner.py",
+      "sha256_at_closure": "sha256:f236c95dc92bbf357b2409cd14d1181b612e5120612e86245e4ba9fbcc845ecf",
+      "sha256_at_freeze": "sha256:f236c95dc92bbf357b2409cd14d1181b612e5120612e86245e4ba9fbcc845ecf"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_bind_input.py",
+      "sha256_at_closure": "sha256:132b1836c915b870b5c66f48c281e4378c497be16171904f4be1571f64ad7244",
+      "sha256_at_freeze": "sha256:132b1836c915b870b5c66f48c281e4378c497be16171904f4be1571f64ad7244"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_mutation.py",
+      "sha256_at_closure": "sha256:c6f4880f4c844e1f6779caac765b05185dafad17735a54f77d64f38c18935418",
+      "sha256_at_freeze": "sha256:c6f4880f4c844e1f6779caac765b05185dafad17735a54f77d64f38c18935418"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_freeze.py",
+      "sha256_at_closure": "sha256:28b0cfd198ad16a4740fd543022a28b772ba7141179fd9dc49eb801b9e64a2e5",
+      "sha256_at_freeze": "sha256:28b0cfd198ad16a4740fd543022a28b772ba7141179fd9dc49eb801b9e64a2e5"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir8_frontier.py",
+      "sha256_at_closure": "sha256:7482faa9109cf698591b309a4a4697924465e017b62c075daf31205c9f7b9991",
+      "sha256_at_freeze": "sha256:7482faa9109cf698591b309a4a4697924465e017b62c075daf31205c9f7b9991"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_selection.py",
+      "sha256_at_closure": "sha256:4cb823d47a247001f1800ce92d81ae78802d8a9eeae1b203a4300d38277b76ab",
+      "sha256_at_freeze": "sha256:4cb823d47a247001f1800ce92d81ae78802d8a9eeae1b203a4300d38277b76ab"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_cohort_input.py",
+      "sha256_at_closure": "sha256:0eae35d587e1172c8ec107bb1188a4b814d16ea3e66375347bae010576b7476d",
+      "sha256_at_freeze": "sha256:0eae35d587e1172c8ec107bb1188a4b814d16ea3e66375347bae010576b7476d"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_protocol.py",
+      "sha256_at_closure": "sha256:90df8e6c6079eff018b8ed3405fbb2c5252cd1283998634bb85b7bbf2511a056",
+      "sha256_at_freeze": "sha256:90df8e6c6079eff018b8ed3405fbb2c5252cd1283998634bb85b7bbf2511a056"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_catalog_parser.py",
+      "sha256_at_closure": "sha256:b67f8271cc414fa248a953b60ca845f8f58b71c7e60dcbeaac679981df3975f8",
+      "sha256_at_freeze": "sha256:b67f8271cc414fa248a953b60ca845f8f58b71c7e60dcbeaac679981df3975f8"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_projection.py",
+      "sha256_at_closure": "sha256:7e6435633b7354742e43085ff02d505c3ad224f579571c9f83c2375e50b993ce",
+      "sha256_at_freeze": "sha256:7e6435633b7354742e43085ff02d505c3ad224f579571c9f83c2375e50b993ce"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_frame.py",
+      "sha256_at_closure": "sha256:03b6f16e5b80528483bb96878b2c8eb7e814ffe95d82a4aa0a2aadf13b6cf37b",
+      "sha256_at_freeze": "sha256:03b6f16e5b80528483bb96878b2c8eb7e814ffe95d82a4aa0a2aadf13b6cf37b"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_roots.py",
+      "sha256_at_closure": "sha256:fd0d7ee7481e2df5ec5eec1ecc582f89c72e58faaa0f58d11d2d1b4f1c891bc6",
+      "sha256_at_freeze": "sha256:fd0d7ee7481e2df5ec5eec1ecc582f89c72e58faaa0f58d11d2d1b4f1c891bc6"
+    },
+    {
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_execution_authority_gap.py",
+      "sha256_at_closure": "sha256:dd0bc7389c6e1676425672b1ae6d1818748a333eccb4e106c51fda1f532b9f88",
+      "sha256_at_freeze": "sha256:dd0bc7389c6e1676425672b1ae6d1818748a333eccb4e106c51fda1f532b9f88"
+    }
+  ],
+  "hostile_hypothesis_falsified": {
+    "hypothesis": "a seeded-but-unexpanded V10 root could have visited_count zero and therefore be reseeded",
+    "mechanism": "sfir8_frontier.enqueue inserts the frontier row and visited identity before commit; V10's visited_count guard therefore already sees the seed before expansion",
+    "scientific_consequence": "not a reason to invalidate V10; preserved as a hostile hypothesis that failed",
+    "synthetic_after_seed": {
+      "pending_count": 1,
+      "visited_count": 1
+    },
+    "verdict": "FALSIFIED"
+  },
+  "instrument_commit": "4a47add77fd57bb24815bc984503589d7bfa6d26",
+  "instrument_freeze_digest": "sha256:9545e6ed32b962c6fe05cfcd2c85b797b91e502539f8449870739a77e14c47b2",
+  "invalidating_defect": {
+    "counterexample": {
+      "candidate_lower_bound": 0,
+      "synthetic_dispositions": {
+        "exhausted": 0,
+        "refused": 50,
+        "stopped": 0
+      },
+      "v10_complete": true,
+      "v10_exact_count": 0,
+      "why_invalid": "no root was counted as measured or stopped, yet the frozen expression declares the census complete and exact; zero then becomes a population claim about an unmeasured cohort"
+    },
+    "found_before_roster_generation": true,
+    "id": "V10-COMPLETENESS-ALL-REFUSED",
+    "source": {
+      "assignments_named_complete": [
+        "stopped == 0"
+      ],
+      "frozen_expression": "stopped == 0",
+      "missing_counted_nonzero_guard": true
+    }
+  },
+  "schema": "tavonel.sfir10.precohort_closure.v1",
+  "state": "PRECOHORT_INSTRUMENT_INVALID_NO_COHORT_SPENT",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10",
+  "what_is_not_spent": "partition one: no V10 cohort roster artifact exists, so a new prospectively frozen successor may use the still-unseen partition under an independently fixed instrument",
+  "what_is_spent": "the V10 instrument design and its immutable freeze/input receipts",
+  "what_must_not_happen": "do not modify or refreeze V10, do not call V10 a failed capacity result, and do not treat the falsified reseed hypothesis as a defect"
+}

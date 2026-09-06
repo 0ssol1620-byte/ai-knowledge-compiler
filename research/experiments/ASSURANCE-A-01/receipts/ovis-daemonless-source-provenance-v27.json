@@ -1,0 +1,19 @@
+{
+  "all_current_bake_inputs_match_attestation": true,
+  "bake_attestation_receipt_sha256": "sha256:dcf5e9855a2712b8b86c738dce969efeb2d08e80e91a6d99c31c305f4bb923f5",
+  "context_file_count": 4,
+  "context_hash_contract": "legacy-minimal-runtime-context-v21-compatible",
+  "dockerfile_sha256": "sha256:445bdae1c84270dfa64053651414ed8c5539a47586ca216b05f09ac82576332a",
+  "generated_at": "2026-08-16T06:55:50.132730+00:00",
+  "output_manifest_digest": "sha256:a26d09cd1132d4b69b4870189c9348dea6bc7a20e46bda228d32740e6b9cafda",
+  "public_benchmark_inference_allowed": false,
+  "receipt_sha256": "sha256:0a9b520661147e10be3dfab2d55843d8c0875bfd0dc813b375dfef4df44fe9d5",
+  "runtime_file_sha256": {
+    "/opt/folynta/qualification-http.py": "sha256:aa53908268ff67992685b2c607607e9a6e183ca70e129e2e9b3620f36019157f",
+    "/opt/folynta/start-ssh.sh": "sha256:6489518d0a098e30af6a353b7f910cc842d27ed0ed36c397236e91d72bdf027f",
+    "/opt/folynta/verify-runtime.sh": "sha256:d56d4d94aa82a573df0553e8ccb42a7702cf471c334426d132f68df4897b847d"
+  },
+  "schema": "tavonel.daemonless-source-provenance.v1",
+  "source_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "source_tree_sha256": "sha256:ac5249e484c3d4bc570c3ce7acfe7c81a1b445f309c6fb99b63fc30ed7bbefb4"
+}

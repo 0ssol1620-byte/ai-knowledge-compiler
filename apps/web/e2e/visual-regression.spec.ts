@@ -9,8 +9,11 @@ test.beforeEach(({}, testInfo) => {
 
 const visualRoutes = [
   { name: "marketing-home", path: "/" },
-  { name: "evidence-film", path: "/film?scene=4&static=1" },
-  { name: "benchmark-evidence", path: "/benchmarks" },
+  {
+    name: "processing-workspace",
+    path: "/documents/sample-dart/processing",
+  },
+  { name: "research-method", path: "/research" },
   { name: "verify-product", path: "/product/verify" },
   { name: "dart-public-proof", path: "/demo/dart" },
   { name: "sec-public-proof", path: "/demo/sec" },

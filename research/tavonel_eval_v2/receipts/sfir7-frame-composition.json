@@ -1,0 +1,61 @@
+{
+ "catalog_rank_value_range": [
+  23,
+  30
+ ],
+ "census_started": false,
+ "computes_no_capacity": true,
+ "computes_no_yield": true,
+ "content_sha256": "sha256:8e70ca35f39b542e0bfd648e7bc6ef74d895b38b960c9bc161cc90b87ff7c2ef",
+ "declared_licences_absent_from_the_roster": [
+  "BSD-2-Clause",
+  "MPL-2.0",
+  "GPL-2.0-only",
+  "GPL-3.0-only",
+  "LGPL-2.1-only",
+  "LGPL-3.0-only"
+ ],
+ "describes_roster_fingerprint": "sha256:e328ec8fb910c62a9af0bc8e5868976d9872bf3efaa050cd62adda1b4f9c34df",
+ "estimated_cost_usd": 0.0,
+ "gpu_seconds": 0,
+ "languages": {
+  "C": 1,
+  "C++": 1,
+  "CoffeeScript": 1,
+  "Java": 2,
+  "JavaScript": 35,
+  "PHP": 1,
+  "Ruby": 4,
+  "TypeScript": 5
+ },
+ "licences_as_published": {
+  "Apache-2.0": 5,
+  "BSD-3-Clause": 3,
+  "ISC": 2,
+  "MIT": 40
+ },
+ "overlap_with_earlier_git_roots": {
+  "count": 0,
+  "earlier_roots": 20,
+  "note": "SFIR7 deliberately does not exclude the repositories SFIR1-SFIR4 used. Excluding them would be TAVONEL curating an external universe again, which is the habit this protocol exists to stop. Whether the external rule happens to reselect any of them is a diagnostic and never an input.",
+  "shared": []
+ },
+ "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7",
+ "registered_limitations": [
+  {
+   "id": "SFIR7-L1",
+   "limitation": "the roster is dominated by one language ecosystem. 35 of 50 roots are JavaScript.",
+   "what_it_threatens": "external validity. A capacity result over this roster speaks to repositories like these, not to open-source documentation at large. It does not threaten internal validity: the rule is declared, deterministic and reproducible from the pinned digest.",
+   "why_it_happens": "Libraries.io's SourceRank is computed over a catalogue whose package managers are overwhelmingly npm, so the highest-ranked repositories are the ones npm depends on most.",
+   "why_it_is_not_repaired": "balancing by language would be a TAVONEL judgement about which repositories deserve to be in the universe, applied on top of an external ordinal chosen precisely so that no such judgement is made. A stratified rule is a defensible design and it is a DIFFERENT design; adopting one now, with the roster in hand and the census unrun, would mean choosing a frame while able to guess at its yield."
+  },
+  {
+   "id": "SFIR7-L2",
+   "limitation": "6 of the 10 declared licence families do not appear in the roster at all: BSD-2-Clause, MPL-2.0, GPL-2.0-only, GPL-3.0-only, LGPL-2.1-only, LGPL-3.0-only",
+   "why_it_happens": "the allow-list was fixed before the snapshot was read, and rank ordering decides which of its members survive into the top N. Copyleft-licensed projects are rarer at the top of an npm-weighted ordinal.",
+   "why_it_is_not_repaired": "the allow-list is an eligibility predicate, not a quota. Adding a per-licence floor would be tuning the frame's composition after seeing it."
+  }
+ ],
+ "roots": 50,
+ "schema": "tavonel.sfir7.frame_composition.v1"
+}

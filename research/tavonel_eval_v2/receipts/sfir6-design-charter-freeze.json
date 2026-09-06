@@ -1,0 +1,126 @@
+{
+  "batching": {
+    "canary": {
+      "path": "receipts/sfir6-adapter-canary.json",
+      "sha256": "sha256:402fe4ccad2022905680235c018c6cdf1ebe6e9f19da1e91d770ebc603916894"
+    },
+    "form": "officially_supported_two_pass"
+  },
+  "carried_forward_by_reference": {
+    "charter": "protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml",
+    "fields_carried": [
+      "family_authorities",
+      "capacity_rule",
+      "git_tree_enumeration",
+      "spent_policy",
+      "payload_policy",
+      "terminal_policy"
+    ],
+    "fields_redeclared": [],
+    "sha256": "sha256:c211535fae804cb216a869cfe417a2a1f2e06590d5ae96e3a95fca9734bf2174"
+  },
+  "charter": {
+    "path": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6_DESIGN_CHARTER.yaml",
+    "sha256": "sha256:67a7b890c08734f0748c5f63a580c6d28f7420b7d3eea6f0afcb10f1e6393bd4"
+  },
+  "content_sha256": "sha256:41d9188ca4a21e6f3ae17b2575e6fa6a9471ea2f7ece676bd55290e2b2395f59",
+  "corrected_pagination_fields": [
+    "cap_reached",
+    "exhausted",
+    "rate_limit_retries",
+    "rate_limit_wait_seconds",
+    "retries_total",
+    "roots_processed",
+    "transport_retries"
+  ],
+  "estimated_cost_usd": 0.0,
+  "frame_unchanged": {
+    "ecfr_roots": 50,
+    "git_roots": 20,
+    "selection_salt_sha256": "6fe55eb88a8b4087b50ce844882ec3f6a701f7ddc2e4ed8ecb444650cd3d57cd",
+    "wikipedia_roots": 30
+  },
+  "generated_at": "2026-08-27T06:47:41.134251+00:00",
+  "gpu_seconds": 0,
+  "predecessor_result_preserved": {
+    "path": "receipts/sfir5-capacity-outcome.json",
+    "sha256": "sha256:572b418f539c0c04cac366973b33b8002cbf7d6a1071f15defd3fd16ad24ab10",
+    "state": "CAPACITY_CRITERION_APPLIED_AND_FAILED"
+  },
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6",
+  "repairs": [
+    {
+      "id": "INC-V2-106",
+      "replaced_by": "two_pass_officially_supported_batching",
+      "verified_before_implementation": "receipts/sfir6-adapter-canary.json",
+      "what": "wikipedia_adapter_sent_multiple_pageids_with_rvlimit",
+      "why_unconditional": "MediaWiki answers invalidparammix to that combination for every input. The request was invalid on every run of every study, whatever the data."
+    },
+    {
+      "id": "INC-V2-107",
+      "replaced_by": "successor_side_corrected_contract_without_editing_the_frozen_module",
+      "what": "capacity_pagination_field_set_compared_by_strict_set_equality",
+      "why_unconditional": "the seal refused every census, for every family, whatever the data. Proven not to change SFIR5's outcome by correcting it in memory and re-running."
+    }
+  ],
+  "schema": "tavonel.sfir6.design_charter_freeze.v1",
+  "sfir4_retry_bounds_unmodified": {
+    "max_rate_limit_wait_seconds": 60,
+    "max_total_rate_limit_wait_seconds": 180,
+    "maximum_retries_per_request": 5
+  },
+  "state": "FROZEN_PRE_CENSUS",
+  "toolchain": {
+    "probe_sfir4_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir4_capacity.py",
+      "sha256": "sha256:e0d37ee501bd8d12b80e79b7fc73ba3ea422069c242cb41eb5ea636fa533ba8f"
+    },
+    "sfir5_transport": {
+      "path": "research/tavonel_eval_v2/tools/sfir5_transport.py",
+      "sha256": "sha256:01983a92ccb60011d8a4c965cbb08210d04011e3717aceabfe0787ac18bbba46"
+    },
+    "sfir6_canary": {
+      "path": "research/tavonel_eval_v2/tools/sfir6_canary.py",
+      "sha256": "sha256:6e59703bd4166b06ec23281b53eac130140fc1da03768195927b29aa82507856"
+    },
+    "sfir6_charter": {
+      "path": "research/tavonel_eval_v2/tools/sfir6_charter.py",
+      "sha256": "sha256:ca7661e798f0ffbbfbd180cb465fe12d8334728efb6c4879f1ef1d80640a7e0c"
+    },
+    "sfir6_protocol": {
+      "path": "research/tavonel_eval_v2/tools/sfir6_protocol.py",
+      "sha256": "sha256:e68a86acbad90e12502fa7a231f1e98f04f8c0aa0f9231fc24f8d564223e5225"
+    },
+    "sfir6_transport": {
+      "path": "research/tavonel_eval_v2/tools/sfir6_transport.py",
+      "sha256": "sha256:d9f186edf46ecac4d0b43e01a25176c94a07badbd9ee6e7565db67a0c5a513dc"
+    },
+    "sfir6_wikipedia": {
+      "path": "research/tavonel_eval_v2/tools/sfir6_wikipedia.py",
+      "sha256": "sha256:8c8a1698f7546f0c5a66fc295524524d6c75bfa0d9cf8b2524ce9f65fedf18ca"
+    },
+    "sources_sfir4": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir4.py",
+      "sha256": "sha256:df50c865e17d09b4523c474fd315c8cac8e0e008ef5919048e17c5a804a31837"
+    }
+  },
+  "transport_bounds": {
+    "host_min_interval_seconds": {
+      "api.github.com": 0.5,
+      "en.wikipedia.org": 7.0,
+      "www.ecfr.gov": 0.5
+    },
+    "max_ids_per_wikipedia_request": 50,
+    "max_total_requests": 12000,
+    "max_total_wall_clock_seconds": 21600
+  },
+  "verdict_policy": {
+    "all_three_families_remeasured": true,
+    "if_git_fails_again_the_criterion_fails": true,
+    "lowering_a_threshold_or_adding_a_root_on_failure_is_forbidden": true,
+    "no_family_result_is_reused_from_sfir5": true,
+    "successor_is_a_new_frame_question_not_a_repair": true,
+    "successor_on_failure": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7",
+    "verdict_taken_from_sfir6_whatever_it_says": true
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.tavonel.com/quality/acceptance-report-1.0.0.json",
+  "title": "TAVONEL Mixed-Document Quality Acceptance Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "report_id", "generated_at", "suite_id", "suite_sha256", "candidate_id", "candidate_sha256", "evidence_boundary", "sources", "dimensions", "passed_dimensions", "total_dimensions", "verdict", "report_sha256"],
+  "properties": {
+    "schema_version": {"const": "quality-acceptance-report-1.0.0"},
+    "report_id": {"type": "string", "minLength": 3},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "suite_id": {"type": "string", "minLength": 1},
+    "suite_sha256": {"$ref": "#/$defs/digest"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "candidate_sha256": {"$ref": "#/$defs/digest"},
+    "report_sha256": {"$ref": "#/$defs/digest"},
+    "evidence_boundary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["grade", "uses_only_pinned_local_or_public_fixtures", "runpod_execution", "production_runtime_claim", "limitations"],
+      "properties": {
+        "grade": {"enum": ["fixture", "public_benchmark", "private_holdout", "production_observation"]},
+        "uses_only_pinned_local_or_public_fixtures": {"const": true},
+        "runpod_execution": {"enum": ["not_observed", "observed"]},
+        "production_runtime_claim": {"type": "boolean"},
+        "limitations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "sources": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "media_type", "path", "sha256", "observed_sha256", "verified"],
+        "properties": {
+          "id": {"type": "string"}, "media_type": {"type": "string"},
+          "path": {"type": "string", "pattern": "^(?![/\\\\])(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$"},
+          "sha256": {"$ref": "#/$defs/digest"}, "observed_sha256": {"$ref": "#/$defs/digest"}, "verified": {"const": true}
+        }
+      }
+    },
+    "dimensions": {
+      "type": "array", "minItems": 10, "maxItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "passed", "metrics", "checks"],
+        "properties": {
+          "name": {"enum": ["ocr_text", "ocr_layout", "citations", "entity_resolution", "claims", "temporal_authority", "ontology_graph", "adaptive_chunking", "retrieval", "downstream_ai"]},
+          "passed": {"type": "boolean"}, "metrics": {"type": "object"},
+          "checks": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["metric", "actual", "passed"], "properties": {"metric": {"type": "string"}, "minimum": {"type": "number"}, "value": {"type": ["number", "boolean"]}, "actual": {"type": ["number", "boolean"]}, "passed": {"type": "boolean"}}}}
+        }
+      }
+    },
+    "passed_dimensions": {"type": "integer", "minimum": 0, "maximum": 10},
+    "total_dimensions": {"const": 10},
+    "verdict": {"enum": ["qualified", "not_qualified"]}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}

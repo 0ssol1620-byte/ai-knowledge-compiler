@@ -1,0 +1,131 @@
+{
+  "schema": "tavonel.recovery.development_evidence_register.v1",
+  "status": "PRE_FREEZE_DEVELOPMENT_EVIDENCE_ONLY",
+  "paper_track": "TAVONEL evidence-driven selective document recovery",
+  "rules": {
+    "historical_evidence_may_tune_or_motivate_protocol": true,
+    "historical_evidence_may_score_fresh_confirmatory_claims": false,
+    "historical_document_or_page_families_are_spent": true,
+    "exact_local_receipt_and_sha256_required_before_paper_citation": true,
+    "missing_local_binding_is_not_silently_replaced_by_prose": true
+  },
+  "items": [
+    {
+      "id": "DEV_PUBLIC_5132_RECOVERY_CAMPAIGN",
+      "evidence_class": "MEASURED_HISTORICAL_DEVELOPMENT",
+      "confirmatory_eligible": false,
+      "corpus": {
+        "parsebench_documents": 2078,
+        "omnidocbench_documents": 1651,
+        "olmocr_bench_documents": 1403,
+        "total_documents": 5132
+      },
+      "pipeline": "MinerU 3.4.4 VLM engine + FOLYNTA/TAVONEL recovery runtime",
+      "metrics": {
+        "output_completion": {"numerator": 5131, "denominator": 5132},
+        "recovery_required_documents": 1797,
+        "recovered_documents": 1796,
+        "recovery_when_required": 0.9994,
+        "olmocr_overall": 0.806,
+        "olmocr_checks_passed": 7137,
+        "olmocr_checks_total": 8413,
+        "olmocr_ci95": [0.7962, 0.8157],
+        "low_quality_scan": 0.369,
+        "omnidoc_text_character_match": 0.942,
+        "omnidoc_reading_order_match": 0.859,
+        "omnidoc_table_structure": 0.955,
+        "omnidoc_table_full": 0.926,
+        "repeat_byte_identity": {"numerator": 384, "denominator": 384, "repeats": 3}
+      },
+      "interpretation": "Completion and recovery are not accuracy. Public benchmark outcomes are development evidence and the corpus is spent for fresh confirmation.",
+      "local_binding": {
+        "builder": "benchmark/runpod_eval/build_public_benchmark_final_report.py",
+        "binding_receipt": "research/tavonel_recovery_eval_v1/receipts/public-development-evidence-binding.json",
+        "approved_claim_ids": [
+          "corpus-scale",
+          "completion-rate",
+          "recovery-rate",
+          "benchmark-accuracy",
+          "accuracy-by-document-type"
+        ]
+      }
+    },
+    {
+      "id": "DEV_RECOVERY_SINGLE_VARIABLE_COUNTERFACTUAL",
+      "evidence_class": "MEASURED_HISTORICAL_DEVELOPMENT",
+      "confirmatory_eligible": false,
+      "question": "How much of the official olmOCR-Bench score is attributable to the recovery lane?",
+      "metrics": {
+        "with_recovery": 0.806,
+        "without_recovery": 0.537,
+        "parsebench_table_grits_with": 0.9017,
+        "parsebench_table_grits_without": 0.5321,
+        "parsebench_content_faithfulness_with": 0.8376,
+        "parsebench_content_faithfulness_without": 0.5243,
+        "omnidoc_text_edit_distance_with": 0.0583,
+        "omnidoc_text_edit_distance_without": 0.2640,
+        "omnidoc_table_teds_with": 0.9257,
+        "omnidoc_table_teds_without": 0.7140
+      },
+      "design_note": "Model, evaluator revision, corpus, source manifest, test set and settings are held constant; recovered content is the changed variable. Absent-type checks can become easier when output is empty, making the no-recovery comparison generous.",
+      "local_binding": {
+        "builder": "benchmark/runpod_eval/build_recovery_accuracy_counterfactual.py",
+        "binding_receipt": "research/tavonel_recovery_eval_v1/receipts/public-development-evidence-binding.json",
+        "approved_claim_ids": [
+          "recovery-contribution-olmocr",
+          "recovery-contribution-parsebench",
+          "recovery-contribution-omnidocbench"
+        ]
+      }
+    },
+    {
+      "id": "DEV_DART_SEC_20_PAGE_A40",
+      "evidence_class": "MEASURED_HISTORICAL_DEVELOPMENT",
+      "confirmatory_eligible": false,
+      "corpus": "20-page fixed DART/SEC set: Samsung 5, Hyundai 5, Apple SEC 10-K 5, Microsoft SEC 10-K 5",
+      "gpu": "RunPod NVIDIA A40 48GB",
+      "candidates": [
+        {"name": "Unlimited-OCR", "seconds_per_page": 45.85, "numeric_exact": 0.9507, "peak_vram_gib": 11.53, "role": "Production Reject"},
+        {"name": "PaddleOCR-VL 1.6", "seconds_per_page": 24.01, "numeric_exact": 0.8631, "peak_vram_gib": 3.13, "role": "Research Only"},
+        {"name": "MinerU 3.2.3 pipeline", "seconds_per_page": 5.36, "numeric_exact": 0.6771, "peak_vram_gib": 2.38, "role": "Secondary Signal Only"},
+        {"name": "MinerU 3.2.3 VLM", "seconds_per_page": 12.32, "numeric_exact": 0.9697, "peak_vram_gib": 23.39, "role": "Research Challenger"}
+      ],
+      "critical_negative": "All candidates failed at least one critical number/row/non-source-content hard gate; no Production Champion.",
+      "known_failure": "Hyundai p0526 omitted six consecutive table rows, including associated dates and amounts.",
+      "local_binding": {
+        "historical_report_path": "PENDING_LOCAL_BINDING",
+        "historical_report_sha256": null
+      }
+    },
+    {
+      "id": "DEV_BLIND_PREDICTION_ONLY_DETECTOR",
+      "evidence_class": "NEGATIVE_HISTORICAL_DEVELOPMENT",
+      "confirmatory_eligible": false,
+      "hypothesis_supported": false,
+      "historical_scope": {"cases": 5116, "official_failure_records": 42506},
+      "finding": "Prediction-only blind ranking did not beat random or prediction-length-only selection at the tested budgets.",
+      "paper_role": "Required weak baseline and negative result; do not resurrect as a product claim without new evidence.",
+      "local_binding": {
+        "evaluator": "benchmark/runpod_eval/evaluate_blind_quality_detection.py",
+        "exact_receipt_path": "PENDING_LOCAL_BINDING",
+        "exact_receipt_sha256": null
+      }
+    },
+    {
+      "id": "DEV_OVISOCR2_RTX4090_SMOKE",
+      "evidence_class": "DIAGNOSTIC_SMOKE_ONLY",
+      "confirmatory_eligible": false,
+      "gpu": "RunPod RTX 4090",
+      "metrics": {"critical_tokens_correct": 5, "critical_tokens_total": 5, "cold_start_seconds": 507.1, "inference_seconds": 5.74},
+      "interpretation": "Synthetic one-page smoke only; never report as public benchmark or real-document accuracy.",
+      "local_binding": {"exact_receipt_path": "PENDING_LOCAL_BINDING", "exact_receipt_sha256": null}
+    },
+    {
+      "id": "DEV_SEC_RENDERER_GPU_TIMER",
+      "evidence_class": "EXCLUDED_DIFFERENT_RESEARCH_QUESTION",
+      "confirmatory_eligible": false,
+      "finding": "SEC Knowledge Observatory renderer GPU timer evidence exists but measures visualization performance, not document inference or recovery.",
+      "paper_role": "Exclude from Paper 2 inference evidence."
+    }
+  ]
+}

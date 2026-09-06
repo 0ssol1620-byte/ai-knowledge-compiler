@@ -1,0 +1,60 @@
+{
+  "arms": {
+    "abstain_review_baseline": {
+      "available": true,
+      "cases": 200,
+      "why": "a baseline that accepts nothing needs no features"
+    },
+    "candidate_agreement_threshold": {
+      "available": true,
+      "cases": 200,
+      "why": "two distinct primary parsers cover the same cases: ['mineru-3.4.4-vlm'] frozen, plus ovisocr2-0.9b-vllm-0.22.1 from the 2026-08-18 live run; 200/200 sources overlap and dataset_revision matches (True)"
+    },
+    "model_self_confidence_threshold": {
+      "available": false,
+      "cases": 0,
+      "why": "the frozen Stage-1 runtime emits no per-case confidence; run-summary case fields are ['batch_latency_seconds', 'case_id', 'markdown_characters', 'markdown_sha256', 'source_sha256', 'status']. The preregistration forbids reconstructing this feature after the fact, so the arm is reported unavailable rather than imputed."
+    },
+    "source_grounded_acceptance_receipt": {
+      "available": false,
+      "cases": 0,
+      "why": "the cases both parsers cover are OmniDocBench page images ({'jpg': 981, 'png': 670}), which carry no native text layer, so akc_cir.source_grounded_acceptance.native_text_source_check would return unavailable_source_check for every case. The PDF-bearing suites ({'olmocr-bench': 1403, 'parsebench': 2036}) could carry native text, but they have only one primary parser and their source PDFs are not staged in this checkout."
+    }
+  },
+  "claim_state": "A9 native-source gate implemented and unit-verified; empirical precision benefit WITHHELD",
+  "experiment_id": "H1-A9-01",
+  "frozen_inputs": {
+    "dataset_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+    "frozen_candidate_ids": {
+      "mineru-3.4.4-vlm": "folynta-merged-r3-paddle-op-2026-08-06"
+    },
+    "frozen_merge_receipt_sha256": "sha256:1e8a2e77b3286113e20a07eb8c3610dfe14b7edb27e1bbc94159edafab811c75",
+    "frozen_merge_root": "folynta-quality-candidate-hybrid-merged-2026-08-09",
+    "stage1_assembly_id": "sha256:c7919dda72216a1649ff4a7a59612c4658cc69662c24f13361e67505897da970",
+    "stage1_candidate_id": "ovisocr2-0.9b-vllm-0.22.1",
+    "stage1_input_manifest_sha256": "sha256:9d2e2f80ccd9ba52c8d3e1b39c14cd45b3870c36a3fd4ef0819b1276339be427",
+    "stage1_receipt_sha256": "sha256:24457bc4377bd5a4d24881f39cb941085ad9c2a6c1e461f1f9c6ecb92b346b8b",
+    "stage1_run_dir": "D:\\CodexProjects\\ai-knowledge-compiler\\.chatgpt2codex\\formal-runtime-v29\\stage1\\run-0b45d87ed856"
+  },
+  "go_to_phase_1": false,
+  "go_to_phase_1_reason": "NO-GO. The agreement arm and the source-grounded arm cannot be evaluated on the same cases. The 200 cases with two independent parsers are page images with no native text to ground against; the corpora that could carry native text have one parser and no staged sources. Evaluating the registered research question would require reconstructing features the preregistration forbids reconstructing.",
+  "gpu_spend_usd": 0,
+  "narrowest_unblocking_step": "Run the second parser over a PDF subset whose native text layer is verified present, so agreement features and source-grounded checks exist on the same frozen cases. Scope it by the number of cases needed for the registered endpoint, not by the size of the PDF corpora.",
+  "performance_conclusion_allowed": false,
+  "phase": 0,
+  "schema": "tavonel.research.phase0-feasibility.v1",
+  "suite_source_extensions": {
+    "olmocr-bench": {
+      "pdf": 1403
+    },
+    "omnidocbench": {
+      "jpg": 981,
+      "png": 670
+    },
+    "parsebench": {
+      "jpg": 23,
+      "pdf": 2036,
+      "png": 19
+    }
+  }
+}

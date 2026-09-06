@@ -1,0 +1,240 @@
+# Source Coverage Locality v2 — witness-based question-local coverage.
+#
+# Frozen after the instrument was completed against development fixtures and
+# BEFORE it was applied to the P4e cohort. It is applied to that cohort exactly
+# once, and the eligibility count that run produces is the result.
+
+schema: tavonel.v2.protocol.locality_v2.v1
+protocol_id: SOURCE_LOCALITY_V2
+version: 1
+authored: 2026-08-22
+supersedes: null
+
+relates_to:
+  P0d_source_coverage:
+    state: PASS on its own gates
+    standing_result: 26 of 26 natural pairs SOURCE_COVERAGE_INCOMPLETE
+    rule: >-
+      read-only. P0d's classifier `canonicalization/source_spans.py` is NOT
+      edited; locality v2 lives in new modules with their own digests. The
+      honest way to change an instrument is a new protocol, not an edit that
+      silently moves an older sealed result.
+  P4e_provenance_retrieval:
+    state: Core PASS 12/12
+    rule: >-
+      read-only. 720 questions, Q1 = 175, envelope retrievable@10 = 0.9903,
+      atom recovery = 1.0 and the provisional locally-complete count of 20 are
+      preserved exactly. This protocol produces a SEPARATE eligibility figure on
+      the same frozen cohort; it does not re-score P4e.
+
+# ---------------------------------------------------------------------------
+# 1. What v1 got wrong, in its own words
+# ---------------------------------------------------------------------------
+
+motivation:
+  v1_defect_positional: >-
+    the markdown rule asked whether an unmodeled span sat between the first and
+    last modeled span of the atoms in scope, and its own docstring admitted this
+    can OVER-GRANT: a reference definition at the foot of a file that the target
+    atom depends on lies outside the interval and was never examined.
+  v1_defect_markup: >-
+    HTML and XML events carried no position at all, so 633 of 720 P4e questions
+    fell to a document-level rule that can only UNDER-GRANT. The resulting
+    figure of 20 was an artefact of the instrument.
+  consequence: >-
+    both directions of error were live at once. A single number could not be
+    read, and was not read, as a property of the corpus.
+
+# ---------------------------------------------------------------------------
+# 2. The witness
+# ---------------------------------------------------------------------------
+
+witness:
+  artifact: SOURCE_COVERAGE_WITNESS, recorded per question, not merely consulted
+  closure_over:
+    - the atom's direct raw-source span
+    - the source spans of every envelope member atom
+    - reference and link definitions the atom uses
+    - include, import and directive targets and their arguments
+    - anchor, citation and reference dependencies
+    - the source spans that produced the atom's canonical facts
+  region_rule: >-
+    an admitted dependency occupies a syntactic region, not only the span the
+    grammar matched. The region is widened to the whole lines the dependency
+    touches and every overlapping span joins the closure. A reference
+    definition is line-scoped in the source itself, so this is not a guess
+    about where it is.
+  derived_elements:
+    UNRESOLVED_INCLUDE_TARGET: >-
+      an include or import names content that is not in this source, so nothing
+      about its coverage has been established. Calling it MODELED because the
+      directive parsed would be reading the signpost and reporting the road.
+    EMBEDDED_MARKUP_IN_DEPENDENCY: >-
+      markup inside an admitted dependency that the outer grammar does not
+      classify.
+  every_element_records: [role, why it was admitted, classification, location state]
+
+completeness_rule:
+  QUESTION_LOCAL_COVERAGE_COMPLETE: >-
+    granted only when every element of the witness set is MODELED or
+    IGNORED_BY_DECLARED_POLICY and UNMODELED_SOURCE_FACT count is 0.
+  refusal_reasons_enumerated:
+    - UNMODELED_SOURCE_FACT_IN_CLOSURE
+    - LOCATION_UNVERIFIABLE_IN_DOCUMENT
+    - NO_DIRECT_SPAN_FOR_TARGET_ATOM
+  why_enumerated: >-
+    an eligibility figure driven by unlocatable markup means something different
+    from one driven by genuine unmodeled facts, and a single count cannot tell
+    them apart.
+  interval_only_completeness: FORBIDDEN. v1's low/high rule may not grant on its own.
+
+# ---------------------------------------------------------------------------
+# 3. Positional provenance for HTML and XML
+# ---------------------------------------------------------------------------
+
+source_map:
+  form: raw source interval → parser event → canonical fact or unit
+  direction: >-
+    built forward from the parser, not inferred backwards from canonical output
+    by guessing which parser produced it.
+  mechanism: >-
+    HTMLParser.getpos() gives the line and column each event began at; the
+    offset is computed from a line-offset table and each event closes at the
+    start of the next, so intervals partition the source in reading order.
+  charrefs: >-
+    convert_charrefs is OFF. With it on, adjacent text and character references
+    merge into one event whose reported position is the start of the merged run
+    — an almost-right interval, which is the kind this instrument refuses.
+  LOCATION_UNVERIFIABLE:
+    when: >-
+      the parser reports no usable position, or the computed interval does not
+      run forward within the source
+    consequence: >-
+      the position is NOT estimated. The span cannot support local completeness,
+      and because an unlocatable element cannot be shown to lie outside the
+      closure it is treated as inside it.
+
+# ---------------------------------------------------------------------------
+# 4. Anti-fitting rule
+# ---------------------------------------------------------------------------
+
+anti_fitting:
+  binding: yes
+  rule: >-
+    the instrument is not tuned iteratively while watching the P4e eligibility
+    count move toward 190. It was completed against development fixtures,
+    frozen here, sealed by tool digest, and applied to the frozen P4e cohort
+    exactly once.
+  the_count_that_run_produces_is_the_result: true
+  after_seeing_the_cohort_number:
+    forbidden: any further change to the instrument aimed at that number
+    permitted: >-
+      only the repair of a genuine implementation defect against THIS frozen
+      contract, and then only as a separate recorded incident preserving the
+      existing run and receipt.
+  development_fixtures_are_not_from_the_cohort: true
+
+controls:
+  location: canonicalization/locality_fixtures.py
+  required_before_the_instrument_is_frozen: all eight pass
+  set:
+    direct_span_positive:
+      expect: COMPLETE
+      guards: the instrument can grant completeness at all
+    out_of_range_link_definition:
+      expect: INCOMPLETE
+      guards: the over-grant case v1 admitted it could miss
+      note: this control failed on the first two implementations and drove both fixes
+    include_directive_dependency:
+      expect: INCOMPLETE
+      guards: a directive argument the atom depends on is examined
+    unrelated_unmodeled_outside_witness:
+      expect: COMPLETE
+      guards: >-
+        the witness genuinely localises. Failing here would mean it is the
+        document-level rule wearing a new name
+    html_attribute: {expect: INCOMPLETE, guards: unmodeled attribute in the atom's own markup}
+    nested_markup: {expect: INCOMPLETE, guards: intervals close in reading order through nesting}
+    malformed_markup:
+      expect: INCOMPLETE
+      guards: >-
+        a parser's position is least trustworthy on broken markup, which is
+        where a fabricated interval would do the most damage
+    ambiguous_location: {expect: INCOMPLETE, guards: an unplaceable event is refused, never guessed}
+  directional_pair: [out_of_range_link_definition, unrelated_unmodeled_outside_witness]
+  why_a_pair: >-
+    one control alone can be satisfied by an instrument that always refuses or
+    always grants. The pair pins both directions.
+
+# ---------------------------------------------------------------------------
+# 5. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_LOC2_CONTROLS:
+    predicate: all eight development controls return their expected verdict
+    on_fail: STOP. The cohort run does not happen.
+  G_LOC2_DIRECTIONAL:
+    predicate: >-
+      the over-grant control is INCOMPLETE and the under-grant control is
+      COMPLETE, in the same execution
+    on_fail: STOP
+  G_LOC2_WITNESS_RECORDED:
+    predicate: every scored question carries a witness with at least its role breakdown
+  G_LOC2_NO_INTERVAL_ONLY_GRANT:
+    predicate: >-
+      no question is granted completeness by an interval rule; every grant cites
+      a witness with zero unmodeled elements
+  G_LOC2_LOCATION_HONESTY:
+    predicate: >-
+      no span carries an estimated position. Every span is either
+      LOCATION_VERIFIED with an interval or LOCATION_UNVERIFIABLE with none
+  G_LOC2_APPLIED_ONCE:
+    predicate: the frozen P4e cohort is scored by this protocol exactly once
+  G_LOC2_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+reported_not_gated:
+  - locally-complete total
+  - locally-complete Q1
+  - locally-complete Q1 by family
+  - witness failures by reason
+  - LOCATION_UNVERIFIABLE count
+  - over-grant and under-grant control outcomes
+  why: >-
+    these are the decision-gate numbers. Gating them would make the instrument's
+    own output a pass/fail on the thing under investigation.
+
+# ---------------------------------------------------------------------------
+# 6. Decision gate
+# ---------------------------------------------------------------------------
+
+decision_gate:
+  if_eligible_Q1_at_least_190_and_spread_across_families: >-
+    resubmit the model-study proposal with real numbers, for approval.
+  if_below_190:
+    do_not: request GPU
+    do_not_2: re-fit the instrument to this cohort
+    do: >-
+      freeze a NEW cohort acquisition protocol expanding documents and revision
+      pairs. Markdown-only narrowing is not adopted.
+  hard_minimum_eligible_Q1: 190
+  status_of_190: conservative preregistered floor, never lowered after seeing eligibility
+
+# ---------------------------------------------------------------------------
+# 7. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    On the frozen P4e cohort, this share of questions has a source-coverage
+    witness in which every element is MODELED or IGNORED_BY_DECLARED_POLICY with
+    no unmodeled fact, and these are the refusal reasons for the rest.
+  forbidden:
+    - calling any document revision globally CURRENT or source-faithful end-to-end
+    - re-scoring P4e, P4d, P4c or P0d
+    - presenting a question-local status as a claim about its document
+    - lowering the 190 floor
+    - adjusting the instrument to this cohort's number
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

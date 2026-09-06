@@ -1,0 +1,260 @@
+# MARKUP_SEMANTICS_V1 — what counts as a canonical source fact in markup.
+#
+# Frozen before the P4f/P4g expanded cohort is acquired or scored.
+#
+# P0d, SOURCE_LOCALITY_V2 and P4e keep their results. Those results stand under
+# the grammar each declared at the time; this protocol governs what comes after,
+# so that stronger source-faithful evidence does not inherit a policy that was
+# never argued for.
+
+schema: tavonel.v2.protocol.markup_semantics.v1
+protocol_id: MARKUP_SEMANTICS_V1
+version: 1
+authored: 2026-08-22
+supersedes: null
+
+relates_to:
+  P0d_source_coverage:
+    rule: read-only, not re-scored, not retroactively FAILED
+    note: >-
+      its `_HTML_IGNORED_ATTRS` is the subject of INC-V2-010. The result stands
+      as a result under that declared grammar.
+  SOURCE_LOCALITY_V2: {rule: read-only, eligible_Q1: 5, not_re_scored: true}
+  P4e_provenance_retrieval: {rule: read-only, Core: PASS 12/12}
+  P4f_cohort_expansion:
+    state: SUPERSEDED_BEFORE_EXECUTION
+    rule: >-
+      preserved unmodified as expansion-planning evidence. Never executed. See
+      INC-V2-011: its markup workstream and its instrument-identity gate cannot
+      both be satisfied.
+
+# ---------------------------------------------------------------------------
+# 1. The rule that replaces "is it user-visible prose"
+# ---------------------------------------------------------------------------
+
+modelling_test:
+  question: >-
+    can a change to this source construct change the compiled interpretation or
+    a downstream artifact?
+  if_yes: it is a canonical source fact and carries a facet
+  not_the_test: whether a human reading the rendered page would see it
+  control_facts: >-
+    not every canonical source fact is a retrieval knowledge unit. Several exist
+    so correctness can be checked — `colspan` and `rowspan` are recorded as
+    control facts, because a reader never asks about them and an answer can be
+    wrong because of them.
+
+facets:
+  - CONTENT_LEXICAL
+  - STRUCTURAL
+  - REFERENCE_LOCATOR
+  - TEMPORAL
+  - AUTHORITY_APPLICABILITY
+  - METADATA
+  - ACCESSIBILITY
+  - VISUAL
+  - EXTERNAL_DEPENDENCY_EXECUTION
+
+states:
+  MODELED: a canonical source fact, with a facet
+  IGNORED_BY_DECLARED_POLICY: argued to change no facet, narrowly and with reasons
+  UNRESOLVED_SOURCE_FACT: >-
+    may carry meaning, cannot be interpreted from the local source alone. NOT
+    ignored, and never permits question-local coverage completeness.
+  UNMODELED_SOURCE_FACT: not classified by the declared policy
+
+fail_closed:
+  rule: >-
+    UNRESOLVED and UNMODELED both block local completeness. Only MODELED and
+    IGNORED permit it.
+  the_third_state_exists_so_that: >-
+    nothing is forced into a binary it does not fit. An external stylesheet may
+    hide a paragraph; calling that IGNORED is a claim nobody has established and
+    calling it MODELED is a claim nobody can evaluate here.
+
+# ---------------------------------------------------------------------------
+# 2. The bar for ignoring anything
+# ---------------------------------------------------------------------------
+
+ignoring_requires:
+  1: a statement of what the construct means
+  2: >-
+    an argument that under the DECLARED CONSUMER SEMANTICS it changes none of
+    CONTENT, STRUCTURE, REFERENCE, TEMPORAL, AUTHORITY, METADATA, ACCESSIBILITY,
+    VISUAL or EXTERNAL_DEPENDENCY
+  3: that argument recorded before the measurement it affects
+  insufficient: >-
+    calling it a presentation attribute. That is a category name, not an
+    argument, and it is how the previous policy acquired fourteen wrong entries.
+
+declared_consumer:
+  reads:
+    - canonical text, including characters produced by references
+    - block, list and table structure, including cell association
+    - reference destinations and relationships
+    - declared language, direction and encoding
+    - accessible names, descriptions and hidden state
+    - machine-readable times and reporting contexts
+    - document-level assertions
+  does_not_read: [pixel geometry, colour, spacing, alignment, fetch and decode hints]
+  cannot_decide_locally: >-
+    what an external stylesheet or script does to a class, a style, a data
+    attribute or an event handler
+  why_named: >-
+    every "changes no facet" argument is made against this consumer. Without
+    naming it the arguments are unfalsifiable.
+
+# ---------------------------------------------------------------------------
+# 3. What INC-V2-010 reclassified, forward only
+# ---------------------------------------------------------------------------
+
+reclassified_from_the_previous_policy:
+  colspan: {to: MODELED, facet: STRUCTURAL, control_fact: true}
+  rowspan: {to: MODELED, facet: STRUCTURAL, control_fact: true}
+  scope: {to: MODELED, facet: STRUCTURAL}
+  headers: {to: MODELED, facet: STRUCTURAL}
+  role: {to: MODELED, facet: ACCESSIBILITY}
+  aria_star: {to: MODELED, facet: ACCESSIBILITY, by: prefix rule}
+  alt: {to: MODELED, facet: ACCESSIBILITY, note: "for a non-visual consumer this IS the content"}
+  title: {to: MODELED, facet: ACCESSIBILITY}
+  lang: {to: MODELED, facet: METADATA}
+  dir: {to: MODELED, facet: METADATA}
+  rel: {to: MODELED, facet: REFERENCE_LOCATOR}
+  media: {to: MODELED, facet: METADATA, note: applicability, not styling}
+  target: {to: MODELED, facet: REFERENCE_LOCATOR, note: browsing context is behaviour}
+  content: {to: MODELED, facet: METADATA, note: the whole payload of a meta element}
+  http-equiv: {to: MODELED, facet: METADATA, note: a pragma directive}
+
+no_longer_blanket_ignored:
+  class: {to: UNRESOLVED_SOURCE_FACT, facet: EXTERNAL_DEPENDENCY_EXECUTION}
+  style: {to: UNRESOLVED_SOURCE_FACT, facet: EXTERNAL_DEPENDENCY_EXECUTION}
+  character_and_entity_references:
+    to: MODELED
+    facet: CONTENT_LEXICAL
+    evidence: >-
+      15,415 occurrences of &#160; alone in the development corpus. Ignoring
+      them would make canonical text untraceable at exactly the characters most
+      likely to differ.
+  tags:
+    to: MODELED where the element creates structure or reference
+    covers: [table, tr, td, th, thead, tbody, caption, ul, ol, li, dl, dt, dd, h1-h6, p, pre, blockquote, a, link, img, cite, time, meta, del, ins]
+    residue_only: ["<", ">", "</", "/>"]
+    note: >-
+      only the delimiter punctuation is residue. The element it delimits is
+      classified on its own.
+
+still_ignored_with_reasons:
+  [width, height, cellpadding, cellspacing, border, align, valign, bgcolor,
+   decoding, loading, data-file-width, data-file-height, b, i, span, div, br, wbr]
+  note: >-
+    each carries its meaning and its no-facet argument in the policy. `span` and
+    `div` are ignored as containers while their attributes are classified
+    separately, so class and style on them remain UNRESOLVED.
+
+unknown_constructs:
+  attribute: UNMODELED_SOURCE_FACT
+  tag: UNMODELED_SOURCE_FACT
+  rule: >-
+    never assumed decorative. Assuming is how the previous policy went wrong.
+
+# ---------------------------------------------------------------------------
+# 4. Sealing — policy and code are hashed separately
+# ---------------------------------------------------------------------------
+
+sealing:
+  policy_digest:
+    over: the declared mapping itself, canonicalised
+    not_over: the file bytes
+    property: >-
+      reformatting, re-ordering comments or rewrapping a justification leaves it
+      unchanged; reclassifying one attribute moves it. A file-bytes hash does
+      not have that property.
+    value_at_freeze: sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12
+  schema_digest:
+    over: the shape a classification result takes
+    value_at_freeze: sha256:f4d1aec809956d845b2789124bc0122f832587606531cd6b861e35e5e0a6f953
+  code_digests: recorded separately for markup_semantics.py, source_map.py and coverage_witness.py
+  loophole_closed: >-
+    sealing only a tool digest would let policy semantics change without the
+    seal noticing. Sealing only the policy would let resolution logic change.
+    Both are sealed and both are reported.
+
+# ---------------------------------------------------------------------------
+# 5. Controls — pairs, because the claim is about change
+# ---------------------------------------------------------------------------
+
+controls:
+  location: canonicalization/markup_controls.py
+  form: >-
+    each control is a PAIR of sources differing in exactly one construct. The
+    claim under test is not "this attribute is classified somehow" but "a change
+    to it changes the compiled interpretation", and only a pair shows that.
+  set:
+    rowspan_changes_table_association: {expect: MODELED, facet: STRUCTURAL}
+    alt_changes_accessible_content: {expect: MODELED, facet: ACCESSIBILITY}
+    lang_changes_interpretation: {expect: MODELED, facet: METADATA}
+    rel_changes_relationship: {expect: MODELED, facet: REFERENCE_LOCATOR}
+    charref_changes_canonical_text: {expect: MODELED, facet: CONTENT_LEXICAL}
+    nesting_changes_structure_same_tokens:
+      expect: MODELED
+      facet: STRUCTURAL
+      note: identical visible token sequence, different structure
+    class_external_dependency_unresolved:
+      expect: UNRESOLVED_SOURCE_FACT
+      facet: EXTERNAL_DEPENDENCY_EXECUTION
+    decorative_attribute_stays_ignorable:
+      expect: IGNORED_BY_DECLARED_POLICY
+      why_it_matters: >-
+        the other direction. A policy calling everything meaningful would pass
+        the seven above and be useless.
+  three_directions_required: >-
+    at least one MODELED control, the UNRESOLVED control, and the IGNORED
+    control must all return their expected state in the same execution.
+
+development_evidence_use:
+  permitted: >-
+    surveying the P4e corpus to learn which constructs EXIST — 65,485 class,
+    58,014 href, 39,399 title, 25,441 style, 15,415 &#160;, 1,198 colspan, 963
+    alt, 575 role, 194 XBRL contextref, 167 lang.
+  forbidden: >-
+    deciding a classification by how much eligibility it would buy. Every
+    entry is decided by the semantic-effect rule.
+
+# ---------------------------------------------------------------------------
+# 6. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_MS1_CONTROLS:
+    predicate: all eight controls return their expected state and facet
+    on_fail: STOP
+  G_MS1_THREE_DIRECTIONS:
+    predicate: a MODELED, the UNRESOLVED and the IGNORED control all pass together
+    on_fail: STOP
+  G_MS1_EVERY_IGNORE_HAS_A_REASON:
+    predicate: every IGNORED entry carries a meaning statement and a no-facet argument
+  G_MS1_RESOLUTION_IS_TOTAL:
+    predicate: >-
+      every construct resolves to exactly one of the four states; nothing falls
+      through to a default
+  G_MS1_UNKNOWN_IS_NOT_IGNORED:
+    predicate: an undeclared attribute or element resolves to UNMODELED, never IGNORED
+  G_MS1_POLICY_SEALED_SEPARATELY:
+    predicate: >-
+      the policy digest and the code digests are both recorded, and the policy
+      digest is computed over the mapping rather than the file
+  G_MS1_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+claim_boundary:
+  permitted: >-
+    Under this declared consumer and this policy, these constructs are canonical
+    source facts with these facets, these are unresolved, and these are ignored
+    for the recorded reasons.
+  forbidden:
+    - retroactively re-scoring P0d, SOURCE_LOCALITY_V2, P4e or any earlier result
+    - reclassifying a construct in order to raise an eligibility count
+    - treating UNRESOLVED as IGNORED
+    - claiming a document revision is source-faithful end-to-end
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

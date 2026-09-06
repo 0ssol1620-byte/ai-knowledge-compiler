@@ -1,0 +1,110 @@
+{
+  "checks": {
+    "confirmed_defect_lineages_all_fire": {
+      "expected_lineages": 14,
+      "fired_lineages": 14,
+      "missing": [],
+      "pass": true,
+      "tautological": false
+    },
+    "every_over_fire_confirmed_by_the_independent_facet_module": {
+      "checked": 28,
+      "disagreements": [],
+      "pass": true,
+      "tautological": false
+    },
+    "identity_continuity_undisturbed": {
+      "observed_count": 0,
+      "pass": true,
+      "predicted": false,
+      "tautological": false
+    },
+    "no_over_fire_is_canonical_form_only": {
+      "controls_agree": true,
+      "controls_backing_it": [
+        "identical",
+        "nfc_vs_nfd",
+        "nfd_vs_nfc_reversed",
+        "both_empty"
+      ],
+      "observed_count": 0,
+      "pass": true,
+      "tautological": true,
+      "why": "the CONTENT projection normalizes NFC, so a canonical-form-only difference cannot reach `changed`; reported, not counted as evidence"
+    },
+    "no_over_fire_lacks_a_facet_account": {
+      "observed_count": 0,
+      "pass": true,
+      "tautological": false,
+      "why": "an over-fire with no matched pair reproduced means the benchmark's reproduction of `diff_documents`' matching has drifted"
+    },
+    "under_fire_is_empty": {
+      "observed_count": 0,
+      "pass": true,
+      "predicted": false,
+      "tautological": false
+    }
+  },
+  "contracts_agree": true,
+  "corpus": {
+    "matched_pairs_total": 2536,
+    "pairs_considered": 538,
+    "pairs_resolved": 538,
+    "pairs_unresolved": 0
+  },
+  "facet_contract": "tavonel.v2.source_fact_ir.change_facets.v1",
+  "facet_contract_declared_by_semantic_diff": "tavonel.v2.source_fact_ir.change_facets.v1",
+  "limit": null,
+  "non_tautological_checks_passed": 5,
+  "non_tautological_checks_total": 5,
+  "predictions_from_adversarial_controls": {
+    "canonical_form_only_controls": [
+      "identical",
+      "nfc_vs_nfd",
+      "nfd_vs_nfc_reversed",
+      "both_empty"
+    ],
+    "canonical_form_only_controls_all_expect_unchanged": true,
+    "controls_expecting_changed": [
+      "registered_trademark_added",
+      "recasing_of_a_proper_noun",
+      "hyphen_to_em_dash",
+      "spacing_inside_a_citation",
+      "real_change_buried_in_heavy_formatting_churn",
+      "formatting_churn_with_no_content_change",
+      "zero_width_space_removed",
+      "empty_becomes_content",
+      "content_becomes_empty"
+    ],
+    "controls_total": 13,
+    "predicts_identity_disturbance": false,
+    "predicts_under_fire": false
+  },
+  "provenance": {
+    "generated_at": "2026-08-24T09:21:41.168642+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-canary",
+    "run_id": "20260824T092141Z-36fa48664af6",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/canary_identity_change.py",
+    "tool_sha256": "sha256:1bead013040e0486fd8e037c961b35844acffd16ce0d1e9cdc1e1b0e183ea9e2"
+  },
+  "receipt_sha256": "sha256:cf75fb34845419cc3d0ac3695e1cd032764160a25f5afd79c46f4df0b13e4743",
+  "reported_not_gated": {
+    "over_fire_denominator": 2536,
+    "over_fire_difference_classes": {
+      "case_only": 2,
+      "other": 26
+    },
+    "over_fire_rate_over_matched_pairs": 0.011041,
+    "over_fire_units": 28,
+    "over_fires_not_on_a_confirmed_defect_lineage": 14,
+    "over_fires_on_confirmed_defect_lineages": 14,
+    "why": "no threshold in this repository is calibrated; a rate bar invented here would be an uncalibrated number presented as a measured one"
+  },
+  "schema": "tavonel.v2.canary_identity_change.v1",
+  "verdict": "PASS"
+}

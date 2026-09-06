@@ -1,0 +1,211 @@
+{
+  "conditions_declared": 12,
+  "conditions_passed": 12,
+  "failed": [],
+  "gate_id": "V2R4_PREACQUISITION_JOIN_GATE",
+  "provenance": {
+    "generated_at": "2026-08-26T05:04:51.549035+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r4-preacquisition-gate",
+    "run_id": "20260826T050451Z-55f0e4c41aff",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/v2r4_preacquisition_gate.py",
+    "tool_sha256": "sha256:20b62487617373dbc1963c0f135b1925406c57c0aeb15f8ecf944a00d0211a22"
+  },
+  "receipt_sha256": "sha256:eb1c060ca94e15fa2a1237c0c7849ae823e41f7667f972fbf2c65c763f5d206a",
+  "rows": [
+    {
+      "condition": "invariant_domain_equality",
+      "detail": {
+        "compared": "set equality on full identifiers, never a count",
+        "count": 8,
+        "invariants": [
+          "INVARIANT_1_identity_decisions_unchanged",
+          "INVARIANT_2_identity_fold_remains_identity_only",
+          "INVARIANT_3_expectation_is_independent",
+          "INVARIANT_4_changed_facet_resolves_typed_or_failclosed",
+          "INVARIANT_5_never_silently_unchanged",
+          "INVARIANT_6_ambiguous_identity_stays_unresolved",
+          "INVARIANT_7_only_predeclared_ignores",
+          "INVARIANT_8_sfi2_cases_cannot_certify"
+        ]
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "v2r4_full_eight_rehearsal",
+      "detail": {
+        "drivers": 8,
+        "green": null,
+        "verdict": "SCORER_REHEARSABLE"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "every_invariant_reds_independently",
+      "detail": {
+        "each_with_zero_collateral": true,
+        "invariants_driven_red": 8,
+        "per_invariant": {
+          "INVARIANT_1_identity_decisions_unchanged": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_2_identity_fold_remains_identity_only": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_3_expectation_is_independent": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_4_changed_facet_resolves_typed_or_failclosed": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_5_never_silently_unchanged": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_6_ambiguous_identity_stays_unresolved": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_7_only_predeclared_ignores": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          },
+          "INVARIANT_8_sfi2_cases_cannot_certify": {
+            "collateral_damage": [],
+            "overall": "FAIL",
+            "target_verdict": "VIOLATED"
+          }
+        }
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "v2r4_allowed_delta_attestation",
+      "detail": {
+        "accepted_deltas": 216,
+        "core_breaches": [],
+        "core_paths_preserved": 39,
+        "verdict": "SCIENTIFIC_CORE_PRESERVED_WITH_PREDECLARED_HYGIENE_DELTAS"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "sfi3_root_reservation_frozen",
+      "detail": {
+        "content_digest": "sha256:ee24738dd34b8f8e94fe0f59187de36ec33c5396fd821eaaec52c9c2301696e3",
+        "receipt": "sfi3-root-reservation--20260826T040829Z-e0f676096927.json",
+        "reservation_id": "SFI3_ROOT_RESERVATION_V1",
+        "reserved_counts": {
+          "encyclopedia_wikipedia": 15,
+          "git_docs": 41,
+          "regulation_ecfr": 41,
+          "sec_edgar": 0
+        },
+        "verified": true
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "v2r4_sfi3_root_separation",
+      "detail": {
+        "clashes": 0,
+        "module": "sources_v2r4",
+        "prior_identities": 960,
+        "sfi3_containers_checked": {
+          "git_docs": 44,
+          "regulation_ecfr": 88,
+          "sec_edgar": 0
+        },
+        "sfi3_reserved_counts": {
+          "encyclopedia_wikipedia": 15,
+          "git_docs": 41,
+          "regulation_ecfr": 41,
+          "sec_edgar": 0
+        }
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "i8_exclusion_domain_exact",
+      "detail": {
+        "count": 7,
+        "held": true,
+        "populations": [
+          "from_the_14_sfi2_forensic_cases",
+          "from_the_538_pair_retrospective_cohort",
+          "from_v1_universe",
+          "from_v2r1_universe",
+          "from_v2r2_universe",
+          "from_v2r3r1_universe",
+          "from_vbc1_burned_material"
+        ],
+        "sfi3_is_not_one_of_them": true
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "anti_blocker_audit_zero_blockers",
+      "detail": {
+        "blocker_count": 0,
+        "modules_absent": [],
+        "modules_scanned": 52,
+        "verdict": "ANTI_BLOCKER_AUDIT_PASS"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "authoritative_full_suite_green",
+      "detail": {
+        "returncode": 0,
+        "summary": "2606 passed, 4 skipped in 483.28s (0:08:03)"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "gpu_spend_zero",
+      "detail": {
+        "cost_usd": 0,
+        "gpu_seconds": 0,
+        "launch_receipts": 5
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "sfi3_fresh_payload_unopened",
+      "detail": {
+        "sfi3_corpus_empty": true,
+        "sfi3_corpus_present": false,
+        "sfi3_frame_receipts": []
+      },
+      "verdict": "PASS"
+    },
+    {
+      "condition": "no_prior_v2r4_measurement",
+      "detail": {
+        "corpus_present": false,
+        "fresh_material_opened": false,
+        "measurement_receipts": 0
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "schema": "tavonel.v2.v2r4_preacquisition_gate.v1",
+  "verdict": "READY_FOR_ACQUISITION",
+  "what_is_still_unspent": "no V2R4 content has been opened, no SFI3 payload has been opened, and GPU spend is zero. The first irreversible act is the acquisition the frame authorises, and it comes after rung 0 seals.",
+  "what_ready_means": "every one of the twelve conditions section G names was EXECUTED and came back PASS. It authorises the freeze ladder to begin -- rung 0 onward -- and nothing else. It is not a result, not a verdict about production, and not permission to spend GPU."
+}

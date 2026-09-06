@@ -1,0 +1,73 @@
+{
+  "schema": "tavonel.h1-a9-a12-shared-pilot-budget.v1",
+  "prepared_on": "2026-08-16",
+  "status": "PLANNED_NOT_EXECUTED",
+  "purpose": "Reuse the same prospective 48-case public semantic-failure outputs across A12 recovery-family ablation and A9 acceptance-policy evaluation so the two research questions do not duplicate inference.",
+  "cohort": "research/experiments/H1-A12-01/cohorts/semantic-divergence-pilot-v1.json",
+  "case_count": 48,
+  "inference_plan": [
+    {
+      "arm": "independent_candidate_paddle",
+      "model": "PaddleOCR-VL 1.6",
+      "outputs_reused_by": ["A12", "A9"]
+    },
+    {
+      "arm": "independent_candidate_deepseek",
+      "model": "DeepSeek-OCR-2",
+      "outputs_reused_by": ["A12", "A9"]
+    },
+    {
+      "arm": "semantic_same_family_ablation",
+      "model": "MinerU same-family recipe frozen before scoring",
+      "outputs_reused_by": ["A12"]
+    }
+  ],
+  "historical_demo_cost_basis": {
+    "source": "benchmark/reports/STRUCTARA_TIER_A_MODEL_PORTFOLIO_EVALUATION_FINAL_2026-08-02.md",
+    "scope_warning": "These are 18-page demo inference estimates, not invoices and not hard-case measurements. They exclude startup/orchestration/storage/transfer/evaluation/tax and may understate the prospective pilot.",
+    "estimated_usd_per_page": {
+      "PaddleOCR-VL": 0.000676,
+      "DeepSeek-OCR-2": 0.009047,
+      "MinerU_pipeline": 0.001334,
+      "MinerU_VLM_c1": 0.006652
+    }
+  },
+  "raw_inference_estimates_48_cases": {
+    "paddle_usd": 0.032448,
+    "deepseek_usd": 0.434256,
+    "same_family_mineru_pipeline_usd": 0.064032,
+    "same_family_mineru_vlm_c1_usd": 0.319296,
+    "three_arm_total_if_mineru_pipeline_usd": 0.530736,
+    "three_arm_total_if_mineru_vlm_c1_usd": 0.786
+  },
+  "planning_reserve": {
+    "multiplier_over_historical_raw_inference": 3.0,
+    "three_arm_total_if_mineru_pipeline_usd": 1.592208,
+    "three_arm_total_if_mineru_vlm_c1_usd": 2.358,
+    "interpretation": "A 3x reserve still fits the registered nominal USD 3 pilot cap on the historical per-page basis; actual provider/runtime preflight must replace this estimate before spend."
+  },
+  "gpu_parallelism": {
+    "preferred_workers": 4,
+    "rule": "Shard independent cases only. Parallelism is for wall-clock compression and must not add extra arms/repeats or raise the registered total-work budget.",
+    "multi_gpu_model_parallelism": false
+  },
+  "ground_truth_policy": "No evaluator labels or ground truth mount on GPU workers. Only source inputs and frozen model/runtime instructions are sent; scoring is local after output hashes are frozen.",
+  "reuse_policy": [
+    "If an exact output already exists under the same immutable action/model/source/settings identity, reuse it.",
+    "Paddle and DeepSeek outputs feed both A12 independent-family recovery analysis and A9 agreement/source-grounded acceptance analysis.",
+    "The original failed base prediction is reused from the frozen public failure pack and is not rerun merely to create an ablation.",
+    "Do not add a self-confidence arm unless the original model/runtime genuinely emits a frozen confidence feature."
+  ],
+  "spend_gate": {
+    "incremental_gpu_spend_so_far_usd": 0.0,
+    "nominal_cap_usd": 3.0,
+    "hard_cap_usd": 10.0,
+    "requires_before_any_gpu": [
+      "formal immutable runtime security/build/qualification READY",
+      "exact source-only case reconstruction",
+      "same-family ablation recipe frozen before outcome scoring",
+      "provider preflight estimate within cap"
+    ]
+  },
+  "claim_boundary": "Budget/reuse plan only. No model arm has been executed by this plan and no quality/cost-performance claim is authorized."
+}

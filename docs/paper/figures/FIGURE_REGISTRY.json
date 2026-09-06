@@ -1,0 +1,512 @@
+{
+  "generated_at": "2026-08-20T13:49:14.010842+00:00",
+  "greyscale_unsafe_figures": [],
+  "note": "Specifications are the source of truth. These assets are rendered from them and carry no content the specification does not.",
+  "paper": [
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 45905,
+          "path": "docs/paper/figures/FIG01.pdf",
+          "sha256": "sha256:32b23d2f53ed2af1ca03cd2e95a75c7e48167fb3c192a95d90593831494c75ab"
+        },
+        "png": {
+          "bytes": 314846,
+          "path": "docs/paper/figures/FIG01.png",
+          "sha256": "sha256:d26f2a86e8eb009a4abf7783a7648c1dd9908df5e15f30102491dcdc2f147940"
+        },
+        "svg": {
+          "bytes": 38161,
+          "path": "docs/paper/figures/FIG01.svg",
+          "sha256": "sha256:543fa06afda1aaf88b7addfaf1a6216652a6e311270427c58f87516086c308a7"
+        }
+      },
+      "caption": "Where staleness enters, and where it is stopped",
+      "figure": 1,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/paper/figures/source/FIG01.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:625c10bd4c6df3dedfff1ab9c7e1c6ed479d2e17b980e74d09732bb609d3bddd",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG01",
+      "styled_groups": [
+        "GATE",
+        "HOLD",
+        "KINDS"
+      ],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        604.6412353515625,
+        1930.484375
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 44782,
+          "path": "docs/paper/figures/FIG02.pdf",
+          "sha256": "sha256:38d47df01a63f5e11bb6f04683b229daa1521a98dba361352f63aac0fb590368"
+        },
+        "png": {
+          "bytes": 197952,
+          "path": "docs/paper/figures/FIG02.png",
+          "sha256": "sha256:e060f7ce6c2a48e9b52ef60f30f746e7cbbb432dd96bb51063b22dc4d88c88c0"
+        },
+        "svg": {
+          "bytes": 28369,
+          "path": "docs/paper/figures/FIG02.svg",
+          "sha256": "sha256:45367b7e0706820d40e96bd3dae6959a49f563c64285663c3b4c50215d2cea51"
+        }
+      },
+      "caption": "The failure this system caused, and the fix",
+      "figure": 2,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/paper/figures/source/FIG02.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:19a7252c861000d62cd0cf6794c0b55f47d3acbfcf0829e66c66e2e29f31f7f9",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG02",
+      "styled_groups": [
+        "A7",
+        "B6",
+        "B7"
+      ],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        334.0,
+        2082.0
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 38304,
+          "path": "docs/paper/figures/FIG03.pdf",
+          "sha256": "sha256:a047c0ce89197588b0cc0a530f571b689dd4e18471bec37ee9d50f0f331d920c"
+        },
+        "png": {
+          "bytes": 266673,
+          "path": "docs/paper/figures/FIG03.png",
+          "sha256": "sha256:fe22c6677dfaecb7e1ae59d2956a8b38a01027f57eb8c0e0392034b6c1419b06"
+        },
+        "svg": {
+          "bytes": 23625,
+          "path": "docs/paper/figures/FIG03.svg",
+          "sha256": "sha256:51ef1cbd9281147324d1f8ccb5d39b99d9294f70c171b8c80630157bc05fd204"
+        }
+      },
+      "caption": "The gate's four checks, drawn in their implementation order",
+      "figure": 3,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/paper/figures/source/FIG03.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:3560d37e4e07047217ba53d204258ae4e67d05530278d595834269bec2b1e3aa",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG03",
+      "styled_groups": [
+        "F",
+        "G4",
+        "P"
+      ],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        644.71875,
+        1647.3125
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 38029,
+          "path": "docs/paper/figures/FIG04.pdf",
+          "sha256": "sha256:977942d6d5020c365d20198ff6b1e75d387b1164bf2246f3b1d884b632cedaa2"
+        },
+        "png": {
+          "bytes": 207542,
+          "path": "docs/paper/figures/FIG04.png",
+          "sha256": "sha256:0f5d8a02009dc1a6c7947c24b2fbd5fa60c45d44af7ad2729c78909b355a517d"
+        },
+        "svg": {
+          "bytes": 26700,
+          "path": "docs/paper/figures/FIG04.svg",
+          "sha256": "sha256:3eef73ad12eefd4bf93a47fbe668dcd78e1c11672c93b9976bf5435c99b9a1d8"
+        }
+      },
+      "caption": "Identity resolution outcomes",
+      "figure": 4,
+      "greyscale_safe": true,
+      "png_dpi": 300.5,
+      "source": "docs/paper/figures/source/FIG04.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:ce1b8eb709b12432836bc1d108078c98ba1b7d24cf09b83a783eadc8d6446689",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG04",
+      "styled_groups": [
+        "AMB",
+        "M"
+      ],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        627.7109375,
+        1266.515625
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 33783,
+          "path": "docs/paper/figures/FIG05.pdf",
+          "sha256": "sha256:0a6f34b8b33500626c79f98f949cde50f1a267246f00157eac612a9ffdc41fef"
+        },
+        "png": {
+          "bytes": 86220,
+          "path": "docs/paper/figures/FIG05.png",
+          "sha256": "sha256:19772410469a4d9e88281117b022d47c649daf6b205652f67ff9105b73a6a58f"
+        },
+        "svg": {
+          "bytes": 18065,
+          "path": "docs/paper/figures/FIG05.svg",
+          "sha256": "sha256:2ff5775443a17f84d5f77175bc7aa7dd7c04d530ea4b449da1a4139eee7c13f2"
+        }
+      },
+      "caption": "Cost, split into the two stages it actually has",
+      "figure": 5,
+      "greyscale_safe": true,
+      "png_dpi": 300.7,
+      "source": "docs/paper/figures/source/FIG05.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:667704b4a048075f98b67df5653cb7446c052f5abbb0ecc698aca7558e507573",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG05",
+      "styled_groups": [
+        "S1",
+        "S2"
+      ],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        747.09375,
+        425.5
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 43848,
+          "path": "docs/paper/figures/FIG06.pdf",
+          "sha256": "sha256:2832fa76876ea1146a209175303673efa78b6bbe3f1cf897298805aa07deb36e"
+        },
+        "png": {
+          "bytes": 296817,
+          "path": "docs/paper/figures/FIG06.png",
+          "sha256": "sha256:b079f007c03a92c42c908632601ccff814a53450b1f69d6e1086c0d10c73ce73"
+        },
+        "svg": {
+          "bytes": 20584,
+          "path": "docs/paper/figures/FIG06.svg",
+          "sha256": "sha256:a90b54814627223f2b9dbb089f506a5935272976a5842ad14efe28fca7f22da6"
+        }
+      },
+      "caption": "Evidence classes across the claim set",
+      "figure": 6,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/paper/figures/source/FIG06.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:c15ee4b89dd6d465af3560d631b5490e54e1194dfcf3e08e2c11bca7eae3ed8a",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG06",
+      "styled_groups": [
+        "CONTRACT",
+        "CTRL",
+        "HELD",
+        "NONE",
+        "REAL"
+      ],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        1818.703125,
+        669.5
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 51933,
+          "path": "docs/paper/figures/FIG07.pdf",
+          "sha256": "sha256:2449900dff85b39d69ee859f125c7e948cf972053b04e575bb75cf9b864b0377"
+        },
+        "png": {
+          "bytes": 165812,
+          "path": "docs/paper/figures/FIG07.png",
+          "sha256": "sha256:21a051293604e962a4c4e7831d9b13247d572ea9294b6a32e80073daf5c87ecc"
+        },
+        "svg": {
+          "bytes": 23567,
+          "path": "docs/paper/figures/FIG07.svg",
+          "sha256": "sha256:b448f09ade641f8cbf94fb1309997619f32186ed5890aa9ea2cf460b88fb1c16"
+        }
+      },
+      "caption": "why accelerating identity matching broke history",
+      "figure": 7,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/paper/figures/source/FIG07.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:ed6ccee2658a82020053c2782676675d4e2c66da0099320f01b2c7c5d3fd7967",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG07",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        672.0,
+        877.28125
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 74100,
+          "path": "docs/paper/figures/FIG08.pdf",
+          "sha256": "sha256:c29b49d91eb2d41a4640c94a4d086d65cf327df6b7a1e36bba61e5d7e8d21d5c"
+        },
+        "png": {
+          "bytes": 107222,
+          "path": "docs/paper/figures/FIG08.png",
+          "sha256": "sha256:92a8ba81d9961cc9e2c9a40c95747852a24fe49000d26e87492093f96a9f0be8"
+        },
+        "svg": {
+          "bytes": 3476,
+          "path": "docs/paper/figures/FIG08.svg",
+          "sha256": "sha256:4be337d16dd4c0c3d8d8c2e44e6c3aa5aa74a578997782f7097f610d8ac8a931"
+        }
+      },
+      "caption": "the identity scalability trade, including the negative result",
+      "figure": 8,
+      "greyscale_safe": true,
+      "png_dpi": 300.0,
+      "source": "docs/paper/figures/source/FIG08.json",
+      "source_kind": "table",
+      "source_sha256": "sha256:30055defc9524be1c9bd4f987719a4707bb20d67b2e74e6c1e55b1a261219073",
+      "specification": "docs/paper/FIGURES_2026-08-19.md",
+      "stem": "FIG08",
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        1090.0,
+        124.0
+      ]
+    }
+  ],
+  "paper_figure_count": 8,
+  "patent": [
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 36811,
+          "path": "docs/ip/drawings/SHEET01.pdf",
+          "sha256": "sha256:052bf53d49c3bb34b2092456815e5bb3b00fd06395ea9e6ac0e43e27fd27787d"
+        },
+        "png": {
+          "bytes": 210446,
+          "path": "docs/ip/drawings/SHEET01.png",
+          "sha256": "sha256:de33ef62c83e8d632678ca0ce92510f63a91bbd5862f425618d65dcd08d44707"
+        },
+        "svg": {
+          "bytes": 28112,
+          "path": "docs/ip/drawings/SHEET01.svg",
+          "sha256": "sha256:9e3f3697ebdebbe610b6ec61cbefb92356709176a7142deeb4f4ae4d11c510cf"
+        }
+      },
+      "caption": "Source anchoring and the acceptance gate (Family A)",
+      "figure": 1,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/ip/drawings/source/SHEET01.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:d5f5892c0474fb0a73b3b2cd9dccc25ed471d54a43f21390b8d7309f3592ddee",
+      "specification": "docs/ip/PATENT_ABSTRACT_AND_DRAWINGS_2026-08-20.md",
+      "stem": "SHEET01",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        846.375,
+        889.0
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 33928,
+          "path": "docs/ip/drawings/SHEET02.pdf",
+          "sha256": "sha256:a3fd92ffe9ecb7a40d28c46b3b8395337f2175435626ad54f9cbc8e8e9d45494"
+        },
+        "png": {
+          "bytes": 128477,
+          "path": "docs/ip/drawings/SHEET02.png",
+          "sha256": "sha256:7d8e2a3ef24b1e03cee6eb7486d9c5787f7aad71b3075584544d8be37ed14b84"
+        },
+        "svg": {
+          "bytes": 21286,
+          "path": "docs/ip/drawings/SHEET02.svg",
+          "sha256": "sha256:1488578a6dd41074986fedd9039d05e73220f293ce95a9fe0eac5f81ee6123f1"
+        }
+      },
+      "caption": "Identity resolution outcomes (B1 element 2, B2, B3)",
+      "figure": 2,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/ip/drawings/source/SHEET02.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:1281025aa71c7530fe748e31afa8c07848201257abb37998126fa21ef6f6f354",
+      "specification": "docs/ip/PATENT_ABSTRACT_AND_DRAWINGS_2026-08-20.md",
+      "stem": "SHEET02",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        1593.828125,
+        278.0
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 33290,
+          "path": "docs/ip/drawings/SHEET03.pdf",
+          "sha256": "sha256:c767eb8ae4abde0a111e962f3efd4d1f4e2cd284441f36fe4240d06b9b889d7f"
+        },
+        "png": {
+          "bytes": 98837,
+          "path": "docs/ip/drawings/SHEET03.png",
+          "sha256": "sha256:84be23552f783c83b719fb673fbcc4c31d8afd1437db3ce98e6d0c223dd9edd2"
+        },
+        "svg": {
+          "bytes": 18174,
+          "path": "docs/ip/drawings/SHEET03.svg",
+          "sha256": "sha256:c05b8af3e5887386f7862528a1cd79708f453c9188169fc5935184f73a96e4f0"
+        }
+      },
+      "caption": "Typed change classification (B1 element 3, B8)",
+      "figure": 3,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/ip/drawings/source/SHEET03.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:7677d5d067a2ec82f5bcd39c3937b2ca94687596e57ac86eb7228e357ee668e6",
+      "specification": "docs/ip/PATENT_ABSTRACT_AND_DRAWINGS_2026-08-20.md",
+      "stem": "SHEET03",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        1128.265625,
+        300.5
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 29445,
+          "path": "docs/ip/drawings/SHEET04.pdf",
+          "sha256": "sha256:28fadfde7b1d41ebeb414f8b6517a525fb5040370fb7452b54aeb9528458600d"
+        },
+        "png": {
+          "bytes": 58694,
+          "path": "docs/ip/drawings/SHEET04.png",
+          "sha256": "sha256:56c3afc4956258681348034d1828fa94ac4164d60e8e0fca781a4144fc3872fc"
+        },
+        "svg": {
+          "bytes": 15531,
+          "path": "docs/ip/drawings/SHEET04.svg",
+          "sha256": "sha256:6038a4f9801f202d1e971e60dd299128c7c99618dd1bf6913a7e9d702c6a0c8e"
+        }
+      },
+      "caption": "Change-kind-typed dependency graph (B1 element 4, B9)",
+      "figure": 4,
+      "greyscale_safe": true,
+      "png_dpi": 300.5,
+      "source": "docs/ip/drawings/source/SHEET04.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:42de0d9c60dafdb4ee6e004195c782f74625dc877511df13b89dc4c33f07363f",
+      "specification": "docs/ip/PATENT_ABSTRACT_AND_DRAWINGS_2026-08-20.md",
+      "stem": "SHEET04",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        557.140625,
+        276.0
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 37608,
+          "path": "docs/ip/drawings/SHEET05.pdf",
+          "sha256": "sha256:23efee59219156850f38a0d7058c9e230200270b95f746ecfea1e3f7fdd9ee2c"
+        },
+        "png": {
+          "bytes": 272033,
+          "path": "docs/ip/drawings/SHEET05.png",
+          "sha256": "sha256:6ab1396fc51e2ea69c214caad9521e7b945dec22712b6bad42c8f49d29d82156"
+        },
+        "svg": {
+          "bytes": 28518,
+          "path": "docs/ip/drawings/SHEET05.svg",
+          "sha256": "sha256:5fd99f2038c3d003fa292fa9242c6871d5700514a61ff19ce919d820484004c6"
+        }
+      },
+      "caption": "Selective recompilation and the verification gate (B1 elements 5\u20139)",
+      "figure": 5,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/ip/drawings/source/SHEET05.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:ecff795e686cff038f02a1785795dbe4fd8a7514311c224a4ca581b009d3d2d1",
+      "specification": "docs/ip/PATENT_ABSTRACT_AND_DRAWINGS_2026-08-20.md",
+      "stem": "SHEET05",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        1754.0,
+        1008.0
+      ]
+    },
+    {
+      "assets": {
+        "pdf": {
+          "bytes": 28722,
+          "path": "docs/ip/drawings/SHEET06.pdf",
+          "sha256": "sha256:94a9bcc52d2bc27fb947b91d12da19ec98bd06537a5d42bdb0c854ff2c089aeb"
+        },
+        "png": {
+          "bytes": 107191,
+          "path": "docs/ip/drawings/SHEET06.png",
+          "sha256": "sha256:0e573be4046c27a226ee4283a27ba438cf38d88652d884adc163645e725917a7"
+        },
+        "svg": {
+          "bytes": 16847,
+          "path": "docs/ip/drawings/SHEET06.svg",
+          "sha256": "sha256:890992bb528586e2ce69c2714e2806b41c4152d13b81a9b9a8c9eaa46b82c1a0"
+        }
+      },
+      "caption": "Consumption-time filtering (claim B10) and lineage (B5, B6)",
+      "figure": 6,
+      "greyscale_safe": true,
+      "png_dpi": 300.6,
+      "source": "docs/ip/drawings/source/SHEET06.mmd",
+      "source_kind": "mermaid",
+      "source_sha256": "sha256:38e0c62a8b9a6c7f9afdbd21144a79a7aac9b25023ea33c71d3a287b13f38a37",
+      "specification": "docs/ip/PATENT_ABSTRACT_AND_DRAWINGS_2026-08-20.md",
+      "stem": "SHEET06",
+      "styled_groups": [],
+      "styled_without_a_text_label": [],
+      "svg_size_px": [
+        1409.578125,
+        175.0
+      ]
+    }
+  ],
+  "patent_sheet_count": 6,
+  "renderer": "@mermaid-js/mermaid-cli@11.16.0 via npx; table figures by tools/release/render_figures.py",
+  "schema": "tavonel.figure-registry.v1"
+}

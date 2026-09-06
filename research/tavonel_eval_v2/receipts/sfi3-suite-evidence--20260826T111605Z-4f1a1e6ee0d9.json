@@ -1,0 +1,3958 @@
+{
+  "command": [
+    ".venv/Scripts/python.exe",
+    "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+    "--receipt-only-on-pass"
+  ],
+  "completed": true,
+  "completed_at": "2026-08-26T11:22:20.942754+00:00",
+  "error_count": 0,
+  "exit_code": 0,
+  "failure_count": 0,
+  "latest_pointer_is_evidence": false,
+  "output_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/pytest-output.log",
+  "output_file_sha256": "sha256:f394bdaa4384e6c443f27c253247b2dbbb341eeb9a56a4f130f63656f70fcf91",
+  "peak_rss_bytes": 3829760,
+  "provenance": {
+    "generated_at": "2026-08-26T11:22:20.961237+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-suite-evidence",
+    "run_id": "20260826T111605Z-4f1a1e6ee0d9",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+    "tool_sha256": "sha256:3e4aef01a92695fb533e1c21ef685297a53ef2b42f28f0292dcb7aef2662c97e"
+  },
+  "receipt_sha256": "sha256:06ac1aec268fa62884c49ac7b5d6dc394c0395d9bbf22eb62d359a5ac3b550dd",
+  "reentry_guard_set_in_every_shard": "TAVONEL_SFI3_FREEZE_GATE_RUNNING",
+  "schema": "tavonel.v2.sfi3_suite_evidence.v1",
+  "shard_count": 94,
+  "shards": [
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_anti_blocker_audit.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0001.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0001.xml",
+      "junit_file_sha256": "sha256:92956cc8cc2124ccd70cb4196cabb3ad4f3384d5e22d7c3d8bacee8e72b9a8e2",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_anti_blocker_audit.py",
+      "tests": 40
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_change_facets.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0002.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0002.xml",
+      "junit_file_sha256": "sha256:3deec00e918616d6dd001e4f25fff778955d86ab06bd2e4ca39f0a8ce90c9678",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_change_facets.py",
+      "tests": 20
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_channel_closure.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0003.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0003.xml",
+      "junit_file_sha256": "sha256:d022ba60f75b497561c80ded45eff3fa09650d46ec3d15d5dc1547cc307d36bb",
+      "peak_rss_bytes": 3821568,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_channel_closure.py",
+      "tests": 33
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_coverage_and_refusals.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0004.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0004.xml",
+      "junit_file_sha256": "sha256:000ca6765b9af81bfae9d3c088fb239aca4aae098b05b7e8d3aced8aa10908ad",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_coverage_and_refusals.py",
+      "tests": 23
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_dependency_contract.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0005.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0005.xml",
+      "junit_file_sha256": "sha256:c6f87c1b3a47ea1c5dbfc3575d91a2fec862c31c293940884202174ea106759a",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_dependency_contract.py",
+      "tests": 21
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_e8_instrumentation_power.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0006.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0006.xml",
+      "junit_file_sha256": "sha256:ad9ef13b52e67684b3f122c28b85fa1a1aeb0e086a30eb0f82a52eedb7fdc5c5",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_e8_instrumentation_power.py",
+      "tests": 9
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_e9_oracle.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0007.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0007.xml",
+      "junit_file_sha256": "sha256:4a087de6c66dae508ac0e407d9bd6fe63a31c0864784fd8eab3ce0a6d3c8e923",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_e9_oracle.py",
+      "tests": 13
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_execution_invariant.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0008.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0008.xml",
+      "junit_file_sha256": "sha256:6f775600b0dd2e8f9171a2dc26e613d10f25b26df1ad0ec6365ef5c53b414704",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_execution_invariant.py",
+      "tests": 24
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_executor_channels.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0009.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0009.xml",
+      "junit_file_sha256": "sha256:31ab42e5b4e8886d8982446dc192db606c713c90bda88896f285b8cdabd4483b",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_executor_channels.py",
+      "tests": 21
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_forensic_sfi2_execution.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0010.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0010.xml",
+      "junit_file_sha256": "sha256:a705d0602cc09c80e0334345e39eebbba5a861183f8a886687e0ab987086eeea",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_forensic_sfi2_execution.py",
+      "tests": 9
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_four_link_acceptance.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0011.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0011.xml",
+      "junit_file_sha256": "sha256:a77757a86f73148057da066ece320a60df556aa169d6d323374cc9071080059f",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_four_link_acceptance.py",
+      "tests": 32
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_four_link_gate.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0012.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0012.xml",
+      "junit_file_sha256": "sha256:ca0a6b8f4da812d3bae11953b0cde559c6b7da92454f884def55a2408f2a664a",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_four_link_gate.py",
+      "tests": 18
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_four_link_validator.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0013.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0013.xml",
+      "junit_file_sha256": "sha256:73028a866563b24e636e3a7b0f2d5bd1f2361d06a9d8e2819dbe5ec723114170",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_four_link_validator.py",
+      "tests": 21
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_freeze_sfi3_gate.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0014.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0014.xml",
+      "junit_file_sha256": "sha256:a8a1815ca7355ff2a20732a00d8f33ce9a946373f7b88dfa124550c3253bfa9d",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_freeze_sfi3_gate.py",
+      "tests": 40
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_gpu_successor_execution.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0015.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0015.xml",
+      "junit_file_sha256": "sha256:1997e132fe0653d11193bcf9ff4ac211fcf43d9a3ae11dfa14231095ae565b41",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_execution.py",
+      "tests": 7
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_gpu_successor_pin.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0016.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0016.xml",
+      "junit_file_sha256": "sha256:a5ac87c7c7cf1e65a27822be9e646ed9c44cd23719c67cfc19039f043237d560",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_pin.py",
+      "tests": 19
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_gpu_successor_preflight_bindings.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0017.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0017.xml",
+      "junit_file_sha256": "sha256:7cfa4ef0b1c0e4db1e67d044feabba9e3f4b4d3de3c8eb7395c0dca86717e457",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_preflight_bindings.py",
+      "tests": 10
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_gpu_successor_study.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0018.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0018.xml",
+      "junit_file_sha256": "sha256:9b6525a2eb5bba3d2666f8c86a510a3aa48940ef5bc12cef477784afb5300986",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_study.py",
+      "tests": 64
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_identity_change_migration.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0019.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0019.xml",
+      "junit_file_sha256": "sha256:952a6b1858f9fc3d4a4dcc1ef0b438997bd41802328dc29499985fe4190a5432",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_identity_change_migration.py",
+      "tests": 69
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_identity_change_migration_closure.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0020.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0020.xml",
+      "junit_file_sha256": "sha256:6ef37f07ccabba97a8aa4952ff47a0d6049114c4cbbdb4422ebf7732e7e06d40",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_identity_change_migration_closure.py",
+      "tests": 43
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_identity_quarantine.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0021.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0021.xml",
+      "junit_file_sha256": "sha256:7d45e8f689b6f70be59ad8f43039e6fd8cad98be43acdff0bb62aba471b44da7",
+      "peak_rss_bytes": 3796992,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_identity_quarantine.py",
+      "tests": 24
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_include_target.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0022.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0022.xml",
+      "junit_file_sha256": "sha256:cc9462422768a9f7130956b6e26a1d716f98a02ae6d27be7983053cf720ef04a",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_include_target.py",
+      "tests": 35
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_invariant_domain.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0023.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0023.xml",
+      "junit_file_sha256": "sha256:c1ae8d57e4dc83a810b32cc5f1ca58c7ecac960b9981a23dde8686d4d202510b",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_invariant_domain.py",
+      "tests": 30
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0024.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0024.xml",
+      "junit_file_sha256": "sha256:30c5ce059aaa753ba04de4ede75a637fb1aa5fa5c30a1c03395ab111857cb745",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py",
+      "tests": 46
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0025.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0025.xml",
+      "junit_file_sha256": "sha256:23c38f17bd522b0d1e88d365731a93a115a81c10d7648a53980e9b674ce59b77",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py",
+      "tests": 24
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_p0_findings.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0026.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0026.xml",
+      "junit_file_sha256": "sha256:a8a2fc0599c5bffe36358446d79d7a33e90c411434a982ea868ecd6eef3e9c52",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_p0_findings.py",
+      "tests": 5
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_p0b_and_boundary.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0027.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0027.xml",
+      "junit_file_sha256": "sha256:1a64b40c6bcdcd1406989908c422256d783e5e26dd23e696883198b8ed1b708d",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_p0b_and_boundary.py",
+      "tests": 13
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part10.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0028.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0028.xml",
+      "junit_file_sha256": "sha256:b190785705e969e7050d281ab561a47d66db9f7ee36108b58625e310ec38b429",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part10.py",
+      "tests": 27
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part11.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0029.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0029.xml",
+      "junit_file_sha256": "sha256:ff2d27c6597aaffe906b41ff2d89507db6bf2db81eae6e2bcd613f2575fe1283",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part11.py",
+      "tests": 27
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part12.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0030.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0030.xml",
+      "junit_file_sha256": "sha256:4ba5aaa33ac862a516517361cec45acb97fe7b870fe6ce30a190b962228bdb54",
+      "peak_rss_bytes": 3821568,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part12.py",
+      "tests": 36
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part13.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0031.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0031.xml",
+      "junit_file_sha256": "sha256:3e4abc20a4e807cad9382cf50883cb23994e7bf98a6c910e5a32f7742a94db2d",
+      "peak_rss_bytes": 3829760,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part13.py",
+      "tests": 33
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part14.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0032.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0032.xml",
+      "junit_file_sha256": "sha256:74648739c870e0c6ac7c172ef0eac006c4f0d891620da4091ed3d29d5282d51d",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part14.py",
+      "tests": 36
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part15.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0033.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0033.xml",
+      "junit_file_sha256": "sha256:42a39c93b09e30b2c93eb67b76d7d7bbef98b9fcdeb6736a3854443444b54555",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part15.py",
+      "tests": 53
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part16.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0034.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0034.xml",
+      "junit_file_sha256": "sha256:ca8ea43b2ab9997aac4e884bc02bda70ea5f8147c6af1e2729782b9048e03909",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part16.py",
+      "tests": 23
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part3.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0035.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0035.xml",
+      "junit_file_sha256": "sha256:7a19892171e049c195df7af2032fe731bb620e48c77b1be929b8dd5aedc2b515",
+      "peak_rss_bytes": 3817472,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part3.py",
+      "tests": 27
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part4.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0036.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0036.xml",
+      "junit_file_sha256": "sha256:4a051e227288fb200b2144cad5246fd96161899a8c15796b006ad3027b08abb4",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part4.py",
+      "tests": 30
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part5.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0037.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0037.xml",
+      "junit_file_sha256": "sha256:42234edbad10c83a403e6c75b54fb33dd3c37f8e82a22efb640fbd600566dfa6",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part5.py",
+      "tests": 38
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part6.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0038.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0038.xml",
+      "junit_file_sha256": "sha256:4c21a5076678942af8e90963ce3ec233ccdfaf367610ca13a18183bb4f72a450",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part6.py",
+      "tests": 31
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part7.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0039.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0039.xml",
+      "junit_file_sha256": "sha256:7a77344d00b5ede294c40994a9830e8af7ef906a6f9cc3767f5234e060d70f7c",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part7.py",
+      "tests": 54
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part8.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0040.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0040.xml",
+      "junit_file_sha256": "sha256:4136aaf35273523dcd5f8ca0c543e7ddfe06a264d2d37a7092b14f5699b7283c",
+      "peak_rss_bytes": 3813376,
+      "skipped": 1,
+      "test_file": "research/tavonel_eval_v2/tests/test_part8.py",
+      "tests": 46
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_part9.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0041.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0041.xml",
+      "junit_file_sha256": "sha256:f6f659b2b712390fdfd9542ad6f054e5656d9f0ecf4e56698a9f170196766220",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_part9.py",
+      "tests": 17
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_preflight_checks.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0042.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0042.xml",
+      "junit_file_sha256": "sha256:fb55f257cd8e29cb5284a5694ca37e79a08a0262876e9d7ca44741165f24a88e",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_preflight_checks.py",
+      "tests": 34
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_provenance_document.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0043.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0043.xml",
+      "junit_file_sha256": "sha256:4a748e9b32504a65bfa9bf5686e4dcc29697cad60a372c852403afc05d4ac1d0",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_provenance_document.py",
+      "tests": 45
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_provenance_fixtures.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0044.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0044.xml",
+      "junit_file_sha256": "sha256:22a8f1cf7b1e06d49f350dc01256b2d3180007e7443fa3434aaba1e237a4d0b6",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_provenance_fixtures.py",
+      "tests": 47
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_rebuild_equivalence.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0045.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0045.xml",
+      "junit_file_sha256": "sha256:0a30ba9ef6d8b3513c55c161c0f9666a697ba98ed240d19c517b79933c293824",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_rebuild_equivalence.py",
+      "tests": 12
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_scope_gate.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0046.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0046.xml",
+      "junit_file_sha256": "sha256:221079d50dc56a390b9bd80d9225c7c240ed7864f880ec95b3b671aa946df824",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_scope_gate.py",
+      "tests": 16
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi2_acquisition.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0047.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0047.xml",
+      "junit_file_sha256": "sha256:4fb23b4a2b60334499203a3904bdf4754267cc9d8cd1f931de126c08ff531336",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi2_acquisition.py",
+      "tests": 28
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi2_frame_verification.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0048.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0048.xml",
+      "junit_file_sha256": "sha256:14ac0e1a30ea3264ffa0b62162ec28f8c82082080f12720e548b784a7ce6f73e",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi2_frame_verification.py",
+      "tests": 8
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi2_integration.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0049.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0049.xml",
+      "junit_file_sha256": "sha256:469ea414897f92dd5323cfaeb1a8da02bb03d14c759c262cf64349a76540244d",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi2_integration.py",
+      "tests": 23
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi2_scoring.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0050.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0050.xml",
+      "junit_file_sha256": "sha256:921578f75f0e18c01901e6afaf3bc93de06098738749fb95a19179359ae3e154",
+      "peak_rss_bytes": 3809280,
+      "skipped": 1,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi2_scoring.py",
+      "tests": 25
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi2_worker.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0051.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0051.xml",
+      "junit_file_sha256": "sha256:3970cd453801c6c951a515ad0bb53882fe788184ca80b156e2c0fa199fb4dc33",
+      "peak_rss_bytes": 3825664,
+      "skipped": 1,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi2_worker.py",
+      "tests": 16
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_acceptance.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0052.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0052.xml",
+      "junit_file_sha256": "sha256:65e21958263cdbcb363278d09ceb8f59a580a307f1485df67ba8dfe299bd2bbf",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_acceptance.py",
+      "tests": 49
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0053.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0053.xml",
+      "junit_file_sha256": "sha256:7650e437a4683367b6bf451b7d86fe6ebf505d73a959dd65c7a43a1b696dade6",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py",
+      "tests": 33
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_execution_path.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0054.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0054.xml",
+      "junit_file_sha256": "sha256:da00b4bcb3524b34d7838c931e20284d628a00acf48b9318ae9dfafaca4e5f79",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_execution_path.py",
+      "tests": 31
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_frame_verification.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0055.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0055.xml",
+      "junit_file_sha256": "sha256:999a847d698bd3a2594c415fd4f464be4c3dddf7ed2cdcaac7b91c9fcdb4d997",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_frame_verification.py",
+      "tests": 9
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0056.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0056.xml",
+      "junit_file_sha256": "sha256:120fc8f86e8e3b0d6e5a337f2e26e216789566db31496b0924dcf2e37826d209",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py",
+      "tests": 94
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_root_replacement.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0057.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0057.xml",
+      "junit_file_sha256": "sha256:4363d0e1bb00a9bc83743e7e07af2ca22daa5da65d0659d399b8fdea994c1b9e",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_replacement.py",
+      "tests": 29
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_root_reservation.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0058.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0058.xml",
+      "junit_file_sha256": "sha256:e00166ffa302c8580191c0cf1c21bd471d3d31fc3331bcccc9f15eef40d17435",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_reservation.py",
+      "tests": 29
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_scoring.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0059.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0059.xml",
+      "junit_file_sha256": "sha256:bbd3367385b5f7ed0f2b39e96d15d02fa763be65b816ab34dcb64829cbcd80b8",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_scoring.py",
+      "tests": 49
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi3_suite_evidence.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0060.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0060.xml",
+      "junit_file_sha256": "sha256:c6562f83818d9317ac0c1d325e563562d2eb68affb5e601daf5a9d73af2fbb3d",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi3_suite_evidence.py",
+      "tests": 10
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_acquisition.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0061.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0061.xml",
+      "junit_file_sha256": "sha256:14cacecf70e8a49351c319607c9bcc6f8ab40178976406160889d0ea045c14da",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_acquisition.py",
+      "tests": 26
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_adversarial.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0062.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0062.xml",
+      "junit_file_sha256": "sha256:d229bb17707328b6b7e2a968f04e9a0030032d38036f2d20cc98f837beafb357",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_adversarial.py",
+      "tests": 56
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_core.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0063.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0063.xml",
+      "junit_file_sha256": "sha256:bd9d2877e8d623a6914d317e0244744cb666422f56d247df6e7ab95e872e85e9",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_core.py",
+      "tests": 32
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_fingerprint.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0064.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0064.xml",
+      "junit_file_sha256": "sha256:b1585ccdd6f74bf382f86c7455563562658feb6be0658550fe7f34506c7476eb",
+      "peak_rss_bytes": 3817472,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_fingerprint.py",
+      "tests": 23
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_forensic.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0065.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0065.xml",
+      "junit_file_sha256": "sha256:0b33286e8c1d3f7361e6c3140695cb5b18010740c29d95ddc794a195da855ffd",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_forensic.py",
+      "tests": 11
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_gpu_preflight.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0066.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0066.xml",
+      "junit_file_sha256": "sha256:22dc5b7321d3e0b33856d2f83fc330bbdc326df7a85c7ca6d3410eddad390d4c",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_gpu_preflight.py",
+      "tests": 42
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_integration.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0067.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0067.xml",
+      "junit_file_sha256": "sha256:0d9b8700700a2d8045ff0318371d39a5e70e2653acb9d42398b8a3a7228eb44b",
+      "peak_rss_bytes": 3809280,
+      "skipped": 1,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_integration.py",
+      "tests": 14
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_metadata.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0068.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0068.xml",
+      "junit_file_sha256": "sha256:3eeadd05faa973aff99c46370fe0ceac868f4434574aee6607dc5bf23f46d236",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_metadata.py",
+      "tests": 20
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_reference.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0069.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0069.xml",
+      "junit_file_sha256": "sha256:8d35fa201613b0f5cbfc4988cb9d5b686bf32b495fe25efb9e34475b7ca91b6c",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_reference.py",
+      "tests": 19
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_sfi_scoring.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0070.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0070.xml",
+      "junit_file_sha256": "sha256:2c57bae36666aaf08d5d13e5b468bea98792a8a30bc2fcc0086e12c4fa5a8b06",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_sfi_scoring.py",
+      "tests": 16
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_spanmap.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0071.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0071.xml",
+      "junit_file_sha256": "sha256:6a6245ce17ab897b56ca5b8983f2f3dcc90e30cba16a3d61c191e524c824fd18",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_spanmap.py",
+      "tests": 23
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_successor_inputs.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0072.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0072.xml",
+      "junit_file_sha256": "sha256:51dea1d17d39b073f91a176ed64b1a4c0fd61358a3b83f071928b7c9482b104e",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_successor_inputs.py",
+      "tests": 28
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_successor_materializer.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0073.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0073.xml",
+      "junit_file_sha256": "sha256:eacd97347bec75ba96e84af82b6dd444abd0e6e9b354837951c810272b6b2c1a",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_successor_materializer.py",
+      "tests": 38
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2_closure_freeze.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0074.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0074.xml",
+      "junit_file_sha256": "sha256:99d59924b774f4f8413a9536070831fb131cc208952f80c2295760f93b48c399",
+      "peak_rss_bytes": 3821568,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2_closure_freeze.py",
+      "tests": 49
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0075.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0075.xml",
+      "junit_file_sha256": "sha256:f07554fed7ba9acbe1371604e310a10f6027e8840d25f8d36e67368f46e24eec",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py",
+      "tests": 38
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r1_freeze_gate.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0076.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0076.xml",
+      "junit_file_sha256": "sha256:a98c904b067fc2277b5073012f914d411413f179f8025bbad38595547397bc23",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r1_freeze_gate.py",
+      "tests": 24
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r1_invariant6.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0077.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0077.xml",
+      "junit_file_sha256": "sha256:03edf38d06a3f7bad70e524a074ef558e568f99407cfa13875ae47e038e48133",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r1_invariant6.py",
+      "tests": 15
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r2_freeze_adapter.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0078.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0078.xml",
+      "junit_file_sha256": "sha256:011253fe25d2bf99dba8f906e2294abe0ebe97330bc85703459880d82dedabb5",
+      "peak_rss_bytes": 3821568,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r2_freeze_adapter.py",
+      "tests": 13
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r2_freeze_gate.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0079.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0079.xml",
+      "junit_file_sha256": "sha256:e7ad4a18323b414d71c0aea2c8b9e4ed5ee9e218999ee682d9e028a12a176255",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r2_freeze_gate.py",
+      "tests": 24
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r2_invariant6.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0080.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0080.xml",
+      "junit_file_sha256": "sha256:1ecc40534561ee44817094d922fc29179d7f41a1ab8ee65688ab3b7fc1a9c9dd",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r2_invariant6.py",
+      "tests": 17
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3_attestation.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0081.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0081.xml",
+      "junit_file_sha256": "sha256:60f7b9ba6d19b4270356c085ca05e60a644baeea8b2b3d3cae7f8ad582e3ce92",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3_attestation.py",
+      "tests": 26
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3_chain_disposition.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0082.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0082.xml",
+      "junit_file_sha256": "sha256:c7d873c351f318ee880e7ef682f389d6f0063f0f41eb8fcd6bff28010c0255b5",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3_chain_disposition.py",
+      "tests": 30
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0083.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0083.xml",
+      "junit_file_sha256": "sha256:3c9cdf05e2f655a94676295dd85a8706abdc12f95c57d79e376da26ad5a5e176",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+      "tests": 13
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3_instrument.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0084.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0084.xml",
+      "junit_file_sha256": "sha256:50e01fe2afa58ff09e848efaddbce87c36709b6551f8bdbb69c40ea0ea2ead7e",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3_instrument.py",
+      "tests": 27
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3_lanes.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0085.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0085.xml",
+      "junit_file_sha256": "sha256:89c9c6fb2105ffcb682b7d35e74275be1d8ed578c5e70c6ac36da38c4a6f1676",
+      "peak_rss_bytes": 3825664,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3_lanes.py",
+      "tests": 20
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3_power_battery.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0086.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0086.xml",
+      "junit_file_sha256": "sha256:f152f76bc7a02978086a613565107434b42ca3d97d7706cef5a6a30964769fa9",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3_power_battery.py",
+      "tests": 19
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0087.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0087.xml",
+      "junit_file_sha256": "sha256:9b5c56edbd4f91433f8200808dc9fc4060e8f9aa1168b768ffbd545242d0c621",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py",
+      "tests": 51
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_closure_runner.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0088.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0088.xml",
+      "junit_file_sha256": "sha256:f02b867ed37bf1bd7ff382813965511cdfc4abc20e48e914086aa0e677b81cc0",
+      "peak_rss_bytes": 3821568,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_closure_runner.py",
+      "tests": 23
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_frame.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0089.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0089.xml",
+      "junit_file_sha256": "sha256:5198a965c6f38116825e0a24779955d94424e513ec97440bfd2684461150999d",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_frame.py",
+      "tests": 64
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_grading.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0090.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0090.xml",
+      "junit_file_sha256": "sha256:c3bcef833f26f8cb44d6b38364d708f9959fd9690f6629713f56dc91c09783c1",
+      "peak_rss_bytes": 3809280,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_grading.py",
+      "tests": 30
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0091.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0091.xml",
+      "junit_file_sha256": "sha256:b4764c73c3040e06918e521da562d4c3ea197de812caa6319923085d93857e13",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py",
+      "tests": 28
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_rehearsal.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0092.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0092.xml",
+      "junit_file_sha256": "sha256:b4768a20aa479a48dc5372d14024ba1887830383e7bb5ac1c5633d258e387bd2",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_rehearsal.py",
+      "tests": 24
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_semantics_delta.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0093.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0093.xml",
+      "junit_file_sha256": "sha256:a672f6647ff77d9388ef517a7a31f6963f3f6088bd9850f6e82c0c1d48c66317",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_semantics_delta.py",
+      "tests": 35
+    },
+    {
+      "command": [
+        "D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T111605Z-4f1a1e6ee0d9\\junit-0094.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_error": null,
+      "junit_file": "research/tavonel_eval_v2/receipts/suite-output/20260826T111605Z-4f1a1e6ee0d9/junit-0094.xml",
+      "junit_file_sha256": "sha256:bf95d0b3df96ba60a29847bdc1f47ff2c8b95c40902e427aa86d49158e53f0f1",
+      "peak_rss_bytes": 3813376,
+      "skipped": 0,
+      "test_file": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py",
+      "tests": 16
+    }
+  ],
+  "skip_count": 4,
+  "started_at": "2026-08-26T11:16:05.145988+00:00",
+  "suite_manifest": {
+    "digest": "sha256:d933212afb4152d60d2ec831711262efcc3be074fb7e09ba680470478f3dd6be",
+    "files": [
+      {
+        "bytes": 17296,
+        "path": "research/tavonel_eval_v2/tests/test_anti_blocker_audit.py",
+        "sha256": "sha256:447ed8d3a1e8c0985be0508097770e7c273a461d5d1c6f817cbe129ce3dd9baf"
+      },
+      {
+        "bytes": 18546,
+        "path": "research/tavonel_eval_v2/tests/test_change_facets.py",
+        "sha256": "sha256:e818a96481b10d09a21a8e80ed14474ca4b1e894a4ff9aabfb6a6fc7c6b0a24d"
+      },
+      {
+        "bytes": 24630,
+        "path": "research/tavonel_eval_v2/tests/test_channel_closure.py",
+        "sha256": "sha256:5f55fc133df87073a1744cbd62e03aad5cd63382bc3885f53edab2fb4c6b57f9"
+      },
+      {
+        "bytes": 11274,
+        "path": "research/tavonel_eval_v2/tests/test_coverage_and_refusals.py",
+        "sha256": "sha256:ae28d1b4d0dc8a384a0227a352344391b287462ab3ab15114d20c47e0d88eef1"
+      },
+      {
+        "bytes": 16445,
+        "path": "research/tavonel_eval_v2/tests/test_dependency_contract.py",
+        "sha256": "sha256:e3c11959116bfe409461a284a0fb697bbaa5a54420cbed4596dbde0886ab2bf4"
+      },
+      {
+        "bytes": 3765,
+        "path": "research/tavonel_eval_v2/tests/test_e8_instrumentation_power.py",
+        "sha256": "sha256:02acc13618a71b123a4753cedfaa70cc81dcd06e8a72b7156bdeea8b49738b89"
+      },
+      {
+        "bytes": 9813,
+        "path": "research/tavonel_eval_v2/tests/test_e9_oracle.py",
+        "sha256": "sha256:91fb9d87dd5a78b34561c772fef4668e60b6ab84ec9652a14702298a5a84ff83"
+      },
+      {
+        "bytes": 19299,
+        "path": "research/tavonel_eval_v2/tests/test_execution_invariant.py",
+        "sha256": "sha256:5544f2dfb80cef278a68322d1eb09b5ba1f784fe90fa139773f28c668b0a1178"
+      },
+      {
+        "bytes": 17450,
+        "path": "research/tavonel_eval_v2/tests/test_executor_channels.py",
+        "sha256": "sha256:48c444df9c99f98d3ea7b65a66f5084d1aab7aafc6eb4328d1188b00a810a978"
+      },
+      {
+        "bytes": 11939,
+        "path": "research/tavonel_eval_v2/tests/test_forensic_sfi2_execution.py",
+        "sha256": "sha256:c9ee4f92309d2fbe24c41221cd88c153d614b7d090d77810b0410395f1ddc814"
+      },
+      {
+        "bytes": 15862,
+        "path": "research/tavonel_eval_v2/tests/test_four_link_acceptance.py",
+        "sha256": "sha256:4bc558700e51899dbc0dba6e82e12a75d0404a128aae466b504e65ef96c48d77"
+      },
+      {
+        "bytes": 16091,
+        "path": "research/tavonel_eval_v2/tests/test_four_link_gate.py",
+        "sha256": "sha256:0811d7244ba86cc8a0377b3747d8c01df756f52bc506291e3c313609a7671e55"
+      },
+      {
+        "bytes": 13810,
+        "path": "research/tavonel_eval_v2/tests/test_four_link_validator.py",
+        "sha256": "sha256:86c66ffc1f97b8f44a354187c819a832ad40f72b9d6464fe3a66b6244ef71dea"
+      },
+      {
+        "bytes": 30187,
+        "path": "research/tavonel_eval_v2/tests/test_freeze_sfi3_gate.py",
+        "sha256": "sha256:7100f727872e2ad8e1cc7507f922777637356dc06ae7e2ca0db02ac7b3908d36"
+      },
+      {
+        "bytes": 5259,
+        "path": "research/tavonel_eval_v2/tests/test_gpu_successor_execution.py",
+        "sha256": "sha256:7d5489e3171daff44baac3d13f475d9b06afe7dfb37781df66e80a5c011212fe"
+      },
+      {
+        "bytes": 9746,
+        "path": "research/tavonel_eval_v2/tests/test_gpu_successor_pin.py",
+        "sha256": "sha256:becf7b9df7f7aa40b2f6b7a64a70a8bf471dea80bd6c1bfd006199ccd3a2c51c"
+      },
+      {
+        "bytes": 5913,
+        "path": "research/tavonel_eval_v2/tests/test_gpu_successor_preflight_bindings.py",
+        "sha256": "sha256:5c50457ebebdd3854c6ad62cb000084a2a0b9432b201bb5ad1f1dee81387fd60"
+      },
+      {
+        "bytes": 25485,
+        "path": "research/tavonel_eval_v2/tests/test_gpu_successor_study.py",
+        "sha256": "sha256:ddcee52a813cf14b69d825dce8b89a6c0ecb7476ae8e37f1c5b419307e452d07"
+      },
+      {
+        "bytes": 22644,
+        "path": "research/tavonel_eval_v2/tests/test_identity_change_migration.py",
+        "sha256": "sha256:2046b4b3d7a23df820e5dbfa2d8164070762c77ad08634013a5638dd7f2b4998"
+      },
+      {
+        "bytes": 32870,
+        "path": "research/tavonel_eval_v2/tests/test_identity_change_migration_closure.py",
+        "sha256": "sha256:e5e5896e216380d8ad0fa5176267fe107989445db0c799733795c2d9a9e42f37"
+      },
+      {
+        "bytes": 48696,
+        "path": "research/tavonel_eval_v2/tests/test_identity_quarantine.py",
+        "sha256": "sha256:f94e30fd945e0bb4f596d5c48ae7d9d75e75a13b247ea3ac22c2275a608c2f51"
+      },
+      {
+        "bytes": 17108,
+        "path": "research/tavonel_eval_v2/tests/test_include_target.py",
+        "sha256": "sha256:a9b1ec274f0b8d838d68d869c15b0f77d500e31d85ffd5f14041fba34c6b627d"
+      },
+      {
+        "bytes": 13670,
+        "path": "research/tavonel_eval_v2/tests/test_invariant_domain.py",
+        "sha256": "sha256:4c1e960d1807d775e564f42537bae9d46a8a9bd80b6e5111bac84ee2adef12ed"
+      },
+      {
+        "bytes": 55864,
+        "path": "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py",
+        "sha256": "sha256:704884e21145348d0b35b55feb1040df33bcc61a050dcda96109ae156955d663"
+      },
+      {
+        "bytes": 11328,
+        "path": "research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py",
+        "sha256": "sha256:e19bb34c32c8119ac3a67f1a89285859931ef6731bae3f6402a79b588501fca7"
+      },
+      {
+        "bytes": 7597,
+        "path": "research/tavonel_eval_v2/tests/test_p0_findings.py",
+        "sha256": "sha256:78471356e4e838ca2f0bb1f6cf339202cda399ca937febe401d589e8849673d9"
+      },
+      {
+        "bytes": 8692,
+        "path": "research/tavonel_eval_v2/tests/test_p0b_and_boundary.py",
+        "sha256": "sha256:737f0787d91dee25b448184dd68cd8a239f6bda85048b5aaea67df48a736b900"
+      },
+      {
+        "bytes": 10252,
+        "path": "research/tavonel_eval_v2/tests/test_part10.py",
+        "sha256": "sha256:700070dcbbc2ec719a4915bf613003eed44a6e2bf9cee568d83d4682ba09150f"
+      },
+      {
+        "bytes": 10528,
+        "path": "research/tavonel_eval_v2/tests/test_part11.py",
+        "sha256": "sha256:cdc645a13a3b34ebe3fee2965ecb8bbe1a93cdcbcdc8c4480363135cfc289a10"
+      },
+      {
+        "bytes": 12981,
+        "path": "research/tavonel_eval_v2/tests/test_part12.py",
+        "sha256": "sha256:d26066f4a933fea19ecb104b09bd11e930166e32bf50916a41f127ea1c2e3a0c"
+      },
+      {
+        "bytes": 15965,
+        "path": "research/tavonel_eval_v2/tests/test_part13.py",
+        "sha256": "sha256:f5cf54f902fa16b9aef815a450f57e69fdda6e1ae0eb7c10f6ace095c48991f9"
+      },
+      {
+        "bytes": 25868,
+        "path": "research/tavonel_eval_v2/tests/test_part14.py",
+        "sha256": "sha256:f78ea33bd8c333aed22c2dce023c628dfaf800cf42774353f2cb01fa51da01ef"
+      },
+      {
+        "bytes": 29011,
+        "path": "research/tavonel_eval_v2/tests/test_part15.py",
+        "sha256": "sha256:a40a09e0da4cca22a4da8579883279c1056a1cc7c90e98da67fdccf453bf8904"
+      },
+      {
+        "bytes": 11419,
+        "path": "research/tavonel_eval_v2/tests/test_part16.py",
+        "sha256": "sha256:dec77eea47f130ca0786a360e17e745964c0f5200f05f94ae7042d004456d3a0"
+      },
+      {
+        "bytes": 13192,
+        "path": "research/tavonel_eval_v2/tests/test_part3.py",
+        "sha256": "sha256:b52b9f9d70f7928b6a5955bbd84a6fd190d954cd1d20ee20184834b3e79a5210"
+      },
+      {
+        "bytes": 10403,
+        "path": "research/tavonel_eval_v2/tests/test_part4.py",
+        "sha256": "sha256:6ab939815e1c0ce736eec9cc07f0a070ba8373711d58d802f5c289fad9620def"
+      },
+      {
+        "bytes": 10832,
+        "path": "research/tavonel_eval_v2/tests/test_part5.py",
+        "sha256": "sha256:10b8b28f6e120f041624a1d7f5d4662d493475d7395e70f02469cb6b2b5cc870"
+      },
+      {
+        "bytes": 11754,
+        "path": "research/tavonel_eval_v2/tests/test_part6.py",
+        "sha256": "sha256:77dd32b8aca83ab74e39d5c145638b815425b4d665b6db5f8ba73272fae26687"
+      },
+      {
+        "bytes": 10859,
+        "path": "research/tavonel_eval_v2/tests/test_part7.py",
+        "sha256": "sha256:0f11829ca2365d67e9f9b1498a3df0e2d8a11b960c021dec758d6c66ff6990f8"
+      },
+      {
+        "bytes": 14370,
+        "path": "research/tavonel_eval_v2/tests/test_part8.py",
+        "sha256": "sha256:9286215c0e3a739d95d9e59c56f2a395bd60d5d1e8fe15f752caa8e2fe050da0"
+      },
+      {
+        "bytes": 6310,
+        "path": "research/tavonel_eval_v2/tests/test_part9.py",
+        "sha256": "sha256:3601df3f8c2defce6643990600243c29787b49810c9320213783a9fde4103f67"
+      },
+      {
+        "bytes": 20192,
+        "path": "research/tavonel_eval_v2/tests/test_preflight_checks.py",
+        "sha256": "sha256:01251042c6c1d83533cbb7e55ca8288adef8f80e2509bf8d6f44bf2d3130bbc4"
+      },
+      {
+        "bytes": 21636,
+        "path": "research/tavonel_eval_v2/tests/test_provenance_document.py",
+        "sha256": "sha256:9d9110a7d4c545e1a9ddef5c9cd630e6a8416e2a0ed0dfa31973a90324cac182"
+      },
+      {
+        "bytes": 23402,
+        "path": "research/tavonel_eval_v2/tests/test_provenance_fixtures.py",
+        "sha256": "sha256:9fa96a7cd456d861726d643c1e7b2ffcb1a2c0ae57df5b07ebc59377f4cfd9a6"
+      },
+      {
+        "bytes": 15597,
+        "path": "research/tavonel_eval_v2/tests/test_rebuild_equivalence.py",
+        "sha256": "sha256:09155c04983b04b6c6740bebc982163386ae8d6a47fce644205e119d437fd810"
+      },
+      {
+        "bytes": 8260,
+        "path": "research/tavonel_eval_v2/tests/test_scope_gate.py",
+        "sha256": "sha256:faed0aba7773ec3c3e5858853df6b847ad215305589d6e6717a9b099a4e4fb2e"
+      },
+      {
+        "bytes": 21160,
+        "path": "research/tavonel_eval_v2/tests/test_sfi2_acquisition.py",
+        "sha256": "sha256:27ffa16a4baf4dfb0d07926f09fbfb0b7e0f303cc43218bdaadcd82d12beee7a"
+      },
+      {
+        "bytes": 5010,
+        "path": "research/tavonel_eval_v2/tests/test_sfi2_frame_verification.py",
+        "sha256": "sha256:a446bb2d942146fb1e32e863bc669d33df24f993c3b987bc79163ea31b754e81"
+      },
+      {
+        "bytes": 19664,
+        "path": "research/tavonel_eval_v2/tests/test_sfi2_integration.py",
+        "sha256": "sha256:ad6c65551c71114c3f0adfaf96241d44f57b00d572d4a3aa36d8c97d0d604de9"
+      },
+      {
+        "bytes": 15892,
+        "path": "research/tavonel_eval_v2/tests/test_sfi2_scoring.py",
+        "sha256": "sha256:b669cd5256f9682e04ffe054ba0c82e1d45438224e03159e0276d7b8312adb4d"
+      },
+      {
+        "bytes": 11529,
+        "path": "research/tavonel_eval_v2/tests/test_sfi2_worker.py",
+        "sha256": "sha256:89b55f705e2e216a0f190a28a8333cf003f2a6a73dfc4d2b6622976f8d1fbc13"
+      },
+      {
+        "bytes": 19957,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_acceptance.py",
+        "sha256": "sha256:c92aa01a4a044ab22428eb265c8caf1193e594b761fc9de728c3e8fc88b82938"
+      },
+      {
+        "bytes": 29648,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py",
+        "sha256": "sha256:2c638e2d628bcfac3d27fac3837922fc35e4023d24ce365fb13053117c39df83"
+      },
+      {
+        "bytes": 18706,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_execution_path.py",
+        "sha256": "sha256:70a1cef00bd65f0e141d8925005190599989b09cb28a5ad838d0c18dae24c892"
+      },
+      {
+        "bytes": 5378,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_frame_verification.py",
+        "sha256": "sha256:6e75fea2e25b8d42271df6a753073b9c28805f60b2c8a3277cec7d8b1888499e"
+      },
+      {
+        "bytes": 17716,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py",
+        "sha256": "sha256:171217f98da608a5c686bf356a0035605351fc79f3280920f387ece547109586"
+      },
+      {
+        "bytes": 27570,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_root_replacement.py",
+        "sha256": "sha256:c5e935c9e409bc2e7364064cda508a116d1e6ae5dcc3dc811d50a3b484aa32bb"
+      },
+      {
+        "bytes": 18882,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_root_reservation.py",
+        "sha256": "sha256:aeda2296521d52c469d25f775d637206c113e67abf20a09e22f668533f14e258"
+      },
+      {
+        "bytes": 22372,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_scoring.py",
+        "sha256": "sha256:0d5cc253031c5612885371cfdc70c1f09ea8a5d92a69307255a4b6788a45a234"
+      },
+      {
+        "bytes": 9052,
+        "path": "research/tavonel_eval_v2/tests/test_sfi3_suite_evidence.py",
+        "sha256": "sha256:3340b5d5a2a17b38805e0245e889f8e2acf37ed6590e51514a5753d41f837aeb"
+      },
+      {
+        "bytes": 22255,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_acquisition.py",
+        "sha256": "sha256:68cc67aa1ca7344cb251fb7b99523512efa895c316a59177d9ebc620bb47e4be"
+      },
+      {
+        "bytes": 26393,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_adversarial.py",
+        "sha256": "sha256:f1381141d71f4600928cbd8fbb33f3a11f6de371f783c295b69236f34e5e2481"
+      },
+      {
+        "bytes": 14540,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_core.py",
+        "sha256": "sha256:c29cbbfe106772a420c24e60ac150856c01682ccbb1fde06ffc25f4a6e0e2573"
+      },
+      {
+        "bytes": 16217,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_fingerprint.py",
+        "sha256": "sha256:adc25a2e4247562b693a9795ba984b22d5341541fff1633ac65a7fda63b421c5"
+      },
+      {
+        "bytes": 8817,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_forensic.py",
+        "sha256": "sha256:c4169af55dc72983f5b3e2dfce1dd3712bddafeca224f56170d1668f37a6d4a1"
+      },
+      {
+        "bytes": 24461,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_gpu_preflight.py",
+        "sha256": "sha256:fe14ef592afeb4212557d0a844ce0b4374fc3dd9976de68250100bcf27af878c"
+      },
+      {
+        "bytes": 12873,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_integration.py",
+        "sha256": "sha256:193bd7ed06d1d87935d8e1446d743d8af1c0e6f811f1206c3c8cb10f8fbb71c2"
+      },
+      {
+        "bytes": 14121,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_metadata.py",
+        "sha256": "sha256:d415d2b134f400c91f2ef92dc1f976bcf5b81646d6ceef068839bf583a535156"
+      },
+      {
+        "bytes": 17398,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_reference.py",
+        "sha256": "sha256:f689ffece2c9c92cda00b7e846ee66c169d710261b94e3edc457ef15df6121f2"
+      },
+      {
+        "bytes": 11828,
+        "path": "research/tavonel_eval_v2/tests/test_sfi_scoring.py",
+        "sha256": "sha256:27aa338950126d90ce9dc41857216982c5a06ba66ab19dece8ee6653c1bd0209"
+      },
+      {
+        "bytes": 9608,
+        "path": "research/tavonel_eval_v2/tests/test_spanmap.py",
+        "sha256": "sha256:c04592a9d5b69b974dec352eeb6226e66f6597e29d599f58e24d8dc91f42b86c"
+      },
+      {
+        "bytes": 19669,
+        "path": "research/tavonel_eval_v2/tests/test_successor_inputs.py",
+        "sha256": "sha256:9439377c6d375c6ec84aac6bc7be9699908951b421ae83889b7a9390c6665829"
+      },
+      {
+        "bytes": 21096,
+        "path": "research/tavonel_eval_v2/tests/test_successor_materializer.py",
+        "sha256": "sha256:91f6ab319fbada3ddcefa738b03ffb2379db448fd60632c32dbea1b3d2559583"
+      },
+      {
+        "bytes": 38982,
+        "path": "research/tavonel_eval_v2/tests/test_v2_closure_freeze.py",
+        "sha256": "sha256:62cbc068251da08a032782ebcee41674b22db4c011948a03f5ee25e6c4419303"
+      },
+      {
+        "bytes": 27807,
+        "path": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py",
+        "sha256": "sha256:bdd3d3045e9ec60888096417424a2e3dc79207bf32d5f743b14275c13f72833b"
+      },
+      {
+        "bytes": 8009,
+        "path": "research/tavonel_eval_v2/tests/test_v2r1_freeze_gate.py",
+        "sha256": "sha256:5ce2092254f372271ceef6f98b3eed182127d93e678b2b52bf9dd0975759ec61"
+      },
+      {
+        "bytes": 7751,
+        "path": "research/tavonel_eval_v2/tests/test_v2r1_invariant6.py",
+        "sha256": "sha256:9bbdb8fe2ef5d210a2942bdd9d2cbd12693df24878b5f59894cca1bf09547e4e"
+      },
+      {
+        "bytes": 7323,
+        "path": "research/tavonel_eval_v2/tests/test_v2r2_freeze_adapter.py",
+        "sha256": "sha256:4c55e5545cd159ee4c4e15156fe7f1310f331adb3e03f383b702ef8f9466095a"
+      },
+      {
+        "bytes": 8746,
+        "path": "research/tavonel_eval_v2/tests/test_v2r2_freeze_gate.py",
+        "sha256": "sha256:31bc5b3d62a744adc58af538fe7860866d295806acc882ae39e26b750c561282"
+      },
+      {
+        "bytes": 19325,
+        "path": "research/tavonel_eval_v2/tests/test_v2r2_invariant6.py",
+        "sha256": "sha256:508158359ca3e988367e74a63bfc912392b6b15d53a094f661bf2691541978f1"
+      },
+      {
+        "bytes": 23003,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3_attestation.py",
+        "sha256": "sha256:cac9fd8a1ddcee7a87954f7cfa20795c1edd8141ceb16ec66d1ae32fa8af74e8"
+      },
+      {
+        "bytes": 16256,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3_chain_disposition.py",
+        "sha256": "sha256:230e1437058197a7c04c6585edbc43627d235642e29c62af059f2e3e63905d20"
+      },
+      {
+        "bytes": 11781,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+        "sha256": "sha256:f5775f7c10843496ec82ee300f8d9b9788ea3113576b7f16b323e4c81470b7f9"
+      },
+      {
+        "bytes": 19126,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3_instrument.py",
+        "sha256": "sha256:4fad35c02c9919b7466a9b405d6fb1c2d8b6bfffd933b05c3798e7f6e32021fb"
+      },
+      {
+        "bytes": 15503,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3_lanes.py",
+        "sha256": "sha256:d24552cd74f13264da37f4b704cb312970066e149a7877139ff627d2318f6579"
+      },
+      {
+        "bytes": 19450,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3_power_battery.py",
+        "sha256": "sha256:0c92706e8624b1e6471fe36682c43bd1a738681ccd98c0a980fdee56af573217"
+      },
+      {
+        "bytes": 37895,
+        "path": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py",
+        "sha256": "sha256:8741647632f8688942f8ffeaae9ab11ae826a30499279f31c03b03f15e0bdfbd"
+      },
+      {
+        "bytes": 14615,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_closure_runner.py",
+        "sha256": "sha256:6ec016d1290de92d9c78c11f1bc72f6459bdb9297144f935e0be6af8cd3f9948"
+      },
+      {
+        "bytes": 36320,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_frame.py",
+        "sha256": "sha256:f9716dd2e9ea2c59a2233d71f59830a9a1da55d7fac9ce5000caf6f5972c6e9a"
+      },
+      {
+        "bytes": 15148,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_grading.py",
+        "sha256": "sha256:acbd2946725e359606a53338e228cb9076c2087e44db76faa8f9a53ed134500c"
+      },
+      {
+        "bytes": 14133,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py",
+        "sha256": "sha256:f6aef310b175a87cc48c43c34cec2922cbd36c425e570834d0a06f3c92e5586c"
+      },
+      {
+        "bytes": 10403,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_rehearsal.py",
+        "sha256": "sha256:9b802f5e4ed866682920750896837b0317dc5c05e606e83e0fcd1d4b474db8cd"
+      },
+      {
+        "bytes": 14794,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_semantics_delta.py",
+        "sha256": "sha256:0e35cee85c574de06f323391554d6213ef6c82d22d3035eea4dd4682255d44ca"
+      },
+      {
+        "bytes": 8046,
+        "path": "research/tavonel_eval_v2/tests/test_v2r4_sfi3_reservation_handoff.py",
+        "sha256": "sha256:eb307d99ae2de58c659c0c834e90d3bf53fae662c75ed054c1483ab8482c27e8"
+      }
+    ],
+    "pytest_args": [
+      "-q",
+      "-p",
+      "no:cacheprovider"
+    ],
+    "schema": "tavonel.v2.sfi3_suite_manifest.v1",
+    "selection": "recursive sorted test_*.py; one fresh pytest process per file"
+  },
+  "suite_manifest_sha256": "sha256:d933212afb4152d60d2ec831711262efcc3be074fb7e09ba680470478f3dd6be",
+  "test_count": 2712,
+  "test_file_count": 94,
+  "tooling_manifest": {
+    "digest": "sha256:a2f7e9cf4fb3ad27c01e48dc4b1908c8c91c9a26375cf73ef0dd715e51fd910f",
+    "files": [
+      {
+        "bytes": 13015,
+        "path": "packages/cir-python/src/akc_cir/__init__.py",
+        "sha256": "sha256:0f63fa53196c1f05d823119630e85c9630e335d157ef0b0b2d07e8749dde6bc0"
+      },
+      {
+        "bytes": 5067,
+        "path": "packages/cir-python/src/akc_cir/action_key.py",
+        "sha256": "sha256:f41f4d1df77f247ba91ce30b5b851db0bc7fdcba078a16e9608328bf2d162183"
+      },
+      {
+        "bytes": 12195,
+        "path": "packages/cir-python/src/akc_cir/authority.py",
+        "sha256": "sha256:c25bc21f7472207f15e405b819d5feb1a628ebbb7e810cfc24c7e0858d17ae35"
+      },
+      {
+        "bytes": 2401,
+        "path": "packages/cir-python/src/akc_cir/base.py",
+        "sha256": "sha256:637bfb3440a93a8aa033a45b63c422afb47ae633339d42650b6e9f310887cff1"
+      },
+      {
+        "bytes": 9536,
+        "path": "packages/cir-python/src/akc_cir/build_receipt.py",
+        "sha256": "sha256:7425ecc37850989814ec891f8995673dd658f744e42b21033728073afceddcd9"
+      },
+      {
+        "bytes": 8595,
+        "path": "packages/cir-python/src/akc_cir/calibration.py",
+        "sha256": "sha256:f6aacac46305d80330cf0b270ae341ae47ebfcdda5c63ea1ecd50439f1802443"
+      },
+      {
+        "bytes": 6477,
+        "path": "packages/cir-python/src/akc_cir/cause_conditioned_recovery.py",
+        "sha256": "sha256:7e5f638474e91861698dd1af52ead5229dedc7429b142b308a8c9745ec0f5fff"
+      },
+      {
+        "bytes": 47001,
+        "path": "packages/cir-python/src/akc_cir/collection_events.py",
+        "sha256": "sha256:087200720e299b24e61e10f0932ac16dc13564e442f91a95e47adee0537f479f"
+      },
+      {
+        "bytes": 5026,
+        "path": "packages/cir-python/src/akc_cir/consumption_lineage.py",
+        "sha256": "sha256:9308299e8de0812fcbfdb6da874c96102d4c83ae7af1fce0ebc3588c415f7b30"
+      },
+      {
+        "bytes": 6316,
+        "path": "packages/cir-python/src/akc_cir/critical_tokens.py",
+        "sha256": "sha256:7f5bfd0e27a27551ea103372b6ed93f814260790ac0cd196d5ec286b6b16a56b"
+      },
+      {
+        "bytes": 13846,
+        "path": "packages/cir-python/src/akc_cir/dependency.py",
+        "sha256": "sha256:3cf21ec387e5fbe5f613bd789280db50a43c9454fc0517dc8040afc60f802cfb"
+      },
+      {
+        "bytes": 5983,
+        "path": "packages/cir-python/src/akc_cir/derivation.py",
+        "sha256": "sha256:218937e4c8a1fb2fa1e6156c9863f61958aa98073bc7430fc5abf9c0b56e22ee"
+      },
+      {
+        "bytes": 16583,
+        "path": "packages/cir-python/src/akc_cir/entity.py",
+        "sha256": "sha256:80e1fe8b8c8516dedce0a255bbd3754806423d6478e941be924e2b95d82ad153"
+      },
+      {
+        "bytes": 1559,
+        "path": "packages/cir-python/src/akc_cir/errors.py",
+        "sha256": "sha256:74f0a34a96c560093f2d2ac8b36e5cd2b990642fbc67d061568e5f767d8b1ad5"
+      },
+      {
+        "bytes": 5605,
+        "path": "packages/cir-python/src/akc_cir/events.py",
+        "sha256": "sha256:1dbbe8d40206cfc1d49b93ddb566dd02c4c4239db324c014292296f07737ccf6"
+      },
+      {
+        "bytes": 5946,
+        "path": "packages/cir-python/src/akc_cir/exports.py",
+        "sha256": "sha256:0ee1cde6b3fedb3b479090458bc85221abc6f8603ad70a4fa141b573c859eeca"
+      },
+      {
+        "bytes": 43933,
+        "path": "packages/cir-python/src/akc_cir/identity.py",
+        "sha256": "sha256:0b27e1b505d4684eaaf07aea0d6ffc1df3f30e4b8b1d95c5025f83572a05fafc"
+      },
+      {
+        "bytes": 9042,
+        "path": "packages/cir-python/src/akc_cir/identity_quarantine.py",
+        "sha256": "sha256:8d96f7fb8828ec7e1e15ee7b0f9bce1502d4f070fdf124263f6a1fa89d8afe3f"
+      },
+      {
+        "bytes": 35778,
+        "path": "packages/cir-python/src/akc_cir/inspection.py",
+        "sha256": "sha256:4e8ff22675b9a8b3ab7780b1fe9316a2057eddb46e68baf158693c0c3425772a"
+      },
+      {
+        "bytes": 5304,
+        "path": "packages/cir-python/src/akc_cir/knowledge.py",
+        "sha256": "sha256:85cdd23da22fe22372087abba4bdd54e26378132608650a4fa04258c8774a3cc"
+      },
+      {
+        "bytes": 8004,
+        "path": "packages/cir-python/src/akc_cir/knowledge_model.py",
+        "sha256": "sha256:9d094bf4b96e1cfd3532e02f6a439eb7e2738bd9bd2d081c0253a556d933906f"
+      },
+      {
+        "bytes": 10377,
+        "path": "packages/cir-python/src/akc_cir/models.py",
+        "sha256": "sha256:d7a2e6f79749e8cc895d27b44c473d5abf0f53a8590a832f1317baedce0e303a"
+      },
+      {
+        "bytes": 17942,
+        "path": "packages/cir-python/src/akc_cir/normalization.py",
+        "sha256": "sha256:83342f8dc5b408ce8fad1701c5b2658606fcb0451e87d8820584261068a1435d"
+      },
+      {
+        "bytes": 8402,
+        "path": "packages/cir-python/src/akc_cir/parser_verification.py",
+        "sha256": "sha256:9991ec14ea27b0048e27da47cb3b121276d67ef936c6eaeebce8817a85968f7d"
+      },
+      {
+        "bytes": 16922,
+        "path": "packages/cir-python/src/akc_cir/promotion_gate.py",
+        "sha256": "sha256:905e6387e8f984a6778dc379b4313c92a9ee95f3dfc5a2b9ad373d9518fce99b"
+      },
+      {
+        "bytes": 2591,
+        "path": "packages/cir-python/src/akc_cir/prompts.py",
+        "sha256": "sha256:27301413eb906f29fb35dca3b72b652778ad517e8f3237493326e093a7da8488"
+      },
+      {
+        "bytes": 4693,
+        "path": "packages/cir-python/src/akc_cir/public_proof.py",
+        "sha256": "sha256:1303abf42e0f995dd0458afddadb99208571fa3bfa50797a821ce97d7f60acaf"
+      },
+      {
+        "bytes": 38866,
+        "path": "packages/cir-python/src/akc_cir/reading_order.py",
+        "sha256": "sha256:27f4061c3309cf285d7f6d79ef87176a969180e19aada9382843d8a725394db1"
+      },
+      {
+        "bytes": 30976,
+        "path": "packages/cir-python/src/akc_cir/recompilation.py",
+        "sha256": "sha256:c8962d8d5ce21f797aef99551c6600de19be30e8e8380f087fe07249fe5e143a"
+      },
+      {
+        "bytes": 27289,
+        "path": "packages/cir-python/src/akc_cir/reconciler.py",
+        "sha256": "sha256:7e3d9b427552b9d0ebc2290b9ac2c7637843e266c490a4bf0c2fc9058a9fee3d"
+      },
+      {
+        "bytes": 31239,
+        "path": "packages/cir-python/src/akc_cir/recovery_policy.py",
+        "sha256": "sha256:7937e51f72a1f5f0c01d7a6774074fe06f3ad4500495c895d9ad37c76fe6cd33"
+      },
+      {
+        "bytes": 10830,
+        "path": "packages/cir-python/src/akc_cir/revision_resolution.py",
+        "sha256": "sha256:1e9b5074a2056672e2d76e1398b7d48656f186dacf3866da013023358a48295f"
+      },
+      {
+        "bytes": 2460,
+        "path": "packages/cir-python/src/akc_cir/safe_payload.py",
+        "sha256": "sha256:cd7c0a2c313e19f37857740dba80269025a86300d01e81f52bd93a20e0cf4275"
+      },
+      {
+        "bytes": 3091,
+        "path": "packages/cir-python/src/akc_cir/schema.py",
+        "sha256": "sha256:87bb59cbf0e000c5adef360aa825da9958402969291fdbe6a2e206fb79252f71"
+      },
+      {
+        "bytes": 46127,
+        "path": "packages/cir-python/src/akc_cir/semantic_diff.py",
+        "sha256": "sha256:05b6a7f7234370e4926b64bcdd2b74a5fd065b5ddc631854c8c90d9d72ed4e6b"
+      },
+      {
+        "bytes": 2761,
+        "path": "packages/cir-python/src/akc_cir/shadow_audit.py",
+        "sha256": "sha256:13e62db9a8f446a85f2070e1ed0406059f4d36c3be3abe0f8cc71c087b3da28c"
+      },
+      {
+        "bytes": 8407,
+        "path": "packages/cir-python/src/akc_cir/source_grounded_acceptance.py",
+        "sha256": "sha256:397fb40dae8d013faab59b16c1e374f5643686966017a6d82629434c0bfb1f0b"
+      },
+      {
+        "bytes": 12058,
+        "path": "packages/cir-python/src/akc_cir/temporal.py",
+        "sha256": "sha256:721807a015e94279bba0be843b11c2a21ae7d8744fdf40bdacdc47d7f3afea68"
+      },
+      {
+        "bytes": 15082,
+        "path": "packages/cir-python/src/akc_cir/trust.py",
+        "sha256": "sha256:ff73ed0683d7baa2d90175d0052387d94180722285375851ea5dd24335310f37"
+      },
+      {
+        "bytes": 15788,
+        "path": "packages/cir-python/src/akc_cir/world_state.py",
+        "sha256": "sha256:c90557a19aacfcff9b1ce173b84c43af9540c727d47fe23272f18722f5c51b76"
+      },
+      {
+        "bytes": 5621,
+        "path": "pyproject.toml",
+        "sha256": "sha256:f256e8e899c4d93de714e2560265f7f03af2e8139f9c26430ba27aaefb61b4b7"
+      },
+      {
+        "bytes": 8244,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_chains.py",
+        "sha256": "sha256:a669b971b5dbbbddc9faae40c015248c00f1b2fbbf6e213130dab63122c735dc"
+      },
+      {
+        "bytes": 15127,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_corpus.py",
+        "sha256": "sha256:d09fb91fc9d3aee08c3982b83b067d7da305cbbc3e7e365a526a4a5c8bb63b17"
+      },
+      {
+        "bytes": 20112,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_p4c_corpus.py",
+        "sha256": "sha256:b5ea2bba7a2ae7ac451cd780186a23f33e77ed2e848926da96aec502f5bae80a"
+      },
+      {
+        "bytes": 12699,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_p4e_corpus.py",
+        "sha256": "sha256:fce4ded3e7576b173c5b9528d8eef3a8c359787590054380106e968b0093d0ed"
+      },
+      {
+        "bytes": 28139,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_p4g_corpus.py",
+        "sha256": "sha256:1bc115d36200f143e92425d4e41f1c505caa1460cd6d08b7ffb3d1a3febe5efe"
+      },
+      {
+        "bytes": 11143,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_p4i_corpus.py",
+        "sha256": "sha256:5a6b99ac05b9c1559818d18fcb3e3b93798a0f2da12b78d7fa2b3894742f2396"
+      },
+      {
+        "bytes": 23358,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_v2r1_corpus.py",
+        "sha256": "sha256:d0ec7b91b82a64f64b0a6a7703951870eda61fae3dd352e02c23b739d30ff9a6"
+      },
+      {
+        "bytes": 25331,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_v2r2_corpus.py",
+        "sha256": "sha256:16afec12e6612e384e1a46ee3ba9b3b48d34df0e94fa66b8f85c3b00981391cc"
+      },
+      {
+        "bytes": 5860,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_v2r3_corpus.py",
+        "sha256": "sha256:f93563d47eae08edf80b71a4d8a785633f61e2f7dcf0c8fd64777302bf816978"
+      },
+      {
+        "bytes": 6236,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_v2r4_corpus.py",
+        "sha256": "sha256:d305ddc13ea508afddd71e0bd414d92cf4d4e8ce4618f1771edd04c0e00120d2"
+      },
+      {
+        "bytes": 4780,
+        "path": "research/tavonel_eval_v2/acquisition/fetch_vbc1_probe.py",
+        "sha256": "sha256:5e922c7757204e915ca7cc517415a165ee5faa2f7dea2660e0f8ae319898a10c"
+      },
+      {
+        "bytes": 8100,
+        "path": "research/tavonel_eval_v2/acquisition/http_pool.py",
+        "sha256": "sha256:c4fa22aad869d38b3bded8ff8e80679cf8531c1bc8cef7e8d703defd1961dddf"
+      },
+      {
+        "bytes": 5218,
+        "path": "research/tavonel_eval_v2/acquisition/payload_cache.py",
+        "sha256": "sha256:80be87deeb6b1c5a5b1a530b0d8b7afd36ae7a97253b299d688dc5c57179d494"
+      },
+      {
+        "bytes": 3203,
+        "path": "research/tavonel_eval_v2/acquisition/sources.py",
+        "sha256": "sha256:24361d521f3b97d4e979a2c0904adb7e01728b66446d4bffecbe24cd24f642f2"
+      },
+      {
+        "bytes": 5383,
+        "path": "research/tavonel_eval_v2/acquisition/sources_p4c.py",
+        "sha256": "sha256:f0503410304ed70c758cde592789cf1e9bcf081b452ec1d215f050d676ec0c96"
+      },
+      {
+        "bytes": 7250,
+        "path": "research/tavonel_eval_v2/acquisition/sources_p4e.py",
+        "sha256": "sha256:874b1737e27ae5aeab90437ad489925e9b53d51a1fc7be35b3e96e0f36be7465"
+      },
+      {
+        "bytes": 19553,
+        "path": "research/tavonel_eval_v2/acquisition/sources_p4g.py",
+        "sha256": "sha256:b8193e92d00ed1084d6d2403a6022c35ded8f835b8d6973dfd8de7ff6f4303a7"
+      },
+      {
+        "bytes": 8892,
+        "path": "research/tavonel_eval_v2/acquisition/sources_p4i.py",
+        "sha256": "sha256:81eee0d0f9b08fc6c2aa6bb9c618134e11b718de0f2b9e26bc44f7501ad6a7c9"
+      },
+      {
+        "bytes": 4628,
+        "path": "research/tavonel_eval_v2/acquisition/sources_sfh1.py",
+        "sha256": "sha256:c7e7d8bf4606b959c0627ca236f09386b13fb9b46dc7be23a6445039a51247b6"
+      },
+      {
+        "bytes": 27791,
+        "path": "research/tavonel_eval_v2/acquisition/sources_sfi1.py",
+        "sha256": "sha256:1d844b1964176dbcade331fdb03d7a30afff14781dbe7449bc34ce7d168cfca8"
+      },
+      {
+        "bytes": 28572,
+        "path": "research/tavonel_eval_v2/acquisition/sources_sfi2.py",
+        "sha256": "sha256:163d5b9909ebd45baa2a00f6f5732a2b1a396ec85026c3ae5a85ddfe86796f7a"
+      },
+      {
+        "bytes": 35436,
+        "path": "research/tavonel_eval_v2/acquisition/sources_sfi3.py",
+        "sha256": "sha256:06aad153d43b5d579aeea839c2bc1c96dbbd9f287b1f1e7651742d8654987f0b"
+      },
+      {
+        "bytes": 27565,
+        "path": "research/tavonel_eval_v2/acquisition/sources_v2r1.py",
+        "sha256": "sha256:c4b504100aa04106a8c6a9a2ef30c037aa3ea0c6f9b0f21e65796ae252fcede5"
+      },
+      {
+        "bytes": 28634,
+        "path": "research/tavonel_eval_v2/acquisition/sources_v2r2.py",
+        "sha256": "sha256:0caf7cf4acf3aef83c53fd7c03047fc877638ac76b23af65634b685278977cd3"
+      },
+      {
+        "bytes": 38517,
+        "path": "research/tavonel_eval_v2/acquisition/sources_v2r3.py",
+        "sha256": "sha256:26aa683d0d1bad02329ac02e1c014415d859c160bd534dd990f568c860305038"
+      },
+      {
+        "bytes": 5214,
+        "path": "research/tavonel_eval_v2/acquisition/sources_v2r3r1.py",
+        "sha256": "sha256:2b6950ce86e15ce2bad3555258bb38da763232296d33ba5566b22b44b1d6f854"
+      },
+      {
+        "bytes": 56440,
+        "path": "research/tavonel_eval_v2/acquisition/sources_v2r4.py",
+        "sha256": "sha256:a3010167a2c0db03bf83a39bd08bcad42d7e60a958856b14af74fc56edf2b15e"
+      },
+      {
+        "bytes": 7068,
+        "path": "research/tavonel_eval_v2/acquisition/sources_vbc1_probe.py",
+        "sha256": "sha256:7cf62f1ba4a9a90f03abdabd6bfd7511aca938061b311cfcb78ca8ce919146a7"
+      },
+      {
+        "bytes": 9305,
+        "path": "research/tavonel_eval_v2/acquisition/sources_vbc2.py",
+        "sha256": "sha256:652948d39f767a6e0e15ad78669e53f228f21d50458a00135ae2d9c1c632f40a"
+      },
+      {
+        "bytes": 5018,
+        "path": "research/tavonel_eval_v2/acquisition/vbc2_worker.py",
+        "sha256": "sha256:025af4c93ecd3742f8c6afcde4ae446b7365f6b9241233785206ad840dc05eeb"
+      },
+      {
+        "bytes": 10142,
+        "path": "research/tavonel_eval_v2/activation/knowledge_store.py",
+        "sha256": "sha256:1b36ae9ac5aee65608e6b3f2b139fe9bec76778e464bcecc680a8cc8a2d7b1c0"
+      },
+      {
+        "bytes": 15862,
+        "path": "research/tavonel_eval_v2/activation/knowledge_store_p3b.py",
+        "sha256": "sha256:5e39003e654bdecff6c4a90ccda84f1fc300c8ccee16debfa83f04827654928f"
+      },
+      {
+        "bytes": 7718,
+        "path": "research/tavonel_eval_v2/canonicalization/build_p0b_corpus.py",
+        "sha256": "sha256:bd617aeff2c4e4a39ec55eb5792e3e89f36d91cf856d20f99640c8224a401366"
+      },
+      {
+        "bytes": 10034,
+        "path": "research/tavonel_eval_v2/canonicalization/build_p0c_corpus.py",
+        "sha256": "sha256:9b0da9b091bfdb5f9afcb4d180ddfb562c5134b32f84839b88eda4fd781acb73"
+      },
+      {
+        "bytes": 7527,
+        "path": "research/tavonel_eval_v2/canonicalization/canonical_document.py",
+        "sha256": "sha256:b676978497b34bc7bcaec9836acca10619f7be0a1b7501ac479a9b95191d3b35"
+      },
+      {
+        "bytes": 9318,
+        "path": "research/tavonel_eval_v2/canonicalization/canonicalize.py",
+        "sha256": "sha256:e45531f7c152b8ad74ba58a3c1a1df3005bc5e8c3e55805670a538deb8657852"
+      },
+      {
+        "bytes": 13598,
+        "path": "research/tavonel_eval_v2/canonicalization/changed_region_controls.py",
+        "sha256": "sha256:6bfa1ee5b63491e311f802ad87106ab3de0023a905401785f5b8c9a8550d1c9d"
+      },
+      {
+        "bytes": 18271,
+        "path": "research/tavonel_eval_v2/canonicalization/changed_regions.py",
+        "sha256": "sha256:148e664296622651496dacabc5c14a99ef1ab9a6c5f1c66a7c956860fb957e9c"
+      },
+      {
+        "bytes": 13811,
+        "path": "research/tavonel_eval_v2/canonicalization/coverage_witness.py",
+        "sha256": "sha256:080c7ded3d216e75a563ec8811fe15863b5c8a8d7ee812e39b36920b5dcfbd7a"
+      },
+      {
+        "bytes": 11712,
+        "path": "research/tavonel_eval_v2/canonicalization/coverage_witness_v2.py",
+        "sha256": "sha256:1ae9609908a32c7aeaf97b9298fe167a47537d5415fbb23912c9bef03064119d"
+      },
+      {
+        "bytes": 6600,
+        "path": "research/tavonel_eval_v2/canonicalization/locality_fixtures.py",
+        "sha256": "sha256:4b1786e82a652d49468bc18c70759a76835eb30aa45583e78e5a246584c81d11"
+      },
+      {
+        "bytes": 6525,
+        "path": "research/tavonel_eval_v2/canonicalization/markup_controls.py",
+        "sha256": "sha256:8ed0a7a9e26f5dd0d071d219b30b2a17b4c65efa5dd3b831d6c0a5bcf2d70830"
+      },
+      {
+        "bytes": 17384,
+        "path": "research/tavonel_eval_v2/canonicalization/markup_policy.py",
+        "sha256": "sha256:2e398c645c33f5cb28f495f0d360bf181380dc25618550e5ff5db6172a38dd33"
+      },
+      {
+        "bytes": 5768,
+        "path": "research/tavonel_eval_v2/canonicalization/markup_semantics.py",
+        "sha256": "sha256:5206511d4b8745741197e2a171d066e4add9bb0891baf048174a52f49e8d9d61"
+      },
+      {
+        "bytes": 31289,
+        "path": "research/tavonel_eval_v2/canonicalization/provenance_document.py",
+        "sha256": "sha256:db2fd58a6398cc25a9967caec77f7d44db1b005cf1b8d29c9f7b18e505f5e636"
+      },
+      {
+        "bytes": 9594,
+        "path": "research/tavonel_eval_v2/canonicalization/source_map.py",
+        "sha256": "sha256:e61ebae70e774bfbbcf3d98a4b0473f93668cf52b0f9016d0a1461b8f5a425bc"
+      },
+      {
+        "bytes": 11273,
+        "path": "research/tavonel_eval_v2/canonicalization/source_map_v2.py",
+        "sha256": "sha256:a97028a47d78f03206e2eea1f512cbbf0af9409140d83ac136aa0f31fa9f88c1"
+      },
+      {
+        "bytes": 19813,
+        "path": "research/tavonel_eval_v2/canonicalization/source_spans.py",
+        "sha256": "sha256:bdea1431c69ba7607d34bf791eebbea930dbb75ed9e07effe3791340adc7de42"
+      },
+      {
+        "bytes": 5811,
+        "path": "research/tavonel_eval_v2/comparator/compare_recompilation.py",
+        "sha256": "sha256:25052e588a3188fb10c801277236fcbdd8f9bb5c9535fe1e2c2ece7c2bd19793"
+      },
+      {
+        "bytes": 3894,
+        "path": "research/tavonel_eval_v2/comparator/compare_states.py",
+        "sha256": "sha256:03264f71a029e42c362ad423cd2f3a664102782bd640f89dc7d054927f84bd4d"
+      },
+      {
+        "bytes": 4543,
+        "path": "research/tavonel_eval_v2/comparator/compare_states_p0b.py",
+        "sha256": "sha256:fcc1ef8445e443af282734cbc96a0b895b97758b38573644eccb22014e85ebf4"
+      },
+      {
+        "bytes": 5499,
+        "path": "research/tavonel_eval_v2/comparator/compare_states_p0c.py",
+        "sha256": "sha256:a4fc0aed007d8e7595b8f20270f33e0c5dba98254c4507a6a0ee9e8ddbfff4e3"
+      },
+      {
+        "bytes": 24709,
+        "path": "research/tavonel_eval_v2/compiler/channel_cases.py",
+        "sha256": "sha256:bb7fea3a79cc299a03fed7a183318cc32aa3772609d57dd673ab405e38a777ec"
+      },
+      {
+        "bytes": 22339,
+        "path": "research/tavonel_eval_v2/compiler/dependency_contract.py",
+        "sha256": "sha256:74c7e31a01edb8221704744b5b2c93ec95893aa25425147525ac77f94e58c4df"
+      },
+      {
+        "bytes": 11230,
+        "path": "research/tavonel_eval_v2/compiler/e9_oracle.py",
+        "sha256": "sha256:3548446bb17fd52708cf2b9b85c761670fed451a56c57037ae7e643f726001b9"
+      },
+      {
+        "bytes": 5699,
+        "path": "research/tavonel_eval_v2/compiler/execution_invariant.py",
+        "sha256": "sha256:9cf44150be2c2579fc1e399391968cf04c16d97b4742159ac792c037d7a2c4f8"
+      },
+      {
+        "bytes": 29651,
+        "path": "research/tavonel_eval_v2/compiler/rebuild_equivalence.py",
+        "sha256": "sha256:1256736d76a40f23aee4fdcad2fd6bd2aa6f8cfac5416ea72cb7665a7237e0e0"
+      },
+      {
+        "bytes": 29881,
+        "path": "research/tavonel_eval_v2/compiler/selective_build.py",
+        "sha256": "sha256:29bf90bd07208c13a4109846c897210585800c2ce9a8785dbd802815185651a0"
+      },
+      {
+        "bytes": 12459,
+        "path": "research/tavonel_eval_v2/compiler/selective_build_p0b.py",
+        "sha256": "sha256:5741f82086db5e1e1d862db6eac55e571c116b9ba73076b591d099f165c46711"
+      },
+      {
+        "bytes": 16731,
+        "path": "research/tavonel_eval_v2/compiler/selective_build_p0c.py",
+        "sha256": "sha256:c12ef1468e5a641c8c110a34410c0e80c9092585b23745e559176e2630e7a4bd"
+      },
+      {
+        "bytes": 6573,
+        "path": "research/tavonel_eval_v2/endpoint/context_builder.py",
+        "sha256": "sha256:36ebe4735a307bdba9fd78f7424055808399c2bb2e9ef2669dd7545265f4b2b2"
+      },
+      {
+        "bytes": 15355,
+        "path": "research/tavonel_eval_v2/endpoint/successor_prompt_schema.py",
+        "sha256": "sha256:8318803f6133b009f75759cdf17e7692cb380c015dada3950559abf09c5f04d8"
+      },
+      {
+        "bytes": 10291,
+        "path": "research/tavonel_eval_v2/endpoint/tokenizer_parity.py",
+        "sha256": "sha256:a6be9336b5c0e2d015b037d6c73d5d815c9540d165a5851bf6480f8c2ad8aa30"
+      },
+      {
+        "bytes": 20642,
+        "path": "research/tavonel_eval_v2/endpoint/value_fact.py",
+        "sha256": "sha256:4b2aa38a662dd5fedb262d451fe15ce50ee84c043b4e9cbfde3c692ec4b2a42b"
+      },
+      {
+        "bytes": 11165,
+        "path": "research/tavonel_eval_v2/endpoint/value_fact_controls.py",
+        "sha256": "sha256:1c115482a1b035b69ad9ca73d70c1c45ee6cfdebfdc2372505c5a91c4b91ff9d"
+      },
+      {
+        "bytes": 8359,
+        "path": "research/tavonel_eval_v2/endpoint/value_scorer.py",
+        "sha256": "sha256:00c417042b3bdaf3e03b47c6a16d663a3eb92b7a830fb1dbfce0f698757305ba"
+      },
+      {
+        "bytes": 8646,
+        "path": "research/tavonel_eval_v2/facets/facet_coverage.py",
+        "sha256": "sha256:a00dbda300c507d638887cfe604d184d517c779eb33c2ea897008f297440ee7c"
+      },
+      {
+        "bytes": 3301,
+        "path": "research/tavonel_eval_v2/facets/facets.py",
+        "sha256": "sha256:b812337d3095790f9b2cf34ca1a12f4cb37a2ab322a674f68b95cfec0ce88624"
+      },
+      {
+        "bytes": 7590,
+        "path": "research/tavonel_eval_v2/oracle/independent_full_build.py",
+        "sha256": "sha256:ddcbaae25c72111178fc51f50e5d797fae30bb48c842458323bdbbb07e9078ee"
+      },
+      {
+        "bytes": 7512,
+        "path": "research/tavonel_eval_v2/oracle/independent_full_build_p0b.py",
+        "sha256": "sha256:5d0cb54e32b3041cc0e0521a8863bacec9ad2e67be43d1844f1412f4dd7deda5"
+      },
+      {
+        "bytes": 8979,
+        "path": "research/tavonel_eval_v2/oracle/independent_full_build_p0c.py",
+        "sha256": "sha256:41e6d322193e5cdac1836d1692993e74723c9236175ef9a44cdf03f6997a20b3"
+      },
+      {
+        "bytes": 13899,
+        "path": "research/tavonel_eval_v2/oracle/source_derived_expected.py",
+        "sha256": "sha256:ed235461c6f4019922dd0ade1c1d169b16e9a0626e604cf71292b66de3963cfa"
+      },
+      {
+        "bytes": 11064,
+        "path": "research/tavonel_eval_v2/retrieval/envelope.py",
+        "sha256": "sha256:d579f647ac8a0183e00b08dbfc0f996252d8eea06acd780961d706accb22e05d"
+      },
+      {
+        "bytes": 7779,
+        "path": "research/tavonel_eval_v2/retrieval/intent_view.py",
+        "sha256": "sha256:9b3780159f7b19318af0b8395c239c31f783c047cb362b13834c0b6544a136b0"
+      },
+      {
+        "bytes": 7454,
+        "path": "research/tavonel_eval_v2/retrieval/isolated_builder.py",
+        "sha256": "sha256:ade29d50bc287c838f4a539e1251a1e44ee71af8d6b6fdea961f959b40095eb8"
+      },
+      {
+        "bytes": 812,
+        "path": "research/tavonel_eval_v2/source_fact_ir/__init__.py",
+        "sha256": "sha256:1150963e96de2c0e76c024ee9e260df49b150345688dd47e664e34dd79af8f55"
+      },
+      {
+        "bytes": 45563,
+        "path": "research/tavonel_eval_v2/source_fact_ir/adversarial_fixtures.py",
+        "sha256": "sha256:3933221d6225d44badb1d0d177bd659a5e411bb04c448798d4409d85699d4df6"
+      },
+      {
+        "bytes": 11857,
+        "path": "research/tavonel_eval_v2/source_fact_ir/change_facets.py",
+        "sha256": "sha256:befeabe3629db7679fa963365db75b98c73af52b1a371c9b62d3e198aa82786f"
+      },
+      {
+        "bytes": 10883,
+        "path": "research/tavonel_eval_v2/source_fact_ir/compile.py",
+        "sha256": "sha256:117bba84067c05102e497fe1618cda451df7b18e9d32f5a464bcd91bfbe400fe"
+      },
+      {
+        "bytes": 16818,
+        "path": "research/tavonel_eval_v2/source_fact_ir/core_extractor.py",
+        "sha256": "sha256:2b51a70d9914922cc45d02e68ada5d73108b33b9734298de13f80927ad702b66"
+      },
+      {
+        "bytes": 6558,
+        "path": "research/tavonel_eval_v2/source_fact_ir/expected_change_status.py",
+        "sha256": "sha256:6081f6cfb8d5de730099b4609fe29a597c7b031917980241fd823227f2d65546"
+      },
+      {
+        "bytes": 18803,
+        "path": "research/tavonel_eval_v2/source_fact_ir/fingerprint.py",
+        "sha256": "sha256:fa7f23e24b2994755b23f3251ca0a0272b45ebecd7e42a0f7da73210b10ac3b6"
+      },
+      {
+        "bytes": 13408,
+        "path": "research/tavonel_eval_v2/source_fact_ir/include_target.py",
+        "sha256": "sha256:74110b485fc3c1770d0392008a00758914636ea3b6f832a42fb664b80a4d5a90"
+      },
+      {
+        "bytes": 23301,
+        "path": "research/tavonel_eval_v2/source_fact_ir/ir.py",
+        "sha256": "sha256:70fc3fcdb23bb74c00167408acbbc5d9f4cb59f5b834fb428824eaeab595c53c"
+      },
+      {
+        "bytes": 30727,
+        "path": "research/tavonel_eval_v2/source_fact_ir/metadata.py",
+        "sha256": "sha256:4bef85b20f352241e40968dafb871280e4a8603cdbd349421acd6d50af6a941d"
+      },
+      {
+        "bytes": 67585,
+        "path": "research/tavonel_eval_v2/source_fact_ir/provenance_fixtures.py",
+        "sha256": "sha256:7e42bdc38929a81ae28e98e7ef9e4e1ef0879e97f4ab9583617e1653e0e7bb50"
+      },
+      {
+        "bytes": 42216,
+        "path": "research/tavonel_eval_v2/source_fact_ir/reference.py",
+        "sha256": "sha256:d15205ec7d474038c6831b4c6c81dbdb25221fa9f7f40b255a8b4f6a9f72cbdd"
+      },
+      {
+        "bytes": 13829,
+        "path": "research/tavonel_eval_v2/source_fact_ir/scope_gate.py",
+        "sha256": "sha256:6b83680736d835651dbdfe01ddb7f26d1c99d93039bb6e0bfac3c183b436a061"
+      },
+      {
+        "bytes": 14675,
+        "path": "research/tavonel_eval_v2/source_fact_ir/spanmap.py",
+        "sha256": "sha256:b96559604ef1b0bf1f567c2061bf23d8b208e1f62279afe8c3c529e9b1cf1966"
+      },
+      {
+        "bytes": 9804,
+        "path": "research/tavonel_eval_v2/tools/adjudicate_v2r1.py",
+        "sha256": "sha256:cc6613feeb4e52f9da4b9806b70384bedf1dcb7811c837fb31fa9b975e828f39"
+      },
+      {
+        "bytes": 14485,
+        "path": "research/tavonel_eval_v2/tools/adjudicate_v2r2.py",
+        "sha256": "sha256:cb2f01daff621a54cf866a181ed55f82fcdf5b037f58bb6a6d7abb131e060fc8"
+      },
+      {
+        "bytes": 32605,
+        "path": "research/tavonel_eval_v2/tools/anti_blocker_audit.py",
+        "sha256": "sha256:0f263976cc888bafc5f56d75725b89d3c6e074ce5d89e3b70674ce066740226d"
+      },
+      {
+        "bytes": 10913,
+        "path": "research/tavonel_eval_v2/tools/build_claim_matrix.py",
+        "sha256": "sha256:e551bd8b6f7b87c7fa6165c3cfc25ff86800655cf4af3fbdfd9fd0e30c6efae8"
+      },
+      {
+        "bytes": 13912,
+        "path": "research/tavonel_eval_v2/tools/build_successor_cohort.py",
+        "sha256": "sha256:4b1907c6ca9c616b3c946ad590bd68a527e8e8dad4dd5649c4ae2d3ef7df9f60"
+      },
+      {
+        "bytes": 11668,
+        "path": "research/tavonel_eval_v2/tools/canary_identity_change.py",
+        "sha256": "sha256:89e639efe7def7d6a74b910528685db647dd8dcb7a84a47b22769c1596f85b0e"
+      },
+      {
+        "bytes": 18881,
+        "path": "research/tavonel_eval_v2/tools/canary_identity_quarantine.py",
+        "sha256": "sha256:6a34c67bd7e5fa382460ea8df3c848446ab700078e9f19b381a42b4692883553"
+      },
+      {
+        "bytes": 2388,
+        "path": "research/tavonel_eval_v2/tools/common.py",
+        "sha256": "sha256:caa2dbbf3d84c8812c0f09cfa4d3490f3b2aed78d2f7926495809426bb57f644"
+      },
+      {
+        "bytes": 6652,
+        "path": "research/tavonel_eval_v2/tools/correct_sfi2_e5_reading.py",
+        "sha256": "sha256:608ce91c0b41c1c600c1a48329620f6149cd6c44fcc1cd344b75e0e8ba58e6ae"
+      },
+      {
+        "bytes": 48461,
+        "path": "research/tavonel_eval_v2/tools/enumerate_v2_universe.py",
+        "sha256": "sha256:680e1c95ef367e8eefd75d8fdda7c73329487ab6e5f1025d3908311c74a6b10d"
+      },
+      {
+        "bytes": 19728,
+        "path": "research/tavonel_eval_v2/tools/enumerate_v2r1_universe.py",
+        "sha256": "sha256:6b7a09919db1ed185f82218db1249be540b0828d4e62fff25a16cfaa0585b745"
+      },
+      {
+        "bytes": 29063,
+        "path": "research/tavonel_eval_v2/tools/enumerate_v2r2_universe.py",
+        "sha256": "sha256:de6f4695110c08d0f1866d43915ec60fc28acabe7609e9d1cf983fe68075a8c8"
+      },
+      {
+        "bytes": 11418,
+        "path": "research/tavonel_eval_v2/tools/enumerate_v2r3_universe.py",
+        "sha256": "sha256:1a3032cdba1074c7e567b4b72c86dae186db50c2fafdd9d1415c664ad41b0a19"
+      },
+      {
+        "bytes": 7581,
+        "path": "research/tavonel_eval_v2/tools/enumerate_v2r3r1_universe.py",
+        "sha256": "sha256:746b12cb7dd317db35c3102fc449ed5872c997fe134487c2072804ebb4794990"
+      },
+      {
+        "bytes": 12242,
+        "path": "research/tavonel_eval_v2/tools/enumerate_v2r4_universe.py",
+        "sha256": "sha256:2fffd4fd03938b7acdbeca66a5406eded5947cedd8f239e96340d82215f1a59b"
+      },
+      {
+        "bytes": 5998,
+        "path": "research/tavonel_eval_v2/tools/evidence.py",
+        "sha256": "sha256:3d120a824701f130498890a44fb15df4711c0c0a2d4be331d6343b067739e498"
+      },
+      {
+        "bytes": 9999,
+        "path": "research/tavonel_eval_v2/tools/evidence_hygiene_pass.py",
+        "sha256": "sha256:7b5bb003336fd518c4e2c1f53e44df59eee1c9b7e31efea1d85fe09631e8ebc6"
+      },
+      {
+        "bytes": 17840,
+        "path": "research/tavonel_eval_v2/tools/forensic_four_divergences_v2.py",
+        "sha256": "sha256:cb89ef57df34fae778dd7e24f00bebda7ec37a9f697210699b1bf42d2774c5c0"
+      },
+      {
+        "bytes": 15846,
+        "path": "research/tavonel_eval_v2/tools/forensic_sealed_drift.py",
+        "sha256": "sha256:9ade45dc2d7b23336541bf8f527ba17734fce9975b5108ba68747294d536d67c"
+      },
+      {
+        "bytes": 21793,
+        "path": "research/tavonel_eval_v2/tools/forensic_sfi2_execution.py",
+        "sha256": "sha256:95395cbaf9ecbc49aaf63b71b6dd5c7f241195ac5ef4f185e251f0703d1c44a4"
+      },
+      {
+        "bytes": 10177,
+        "path": "research/tavonel_eval_v2/tools/forensic_stale_escape.py",
+        "sha256": "sha256:ea1a9facf148419f372f7e5385ce8b6a7ed735a8e824fb9090605273978882b4"
+      },
+      {
+        "bytes": 10874,
+        "path": "research/tavonel_eval_v2/tools/forensic_stale_escape_root_cause.py",
+        "sha256": "sha256:14cba9ae8a0433a37c4b6cf9c81b0042d6d9fc04c555657b98d216c2551033d1"
+      },
+      {
+        "bytes": 16367,
+        "path": "research/tavonel_eval_v2/tools/four_link_acceptance.py",
+        "sha256": "sha256:78e4ba68a6e95d0d3f6f13bc9e54eb50a0393e25b415edaa4e8eb05c019d7b8f"
+      },
+      {
+        "bytes": 19694,
+        "path": "research/tavonel_eval_v2/tools/four_link_gate.py",
+        "sha256": "sha256:d401b6e918ca15e934c3d067e8bf386d55525d13ab058cef8114b2b3539b1d18"
+      },
+      {
+        "bytes": 12018,
+        "path": "research/tavonel_eval_v2/tools/four_link_validator.py",
+        "sha256": "sha256:50c4401a21c15a994a52662e2f0247e08974c1b23cc1b1b4d2007835cafe6392"
+      },
+      {
+        "bytes": 9148,
+        "path": "research/tavonel_eval_v2/tools/freeze_gpu_successor_protocols.py",
+        "sha256": "sha256:eaf271a92e40e68a3c5980007ea423213fb798023dd21b9be1f52559c7174a15"
+      },
+      {
+        "bytes": 19878,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure.py",
+        "sha256": "sha256:0120d26829186cc825ea0e4ce4563caf2257ca8d1cece96b87449fc83a69ed00"
+      },
+      {
+        "bytes": 57234,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2.py",
+        "sha256": "sha256:7f5d51a147938b77abe2f9316853781d5f1ead7a245edc50d65d92b97c93958f"
+      },
+      {
+        "bytes": 89602,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+        "sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+      },
+      {
+        "bytes": 10922,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r2.py",
+        "sha256": "sha256:f86c7e2ad731238482f3586f00cdc3f683e1895c06e91a32470a598c2f40cc6c"
+      },
+      {
+        "bytes": 18220,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3.py",
+        "sha256": "sha256:fb9e786e2d832541ca8b507dc62457e93990ee1ed108df64a4b5b8922244342c"
+      },
+      {
+        "bytes": 28054,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3r1.py",
+        "sha256": "sha256:135faaa1b10d5d54ad9c1ebf667114fc64ece324bf334412801a46407923caed"
+      },
+      {
+        "bytes": 25706,
+        "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r4.py",
+        "sha256": "sha256:8b8c02537767cb67c793ebf1587f31808b061aa0827ff4dc48a47a74a3d0f45f"
+      },
+      {
+        "bytes": 2714,
+        "path": "research/tavonel_eval_v2/tools/freeze_protocol.py",
+        "sha256": "sha256:b8325e3257e1e5bede941b2c7795e035b180ca3a7287d1d496744169cfced9a1"
+      },
+      {
+        "bytes": 3168,
+        "path": "research/tavonel_eval_v2/tools/freeze_protocol_immutable.py",
+        "sha256": "sha256:2d353f9fe4475f136eb848768adb0dfe3f34f44ab53cdafa8f5652aa3b31554b"
+      },
+      {
+        "bytes": 10612,
+        "path": "research/tavonel_eval_v2/tools/freeze_sfi1_lineages.py",
+        "sha256": "sha256:11a21e111a91ece1a3395e26e667912f69831670f4b9cdb64238bf01fe30e5d8"
+      },
+      {
+        "bytes": 10678,
+        "path": "research/tavonel_eval_v2/tools/freeze_sfi2_lineages.py",
+        "sha256": "sha256:60462ead52c524ce67dd7a8b272318d20efd605bfee1c5cd1a02fa2487abc105"
+      },
+      {
+        "bytes": 11075,
+        "path": "research/tavonel_eval_v2/tools/freeze_sfi3_lineages.py",
+        "sha256": "sha256:5e2a444cf48d92be615d2347d152a73a861844bc9fd4aa0bd13337730108ff1d"
+      },
+      {
+        "bytes": 47501,
+        "path": "research/tavonel_eval_v2/tools/freeze_sfi3_protocol.py",
+        "sha256": "sha256:73122e37c988b15de1f20233a252f639a3eb86ac41bf2fae061e3636821a2b84"
+      },
+      {
+        "bytes": 3837,
+        "path": "research/tavonel_eval_v2/tools/freeze_value_fact.py",
+        "sha256": "sha256:eed284143ee2ebd5a1c94821eaf91c41e924130cf9dd0d425eb18d2b7c8cf913"
+      },
+      {
+        "bytes": 11064,
+        "path": "research/tavonel_eval_v2/tools/freeze_vbc2_lineages.py",
+        "sha256": "sha256:9131c06dd91889796595403b7a92ee9b0a9504c3004d9a29275ad7d29c533a86"
+      },
+      {
+        "bytes": 10224,
+        "path": "research/tavonel_eval_v2/tools/gpu_successor_execution.py",
+        "sha256": "sha256:5453dcef00ecdd12f33686b3c1c4ea72f7ecde141c1b61c8e31d7a18278e8541"
+      },
+      {
+        "bytes": 46046,
+        "path": "research/tavonel_eval_v2/tools/gpu_successor_preflight.py",
+        "sha256": "sha256:fc81b00b3255f67464503aa4182115c00b4c30ed70b0af8ef222c97a4d9d8162"
+      },
+      {
+        "bytes": 25528,
+        "path": "research/tavonel_eval_v2/tools/identity_change_benchmark.py",
+        "sha256": "sha256:768ea544cc8c6019822a0b632044994eab7c4d267ef28b33822b8d140c0982b4"
+      },
+      {
+        "bytes": 54075,
+        "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure.py",
+        "sha256": "sha256:b499e8635f4cbbb5aed5748d57de79139d43019041f476e00177934933b6cb59"
+      },
+      {
+        "bytes": 12594,
+        "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2.py",
+        "sha256": "sha256:ee63d3b6103c8c35319cad4aa7f7ef9989af682a0bf8c3fcd8bd3cd720610952"
+      },
+      {
+        "bytes": 13526,
+        "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r2.py",
+        "sha256": "sha256:02109961da2f7eb5a238efe147446a34eb2b3ff91470b5ef69bf7f98bba52912"
+      },
+      {
+        "bytes": 15418,
+        "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r3.py",
+        "sha256": "sha256:f5b8de50019ef4efe6a83ddeb295178c35848f78c94daabef0669fe044eb1e0d"
+      },
+      {
+        "bytes": 25063,
+        "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r3r1.py",
+        "sha256": "sha256:78a79d0e8152c35eac6dea25ece7ee29f226159b51e5811021cc6a3810a405df"
+      },
+      {
+        "bytes": 29637,
+        "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r4.py",
+        "sha256": "sha256:086378cb617be113f8dc5cc13fa0a38fc021098ccd13baf6797f456b0bc76b74"
+      },
+      {
+        "bytes": 28446,
+        "path": "research/tavonel_eval_v2/tools/identity_quarantine_differential.py",
+        "sha256": "sha256:2e4da7d85ec492e917b3659ee7abe15b6db002ad65d08038a32edb95a6e355c3"
+      },
+      {
+        "bytes": 9011,
+        "path": "research/tavonel_eval_v2/tools/inc_v2_001_disposition.py",
+        "sha256": "sha256:c768e53ad23cf5d8ecd7ee092baf4dff31a7b3fcc55a018a85ae541def4ef81f"
+      },
+      {
+        "bytes": 14043,
+        "path": "research/tavonel_eval_v2/tools/inc_v2_003_impact.py",
+        "sha256": "sha256:3e0a2af6f0c7e04c4b0546ab17e5564c3a23c0fea35c5a7c7fd16d3f65c229ed"
+      },
+      {
+        "bytes": 10375,
+        "path": "research/tavonel_eval_v2/tools/instance_lock.py",
+        "sha256": "sha256:61ff344f6ae4fffe3d7466b931b6defbc98a3070a918d7f6018bc24869eca440"
+      },
+      {
+        "bytes": 15244,
+        "path": "research/tavonel_eval_v2/tools/invariant_domain.py",
+        "sha256": "sha256:7110172918219a10654c22b763dc3ad5fae70b5bde32c6df8bf9d7b45697a823"
+      },
+      {
+        "bytes": 11652,
+        "path": "research/tavonel_eval_v2/tools/kill_switch.py",
+        "sha256": "sha256:e32c63825fdb4fafaa6f14d14395e263994f8e21faf1c9bb11e157f02ce7b7fd"
+      },
+      {
+        "bytes": 36678,
+        "path": "research/tavonel_eval_v2/tools/launch_gpu_successor.py",
+        "sha256": "sha256:f11736221f2167e14363c597fa0166e38dc008858fe4100883884cdf7a8b316e"
+      },
+      {
+        "bytes": 13593,
+        "path": "research/tavonel_eval_v2/tools/materialize_successor_inputs.py",
+        "sha256": "sha256:f33208eb456138c2388a0e8e2eddf41ed9eca8c89ed33455a70326ef1a5d3a72"
+      },
+      {
+        "bytes": 7021,
+        "path": "research/tavonel_eval_v2/tools/mcnemar_power.py",
+        "sha256": "sha256:49a217ce8d1f99ade0a9332a2f2163308de1931f324240be0069663722ccd955"
+      },
+      {
+        "bytes": 14864,
+        "path": "research/tavonel_eval_v2/tools/migration_closure_acceptance.py",
+        "sha256": "sha256:6fa3e61c79452b271fd32cf13fd54cc08c8ab4b50402e811a51accac2d8ea950"
+      },
+      {
+        "bytes": 5644,
+        "path": "research/tavonel_eval_v2/tools/p4b_lineage_diagnostic.py",
+        "sha256": "sha256:c8d4534f55fab3dc9b7666b7d1f6cf4d982239cca87735a6ac0adab744537fb3"
+      },
+      {
+        "bytes": 33514,
+        "path": "research/tavonel_eval_v2/tools/preflight_checks.py",
+        "sha256": "sha256:a6396c6b9d0b6227fd73790ee6018f860666e2208e9bc95a47da1632b13da0eb"
+      },
+      {
+        "bytes": 30390,
+        "path": "research/tavonel_eval_v2/tools/preflight_sfi3_roots.py",
+        "sha256": "sha256:2904c0bb67f79a9136d7c68613abb027b9dec2d18347100a7e58ff8414423a97"
+      },
+      {
+        "bytes": 7450,
+        "path": "research/tavonel_eval_v2/tools/probe_v2r3_roots.py",
+        "sha256": "sha256:aa42a184a9cf28f9290dc1618416003e5f7bf520fe300c4b2e8f2bcbef569615"
+      },
+      {
+        "bytes": 17616,
+        "path": "research/tavonel_eval_v2/tools/probe_v2r4_roots.py",
+        "sha256": "sha256:b00a38eb38a9eb7b9d6f65ec5aec47c7f584010f312c73f1dd30a88eeac8c1fb"
+      },
+      {
+        "bytes": 8499,
+        "path": "research/tavonel_eval_v2/tools/prove_e8_instrumentation_power.py",
+        "sha256": "sha256:133412ca31ff302b1560b5797658edd6990fc6a2b1c0c096af5f19fc5da7d07b"
+      },
+      {
+        "bytes": 5735,
+        "path": "research/tavonel_eval_v2/tools/recanonicalise_v2r1.py",
+        "sha256": "sha256:8bb578c242980351b181d345dfb4ad41fb02973d19c42528f167584e34b91be8"
+      },
+      {
+        "bytes": 7866,
+        "path": "research/tavonel_eval_v2/tools/reclassify_identity_change_ladder.py",
+        "sha256": "sha256:651501f817b7cc7b72fe0d467f2a0d6bb7be123b3ddc7977fd8fbaa4b6922a02"
+      },
+      {
+        "bytes": 13028,
+        "path": "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+        "sha256": "sha256:3e4aef01a92695fb533e1c21ef685297a53ef2b42f28f0292dcb7aef2662c97e"
+      },
+      {
+        "bytes": 5780,
+        "path": "research/tavonel_eval_v2/tools/record_study_rename.py",
+        "sha256": "sha256:70d1700a2ed8b02abcaeac5311f8e753ffa1f03854ca0f81f03a63ecbada0aff"
+      },
+      {
+        "bytes": 2573,
+        "path": "research/tavonel_eval_v2/tools/register_legacy_receipts.py",
+        "sha256": "sha256:a7b3cfb3cd9a5f4c2c127a6eca4fdf1b9508de89812c73f39be9c999d043ff4b"
+      },
+      {
+        "bytes": 7744,
+        "path": "research/tavonel_eval_v2/tools/register_route_a_closure.py",
+        "sha256": "sha256:71260dbbe9ffe4da99636d86f8b6f1da1052703ebacaf953a8b7b3b4defa8b8f"
+      },
+      {
+        "bytes": 14526,
+        "path": "research/tavonel_eval_v2/tools/rehearse_sfi3_execution.py",
+        "sha256": "sha256:e1b88e285c3a6cabb22be297902e2b66c041a9a864793b422d82aae38f68fbcf"
+      },
+      {
+        "bytes": 15927,
+        "path": "research/tavonel_eval_v2/tools/rehearse_v2r4_closure.py",
+        "sha256": "sha256:8bf2d6de71c22ce4b508bdf6f52144e8aa524da2bb21d5c8e23c6141f2684a2f"
+      },
+      {
+        "bytes": 29968,
+        "path": "research/tavonel_eval_v2/tools/replace_sfi3_roots.py",
+        "sha256": "sha256:2ef84dfac11a4dc9c6670735d85f64aeaab3fd5f3423b333d519f2ff7638399a"
+      },
+      {
+        "bytes": 2759,
+        "path": "research/tavonel_eval_v2/tools/reproducibility_fixture.py",
+        "sha256": "sha256:a0d4c66950dfcebf6a859b9eb269e4ffe0c912557365c478c7a158fb1ef4af2d"
+      },
+      {
+        "bytes": 13417,
+        "path": "research/tavonel_eval_v2/tools/resolve_gpu_successor_pin.py",
+        "sha256": "sha256:fa3aa05100c7042bda003ffbec125ebc689a14e096ee4e8d32f3f2b9703d43e4"
+      },
+      {
+        "bytes": 9250,
+        "path": "research/tavonel_eval_v2/tools/root_identity.py",
+        "sha256": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d"
+      },
+      {
+        "bytes": 14792,
+        "path": "research/tavonel_eval_v2/tools/run_locality_v2.py",
+        "sha256": "sha256:69947799fb858c8d45d4a0f074d045f52c82260e960dbc195f09709a26454a4f"
+      },
+      {
+        "bytes": 22151,
+        "path": "research/tavonel_eval_v2/tools/run_model_preflight.py",
+        "sha256": "sha256:99fecd23bcb69fb5eb51e73eab6e8dc099212da8c08ce37a288760df9569d9f0"
+      },
+      {
+        "bytes": 25457,
+        "path": "research/tavonel_eval_v2/tools/run_oracle_v2.py",
+        "sha256": "sha256:b0e6f811cd172c1413d1383980768067e69f815ef457a631fbd9822c16c5eb42"
+      },
+      {
+        "bytes": 19755,
+        "path": "research/tavonel_eval_v2/tools/run_p0b.py",
+        "sha256": "sha256:d54b3a297dbfe02de7c444019e3d987efc254ea05bcc1dda2c821e80592c4254"
+      },
+      {
+        "bytes": 21798,
+        "path": "research/tavonel_eval_v2/tools/run_p0c.py",
+        "sha256": "sha256:db35a4f52b697453b79038c937f27efa14d6833e14a80e21a9bcaf3187bc6c24"
+      },
+      {
+        "bytes": 17316,
+        "path": "research/tavonel_eval_v2/tools/run_p0d.py",
+        "sha256": "sha256:2500fb72e17bfe1c6bc44dde574a6a86a943bbc1261bba7ea993ff182e543571"
+      },
+      {
+        "bytes": 17235,
+        "path": "research/tavonel_eval_v2/tools/run_p1_smoke.py",
+        "sha256": "sha256:c649482bcc4a7a05512614ff822182338aa4015cddbfa3e0c790ab015c8932eb"
+      },
+      {
+        "bytes": 22395,
+        "path": "research/tavonel_eval_v2/tools/run_p2.py",
+        "sha256": "sha256:0bd07348e77df7373a13b244d1f8cb06a247f322b14dd372a411f275aba67419"
+      },
+      {
+        "bytes": 20657,
+        "path": "research/tavonel_eval_v2/tools/run_p3.py",
+        "sha256": "sha256:9607a3c1e2361397fbcaa1ce1946906a518d479abb51fd8658090a044a744c6d"
+      },
+      {
+        "bytes": 28839,
+        "path": "research/tavonel_eval_v2/tools/run_p3b.py",
+        "sha256": "sha256:65b87eeaaa68f3cbcd7484cb0ca17ffb671da0bdac99db1912202ffa37dc0dbc"
+      },
+      {
+        "bytes": 13054,
+        "path": "research/tavonel_eval_v2/tools/run_p4.py",
+        "sha256": "sha256:de058fab03a5b2cb949da948149e70843204028dfc2c95894d23570ced6a0bc2"
+      },
+      {
+        "bytes": 22735,
+        "path": "research/tavonel_eval_v2/tools/run_p4b.py",
+        "sha256": "sha256:3e34117ead25855e00c15dec1b0a88f0818994873d7c93a5f3e2e0bd5a135be6"
+      },
+      {
+        "bytes": 16897,
+        "path": "research/tavonel_eval_v2/tools/run_p4c.py",
+        "sha256": "sha256:f6d382cc06e0367559dc0d530b454a64272c347399742b7177a91ec84d210f9b"
+      },
+      {
+        "bytes": 23353,
+        "path": "research/tavonel_eval_v2/tools/run_p4d.py",
+        "sha256": "sha256:5124cbb76ea87de3efdcb1068adc96419d8f66fa5adb600163bd4c784288b71b"
+      },
+      {
+        "bytes": 25955,
+        "path": "research/tavonel_eval_v2/tools/run_p4e.py",
+        "sha256": "sha256:8827cd695de15d388863e8f9f624ad4148c7293c4ebf624dfa2e7fed12c3602a"
+      },
+      {
+        "bytes": 16053,
+        "path": "research/tavonel_eval_v2/tools/run_p4g.py",
+        "sha256": "sha256:65ac2d68154c389ac9078287582f4dd4d4b6e5ecbfb79b09a46e434a66192be4"
+      },
+      {
+        "bytes": 18081,
+        "path": "research/tavonel_eval_v2/tools/run_p4i.py",
+        "sha256": "sha256:23a2172adc802b07b527ef9228b375906626b0236d88e90464599405074f2189"
+      },
+      {
+        "bytes": 7588,
+        "path": "research/tavonel_eval_v2/tools/run_r1_reproducibility.py",
+        "sha256": "sha256:6342be7f23bd55397e3d7a708f4ce2bf2ba1a2e3543a5c1089e336a60f502025"
+      },
+      {
+        "bytes": 21476,
+        "path": "research/tavonel_eval_v2/tools/run_sfh1.py",
+        "sha256": "sha256:137588a0091d9768b20f5381aeb9f0a737c5a26c5411d0ec5a5e60f3c3e09880"
+      },
+      {
+        "bytes": 10241,
+        "path": "research/tavonel_eval_v2/tools/run_vbc1_probe.py",
+        "sha256": "sha256:33acd1285e860b891828eb1b9fad55d8ca2443bef6e7940bf1389e4fcb40caae"
+      },
+      {
+        "bytes": 21307,
+        "path": "research/tavonel_eval_v2/tools/run_vbc2_acquire.py",
+        "sha256": "sha256:fee435ca7fa92c3f44567f43c6d01632ed006a77e86828f7bf7db9db7eb829c8"
+      },
+      {
+        "bytes": 18182,
+        "path": "research/tavonel_eval_v2/tools/run_vbc2_parallel.py",
+        "sha256": "sha256:816c057acd17bf58ea1bac5c4ff3d1aaaf027a260a4c5e7a634e5b49f77c0e02"
+      },
+      {
+        "bytes": 20834,
+        "path": "research/tavonel_eval_v2/tools/run_vbc2_preflight.py",
+        "sha256": "sha256:a6e14f68772cbc6e2e865f34d9ce0a72c102560b872fbca4212eb7c0dd5636c2"
+      },
+      {
+        "bytes": 19682,
+        "path": "research/tavonel_eval_v2/tools/runpod_provisioner.py",
+        "sha256": "sha256:a8639c355927c7eef8112497dc3bb1637c857ee9de9af8c567af770d229baf00"
+      },
+      {
+        "bytes": 2943,
+        "path": "research/tavonel_eval_v2/tools/scan_v2r3_ecfr_supply.py",
+        "sha256": "sha256:48cfdd47d818dcd87d975304ba756ab57675f8000c0e99e05343099c41755272"
+      },
+      {
+        "bytes": 14495,
+        "path": "research/tavonel_eval_v2/tools/score_sfi1.py",
+        "sha256": "sha256:f9d03195a5eb867f8247afe1d4e89725245dfce88af618b84678b6e56012e5c6"
+      },
+      {
+        "bytes": 13624,
+        "path": "research/tavonel_eval_v2/tools/score_sfi2.py",
+        "sha256": "sha256:a52ff2834e4c2e393a49166afa6d5f6b31491445ce7f65823a926f68d4decace"
+      },
+      {
+        "bytes": 31685,
+        "path": "research/tavonel_eval_v2/tools/score_sfi3.py",
+        "sha256": "sha256:670dee3ae7dca4ef8324ca242984b3f78be503759450d5772d770965bdea6062"
+      },
+      {
+        "bytes": 8958,
+        "path": "research/tavonel_eval_v2/tools/seal_instrument_identity.py",
+        "sha256": "sha256:ec1aa8c3a09cbd188966bad03f84d1c7e359a1edb7ab092ee2bf4bf01d920d09"
+      },
+      {
+        "bytes": 11658,
+        "path": "research/tavonel_eval_v2/tools/seal_source_map_contract.py",
+        "sha256": "sha256:0a803f12a5b574f66da1d3635c7d3138698cbd01e9481d75f97ca4bb5c2a5847"
+      },
+      {
+        "bytes": 2414,
+        "path": "research/tavonel_eval_v2/tools/seal_verification_envelope.py",
+        "sha256": "sha256:c25cbbb0d3736ff0d6177ce07f05546978d0871d125345e735a21a5ffdffdf18"
+      },
+      {
+        "bytes": 25072,
+        "path": "research/tavonel_eval_v2/tools/sfi1_worker.py",
+        "sha256": "sha256:1ae1b1de3e509f8ae195d320f28bfda36f912e35c3623683c729fb3e0bc84b87"
+      },
+      {
+        "bytes": 17306,
+        "path": "research/tavonel_eval_v2/tools/sfi2_worker.py",
+        "sha256": "sha256:8143508c79c5cdfb6890d7822cc84928b83602dec23777b418e2dda5002e5994"
+      },
+      {
+        "bytes": 24321,
+        "path": "research/tavonel_eval_v2/tools/sfi3_acceptance.py",
+        "sha256": "sha256:87ead1b46f015b9b36657c675f0ea7a951be01e3a4cf8f30dcf7c3cf9860ac82"
+      },
+      {
+        "bytes": 19523,
+        "path": "research/tavonel_eval_v2/tools/sfi3_root_reservation.py",
+        "sha256": "sha256:a12c637528ee184983170ef1b76393ea888f8fa057fb213ac328d5c5e7ec043c"
+      },
+      {
+        "bytes": 13880,
+        "path": "research/tavonel_eval_v2/tools/sfi3_worker.py",
+        "sha256": "sha256:66ff5f74c829319ceb264dc092ffce8086dadc2e71521d3d419759b231418c9c"
+      },
+      {
+        "bytes": 6554,
+        "path": "research/tavonel_eval_v2/tools/supersede_pre_amendment_runs.py",
+        "sha256": "sha256:c9cae7f7671e07575db02dd83fe53307e3be062def2a0d61d6b4b33f51a6cb9e"
+      },
+      {
+        "bytes": 5921,
+        "path": "research/tavonel_eval_v2/tools/switch_identity_quarantine.py",
+        "sha256": "sha256:f35589e986ae9faee95761bc0dc05a8c6237cf772b570a8da0d0ff4f38550e52"
+      },
+      {
+        "bytes": 8808,
+        "path": "research/tavonel_eval_v2/tools/v2r1_invariant6.py",
+        "sha256": "sha256:3aff6168c01903d0d2b40277bcb34f16375723552566acd47479584b6e165cbd"
+      },
+      {
+        "bytes": 14825,
+        "path": "research/tavonel_eval_v2/tools/v2r2_invariant6.py",
+        "sha256": "sha256:bb87c5fd993fbc617b7c336abf9fc1cd10c2d799c3fe50d517082d5082110fdf"
+      },
+      {
+        "bytes": 9877,
+        "path": "research/tavonel_eval_v2/tools/v2r2_resolver_surface.py",
+        "sha256": "sha256:94356c20ba87de4287093e27956b96abb56b92955d35a65ab51d409182237907"
+      },
+      {
+        "bytes": 19345,
+        "path": "research/tavonel_eval_v2/tools/v2r3_attestation.py",
+        "sha256": "sha256:a3324d2eb38d048776586eaff89079fac9c2358d3c64acc184d925ec2b58199e"
+      },
+      {
+        "bytes": 27322,
+        "path": "research/tavonel_eval_v2/tools/v2r3_chain_disposition.py",
+        "sha256": "sha256:6309054beeda7b7f1b12be0157a81f56c8f1b40aca68d7c008ac34231584ceff"
+      },
+      {
+        "bytes": 13561,
+        "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+        "sha256": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3"
+      },
+      {
+        "bytes": 13074,
+        "path": "research/tavonel_eval_v2/tools/v2r3_invariant6.py",
+        "sha256": "sha256:d1538d772c14d43622e8823578ad531ddabfa9ba581f3427bc3fa104a801b7e2"
+      },
+      {
+        "bytes": 7752,
+        "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+        "sha256": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f"
+      },
+      {
+        "bytes": 17489,
+        "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+        "sha256": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6"
+      },
+      {
+        "bytes": 16229,
+        "path": "research/tavonel_eval_v2/tools/v2r3r1_attestation.py",
+        "sha256": "sha256:34b9530775e0a881d8a1e81c4a02ad42019a83cc482a078ee5117b85eab365d0"
+      },
+      {
+        "bytes": 23246,
+        "path": "research/tavonel_eval_v2/tools/v2r3r1_carry_forward.py",
+        "sha256": "sha256:1830444b544eccfa372424442cf00d2753952ba8b82fedf522aeb0a6666b1ecd"
+      },
+      {
+        "bytes": 14571,
+        "path": "research/tavonel_eval_v2/tools/v2r3r1_semantics.py",
+        "sha256": "sha256:a9f6e7c716ca200801f099b5ce264ba4940d754d9d56165733e272a8914882c9"
+      },
+      {
+        "bytes": 37452,
+        "path": "research/tavonel_eval_v2/tools/v2r4_attestation.py",
+        "sha256": "sha256:df631708a44021d29765a346c4efae16de6ab3e81623124319e3f91d8b79e1d9"
+      },
+      {
+        "bytes": 17551,
+        "path": "research/tavonel_eval_v2/tools/v2r4_grading.py",
+        "sha256": "sha256:ce3b0b03cfaedd1d271bd10d28657de493728c72cf839c76b5c9aa6ae304b9fd"
+      },
+      {
+        "bytes": 16769,
+        "path": "research/tavonel_eval_v2/tools/v2r4_preacquisition_gate.py",
+        "sha256": "sha256:20b62487617373dbc1963c0f135b1925406c57c0aeb15f8ecf944a00d0211a22"
+      },
+      {
+        "bytes": 29199,
+        "path": "research/tavonel_eval_v2/tools/v2r4_semantics_delta.py",
+        "sha256": "sha256:0240e973370aa1c42c79874db33ffbcbad3b0bbe5a609c4ece4f11e3c180115e"
+      },
+      {
+        "bytes": 18258,
+        "path": "research/tavonel_eval_v2/tools/v2r4_sfi3_reservation_handoff.py",
+        "sha256": "sha256:1c1d7b6fd7531f776b322aeb7b9a5195563f2fd2db0842bb2fec99cb2f6fd898"
+      },
+      {
+        "bytes": 8966,
+        "path": "research/tavonel_eval_v2/tools/verify_claim_pins.py",
+        "sha256": "sha256:7ceac5ee52238f09bcace2efde05be8bb99e4bffb9834a29f6fd767314a2ab76"
+      },
+      {
+        "bytes": 14403,
+        "path": "research/tavonel_eval_v2/tools/verify_sealed_evidence.py",
+        "sha256": "sha256:4c7784ab29a3e046b4bfb5f27537d358178c626779282dc95f8affbfd782de33"
+      },
+      {
+        "bytes": 6706,
+        "path": "research/tavonel_eval_v2/tools/verify_sfi2_frame.py",
+        "sha256": "sha256:02216bea34498852c95919dc163d10505769a8e0b3903cfc609dc61118a021f7"
+      },
+      {
+        "bytes": 5199,
+        "path": "research/tavonel_eval_v2/tools/verify_sfi3_frame.py",
+        "sha256": "sha256:5a8d6bb953d9b0601fb0781c46a1ef74a7b2c75b2baa92be59f6f8d9386a1f5f"
+      },
+      {
+        "bytes": 5804,
+        "path": "research/tavonel_eval_v2/tools/verify_sfi3_reservation_binding.py",
+        "sha256": "sha256:481bfab5f5e62326462ec66f0fc53e3c430654ea8b9504117a2b9b258d6f9bbf"
+      },
+      {
+        "bytes": 352647,
+        "path": "uv.lock",
+        "sha256": "sha256:01f6e8a4025b43f7ee1d65c2d40794be1be3fe9110574291dc48b974973b397f"
+      }
+    ],
+    "schema": "tavonel.v2.sfi3_tooling_manifest.v1",
+    "scope": [
+      "research/tavonel_eval_v2/acquisition",
+      "research/tavonel_eval_v2/activation",
+      "research/tavonel_eval_v2/canonicalization",
+      "research/tavonel_eval_v2/comparator",
+      "research/tavonel_eval_v2/compiler",
+      "research/tavonel_eval_v2/endpoint",
+      "research/tavonel_eval_v2/facets",
+      "research/tavonel_eval_v2/oracle",
+      "research/tavonel_eval_v2/retrieval",
+      "research/tavonel_eval_v2/source_fact_ir",
+      "research/tavonel_eval_v2/tools",
+      "packages/cir-python/src/akc_cir",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "tooling_manifest_sha256": "sha256:a2f7e9cf4fb3ad27c01e48dc4b1908c8c91c9a26375cf73ef0dd715e51fd910f",
+  "wall_clock_seconds": 375.819918
+}

@@ -1,0 +1,20 @@
+{
+  "completed_at_utc": "2026-08-15T18:52:24.268169+00:00",
+  "failure_message": "Client error '400 Bad Request' for url 'https://api.runpod.io/graphql'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+  "failure_type": "HTTPStatusError",
+  "passed": false,
+  "provider_guards": {
+    "stop_after": "20m",
+    "terminate_after": "25m",
+    "volume_in_gb": 0
+  },
+  "runtime": {
+    "expected_model_safetensors_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+    "gdn_prefill_backend": "triton",
+    "image_digest": "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05",
+    "model_artifact_hash_verified_in_this_smoke": false,
+    "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c"
+  },
+  "schema": "tavonel.ovis-vllm-server-smoke.v1",
+  "started_at_utc": "2026-08-15T18:52:22.957488+00:00"
+}

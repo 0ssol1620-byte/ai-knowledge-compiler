@@ -1,0 +1,266 @@
+{
+  "amendment": "AMENDMENT_2_2026-08-19.md",
+  "blocked_policy_touched": false,
+  "consequence_for_p2_13": "The existing ceiling may NOT be reused as the exactness lemma. An exact pruning proof must additionally establish that the pruned edge cannot be the assigned partner of any row (not merely cannot be a MATCHED partner), and cannot alter the runner-up of any row. Preserving the winner is not sufficient; the classification-relevant alternative set must be preserved too.",
+  "experiment": "H1-K-LEGACY-INVARIANT-EXTRACTION-01",
+  "external_gpu_cost_usd": 0.0,
+  "gap_a_ambiguous_to_new": {
+    "attempts": [
+      {
+        "flips": true,
+        "identifier": "shared-identifier",
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.6,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": null,
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.428571,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": "shared-identifier",
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.6,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": null,
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.428571,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": "shared-identifier",
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.5625,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": null,
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.375,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": "shared-identifier",
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.6,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": null,
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.428571,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      }
+    ],
+    "examples": [
+      {
+        "flips": true,
+        "identifier": "shared-identifier",
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.6,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": null,
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.428571,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      },
+      {
+        "flips": true,
+        "identifier": "shared-identifier",
+        "in_review_band": false,
+        "kept": {
+          "candidates": [
+            "u1"
+          ],
+          "logical_id": null,
+          "match": "ambiguous"
+        },
+        "path_agreement": 0.0,
+        "score": 0.6,
+        "withheld": {
+          "candidates": [],
+          "logical_id": "n1",
+          "match": "new"
+        },
+        "within_ceiling": true
+      }
+    ],
+    "flipping_count": 8,
+    "found_ambiguous_to_new": true
+  },
+  "gap_b_runner_up_attribution": {
+    "argument": "The lemma excludes a pruned candidate from being the runner-up that fires the tie guard on a pair that would otherwise MERGE, because 0.87 > 0.80. It does not exclude it from being the runner-up of a pair already in the review band, where the tie guard returns candidates=(best, runner_up). Withholding it changes that tuple.",
+    "measured": false,
+    "type": "analytic, not measured in this receipt",
+    "why_this_is_now_load_bearing": "H1-K Amendment 1 established that candidate attribution is semantic: it seeds selective recompilation and the promotion gate and is serialized. Before that audit this gap looked cosmetic."
+  },
+  "generated_at": "2026-08-19T03:56:59.340706+00:00",
+  "identity_module_modified": false,
+  "identity_module_sha256": "sha256:0b27e1b505d4684eaaf07aea0d6ffc1df3f30e4b8b1d95c5025f83572a05fafc",
+  "lemma_as_stated": "Pruning cannot turn AMBIGUOUS or NEW into MATCHED for a given row.",
+  "lemma_is_sound_as_stated": true,
+  "lemma_sufficient_for_exactness": false,
+  "network_access": false,
+  "receipt_sha256": "sha256:22693ed190eff208e4fbed75f7b84712209f6fe05220413062009815558aa52d",
+  "schema": "tavonel.pruning-ceiling-lemma-audit.v1",
+  "threshold_analysis": {
+    "ceiling": 0.8,
+    "ceiling_below_merge": true,
+    "ceiling_below_merge_minus_tie": true,
+    "merge_minus_tie": 0.87,
+    "merge_threshold": 0.92,
+    "new_threshold": 0.75,
+    "overlap_is_nonempty": true,
+    "review_band_overlap": [
+      0.75,
+      0.8
+    ],
+    "tie_band": 0.05,
+    "why_it_matters": "A pruned candidate can score anywhere in [0.75, 0.80]. That is inside the review band, so it can be the assigned partner of a row and make it AMBIGUOUS, and it can be the runner-up of a review-band pair and change which unit is named in `candidates`. Neither is a MATCHED promotion, so neither is excluded by the lemma."
+  },
+  "verdict": "CEILING_INSUFFICIENT_FOR_EXACT_PRUNING"
+}

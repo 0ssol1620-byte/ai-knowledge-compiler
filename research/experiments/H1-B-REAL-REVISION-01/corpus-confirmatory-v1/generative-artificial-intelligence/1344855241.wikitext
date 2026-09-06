@@ -1,0 +1,5 @@
+#REDIRECT [[Generative AI]]
+{{Rcat shell|
+{{R from long name}}
+{{R from move}}
+}}

@@ -9,6 +9,8 @@ from datetime import UTC, date, datetime, time, timedelta
 from decimal import ROUND_CEILING, Decimal, InvalidOperation
 from enum import StrEnum
 
+from akc_api.plan_catalog import canonical_plan_code
+
 _SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 _MONEY_QUANTUM = Decimal("0.000001")
 
@@ -194,7 +196,7 @@ def canonical_source_sha256(value: str) -> str:
 
 
 def is_free_plan(plan_code: str) -> bool:
-    return plan_code.strip().casefold() == "free"
+    return canonical_plan_code(plan_code) == "evaluation"
 
 
 def queue_priority_for_plan(plan_code: str) -> int:

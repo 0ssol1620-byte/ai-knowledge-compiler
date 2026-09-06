@@ -1,0 +1,49 @@
+{
+ "candidate_causes_of_the_residual": [
+  {
+   "candidate": "a secondary rate limit rather than primary exhaustion",
+   "how_it_would_be_settled": "record x-ratelimit-remaining on the response that stopped the run",
+   "why_plausible": "GitHub answers a secondary limit with 403 and a Retry-After while primary quota remains, and SFIR4's fetcher raises RateLimited on exactly that shape. The run would then have stopped below 5,000 charged, and the residual would not be a charge at all."
+  },
+  {
+   "candidate": "provider-side charges the redirect handler cannot see",
+   "how_it_would_be_settled": "carry per-request charge accounting through the traversal itself, so every request's cost is recorded where it happened",
+   "why_plausible": "three of thirty-six renamed requests were charged more than their observed hops, so the provider's counter and our hop count are not identical even on a redirect we do observe"
+  }
+ ],
+ "content_sha256": "sha256:efea42d84666ffac774dc32db0fe4838f71726da6f595df917474928a4698c3b",
+ "estimated_cost_usd": 0.0,
+ "explains_the_divergence": false,
+ "finding": "PER_HOP_CHARGING_EXPLAINS_PART_OF_THE_DIVERGENCE",
+ "gpu_seconds": 0,
+ "means": "GitHub charges per network hop, and every request to one of the nine renamed addresses was charged twice and counted once: 790 such requests, a surcharge of 790. That is measured. It leaves 240 charges unaccounted for, which is NOT attributed here.",
+ "measured_rule_from": {
+  "charged_per_logical_request": {
+   "renamed": 2,
+   "unrenamed": 1
+  },
+  "finding": "RENAMED_ADDRESSES_COST_MORE",
+  "receipt": "receipts/sfir8-hop-divergence.json"
+ },
+ "predicted_provider_charge": 4760,
+ "produces_capacity_claim": false,
+ "protocol_id": "SOURCE_FACT_IR_INSTRUMENT_CALIBRATION_V8",
+ "provider_limit": 5000,
+ "reads_terminal_evidence_only": true,
+ "requests_made": 0,
+ "residual_unexplained": 240,
+ "schema": "tavonel.sfir8.sfir7_accounting_reconciliation.v1",
+ "sfir7_observed": {
+  "logical_requests": 3970,
+  "logical_requests_on_renamed_addresses": 790,
+  "logical_requests_on_unrenamed_addresses": 3180,
+  "our_counter_stayed_below_the_bound": true,
+  "our_frozen_global_bound": 4800,
+  "roots_renamed": 8,
+  "roots_visited": 50
+ },
+ "study_kind": "DEVELOPMENT_INSTRUMENT_CALIBRATION",
+ "surcharge_from_renames": 790,
+ "the_residual_is_not_attributed": "Both candidates are consistent with what was measured and neither is established. SFIR7's census is terminal evidence and is not re-run to settle this, so it is settled prospectively: SFIR9's traversal records provider charge per request, which makes the question answer itself on the next live run instead of being argued from arithmetic.",
+ "what_this_fixes_in_sfir9": "a request bound must be expressed in the quantity the provider bills -- network hops -- and the traversal must count them. A bound on logical requests cannot protect a budget denominated in hops, however carefully it is derived."
+}

@@ -1,0 +1,98 @@
+{
+  "census": {
+    "path": "research/tavonel_eval_v2/receipts/sfir5-capacity-metadata-census.json",
+    "sha256": "sha256:58820fb9e8bc11b38357ed024be8d5220b977283fce26dadf01279cd7515cc50"
+  },
+  "census_seal": {
+    "path": "research/tavonel_eval_v2/receipts/sfir5-capacity-census-seal.json",
+    "sha256": "sha256:3fd81622138b92afac66d082dd953c4247e36b6ea914cbdc45f48506fe7d00db"
+  },
+  "content_sha256": "sha256:d7ca53472316efc4f9fbee76968b0a4baf5587ed5a8588d232dd3a15d1a42763",
+  "criterion": {
+    "formula": "Q_f=min(1000,floor(0.8*C_f))",
+    "minimum_C_per_family": 750,
+    "minimum_Q_per_family": 600,
+    "requires_every_family": true
+  },
+  "downstream_not_run": {
+    "acquisition_started": false,
+    "authority": "charter terminal_policy: no_roster_or_acquisition_on_capacity_shortfall",
+    "corpus_spent": false,
+    "payload_opened": false,
+    "roster_frozen": false
+  },
+  "estimated_cost_usd": 0.0,
+  "families": {
+    "encyclopedia_wikipedia": {
+      "C": 0,
+      "Q": 0,
+      "is_a_measurement": false,
+      "meets_C": false,
+      "meets_Q": false,
+      "root_states": {
+        "COMPLETE": 1,
+        "ZERO_CANDIDATE_ROOT_DISPOSITION": 29
+      },
+      "roots_complete": 1,
+      "roots_declared": 30,
+      "the_zero_is_not_a_capacity_statement": "C=0 here records that the instrument never enumerated, not that the declared categories lack revised pages. Nothing in this programme establishes the capacity of this family in either direction.",
+      "verdict": "NOT_MEASURED_INSTRUMENT_DEFECT",
+      "why": "every revision request was rejected by the endpoint. The adapter supplies 50 page ids together with rvlimit=2; MediaWiki answers invalidparammix, because rvlimit 'may only be used on a single page'. Every root therefore failed the seen_batch == set(batch) check and was filed TRUNCATED_OR_INCOMPLETE_ENUMERATION. No candidate could have been produced by any input."
+    },
+    "git_docs": {
+      "C": 293,
+      "Q": 234,
+      "is_a_measurement": true,
+      "meets_C": false,
+      "meets_Q": false,
+      "root_states": {
+        "COMPLETE": 13,
+        "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION": 7
+      },
+      "roots_complete": 13,
+      "roots_declared": 20,
+      "verdict": "SHORTFALL_MEASURED",
+      "why": "13 of 20 roots enumerated to queue exhaustion, 7 hit declared tree-traversal bounds and were excluded as the charter requires. No root reached its per-root candidate cap of 80 (highest was 73), so the total is not an artifact of the cap. This is what the declared frame yields under the declared bounds."
+    },
+    "regulation_ecfr": {
+      "C": 859,
+      "Q": 687,
+      "is_a_measurement": true,
+      "meets_C": true,
+      "meets_Q": true,
+      "root_states": {
+        "COMPLETE": 49,
+        "ZERO_CANDIDATE_ROOT_DISPOSITION": 1
+      },
+      "roots_complete": 49,
+      "roots_declared": 50,
+      "verdict": "MEETS_CRITERION",
+      "why": "49 of 50 roots enumerated to exhaustion; one reserved title carries no versions"
+    }
+  },
+  "families_measured": [
+    "git_docs",
+    "regulation_ecfr"
+  ],
+  "families_meeting_criterion": [
+    "regulation_ecfr"
+  ],
+  "families_not_measured": [
+    "encyclopedia_wikipedia"
+  ],
+  "first_applied_criterion_in_the_programme": true,
+  "generated_at": "2026-08-27T06:27:02.465329+00:00",
+  "gpu_seconds": 0,
+  "outcome": "The criterion requires every family. One family meets it, one falls short as a measurement, and one was not measured at all. The criterion is not met, and it cannot be met on this census whatever view is taken of the unmeasured family.",
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5",
+  "schema": "tavonel.sfir5.capacity_outcome.v1",
+  "seal_side_defect": {
+    "consequence_if_uncorrected": "seal_capacity would refuse EVERY census, for every family, whatever the data. It went unseen because all four SFIR4 runs died before producing a census, so this path had never been exercised on real output.",
+    "does_it_change_this_outcome": false,
+    "how_that_was_established": "the field set was corrected in memory and seal_capacity re-run against the same sealed census; the refusal became 'encyclopedia_wikipedia capacity shortfall'. Established by running it, not by arguing it. The frozen module on disk was not edited.",
+    "what": "seal_capacity refuses this census with 'encyclopedia_wikipedia pagination proof drifted' before reaching any capacity arithmetic. CAPACITY_PAGINATION_FIELDS compares the pagination block by strict set equality, and the INC-V2-098 repair added retries_total and transport_retries to that block without updating it."
+  },
+  "state": "CAPACITY_CRITERION_APPLIED_AND_FAILED",
+  "what_this_receipt_does_not_say": "that encyclopedia_wikipedia lacks capacity. Its instrument never enumerated, and a broken instrument's silence is not a measured absence. It also does not say that the two measured families are wrong -- git_docs fell short under declared bounds with no cap reached, and regulation_ecfr met the criterion.",
+  "why_that_is_notable": "SFIR1 through SFIR4 each stopped before the criterion could be applied. SFIR4's stop receipt records scientific_threshold_evaluated: false. This is the first census in the programme that was completed and evaluated."
+}

@@ -1,0 +1,24 @@
+{
+  "all_three_facets_exact": true,
+  "blocked_policy_executed": false,
+  "cases": 19,
+  "closes": "H1-L Amendment 2 listed three contract facets as not computed: the serialized semantic record, changed_logical_ids, and the selective rebuild set. Two were argued 'strongly implied'. That reasoning produced the P15 overclaim, so it is not relied on here.",
+  "divergence_examples": [],
+  "divergences_per_facet": {
+    "changed_logical_ids": 0,
+    "selective_rebuild_set": 0,
+    "serialized_semantic_record": 0
+  },
+  "experiment": "H1-L-CERTIFIED-SPARSE-MATCHER-01",
+  "extension_of": "receipts/exactness-2026-08-19.json",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T06:02:20.855939+00:00",
+  "identity_module_modified": false,
+  "instrument_note": "No mutants of its own; inherits separating power from the main H1-L run. A reader who rejects that inheritance should treat this null as unvalidated.",
+  "network_access": false,
+  "note_on_direction": "Adding facets to a comparison can only reveal divergence, never hide it. A zero here therefore strengthens the earlier zero rather than restating it.",
+  "receipt_sha256": "sha256:7d0190d0072c7d286716d88ab7a68cb78cfb53dbb1627ed77869f5ca9589f638",
+  "result": "FULL_CONTRACT_EXACT",
+  "schema": "tavonel.certified-sparse-full-contract.v1",
+  "total_divergences": 0
+}

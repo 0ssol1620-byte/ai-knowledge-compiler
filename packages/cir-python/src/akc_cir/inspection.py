@@ -49,6 +49,7 @@ __all__ = [
     "SECURITY_CODES",
     "CalibrationTable",
     "DetectorSignal",
+    "EvidenceChannel",
     "FailureCode",
     "FailureEvent",
     "InspectionResult",
@@ -56,6 +57,7 @@ __all__ = [
     "Severity",
     "SourceScope",
     "Stage",
+    "aggregate_evidence_risk",
     "correlate_failures",
     "detect_completeness",
     "detect_duplication",
@@ -165,6 +167,47 @@ class InspectionStatus(StrEnum):
     PASS = "PASS"  # noqa: S105 -- an inspection verdict, not a credential
     SUSPICIOUS = "SUSPICIOUS"
     FAIL = "FAIL"
+    UNKNOWN_REFERENCE = "UNKNOWN_REFERENCE"
+    UNRESOLVED = "UNRESOLVED"
+
+
+class EvidenceChannel(StrEnum):
+    """Independent observation families used by correlation-aware aggregation."""
+
+    SOURCE = "source"
+    COMPLETENESS = "completeness"
+    TEXT_QUALITY = "text_quality"
+    STRUCTURE = "structure"
+    VISUAL = "visual"
+    KNOWLEDGE = "knowledge"
+    SECURITY = "security"
+    CONTROL = "control"
+    SYSTEM = "system"
+
+
+def _default_evidence_channel(code: FailureCode) -> EvidenceChannel:
+    """Backward-compatible channel inference for pre-metadata detector callers."""
+    try:
+        number = int(code.value.split("_", 1)[0][1:])
+    except (ValueError, IndexError):
+        return EvidenceChannel.SYSTEM
+    if number <= 1:
+        return EvidenceChannel.SOURCE
+    if 8 <= number <= 9:
+        return EvidenceChannel.COMPLETENESS
+    if 10 <= number <= 11:
+        return EvidenceChannel.TEXT_QUALITY
+    if number == 12:
+        return EvidenceChannel.STRUCTURE
+    if 13 <= number <= 18:
+        return EvidenceChannel.VISUAL
+    if 19 <= number <= 24:
+        return EvidenceChannel.KNOWLEDGE
+    if number in {25, 28, 29, 34, 45}:
+        return EvidenceChannel.SECURITY
+    if number in {26, 27, 35, 36, 37, 38, 39, 40, 48}:
+        return EvidenceChannel.CONTROL
+    return EvidenceChannel.SYSTEM
 
 
 #: §N9.1's hard-fail list. These need no threshold calibration to be wrong, and
@@ -220,10 +263,19 @@ class DetectorSignal:
     detail: str = ""
     evidence_refs: tuple[str, ...] = ()
     raw: Mapping[str, float | str | None] = field(default_factory=dict)
+    evidence_channel: EvidenceChannel | None = None
+    independence_group: str = ""
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.score <= 1.0:
             raise ValueError(f"{self.code}: detector score must be within 0..1")
+        if self.evidence_channel is None:
+            object.__setattr__(self, "evidence_channel", _default_evidence_channel(self.code))
+        if not self.independence_group:
+            # Repeated observations from one detector are correlated by default.
+            # Callers may deliberately share a group across different detectors
+            # when those signals derive from the same underlying evidence.
+            object.__setattr__(self, "independence_group", self.code.value)
 
     @property
     def signature(self) -> str:
@@ -316,6 +368,12 @@ class InspectionResult:
     signals: tuple[DetectorSignal, ...]
     calibration: CalibrationTable
     unknown_references: tuple[str, ...] = ()
+    unresolved_reasons: tuple[str, ...] = ()
+
+    @property
+    def acceptable(self) -> bool:
+        """Only an explicit PASS may cross a publish/accept boundary."""
+        return self.status is InspectionStatus.PASS
 
     @property
     def codes(self) -> tuple[FailureCode, ...]:
@@ -339,6 +397,10 @@ class InspectionResult:
         """
         if self.status is InspectionStatus.PASS:
             return "ACCEPT"
+        if self.status is InspectionStatus.UNKNOWN_REFERENCE:
+            return "ACQUIRE_REFERENCE"
+        if self.status is InspectionStatus.UNRESOLVED:
+            return "HUMAN_REVIEW_OR_FAIL_CLOSED"
         ranked = sorted(
             self.signals, key=lambda s: (not s.hard_fail, -s.score, s.code.value)
         )
@@ -355,12 +417,18 @@ class InspectionResult:
                     "hard_fail": s.hard_fail,
                     "detail": s.detail,
                     "raw": dict(s.raw),
+                    "evidence_channel": (
+                        s.evidence_channel or _default_evidence_channel(s.code)
+                    ).value,
+                    "independence_group": s.independence_group,
                 }
                 for s in self.signals
             ],
             "recommended_action": self.recommended_action(),
             "thresholds_calibrated": self.calibration.calibrated,
             "unknown_references": list(self.unknown_references),
+            "unresolved_reasons": list(self.unresolved_reasons),
+            "acceptable": self.acceptable,
         }
 
 
@@ -710,6 +778,7 @@ def inspect_output(
     *,
     calibration: CalibrationTable | None = None,
     unknown_references: Iterable[str] = (),
+    unresolved_reasons: Iterable[str] = (),
 ) -> InspectionResult:
     """Turn a detector vector into a status, and say what the status rests on.
 
@@ -725,14 +794,28 @@ def inspect_output(
     table = calibration or CalibrationTable()
     ordered = tuple(sorted(signals, key=lambda s: (not s.hard_fail, -s.score, s.code)))
     unknowns = tuple(dict.fromkeys(ref for ref in unknown_references if ref))
+    unresolved = tuple(dict.fromkeys(reason for reason in unresolved_reasons if reason))
 
     if not ordered:
         return InspectionResult(
-            status=InspectionStatus.PASS,
-            severity=Severity.INFO,
+            status=(
+                InspectionStatus.UNRESOLVED
+                if unresolved
+                else InspectionStatus.UNKNOWN_REFERENCE
+                if unknowns
+                else InspectionStatus.PASS
+            ),
+            severity=(
+                Severity.HIGH
+                if unresolved
+                else Severity.MEDIUM
+                if unknowns
+                else Severity.INFO
+            ),
             signals=(),
             calibration=table,
             unknown_references=unknowns,
+            unresolved_reasons=unresolved,
         )
 
     if any(signal.hard_fail for signal in ordered):
@@ -742,10 +825,11 @@ def inspect_output(
             signals=ordered,
             calibration=table,
             unknown_references=unknowns,
+            unresolved_reasons=unresolved,
         )
 
     catastrophic = [s for s in ordered if s.code in CATASTROPHIC_CODES]
-    catastrophic_risk = _noisy_or(s.score for s in catastrophic)
+    catastrophic_risk = aggregate_evidence_risk(catastrophic)
     if catastrophic_risk >= table.catastrophic_threshold:
         return InspectionResult(
             status=InspectionStatus.FAIL,
@@ -753,9 +837,10 @@ def inspect_output(
             signals=ordered,
             calibration=table,
             unknown_references=unknowns,
+            unresolved_reasons=unresolved,
         )
 
-    combined = _noisy_or(s.score for s in ordered)
+    combined = aggregate_evidence_risk(ordered)
     if combined >= table.suspicious_threshold:
         return InspectionResult(
             status=InspectionStatus.SUSPICIOUS,
@@ -763,6 +848,26 @@ def inspect_output(
             signals=ordered,
             calibration=table,
             unknown_references=unknowns,
+            unresolved_reasons=unresolved,
+        )
+
+    if unresolved:
+        return InspectionResult(
+            status=InspectionStatus.UNRESOLVED,
+            severity=Severity.HIGH,
+            signals=ordered,
+            calibration=table,
+            unknown_references=unknowns,
+            unresolved_reasons=unresolved,
+        )
+    if unknowns:
+        return InspectionResult(
+            status=InspectionStatus.UNKNOWN_REFERENCE,
+            severity=Severity.MEDIUM,
+            signals=ordered,
+            calibration=table,
+            unknown_references=unknowns,
+            unresolved_reasons=unresolved,
         )
 
     return InspectionResult(
@@ -771,7 +876,25 @@ def inspect_output(
         signals=ordered,
         calibration=table,
         unknown_references=unknowns,
+        unresolved_reasons=unresolved,
     )
+
+
+def aggregate_evidence_risk(signals: Iterable[DetectorSignal]) -> float:
+    """Correlation-aware noisy-or over detector evidence.
+
+    Signals sharing ``independence_group`` are alternative observations of the
+    same underlying evidence, so only the strongest score from that group is
+    allowed to contribute. Distinct groups then accumulate with noisy-or. This
+    prevents correlated detectors from becoming falsely certain merely because
+    they looked at the same pixels/text twice.
+    """
+    strongest: dict[str, float] = {}
+    for signal in signals:
+        strongest[signal.independence_group] = max(
+            strongest.get(signal.independence_group, 0.0), signal.score
+        )
+    return _noisy_or(strongest.values())
 
 
 def _noisy_or(scores: Iterable[float]) -> float:

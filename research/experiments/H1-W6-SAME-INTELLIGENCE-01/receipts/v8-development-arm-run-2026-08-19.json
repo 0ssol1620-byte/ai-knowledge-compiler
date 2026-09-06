@@ -1,0 +1,529 @@
+{
+  "arm_comparison_meaning": "an evidence-selection check, not a model comparison. It answers whether the harness routes different evidence to different arms and scores it correctly.",
+  "comparisons": {
+    "TAVONEL_vs_BASIC_RAG_PLUS": {
+      "BASIC_RAG_PLUS_rate": 0.8814,
+      "TAVONEL_rate": 0.9096,
+      "absolute_effect": 0.0282,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG_PLUS",
+      "concordant_pairs": {
+        "both": 155,
+        "neither": 15
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_PLUS_only": 1,
+        "TAVONEL_only": 6,
+        "total": 7
+      },
+      "mcnemar_exact_p": 0.125,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.0366,
+        0.0936
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "TAVONEL_vs_RAW_floor": {
+      "RAW_rate": 0.9209,
+      "TAVONEL_rate": 0.9096,
+      "absolute_effect": -0.0113,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs RAW",
+      "concordant_pairs": {
+        "both": 161,
+        "neither": 14
+      },
+      "discordant_pairs": {
+        "RAW_only": 2,
+        "TAVONEL_only": 0,
+        "total": 2
+      },
+      "mcnemar_exact_p": 0.5,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.0714,
+        0.0484
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "primary_TAVONEL_vs_BASIC_RAG": {
+      "BASIC_RAG_rate": 0.8927,
+      "TAVONEL_rate": 0.9096,
+      "absolute_effect": 0.0169,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 158,
+        "neither": 16
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 0,
+        "TAVONEL_only": 3,
+        "total": 3
+      },
+      "mcnemar_exact_p": 0.25,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.0465,
+        0.0808
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    }
+  },
+  "context_budget_by_arm": {
+    "BASIC_RAG": {
+      "inference_cost_note": "null because no inference occurred. The development model is extractive; cost is measured once the frozen model is attested and running.",
+      "inference_cost_usd": null,
+      "max_source_tokens": 2967,
+      "median_context_utilization": 0.4577,
+      "median_latency_ms": 3.894,
+      "median_source_tokens": 1373,
+      "median_units_omitted": 0,
+      "oracle_omitted_by_truncation_rate": 0.0282,
+      "raw_context_overflow_count": 0,
+      "truncation_rate": 0.0113
+    },
+    "BASIC_RAG_PLUS": {
+      "inference_cost_note": "null because no inference occurred. The development model is extractive; cost is measured once the frozen model is attested and running.",
+      "inference_cost_usd": null,
+      "max_source_tokens": 2932,
+      "median_context_utilization": 0.518,
+      "median_latency_ms": 4.498,
+      "median_source_tokens": 1554,
+      "median_units_omitted": 0,
+      "oracle_omitted_by_truncation_rate": 0.0395,
+      "raw_context_overflow_count": 0,
+      "truncation_rate": 0.0395
+    },
+    "RAW": {
+      "inference_cost_note": "null because no inference occurred. The development model is extractive; cost is measured once the frozen model is attested and running.",
+      "inference_cost_usd": null,
+      "max_source_tokens": 26369,
+      "median_context_utilization": 0.199,
+      "median_latency_ms": 6.232,
+      "median_source_tokens": 6368,
+      "median_units_omitted": 0,
+      "oracle_omitted_by_truncation_rate": 0.0,
+      "raw_context_overflow_count": 0,
+      "truncation_rate": 0.0
+    },
+    "TAVONEL": {
+      "inference_cost_note": "null because no inference occurred. The development model is extractive; cost is measured once the frozen model is attested and running.",
+      "inference_cost_usd": null,
+      "max_source_tokens": 2990,
+      "median_context_utilization": 0.4707,
+      "median_latency_ms": 4.116,
+      "median_source_tokens": 1412,
+      "median_units_omitted": 0,
+      "oracle_omitted_by_truncation_rate": 0.0113,
+      "raw_context_overflow_count": 0,
+      "truncation_rate": 0.0395
+    }
+  },
+  "controls": {
+    "all_separate": true,
+    "fairness": {
+      "clean_holds": true,
+      "differing_decoding_rejected": true,
+      "extra_intelligence_rejected": true,
+      "separates": true,
+      "temporal_metadata_leak_rejected": true
+    },
+    "scoring": {
+      "abstaining_on_an_answerable_question_is_wrong": true,
+      "abstaining_where_evidence_does_not_determine_is_correct": true,
+      "answering_an_undetermined_question_is_an_unsupported_assertion": true,
+      "markup_does_not_change_the_verdict": true,
+      "right_answer_right_evidence_is_temporally_correct": true,
+      "right_answer_stale_evidence_is_flagged": true,
+      "right_answer_stale_evidence_is_not_temporally_correct": true,
+      "separates": true,
+      "stale_value_is_a_stale_answer": true,
+      "stale_value_is_not_answer_correct": true
+    },
+    "statistics": {
+      "a_real_difference_has_nonzero_effect": true,
+      "a_real_difference_is_detected": true,
+      "identical_arms_are_not_significant": true,
+      "identical_arms_have_no_discordant_pairs": true,
+      "identical_arms_have_zero_effect": true,
+      "interval_covers_zero_when_arms_are_identical": true,
+      "one_discordant_pair_is_not_significant": true,
+      "separates": true
+    }
+  },
+  "development_model_context_note": "a development stand-in, not the frozen value. The freeze receipt carries the attested Qwen3.6-27B context window.",
+  "development_model_context_tokens": 32000,
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "fairness_contract": {
+    "finding_count": 0,
+    "findings": [],
+    "holds": true,
+    "shared_keys_checked": [
+      "model_identity",
+      "decoding",
+      "answer_schema",
+      "subject_routing",
+      "scorer",
+      "top_k",
+      "context_budget_tokens",
+      "question_set_sha256"
+    ]
+  },
+  "generated_at": "2026-08-19T23:10:38.533859+00:00",
+  "network_access": false,
+  "primary_comparison": {
+    "BASIC_RAG_rate": 0.8927,
+    "TAVONEL_rate": 0.9096,
+    "absolute_effect": 0.0169,
+    "ci_method": "Newcombe score interval for paired proportions",
+    "comparison": "TAVONEL vs BASIC_RAG",
+    "concordant_pairs": {
+      "both": 158,
+      "neither": 16
+    },
+    "discordant_pairs": {
+      "BASIC_RAG_only": 0,
+      "TAVONEL_only": 3,
+      "total": 3
+    },
+    "mcnemar_exact_p": 0.25,
+    "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+    "n_pairs": 177,
+    "paired_difference_ci95": [
+      -0.0465,
+      0.0808
+    ],
+    "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+  },
+  "protocol": "W6_V8_CONFIRMATORY_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:fe6c20a558720d92586c28ceedeb86ed125018894aba1c1ac31a66cacc1d495b",
+  "question_set": "question-set-v8-dev-2026-08-19.json",
+  "question_set_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+  "questions_evaluated": 177,
+  "questions_skipped_no_locatable_oracle": 17,
+  "rates_by_arm": {
+    "BASIC_RAG": {
+      "abstained": 0.0734,
+      "abstention_appropriate": 0.0,
+      "answer_correct": 0.8927,
+      "evidence_correct": 0.6045,
+      "provenance_localized": 0.6045,
+      "right_answer_stale_evidence": 0.2994,
+      "stale_answer": 0.0339,
+      "temporal_correct": 0.5932,
+      "unsupported_assertion": 0.0
+    },
+    "BASIC_RAG_PLUS": {
+      "abstained": 0.096,
+      "abstention_appropriate": 0.0,
+      "answer_correct": 0.8814,
+      "evidence_correct": 0.5593,
+      "provenance_localized": 0.5593,
+      "right_answer_stale_evidence": 0.3333,
+      "stale_answer": 0.0226,
+      "temporal_correct": 0.548,
+      "unsupported_assertion": 0.0
+    },
+    "RAW": {
+      "abstained": 0.0621,
+      "abstention_appropriate": 0.0,
+      "answer_correct": 0.9209,
+      "evidence_correct": 0.226,
+      "provenance_localized": 0.226,
+      "right_answer_stale_evidence": 0.6949,
+      "stale_answer": 0.0169,
+      "temporal_correct": 0.226,
+      "unsupported_assertion": 0.0
+    },
+    "TAVONEL": {
+      "abstained": 0.0791,
+      "abstention_appropriate": 0.0,
+      "answer_correct": 0.9096,
+      "evidence_correct": 0.9153,
+      "provenance_localized": 0.9153,
+      "right_answer_stale_evidence": 0.0056,
+      "stale_answer": 0.0113,
+      "temporal_correct": 0.904,
+      "unsupported_assertion": 0.0
+    }
+  },
+  "raw_context_budget_policy": "RAW_GETS_WHOLE_DOCUMENT_BUDGET",
+  "raw_context_budget_policy_note": "founder decision of 2026-08-20, option B. RAW receives the whole before + after document pair against the frozen model context rather than the retrieval budget, because under the shared budget its floor was set by context capacity rather than by knowledge representation. The asymmetry favours the floor and is reported rather than hidden. RAW is a floor only; the primary comparison remains TAVONEL vs BASIC_RAG.",
+  "raw_context_overflow": {
+    "count": 0,
+    "handling": "recorded, never silently truncated. RAW is scored as an abstention on those questions and reported separately; the paired TAVONEL vs BASIC_RAG primary endpoint is unaffected because RAW is not the comparator.",
+    "questions": []
+  },
+  "receipt_sha256": "sha256:cbb0830b8282644dc56465d74f928b4839e5403ca1f5703c86b02ed052b573a0",
+  "run_class": "DEVELOPMENT_ONLY",
+  "run_class_note": "the model performs no inference, so each arm's result is a pure function of the evidence it retrieved. This verifies the pipeline end to end. It is not a result about any model and must never be reported as a paper endpoint.",
+  "schema": "tavonel.w6-v8-development-arm-run.v1",
+  "secondary_comparisons": {
+    "abstention_appropriate": {
+      "BASIC_RAG_rate": 0.0,
+      "TAVONEL_rate": 0.0,
+      "absolute_effect": 0.0,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 0,
+        "neither": 177
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 0,
+        "TAVONEL_only": 0,
+        "total": 0
+      },
+      "mcnemar_exact_p": 1.0,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.0212,
+        0.0212
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "evidence_correct": {
+      "BASIC_RAG_rate": 0.6045,
+      "TAVONEL_rate": 0.9153,
+      "absolute_effect": 0.3107,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 107,
+        "neither": 15
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 0,
+        "TAVONEL_only": 55,
+        "total": 55
+      },
+      "mcnemar_exact_p": 0.0,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        0.2253,
+        0.3911
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "provenance_localized": {
+      "BASIC_RAG_rate": 0.6045,
+      "TAVONEL_rate": 0.9153,
+      "absolute_effect": 0.3107,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 107,
+        "neither": 15
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 0,
+        "TAVONEL_only": 55,
+        "total": 55
+      },
+      "mcnemar_exact_p": 0.0,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        0.2253,
+        0.3911
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "right_answer_stale_evidence": {
+      "BASIC_RAG_rate": 0.2994,
+      "TAVONEL_rate": 0.0056,
+      "absolute_effect": -0.2938,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 0,
+        "neither": 123
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 53,
+        "TAVONEL_only": 1,
+        "total": 54
+      },
+      "mcnemar_exact_p": 0.0,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.3651,
+        -0.2261
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "stale_answer": {
+      "BASIC_RAG_rate": 0.0339,
+      "TAVONEL_rate": 0.0113,
+      "absolute_effect": -0.0226,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 2,
+        "neither": 171
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 4,
+        "TAVONEL_only": 0,
+        "total": 4
+      },
+      "mcnemar_exact_p": 0.125,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.0615,
+        0.0116
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "temporal_correct": {
+      "BASIC_RAG_rate": 0.5932,
+      "TAVONEL_rate": 0.904,
+      "absolute_effect": 0.3107,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 105,
+        "neither": 17
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 0,
+        "TAVONEL_only": 55,
+        "total": 55
+      },
+      "mcnemar_exact_p": 0.0,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        0.2237,
+        0.3923
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    },
+    "unsupported_assertion": {
+      "BASIC_RAG_rate": 0.0,
+      "TAVONEL_rate": 0.0,
+      "absolute_effect": 0.0,
+      "ci_method": "Newcombe score interval for paired proportions",
+      "comparison": "TAVONEL vs BASIC_RAG",
+      "concordant_pairs": {
+        "both": 0,
+        "neither": 177
+      },
+      "discordant_pairs": {
+        "BASIC_RAG_only": 0,
+        "TAVONEL_only": 0,
+        "total": 0
+      },
+      "mcnemar_exact_p": 1.0,
+      "mcnemar_method": "exact binomial on discordant pairs, p = 0.5",
+      "n_pairs": 177,
+      "paired_difference_ci95": [
+        -0.0212,
+        0.0212
+      ],
+      "reporting_rule": "a p-value is never reported alone. p < 0.05 on 4 discordant pairs and on 400 are different findings, and the discordant counts above are what distinguishes them."
+    }
+  },
+  "secondary_multiplicity": {
+    "alpha": 0.05,
+    "family_size": 7,
+    "note": "step-down: once a hypothesis fails, every later one fails too",
+    "results": {
+      "abstention_appropriate": {
+        "p": 1.0,
+        "significant": false,
+        "threshold": 0.05
+      },
+      "evidence_correct": {
+        "p": 0.0,
+        "significant": true,
+        "threshold": 0.008333
+      },
+      "provenance_localized": {
+        "p": 0.0,
+        "significant": true,
+        "threshold": 0.01
+      },
+      "right_answer_stale_evidence": {
+        "p": 0.0,
+        "significant": true,
+        "threshold": 0.0125
+      },
+      "stale_answer": {
+        "p": 0.125,
+        "significant": false,
+        "threshold": 0.016667
+      },
+      "temporal_correct": {
+        "p": 0.0,
+        "significant": true,
+        "threshold": 0.007143
+      },
+      "unsupported_assertion": {
+        "p": 1.0,
+        "significant": false,
+        "threshold": 0.025
+      }
+    }
+  },
+  "shared_configuration": {
+    "answer_schema": "answer|abstained|evidence_present",
+    "context_budget_tokens": 3000,
+    "decoding": {
+      "deterministic": true,
+      "temperature": 0.0
+    },
+    "model_identity": {
+      "is_real_model": false,
+      "name": "ExtractiveDevelopmentModel",
+      "note": "performs no inference; selects the first candidate value present in the supplied context. Present so the pipeline is exercisable before a model is pinned. Never an endpoint.",
+      "version": "development-stub-1"
+    },
+    "question_set_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+    "scorer": "scoring_v8.score_answer",
+    "subject_routing": "stage_0_deterministic_subject_to_document_namespace",
+    "top_k": 5
+  },
+  "source_hashes": {
+    "arms_v8.py": "sha256:c90229f77b3f194e8790d53f2530bc36f026a5e685bfb88b2226edcc8cbb35e5",
+    "build_question_set_v8.py": "sha256:4a45baaf9cf72349569d1509d30823b4d16fa892b9b349330898a14818d3c656",
+    "entity_conditioned_gate_v8.py": "sha256:250bb19e0aa3ecfe2d71b48e373df2c4e9a7fe245914cbb5ca95c750c5f76d2e",
+    "residual_overlap_v8.py": "sha256:af83564d6d861bd4a7313667d31d70557e77635c7838935b9ec9fd874809d65a",
+    "run_arms_dev_v8.py": "sha256:5e2409c36061e02e278a9c8d285805b144ecd68b6217b4575f8a293feeb4fc7e",
+    "scoring_v8.py": "sha256:98566bcc21c2d9591b75f39f5fa967c3f1ff2bf58edfb811535d9dfb72a918b1",
+    "taint_gate_v8.py": "sha256:083ba42611be0e941d7462b264a1f87a46141f09350ffc1117f3b28f53bd9dfe"
+  },
+  "temporal_hard_negative": {
+    "BASIC_RAG": {
+      "answer_from_stale_evidence": 56,
+      "correct_revision_top_1": 76,
+      "wrong_revision_top_1": 101
+    },
+    "BASIC_RAG_PLUS": {
+      "answer_from_stale_evidence": 61,
+      "correct_revision_top_1": 78,
+      "wrong_revision_top_1": 99
+    },
+    "RAW": {
+      "answer_from_stale_evidence": 125,
+      "correct_revision_top_1": 0,
+      "wrong_revision_top_1": 177
+    },
+    "TAVONEL": {
+      "answer_from_stale_evidence": 0,
+      "correct_revision_top_1": 177,
+      "wrong_revision_top_1": 0
+    }
+  },
+  "temporal_hard_negative_note": "the hard negative is CORRECT SUBJECT + WRONG REVISION. wrong_revision_top_1 and answer_from_stale_evidence are the columns that show it directly."
+}

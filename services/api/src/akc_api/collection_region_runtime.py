@@ -7,7 +7,7 @@ import uuid
 from collections.abc import Iterable, Mapping
 from typing import Annotated, Any, Literal
 
-from akc_quality import AgentFinding, RecoveryStage
+from akc_quality import AgentFinding, FindingLevel, RecoveryStage
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,6 +50,58 @@ class RegionPromotionError(ValueError):
     """A recovery output is stale, unscoped, or lacks verifiable evidence."""
 
 
+class RegionAssuranceAttestation(BaseModel):
+    """Compact, content-free assurance vector attached to a recovery candidate.
+
+    Upstream verifier workers run against the real source evidence/native render
+    and pass only this result vector through the promotion boundary. Raw source
+    or alternate-parser text is deliberately not duplicated into the attestation.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    verification_receipt_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    parser_output_count: Annotated[int, Field(ge=1, le=16)] = 1
+    parser_unresolved: bool = False
+    critical_token_checked: bool = False
+    critical_token_passed: bool | None = None
+    critical_token_mismatch_count: Annotated[int, Field(ge=0, le=10_000)] = 0
+    visual_round_trip_required: bool = False
+    visual_round_trip_passed: bool | None = None
+    cross_page_check_required: bool = False
+    cross_page_check_passed: bool | None = None
+
+    @model_validator(mode="after")
+    def validate_attestation(self) -> RegionAssuranceAttestation:
+        if self.critical_token_checked:
+            if self.critical_token_passed is None:
+                raise ValueError("checked critical tokens require an explicit verdict")
+            if self.critical_token_passed and self.critical_token_mismatch_count:
+                raise ValueError("passing critical-token attestation cannot contain mismatches")
+        elif self.critical_token_passed is not None or self.critical_token_mismatch_count:
+            raise ValueError("unchecked critical tokens cannot carry a verdict or mismatches")
+        if self.visual_round_trip_required and self.visual_round_trip_passed is None:
+            raise ValueError("required visual round-trip needs an explicit verdict")
+        if self.cross_page_check_required and self.cross_page_check_passed is None:
+            raise ValueError("required cross-page check needs an explicit verdict")
+        return self
+
+    @property
+    def publishable(self) -> bool:
+        # One line per reason not to publish. Written as a ledger rather than a
+        # chain of early returns so that every rule has the same shape: in a
+        # fail-closed check, the condition that looks different from its
+        # neighbours is the one someone later edits without noticing it is the
+        # same kind of rule.
+        blockers = (
+            self.parser_unresolved,
+            self.critical_token_checked and not self.critical_token_passed,
+            self.visual_round_trip_required and not self.visual_round_trip_passed,
+            self.cross_page_check_required and not self.cross_page_check_passed,
+        )
+        return not any(blockers)
+
+
 class RegionOutputCandidate(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -69,6 +121,7 @@ class RegionOutputCandidate(BaseModel):
     model_revision: Annotated[str, Field(min_length=1, max_length=200)]
     provider_revision: Annotated[str, Field(min_length=1, max_length=200)]
     attestation_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    assurance: RegionAssuranceAttestation | None = None
 
     @model_validator(mode="after")
     def validate_output_and_route(self) -> RegionOutputCandidate:
@@ -82,6 +135,20 @@ class RegionOutputCandidate(BaseModel):
                 raise ValueError("region output digest mismatch")
             if self.independent_signal_count < 2:
                 raise ValueError("promotable region output requires two independent signals")
+            if any(
+                finding.level in {FindingLevel.HARD, FindingLevel.SECURITY}
+                for finding in self.findings
+            ):
+                raise ValueError("promotable region output cannot carry hard/security findings")
+            if self.recovery_stage is RecoveryStage.SECOND_PARSER and (
+                self.assurance is None or self.assurance.parser_output_count < 2
+            ):
+                raise ValueError(
+                    "second-parser promotion requires a compact "
+                    "multi-parser assurance attestation"
+                )
+            if self.assurance is not None and not self.assurance.publishable:
+                raise ValueError("region assurance attestation is not publishable")
         elif self.output_text is not None or self.output_sha256 is not None:
             raise ValueError("non-promotable region attempt cannot publish output")
         return self
@@ -104,6 +171,9 @@ def _summary(candidate: RegionOutputCandidate) -> dict[str, Any]:
         "model_revision": candidate.model_revision,
         "provider_revision": candidate.provider_revision,
         "attestation_sha256": candidate.attestation_sha256,
+        "assurance": (
+            candidate.assurance.model_dump(mode="json") if candidate.assurance is not None else None
+        ),
     }
 
 

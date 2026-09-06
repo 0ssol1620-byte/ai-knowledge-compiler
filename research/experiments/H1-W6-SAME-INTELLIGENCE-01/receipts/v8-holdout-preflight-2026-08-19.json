@@ -1,0 +1,304 @@
+{
+  "arm_source_hashes": {
+    "arms_v8.py": "sha256:c90229f77b3f194e8790d53f2530bc36f026a5e685bfb88b2226edcc8cbb35e5",
+    "build_holdout_manifest_v8.py": "sha256:715712d315b0a8d7228325a8710da38bb5a50fee8a7b7f71c030733c70008797",
+    "build_question_set_v8.py": "sha256:4a45baaf9cf72349569d1509d30823b4d16fa892b9b349330898a14818d3c656",
+    "entity_conditioned_gate_v8.py": "sha256:250bb19e0aa3ecfe2d71b48e373df2c4e9a7fe245914cbb5ca95c750c5f76d2e",
+    "residual_overlap_v8.py": "sha256:af83564d6d861bd4a7313667d31d70557e77635c7838935b9ec9fd874809d65a",
+    "run_arms_dev_v8.py": "sha256:5e2409c36061e02e278a9c8d285805b144ecd68b6217b4575f8a293feeb4fc7e",
+    "run_arms_holdout_v8.py": "sha256:09fb3d28b8c03fd55ed1d58de0723b280df354a9a18040c9de5958e33e9caf0d",
+    "scoring_v8.py": "sha256:98566bcc21c2d9591b75f39f5fa967c3f1ff2bf58edfb811535d9dfb72a918b1",
+    "taint_gate_v8.py": "sha256:083ba42611be0e941d7462b264a1f87a46141f09350ffc1117f3b28f53bd9dfe",
+    "vllm_model_v8.py": "sha256:6ec3af44fc4c3faa1ec3b78a294a8682ea9acb428867928b06b2eeb9dbb61f75"
+  },
+  "conditions": {
+    "all_arm_sources_exist": {
+      "detail": [],
+      "passes": true,
+      "why": "a missing arm means the holdout would be spent on an incomplete comparison"
+    },
+    "config_freeze_exists": {
+      "detail": null,
+      "passes": true,
+      "why": "the freeze is the holdout lock: it pins every hash, parameter and rule so that nothing can be tuned once holdout results are visible"
+    },
+    "development_controls_separate": {
+      "detail": null,
+      "passes": true,
+      "why": "fairness, scoring and statistics controls must all have fired on development data; a control that never separated has verified nothing"
+    },
+    "development_seal_valid": {
+      "detail": "SEALED_DEVELOPMENT_PROTOCOL_CONFLICT_RUN",
+      "passes": true,
+      "why": "the seal is what distinguishes development titles from holdout titles; without it there is no such thing as an untouched title"
+    },
+    "fairness_contract_holds": {
+      "detail": null,
+      "passes": true,
+      "why": "the arms must differ only in knowledge representation"
+    },
+    "full_repository_green": {
+      "detail": true,
+      "passes": true,
+      "why": "a red repository means the harness that produces the endpoint is not known to work"
+    },
+    "holdout_status_unopened": {
+      "detail": null,
+      "passes": true,
+      "why": "a holdout that has been opened once cannot be opened again as a holdout"
+    },
+    "identity_controls_separate": {
+      "detail": null,
+      "passes": true,
+      "why": "the identity chain must be able to reach every failure state it claims: reconciled, mismatch, not-ready and ambiguous"
+    },
+    "leakage_gates_live": {
+      "detail": null,
+      "passes": true,
+      "why": "both leakage layers must have demonstrated they can fail"
+    },
+    "model_identity_chain_reconciled": {
+      "detail": {
+        "action": null,
+        "attested": null,
+        "expected": null,
+        "state": "MODEL_IDENTITY_RECONCILED"
+      },
+      "passes": true,
+      "why": "the candidate registry's expected revision, the live attestation and the config freeze must be the same revision. MODEL_IDENTITY_MISMATCH means something ran that was not expected: the registry is not overwritten with whatever ran, and the holdout does not open"
+    },
+    "model_is_pinned_and_real": {
+      "detail": "Qwen/Qwen3.6-27B",
+      "passes": true,
+      "why": "the development model performs no inference. Opening the holdout against it would spend untouched titles on a stub"
+    },
+    "model_runtime_attested": {
+      "detail": {
+        "expected": "Qwen/Qwen3.6-27B",
+        "missing_fields": [],
+        "observed": "Qwen/Qwen3.6-27B"
+      },
+      "passes": true,
+      "why": "MODEL_RUNTIME_NOT_READY otherwise. A model name pins nothing: two runtimes serving the same name can differ in checkpoint, tokenizer, quantization and serving stack. Every field must come from the live runtime. There is no fallback to another model --- an unattestable runtime fails the preflight"
+    },
+    "no_fallback_model_permitted": {
+      "detail": null,
+      "passes": true,
+      "why": "the serving registry may declare a fallback recipe, which is correct for serving and forbidden here. A confirmatory run that silently answered from a different model would be unfalsifiable"
+    },
+    "no_source_drift": {
+      "detail": null,
+      "passes": true,
+      "why": "the code that runs the holdout must be the code that was frozen, byte for byte"
+    },
+    "overlap_guard_live": {
+      "detail": null,
+      "passes": true,
+      "why": "the generator must read the key the seal actually uses, verified against the source rather than assumed"
+    },
+    "raw_context_budget_policy_decided": {
+      "detail": "RAW_GETS_WHOLE_DOCUMENT_BUDGET",
+      "passes": true,
+      "why": "the development run measured RAW losing the oracle to truncation on 0.5763 of questions. Until the policy is chosen and stated, a context-window effect would be reported as a representation effect"
+    },
+    "raw_context_window_known": {
+      "detail": 262144,
+      "passes": true,
+      "why": "option B gives RAW the whole document pair against the frozen model context. Without the attested context window RAW cannot run, and falling back to the retrieval budget would reintroduce the budget-limited floor"
+    },
+    "scorer_exists": {
+      "detail": null,
+      "passes": true,
+      "why": "scoring must be defined before the arms run, never chosen after seeing them"
+    },
+    "separability_metric_disposition_decided": {
+      "detail": null,
+      "passes": true,
+      "why": "at 1.0 the metric is tautological under the v8 admission rule; it must be declared a generator integrity check or replaced before the holdout, never cited as independent difficulty evidence"
+    },
+    "statistics_config_exists": {
+      "detail": null,
+      "passes": true,
+      "why": "the multiplicity correction is frozen before the holdout, not selected to suit the result"
+    },
+    "v7_titles_present_in_seal": {
+      "detail": 750,
+      "passes": true,
+      "why": "the overlap guard reads this list. An empty list makes the guard inert and a silent pass, which is worse than no guard --- exactly the defect found on 2026-08-19"
+    }
+  },
+  "controls": {
+    "breaks": {
+      "controls_did_not_separate": {
+        "failed_conditions": [
+          "development_controls_separate"
+        ],
+        "refused": true
+      },
+      "empty_seal_titles": {
+        "failed_conditions": [
+          "v7_titles_present_in_seal"
+        ],
+        "refused": true
+      },
+      "fairness_violated": {
+        "failed_conditions": [
+          "fairness_contract_holds"
+        ],
+        "refused": true
+      },
+      "holdout_already_opened": {
+        "failed_conditions": [
+          "holdout_status_unopened"
+        ],
+        "refused": true
+      },
+      "identity_chain_mismatch": {
+        "failed_conditions": [
+          "model_identity_chain_reconciled"
+        ],
+        "refused": true
+      },
+      "identity_chain_not_ready": {
+        "failed_conditions": [
+          "model_identity_chain_reconciled"
+        ],
+        "refused": true
+      },
+      "identity_controls_inert": {
+        "failed_conditions": [
+          "identity_controls_separate"
+        ],
+        "refused": true
+      },
+      "identity_registry_ambiguous": {
+        "failed_conditions": [
+          "model_identity_chain_reconciled"
+        ],
+        "refused": true
+      },
+      "missing_arm_source": {
+        "failed_conditions": [
+          "all_arm_sources_exist"
+        ],
+        "refused": true
+      },
+      "missing_config_freeze": {
+        "failed_conditions": [
+          "config_freeze_exists",
+          "no_source_drift",
+          "model_is_pinned_and_real",
+          "model_runtime_attested",
+          "raw_context_window_known",
+          "raw_context_budget_policy_decided",
+          "separability_metric_disposition_decided"
+        ],
+        "refused": true
+      },
+      "missing_seal": {
+        "failed_conditions": [
+          "development_seal_valid",
+          "v7_titles_present_in_seal"
+        ],
+        "refused": true
+      },
+      "model_name_substituted": {
+        "failed_conditions": [
+          "model_runtime_attested"
+        ],
+        "refused": true
+      },
+      "raw_budget_policy_reverted_to_shared": {
+        "failed_conditions": [
+          "raw_context_budget_policy_decided"
+        ],
+        "refused": true
+      },
+      "repository_red": {
+        "failed_conditions": [
+          "full_repository_green"
+        ],
+        "refused": true
+      },
+      "residual_control_did_not_separate": {
+        "failed_conditions": [
+          "leakage_gates_live"
+        ],
+        "refused": true
+      },
+      "separability_cited_as_difficulty_evidence": {
+        "failed_conditions": [
+          "separability_metric_disposition_decided"
+        ],
+        "refused": true
+      },
+      "source_drift": {
+        "failed_conditions": [
+          "no_source_drift"
+        ],
+        "refused": true
+      },
+      "statistics_config_absent": {
+        "failed_conditions": [
+          "statistics_config_exists"
+        ],
+        "refused": true
+      },
+      "stub_model": {
+        "failed_conditions": [
+          "model_is_pinned_and_real"
+        ],
+        "refused": true
+      },
+      "taint_gate_not_live": {
+        "failed_conditions": [
+          "leakage_gates_live"
+        ],
+        "refused": true
+      },
+      "unattested_model_runtime": {
+        "failed_conditions": [
+          "model_runtime_attested"
+        ],
+        "refused": true
+      },
+      "undecided_raw_budget_policy": {
+        "failed_conditions": [
+          "raw_context_budget_policy_decided"
+        ],
+        "refused": true
+      },
+      "undecided_separability_disposition": {
+        "failed_conditions": [
+          "separability_metric_disposition_decided"
+        ],
+        "refused": true
+      },
+      "unknown_model_context_window": {
+        "failed_conditions": [
+          "raw_context_window_known"
+        ],
+        "refused": true
+      }
+    },
+    "every_break_refused": true,
+    "note": "the baseline is synthetic so the controls fire regardless of the live state. overlap_guard_live still reads the real generator source, because a control that can fake a live guard is not a control.",
+    "separates": true,
+    "synthetic_baseline_failed_conditions": [],
+    "synthetic_baseline_passes": true
+  },
+  "controls_separate": true,
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "failed_conditions": [],
+  "generated_at": "2026-08-20T03:18:28.849309+00:00",
+  "holdout_may_be_opened": true,
+  "holdout_status": "UNOPENED",
+  "network_access": false,
+  "protocol": "W6_V8_CONFIRMATORY_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:fe6c20a558720d92586c28ceedeb86ed125018894aba1c1ac31a66cacc1d495b",
+  "receipt_sha256": "sha256:65e962c61dc591f1b6b426759125965d99e2af2e1aa939c84b7897647255eb9d",
+  "run_class": "DEVELOPMENT_ONLY",
+  "schema": "tavonel.w6-v8-holdout-preflight.v1",
+  "what_this_reads": "development-side state only. No holdout title is opened, read, inspected, previewed or dry-run by this gate."
+}

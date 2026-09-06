@@ -1,0 +1,50 @@
+{
+  "cleanup": {
+    "stop_acknowledged": true,
+    "stop_error_type": null
+  },
+  "completed_at_utc": "2026-08-15T19:04:56.596082+00:00",
+  "completion_http_status": 200,
+  "health": {
+    "attempts": 87,
+    "ready": true,
+    "seconds_from_create": 507.066
+  },
+  "passed": true,
+  "provider_create": {
+    "hourly_rate_usd": "0.74",
+    "machine_id_present": true,
+    "name": "tavonel-ovis-vllm-smoke-185603",
+    "pod_id": "gos4tphdnugh2x",
+    "status": "RUNNING"
+  },
+  "provider_guards": {
+    "local_finally_stop": true,
+    "stop_after": "2026-08-15T19:16:03.593419+00:00",
+    "terminate_after": "2026-08-15T19:21:03.593419+00:00",
+    "volume_in_gb": 0
+  },
+  "runtime": {
+    "expected_model_safetensors_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+    "gdn_prefill_backend": "triton",
+    "image_digest": "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05",
+    "model_artifact_hash_verified_in_this_smoke": false,
+    "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c"
+  },
+  "schema": "tavonel.ovis-vllm-server-smoke.v1",
+  "smoke": {
+    "all_critical_tokens_present": true,
+    "critical_token_checks": {
+      "2026-08-16": true,
+      "42.50": true,
+      "MUST": true,
+      "TAVONEL": true,
+      "USD": true
+    },
+    "input_sha256": "sha256:7b2be110cc2c3c6b0d2ada762ac351e3bc9874fb03ff47d9ed1cea8aaf79823d",
+    "request_seconds": 5.74,
+    "response_preview": "TAVONEL\n\nDATE 2026-08-16\n\nAMOUNT 42.50 USD\n\nPOLICY MUST",
+    "response_sha256": "sha256:7b1e89812900707bfe44024dfad481be755e6077757f918792182640368c5ae0"
+  },
+  "started_at_utc": "2026-08-15T18:56:03.593467+00:00"
+}

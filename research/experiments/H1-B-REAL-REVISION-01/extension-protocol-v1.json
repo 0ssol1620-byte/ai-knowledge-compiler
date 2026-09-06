@@ -1,0 +1,30 @@
+{
+  "schema": "tavonel.real-public-revision-holdout-extension-protocol.v1",
+  "prepared_on": "2026-08-17",
+  "status": "FROZEN_BEFORE_EXTENSION_FETCH",
+  "base_receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-holdout-v2.json",
+  "reason": "The frozen 12-pair base holdout achieved 12/12 equivalence and zero stale-left-behind but contained only five rendered-semantic-change pairs. Before fetching any extension outcomes, freeze one additional 12-page technology/science set and retain every fetched pair without post-hoc dropping.",
+  "cutoff": "2026-07-01T00:00:00Z",
+  "titles": [
+    "OpenAI",
+    "ChatGPT",
+    "GPT-4",
+    "Deep learning",
+    "Transformer (deep learning architecture)",
+    "Computer vision",
+    "Natural language processing",
+    "Nvidia",
+    "SpaceX",
+    "RNA vaccine",
+    "Nuclear fusion",
+    "James Webb Space Telescope"
+  ],
+  "selection_rule": "One fixed public technology/science page set chosen before extension fetch; use the same two-revision-before-cutoff rule and the same v2 rendered-semantic adapter. No extension pair may be dropped based on equivalence, rebuild fraction, or change count.",
+  "success_gate": {
+    "all_pairs_equivalent": true,
+    "stale_left_behind_total": 0,
+    "combined_rendered_semantic_changed_pair_count_min": 8
+  },
+  "gpu_cost_usd": 0.0,
+  "claim_boundary": "This extension strengthens public real-revision generalization evidence; it does not establish performance on every document domain or imply production persistence."
+}

@@ -1,0 +1,51 @@
+{
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3-acquisition-frame-freeze--20260825T173240Z-2ddcbbfc3c8d.json",
+    "receipt_body_sha256": "sha256:5090b7cc27ddef2353106e18bd19bc93db6f4cfa69a4f5d9e1ff664b138f2236",
+    "receipt_file_sha256": "sha256:ffe2453ab28febc6b73b87183925326bd748fff92289df330930a3aeeb756c28",
+    "run_id": "20260825T173240Z-2ddcbbfc3c8d",
+    "stem": "identity-change-migration-closure-v2r3-acquisition-frame-freeze"
+  },
+  "pinned_files": {
+    "acquisition/sources_v2r3.py": "sha256:26aa683d0d1bad02329ac02e1c014415d859c160bd534dd990f568c860305038",
+    "tools/root_identity.py": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d"
+  },
+  "provenance": {
+    "generated_at": "2026-08-25T17:32:40.488713+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml",
+    "protocol_sha256": "sha256:51b8a0b0ec32dc5c04224ed346fa720c21c35929a917db7db2a0335581b74318",
+    "receipt_stem": "identity-change-migration-closure-v2r3-frame-attestation",
+    "run_id": "20260825T173240Z-8d8c7cbeb23e",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:ce7f46cfb8fcbb30e68b8be9761635cad7e564f6e73f04dbda1dac5fd54ea9bd",
+  "refuses_unless": "unverifiable == 0 AND clashes == 0",
+  "root_disjointness": {
+    "clashes": 0,
+    "prior_by_family": {
+      "ecfr": 265,
+      "git": 268,
+      "sec": 18,
+      "wikipedia": 324
+    },
+    "prior_identities": 875,
+    "prior_modules_read": 12,
+    "prior_root_set_digest": "sha256:6c9ffa7cf192e94390d7093cbde25a308ec9924efa3ab491a525df06d53754cd",
+    "prior_unverifiable": 0,
+    "proved": true,
+    "reader": "tools/root_identity.py",
+    "v2r3_by_family": {
+      "ecfr": 44,
+      "git": 40,
+      "sec": 1
+    },
+    "v2r3_roots": 85,
+    "v2r3_unverifiable": 0
+  },
+  "rung": "0a",
+  "rung_name": "frame_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3_attestation.v1"
+}

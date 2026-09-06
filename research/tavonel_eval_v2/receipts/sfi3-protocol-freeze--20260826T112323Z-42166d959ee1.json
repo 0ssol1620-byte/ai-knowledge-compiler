@@ -1,0 +1,491 @@
+{
+  "blocking": [],
+  "checks": [
+    {
+      "condition": "protocol_is_a_draft",
+      "describe": "the protocol has not already been frozen",
+      "detail": "status is 'DRAFT_NOT_FROZEN'",
+      "endpoints": 9,
+      "verdict": "PASS"
+    },
+    {
+      "condition": "no_prior_freeze",
+      "describe": "no earlier freeze receipt exists",
+      "detail": "no prior freeze receipt",
+      "verdict": "PASS"
+    },
+    {
+      "absent_summariser_blocks": [],
+      "condition": "post_freeze_pipeline_exists",
+      "describe": "the sealed protocol can actually be executed",
+      "detail": "worker, scorer, frame and every scored aggregation block are present, and the execution path was carried end to end on development fixtures with 8 negative control(s)",
+      "files_checked": {
+        "acquisition worker": true,
+        "equivalence summariser": true,
+        "frame": true,
+        "scorer": true
+      },
+      "rehearsal_receipt": "research/tavonel_eval_v2/receipts/sfi3-execution-rehearsal--20260824T235257Z-9785847f11db.json",
+      "verdict": "PASS"
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+        "--receipt-only-on-pass"
+      ],
+      "condition": "Windows stale-lock resolved",
+      "describe": "Windows stale-lock resolved",
+      "detail": "external suite completed: 2712 tests, 4 skipped",
+      "peak_rss_bytes": 3829760,
+      "receipt": "research/tavonel_eval_v2/receipts/sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "receipt_file_sha256": "sha256:d6ed39fb0426e4cea8af37b2d4b78bda9a97bb21dea41f65f4584473da6f1035",
+      "returncode": 0,
+      "verdict": "PASS"
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+        "--receipt-only-on-pass"
+      ],
+      "condition": "suite stable",
+      "describe": "suite stable",
+      "detail": "external suite completed: 2712 tests, 4 skipped",
+      "peak_rss_bytes": 3829760,
+      "receipt": "research/tavonel_eval_v2/receipts/sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "receipt_file_sha256": "sha256:d6ed39fb0426e4cea8af37b2d4b78bda9a97bb21dea41f65f4584473da6f1035",
+      "returncode": 0,
+      "verdict": "PASS"
+    },
+    {
+      "condition": "causal wording corrected",
+      "describe": "causal wording corrected",
+      "detail": "no unqualified reappearance found across 370 scanned file(s)",
+      "excluded": [
+        "NS/receipts/** (immutable historical evidence)",
+        "this module and its test (self-referential pattern/fixture text)"
+      ],
+      "verdict": "PASS",
+      "violations": []
+    },
+    {
+      "condition": "incident cross-refs coherent",
+      "declared_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84
+      ],
+      "describe": "incident cross-refs coherent",
+      "detail": "84 distinct INC-V2 number(s) declared; 0 unmarked duplicate declaration(s), 0 numbering gap(s), 0 unresolved reference(s)",
+      "duplicate_declarations": [],
+      "numbering_gaps": [],
+      "unresolved_references": [],
+      "verdict": "PASS"
+    },
+    {
+      "benchmark_receipt": "research/tavonel_eval_v2/receipts/identity-change-benchmark--20260824T092056Z-eb6269afcbd0.json",
+      "canary_receipt": "research/tavonel_eval_v2/receipts/identity-change-canary--20260824T092141Z-36fa48664af6.json",
+      "closure_acceptance": {
+        "cohort_floor": 200,
+        "families": [
+          "git_docs",
+          "regulation_ecfr",
+          "sec_edgar"
+        ],
+        "held": true,
+        "how": "every digest recomputed from disk, the measurement re-read, the invariant set compared as set equality, and each verdict taken from the measurement rather than from this acceptance's summary of it",
+        "invariants": {
+          "INVARIANT_1_identity_decisions_unchanged": "MET",
+          "INVARIANT_2_identity_fold_remains_identity_only": "MET",
+          "INVARIANT_3_expectation_is_independent": "MET",
+          "INVARIANT_4_changed_facet_resolves_typed_or_failclosed": "MET",
+          "INVARIANT_5_never_silently_unchanged": "MET",
+          "INVARIANT_6_ambiguous_identity_stays_unresolved": "MET",
+          "INVARIANT_7_only_predeclared_ignores": "MET",
+          "INVARIANT_8_sfi2_cases_cannot_certify": "MET"
+        },
+        "measurement_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4--20260826T064947Z-e6cab21d2c93.json",
+        "measurement_run_id": "20260826T064947Z-e6cab21d2c93",
+        "measurement_sha256": "sha256:28da167f1c98a67b866e40add4bfa5ba840b618e1a1559c24a11b516e2ea3474",
+        "no_glob": "the closure is named by protocol id, run id and digest. There is no glob, no 'latest', and no implicit predecessor selection anywhere in this path -- see INC-V2-069.",
+        "overall": "PASS",
+        "pairs_resolved": 223,
+        "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4",
+        "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+        "schema": "tavonel.v2.migration_closure_acceptance.v1",
+        "universe_sha256": "sha256:2ff5ade21d0e63ecbb33ed18c449a7de9a85789472b0088107715b0d162da1c1"
+      },
+      "closure_acceptance_receipt": "research/tavonel_eval_v2/receipts/migration-closure-acceptance--20260826T065127Z-0d8f9b2c3e28.json",
+      "closure_bound_by": "an explicit MIGRATION_CLOSURE_ACCEPTANCE_V1 receipt naming protocol id, run id and digests -- never a stem glob or a 'latest' pointer",
+      "condition": "identity/change separation complete",
+      "describe": "identity/change separation complete",
+      "detail": "ladder complete: 538 real revision pairs, 2536 matched units, under-fire 0, identity records unchanged, canary 5/5; production probe folds identity-equal and still catches the change",
+      "over_fire_reported_not_gated": {
+        "on_confirmed_defect_lineages": 14,
+        "rate_over_matched_pairs": 0.011041,
+        "why_not_gated": "over-fire is the stated price of the fix, not a threshold to tune against; no bar in this repository is calibrated"
+      },
+      "production_probe": {
+        "carried_forward_count": 3,
+        "identity_folds_equal": true,
+        "stale_artifacts": []
+      },
+      "prospective_closure_overall": "PASS",
+      "prospective_closure_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4--20260826T064947Z-e6cab21d2c93.json",
+      "retrospective_receipts_classification": "RETROSPECTIVE MIGRATION SAFETY REGRESSION, not prospective ladder qualification (founder ruling on INC-V2-042). They are necessary and not sufficient",
+      "verdict": "PASS"
+    },
+    {
+      "channels": {
+        "LOCATOR": "PASS",
+        "METADATA": "PASS",
+        "SEMANTIC": "PASS",
+        "STRUCTURAL": "PASS",
+        "TEMPORAL": "PASS"
+      },
+      "condition": "five-channel contract complete",
+      "describe": "five-channel contract complete",
+      "detail": "all 5 declared channels resolve to a seed set, 0 silent",
+      "expected_side_source": "declarative dependency contract (declared facet sensitivity), not the planner",
+      "verdict": "PASS"
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+        "--receipt-only-on-pass"
+      ],
+      "condition": "E9 independent oracle and gate-power tests complete",
+      "describe": "E9 independent oracle and gate-power tests complete",
+      "detail": "external suite completed: 2712 tests, 4 skipped",
+      "peak_rss_bytes": 3829760,
+      "receipt": "research/tavonel_eval_v2/receipts/sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "receipt_file_sha256": "sha256:d6ed39fb0426e4cea8af37b2d4b78bda9a97bb21dea41f65f4584473da6f1035",
+      "returncode": 0,
+      "verdict": "PASS"
+    },
+    {
+      "condition": "E8 option (b) applied",
+      "describe": "E8 option (b) applied",
+      "detail": "protocol declares contributes_to_pass_arithmetic=False; scorer excludes it from PRIMARY_ENDPOINTS=True",
+      "verdict": "PASS"
+    },
+    {
+      "condition": "E8 fault-injection power proven",
+      "describe": "E8 fault-injection power proven",
+      "detail": "fault injection raised at every stage",
+      "receipt": "research/tavonel_eval_v2/receipts/e8-instrumentation-power--20260823T111643Z-f449584e29f6.json",
+      "split": "development",
+      "verdict": "PASS"
+    },
+    {
+      "condition": "dynamic include-target fail-closed complete",
+      "constructs": {
+        "html-include-src": false,
+        "hugo-shortcode-include": true,
+        "jinja-include": true,
+        "mediawiki-template": false
+      },
+      "describe": "dynamic include-target fail-closed complete",
+      "detail": "all 2 unrouted construct(s) proven safe by research/tavonel_eval_v2/source_fact_ir/scope_gate.py",
+      "proof": {
+        "html-include-src": {
+          "in_scored_path": true,
+          "never_represents_computed_or_malformed": true,
+          "taxonomy_route": "include_target.embedded_template_marker on the resolved attribute value"
+        },
+        "hugo-shortcode-include": {
+          "in_scored_path": true,
+          "never_represents_computed_or_malformed": true,
+          "taxonomy_route": "include_target.classify_include_expression on the text after the directive name, same call as jinja-include"
+        },
+        "jinja-include": {
+          "in_scored_path": true,
+          "never_represents_computed_or_malformed": true,
+          "taxonomy_route": "include_target.classify_include_expression on the text after the directive name"
+        },
+        "mediawiki-template": {
+          "in_scored_path": true,
+          "never_represents_computed_or_malformed": true,
+          "taxonomy_route": "no taxonomy call: _MEDIAWIKI_RE's character class structurally excludes '{'/'}' from the captured name, so no computed expression can be captured as a name in the first place — see prove_mediawiki_name_cannot_carry_a_computed_expression"
+        }
+      },
+      "unrouted": [
+        "html-include-src",
+        "mediawiki-template"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "channels": [
+        {
+          "case": "semantic_case",
+          "digest_moved": true,
+          "ir_channel": "SEMANTIC",
+          "prior_value": "sha256:0079508d7fcf33e32785f3550a80511684b43eb4e47379730047fa1dd7d04820",
+          "rebuilt_value": "sha256:f9a3a80c7c3dc88b1874d96f159756d3138ba076f8bbe6eb6210e12b228e40fe",
+          "target_artifact": "section:u:bf7665445169198c5a288964"
+        },
+        {
+          "case": "structural_case",
+          "digest_moved": true,
+          "ir_channel": "STRUCTURAL",
+          "prior_value": "sha256:70f6e613609f70bd94c967571fdcbb8256bde7dd602842a390894d2e0ce2573c",
+          "rebuilt_value": "sha256:e7bca9926d5905ee6e975522000c9e61c555d1b41c1abd2a53357690d07fab14",
+          "target_artifact": "structure-map:3d514b3bd6cf74af"
+        },
+        {
+          "case": "referential_case",
+          "digest_moved": true,
+          "ir_channel": "REFERENTIAL",
+          "prior_value": "sha256:0079508d7fcf33e32785f3550a80511684b43eb4e47379730047fa1dd7d04820",
+          "rebuilt_value": "sha256:546d4a1597277b6d7b52b6d33fc61f81b6b73a62764ac06e8a2b33de3e213f94",
+          "target_artifact": "section:u:bf7665445169198c5a288964"
+        },
+        {
+          "case": "temporal_case",
+          "digest_moved": true,
+          "ir_channel": "TEMPORAL",
+          "prior_value": "sha256:0079508d7fcf33e32785f3550a80511684b43eb4e47379730047fa1dd7d04820",
+          "rebuilt_value": "sha256:b11bd7372d39245bc61199c5c2d71c6035d883f438179f12106c9b32d95fec97",
+          "target_artifact": "section:u:bf7665445169198c5a288964"
+        },
+        {
+          "case": "descriptive_case",
+          "digest_moved": true,
+          "ir_channel": "DESCRIPTIVE",
+          "prior_value": "sha256:0079508d7fcf33e32785f3550a80511684b43eb4e47379730047fa1dd7d04820",
+          "rebuilt_value": "sha256:d12f1c7b34534b867a110a8ee28ee611a929f4fa5a99fcf9a44abf6192e4251c",
+          "target_artifact": "section:u:bf7665445169198c5a288964"
+        }
+      ],
+      "condition": "artifact facet/fingerprint propagation verified",
+      "describe": "artifact facet/fingerprint propagation verified",
+      "detail": "artifact digest moved for every declared channel",
+      "verdict": "PASS"
+    },
+    {
+      "condition": "claim pins byte-match",
+      "describe": "claim pins byte-match",
+      "detail": "}",
+      "returncode": 0,
+      "verdict": "PASS"
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+        "--receipt-only-on-pass"
+      ],
+      "condition": "scorer/executor seam tests green",
+      "describe": "scorer/executor seam tests green",
+      "detail": "external suite completed: 2712 tests, 4 skipped",
+      "peak_rss_bytes": 3829760,
+      "receipt": "research/tavonel_eval_v2/receipts/sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "receipt_file_sha256": "sha256:d6ed39fb0426e4cea8af37b2d4b78bda9a97bb21dea41f65f4584473da6f1035",
+      "returncode": 0,
+      "verdict": "PASS"
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "research/tavonel_eval_v2/tools/record_sfi3_suite_evidence.py",
+        "--receipt-only-on-pass"
+      ],
+      "condition": "spent-set streaming preserved",
+      "describe": "spent-set streaming preserved",
+      "detail": "external suite completed: 2712 tests, 4 skipped",
+      "peak_rss_bytes": 3829760,
+      "receipt": "research/tavonel_eval_v2/receipts/sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "receipt_file_sha256": "sha256:d6ed39fb0426e4cea8af37b2d4b78bda9a97bb21dea41f65f4584473da6f1035",
+      "returncode": 0,
+      "verdict": "PASS"
+    },
+    {
+      "condition": "78-root availability-only preflight complete",
+      "describe": "78-root availability-only preflight complete",
+      "detail": "valid roots per family: {'encyclopedia_wikipedia': 10, 'git_docs': 32, 'regulation_ecfr': 36}; families wiped out: []",
+      "floor_reachability": "NOT ESTABLISHED by this check. Only a wiped-out family is provable pre-freeze; anything finer needs yield estimation, which would require reading revision content",
+      "receipt": "research/tavonel_eval_v2/receipts/sfi3-root-preflight--20260823T124032Z-460a72fb471c.json",
+      "root_shortfall": {},
+      "verdict": "PASS"
+    },
+    {
+      "condition": "fresh frame disjointness complete",
+      "describe": "fresh frame disjointness complete",
+      "detail": "0 disjointness violation(s) against a spent set of 6127 lineage id(s); frame_sealed=False",
+      "frame_sealed": false,
+      "scope_note": "Wikipedia category roots are not lineage-id-shaped before network expansion and are checked only once the frame is sealed, via expanded_frame_overlap above",
+      "verdict": "PASS",
+      "violations": []
+    },
+    {
+      "condition": "SFI2 14 forensic cases excluded",
+      "describe": "SFI2 14 forensic cases excluded",
+      "detail": "all 14 pinned SFI2 E5/E6 forensic lineages are in SFI3's spent set",
+      "missing_from_spent_set": [],
+      "pinned_lineage_ids": [
+        "ecfr:38:4:4.117",
+        "ecfr:40:262:262.1",
+        "ecfr:40:761:761.123",
+        "ecfr:40:761:761.180",
+        "git:apache/dolphinscheduler:docs/docs/en/contribute/join/become-a-committer.md",
+        "git:apache/druid:docs/api-reference/data-management-api.md",
+        "git:apache/druid:docs/api-reference/legacy-metadata-api.md",
+        "git:apache/druid:docs/api-reference/supervisor-api.md",
+        "git:apache/druid:docs/data-management/manual-compaction.md",
+        "git:apache/druid:docs/data-management/schema-changes.md",
+        "git:apache/druid:docs/design/deep-storage.md",
+        "git:apache/druid:docs/design/indexing-service.md",
+        "git:apache/druid:docs/design/metadata-storage.md",
+        "git:microsoft/playwright:docs/src/api/class-playwrightassertions.md"
+      ],
+      "pinned_receipt": "research/tavonel_eval_v2/receipts/sfi2-native-provenance--20260823T085006Z-e53cc8aaeb7d.json",
+      "verdict": "PASS"
+    },
+    {
+      "condition": "no fresh SFI3 payload read",
+      "describe": "no fresh SFI3 payload read",
+      "detail": "no SFI3 lineage expansion or acquisition artifact exists",
+      "verdict": "PASS"
+    },
+    {
+      "condition": "INC-V2-034 four-link gate implemented and tested, or sealed as a separate hard blocker",
+      "describe": "INC-V2-034 four-link gate implemented and tested, or sealed as a separate hard blocker",
+      "detail": "research/tavonel_eval_v2/tools/four_link_gate.py exists; it gates GPU entry, not the SFI3 result",
+      "note": "separate hard gate, deliberately not mixed into the held-out arithmetic",
+      "verdict": "PASS"
+    },
+    {
+      "absent_summariser_blocks": [],
+      "condition": "execution readiness rehearsed end to end on development fixtures, with negative controls, and no fresh SFI3 payload opened",
+      "describe": "execution readiness rehearsed end to end on development fixtures, with negative controls, and no fresh SFI3 payload opened",
+      "detail": "worker, scorer, frame and every scored aggregation block are present, and the execution path was carried end to end on development fixtures with 8 negative control(s)",
+      "files_checked": {
+        "acquisition worker": true,
+        "equivalence summariser": true,
+        "frame": true,
+        "scorer": true
+      },
+      "rehearsal_receipt": "research/tavonel_eval_v2/receipts/sfi3-execution-rehearsal--20260824T235257Z-9785847f11db.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual_frozen_roots_checked_at_sfi3_rung_0": true,
+      "collision_count": 0,
+      "condition": "SFI3 roots inside SFI3_ROOT_RESERVATION_V1 and disjoint from V2R4's frozen containers",
+      "declared_containers_sha256": "sha256:ff58620091cae5b95f543ea59650718f47153ed372f7b1560bb08d0c219558cc",
+      "describe": "SFI3 roots inside SFI3_ROOT_RESERVATION_V1 and disjoint from V2R4's frozen containers",
+      "detail": "the exact protocol-pinned administrative V2R4/SFI3 handoff verifies; chronology, equivalence and identity-only separation hold",
+      "handoff_file_sha256": "sha256:157c5b5b47d1d4a9b39ec943e049d3226d15fedd66597f0314969d940599f5b1",
+      "handoff_receipt": "research/tavonel_eval_v2/receipts/v2r4-sfi3-reservation-handoff--20260826T100643Z-2e671a93537e.json",
+      "handoff_schema": "V2R4_SFI3_RESERVATION_HANDOFF_V1",
+      "no_v2r4_outcome_was_read": true,
+      "verdict": "PASS"
+    }
+  ],
+  "estimated_cost_usd": 0.0,
+  "generated_at": "2026-08-26T11:23:23.185785+00:00",
+  "gpu_seconds": 0,
+  "interpreter_for_suite": ".venv/Scripts/python.exe",
+  "may_freeze": true,
+  "meaning": "the rules of SFI3 are fixed as of this digest. After this receipt exists the first fresh lineage may be read, and a corpus once looked at is spent",
+  "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_HELDOUT_V3.yaml",
+  "protocol_sha256": "sha256:4fba46a0e53e695ee95f5f7b35368a36f1d839092697b8bf070395495dfd689f",
+  "provenance": {
+    "generated_at": "2026-08-26T11:23:23.186886+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_HELDOUT_V3.yaml",
+    "protocol_sha256": "sha256:4fba46a0e53e695ee95f5f7b35368a36f1d839092697b8bf070395495dfd689f",
+    "receipt_stem": "sfi3-protocol-freeze",
+    "run_id": "20260826T112323Z-42166d959ee1",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_sfi3_protocol.py",
+    "tool_sha256": "sha256:73122e37c988b15de1f20233a252f639a3eb86ac41bf2fae061e3636821a2b84"
+  },
+  "receipt_sha256": "sha256:6d22ea51d02ee42c6bf2055aa6e8ef94a727b49fa1cc6825dc05d00af18b8d04",
+  "schema": "tavonel.v2.sfi3_protocol_freeze.v1"
+}

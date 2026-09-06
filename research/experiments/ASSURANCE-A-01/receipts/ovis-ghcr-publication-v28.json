@@ -1,0 +1,18 @@
+{
+  "copy_performed": true,
+  "credential_persisted_in_receipt": false,
+  "critical_vulnerability_count_at_publication": 0,
+  "generated_at": "2026-08-16T16:31:24.405874+00:00",
+  "image_tag": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:daemonless-v28-e155f9b0c1fad09d",
+  "immutable_image": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1@sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+  "local_manifest_digest": "sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+  "public_benchmark_inference_allowed": false,
+  "publisher": "regctl-windows",
+  "publisher_binary_sha256": "sha256:9b83975d464e4ee5a9f899a3ead26072ed67e9a8ed0f582897bfad8141b45938",
+  "publisher_version": "0.11.5",
+  "remote_digest_verified": true,
+  "remote_manifest_digest": "sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+  "schema": "tavonel.daemonless-ghcr-publication.v2",
+  "security_receipt_sha256": "sha256:cc9c0ee551306305afb4630df9dbbb8706b4ee30e23488721bc2a4422d52bfc2",
+  "temporary_auth_config_removed_by_context_manager": true
+}

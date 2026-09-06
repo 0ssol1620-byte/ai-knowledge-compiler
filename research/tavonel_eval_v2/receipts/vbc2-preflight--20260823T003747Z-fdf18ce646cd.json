@@ -1,0 +1,601 @@
+{
+  "acquisition_completeness": {
+    "complete": true,
+    "manifest": "research/tavonel_eval_v2/artifacts/development/vbc2_cohorts/vbc2_cohort.20260823T003428.543991+0000-191ef2a596ae.json",
+    "manifest_sha256": "sha256:e4458d5e075a021ead9bc0485e6cab8ba1621c5e6b7212be4480f79bf1222780",
+    "rule": "a full acquisition requires stopped_on_wall_clock_budget == false and the frozen lineage list exhausted. Anything else is a diagnostic partial result and cannot be a confirmatory acquisition.",
+    "status": "COMPLETE",
+    "walk_coverage": {
+      "budget_seconds": null,
+      "limit": null,
+      "lineages_available": 2271,
+      "lineages_considered": 2271,
+      "lineages_walked": 2271,
+      "note": "a partial walk is a coverage limit, not a source property. An admitted count from one is a diagnostic figure and is never a cohort result.",
+      "stopped_on_wall_clock_budget": false
+    }
+  },
+  "by_family": {},
+  "cohort_manifest": "research/tavonel_eval_v2/artifacts/development/vbc2_cohorts/vbc2_cohort.20260823T003428.543991+0000-191ef2a596ae.json",
+  "cohort_manifest_sha256": "sha256:e4458d5e075a021ead9bc0485e6cab8ba1621c5e6b7212be4480f79bf1222780",
+  "ended_at": "2026-08-23T00:37:46.982253+00:00",
+  "estimated_cost_usd": 0.0,
+  "excluded_by_reason": {
+    "ATOM_NOT_LOCATED": 1,
+    "ATOM_NOT_UNIQUE": 1,
+    "COVERAGE_INCOMPLETE": 1
+  },
+  "excluded_detail": [
+    {
+      "reason": "ATOM_NOT_UNIQUE",
+      "slug": "git-backstage-backstage-docs-well-known-skills-mui-to-bui-migration-skill-md"
+    },
+    {
+      "reason": "COVERAGE_INCOMPLETE",
+      "slug": "git-denoland-docs-runtime-desktop-comparison-md"
+    },
+    {
+      "reason": "ATOM_NOT_LOCATED",
+      "slug": "wikipedia-en-reykjanesb-r"
+    }
+  ],
+  "extractor": {
+    "controls": {
+      "all_agree": true,
+      "by_kind": {
+        "adversarial": true,
+        "negative": true,
+        "positive": true
+      },
+      "results": [
+        {
+          "agrees": true,
+          "guards": "the ordinary case: one row label, one column, one changed value",
+          "kind": "positive",
+          "name": "positive_markdown_table_default",
+          "observed": "1 fact(s)"
+        },
+        {
+          "agrees": true,
+          "guards": "a row that did not change is not a currency question",
+          "kind": "negative",
+          "name": "negative_unchanged_row_is_not_a_fact",
+          "observed": "VALUE_UNCHANGED"
+        },
+        {
+          "agrees": true,
+          "guards": "a th/td row is a source-native key/value and must be read as one",
+          "kind": "positive",
+          "name": "positive_html_infobox_row",
+          "observed": "1 fact(s)"
+        },
+        {
+          "agrees": true,
+          "guards": "a renamed option is a different property, not a changed value",
+          "kind": "adversarial",
+          "name": "adversarial_renamed_key",
+          "observed": "PROPERTY_NOT_STABLE"
+        },
+        {
+          "agrees": true,
+          "guards": "1,200 and 1200 are the same value; the scorer says so and so must this",
+          "kind": "adversarial",
+          "name": "adversarial_typography_only",
+          "observed": "VALUE_UNCHANGED"
+        },
+        {
+          "agrees": true,
+          "guards": "a version becoming a date is not a single-kind contrast",
+          "kind": "adversarial",
+          "name": "adversarial_value_kind_change",
+          "observed": "VALUE_KIND_MISMATCH"
+        },
+        {
+          "agrees": true,
+          "guards": "a label carrying a value would put part of the answer in the question",
+          "kind": "adversarial",
+          "name": "adversarial_label_contains_a_number",
+          "observed": "0"
+        },
+        {
+          "agrees": true,
+          "guards": "two rows claiming one key is ambiguity, not a choice of ordinal",
+          "kind": "adversarial",
+          "name": "adversarial_duplicate_row_label",
+          "observed": "0"
+        },
+        {
+          "agrees": true,
+          "guards": "nested pattern matches must not make a version look like two values",
+          "kind": "positive",
+          "name": "positive_version_chain_is_one_value",
+          "observed": "1 fact(s)"
+        },
+        {
+          "agrees": true,
+          "guards": "dominance is span containment, not string containment",
+          "kind": "adversarial",
+          "name": "adversarial_two_values_at_their_own_positions",
+          "observed": "0"
+        },
+        {
+          "agrees": true,
+          "guards": "a cell holding two tokens binds no single value",
+          "kind": "adversarial",
+          "name": "adversarial_range_is_not_a_value",
+          "observed": "0"
+        },
+        {
+          "agrees": true,
+          "guards": "answering from a neighbouring change is not currency selection",
+          "kind": "adversarial",
+          "name": "adversarial_atom_carries_a_second_changed_number",
+          "observed": "noisy=False clean=True"
+        },
+        {
+          "agrees": true,
+          "guards": "the generated question must be blind to both values",
+          "kind": "adversarial",
+          "name": "adversarial_question_never_states_a_value",
+          "observed": "Default of --query.lookback-delta"
+        }
+      ],
+      "three_directions_passed": true
+    }
+  },
+  "gate_detail": {
+    "G_VBC2_COHORT_FLOOR": {
+      "distinct_lineages": 0,
+      "floor": 190,
+      "passed": false
+    },
+    "G_VBC2_CONTEXT_VALIDITY": {
+      "passed": true,
+      "single_revision_arms": [
+        "compiled_current",
+        "full_current_oracle",
+        "superseded_control"
+      ]
+    },
+    "G_VBC2_EXTRACTOR_UNCHANGED": {
+      "controls": 13,
+      "passed": true,
+      "sha256": "sha256:4b2aa38a662dd5fedb262d451fe15ce50ee84c043b4e9cbfde3c692ec4b2a42b"
+    },
+    "G_VBC2_FAMILIES": {
+      "by_family": {},
+      "passed": false
+    },
+    "G_VBC2_FRESH_LINEAGES": {
+      "checked_in": "research/tavonel_eval_v2/artifacts/development/vbc2_lineages.json",
+      "note": "computed at lineage-freeze time against P4i, the V1 probe and the ME1 survivors",
+      "passed": true
+    },
+    "G_VBC2_NO_GPU_YET": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_VBC2_ONE_QUESTION_PER_LINEAGE": {
+      "distinct_lineages": 0,
+      "passed": true,
+      "primary_questions": 0
+    },
+    "G_VBC2_PAIR_IS_ADJACENT": {
+      "count": 0,
+      "passed": true
+    },
+    "G_VBC2_QUESTION_BLIND_TO_VALUE": {
+      "passed": true,
+      "template_digest": "sha256:ba60d3b2ce422e499cd6705050f69f678ad6f3de122f910baa5443d5e6348641"
+    },
+    "G_VBC2_QUESTION_ID_INJECTIVE": {
+      "passed": true,
+      "rows": 0,
+      "unique": 0
+    },
+    "G_VBC2_SCHEDULE_BALANCED": {
+      "detail": {
+        "balanced": true,
+        "by_arm_and_position": {
+          "append_only_stale_capable": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "compiled_current": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "full_current_oracle": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "superseded_control": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "max_position_spread": 0
+      },
+      "passed": true
+    },
+    "G_VBC2_SCORER_UNCHANGED": {
+      "passed": true,
+      "sha256": "sha256:00c417042b3bdaf3e03b47c6a16d663a3eb92b7a830fb1dbfce0f698757305ba"
+    },
+    "G_VBC2_SELECTION_BLIND": {
+      "note": "lineage lists and history bounds were frozen before any history was read",
+      "passed": true
+    },
+    "G_VBC2_TOKENIZER_PARITY": {
+      "battery_digest": "sha256:a0a66a696260fa58f48bab7802f9beb7430d1c937c1c64aaf1252469a75d57ee",
+      "cpu_signature": "sha256:e4d0e7cc07c483159ee69ce70b89076a040a77c4d12541645e2f08967fb20364",
+      "gpu_side": "compared at run time; the GPU runs the identical frozen battery",
+      "passed": true
+    },
+    "G_VBC2_TRUNCATION": {
+      "ceiling": 0.25,
+      "passed": true,
+      "rates": {
+        "append_only_stale_capable": 0.0,
+        "compiled_current": 0.0,
+        "full_current_oracle": 0.0,
+        "superseded_control": 0.0
+      }
+    }
+  },
+  "gates": {
+    "G_VBC2_COHORT_FLOOR": false,
+    "G_VBC2_CONTEXT_VALIDITY": true,
+    "G_VBC2_EXTRACTOR_UNCHANGED": true,
+    "G_VBC2_FAMILIES": false,
+    "G_VBC2_FRESH_LINEAGES": true,
+    "G_VBC2_NO_GPU_YET": true,
+    "G_VBC2_ONE_QUESTION_PER_LINEAGE": true,
+    "G_VBC2_PAIR_IS_ADJACENT": true,
+    "G_VBC2_QUESTION_BLIND_TO_VALUE": true,
+    "G_VBC2_QUESTION_ID_INJECTIVE": true,
+    "G_VBC2_SCHEDULE_BALANCED": true,
+    "G_VBC2_SCORER_UNCHANGED": true,
+    "G_VBC2_SELECTION_BLIND": true,
+    "G_VBC2_TOKENIZER_PARITY": true,
+    "G_VBC2_TRUNCATION": true
+  },
+  "gpu_seconds": 0,
+  "inputs_path": "research/tavonel_eval_v2/artifacts/development/vbc2_endpoint_inputs.json",
+  "inputs_sha256": "sha256:840d9901352b0772b69dd9b0af412cf2b5e3b871c9ddc0010c6a565951cccc81",
+  "model": {
+    "added_tokens_attested": 33,
+    "added_tokens_here": 33,
+    "behaviour_probe": {
+      "expected_tokens": 20,
+      "matches": true,
+      "observed_tokens": 20,
+      "text": "TAVONEL 1,450 — café ü 42.50 USD"
+    },
+    "chat_template_matches": true,
+    "chat_template_sha256": "sha256:e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259",
+    "chat_template_sha256_attested": "e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259",
+    "no_auto_update": "pinned by commit; resolving to latest is forbidden",
+    "repository": "Qwen/Qwen3.6-27B",
+    "revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "source_of_pin": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json",
+    "tokenizer_class_attested": "Qwen2Tokenizer",
+    "tokenizer_class_here": "Qwen2TokenizerFast",
+    "tokenizer_file_matches": true,
+    "tokenizer_file_sha256": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_file_sha256_attested": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "vocab_size_attested": 248320,
+    "vocab_size_here": 248044,
+    "vocab_size_note": "the two libraries report this field differently — transformers here excludes added tokens. Identity rests on the file digest and the behaviour probe, which match exactly."
+  },
+  "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V2.yaml",
+  "protocol_sha256": "sha256:5f3a860138fe1c7a6fd0b7e571723e8224d325037cd7e3ecfabc7e511e4ca8b7",
+  "provenance": {
+    "generated_at": "2026-08-23T00:37:47.056041+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V2.yaml",
+    "protocol_sha256": "sha256:5f3a860138fe1c7a6fd0b7e571723e8224d325037cd7e3ecfabc7e511e4ca8b7",
+    "receipt_stem": "vbc2-preflight",
+    "run_id": "20260823T003747Z-fdf18ce646cd",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_vbc2_preflight.py",
+    "tool_sha256": "sha256:a6e14f68772cbc6e2e865f34d9ce0a72c102560b872fbca4212eb7c0dd5636c2"
+  },
+  "receipt_sha256": "sha256:26f9c8deea87b9d201d61839fca3ce731af36f4db3a3c50c610942378e71aa73",
+  "schedule_balance": {
+    "balanced": true,
+    "by_arm_and_position": {
+      "append_only_stale_capable": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "compiled_current": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "full_current_oracle": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "superseded_control": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "max_position_spread": 0
+  },
+  "schema": "tavonel.v2.vbc2_preflight.v1",
+  "scorer": {
+    "controls": {
+      "all_agree": true,
+      "results": [
+        {
+          "agrees": true,
+          "expected": "CURRENT_ONLY",
+          "guards": "the ordinary success case",
+          "name": "positive_current_value",
+          "observed": "CURRENT_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "SUPERSEDED_ONLY",
+          "guards": "the stale answer must not score as a success",
+          "name": "negative_superseded_value",
+          "observed": "SUPERSEDED_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "BOTH",
+          "guards": "reciting both is not selecting one",
+          "name": "ambiguous_both_values",
+          "observed": "BOTH"
+        },
+        {
+          "agrees": true,
+          "expected": "NO_MATCH",
+          "guards": "a refusal is not a current-value success",
+          "name": "no_value_at_all",
+          "observed": "NO_MATCH"
+        },
+        {
+          "agrees": true,
+          "expected": "CURRENT_ONLY",
+          "guards": "typography must not decide the endpoint",
+          "name": "thousands_separator_is_the_same_value",
+          "observed": "CURRENT_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "NO_MATCH",
+          "guards": "42 inside 4200 is not the value 42",
+          "name": "substring_is_not_a_match",
+          "observed": "NO_MATCH"
+        },
+        {
+          "agrees": true,
+          "expected": "CURRENT_ONLY",
+          "guards": "a unicode dash must not hide a date",
+          "name": "unicode_dash_and_case_are_normalised",
+          "observed": "CURRENT_ONLY"
+        },
+        {
+          "agrees": true,
+          "expected": "SUPERSEDED_ONLY",
+          "guards": "normalisation must not merge two genuinely different values",
+          "name": "decimal_precision_is_not_collapsed",
+          "observed": "SUPERSEDED_ONLY"
+        }
+      ],
+      "three_directions": {
+        "ambiguous": true,
+        "negative": true,
+        "passed": true,
+        "positive": true
+      }
+    },
+    "unchanged": true
+  },
+  "split": "MODEL-ENDPOINT CONFIRMATORY — MODEL OUTCOMES UNSEEN",
+  "started_at": "2026-08-23T00:37:35.538092+00:00",
+  "tokenizer_environment": {
+    "added_tokens": 33,
+    "chat_template_sha256": "sha256:e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259",
+    "is_fast": true,
+    "len_tokenizer": 248077,
+    "special_tokens_map": {
+      "additional_special_tokens": [
+        "<|im_start|>",
+        "<|im_end|>",
+        "<|object_ref_start|>",
+        "<|object_ref_end|>",
+        "<|box_start|>",
+        "<|box_end|>",
+        "<|quad_start|>",
+        "<|quad_end|>",
+        "<|vision_start|>",
+        "<|vision_end|>",
+        "<|vision_pad|>",
+        "<|image_pad|>",
+        "<|video_pad|>"
+      ],
+      "audio_bos_token": "<|audio_start|>",
+      "audio_eos_token": "<|audio_end|>",
+      "audio_token": "<|audio_pad|>",
+      "eos_token": "<|im_end|>",
+      "image_token": "<|image_pad|>",
+      "pad_token": "<|endoftext|>",
+      "video_token": "<|video_pad|>",
+      "vision_bos_token": "<|vision_start|>",
+      "vision_eos_token": "<|vision_end|>"
+    },
+    "special_tokens_map_sha256": "sha256:5e5c7d8ee38cff5b05b91972cdecdafb3a0ed06318233864fff8377eef05803c",
+    "tokenizer_class": "Qwen2TokenizerFast",
+    "tokenizers_version": "0.22.1",
+    "transformers_version": "4.57.3",
+    "vocab_size_reported": 248044
+  },
+  "tokenizer_parity_cpu": {
+    "all_classes_covered": true,
+    "battery_digest": "sha256:a0a66a696260fa58f48bab7802f9beb7430d1c937c1c64aaf1252469a75d57ee",
+    "boundary_straddled": true,
+    "classes_covered": [
+      "long_context_boundary",
+      "number_and_version",
+      "regression",
+      "special_tokens",
+      "unicode"
+    ],
+    "results": [
+      {
+        "class": "regression",
+        "guards": "the exact string the W6 attestation recorded; it must not drift",
+        "ids_sha256": "sha256:48435bfdffb473cb99cd9e24ea0ad5687ad9361be66448ba0f757bd3c187623b",
+        "name": "attested_probe",
+        "token_count": 20
+      },
+      {
+        "class": "unicode",
+        "guards": "NFKC handling and multi-byte segmentation",
+        "ids_sha256": "sha256:e8f3681131479c0371a09578e92a635a79b80d8ebd7bd33d26641cff9de2d958",
+        "name": "unicode_accents_and_cjk",
+        "token_count": 13
+      },
+      {
+        "class": "unicode",
+        "guards": "non-breaking space, combining acute and zero-width joiner",
+        "ids_sha256": "sha256:48556fffa5ac77989e8aa01853204fcb97fcc17ea8c2c371d72c6f058e866212",
+        "name": "unicode_nbsp_and_combining",
+        "token_count": 9
+      },
+      {
+        "class": "number_and_version",
+        "guards": "the shapes the endpoint's value markers are made of",
+        "ids_sha256": "sha256:3b848fb4545d85c81b7f5ec434c6716790fde6836256e00818097346e082af30",
+        "name": "numbers_thousands_and_decimals",
+        "token_count": 33
+      },
+      {
+        "class": "number_and_version",
+        "guards": "dotted chains, ISO dates and unit-suffixed quantities",
+        "ids_sha256": "sha256:e662b8de9de4f8010451aac757655c04dcdba91a67e19078d9c544b584a853fb",
+        "name": "versions_and_dates",
+        "token_count": 39
+      },
+      {
+        "class": "number_and_version",
+        "guards": "flag and identifier shapes that carry property labels",
+        "ids_sha256": "sha256:33718ce8d6b912be15d22ac80f86c5d98f3ef566c9a7ffd72b3581e20b41fc9b",
+        "name": "identifiers_and_flags",
+        "token_count": 29
+      },
+      {
+        "class": "unicode",
+        "guards": "pipe tables reach the prompt as text and must segment stably",
+        "ids_sha256": "sha256:f0d527ebe9677f270a7049846ad34fad2b0c4db153e37709114a48e231921a3c",
+        "name": "markup_residue",
+        "token_count": 21
+      },
+      {
+        "class": "special_tokens",
+        "guards": "the template's turn markers must survive encode and decode",
+        "ids_sha256": "sha256:f29dbb06f6ece99ca375099217b04b249a991dfa0d8dfbb78e404ac4274b551d",
+        "name": "chat_template_round_trip",
+        "token_count": 39
+      },
+      {
+        "class": "long_context_boundary",
+        "guards": "an off-by-a-few disagreement here silently changes what was truncated",
+        "ids_sha256": "sha256:c342f780c90897a9c7d29c9e6008e7e0e972f7a389ca9ecccadb9fb888082064",
+        "name": "long_context_boundary_4090_under",
+        "repeats": 255,
+        "straddles": true,
+        "target": 4090,
+        "token_count": 4081
+      },
+      {
+        "class": "long_context_boundary",
+        "guards": "an off-by-a-few disagreement here silently changes what was truncated",
+        "ids_sha256": "sha256:d7a3fa5935e3d2c0acc481f86b4bd15973f3c97c93acc42970c197900e31db72",
+        "name": "long_context_boundary_4090_over",
+        "repeats": 256,
+        "straddles": true,
+        "target": 4090,
+        "token_count": 4097
+      },
+      {
+        "class": "long_context_boundary",
+        "guards": "an off-by-a-few disagreement here silently changes what was truncated",
+        "ids_sha256": "sha256:c342f780c90897a9c7d29c9e6008e7e0e972f7a389ca9ecccadb9fb888082064",
+        "name": "long_context_boundary_4096_under",
+        "repeats": 255,
+        "straddles": true,
+        "target": 4096,
+        "token_count": 4081
+      },
+      {
+        "class": "long_context_boundary",
+        "guards": "an off-by-a-few disagreement here silently changes what was truncated",
+        "ids_sha256": "sha256:d7a3fa5935e3d2c0acc481f86b4bd15973f3c97c93acc42970c197900e31db72",
+        "name": "long_context_boundary_4096_over",
+        "repeats": 256,
+        "straddles": true,
+        "target": 4096,
+        "token_count": 4097
+      },
+      {
+        "class": "long_context_boundary",
+        "guards": "an off-by-a-few disagreement here silently changes what was truncated",
+        "ids_sha256": "sha256:d7a3fa5935e3d2c0acc481f86b4bd15973f3c97c93acc42970c197900e31db72",
+        "name": "long_context_boundary_4102_under",
+        "repeats": 256,
+        "straddles": true,
+        "target": 4102,
+        "token_count": 4097
+      },
+      {
+        "class": "long_context_boundary",
+        "guards": "an off-by-a-few disagreement here silently changes what was truncated",
+        "ids_sha256": "sha256:0016a94fda430ba811981dbbe447ed648d8038555187683ba73829cad2ae7b9f",
+        "name": "long_context_boundary_4102_over",
+        "repeats": 257,
+        "straddles": true,
+        "target": 4102,
+        "token_count": 4113
+      }
+    ],
+    "signature": "sha256:e4d0e7cc07c483159ee69ce70b89076a040a77c4d12541645e2f08967fb20364"
+  },
+  "totals": {
+    "distinct_lineages": 0,
+    "excluded": 3,
+    "final_cohort": 0,
+    "primary_transitions": 3,
+    "prompts_materialized": 0
+  },
+  "truncation_rates": {
+    "append_only_stale_capable": 0.0,
+    "compiled_current": 0.0,
+    "full_current_oracle": 0.0,
+    "superseded_control": 0.0
+  },
+  "verdict": "FAIL"
+}

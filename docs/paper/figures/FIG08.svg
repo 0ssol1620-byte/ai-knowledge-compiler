@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1090" height="124" viewBox="0 0 1090 124" font-family="Arial, Helvetica, sans-serif">
+<rect width="1090" height="124" fill="#ffffff"/>
+<text x="2" y="18" font-size="14" font-weight="bold">Figure 8 — the identity scalability trade, including the negative result</text>
+<rect x="1.0" y="30.0" width="372.8" height="22.0" fill="#f2f2f2" stroke="#000000" stroke-width="1"/>
+<text x="11.0" y="45.0" font-size="13.0" font-weight="bold">policy</text>
+<rect x="373.8" y="30.0" width="156.8" height="22.0" fill="#f2f2f2" stroke="#000000" stroke-width="1"/>
+<text x="383.8" y="45.0" font-size="13.0" font-weight="bold">speed</text>
+<rect x="530.6" y="30.0" width="336.8" height="22.0" fill="#f2f2f2" stroke="#000000" stroke-width="1"/>
+<text x="540.6" y="45.0" font-size="13.0" font-weight="bold">exactness</text>
+<rect x="867.4" y="30.0" width="221.6" height="22.0" fill="#f2f2f2" stroke="#000000" stroke-width="1"/>
+<text x="877.4" y="45.0" font-size="13.0" font-weight="bold">status</text>
+<rect x="1.0" y="52.0" width="372.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="11.0" y="67.0" font-size="13.0" font-weight="normal">LEGACY (dense global)</text>
+<rect x="373.8" y="52.0" width="156.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="383.8" y="67.0" font-size="13.0" font-weight="normal">baseline</text>
+<rect x="530.6" y="52.0" width="336.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="540.6" y="67.0" font-size="13.0" font-weight="normal">exact by definition</text>
+<rect x="867.4" y="52.0" width="221.6" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="877.4" y="67.0" font-size="13.0" font-weight="normal">in production</text>
+<rect x="1.0" y="74.0" width="372.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="11.0" y="89.0" font-size="13.0" font-weight="normal">BLOCKED (bucketed candidates)</text>
+<rect x="373.8" y="74.0" width="156.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="383.8" y="89.0" font-size="13.0" font-weight="normal">~47x at 1,000 units</text>
+<rect x="530.6" y="74.0" width="336.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="540.6" y="89.0" font-size="13.0" font-weight="normal">8 residual, 8/8 future-path divergence</text>
+<rect x="867.4" y="74.0" width="221.6" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="877.4" y="89.0" font-size="13.0" font-weight="normal">shadow only — promotion veto</text>
+<rect x="1.0" y="96.0" width="372.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="11.0" y="111.0" font-size="13.0" font-weight="normal">CERTIFIED_SPARSE (admissible bound + certificate)</text>
+<rect x="373.8" y="96.0" width="156.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="383.8" y="111.0" font-size="13.0" font-weight="normal">0.35–0.48x</text>
+<rect x="530.6" y="96.0" width="336.8" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="540.6" y="111.0" font-size="13.0" font-weight="normal">exact on frozen corpus, 3 separating mutants</text>
+<rect x="867.4" y="96.0" width="221.6" height="22.0" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+<text x="877.4" y="111.0" font-size="13.0" font-weight="normal">not proposed for promotion</text>
+</svg>

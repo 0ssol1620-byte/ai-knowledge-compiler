@@ -1,0 +1,283 @@
+{
+  "authorisation_note": "the founder authorised, in advance, that on a fresh held-out PASS the successor study may run without a further founder wait, under <=6 GPU hours and <=$40. This receipt is not that authorisation; it is what the authorisation is conditional on, and it has not run any model.",
+  "blocking_gates": [
+    "G_GSP_COST_WITHIN_CAP",
+    "G_GSP_FOUR_LINK_ACCEPTANCE_PASS",
+    "G_GSP_MODEL_PINNED",
+    "G_GSP_MODEL_PIN_SOURCE_SEALED",
+    "G_GSP_PROTOCOL_BUNDLE_FROZEN",
+    "G_GSP_SFI3_ACCEPTANCE_PASS"
+  ],
+  "budget": {
+    "gpu_hours": 6.0,
+    "hard_spend_cap_usd": 40.0
+  },
+  "closed_endpoint": {
+    "protocol": "MODEL_ENDPOINT_V1",
+    "stop_record": "STOP-V2-005"
+  },
+  "declarations": {
+    "four_link_acceptance": {
+      "path": null,
+      "sha256": "ABSENT"
+    },
+    "manifest": {
+      "path": "research/tavonel_eval_v2/artifacts/development/typed_fact_cohort.json",
+      "sha256": "sha256:e04602fdc8310cbd3a8bcf90f3517a578961df7ac2b033e9aa22645191455ae0"
+    },
+    "model_pin": {
+      "path": null,
+      "sha256": "ABSENT"
+    },
+    "runtime": {
+      "path": "research/tavonel_eval_v2/protocols/GPU_SUCCESSOR_RUNTIME_V1.yaml",
+      "sha256": "sha256:098249db81e04aaaba0fda89fd01663245454fe17ee25b9bd304a69ab425b828"
+    },
+    "sfi3_acceptance": {
+      "path": null,
+      "sha256": "ABSENT"
+    },
+    "study": {
+      "path": "research/tavonel_eval_v2/protocols/GPU_SUCCESSOR_STUDY_V1.yaml",
+      "sha256": "sha256:408d34faeff5163065e8aa932f890c19f4c6aa9b5ed68e90a96fca1e78b17454"
+    }
+  },
+  "design": {
+    "arms": [
+      "TYPED_REPRESENTATION",
+      "TEXT_ONLY_BASELINE"
+    ],
+    "cohort_floor": 120,
+    "context_budget_tokens": 4096,
+    "determinism_repeats": 2,
+    "eligible_kinds": [
+      "REFERENCE_TARGET",
+      "LANGUAGE",
+      "EFFECTIVE_TIME",
+      "APPLICABILITY"
+    ]
+  },
+  "ended_at": "2026-08-27T05:49:40.764434+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_GSP_CAPABILITY_NOT_INFERRED_FROM_NAME": {
+      "detail": {
+        "capability_claimed": false,
+        "reason": "no pinned registry evidence distinct from the model name was supplied; a name is not a capability and none is inferred from it",
+        "repository": ""
+      },
+      "passed": true
+    },
+    "G_GSP_COHORT_FEASIBILITY": {
+      "detail": {
+        "by_kind": {
+          "APPLICABILITY": 29,
+          "EFFECTIVE_TIME": 0,
+          "LANGUAGE": 275,
+          "REFERENCE_TARGET": 19714
+        },
+        "eligible_count": 20018,
+        "facts_scanned": 20018,
+        "feasible": true,
+        "floor": 120,
+        "manifest": "research/tavonel_eval_v2/artifacts/development/typed_fact_cohort.json",
+        "manifest_present": true,
+        "manifest_sha256": "sha256:e04602fdc8310cbd3a8bcf90f3517a578961df7ac2b033e9aa22645191455ae0"
+      },
+      "passed": true
+    },
+    "G_GSP_CONTEXT_BUDGET_FEASIBLE": {
+      "detail": {
+        "context_budget_tokens": 4096,
+        "estimated_prompt_tokens": 2048,
+        "estimated_total_tokens": 2304,
+        "feasible": true,
+        "max_new_tokens": 256
+      },
+      "passed": true
+    },
+    "G_GSP_COST_WITHIN_CAP": {
+      "detail": {
+        "arithmetic": {
+          "estimated_cost_usd": "25.6230 x 2.5 = 64.06",
+          "estimated_gpu_hours": "92242.9 / 3600 = 25.6230",
+          "estimated_seconds": "184485888 / 2000.0 = 92242.9",
+          "tokens_per_item": "2048 + 256 = 2304",
+          "total_calls": "20018 x 2 x 2 = 80072",
+          "total_tokens": "80072 x 2304 = 184485888"
+        },
+        "cap_gpu_hours": 6.0,
+        "cap_usd": 40.0,
+        "estimated_cost_usd": 64.0576,
+        "estimated_gpu_hours": 25.62304,
+        "inputs": {
+          "arms": 2,
+          "cohort_size": 20018,
+          "declared_assumption": {
+            "gpu_hourly_rate_usd": 2.5,
+            "tokens_per_second": 2000.0
+          },
+          "max_new_tokens": 256,
+          "prompt_tokens": 2048,
+          "repeats": 2
+        },
+        "within_cap": false,
+        "within_hours_cap": false,
+        "within_usd_cap": false
+      },
+      "passed": false
+    },
+    "G_GSP_EXCLUDES_CLOSED_ENDPOINT": {
+      "detail": {
+        "clean": true,
+        "forbidden_endpoint_id": "MODEL_ENDPOINT_V1",
+        "forbidden_scorer_classes": [
+          "CURRENT_ONLY",
+          "SUPERSEDED_ONLY",
+          "BOTH",
+          "NO_MATCH"
+        ],
+        "forbidden_stop_record": "STOP-V2-005",
+        "is_forbidden_endpoint": false,
+        "requires_value_transition_between_revisions": false,
+        "scorer_class_overlap": [],
+        "scorer_classes": [
+          "REPRESENTATION_CORRECT",
+          "REPRESENTATION_INCORRECT",
+          "REFUSED"
+        ],
+        "study_id": "SOURCE_FACT_PROPAGATION_MODEL_V1",
+        "why_this_avoids_the_closed_endpoint": "MODEL_ENDPOINT_V1 needed a value that moved between two revisions of one lineage; a complete walk of 2,271 lineages found that three times. This design's eligibility is a property of a single revision's typed representation, never of a transition between two, so the scarcity that closed the exact-value endpoint does not apply to it by construction."
+      },
+      "passed": true
+    },
+    "G_GSP_FOUR_LINK_ACCEPTANCE_PASS": {
+      "detail": {
+        "passed": false,
+        "receipt": null,
+        "receipt_sha256": null,
+        "why": "no four-link acceptance receipt was named. GPU authority is one explicit immutable path and one digest; absence is a hard block, not a reason to go looking."
+      },
+      "passed": false,
+      "rule": "the exact cohort presented to the GPU must carry a complete four-link chain and clear its floor, proven by an explicit FOUR_LINK_ACCEPTANCE_V1 receipt. Mandatory, and never a substitute for the SFI3 acceptance: one says the study passed, the other says this cohort is followable."
+    },
+    "G_GSP_MATERIALIZER_READY": {
+      "detail": {
+        "importable": true,
+        "module": "context_builder",
+        "present_attributes": [
+          "fit_to_budget",
+          "prompt_parts",
+          "TOTAL_PROMPT_TOKENS",
+          "schedule"
+        ],
+        "ready": true,
+        "required_attributes": [
+          "fit_to_budget",
+          "prompt_parts",
+          "TOTAL_PROMPT_TOKENS",
+          "schedule"
+        ]
+      },
+      "passed": true
+    },
+    "G_GSP_MODEL_PINNED": {
+      "detail": {
+        "capability": {
+          "capability_claimed": false,
+          "reason": "no pinned registry evidence distinct from the model name was supplied; a name is not a capability and none is inferred from it",
+          "repository": ""
+        },
+        "not_resolved_to_latest": true,
+        "pinned_by_exact_revision": false,
+        "repository": "",
+        "revision": "",
+        "revision_is_40_hex": false,
+        "tokenizer_file_sha256": "",
+        "tokenizer_sha_well_formed": false
+      },
+      "passed": false
+    },
+    "G_GSP_MODEL_PIN_SOURCE_SEALED": {
+      "detail": {
+        "expected_file_sha256": null,
+        "passed": false,
+        "path": null,
+        "why": "exact model-pin artifact path and file SHA-256 are both required"
+      },
+      "passed": false,
+      "rule": "the model identity must come from an explicitly named resolver receipt or flat sealed export whose exact file SHA-256 the caller supplied"
+    },
+    "G_GSP_NO_GPU_YET": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_GSP_PROTOCOL_BUNDLE_FROZEN": {
+      "detail": {
+        "expected_file_sha256": null,
+        "passed": false,
+        "receipt": null,
+        "why": "exact protocol-freeze receipt path and file SHA-256 are both required"
+      },
+      "passed": false,
+      "rule": "the GPU study and runtime declarations must both be bound by one explicit immutable bundle-freeze receipt, named by exact path and file SHA-256, and both declarations must still match it byte for byte"
+    },
+    "G_GSP_RUNTIME_IMAGE_PINNABLE": {
+      "detail": {
+        "form": "repository@sha256:<64 hex>, never a floating tag",
+        "matches_pinned_digest_form": true,
+        "runtime_image_digest": "runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35"
+      },
+      "passed": true
+    },
+    "G_GSP_SFI3_ACCEPTANCE_PASS": {
+      "detail": {
+        "passed": false,
+        "receipt": null,
+        "receipt_sha256": null,
+        "why": "no SFI3 acceptance receipt was named. GPU authority is one explicit immutable path and one digest; absence is a hard block, not a reason to go looking."
+      },
+      "passed": false,
+      "rule": "GPU inference is not permitted until the fresh held-out SOURCE_FACT_IR_HELDOUT_V3 study PASSES, proven by an explicit SOURCE_FACT_IR_HELDOUT_ACCEPTANCE_V1 receipt named by path and digest. SFI2 is frozen, FAIL and spent, and can never satisfy this. Absence is a hard block."
+    },
+    "G_GSP_TOKENIZER_PARITY_BATTERY_AVAILABLE": {
+      "detail": {
+        "battery_digest": "sha256:a0a66a696260fa58f48bab7802f9beb7430d1c937c1c64aaf1252469a75d57ee",
+        "deterministic": true,
+        "probe_classes": [
+          "regression",
+          "unicode",
+          "number_and_version",
+          "special_tokens",
+          "long_context_boundary"
+        ]
+      },
+      "passed": true
+    }
+  },
+  "gpu_seconds": 0,
+  "protocol_bundle_freeze": {
+    "expected_file_sha256": null,
+    "path": null
+  },
+  "provenance": {
+    "generated_at": "2026-08-27T05:49:40.783176+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "gpu-successor-preflight",
+    "run_id": "20260827T054940Z-3bf747c1fb82",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/gpu_successor_preflight.py",
+    "tool_sha256": "sha256:e1fc857de8189df33064ddaa986182f61cd2eb017f2215d4fb77b79f5bca201c"
+  },
+  "receipt_sha256": "sha256:f86e82dc1411209af0cfaf4e7abaad88049b6d9a7a48068b9334fde5ca858744",
+  "schema": "tavonel.v2.gpu_successor_preflight.v1",
+  "split": "development",
+  "started_at": "2026-08-27T05:49:40.372576+00:00",
+  "study_id": "SOURCE_FACT_PROPAGATION_MODEL_V1",
+  "supersedes": null,
+  "verdict": "BLOCKED"
+}

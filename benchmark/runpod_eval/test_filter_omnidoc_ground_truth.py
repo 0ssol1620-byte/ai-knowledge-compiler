@@ -22,6 +22,22 @@ def test_subset_follows_manifest_order_and_requires_isolation_receipt() -> None:
     assert [row["page_info"]["image_path"] for row in subset] == filenames
 
 
+def test_public_core_shard_uses_source_relative_path_without_ground_truth() -> None:
+    rows = [annotation("page-b.png"), annotation("page-a.png")]
+    manifest = {
+        "schema": "folynta.public-core-inference-shard.v1",
+        "input_count": 2,
+        "ground_truth_mounted": False,
+        "inputs": [
+            {"case_id": "a", "source_relative_path": "images/page-a.png"},
+            {"case_id": "b", "source_relative_path": "images/page-b.png"},
+        ],
+    }
+    subset, filenames = build_subset(rows, manifest)
+    assert filenames == ["page-a.png", "page-b.png"]
+    assert [row["page_info"]["image_path"] for row in subset] == filenames
+
+
 @pytest.mark.parametrize(
     ("rows", "manifest"),
     [
@@ -40,6 +56,15 @@ def test_subset_follows_manifest_order_and_requires_isolation_receipt() -> None:
                 "case_count": 1,
                 "ground_truth_mounted": False,
                 "cases": [{"filename": "missing.jpg"}],
+            },
+        ),
+        (
+            [annotation("a.png")],
+            {
+                "schema": "folynta.public-core-inference-shard.v1",
+                "input_count": 1,
+                "ground_truth_mounted": False,
+                "inputs": [{"source_relative_path": "../a.png"}],
             },
         ),
     ],

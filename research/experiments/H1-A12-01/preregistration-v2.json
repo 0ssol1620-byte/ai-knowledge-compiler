@@ -1,0 +1,100 @@
+{
+  "schema": "tavonel.research.preregistration.v1",
+  "experiment_id": "H1-A12-01",
+  "version": 2,
+  "title": "Existing independent-family semantic recovery versus a same-family-permitted ablation",
+  "status": "PREREGISTERED_PROTOCOL_NOT_RUN",
+  "prepared_on": "2026-08-16",
+  "supersedes": "research/experiments/H1-A12-01/preregistration.json",
+  "supersession_reason": "Before any paired intervention outcome was observed, repository reconciliation confirmed that the v6 scheduler already implements the behavioral A12 distinction: semantic failures enter RECOVERY with the failed independent family excluded, while infrastructure failures enter RETRY with separate worker-health handling. The experiment is therefore reframed as an ablation of the existing behavior, not as a comparison between a new selector and the current production scheduler.",
+  "patent_element": "Family A / A12",
+  "paper_track": "Beyond the Parser / cause-conditioned recovery follow-on",
+  "research_question": "On frozen public semantic-failure cases and an equal per-case recovery budget, does the existing independent-family semantic-recovery policy produce a different trusted-output yield or cost per trusted output than a counterfactual policy that permits a same-family recovery variation before independent-family escalation?",
+  "existing_behavior_evidence": {
+    "receipt": "research/experiments/H1-A12-01/receipts/production-path-reconciliation.json",
+    "scheduler": "services/scheduler/src/akc_scheduler/autonomous_v6_pipeline.py",
+    "recovery_core": "packages/parallel-runtime/src/akc_parallel_runtime/recovery.py",
+    "targeted_regression": "3/3 PASS",
+    "new_explicit_contract": "packages/cir-python/src/akc_cir/cause_conditioned_recovery.py"
+  },
+  "non_claims": [
+    "Existing scheduler tests prove behavior, not quality/cost superiority.",
+    "The frozen aggregate campaign results do not contain outcomes for a same-family-permitted counterfactual arm.",
+    "The 48-case cohort is selection evidence only; no recovery arm has been executed.",
+    "No public, patent-performance, or paper-performance claim is authorized until paired intervention evidence is frozen and independently reviewed."
+  ],
+  "cohort": {
+    "manifest": "research/experiments/H1-A12-01/cohorts/semantic-divergence-pilot-v1.json",
+    "case_count": 48,
+    "strata": {
+      "R01_reading_order": 8,
+      "B01_block_match": 8,
+      "N01_numeric_critical": 8,
+      "F01_formula": 8,
+      "G01_grounding": 8,
+      "H01_hallucination": 8
+    },
+    "selection_constraints": [
+      "public failure-record route requests recovery",
+      "at least two candidate model families are available",
+      "stable deterministic ordering before outcome execution",
+      "ground truth is not embedded in or mounted from this cohort manifest"
+    ]
+  },
+  "arms": {
+    "A_existing_cause_conditioned": "Use the current v6 semantic recovery behavior: exclude the failed independent model family, choose another eligible family under the same recovery scope/budget, apply existing source/evaluator acceptance.",
+    "B_same_family_permitted_ablation": "Permit exactly one bounded same-family recovery variation at the same decision point before independent-family escalation. The exact same-family recipe/settings must be frozen before outcomes are scored; no post-hoc tuning.",
+    "operational_control": "Infrastructure/transient retry remains an implementation control and is not mixed into the semantic primary endpoint."
+  },
+  "held_constant": [
+    "case/source identity and source hash",
+    "base prediction and failure evidence presented to the recovery decision",
+    "recovery scope and maximum attempt/budget ceiling",
+    "runtime image and model revisions",
+    "independent evaluator and source-grounded acceptance revisions",
+    "deterministic settings where supported"
+  ],
+  "execution_economy": [
+    "Reuse frozen base predictions and failure routes; do not rerun the primary parser merely to create an ablation.",
+    "Run only the recovery action needed by each arm.",
+    "If an arm's exact output already exists under the same immutable action identity, reuse it rather than recomputing it.",
+    "Ground truth/evaluator labels never mount on GPU workers; GPU receives source-only inputs and outputs are scored locally.",
+    "Shard independent cases across up to four GPUs only after formal runtime READY; parallelism may reduce wall clock but must not increase the registered total-work budget by adding extra arms or repeats."
+  ],
+  "primary_endpoint": "trusted-output rate on the 48 frozen semantic-failure cases",
+  "secondary_endpoints": [
+    "cost per trusted output",
+    "GPU seconds per trusted output",
+    "incremental recovery yield by failure-code stratum",
+    "abstention/review rate",
+    "critical false-accept or newly introduced critical failure count",
+    "wall-clock latency"
+  ],
+  "trusted_output_definition": "A recovery output passes the frozen independent correctness/integrity evaluator and the source-grounded acceptance contract without a newly introduced critical failure. Agreement or model self-confidence alone never constitutes the outcome label.",
+  "statistics": [
+    "paired same-case arm comparison",
+    "report every numerator and denominator",
+    "exact paired success/failure table plus bootstrap confidence interval for paired yield/cost deltas where meaningful",
+    "report every stratum separately before any pooled summary",
+    "retain negative/null findings and do not change the registered primary endpoint after observing results"
+  ],
+  "gpu_budget": {
+    "incremental_spend_before_runtime_ready_usd": 0.0,
+    "nominal_pilot_cap_usd": 3.0,
+    "hard_cap_usd": 10.0,
+    "preferred_parallelism": 4,
+    "hard_cap_rule": "Never exceed USD 10 without new explicit founder authorization."
+  },
+  "stop_before_spend_if": [
+    "formal immutable runtime is not READY/qualified",
+    "source-only artifact identity cannot be reconstructed exactly",
+    "same-family ablation recipe is not frozen before scoring",
+    "independent outcome/evaluator contract is unavailable",
+    "predicted pilot spend exceeds the nominal cap without a smaller informative design"
+  ],
+  "claim_gate": {
+    "before_results": "A12 IMPLEMENTED IN MULTIPLE REPOSITORY LAYERS / EMPIRICAL BENEFIT WITHHELD",
+    "success": "Only a corpus- and arm-scoped empirical statement with denominators, exact runtime/evaluator identities, uncertainty, and receipt hashes may be considered; filing/publication remains separately gated.",
+    "failure_or_null": "Retain the result. Do not tune the registered endpoint or silently redefine the same-family ablation after outcomes are observed."
+  }
+}

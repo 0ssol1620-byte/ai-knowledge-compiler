@@ -1,0 +1,20 @@
+{
+  "cases": 330,
+  "equivalent_cases": 330,
+  "external_cost_usd": 0.0,
+  "gate": {
+    "all_cases_equivalent": true,
+    "mean_rebuild_fraction_below_0_20": true,
+    "zero_stale_left_behind": true
+  },
+  "historical_context": {
+    "prior_core_mean_rebuild_fraction": 1.0,
+    "source": "DIAG-B-01 committed historical receipt; corpus generation has since changed, so this is context rather than a paired statistical comparison"
+  },
+  "max_rebuild_fraction": 0.2222222222222222,
+  "mean_rebuild_fraction": 0.12626262626262624,
+  "min_rebuild_fraction": 0.0,
+  "schema_version": "tavonel.selective_invalidation.production_promotion.v1",
+  "stale_left_behind_total": 0,
+  "suite_documents": 30
+}

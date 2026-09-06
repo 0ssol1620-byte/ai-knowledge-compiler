@@ -1,0 +1,129 @@
+{
+  "authority": "FD-2026-08-21-05, research/tavonel_eval_v2/receipts/founder-decision-2026-08-21.json",
+  "external_gpu_cost_usd": 0.0,
+  "figures_contaminated_by_INC_V2_003": [
+    "identity_outcomes",
+    "unresolved rate",
+    "changed logical id set",
+    "rebuilt_fraction",
+    "work_avoided_fraction",
+    "unnecessary_rebuild_set"
+  ],
+  "figures_not_contaminated": [
+    "oracle isolation evidence",
+    "structural positive control outcomes",
+    "the two INC-V2-002 stale escapes",
+    "equivalence verdicts"
+  ],
+  "forbidden": [
+    "retroactive correction of any figure above",
+    "reinterpretation of any gate as PASS",
+    "re-running under a changed protocol and reporting the result as P0 v1"
+  ],
+  "gpu_seconds": 0,
+  "impact_analysis": "research/tavonel_eval_v2/receipts/inc-v2-003-impact-analysis.json",
+  "open_incidents_against_this_result": {
+    "INC-V2-001": "sealed evidence drift; G_P0_SEALED FAIL/BLOCKED",
+    "INC-V2-002": "case-only edit escaped invalidation; G_P0_EQUIVALENCE FAIL",
+    "INC-V2-003": "identity-scope protocol/implementation mismatch; identity and cost figures contaminated"
+  },
+  "preserved_result": {
+    "artifact_exact_match_rate": 0.9666666666666667,
+    "equivalent_pairs": 29,
+    "gates": {
+      "G_P0_COST": true,
+      "G_P0_EQUIVALENCE": false,
+      "G_P0_ISOLATION": true,
+      "G_P0_SMOKE_SCALE": true,
+      "G_P0_STRUCTURAL_COVERAGE": true
+    },
+    "scored_pairs": 30,
+    "stale_escape_count": 2,
+    "verdict": "FAIL"
+  },
+  "receipt_sha256": "sha256:70b25d320c023b2638df94066c61b0157f12e69584d23c1335f538bb0610a417",
+  "rule": "read-only from this point. A P0b or later defect is never fixed by editing a file listed here.",
+  "schema": "tavonel.v2.p0_v1_seal.v1",
+  "sealed_at": "2026-08-21T05:36:41.064537+00:00",
+  "sealed_implementation": [
+    {
+      "path": "research/tavonel_eval_v2/protocols/P0_master_protocol.yaml",
+      "sha256": "sha256:beeb6b392eabcfa3bd8fa797744956dae8d299b00385d8c270aa0d3bbcb4abbb"
+    },
+    {
+      "path": "research/tavonel_eval_v2/compiler/selective_build.py",
+      "sha256": "sha256:e3ff1a387cb7021ba3c271db32d2ef3a86192672fb391bf25dbd8fe654500611"
+    },
+    {
+      "path": "research/tavonel_eval_v2/oracle/independent_full_build.py",
+      "sha256": "sha256:ddcbaae25c72111178fc51f50e5d797fae30bb48c842458323bdbbb07e9078ee"
+    },
+    {
+      "path": "research/tavonel_eval_v2/comparator/compare_states.py",
+      "sha256": "sha256:03264f71a029e42c362ad423cd2f3a664102782bd640f89dc7d054927f84bd4d"
+    },
+    {
+      "path": "research/tavonel_eval_v2/canonicalization/canonical_document.py",
+      "sha256": "sha256:b676978497b34bc7bcaec9836acca10619f7be0a1b7501ac479a9b95191d3b35"
+    },
+    {
+      "path": "research/tavonel_eval_v2/canonicalization/canonicalize.py",
+      "sha256": "sha256:e45531f7c152b8ad74ba58a3c1a1df3005bc5e8c3e55805670a538deb8657852"
+    },
+    {
+      "path": "research/tavonel_eval_v2/acquisition/sources.py",
+      "sha256": "sha256:24361d521f3b97d4e979a2c0904adb7e01728b66446d4bffecbe24cd24f642f2"
+    },
+    {
+      "path": "research/tavonel_eval_v2/acquisition/fetch_corpus.py",
+      "sha256": "sha256:d09fb91fc9d3aee08c3982b83b067d7da305cbbc3e7e365a526a4a5c8bb63b17"
+    },
+    {
+      "path": "research/tavonel_eval_v2/tools/run_p1_smoke.py",
+      "sha256": "sha256:c649482bcc4a7a05512614ff822182338aa4015cddbfa3e0c790ab015c8932eb"
+    },
+    {
+      "path": "research/tavonel_eval_v2/tools/verify_sealed_evidence.py",
+      "sha256": "sha256:4c7784ab29a3e046b4bfb5f27537d358178c626779282dc95f8affbfd782de33"
+    },
+    {
+      "path": "research/tavonel_eval_v2/tools/common.py",
+      "sha256": "sha256:caa2dbbf3d84c8812c0f09cfa4d3490f3b2aed78d2f7926495809426bb57f644"
+    }
+  ],
+  "sealed_receipts": [
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-protocol-freeze.json",
+      "sha256": "sha256:041b2d36800df03a9164b431ccdca88e4f9b59bf68c810037656819809b8306c"
+    },
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-sealed-evidence-verification.json",
+      "sha256": "sha256:ef9c8e417265cf53dce6bf28d134c06554cb303bff5ec2a98c9a5578dc93bf91"
+    },
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-sealed-evidence-verification-final.json",
+      "sha256": "sha256:3f1a37834e7af98459a0599d9779a796e8a3f2ee168da91c54a6bc50b80a3868"
+    },
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-acquisition-manifest.json",
+      "sha256": "sha256:73807203a103f8bfd09f0f79ac3bdc831608f5956b8a79dc451f4e413986e845"
+    },
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-canonicalisation-manifest.json",
+      "sha256": "sha256:b25bcb7b8d1fcbae512c545a09fc66cd39f733e397dfe2f652ac7897c7b9a00c"
+    },
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-oracle-independence.json",
+      "sha256": "sha256:e7d5d6bb7de780c43839ab237b9e0a39d208d16780b063b21d256ffc3fb80d61"
+    },
+    {
+      "path": "research/tavonel_eval_v2/receipts/p0-oracle-independence-run1-superseded.json",
+      "sha256": "sha256:f90199cee5bd81b36554776276b2e692c7db97eb49bc02b88a94e802f87ab78e"
+    }
+  ],
+  "status": "PARTIAL / FAILED development evidence",
+  "successor": {
+    "protocol": "research/tavonel_eval_v2/protocols/P0b_recompilation_mechanics.yaml",
+    "relation": "sibling, not correction. P0b does not inherit or repair any P0 v1 figure."
+  }
+}

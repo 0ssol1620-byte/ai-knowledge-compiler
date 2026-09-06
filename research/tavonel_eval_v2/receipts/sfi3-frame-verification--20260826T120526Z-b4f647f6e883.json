@@ -1,0 +1,59 @@
+{
+  "accounted_for": 1698,
+  "acquisition": "research/tavonel_eval_v2/artifacts/development/sfi3/sfi3_acquisition.json",
+  "acquisition_sha256": "sha256:d9e2d4bbbda5ae2c28af15fcebfac1a4a847b7da9f3eff44f0a7a45bc65772b6",
+  "admitted": 245,
+  "all_quotas_filled": false,
+  "by_family": {
+    "encyclopedia_wikipedia": 25,
+    "git_docs": 120,
+    "regulation_ecfr": 100
+  },
+  "candidates_in_frame": 1698,
+  "candidates_never_considered": 0,
+  "concerns": [
+    "family encyclopedia_wikipedia filled 25 of 70. Reported as a shortfall; the quota is not lowered and the shortfall is not redistributed"
+  ],
+  "ending": "EXHAUSTED_EVERY_CANDIDATE_CONSIDERED",
+  "estimated_cost_usd": 0.0,
+  "every_candidate_considered": true,
+  "family_quota": {
+    "encyclopedia_wikipedia": 70,
+    "git_docs": 120,
+    "regulation_ecfr": 100
+  },
+  "generated_at": "2026-08-26T12:05:26.534773+00:00",
+  "gpu_seconds": 0,
+  "lineages_considered": 1698,
+  "provenance": {
+    "generated_at": "2026-08-26T12:05:26.535575+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-frame-verification",
+    "run_id": "20260826T120526Z-b4f647f6e883",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/verify_sfi3_frame.py",
+    "tool_sha256": "sha256:5a8d6bb953d9b0601fb0781c46a1ef74a7b2c75b2baa92be59f6f8d9386a1f5f"
+  },
+  "quotas_filled": {
+    "encyclopedia_wikipedia": false,
+    "git_docs": true,
+    "regulation_ecfr": true
+  },
+  "reading": "EXHAUSTED means every candidate the frame held was considered. COMPLETE means the quotas filled and the run stopped early, which is correct and leaves candidates unexamined. NEITHER means the run stopped for a reason this tool cannot name, and the cohort's size is not evidence of anything",
+  "receipt_sha256": "sha256:065dac3b984eecbfdb883611e53f10528e33ca41f40123e56e3040c0777b1f1f",
+  "reconciles": true,
+  "rejected": 1453,
+  "rejected_by_code": {
+    "BEYOND_FAMILY_QUOTA": 312,
+    "CANONICALISATION_EMPTY": 2,
+    "PAYLOAD_UNAVAILABLE": 2,
+    "TOO_FEW_REVISIONS": 1137
+  },
+  "schema": "tavonel.v2.sfi3_frame_verification.v1",
+  "scorable": false,
+  "study": "SOURCE_FACT_IR_HELDOUT_V3",
+  "unaccounted": 0
+}

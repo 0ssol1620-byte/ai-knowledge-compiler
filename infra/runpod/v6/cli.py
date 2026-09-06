@@ -137,6 +137,17 @@ def build_parser() -> argparse.ArgumentParser:
     cohort_cleanup.add_argument("--evidence-receipt-sha256", required=True)
     cohort_cleanup.add_argument("--artifacts-uploaded", action="store_true")
     cohort_cleanup.add_argument("--grace-window-elapsed", action="store_true")
+
+    promote_runtime = commands.add_parser(
+        "promote-runtime",
+        help=(
+            "Offline-only: bind a passed baked-runtime qualification to a "
+            "BUILD_REQUIRED Pod spec and write a READY spec."
+        ),
+    )
+    promote_runtime.add_argument("--spec", type=Path, required=True)
+    promote_runtime.add_argument("--qualification", type=Path, required=True)
+    promote_runtime.add_argument("--ready-spec-out", type=Path, required=True)
     return parser
 
 
@@ -179,6 +190,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _dispatch(args: argparse.Namespace, client: RunPodV2Client) -> object:
+    if args.command == "promote-runtime":
+        if args.execute:
+            raise ContractError("promote-runtime is offline-only and rejects --execute")
+        from infra.runpod.v6.runtime_promotion import promote_build_required_spec
+
+        ready_spec, receipt = promote_build_required_spec(
+            _read_object(args.spec),
+            _read_object(args.qualification),
+        )
+        _write_receipt(
+            args.ready_spec_out,
+            json.dumps(ready_spec, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        )
+        return receipt
     if args.command == "inventory":
         return client.inventory_endpoints()
     if args.command == "create":

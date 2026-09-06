@@ -1,0 +1,22 @@
+{
+  "attempt": "v4-hashbound-persisted-safe",
+  "evidence_class": "DEVELOPMENT_RUNTIME_QUALIFICATION_ONLY",
+  "fresh_confirmatory_observation": false,
+  "incident_digest": "sha256:46abbb56544bf87d86686f7f4782bc3ba012fba3b4b084958b2710cc5d8113f9",
+  "pod_billing": {
+    "provider_reported_amount_usd": 0.0,
+    "provider_reported_time_billed_ms": 0,
+    "row_count": 0,
+    "source": "runpod_pod_billing_api",
+    "status": "available",
+    "zero_spend_inferred": false
+  },
+  "provider_stopped": true,
+  "reason": "spawned watchdog entrypoint resolved the v3 controller namespace instead of the v4 attempt namespace",
+  "remaining_gpu_seconds": 10092.353229,
+  "role": "strong",
+  "schema": "tavonel.recovery.runtime_qualification_incident.v1",
+  "scientific_qualification_usable": false,
+  "startup_script_hash_bound": true,
+  "state": "INVALID_INSTRUMENT"
+}

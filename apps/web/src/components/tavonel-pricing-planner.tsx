@@ -1,204 +1,116 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const plans = [
-  {
-    name: "Free",
-    audience: "Individuals",
-    summary: "Try core conversion with short retention.",
-    includes: ["Limited pages", "Core conversion", "Short retention"],
-  },
-  {
-    name: "Personal",
-    audience: "Individuals",
-    summary: "Clean Markdown and personal knowledge projects.",
-    includes: ["Clean Markdown", "Basic Obsidian", "Personal projects"],
-  },
-  {
-    name: "Pro",
-    audience: "Individuals",
-    summary: "Precision processing with proof and connected knowledge.",
-    includes: ["Precision routes", "Source comparison", "Notes and graph"],
-  },
-  {
-    name: "Team",
-    audience: "Teams",
-    summary: "Shared projects, reviewers, API, and audit basics.",
-    includes: ["Shared projects", "Review roles", "API and audit"],
-  },
-  {
-    name: "Business",
-    audience: "Teams",
-    summary: "Higher limits, retention controls, and organization roles.",
-    includes: ["Retention controls", "Organization roles", "Priority support"],
-  },
-  {
-    name: "Enterprise",
-    audience: "Enterprise",
-    summary: "Custom policy, region, deployment, identity, and SLA.",
-    includes: ["Custom policy", "VPC or on-prem", "SSO and SCIM"],
-  },
-] as const;
+import { CANONICAL_PLANS } from "@/lib/billing-catalog";
+import { recordPublicProductEvent } from "@/lib/public-product-analytics";
 
-type Audience = "Individuals" | "Teams" | "Enterprise";
+const STANDARD_PAGE_USD = 0.04;
+const MAXIMUM_PAGE_USD = 0.06;
+
+function usd(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export function TavonelPricingPlanner() {
-  const [audience, setAudience] = useState<Audience>("Individuals");
-  const [pages, setPages] = useState(2500);
-  const [scanRatio, setScanRatio] = useState(20);
-  const [precisionRatio, setPrecisionRatio] = useState(15);
-  const [knowledgeOutput, setKnowledgeOutput] = useState(true);
-
+  const [pages, setPages] = useState(348);
+  const [complexRatio, setComplexRatio] = useState(11);
   const estimate = useMemo(() => {
-    const weighted =
-      pages *
-      (1 +
-        (scanRatio / 100) * 0.7 +
-        (precisionRatio / 100) * 1.5 +
-        (knowledgeOutput ? 0.15 : 0));
-    const lower = Math.ceil((weighted * 0.9) / 100) * 100;
-    const upper = Math.ceil((weighted * 1.15) / 100) * 100;
-    const recommended =
-      pages <= 100
-        ? "Free"
-        : pages <= 1000
-          ? "Personal"
-          : pages <= 5000
-            ? "Pro"
-            : pages <= 20000
-              ? "Team"
-              : pages <= 100000
-                ? "Business"
-                : "Enterprise";
-    return { lower, upper, recommended };
-  }, [knowledgeOutput, pages, precisionRatio, scanRatio]);
+    const complexPages = Math.ceil(pages * (complexRatio / 100));
+    const standard = pages * STANDARD_PAGE_USD;
+    const expected = standard + complexPages * (MAXIMUM_PAGE_USD - STANDARD_PAGE_USD);
+    const maximum = pages * MAXIMUM_PAGE_USD;
+    return { complexPages, expected, maximum };
+  }, [complexRatio, pages]);
+
+  useEffect(() => {
+    recordPublicProductEvent("pricing_viewed");
+  }, []);
 
   return (
-    <section
-      className="tv-pricing-system"
-      aria-labelledby="pricing-plans-title"
-    >
+    <section className="tv-pricing-system" aria-labelledby="pricing-plans-title">
       <header>
-        <p className="tv-context-label">Plans and operating controls</p>
-        <h2 id="pricing-plans-title">
-          Choose the control surface, then size it.
-        </h2>
-        <div className="tv-audience-switch" role="group" aria-label="Audience">
-          {(["Individuals", "Teams", "Enterprise"] as const).map((item) => (
-            <button
-              type="button"
-              key={item}
-              aria-pressed={audience === item}
-              onClick={() => setAudience(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
+        <p className="tv-context-label">Pages + dollars</p>
+        <h2 id="pricing-plans-title">Processing from $0.04 per page.</h2>
+        <p>
+          Every run shows an estimate and a maximum charge before processing.
+          Complex routing adds cost only to pages that require it.
+        </p>
       </header>
 
-      <div className="tv-plan-ledger">
-        {plans
-          .filter((plan) => plan.audience === audience)
-          .map((plan) => (
-            <article key={plan.name}>
-              <span>{plan.audience}</span>
-              <h3>{plan.name}</h3>
-              <p>{plan.summary}</p>
-              <ul>
-                {plan.includes.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
+      <div className="tv-plan-ledger tv-plan-ledger-five">
+        {CANONICAL_PLANS.map((plan) => (
+          <article key={plan.name}>
+            <span>{plan.cadence}</span>
+            <h3>{plan.name}</h3>
+            <strong className="tv-plan-price">{plan.price}</strong>
+            <p>
+              {plan.includedPages === null
+                ? "Usage and throughput set only after qualification"
+                : `${plan.includedPages.toLocaleString()} standard pages included`}
+            </p>
+            <ul>
+              {plan.includes.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </article>
+        ))}
       </div>
 
       <div className="tv-credit-planner">
         <div>
-          <p className="tv-context-label">Transparent estimate</p>
-          <h2>Plan around the pages you actually process.</h2>
-          <p>
-            This planning model exposes scan, Precision, and knowledge-output
-            overhead. It is an estimate, not a quote.
-          </p>
+          <p className="tv-context-label">Pre-run calculator</p>
+          <h2>Know the boundary before you compile.</h2>
           <label>
-            <span>
-              Monthly pages <strong>{pages.toLocaleString()}</strong>
-            </span>
+            <span>Detected pages <strong>{pages.toLocaleString()}</strong></span>
             <input
               type="range"
-              min="100"
-              max="150000"
-              step="100"
+              min="1"
+              max="10000"
+              step="1"
               value={pages}
-              onChange={(event) => setPages(Number(event.target.value))}
+              onChange={(event) => setPages(Number(event.currentTarget.value))}
             />
           </label>
           <label>
-            <span>
-              Scan ratio <strong>{scanRatio}%</strong>
-            </span>
+            <span>Complex-page estimate <strong>{complexRatio}%</strong></span>
             <input
               type="range"
               min="0"
               max="100"
-              step="5"
-              value={scanRatio}
-              onChange={(event) => setScanRatio(Number(event.target.value))}
+              step="1"
+              value={complexRatio}
+              onChange={(event) => setComplexRatio(Number(event.currentTarget.value))}
             />
           </label>
-          <label>
-            <span>
-              Precision ratio <strong>{precisionRatio}%</strong>
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={precisionRatio}
-              onChange={(event) =>
-                setPrecisionRatio(Number(event.target.value))
-              }
-            />
-          </label>
-          <label className="tv-planner-check">
-            <input
-              type="checkbox"
-              checked={knowledgeOutput}
-              onChange={(event) => setKnowledgeOutput(event.target.checked)}
-            />
-            Build knowledge notes and graph output
-          </label>
+          <p>
+            {estimate.complexPages.toLocaleString()} pages may require vision or
+            precision escalation. You can lower the hard cap before starting.
+          </p>
         </div>
         <aside aria-live="polite">
-          <span>Estimated operating profile</span>
+          <span>Estimated compile</span>
           <dl>
-            <div>
-              <dt>Recommended plan</dt>
-              <dd>{estimate.recommended}</dd>
-            </div>
-            <div>
-              <dt>Credit range</dt>
-              <dd>
-                {estimate.lower.toLocaleString()}–
-                {estimate.upper.toLocaleString()}
-              </dd>
-            </div>
-            <div>
-              <dt>Maximum draw</dt>
-              <dd>{estimate.upper.toLocaleString()} credits</dd>
-            </div>
+            <div><dt>Standard floor</dt><dd>{usd(pages * STANDARD_PAGE_USD)}</dd></div>
+            <div><dt>Estimated charge</dt><dd>{usd(estimate.expected)}</dd></div>
+            <div><dt>Maximum charge</dt><dd>{usd(estimate.maximum)}</dd></div>
           </dl>
-          <p>
-            Monetary maximum, overage rate, storage extension, and annual
-            discount appear only after the owner-approved price book is
-            registered.
-          </p>
+          <p>No run may settle above the approved maximum charge.</p>
+          <details>
+            <summary>Internal usage details</summary>
+            <p>1 internal processing unit = $0.01. Units support reservations, retries, release, and cost accounting; they are not the primary sales unit.</p>
+          </details>
         </aside>
       </div>
+      <p className="tv-pricing-hypothesis">
+        Developer and Team are the canonical launch hypotheses. Scale and
+        Enterprise remain qualification-only until measured P50/P95 COGS and
+        owner approval establish their allowance and commercial rate.
+      </p>
     </section>
   );
 }

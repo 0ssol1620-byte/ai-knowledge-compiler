@@ -1,0 +1,287 @@
+/*
+ * TAVONEL cinematic experience — token layer.
+ * CINEMATIC_DESIGN_MASTER_SPEC §11 (material/colour/light), §12 (typography),
+ * §7.3 (motion curves), §6 (grid and layers).
+ *
+ * Everything is scoped under [data-tvx]. The spec (§0.1) rules that the current
+ * implementation is not a visual baseline, and this app carries eight legacy
+ * stylesheets that are deliberately unlayered so they outrank @layer rules. An
+ * attribute-scoped selector beats a bare element selector on specificity, so
+ * this file wins inside the experience and changes nothing outside it. That is
+ * the blank slate, without a thirty-route refactor to get it.
+ */
+
+[data-tvx] {
+  /* ── §11.1 core colour tokens ──────────────────────────────────────────
+   * Eleven tokens. There is no twelfth for "a nice blue for this one thing".
+   * Cobalt means active computation, selection or trace — never a background
+   * gradient. Amber means affected/stale pending recompilation. Oxide means a
+   * real conflict. Current and verified are carried by registration, clarity
+   * and settle, which is why there is no green in the system at all. */
+  --tvx-void-950: #050607;
+  --tvx-graphite-900: #0b0e10;
+  --tvx-graphite-800: #141a1d;
+  --tvx-steel-650: #344047;
+  --tvx-fog-500: #8d969b;
+  --tvx-bone-100: #ece8de;
+  --tvx-paper-050: #f4efe5;
+  --tvx-signal-cobalt: #6d85ff;
+  --tvx-signal-cool: #8aa5b5;
+  --tvx-warning-amber: #b88a48;
+  --tvx-critical-oxide: #9d5752;
+
+  /* Rules and hairlines are alpha over the stage, never a mixed hex, so they
+   * hold up when the stage colour changes between acts. */
+  --tvx-rule-faint: rgb(236 232 222 / 8%);
+  --tvx-rule: rgb(236 232 222 / 14%);
+  --tvx-rule-strong: rgb(236 232 222 / 24%);
+
+  /* ── Voice roles ───────────────────────────────────────────────────────
+   * The 2026-08-21 brief §22.4 replaces the older spec's licensed-face list
+   * with a free-first font policy: evaluate Fontshare, prefer SIL OFL where
+   * practical, record a licence per family, and never ship font files outside
+   * the project. That resolves the open question this file previously carried.
+   *
+   * Wanted Sans is SIL OFL and already self-hosted and subset here, so the
+   * editorial voice is now compliant rather than a placeholder waiting on a
+   * purchase. The instrument voice still runs on a system mono stack; a
+   * Fontshare or OFL mono is an open choice, not a blocked one. */
+  --tvx-font-editorial: var(--font-wanted-sans), "Segoe UI Variable Text",
+    "Segoe UI", system-ui, sans-serif;
+  --tvx-font-instrument: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono",
+    Consolas, monospace;
+  --tvx-font-evidence: "Source Serif 4", Georgia, "Times New Roman", serif;
+
+  /* ── §7.3 motion curves ────────────────────────────────────────────────
+   * Named for what they mean, not for their shape. A camera move and a copy
+   * reveal are different events and never share a curve. */
+  --tvx-ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+  --tvx-ease-camera: cubic-bezier(0.16, 1, 0.3, 1);
+  --tvx-ease-resolve: cubic-bezier(0.4, 0, 0.2, 1);
+  --tvx-ease-lock: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --tvx-ease-diff: cubic-bezier(0.55, 0, 0.15, 1);
+  --tvx-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* ── §6.5 layer stack ──────────────────────────────────────────────────
+   * Z9 is development only and is not referenced by any shipped component. */
+  --tvx-z-atmosphere: 0;
+  --tvx-z-horizon: 10;
+  --tvx-z-topology: 20;
+  --tvx-z-objects: 30;
+  --tvx-z-relations: 40;
+  --tvx-z-world-labels: 50;
+  --tvx-z-editorial: 60;
+  --tvx-z-instruments: 70;
+  --tvx-z-nav: 80;
+
+  /* ── §6.1/§6.2 artboard ───────────────────────────────────────────────
+   * The canonical artboard is 1440x900. `--tvx-u` is one canonical pixel
+   * expressed against the live viewport width, so a value transcribed from the
+   * spec can be written as `calc(90 * var(--tvx-u))` and stay proportionally
+   * correct without anyone hand-converting it. §17 overrides the ones that
+   * must not scale — type sizes above all. */
+  --tvx-artboard-w: 1440;
+  --tvx-artboard-h: 900;
+  --tvx-u: calc(100vw / var(--tvx-artboard-w));
+  --tvx-safe-x: 6.25%;
+  --tvx-safe-top: 4%;
+  --tvx-safe-bottom: 6%;
+
+  /* The editorial column ceiling. The 2026-08-21 brief §22.4 states main copy
+   * max width ~620px, where the older spec set 580 with a 620 hard ceiling.
+   * The newer number wins and the two now coincide. */
+  --tvx-copy-max: 620px;
+  --tvx-copy-ceiling: 620px;
+}
+
+/* ── Stage ───────────────────────────────────────────────────────────────
+ * §3.4 fixes the ratio at 88% deep night to 12% evidence paper. The stage is a
+ * flat graphite; there is no atmospheric radial gradient behind the content,
+ * because a glow that means nothing is the first thing that makes a dark page
+ * read as a template. Light in this system comes from the lighting rig on real
+ * objects (§11.4), not from the background. */
+[data-tvx] {
+  background-color: var(--tvx-graphite-900);
+  color: var(--tvx-bone-100);
+  font-family: var(--tvx-font-editorial);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Canonical type scale at 1440x900 ───────────────────────────────────
+ * Values follow the 2026-08-21 brief §22.4, which narrows every band the
+ * 2026-08-20 spec §12.2 set. The newer document is authority #1 by its own
+ * §0.1, so where the two disagree the smaller, calmer scale wins:
+ *
+ *   hero      60–68 → 56–66,  line-height now 1.02–1.08
+ *   query     32–38 → 30–36
+ *   secondary 18–22 → 20–28
+ *   numeric   42–54 → 38–46
+ *
+ * Ranges are rendered as clamps between the 1024 and 1920 ends, so one rule
+ * serves every viewport without a media-query ladder. The upper bound of each
+ * clamp is the brief's maximum, never more: a wider screen gets more world,
+ * not larger text. */
+
+[data-tvx] .tvx-h1 {
+  font-size: clamp(2.5rem, 4.31vw, 4.125rem); /* 40 → 66px */
+  line-height: 1.05;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  max-width: var(--tvx-copy-max);
+  text-wrap: balance;
+}
+
+[data-tvx] .tvx-statement {
+  font-size: clamp(2rem, 3.45vw, 3.375rem); /* 32 → 54px */
+  line-height: 1.06;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  max-width: var(--tvx-copy-max);
+  text-wrap: balance;
+}
+
+[data-tvx] .tvx-query {
+  font-size: clamp(1.5rem, 2.36vw, 2.25rem); /* 24 → 36px */
+  line-height: 1.16;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  max-width: 550px;
+}
+
+[data-tvx] .tvx-brand {
+  font-size: clamp(2rem, 3.4vw, 3.25rem); /* 32 → 52px */
+  line-height: 1.04;
+  font-weight: 450;
+  letter-spacing: -0.02em;
+}
+
+[data-tvx] .tvx-sub {
+  font-size: clamp(1.0625rem, 1.6vw, 1.5rem); /* 17 → 24px, inside 20–28 */
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  max-width: var(--tvx-copy-max);
+  color: var(--tvx-fog-500);
+}
+
+[data-tvx] .tvx-numeric {
+  font-size: clamp(2rem, 3.06vw, 2.875rem); /* 32 → 46px */
+  line-height: 1.08;
+  font-weight: 450;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-tvx] .tvx-world-label {
+  font-size: 0.8125rem; /* 13px — inside the 12–14 band, never scaled down */
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  max-width: 220px;
+}
+
+/* The instrument voice. Wide tracking and uppercase do the work that a filled
+ * badge would otherwise do — §14.1 forbids the badge.
+ *
+ * 12px, not 11. The 2026-08-20 spec allowed an 11–12px band; the 2026-08-21
+ * brief §22.4 sets a hard floor of "technical labels: minimum 12px readable",
+ * and §32.6's layout gate fails on unreadable technical text. The old value
+ * was inside the old band and is a violation under the new one. */
+[data-tvx] .tvx-technical {
+  font-family: var(--tvx-font-instrument);
+  font-size: 12px; /* 12px — floor, not a preference */
+  line-height: 1.36;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  max-width: 300px;
+  color: var(--tvx-fog-500);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-tvx] .tvx-evidence-body {
+  font-family: var(--tvx-font-evidence);
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #1b1a17;
+}
+
+/* Values, timestamps, world-state ids, pages and deltas are tabular. A launch
+ * date that reflows by a pixel when it changes undermines the claim that the
+ * unaffected set did not move. */
+[data-tvx] .tvx-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── §12.3 reveal behaviour ─────────────────────────────────────────────
+ * Line-mask reveal, 300–360ms, with an 8–14px settle. Typewriter, scramble,
+ * decode and glitch are absent by construction — there is no keyframe here
+ * that could produce them. */
+@keyframes tvx-line-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 -10% 0);
+  }
+}
+
+[data-tvx] .tvx-reveal {
+  animation: tvx-line-reveal 340ms var(--tvx-ease-reveal) both;
+  animation-delay: var(--tvx-reveal-delay, 0ms);
+}
+
+/* ── §18.5 motion safety ────────────────────────────────────────────────
+ * The preference is honoured on first render, not after the animation begins.
+ * Reduced motion keeps the same semantic checkpoints (§18.1); it removes
+ * travel, not narrative. */
+@media (prefers-reduced-motion: reduce) {
+  [data-tvx] .tvx-reveal {
+    animation: tvx-fade-in 200ms linear both;
+  }
+}
+
+@keyframes tvx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── §18.2 focus ────────────────────────────────────────────────────────
+ * Focus uses the cobalt signal rather than the browser default, and it is a
+ * real ring with offset so it survives on both the graphite stage and the
+ * paper surfaces. */
+[data-tvx] :focus-visible {
+  outline: 2px solid var(--tvx-signal-cobalt);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+/* ── §3.8 UI law ────────────────────────────────────────────────────────
+ * Instruments, not panels. A hairline and a graphite ground; no rounded SaaS
+ * card, no pill, no glass, no drop shadow standing in for hierarchy. The
+ * 2px radius is a manufacturing tolerance, not a style. */
+[data-tvx] .tvx-instrument {
+  background-color: var(--tvx-graphite-800);
+  border: 1px solid var(--tvx-rule);
+  border-radius: 2px;
+}
+
+/* Evidence paper is the brightest object in the system (§11.2) and the only
+ * place the palette inverts. */
+[data-tvx] .tvx-paper {
+  background-color: var(--tvx-paper-050);
+  color: #1b1a17;
+  border-radius: 1px;
+}

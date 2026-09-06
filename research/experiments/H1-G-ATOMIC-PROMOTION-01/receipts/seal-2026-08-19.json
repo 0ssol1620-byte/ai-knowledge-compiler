@@ -1,0 +1,42 @@
+{
+  "decision_rule": "PASS only if all required tests remain present and pytest exits zero",
+  "evidence_class": "CONTROLLED_IMPLEMENTATION_CONTRACT_AUDIT",
+  "frozen_at": "2026-08-19T01:40:14.084703+00:00",
+  "pinned_files": {
+    "packages/cir-python/src/akc_cir/build_receipt.py": "sha256:7425ecc37850989814ec891f8995673dd658f744e42b21033728073afceddcd9",
+    "packages/cir-python/src/akc_cir/world_state.py": "sha256:c90557a19aacfcff9b1ce173b84c43af9540c727d47fe23272f18722f5c51b76",
+    "research/experiments/H1-G-ATOMIC-PROMOTION-01/PROTOCOL_2026-08-19.md": "sha256:65e4c43cc7474b6cc3c8ab19a54b2d5b97d5b4a1e1127c50890dd693dae01295",
+    "research/experiments/H1-G-ATOMIC-PROMOTION-01/scripts/audit_atomic_promotion.py": "sha256:cd54b3217d5b01eb65b0e9c93a196e6cab9cd5a772b68cccba10f3d37f402e17",
+    "tests/unit/test_build_receipt.py": "sha256:2d071ef4293d38ef39bc2aa16c7c2d7a53fd271f8b3da3f69a4fc3d7dd51d150",
+    "tests/unit/test_world_state.py": "sha256:f428505e5aa9f2fc50098ff8be91fb9e493bc8f0e01afc125ba923a76832eb2d"
+  },
+  "pytest_targets": [
+    "tests/unit/test_world_state.py",
+    "tests/unit/test_build_receipt.py"
+  ],
+  "required_contract_tests": [
+    "test_a_blocked_publish_leaves_the_old_state_serving",
+    "test_a_checksum_mismatch_blocks_the_publish",
+    "test_a_receipt_describing_other_bytes_is_refused",
+    "test_a_receipt_for_another_artifact_is_refused",
+    "test_a_receipt_from_the_prior_revision_is_refused",
+    "test_a_refused_publish_emits_nothing",
+    "test_a_rejected_candidate_cannot_be_published_on_a_retry",
+    "test_a_selective_build_that_diverges_is_refused",
+    "test_a_selective_build_without_an_equivalence_check_is_refused",
+    "test_a_successful_publish_emits_exactly_one_event",
+    "test_an_unrun_permission_check_blocks_the_publish",
+    "test_an_untracked_builder_is_refused_rather_than_detected",
+    "test_editing_any_sealed_field_breaks_the_seal",
+    "test_failed_validation_blocks_the_publish",
+    "test_inputs_that_moved_since_the_build_are_refused",
+    "test_no_argument_combination_promotes_an_untracked_build",
+    "test_publishing_something_never_staged_is_refused",
+    "test_rollback_restores_the_previous_state",
+    "test_rolling_back_to_an_unpublished_candidate_is_refused",
+    "test_the_permissive_path_downgrades_rather_than_passes",
+    "test_the_tracked_flag_cannot_be_restored_by_editing_the_receipt"
+  ],
+  "schema": "tavonel.atomic-promotion-audit-seal.v1",
+  "seal_sha256": "sha256:5d33ba25d0967f80e6d05b2b21e4a3eb751cd9750b284b1a55ebc71f2e40533f"
+}

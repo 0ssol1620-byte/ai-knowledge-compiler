@@ -1,0 +1,32 @@
+{
+  "by_reason": {},
+  "collision_groups": [],
+  "collision_groups_wholly_excluded": true,
+  "estimated_cost_usd": 0.0,
+  "exclusion_policy_sha256": "sha256:a1fc333922d02424c97955cf55882bb9de7e25317eae972e8a7ab4c011fbe7e8",
+  "gpu_seconds": 0,
+  "no_post_freeze_change": "after this rung neither the policy nor the realised set may change. A policy edit and a set edit fail separately and are named separately, so neither can be explained away as the other.",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+  "protocol_sha256": "sha256:56bbe4c43f15d918483b3e7ff4941edc5a08246cec2a361e734c2f593793a48c",
+  "provenance": {
+    "generated_at": "2026-08-25T10:46:03.488221+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2.yaml",
+    "protocol_sha256": "sha256:56bbe4c43f15d918483b3e7ff4941edc5a08246cec2a361e734c2f593793a48c",
+    "receipt_stem": "identity-change-migration-closure-v2r2-exclusion-freeze",
+    "run_id": "20260825T104603Z-df0b99bbab45",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "realised_exclusion_count": 0,
+  "realised_exclusions": [],
+  "realised_exclusions_sha256": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "receipt_sha256": "sha256:851f84cb67abcbae4aa1d287c1511ec5efda78c8ade96293111efe2ed72e8b46",
+  "rung": 4,
+  "rung_name": "exclusions",
+  "schema": "tavonel.v2.exclusion_freeze.v1",
+  "scorer_freeze_receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r2-scorer-freeze--20260825T104559Z-db606c6abc47.json",
+  "scorer_freeze_run_id": "20260825T104559Z-db606c6abc47",
+  "universe_freeze_run_id": "20260825T104523Z-6a50832c28d1"
+}

@@ -1,0 +1,242 @@
+# GPU_SUCCESSOR_RUNTIME_V1 — the runtime declaration behind the cost
+# arithmetic in `tools/gpu_successor_preflight.estimate_cost` and
+# `protocols/GPU_SUCCESSOR_STUDY_V1.yaml` section 6. This file does not
+# define a new study, a new model pin, or a new cost cap — it is the single
+# place that names, with a measurement/declared_assumption tag on every
+# field, what the "declared throughput" and "declared price" in that
+# arithmetic actually assume about hardware, image, serving stack, decoding,
+# and batching.
+#
+# STATUS: DRAFT_NOT_FROZEN, same posture as GPU_SUCCESSOR_STUDY_V1.yaml.
+# Nothing here authorizes a run. `tools/launch_gpu_successor.py` reads this
+# file's digest into every receipt it writes; it does not read a launch
+# permission from it, and it never loosens a gate this file's numbers feed
+# into.
+#
+# No GPU second has been spent against this declaration. Every field below
+# carries a `kind` of either:
+#   - measurement          a fact checked mechanically right now (e.g. a
+#                           digest string matching the required
+#                           `repository@sha256:<64 hex>` form), never an
+#                           observation made on running hardware.
+#   - declared_assumption   a number nobody has observed on real hardware —
+#                           a planning figure the cost arithmetic uses.
+# None of the fields below are a measurement of anything that happened on a
+# GPU, because nothing has happened on a GPU yet for this study.
+
+schema: tavonel.v2.protocol.gpu_successor_runtime.v1
+protocol_id: GPU_SUCCESSOR_RUNTIME_V1
+study_id: SOURCE_FACT_PROPAGATION_MODEL_V1
+version: 1
+authored: 2026-08-23
+status: DRAFT_NOT_FROZEN
+supersedes: null
+
+relates_to:
+  GPU_SUCCESSOR_STUDY_V1:
+    rule: >-
+      the frozen-when-frozen study contract. Every number in this file that
+      also appears there (model pin, runtime image digest, decoding
+      parameters, cost-cap declared parameters) is copied from it verbatim,
+      never restated with a drifted value. Where this file adds detail the
+      study protocol does not carry (GPU count, region, batch/concurrency),
+      that detail is additive, not a contradiction.
+  gpu_successor_preflight.py:
+    rule: >-
+      `DECLARED_THROUGHPUT_TOKENS_PER_SECOND` and
+      `DECLARED_GPU_HOURLY_RATE_USD` in that module are this file's
+      `cost_assumptions.throughput_tokens_per_second` and
+      `cost_assumptions.gpu_hourly_rate_usd`, named twice so a reader of the
+      protocol and a reader of the code see the same number without
+      cross-referencing. The test suite checks agreement against the live
+      module rather than trusting this comment.
+  tools/launch_gpu_successor.py:
+    rule: >-
+      hashes this file into every receipt it writes (`runtime_declaration`),
+      and refuses to provision unless `gpu_successor_preflight.run()`
+      returns `READY_TO_AUTHORIZE` against the same declared image digest
+      and cost parameters named here.
+
+# ---------------------------------------------------------------------------
+# 1. Hardware
+# ---------------------------------------------------------------------------
+
+hardware:
+  gpu_type:
+    value: NVIDIA H200
+    kind: declared_assumption
+    note: >-
+      matches the attested runtime in GPU_SUCCESSOR_STUDY_V1.yaml
+      (`runtime.attested_gpu`), itself the closed MODEL_ENDPOINT_V1 study's
+      W6 v8 attestation. This study reuses the already-pinned model/runtime
+      per the founder's framing, so it declares the same GPU family rather
+      than selecting a new one. No H200 second has been reserved or spent
+      for THIS study.
+  gpu_count:
+    value: 1
+    kind: declared_assumption
+  vram_per_gpu_gb:
+    value: 141
+    kind: declared_assumption
+    note: H200 SXM nameplate VRAM. Not measured on a reserved instance.
+  region_or_data_center_constraint:
+    value: none declared
+    kind: declared_assumption
+    note: >-
+      no specific Runpod data-center id is pinned in this frozen-when-frozen
+      declaration. Pinning one is a launch-time decision, made from a
+      read-only availability lookup at the moment of `--execute`, not baked
+      in here — a specific data-center constraint recorded now would go
+      stale before the study actually runs.
+  network_volume: none declared
+
+# ---------------------------------------------------------------------------
+# 2. Container image — pinned by digest, never a floating tag
+# ---------------------------------------------------------------------------
+
+image:
+  repository_and_digest:
+    value: >-
+      runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35
+    kind: measurement
+    note: >-
+      "measurement" here means the STRING mechanically matches the required
+      `repository@sha256:<64 hex>` form — the same check
+      `gpu_successor_preflight.runtime_image_pinnable` performs. It does not
+      mean the image has been pulled or a container started against it for
+      this study; nothing has.
+  floating_tag_forbidden: true
+  source: >-
+    GPU_SUCCESSOR_STUDY_V1.yaml `runtime.runtime_image_digest`, itself the
+    closed MODEL_ENDPOINT_V1 study's attested runtime image.
+
+# ---------------------------------------------------------------------------
+# 3. Serving stack
+# ---------------------------------------------------------------------------
+
+serving_stack:
+  engine:
+    value: vllm
+    kind: declared_assumption
+  engine_version:
+    value: "0.27.1"
+    kind: declared_assumption
+    note: copied from GPU_SUCCESSOR_STUDY_V1.yaml `runtime.serving_runtime_version`.
+  dtype:
+    value: bfloat16
+    kind: declared_assumption
+  quantization:
+    value: none
+    kind: declared_assumption
+
+# ---------------------------------------------------------------------------
+# 4. Decoding parameters — identical across both arms of the study
+# ---------------------------------------------------------------------------
+
+decoding:
+  temperature:
+    value: 0.0
+    kind: declared_assumption
+  strategy:
+    value: greedy
+    kind: declared_assumption
+  max_new_tokens:
+    value: 256
+    kind: declared_assumption
+    note: "= gpu_successor_preflight.MAX_NEW_TOKENS"
+  seed:
+    value: null
+    kind: declared_assumption
+    note: >-
+      Deliberately null, and null is the policy rather than an omission.
+      Strategy is greedy at temperature 0.0, so no sampling RNG is consulted
+      and a seed would change nothing about which token is emitted. Recording
+      a seed here would suggest the run's determinism rests on it; it rests on
+      greedy decoding, the pinned revision and the pinned runtime image
+      digest, all three of which the receipt carries. If the strategy ever
+      moves off greedy, a seed becomes load-bearing and this field must be set
+      in the same change — a sampling run with a null seed is not reproducible
+      and its determinism_repeats would compare two different experiments.
+  thinking:
+    value: "off"
+    kind: declared_assumption
+  tools:
+    value: "off"
+    kind: declared_assumption
+  prompt_token_allowance:
+    value: 2048
+    kind: declared_assumption
+    note: >-
+      = gpu_successor_preflight.ESTIMATED_PROMPT_TOKENS, an allowance for the
+      cost arithmetic, not a tokenizer measurement — the real per-item count
+      is only knowable once a cohort exists to materialize.
+  context_budget_tokens:
+    value: 4096
+    kind: declared_assumption
+    note: "= gpu_successor_preflight.CONTEXT_BUDGET_TOKENS"
+
+# ---------------------------------------------------------------------------
+# 5. Batch / concurrency
+# ---------------------------------------------------------------------------
+
+batching:
+  arms:
+    value: 2
+    kind: declared_assumption
+    note: VERIFIED_CURRENT_TYPED, STALE_APPEND_ONLY.
+  determinism_repeats:
+    value: 2
+    kind: declared_assumption
+  concurrency_model:
+    value: vLLM continuous batching, whole cohort served concurrently
+    kind: declared_assumption
+    note: >-
+      this is why the declared throughput below is an aggregate batched
+      figure rather than a single-stream generation rate — no batching
+      configuration has been tuned or measured on real hardware.
+
+# ---------------------------------------------------------------------------
+# 6. Throughput and price assumptions the cost arithmetic rests on
+# ---------------------------------------------------------------------------
+
+cost_assumptions:
+  throughput_tokens_per_second:
+    value: 2000.0
+    kind: declared_assumption
+    note: >-
+      = gpu_successor_preflight.DECLARED_THROUGHPUT_TOKENS_PER_SECOND. An
+      aggregate batched estimate for one H200 running vLLM continuous
+      batching against this model, not a benchmark run on reserved hardware.
+  gpu_hourly_rate_usd:
+    value: 2.5
+    kind: declared_assumption
+    price_snapshot_date: 2026-08-23
+    price_source: >-
+      carried forward unchanged from GPU_SUCCESSOR_STUDY_V1.yaml
+      `cost_cap.declared_parameters.declared_gpu_hourly_rate_usd`, itself a
+      declared planning figure for an H200-class instance, not a quote
+      fetched from a live Runpod pricing endpoint while authoring this file
+      — no pricing API call was made to author this protocol. A launch-time
+      operator should re-check the live rate before `--execute` if the
+      snapshot date above is stale relative to the run.
+  cap_gpu_hours:
+    value: 6.0
+    kind: declared_assumption
+    note: >-
+      the founder's approved ceiling, not a measurement or a guess about
+      hardware behavior; = gpu_successor_preflight.CAP_GPU_HOURS. Recorded
+      as declared_assumption only because "measurement" would misstate it as
+      an observation.
+  cap_usd:
+    value: 40.0
+    kind: declared_assumption
+    note: >-
+      the founder's approved ceiling; = gpu_successor_preflight.CAP_USD. Same
+      reasoning as `cap_gpu_hours` above.
+
+no_gpu_second_spent: >-
+  every `declared_assumption` field above is exactly that — an assumption fed
+  into `gpu_successor_preflight.estimate_cost`'s arithmetic, not an
+  observation. `tools/launch_gpu_successor.py` writes `gpu_seconds: 0` and
+  `estimated_cost_usd: 0.0` for every refusal and every dry run, and this
+  protocol has never been used to provision anything.

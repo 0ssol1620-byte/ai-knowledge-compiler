@@ -1,0 +1,22 @@
+{
+  "measurement_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4--20260826T064947Z-e6cab21d2c93.json",
+  "measurement_run_id": "20260826T064947Z-e6cab21d2c93",
+  "measurement_sha256": "sha256:28da167f1c98a67b866e40add4bfa5ba840b618e1a1559c24a11b516e2ea3474",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4",
+  "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+  "provenance": {
+    "generated_at": "2026-08-26T06:51:27.993853+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "migration-closure-acceptance",
+    "run_id": "20260826T065127Z-0d8f9b2c3e28",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/migration_closure_acceptance.py",
+    "tool_sha256": "sha256:6fa3e61c79452b271fd32cf13fd54cc08c8ab4b50402e811a51accac2d8ea950"
+  },
+  "receipt_sha256": "sha256:84f97670bd26b2aa41612ff5a99af80b3938930c32a3ce9c714919f65a45a4c8",
+  "schema": "tavonel.v2.migration_closure_acceptance.v1",
+  "universe_sha256": "sha256:2ff5ade21d0e63ecbb33ed18c449a7de9a85789472b0088107715b0d162da1c1"
+}

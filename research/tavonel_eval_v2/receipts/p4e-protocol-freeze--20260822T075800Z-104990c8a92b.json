@@ -1,0 +1,25 @@
+{
+  "amendment_of": null,
+  "estimated_cost_usd": 0.0,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "protocol_path": "research/tavonel_eval_v2/protocols/P4e_provenance_retrieval.yaml",
+  "protocol_sha256": "sha256:a6060213407fce8da9622979cb97c5e522ed30e942719c6c92e55141e46366d6",
+  "provenance": {
+    "generated_at": "2026-08-22T07:58:00.078147+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/P4e_provenance_retrieval.yaml",
+    "protocol_sha256": "sha256:a6060213407fce8da9622979cb97c5e522ed30e942719c6c92e55141e46366d6",
+    "receipt_stem": "p4e-protocol-freeze",
+    "run_id": "20260822T075800Z-104990c8a92b",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_protocol_immutable.py",
+    "tool_sha256": "sha256:2d353f9fe4475f136eb848768adb0dfe3f34f44ab53cdafa8f5652aa3b31554b"
+  },
+  "receipt_sha256": "sha256:afdb33a5a348f10dca1798d11d7f617d951c20963b527eb5312ba28531316a5e",
+  "schema": "tavonel.v2.protocol_freeze.v2",
+  "supersedes_receipts": [],
+  "worktree_dirty_path_count": 182
+}

@@ -1,0 +1,113 @@
+{
+  "body_text_categories": [
+    "code_txt",
+    "reference",
+    "text_block",
+    "title"
+  ],
+  "criterion_reads_predictions": false,
+  "criterion_reproduces_the_evaluator_exactly": true,
+  "disagreements_scored_without_body_text": [],
+  "disagreements_unscored_despite_body_text": [],
+  "excluded_page_data_sources": [
+    [
+      "book",
+      13
+    ],
+    [
+      "academic_literature",
+      13
+    ],
+    [
+      "research_report",
+      13
+    ],
+    [
+      "magazine",
+      5
+    ],
+    [
+      "colorful_textbook",
+      4
+    ],
+    [
+      "note",
+      2
+    ],
+    [
+      "PPT2PDF",
+      1
+    ]
+  ],
+  "excluded_page_region_categories": [
+    [
+      "table",
+      62
+    ],
+    [
+      "header",
+      56
+    ],
+    [
+      "table_caption",
+      44
+    ],
+    [
+      "page_number",
+      43
+    ],
+    [
+      "footer",
+      30
+    ],
+    [
+      "table_footnote",
+      27
+    ],
+    [
+      "abandon",
+      21
+    ],
+    [
+      "figure",
+      18
+    ],
+    [
+      "text_mask",
+      14
+    ],
+    [
+      "figure_caption",
+      9
+    ],
+    [
+      "figure_footnote",
+      4
+    ],
+    [
+      "equation_isolated",
+      2
+    ],
+    [
+      "equation_caption",
+      1
+    ],
+    [
+      "equation_explanation",
+      1
+    ],
+    [
+      "list_group",
+      1
+    ]
+  ],
+  "generated_at": "2026-08-18T09:03:01.191369+00:00",
+  "pages_in_ground_truth": 800,
+  "pages_predicted_scored": 749,
+  "pages_predicted_unscored": 51,
+  "pages_scored_by_the_evaluator": 749,
+  "receipt_sha256": "sha256:25e64b32348fc156c1bfd31eb7e11020e17a45c607a997d4a88ed14784adc631",
+  "schema": "tavonel.a9-scored-page-criterion.v1",
+  "what_is_not_claimed": "not that the excluded pages are safe. A table-only page can be transcribed catastrophically. Only that the official text metric does not measure them and their removal is not selective.",
+  "why_this_matters": "the confirmatory endpoint is undefined on an unscored page, so those pages leave the denominator. If they left it for a reason correlated with output quality -- empty prediction, matcher timeout, nothing aligned -- the measured error rate would be biased downward and the test statistic would not show it. This criterion is computed from the annotation alone, so the exclusion is fixed before the model runs."
+}

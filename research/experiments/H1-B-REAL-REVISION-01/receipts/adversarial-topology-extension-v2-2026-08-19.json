@@ -1,0 +1,67 @@
+{
+  "all_cells_equivalent": true,
+  "cases_per_cell": 200,
+  "cells": {
+    "cross_document_dependency": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 600,
+        "max_target_depth": 0,
+        "planned_artifacts": 600
+      }
+    },
+    "deep_chain_64": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 12800,
+        "max_target_depth": 0,
+        "planned_artifacts": 12800
+      }
+    },
+    "diamond_conflicting_channels_semantic": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 400,
+        "max_target_depth": 0,
+        "planned_artifacts": 400
+      }
+    },
+    "diamond_conflicting_channels_structural": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 400,
+        "max_target_depth": 0,
+        "planned_artifacts": 400
+      }
+    }
+  },
+  "evidence_class": "development controlled topology sweep; not final holdout",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T23:21:15.181008+00:00",
+  "primary_criterion": "zero stale escapes / exact full-oracle artifact equivalence",
+  "protocol_sha256": "sha256:d51462afce8482aa8a9a63869c62ee4b99c9aad1cd89531ac8026049b977b206",
+  "receipt_sha256": "sha256:8ef7bbd86c8bd59b73e270539783101edfe1acd2bc602169ca7331337e575514",
+  "schema": "tavonel.family-b-adversarial-topology-extension.v1",
+  "script_sha256": "sha256:9dc27bc19650a0b28a4430b4c8a81cc41c4379939e60561a65560ad1ee159bec",
+  "seed": 2026081907
+}

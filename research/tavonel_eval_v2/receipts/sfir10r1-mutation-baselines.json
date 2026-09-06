@@ -1,0 +1,109 @@
+{
+  "all_baselines_green": true,
+  "all_mutations_killed": true,
+  "baseline": {
+    "returncode": 0,
+    "summary_tail": [
+      "..........................................                               [100%]",
+      "42 passed in 0.79s"
+    ]
+  },
+  "mutation_digest": "sha256:f9952d79d79a8a79d75a1aac8951dde8abb81e17eda772d4f86111ad60f7dcbd",
+  "mutations_declared": 18,
+  "mutations_killed": 18,
+  "outcomes": [
+    {
+      "label": "M01 choose partition two instead of mechanical successor",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_protocol.py"
+    },
+    {
+      "label": "M02 enable adaptive mid-segment polling",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_protocol.py"
+    },
+    {
+      "label": "M03 stop requiring reset evidence",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_protocol.py"
+    },
+    {
+      "label": "M04 reserve one charge instead of worst-case redirect cost",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_protocol.py"
+    },
+    {
+      "label": "M05 permit a segment request that can overspend",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    },
+    {
+      "label": "M06 permit a root request that can overspend",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    },
+    {
+      "label": "M07 ignore provider reset drift on a response",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    },
+    {
+      "label": "M08 accept multi-charge hop as attributable",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    },
+    {
+      "label": "M09 turn rate-limit HTTP status into ordinary transport handling",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    },
+    {
+      "label": "M10 invent main when metadata has no default branch",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    },
+    {
+      "label": "M11 report transport stop as frontier exhaustion",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_runner.py"
+    },
+    {
+      "label": "M12 call unfinished roots exhausted when windows end",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_runner.py"
+    },
+    {
+      "label": "M13 resume after crash without a sealed segment receipt",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_runner.py"
+    },
+    {
+      "label": "M14 permit a short roster to enter the census",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_protocol.py"
+    },
+    {
+      "label": "M15 restore V10 all-refused false completeness",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_runner.py"
+    },
+    {
+      "label": "M16 ignore an existing immutable root snapshot and reseed",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_runner.py"
+    },
+    {
+      "label": "M17 allow counted root without immutable revision snapshot",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_runner.py"
+    },
+    {
+      "label": "M18 misclassify metadata transport failure as identity refusal",
+      "outcome": "KILLED",
+      "target": "tools/sfir10r1_transport.py"
+    }
+  ],
+  "schema": "tavonel.sfir10r1.mutation_baselines.v1",
+  "survivors_or_invalid": [],
+  "what_this_establishes": "the selected synthetic controls detect these 18 declared weakenings; it does not prove absence of other defects"
+}

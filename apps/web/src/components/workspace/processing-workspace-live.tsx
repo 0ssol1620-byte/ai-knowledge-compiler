@@ -42,6 +42,7 @@ import {
   recordProductAnalyticsEvent,
   streamJob,
 } from "@/lib/api-client";
+import { formatUsd } from "@/lib/customer-pricing";
 import {
   initialLiveJobState,
   reduceJobEvent,
@@ -93,6 +94,15 @@ interface JobSnapshot {
       used: number;
       reserved: number;
       maximum: number;
+    };
+    customer_charges: {
+      currency: "USD";
+      estimated: number;
+      charged: number;
+      authorized: number;
+      maximum: number;
+      standard_page_rate: number;
+      routed_page_rate: number;
     };
   };
   document: {
@@ -172,6 +182,7 @@ function EstimateView({ documentId }: { documentId: string }) {
   const [consented, setConsented] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string>();
+  const [customerMaximum, setCustomerMaximum] = useState<string>();
   const estimate = useQuery({
     queryKey: ["document-estimate", documentId],
     queryFn: () =>
@@ -209,6 +220,13 @@ function EstimateView({ documentId }: { documentId: string }) {
   }
 
   const value = estimate.data;
+  const customerMaximumValue =
+    customerMaximum ?? value.customer_charge_max_usd.toFixed(2);
+  const approvedMaximum = Number(customerMaximumValue);
+  const maximumIsValid =
+    Number.isFinite(approvedMaximum) &&
+    approvedMaximum >= value.customer_charge_estimate_usd &&
+    approvedMaximum <= value.customer_charge_max_usd;
   return (
     <div className="estimate-page-live">
       <section
@@ -224,12 +242,19 @@ function EstimateView({ documentId }: { documentId: string }) {
               Confirm the estimate before processing
             </h1>
             <p>
-              These are live security and preflight results. No credits are used
+              These are live security and preflight results. No charge is made
               before approval.
             </p>
           </div>
         </div>
-        <EstimateFacts estimate={value} />
+        <EstimateFacts
+          estimate={value}
+          customerMaximum={customerMaximumValue}
+          onCustomerMaximumChange={(next) => {
+            setCustomerMaximum(next);
+            setConsented(false);
+          }}
+        />
         <label className="consent-check">
           <input
             type="checkbox"
@@ -237,8 +262,8 @@ function EstimateView({ documentId }: { documentId: string }) {
             onChange={(event) => setConsented(event.currentTarget.checked)}
           />
           <span>
-            I confirmed the {value.credit_max}-credit maximum reservation and the
-            automatic return policy for failed pages.
+            I confirmed the {formatUsd(approvedMaximum)} maximum
+            charge and the automatic release policy for failed pages.
           </span>
         </label>
         {startError && (
@@ -253,7 +278,7 @@ function EstimateView({ documentId }: { documentId: string }) {
           <button
             type="button"
             className="primary-button"
-            disabled={!consented || starting}
+            disabled={!consented || !maximumIsValid || starting}
             onClick={() => {
               setStarting(true);
               setStartError(undefined);
@@ -265,13 +290,17 @@ function EstimateView({ documentId }: { documentId: string }) {
                   body: JSON.stringify({
                     route_profile: "parse_balanced_v1",
                     max_credits: value.credit_max,
+                    customer_max_charge_usd: approvedMaximum,
                     external_processing_consent: false,
                   }),
                 },
               )
-                .then((result) =>
-                  router.replace(`/workspace?job=${result.job_id}`),
-                )
+                .then((result) => {
+                  void recordProductAnalyticsEvent({
+                    event_type: "compile_started",
+                  }).catch(() => undefined);
+                  router.replace(`/workspace?job=${result.job_id}`);
+                })
                 .catch((reason: unknown) => {
                   setStartError(
                     reason instanceof Error
@@ -291,7 +320,15 @@ function EstimateView({ documentId }: { documentId: string }) {
   );
 }
 
-function EstimateFacts({ estimate }: { estimate: PreflightEstimate }) {
+function EstimateFacts({
+  estimate,
+  customerMaximum,
+  onCustomerMaximumChange,
+}: {
+  estimate: PreflightEstimate;
+  customerMaximum: string;
+  onCustomerMaximumChange: (value: string) => void;
+}) {
   return (
     <>
       <div className="estimate-page-grid">
@@ -344,12 +381,36 @@ function EstimateFacts({ estimate }: { estimate: PreflightEstimate }) {
       </div>
       <div className="estimate-credit">
         <div>
-          <span>Estimated credits</span>
+          <span>Estimated charge</span>
           <strong>
-            {estimate.credit_min}–{estimate.credit_max}
+            {formatUsd(estimate.customer_charge_min_usd)}–
+            {formatUsd(estimate.customer_charge_estimate_usd)}
           </strong>
         </div>
-        <p>Unused reservations are returned through a ledger transaction.</p>
+        <label>
+          <span>Maximum charge (USD)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={estimate.customer_charge_estimate_usd}
+            max={estimate.customer_charge_max_usd}
+            step="0.01"
+            value={customerMaximum}
+            onChange={(event) => onCustomerMaximumChange(event.currentTarget.value)}
+          />
+        </label>
+        <p>
+          Routed-page ceiling: {formatUsd(estimate.customer_charge_max_usd)} at{" "}
+          {formatUsd(estimate.routed_page_rate_usd)}/page. Unused authorization is
+          released automatically.
+        </p>
+        <details>
+          <summary>Advanced receipt</summary>
+          <code>
+            {estimate.credit_min}–{estimate.credit_max} internal routing units ·
+            not customer currency
+          </code>
+        </details>
       </div>
     </>
   );
@@ -450,12 +511,13 @@ function LiveJobView({ jobId }: { jobId: string }) {
       return;
     }
     resultViewRecorded.current = true;
-    void recordProductAnalyticsEvent({
-      event_type: "result_first_viewed",
-      job_id: jobId,
-    }).catch(() => {
-      // Optional analytics must never block result rendering.
-    });
+    void Promise.allSettled([
+      recordProductAnalyticsEvent({
+        event_type: "result_first_viewed",
+        job_id: jobId,
+      }),
+      recordProductAnalyticsEvent({ event_type: "compile_completed" }),
+    ]);
   }, [effectiveStatus, jobId]);
 
   useEffect(() => {
@@ -631,6 +693,9 @@ function LiveJobView({ jobId }: { jobId: string }) {
     }
     setHighlightedEvidence({ blockId, source });
     if (action === "select" || action === "pin") {
+      void recordProductAnalyticsEvent({
+        event_type: "evidence_opened",
+      }).catch(() => undefined);
       const sourcePage = pages.find(
         (page) => page.page_number === source.page_number,
       );
@@ -718,7 +783,12 @@ function LiveJobView({ jobId }: { jobId: string }) {
           <button
             className="review-button"
             type="button"
-            onClick={() => setReviewOpen(true)}
+            onClick={() => {
+              setReviewOpen(true);
+              void recordProductAnalyticsEvent({
+                event_type: "review_opened",
+              }).catch(() => undefined);
+            }}
           >
             <ShieldCheck size={15} weight="fill" aria-hidden="true" />
             Integrity
@@ -789,11 +859,17 @@ function LiveJobView({ jobId }: { jobId: string }) {
           })}
         </div>
         <div className="cost-meter">
-          <Credit label="Estimated" value={data.job.credits.estimated} />
-          <Credit label="Used" value={data.job.credits.used} />
-          <Credit label="Reserved" value={data.job.credits.reserved} />
-          <Credit label="Maximum" value={data.job.credits.maximum} />
-          <em>credits</em>
+          <Credit label="Estimated" value={data.job.customer_charges.estimated} />
+          <Credit label="Charged" value={data.job.customer_charges.charged} />
+          <Credit label="Authorized" value={data.job.customer_charges.authorized} />
+          <Credit label="Maximum" value={data.job.customer_charges.maximum} />
+          <em>USD</em>
+          <details>
+            <summary>Advanced receipt</summary>
+            <code>
+              {data.job.credits.estimated} estimated · {data.job.credits.used} used · {data.job.credits.reserved} reserved · {data.job.credits.maximum} maximum internal units
+            </code>
+          </details>
         </div>
       </section>
 
@@ -1096,6 +1172,11 @@ function LiveJobView({ jobId }: { jobId: string }) {
       <ExportDialog
         open={exportOpen}
         onClose={() => setExportOpen(false)}
+        onDownload={() => {
+          void recordProductAnalyticsEvent({
+            event_type: "package_downloaded",
+          }).catch(() => undefined);
+        }}
         summary={{
           pages: pages.length,
           blocks: data.summary.blocks,
@@ -1162,7 +1243,7 @@ function Credit({ label, value }: { label: string; value: number }) {
   return (
     <span>
       <small>{label}</small>
-      <strong>{value}</strong>
+      <strong>{formatUsd(value)}</strong>
     </span>
   );
 }

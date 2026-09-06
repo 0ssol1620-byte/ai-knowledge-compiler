@@ -10,6 +10,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from akc_api.collection_integrity_runtime import reconcile_integrity_analysis_task
+from akc_api.customer_pricing import (
+    ROUTED_PAGE_RATE_USD,
+    STANDARD_PAGE_RATE_USD,
+    capped_customer_charge,
+)
 from akc_api.models import (
     AnalysisTask,
     ArchitecturePlan,
@@ -208,6 +213,8 @@ async def _reconcile_binding(
     released = _money(actual.get("released"))
     billable_pages = int(actual.get("billable_pages", 0))
     unbillable_pages = int(actual.get("unbillable_pages", 0))
+    customer_native_pages = int(actual.get("customer_native_pages", 0))
+    customer_routed_pages = int(actual.get("customer_routed_pages", 0))
     terminal_result_ids = set(str(item) for item in job.progress.get("terminal_result_ids", []))
     pages = list(
         await session.scalars(
@@ -298,6 +305,10 @@ async def _reconcile_binding(
             )
             consumed += charge
             billable_pages += 1
+            if str(page.route or "native") == "native":
+                customer_native_pages += 1
+            else:
+                customer_routed_pages += 1
         else:
             unbillable_pages += 1
             if reuse_unbillable:
@@ -331,6 +342,17 @@ async def _reconcile_binding(
         "failed_tasks": failed_tasks,
         "terminal_result_ids": sorted(terminal_result_ids),
     }
+    customer_calculated = (
+        Decimal(customer_native_pages) * STANDARD_PAGE_RATE_USD
+        + Decimal(customer_routed_pages) * ROUTED_PAGE_RATE_USD
+    )
+    customer_maximum = Decimal(
+        str(job.cost_estimate.get("customer_max_charge_usd", "0"))
+    )
+    customer_charged = capped_customer_charge(
+        calculated_usd=customer_calculated,
+        approved_maximum_usd=customer_maximum,
+    )
     job.cost_actual = {
         **actual,
         "reserved": str(total_reserved),
@@ -339,6 +361,10 @@ async def _reconcile_binding(
         "released": str(released),
         "billable_pages": billable_pages,
         "unbillable_pages": unbillable_pages,
+        "customer_native_pages": customer_native_pages,
+        "customer_routed_pages": customer_routed_pages,
+        "customer_charge_calculated_usd": str(customer_calculated),
+        "customer_charge_charged_usd": str(customer_charged),
     }
     if reused_pages:
         await _processing_event(

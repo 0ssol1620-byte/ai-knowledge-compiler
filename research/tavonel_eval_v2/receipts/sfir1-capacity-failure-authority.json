@@ -1,0 +1,35 @@
+{
+  "schema": "tavonel.sfir1.capacity_probe_failure.v1",
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V1",
+  "generated_at": "2026-08-26T13:16:19Z",
+  "state": "TERMINAL_PRE_PAYLOAD_CAPACITY_INSTRUMENT_REFUSAL",
+  "reason": "FROZEN_GIT_ROOT_METADATA_HTTP_404",
+  "exit_code": 1,
+  "charter": {
+    "path": "research/tavonel_eval_v2/receipts/sfir1-design-charter-freeze.json",
+    "sha256": "sha256:b5ae12d49685ded7e8231986593f5f61de514cfd94b37c7c62c74c89cb2e040d"
+  },
+  "spent_identity_authority": {
+    "path": "research/tavonel_eval_v2/receipts/sfir1-spent-identity-authority.json",
+    "sha256": "sha256:cfc0f3d0e14fada3855660452691cd8a29543e39fab6f0035266024ba86c9bf5"
+  },
+  "toolchain": {
+    "probe_sfir1_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir1_capacity.py",
+      "sha256": "sha256:704c0a9bc2f3dd08cb153d93c15386c0dc00a3051ac6d79b299e6cbc5f3c5729"
+    },
+    "sources_sfir1": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir1.py",
+      "sha256": "sha256:9d34ac755536cef00bf1eb2aef7ffbbc359ee69bfbfdff50b7c732758ef041dd"
+    }
+  },
+  "capacity_metadata_written": false,
+  "payload_opened": false,
+  "diff_opened": false,
+  "source_fact_computed": false,
+  "endpoint_outcome_computed": false,
+  "score_attempted": false,
+  "gpu_seconds": 0,
+  "estimated_cost_usd": 0.0,
+  "disposition": "NO_RETRY_NO_CHARTER_AMENDMENT_NO_ROSTER_NO_ACQUISITION"
+}

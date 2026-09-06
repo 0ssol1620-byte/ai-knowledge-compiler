@@ -1,0 +1,4296 @@
+{
+  "H4a_divergence_non_decreasing_in_horizon": {
+    "A_DETERMINISTIC": true,
+    "B_GLOBAL_ONE_TO_ONE": true,
+    "C_FORCED_CONTINUATION": true
+  },
+  "H4b_forced_at_least_as_divergent_as_preserving": false,
+  "H4c_downstream_equivalence_in_every_arm": true,
+  "arms": [
+    "A_DETERMINISTIC",
+    "B_GLOBAL_ONE_TO_ONE",
+    "C_FORCED_CONTINUATION"
+  ],
+  "chain_count": 8,
+  "chain_manifest": "research/tavonel_eval_v2/receipts/p2-chain-manifest.json",
+  "chain_manifest_file_sha256": "sha256:ad62ef0cc66a04d0b2c1213a8ecb239c92b663c076975935b14bb9b65a36e537",
+  "chains": [
+    {
+      "chain_id": "chain-prometheus-configuration",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": null,
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 74
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 74
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 74
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 74
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 74
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 6164,
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "087ef2143318",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "552b154c4de5",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 150,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 150,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 150,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "552b154c4de5",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "5c3ac4d4ce4e",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 140,
+              "changed_units": 7,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 14,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 140,
+              "changed_units": 7,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 14,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 140,
+              "changed_units": 7,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 14,
+              "unresolved": 0
+            }
+          },
+          "from_version": "5c3ac4d4ce4e",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "add59839e1cf",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 142,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 142,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 142,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            }
+          },
+          "from_version": "add59839e1cf",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "c5fa89db085c",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c5fa89db085c",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "5542b00b9d59",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "5542b00b9d59",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "6cb11890aaf6",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 148,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 148,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 148,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            }
+          },
+          "from_version": "6cb11890aaf6",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "fd78076ac89e",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 148,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 148,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 148,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            }
+          },
+          "from_version": "fd78076ac89e",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "2391cf6ffc85",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 146,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 146,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 146,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "2391cf6ffc85",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "d067a8b565e3",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "d067a8b565e3",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "223b91d48f79",
+          "unit_count_after": 74
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 152,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "223b91d48f79",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "a8b5db65156f",
+          "unit_count_after": 74
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-prometheus-functions",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": {
+          "cause": "UNRESOLVED_VS_DECIDED",
+          "step": 2,
+          "unit": "deriv()"
+        },
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 53
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 53
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.10526315789473684,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 57
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.10526315789473684,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 57
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.13559322033898305,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 59
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 45256,
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 110,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 110,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 110,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "354c0b262a75",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "d6c18a4d6292",
+          "unit_count_after": 53
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 110,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 110,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 110,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "d6c18a4d6292",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "56c6370b26a5",
+          "unit_count_after": 53
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 42,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 16,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.4285714285714286,
+              "carried": 92,
+              "changed_units": 43,
+              "current_decision_divergence": 0.10526315789473684,
+              "forced": 0,
+              "origin_divergence": 0.10526315789473684,
+              "rebuilt": 28,
+              "unresolved": 6
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 42,
+              "current_decision_divergence": 0.0,
+              "forced": 6,
+              "origin_divergence": 0.0,
+              "rebuilt": 16,
+              "unresolved": 0
+            }
+          },
+          "from_version": "56c6370b26a5",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "ae9e52c8689f",
+          "unit_count_after": 57
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.10526315789473684,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "ae9e52c8689f",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "5d0bc055ef3b",
+          "unit_count_after": 57
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.10526315789473684,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "5d0bc055ef3b",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "1463a5bb5a6f",
+          "unit_count_after": 57
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.10526315789473684,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "1463a5bb5a6f",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "7b29b912e371",
+          "unit_count_after": 57
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 114,
+              "changed_units": 26,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.2857142857142857,
+              "carried": 110,
+              "changed_units": 27,
+              "current_decision_divergence": 0.03389830508474576,
+              "forced": 0,
+              "origin_divergence": 0.13559322033898305,
+              "rebuilt": 14,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 114,
+              "changed_units": 26,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            }
+          },
+          "from_version": "7b29b912e371",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "7af21f195c8f",
+          "unit_count_after": 59
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 114,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.2857142857142857,
+              "carried": 110,
+              "changed_units": 4,
+              "current_decision_divergence": 0.03389830508474576,
+              "forced": 0,
+              "origin_divergence": 0.13559322033898305,
+              "rebuilt": 14,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 114,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            }
+          },
+          "from_version": "7af21f195c8f",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "a74f0b2e7a13",
+          "unit_count_after": 59
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 122,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 122,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.13559322033898305,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 122,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "a74f0b2e7a13",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "352e36a7601c",
+          "unit_count_after": 59
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 122,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 122,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.13559322033898305,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 122,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "352e36a7601c",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "b4741eeb99c7",
+          "unit_count_after": 59
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 8,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.33333333333333337,
+              "carried": 114,
+              "changed_units": 9,
+              "current_decision_divergence": 0.03333333333333333,
+              "forced": 0,
+              "origin_divergence": 0.16666666666666666,
+              "rebuilt": 12,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 118,
+              "changed_units": 8,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "b4741eeb99c7",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "4c352ffb82a0",
+          "unit_count_after": 60
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-prometheus-basics",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": {
+          "cause": "UNRESOLVED_VS_DECIDED",
+          "step": 7,
+          "unit": "Examples"
+        },
+        "C_FORCED_CONTINUATION": {
+          "cause": "CONTINUATION_VS_NEW",
+          "step": 7,
+          "unit": "Expression language data types"
+        }
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 14
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 14
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 14
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 14
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.3125,
+            "C_FORCED_CONTINUATION": 0.0625
+          },
+          "units": 16
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 22660,
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/basics.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 34,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 34,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 34,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "90f7832447d2",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "bc008f1b0ec2",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "bc008f1b0ec2",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "d6e43b89f45c",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "d6e43b89f45c",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "993d4e71c944",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 0,
+              "changed_units": 14,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 34,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 0,
+              "changed_units": 14,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 34,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 0,
+              "changed_units": 14,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 34,
+              "unresolved": 0
+            }
+          },
+          "from_version": "993d4e71c944",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "13564c03efe7",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "13564c03efe7",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "1071c82b4263",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 30,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 30,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 30,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "1071c82b4263",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "562d13e930d9",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "562d13e930d9",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "a59f3e090bb6",
+          "unit_count_after": 14
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 14,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.25,
+              "carried": 22,
+              "changed_units": 15,
+              "current_decision_divergence": 0.1875,
+              "forced": 0,
+              "origin_divergence": 0.1875,
+              "rebuilt": 16,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 14,
+              "current_decision_divergence": 0.0625,
+              "forced": 2,
+              "origin_divergence": 0.0625,
+              "rebuilt": 12,
+              "unresolved": 0
+            }
+          },
+          "from_version": "a59f3e090bb6",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "c92957871816",
+          "unit_count_after": 16
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 10,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.25,
+              "carried": 24,
+              "changed_units": 11,
+              "current_decision_divergence": 0.11764705882352941,
+              "forced": 0,
+              "origin_divergence": 0.29411764705882354,
+              "rebuilt": 16,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 10,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.058823529411764705,
+              "rebuilt": 12,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c92957871816",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "1463a5bb5a6f",
+          "unit_count_after": 17
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 9,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.2857142857142857,
+              "carried": 24,
+              "changed_units": 10,
+              "current_decision_divergence": 0.125,
+              "forced": 0,
+              "origin_divergence": 0.3125,
+              "rebuilt": 14,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 9,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0625,
+              "rebuilt": 10,
+              "unresolved": 0
+            }
+          },
+          "from_version": "1463a5bb5a6f",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "7b29b912e371",
+          "unit_count_after": 16
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 10,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.33333333333333337,
+              "carried": 28,
+              "changed_units": 11,
+              "current_decision_divergence": 0.11764705882352941,
+              "forced": 0,
+              "origin_divergence": 0.29411764705882354,
+              "rebuilt": 12,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 32,
+              "changed_units": 10,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.058823529411764705,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "7b29b912e371",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "352e36a7601c",
+          "unit_count_after": 17
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-loki--index",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": {
+          "cause": "UNRESOLVED_VS_DECIDED",
+          "step": 8,
+          "unit": "Grafana Loki configuration parameters/Configuration file reference/bloomcompactor"
+        },
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 50
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 50
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 50
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 50
+        }
+      ],
+      "length": 10,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 41784,
+      "source_family": "git_docs",
+      "source_id": "git:grafana/loki:docs/sources/configure/_index.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 102,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 102,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 102,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "d39dc09ca655",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "7607f0448403",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "7607f0448403",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "bc26198c0021",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 98,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 98,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 98,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "bc26198c0021",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "491d2513e746",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "491d2513e746",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "9e6e6d22e03c",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "9e6e6d22e03c",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "3ece2ea6c470",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 104,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "3ece2ea6c470",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "58c8c61905ea",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 100,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 100,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 100,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 6,
+              "unresolved": 0
+            }
+          },
+          "from_version": "58c8c61905ea",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "ff08d2fcc2b7",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 102,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 102,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 102,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "ff08d2fcc2b7",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "705379cc815e",
+          "unit_count_after": 50
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 13,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 30,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0625,
+              "carried": 74,
+              "changed_units": 14,
+              "current_decision_divergence": 0.1,
+              "forced": 0,
+              "origin_divergence": 0.1,
+              "rebuilt": 32,
+              "unresolved": 5
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 13,
+              "current_decision_divergence": 0.0,
+              "forced": 5,
+              "origin_divergence": 0.0,
+              "rebuilt": 30,
+              "unresolved": 0
+            }
+          },
+          "from_version": "705379cc815e",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "a9345d0fb627",
+          "unit_count_after": 50
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-website-deployment",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": null,
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 35
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 35
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 35
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 35
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 35
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 28388,
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "68c8aaaabb61",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "60e358f57d8c",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "60e358f57d8c",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "a15b0a3b97ef",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "a15b0a3b97ef",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "726c0a8dab90",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "726c0a8dab90",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "cfb88965e2d7",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "cfb88965e2d7",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "c2f016b34c14",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c2f016b34c14",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "411a663d996d",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 73,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 3,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 73,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 3,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 73,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 3,
+              "unresolved": 0
+            }
+          },
+          "from_version": "411a663d996d",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "af93a0a732cf",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "af93a0a732cf",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "fb60f3655ae7",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "fb60f3655ae7",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "73f9f06cf5ba",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "73f9f06cf5ba",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "c37d57216103",
+          "unit_count_after": 35
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 74,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c37d57216103",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "a03054abc667",
+          "unit_count_after": 35
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-website-service",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": {
+          "cause": "UNRESOLVED_VS_DECIDED",
+          "step": 5,
+          "unit": "Defining a Service"
+        },
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 41
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 41
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 41
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 41
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.05,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 40
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 48028,
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 80,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 80,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 80,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c164c1ddf6d5",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "bf7a46b04d09",
+          "unit_count_after": 41
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            }
+          },
+          "from_version": "bf7a46b04d09",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "60cb290c0413",
+          "unit_count_after": 41
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 80,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 80,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 80,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "60cb290c0413",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "0e2587f70120",
+          "unit_count_after": 41
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 86,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 86,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 86,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "0e2587f70120",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "854aaf863c57",
+          "unit_count_after": 41
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 86,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 86,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 86,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "854aaf863c57",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "c08d4b9a972c",
+          "unit_count_after": 41
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 37,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.19999999999999996,
+              "carried": 76,
+              "changed_units": 37,
+              "current_decision_divergence": 0.05,
+              "forced": 0,
+              "origin_divergence": 0.05,
+              "rebuilt": 10,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 37,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c08d4b9a972c",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "3d3d53bb471d",
+          "unit_count_after": 40
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 38,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.1428571428571429,
+              "carried": 74,
+              "changed_units": 38,
+              "current_decision_divergence": 0.04878048780487805,
+              "forced": 0,
+              "origin_divergence": 0.04878048780487805,
+              "rebuilt": 14,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 76,
+              "changed_units": 38,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 12,
+              "unresolved": 0
+            }
+          },
+          "from_version": "3d3d53bb471d",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "4a1f03802b42",
+          "unit_count_after": 41
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 37,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.19999999999999996,
+              "carried": 76,
+              "changed_units": 37,
+              "current_decision_divergence": 0.05,
+              "forced": 0,
+              "origin_divergence": 0.05,
+              "rebuilt": 10,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 78,
+              "changed_units": 37,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "4a1f03802b42",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "7212303bb644",
+          "unit_count_after": 40
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.05,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "7212303bb644",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "8a5ff3d757a4",
+          "unit_count_after": 40
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.05,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "8a5ff3d757a4",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "434ae53916ec",
+          "unit_count_after": 40
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.05,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 84,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "434ae53916ec",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "90d449e0c3fa",
+          "unit_count_after": 40
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-book-ch04-01-what-is-ownership",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": {
+          "cause": "UNRESOLVED_VS_DECIDED",
+          "step": 5,
+          "unit": "What Is Ownership?/Memory and Allocation/Variables and Data Interacting with Clone"
+        },
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 10
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 10
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 10
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 10
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.18181818181818182,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 11
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 28892,
+      "source_family": "git_docs",
+      "source_id": "git:rust-lang/book:src/ch04-01-what-is-ownership.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "58957e6ba207",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "9c9a522555c0",
+          "unit_count_after": 10
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 9,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 17,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 9,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 17,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 9,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 17,
+              "unresolved": 0
+            }
+          },
+          "from_version": "9c9a522555c0",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "3d51f70c7816",
+          "unit_count_after": 10
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 18,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 18,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 18,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "3d51f70c7816",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "0a3135500400",
+          "unit_count_after": 10
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "0a3135500400",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "d7c8e047fd8f",
+          "unit_count_after": 10
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "d7c8e047fd8f",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "72ef94c33880",
+          "unit_count_after": 10
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 20,
+              "changed_units": 5,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.33333333333333337,
+              "carried": 16,
+              "changed_units": 6,
+              "current_decision_divergence": 0.18181818181818182,
+              "forced": 0,
+              "origin_divergence": 0.18181818181818182,
+              "rebuilt": 12,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 20,
+              "changed_units": 5,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "72ef94c33880",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "dc67ffe78fa6",
+          "unit_count_after": 11
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 24,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 24,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.18181818181818182,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 24,
+              "changed_units": 4,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "dc67ffe78fa6",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "3a30e4c1fbe6",
+          "unit_count_after": 11
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.18181818181818182,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 26,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "3a30e4c1fbe6",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "f8ed2ced5daa",
+          "unit_count_after": 11
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 14,
+              "changed_units": 8,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 14,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 14,
+              "changed_units": 8,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.18181818181818182,
+              "rebuilt": 14,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 14,
+              "changed_units": 8,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 14,
+              "unresolved": 0
+            }
+          },
+          "from_version": "f8ed2ced5daa",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "bb86b1763bdf",
+          "unit_count_after": 11
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.18181818181818182,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 28,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "bb86b1763bdf",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "8a6130451b08",
+          "unit_count_after": 11
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 24,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 24,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.18181818181818182,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 24,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "8a6130451b08",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "05d114287b7d",
+          "unit_count_after": 11
+        }
+      ]
+    },
+    {
+      "chain_id": "chain-uv-dependencies",
+      "downstream": {
+        "A_DETERMINISTIC": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "B_GLOBAL_ONE_TO_ONE": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        },
+        "C_FORCED_CONTINUATION": {
+          "diverged": [],
+          "extra_in_selective": [],
+          "missing_from_selective": [],
+          "stale_left_behind": [],
+          "state_hash_equal": true
+        }
+      },
+      "first_divergence": {
+        "A_DETERMINISTIC": null,
+        "B_GLOBAL_ONE_TO_ONE": {
+          "cause": "UNRESOLVED_VS_DECIDED",
+          "step": 1,
+          "unit": "Managing dependencies/Editable dependencies"
+        },
+        "C_FORCED_CONTINUATION": null
+      },
+      "horizons": [
+        {
+          "horizon": 1,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.0,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 25
+        },
+        {
+          "horizon": 2,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.038461538461538464,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 26
+        },
+        {
+          "horizon": 3,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.038461538461538464,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 26
+        },
+        {
+          "horizon": 5,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.038461538461538464,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 26
+        },
+        {
+          "horizon": 10,
+          "path_divergence": {
+            "A_DETERMINISTIC": 0.0,
+            "B_GLOBAL_ONE_TO_ONE": 0.1111111111111111,
+            "C_FORCED_CONTINUATION": 0.0
+          },
+          "units": 27
+        }
+      ],
+      "length": 12,
+      "oracle_akc_cir_imported": false,
+      "oracle_cir_python_on_path": false,
+      "oracle_pid": 16820,
+      "source_family": "git_docs",
+      "source_id": "git:astral-sh/uv:docs/concepts/projects/dependencies.md",
+      "steps": [
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 48,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 48,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 48,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "b046e7f3be3b",
+          "inventory_identical_across_arms": true,
+          "step": 0,
+          "to_version": "c226d66f35b1",
+          "unit_count_after": 25
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 48,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.16666666666666663,
+              "carried": 46,
+              "changed_units": 4,
+              "current_decision_divergence": 0.038461538461538464,
+              "forced": 0,
+              "origin_divergence": 0.038461538461538464,
+              "rebuilt": 12,
+              "unresolved": 1
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 48,
+              "changed_units": 3,
+              "current_decision_divergence": 0.0,
+              "forced": 1,
+              "origin_divergence": 0.0,
+              "rebuilt": 10,
+              "unresolved": 0
+            }
+          },
+          "from_version": "c226d66f35b1",
+          "inventory_identical_across_arms": true,
+          "step": 1,
+          "to_version": "ff30f14d50cf",
+          "unit_count_after": 26
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 56,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 56,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.038461538461538464,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 56,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "ff30f14d50cf",
+          "inventory_identical_across_arms": true,
+          "step": 2,
+          "to_version": "cd40a3452295",
+          "unit_count_after": 26
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.038461538461538464,
+              "rebuilt": 0,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 0,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 0,
+              "unresolved": 0
+            }
+          },
+          "from_version": "cd40a3452295",
+          "inventory_identical_across_arms": true,
+          "step": 3,
+          "to_version": "f1647838aed0",
+          "unit_count_after": 26
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 50,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 50,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.038461538461538464,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 50,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "f1647838aed0",
+          "inventory_identical_across_arms": true,
+          "step": 4,
+          "to_version": "960714d4d6ad",
+          "unit_count_after": 26
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 52,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.33333333333333337,
+              "carried": 48,
+              "changed_units": 7,
+              "current_decision_divergence": 0.07407407407407407,
+              "forced": 0,
+              "origin_divergence": 0.1111111111111111,
+              "rebuilt": 12,
+              "unresolved": 2
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 52,
+              "changed_units": 6,
+              "current_decision_divergence": 0.0,
+              "forced": 2,
+              "origin_divergence": 0.0,
+              "rebuilt": 8,
+              "unresolved": 0
+            }
+          },
+          "from_version": "960714d4d6ad",
+          "inventory_identical_across_arms": true,
+          "step": 5,
+          "to_version": "8917b00fd97d",
+          "unit_count_after": 27
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.1111111111111111,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "8917b00fd97d",
+          "inventory_identical_across_arms": true,
+          "step": 6,
+          "to_version": "fee7f9d093b3",
+          "unit_count_after": 27
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.1111111111111111,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "fee7f9d093b3",
+          "inventory_identical_across_arms": true,
+          "step": 7,
+          "to_version": "7520fe6c25d2",
+          "unit_count_after": 27
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 56,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 56,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.1111111111111111,
+              "rebuilt": 4,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 56,
+              "changed_units": 2,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 4,
+              "unresolved": 0
+            }
+          },
+          "from_version": "7520fe6c25d2",
+          "inventory_identical_across_arms": true,
+          "step": 8,
+          "to_version": "b8b3073ba38e",
+          "unit_count_after": 27
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.1111111111111111,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "b8b3073ba38e",
+          "inventory_identical_across_arms": true,
+          "step": 9,
+          "to_version": "50d437988227",
+          "unit_count_after": 27
+        },
+        {
+          "arms": {
+            "A_DETERMINISTIC": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "B_GLOBAL_ONE_TO_ONE": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.1111111111111111,
+              "rebuilt": 2,
+              "unresolved": 0
+            },
+            "C_FORCED_CONTINUATION": {
+              "affected_set_jaccard_divergence": 0.0,
+              "carried": 58,
+              "changed_units": 1,
+              "current_decision_divergence": 0.0,
+              "forced": 0,
+              "origin_divergence": 0.0,
+              "rebuilt": 2,
+              "unresolved": 0
+            }
+          },
+          "from_version": "50d437988227",
+          "inventory_identical_across_arms": true,
+          "step": 10,
+          "to_version": "7e6caa45f62a",
+          "unit_count_after": 27
+        }
+      ]
+    }
+  ],
+  "chains_sha256": "sha256:b695365915c2e02e46480132b868a1c535c977865dd0ffd6dcccb1367388eee7",
+  "driver_sha256": "sha256:0bd07348e77df7373a13b244d1f8cb06a247f322b14dd372a411f275aba67419",
+  "ended_at": "2026-08-21T05:45:07.127369+00:00",
+  "estimated_cost_usd": 0.0,
+  "first_divergence_causes": {
+    "chain-book-ch04-01-what-is-ownership": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": {
+        "cause": "UNRESOLVED_VS_DECIDED",
+        "step": 5,
+        "unit": "What Is Ownership?/Memory and Allocation/Variables and Data Interacting with Clone"
+      },
+      "C_FORCED_CONTINUATION": null
+    },
+    "chain-loki--index": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": {
+        "cause": "UNRESOLVED_VS_DECIDED",
+        "step": 8,
+        "unit": "Grafana Loki configuration parameters/Configuration file reference/bloomcompactor"
+      },
+      "C_FORCED_CONTINUATION": null
+    },
+    "chain-prometheus-basics": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": {
+        "cause": "UNRESOLVED_VS_DECIDED",
+        "step": 7,
+        "unit": "Examples"
+      },
+      "C_FORCED_CONTINUATION": {
+        "cause": "CONTINUATION_VS_NEW",
+        "step": 7,
+        "unit": "Expression language data types"
+      }
+    },
+    "chain-prometheus-configuration": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": null,
+      "C_FORCED_CONTINUATION": null
+    },
+    "chain-prometheus-functions": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": {
+        "cause": "UNRESOLVED_VS_DECIDED",
+        "step": 2,
+        "unit": "deriv()"
+      },
+      "C_FORCED_CONTINUATION": null
+    },
+    "chain-uv-dependencies": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": {
+        "cause": "UNRESOLVED_VS_DECIDED",
+        "step": 1,
+        "unit": "Managing dependencies/Editable dependencies"
+      },
+      "C_FORCED_CONTINUATION": null
+    },
+    "chain-website-deployment": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": null,
+      "C_FORCED_CONTINUATION": null
+    },
+    "chain-website-service": {
+      "A_DETERMINISTIC": null,
+      "B_GLOBAL_ONE_TO_ONE": {
+        "cause": "UNRESOLVED_VS_DECIDED",
+        "step": 5,
+        "unit": "Defining a Service"
+      },
+      "C_FORCED_CONTINUATION": null
+    }
+  },
+  "forced_continuations": {
+    "A_DETERMINISTIC": 0,
+    "B_GLOBAL_ONE_TO_ONE": 0,
+    "C_FORCED_CONTINUATION": 36
+  },
+  "gates": {
+    "G_P2_ARM_INVARIANCE": {
+      "passed": true,
+      "steps": 86
+    },
+    "G_P2_COST": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_P2_EQUIVALENCE": {
+      "passed": true,
+      "per_arm_equivalent": {
+        "A_DETERMINISTIC": true,
+        "B_GLOBAL_ONE_TO_ONE": true,
+        "C_FORCED_CONTINUATION": true
+      },
+      "stale_left_behind_total": {
+        "A_DETERMINISTIC": 0,
+        "B_GLOBAL_ONE_TO_ONE": 0,
+        "C_FORCED_CONTINUATION": 0
+      }
+    },
+    "G_P2_HORIZON_COVERAGE": {
+      "horizons_reached": [
+        "1",
+        "10",
+        "2",
+        "3",
+        "5"
+      ],
+      "passed": true
+    },
+    "G_P2_SCALE": {
+      "chains": 8,
+      "passed": true,
+      "shortest": 10
+    }
+  },
+  "gpu_seconds": 0,
+  "mean_affected_set_jaccard_divergence": {
+    "A_DETERMINISTIC": 0.0,
+    "B_GLOBAL_ONE_TO_ONE": 0.04524501661129568,
+    "C_FORCED_CONTINUATION": 0.0
+  },
+  "mean_current_decision_divergence": {
+    "A_DETERMINISTIC": 0.0,
+    "B_GLOBAL_ONE_TO_ONE": 0.015085133734922013,
+    "C_FORCED_CONTINUATION": 0.0007267441860465116
+  },
+  "mean_rebuilt_per_step": {
+    "A_DETERMINISTIC": 5.3023255813953485,
+    "B_GLOBAL_ONE_TO_ONE": 5.976744186046512,
+    "C_FORCED_CONTINUATION": 5.3023255813953485
+  },
+  "path_divergence_by_horizon": {
+    "1": {
+      "chains_reaching_this_horizon": 8,
+      "max_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.0,
+        "C_FORCED_CONTINUATION": 0.0
+      },
+      "mean_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.0,
+        "C_FORCED_CONTINUATION": 0.0
+      }
+    },
+    "10": {
+      "chains_reaching_this_horizon": 7,
+      "max_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.3125,
+        "C_FORCED_CONTINUATION": 0.0625
+      },
+      "mean_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.11300321618118228,
+        "C_FORCED_CONTINUATION": 0.008928571428571428
+      }
+    },
+    "2": {
+      "chains_reaching_this_horizon": 8,
+      "max_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.038461538461538464,
+        "C_FORCED_CONTINUATION": 0.0
+      },
+      "mean_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.004807692307692308,
+        "C_FORCED_CONTINUATION": 0.0
+      }
+    },
+    "3": {
+      "chains_reaching_this_horizon": 8,
+      "max_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.10526315789473684,
+        "C_FORCED_CONTINUATION": 0.0
+      },
+      "mean_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.017965587044534412,
+        "C_FORCED_CONTINUATION": 0.0
+      }
+    },
+    "5": {
+      "chains_reaching_this_horizon": 8,
+      "max_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.10526315789473684,
+        "C_FORCED_CONTINUATION": 0.0
+      },
+      "mean_path_divergence": {
+        "A_DETERMINISTIC": 0.0,
+        "B_GLOBAL_ONE_TO_ONE": 0.017965587044534412,
+        "C_FORCED_CONTINUATION": 0.0
+      }
+    }
+  },
+  "protocol": "P2_multi_revision_lineage",
+  "protocol_sha256": "sha256:3809c14d01909435f0fcf810599cd5c242017032345658512601925d1a8bc50c",
+  "receipt_sha256": "sha256:fc04e6b7e3641d5a6f7609d4f78b4106d01d724ccd6d4e0d8d07e5d15dc92969",
+  "reference_arm": "A_DETERMINISTIC",
+  "reference_arm_note": "the lineage the document's own heading paths declare, not an oracle of true authorship lineage. Divergence from it is not an error rate.",
+  "schema": "tavonel.v2.p2_lineage.v1",
+  "split": "development",
+  "started_at": "2026-08-21T05:44:35.645416+00:00",
+  "step_count": 86,
+  "unresolved_decisions": {
+    "A_DETERMINISTIC": 0,
+    "B_GLOBAL_ONE_TO_ONE": 36,
+    "C_FORCED_CONTINUATION": 0
+  },
+  "verdict": "PASS"
+}

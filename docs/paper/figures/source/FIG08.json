@@ -1,0 +1,29 @@
+{
+  "title": "the identity scalability trade, including the negative result",
+  "rows": [
+    [
+      "policy",
+      "speed",
+      "exactness",
+      "status"
+    ],
+    [
+      "LEGACY (dense global)",
+      "baseline",
+      "exact by definition",
+      "in production"
+    ],
+    [
+      "BLOCKED (bucketed candidates)",
+      "~47x at 1,000 units",
+      "8 residual, 8/8 future-path divergence",
+      "shadow only \u2014 promotion veto"
+    ],
+    [
+      "CERTIFIED_SPARSE (admissible bound + certificate)",
+      "0.35\u20130.48x",
+      "exact on frozen corpus, 3 separating mutants",
+      "not proposed for promotion"
+    ]
+  ]
+}

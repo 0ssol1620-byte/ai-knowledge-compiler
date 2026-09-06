@@ -1,0 +1,315 @@
+# MODEL_ENDPOINT_V1 — everything that must be fixed before the first model call.
+#
+# The study is conditionally approved. This protocol is the condition: it freezes
+# the model identity, the runtime, the prompts, the contexts, the scorer, the
+# schedule, the validity gate and the two execution stages, all before any GPU
+# second is spent. If every preflight gate passes, execution proceeds without a
+# further founder check-in. If any fails, GPU does not start.
+
+schema: tavonel.v2.protocol.model_endpoint.v1
+protocol_id: MODEL_ENDPOINT_V1
+version: 1
+authored: 2026-08-23
+supersedes: null
+
+relates_to:
+  MODEL_STUDY_PROPOSAL_v2_2026-08-22:
+    state: CONDITIONALLY APPROVED
+    rule: >-
+      this protocol replaces its ambiguous stop condition and its confirmatory
+      terminology. Everything else in it stands.
+  P4i_cohort_expansion:
+    rule: read-only, never re-scored
+    eligible_Q1: 296
+    documents: 511
+  P4g_cohort_expansion: {rule: read-only, eligible_Q1: 174}
+  P0d_source_coverage: {rule: read-only, standing_result: 26 of 26 SOURCE_COVERAGE_INCOMPLETE}
+
+# ---------------------------------------------------------------------------
+# 1. What this cohort is, said accurately
+# ---------------------------------------------------------------------------
+
+split_terminology:
+  correct: MODEL-ENDPOINT CONFIRMATORY — MODEL OUTCOMES UNSEEN
+  forbidden: untouched confirmatory corpus
+  why: >-
+    the P4i corpus already carries retrieval and source-coverage development
+    results. Those are development evidence and they were seen. What has never
+    been opened is the model's answers. Calling the corpus untouched would claim
+    a cleanliness it does not have.
+  consequence: >-
+    retrieval and coverage figures from P4i are never reported as confirmatory.
+    Only the model endpoint is confirmatory, and only on its first open.
+
+# ---------------------------------------------------------------------------
+# 2. Model and runtime — pinned, never auto-updated
+# ---------------------------------------------------------------------------
+
+model:
+  repository: Qwen/Qwen3.6-27B
+  revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  tokenizer_revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  source_of_pin: >-
+    the W6 v8 runtime attestation,
+    research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json
+  tokenizer_file_sha256: sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42
+  chat_template_sha256: sha256:e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259
+  behaviour_probe:
+    text: "TAVONEL 1,450 — café ü 42.50 USD"
+    expected_tokens: 20
+    why: >-
+      a file digest proves which bytes were loaded; a token count proves the
+      loaded bytes behave as the attested tokenizer did. They are different
+      claims and both are checked.
+  no_auto_update: >-
+    the revision is pinned by commit. Resolving to "latest" is forbidden, and
+    the preflight fails if the loaded tokenizer's digest or probe differs.
+
+runtime:
+  serving_runtime: vllm
+  serving_runtime_version: 0.27.1
+  dtype: bfloat16
+  quantization: none
+  temperature: 0.0
+  decoding: greedy
+  max_new_tokens: 256
+  thinking: off
+  tools: off
+  runtime_image_digest: runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35
+  attested_gpu: NVIDIA H200
+  rule: >-
+    reproduce the attested runtime as closely as the environment allows. Any
+    departure is recorded in the run receipt as an observed difference, never
+    silently accepted and never described as the attested runtime.
+
+# ---------------------------------------------------------------------------
+# 3. Arms
+# ---------------------------------------------------------------------------
+
+arms:
+  compiled_current: only atoms the compiled state marks current
+  full_current_oracle: the current revision assembled directly from source, without the compiler
+  append_only_stale_capable: both revisions, ordered by retrieval score, no currency restriction
+  superseded_control: only the superseded revision
+  identical_across_arms: [model, revision, decoding, max_new_tokens, prompt template, context token budget]
+  arm_names_never_reach_the_model: >-
+    the prompt template is byte-identical across arms and contains no arm label,
+    no revision label and no currency word. Only the context differs.
+
+# ---------------------------------------------------------------------------
+# 4. Prompt and context, materialized on CPU before any GPU second
+# ---------------------------------------------------------------------------
+
+materialization:
+  when: entirely on CPU, before the first model call
+  sealed: immutable hash receipt over every input
+  per_question_per_arm_recorded:
+    - exact query
+    - exact prompt, as the string sent
+    - context atoms, with their ids
+    - context ordering
+    - provenance of every query field
+    - context token count under the pinned tokenizer
+    - truncation, and what was dropped
+    - model and tokenizer identity
+  question_frame:
+    template: >-
+      a single constant frame wrapping the retrieval query. It is identical for
+      every question and every arm, so it introduces no per-question
+      information and cannot carry provenance of its own.
+  provenance_unchanged: >-
+    every substantive query field still comes from PERMITTED_INTENT_SOURCES.
+    The frame adds no document-specific content.
+
+context_budget:
+  total_prompt_tokens: 4096
+  measured_with: the pinned tokenizer, after the chat template is applied
+  applies_to: all four arms identically
+  rule: >-
+    atoms are added in the arm's declared order until the next atom would
+    exceed the budget. Nothing is summarised, paraphrased or re-ranked to fit.
+
+context_validity_filter:
+  applies_to: [compiled_current, full_current_oracle, superseded_control]
+  predicate: >-
+    the question's target evidence atom, in that arm's revision, survives
+    truncation and is present in the context
+  superseded_control_target: >-
+    the superseded-revision atom at the same anchor path. The control must
+    actually contain the stale value or it tests nothing.
+  on_failure: the question is ineligible for the model endpoint
+  applied: >-
+    only before the first model call. It cannot be applied afterwards, because
+    after the first call it would be selection on an outcome.
+  append_only_arm_excluded_from_the_filter: >-
+    in the append-only arm the two revisions crowd each other out of the budget.
+    That is part of the intervention, not a defect, and is recorded rather than
+    filtered.
+
+truncation_stop:
+  predicate: any arm's truncation rate exceeds 0.25
+  when_evaluated: on CPU, before GPU
+  why_not_a_runtime_stop: >-
+    context is fully determined on CPU. Leaving this as a runtime stop would
+    spend GPU time to discover something already known.
+
+cohort_floor:
+  predicate: the final frozen model cohort has at least 190 Q1 questions
+  on_failure: do not start GPU
+
+# ---------------------------------------------------------------------------
+# 5. Scorer — deterministic, frozen before the run
+# ---------------------------------------------------------------------------
+
+scorer:
+  classes: [CURRENT_ONLY, SUPERSEDED_ONLY, BOTH, NO_MATCH]
+  primary_success: CURRENT_ONLY
+  failures_for_the_primary_endpoint: [SUPERSEDED_ONLY, BOTH, NO_MATCH]
+  both_is_a_failure: >-
+    an answer containing the current and the superseded value has not selected
+    the current one.
+  deterministic_only: true
+  forbidden:
+    - human adjudication
+    - an LLM judge
+    - any change to a normalization rule after seeing model output
+  value_markers:
+    current: value-like strings present in the current atom and absent from the superseded atom
+    superseded: value-like strings present in the superseded atom and absent from the current atom
+    value_like: numbers, dates, versions, percentages, currency amounts and identifiers
+  indistinguishable_questions:
+    predicate: >-
+      current and superseded oracle values are not distinguishable after
+      normalization, or either marker set is empty
+    action: excluded before the model run
+  controls:
+    required: constructed positive, negative and ambiguous cases
+    frozen_with_the_scorer: true
+
+# ---------------------------------------------------------------------------
+# 6. Schedule — order is a confounder unless it is controlled
+# ---------------------------------------------------------------------------
+
+schedule:
+  rule: >-
+    the four arms are never executed in one block each. Each question's arm
+    order is a rotation of a frozen Latin square, assigned deterministically
+    from the question id.
+  balance: every arm appears in every position an equal number of times
+  derived_from: the sorted question ids alone, never from content or outcome
+
+# ---------------------------------------------------------------------------
+# 7. Execution, in two stages
+# ---------------------------------------------------------------------------
+
+stage_1:
+  what: the frozen final cohort, all four arms, one pass
+  then: evaluate assay sensitivity
+
+assay_sensitivity_gate:
+  predicate: >-
+    compiled_current marginal current-value accuracy
+    minus superseded_control accuracy >= 0.15
+  kind: VALIDITY GATE, not a significance test
+  no_p_value: >-
+    this gate carries no p-value and none is computed for it. It asks whether
+    the endpoint can move at all, which is a different question from whether a
+    difference is significant.
+  when_evaluated: after the full first pass of all four arms, never sequentially during it
+  on_failure:
+    verdict: ENDPOINT_INSENSITIVE_TO_CURRENCY
+    consequences:
+      - no primary product-effect claim is made
+      - stop; the determinism repeat is not run and no further GPU is spent
+
+stage_2:
+  precondition: the assay sensitivity gate passed
+  what: a determinism repeat on the identical frozen inputs
+  on_any_disagreement:
+    verdict: NONDETERMINISTIC_RUNTIME
+    consequences:
+      - stop
+      - no confirmatory claim is made
+
+# ---------------------------------------------------------------------------
+# 8. Analysis
+# ---------------------------------------------------------------------------
+
+primary_test:
+  one_only: exact McNemar, compiled_current versus append_only_stale_capable
+  declared_in_advance: true
+  alpha: 0.05 two-sided
+  no_other_hypothesis_tests: >-
+    full_current_oracle and superseded_control carry no hypothesis test. They are
+    the ceiling and the floor, and testing them would multiply comparisons the
+    design never declared.
+
+family_results:
+  reported: descriptive accuracy and confidence intervals per family
+  forbidden: any additional p-value, per family or otherwise
+
+# ---------------------------------------------------------------------------
+# 9. Cost
+# ---------------------------------------------------------------------------
+
+budget:
+  gpu_hours: 6
+  hard_spend_cap_usd: 40
+  on_reaching_the_cap: stop immediately, report what completed, claim nothing from a partial arm
+  approved_by: founder, 2026-08-23, conditional on this preflight passing
+
+# ---------------------------------------------------------------------------
+# 10. Preflight gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_ME1_MODEL_PINNED:
+    predicate: >-
+      the loaded tokenizer's file digest equals the attested digest and the
+      behaviour probe returns the attested token count
+  G_ME1_RUNTIME_DECLARED:
+    predicate: every runtime parameter above is recorded in the receipt
+  G_ME1_INPUTS_MATERIALIZED:
+    predicate: >-
+      every question and arm has a recorded query, prompt, context, ordering,
+      provenance, token count and truncation state
+  G_ME1_PROMPT_CARRIES_NO_ARM_LABEL:
+    predicate: >-
+      the prompt template is byte-identical across arms and contains no arm,
+      revision or currency label
+  G_ME1_CONTEXT_VALIDITY:
+    predicate: >-
+      in the three single-revision arms, every retained question's target
+      evidence atom is present after truncation
+  G_ME1_TRUNCATION:
+    predicate: no arm's truncation rate exceeds 0.25
+  G_ME1_SCORER_CONTROLS:
+    predicate: the frozen scorer classifies its positive, negative and ambiguous controls correctly
+  G_ME1_VALUES_DISTINGUISHABLE:
+    predicate: >-
+      every retained question has non-empty, disjoint current and superseded
+      marker sets after normalization
+  G_ME1_SCHEDULE_BALANCED:
+    predicate: every arm appears in every position an equal number of times
+  G_ME1_COHORT_FLOOR:
+    predicate: the final frozen cohort has at least 190 Q1 questions
+  G_ME1_NO_GPU_YET:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0 at preflight time
+
+execution_authorisation:
+  rule: >-
+    if every preflight gate passes, the GPU study executes without a further
+    founder check-in, within 6 GPU hours and a hard $40 cap.
+  if_any_gate_fails: GPU does not start.
+
+claim_boundary:
+  forbidden:
+    - calling the P4i corpus an untouched confirmatory corpus
+    - adding a p-value to the assay sensitivity gate
+    - evaluating assay sensitivity sequentially during the first pass
+    - testing full_current_oracle or superseded_control as hypotheses
+    - producing per-family p-values
+    - modifying protocol, threshold, scorer or cohort after a result and re-running
+    - claiming source-faithful end-to-end evidence from any model result
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

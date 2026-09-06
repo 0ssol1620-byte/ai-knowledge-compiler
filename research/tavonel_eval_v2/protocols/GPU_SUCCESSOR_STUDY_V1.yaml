@@ -1,0 +1,526 @@
+# GPU_SUCCESSOR_STUDY_V1 — downstream effect of typed-current state versus stale
+# carried-forward state, on the already-pinned model and runtime.
+#
+# This is the study `tools/gpu_successor_preflight.py` prepares for and gates.
+# It does not replace that preflight and does not loosen any gate it declares
+# (the held-out PASS gate, the cohort floor, the cost cap, the model pin, the
+# exclusion of the closed exact-value endpoint). This protocol is the frozen
+# design the preflight's gates exist to protect; where a number appears in
+# both, the two agree on purpose — see `agreement_with_preflight` below.
+#
+# Founder framing (2026-08-23): "a successor study that measures downstream
+# effects of verified-current typed source-fact state versus stale/append-only
+# state using the already pinned model/runtime." Everything below is that
+# sentence, made frozen and falsifiable.
+#
+# STATUS: DRAFT_NOT_FROZEN. This workstream does not freeze its own protocol.
+# The orchestrator freezes it — by sealing this file's digest into a receipt —
+# once it is integrated with `paper/CLAIM_MATRIX.yaml` and
+# `tools/gpu_successor_preflight.py`. Nothing in this document authorizes a
+# run by itself.
+
+schema: tavonel.v2.protocol.gpu_successor_study.v1
+protocol_id: GPU_SUCCESSOR_STUDY_V1
+study_id: SOURCE_FACT_PROPAGATION_MODEL_V1
+version: 1
+authored: 2026-08-23
+status: DRAFT_NOT_FROZEN
+supersedes: null
+
+relates_to:
+  MODEL_ENDPOINT_V1:
+    state: CLOSED, STOP-V2-005, must not be revived
+    rule: read-only. See `forbidden` below.
+  SOURCE_FACT_IR_HELDOUT_V1:
+    state: FROZEN, FAIL, must never be rescored
+    rule: >-
+      its corpus is development material only. This study's cohort is drawn
+      from a DIFFERENT frame — the fresh held-out run that supersedes it, not
+      from SFI1's spent corpus.
+  gpu_successor_preflight.py:
+    rule: >-
+      the CPU-only, outcome-independent gate this protocol runs under. Every
+      gate it declares (`G_GSP_*`) applies to this study without exception.
+      This protocol does not define a second, looser path around any of them.
+  SOURCE_FACT_IR_V1 (source_fact_ir/ir.py, source_fact_ir/spanmap.py):
+    rule: >-
+      the four-state vocabulary and the source-witness -> canonical
+      representation -> fingerprint -> dependency-path chain this study's
+      eligibility and its two arms are both defined against.
+
+agreement_with_preflight:
+  # Every field on the left is read by a human from this protocol; every field
+  # on the right names the exact constant in `tools/gpu_successor_preflight.py`
+  # it must not contradict. The test suite checks this table against the live
+  # module rather than trusting this comment.
+  cohort_floor: {this_protocol: 120, gpu_successor_preflight: COHORT_FLOOR}
+  eligible_kinds:
+    this_protocol: [REFERENCE_TARGET, LANGUAGE, EFFECTIVE_TIME, APPLICABILITY]
+    gpu_successor_preflight: ELIGIBLE_KINDS
+  requires_value_transition_between_revisions:
+    this_protocol: false
+    gpu_successor_preflight: REQUIRES_VALUE_TRANSITION_BETWEEN_REVISIONS
+  determinism_repeats: {this_protocol: 2, gpu_successor_preflight: DETERMINISM_REPEATS}
+  prompt_tokens: {this_protocol: 2048, gpu_successor_preflight: ESTIMATED_PROMPT_TOKENS}
+  max_new_tokens: {this_protocol: 256, gpu_successor_preflight: MAX_NEW_TOKENS}
+  cap_gpu_hours: {this_protocol: 6.0, gpu_successor_preflight: CAP_GPU_HOURS}
+  cap_usd: {this_protocol: 40.0, gpu_successor_preflight: CAP_USD}
+  forbidden_endpoint_id: {this_protocol: MODEL_ENDPOINT_V1, gpu_successor_preflight: FORBIDDEN_ENDPOINT_ID}
+  forbidden_stop_record: {this_protocol: STOP-V2-005, gpu_successor_preflight: FORBIDDEN_STOP_RECORD}
+  runtime_image_digest:
+    this_protocol: >-
+      runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35
+    gpu_successor_preflight: default --runtime-image-digest
+
+# ---------------------------------------------------------------------------
+# 1. Preconditions — gates, not suggestions
+# ---------------------------------------------------------------------------
+
+preconditions:
+  order: all_required, checked_in_this_order, first_failure_blocks
+  gates:
+    - id: G_SUCC_PROTOCOL_FROZEN
+      requires: this protocol's own status field reads FROZEN, not DRAFT_NOT_FROZEN
+      on_failure: BLOCK. A draft protocol authorizes nothing.
+    - id: G_SUCC_HELD_OUT_SOURCE_FACT_IR_PASS
+      requires: >-
+        an accepted SOURCE_FACT_IR_HELDOUT_ACCEPTANCE_V1 receipt over a fresh
+        held-out SOURCE_FACT_IR_HELDOUT_V3 measurement — frozen before its
+        cohort existed, never exposed to a pre-freeze execution, disjoint from
+        SOURCE_FACT_IR_HELDOUT_V1's spent corpus, from SOURCE_FACT_IR_HELDOUT_V2's
+        spent corpus, and from every lineage those corpora's forensic cases came
+        from — whose own measurement verdict is PASS, at split held_out, and
+        whose eight primary endpoints are every one MET while the E8 safety veto
+        is clear.
+      on_failure: >-
+        BLOCK. No successor cohort is assembled, no manifest is built, no GPU
+        is provisioned. `SOURCE_FACT_IR_HELDOUT_V1` and
+        `SOURCE_FACT_IR_HELDOUT_V2` are both FAIL and both spent; neither can
+        satisfy this gate, and they are cited only to be excluded.
+      note: >-
+        SFI3's acceptance rule is NOT "all endpoints MET". SFI3 declares nine
+        endpoints: E1–E7 and E9 are the PASS-contributing primaries, and E8 is
+        a mandatory safety veto whose clean state is
+        VETO_CLEAR_NO_POSITIVE_CREDIT — never MET, contributing no positive
+        evidence, and failing the whole study if violated. That arithmetic has
+        exactly one implementation, `tools/sfi3_acceptance.py`; this protocol
+        does not define a second copy of it, and neither does the launcher.
+    - id: G_SUCC_PREFLIGHT_READY
+      requires: >-
+        `tools/gpu_successor_preflight.py` returns
+        verdict == READY_TO_AUTHORIZE against this protocol's own declared
+        model pin, runtime image digest and cohort manifest.
+      on_failure: BLOCK, and report every blocking gate the preflight names.
+      note: >-
+        this single gate transitively re-checks G_SUCC_HELD_OUT_SOURCE_FACT_IR_PASS
+        (`G_GSP_SFI3_ACCEPTANCE_PASS`) and the four-link chain over the exact
+        cohort about to run (`G_GSP_FOUR_LINK_ACCEPTANCE_PASS`) — both
+        mandatory, neither substituting for the other — plus model pin, runtime
+        pinnability, materializer readiness, context budget, cohort
+        feasibility, the closed-endpoint exclusion and the cost cap. Restating
+        those checks here would create a second copy that could drift; this
+        protocol points at the one copy instead.
+        Both acceptance receipts are named explicitly by immutable path and
+        bound by SHA-256. There is no stem, no glob and no `latest` on this
+        route: the retired `sfi2-native-provenance` stem search is not replaced
+        by another search.
+    - id: G_SUCC_FOUNDER_ADVANCE_AUTHORIZATION_ON_FILE
+      requires: >-
+        the founder's advance authorization ("on a V2 PASS the successor may be
+        frozen and RUN with no further check-in, under <=6 GPU hours and <=$40")
+        is recorded and dated at or before this protocol's freeze.
+      on_failure: BLOCK. Absent that record, a further founder check-in is
+        required before run, exactly as any other GPU spend would need.
+
+authorizes_no_run_by_itself: >-
+  every gate above can pass and this document still authorizes nothing until
+  its own status is FROZEN by the orchestrator. A DRAFT that happens to satisfy
+  every gate is still a draft.
+
+# ---------------------------------------------------------------------------
+# 2. Model and runtime — the ALREADY pinned model, not a new one
+# ---------------------------------------------------------------------------
+
+model:
+  repository: Qwen/Qwen3.6-27B
+  revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  tokenizer_revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  tokenizer_file_sha256: sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42
+  chat_template_sha256: sha256:e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259
+  source_of_pin: protocols/MODEL_ENDPOINT_V1.yaml, itself sourced from the W6 v8
+    runtime attestation (research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-model-attestation.json)
+  rule: >-
+    this is the closed study's exact pin, unchanged. "Already pinned" in the
+    founder's framing means this pin, not a fresh selection. A revision that
+    resolves to "latest" fails `G_GSP_MODEL_PINNED` by construction.
+  capability_evidence: >-
+    must be supplied as a pointer distinct from the repository string itself
+    (`capability_from_registry`); a bare name is never treated as evidence of
+    what the model can do.
+
+runtime:
+  serving_runtime: vllm
+  serving_runtime_version: 0.27.1
+  dtype: bfloat16
+  quantization: none
+  temperature: 0.0
+  decoding: greedy
+  max_new_tokens: 256
+  thinking: off
+  tools: off
+  runtime_image_digest: >-
+    runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35
+  attested_gpu: NVIDIA H200
+  rule: >-
+    reproduce the attested runtime as closely as the environment allows. Any
+    departure is recorded in the run receipt as an observed difference, never
+    silently accepted.
+
+# ---------------------------------------------------------------------------
+# 3. Arms — currency, not representation, and not a value transition
+# ---------------------------------------------------------------------------
+
+arms_axis: >-
+  this study varies CURRENCY of the served compiled state, holding the model,
+  the decoding parameters, the prompt template and the question fixed across
+  both arms. It is a different axis from
+  `gpu_successor_preflight.ARMS` (TYPED_REPRESENTATION vs TEXT_ONLY_BASELINE),
+  which varies REPRESENTATION FORM at fixed currency. The two are not the same
+  experiment and this protocol does not claim to run the preflight's ARMS;
+  both arms of THIS study serve the typed IR representation, never bare text,
+  so a difference this study finds cannot be attributed to representation form
+  disappearing — only to which state's representation was served.
+
+arms:
+  VERIFIED_CURRENT_TYPED:
+    definition: >-
+      the served context is built from the compiled state of the question's
+      CURRENT revision, and for every typed fact the question depends on: the
+      fact's state is REPRESENTED_IN_COMPILED_STATE, and all four chain links
+      resolve (source witness present, canonical representation present,
+      fingerprint present, dependency path present and non-null). No
+      UNRESOLVED_SOURCE_FACT and no UNSUPPORTED_CONSTRUCT fact sits inside the
+      scope the question's evidence atom belongs to.
+    ground_truth_source: the current revision's own typed representation.
+  STALE_APPEND_ONLY:
+    definition: >-
+      the served context is the compiled artifact of the lineage's revision
+      IMMEDIATELY PRECEDING the current one, retained unchanged rather than
+      rebuilt — the artifact a selective path with an escape would have left
+      in place. This is an append-only retention of a real prior artifact,
+      never a synthetic or hand-edited one.
+    what_it_is_not: >-
+      this arm is NOT required to carry a different VALUE for the fact under
+      test than the current revision does. Requiring that would reintroduce
+      the value-transition scarcity that closed MODEL_ENDPOINT_V1 (10 of 296,
+      then 0 of 174, then 3 of 2,271). What makes this arm stale is which
+      artifact is served — the pre-change one — not whether its value differs.
+      Frequently it will not represent the fact at all (RECOGNIZED_BUT_UNREPRESENTED
+      or absent), which is itself a legitimate and expected stale outcome.
+  identical_across_arms: [model, revision, decoding, max_new_tokens, prompt
+    template, context token budget, the question itself]
+  arm_names_never_reach_the_model: >-
+    the prompt template is byte-identical across arms and contains no arm
+    label, no currency word and no revision identifier. Only the served
+    context differs, exactly as in MODEL_ENDPOINT_V1's arm design.
+
+# ---------------------------------------------------------------------------
+# 4. Eligibility — a property of the current revision alone
+# ---------------------------------------------------------------------------
+
+eligibility:
+  unit_of_eligibility: one typed fact, on its CURRENT revision, considered alone.
+  all_required:
+    - kind is one of REFERENCE_TARGET, LANGUAGE, EFFECTIVE_TIME, APPLICABILITY
+    - state == REPRESENTED_IN_COMPILED_STATE on the current revision
+    - all four chain links resolve on the current revision (source witness,
+      canonical representation, fingerprint, dependency path all present)
+      # NOT YET ENFORCED BY ANY TOOL, and recorded here rather than quietly
+      # softened. `gpu_successor_preflight.cohort_feasibility` and
+      # `tools/build_successor_cohort.py` both check kind, state and the
+      # invisible-in-unit-text predicate; NEITHER verifies that a fingerprint
+      # and a dependency path actually resolve, because a manifest does not
+      # carry them — that machinery lives in the compiler lane. So this clause
+      # is currently a stated requirement with no gate behind it, which is the
+      # exact shape of the defects INC-V2-029 and INC-V2-032 catalogue: a
+      # declaration nobody reads against the behaviour.
+      #
+      # It must be closed BEFORE this protocol is frozen, in one of two ways,
+      # and the choice is the founder's rather than an implementer's:
+      #   (a) enforce it — the cohort builder resolves both links per fact and
+      #       excludes, counting, any fact where either is absent. Stronger,
+      #       and it may shrink the cohort below the floor of 120, which would
+      #       be a real finding about chain completeness rather than a defect.
+      #   (b) narrow the clause to what is checked, and say plainly that the
+      #       study's eligibility is kind + state + invisibility, not the full
+      #       four-link chain.
+      # What is forbidden is freezing it as written while nothing checks it,
+      # because the study would then claim a cohort property it never verified.
+    - the fact's representation, serialized, is NOT a substring of the
+      witness's own excerpt text (the same `_invisible_in_unit_text` predicate
+      `gpu_successor_preflight.py` already applies) — a fact recoverable from
+      the unit's own prose does not exercise the typed chain and does not
+      belong in this cohort
+    - an immediately-preceding revision of the same lineage exists in the
+      corpus, so a STALE_APPEND_ONLY context can be constructed from a real
+      artifact rather than fabricated
+  never_required:
+    - the preceding revision's value for this fact differs from the current one
+    - any value transition between two revisions, of any kind
+    - a minimum time spacing between the current and preceding revision
+    - a value bearing structural marker (table, infobox, configuration key) —
+      that predicate belongs to the retired VALUE_BEARING_COHORT design and is
+      not reused here
+  why_this_avoids_the_closed_endpoints_scarcity: >-
+    MODEL_ENDPOINT_V1's eligibility required a value that had MOVED between two
+    revisions of one lineage — a temporal transition scarce enough that a
+    complete walk of 2,271 lineages found it three times. This eligibility
+    requires only that a typed fact be REPRESENTED on the fact's OWN revision
+    and that a preceding revision exist to serve as the stale artifact's
+    source — a structural condition nearly every non-first revision in the
+    corpus satisfies, and one that says nothing about whether any value moved.
+  structural_check: >-
+    `requires_value_transition_between_revisions: false` above is asserted, not
+    merely claimed in prose; the test suite checks this field is present and
+    false, and checks that no field named in this section's `all_required` or
+    `never_required` block mentions a value comparison across revisions.
+
+# ---------------------------------------------------------------------------
+# 5. Cohort floor and refusal below it
+# ---------------------------------------------------------------------------
+
+cohort:
+  floor: 120
+  rule: >-
+    below 120 eligible (question, revision-pair) units, the study REFUSES to
+    run. This is not a soft target; `gpu_successor_preflight.cohort_feasibility`
+    reports `feasible: false` and `G_GSP_COHORT_FEASIBILITY` blocks
+    `G_SUCC_PREFLIGHT_READY` above, so the refusal is enforced by the same gate
+    the preflight already runs, not by a second copy of the check.
+  floor_not_lowered_to_reach_it: >-
+    the floor is declared here, before any cohort is walked. Lowering it after
+    a count exists would be exactly the failure mode P0d and VALUE_BEARING_COHORT_V2
+    both name and refuse: a quota moved after a count exists is not a quota.
+  quota_redistribution: >-
+    if one source family cannot reach its share of the floor (as sec_edgar
+    could not for SOURCE_FACT_IR_HELDOUT_V1), the shortfall is reported, not
+    redistributed to the remaining families to protect the target number.
+
+# ---------------------------------------------------------------------------
+# 6. Cost cap — the arithmetic, shown, not asserted
+# ---------------------------------------------------------------------------
+
+cost_cap:
+  hard_cap_gpu_hours: 6.0
+  hard_cap_usd: 40.0
+  formula: >-
+    identical in shape to `gpu_successor_preflight.estimate_cost`:
+    tokens_per_item = prompt_tokens + max_new_tokens;
+    total_calls = cohort_size * arms * repeats;
+    total_tokens = total_calls * tokens_per_item;
+    estimated_seconds = total_tokens / tokens_per_second;
+    estimated_gpu_hours = estimated_seconds / 3600;
+    estimated_cost_usd = estimated_gpu_hours * gpu_hourly_rate_usd.
+  declared_parameters:
+    arms: 2
+    determinism_repeats: 2
+    prompt_tokens: 2048
+    max_new_tokens: 256
+    declared_throughput_tokens_per_second: 2000.0
+    declared_gpu_hourly_rate_usd: 2.5
+  worked_examples:
+    - cohort_size: 120
+      note: the declared floor. Chosen as the study's minimum viable size.
+      total_calls: 480
+      total_tokens: 1105920
+      estimated_gpu_hours: 0.153600
+      estimated_cost_usd: 0.384
+      within_cap: true
+    - cohort_size: 4687
+      note: >-
+        the largest cohort size still inside the GPU-hour cap at these
+        declared rates (the dollar cap does not bind until far past this
+        point) — included so the refusal boundary is visible rather than only
+        assertable in code.
+      total_calls: 18748
+      total_tokens: 43195392
+      estimated_gpu_hours: 5.99936
+      estimated_cost_usd: 14.9984
+      within_cap: true
+      margin: >-
+        the very next cohort size, 4688, crosses the hour cap
+        (estimated_gpu_hours 6.00064) while staying under the dollar cap
+        (estimated_cost_usd 15.0016) — the two caps bind independently and
+        either alone is sufficient to refuse.
+    - cohort_size: 6000
+      note: an over-cap configuration, included so the refusal is demonstrable.
+      total_calls: 24000
+      total_tokens: 55296000
+      estimated_gpu_hours: 7.68
+      estimated_cost_usd: 19.2
+      within_hours_cap: false
+      within_cap: false
+      rule: >-
+        REFUSED. The hours cap binds before the dollar cap at this cohort size
+        and these declared rates; either cap alone is sufficient to refuse.
+  refusal_is_arithmetic_not_judgement: >-
+    `within_cap` is `within_hours_cap and within_usd_cap`, both computed
+    directly from the formula above with no discretionary override. A
+    configuration that fails either sub-cap fails the whole gate.
+  cap_not_widened_after_a_shortfall: >-
+    if the true eligible cohort sits between the floor and a size that would
+    exceed the cap, the study runs at whatever eligible size clears both the
+    floor and the cap — never at a manufactured size chosen to exactly meet
+    the cap, and the cap itself is never raised to fit a larger cohort found
+    after the fact.
+
+# ---------------------------------------------------------------------------
+# 7. Scoring — fixed before any answer exists
+# ---------------------------------------------------------------------------
+
+scoring:
+  per_arm_answer_classes:
+    ANSWER_MATCHES_CURRENT: >-
+      the model's answer, normalized, equals the current typed fact's value
+      under the same normalization SOURCE_FACT_IR's representation comparison
+      uses.
+    ANSWER_REFUSED: >-
+      the model declines, states the information is not present, or states it
+      cannot determine the answer from the given context.
+    ANSWER_OTHER: >-
+      normalizes to neither of the above — includes an answer matching some
+      other value (which may or may not be the artifact the stale arm served),
+      and includes a fabricated or unsupported answer.
+  scorer_classes: [ANSWER_MATCHES_CURRENT, ANSWER_REFUSED, ANSWER_OTHER]
+  disjoint_from_closed_endpoint: >-
+    the closed endpoint's scorer classes were CURRENT_ONLY, SUPERSEDED_ONLY,
+    BOTH, NO_MATCH (`endpoint/value_scorer.py`). This study's classes share no
+    name with that set and are not defined in terms of "superseded" matching —
+    a stale-arm answer is judged only against whether it matches the CURRENT
+    value or not, never against whether it recovers an old value, because
+    recovering an old value was never this study's target population.
+  paired_judgement_per_question:
+    NO_DIFFERENCE: >-
+      VERIFIED_CURRENT_TYPED and STALE_APPEND_ONLY normalize to the same class
+      and, where applicable, the same value.
+    DIFFERENCE_TOWARD_CURRENT: >-
+      VERIFIED_CURRENT_TYPED == ANSWER_MATCHES_CURRENT and
+      STALE_APPEND_ONLY != ANSWER_MATCHES_CURRENT.
+    DIFFERENCE_TOWARD_STALE_OR_WORSE: >-
+      STALE_APPEND_ONLY == ANSWER_MATCHES_CURRENT and
+      VERIFIED_CURRENT_TYPED != ANSWER_MATCHES_CURRENT. Recorded, never assumed
+      impossible in advance.
+    DIFFERENCE_NEITHER_CORRECT: >-
+      the two arms' answers differ from EACH OTHER and neither equals
+      ANSWER_MATCHES_CURRENT.
+  judgement_rule_is_fixed: >-
+    the four classes above and the equalities that produce them are declared
+    in this frozen protocol. No threshold, synonym list or normalization rule
+    inside this classification may be edited after any model output exists for
+    this study. A normalization defect discovered after outputs exist is
+    reported as a limitation of the run, not silently patched into the scorer
+    that produced it.
+  what_a_difference_measures: >-
+    whether the downstream answer changes when the served state moves from the
+    pre-change (stale, carried-forward) artifact to the verified-current typed
+    one, and in which direction — exactly the founder's framing. This protocol
+    does not claim a difference proves the model "used" the typed chain in any
+    mechanistic sense, only that the answer changed when the served state did.
+
+# ---------------------------------------------------------------------------
+# 8. Anti-fitting rules
+# ---------------------------------------------------------------------------
+
+anti_fitting:
+  no_threshold_moved_after_an_outcome_exists: >-
+    the cohort floor (120), the cost cap (6h / $40), and every scoring class
+    and equality in section 7 are fixed at freeze. None may be tuned, widened
+    or narrowed once any question has been scored, echoing P0d, VALUE_BEARING_COHORT_V2
+    and C-22's own rule against moving a floor after a count exists.
+  no_construct_dropped_after_scoring: >-
+    a typed-fact kind, an eligible question or a scored pair is never removed
+    from the cohort because its result was inconvenient. A construct excluded
+    from the cohort must be excluded by a rule stated in section 4, applied
+    before scoring, and recorded as a rejection reason — never discovered to be
+    exclusion-worthy only after its score is known.
+  unsupported_and_unresolved_fail_closed: >-
+    a question whose target fact is UNRESOLVED_SOURCE_FACT or
+    UNSUPPORTED_CONSTRUCT on the current revision is ineligible by section 4
+    and is never silently promoted to REPRESENTED to keep a cohort at floor.
+  no_smoke_execution_on_real_cohort_lineages_before_freeze: >-
+    INC-V2-027's lesson, applied here directly: a smoke run on real cohort
+    lineages is an execution and spends the held-out property of whatever it
+    touches. This study's cohort — like SOURCE_FACT_IR_HELDOUT_V1's successor —
+    is smoke-tested on fixtures only, never on a real candidate lineage, before
+    this protocol's own status reads FROZEN.
+  demotion_rule_inherited: >-
+    if a pre-freeze execution against real cohort lineages is later discovered
+    (by receipt timestamp or file modification time, mechanically, as C-20 and
+    INC-V2-027 were), this study is demoted from held_out to
+    development_diagnostic on the same one-sided, mechanically-derived basis —
+    never repaired, re-scored or re-run to recover held-out status.
+
+# ---------------------------------------------------------------------------
+# 9. Forbidden — the closed endpoint stays closed
+# ---------------------------------------------------------------------------
+
+forbidden:
+  closed_exact_value_endpoint:
+    protocol: MODEL_ENDPOINT_V1
+    stop_record: STOP-V2-005
+    rule: >-
+      this study does not revive MODEL_ENDPOINT_V1. It does not select
+      questions by whether a value moved between two revisions, does not use
+      MODEL_ENDPOINT_V1's arms (compiled_current, full_current_oracle,
+      append_only_stale_capable, superseded_control), and does not use its
+      scorer classes (CURRENT_ONLY, SUPERSEDED_ONLY, BOTH, NO_MATCH). Section 3
+      defines a different pair of arms over a different eligibility predicate,
+      and section 7 defines different, disjoint scorer classes.
+  no_successor_cohort_to_chase_the_190_floor: >-
+    the founder's ruling on STOP-V2-005 is quoted directly in
+    `tools/gpu_successor_preflight.py`: "no successor cohort may be created to
+    chase the 190 floor." This study's 120 floor is an independently declared
+    parameter for a different endpoint (section 6), not a discounted version of
+    190, and it is never adjusted toward 190 or any other number from the
+    closed study.
+  no_value_bearing_structure_reselection: >-
+    this study does not reuse VALUE_BEARING_COHORT_V1/V2's selection-by-
+    structure predicate (tables, infoboxes, configuration keys, regulatory
+    quantities). Eligibility here is the four-link chain and unrepresentable-
+    from-text test in section 4, nothing else.
+  phrases:
+    - source-faithful end-to-end
+    - no source fact is lost
+    - the model is superior
+    - improves question answering
+
+# ---------------------------------------------------------------------------
+# 10. What PASS and FAIL each authorise
+# ---------------------------------------------------------------------------
+
+authorization:
+  pass_authorises:
+    - reporting the observed direction and magnitude of downstream answer
+      difference between the two arms as a held-out finding, bound by a
+      CLAIM_MATRIX.yaml row and its receipt
+    - citing this result as evidence that serving the verified-current typed
+      state changed model answers relative to a stale carried-forward artifact,
+      ON THIS COHORT, at this floor
+  fail_authorises:
+    - reporting the FAIL as a held-out finding in its own right, in the same
+      house style as SOURCE_FACT_IR_HELDOUT_V1's FAIL and the two demoted
+      diagnostics of section 5 of the internal draft — a negative result is
+      published, not buried or silently re-run
+  neither_pass_nor_fail_authorises:
+    - a claim of general model accuracy improvement (forbidden phrase, section 9)
+    - reviving MODEL_ENDPOINT_V1 or its exact-value scorer
+    - modifying anything under docs/ip/
+    - public release of any kind — the IP gate stays CLOSED regardless of verdict
+    - a second run of this exact cohort to try for a different verdict
+    - spending beyond the hard cap in section 6, regardless of verdict
+  a_fail_does_not_authorize_widening_eligibility_and_rerunning: >-
+    the same rule SFI1 and SOURCE_FACT_IR_HELDOUT_V1 both apply: widening
+    section 4's eligibility on the corpus that produced a FAIL, to see if a
+    wider corpus would PASS, is fitting the instrument to its own result. A
+    widened eligibility rule is a new protocol, frozen before a new cohort
+    exists, not an amendment of this one after the fact.

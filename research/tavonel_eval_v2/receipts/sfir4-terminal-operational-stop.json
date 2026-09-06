@@ -1,0 +1,86 @@
+{
+  "aborts_before_this_one": [
+    {
+      "cause": "eCFR metadata field renamed",
+      "incident": "INC-V2-095",
+      "repaired": true
+    },
+    {
+      "cause": "reserved CFR title carries no edition date",
+      "incident": "INC-V2-096",
+      "repaired": true
+    },
+    {
+      "cause": "RemoteDisconnected matched no handler",
+      "incident": "INC-V2-098",
+      "repaired": true
+    }
+  ],
+  "disposition": {
+    "capacity_measured": "incomplete",
+    "cause": "frozen transport budget incompatible with observed Wikimedia rate behavior",
+    "corpus_opened": false,
+    "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4",
+    "scientific_threshold_evaluated": false,
+    "state": "TERMINAL_OPERATIONAL_STOP"
+  },
+  "estimated_cost_usd": 0.0,
+  "frozen_bounds_that_were_not_edited": {
+    "max_rate_limit_wait_seconds": 60,
+    "max_total_rate_limit_wait_seconds": 180,
+    "maximum_retries_per_request": 5,
+    "why_not_edited": "the three earlier SFIR4 corrections were unconditional defects with one right answer whichever way the census came out. This is a tuning parameter, and a value chosen after watching a run fail is chosen partly by the failure. Editing it would have been the first correction in this study to fail the standard the paper's own section 2 sets."
+  },
+  "generated_at": "2026-08-27T04:47:14.745310+00:00",
+  "gpu_seconds": 0,
+  "observed_rate_behaviour": {
+    "endpoint": "en.wikipedia.org/w/api.php",
+    "retry_after_values_seen_seconds": [
+      55,
+      54,
+      54,
+      53,
+      53,
+      52,
+      51,
+      51,
+      50,
+      50
+    ],
+    "shape": "quota per ~60s window, not a per-request rate",
+    "trials": [
+      {
+        "inter_request_delay_seconds": 0,
+        "ok": 10,
+        "throttled": 2
+      },
+      {
+        "inter_request_delay_seconds": 2,
+        "ok": 10,
+        "throttled": 2
+      },
+      {
+        "inter_request_delay_seconds": 5,
+        "ok": 11,
+        "throttled": 1
+      },
+      {
+        "inter_request_delay_seconds": 7,
+        "ok": 20,
+        "throttled": 0,
+        "window_seconds": 150
+      }
+    ],
+    "why_this_is_admissible_for_designing_a_successor": "it measures the ENDPOINT, not SFIR4's or SFIR5's capacity result. No candidate was counted, no threshold evaluated, no cohort read. Using it to choose a pacing budget is therefore not choosing a parameter by looking at an outcome."
+  },
+  "receipt_sha256": "sha256:3b4ddf271109978bdae303e63dd8562caaa51e31dae9cae0f47642f01fe7a216",
+  "result_blind_at_stop": {
+    "capacity_quantity_computed_printed_or_written": false,
+    "capacity_receipt_path": "research/tavonel_eval_v2/receipts/sfir4-capacity-metadata-census.json",
+    "capacity_receipt_written": false,
+    "how_verified": "the destination path was checked for a receipt and the captured run output was searched for any capacity quantity; it holds a traceback and nothing else."
+  },
+  "schema": "tavonel.sfir4.terminal_operational_stop.v1",
+  "succeeded_by": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5",
+  "what_this_receipt_does_not_say": "that SFIR4 measured anything. The criterion was never applied, so this is not a FAIL of the capacity threshold and must not be read as evidence that the declared frame is short of capacity. Nothing here establishes that either way."
+}

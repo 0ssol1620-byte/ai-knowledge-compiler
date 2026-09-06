@@ -27,6 +27,8 @@ import type { ReactNode } from "react";
 const MARKETING_PREFIXES = [
   "/product",
   "/solutions",
+  "/integrations",
+  "/enterprise",
   "/demo",
   "/research",
   "/security",
@@ -64,10 +66,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   // variants can be captured under identical conditions (§25.1). Removed once
   // decision.md records the chosen direction.
   const designRoute = pathname.startsWith("/design/");
+  // The cinematic experience is the public stage (CINEMATIC_DESIGN_MASTER_SPEC
+  // §4.4). It renders with no application chrome and no session check — the
+  // authenticated shell's session probe would otherwise replace the first
+  // three seconds of the film with a "could not verify your session" panel.
+  const experienceRoute = pathname.startsWith("/experience");
   const bareRoute =
     marketingRoute ||
     authRoute ||
     designRoute ||
+    experienceRoute ||
     pathname === "/verify-email" ||
     pathname.startsWith("/notices");
 

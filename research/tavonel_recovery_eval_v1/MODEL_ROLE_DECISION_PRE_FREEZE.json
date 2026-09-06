@@ -1,0 +1,50 @@
+{
+  "schema": "tavonel.recovery.model_role_decision.v1",
+  "status": "PRE_FREEZE_ROLE_DECISION",
+  "fresh_confirmatory_observations_seen": false,
+  "development_evidence": {
+    "path": "docs/evidence/artifacts/folynta-measured-model-evaluation-snapshot-2026-08-02.json",
+    "use": "development-only role selection; not confirmatory scoring"
+  },
+  "roles": {
+    "primary": {
+      "candidate_id": "paddleocr-vl-1.6-fastdeploy-c8",
+      "rationale": "Measured fast/cost-efficient VLM lane with strong table/text metrics; used as the default path so selective recovery has a meaningful cost target.",
+      "historical_metrics": {
+        "text_edit_companion": 0.961791144692022,
+        "table_teds": 0.9060647206933243,
+        "table_structure_teds": 0.9383699633699635,
+        "mean_latency_ms": 3524.9142754322816,
+        "cost_per_page_usd": 0.0006756085694578539,
+        "exact_repeat_ratio": 0.5555555555555556
+      },
+      "runtime_qualification_required": true
+    },
+    "peer": {
+      "candidate_id": "repository-native-source-evidence",
+      "rationale": "Independent non-VLM evidence family. It is used to expose disagreement or source-native constraints, not as a globally superior parser.",
+      "implementation_pin_required": true,
+      "gpu_required": false
+    },
+    "strong": {
+      "candidate_id": "mineru-3.4.4-vlm-c1",
+      "rationale": "Measured quality-escalation lane on the spent OmniDoc development subset: strongest table TEDS/structure and exact-repeat stability among the recorded candidates, at substantially higher latency/cost.",
+      "historical_metrics": {
+        "text_edit_companion": 0.9657421536098182,
+        "table_teds": 0.9596961750183709,
+        "table_structure_teds": 0.9845238095238097,
+        "mean_latency_ms": 34707.780641788195,
+        "cost_per_page_usd": 0.006652324623009405,
+        "exact_repeat_ratio": 1.0
+      },
+      "runtime_qualification_required": true,
+      "license_and_runtime_gate_required": true
+    }
+  },
+  "important_nonclaims": [
+    "primary does not mean universally best",
+    "strong does not mean universally best on every document type",
+    "peer agreement is not truth",
+    "role selection may not be changed after the fresh cohort is opened because of confirmatory outcomes"
+  ]
+}

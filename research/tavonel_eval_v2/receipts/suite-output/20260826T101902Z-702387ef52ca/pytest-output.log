@@ -1,0 +1,467 @@
+{"event": "suite_start", "run_id": "20260826T101902Z-702387ef52ca", "started_at": "2026-08-26T10:19:02.964673+00:00"}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_anti_blocker_audit.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_anti_blocker_audit.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0001.xml"]}
+........................................                                 [100%]
+40 passed in 1.69s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_anti_blocker_audit.py", "exit_code": 0, "counts": {"tests": 40, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_change_facets.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_change_facets.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0002.xml"]}
+....................                                                     [100%]
+20 passed in 1.92s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_change_facets.py", "exit_code": 0, "counts": {"tests": 20, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_channel_closure.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_channel_closure.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0003.xml"]}
+.................................                                        [100%]
+33 passed in 0.50s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_channel_closure.py", "exit_code": 0, "counts": {"tests": 33, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_coverage_and_refusals.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_coverage_and_refusals.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0004.xml"]}
+.......................                                                  [100%]
+23 passed in 0.51s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_coverage_and_refusals.py", "exit_code": 0, "counts": {"tests": 23, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_dependency_contract.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_dependency_contract.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0005.xml"]}
+.....................                                                    [100%]
+21 passed in 0.47s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_dependency_contract.py", "exit_code": 0, "counts": {"tests": 21, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_e8_instrumentation_power.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_e8_instrumentation_power.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0006.xml"]}
+.........                                                                [100%]
+9 passed in 0.40s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_e8_instrumentation_power.py", "exit_code": 0, "counts": {"tests": 9, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_e9_oracle.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_e9_oracle.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0007.xml"]}
+.............                                                            [100%]
+13 passed in 0.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_e9_oracle.py", "exit_code": 0, "counts": {"tests": 13, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_execution_invariant.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_execution_invariant.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0008.xml"]}
+........................                                                 [100%]
+24 passed in 0.47s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_execution_invariant.py", "exit_code": 0, "counts": {"tests": 24, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_executor_channels.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_executor_channels.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0009.xml"]}
+.....................                                                    [100%]
+21 passed in 0.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_executor_channels.py", "exit_code": 0, "counts": {"tests": 21, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3825664, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_forensic_sfi2_execution.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_forensic_sfi2_execution.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0010.xml"]}
+.........                                                                [100%]
+9 passed in 1.76s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_forensic_sfi2_execution.py", "exit_code": 0, "counts": {"tests": 9, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3825664, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_four_link_acceptance.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_four_link_acceptance.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0011.xml"]}
+................................                                         [100%]
+32 passed in 1.02s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_four_link_acceptance.py", "exit_code": 0, "counts": {"tests": 32, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_four_link_gate.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_four_link_gate.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0012.xml"]}
+..................                                                       [100%]
+18 passed in 0.36s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_four_link_gate.py", "exit_code": 0, "counts": {"tests": 18, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3825664, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_four_link_validator.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_four_link_validator.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0013.xml"]}
+.....................                                                    [100%]
+21 passed in 0.39s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_four_link_validator.py", "exit_code": 0, "counts": {"tests": 21, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_freeze_sfi3_gate.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_freeze_sfi3_gate.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0014.xml"]}
+........................................                                 [100%]
+40 passed in 22.92s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_freeze_sfi3_gate.py", "exit_code": 0, "counts": {"tests": 40, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_execution.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_gpu_successor_execution.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0015.xml"]}
+.......                                                                  [100%]
+7 passed in 0.40s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_execution.py", "exit_code": 0, "counts": {"tests": 7, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_pin.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_gpu_successor_pin.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0016.xml"]}
+...................                                                      [100%]
+19 passed in 0.39s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_pin.py", "exit_code": 0, "counts": {"tests": 19, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_preflight_bindings.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_gpu_successor_preflight_bindings.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0017.xml"]}
+..........                                                               [100%]
+10 passed in 0.41s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_preflight_bindings.py", "exit_code": 0, "counts": {"tests": 10, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_study.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_gpu_successor_study.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0018.xml"]}
+................................................................         [100%]
+64 passed in 1.28s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_gpu_successor_study.py", "exit_code": 0, "counts": {"tests": 64, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_identity_change_migration.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_identity_change_migration.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0019.xml"]}
+.....................................................................    [100%]
+69 passed in 7.69s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_identity_change_migration.py", "exit_code": 0, "counts": {"tests": 69, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_identity_change_migration_closure.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_identity_change_migration_closure.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0020.xml"]}
+...........................................                              [100%]
+43 passed in 9.21s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_identity_change_migration_closure.py", "exit_code": 0, "counts": {"tests": 43, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_identity_quarantine.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_identity_quarantine.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0021.xml"]}
+........................                                                 [100%]
+24 passed in 77.64s (0:01:17)
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_identity_quarantine.py", "exit_code": 0, "counts": {"tests": 24, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3796992, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_include_target.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_include_target.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0022.xml"]}
+...................................                                      [100%]
+35 passed in 0.27s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_include_target.py", "exit_code": 0, "counts": {"tests": 35, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_invariant_domain.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_invariant_domain.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0023.xml"]}
+..............................                                           [100%]
+30 passed in 0.62s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_invariant_domain.py", "exit_code": 0, "counts": {"tests": 30, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0024.xml"]}
+..............................................                           [100%]
+46 passed in 1.91s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py", "exit_code": 0, "counts": {"tests": 46, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0025.xml"]}
+.......................F                                                 [100%]
+================================== FAILURES ===================================
+____________ test_the_sfi3_gate_now_refuses_for_the_honest_reason _____________
+
+    def test_the_sfi3_gate_now_refuses_for_the_honest_reason():
+        """Not "V1's closure says FAIL" but "no accepted V2R4 closure exists".
+    
+        The distinction is the whole repair: the old gate reported a superseded
+        chain's verdict and had no way to mention that four successors existed.
+        """
+        import freeze_sfi3_protocol as freezer
+    
+        result = freezer._identity_change_separation_complete()
+>       assert result["verdict"] == freezer.CONDITION_FAILED
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+research\tavonel_eval_v2\tests\test_migration_closure_acceptance.py:294: AssertionError
+=========================== short test summary info ===========================
+FAILED research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py::test_the_sfi3_gate_now_refuses_for_the_honest_reason
+1 failed, 23 passed in 0.74s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_migration_closure_acceptance.py", "exit_code": 1, "counts": {"tests": 24, "skipped": 0, "failures": 1, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_p0_findings.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_p0_findings.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0026.xml"]}
+.....                                                                    [100%]
+5 passed in 0.66s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_p0_findings.py", "exit_code": 0, "counts": {"tests": 5, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_p0b_and_boundary.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_p0b_and_boundary.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0027.xml"]}
+.............                                                            [100%]
+13 passed in 0.46s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_p0b_and_boundary.py", "exit_code": 0, "counts": {"tests": 13, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part10.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part10.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0028.xml"]}
+...........................                                              [100%]
+27 passed in 1.57s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part10.py", "exit_code": 0, "counts": {"tests": 27, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part11.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part11.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0029.xml"]}
+...........................                                              [100%]
+27 passed in 0.26s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part11.py", "exit_code": 0, "counts": {"tests": 27, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3821568, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part12.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part12.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0030.xml"]}
+....................................                                     [100%]
+36 passed in 0.35s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part12.py", "exit_code": 0, "counts": {"tests": 36, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part13.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part13.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0031.xml"]}
+.................................                                        [100%]
+33 passed in 0.57s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part13.py", "exit_code": 0, "counts": {"tests": 33, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part14.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part14.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0032.xml"]}
+....................................                                     [100%]
+36 passed in 0.69s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part14.py", "exit_code": 0, "counts": {"tests": 36, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part15.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part15.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0033.xml"]}
+.....................................................                    [100%]
+53 passed in 0.84s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part15.py", "exit_code": 0, "counts": {"tests": 53, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part16.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part16.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0034.xml"]}
+.......................                                                  [100%]
+23 passed in 0.66s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part16.py", "exit_code": 0, "counts": {"tests": 23, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part3.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part3.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0035.xml"]}
+...........................                                              [100%]
+27 passed in 0.73s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part3.py", "exit_code": 0, "counts": {"tests": 27, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part4.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part4.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0036.xml"]}
+..............................                                           [100%]
+30 passed in 0.30s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part4.py", "exit_code": 0, "counts": {"tests": 30, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part5.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part5.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0037.xml"]}
+......................................                                   [100%]
+38 passed in 0.40s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part5.py", "exit_code": 0, "counts": {"tests": 38, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part6.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part6.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0038.xml"]}
+...............................                                          [100%]
+31 passed in 1.73s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part6.py", "exit_code": 0, "counts": {"tests": 31, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3833856, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part7.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part7.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0039.xml"]}
+......................................................                   [100%]
+54 passed in 0.29s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part7.py", "exit_code": 0, "counts": {"tests": 54, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part8.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part8.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0040.xml"]}
+...................................s..........                           [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] research\tavonel_eval_v2\tests\test_part8.py:229: source_spans is sealed by P0d, not by this receipt
+45 passed, 1 skipped in 0.56s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part8.py", "exit_code": 0, "counts": {"tests": 46, "skipped": 1, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_part9.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_part9.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0041.xml"]}
+.................                                                        [100%]
+17 passed in 0.51s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_part9.py", "exit_code": 0, "counts": {"tests": 17, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_preflight_checks.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_preflight_checks.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0042.xml"]}
+..................................                                       [100%]
+34 passed in 10.84s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_preflight_checks.py", "exit_code": 0, "counts": {"tests": 34, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_provenance_document.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_provenance_document.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0043.xml"]}
+.............................................                            [100%]
+45 passed in 0.31s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_provenance_document.py", "exit_code": 0, "counts": {"tests": 45, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_provenance_fixtures.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_provenance_fixtures.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0044.xml"]}
+...............................................                          [100%]
+47 passed in 0.30s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_provenance_fixtures.py", "exit_code": 0, "counts": {"tests": 47, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_rebuild_equivalence.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_rebuild_equivalence.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0045.xml"]}
+............                                                             [100%]
+12 passed in 0.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_rebuild_equivalence.py", "exit_code": 0, "counts": {"tests": 12, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_scope_gate.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_scope_gate.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0046.xml"]}
+................                                                         [100%]
+16 passed in 0.26s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_scope_gate.py", "exit_code": 0, "counts": {"tests": 16, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_acquisition.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi2_acquisition.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0047.xml"]}
+............................                                             [100%]
+28 passed in 0.55s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_acquisition.py", "exit_code": 0, "counts": {"tests": 28, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_frame_verification.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi2_frame_verification.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0048.xml"]}
+........                                                                 [100%]
+8 passed in 0.24s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_frame_verification.py", "exit_code": 0, "counts": {"tests": 8, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_integration.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi2_integration.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0049.xml"]}
+.......................                                                  [100%]
+23 passed in 0.88s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_integration.py", "exit_code": 0, "counts": {"tests": 23, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_scoring.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi2_scoring.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0050.xml"]}
+......................s..                                                [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] research\tavonel_eval_v2\tests\test_sfi2_scoring.py:253: the protocol has been frozen; the refusal path is no longer live
+24 passed, 1 skipped in 0.34s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_scoring.py", "exit_code": 0, "counts": {"tests": 25, "skipped": 1, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_worker.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi2_worker.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0051.xml"]}
+............s...                                                         [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] research\tavonel_eval_v2\tests\test_sfi2_worker.py:235: the protocol has been frozen; the refusal path is no longer live
+15 passed, 1 skipped in 0.55s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi2_worker.py", "exit_code": 0, "counts": {"tests": 16, "skipped": 1, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_acceptance.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_acceptance.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0052.xml"]}
+.................................................                        [100%]
+49 passed in 1.14s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_acceptance.py", "exit_code": 0, "counts": {"tests": 49, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0053.xml"]}
+.................................                                        [100%]
+33 passed in 0.79s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_acquisition.py", "exit_code": 0, "counts": {"tests": 33, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_execution_path.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_execution_path.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0054.xml"]}
+...............................                                          [100%]
+31 passed in 0.77s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_execution_path.py", "exit_code": 0, "counts": {"tests": 31, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_frame_verification.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_frame_verification.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0055.xml"]}
+.........                                                                [100%]
+9 passed in 0.28s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_frame_verification.py", "exit_code": 0, "counts": {"tests": 9, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0056.xml"]}
+........................................................................ [ 76%]
+......................                                                   [100%]
+94 passed in 0.33s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_preflight.py", "exit_code": 0, "counts": {"tests": 94, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_replacement.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_root_replacement.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0057.xml"]}
+.............................                                            [100%]
+29 passed in 2.24s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_replacement.py", "exit_code": 0, "counts": {"tests": 29, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_reservation.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_root_reservation.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0058.xml"]}
+.............................                                            [100%]
+29 passed in 0.38s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_root_reservation.py", "exit_code": 0, "counts": {"tests": 29, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_scoring.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_scoring.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0059.xml"]}
+.................................................                        [100%]
+49 passed in 0.43s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_scoring.py", "exit_code": 0, "counts": {"tests": 49, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_suite_evidence.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi3_suite_evidence.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0060.xml"]}
+..........                                                               [100%]
+10 passed in 0.41s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi3_suite_evidence.py", "exit_code": 0, "counts": {"tests": 10, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_acquisition.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_acquisition.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0061.xml"]}
+..........................                                               [100%]
+26 passed in 0.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_acquisition.py", "exit_code": 0, "counts": {"tests": 26, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_adversarial.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_adversarial.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0062.xml"]}
+........................................................                 [100%]
+56 passed in 0.36s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_adversarial.py", "exit_code": 0, "counts": {"tests": 56, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_core.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_core.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0063.xml"]}
+................................                                         [100%]
+32 passed in 0.30s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_core.py", "exit_code": 0, "counts": {"tests": 32, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_fingerprint.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_fingerprint.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0064.xml"]}
+.......................                                                  [100%]
+23 passed in 0.46s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_fingerprint.py", "exit_code": 0, "counts": {"tests": 23, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3805184, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_forensic.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_forensic.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0065.xml"]}
+...........                                                              [100%]
+11 passed in 0.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_forensic.py", "exit_code": 0, "counts": {"tests": 11, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_gpu_preflight.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_gpu_preflight.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0066.xml"]}
+..........................................                               [100%]
+42 passed in 0.66s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_gpu_preflight.py", "exit_code": 0, "counts": {"tests": 42, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_integration.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_integration.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0067.xml"]}
+..........s...                                                           [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] research\tavonel_eval_v2\tests\test_sfi_integration.py:252: every lane has landed; the degraded path is exercised elsewhere
+13 passed, 1 skipped in 0.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_integration.py", "exit_code": 0, "counts": {"tests": 14, "skipped": 1, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_metadata.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_metadata.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0068.xml"]}
+....................                                                     [100%]
+20 passed in 0.25s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_metadata.py", "exit_code": 0, "counts": {"tests": 20, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_reference.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_reference.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0069.xml"]}
+...................                                                      [100%]
+19 passed in 0.26s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_reference.py", "exit_code": 0, "counts": {"tests": 19, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_sfi_scoring.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_sfi_scoring.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0070.xml"]}
+................                                                         [100%]
+16 passed in 0.30s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_sfi_scoring.py", "exit_code": 0, "counts": {"tests": 16, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_spanmap.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_spanmap.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0071.xml"]}
+.......................                                                  [100%]
+23 passed in 0.25s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_spanmap.py", "exit_code": 0, "counts": {"tests": 23, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_successor_inputs.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_successor_inputs.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0072.xml"]}
+............................                                             [100%]
+28 passed in 0.37s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_successor_inputs.py", "exit_code": 0, "counts": {"tests": 28, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_successor_materializer.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_successor_materializer.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0073.xml"]}
+......................................                                   [100%]
+38 passed in 0.40s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_successor_materializer.py", "exit_code": 0, "counts": {"tests": 38, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2_closure_freeze.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2_closure_freeze.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0074.xml"]}
+.................................................                        [100%]
+49 passed in 16.40s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2_closure_freeze.py", "exit_code": 0, "counts": {"tests": 49, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0075.xml"]}
+......................................                                   [100%]
+38 passed in 15.82s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2_universe_enumeration.py", "exit_code": 0, "counts": {"tests": 38, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r1_freeze_gate.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r1_freeze_gate.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0076.xml"]}
+........................                                                 [100%]
+24 passed in 0.94s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r1_freeze_gate.py", "exit_code": 0, "counts": {"tests": 24, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r1_invariant6.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r1_invariant6.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0077.xml"]}
+...............                                                          [100%]
+15 passed in 0.44s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r1_invariant6.py", "exit_code": 0, "counts": {"tests": 15, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r2_freeze_adapter.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r2_freeze_adapter.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0078.xml"]}
+.............                                                            [100%]
+13 passed in 0.61s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r2_freeze_adapter.py", "exit_code": 0, "counts": {"tests": 13, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r2_freeze_gate.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r2_freeze_gate.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0079.xml"]}
+........................                                                 [100%]
+24 passed in 1.46s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r2_freeze_gate.py", "exit_code": 0, "counts": {"tests": 24, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r2_invariant6.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r2_invariant6.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0080.xml"]}
+.................                                                        [100%]
+17 passed in 0.53s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r2_invariant6.py", "exit_code": 0, "counts": {"tests": 17, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_attestation.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3_attestation.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0081.xml"]}
+..........................                                               [100%]
+26 passed in 7.68s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_attestation.py", "exit_code": 0, "counts": {"tests": 26, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_chain_disposition.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3_chain_disposition.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0082.xml"]}
+..............................                                           [100%]
+30 passed in 16.32s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_chain_disposition.py", "exit_code": 0, "counts": {"tests": 30, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3817472, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0083.xml"]}
+.............                                                            [100%]
+13 passed in 0.55s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py", "exit_code": 0, "counts": {"tests": 13, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_instrument.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3_instrument.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0084.xml"]}
+...........................                                              [100%]
+27 passed in 3.29s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_instrument.py", "exit_code": 0, "counts": {"tests": 27, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_lanes.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3_lanes.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0085.xml"]}
+....................                                                     [100%]
+20 passed in 0.93s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_lanes.py", "exit_code": 0, "counts": {"tests": 20, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3809280, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_power_battery.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3_power_battery.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0086.xml"]}
+...................                                                      [100%]
+19 passed in 0.45s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3_power_battery.py", "exit_code": 0, "counts": {"tests": 19, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0087.xml"]}
+...................................................                      [100%]
+51 passed in 8.48s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r3r1_carry_forward.py", "exit_code": 0, "counts": {"tests": 51, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_closure_runner.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r4_closure_runner.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0088.xml"]}
+.......................                                                  [100%]
+23 passed in 1.56s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_closure_runner.py", "exit_code": 0, "counts": {"tests": 23, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_frame.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r4_frame.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0089.xml"]}
+......................................F...............F.........         [100%]
+================================== FAILURES ===================================
+___________________ test_no_v2r4_measurement_has_been_read ____________________
+
+tmp_path = WindowsPath('C:/Users/yspow/AppData/Local/Temp/pytest-of-yspow/pytest-5111/test_no_v2r4_measurement_has_b0')
+
+    def test_no_v2r4_measurement_has_been_read(tmp_path):
+        """The condition the founder ruling actually binds, and the only half of the
+        original assertion that is still meant to hold.
+    
+        `_nothing_has_been_measured` is the STRONGER guard -- it asks whether any
+        material exists at all, and rungs 0 and 1 shut on it because once you can see
+        the corpus you could choose around it. Those rungs have sealed; that guard is
+        correctly closed now. What must still be true, and what ¡×H and ¡×I are written
+        on, is that no OUTCOME has been read."""
+        ws = freezer.workspace()
+        stem = freezer.base.stem_for(freezer.base.load_protocol(ws.protocol), "measurement")
+>       assert sorted(path.name for path in ws.receipts.glob(f"{stem}--*.json")) == []
+E       AssertionError: assert ['identity-ch...21d2c93.json'] == []
+E         
+E         Left contains one more item: 'identity-change-migration-closure-v2r4--20260826T064947Z-e6cab21d2c93.json'
+E         Use -v to get more diff
+
+research\tavonel_eval_v2\tests\test_v2r4_frame.py:548: AssertionError
+_________ test_the_gate_reports_ready_on_the_fully_sealed_live_chain __________
+
+    def test_the_gate_reports_ready_on_the_fully_sealed_live_chain():
+        """The live answer, in the direction it now has one.
+    
+        THIS TEST IS THE FOURTH INSTANCE OF THE CLASS ABOVE, and it was written in the
+        repair FOR that class. Its first version asserted `rung 3 is missing` --
+        true when the scorer was unfrozen, false twenty minutes later when rung 4
+        sealed. Naming a specific unfrozen rung on a chain that is still being built
+        pins a moment however carefully the name is chosen; the only live assertion
+        that does not expire is the one about the chain's FINAL state.
+    
+        So: every rung sealed, the gate READY, and the four companion attestations
+        present. The "names the first unfrozen rung" property is exercised at a bare
+        workspace, above, where it cannot expire.
+        """
+>       gate = freezer.require_v2r4_execution_preconditions()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+research\tavonel_eval_v2\tests\test_v2r4_frame.py:707: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+ws = V2R4Workspace(root=WindowsPath('D:/CodexProjects/ai-knowledge-compiler'), protocol=WindowsPath('D:/CodexProjects/ai-kn...ects/ai-knowledge-compiler/research/tavonel_eval_v2/artifacts/development/sfi2/sfi2_acquisition.json')), manifest=None)
+
+    def require_v2r4_execution_preconditions(ws: Any | None = None) -> dict[str, Any]:
+        """Everything the base gate checks, plus the four attestations, recomputed."""
+        ws = ws or workspace()
+        #: Before anything else: the protocol on disk is the one rung 1 sealed, its
+        #: link to the frame in force is intact, and every attestation rung it
+        #: declares is wired here. `PROTOCOL` is a PATH, and a path is a filename
+        #: rather than a binding until its digest is compared to what was frozen.
+        binding = require_protocol_binding(ws)
+        with _bound():
+            ready = base.require_execution_preconditions(ws)
+    
+            #: The base gate REPORTS prior measurements. A closure runs exactly once,
+            #: so here it REFUSES on them -- a report is not a refusal, and "already
+            #: measured" printed beside READY is a state this study must not be able
+            #: to reach.
+            already = ready.get("already_measured") or []
+            if already:
+>               raise FreezeRefused(
+                    f"a V2R4 measurement already exists: {already}. A closure runs "
+                    "EXACTLY ONCE. Its corpus is spent and no rescore is permitted."
+                )
+E               freeze_migration_closure_v2r1.FreezeRefused: a V2R4 measurement already exists: ['identity-change-migration-closure-v2r4--20260826T064947Z-e6cab21d2c93.json']. A closure runs EXACTLY ONCE. Its corpus is spent and no rescore is permitted.
+
+research\tavonel_eval_v2\tools\freeze_migration_closure_v2r4.py:429: FreezeRefused
+=========================== short test summary info ===========================
+FAILED research/tavonel_eval_v2/tests/test_v2r4_frame.py::test_no_v2r4_measurement_has_been_read
+FAILED research/tavonel_eval_v2/tests/test_v2r4_frame.py::test_the_gate_reports_ready_on_the_fully_sealed_live_chain
+2 failed, 62 passed in 7.81s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_frame.py", "exit_code": 1, "counts": {"tests": 64, "skipped": 0, "failures": 2, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_grading.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r4_grading.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0090.xml"]}
+..............................                                           [100%]
+30 passed in 2.30s
+{"event": "shard_complete", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_grading.py", "exit_code": 0, "counts": {"tests": 30, "skipped": 0, "failures": 0, "errors": 0}, "peak_rss_bytes": 3813376, "junit_error": null}
+{"event": "shard_start", "test_file": "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py", "command": ["D:\\CodexProjects\\ai-knowledge-compiler\\.venv\\Scripts\\python.exe", "-m", "pytest", "research/tavonel_eval_v2/tests/test_v2r4_preacquisition_gate.py", "-q", "-p", "no:cacheprovider", "--junitxml=D:\\CodexProjects\\ai-knowledge-compiler\\research\\tavonel_eval_v2\\receipts\\suite-output\\20260826T101902Z-702387ef52ca\\junit-0091.xml"]}
+....FFFF..........

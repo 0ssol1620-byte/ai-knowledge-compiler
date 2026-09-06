@@ -1,0 +1,25 @@
+{
+  "estimated_cost_usd": 0.0,
+  "frozen_before_any_cohort_pair_was_read": true,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1",
+  "protocol_path": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml",
+  "protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+  "provenance": {
+    "generated_at": "2026-08-25T00:06:09.727392+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml",
+    "protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+    "receipt_stem": "identity-change-migration-closure-protocol-freeze",
+    "run_id": "20260825T000609Z-9edc066095d8",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure.py",
+    "tool_sha256": "sha256:d012a5514553de37f3e0db11a3958e0a5d585aeabda906e143e9a15c6563569a"
+  },
+  "receipt_sha256": "sha256:72d40affa84dfbfc4401572d5e25c9e703e9cb4cb92686cd1644290615bd301d",
+  "schema": "tavonel.v2.protocol_freeze.v2",
+  "what_this_seals": "eight threshold-free structural acceptance criteria, the facet channel declaration, the empty predeclared-ignore declaration, the cohort selection rule and the fixture battery -- all before the universe is frozen and before any pair is measured"
+}

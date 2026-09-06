@@ -26,6 +26,7 @@ Decisions that open a capability rather than resolve a conflict.
 | Record | Decides |
 | --- | --- |
 | [ADR-006](ADR-006-anonymous-trial-ingest.md) | The marketing hero may accept a document from an anonymous visitor, under caps. Tenant scoping is preserved through a system trial tenant; the ADR-004 quarantine path is not shortened; the flow stops at `PREFLIGHTED` so GPU spend stays behind a principal; `trial_ingest_enabled` defaults to `false`. |
+| [ADR-007](ADR-007-universal-source-front-end.md) | Every source family enters one lifecycle. `Source` / `SourceVersion` / `SourceRepresentation` become the storage vocabulary, additive to `documents`; readers are plug-ins behind a `ReaderProvider` protocol and a `ReaderRegistry` (`akc_readers`) that resolves by declared capability, never by provider name; one typed Capability Manifest is the single source of truth for what the deployment reads, and `VERIFIED_NATIVE` / `VERIFIED_HYBRID` require a committed §27 qualification receipt; `EvidenceLocator v2` is a **sibling** of `SourceRef`, never a replacement, with the legacy page + bbox1000 as its lossless `pdf` variant; `approved_customer_data` stays refused without a `CustomerDataGateDecision` and `activationPolicy.customerData.enabled` stays `false`. Status: Proposed. |
 
 ## Decision order
 

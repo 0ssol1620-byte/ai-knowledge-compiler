@@ -5,6 +5,7 @@ import { EvidenceFilmStage } from "@/components/evidence-film-stage";
 export const metadata: Metadata = {
   title: "Evidence in Motion | FOLYNTA",
   description: "A measured 60-second product film showing documents becoming verified, portable knowledge.",
+  robots: { index: false, follow: false },
 };
 
 export default function FilmPage() {

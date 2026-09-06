@@ -1,0 +1,88 @@
+{
+  "acquisition_receipt_sha256": "sha256:cee6b398d28abd4221fca3688ce72ce6d22dd9e4f34be5b4985fde8201133fd8",
+  "conditions": {
+    "accounting_reconciles": {
+      "detail": {
+        "exclusions": 359,
+        "records": 391,
+        "titles_consumed": 750
+      },
+      "passes": true,
+      "why": "every title the run consumed is either an eligible record or a named exclusion. A title that is neither has disappeared without a reason, and a corpus with silent disappearances cannot support a denominator"
+    },
+    "acquisition_receipt": {
+      "detail": {
+        "manifest_receipt_matches": true,
+        "schema": "tavonel.w6-v3-acquisition.v1"
+      },
+      "passes": true,
+      "why": "the receipt must bind to the protocol bytes, the acquisition script bytes and the exact holdout title manifest. A receipt that floats free of them describes some other run"
+    },
+    "corpus_root_hash": {
+      "detail": "sha256:13bfe8600855a9d7eedf9ec32c337581eaed0edb6dbf1fcd60dde7e5191f73cd",
+      "passes": true,
+      "why": "one order-independent digest over every verified pair, so the sealed endpoint can name the corpus it was computed from in a single value"
+    },
+    "metadata_written_last": {
+      "detail": {
+        "violation_count": 0,
+        "violations": []
+      },
+      "passes": true,
+      "why": "the completeness marker is metadata.json being newer than the wikitext beside it. If it is older, the pair was rewritten after it was declared complete"
+    },
+    "no_duplicates": {
+      "detail": {
+        "duplicate_indices": [],
+        "duplicate_titles": []
+      },
+      "passes": true,
+      "why": "a duplicated pair would be counted twice in the denominator and would let one article carry two votes in a paired comparison"
+    },
+    "no_incomplete_directories": {
+      "detail": {
+        "directories": 391,
+        "incomplete": [],
+        "incomplete_count": 0
+      },
+      "passes": true,
+      "why": "metadata.json is written last, so a directory without it is a pair that was interrupted. corpus-v5 held exactly this defect and reported 0 complete pairs"
+    },
+    "per_pair_hashes_match": {
+      "detail": {
+        "mismatches": [],
+        "missing_files": [],
+        "pairs_verified": 391
+      },
+      "passes": true,
+      "why": "the bytes the endpoint will read must be the bytes the receipt hashed. Anything else means the corpus changed after it was recorded"
+    },
+    "process_exit_status": {
+      "detail": 0,
+      "passes": true,
+      "why": "an acquisition that exited non-zero produced a partial corpus, and a partial corpus that is silently accepted becomes an endpoint computed over whatever happened to finish"
+    },
+    "untouched_disjointness": {
+      "detail": {
+        "outside_manifest": [],
+        "overlap_with_development": [],
+        "sealed_development_titles": 750
+      },
+      "passes": true,
+      "why": "the holdout is only untouched if no acquired title was seen in development and no acquired title came from outside the frozen manifest. An empty development list would make this check inert, so it is itself a failure"
+    }
+  },
+  "corpus_root_hash": "sha256:13bfe8600855a9d7eedf9ec32c337581eaed0edb6dbf1fcd60dde7e5191f73cd",
+  "eligible_records": 391,
+  "excluded_records": 359,
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "failed": [],
+  "generated_at": "2026-08-20T08:19:52.626236+00:00",
+  "holdout_manifest_sha256": "sha256:f298f82cfe1ef81147da58fb4a2c4cc7a05f7afaf765c67ea790c422637f92e1",
+  "pairs_verified": 391,
+  "passes": true,
+  "receipt_sha256": "sha256:f10b673a3f9f201f50730d66a2d1bff4939271846df673ad36986e516f663318",
+  "run_class": "HOLDOUT_CONFIRMATORY",
+  "schema": "tavonel.w6-v8-holdout-acquisition-integrity.v1"
+}

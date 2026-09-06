@@ -1,0 +1,384 @@
+{
+  "by_split": {
+    "development": 12,
+    "held_out": 5
+  },
+  "by_status": {
+    "DECLARED_POLICY": 1,
+    "NOT_YET_ESTABLISHED": 2,
+    "PROVEN_ON_DEVELOPMENT_DATA": 11,
+    "PROVEN_ON_HELD_OUT_DATA": 3
+  },
+  "claims": 17,
+  "draft": {
+    "clean": true,
+    "hits": [],
+    "lines": 306,
+    "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+    "present": true,
+    "sha256": "sha256:ea8ee0c82e760d63b8bb2a5e00cc9172b4a7be90812150bdaee2414be2d14ec8"
+  },
+  "estimated_cost_usd": 0.0,
+  "failures": [],
+  "forbidden_claims": [
+    "F-01",
+    "F-02",
+    "F-03",
+    "F-04",
+    "F-05"
+  ],
+  "gates": {
+    "G_CLAIM_FIELDS_COMPLETE": true,
+    "G_CLAIM_NEGATIVES_BIND": true,
+    "G_CLAIM_NO_FORBIDDEN_WORDING": true,
+    "G_CLAIM_RECEIPTS_BIND": true,
+    "G_CLAIM_SPLITS_DECLARED": true,
+    "G_DRAFT_NO_FORBIDDEN_WORDING": true,
+    "G_RELEASE_GATE_CLOSED": true
+  },
+  "generated_at": "2026-08-23T03:12:53.112799+00:00",
+  "gpu_seconds": 0,
+  "matrix": "research/tavonel_eval_v2/paper/CLAIM_MATRIX.yaml",
+  "matrix_sha256": "sha256:c955174e56e644e820746e7ee4963ac4339406e9c559d5f6bf2e5265f596cbbf",
+  "negative_findings": [
+    "N-01",
+    "N-02",
+    "N-03",
+    "N-04",
+    "N-05",
+    "N-06"
+  ],
+  "pending_claims": [
+    "C-16",
+    "C-17"
+  ],
+  "provenance": {
+    "generated_at": "2026-08-23T03:12:53.113439+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "claim-matrix",
+    "run_id": "20260823T031253Z-aebcdb184b7e",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/build_claim_matrix.py",
+    "tool_sha256": "sha256:856d254c939e5cfe4dc4fc6690ccd6936d98c28e3d362739d69187cca0811a96"
+  },
+  "readiness_gaps": [
+    "G-01",
+    "G-02",
+    "G-03",
+    "G-04",
+    "G-05"
+  ],
+  "receipt_sha256": "sha256:78db8adc6f1a007f8ce9e99373881443d464e40ba6f6b55bccc1d56da9525775",
+  "release": {
+    "dataset_release": "FORBIDDEN",
+    "demo_release": "FORBIDDEN",
+    "docs_ip": "not modified",
+    "ip_gate": "CLOSED",
+    "public_arxiv": "FORBIDDEN",
+    "public_github": "FORBIDDEN"
+  },
+  "rows": [
+    {
+      "allowed_count": 2,
+      "forbidden_count": 2,
+      "id": "C-01",
+      "limitation_count": 2,
+      "protocol": "P0b_recompilation_mechanics",
+      "receipt": "receipts/p0b-mechanics.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:7fade5f559e538304cef605af8889d9d06f36294c02b5c4ece75a8cd20b907ac",
+        "path": "research/tavonel_eval_v2/receipts/p0b-mechanics.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-02",
+      "limitation_count": 1,
+      "protocol": "P0c_coverage_completeness",
+      "receipt": "receipts/p0c-coverage-completeness--20260821T083632Z-50f5a1619262.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:5c1f0098c7d89ca7f099940aa048b6328d727d8ac292f4d13954e2f5b68d229b",
+        "path": "research/tavonel_eval_v2/receipts/p0c-coverage-completeness--20260821T083632Z-50f5a1619262.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 2,
+      "forbidden_count": 2,
+      "id": "C-03",
+      "limitation_count": 1,
+      "protocol": "P0d_source_coverage",
+      "receipt": "receipts/p0d-source-coverage--20260822T014018Z-fd08c210d582.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:4ce1512b76a984b176a3e40d9f1aa275b3cb6fa4f4156676703419104f257f56",
+        "path": "research/tavonel_eval_v2/receipts/p0d-source-coverage--20260822T014018Z-fd08c210d582.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-04",
+      "limitation_count": 1,
+      "protocol": "P3b_refusal_legibility",
+      "receipt": "receipts/p3b-refusal-legibility--20260821T083643Z-87b32c41bb7f.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:975b94765b4ff3c0b2a7923c15a5b2dffcd7f33deed01b20bdec0e465a750879",
+        "path": "research/tavonel_eval_v2/receipts/p3b-refusal-legibility--20260821T083643Z-87b32c41bb7f.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 2,
+      "forbidden_count": 2,
+      "id": "C-05",
+      "limitation_count": 1,
+      "protocol": "P4e_provenance_retrieval",
+      "receipt": "receipts/p4e-provenance-retrieval--20260822T080030Z-4f1f2fdaa1ab.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:d7a1297e4431f2be311cb998bbabac554842da66aa82e2e52f612cda1094085b",
+        "path": "research/tavonel_eval_v2/receipts/p4e-provenance-retrieval--20260822T080030Z-4f1f2fdaa1ab.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-06",
+      "limitation_count": 1,
+      "protocol": "P4d_retrieval_granularity",
+      "receipt": "receipts/p4d-retrieval-granularity--20260822T022902Z-b4e65b1bf1ee.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:e71323bf2a620d1c5f50b6d22ddc01715c021cec6a4c0db1a54f462c0d4387d4",
+        "path": "research/tavonel_eval_v2/receipts/p4d-retrieval-granularity--20260822T022902Z-b4e65b1bf1ee.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 1,
+      "id": "C-07",
+      "limitation_count": 1,
+      "protocol": "P4c_retrieval_validity",
+      "receipt": "receipts/p4c-retrieval-validity--20260822T015247Z-448b82aa9ed8.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:4adc0c95f8b6ab2027f557871cb2d50cbf1d2daa4496fe04db7ab17fa836a20f",
+        "path": "research/tavonel_eval_v2/receipts/p4c-retrieval-validity--20260822T015247Z-448b82aa9ed8.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-08",
+      "limitation_count": 1,
+      "protocol": "P4c_retrieval_validity",
+      "receipt": "receipts/p4c-retrieval-validity--20260822T015247Z-448b82aa9ed8.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:4adc0c95f8b6ab2027f557871cb2d50cbf1d2daa4496fe04db7ab17fa836a20f",
+        "path": "research/tavonel_eval_v2/receipts/p4c-retrieval-validity--20260822T015247Z-448b82aa9ed8.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-09",
+      "limitation_count": 1,
+      "protocol": "SOURCE_LOCALITY_V2",
+      "receipt": "receipts/locality-v2--20260822T084840Z-5c1f0581ac04.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:6baca197ff541a78f3a7d4da2adfa6180adfdacfa9f95168af62da76df96236a",
+        "path": "research/tavonel_eval_v2/receipts/locality-v2--20260822T084840Z-5c1f0581ac04.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-10",
+      "limitation_count": 1,
+      "protocol": "MARKUP_SEMANTICS_V1",
+      "receipt": "receipts/markup-semantics-v1-freeze--20260822T095710Z-d1fa5f86f193.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:44f10431639b649dbcf8b14c688fc1cc7b994c2db07401ba0ede1282d732e67d",
+        "path": "research/tavonel_eval_v2/receipts/markup-semantics-v1-freeze--20260822T095710Z-d1fa5f86f193.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "development",
+      "status": "DECLARED_POLICY"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 1,
+      "id": "C-11",
+      "limitation_count": 1,
+      "protocol": "R1_receipt_reproducibility",
+      "receipt": "receipts/r1-reproducibility-check--20260822T013341Z-683664c5041e.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:72375b99b42d14103c82ebbaf144f8422fefda82233e03a8acc7c638594a1629",
+        "path": "research/tavonel_eval_v2/receipts/r1-reproducibility-check--20260822T013341Z-683664c5041e.json",
+        "self_hash_recomputes": true,
+        "verdict": "PASS"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 1,
+      "forbidden_count": 2,
+      "id": "C-12",
+      "limitation_count": 1,
+      "protocol": "MODEL_ENDPOINT_V1",
+      "receipt": "receipts/model-endpoint-preflight--20260822T151517Z-43f9291f0970.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:6c4dbdeb4a1c5d01a738377841b051a23cbb40c7254f49a0af87a43d07cbcbbc",
+        "path": "research/tavonel_eval_v2/receipts/model-endpoint-preflight--20260822T151517Z-43f9291f0970.json",
+        "self_hash_recomputes": true,
+        "verdict": "FAIL"
+      },
+      "split": "development",
+      "status": "PROVEN_ON_DEVELOPMENT_DATA"
+    },
+    {
+      "allowed_count": 2,
+      "forbidden_count": 2,
+      "id": "C-13",
+      "limitation_count": 1,
+      "protocol": "VALUE_BEARING_COHORT_V1",
+      "receipt": "receipts/vbc1-probe-result--20260822T172056Z-c718e6225611.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:22ca4d560fcbb8d45c0b0808c989e62d4577323298df54df9e7ae30526cb5077",
+        "path": "research/tavonel_eval_v2/receipts/vbc1-probe-result--20260822T172056Z-c718e6225611.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "held_out",
+      "status": "PROVEN_ON_HELD_OUT_DATA"
+    },
+    {
+      "allowed_count": 2,
+      "forbidden_count": 2,
+      "id": "C-14",
+      "limitation_count": 1,
+      "protocol": "VALUE_BEARING_COHORT_V2",
+      "receipt": "receipts/vbc2-cohort--20260823T003429Z-7a819c36887d.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:790712bd0b0e83787faf054c1c1ce3ab897be55a5126ddd49cbc70232797eb0c",
+        "path": "research/tavonel_eval_v2/receipts/vbc2-cohort--20260823T003429Z-7a819c36887d.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "held_out",
+      "status": "PROVEN_ON_HELD_OUT_DATA"
+    },
+    {
+      "allowed_count": 2,
+      "forbidden_count": 2,
+      "id": "C-15",
+      "limitation_count": 1,
+      "protocol": "STOP-V2-005",
+      "receipt": "receipts/route-a-closure--20260823T014801Z-660bb0cfcc24.json",
+      "receipt_state": {
+        "declares_self_hash": true,
+        "exists": true,
+        "file_sha256": "sha256:d605c3c9b3d9d90ddb1207860b213f30589d9bbd4e12aa02f13f568a14ed082b",
+        "path": "research/tavonel_eval_v2/receipts/route-a-closure--20260823T014801Z-660bb0cfcc24.json",
+        "self_hash_recomputes": true,
+        "verdict": null
+      },
+      "split": "held_out",
+      "status": "PROVEN_ON_HELD_OUT_DATA"
+    },
+    {
+      "allowed_count": 0,
+      "forbidden_count": 1,
+      "id": "C-16",
+      "limitation_count": 1,
+      "protocol": "SOURCE_FAITHFULNESS_HELDOUT_V1",
+      "receipt": "PENDING",
+      "receipt_state": {
+        "pending": true
+      },
+      "split": "held_out",
+      "status": "NOT_YET_ESTABLISHED"
+    },
+    {
+      "allowed_count": 0,
+      "forbidden_count": 1,
+      "id": "C-17",
+      "limitation_count": 1,
+      "protocol": "ORACLE_INDEPENDENCE_V2",
+      "receipt": "PENDING",
+      "receipt_state": {
+        "pending": true
+      },
+      "split": "held_out",
+      "status": "NOT_YET_ESTABLISHED"
+    }
+  ],
+  "schema": "tavonel.v2.claim_matrix_seal.v1",
+  "verdict": "PASS",
+  "visibility": "INTERNAL_ONLY"
+}

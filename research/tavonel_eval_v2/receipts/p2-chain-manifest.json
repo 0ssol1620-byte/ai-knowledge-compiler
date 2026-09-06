@@ -1,0 +1,1164 @@
+{
+  "canonicaliser_sha256": "sha256:b676978497b34bc7bcaec9836acca10619f7be0a1b7501ac479a9b95191d3b35",
+  "chain_count": 8,
+  "chains": [
+    {
+      "chain_id": "chain-prometheus-configuration",
+      "length": 12,
+      "license": "Apache-2.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/00.json",
+          "canonical_sha256": "sha256:377c5960cdd0059f7fc1a2b9709546e7d08cacc7e0cb4846da35434d95ea3070",
+          "chain_position": 0,
+          "known_at": "2026-07-28T11:25:30Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/00-087ef2143318.md",
+          "source_digest": "sha256:41fce997567ed5d4c7047cb0623324ca3b88ab7efd3dfb6b7c250b1db7cfca46",
+          "unit_count": 74,
+          "version_id": "087ef21433184112559ba850c48db2eda56b1725"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/01.json",
+          "canonical_sha256": "sha256:00257b6de76898801acf6571657a202361f4d119c18a911c0c045f0e0b351ae6",
+          "chain_position": 1,
+          "known_at": "2026-07-30T01:31:33Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/01-552b154c4de5.md",
+          "source_digest": "sha256:5edc4301a50d26ef835eed7b24c04cbe0b114a71878a23d7d27546c66050a582",
+          "unit_count": 74,
+          "version_id": "552b154c4de5115b3c4f36c92a4772d4c559fd09"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/02.json",
+          "canonical_sha256": "sha256:2b6e779aecba338b7987ae71eeba67ca290219d6202aab4ff8edca81a96734a7",
+          "chain_position": 2,
+          "known_at": "2026-08-02T18:52:13Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/02-5c3ac4d4ce4e.md",
+          "source_digest": "sha256:86cc99394b77566e9e831942ed4bdae51cdd227d0e00f4c1a3d79f32bb4a1948",
+          "unit_count": 74,
+          "version_id": "5c3ac4d4ce4ef4e53adf96b0b7365494113eef9d"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/03.json",
+          "canonical_sha256": "sha256:01c03d567ab885b8c949c69771f50d37562bdbc0a5411c8d9e19630b69915c19",
+          "chain_position": 3,
+          "known_at": "2026-08-06T14:00:52Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/03-add59839e1cf.md",
+          "source_digest": "sha256:749857a156e28d7cbf959ab6f9b802170853fb94461b123d773fb768b5128004",
+          "unit_count": 74,
+          "version_id": "add59839e1cf8328c599029e7c55713fe78c3bb5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/04.json",
+          "canonical_sha256": "sha256:c85ccdfaf6b7a9f839efc3a02867f7a24412d74ddfc5f1fc3c0f91d0390f0bcc",
+          "chain_position": 4,
+          "known_at": "2026-08-06T15:19:40Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/04-c5fa89db085c.md",
+          "source_digest": "sha256:e5a0d80dc5214c552367af0aac2633681232c69215d890631d08fad7543b4807",
+          "unit_count": 74,
+          "version_id": "c5fa89db085c9b3855d7916f2ade047066a7a318"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/05.json",
+          "canonical_sha256": "sha256:dc78fe2c6040899a6bb0884aa6c24ee2c8c58eff37f93ec6b3e0e7ba005aea05",
+          "chain_position": 5,
+          "known_at": "2026-08-08T18:41:17Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/05-5542b00b9d59.md",
+          "source_digest": "sha256:0404c1fb5bb232ec2adcec05ebe1ac18f76729ce48dc02a3fc2afc6033566f3d",
+          "unit_count": 74,
+          "version_id": "5542b00b9d5933e29d7b597705c718b764bcc1cb"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/06.json",
+          "canonical_sha256": "sha256:aba030f7dd22c084d5e7fb1202ed0c1572649bfe2ec94a53f31d6b9210d31452",
+          "chain_position": 6,
+          "known_at": "2026-08-13T01:33:14Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/06-6cb11890aaf6.md",
+          "source_digest": "sha256:6aa4cecdc2b3996efa2ec1f7fe148ce063de6b0be3aa981314480966e73e9d5c",
+          "unit_count": 74,
+          "version_id": "6cb11890aaf6bee049e9759eccc44e4f69e217e3"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/07.json",
+          "canonical_sha256": "sha256:f2445b39af3f20a94e918f498442029df3726c246521386c4a4ca0a316d4f3ae",
+          "chain_position": 7,
+          "known_at": "2026-08-13T03:08:26Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/07-fd78076ac89e.md",
+          "source_digest": "sha256:8b6b3e61fbf3c4da0e270310ecd1fefe4512a29ed727063ae6759207e05433f2",
+          "unit_count": 74,
+          "version_id": "fd78076ac89ef117bedff0e581bb04b5a6a35d27"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/08.json",
+          "canonical_sha256": "sha256:ee46ceea9ff25ed5b4947b86276ceeae69652f263319e3f948ae82a0ba757f36",
+          "chain_position": 8,
+          "known_at": "2026-08-13T12:32:34Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/08-2391cf6ffc85.md",
+          "source_digest": "sha256:2d9a3a61d7ab2d364863d3f132b04982127093536604bbd73b6ad5223d03c48d",
+          "unit_count": 74,
+          "version_id": "2391cf6ffc853df347fc7689689309253f533e96"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/09.json",
+          "canonical_sha256": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+          "chain_position": 9,
+          "known_at": "2026-08-15T12:52:01Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/09-d067a8b565e3.md",
+          "source_digest": "sha256:97dd3d5bf1ca7725bf6694eaa53572bc6d0e60a347c7e4925dbddc8fa9edf307",
+          "unit_count": 74,
+          "version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/10.json",
+          "canonical_sha256": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+          "chain_position": 10,
+          "known_at": "2026-08-18T11:18:44Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/10-223b91d48f79.md",
+          "source_digest": "sha256:b2e1a8e18f9c6088aaa9b85c017ba6b2c56de8f0e5feffef391e2995b1c03912",
+          "unit_count": 74,
+          "version_id": "223b91d48f79754209b432d32951e84abf05df23"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-configuration/11.json",
+          "canonical_sha256": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+          "chain_position": 11,
+          "known_at": "2026-08-18T11:29:20Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-configuration/11-a8b5db65156f.md",
+          "source_digest": "sha256:d7f0348efdff475a0fbef3c1fc24b000856d0fe1e34f60f45a47184fce5120da",
+          "unit_count": 74,
+          "version_id": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md"
+    },
+    {
+      "chain_id": "chain-prometheus-functions",
+      "length": 12,
+      "license": "Apache-2.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/00.json",
+          "canonical_sha256": "sha256:dc232256bb3ad0d46dba5fb76a41571ce2e3371d87aab3fdcdd1393932a867aa",
+          "chain_position": 0,
+          "known_at": "2026-03-23T15:42:45Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/00-354c0b262a75.md",
+          "source_digest": "sha256:a0ade00eeef3ca576bb8d9566b24d5d065222443f777d02e0317d0f0c5152ec1",
+          "unit_count": 53,
+          "version_id": "354c0b262a7541a767d5dfd62d5785968eb52e0b"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/01.json",
+          "canonical_sha256": "sha256:4d6ce77ecbca8255b8f40c33135ba2a2d78419a7ff6f780b9101dbf879a19d87",
+          "chain_position": 1,
+          "known_at": "2026-03-30T07:32:29Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/01-d6c18a4d6292.md",
+          "source_digest": "sha256:8fe17ac7e1738739ef00999d4718b56988b3cd3c7e08cd85c6b70b249c0a3dfb",
+          "unit_count": 53,
+          "version_id": "d6c18a4d6292ec58da677984a2c810e35b6f1e2c"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/02.json",
+          "canonical_sha256": "sha256:e390a5e1361ce48002e402d9c5a3bc61c672e61c7bd70c1cf3212445ad42f7cc",
+          "chain_position": 2,
+          "known_at": "2026-04-08T16:01:27Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/02-56c6370b26a5.md",
+          "source_digest": "sha256:0990aaf3667aabb09d4b4dcd84e2ebf394febc69856aeda776dec640a3e031a6",
+          "unit_count": 53,
+          "version_id": "56c6370b26a54af1baa4b9f45657803186c8289e"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/03.json",
+          "canonical_sha256": "sha256:3afc3437bad1c18cc6c45f65245a3f53b839560a067d629a36fa0e10fcac779a",
+          "chain_position": 3,
+          "known_at": "2026-04-16T08:59:23Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/03-ae9e52c8689f.md",
+          "source_digest": "sha256:b5f7eda93e9dcc7a480ea10038c4060349d6c05906b4ac5b21a188847af80fe3",
+          "unit_count": 57,
+          "version_id": "ae9e52c8689fb9f806b00622ffd023e5ce277f60"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/04.json",
+          "canonical_sha256": "sha256:a6f1e3da48f6bcf7f9adf2d27743c6ade72eab9a07726e7dd0200ae88044e3cc",
+          "chain_position": 4,
+          "known_at": "2026-04-17T11:51:37Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/04-5d0bc055ef3b.md",
+          "source_digest": "sha256:7c12e3280e9220f68dab0401dcd491968e3aeb2b7a07e4ddb90cf8ccb38465d4",
+          "unit_count": 57,
+          "version_id": "5d0bc055ef3b2d3f008cc69a7a10e7f1501e01d5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/05.json",
+          "canonical_sha256": "sha256:2505abf79fcd0ca3cbc075962630d52270262571d24fb0f2a449bfdc79bef5ad",
+          "chain_position": 5,
+          "known_at": "2026-04-24T16:45:09Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/05-1463a5bb5a6f.md",
+          "source_digest": "sha256:dbb423f537ad9337568e526e71f5493851997d1adcb340d6540f122ab591c7e8",
+          "unit_count": 57,
+          "version_id": "1463a5bb5a6f837e56f83d83f9f0726804a62e56"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/06.json",
+          "canonical_sha256": "sha256:5cc50f591a1f432f7f9fa625ba6103705b38096ad6c35641715ce2a96706554d",
+          "chain_position": 6,
+          "known_at": "2026-05-13T07:59:50Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/06-7b29b912e371.md",
+          "source_digest": "sha256:7c12e3280e9220f68dab0401dcd491968e3aeb2b7a07e4ddb90cf8ccb38465d4",
+          "unit_count": 57,
+          "version_id": "7b29b912e3712cb06e93d3c2db7f77cc2b4fee96"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/07.json",
+          "canonical_sha256": "sha256:0a187bc3566caa9aec72670f31fa9e1b5067ebf6daf26dfe9465648c11f88cd2",
+          "chain_position": 7,
+          "known_at": "2026-05-18T09:15:31Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/07-7af21f195c8f.md",
+          "source_digest": "sha256:6134f2bffb0bfb8a45e30b3dfd1de64c2dfaad7c46924243301965088c8d0984",
+          "unit_count": 59,
+          "version_id": "7af21f195c8f425810123356f3599d94c8fb6ced"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/08.json",
+          "canonical_sha256": "sha256:f6503c1ad7362b3f8690b9335d374ca0d112db62d7e182d3535632644dd07363",
+          "chain_position": 8,
+          "known_at": "2026-05-19T11:07:16Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/08-a74f0b2e7a13.md",
+          "source_digest": "sha256:7d2f054dd51bacc6f5dd26e90d26a920daf85f33cc124422a4297d689a3aec9c",
+          "unit_count": 59,
+          "version_id": "a74f0b2e7a134cce9f99c291346bef001520a840"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/09.json",
+          "canonical_sha256": "sha256:e5c83cdaf9cf98f3d332a022b248716a359b6c95c63f2076d501427214f35ce3",
+          "chain_position": 9,
+          "known_at": "2026-06-29T12:32:14Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/09-352e36a7601c.md",
+          "source_digest": "sha256:ee830de443e48b375e18837b4c07678a833e3ac62c27a62b27aed5663455f877",
+          "unit_count": 59,
+          "version_id": "352e36a7601cd720254d1a40d3cc07babce0cc82"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/10.json",
+          "canonical_sha256": "sha256:c1b7d6e16570771043f31140a37db39f2b2ba5f0e4fa7f810a0524f14e3d0cbb",
+          "chain_position": 10,
+          "known_at": "2026-07-03T14:44:27Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/10-b4741eeb99c7.md",
+          "source_digest": "sha256:f59a239be0d6024027485e7ccc51e11e4b6aacf1fd488dec8afb27bba03925d0",
+          "unit_count": 59,
+          "version_id": "b4741eeb99c742229e20e6540dd21aa044373eb5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-functions/11.json",
+          "canonical_sha256": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+          "chain_position": 11,
+          "known_at": "2026-07-21T06:57:20Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-functions/11-4c352ffb82a0.md",
+          "source_digest": "sha256:21a0b70b5178dbe74a0d707818f533f827cee0368133067bda0228aaccb09821",
+          "unit_count": 60,
+          "version_id": "4c352ffb82a082310978147b14070d7969e9d5d4"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md"
+    },
+    {
+      "chain_id": "chain-prometheus-basics",
+      "length": 12,
+      "license": "Apache-2.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/00.json",
+          "canonical_sha256": "sha256:08ce0edc37a4341661ff58d23b413cd7734ce0980677524cff1e4062a90ab02e",
+          "chain_position": 0,
+          "known_at": "2024-10-08T12:59:07Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/00-90f7832447d2.md",
+          "source_digest": "sha256:4662deb9c8b11b6b1cb0ac3108fc279a08ef0222a59ed1f8f98b00713f0bb3b8",
+          "unit_count": 14,
+          "version_id": "90f7832447d2f26c181ad42fef757be68d0cb805"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/01.json",
+          "canonical_sha256": "sha256:52025799eaa333a72724c6c95bad37a6f244478afb8cde6c808e2740e8f5b2bb",
+          "chain_position": 1,
+          "known_at": "2024-11-24T21:02:01Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/01-bc008f1b0ec2.md",
+          "source_digest": "sha256:ad47b30de9bf4680402ec906279f963e6f0fccfec2028e2689adc7118591b3be",
+          "unit_count": 14,
+          "version_id": "bc008f1b0ec2a2f0db682f6c7baec09b02773150"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/02.json",
+          "canonical_sha256": "sha256:74833b2956272e3eb266b0182029c8844e290b220edba248222627e25aeb138d",
+          "chain_position": 2,
+          "known_at": "2024-11-24T21:03:04Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/02-d6e43b89f45c.md",
+          "source_digest": "sha256:0a5f22d3120bf795797da60ce7b098f70a6139ca2a4a082d3e617388d2203d6d",
+          "unit_count": 14,
+          "version_id": "d6e43b89f45c0540d6cd4743ffeaa0feb69e65ad"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/03.json",
+          "canonical_sha256": "sha256:9a98d73da53d782745f1fef288fd82652df8b5d18a03470b55c2999922ce5533",
+          "chain_position": 3,
+          "known_at": "2025-02-07T21:47:59Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/03-993d4e71c944.md",
+          "source_digest": "sha256:e74d3efea61872627693d422e83e494e5e84dab12cf3b720bbde0755cc6139e3",
+          "unit_count": 14,
+          "version_id": "993d4e71c944908830b14e1e0e950b3633cbe88a"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/04.json",
+          "canonical_sha256": "sha256:df6fcdc6c96109b1502fc658433511a475e7f0a92719e55726bd431f83e4921f",
+          "chain_position": 4,
+          "known_at": "2025-05-28T19:37:27Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/04-13564c03efe7.md",
+          "source_digest": "sha256:6e550c77fcb8cde663dbcfac508c8cc4f5effe8c10f43e6d29eebdcd729994d2",
+          "unit_count": 14,
+          "version_id": "13564c03efe7517841fdc4c73905b1f630bfddcc"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/05.json",
+          "canonical_sha256": "sha256:4a8ddd98a06de9ebbd96c9d667ea066f1787d636a502b48f52108ae539aeece4",
+          "chain_position": 5,
+          "known_at": "2025-08-13T17:25:17Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/05-1071c82b4263.md",
+          "source_digest": "sha256:0946052096e7bd9b2b0d628043f9f63311246a153db77ba7dd09a430ecfbc9a1",
+          "unit_count": 14,
+          "version_id": "1071c82b426362d956ca08134c2040b0176d0de2"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/06.json",
+          "canonical_sha256": "sha256:6658b9c30ec24af7331e668a91ea9af975d73ce94234ed110b1c75987df93eb0",
+          "chain_position": 6,
+          "known_at": "2025-09-02T11:44:14Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/06-562d13e930d9.md",
+          "source_digest": "sha256:4986fd703386e1ebf2861e965310a128b2526e732d9b8b06c751a845d16df438",
+          "unit_count": 14,
+          "version_id": "562d13e930d9cb386c20a04bc637003aa6381213"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/07.json",
+          "canonical_sha256": "sha256:5b58bed0ce5cc11ce60d1be5356adf0d8eaa2131bd16ccca989ceef73e8db345",
+          "chain_position": 7,
+          "known_at": "2025-09-30T09:50:04Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/07-a59f3e090bb6.md",
+          "source_digest": "sha256:c738432dafe66abe603c31f0ecb6934ed771c525e4c1a6edb93f541328c2d830",
+          "unit_count": 14,
+          "version_id": "a59f3e090bb6cca3063e4dca2364333f6a79d5f5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/08.json",
+          "canonical_sha256": "sha256:eedf533061ece74269acc7ecbf795896cc5708ece92574fd145d31b9d78f1aef",
+          "chain_position": 8,
+          "known_at": "2025-10-24T10:31:42Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/08-c92957871816.md",
+          "source_digest": "sha256:de1194d5db88b22665fbf51f0d1539cdec4d48fd1a142f5e977fd4b8abc81717",
+          "unit_count": 16,
+          "version_id": "c92957871816fc46222ca585ace0e99ca5e5b3db"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/09.json",
+          "canonical_sha256": "sha256:0656cbdc1593389e90e27bb567182f6cb05091070576784242bfab714c0d2df9",
+          "chain_position": 9,
+          "known_at": "2026-04-24T16:45:09Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/09-1463a5bb5a6f.md",
+          "source_digest": "sha256:939dc2cfa7bcce16386faa3b7b23be079a7425f9cc7fa362e77409e489076c32",
+          "unit_count": 17,
+          "version_id": "1463a5bb5a6f837e56f83d83f9f0726804a62e56"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/10.json",
+          "canonical_sha256": "sha256:754f3702611a87bfb089d1c3ad8719a172e89121f2f494892c20d1287734d03a",
+          "chain_position": 10,
+          "known_at": "2026-05-13T07:59:50Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/10-7b29b912e371.md",
+          "source_digest": "sha256:de1194d5db88b22665fbf51f0d1539cdec4d48fd1a142f5e977fd4b8abc81717",
+          "unit_count": 16,
+          "version_id": "7b29b912e3712cb06e93d3c2db7f77cc2b4fee96"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-prometheus-basics/11.json",
+          "canonical_sha256": "sha256:03e9b1bc50bd09f66bbc141231fe509bc1a1eb7acc4e7f945e7236d6aeeb44b6",
+          "chain_position": 11,
+          "known_at": "2026-06-29T12:32:14Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-prometheus-basics/11-352e36a7601c.md",
+          "source_digest": "sha256:bdf7feaa71b6e6cddb1c143974e579c9d3c5ea19c6e6b4af16f0f9927c9f6853",
+          "unit_count": 17,
+          "version_id": "352e36a7601cd720254d1a40d3cc07babce0cc82"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/basics.md"
+    },
+    {
+      "chain_id": "chain-loki--index",
+      "length": 10,
+      "license": "AGPL-3.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [
+        {
+          "reason": "INELIGIBLE_PARSE_FLOOR",
+          "sha": "50fc13c42261815259d2656763f60bc38c28b85b",
+          "units": 1
+        },
+        {
+          "reason": "INELIGIBLE_PARSE_FLOOR",
+          "sha": "e4c6888ba8e3d16fe65eee5e611084baeb28bf87",
+          "units": 1
+        }
+      ],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/00.json",
+          "canonical_sha256": "sha256:87178ba06d0f060b903537fecd7602abd72ea600dc8b6b4fab2879cd91d968b1",
+          "chain_position": 0,
+          "known_at": "2024-04-03T18:35:22Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/00-d39dc09ca655.md",
+          "source_digest": "sha256:a6dd47c16d717680cd391edd1b599a91bf194317ed18652da73378fbb90f1a93",
+          "unit_count": 50,
+          "version_id": "d39dc09ca655f87bf0c0a421be7dec8c6b848205"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/01.json",
+          "canonical_sha256": "sha256:b823284a55725512ed9a2fc6ad20956943566a85a19763964dbeeb3a37eec2e0",
+          "chain_position": 1,
+          "known_at": "2024-04-04T13:47:26Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/01-7607f0448403.md",
+          "source_digest": "sha256:d5f12409bc17fd5b3245d99ef433079a343e935935e5700925d5575ac7dadb67",
+          "unit_count": 50,
+          "version_id": "7607f0448403e53fe50f73b3d7448fddb443676b"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/02.json",
+          "canonical_sha256": "sha256:9726d1a8331eefe0a7813f3a2a461f761579ca4b64623d15b903e750b423c834",
+          "chain_position": 2,
+          "known_at": "2024-04-04T19:55:20Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/02-bc26198c0021.md",
+          "source_digest": "sha256:5680dcb8e684703d542d1e45178c69fc280242a7e9cb4150ac5381597a440abf",
+          "unit_count": 50,
+          "version_id": "bc26198c00219b80e582cbd3c1680eb9772a75e5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/03.json",
+          "canonical_sha256": "sha256:1ab3c0ef1a86239f3b68e61fcf65fe2172999e33312d6e25cf25d7ecd18efaf5",
+          "chain_position": 3,
+          "known_at": "2024-04-04T21:24:34Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/03-491d2513e746.md",
+          "source_digest": "sha256:22984ee1307df14245fe2f529550257fca9e52e0135f6b9f07d423959a28f53e",
+          "unit_count": 50,
+          "version_id": "491d2513e7469809d5b6962359305b9f7e6cb250"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/04.json",
+          "canonical_sha256": "sha256:1933ad7c4d3897944fa075fc8ab1f92d09666c244ff5bec132f8bf92b33d3faa",
+          "chain_position": 4,
+          "known_at": "2024-04-04T23:02:44Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/04-9e6e6d22e03c.md",
+          "source_digest": "sha256:916e56cad718fa7ae30fc48f8f248ff2c306c9d0d8735ff69d19f4cca422a7be",
+          "unit_count": 50,
+          "version_id": "9e6e6d22e03c5179ecd4833067e415ae68df980a"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/05.json",
+          "canonical_sha256": "sha256:6490c51492a87018a47155d039902c8a609a701b62199e5102ce8d5687a27916",
+          "chain_position": 5,
+          "known_at": "2024-04-04T23:36:23Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/05-3ece2ea6c470.md",
+          "source_digest": "sha256:abea2ff07df5a13cada2fef2d3aa2bec486aa1aaecd7016cd86227ebd0f7ba45",
+          "unit_count": 50,
+          "version_id": "3ece2ea6c470b7a53e92c395e28af2999c328199"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/06.json",
+          "canonical_sha256": "sha256:1f45be382b933cc3680ac48d8db81c993607bf0ab9feb8a485b50b05ab559416",
+          "chain_position": 6,
+          "known_at": "2024-04-05T05:47:53Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/06-58c8c61905ea.md",
+          "source_digest": "sha256:fa8b139a761e2ae56f7ea3046f7dc73dd2d64ba4e02c6c89c4aedd30eafc8f8e",
+          "unit_count": 50,
+          "version_id": "58c8c61905ea7a11d4e27554f55d9350d54feaae"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/07.json",
+          "canonical_sha256": "sha256:a4503c1d17b507f1021fac854bef9f78b3e0c7c51839b9458d432cd23b6e8ddf",
+          "chain_position": 7,
+          "known_at": "2024-04-05T09:25:38Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/07-ff08d2fcc2b7.md",
+          "source_digest": "sha256:7415995fd508eb8e483f9ba16c6a556affe2ed201a7ed31c5e50a65add5ff990",
+          "unit_count": 50,
+          "version_id": "ff08d2fcc2b707a209dabc647933d826fc834543"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/08.json",
+          "canonical_sha256": "sha256:e4e38a9982b0074fc55032a7aaf44bfef47b03405749c9480173074190e6ee81",
+          "chain_position": 8,
+          "known_at": "2024-04-05T12:55:33Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/08-705379cc815e.md",
+          "source_digest": "sha256:55f6c5e10405c6fc71ff3fb7a6b432386709b1249dd59e1b579b5c6094e3a193",
+          "unit_count": 50,
+          "version_id": "705379cc815e2646c9d4f5ba421e58af853085a4"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-loki--index/09.json",
+          "canonical_sha256": "sha256:74ebc65a4a2b6330573de9965b1945c66342185ba0b2b564d34b4d65c8797f18",
+          "chain_position": 9,
+          "known_at": "2024-04-05T15:48:44Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-loki--index/09-a9345d0fb627.md",
+          "source_digest": "sha256:2f165eaa775685cf66e12e7ee742dbd6e4a4891ff0552dd9be9cab392fdf155e",
+          "unit_count": 50,
+          "version_id": "a9345d0fb627a0672a60f149bc06db3d75e5f974"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:grafana/loki:docs/sources/configure/_index.md"
+    },
+    {
+      "chain_id": "chain-website-deployment",
+      "length": 12,
+      "license": "CC-BY-4.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/00.json",
+          "canonical_sha256": "sha256:22ede1fa06c0e6f4b8b00545748080ff65827d77f5ebdf6c66510c52fc366f10",
+          "chain_position": 0,
+          "known_at": "2025-12-18T11:39:17Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/00-68c8aaaabb61.md",
+          "source_digest": "sha256:d37668472566284c622f38e0635f14e0c65edc32c320e26b2f2b8a65cb6eee78",
+          "unit_count": 35,
+          "version_id": "68c8aaaabb61bd071cb7419a926bbc58a945095d"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/01.json",
+          "canonical_sha256": "sha256:67d28ed15896b0ac13e812e59845d1c44afe217e1810c271dc12135b15612b91",
+          "chain_position": 1,
+          "known_at": "2026-02-24T23:32:35Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/01-60e358f57d8c.md",
+          "source_digest": "sha256:53a93c0e3b140d683742033693241b3d5ca44b124cb89fd92e3b461b792c4ff8",
+          "unit_count": 35,
+          "version_id": "60e358f57d8cb11e4b5df6a643d85b81308113e4"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/02.json",
+          "canonical_sha256": "sha256:97479594cb63bf5f8c289100367ee08db98ded724286970872274ecff60039d2",
+          "chain_position": 2,
+          "known_at": "2026-02-26T20:37:02Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/02-a15b0a3b97ef.md",
+          "source_digest": "sha256:378c0ce7927e5b6f88bb44af9f6b44bbab35292d5a1538fdcae62710491aeec6",
+          "unit_count": 35,
+          "version_id": "a15b0a3b97ef2cc83f9d321d12d6f5f357bc9040"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/03.json",
+          "canonical_sha256": "sha256:680160e3e2c01e71f6b15d768aaac3e1c533d360ac63b2d9ecb52071022ca530",
+          "chain_position": 3,
+          "known_at": "2026-02-26T20:38:12Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/03-726c0a8dab90.md",
+          "source_digest": "sha256:ee17ae92667658762afb218204db567d7d5d1bc6d3a4f7b965000ef965dee9a2",
+          "unit_count": 35,
+          "version_id": "726c0a8dab908c9b6ad0dd3b361625e524d72629"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/04.json",
+          "canonical_sha256": "sha256:85ae53abd56c267c87b20974748c766a85733dd0113d720346b91db1f9102b4d",
+          "chain_position": 4,
+          "known_at": "2026-02-26T20:38:46Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/04-cfb88965e2d7.md",
+          "source_digest": "sha256:1b834257037357f0fe460add4220e99551052bfd9bc9d6550938c241fa6eaf27",
+          "unit_count": 35,
+          "version_id": "cfb88965e2d74dd52b6a63865cfc489d612b5c53"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/05.json",
+          "canonical_sha256": "sha256:edb7a974e84fce9be3044d81ae278c65d8d9ae2c7a342609404ffa1f0b5bd07b",
+          "chain_position": 5,
+          "known_at": "2026-02-26T20:44:43Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/05-c2f016b34c14.md",
+          "source_digest": "sha256:71614ca6482707f474b4ff29403b44696ec8cf7631575bdac65eda9f49b8bb3b",
+          "unit_count": 35,
+          "version_id": "c2f016b34c141401a62091169d8fe5cef5d85661"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/06.json",
+          "canonical_sha256": "sha256:46ce339fedb5aa531fe49aac99326cf904f76326b9a0a48c7803a5126412eae5",
+          "chain_position": 6,
+          "known_at": "2026-02-26T20:57:03Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/06-411a663d996d.md",
+          "source_digest": "sha256:0070f2a51275fb830a620091d60d2f5c05f52968312c93926f73eb9393ca60e3",
+          "unit_count": 35,
+          "version_id": "411a663d996d5cc00383fd1e72ad01de65564deb"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/07.json",
+          "canonical_sha256": "sha256:419190ecd317536ad517a67037750a9a5e8c031a8f8e2589597872fb2af7f5d8",
+          "chain_position": 7,
+          "known_at": "2026-03-15T15:27:08Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/07-af93a0a732cf.md",
+          "source_digest": "sha256:6d8afb2b339292c1643b971044d4c76c0a83d130bf5d9dc18eb53259491d12d0",
+          "unit_count": 35,
+          "version_id": "af93a0a732cf3057895c62e615a212a44aa6cec7"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/08.json",
+          "canonical_sha256": "sha256:0ad3880dba7f4304681aa9dc778fdb6e6ac73f4f5fb005e23f58db355eba9aa6",
+          "chain_position": 8,
+          "known_at": "2026-03-18T20:36:30Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/08-fb60f3655ae7.md",
+          "source_digest": "sha256:f014af52f9a8a2455ffc98fb7b07532da86e71c278598013e376fdaa520952fb",
+          "unit_count": 35,
+          "version_id": "fb60f3655ae76c1484d603ab75f6391738bc3f34"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/09.json",
+          "canonical_sha256": "sha256:3cb3ac12c77ee9e09c3384952e21defa45106529f1c5feed42bb86210eea9918",
+          "chain_position": 9,
+          "known_at": "2026-04-19T20:43:32Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/09-73f9f06cf5ba.md",
+          "source_digest": "sha256:29fc573cb064d41bc76d0a86b6d55afabbb18a3ec472e726326615fda9c64e7c",
+          "unit_count": 35,
+          "version_id": "73f9f06cf5badfd60436b9f623a46496058402a5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/10.json",
+          "canonical_sha256": "sha256:7622a0d37754c65d486ec37f2b16950d058d56a2883d2c1bef51d557fcabf5da",
+          "chain_position": 10,
+          "known_at": "2026-05-13T20:32:47Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/10-c37d57216103.md",
+          "source_digest": "sha256:ec8a93307efd8bf37349da4f103e5ad2c9698e9171d61a26ca9734bf684fe222",
+          "unit_count": 35,
+          "version_id": "c37d57216103cd3473e82dc7b481bf5b34a1a197"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-deployment/11.json",
+          "canonical_sha256": "sha256:82b52168ae1eb950e2b425408fe9399548ea439e79fe0ac5db740e7c3c20c538",
+          "chain_position": 11,
+          "known_at": "2026-06-18T12:21:44Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-deployment/11-a03054abc667.md",
+          "source_digest": "sha256:b4896e5d45a7d97b0d36ca5fe9e2cac2188ab46ce9cfbc61b4c143220e550c98",
+          "unit_count": 35,
+          "version_id": "a03054abc6670d709271bb840dbdd1101eb4db87"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md"
+    },
+    {
+      "chain_id": "chain-website-service",
+      "length": 12,
+      "license": "CC-BY-4.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/00.json",
+          "canonical_sha256": "sha256:e17c2fc6fdf13357e9531215472f9ccb663396c7b78b5a431efb695db5e8b74e",
+          "chain_position": 0,
+          "known_at": "2025-10-13T12:36:19Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/00-c164c1ddf6d5.md",
+          "source_digest": "sha256:14bbc5a0652da5da8fe58947f3f1ee960523799fb9fee3addbefad8cce364918",
+          "unit_count": 41,
+          "version_id": "c164c1ddf6d5078977dface4755708f71a585c09"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/01.json",
+          "canonical_sha256": "sha256:e9305369cba47c9fb3797175b59fc648ea0b7fcb6d3bd9970e132583a095d215",
+          "chain_position": 1,
+          "known_at": "2025-10-14T21:32:15Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/01-bf7a46b04d09.md",
+          "source_digest": "sha256:ede64ab80fde000afe2022096aa91c4e61745d2f4072b8acacf23c488215a23b",
+          "unit_count": 41,
+          "version_id": "bf7a46b04d09d40e92d36d66cad0e7d6be355cd0"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/02.json",
+          "canonical_sha256": "sha256:3a1fd32ae1e9244775b57d3fc5a04223aea4700dead469ea0ee08d80a5f4c30d",
+          "chain_position": 2,
+          "known_at": "2025-11-07T05:40:52Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/02-60cb290c0413.md",
+          "source_digest": "sha256:4521784165aaf784516d97ccd40060d14fbd2e602671f2a31018bf7fb3f2cb78",
+          "unit_count": 41,
+          "version_id": "60cb290c0413275d481155aff2ca0c0183502360"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/03.json",
+          "canonical_sha256": "sha256:4302f4ef42875438e42ec7b6d2ae5e58d2ffbe12b7c4aaffddeba900a1894916",
+          "chain_position": 3,
+          "known_at": "2025-12-02T11:28:23Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/03-0e2587f70120.md",
+          "source_digest": "sha256:78684261257687cbc6e9fdc45abde7a739c7f702e467d1b64c0a75e9fb446937",
+          "unit_count": 41,
+          "version_id": "0e2587f7012048a66c6ce9088e1249464cb3bf3b"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/04.json",
+          "canonical_sha256": "sha256:8d1f9622f5e3dbf27665db0b1e9d3b8d6121e5d77a85d2ed92d091bd39e5c080",
+          "chain_position": 4,
+          "known_at": "2026-01-07T04:12:28Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/04-854aaf863c57.md",
+          "source_digest": "sha256:4bb1c335fa76487a602d9f6c8ee6f1595ef7de989a8c52d8e842db698ee18747",
+          "unit_count": 41,
+          "version_id": "854aaf863c572486e8998060294c4d858dc74101"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/05.json",
+          "canonical_sha256": "sha256:e1413675491a32265b425ac910fa0ddd341247a1f0d5636a9212972fd5959e3d",
+          "chain_position": 5,
+          "known_at": "2026-01-29T22:35:49Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/05-c08d4b9a972c.md",
+          "source_digest": "sha256:23a8849983df988cb9a68390fdd9ed01c07fa5489c0aed8253c77b07937ff0a9",
+          "unit_count": 41,
+          "version_id": "c08d4b9a972cb41f16296aa6af257d2fc1e9b9f1"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/06.json",
+          "canonical_sha256": "sha256:cab0c1b1bc12a0c7e33c4d3c99513a7b90eae8e2e974b355e86574368367336a",
+          "chain_position": 6,
+          "known_at": "2026-03-19T14:24:27Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/06-3d3d53bb471d.md",
+          "source_digest": "sha256:67536accef4a6fb1b7869b3c047427cb9055f9878176ebc39c4b985bd91efaca",
+          "unit_count": 40,
+          "version_id": "3d3d53bb471d8b0f145ae98e3fa95e34bfc2d113"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/07.json",
+          "canonical_sha256": "sha256:ec453a2b0d4440961083a95d4970cec73809be92f33702986f508cc22c8d8077",
+          "chain_position": 7,
+          "known_at": "2026-04-08T15:32:40Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/07-4a1f03802b42.md",
+          "source_digest": "sha256:ab09afa907b037cb0bb0d78abfb2aaf253d7feb6df65ef2ffb2bd2cbbb2ee760",
+          "unit_count": 41,
+          "version_id": "4a1f03802b423637c04c56258f87630a28139217"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/08.json",
+          "canonical_sha256": "sha256:9ba9799b48dbb3d6c5c833ccb5f2b03227c9572d1b7dd5017e498fbaa0164e72",
+          "chain_position": 8,
+          "known_at": "2026-04-08T15:39:32Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/08-7212303bb644.md",
+          "source_digest": "sha256:69f1a1e8bbc9879d2cfd43bbe26cc89e0f830a0bc7191a2f9d6b86e9c1a3ed57",
+          "unit_count": 40,
+          "version_id": "7212303bb64435498b40de7997721b4df9409d01"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/09.json",
+          "canonical_sha256": "sha256:10e1464ef2731bcd0b3ce7561cce55f665c1c2e7add1d5e5d4f301746d2d16b6",
+          "chain_position": 9,
+          "known_at": "2026-04-08T18:11:33Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/09-8a5ff3d757a4.md",
+          "source_digest": "sha256:4b41a921d7dedfec10fed36c094d8e77105f47c26baed7bd62e4e4def4d81854",
+          "unit_count": 40,
+          "version_id": "8a5ff3d757a48e5cf731bb39fbd70772dc01d956"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/10.json",
+          "canonical_sha256": "sha256:93de17fc488ec2e2cd30c0e39be046dedf8a582858408d60ef44c7c35f7d66cc",
+          "chain_position": 10,
+          "known_at": "2026-04-24T19:33:32Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/10-434ae53916ec.md",
+          "source_digest": "sha256:cf12c06b6d235eda27385099d0b4d74de435cd201a885c36c7b66f683c737700",
+          "unit_count": 40,
+          "version_id": "434ae53916eca3e50394ffb47320b0908d41fe3f"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-website-service/11.json",
+          "canonical_sha256": "sha256:a28c25a909c552bc9bdadf9951c6fd7c3bf8bb2881185408a1e845c52ca1ff74",
+          "chain_position": 11,
+          "known_at": "2026-06-03T08:40:20Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-website-service/11-90d449e0c3fa.md",
+          "source_digest": "sha256:124a280dfbc2dad83498c579e960e5d199ca612b727033e2a88da1103e1acb51",
+          "unit_count": 40,
+          "version_id": "90d449e0c3fa65cdcf61dac336121f5586644157"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md"
+    },
+    {
+      "chain_id": "chain-book-ch04-01-what-is-ownership",
+      "length": 12,
+      "license": "MIT OR Apache-2.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/00.json",
+          "canonical_sha256": "sha256:dbc6715be94f8b57c7ada10f0c6c5236a517853e6061afa0074e6133dfccca7d",
+          "chain_position": 0,
+          "known_at": "2022-05-04T17:45:16Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/00-58957e6ba207.md",
+          "source_digest": "sha256:4efd538702b34f08ac4c321d0618b7c21f51be161c929d2a558573622774a8ee",
+          "unit_count": 10,
+          "version_id": "58957e6ba2077b0e473d57f8e0980ccc2e5e59ae"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/01.json",
+          "canonical_sha256": "sha256:a4e84184f874bf6ca0b1814e0c8f0b4ed3f95f30ae1bcab26e3525597839e8f3",
+          "chain_position": 1,
+          "known_at": "2022-05-04T17:45:16Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/01-9c9a522555c0.md",
+          "source_digest": "sha256:f550772a1ebe5c672f85d09112caa7bbb6549f71a7c02406bf98d76264b6e683",
+          "unit_count": 10,
+          "version_id": "9c9a522555c05cae6717adfbb419af58ebd1cea0"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/02.json",
+          "canonical_sha256": "sha256:383f93b33a911623b66cbf28fa6c301f4a543cee2d54a6dd085442b6bd917232",
+          "chain_position": 2,
+          "known_at": "2022-10-20T20:39:55Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/02-3d51f70c7816.md",
+          "source_digest": "sha256:92a107dc3ccca019c8d45cda71f18a76ae4d52a22a99fe646f8eeb554850dc03",
+          "unit_count": 10,
+          "version_id": "3d51f70c78162faaebcab0da0de2ddd333e7a8ed"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/03.json",
+          "canonical_sha256": "sha256:1f29e4c9eee003a83f3d8eaff45608680e4a3a3a30f8174d31692c573cf67fad",
+          "chain_position": 3,
+          "known_at": "2024-09-26T20:53:15Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/03-0a3135500400.md",
+          "source_digest": "sha256:8cb5faf039febba781b146368f28103a1861406fd63d150ac6b5ec88af291e93",
+          "unit_count": 10,
+          "version_id": "0a3135500400634753be42f5369ea0cd3585671e"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/04.json",
+          "canonical_sha256": "sha256:58f533b97c869711da9456e44d7edaca4f11268dbb504be2a324c004b57f8509",
+          "chain_position": 4,
+          "known_at": "2024-09-26T21:18:28Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/04-d7c8e047fd8f.md",
+          "source_digest": "sha256:f9c7de02446204c9c17970ef308b42d3627dc0f5870de725cb0daa377f7e7d1a",
+          "unit_count": 10,
+          "version_id": "d7c8e047fd8ff25968a2910027dc9f0c7268d758"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/05.json",
+          "canonical_sha256": "sha256:c94c44c4a6fdc5ce0da283c5a69a12854a8c83ed31a751954bef56a62f4f8e77",
+          "chain_position": 5,
+          "known_at": "2024-09-28T07:37:39Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/05-72ef94c33880.md",
+          "source_digest": "sha256:8cb5faf039febba781b146368f28103a1861406fd63d150ac6b5ec88af291e93",
+          "unit_count": 10,
+          "version_id": "72ef94c3388001e0848f6e684115a301dcc38d4d"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/06.json",
+          "canonical_sha256": "sha256:5386f5b301f1c585e3d866861dcee73497d0f97f872e88b68209f06020eb850f",
+          "chain_position": 6,
+          "known_at": "2024-10-01T15:36:32Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/06-dc67ffe78fa6.md",
+          "source_digest": "sha256:8280011f2d65416930ecc1f12467b3a454b9948d83cf74f69ab293bd6b58263b",
+          "unit_count": 11,
+          "version_id": "dc67ffe78fa66144702dfa08c546ebd15762bf3e"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/07.json",
+          "canonical_sha256": "sha256:82e4159f90737c1abe68a11c92cfcdfb4c5de9b2d527cb9b4288bd398bae4f1e",
+          "chain_position": 7,
+          "known_at": "2024-12-02T23:09:20Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/07-3a30e4c1fbe6.md",
+          "source_digest": "sha256:8a2995cbf460fb17cc1f5c2184a14923994a400b6120be6ae0bcc97529f555c5",
+          "unit_count": 11,
+          "version_id": "3a30e4c1fbe641afc066b3af9eb01dcdf5ed8b24"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/08.json",
+          "canonical_sha256": "sha256:360363e70a2553138bc90fda346c7626747016b94c56d87725045bc6b3f9c861",
+          "chain_position": 8,
+          "known_at": "2025-05-12T17:58:14Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/08-f8ed2ced5daa.md",
+          "source_digest": "sha256:21ca0a4e70a7d95d945ce46b063e614ada62d6a6f12d3108514bbde433fe5a98",
+          "unit_count": 11,
+          "version_id": "f8ed2ced5daaa26e2b3a69df4bf5e1ce04dda758"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/09.json",
+          "canonical_sha256": "sha256:1f5c9aa1f159c34a3eafcc7659dd36f9453a353a9e533929e0490cab2cc49483",
+          "chain_position": 9,
+          "known_at": "2025-09-28T21:24:16Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/09-bb86b1763bdf.md",
+          "source_digest": "sha256:1598f1fff37549af4fa9a2f7af1f6abe595cfc7ccad9b56d18697aa6ad1bc7a3",
+          "unit_count": 11,
+          "version_id": "bb86b1763bdfb823e3e1d52c57020543b0fc7c4a"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/10.json",
+          "canonical_sha256": "sha256:926a9dd65e0921c4892d4288c98ac055a868975b47725aeddb3960bf8ba7fe0a",
+          "chain_position": 10,
+          "known_at": "2025-09-28T21:24:16Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/10-8a6130451b08.md",
+          "source_digest": "sha256:7c6b95dfc1a5e87f39a40bcda2ab794ebfcd239326d13ea5c3bd432691ff381a",
+          "unit_count": 11,
+          "version_id": "8a6130451b0817ead5c2522ce641dcb0f11a8571"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-book-ch04-01-what-is-ownership/11.json",
+          "canonical_sha256": "sha256:74297abaf0b4d45a2dba55a928a66e9f01a8c04d90712c8c35103f1f443bd4ff",
+          "chain_position": 11,
+          "known_at": "2026-02-03T15:19:04Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-book-ch04-01-what-is-ownership/11-05d114287b7d.md",
+          "source_digest": "sha256:873724c6862ad0cc447becf0e818eb39a324c5d4bfa26ef721286aae1941c0ba",
+          "unit_count": 11,
+          "version_id": "05d114287b7d6f6c9253d5242540f00fbd6172ab"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:rust-lang/book:src/ch04-01-what-is-ownership.md"
+    },
+    {
+      "chain_id": "chain-uv-dependencies",
+      "length": 12,
+      "license": "MIT OR Apache-2.0",
+      "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+      "rejected_revisions": [],
+      "relation_basis": "consecutive commits touching this path, oldest first",
+      "revisions": [
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/00.json",
+          "canonical_sha256": "sha256:0293b63876171ac191757a00041054dd4559b89c50c10a87035f43eb69c7bc25",
+          "chain_position": 0,
+          "known_at": "2025-07-14T19:06:05Z",
+          "position": 0,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/00-b046e7f3be3b.md",
+          "source_digest": "sha256:0f9a15699c991d155a6200a6854d7e5ac0dfc99faeb015b5bf31577b445f2095",
+          "unit_count": 25,
+          "version_id": "b046e7f3be3b495f695a474ce0088f9b2280eb5c"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/01.json",
+          "canonical_sha256": "sha256:1625304f879db4785219cee0ad900daa3fffbda3a6c2d33506368e315174d965",
+          "chain_position": 1,
+          "known_at": "2025-07-15T17:55:57Z",
+          "position": 1,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/01-c226d66f35b1.md",
+          "source_digest": "sha256:f348349986823f02e8f60a88a3490ec0f891b61d95edce44b675e711beed8629",
+          "unit_count": 25,
+          "version_id": "c226d66f35b17df57018015c5f9c21d446d51849"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/02.json",
+          "canonical_sha256": "sha256:25985e00f9e0eae311a13f57d39e01bfa18fce1afe1297c671a7ae1e5b0bd930",
+          "chain_position": 2,
+          "known_at": "2025-07-17T22:20:21Z",
+          "position": 2,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/02-ff30f14d50cf.md",
+          "source_digest": "sha256:17f72e8c93c0d81d9e47dc6ddb762ec48c682eb6cf5915b1b3bb5516a6e99231",
+          "unit_count": 26,
+          "version_id": "ff30f14d50cfdda544397f910808eeec8b20f11b"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/03.json",
+          "canonical_sha256": "sha256:2508ce35cd18175e507cf7e505d9f5d7a0e9183e1ebc339ef931bbca77d04b60",
+          "chain_position": 3,
+          "known_at": "2025-07-17T22:20:21Z",
+          "position": 3,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/03-cd40a3452295.md",
+          "source_digest": "sha256:26c90fa12918bf97b653f9b2d6d02b41baa322fd26848792601a9984924a3531",
+          "unit_count": 26,
+          "version_id": "cd40a3452295a8d4b6af69206c43282096507c89"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/04.json",
+          "canonical_sha256": "sha256:6ead32d48cc8ab0c4c23bad648143a2dedb1504cc3e6d73eb97b3485d15e30d0",
+          "chain_position": 4,
+          "known_at": "2025-08-23T00:26:16Z",
+          "position": 4,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/04-f1647838aed0.md",
+          "source_digest": "sha256:d5906b940f3e1789324972ce4f63c0e187b8678399ed6a96435272155748192d",
+          "unit_count": 26,
+          "version_id": "f1647838aed0c8be85b064e0407449ef220330cb"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/05.json",
+          "canonical_sha256": "sha256:25d22f9b16ce9123bdb6cf1bc22ebe24fe0b4cf502661e0375e554a9459f5186",
+          "chain_position": 5,
+          "known_at": "2025-08-27T18:16:52Z",
+          "position": 5,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/05-960714d4d6ad.md",
+          "source_digest": "sha256:a2ca6c06bfc646f7e5c125ec3e26f47fea2b6a8a2bec643f155538e6ba52bb52",
+          "unit_count": 26,
+          "version_id": "960714d4d6ada36276a44be08543bf56f894b6ce"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/06.json",
+          "canonical_sha256": "sha256:af4cf422f92182384d0c5de4408eeebc086b5812410f7f0f450ac1f628b4b084",
+          "chain_position": 6,
+          "known_at": "2025-09-12T13:15:27Z",
+          "position": 6,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/06-8917b00fd97d.md",
+          "source_digest": "sha256:a91d6eb4844675a38342bfcdabeefa0cfab61154eac35a2862b104f2c31be6e3",
+          "unit_count": 27,
+          "version_id": "8917b00fd97d0fc54c0f8c6bc5fb5062f84ecba5"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/07.json",
+          "canonical_sha256": "sha256:8a9eb816aa8a5359f6047413df8090efbcd245f898a1954466560158f405dead",
+          "chain_position": 7,
+          "known_at": "2025-12-02T12:23:51Z",
+          "position": 7,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/07-fee7f9d093b3.md",
+          "source_digest": "sha256:15ad02b658a3683a7049477fea655cf3d5abf35b90472e97c769d4ee790541ac",
+          "unit_count": 27,
+          "version_id": "fee7f9d093b3ef20f4e86aa7f92ebe67145240f6"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/08.json",
+          "canonical_sha256": "sha256:e981ca8a76261fb9523e7fb8203d7fd547961b1db564b1479710fce62e69d6fb",
+          "chain_position": 8,
+          "known_at": "2026-03-06T16:50:11Z",
+          "position": 8,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/08-7520fe6c25d2.md",
+          "source_digest": "sha256:5644cc7ee3fd6f2b6888e1cd761fb204f7f5cf31a1e54f396e9a444cb0eb1847",
+          "unit_count": 27,
+          "version_id": "7520fe6c25d2ab369e6d9295c8ca4909ce4bc896"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/09.json",
+          "canonical_sha256": "sha256:8757df0dc58acd832203779987745994ff5fdad621143a315041e5b28f53a559",
+          "chain_position": 9,
+          "known_at": "2026-04-21T18:02:05Z",
+          "position": 9,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/09-b8b3073ba38e.md",
+          "source_digest": "sha256:35372b2144ea185c0ea34a0a4a6823bc60ec3d0874be356a107d268d63081915",
+          "unit_count": 27,
+          "version_id": "b8b3073ba38e85d09ba1266a0cca74a7dc764a88"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/10.json",
+          "canonical_sha256": "sha256:34e1d0c62ebc88b048340f98a8907f88fca3ea45bb6d763322f1a7c298e97e82",
+          "chain_position": 10,
+          "known_at": "2026-07-21T18:06:46Z",
+          "position": 10,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/10-50d437988227.md",
+          "source_digest": "sha256:d5a7e3a6ca77d497287699922f3873e5a0909e6990c777a8405c54b610263072",
+          "unit_count": 27,
+          "version_id": "50d437988227755233271e64c1cf86db8d4c98ba"
+        },
+        {
+          "canonical_path": "research/tavonel_eval_v2/artifacts/development/chains/canonical/chain-uv-dependencies/11.json",
+          "canonical_sha256": "sha256:d3df6d1017fa2e42ff7cc8043816db26e02b1100566035f9ed28bee92a9d889b",
+          "chain_position": 11,
+          "known_at": "2026-08-14T10:31:51Z",
+          "position": 11,
+          "raw_path": "research/tavonel_eval_v2/artifacts/development/chains/raw/chain-uv-dependencies/11-7e6caa45f62a.md",
+          "source_digest": "sha256:abd68b302b56e9e23e421099851d3531e3e40bd7ae8eb10b4e9e0281c9d68364",
+          "unit_count": 27,
+          "version_id": "7e6caa45f62a0506fea1b8ecfa0558e5d62d520c"
+        }
+      ],
+      "source_family": "git_docs",
+      "source_id": "git:astral-sh/uv:docs/concepts/projects/dependencies.md"
+    }
+  ],
+  "credentials_sent": false,
+  "ended_at": "2026-08-21T05:41:54.660076+00:00",
+  "excluded": [],
+  "external_gpu_cost_usd": 0.0,
+  "fetcher_sha256": "sha256:a669b971b5dbbbddc9faae40c015248c00f1b2fbbf6e213130dab63122c735dc",
+  "gpu_seconds": 0,
+  "length_histogram": {
+    "10": 1,
+    "12": 7
+  },
+  "network_reads_only": true,
+  "receipt_sha256": "sha256:88cc6e09218a5ba5af4eca6c1915c1de9ba514fbd9dc64ff6709d67a948a2f56",
+  "requested_length": 12,
+  "revision_count": 94,
+  "schema": "tavonel.v2.chain_manifest.v1",
+  "started_at": "2026-08-21T05:40:32.155975+00:00",
+  "step_count": 86
+}

@@ -1,0 +1,133 @@
+{
+  "acquisition_receipt_sha256": "sha256:8141f19aa9d34b1efa536961b487db99eb06a2ba0dcf8c384573cad499d61686",
+  "all_gates_pass": true,
+  "articles_with_primary": 151,
+  "availability_reached": true,
+  "corpus_root_sha256": "sha256:d4eaf6fe9ac514536085b142c12f72c4f0108a80e5f2bd0b19414e78129a0e8f",
+  "corpus_v5_modified": false,
+  "corpus_v6_modified": false,
+  "eligible_pages": 391,
+  "endpoint_note": "Passing these gates says the corpus is what the acquisition says it is. It says nothing about whether the frozen question set finds moved facts. That endpoint was declared NOT RUN once rather than weakened, and that declaration stands until it is executed under its own frozen protocol.",
+  "endpoint_status": "NOT_RUN",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "gates": [
+    {
+      "detail": {
+        "return_code": 0,
+        "source": "completion sidecar, not the console -- a console line is not an artifact"
+      },
+      "gate": "1_process_exit_status",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "exists": true,
+        "records_return_code": true,
+        "scientific_rules_changed": false
+      },
+      "gate": "2_completion_sidecar",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "now": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc",
+        "pinned_at_launch": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc"
+      },
+      "gate": "3_manifest_unchanged_since_launch",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "cohorts_completed": 1,
+        "eligible_plus_excluded": 750,
+        "manifest_slice_considered": 4500,
+        "note": "the acquisition stops at the first cohort that satisfies the availability rule, so unreached cohorts are not missing data -- they were never due",
+        "titles_in_completed_cohorts": 750,
+        "titles_in_manifest": 6987
+      },
+      "gate": "4_title_accounting",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "exclusion_reasons": {
+          "missing_snapshot_revision": 20,
+          "snapshot_revisions_less_than_1095_days_apart": 339
+        },
+        "exclusions_on_file": 359,
+        "receipt_eligible": 391,
+        "receipt_excluded": 359,
+        "records_on_file": 391
+      },
+      "gate": "5_counts_reconcile",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "complete": 391,
+        "directories": 391,
+        "incomplete": 0,
+        "incomplete_names": []
+      },
+      "gate": "6_incomplete_directories",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "complete_directories": 391,
+        "eligible_records": 391,
+        "why": "metadata.json is written after both wikitext files, so a directory carrying all three is a completed pair. v5 and v6 each left one directory with two files and no metadata -- the signature of the defect that killed both"
+      },
+      "gate": "8_metadata_last_semantics",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "duplicate_directories": [],
+        "duplicate_manifest_indices": [],
+        "duplicate_titles": []
+      },
+      "gate": "7_duplicate_detection",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "mismatched": [],
+        "missing_files": [],
+        "pairs_checked": 391
+      },
+      "gate": "9_per_pair_hashes",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "corpus_root_sha256": "sha256:d4eaf6fe9ac514536085b142c12f72c4f0108a80e5f2bd0b19414e78129a0e8f",
+        "definition": "sha256 over the sorted list of 'dir/file:sha256' lines; recomputable by any third party from the corpus alone",
+        "files_hashed": 1173
+      },
+      "gate": "10_corpus_root_hash",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "recomputed": "sha256:8141f19aa9d34b1efa536961b487db99eb06a2ba0dcf8c384573cad499d61686",
+        "recorded": "sha256:8141f19aa9d34b1efa536961b487db99eb06a2ba0dcf8c384573cad499d61686"
+      },
+      "gate": "11_acquisition_receipt_self_hash",
+      "state": "PASS"
+    }
+  ],
+  "gates_failed": 0,
+  "gates_passed": 11,
+  "gates_unknown": 0,
+  "generated_at": "2026-08-19T09:57:40.151239+00:00",
+  "identity_module_modified": false,
+  "network_access": false,
+  "primary_endpoint_status_reported_by_acquisition": "ELIGIBLE_FOR_QUESTION_SET",
+  "primary_retained": 293,
+  "purpose": "The eleven gates between a completed acquisition and any endpoint evaluation. The acquisition's own ELIGIBLE_FOR_QUESTION_SET is a self-report; this is the check.",
+  "receipt_sha256": "sha256:97c06fede35dafd71d187b5ff9078e2905972312afe012b8291aeedbf4a5c4db",
+  "schema": "tavonel.w6-v7-corpus-integrity.v1",
+  "unchanged_controls": 2522
+}

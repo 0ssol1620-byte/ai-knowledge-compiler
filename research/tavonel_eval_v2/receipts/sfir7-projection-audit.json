@@ -1,0 +1,132 @@
+{
+ "accounting_balances": true,
+ "capacity_or_yield_computed": false,
+ "catalog_member": "repositories-1.6.0-2020-01-12.csv",
+ "content_sha256": "sha256:bf8a37b17e7bffe97044308321912bfee6399ac1134a24dd774effad377334ae",
+ "eligibility_applied": false,
+ "estimated_cost_usd": 0.0,
+ "every_declared_licence_is_present": true,
+ "gpu_seconds": 0,
+ "host_uuid": {
+  "blank": 0,
+  "distinct": 36515237,
+  "shared_by_more_than_one_row": 4121,
+  "shared_sample": [
+   "1001071",
+   "1005000",
+   "1005159",
+   "1006714",
+   "1007901",
+   "1008353",
+   "1008402",
+   "1009194",
+   "1009891",
+   "1010170",
+   "1010705",
+   "1011122",
+   "1011128",
+   "1011508",
+   "1013362",
+   "1014126",
+   "1014579",
+   "1014623",
+   "1015639",
+   "1016829"
+  ],
+  "what_a_shared_uuid_means": "one host repository id appearing on more than one catalogue row. Across the whole catalogue that is expected -- the same repository can be indexed under several package entries. It only becomes an identity question once a roster is selected, which is where require_identity_coherence runs."
+ },
+ "hosts_present": {
+  "Bitbucket": 1,
+  "GitHub": 36493782,
+  "GitLab": 25575
+ },
+ "parser_rejection_reasons": {
+  "NAME_WITH_OWNER_NOT_OWNER_SLASH_REPO": 39401,
+  "NO_LAST_ACTIVITY_TIMESTAMP": 1143301
+ },
+ "parser_rejections_by_host": {
+  "Bitbucket": 269930,
+  "GitHub": 73784,
+  "GitLab": 838988
+ },
+ "projection_refusal_reasons": {},
+ "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7",
+ "ranking_applied": false,
+ "record_id": {
+  "distinct": 36519358,
+  "duplicate_sample": [],
+  "duplicates": 0,
+  "strictly_increasing_integers": true
+ },
+ "roots_selected": 0,
+ "rows_parsed": 36519358,
+ "rows_projected": 36519358,
+ "rows_projection_refused": 0,
+ "rows_read": 37702060,
+ "rows_rejected_by_parser": 1182702,
+ "schema": "tavonel.sfir7.projection_audit.v1",
+ "vocabulary_reconciliation_coverage": {
+  "Apache-2.0": {
+   "rows_present": 857827,
+   "spellings_used": [
+    "Apache-2.0"
+   ]
+  },
+  "BSD-2-Clause": {
+   "rows_present": 71773,
+   "spellings_used": [
+    "BSD-2-Clause"
+   ]
+  },
+  "BSD-3-Clause": {
+   "rows_present": 201847,
+   "spellings_used": [
+    "BSD-3-Clause"
+   ]
+  },
+  "GPL-2.0-only": {
+   "rows_present": 339080,
+   "spellings_used": [
+    "GPL-2.0"
+   ]
+  },
+  "GPL-3.0-only": {
+   "rows_present": 653935,
+   "spellings_used": [
+    "GPL-3.0"
+   ]
+  },
+  "ISC": {
+   "rows_present": 29257,
+   "spellings_used": [
+    "ISC"
+   ]
+  },
+  "LGPL-2.1-only": {
+   "rows_present": 27672,
+   "spellings_used": [
+    "LGPL-2.1"
+   ]
+  },
+  "LGPL-3.0-only": {
+   "rows_present": 57519,
+   "spellings_used": [
+    "LGPL-3.0"
+   ]
+  },
+  "MIT": {
+   "rows_present": 3062224,
+   "spellings_used": [
+    "MIT"
+   ]
+  },
+  "MPL-2.0": {
+   "rows_present": 32487,
+   "spellings_used": [
+    "MPL-2.0"
+   ]
+  }
+ },
+ "wall_clock_seconds": 430.156,
+ "why_no_yield_figure": "how many rows would be eligible is a yield number, one step from a capacity expectation. Knowing it before the rule runs is the contamination this design exists to avoid."
+}

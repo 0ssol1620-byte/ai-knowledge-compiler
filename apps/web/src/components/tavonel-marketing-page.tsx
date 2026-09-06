@@ -8,14 +8,12 @@ import {
   type TavonelGlyphName,
 } from "@/components/tavonel-glyph";
 import { TavonelDiagram } from "@/components/tavonel-diagram";
+import { TavonelContactForm } from "@/components/tavonel-contact-form";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
 import { TavonelPricingPlanner } from "@/components/tavonel-pricing-planner";
 import type { TavonelPage } from "@/lib/tavonel-content";
-import {
-  ROUTE_DIAGRAMS,
-  type TavonelDiagramId,
-} from "@/lib/tavonel-diagrams";
+import { ROUTE_DIAGRAMS, type TavonelDiagramId } from "@/lib/tavonel-diagrams";
 
 const glyphs: TavonelGlyphName[] = ["page", "block", "evidence", "node"];
 
@@ -89,7 +87,6 @@ export function TavonelMarketingPage({
           {productEvidence[definition.path] ? (
             <ProductEvidence
               evidence={productEvidence[definition.path]!}
-              path={definition.path}
             />
           ) : (
             <PageThesis definition={definition} />
@@ -100,6 +97,8 @@ export function TavonelMarketingPage({
           <p>{definition.thesis}</p>
           <span>Source-linked by design</span>
         </section>
+
+        {definition.path === "/company/contact" && <TavonelContactForm />}
 
         {definition.path === "/demo/dart" && (
           <section className="tv-route-proof">
@@ -168,10 +167,8 @@ export function TavonelMarketingPage({
 
 function ProductEvidence({
   evidence,
-  path,
 }: {
   evidence: (typeof productEvidence)[string];
-  path: string;
 }) {
   return (
     <figure className="tv-page-product-evidence">
@@ -182,7 +179,7 @@ function ProductEvidence({
           width={1440}
           height={900}
           sizes="(max-width: 960px) 92vw, 52vw"
-          priority={path === "/product"}
+          loading="lazy"
         />
       </div>
       <figcaption>

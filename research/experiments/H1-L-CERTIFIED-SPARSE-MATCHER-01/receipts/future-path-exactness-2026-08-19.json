@@ -1,0 +1,23 @@
+{
+  "blocked_policy_executed": false,
+  "cases": 19,
+  "cases_with_differing_carry_forward_ids": [],
+  "closes_gap": "The frozen semantic contract lists next-revision lineage as a facet. run_exactness.py never computed it, yet a summary table described future-path exactness as preserved. Nothing had measured it.",
+  "comparisons": 19,
+  "divergence_examples": [],
+  "experiment": "H1-L-CERTIFIED-SPARSE-MATCHER-01",
+  "extension_of": "receipts/exactness-2026-08-19.json",
+  "external_gpu_cost_usd": 0.0,
+  "future_path_exact": true,
+  "generated_at": "2026-08-19T05:59:26.133765+00:00",
+  "identity_module_modified": false,
+  "instrument_note": "This harness inherits its separating power from the main H1-L run, whose three mutants separated on 10, 15 and 17 cases using the same footprint function. It adds no mutants of its own, and a reader who rejects that inheritance should treat the null as unvalidated.",
+  "method": "Run revision 1 under both policies; build each policy's OWN revision-2 previous set from its own revision-1 logical ids, seeding a fresh id wherever a decision was unresolved; apply the same revision-2 edit to both; compare the revision-2 footprints.",
+  "network_access": false,
+  "receipt_sha256": "sha256:c49b2fc55e136f259cd1d40a231f583e1295ba8f807f072257965ea4324f4fa6",
+  "result": "FUTURE_PATH_EXACT",
+  "revision_1_divergences": 0,
+  "revision_2_divergences": 0,
+  "schema": "tavonel.certified-sparse-future-path.v1",
+  "why_each_policy_carries_its_own_state": "Feeding both policies the same revision-2 inputs would erase the divergence under test. The fork is created by the identifiers revision 1 assigned."
+}

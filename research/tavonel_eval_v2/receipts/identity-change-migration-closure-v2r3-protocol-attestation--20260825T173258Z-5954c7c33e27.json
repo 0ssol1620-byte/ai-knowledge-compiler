@@ -1,0 +1,159 @@
+{
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r3-protocol-freeze--20260825T173257Z-170b873cf8c2.json",
+    "receipt_body_sha256": "sha256:d7cb161a81c13c80773436308e0e5e6f4fc42e8fea6a404e420982ef0bcfef72",
+    "receipt_file_sha256": "sha256:11c162413abf1c014b92a6876dc475f4115c0383e62b884665ad203dd9a1c783",
+    "run_id": "20260825T173257Z-170b873cf8c2",
+    "stem": "identity-change-migration-closure-v2r3-protocol-freeze"
+  },
+  "contract_consistency": {
+    "checked_by": [
+      "tools/v2r3_state_table.py::check_contract",
+      "tests/test_v2r3_contract_consistency.py"
+    ],
+    "prose_matches_executable_rows": true,
+    "proved": true,
+    "reachable_rows": 8,
+    "required_intersect_forbidden_empty_for_every_row": true,
+    "rows": [
+      {
+        "effective": "EFFECTIVE_MATCHED",
+        "forbidden": [
+          "unit_added",
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [],
+        "resolver_state": "MATCHED",
+        "rule": "E",
+        "side": "after",
+        "silence_allowed": true
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "MATCHED",
+        "rule": "D",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_NEW",
+        "forbidden": [
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [
+          "unit_added"
+        ],
+        "resolver_state": "NEW",
+        "rule": "C",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "NEW",
+        "rule": "B",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": false,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "AMBIGUOUS",
+        "rule": "A",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_added"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "AMBIGUOUS",
+        "rule": "A",
+        "side": "after",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_REMOVED",
+        "forbidden": [
+          "modified_claim",
+          "identity_unresolved"
+        ],
+        "quarantined": false,
+        "required": [
+          "unit_removed"
+        ],
+        "resolver_state": "UNCONSUMED",
+        "rule": "G",
+        "side": "before_unconsumed",
+        "silence_allowed": false
+      },
+      {
+        "effective": "EFFECTIVE_UNRESOLVED",
+        "forbidden": [
+          "unit_removed",
+          "modified_claim"
+        ],
+        "quarantined": true,
+        "required": [
+          "identity_unresolved"
+        ],
+        "resolver_state": "UNCONSUMED",
+        "rule": "F",
+        "side": "before_unconsumed",
+        "silence_allowed": false
+      }
+    ],
+    "state": "SATISFIABLE"
+  },
+  "pinned_files": {
+    "docs/COMPAT_IDENTITY_UNCERTAINTY_QUARANTINE.md": "sha256:655fd3d85eebec5209a2489290b34a8ca9d6c4cff8f1ac39e8504e4447f1b101",
+    "protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml": "sha256:51b8a0b0ec32dc5c04224ed346fa720c21c35929a917db7db2a0335581b74318",
+    "tests/test_v2r3_contract_consistency.py": "sha256:c33bf9b1ffaa8036d6a75b3d4812011879bde2f174d00fc51ac511f0575d17ed",
+    "tools/v2r3_effective_identity.py": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+    "tools/v2r3_quarantine_oracle.py": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+    "tools/v2r3_state_table.py": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6"
+  },
+  "provenance": {
+    "generated_at": "2026-08-25T17:32:58.602997+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml",
+    "protocol_sha256": "sha256:51b8a0b0ec32dc5c04224ed346fa720c21c35929a917db7db2a0335581b74318",
+    "receipt_stem": "identity-change-migration-closure-v2r3-protocol-attestation",
+    "run_id": "20260825T173258Z-5954c7c33e27",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:94148975b9042535fe83e59ce1802c9dc333413c85e1d13f72315e495dd219ae",
+  "refuses_unless": "the state table is SATISFIABLE AND the consistency suite passes",
+  "rung": "1a",
+  "rung_name": "protocol_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3_attestation.v1"
+}

@@ -1,0 +1,1216 @@
+# IDENTITY_CHANGE_MIGRATION_CLOSURE_V2 (ICMC2) — the prospective closure of the
+# INC-V2-037 predicate migration, run ONCE after the INC-V2-047 repair lands, on
+# a NEW universe disjoint from every cohort any earlier closure or regression
+# already measured.
+#
+# DRAFT UNTIL ITS FOUR FREEZE RECEIPTS EXIST. This file binds nothing until
+# `tools/freeze_migration_closure_v2.py protocol` has written an immutable
+# receipt pinning this file's sha256, and the V2 runner refuses to execute until
+# all four rungs — protocol, universe, scorer/acceptance, exclusions — have
+# receipts and every pinned digest still matches what is on disk.
+#
+# WHAT THIS FILE IS NOT.
+#
+#   * It is not a repair of V1. IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 returned
+#     `overall: FAIL` and that FAIL stands permanently. V1 is never rescored,
+#     re-thresholded, re-scoped or re-run, and this protocol never reads a V1
+#     result as evidence of anything. V1's universe is read here for ONE
+#     purpose: lineage ids, to subtract them, so that V2's universe is new.
+#   * It is not narrower than V1 anywhere. Every difference from V1 is recorded
+#     in `protocol_delta` below, was written BEFORE execution, and is justified
+#     by the semantics of the repair rather than by anything V1 observed.
+#   * It does not contain a number chosen from an observed result. The 1.10%
+#     retrospective over-fire figure is not a threshold here and nothing is
+#     derived from it. The nine (lineage, logical_id) cases on which V1's
+#     INVARIANT_6 was VIOLATED are not an ignore list, not an exclusion, and not
+#     named anywhere in this file.
+#
+# V1's protocol file and every V1 receipt are IMMUTABLE and are not opened for
+# writing by this protocol or by any tool it names.
+
+schema: tavonel.v2.protocol.identity_change_migration_closure.v2
+protocol_id: IDENTITY_CHANGE_MIGRATION_CLOSURE_V2
+status: DRAFT_NOT_FROZEN
+split: development
+supersedes_nothing: >-
+  V2 does not supersede V1. V1 is a completed measurement with a permanent FAIL.
+  V2 is a second, separate measurement of the same eight properties, on a new
+  universe, after a repair. Neither result overwrites the other and neither is
+  subtracted from the other.
+
+authorised_by: >-
+  founder ruling recorded against INC-V2-047, 2026-08-25. V1's FAIL stands
+  permanently and is never repaired, rescored, threshold-changed, scope-narrowed
+  or reused as a positive closure denominator; a V2 closure runs ONCE, after the
+  repair, on a NEW disjoint universe; INVARIANT_6 remains zero tolerance; and
+  the reading of INVARIANT_4's cohort population is ACCEPTED as V1 wrote it and
+  carries into V2 unchanged.
+
+# ---------------------------------------------------------------------------
+# the four freezes, and the order that is enforced as a refusal
+#
+# V1 froze two things: the protocol and the universe. Two of its later problems
+# were not reachable by those two freezes. INC-V2-046: the exclusion behaviour
+# that decided which pairs left the universe was settled inside the freeze code
+# while the freeze was running, so "what was excluded and why" was not a thing
+# anybody had committed to in advance. INC-V2-048: a condition read the more
+# comfortable of two available measurements, and nothing had pinned which
+# measurement the acceptance semantics were entitled to read.
+#
+# So V2 freezes four things, in order, and the runner refuses rather than warns.
+
+freeze:
+  order:
+    - "1. protocol            — this file, by sha256"
+    - "2. universe            — the complete candidate universe, by content digest"
+    - "3. scorer_acceptance   — the scorer modules and the acceptance semantics"
+    - "4. exclusions          — the exclusion policy AND the realised exclusion set"
+    - "5. execute exactly once"
+  stems:
+    protocol: identity-change-migration-closure-v2-protocol-freeze
+    universe: identity-change-migration-closure-v2-universe
+    scorer_acceptance: identity-change-migration-closure-v2-scorer-freeze
+    exclusions: identity-change-migration-closure-v2-exclusion-freeze
+    measurement: identity-change-migration-closure-v2
+  tool: research/tavonel_eval_v2/tools/freeze_migration_closure_v2.py
+  enforced_by: >-
+    each rung refuses (exit 4) unless every rung before it has a receipt whose
+    pinned digest still matches what is on disk, and each rung records the RUN ID
+    of the rung before it, so the ordering is a chain of references rather than a
+    comparison of two wall-clock stamps a reader is trusted to check. The
+    execution gate — `require_execution_preconditions` — re-verifies all four
+    links and every pinned digest, and exits non-zero on any absence, any digest
+    mismatch, and any break in the chain.
+  ordering_is_not_a_timestamp: >-
+    a timestamp proves what a receipt claims about itself. A refusal proves what
+    the next step was able to do. V1's ordering discipline was already of the
+    second kind for protocol and universe and it was observed firing; rungs 3
+    and 4 are new and are built the same way.
+  no_post_freeze_change:
+    rule: >-
+      after rung 4 nothing in this file, in the scorer modules, in the acceptance
+      semantics or in the exclusion policy may change. There is no amend path and
+      no force flag. A change that is genuinely necessary is a NEW protocol with
+      a new id, a new freeze chain and a new universe — not an edit to a frozen
+      one.
+    enforced_by: >-
+      every rung pins a digest and the gate recomputes it. Editing this file
+      breaks rung 1; editing a scorer module breaks rung 3; editing the exclusion
+      policy breaks both rung 1 and rung 4, and rung 4 names it as an exclusion
+      change specifically so the reason cannot be mistaken for an unrelated edit.
+
+# ---------------------------------------------------------------------------
+# what happened
+
+background:
+  defect: >-
+    INC-V2-037. `akc_cir.semantic_diff.diff_documents` decided MODIFIED_CLAIM
+    from `counterpart.identity_text != incoming.identity_text`, where
+    `identity_text` is `akc_cir.identity.normalize_text_for_identity` — an
+    NFKC + casefold + punctuation-to-space + whitespace-collapse fold whose
+    insensitivity is the feature for identity continuity and the defect for
+    change detection.
+  production_state: >-
+    the switch has landed. MODIFIED_CLAIM is decided by
+    `semantic_diff.content_facet_verdict`, an NFC-only CONTENT projection, and
+    an UNRESOLVED content facet fails closed as a modification rather than
+    passing as unchanged.
+  preserved_reference_path: >-
+    `diff_documents(legacy_identity_change_predicate=True)` is the pinned
+    pre-INC-V2-037 path. It is PRESERVED, not removed, and this protocol forbids
+    removing it. It is a reference instrument only; it is never a ground-truth
+    oracle here.
+  the_defect_v2_runs_after: >-
+    INC-V2-047. A unit whose identity the resolver explicitly declined to settle
+    was ALSO reported `unit_removed`, because `diff_documents` protects only the
+    NAMED CANDIDATES of an unsettled decision from removal, and a before-side
+    unit that shares a logical id with the unsettled incoming unit is not among
+    those candidates. The diff then carried two contradictory statements about
+    one key. The defect predates the INC-V2-037 migration — it is identical
+    under both predicates — and it is repaired by another lane through the
+    Protected Core ladder before this closure runs.
+  what_the_repair_introduces: >-
+    an identity-uncertainty quarantine. An identity the resolver has not settled
+    is held in an explicit unresolved state instead of being forced into either
+    continuity or deletion. That is a NEW production concept, and it is the
+    reason INVARIANT_6 gains a clause below.
+
+v1_standing:
+  result: FAIL
+  permanent: true
+  never_repaired: true
+  never_rescored: true
+  never_reused_as_a_positive_closure_denominator: true
+  files_that_are_immutable_here:
+    - research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml
+    - receipts/identity-change-migration-closure--*.json
+    - receipts/identity-change-migration-closure-protocol-freeze--*.json
+    - receipts/identity-change-migration-closure-universe--*.json
+    - receipts/identity-change-ladder-reclassification--*.json
+    - receipts/identity-change-benchmark--*.json
+    - receipts/identity-change-canary--*.json
+  the_only_thing_v1_is_read_for: >-
+    the lineage id list in V1's frozen universe receipt, subtracted from V2's
+    candidate universe so that V2 measures new material. No V1 verdict, count,
+    invariant result or violated case is read by any V2 tool, and none appears in
+    any V2 numerator or denominator.
+  the_nine_violating_cases: >-
+    NOT enumerated in this file, NOT excluded, NOT ignored. Excluding the cases
+    on which the previous run failed is the purest form of fitting a criterion to
+    an outcome. If the repair works, V2's universe will contain the same SHAPE
+    and INVARIANT_6 will observe it holding; if it does not, V2 fails again and
+    that is the result.
+
+retrospective_evidence:
+  standing: RETROSPECTIVE_MIGRATION_SAFETY_REGRESSION
+  not: PROSPECTIVE_LADDER_QUALIFICATION
+  receipts:
+    - receipts/identity-change-benchmark--20260824T092056Z-eb6269afcbd0.json
+    - receipts/identity-change-canary--20260824T092141Z-36fa48664af6.json
+  immutable: true
+  never_edited: true
+  never_deleted: true
+  read_for_grading: false
+
+legacy_is_not_ground_truth:
+  rule: >-
+    legacy disagreement is NEVER ground truth in this closure. The legacy
+    predicate is the defect under repair. A unit the legacy predicate called
+    unchanged and the production predicate calls changed is an
+    OVER_FIRE_RELATIVE_TO_LEGACY and nothing more; it is not a false positive
+    and this protocol forbids that word for it.
+  descriptive_only: >-
+    the 1.10% over-fire figure in the retrospective benchmark is descriptive. It
+    is not an acceptance criterion, not a bound, not a budget, not a threshold,
+    and no criterion below is derived from it.
+  no_independent_oracle_exists: >-
+    calling an over-fire a false positive would require an oracle independent of
+    both predicates that says the unit's compiled-relevant state did not move.
+    None exists. Where this closure needs an expectation it takes it from the
+    declared facet contract, which is derived from the unit's own fields and
+    imports neither predicate.
+
+# ---------------------------------------------------------------------------
+# outcome independence
+
+anti_fitting:
+  threshold_free: >-
+    every acceptance criterion below is a zero-tolerance structural predicate
+    over declared populations. No criterion carries a rate, a bound, a quota, a
+    ratio or a tolerance. There is nothing here that could be tuned to an
+    observed number, because there is no number to tune.
+  outcome_independent: >-
+    no criterion was chosen after seeing a closure result — V1's or any other. A
+    threshold may be used in this study only if it was demonstrably declared
+    BEFORE the results it grades existed. None was declared for the migration, so
+    none is used.
+  every_delta_is_a_strengthening: >-
+    `protocol_delta` below records three changes from V1. Each of them makes a
+    criterion see MORE, never less. Nothing in V1 was relaxed, widened, scoped
+    down or removed, and in particular nothing was changed because V1 failed on
+    it. The freeze tool refuses to seal this file if the invariant set differs
+    from V1's eight without a recorded delta.
+  a_violation_is_reported_as_a_violation: >-
+    a FAIL is a result. It is never absorbed by widening a facet, adding an
+    ignore, dropping a pair from a denominator or re-running until green. The
+    closure runs ONCE against the frozen universe.
+  what_may_never_be_changed_to_make_this_pass:
+    - >-
+      `akc_cir.identity.normalize_text_for_identity` must NEVER be made
+      content-sensitive. INVARIANT_2 exists to catch it.
+    - >-
+      `unknown` and `unresolved` must NEVER be mapped to `unchanged`.
+      INVARIANT_5 exists to catch it.
+    - >-
+      an unsettled identity must NEVER be repaired by making the contradictory
+      record disappear into silence. INVARIANT_6(d) exists to catch it.
+    - "`legacy_identity_change_predicate` must NEVER be removed."
+    - "V1's protocol and receipts must never be edited or deleted."
+
+# ---------------------------------------------------------------------------
+# the delta from V1, written before execution
+#
+# Three changes. Each names what changed and the repair-semantics reason, and
+# none of them is justified by anything V1 observed. The freeze tool compares
+# this file's invariant bodies against V1's, canonically, and refuses to seal a
+# body that differs and is not declared here.
+
+protocol_delta:
+  written_before_execution: true
+  justified_independently_of_the_v1_outcome: true
+  invariant_set_matches_v1: true
+  changed_invariants:
+    INVARIANT_6_ambiguous_identity_stays_unresolved:
+      change: >-
+        two clauses ADDED. (d) TOTAL ACCOUNTING: every before-side and every
+        after-side unit must be accounted for by exactly one of — matched,
+        added, removed, or explicitly named — by a NON-EMPTY logical id — in an
+        identity_unresolved record (as its subject or among its candidates). A
+        unit that is none of those has disappeared silently, and that is a
+        violation. (e) QUARANTINE
+        CHANNEL: if production declares a typed identity-uncertainty quarantine
+        record, every unsettled logical id must be named by it; if production
+        declares none, the observation is recorded as
+        UNRESOLVED_NO_PRODUCTION_CHANNEL, counted, and never counted as evidence
+        that the channel works.
+      repair_semantics_reason: >-
+        the repair introduces an identity-uncertainty quarantine, which is a
+        production concept that did not exist when V1 was written. V1's
+        INVARIANT_6 could only check the ABSENCE of a contradictory record —
+        that an unsettled unit carries no modified_claim, unit_added or
+        unit_removed. After the repair that absence is reachable two ways: by
+        holding the unit in a visible quarantine, which is the repair, or by
+        deleting the offending record and emitting nothing at all, which is not.
+        An absence-only criterion cannot tell those apart, and the second one
+        would look like a pass. Suppressing a false `unit_removed` into silence
+        is a failure, not a fix, so the criterion must be able to see the
+        difference. This reason holds whatever V1 returned.
+      direction: STRENGTHENING. Nothing in V1's (a), (b) or (c) is relaxed or removed.
+    INVARIANT_8_sfi2_cases_cannot_certify:
+      change: >-
+        the required disjointness is extended from {the 538-pair retrospective
+        cohort, the 14 confirmed SFI2 lineages} to additionally include {every
+        lineage id in V1's frozen universe}.
+      repair_semantics_reason: >-
+        the ruling that authorises this work requires V2 to run on a NEW
+        universe. A pair V1 already measured is not new material, and reusing it
+        would let a V2 result be read as a second opinion on the same evidence
+        rather than as a fresh measurement. This is a property of what "a new
+        universe" means, not of what V1 returned; it would be required
+        identically if V1 had passed.
+      direction: STRENGTHENING. The V1 disjointness requirements are kept whole.
+  unchanged_invariants:
+    - INVARIANT_1_identity_decisions_unchanged
+    - INVARIANT_2_identity_fold_remains_identity_only
+    - INVARIANT_3_expectation_is_independent
+    - INVARIANT_4_changed_facet_resolves_typed_or_failclosed
+    - INVARIANT_5_never_silently_unchanged
+    - INVARIANT_7_only_predeclared_ignores
+  invariant_4_is_carried_unchanged_by_ruling: >-
+    the founder ACCEPTED INVARIANT_4 as V1 read it: its cohort population is
+    facets whose independent oracle verdict is CHANGED. UNRESOLVED is the
+    fail-closed alternative and does not by itself require a production change
+    record unless that facet has a separately declared production fail-closed
+    representation. Broadening it to "every unresolved facet must emit a
+    production record" would test a different property, and it is forbidden here.
+    Unresolved-without-a-production-representation stays COUNTED and VISIBLE
+    under `unresolved_without_a_production_fail_closed_behaviour`; it is never
+    called unchanged and never counted as positive channel evidence.
+  process_changes_that_are_not_invariant_changes:
+    - >-
+      two freeze rungs added (scorer/acceptance, exclusions). See `freeze`.
+    - >-
+      the exclusion policy is declared in this file BEFORE the universe freeze
+      rather than settled inside the freeze code while it runs. See
+      `exclusion_policy`.
+    - >-
+      the candidate universe is enumerated by a separate tool owned by another
+      lane and consumed here as a manifest. See `manifest_contract`.
+
+# ---------------------------------------------------------------------------
+# Deliverable 2 — the exclusion policy, declared BEFORE the universe freeze
+#
+# INC-V2-046: three P4i cache slugs collide at 80 characters and one payload
+# overwrote another. V1 found that at freeze time and decided what to do about
+# it at freeze time. The decision it reached was the right one — exclude both
+# members of every collision group — and the fact that it was reached after the
+# freeze had started is the part this section fixes. An exclusion rule settled
+# while looking at the data is indistinguishable, from the outside, from an
+# exclusion rule settled because of what the data said.
+
+exclusion_policy:
+  declared_before_the_universe_freeze: true
+  frozen_at_rung_4: true
+  amendable_after_rung_4: false
+
+  recompute_every_digest:
+    rule: >-
+      every candidate side's RAW payload and CANONICAL document are re-hashed
+      from the bytes on disk and compared against the digests the manifest
+      records for them. Both, every run, never one of the two.
+    a_missing_recorded_raw_digest_is_not_a_pass: >-
+      a side whose manifest carries no RECORDED raw digest is UNVERIFIABLE and is
+      excluded and named. An absent digest is not treated as agreement; that
+      mapping is the defect class this whole study keeps finding.
+    the_recorded_digest_key_is_not_aliased: >-
+      the recorded raw digest is read from `raw_sha256_recorded` and from no
+      other key. `raw_sha256` means "the digest acquisition wrote down" in the
+      historical cohort manifests and "the digest the enumerator just
+      recomputed" in the V2 enumeration, and comparing a recomputation against
+      itself is a tautology that would report every side verified. One key, one
+      meaning, or the side is excluded.
+
+  canonical_digest_availability:
+    the_gap_declared_before_the_freeze: >-
+      the historical acquisition manifests never recorded a canonical-document
+      digest. There is therefore NOTHING to compare a recomputed canonical
+      digest against for most candidates, and no amount of care at freeze time
+      creates one. This is stated here, before the universe is frozen, because
+      discovering it during the freeze and deciding what to do about it then is
+      precisely the INC-V2-046 shape.
+    what_is_still_done: >-
+      the canonical document is re-hashed for EVERY surviving side and the digest
+      is PINNED in the universe freeze receipt. That gives the property the
+      closure actually needs: the bytes measured are the bytes frozen, and a
+      canonical document that moves between the freeze and the measurement is a
+      refusal at the gate.
+    what_is_not_claimed: >-
+      a side with no recorded canonical digest is NOT verified against
+      acquisition, and is never reported as if it were. It is counted under
+      `canonical_verified_against_acquisition: false` and the count appears in
+      the universe freeze receipt beside the count that was verified.
+    when_a_recorded_canonical_digest_does_exist: >-
+      it must match. The enumerator reports which digest convention it matched
+      via `canonical_digest_convention`; a recorded digest that matched no
+      convention leaves that field null, and such a side is excluded under
+      PAYLOAD_DIGEST_MISMATCH. A recorded digest that cannot be reconciled is a
+      louder signal than no recorded digest at all, not a quieter one.
+
+  upstream_exclusions_are_carried_not_re_decided:
+    rule: >-
+      the enumerating lane applies its own eligibility rules and leaves the rows
+      it dropped in the manifest's `excluded` block with its own category
+      counts. Those are NOT re-decided here and NOT re-litigated; they are cited
+      in the universe freeze receipt by manifest digest together with the
+      enumerator's category counts, so the total accounting from raw candidates
+      to frozen universe is readable end to end.
+    and_re_derived_independently: >-
+      the exclusion policy above is nonetheless applied again to every row the
+      manifest offers as eligible. If the enumerator already removed a colliding
+      or non-disjoint row, this pass finds nothing more to do and says so; if it
+      did not, this pass removes it. Two independent passes over the same rule is
+      the cheap half of defence in depth, and the expensive half — trusting one
+      of them — is what this study keeps paying for.
+
+  collision_detection:
+    structural_not_symptomatic: >-
+      collisions are detected by CACHE KEY, not by a failing digest. A collision
+      whose two members happen to verify is still ambiguous provenance: the
+      manifest records one document's digest beside a cache slot two documents
+      wrote to, and nothing on disk says which write survived. Detecting only via
+      a digest mismatch would silently admit exactly the collisions that
+      overwrote a payload with byte-identical content, or that overwrote it in an
+      order that left the recorded digest intact.
+    collision_keys:
+      - cache_slug
+      - document_slug
+      - before.raw_path
+      - after.raw_path
+      - before.canonical_path
+      - after.canonical_path
+    definition: >-
+      a COLLISION GROUP is the set of all candidate rows that share any one
+      collision key value while carrying different lineage ids. Groups that
+      overlap through a shared row are merged, so a row cannot be excluded under
+      one key and kept under another.
+    the_whole_group_leaves: >-
+      when a collision makes provenance ambiguous, the ENTIRE collision group is
+      excluded — never whichever member is convenient, never only the member
+      whose digest fails, never the member with fewer downstream citations. One
+      member holds the wrong bytes and the other may hold the right ones, and
+      nothing on disk says which is which. Keeping the verifying member is
+      choosing the convenient reading of an ambiguity.
+    enforced_by: >-
+      the universe builder excludes whole groups; the exclusion freeze re-derives
+      the groups from the frozen universe receipt and refuses if any group is
+      partially excluded; and the execution gate re-checks it a third time, so a
+      hand-edited universe receipt is caught before a measurement reads it.
+
+  every_exclusion_is_named_and_counted:
+    rule: >-
+      each excluded lineage id appears in the universe freeze receipt with its
+      reason and its collision-group id where it has one, and the receipt carries
+      per-reason counts and a total. An exclusion that is not named did not
+      happen legitimately.
+    reasons_are_a_closed_set:
+      - NOT_DISJOINT_FROM_THE_538_PAIR_RETROSPECTIVE_COHORT
+      - NOT_DISJOINT_FROM_THE_14_CONFIRMED_SFI2_LINEAGES
+      - NOT_DISJOINT_FROM_THE_V1_FROZEN_UNIVERSE
+      - DUPLICATE_LINEAGE_ALREADY_TAKEN_FROM_AN_EARLIER_MANIFEST
+      - CACHE_KEY_COLLISION_GROUP
+      - PAYLOAD_MISSING
+      - PAYLOAD_DIGEST_MISMATCH
+      - RECORDED_DIGEST_ABSENT
+      - MANIFEST_ROW_MALFORMED
+    applied_in_this_declared_order: >-
+      DUPLICATE_LINEAGE_ALREADY_TAKEN_FROM_AN_EARLIER_MANIFEST, then
+      CACHE_KEY_COLLISION_GROUP, then the three disjointness reasons, then
+      MANIFEST_ROW_MALFORMED, then RECORDED_DIGEST_ABSENT, then PAYLOAD_MISSING,
+      then PAYLOAD_DIGEST_MISMATCH. The order is declared here so that the reason
+      attached to a row is a function of the declaration and not of the order the
+      code happens to test things in. Collision is placed above disjointness on
+      purpose: every member of a collision group is then labelled with the
+      collision, which is what makes "the whole group left" checkable by reading
+      one reason rather than by reasoning across several.
+    digests_are_recomputed_for_rows_that_reach_that_stage: >-
+      a row already excluded above is not hashed. Recomputation is a property of
+      every row that could still enter the universe, which is the population the
+      rule is about.
+    an_unlisted_reason_refuses: >-
+      the builder may not invent an exclusion reason at run time. A row it cannot
+      classify under one of the reasons above refuses the whole freeze rather
+      than being dropped under a new label, because a new label written during a
+      freeze is the thing this section exists to prevent.
+
+  no_post_freeze_exclusion_policy_change:
+    rule: >-
+      after rung 4 the exclusion policy and the realised exclusion set are both
+      pinned. Neither may change.
+    why_this_clause_exists: >-
+      V1 changed its verification behaviour after its freeze — it moved from
+      refusing the whole freeze to excluding individual pairs — and recorded it
+      honestly. Predeclaring is what makes that impossible to do silently rather
+      than merely regrettable to do openly.
+    enforced_by: >-
+      rung 4 pins the canonical digest of THIS block and the sorted realised
+      exclusion set. The gate recomputes both. A policy edit and a set edit fail
+      separately and are named separately, so neither can be explained away as
+      the other.
+
+  p4i_slug_note_for_successors:
+    finding: >-
+      truncating a human-readable slug at a fixed width and using it as cache
+      identity is not collision-resistant, and INC-V2-046 is what that costs.
+    recommendation: >-
+      future acquisition paths should address cached payloads by a
+      collision-resistant or content-addressed identity — the full source id
+      digest, or the payload's own hash — with the readable slug kept as a label
+      beside it rather than as the key.
+    not_a_licence_to_rewrite_history: >-
+      P4i's historical artifacts are NOT re-slugged, re-acquired or rewritten.
+      They are spent evidence and other studies cite them. The collision is
+      handled by exclusion here and by a different identity scheme in whatever is
+      acquired next.
+
+# ---------------------------------------------------------------------------
+# Deliverable 3's input — the candidate universe manifest
+#
+# Enumeration is owned by another lane (`tools/enumerate_v2_universe.py`). This
+# protocol declares the SHAPE it will consume and the machinery refuses loudly on
+# anything else, because guessing at a manifest's meaning is how a closure ends
+# up measuring something other than what was enumerated.
+
+manifest_contract:
+  path: research/tavonel_eval_v2/artifacts/development/v2_universe/v2_universe_candidates.json
+  owner_tool: research/tavonel_eval_v2/tools/enumerate_v2_universe.py
+  not_written_by_this_lane: true
+  enumeration_schema: tavonel.v2.identity_change_migration_closure.v2_universe_enumeration.v1
+  rows_key: pairs
+  accepted_row_key_aliases:
+    - documents
+    - pairs
+    - candidates
+  upstream_excluded_key: excluded
+  upstream_exclusion_summary_key: exclusion_categories
+  required_row_fields:
+    - lineage_id
+    - family
+    - before_version
+    - after_version
+    - before
+    - after
+  accepted_lineage_id_aliases:
+    - lineage_id
+    - document_id
+  optional_row_fields:
+    - cache_slug
+    - document_slug
+  required_side_fields:
+    - raw_path
+    - canonical_path
+  recorded_raw_digest_key: raw_sha256_recorded
+  recorded_canonical_digest_key: canonical_sha256_recorded
+  canonical_digest_convention_key: canonical_digest_convention
+  why_the_recorded_digest_keys_are_named_here_and_not_in_required_side_fields: >-
+    so that the rule has exactly one enforcement site. Listing
+    `raw_sha256_recorded` among the required fields as well would put the check
+    behind a second, earlier guard, and a guard that only ever fires because
+    another guard fires first cannot be shown to work — that is INC-V2-036, a
+    guard sitting where its failure is structurally unreachable. The recorded
+    digest is required, its absence is RECORDED_DIGEST_ABSENT, and one piece of
+    code says so.
+  paths_are_relative_to: the repository root
+  the_manifest_is_not_a_freeze: >-
+    the enumeration declares `is_frozen: false` and `is_evidence: false` about
+    itself. Rung 2 is what turns it into a frozen universe, and rung 2 re-applies
+    the exclusion policy to every row the manifest offers rather than inheriting
+    the enumerator's eligibility decision on trust.
+  a_shape_mismatch_refuses: >-
+    the universe freeze refuses (exit 4) and prints the expected shape beside
+    what it found. It never coerces and never guesses a key. A row whose lineage
+    id cannot be resolved refuses the whole freeze, because a row that cannot be
+    named cannot be excluded by name; a row that has a lineage id but is
+    otherwise unreadable is excluded under MANIFEST_ROW_MALFORMED and named. No
+    row is ever dropped silently — a silently dropped row is an undeclared
+    exclusion.
+  absent_manifest_refuses: >-
+    if the manifest is not on disk the universe freeze refuses. It does not fall
+    back to enumerating candidates itself; enumeration belongs to the lane that
+    owns it and a fallback would put two enumerations in the tree.
+
+# ---------------------------------------------------------------------------
+# Deliverable 3's rung 3 — the scorer and the acceptance semantics
+
+scorer_acceptance:
+  what_rung_3_pins:
+    - the sha256 of every module named in `scorer.modules`
+    - >-
+      the canonical digest of the ACCEPTANCE SEMANTICS — this file's
+      `invariants`, `pass_rule`, `vacuity_rule`, `facet_channels`,
+      `unresolved_fail_closed` and `predeclared_ignored_facets` blocks, taken
+      together as one canonicalised value
+  why_separately_from_rung_1: >-
+    rung 1 pins the whole file, so any edit breaks it. Rung 3 exists because the
+    scorer is CODE and lives outside this file: INC-V2-048 was a condition whose
+    behaviour drifted from the declaration it was supposed to implement, and a
+    protocol digest cannot see that. Pinning the modules makes the drift a
+    refusal. Pinning the acceptance block separately means a change to the
+    grading rule is reported as a change to the grading rule, and not merely as
+    "the protocol moved".
+  scorer:
+    modules:
+      - research/tavonel_eval_v2/tools/identity_change_migration_closure_v2.py
+      - research/tavonel_eval_v2/source_fact_ir/expected_change_status.py
+      - research/tavonel_eval_v2/source_fact_ir/change_facets.py
+    a_named_module_that_is_absent_refuses: true
+    note: >-
+      the runner module is named here as the scorer of record. It does not exist
+      while this protocol is a draft, and rung 3 refuses until it does — which is
+      the correct order: the acceptance semantics cannot be frozen around a
+      scorer that has not been written.
+
+# ---------------------------------------------------------------------------
+# the expectation oracle — carried from V1 unchanged
+
+expectation_oracle:
+  module: research/tavonel_eval_v2/source_fact_ir/expected_change_status.py
+  derives_from: research/tavonel_eval_v2/source_fact_ir/change_facets.py
+  facet_contract_schema: tavonel.v2.source_fact_ir.change_facets.v1
+  verdict_vocabulary:
+    - changed
+    - unchanged
+    - ignored_by_predeclared_policy
+    - unresolved
+  forbidden_imports:
+    - akc_cir.semantic_diff
+    - akc_cir.identity
+    - akc_cir
+    - identity_change_benchmark
+    - canary_identity_change
+  forbidden_attribute_reads:
+    - identity_text
+    - normalize_text_for_identity
+    - MODIFIED_CLAIM
+    - content_facet_verdict
+    - legacy_identity_change_predicate
+  enforced_by: >-
+    an AST walk of the oracle module's own source, run as part of INVARIANT_3 at
+    closure time and again in the test battery. A textual grep would pass on a
+    module that imported the symbol under an alias; the AST walk resolves
+    `import x as y` and attribute access.
+  why: >-
+    the oracle reads a matched unit pair's own fields and resolves the nine
+    declared facets. It never reads either predicate's answer. That is what makes
+    an agreement between oracle and production evidence rather than a
+    restatement.
+
+# ---------------------------------------------------------------------------
+# the facet partition — carried from V1 unchanged
+
+facet_channels:
+  CONTENT:
+    scope: unit
+    production_record: modified_claim
+    unresolved_production_record: modified_claim
+    has_production_channel: true
+  STRUCTURAL:
+    scope: document
+    production_record: structure_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  REFERENCE_LOCATOR:
+    scope: unit
+    production_record: evidence_moved
+    unresolved_production_record: null
+    has_production_channel: true
+  TEMPORAL:
+    scope: unit
+    production_record: temporal_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  METADATA:
+    scope: unit
+    production_record: metadata_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  VISUAL:
+    scope: unit
+    production_record: visual_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  AUTHORITY_APPLICABILITY:
+    scope: unit
+    production_record: authority_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  ACCESSIBILITY:
+    scope: unit
+    production_record: null
+    unresolved_production_record: null
+    has_production_channel: false
+    permanently_unresolved: true
+    why: >-
+      `UnitSnapshot` carries no accessibility field anywhere in this codebase.
+      The facet stays declared so that the absence is countable rather than
+      invisible, and every comparison reports it UNRESOLVED. That is a limitation
+      of the unit representation, not a policy, so it is never reported as
+      ignored_by_predeclared_policy.
+  EXTERNAL_DEPENDENCY_EXECUTION:
+    scope: unit
+    production_record: null
+    unresolved_production_record: null
+    has_production_channel: false
+    permanently_unresolved: true
+    why: same as ACCESSIBILITY.
+
+unresolved_fail_closed:
+  declared_before_execution: true
+  facets_with_a_declared_fail_closed_record: [CONTENT]
+  facets_without_one:
+    - STRUCTURAL
+    - REFERENCE_LOCATOR
+    - TEMPORAL
+    - METADATA
+    - VISUAL
+    - AUTHORITY_APPLICABILITY
+  reported_as: unresolved_without_a_production_fail_closed_behaviour
+  never_reported_as: unchanged
+  never_counted_as: positive channel evidence
+  carried_from_v1_by_ruling: >-
+    INVARIANT_4's cohort population is facets whose oracle verdict is CHANGED.
+    An UNRESOLVED verdict IS the fail-closed alternative and demands no
+    production record on its own unless that facet has a separately declared
+    production fail-closed representation. This is the founder's accepted reading
+    and it is not broadened here.
+  owed_to_a_successor: >-
+    whether production SHOULD distinguish an absent fingerprint from two equal
+    ones is a real question and it is not this closure's.
+
+# ---------------------------------------------------------------------------
+# the identity-uncertainty quarantine channel
+#
+# The repair introduces it. This protocol cannot name its record kind while the
+# repair is still landing, and it refuses to GUESS one — a guessed record name
+# that production never emits would make INVARIANT_6(e) vacuous, which is this
+# study's most-repeated defect. So the field carries a sentinel, and the freeze
+# tool refuses to seal this file while the sentinel is present. The hole is loud
+# and it cannot be frozen past.
+
+quarantine_channel:
+  production_record: PENDING_REPAIR_DECLARATION
+  resolve_to: >-
+    either the exact `ChangeKind` value the repaired `diff_documents` emits for a
+    quarantined identity, or the literal string NONE_DECLARED_BY_PRODUCTION if
+    the repair declares no typed quarantine record.
+  sentinel_blocks_the_freeze: true
+  if_none_declared_by_production: >-
+    INVARIANT_6(e) records UNRESOLVED_NO_PRODUCTION_CHANNEL for every unsettled
+    logical id, counts it, and never counts it as evidence that the channel
+    works. (d) is unaffected and keeps its full power — (d) is written over
+    surfaces that already exist, so the criterion cannot be defeated by the
+    repair choosing not to add a typed record.
+  never: >-
+    this field is never resolved to a record kind that production does not
+    actually emit. The freeze tool checks the named kind exists in
+    `akc_cir.semantic_diff.ChangeKind` and refuses otherwise.
+
+diff_level: L4
+why_L4: >-
+  L4 (GRAPH) is the only level at which every declared production channel is
+  reachable in one call. Running below L4 would leave a channel unreachable and
+  let INVARIANT_4 report a clean result on a channel it never asked about.
+
+predeclared_ignored_facets:
+  rule: >-
+    an ignore is a declaration made in advance, by name, in this file, for a
+    stated reason. It is NEVER inferred from the data: an inferred ignore is
+    indistinguishable from a bug that happens to produce matching empty values.
+  by_family:
+    git_docs: []
+    regulation_ecfr: []
+    encyclopedia_wikipedia: []
+    sec_edgar: []
+  consequence: >-
+    the declaration is empty for every family in this cohort. INVARIANT_7 is
+    therefore the tightest form it can take: zero facets may be treated as
+    change-equivalent, and any facet the closure treats as change-equivalent is a
+    violation.
+
+# ---------------------------------------------------------------------------
+# acceptance criteria — the same eight invariants
+#
+# INVARIANT_1, 2, 3, 4, 5 and 7 are carried from V1 verbatim. INVARIANT_6 and
+# INVARIANT_8 are changed, and both changes are declared in `protocol_delta`
+# above with their repair-semantics reasons.
+
+invariants:
+
+  INVARIANT_1_identity_decisions_unchanged:
+    statement: >-
+      logical identity and identity-resolver decisions are unchanged by the
+      migration.
+    executable_meaning: >-
+      for every frozen pair, `diff_documents` is called twice on byte-identical
+      inputs, once with legacy_identity_change_predicate=True and once with
+      False. (a) the ordered list of identity-sensitive change records —
+      unit_added, unit_removed, identity_unresolved, evidence_moved, each as its
+      full `as_record()` including candidates — must be identical between the two
+      calls; (b) the `unresolved` tuple each call returns must be identical;
+      (c) the set of counterpart logical ids named by modified_claim under
+      EITHER predicate must be a subset of the matched-counterpart set obtained
+      by running `assign_one_to_one` independently on the same fingerprints,
+      with AMBIGUOUS and NEW decisions excluded — so neither predicate can
+      create a match that the resolver did not make.
+    population: every resolved pair in the frozen universe.
+    violation: any pair where (a), (b) or (c) fails.
+    met_when: violations == 0 AND exercising_pairs > 0.
+    why_not_the_internal_decision_list: >-
+      `diff_documents` does not return the resolver's decisions, so comparing
+      them "between the two calls" is not executable from outside. (a) and (b)
+      are the observable projection of those decisions and (c) closes the one
+      direction the projection could miss. Specifying the unobservable version
+      would have been INC-V2-036 again — a guard on a seam nothing can reach.
+    can_come_back_red_because: >-
+      the test battery feeds the closure a legacy-side diff whose
+      identity_unresolved candidates differ by one element and asserts it FAILS,
+      and a diff whose modified_claim names a logical id the resolver left
+      AMBIGUOUS and asserts it FAILS.
+
+  INVARIANT_2_identity_fold_remains_identity_only:
+    statement: >-
+      `normalize_text_for_identity` remains an identity-only lossy
+      normalization and has NOT become content-sensitive.
+    executable_meaning: >-
+      over a declared closed set of fold classes — nfkc_compatibility,
+      case_only, punctuation_to_space, whitespace_collapse — and over BOTH
+      synthetic fixtures and real unit texts drawn from the frozen cohort and
+      perturbed by each class, assert
+      `normalize_text_for_identity(a) == normalize_text_for_identity(b)` for
+      every (a, b) the class relates. Additionally assert the fold is genuinely
+      lossy on the real cohort: at least one real perturbed pair must have
+      unequal raw text and equal folds, so the check cannot pass by the fold
+      having become an identity function on trivial inputs.
+    population: >-
+      the declared fold classes crossed with the frozen cohort's real unit
+      texts, plus the synthetic fixture battery.
+    violation: >-
+      any class instance where the two folds differ, or a lossiness witness
+      count of zero.
+    met_when: violations == 0 AND lossiness_witnesses > 0.
+    can_come_back_red_because: >-
+      making the fold content-sensitive — dropping the casefold, dropping the
+      punctuation fold, or returning the raw text — breaks the equalities for
+      that class. The test battery monkeypatches the fold to a
+      content-sensitive one and asserts the closure FAILS.
+    the_repair_this_forbids: >-
+      "compare raw text instead" applied to `normalize_text_for_identity`. It
+      would fix change detection by destroying unit identity across revisions,
+      which is the thing the normalization exists to protect.
+
+  INVARIANT_3_expectation_is_independent:
+    statement: >-
+      expected change status comes from the independent SourceFact/facet
+      contract, never from legacy output and never from new production output.
+    executable_meaning: >-
+      (a) an AST walk of `expected_change_status.py` and of every module it
+      imports from within `source_fact_ir/` finds none of
+      `expectation_oracle.forbidden_imports` and none of
+      `expectation_oracle.forbidden_attribute_reads`, resolving `import x as y`
+      and attribute access rather than matching text; (b) `inspect.signature` of
+      the oracle entry point declares exactly the parameters
+      (before, after, channels, ignored) — there is no parameter through which a
+      diff, a change record or a predicate flag could enter, and an added one is
+      a violation; (c) the loaded oracle module's `__dict__` contains no module
+      object whose name resolves under `akc_cir`, so the ban cannot be evaded by
+      an import performed at call time.
+    population: the oracle module set, and every resolved pair.
+    violation: any forbidden import, forbidden attribute read, signature leak, or
+      runtime-bound forbidden module.
+    met_when: violations == 0 AND exercising_pairs > 0.
+    can_come_back_red_because: >-
+      the test battery points the AST check at a variant oracle module that
+      imports `akc_cir.semantic_diff` and asserts the closure FAILS, and at a
+      second variant that reads `identity_text` under an alias.
+
+  INVARIANT_4_changed_facet_resolves_typed_or_failclosed:
+    statement: >-
+      a changed, non-ignored, compiled-relevant facet resolves to a typed
+      change OR to UNRESOLVED / fail-closed.
+    executable_meaning: >-
+      for every resolved pair and every facet the oracle reports `changed`:
+      if `facet_channels[facet].has_production_channel` is true, the production
+      diff must carry that facet's `production_record` at the declared scope
+      (unit scope: keyed on the counterpart logical id; document scope: present
+      anywhere in the diff); if it is false, the closure records the facet as
+      UNRESOLVED_NO_PRODUCTION_CHANNEL. Neither outcome may be `unchanged`.
+    population: >-
+      every (resolved pair, facet) whose oracle verdict is `changed` and whose
+      facet is not in `predeclared_ignored_facets` for that pair's family.
+    violation: >-
+      a changed facet with a production channel and no matching record, or a
+      changed facet recorded as unchanged.
+    met_when: violations == 0 AND exercising_facet_observations > 0.
+    can_come_back_red_because: >-
+      the test battery builds a pair whose CONTENT facet changed and feeds a
+      diff with the MODIFIED_CLAIM record removed, and asserts the closure
+      FAILS; and repeats it for the locator channel.
+
+  INVARIANT_5_never_silently_unchanged:
+    statement: it may not silently become `unchanged`.
+    executable_meaning: >-
+      four checks, three of them on the oracle and one on production.
+      (a) EXHAUSTIVE MAPPING PROPERTY — every one of the nine declared facets is
+      crossed with every one of the four declared verdicts and with both channel
+      states, all 72 combinations evaluated, and the closure asserts that no
+      combination whose verdict is `changed` or `unresolved` returns an
+      obligation that silence would discharge. With a production channel the
+      obligation must be `require_typed_change` or `require_fail_closed`;
+      without one it must be exactly `unresolved_no_production_channel`, never
+      `no_obligation`. This is a property of the oracle, evaluated over its whole
+      input domain, not a restatement of what it happens to return on the cohort.
+      (b) VOCABULARY CLOSURE — an unknown facet name and an unknown verdict must
+      each raise `ContractBroken`; the closure calls both and records a violation
+      if either returns a value instead.
+      (c) PERMISSIVE SET CLOSURE — `require_typed_change` and
+      `require_fail_closed` must not be members of
+      `OBLIGATIONS_SATISFIED_BY_SILENCE`.
+      (d) PRODUCTION FAIL-CLOSED — at unit scope, a CONTENT facet of `changed`
+      or `unresolved` requires a modified_claim record on that matched pair, and
+      its absence is a violation.
+    population: >-
+      the oracle's full 72-combination input domain, plus every
+      (resolved pair, facet) for (d).
+    violation: any of (a) through (d).
+    met_when: >-
+      violations == 0 AND mapping_combinations_evaluated == 72 AND
+      unresolved_observations > 0.
+    note_on_power: >-
+      `unresolved_observations > 0` is not decoration. ACCESSIBILITY and
+      EXTERNAL_DEPENDENCY_EXECUTION are permanently unresolved on this unit
+      representation, so the population is non-empty by construction — but the
+      closure counts it rather than assuming it, because an assumption is what
+      INC-V2-036 was.
+    can_come_back_red_because: >-
+      the test battery replaces `obligation_for` with one that maps `unresolved`
+      to `no_obligation` and asserts the closure FAILS on (a); with one that
+      returns a value for an unknown verdict instead of raising and asserts it
+      FAILS on (b); it adds `require_fail_closed` to the permissive set and
+      asserts it FAILS on (c); and it removes a modified_claim from a pair whose
+      CONTENT facet changed and asserts it FAILS on (d).
+
+  INVARIANT_6_ambiguous_identity_stays_unresolved:
+    statement: >-
+      ambiguous identity remains unresolved rather than being forced into
+      continuity, and the unresolved state remains VISIBLE on the diff and
+      evidence surface rather than being discharged by silence.
+    executable_meaning: >-
+      for every production `identity_unresolved` record, (a) the incoming
+      logical id it names appears in no `modified_claim`, no `unit_added` and
+      no `unit_removed` record in the same diff; (b) none of the record's named
+      candidates appears as `unit_removed` — that spelling would assert a
+      deletion the resolver explicitly declined to make; (c) the closure's own
+      matched-pair reproduction excludes every AMBIGUOUS decision, so an
+      ambiguous unit never reaches the facet oracle as a matched pair at all;
+      (d) TOTAL ACCOUNTING — over the whole unit population of the pair, every
+      before-side logical id is accounted for by exactly one of {matched
+      counterpart, unit_removed, NAMED in an identity_unresolved record as its
+      subject or among its candidates} and every after-side logical id by
+      exactly one of {matched counterpart, unit_added, NAMED in an
+      identity_unresolved record as its subject or among its candidates}. A unit
+      that is none of those has left the diff without a statement about it, and
+      that is a violation whether or not any contradictory record was emitted.
+      NAMED means a non-empty logical id string: an empty candidate entry names
+      nothing, and a criterion that accepted one could be satisfied by a record
+      that says a unit is implicated by something it declines to identify;
+      (e) QUARANTINE CHANNEL — if `quarantine_channel.production_record` names a
+      record kind, every unsettled logical id must be named by a record of that
+      kind, and its absence is a violation; if it is
+      NONE_DECLARED_BY_PRODUCTION, each unsettled logical id is recorded as
+      UNRESOLVED_NO_PRODUCTION_CHANNEL, counted, and never counted as evidence
+      that the channel works.
+    population: >-
+      every identity_unresolved record in the frozen universe, plus the whole
+      before-side and after-side unit population of every resolved pair for (d),
+      plus the declared AMBIGUOUS fixture battery.
+    violation: any of (a), (b), (c), (d), (e).
+    met_when: >-
+      violations == 0 AND (cohort observations > 0 OR fixture observations > 0),
+      with the two counts reported separately and never summed into one
+      denominator, AND accounted_unit_observations > 0 for (d).
+    zero_tolerance: >-
+      unchanged from V1 and unchangeable here. One violating (lineage,
+      logical_id) case is a VIOLATED verdict and a FAIL. There is no rate, no
+      budget and no allowance, and none may be added.
+    silence_is_not_a_repair: >-
+      the failure mode (d) exists for: an unsettled identity whose contradictory
+      `unit_removed` is deleted and replaced with nothing. Clauses (a) and (b)
+      go green on that, because they only look for contradictions and the
+      contradiction is gone. (d) fails on it, because the before-side unit is
+      then matched by nothing, removed by nothing and named by nothing. A
+      suppressed record is not a quarantined identity.
+    can_come_back_red_because: >-
+      the test battery injects a diff in which an identity_unresolved unit also
+      carries a modified_claim, and one in which a named candidate is reported
+      unit_removed, and asserts the closure FAILS on each; and it injects a diff
+      in which a before-side unit is neither matched, nor removed, nor named in
+      any identity_unresolved record, and asserts the closure FAILS on (d).
+
+  INVARIANT_7_only_predeclared_ignores:
+    statement: >-
+      predeclared ignored differences are the ONLY permitted change-equivalent
+      differences.
+    executable_meaning: >-
+      (a) the ignore declaration is read from THIS file, at the digest the
+      freeze receipt pins, never from a default in code; (b) every facet the
+      closure reports `ignored_by_predeclared_policy` must be named in the
+      declaration for that pair's family; (c) every (pair, facet) the closure
+      treats as change-equivalent — a `changed` facet for which no production
+      record is required — must be named in the declaration. With the
+      declaration empty for every family in this cohort, (c) reduces to: the
+      count of change-equivalent facet observations must be zero.
+    population: every (resolved pair, facet).
+    violation: any ignore not named in the frozen declaration.
+    met_when: violations == 0 AND exercising_facet_observations > 0.
+    can_come_back_red_because: >-
+      the test battery runs the closure with a facet marked ignored that the
+      frozen declaration does not name, and asserts it FAILS; and with an
+      ignore inferred from empty data on both sides, and asserts it FAILS.
+
+  INVARIANT_8_sfi2_cases_cannot_certify:
+    statement: >-
+      the 14 SFI2 cases remain development regressions only and cannot certify
+      this closure, and no pair any earlier closure already measured enters this
+      one.
+    executable_meaning: >-
+      (a) the frozen universe's lineage id set is disjoint from the union of
+      `sfi1_acquisition.admitted` and `sfi2_acquisition.admitted` — the 538-pair
+      retrospective cohort — and therefore from the 14 confirmed lineages inside
+      it; (b) the 14 confirmed lineage ids are read from the frozen SFI2 receipt
+      for the disjointness proof ONLY, and appear in no invariant's numerator or
+      denominator; (c) the frozen universe's lineage id set is ALSO disjoint from
+      the lineage id set of V1's frozen universe receipt, which is read for its
+      lineage ids only and for no verdict, count or violated case; (d) the
+      closure reports `sfi2_pairs_in_any_denominator: 0`,
+      `v1_pairs_in_any_denominator: 0` and
+      `retrospective_receipts_read_for_grading: []`.
+    population: the frozen universe.
+    violation: >-
+      any intersection with the 538, with the 14, or with V1's universe, or any
+      SFI2-derived or V1-derived pair in any denominator.
+    met_when: violations == 0 AND cohort_pairs > 0.
+    can_come_back_red_because: >-
+      the test battery inserts one confirmed-defect lineage id into a stand-in
+      frozen universe and asserts the closure FAILS, and inserts one lineage id
+      drawn from V1's frozen universe and asserts the closure FAILS.
+    v1_is_read_for_ids_only: >-
+      subtracting V1's lineages is the only use V2 makes of V1. No V1 verdict is
+      read, V1's FAIL is not reinterpreted, and V1 is never a denominator here —
+      neither a positive one nor a negative one.
+
+vacuity_rule:
+  statement: a closure over zero pairs FAILS as vacuous. It never PASSES.
+  executable_meaning: >-
+    `pairs_resolved == 0` yields overall VACUOUS_FAIL before any invariant is
+    graded. Per invariant, an exercising count of zero yields UNPROVEN, and an
+    UNPROVEN invariant can never contribute to a PASS.
+  why: >-
+    this study's recurring defect is a check that reports a clean result because
+    it is watching nothing. Zero observations is the purest form of it.
+
+pass_rule:
+  requires_all_of:
+    - "pairs_resolved > 0"
+    - "all eight invariants MET"
+    - "no invariant UNPROVEN"
+    - "the protocol freeze receipt exists and pins this file's sha256"
+    - "the universe freeze receipt exists and names the protocol freeze run id"
+    - >-
+      the scorer/acceptance freeze receipt exists, names the universe freeze run
+      id, and every pinned module digest still matches disk
+    - >-
+      the exclusion freeze receipt exists, names the scorer freeze run id, and
+      both the exclusion policy digest and the realised exclusion set still match
+    - "every collision group is wholly excluded"
+  no_threshold: >-
+    there is no rate, bound, quota or tolerance anywhere in this rule. A PASS is
+    zero violations on eight structural predicates over a non-empty population.
+  what_a_pass_authorises: >-
+    recording that the INC-V2-037 migration and the INC-V2-047 repair have a
+    prospectively frozen closure on a universe disjoint from the retrospective
+    538, from the 14 confirmed SFI2 lineages and from V1's universe. Nothing
+    more. It does not make the retrospective receipts prospective, does not
+    qualify the ladder retroactively, does not overturn V1's FAIL, does not
+    certify SFI3, and does not authorise GPU spend.
+  what_a_fail_means: >-
+    a negative closure result, reported as one. Not a reason to widen a facet,
+    add an ignore, move a scope, drop a pair or re-run. V2 runs once.
+  a_pass_does_not_retire_v1s_fail: >-
+    V1 measured a universe, on a protocol frozen before it, and failed. That
+    remains true afterwards. A V2 PASS says the repaired system holds on NEW
+    material; it does not say V1's material would now hold, because V1's material
+    is not re-measured and V1's result is not re-opened.
+
+# ---------------------------------------------------------------------------
+# cohort
+
+cohort:
+  path_taken: NEW_DISJOINT_UNIVERSE_ENUMERATED_BY_ANOTHER_LANE
+  declared_before_execution: true
+  enumerated_by: research/tavonel_eval_v2/tools/enumerate_v2_universe.py
+  consumed_as: see `manifest_contract`
+  selection_rule: >-
+    the complete candidate universe as the enumerating lane leaves it, taken in
+    the order the manifest declares, deduplicated by lineage id keeping the first
+    occurrence, then filtered by the declared exclusion policy alone. No pair is
+    selected or dropped by any property of its content, and no pair is selected
+    or dropped by any closure outcome — V1's, V2's or any other. The selection
+    function never calls either change predicate.
+  document_construction: >-
+    the canonical documents already written to disk beside each candidate, read
+    as JSON and passed to `compiler/selective_build.snapshots`. Nothing is
+    re-canonicalised and nothing is re-fetched.
+  network: FORBIDDEN. The closure makes no outbound request of any kind.
+  disjointness:
+    from_the_538_pair_retrospective_cohort: REQUIRED, by lineage id, proven in the universe freeze receipt
+    from_the_14_SFI2_forensic_cases: REQUIRED, proven explicitly and separately
+    from_the_V1_frozen_universe: REQUIRED, by lineage id, proven in the universe freeze receipt
+  sfi3_prohibition:
+    absolute: true
+    forbidden:
+      - artifacts/development/sfi3_lineages.json
+      - any SFI3 acquisition artifact
+      - any SFI3 payload, cached or fresh
+      - any SFI3 revision payload or expansion
+      - any network fetch for SFI3
+    fresh_sfi3_is: >-
+      the prospective confirmatory evidence, owned by another lane, and it is not
+      consumed here.
+
+# ---------------------------------------------------------------------------
+# the fixture battery — carried from V1, plus the one clause (d) needs
+#
+# Frozen with this file BEFORE execution, DEVELOPMENT evidence only, counts
+# reported separately and never added to a cohort denominator. Every declared id
+# must have a registered builder and every registered builder must be declared;
+# the runner refuses on either mismatch.
+
+fixture_battery:
+  standing: DEVELOPMENT_GATE_POWER_ONLY
+  never_summed_into_a_cohort_denominator: true
+  classes:
+    fold_nfkc_compatibility:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold an NFKC compatibility difference
+    fold_case_only:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold a case-only difference
+    fold_punctuation_to_space:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold punctuation to space
+    fold_whitespace_collapse:
+      invariant: INVARIANT_2
+      exercises: the identity fold must collapse whitespace
+    facet_temporal_changed:
+      invariant: INVARIANT_4
+      exercises: a changed TEMPORAL facet must produce temporal_changed
+    facet_metadata_changed:
+      invariant: INVARIANT_4
+      exercises: a changed METADATA facet must produce metadata_changed
+    facet_visual_changed:
+      invariant: INVARIANT_4
+      exercises: a changed VISUAL facet must produce visual_changed
+    facet_authority_changed:
+      invariant: INVARIANT_4
+      exercises: a changed AUTHORITY_APPLICABILITY facet must produce authority_changed
+    facet_locator_changed:
+      invariant: INVARIANT_4
+      exercises: a changed REFERENCE_LOCATOR facet must produce evidence_moved
+    content_unresolved_projection_fails_closed:
+      invariant: INVARIANT_5
+      exercises: >-
+        production's own `semantic_diff.content_facet_verdict` must return
+        `unresolved` — never `unchanged` — for a pair whose text is not
+        comparable, and the independent facet contract must agree.
+    ambiguous_identity_stays_unresolved:
+      invariant: INVARIANT_6
+      exercises: >-
+        a physically reordered document drives the resolver to AMBIGUOUS; the
+        incoming unit must appear in no modified_claim, no unit_added and no
+        unit_removed, and its candidates must not be reported removed
+    unsettled_identity_is_not_discharged_by_silence:
+      invariant: INVARIANT_6
+      exercises: >-
+        a before-side unit that shares a logical id with an unsettled incoming
+        unit must be ACCOUNTED FOR — matched, removed, or named in the
+        identity_unresolved record. Emitting nothing about it must FAIL clause
+        (d). This is the fixture that distinguishes a quarantine from a
+        suppression, and it is the reason (d) exists.
+
+# ---------------------------------------------------------------------------
+# execution
+
+execution:
+  order:
+    - "1. freeze this protocol (immutable receipt)"
+    - "2. freeze the complete candidate universe (immutable receipt)"
+    - "3. freeze the scorer and the acceptance semantics (immutable receipt)"
+    - "4. freeze the exclusion policy and the realised exclusion set (immutable receipt)"
+    - "5. run the closure exactly once against the frozen universe"
+    - "6. write the measurement receipt (immutable)"
+  runs_after: the INC-V2-047 repair has landed through the Protected Core ladder
+  scored_once: true
+  what_counts_as_a_score: >-
+    a run that produces a graded result. A run that raises before grading — a
+    missing file, a crash, a refused precondition — is not a score, produces no
+    receipt, and is repaired and re-run. Declared here BEFORE execution so that
+    the distinction cannot be invented afterwards to justify a second attempt at
+    a result somebody did not like. A run that grades is the run, whichever way
+    it comes out, and it is reported.
+  smoke_tests: >-
+    FIXTURES ONLY, and only before the freeze. No candidate pair is read before
+    the protocol freeze receipt exists.
+  single_writer: true
+  gpu_seconds: 0
+  cost_usd: 0
+  network: forbidden
+
+release:
+  ip_gate: CLOSED
+  docs_ip: untouched
+  public_release: forbidden
+
+# ---------------------------------------------------------------------------
+# what this closure cannot establish, stated before it runs
+
+declared_blind_spots:
+  - >-
+    five of nine facets are permanently UNRESOLVED on this unit representation,
+    so INVARIANT_4's cohort evidence covers CONTENT, STRUCTURAL and
+    REFERENCE_LOCATOR only. The rest rests on the fixture battery, which is
+    development evidence.
+  - >-
+    this closure measures the change PREDICATE and the identity-uncertainty
+    surface. It does not measure whether a detected change creates a rebuild
+    request — that is SFI3's E9 and belongs to another lane.
+  - >-
+    no threshold anywhere in this repository is calibrated, including the 0.92
+    identity merge bar the resolver uses. INVARIANT_6 measures that ambiguity
+    fails closed and stays visible, not that the bar is in the right place.
+  - >-
+    the universe is development material. A closure on development data is a
+    closure on development data.
+  - >-
+    INVARIANT_6(d) proves that no unit left the diff without a statement about
+    it. It does not prove the statement is the RIGHT one — that an unsettled
+    identity ought to have been settled, or ought not to have been. That needs an
+    identity oracle independent of the resolver, and none exists.

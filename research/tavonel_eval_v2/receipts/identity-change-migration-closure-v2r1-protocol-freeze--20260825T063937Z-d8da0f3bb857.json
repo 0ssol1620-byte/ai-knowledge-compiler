@@ -1,0 +1,49 @@
+{
+  "acceptance_semantics_sha256": "sha256:11d759493e2f47a59770d401ab7186be3916fdfe3116d3da961213d939ff0838",
+  "estimated_cost_usd": 0.0,
+  "exclusion_policy_sha256": "sha256:fd9ee9f2d4f27647f38b9ca903ba875924efc2cf9f97bd447e68b20c480a70d5",
+  "frozen_before_any_candidate_pair_was_read": true,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "prior_rung": {
+    "frame_module_sha256": "sha256:c4b504100aa04106a8c6a9a2ef30c037aa3ea0c6f9b0f21e65796ae252fcede5",
+    "receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-acquisition-frame-freeze--20260825T063736Z-eb47b3b794f4.json",
+    "run_id": "20260825T063736Z-eb47b3b794f4",
+    "rung": 0,
+    "rung_name": "acquisition_frame"
+  },
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+  "protocol_path": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1.yaml",
+  "protocol_sha256": "sha256:6dd0e03316f0c15f814a1750645cb052356c0b537b1be6df471e5ba16ae229ad",
+  "provenance": {
+    "generated_at": "2026-08-25T06:39:37.591353+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1.yaml",
+    "protocol_sha256": "sha256:6dd0e03316f0c15f814a1750645cb052356c0b537b1be6df471e5ba16ae229ad",
+    "receipt_stem": "identity-change-migration-closure-v2r1-protocol-freeze",
+    "run_id": "20260825T063937Z-d8da0f3bb857",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:21e89ed92cdccd27616267ae75ff1f85bad74bbec882f4ebd0e8cf3f85fb053a"
+  },
+  "quarantine_channel": {
+    "observed_unresolved_kinds": [
+      "identity_unresolved"
+    ],
+    "production_record": "identity_unresolved",
+    "verification": "executed the repaired diff path and observed the kinds emitted on production's UNRESOLVED channel",
+    "verified_against_production": true
+  },
+  "receipt_sha256": "sha256:c27574c69fb0c3bb9e323aba034594cadc31aa3f58f37a4649323b40e1806344",
+  "rung": 1,
+  "rung_name": "protocol",
+  "schema": "tavonel.v2.protocol_freeze.v3",
+  "supersedes": {
+    "preserved": true,
+    "protocol_file_unchanged": true,
+    "receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-protocol-freeze--20260825T062844Z-6cfc6457c88d.json",
+    "run_id": "20260825T062844Z-6cfc6457c88d",
+    "why": "rung 0 was superseded to add the source roots the first frame omitted, which left this receipt pointing at a frame no longer in force. The protocol file itself is byte-identical."
+  }
+}

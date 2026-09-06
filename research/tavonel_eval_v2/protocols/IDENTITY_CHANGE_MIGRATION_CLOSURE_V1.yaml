@@ -1,0 +1,768 @@
+# IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 (ICMC1) — closure of the INC-V2-037
+# predicate migration, on a development cohort disjoint from the retroactive
+# 538-pair safety regression.
+#
+# DRAFT UNTIL ITS FREEZE RECEIPT EXISTS. This file binds nothing until
+# `tools/freeze_migration_closure.py protocol` has written an immutable receipt
+# under the stem below, and the closure runner refuses to execute unless that
+# receipt exists and pins this file's sha256. Freezing after measuring is
+# exactly INC-V2-042 and the runner is built so it cannot be done by accident.
+#
+# This protocol does NOT re-open, re-run, re-score or amend the two receipts
+# named in `retrospective_evidence`. They are immutable and are read by digest.
+
+schema: tavonel.v2.protocol.identity_change_migration_closure.v1
+protocol_id: IDENTITY_CHANGE_MIGRATION_CLOSURE_V1
+status: DRAFT_NOT_FROZEN
+split: development
+authorised_by: >-
+  founder ruling on INC-V2-042, 2026-08-25. Keep the production implementation;
+  preserve the legacy predicate as a pinned reference path; reclassify the two
+  existing receipts as retrospective migration safety regression rather than
+  prospective ladder qualification; choose no numerical acceptance threshold
+  from the observed 1.10% over-fire delta; treat that delta as descriptive only.
+
+freeze:
+  stem: identity-change-migration-closure-protocol-freeze
+  tool: research/tavonel_eval_v2/tools/freeze_migration_closure.py
+  must_precede:
+    - the universe freeze receipt
+    - the closure measurement receipt
+  enforced_by: >-
+    `tools/identity_change_migration_closure.py` reads the freeze receipt,
+    recomputes this file's sha256 and refuses (exit 4) on any mismatch or
+    absence. Ordering is therefore proven by the runner's own precondition, not
+    only by comparing two wall-clock stamps. Both are recorded.
+
+# ---------------------------------------------------------------------------
+# what happened, and what this protocol is and is not
+
+background:
+  defect: >-
+    INC-V2-037. `akc_cir.semantic_diff.diff_documents` decided MODIFIED_CLAIM
+    from `counterpart.identity_text != incoming.identity_text`, where
+    `identity_text` is `akc_cir.identity.normalize_text_for_identity` — an
+    NFKC + casefold + punctuation-to-space + whitespace-collapse fold whose
+    insensitivity is the feature for identity continuity and the defect for
+    change detection. 14 confirmed selective stale escapes in the frozen SFI2
+    FAIL resolve to that one cause.
+  production_state: >-
+    the switch has landed. MODIFIED_CLAIM is decided by
+    `semantic_diff.content_facet_verdict`, an NFC-only CONTENT projection, and
+    an UNRESOLVED content facet fails closed as a modification rather than
+    passing as unchanged.
+  preserved_reference_path: >-
+    `diff_documents(legacy_identity_change_predicate=True)` is the pinned
+    pre-INC-V2-037 path. It is PRESERVED, not removed, and this protocol
+    forbids removing it. It is a reference instrument only; it is never a
+    ground-truth oracle here (see `legacy_is_not_ground_truth`).
+  process_defect: >-
+    INC-V2-042. The Protected Core ladder ran out of order: the production
+    switch shipped before the benchmark and the canary, which were then
+    produced retroactively in a later session by the same agent that wrote the
+    gate grading them.
+
+retrospective_evidence:
+  standing: RETROSPECTIVE_MIGRATION_SAFETY_REGRESSION
+  not: PROSPECTIVE_LADDER_QUALIFICATION
+  receipts:
+    - receipts/identity-change-benchmark--20260824T092056Z-eb6269afcbd0.json
+    - receipts/identity-change-canary--20260824T092141Z-36fa48664af6.json
+  immutable: true
+  never_edited: true
+  never_deleted: true
+  reclassification_recorded_in:
+    - >-
+      a NEW append-only immutable receipt under the stem
+      `identity-change-ladder-reclassification`, which cites both receipts by
+      file digest and alters neither
+    - incident_ledger.md, INC-V2-045
+  how_they_may_be_read: >-
+    as a measurement of what the switch cost on 538 already-spent revision
+    pairs, taken after the switch, by a party who already knew which direction
+    was convenient. That is a safety regression and it is worth having. It is
+    not the prospective qualification the ladder asks for and this protocol
+    does not turn it into one.
+
+legacy_is_not_ground_truth:
+  rule: >-
+    legacy disagreement is NEVER ground truth in this closure. The legacy
+    predicate is the defect under repair. A unit the legacy predicate called
+    unchanged and the production predicate calls changed is an
+    OVER_FIRE_RELATIVE_TO_LEGACY and nothing more; it is not a false positive
+    and this protocol forbids that word for it.
+  descriptive_only: >-
+    the 1.10% over-fire figure in the retrospective benchmark is descriptive.
+    It is not an acceptance criterion, not a bound, not a budget, and no
+    criterion below is derived from it.
+  no_independent_oracle_exists: >-
+    calling an over-fire a false positive would require an oracle independent
+    of both predicates that says the unit's compiled-relevant state did not
+    move. None exists. Where this closure needs an expectation it takes it from
+    the declared facet contract, which is derived from the unit's own fields
+    and imports neither predicate.
+
+# ---------------------------------------------------------------------------
+# outcome independence
+
+anti_fitting:
+  threshold_free: >-
+    every acceptance criterion below is a zero-tolerance structural predicate
+    over declared populations. No criterion carries a rate, a bound, a quota, a
+    ratio or a tolerance. There is nothing here that could be tuned to an
+    observed number, because there is no number to tune.
+  outcome_independent: >-
+    no criterion was chosen after seeing a closure result. A threshold may be
+    used in this study only if it was demonstrably declared BEFORE the results
+    it grades existed. None was declared for the migration, so none is used.
+  a_violation_is_reported_as_a_violation: >-
+    a FAIL is a result. It is never absorbed by widening a facet, adding an
+    ignore, dropping a pair from a denominator or re-running until green. The
+    closure runs ONCE against the frozen universe.
+  what_may_never_be_changed_to_make_this_pass:
+    - >-
+      `akc_cir.identity.normalize_text_for_identity` must NEVER be made
+      content-sensitive. That repair is explicitly ruled out; INVARIANT_2 exists
+      to catch it.
+    - >-
+      `unknown` and `unresolved` must NEVER be mapped to `unchanged`.
+      INVARIANT_5 exists to catch it.
+    - >-
+      `legacy_identity_change_predicate` must NEVER be removed.
+    - "the two retrospective receipts must never be edited or deleted."
+
+# ---------------------------------------------------------------------------
+# the expectation oracle
+#
+# The single most important structural rule in this protocol. Expected change
+# status comes from the independent SourceFact/facet contract and from nothing
+# else. Reading it off either predicate would make the closure's agreement with
+# that predicate a tautology — the exact shape INC-V2-036 and INC-V2-037 name.
+
+expectation_oracle:
+  module: research/tavonel_eval_v2/source_fact_ir/expected_change_status.py
+  derives_from: research/tavonel_eval_v2/source_fact_ir/change_facets.py
+  facet_contract_schema: tavonel.v2.source_fact_ir.change_facets.v1
+  verdict_vocabulary:
+    - changed
+    - unchanged
+    - ignored_by_predeclared_policy
+    - unresolved
+  forbidden_imports:
+    - akc_cir.semantic_diff
+    - akc_cir.identity
+    - akc_cir
+    - identity_change_benchmark
+    - canary_identity_change
+  forbidden_attribute_reads:
+    - identity_text
+    - normalize_text_for_identity
+    - MODIFIED_CLAIM
+    - content_facet_verdict
+    - legacy_identity_change_predicate
+  enforced_by: >-
+    an AST walk of the oracle module's own source, run as part of INVARIANT_3
+    at closure time and again in the test battery. A textual grep would pass on
+    a module that imported the symbol under an alias; the AST walk resolves
+    `import x as y` and attribute access.
+  why: >-
+    the oracle reads a matched unit pair's own fields — text, document path,
+    anchor, explicit identifier, evidence id, page number, temporal, metadata
+    and visual fingerprints, authority — and resolves the nine declared facets.
+    It never reads either predicate's answer. That is what makes an agreement
+    between oracle and production evidence rather than a restatement.
+
+# ---------------------------------------------------------------------------
+# the facet partition, and which facets production has a channel for
+#
+# Declared BEFORE execution. A facet with a production channel must produce the
+# named record when the oracle says that facet changed. A facet with NO
+# production channel resolves UNRESOLVED_NO_PRODUCTION_CHANNEL and fails closed:
+# it is recorded, it is never silently `unchanged`, and it never counts as
+# evidence that the channel works.
+
+facet_channels:
+  CONTENT:
+    scope: unit
+    production_record: modified_claim
+    unresolved_production_record: modified_claim
+    has_production_channel: true
+    note: >-
+      the one facet for which production declares a fail-closed behaviour on an
+      unresolved verdict: `diff_documents` emits modified_claim with a detail
+      saying the content facet was unresolved, rather than passing the pair as
+      unchanged.
+  STRUCTURAL:
+    scope: document
+    production_record: structure_changed
+    unresolved_production_record: null
+    has_production_channel: true
+    note: >-
+      production reports structure at document scope (`DocumentShape`
+      heading_path_set / block_count / unit_order), not per matched unit. The
+      required record is therefore document-scoped and this protocol says so
+      rather than pretending a per-unit record exists.
+  REFERENCE_LOCATOR:
+    scope: unit
+    production_record: evidence_moved
+    unresolved_production_record: null
+    has_production_channel: true
+  TEMPORAL:
+    scope: unit
+    production_record: temporal_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  METADATA:
+    scope: unit
+    production_record: metadata_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  VISUAL:
+    scope: unit
+    production_record: visual_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  AUTHORITY_APPLICABILITY:
+    scope: unit
+    production_record: authority_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  ACCESSIBILITY:
+    scope: unit
+    production_record: null
+    unresolved_production_record: null
+    has_production_channel: false
+    permanently_unresolved: true
+    why: >-
+      `UnitSnapshot` carries no accessibility field anywhere in this codebase.
+      The facet stays declared so that the absence is countable rather than
+      invisible, and every comparison reports it UNRESOLVED. That is a
+      limitation of the unit representation, not a policy, so it is never
+      reported as ignored_by_predeclared_policy.
+  EXTERNAL_DEPENDENCY_EXECUTION:
+    scope: unit
+    production_record: null
+    unresolved_production_record: null
+    has_production_channel: false
+    permanently_unresolved: true
+    why: same as ACCESSIBILITY.
+
+# Declared BEFORE execution, because it changes how INVARIANT_4 and INVARIANT_5
+# must be read and discovering it afterwards would be indistinguishable from
+# adjusting the criteria to the result.
+#
+# `unresolved_production_record` is null for every facet except CONTENT. That is
+# not a convenience: production has no fail-closed behaviour for an ABSENT
+# fingerprint. `_nonsemantic_dimension_changes` compares the raw values, so two
+# empty temporal fingerprints are equal and no record is emitted — production
+# does not distinguish "both sides say nothing" from "both sides say the same
+# thing". The independent facet contract does distinguish them and reports
+# UNRESOLVED. Production is therefore not *asserting* unchanged on those facets;
+# it has no unresolved concept there at all.
+#
+# What this means for the criteria, stated rather than quietly assumed:
+#
+#   * INVARIANT_4 is about facets the oracle reports CHANGED. An UNRESOLVED
+#     verdict IS the fail-closed outcome the criterion offers as the
+#     alternative, so it demands no production record on its own.
+#   * INVARIANT_5's "may not silently become unchanged" is enforced on the
+#     oracle exhaustively — an UNRESOLVED verdict can never yield an obligation
+#     that silence discharges — and on production for CONTENT, where a
+#     fail-closed behaviour is declared and checkable.
+#   * every UNRESOLVED observation with a production channel and no declared
+#     fail-closed record is COUNTED and reported under
+#     `unresolved_without_a_production_fail_closed_behaviour`. It is a declared
+#     gap in the unit representation, carried openly, and it is never reported
+#     as `unchanged` and never counted as evidence that the channel works.
+#
+# Requiring a record there instead would have failed this closure on every pair
+# for a property of the unit representation rather than of the migration, which
+# is a criterion measuring the wrong thing, not a strict one.
+
+unresolved_fail_closed:
+  declared_before_execution: true
+  facets_with_a_declared_fail_closed_record: [CONTENT]
+  facets_without_one:
+    - STRUCTURAL
+    - REFERENCE_LOCATOR
+    - TEMPORAL
+    - METADATA
+    - VISUAL
+    - AUTHORITY_APPLICABILITY
+  reported_as: unresolved_without_a_production_fail_closed_behaviour
+  never_reported_as: unchanged
+  owed_to_a_successor: >-
+    whether production SHOULD distinguish an absent fingerprint from two equal
+    ones is a real question and it is not this closure's. It is recorded here so
+    the next study inherits the question rather than the silence.
+
+diff_level: L4
+why_L4: >-
+  L4 (GRAPH) is the only level at which every declared production channel is
+  reachable in one call: EVIDENCE_MOVED needs >= L2, MODIFIED_CLAIM and the
+  temporal/metadata/visual dimension records need >= L3, AUTHORITY_CHANGED needs
+  L4. Running below L4 would leave a channel unreachable and let INVARIANT_4
+  report a clean result on a channel it never asked about.
+
+predeclared_ignored_facets:
+  rule: >-
+    an ignore is a declaration made in advance, by name, in this file, for a
+    stated reason. It is NEVER inferred from the data: an inferred ignore is
+    indistinguishable from a bug that happens to produce matching empty values.
+  by_family:
+    git_docs: []
+    regulation_ecfr: []
+    encyclopedia_wikipedia: []
+    sec_edgar: []
+  consequence: >-
+    the declaration is empty for every family in this cohort. INVARIANT_7 is
+    therefore the tightest form it can take: zero facets may be treated as
+    change-equivalent, and any facet the closure treats as change-equivalent is
+    a violation.
+
+# ---------------------------------------------------------------------------
+# acceptance criteria — the eight invariants
+#
+# Each is a zero-tolerance structural predicate with an executable meaning, an
+# explicit population, and a stated way it can come back RED. An invariant with
+# no exercising observation and no fixture power is UNPROVEN, never MET.
+
+invariants:
+
+  INVARIANT_1_identity_decisions_unchanged:
+    statement: >-
+      logical identity and identity-resolver decisions are unchanged by the
+      migration.
+    executable_meaning: >-
+      for every frozen pair, `diff_documents` is called twice on byte-identical
+      inputs, once with legacy_identity_change_predicate=True and once with
+      False. (a) the ordered list of identity-sensitive change records —
+      unit_added, unit_removed, identity_unresolved, evidence_moved, each as its
+      full `as_record()` including candidates — must be identical between the two
+      calls; (b) the `unresolved` tuple each call returns must be identical;
+      (c) the set of counterpart logical ids named by modified_claim under
+      EITHER predicate must be a subset of the matched-counterpart set obtained
+      by running `assign_one_to_one` independently on the same fingerprints,
+      with AMBIGUOUS and NEW decisions excluded — so neither predicate can
+      create a match that the resolver did not make.
+    population: every resolved pair in the frozen universe.
+    violation: any pair where (a), (b) or (c) fails.
+    met_when: violations == 0 AND exercising_pairs > 0.
+    why_not_the_internal_decision_list: >-
+      `diff_documents` does not return the resolver's decisions, so comparing
+      them "between the two calls" is not executable from outside. (a) and (b)
+      are the observable projection of those decisions and (c) closes the one
+      direction the projection could miss. Specifying the unobservable version
+      would have been INC-V2-036 again — a guard on a seam nothing can reach.
+    can_come_back_red_because: >-
+      the test battery feeds the closure a legacy-side diff whose
+      identity_unresolved candidates differ by one element and asserts it FAILS,
+      and a diff whose modified_claim names a logical id the resolver left
+      AMBIGUOUS and asserts it FAILS.
+
+  INVARIANT_2_identity_fold_remains_identity_only:
+    statement: >-
+      `normalize_text_for_identity` remains an identity-only lossy
+      normalization and has NOT become content-sensitive.
+    executable_meaning: >-
+      over a declared closed set of fold classes — nfkc_compatibility,
+      case_only, punctuation_to_space, whitespace_collapse — and over BOTH
+      synthetic fixtures and real unit texts drawn from the frozen cohort and
+      perturbed by each class, assert
+      `normalize_text_for_identity(a) == normalize_text_for_identity(b)` for
+      every (a, b) the class relates. Additionally assert the fold is genuinely
+      lossy on the real cohort: at least one real perturbed pair must have
+      unequal raw text and equal folds, so the check cannot pass by the fold
+      having become an identity function on trivial inputs.
+    population: >-
+      the declared fold classes crossed with the frozen cohort's real unit
+      texts, plus the synthetic fixture battery.
+    violation: >-
+      any class instance where the two folds differ, or a lossiness witness
+      count of zero.
+    met_when: violations == 0 AND lossiness_witnesses > 0.
+    can_come_back_red_because: >-
+      making the fold content-sensitive — dropping the casefold, dropping the
+      punctuation fold, or returning the raw text — breaks the equalities for
+      that class. The test battery monkeypatches the fold to a
+      content-sensitive one and asserts the closure FAILS.
+    the_repair_this_forbids: >-
+      "compare raw text instead" applied to `normalize_text_for_identity`. It
+      would fix change detection by destroying unit identity across revisions,
+      which is the thing the normalization exists to protect.
+
+  INVARIANT_3_expectation_is_independent:
+    statement: >-
+      expected change status comes from the independent SourceFact/facet
+      contract, never from legacy output and never from new production output.
+    executable_meaning: >-
+      (a) an AST walk of `expected_change_status.py` and of every module it
+      imports from within `source_fact_ir/` finds none of
+      `expectation_oracle.forbidden_imports` and none of
+      `expectation_oracle.forbidden_attribute_reads`, resolving `import x as y`
+      and attribute access rather than matching text; (b) `inspect.signature` of
+      the oracle entry point declares exactly the parameters
+      (before, after, channels, ignored) — there is no parameter through which a
+      diff, a change record or a predicate flag could enter, and an added one is
+      a violation; (c) the loaded oracle module's `__dict__` contains no module
+      object whose name resolves under `akc_cir`, so the ban cannot be evaded by
+      an import performed at call time.
+    population: the oracle module set, and every resolved pair.
+    violation: any forbidden import, forbidden attribute read, signature leak, or
+      runtime-bound forbidden module.
+    met_when: violations == 0 AND exercising_pairs > 0.
+    can_come_back_red_because: >-
+      the test battery points the AST check at a variant oracle module that
+      imports `akc_cir.semantic_diff` and asserts the closure FAILS, and at a
+      second variant that reads `identity_text` under an alias.
+
+  INVARIANT_4_changed_facet_resolves_typed_or_failclosed:
+    statement: >-
+      a changed, non-ignored, compiled-relevant facet resolves to a typed
+      change OR to UNRESOLVED / fail-closed.
+    executable_meaning: >-
+      for every resolved pair and every facet the oracle reports `changed`:
+      if `facet_channels[facet].has_production_channel` is true, the production
+      diff must carry that facet's `production_record` at the declared scope
+      (unit scope: keyed on the counterpart logical id; document scope: present
+      anywhere in the diff); if it is false, the closure records the facet as
+      UNRESOLVED_NO_PRODUCTION_CHANNEL. Neither outcome may be `unchanged`.
+    population: >-
+      every (resolved pair, facet) whose oracle verdict is `changed` and whose
+      facet is not in `predeclared_ignored_facets` for that pair's family.
+    violation: >-
+      a changed facet with a production channel and no matching record, or a
+      changed facet recorded as unchanged.
+    met_when: violations == 0 AND exercising_facet_observations > 0.
+    can_come_back_red_because: >-
+      the test battery builds a pair whose CONTENT facet changed and feeds a
+      diff with the MODIFIED_CLAIM record removed, and asserts the closure
+      FAILS; and repeats it for the locator channel.
+
+  INVARIANT_5_never_silently_unchanged:
+    statement: it may not silently become `unchanged`.
+    executable_meaning: >-
+      four checks, three of them on the oracle and one on production.
+      (a) EXHAUSTIVE MAPPING PROPERTY — every one of the nine declared facets is
+      crossed with every one of the four declared verdicts and with both channel
+      states, all 72 combinations evaluated, and the closure asserts that no
+      combination whose verdict is `changed` or `unresolved` returns an
+      obligation that silence would discharge. With a production channel the
+      obligation must be `require_typed_change` or `require_fail_closed`;
+      without one it must be exactly `unresolved_no_production_channel`, never
+      `no_obligation`. This is a property of the oracle, evaluated over its whole
+      input domain, not a restatement of what it happens to return on the cohort.
+      (b) VOCABULARY CLOSURE — an unknown facet name and an unknown verdict must
+      each raise `ContractBroken`; the closure calls both and records a violation
+      if either returns a value instead.
+      (c) PERMISSIVE SET CLOSURE — `require_typed_change` and
+      `require_fail_closed` must not be members of
+      `OBLIGATIONS_SATISFIED_BY_SILENCE`.
+      (d) PRODUCTION FAIL-CLOSED — at unit scope, a CONTENT facet of `changed`
+      or `unresolved` requires a modified_claim record on that matched pair, and
+      its absence is a violation.
+    population: >-
+      the oracle's full 72-combination input domain, plus every
+      (resolved pair, facet) for (d).
+    violation: any of (a) through (d).
+    met_when: >-
+      violations == 0 AND mapping_combinations_evaluated == 72 AND
+      unresolved_observations > 0.
+    note_on_power: >-
+      `unresolved_observations > 0` is not decoration. ACCESSIBILITY and
+      EXTERNAL_DEPENDENCY_EXECUTION are permanently unresolved on this unit
+      representation, so the population is non-empty by construction — but the
+      closure counts it rather than assuming it, because an assumption is what
+      INC-V2-036 was.
+    can_come_back_red_because: >-
+      the test battery replaces `obligation_for` with one that maps `unresolved`
+      to `no_obligation` and asserts the closure FAILS on (a); with one that
+      returns a value for an unknown verdict instead of raising and asserts it
+      FAILS on (b); it adds `require_fail_closed` to the permissive set and
+      asserts it FAILS on (c); and it removes a modified_claim from a pair whose
+      CONTENT facet changed and asserts it FAILS on (d).
+
+  INVARIANT_6_ambiguous_identity_stays_unresolved:
+    statement: >-
+      ambiguous identity remains unresolved rather than being forced into
+      continuity.
+    executable_meaning: >-
+      for every production `identity_unresolved` record, (a) the incoming
+      logical id it names appears in no `modified_claim`, no `unit_added` and
+      no `unit_removed` record in the same diff; (b) none of the record's named
+      candidates appears as `unit_removed` — that spelling would assert a
+      deletion the resolver explicitly declined to make; (c) the closure's own
+      matched-pair reproduction excludes every AMBIGUOUS decision, so an
+      ambiguous unit never reaches the facet oracle as a matched pair at all.
+    population: >-
+      every identity_unresolved record in the frozen cohort, plus the declared
+      AMBIGUOUS fixture battery.
+    violation: any of (a), (b), (c).
+    met_when: >-
+      violations == 0 AND (cohort observations > 0 OR fixture observations > 0),
+      with the two counts reported separately and never summed into one
+      denominator.
+    zero_natural_power_is_reported_as_zero: >-
+      if the cohort produces no ambiguous decision the invariant reports
+      cohort_power 0 and rests on the fixture battery alone, and says so. A
+      zero-observation cohort result is never reported as MET on cohort
+      evidence.
+    can_come_back_red_because: >-
+      the test battery injects a diff in which an identity_unresolved unit also
+      carries a modified_claim, and one in which a named candidate is reported
+      unit_removed, and asserts the closure FAILS on each.
+
+  INVARIANT_7_only_predeclared_ignores:
+    statement: >-
+      predeclared ignored differences are the ONLY permitted change-equivalent
+      differences.
+    executable_meaning: >-
+      (a) the ignore declaration is read from THIS file, at the digest the
+      freeze receipt pins, never from a default in code; (b) every facet the
+      closure reports `ignored_by_predeclared_policy` must be named in the
+      declaration for that pair's family; (c) every (pair, facet) the closure
+      treats as change-equivalent — a `changed` facet for which no production
+      record is required — must be named in the declaration. With the
+      declaration empty for every family in this cohort, (c) reduces to: the
+      count of change-equivalent facet observations must be zero.
+    population: every (resolved pair, facet).
+    violation: any ignore not named in the frozen declaration.
+    met_when: violations == 0 AND exercising_facet_observations > 0.
+    can_come_back_red_because: >-
+      the test battery runs the closure with a facet marked ignored that the
+      frozen declaration does not name, and asserts it FAILS; and with an
+      ignore inferred from empty data on both sides, and asserts it FAILS.
+
+  INVARIANT_8_sfi2_cases_cannot_certify:
+    statement: >-
+      the 14 SFI2 cases remain development regressions only and cannot certify
+      this closure.
+    executable_meaning: >-
+      (a) the frozen universe's lineage id set is disjoint from the union of
+      `sfi1_acquisition.admitted` and `sfi2_acquisition.admitted` — the 538-pair
+      retrospective cohort — and therefore from the 14 confirmed lineages inside
+      it; (b) the 14 confirmed lineage ids are read from the frozen SFI2 receipt
+      for the disjointness proof ONLY, and appear in no invariant's numerator or
+      denominator; (c) the closure reports `sfi2_pairs_in_any_denominator: 0`
+      and `retrospective_receipts_read_for_grading: []`.
+    population: the frozen universe.
+    violation: any intersection, or any SFI2-derived pair in any denominator.
+    met_when: violations == 0 AND cohort_pairs > 0.
+    can_come_back_red_because: >-
+      the test battery inserts one confirmed-defect lineage id into a stand-in
+      frozen universe and asserts the closure FAILS.
+
+vacuity_rule:
+  statement: a closure over zero pairs FAILS as vacuous. It never PASSES.
+  executable_meaning: >-
+    `pairs_resolved == 0` yields overall VACUOUS_FAIL before any invariant is
+    graded. Per invariant, an exercising count of zero yields UNPROVEN, and an
+    UNPROVEN invariant can never contribute to a PASS.
+  why: >-
+    this study's recurring defect, now at roughly ten instances, is a check that
+    reports a clean result because it is watching nothing. Zero observations is
+    the purest form of it.
+
+pass_rule:
+  requires_all_of:
+    - "pairs_resolved > 0"
+    - "all eight invariants MET"
+    - "no invariant UNPROVEN"
+    - "the protocol freeze receipt exists and pins this file's sha256"
+    - "the universe freeze receipt exists and precedes the measurement receipt"
+  no_threshold: >-
+    there is no rate, bound, quota or tolerance anywhere in this rule. A PASS is
+    zero violations on eight structural predicates over a non-empty population.
+  what_a_pass_authorises: >-
+    recording that the INC-V2-037 migration has a prospectively frozen closure
+    on a development cohort disjoint from the retrospective 538. Nothing more.
+    It does not make the retrospective receipts prospective, does not qualify
+    the ladder retroactively, does not certify SFI3, and does not authorise GPU
+    spend.
+  what_a_fail_means: >-
+    a negative closure result, reported as one. Not a reason to widen a facet,
+    add an ignore, move a scope, drop a pair or re-run.
+
+# ---------------------------------------------------------------------------
+# cohort
+
+cohort:
+  path_taken: DISJOINT_REAL_DEVELOPMENT_COHORT
+  declared_before_execution: true
+  selection_rule: >-
+    every development revision-pair cohort whose before/after payloads are
+    already cached on local disk, taken in a fixed declared order, deduplicated
+    by lineage id keeping the first occurrence, then filtered to remove every
+    lineage id present in the 538-pair retrospective cohort. No pair is selected
+    by any property of its content, and no pair is selected by any closure
+    outcome — the selection function never calls either predicate.
+  candidate_sources_in_declared_order:
+    - artifacts/development/p4i_cohort.json
+    - artifacts/development/p4g_cohort.json
+    - artifacts/development/p4e_cohort.json
+    - artifacts/development/vbc2_cohorts/*.json
+  frames_of_record:
+    - acquisition/sources_p4c.py
+    - acquisition/sources_p4e.py
+    - acquisition/sources_p4g.py
+    - acquisition/sources_p4i.py
+    - acquisition/sources_vbc2.py
+  document_construction: >-
+    the canonical documents already written to disk beside each cohort
+    (`canonical_path`), read as JSON and passed to
+    `compiler/selective_build.snapshots`. Nothing is re-canonicalised and
+    nothing is re-fetched. Each pair's `raw_sha256` for both sides is recorded
+    in the universe freeze receipt, so the frozen universe is verifiable
+    against the bytes it was derived from.
+  network: FORBIDDEN. The closure makes no outbound request of any kind.
+  disjointness:
+    from_the_538_pair_retrospective_cohort: >-
+      REQUIRED, by lineage id, proven in the universe freeze receipt before the
+      closure runs.
+    from_the_14_SFI2_forensic_cases: >-
+      REQUIRED. They are a subset of the 538 and the proof covers them
+      explicitly and separately.
+  sfi3_prohibition:
+    absolute: true
+    forbidden:
+      - artifacts/development/sfi3_lineages.json
+      - any SFI3 acquisition artifact
+      - any SFI3 payload, cached or fresh
+      - any network fetch for SFI3
+    sources_sfi3_may_be_read_for: >-
+      lineage identity metadata ONLY — lineage ids, to prove disjointness. Never
+      revision content. This closure does not in fact need it: disjointness is
+      proven against the 538, which is what the founder's ruling requires, and
+      SFI3 remains untouched.
+    fresh_sfi3_is: >-
+      the prospective confirmatory evidence, owned by another lane, and it is
+      not consumed here.
+  universe_freeze:
+    stem: identity-change-migration-closure-universe
+    must_precede: the closure measurement receipt
+    enforced_by: >-
+      the runner refuses (exit 4) if the universe freeze receipt is absent, and
+      records both run ids so the ordering can be read off the receipts.
+
+# ---------------------------------------------------------------------------
+# the fixture battery
+#
+# The real cohort's unit representation carries no temporal, metadata, visual,
+# authority or accessibility data, so five of nine facets are permanently
+# UNRESOLVED on it and three invariants have no natural violation to catch. That
+# is a limitation of the cohort and it is declared here rather than discovered
+# afterwards. The battery below supplies the missing gate power, is frozen with
+# this file BEFORE execution, and is DEVELOPMENT evidence: its counts are
+# reported separately and are never added to a cohort denominator.
+#
+# Every declared id must have a registered builder and every registered builder
+# must be declared. The runner refuses on either mismatch, so the battery cannot
+# drift in either direction.
+
+fixture_battery:
+  standing: DEVELOPMENT_GATE_POWER_ONLY
+  never_summed_into_a_cohort_denominator: true
+  classes:
+    fold_nfkc_compatibility:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold an NFKC compatibility difference
+    fold_case_only:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold a case-only difference
+    fold_punctuation_to_space:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold punctuation to space
+    fold_whitespace_collapse:
+      invariant: INVARIANT_2
+      exercises: the identity fold must collapse whitespace
+    facet_temporal_changed:
+      invariant: INVARIANT_4
+      exercises: a changed TEMPORAL facet must produce temporal_changed
+    facet_metadata_changed:
+      invariant: INVARIANT_4
+      exercises: a changed METADATA facet must produce metadata_changed
+    facet_visual_changed:
+      invariant: INVARIANT_4
+      exercises: a changed VISUAL facet must produce visual_changed
+    facet_authority_changed:
+      invariant: INVARIANT_4
+      exercises: a changed AUTHORITY_APPLICABILITY facet must produce authority_changed
+    facet_locator_changed:
+      invariant: INVARIANT_4
+      exercises: a changed REFERENCE_LOCATOR facet must produce evidence_moved
+    content_unresolved_projection_fails_closed:
+      invariant: INVARIANT_5
+      exercises: >-
+        production's own `semantic_diff.content_facet_verdict` must return
+        `unresolved` — never `unchanged` — for a pair whose text is not
+        comparable, and the independent facet contract must agree.
+      declared_limitation: >-
+        this fixture calls the projection directly and does NOT run it through
+        `diff_documents`, because on this unit representation the unresolved
+        branch is not reachable end to end: `assign_one_to_one` fingerprints
+        every unit before the predicate runs, and the fingerprint normalizes
+        `text`, which raises TypeError on a non-str. So the fail-closed branch in
+        `diff_documents` exists, is correct, and cannot be exercised from
+        outside. That is recorded here as a limitation rather than manufactured
+        into a passing end-to-end case, and it means INVARIANT_5(d)'s
+        `unresolved` half has no gate power on this representation while its
+        `changed` half does.
+    ambiguous_identity_stays_unresolved:
+      invariant: INVARIANT_6
+      exercises: >-
+        a physically reordered document drives the resolver to AMBIGUOUS; the
+        incoming unit must appear in no modified_claim, no unit_added and no
+        unit_removed, and its candidates must not be reported removed
+
+# ---------------------------------------------------------------------------
+# execution
+
+execution:
+  order:
+    - "1. freeze this protocol (immutable receipt)"
+    - "2. freeze the cohort universe (immutable receipt), proving disjointness"
+    - "3. run the closure exactly once against the frozen universe"
+    - "4. write the measurement receipt (immutable)"
+  scored_once: true
+  what_counts_as_a_score: >-
+    a run that produces a graded result. A run that raises before grading —
+    a missing file, a crash, a refused precondition — is not a score, produces
+    no receipt, and is repaired and re-run. Declared here BEFORE execution so
+    that the distinction cannot be invented afterwards to justify a second
+    attempt at a result somebody did not like. A run that grades is the run,
+    whichever way it comes out, and it is reported.
+  smoke_tests: >-
+    FIXTURES ONLY, and only before the freeze. No cohort pair is read before the
+    protocol freeze receipt exists.
+  single_writer: true
+  gpu_seconds: 0
+  cost_usd: 0
+  network: forbidden
+
+release:
+  ip_gate: CLOSED
+  docs_ip: untouched
+  public_release: forbidden
+
+# ---------------------------------------------------------------------------
+# what this closure cannot establish, stated before it runs
+
+declared_blind_spots:
+  - >-
+    five of nine facets — TEMPORAL, METADATA, VISUAL, AUTHORITY_APPLICABILITY,
+    ACCESSIBILITY, and with EXTERNAL_DEPENDENCY_EXECUTION six — are permanently
+    UNRESOLVED on this cohort's unit representation. INVARIANT_4's cohort
+    evidence therefore covers CONTENT, STRUCTURAL and REFERENCE_LOCATOR only.
+    The rest rests on the fixture battery, which is development evidence.
+  - >-
+    this closure measures the change PREDICATE. It does not measure whether a
+    detected change creates a rebuild request — that is SFI3's E9 and belongs to
+    another lane — and a PASS here says nothing about it.
+  - >-
+    no threshold anywhere in this repository is calibrated, including the 0.92
+    identity merge bar the resolver uses. INVARIANT_6 measures that ambiguity
+    fails closed, not that the bar is in the right place.
+  - >-
+    the cohort is development material already spent on retrieval studies. It is
+    disjoint from the 538 and it is not held out. A closure on development data
+    is a closure on development data.

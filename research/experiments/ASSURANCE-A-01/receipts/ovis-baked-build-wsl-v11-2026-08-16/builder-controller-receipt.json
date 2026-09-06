@@ -1,0 +1,28 @@
+{
+  "builder": {
+    "distro": "Ubuntu-24.04",
+    "gpu_used": false,
+    "storage_driver": "overlay"
+  },
+  "completed_at_utc": "2026-08-15T22:40:15.110210+00:00",
+  "dockerfile_sha256": "sha256:dee8d0345e045504be79e0c0be431676dfd9e6ec05e6ad6e11d5478029a23b18",
+  "failure_message": "WSL command failed (125): buildah bud --isolation chroot",
+  "failure_type": "RuntimeError",
+  "ghcr_login": {
+    "credential_persisted_in_receipt": false,
+    "passed": true
+  },
+  "ghcr_logout_acknowledged": true,
+  "image_tag": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:wsl-18aa65e24011ba51beed-224005",
+  "model_artifact_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+  "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+  "passed": false,
+  "scanner_versions": {
+    "syft": "1.50.0",
+    "trivy": "0.72.0"
+  },
+  "schema": "tavonel.ovis-wsl-builder.v11",
+  "source_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "source_tree_sha256": "sha256:18aa65e24011ba51beede0af73befe732522b608c4e9afbbcbd87ded26138188",
+  "started_at_utc": "2026-08-15T22:40:05.710623+00:00"
+}

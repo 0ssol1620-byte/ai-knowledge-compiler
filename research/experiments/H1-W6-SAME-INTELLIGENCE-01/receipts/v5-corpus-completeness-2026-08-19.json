@@ -1,0 +1,20 @@
+{
+  "complete_pairs": 0,
+  "corpus_v5_modified": false,
+  "directory": "corpus-v5/00000-c29ae214bf37",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "files_present": [
+    "after.wikitext",
+    "before.wikitext"
+  ],
+  "finding": "corpus-v5's only pair directory contains before.wikitext and after.wikitext but NO metadata.json. The acquisition writes metadata.json last, so by the completion semantics measured in recovery-fixture-2026-08-19.json this pair is INCOMPLETE. corpus-v5 holds 0 complete pairs, not 1.",
+  "generated_at": "2026-08-19T04:42:09.590288+00:00",
+  "incomplete_pairs": 1,
+  "metadata_json_present": false,
+  "network_access": false,
+  "receipt_sha256": "sha256:a40d6c58292ced42bdce0efd6e578bb4a93ad385ad710f32a7335b6ed9e07c43",
+  "schema": "tavonel.w6-v5-corpus-completeness.v1",
+  "supersedes_statement": "The v5 health check recorded 'pairs_materialized: 1'. That counted directories, not completed pairs. The count of DIRECTORIES is 1 and the count of COMPLETE pairs is 0. The health check is not edited; this receipt refines it.",
+  "why_it_matters": "It removes the last argument for resuming into corpus-v5. There is no completed work there to preserve - only a partial write proving where the process died. Option B (fresh corpus-v6) now costs nothing in re-fetched work, and corpus-v5 is retained purely as failure evidence."
+}

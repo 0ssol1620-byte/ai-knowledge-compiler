@@ -1,0 +1,206 @@
+﻿# P2 — multi-revision lineage sensitivity.
+#
+# Frozen before any P2 result exists.
+#
+# P0b established that the recompilation mechanics are exact under deterministic
+# identity on single revision pairs. P2 asks the question P0b cannot: over a
+# chain of revisions, how far does a different identity policy drive the history
+# apart, and does that drift reach the artifacts.
+#
+# Handoff RQ4. The hypotheses are recorded here before the runs, not after.
+
+schema: tavonel.v2.protocol.P2.v1
+protocol_id: P2_multi_revision_lineage
+version: 1
+authored: 2026-08-21
+supersedes: null
+depends_on:
+  P0b_recompilation_mechanics:
+    relation: >-
+      P2 reuses P0b's artifact specification, its deterministic artifact
+      identifiers and its independent oracle. What varies is the identity policy
+      that decides which units changed.
+  incidents: [INC-V2-003]
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  sealed_evidence: {rule: read-only, scope: [docs/evidence/**, docs/ip/**, research/experiments/**]}
+  p0_v1: {rule: read-only}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. Corpus
+# ---------------------------------------------------------------------------
+
+corpus:
+  unit: a chain of consecutive revisions of one document, oldest first
+  relation_basis: >-
+    the repository's own commit history for that path. Adjacency is read, never
+    inferred from similarity.
+  minimum_chains: 5
+  minimum_length: 3
+  admission:
+    - a revision parses to at least 3 admitted units, or it is excluded with
+      INELIGIBLE_PARSE_FLOOR and the chain is renumbered around it
+    - a chain with fewer than 3 admitted revisions is excluded entirely
+  statistical_unit: the chain, not the step and not the unit
+  clustering_note: >-
+    Steps within a chain are not independent observations. Any interval reported
+    over steps must be clustered on the chain, and P2 reports counts and
+    distributions rather than significance.
+
+# ---------------------------------------------------------------------------
+# 2. Arms — identity policies
+# ---------------------------------------------------------------------------
+
+arms:
+  A_DETERMINISTIC:
+    rule: explicit-path identifier equality
+    unresolved_reachable: false
+    role: >-
+      Reference. NOT an oracle of true authorship lineage: it is the lineage the
+      document's own heading paths declare. Where a section is renamed, A says
+      "new unit" and a human might say "same unit renamed". Divergence from A is
+      therefore divergence from a declared reference, not error against truth,
+      and must never be reported as an error rate.
+  B_GLOBAL_ONE_TO_ONE:
+    rule: >-
+      akc_cir.identity.assign_one_to_one over unit fingerprints, default
+      LogicalIdentityResolver (merge 0.92, new 0.75, tie band 0.05), unresolved
+      preserved as unresolved
+    role: the production policy, and the one P0 v1 ran by accident
+  C_FORCED_CONTINUATION:
+    rule: >-
+      the same assignment as B, except that an AMBIGUOUS decision is forced to
+      its highest-scoring candidate instead of being preserved as unresolved
+    role: >-
+      the ablation the handoff names in H4b. It is what a system does when it
+      refuses to have an unresolved state.
+
+invariant_across_arms: >-
+  Artifact identifiers, the artifact specification, the dependency structure and
+  the independent full rebuild are identical in all three arms. Only the set of
+  units an arm considers changed differs, so any artifact difference is
+  attributable to the identity policy and to nothing else.
+
+# ---------------------------------------------------------------------------
+# 3. Lineage bookkeeping
+# ---------------------------------------------------------------------------
+
+lineage:
+  observation_key: >-
+    the unit's explicit path at that revision. Arm-independent, so the three arms
+    can be compared unit for unit.
+  origin: >-
+    a unit's origin is the (chain position, explicit path) at which its lineage
+    began under that arm. Two arms agree about a unit exactly when they give it
+    the same origin.
+  propagation:
+    CONTINUATION: inherits the prior unit's origin
+    NEW: begins a new origin at this position
+    UNRESOLVED: >-
+      begins a new origin at this position and is flagged unresolved. This is a
+      deliberate accounting choice: an unresolved identity has not been shown to
+      continue anything, and recording it as a continuation would assert the
+      merge the resolver declined to make.
+
+# ---------------------------------------------------------------------------
+# 4. Measures, per step and per horizon
+# ---------------------------------------------------------------------------
+
+measures:
+  current_decision_divergence: >-
+    per step, the fraction of units in the after revision whose arm decision
+    (continuation target, or new) differs from arm A's
+  path_divergence_at_horizon:
+    horizons: [1, 2, 3, 5, 10]
+    definition: >-
+      at chain position h, the fraction of units whose origin under this arm
+      differs from its origin under arm A
+    availability: >-
+      a horizon is reported only for chains that reach it. The number of chains
+      contributing to each horizon is reported beside the value.
+  affected_set_jaccard_divergence: >-
+    per step, 1 - |R_arm ∩ R_A| / |R_arm ∪ R_A| over the rebuilt artifact sets.
+    Zero when both arms rebuilt the same artifacts, one when they share none.
+  downstream_artifact_mismatch: >-
+    at the end of the chain, the arm's active state compared against an
+    independent full rebuild of the final revision. Reported as stale escapes,
+    divergences and missing artifacts, exactly as in P0b.
+  unresolved_rate: per arm, unresolved decisions over decisions
+  first_divergence_cause:
+    taxonomy:
+      NEW_VS_CONTINUATION: A says new, the arm continues something
+      CONTINUATION_VS_NEW: A continues something, the arm says new
+      CONTINUATION_SWAP: both continue, different prior units
+      UNRESOLVED_VS_DECIDED: the arm is unresolved where A decided
+      RUNNER_UP_LOSS: the arm continued a unit that was not A's target and was scored second
+    rule: the cause of the first step at which the arm's origin map leaves A's
+
+# ---------------------------------------------------------------------------
+# 5. Hypotheses, recorded before the runs
+# ---------------------------------------------------------------------------
+
+hypotheses:
+  H4a: >-
+    Path divergence at horizon h is non-decreasing in h: a lineage that has
+    forked does not un-fork, so early disagreement persists and later
+    disagreement adds to it. Falsified if divergence at any horizon is lower than
+    at a smaller horizon on the same set of chains.
+  H4b: >-
+    C_FORCED_CONTINUATION produces at least as many origin disagreements against
+    A as B_GLOBAL_ONE_TO_ONE, because forcing an ambiguous decision asserts a
+    continuation the resolver declined to assert. Falsified if C's divergence is
+    lower than B's at every horizon.
+  H4c: >-
+    Downstream artifact equivalence holds in all three arms. Identity policy
+    changes which artifacts are rebuilt, not what a correct rebuild produces, so
+    an arm that carries a stale artifact forward has found a real defect rather
+    than a different opinion.
+
+# ---------------------------------------------------------------------------
+# 6. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P2_SCALE:
+    predicate: at least 5 chains of at least 3 admitted revisions
+  G_P2_ARM_INVARIANCE:
+    predicate: >-
+      all three arms produced the same artifact inventory at every step, so a
+      difference in outcome cannot be a difference in what was being built
+    on_fail: STOP. The comparison would be uninterpretable.
+  G_P2_EQUIVALENCE:
+    predicate: >-
+      every arm's final active state is artifact-exact against the independent
+      full rebuild of the final revision, with zero stale escapes
+    on_fail: >-
+      Record the divergence with per-step forensics. Do not change the arm
+      definitions or the artifact specification to make it pass.
+  G_P2_HORIZON_COVERAGE:
+    predicate: at least one chain reaches horizon 10
+    on_fail: report the horizons actually reached; do not extrapolate past them
+  G_P2_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+# ---------------------------------------------------------------------------
+# 7. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    On the admitted P2 development chains, the identity policies produced these
+    origin disagreements at these horizons, these affected-set differences, and
+    these downstream equivalence outcomes.
+  forbidden:
+    - calling divergence from arm A an error rate
+    - >-
+      asserting that any arm's lineage is the true authorship lineage. No arm is
+      validated against human-adjudicated lineage in P2; that is annotation work
+      the handoff places in section 5 and it has not been done.
+    - generalising past git_docs, which is the only family with chains here
+    - any efficiency or speedup claim
+    - treating a development-split result as confirmatory

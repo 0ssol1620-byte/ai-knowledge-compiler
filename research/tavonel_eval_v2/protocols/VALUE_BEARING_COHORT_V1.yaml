@@ -1,0 +1,465 @@
+# VALUE_BEARING_COHORT_V1 — a fresh cohort for the endpoint that already exists.
+#
+# MODEL_ENDPOINT_V1's preflight failed because 274 of 296 locally
+# coverage-complete questions had no value for an answer to select. This
+# protocol does not rescue that by widening what counts as a value. It changes
+# the population instead: sources are acquired *because* their revisions carry
+# an exact selectable value change, and the scorer that judged the failure is
+# carried forward byte-identical.
+#
+# Frozen before any fresh candidate is listed and before any acquisition.
+
+schema: tavonel.v2.protocol.value_bearing_cohort.v1
+protocol_id: VALUE_BEARING_COHORT_V1
+version: 1
+authored: 2026-08-23
+supersedes: null
+succeeds:
+  MODEL_ENDPOINT_V1:
+    state: PRESERVED, READ-ONLY
+    verdict: FAIL
+    final_cohort: 10
+    rule: >-
+      not modified, not re-run, not rescued. Its preflight receipt, its gate
+      results and its ten survivors are read-only evidence.
+
+relates_to:
+  INC-V2-017:
+    finding: MODEL_ENDPOINT_INFEASIBLE_ON_THIS_COHORT
+    correct_reading: local source-coverage completeness != exact-value endpoint eligibility
+  INC-V2-018:
+    finding: non-injective question identity silently collapses repeated anchor paths
+    fixed_here: content-addressed question id plus a hard injectivity gate
+  P4i_cohort_expansion:
+    rule: read-only, never re-scored
+    eligible_Q1: 296
+    documents: 511
+    usable_here: >-
+      as DEVELOPMENT data for the ValueFact extractor and its controls, and for
+      nothing else. Its document lineages are excluded from the confirmatory
+      cohort.
+  P0d_source_coverage: {rule: read-only, standing_result: 26 of 26 SOURCE_COVERAGE_INCOMPLETE}
+
+# ---------------------------------------------------------------------------
+# 1. The population, stated before it is sampled
+# ---------------------------------------------------------------------------
+
+target_population:
+  definition: source-native, stable-property, value-bearing revisions
+  source_native: >-
+    the property is readable from the source's own structure — an attribute, a
+    table header, a config key, a labelled regulatory quantity, an XBRL
+    concept, an infobox key — and not invented by this study.
+  stable_property: >-
+    the same property/key exists in both revisions. A property that appears or
+    disappears is a different kind of change and is out of population.
+  value_bearing: >-
+    the property's value differs between the revisions under the frozen
+    scorer's normalization, and both values are of the same value kind.
+
+claim_boundary:
+  this_study_claims: >-
+    an effect on questions about source-native stable properties whose value
+    changed between revisions.
+  this_study_does_not_claim: >-
+    a QA effect over all semantic revisions. Most of the P4i semantic-change
+    population was not an exact selectable value change, and that is reported
+    as a development finding rather than designed around.
+  forbidden_phrasings:
+    - all semantic changes
+    - any document update
+    - general question answering over revisions
+    - untouched confirmatory corpus
+
+# ---------------------------------------------------------------------------
+# 2. The scorer is not touched
+# ---------------------------------------------------------------------------
+
+scorer:
+  file: research/tavonel_eval_v2/endpoint/value_scorer.py
+  rule: BYTE-IDENTICAL TO THE FROZEN VERSION. Not extended, not re-tuned, not replaced.
+  value_kinds:
+    - ISO date
+    - numeric / decimal
+    - version-like numeric chain
+    - percentage
+    - currency
+    - digit-bearing identifier
+  classes: [CURRENT_ONLY, SUPERSEDED_ONLY, BOTH, NO_MATCH]
+  primary_success: CURRENT_ONLY
+  failures: [SUPERSEDED_ONLY, BOTH, NO_MATCH]
+  normalization: unchanged
+  forbidden:
+    - widening the value patterns to reach 190
+    - adding a value kind
+    - human adjudication
+    - an LLM judge
+    - any normalization change after seeing model output
+  why: >-
+    the patterns are what made INC-V2-017 a finding rather than a
+    disappointment. Widening them would clear the floor and destroy the
+    endpoint in the same edit, because CURRENT_ONLY would stop meaning
+    "selected the current value".
+
+# ---------------------------------------------------------------------------
+# 3. ValueFact — the acquisition-side structure the scorer never sees
+# ---------------------------------------------------------------------------
+
+value_fact:
+  purpose: >-
+    the scorer judges answers. This structure decides which candidates may
+    become questions at all. Keeping them separate is what allows candidate
+    selection to be strict without touching the frozen judge.
+  required_fields:
+    property_id: stable, derived from source structure, identical across the two revisions
+    property_label: the source's own label for the property, never the value
+    value_kind: one of the frozen scorer's value kinds
+    current_value: the value in the after revision
+    superseded_value: the value in the before revision
+    source_spans: byte spans in each raw revision for both values
+    before_atom_identity: stable atom id in the before revision
+    after_atom_identity: stable atom id in the after revision
+
+admission_criteria:
+  all_required: true
+  criteria:
+    1_property_stable: the property/key is present and identical in both revisions
+    2_values_differ: current and superseded values differ after the frozen scorer's normalization
+    3_same_value_kind: both values are of the same value kind
+    4_label_readable_without_the_value: >-
+      the property label is obtainable from source-native structure without
+      reading either value. A label that can only be produced by looking at the
+      answer leaks the answer.
+    5_question_generated_without_values: >-
+      neither the current nor the superseded value is an input to question
+      generation
+    6_contrast_unambiguous: >-
+      the value contrast for that property is unambiguous
+  primary_cohort_requires: single-property, single-value contrast
+  on_multiple_unrelated_changed_markers:
+    code: AMBIGUOUS_VALUE_FACT
+    action: excluded from the primary cohort
+
+source_native_property_examples:
+  - structured attribute/key to value
+  - table row/column header to cell value
+  - definition or config key to value
+  - CLI/config option to default, limit or version
+  - regulation field or subsection with a stable labelled quantity
+  - SEC structured/XBRL concept to fact value
+  - encyclopedia infobox/template key to value
+
+question_generation:
+  permitted_inputs:
+    - the stable key or property label
+    - permitted intent metadata (PERMITTED_INTENT_SOURCES, unchanged)
+  forbidden_inputs:
+    - the answer value, current or superseded
+    - any token that changed between the revisions
+  revision_neutral: >-
+    the generated question must be answerable from either revision and must not
+    indicate which revision is current.
+
+# ---------------------------------------------------------------------------
+# 4. Question identity — INC-V2-018
+# ---------------------------------------------------------------------------
+
+question_identity:
+  scheme: canonical content-addressed hash
+  inputs:
+    - source family
+    - source logical/document id
+    - before version id
+    - after version id
+    - stable atom id
+    - anchor path
+    - question kind
+    - value-property id
+  serialization: canonical JSON, sorted keys, UTF-8, then sha256
+  why_the_property_id_matters: >-
+    the anchor path alone is not injective — the same labelled construct
+    recurs within a document. Two questions at one anchor about different
+    properties are different questions and must not collide.
+  gate: G_VBC1_QUESTION_ID_INJECTIVE
+  on_duplicate: STOP. Not a warning, not a deduplication.
+
+# ---------------------------------------------------------------------------
+# 5. Anti-post-hoc: fresh lineages
+# ---------------------------------------------------------------------------
+
+freshness:
+  development_data_allowed: >-
+    P4i's 511 source documents and their lineages may be used to develop the
+    ValueFact extractor, the property taxonomy, the question generator and
+    their controls.
+  confirmatory_cohort_must_not_overlap: >-
+    no document lineage used in P4i may appear in the confirmatory cohort.
+  ten_survivors_excluded: >-
+    the ten questions that survived MODEL_ENDPOINT_V1's preflight are excluded
+    by name. Their eligibility and truncation outcomes have been seen.
+  gate: G_VBC1_FRESH_LINEAGES
+
+development_order:
+  rule: this order is followed and each step completes before the next begins
+  steps:
+    1: P4i development examples
+    2: ValueFact extractor and controls developed
+    3: positive, negative and adversarial fixtures pass
+    4: extractor + property taxonomy + question generator FROZEN
+    5: fresh candidate lists and reserve ordering FROZEN
+    6: acquisition
+    7: CPU preflight
+  why: >-
+    freezing the detector after seeing which sources it admits would make
+    admission an outcome. Each freeze precedes the data it will be applied to.
+
+# ---------------------------------------------------------------------------
+# 6. Acquisition
+# ---------------------------------------------------------------------------
+
+acquisition:
+  admit_exclude_by: the frozen value-bearing predicate alone
+  forbidden_selection_signals:
+    - model output
+    - retrieval score
+    - eventual eligibility yield
+    - any coverage or eligibility figure
+  ordering: selection order and reserve ordering frozen before the first fetch
+  family_weighting:
+    rule: fixed in this protocol before acquisition and never changed afterwards
+    note: >-
+      the target population is value-bearing revisions, so family counts need
+      not resemble P4i's proportions. They are declared here and then left
+      alone.
+    declared_share:
+      git_docs: 0.40
+      regulation_ecfr: 0.30
+      encyclopedia_wikipedia: 0.20
+      sec_edgar: 0.10
+    basis: >-
+      expected density of source-native key-to-value structure — CLI and
+      config documentation carries the most explicit key/default/limit pairs,
+      regulations carry labelled quantities, infoboxes are structured but sit
+      behind the unresolved attr:class constraint, and XBRL is structured but
+      has the heaviest payload path.
+    explicitly_not_based_on: >-
+      P4i's eligibility yield per family. Weighting by observed yield would
+      make acquisition an outcome.
+    over_selection_factor: 1.5
+  families_minimum: 2
+  families_desired: 3
+  never: change source policy to reach three families
+  on_family_yielding_zero: report it as zero
+  admission_failure_codes:
+    - PAYLOAD_UNAVAILABLE
+    - PARSE_FLOOR
+    - RELATION_FAILURE
+    - SOURCE_EXHAUSTION
+    - SPACING_NOT_MET
+    - NO_SOURCE_CHANGE
+    - LISTING_FAILED
+    - NO_VALUE_FACT
+    - AMBIGUOUS_VALUE_FACT
+    - LINEAGE_USED_IN_P4I
+    - OTHER
+
+# ---------------------------------------------------------------------------
+# 7. Context and retrieval — unchanged from MODEL_ENDPOINT_V1
+# ---------------------------------------------------------------------------
+
+context_contract:
+  total_prompt_tokens: 4096
+  retrieval_and_index_policy: unchanged and frozen
+  target_evidence_retention: required in the three single-revision arms
+  append_only_arm: >-
+    both revisions compete for the same budget. That is the intervention and it
+    is recorded, not filtered.
+  forbidden: raising 4096 to rescue a preflight
+  arms:
+    compiled_current: only atoms the compiled state marks current
+    full_current_oracle: the current revision from source, document order, no compiler ranking
+    append_only_stale_capable: both revisions, retrieval order, no currency restriction
+    superseded_control: only the superseded revision
+  arm_names_never_reach_the_model: true
+  schedule: frozen Latin square derived from question ids alone, as before
+
+# ---------------------------------------------------------------------------
+# 8. CPU preflight — the order is part of the contract
+# ---------------------------------------------------------------------------
+
+preflight_order:
+  1: fresh value-bearing candidates
+  2: local source coverage complete
+  3: revision-neutral intent
+  4: stable property/value contrast
+  5: frozen tokenizer materialization
+  6: target evidence retained
+  7: value distinguishable
+  final_cohort: only questions passing every step
+
+cohort_size:
+  hard_floor: 190
+  soft_target: 250-300
+  soft_target_is_not_a_statistical_floor: true
+  if_more_than_296:
+    rule: >-
+      do not increase GPU spend. Freeze down to at most 296 using the
+      deterministic hash ordering and family-cap rule declared below, and
+      declare it before any model outcome is seen.
+    ordering: ascending question id hash
+    family_cap: proportional to the declared family weighting, applied before truncation
+
+truncation_stop:
+  predicate: any arm's truncation rate exceeds 0.25
+  when_evaluated: on CPU, before GPU
+
+# ---------------------------------------------------------------------------
+# 9. Tokenizer parity — closing the mismatch INC-V2-017 recorded
+# ---------------------------------------------------------------------------
+
+tokenizer_parity:
+  why: >-
+    the file digest and the 20-token probe matched, but the preflight reported
+    Qwen2TokenizerFast / vocab 248044 against the attestation's Qwen2Tokenizer
+    / 248320. That did not cause the FAIL and does not change it. It is closed
+    here because the CPU materializer and the GPU runtime must be shown to
+    share one tokenization contract.
+  pinned_and_recorded:
+    - transformers version
+    - tokenizers version
+    - tokenizer class and fast-vs-slow mode
+    - tokenizer_config hash
+    - special tokens map hash
+    - chat template hash
+    - tokenizer.json file hash
+  probe_battery:
+    deterministic: true
+    frozen_before_use: true
+    required_probes:
+      - unicode: accents, CJK, NBSP, combining marks
+      - number_and_version: thousands separators, decimals, dotted version chains
+      - special_tokens: chat template turn markers round-trip
+      - long_context_boundary: a sequence at and just over the 4096 budget
+  cpu_gpu_evidence: >-
+    the GPU runtime runs the identical frozen battery and its results are
+    recorded beside the CPU results. Any divergence stops the run.
+  gate: G_VBC1_TOKENIZER_PARITY
+
+model:
+  repository: Qwen/Qwen3.6-27B
+  revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  tokenizer_revision: 6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  rule: the founder-approved pin, unchanged. No auto-update.
+
+runtime:
+  serving_runtime: vllm
+  serving_runtime_version: 0.27.1
+  dtype: bfloat16
+  quantization: none
+  temperature: 0.0
+  decoding: greedy
+  max_new_tokens: 256
+  thinking: off
+  tools: off
+
+# ---------------------------------------------------------------------------
+# 10. Analysis and execution — inherited unchanged
+# ---------------------------------------------------------------------------
+
+stage_1: {what: the frozen final cohort, all four arms, one pass}
+
+assay_sensitivity_gate:
+  predicate: compiled_current accuracy minus superseded_control accuracy >= 0.15
+  kind: VALIDITY GATE, not a significance test
+  p_value: none
+  when_evaluated: after the full first pass, never sequentially
+  on_failure: {verdict: ENDPOINT_INSENSITIVE_TO_CURRENCY, then: stop, no primary claim}
+
+stage_2:
+  precondition: the assay sensitivity gate passed
+  what: determinism repeat on identical frozen inputs
+  on_any_disagreement: {verdict: NONDETERMINISTIC_RUNTIME, then: stop, no confirmatory claim}
+
+primary_test:
+  one_only: exact McNemar, compiled_current versus append_only_stale_capable
+  alpha: 0.05 two-sided
+  no_other_hypothesis_tests: true
+
+family_results: {reported: descriptive accuracy and CIs, forbidden: any additional p-value}
+
+budget:
+  gpu_hours: 6
+  hard_spend_cap_usd: 40
+  inherits: the founder approval of 2026-08-23
+  on_reaching_the_cap: stop immediately, claim nothing from a partial arm
+
+# ---------------------------------------------------------------------------
+# 11. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_VBC1_SCORER_UNCHANGED:
+    predicate: value_scorer.py digest equals the frozen digest and its controls all pass
+  G_VBC1_QUESTION_ID_INJECTIVE:
+    predicate: number_of_unique_question_ids == number_of_question_rows
+    on_failure: STOP
+  G_VBC1_FRESH_LINEAGES:
+    predicate: >-
+      no confirmatory document lineage appears in P4i, and none of
+      MODEL_ENDPOINT_V1's ten surviving questions appears in the cohort
+  G_VBC1_VALUE_FACT_CONTROLS:
+    predicate: the extractor passes its frozen positive, negative and adversarial fixtures
+  G_VBC1_QUESTION_BLIND_TO_VALUE:
+    predicate: >-
+      no generated question contains either value or any token that changed
+      between the revisions
+  G_VBC1_SELECTION_BLIND:
+    predicate: >-
+      candidate lists and reserve ordering were frozen before the first fetch,
+      and no coverage, eligibility or retrieval figure existed when they were
+  G_VBC1_FAMILIES:
+    predicate: at least 2 families contribute eligible Q1
+  G_VBC1_CONTEXT_VALIDITY:
+    predicate: >-
+      in the three single-revision arms, every retained question's target
+      evidence atom is present after truncation
+  G_VBC1_TRUNCATION:
+    predicate: no arm's truncation rate exceeds 0.25
+  G_VBC1_COHORT_FLOOR:
+    predicate: the final frozen cohort has at least 190 Q1 questions
+  G_VBC1_COHORT_CAP_DECLARED:
+    predicate: >-
+      if more than 296 questions qualify, the truncation to at most 296 used
+      the hash ordering and family cap declared in this protocol, before any
+      model outcome
+  G_VBC1_TOKENIZER_PARITY:
+    predicate: >-
+      every pinned tokenizer field is recorded and the frozen probe battery
+      returns identical results on the CPU materializer and the GPU runtime
+  G_VBC1_NO_GPU_YET:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0 at preflight time
+
+execution_authorisation:
+  rule: >-
+    if final Q1 >= 190, eligible families >= 2, target evidence retention
+    passes, per-arm truncation <= 0.25, the unique question id gate passes and
+    tokenizer parity passes, the GPU study executes under the existing founder
+    approval without a further check-in, within 6 GPU hours and a hard $40 cap.
+  if_any_gate_fails: GPU does not start; the result is preserved.
+
+# ---------------------------------------------------------------------------
+# 12. Route B
+# ---------------------------------------------------------------------------
+
+route_b_broader_semantic_endpoint:
+  status: NOT DISCARDED, NOT A RESCUE
+  rule: >-
+    a broader semantic answer endpoint may be studied only as a separate
+    secondary study, after the primary value-bearing study completes, on a
+    fresh cohort with its own preregistered scorer.
+  forbidden: >-
+    overwriting MODEL_ENDPOINT_V1's failed preflight with a semantic judge or
+    human adjudication.
+
+ip_gate: CLOSED. docs/ip/ is not modified.
+programme_status: PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

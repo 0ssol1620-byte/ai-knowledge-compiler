@@ -1,0 +1,334 @@
+﻿# P0b — recompilation mechanics under deterministic identity.
+#
+# Frozen before any P0b result exists. P0 v1 stays exactly as it was executed,
+# with its failures intact; nothing here amends it, re-runs it or re-labels it.
+#
+# P0b exists for two reasons, both raised by independent review of P0 v1:
+#
+#   INC-V2-003  P0 v1 declared deterministic explicit-path identity and ran the
+#               production fuzzy global resolver. The mechanics it meant to
+#               measure were therefore never measured on their own.
+#   INC-V2-002  A case-only edit escaped invalidation, because the change
+#               detector compared at a coarser resolution than the artifact
+#               payload stored. The design response is in
+#               design/CHANGE_FACETS_AND_ARTIFACT_SENSITIVITY_v1.md and is
+#               validated here for the first time.
+
+schema: tavonel.v2.protocol.P0b.v1
+protocol_id: P0b_recompilation_mechanics
+version: 1
+authored: 2026-08-21
+supersedes: null
+relates_to:
+  P0_master_protocol:
+    relation: >-
+      Sibling, not successor. P0 v1 remains sealed as PARTIAL/FAILED development
+      evidence. P0b does not inherit, correct or reinterpret any P0 v1 figure.
+  incidents: [INC-V2-002, INC-V2-003]
+
+# ---------------------------------------------------------------------------
+# 1. Boundaries carried forward unchanged
+# ---------------------------------------------------------------------------
+
+boundaries:
+  ip_gate:
+    state: CLOSED
+    basis: no KIPO filing acknowledgement has been provided to this programme
+    forbidden_while_closed:
+      [paper publication, arXiv upload, public repository or benchmark or dataset release,
+       web demo disclosure of new technique]
+  gpu:
+    approved: false
+    ceiling_usd: 0.0
+    rule: no GPU and no paid API before the P4 retrieval-validity gate passes on real evidence
+  sealed_evidence:
+    rule: read-only
+    scope: [docs/evidence/**, docs/ip/**, research/experiments/**]
+  p0_v1:
+    rule: read-only
+    scope: [research/tavonel_eval_v2/protocols/P0_master_protocol.yaml,
+            research/tavonel_eval_v2/compiler/selective_build.py,
+            research/tavonel_eval_v2/oracle/independent_full_build.py,
+            research/tavonel_eval_v2/receipts/p0-*.json]
+    note: >-
+      P0b is written as new files beside these. A P0b defect is never fixed by
+      editing a P0 v1 file.
+  isolation:
+    rule: every artifact produced lives under research/tavonel_eval_v2/
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 2. Identity — deterministic, and the only identity rule P0b runs
+# ---------------------------------------------------------------------------
+
+identity:
+  rule: 'u:' + sha256(source_id + "\n" + "/".join(explicit_path))[:24]
+  comparison: >-
+    Two units are the same logical unit exactly when their identifiers are
+    equal. No score, no threshold, no tie band, no weighted signal, no global
+    assignment.
+  outcomes:
+    CONTINUATION: the identifier is present in both revisions
+    NEW: present only in the after revision
+    RETIRED: present only in the before revision
+  unresolved:
+    reachable: false
+    basis: >-
+      The occurrence suffix makes explicit paths unique within a revision, so
+      two units cannot claim one identifier and there is nothing to be ambiguous
+      about. P0b therefore measures no identity ambiguity and must not be read
+      as evidence that ambiguity is rare. Ambiguity is P2's subject.
+  forbidden:
+    - calling diff_documents() or any function that constructs a LogicalIdentityResolver
+    - importing akc_cir.identity.assign_one_to_one
+  enforcement: >-
+    A static import scan of the P0b selective engine records every akc_cir symbol
+    it imports; the gate fails if a fuzzy-identity symbol appears.
+
+# ---------------------------------------------------------------------------
+# 3. Change facets
+# ---------------------------------------------------------------------------
+
+facets:
+  definition: >-
+    A facet is a deterministic projection from a unit to a comparable value. Two
+    revisions differ in a facet exactly when that facet's projections differ.
+  set:
+    SEMANTIC:
+      projection: akc_cir.identity.normalize_text_for_identity(text)
+      note: NFKC, casefold, punctuation folded to space, whitespace collapsed
+    LEXICAL:
+      projection: unicodedata.normalize("NFC", text)
+      note: >-
+        Unicode form only. Case, punctuation and spacing survive. This is the
+        facet P0 v1 had no name for.
+    STRUCTURAL:
+      projection: [explicit_path, ordinal]
+  lattice:
+    - a SEMANTIC difference implies a LEXICAL difference
+    - the converse does not hold
+    - >-
+      A SEMANTIC-sensitive artifact may therefore ignore a LEXICAL-only change
+      safely: had the meaning moved, the semantic projection would have said so.
+  out_of_scope_here:
+    [LOCATOR, TEMPORAL, METADATA, AUTHORITY, VISUAL]
+  out_of_scope_reason: >-
+    The canonical document of P0b carries no page geometry, no per-unit validity
+    time, no authority label. Declaring facets with no projection would be
+    zero-filling. They are specified in the design document and are measured
+    when a source family supplies them.
+
+# ---------------------------------------------------------------------------
+# 4. Artifact sensitivity is observed, never declared
+# ---------------------------------------------------------------------------
+
+sensitivity:
+  mechanism: >-
+    Each builder receives its input units wrapped in a recording view. Every
+    accessor is bound to one facet and reading it records that facet. An
+    artifact's sensitivity is the set of facets its builder actually touched.
+  accessor_binding:
+    .text: LEXICAL
+    .semantic_text: SEMANTIC
+    .explicit_path: STRUCTURAL
+    .ordinal: STRUCTURAL
+    .heading: STRUCTURAL
+  rationale: >-
+    A hand-written declaration fails the same way P0 v1 failed, one level up: it
+    can be wrong and its wrongness is silent. Observation cannot disagree with
+    what the builder did, because it is a record of what the builder did.
+  input_fingerprint:
+    formula: >-
+      sha256(canonical([{unit, facet, projection} for unit in inputs
+      for facet in observed_sensitivity]))
+    carry_rule: >-
+      An artifact may be carried forward exactly when its input fingerprint is
+      unchanged.
+  empty_sensitivity: >-
+    An artifact whose builder recorded no facet is UNVERIFIABLE, never CURRENT.
+    A builder that bypasses the recording view produces exactly this, which is
+    how the bypass is detected.
+
+# ---------------------------------------------------------------------------
+# 5. Artifact specification v2
+#
+# Implemented twice and independently: compiler/selective_build_p0b.py on the
+# selective side, oracle/independent_full_build_p0b.py on the oracle side.
+# ---------------------------------------------------------------------------
+
+artifact_spec:
+  schema: tavonel.v2.artifact_spec.v2
+  digest: sha256 over canonical JSON, json.dumps(sort_keys=True,
+    separators=(",",":"), ensure_ascii=False), UTF-8
+  doc_key_rule: sha256(source_id)[:16]
+  kinds:
+    - id: 'section:<logical_id>'
+      payload: {logical_id, text}
+      reads: .text
+      expected_sensitivity: [LEXICAL]
+      note: stores the unit verbatim, so it is case-sensitive by construction
+    - id: 'semantic-summary:<logical_id>'
+      payload: {logical_id, semantic_text}
+      reads: .semantic_text
+      expected_sensitivity: [SEMANTIC]
+      note: >-
+        The discriminating artifact. A case-only edit must NOT rebuild this one
+        while it MUST rebuild the section artifact above. Under global payload
+        normalisation neither would rebuild; under global raw-byte invalidation
+        both would.
+    - id: 'document-index:<doc_key>'
+      payload: {doc_key, members in reading order}
+      reads: .explicit_path, .ordinal
+      expected_sensitivity: [STRUCTURAL]
+    - id: 'structure-map:<doc_key>'
+      payload: {doc_key, paths in reading order}
+      reads: .explicit_path, .ordinal
+      expected_sensitivity: [STRUCTURAL]
+    - id: 'topic-bucket:<doc_key>:<b>'
+      payload: {doc_key, bucket, sorted members}
+      reads: .explicit_path
+      expected_sensitivity: [STRUCTURAL]
+      bucket_rule: int(sha256(logical_id)[:8], 16) % 4
+  expected_sensitivity_is_a_prediction: >-
+    The expected column is what this protocol predicts the recorder will
+    observe. It is a pre-registered prediction, not an input: the implementation
+    is not given these values, and a mismatch between predicted and observed
+    sensitivity is a reportable finding rather than a configuration error.
+
+# ---------------------------------------------------------------------------
+# 6. Invalidation
+# ---------------------------------------------------------------------------
+
+invalidation:
+  change_facts: >-
+    For every logical identifier present in both revisions, one change fact per
+    facet whose projection differs. A NEW identifier yields a fact on every
+    facet; a RETIRED identifier retires its artifacts.
+  edge_facets: >-
+    A dependency edge carries the observed sensitivity of its source artifact,
+    so §4 and §6 cannot drift apart.
+  traversal: traverse(edge) iff facets(change on edge.target) intersects edge.facets
+  states:
+    CURRENT: the input fingerprint recomputed and is unchanged
+    STALE: the fingerprint changed, or the traversal reached the artifact
+    UNVERIFIABLE: no recorded sensitivity, or a facet projection could not be computed
+  precedence: >-
+    Where the traversal and the fingerprint disagree, the fingerprint decides
+    and the disagreement is recorded. A traversal that would have carried an
+    artifact whose fingerprint moved is a traversal defect and must be visible.
+  publication_rule: UNVERIFIABLE is never published as CURRENT
+
+# ---------------------------------------------------------------------------
+# 7. Oracle independence — at or above the level P0 v1 reached
+# ---------------------------------------------------------------------------
+
+oracle_independence:
+  inherits: P0_master_protocol §5, in full
+  additional:
+    - the P0b oracle imports neither akc_cir nor any P0 v1 module
+    - it is launched with python -I -S, so packages/cir-python/src is off sys.path
+    - a sys.meta_path guard refuses akc_cir, and the guard is probed each run
+    - >-
+      it receives the AFTER canonical document only: no fingerprints, no
+      sensitivity records, no change facts, no plan, no prior state
+    - the comparator imports neither engine
+    - a diverging pair keeps both states, both streams and the per-artifact diff
+  evidence_receipt: receipts/p0b-mechanics.json
+
+# ---------------------------------------------------------------------------
+# 8. Corpus
+# ---------------------------------------------------------------------------
+
+corpus:
+  reuse: >-
+    The canonical documents already written under
+    artifacts/development/canonical/ by the P0 v1 canonicalisation run. Reused
+    as INPUT ONLY. No P0 v1 result, plan, state or receipt is read.
+  groups:
+    natural:
+      description: the 26 admitted natural revision pairs
+      minimum: 20
+    structural_positive_control:
+      description: the 4 existing reading-order rotations
+      minimum: 1
+    lexical_positive_control:
+      description: >-
+        CONSTRUCTED. The AFTER revision of an admitted natural pair, with every
+        unit's text upper-cased. Deterministic, and verified at construction to
+        change the LEXICAL projection of every unit while leaving the SEMANTIC
+        projection of every unit identical. A construction that fails that
+        verification is excluded with reason INELIGIBLE_NOT_LEXICALLY_INVARIANT.
+      minimum: 4
+  labelling: >-
+    Constructed pairs are labelled constructed in every manifest and receipt and
+    are never counted as natural revision evidence.
+
+# ---------------------------------------------------------------------------
+# 9. Gates, declared before any P0b result exists
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P0B_IDENTITY_SCOPE:
+    predicate: >-
+      the selective engine imports no fuzzy-identity symbol, and every identity
+      outcome is CONTINUATION, NEW or RETIRED
+    on_fail: STOP. This is the defect P0b exists to avoid repeating.
+  G_P0B_ISOLATION:
+    predicate: every requirement in §7 satisfied and evidenced
+    on_fail: STOP
+  G_P0B_SCALE:
+    predicate: at least 20 natural pairs across at least 2 source families
+  G_P0B_SENSITIVITY_OBSERVED:
+    predicate: >-
+      every artifact built carries a non-empty observed sensitivity, and the
+      observed set equals the prediction in §5 for every artifact kind
+    on_fail: report the mismatch; do not edit §5 to match what was observed
+  G_P0B_LEXICAL_DISCRIMINATION:
+    predicate: >-
+      on every lexical positive control, every section artifact is rebuilt and
+      every semantic-summary artifact is carried forward
+    rationale: >-
+      This is the single measurement that separates the design from both
+      rejected alternatives. Global normalisation rebuilds neither; global
+      raw-byte invalidation rebuilds both.
+  G_P0B_STRUCTURAL_DISCRIMINATION:
+    predicate: >-
+      on every structural positive control, exactly the order-sensitive
+      artifacts are rebuilt and no section or semantic-summary artifact is
+  G_P0B_FINGERPRINT_AGREEMENT:
+    predicate: >-
+      no artifact is carried forward whose input fingerprint changed, and every
+      traversal/fingerprint disagreement is recorded
+  G_P0B_EQUIVALENCE:
+    predicate: artifact exact match rate == 1.0 and stale escape count == 0
+    on_fail: >-
+      Record the divergence with pair-level forensics and report it. Do not
+      adjust the artifact spec, the facet set, the parser or this protocol to
+      make it pass. A divergence is a result.
+  G_P0B_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+# ---------------------------------------------------------------------------
+# 10. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    On the admitted P0b development pairs, under deterministic explicit-path
+    identity and facet-typed invalidation with observed artifact sensitivity, a
+    selective recompilation and an independently implemented full rebuild
+    produced the same active artifact state under artifact spec v2.
+  forbidden:
+    - generalising beyond the two families and the pairs actually run
+    - any statement about retrieval quality or answer correctness
+    - any efficiency or speedup claim; P0b measures decisions, not seconds
+    - >-
+      reading P0b's absence of identity ambiguity as evidence that ambiguity is
+      rare. P0b cannot produce ambiguity by construction.
+    - treating constructed controls as natural revision evidence
+    - treating a development-split result as confirmatory
+    - >-
+      claiming that facet-typed invalidation eliminates the INC-V2-002 class. It
+      closes the gap for facets that have a projection; an incomplete facet set
+      remains a residual risk and must be stated as one.

@@ -1,0 +1,17 @@
+{
+  "build_passed": true,
+  "critical_vulnerability_count": 0,
+  "dockerfile_sha256": "sha256:445bdae1c84270dfa64053651414ed8c5539a47586ca216b05f09ac82576332a",
+  "generated_at": "2026-08-16T16:32:41.735950+00:00",
+  "image_digest": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1@sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+  "image_tag": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:daemonless-v28-e155f9b0c1fad09d",
+  "model_artifact_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+  "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+  "paid_capacity_ready": false,
+  "runtime_qualification_required": true,
+  "sbom_sha256": "sha256:93d3de7bb7afb15ffda1da8365d98b3cc46d4a159f7f5a380de6391e404fc5aa",
+  "schema": "folynta.baked-image-build-integrity.v1",
+  "source_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "source_tree_sha256": "sha256:ac5249e484c3d4bc570c3ce7acfe7c81a1b445f309c6fb99b63fc30ed7bbefb4",
+  "vulnerability_scan_sha256": "sha256:eeefcdb3831498407059232e9c4314c2df7c25446d816d4ea7b4cb0dd177d59e"
+}

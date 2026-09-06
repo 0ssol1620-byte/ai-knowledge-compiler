@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/migration-closure-acceptance--20260826T065127Z-0d8f9b2c3e28.json",
+  "points_to_file_sha256": "sha256:e1bcf690bb948e5a7da0e07cae0e6d3087c3da64de538c49e55e9c5846df89cd",
+  "run_id": "20260826T065127Z-0d8f9b2c3e28",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "migration-closure-acceptance",
+  "updated_at": "2026-08-26T06:51:28.002421+00:00"
+}

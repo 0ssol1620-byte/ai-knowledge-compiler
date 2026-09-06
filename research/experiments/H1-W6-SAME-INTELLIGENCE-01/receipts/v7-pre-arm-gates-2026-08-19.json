@@ -1,0 +1,108 @@
+{
+  "baseline_gate": false,
+  "checks": {
+    "candidate_entropy": true,
+    "distractor_median_gap_positive": true,
+    "distractor_p25_below_3x_median": true,
+    "median_overlap": false,
+    "p90_overlap": false,
+    "recall_at_1_within_bounds": false,
+    "recall_at_5_within_bounds": false,
+    "revision_leakage": false,
+    "same_document_top1_share": false,
+    "tie_rate": false
+  },
+  "cleared_to_run_arms": false,
+  "corpus_root_sha256": "sha256:d4eaf6fe9ac514536085b142c12f72c4f0108a80e5f2bd0b19414e78129a0e8f",
+  "endpoint_status": "NOT_RUN",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "frozen_before_measurement": {
+    "baseline_sample": "all 293 revision-sensitive questions plus the first 300 controls by question_id hash order",
+    "index": "every section unit of both revisions of every article with a question",
+    "retrieval_query_form": "query_current"
+  },
+  "generated_at": "2026-08-19T12:15:00.134763+00:00",
+  "leakage_by_template_form": {
+    "query_as_of": {
+      "DIAGNOSTIC_median_overlap_excluding_subject_tokens": 0.5,
+      "DIAGNOSTIC_p90_overlap_excluding_subject_tokens": 0.6667,
+      "diagnostic_note": "the two DIAGNOSTIC_ fields are not thresholds and did not enter the gate verdict. They separate two causes of a section 3 breach: answer wording leaking into the query, and the oracle passage containing the subject's own name.",
+      "median_overlap": 0.75,
+      "median_share_of_overlap_from_subject_title": 0.6667,
+      "p90_overlap": 0.8571,
+      "passes": false,
+      "questions_scored": 265,
+      "verbatim_containment": 0
+    },
+    "query_current": {
+      "DIAGNOSTIC_median_overlap_excluding_subject_tokens": 0.5,
+      "DIAGNOSTIC_p90_overlap_excluding_subject_tokens": 0.6667,
+      "diagnostic_note": "the two DIAGNOSTIC_ fields are not thresholds and did not enter the gate verdict. They separate two causes of a section 3 breach: answer wording leaking into the query, and the oracle passage containing the subject's own name.",
+      "median_overlap": 0.75,
+      "median_share_of_overlap_from_subject_title": 0.6667,
+      "p90_overlap": 0.8571,
+      "passes": false,
+      "questions_scored": 265,
+      "verbatim_containment": 0
+    },
+    "query_provenance": {
+      "DIAGNOSTIC_median_overlap_excluding_subject_tokens": 0.3333,
+      "DIAGNOSTIC_p90_overlap_excluding_subject_tokens": 0.6667,
+      "diagnostic_note": "the two DIAGNOSTIC_ fields are not thresholds and did not enter the gate verdict. They separate two causes of a section 3 breach: answer wording leaking into the query, and the oracle passage containing the subject's own name.",
+      "median_overlap": 0.6,
+      "median_share_of_overlap_from_subject_title": 0.6667,
+      "p90_overlap": 0.82,
+      "passes": false,
+      "questions_scored": 265,
+      "verbatim_containment": 0
+    }
+  },
+  "leakage_gate": false,
+  "leakage_thresholds": {
+    "median_max": 0.5,
+    "p90_max": 0.75,
+    "verbatim_max": 0
+  },
+  "measured": {
+    "candidate_pool_units": 6663,
+    "median_candidate_entropy_bits": 3.3043,
+    "median_query_oracle_overlap": 0.75,
+    "median_score_gap": 0.2233,
+    "oracle_unresolved": 63,
+    "p25_score_gap": 0.0548,
+    "p90_query_oracle_overlap": 0.8571,
+    "questions_scored": 530,
+    "recall_at_1": 0.1887,
+    "recall_at_5": 0.5925,
+    "revision_leaking_queries": 37,
+    "same_document_top1_share": 0.9585,
+    "tie_rate": 0.1038
+  },
+  "network_access": false,
+  "protocol": "PROTOCOL_V2_2026-08-19.md",
+  "protocol_sha256": "sha256:2e50ad03c7b7aadea580dc4ab10d26c3e281b8074cbc9d419068efb329800565",
+  "question_set_sha256": "sha256:1b915787fee4502a559f5edead375e4c353f48594fd5d8ce7de501d2e94dec9e",
+  "receipt_sha256": "sha256:de4770b6f62e8d4c79f2752327d451908dbccbf637250274b2dfd79d66d7e8b4",
+  "schema": "tavonel.w6-v7-pre-arm-gates.v1",
+  "validity_thresholds": {
+    "candidate_entropy_min_bits": 1.5,
+    "median_overlap_max": 0.5,
+    "p90_overlap_max": 0.75,
+    "recall_at_1": [
+      0.3,
+      0.9
+    ],
+    "recall_at_5": [
+      0.6,
+      0.98
+    ],
+    "revision_leaking_queries_max": 0,
+    "same_document_top1_share_max": 0.8,
+    "tie_rate_max": 0.05
+  },
+  "what_this_is_not": [
+    "not a result -- no arm has been executed",
+    "not a measure of answer correctness; retrieval validity only"
+  ]
+}

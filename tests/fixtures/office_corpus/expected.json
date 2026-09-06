@@ -1,0 +1,722 @@
+{
+  "schemaVersion": "tavonel.office_corpus_expected.v1",
+  "builder": "tests/fixtures/office_corpus/build_office_corpus.py",
+  "libraries": {
+    "openpyxl": "3.1.5",
+    "python-docx": "1.2.0",
+    "python-pptx": "1.0.2"
+  },
+  "files": [
+    {
+      "path": "xlsx/01-basic-grid.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:3f21e2923c32545d52445af0a9cd4b9f627d837314fac124fed46859e5881bdf",
+      "rows": [
+        {
+          "capability": "xlsx_sheet_names",
+          "expected": [
+            "Data"
+          ]
+        },
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Item",
+            "Data!B1": "Count",
+            "Data!A2": "alpha",
+            "Data!B2": "2",
+            "Data!A3": "beta",
+            "Data!B3": "3",
+            "Data!A4": "gamma",
+            "Data!B4": "5"
+          }
+        },
+        {
+          "capability": "xlsx_table_range",
+          "expected": {
+            "Data": "A1:B4"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/02-formulas-cached.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:def6551232927efd7e118ff6a50ce4816ec2438d700a685cfacc7e1c7822ae03",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Item",
+            "Data!B1": "Count",
+            "Data!C1": "Doubled",
+            "Data!A2": "alpha",
+            "Data!B2": "2",
+            "Data!C2": "4",
+            "Data!A3": "beta",
+            "Data!B3": "3",
+            "Data!C3": "6"
+          }
+        },
+        {
+          "capability": "xlsx_formula_text",
+          "expected": {
+            "Data!C2": "=B2*2",
+            "Data!C3": "=B3*2"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/03-formulas-uncached.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:5267e198677b45c23dbfd2a28c6544ea9f932f96cf4be31b6213c54f3988c883",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Item",
+            "Data!B1": "Count",
+            "Data!C1": "Trebled",
+            "Data!A2": "alpha",
+            "Data!B2": "2",
+            "Data!C2": "=B2*3"
+          }
+        },
+        {
+          "capability": "xlsx_formula_text",
+          "expected": {
+            "Data!C2": "=B2*3"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/04-merged-header.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:619ed7ebc3befb3369efb250b097b1e6a76ac6adb84d97dc647043016b918c17",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Quarterly report",
+            "Data!A2": "Item",
+            "Data!B2": "Count",
+            "Data!C2": "Share",
+            "Data!A3": "alpha",
+            "Data!B3": "2",
+            "Data!C3": "0.4"
+          }
+        },
+        {
+          "capability": "xlsx_merged_ranges",
+          "expected": {
+            "Data": [
+              "A1:C1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/05-hidden-sheet.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:599949ed81d2344d25cd725b0f7dcf0e30ea14970642be0b7474d8c69c4be619",
+      "rows": [
+        {
+          "capability": "xlsx_sheet_names",
+          "expected": [
+            "Visible",
+            "Draft"
+          ]
+        },
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Visible!A1": "Item",
+            "Visible!A2": "alpha",
+            "Draft!A1": "Note",
+            "Draft!A2": "not for release"
+          }
+        },
+        {
+          "capability": "xlsx_hidden_sheets",
+          "expected": [
+            "Draft"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "xlsx/06-named-range.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:f3a6fc5715ace59344a745af3822b89cdf12bbcf37492037f5c4cddfcc8d7d4b",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Item",
+            "Data!B1": "Revenue",
+            "Data!A2": "alpha",
+            "Data!B2": "2",
+            "Data!A3": "beta",
+            "Data!B3": "3"
+          }
+        },
+        {
+          "capability": "xlsx_named_ranges",
+          "expected": {
+            "RevenueColumn": "Data!$B$2:$B$3"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/07-chart-cached-series.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:756dddc38a09371800a17f0986c2c5ab7bc6c1bd3e1d9edeb2af2379e2f3c38e",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Quarter",
+            "Data!B1": "Revenue",
+            "Data!A2": "Q1",
+            "Data!B2": "2",
+            "Data!A3": "Q2",
+            "Data!B3": "3",
+            "Data!A4": "Q3",
+            "Data!B4": "5"
+          }
+        },
+        {
+          "capability": "xlsx_chart_title",
+          "expected": {
+            "Data": "Quarterly revenue"
+          }
+        },
+        {
+          "capability": "xlsx_chart_series_names",
+          "expected": {
+            "Data": [
+              "Revenue"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/08-multi-sheet.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:96f63f06ab944166182ae0bcf71eb4ba7390ee057179197f9f23646fd2d500f1",
+      "rows": [
+        {
+          "capability": "xlsx_sheet_names",
+          "expected": [
+            "Summary",
+            "Detail",
+            "Notes"
+          ]
+        },
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Summary!A1": "Metric",
+            "Summary!B1": "Value",
+            "Summary!A2": "total",
+            "Summary!B2": "10",
+            "Detail!A1": "Item",
+            "Detail!B1": "Count",
+            "Detail!A2": "alpha",
+            "Detail!B2": "4",
+            "Detail!A3": "beta",
+            "Detail!B3": "6",
+            "Notes!A1": "Note",
+            "Notes!A2": "reconciled"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/09-offset-origin.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:92bc0445b5987e267b20eeb2bc8dec9cd5d68f712aa5731201cdebd186042903",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Offset!C5": "Item",
+            "Offset!D5": "Count",
+            "Offset!C6": "alpha",
+            "Offset!D6": "7",
+            "Offset!C7": "beta",
+            "Offset!D7": "8"
+          }
+        },
+        {
+          "capability": "xlsx_table_range",
+          "expected": {
+            "Offset": "C5:D7"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/10-value-types-unicode.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:f4b5bed87a24273490a8c25106175f6961e5e4f694d174e800d980caf1b6f2b3",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Types!A1": "Kind",
+            "Types!B1": "Value",
+            "Types!A2": "text",
+            "Types!B2": "가나다 Ünïcode",
+            "Types!A3": "integer",
+            "Types!B3": "42",
+            "Types!A4": "float",
+            "Types!B4": "3.5",
+            "Types!A5": "boolean",
+            "Types!B5": "TRUE",
+            "Types!A6": "timestamp",
+            "Types!B6": "2026-01-15T00:00:00"
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/01-headings-paragraphs.docx",
+      "format": "docx",
+      "sha256": "sha256:ec90fee706255da57e9f9a49e7ba4dbc085edd6e6ab401fe5e90ff52e5a60bb6",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "Quarterly report",
+            "Revenue rose in every region.",
+            "Risks",
+            "Supply remains constrained."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/02-table-simple.docx",
+      "format": "docx",
+      "sha256": "sha256:e43a02abb6f7358ca4503d8ce726543f4a0cc459a9ae54c58110392155a627dd",
+      "rows": [
+        {
+          "capability": "docx_table_cells",
+          "expected": {
+            "0": {
+              "r/000000/c/000000": "Team",
+              "r/000000/c/000001": "People",
+              "r/000001/c/000000": "platform",
+              "r/000001/c/000001": "4",
+              "r/000002/c/000000": "research",
+              "r/000002/c/000001": "2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/03-table-merged-header.docx",
+      "format": "docx",
+      "sha256": "sha256:60607c517a195e38d9d890fc08396259c7570f348fdf512b0c783ca90b3788a5",
+      "rows": [
+        {
+          "capability": "docx_table_cells",
+          "expected": {
+            "0": {
+              "r/000000/c/000000": "Headcount",
+              "r/000001/c/000000": "platform",
+              "r/000001/c/000001": "4",
+              "r/000002/c/000000": "research",
+              "r/000002/c/000001": "2"
+            }
+          }
+        },
+        {
+          "capability": "docx_merged_cell_spans",
+          "expected": {
+            "0": {
+              "r/000000/c/000000": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/04-comments.docx",
+      "format": "docx",
+      "sha256": "sha256:f0baf6b7a9bc27c6efa297584623ae5c4551b10bac56053472c29cfca727ce70",
+      "rows": [
+        {
+          "capability": "docx_comment_text",
+          "expected": {
+            "0": "Check this number.",
+            "1": "Source, please."
+          }
+        },
+        {
+          "capability": "docx_comment_author",
+          "expected": {
+            "0": "Dana Reviewer",
+            "1": "Kim Auditor"
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/05-tracked-changes.docx",
+      "format": "docx",
+      "sha256": "sha256:aac43ec1392250906dee27c1148f5d44ccf27b1aa4056cc4d39564fb3d867559",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "The contract runs for three years"
+          ]
+        },
+        {
+          "capability": "docx_tracked_changes",
+          "expected": [
+            {
+              "kind": "insertion",
+              "text": "three years"
+            },
+            {
+              "kind": "deletion",
+              "text": "two years"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/06-headers-footers.docx",
+      "format": "docx",
+      "sha256": "sha256:fa8c5cef5678770e441318dcacd4bdd11a02fd110faa5726916d92c0c0eb0c1e",
+      "rows": [
+        {
+          "capability": "docx_headers_footers",
+          "expected": {
+            "docx/section/0000/header/p/000000": "Acme internal",
+            "docx/section/0000/footer/p/000000": "Confidential draft"
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/07-multi-section-headers.docx",
+      "format": "docx",
+      "sha256": "sha256:4ecaae4746b7744b58546792d605f46dced24a786a9ed42992710e1d13bcf561",
+      "rows": [
+        {
+          "capability": "docx_headers_footers",
+          "expected": {
+            "docx/section/0000/header/p/000000": "Part one",
+            "docx/section/0001/header/p/000000": "Part two"
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/08-footnotes.docx",
+      "format": "docx",
+      "sha256": "sha256:84af46c35236e9b0a42b9fa464eb1d809aa5c148663647469039c084e9e679df",
+      "rows": [
+        {
+          "capability": "docx_footnotes",
+          "expected": {
+            "2": "Source: the internal revenue ledger."
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/09-omml-equation.docx",
+      "format": "docx",
+      "sha256": "sha256:3e5826d480c7e73c0e1a4a95faca6d01354e247a1bb682649f5dd6a771947313",
+      "rows": [
+        {
+          "capability": "docx_equation_text",
+          "expected": [
+            "E2=mc"
+          ]
+        },
+        {
+          "capability": "docx_equation_formula",
+          "expected": true
+        }
+      ]
+    },
+    {
+      "path": "docx/10-unicode-lists.docx",
+      "format": "docx",
+      "sha256": "sha256:426c10b5f0c6f25898ccdf018e2dbcf398829015b61d5ed018d03ea23a4474ff",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "분기 보고서",
+            "첫 번째 항목",
+            "Zweiter Eintrag — mit Gedankenstrich"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/11-sdt-content-control.docx",
+      "format": "docx",
+      "sha256": "sha256:b606d885b23a18acbdbecd76902b3c87ab201b12f0ea0c24571423aec24672f2",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "Contract summary.",
+            "Approved by the audit committee.",
+            "Signed on the first of January."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/12-endnotes.docx",
+      "format": "docx",
+      "sha256": "sha256:238de1b2088811e46e8ef59d098ec08a6f543422f07b609895e91fdf26663945",
+      "rows": [
+        {
+          "capability": "docx_endnotes",
+          "expected": {
+            "2": "Source: the board minutes of 2 January."
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/13-nested-table.docx",
+      "format": "docx",
+      "sha256": "sha256:ffda8c0f1d21627ded326083ecf5e105abe1b6f6c7b02df236e0e755177e5071",
+      "rows": [
+        {
+          "capability": "docx_table_cells",
+          "expected": {
+            "0": {
+              "r/000000/c/000000": "Outer cell\nInner cell",
+              "r/000000/c/000001": "Right cell",
+              "r/000001/c/000000": "platform",
+              "r/000001/c/000001": "4"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/01-title-and-body.pptx",
+      "format": "pptx",
+      "sha256": "sha256:f656d36736077916c83e2aec2051c772fbb197b8c02a93e0dbbd1d23ba3e5588",
+      "rows": [
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "Quarterly review",
+              "Revenue rose in every region."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/02-speaker-notes.pptx",
+      "format": "pptx",
+      "sha256": "sha256:7f3329ba623480cc5324a873ca3473c996f8c4d2b6899b4e04347b817258a374",
+      "rows": [
+        {
+          "capability": "pptx_speaker_notes",
+          "expected": {
+            "1": "Mention the two stalled deals."
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/03-table.pptx",
+      "format": "pptx",
+      "sha256": "sha256:3dc899e1c5102bf0a8194c226566c5a0362123a51d0f13945cdd645a4c671cef",
+      "rows": [
+        {
+          "capability": "pptx_table_cells",
+          "expected": {
+            "1/0000": [
+              "Team",
+              "People",
+              "platform",
+              "4",
+              "research",
+              "2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/04-grouped-shapes.pptx",
+      "format": "pptx",
+      "sha256": "sha256:65d2c04cea69311139e08456abeb57663130e89181c81805f57d7cec6c304257",
+      "rows": [
+        {
+          "capability": "pptx_shape_reading_order",
+          "expected": {
+            "1": [
+              "0000.0000",
+              "0000.0001",
+              "0001"
+            ]
+          }
+        },
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "Group first",
+              "Group second",
+              "After the group"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/05-multi-slide.pptx",
+      "format": "pptx",
+      "sha256": "sha256:94c74287647e36e3a55f77b854621cdc480a74baa0419e9a0710d8175455bdd6",
+      "rows": [
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "Agenda for slide 1"
+            ],
+            "2": [
+              "Results for slide 2"
+            ],
+            "3": [
+              "Next steps for slide 3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/06-nested-group.pptx",
+      "format": "pptx",
+      "sha256": "sha256:44788f213b21d25987e6784cab0fa9a6723dbda96cc3889f69477e416fc048cb",
+      "rows": [
+        {
+          "capability": "pptx_shape_reading_order",
+          "expected": {
+            "1": [
+              "0000.0000",
+              "0000.0001.0000",
+              "0000.0001.0001"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/07-notes-multi-slide.pptx",
+      "format": "pptx",
+      "sha256": "sha256:5cd3740a8495de15089190de94951784ff6438c373d06f57ad67eb8c8361b7ac",
+      "rows": [
+        {
+          "capability": "pptx_speaker_notes",
+          "expected": {
+            "1": "First note.",
+            "2": "Second note."
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/08-textbox-reading-order.pptx",
+      "format": "pptx",
+      "sha256": "sha256:afc58ed6eeac2f0738234ffd73e16ca79b599c6a8dd2bff026d1d6a3ce39a6bf",
+      "rows": [
+        {
+          "capability": "pptx_shape_reading_order",
+          "expected": {
+            "1": [
+              "0002",
+              "0001",
+              "0000"
+            ]
+          }
+        },
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "Top box",
+              "Middle box",
+              "Bottom box"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/09-unicode.pptx",
+      "format": "pptx",
+      "sha256": "sha256:5f0648f47f7b4b49bbdc600e821bb522099446d5881adea021c96a442843020b",
+      "rows": [
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "분기 검토",
+              "Résumé — Übersicht"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/10-table-merged-header.pptx",
+      "format": "pptx",
+      "sha256": "sha256:c6258d03fc0ef30972b9e1d6380eb3ec6ee86bf97ac772b5eb569e097a29b13f",
+      "rows": [
+        {
+          "capability": "pptx_table_cells",
+          "expected": {
+            "1/0000": [
+              "Headcount",
+              "platform",
+              "4",
+              "research",
+              "2"
+            ]
+          }
+        },
+        {
+          "capability": "pptx_merged_cell_spans",
+          "expected": {
+            "1/0000": {
+              "r/0000/c/0000": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

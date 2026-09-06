@@ -2,6 +2,10 @@
 
 from .action_key import (
     MISS,
+    ActionInput,
+    CompilationActionKeyInput,
+    RevisionBinding,
+    compilation_action_key,
     ActionKeyStore,
     ExecutionContract,
     InputPair,
@@ -44,11 +48,17 @@ from .base import (
 )
 from .build_receipt import (
     BuildReceipt,
+    CarryForwardReceipt,
+    CarryForwardVerdict,
     DeclaredInput,
     HiddenInputs,
     NonDeterminism,
     NonDeterminismSource,
     ObservedFile,
+    ReceiptFailure,
+    VerificationLevel,
+    seal_receipt,
+    verify_carry_forward,
 )
 from .capability_token import (
     CAPABILITY_SCOPES,
@@ -60,6 +70,16 @@ from .capability_token import (
     mint,
     require_scope,
     verify,
+)
+from .calibration import (
+    CalibrationArtifact,
+    CalibrationExample,
+    CalibrationMethod,
+    CalibrationMetrics,
+    ReliabilityBin,
+    evaluate_calibrator,
+    fit_calibrator,
+
 )
 from .collection_events import (
     COLLECTION_EVENT_ENUM_FIELDS,
@@ -81,7 +101,15 @@ from .consumption_receipt import (
     LedgerTamperedError,
     RecordedReceipt,
 )
+from .critical_tokens import (
+    CriticalTokenKind,
+    CriticalTokenMismatch,
+    CriticalTokenReport,
+    verify_critical_tokens,
+
+)
 from .dependency import (
+    DependencyChannel,
     DependencyEdge,
     DependencyGraph,
     EdgeType,
@@ -89,6 +117,7 @@ from .dependency import (
     ImpactReport,
     Propagation,
 )
+from .derivation import ContentAddressedCache, DerivationManifest, ExecutionClass
 from .entity import (
     HIGH_RISK_TYPES,
     EntityMention,
@@ -146,6 +175,7 @@ from .inspection import (
     SECURITY_CODES,
     CalibrationTable,
     DetectorSignal,
+    EvidenceChannel,
     FailureCode,
     FailureEvent,
     InspectionResult,
@@ -153,6 +183,7 @@ from .inspection import (
     Severity,
     SourceScope,
     Stage,
+    aggregate_evidence_risk,
     correlate_failures,
     inspect_output,
 )
@@ -244,6 +275,18 @@ from .projection import (
     ProjectionResult,
     generate,
 )
+from .parser_verification import (
+    CrossPageFinding,
+    ParserAgreement,
+    ParserCapability,
+    ParserObservation,
+    VerificationDecision,
+    VerificationGate,
+    check_cross_page_consistency,
+    compare_parser_outputs,
+    select_verification_parsers,
+
+)
 from .prompts import (
     KNOWLEDGE_SYSTEM_PROMPT,
     build_knowledge_messages,
@@ -306,8 +349,10 @@ from .recovery_policy import (
     RecoveryLevel,
     RecoveryOutcome,
     RecoveryPolicy,
+    RecoveryTraceReceipt,
     arbitrate,
     circuit_state,
+    default_recovery_registry,
     document_availability,
     select_recovery,
 )
@@ -341,6 +386,7 @@ from .runtime_qualification import (
 )
 from .schema import all_json_schemas, json_schema
 from .semantic_diff import (
+    ChangeChannel,
     ChangeKind,
     DiffLevel,
     DocumentShape,
@@ -348,6 +394,12 @@ from .semantic_diff import (
     SemanticDiff,
     UnitSnapshot,
     diff_documents,
+)
+from .shadow_audit import (
+    ShadowAuditPolicy,
+    ShadowAuditResult,
+    run_shadow_audit,
+    should_shadow_audit,
 )
 from .temporal import (
     AsOfAnswer,
@@ -442,6 +494,7 @@ __all__ = [
     "ActorRole",
     "AgreementVector",
     "AnswerOutcome",
+    "ActionInput",
     "Arbitration",
     "ArbitrationOutcome",
     "ArtifactState",
@@ -456,6 +509,13 @@ __all__ = [
     "BlockType",
     "BuildObservation",
     "BuildReceipt",
+    "CarryForwardReceipt",
+    "CarryForwardVerdict",
+    "CalibrationArtifact",
+    "CalibrationExample",
+    "CalibrationMethod",
+    "CalibrationMetrics",
+
     "CalibrationTable",
     "CanonicalBlock",
     "CanonicalCell",
@@ -463,6 +523,7 @@ __all__ = [
     "CanonicalKnowledgeModel",
     "CanonicalKnowledgeObject",
     "CanonicalTable",
+    "ChangeChannel",
     "ChangeKind",
     "CircuitState",
     "Claim",
@@ -473,6 +534,7 @@ __all__ = [
     "CollectionEventPayloadContract",
     "CollectionEventType",
     "CompiledAnswer",
+    "CompilationActionKeyInput",
     "Confidence",
     "ConflictCandidate",
     "ConflictDimension",
@@ -480,18 +542,28 @@ __all__ = [
     "ConsumptionLedger",
     "ConsumptionOutcome",
     "ConsumptionReceipt",
+    "ContentAddressedCache",
+
     "ContentLayer",
     "ContentSecurity",
     "ContextPackage",
     "ContinuationVerdict",
     "ContractModel",
     "CorpusStats",
+    "CriticalTokenKind",
+    "CriticalTokenMismatch",
+    "CriticalTokenReport",
+    "CrossPageFinding",
+
     "CrossPageRestoration",
     "CudaRuntimeIdentity",
     "DataChannel",
     "DeclaredInput",
+    "DependencyChannel",
+
     "DependencyEdge",
     "DependencyGraph",
+    "DerivationManifest",
     "DetectorSignal",
     "DiffLevel",
     "DocumentClassification",
@@ -508,6 +580,9 @@ __all__ = [
     "EventType",
     "EvidenceOccurrence",
     "ExecutionContract",
+    "EvidenceChannel",
+    "ExecutionClass",
+
     "ExportFile",
     "ExportManifest",
     "ExportProfile",
@@ -574,6 +649,10 @@ __all__ = [
     "OntologyStore",
     "PageState",
     "PermissionDiff",
+    "ParserAgreement",
+    "ParserCapability",
+    "ParserObservation",
+
     "PolicyRegistry",
     "PolicyRevision",
     "ProcessingEvent",
@@ -610,13 +689,17 @@ __all__ = [
     "RecoveryLevel",
     "RecoveryOutcome",
     "RecoveryPolicy",
+    "RecoveryTraceReceipt",
     "RelatedNoteCandidate",
     "RelationAssertion",
     "RelationCandidate",
     "RelationKind",
+    "ReliabilityBin",
     "RepeatedMarginalAnnotation",
+    "ReceiptFailure",
     "ReplayError",
     "Resolution",
+    "RevisionBinding",
     "ResolutionRule",
     "ResolutionStatus",
     "ResolutionTier",
@@ -638,6 +721,9 @@ __all__ = [
     "SmokeResult",
     "SnapshotClaim",
     "SnapshotEvidence",
+    "ShadowAuditPolicy",
+    "ShadowAuditResult",
+
     "SourceMap",
     "SourceMapEntry",
     "SourceRef",
@@ -663,9 +749,14 @@ __all__ = [
     "WorldCategory",
     "WorldManifest",
     "WorldSnapshot",
+    "VerificationDecision",
+    "VerificationGate",
+    "VerificationLevel",
+
     "WorldState",
     "WorldStateRegistry",
     "WorldStateStatus",
+    "aggregate_evidence_risk",
     "all_json_schemas",
     "analyze_document_structure",
     "arbitrate",
@@ -679,11 +770,16 @@ __all__ = [
     "build_ontology_manifest",
     "build_source_payload",
     "canonical_json",
+    "check_cross_page_consistency",
     "circuit_state",
     "classify_intent",
     "compile_answer",
+    "compilation_action_key",
     "compute_action_key",
+    "compare_parser_outputs",
+
     "correlate_failures",
+    "default_recovery_registry",
     "detect_repeated_marginal_blocks",
     "diff_documents",
     "document_availability",
@@ -692,6 +788,9 @@ __all__ = [
     "evaluate_runtime_qualification",
     "evidence_id",
     "generate",
+    "evaluate_calibrator",
+    "fit_calibrator",
+
     "generate_candidates",
     "infer_heading_hierarchy",
     "infer_reading_order",
@@ -722,14 +821,22 @@ __all__ = [
     "restore_cross_page_continuity",
     "reuse_guard",
     "runtime_qualification_json_schema",
+    "seal_receipt",
+    "run_shadow_audit",
+
     "scan_for_injection",
     "select_recovery",
+    "select_verification_parsers",
     "sha256_digest",
+    "should_shadow_audit",
     "source_id",
     "tracked_build",
     "validate_collection_event_payload",
     "validate_lifecycle_history",
     "validate_public_proof_binding",
     "verify",
+    "verify_critical_tokens",
+    "verify_carry_forward",
+
     "verify_equivalence",
 ]

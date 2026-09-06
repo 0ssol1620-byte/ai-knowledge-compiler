@@ -92,7 +92,7 @@
 
 .lead {
   align-self: start;
-  border-left: 3px solid var(--signal);
+  border-block: 1px solid var(--signal);
   padding: 6px 0 6px 22px;
 }
 
@@ -380,7 +380,7 @@
 }
 
 .boundary {
-  border-left: 3px solid #a96c12;
+  border-block: 1px solid #a96c12;
   background: #fff8e9;
   padding: 12px;
   color: #6c501e;

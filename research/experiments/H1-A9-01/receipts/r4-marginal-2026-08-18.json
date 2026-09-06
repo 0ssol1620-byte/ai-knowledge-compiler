@@ -1,0 +1,177 @@
+{
+  "baseline_severe_error_rate": 0.06060606060606061,
+  "configurations": {
+    "agreement_gate_matched_coverage": {
+      "absolute_risk_reduction": 0.010606060606060605,
+      "abstention_rate": 0.09090909090909091,
+      "accepted_pages": 180,
+      "coverage": 0.9090909090909091,
+      "description": "second parser; abstain on low critical-token agreement",
+      "error_reduction_per_abstention_point": 0.0011666666666666665,
+      "errors_abstained": 3,
+      "errors_accepted": 9,
+      "fisher_exact_p_accepted_vs_abstained": 0.08258482497694394,
+      "gpu_seconds_per_page": 12.71068,
+      "relative_risk_reduction": 0.175,
+      "selective_severe_error_rate": 0.05,
+      "severe_errors_avoided_per_1000_pages": 10.606060606060606,
+      "usd_per_1000_pages": 1.867119777777778
+    },
+    "evidence_validity_gate": {
+      "absolute_risk_reduction": 0.008522727272727272,
+      "abstention_rate": 0.030303030303030304,
+      "accepted_pages": 192,
+      "coverage": 0.9696969696969697,
+      "description": "one pass; abstain on internally malformed output (corrected instrument)",
+      "error_reduction_per_abstention_point": 0.0028125,
+      "errors_abstained": 2,
+      "errors_accepted": 10,
+      "fisher_exact_p_accepted_vs_abstained": 0.04420587558147536,
+      "gpu_seconds_per_page": 6.71068,
+      "relative_risk_reduction": 0.14062499999999997,
+      "selective_severe_error_rate": 0.052083333333333336,
+      "severe_errors_avoided_per_1000_pages": 8.522727272727272,
+      "usd_per_1000_pages": 0.6337864444444444
+    },
+    "single_run": {
+      "absolute_risk_reduction": 0.0,
+      "abstention_rate": 0.0,
+      "accepted_pages": 198,
+      "coverage": 1.0,
+      "description": "one pass, accept everything",
+      "error_reduction_per_abstention_point": null,
+      "errors_abstained": 0,
+      "errors_accepted": 12,
+      "fisher_exact_p_accepted_vs_abstained": 1.0,
+      "gpu_seconds_per_page": 6.71068,
+      "relative_risk_reduction": 0.0,
+      "selective_severe_error_rate": 0.06060606060606061,
+      "severe_errors_avoided_per_1000_pages": 0.0,
+      "usd_per_1000_pages": 0.6337864444444444
+    },
+    "stability_and_agreement": {
+      "absolute_risk_reduction": 0.024242424242424246,
+      "abstention_rate": 0.16666666666666666,
+      "accepted_pages": 165,
+      "coverage": 0.8333333333333334,
+      "description": "both; abstain if either fires",
+      "error_reduction_per_abstention_point": 0.0014545454545454549,
+      "errors_abstained": 6,
+      "errors_accepted": 6,
+      "fisher_exact_p_accepted_vs_abstained": 0.006089569055329603,
+      "gpu_seconds_per_page": 19.42136,
+      "relative_risk_reduction": 0.4,
+      "selective_severe_error_rate": 0.03636363636363636,
+      "severe_errors_avoided_per_1000_pages": 24.242424242424246,
+      "usd_per_1000_pages": 2.5009062222222225
+    },
+    "stability_gate": {
+      "absolute_risk_reduction": 0.01616161616161616,
+      "abstention_rate": 0.09090909090909091,
+      "accepted_pages": 180,
+      "coverage": 0.9090909090909091,
+      "description": "two passes of the same parser; abstain where they differ",
+      "error_reduction_per_abstention_point": 0.0017777777777777776,
+      "errors_abstained": 4,
+      "errors_accepted": 8,
+      "fisher_exact_p_accepted_vs_abstained": 0.015112323021677618,
+      "gpu_seconds_per_page": 13.42136,
+      "relative_risk_reduction": 0.26666666666666666,
+      "selective_severe_error_rate": 0.044444444444444446,
+      "severe_errors_avoided_per_1000_pages": 16.161616161616163,
+      "usd_per_1000_pages": 1.2675728888888889
+    },
+    "structural_gate": {
+      "absolute_risk_reduction": 0.004483611626468771,
+      "abstention_rate": 0.010101010101010102,
+      "accepted_pages": 196,
+      "coverage": 0.98989898989899,
+      "description": "one pass; abstain on a structurally defective table",
+      "error_reduction_per_abstention_point": 0.004438775510204083,
+      "errors_abstained": 1,
+      "errors_accepted": 11,
+      "fisher_exact_p_accepted_vs_abstained": 0.11782802645745423,
+      "gpu_seconds_per_page": 6.71068,
+      "relative_risk_reduction": 0.07397959183673472,
+      "selective_severe_error_rate": 0.05612244897959184,
+      "severe_errors_avoided_per_1000_pages": 4.483611626468771,
+      "usd_per_1000_pages": 0.6337864444444444
+    }
+  },
+  "cost_basis": {
+    "mineru_gpu_seconds_per_page": 6.0,
+    "mineru_hourly_rate_usd": 0.74,
+    "note": "the two parsers were measured on different clouds at different hourly rates, so GPU-seconds is the comparable quantity and dollars are reported with each rate named",
+    "ovis_gpu_seconds_per_page": 6.71068,
+    "ovis_hourly_rate_usd": 0.34
+  },
+  "incremental_cost_effectiveness": [
+    {
+      "additional_severe_errors_avoided_per_1000_pages": 8.522727272727272,
+      "additional_usd_per_1000_pages": 0.0,
+      "compared_with": "single_run",
+      "configuration": "evidence_validity_gate",
+      "dominated": false,
+      "usd_per_additional_severe_error_avoided": 0.0
+    },
+    {
+      "additional_severe_errors_avoided_per_1000_pages": -4.039115646258501,
+      "additional_usd_per_1000_pages": 0.0,
+      "compared_with": "evidence_validity_gate",
+      "configuration": "structural_gate",
+      "dominated": true,
+      "usd_per_additional_severe_error_avoided": null
+    },
+    {
+      "additional_severe_errors_avoided_per_1000_pages": 11.678004535147391,
+      "additional_usd_per_1000_pages": 0.6337864444444444,
+      "compared_with": "structural_gate",
+      "configuration": "stability_gate",
+      "dominated": false,
+      "usd_per_additional_severe_error_avoided": 0.05427181009708738
+    },
+    {
+      "additional_severe_errors_avoided_per_1000_pages": -5.555555555555557,
+      "additional_usd_per_1000_pages": 0.5995468888888891,
+      "compared_with": "stability_gate",
+      "configuration": "agreement_gate_matched_coverage",
+      "dominated": true,
+      "usd_per_additional_severe_error_avoided": null
+    },
+    {
+      "additional_severe_errors_avoided_per_1000_pages": 13.63636363636364,
+      "additional_usd_per_1000_pages": 0.6337864444444445,
+      "compared_with": "agreement_gate_matched_coverage",
+      "configuration": "stability_and_agreement",
+      "dominated": false,
+      "usd_per_additional_severe_error_avoided": 0.046477672592592584
+    }
+  ],
+  "instrument_correction": "evidence_validity now excludes LaTeX math spans; the previous p = 0.0014 was driven by math delimiters being read as currency symbols and is retracted",
+  "page_count": 198,
+  "schema": "tavonel.a9-r4-marginal.v2",
+  "severe_error_definition": "official text-block edit distance > 0.10",
+  "signal_marginal_gains": {
+    "adding_agreement_to_stability": 2,
+    "adding_stability_to_agreement": 3,
+    "agreement_marginal_gain_over_stability": 2,
+    "caught_by_agreement": 3,
+    "caught_by_any_signal": 6,
+    "caught_by_evidence": 2,
+    "caught_by_no_signal": 6,
+    "caught_by_stability": 4,
+    "caught_by_structural": 1,
+    "jaccard_stability_agreement": 0.09090909090909091,
+    "missed_by_stability_and_agreement": [
+      "jiaocaineedrop_bde81e42743067b574946698491d7f19.pdf_14.jpg",
+      "magazine_TheEconomist.2023.11.25_page_069.png",
+      "magazine_TheEconomist.2023.12.02_page_031.png",
+      "magazine_TheEconomist.2023.12.23_page_060.png",
+      "notes_9e951846094758afac08c620144e3a76_12.jpg",
+      "notes_9e951846094758afac08c620144e3a76_14.jpg"
+    ],
+    "severe_errors_total": 12,
+    "stability_marginal_gain_over_agreement": 3
+  },
+  "status": "EXPLORATORY"
+}

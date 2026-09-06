@@ -1,0 +1,67 @@
+{
+  "acceptance_semantics_sha256": "sha256:33319511a5d8a2065b1623eb9693d596064165a2d11822c1e2b4239b8871db59",
+  "estimated_cost_usd": 0.0,
+  "exclusion_policy_sha256": "sha256:3ccaffaa319a02c6574a9c61520efd4b6849cf63073876f5a22965831edc4121",
+  "frozen_before_any_candidate_pair_was_read": true,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "invariant_delta_against_v1": {
+    "added": [],
+    "changed": [
+      "INVARIANT_6_ambiguous_identity_stays_unresolved",
+      "INVARIANT_8_sfi2_cases_cannot_certify"
+    ],
+    "problems": [],
+    "removed": [],
+    "unchanged": [
+      "INVARIANT_1_identity_decisions_unchanged",
+      "INVARIANT_2_identity_fold_remains_identity_only",
+      "INVARIANT_3_expectation_is_independent",
+      "INVARIANT_4_changed_facet_resolves_typed_or_failclosed",
+      "INVARIANT_5_never_silently_unchanged",
+      "INVARIANT_7_only_predeclared_ignores"
+    ],
+    "v1_protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f"
+  },
+  "prior_rung": {
+    "frame_module_sha256": "sha256:a3010167a2c0db03bf83a39bd08bcad42d7e60a958856b14af74fc56edf2b15e",
+    "receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4-acquisition-frame-freeze--20260826T050507Z-f9091fd6943a.json",
+    "run_id": "20260826T050507Z-f9091fd6943a",
+    "rung": 0,
+    "rung_name": "acquisition_frame"
+  },
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4",
+  "protocol_path": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml",
+  "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+  "provenance": {
+    "generated_at": "2026-08-26T05:05:42.043504+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml",
+    "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+    "receipt_stem": "identity-change-migration-closure-v2r4-protocol-freeze",
+    "run_id": "20260826T050542Z-6bfd41e1af76",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "quarantine_channel": {
+    "observed_unresolved_kinds": [
+      "identity_unresolved"
+    ],
+    "production_record": "identity_unresolved",
+    "verification": "executed the repaired diff path and observed the kinds emitted on production's UNRESOLVED channel",
+    "verified_against_production": true
+  },
+  "receipt_sha256": "sha256:b47d479e67e9abbb72d1ed735c7d2563a5de39560f601c9a9c566d7f6a008fcf",
+  "rung": 1,
+  "rung_name": "protocol",
+  "schema": "tavonel.v2.protocol_freeze.v3",
+  "v1_is_not_touched": {
+    "opened_for_writing": false,
+    "read_for": "invariant body comparison only",
+    "v1_protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+    "v1_verdict_read": false
+  },
+  "what_this_seals": "the same eight structural acceptance criteria as V1, with two declared strengthenings; the facet channel declaration; the empty predeclared-ignore declaration; the exclusion policy; the manifest contract; and the fixture battery -- all before the universe is frozen and before any candidate pair is read"
+}

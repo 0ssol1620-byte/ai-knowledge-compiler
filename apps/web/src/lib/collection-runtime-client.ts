@@ -93,6 +93,11 @@ export type CollectionEventSnapshot = {
   credits_reserved: string | number;
   credits_consumed: string | number;
   credit_hard_cap: string | number;
+  customer_charge_estimate_usd?: string | number;
+  customer_charge_charged_usd?: string | number;
+  customer_max_charge_usd?: string | number;
+  standard_page_rate_usd?: string | number;
+  routed_page_rate_usd?: string | number;
   terminal_result_ids: string[];
 };
 
@@ -192,6 +197,11 @@ export type CollectionProcessingControlResult = {
   approved_preflight_sha256: string;
   approved_estimate_sha256: string;
   credit_hard_cap: string | number;
+  customer_charge_estimate_usd?: string | number;
+  customer_charge_charged_usd?: string | number;
+  customer_max_charge_usd?: string | number;
+  standard_page_rate_usd?: string | number;
+  routed_page_rate_usd?: string | number;
   overage_policy: CollectionOveragePolicy;
   total_tasks: number;
   completed_tasks: number;
@@ -281,6 +291,11 @@ const processingControlSchema = z
     approved_preflight_sha256: sha256Schema,
     approved_estimate_sha256: sha256Schema,
     credit_hard_cap: decimalSchema,
+    customer_charge_estimate_usd: decimalSchema.optional(),
+    customer_charge_charged_usd: decimalSchema.optional(),
+    customer_max_charge_usd: decimalSchema.optional(),
+    standard_page_rate_usd: decimalSchema.optional(),
+    routed_page_rate_usd: decimalSchema.optional(),
     overage_policy: overagePolicySchema,
     total_tasks: z.number().int().nonnegative(),
     completed_tasks: z.number().int().nonnegative(),
@@ -433,6 +448,11 @@ const collectionSnapshotSchema = z
     credits_reserved: decimalSchema,
     credits_consumed: decimalSchema,
     credit_hard_cap: decimalSchema,
+    customer_charge_estimate_usd: decimalSchema.optional().default(0),
+    customer_charge_charged_usd: decimalSchema.optional().default(0),
+    customer_max_charge_usd: decimalSchema.optional().default(0),
+    standard_page_rate_usd: decimalSchema.optional().default("0.04"),
+    routed_page_rate_usd: decimalSchema.optional().default("0.06"),
     terminal_result_ids: z.array(z.uuid()),
   })
   .strict();
@@ -564,6 +584,7 @@ export async function startCollectionProcessing(input: {
   preflightSha256: string;
   estimateSha256: string;
   hardCapCredits: string | number;
+  customerMaxChargeUsd: string | number;
   overagePolicy: CollectionOveragePolicy;
   knowledgeBlueprintId: string;
   knowledgeBlueprintRegistrySha256: string;
@@ -590,6 +611,7 @@ export async function startCollectionProcessing(input: {
         approved_preflight_sha256: input.preflightSha256,
         approved_estimate_sha256: input.estimateSha256,
         credit_hard_cap: input.hardCapCredits,
+        customer_max_charge_usd: input.customerMaxChargeUsd,
         overage_policy: input.overagePolicy,
         knowledge_blueprint_id: input.knowledgeBlueprintId,
         knowledge_blueprint_registry_sha256:
@@ -850,6 +872,7 @@ function assertStartContract(input: {
   preflightSha256: string;
   estimateSha256: string;
   hardCapCredits: string | number;
+  customerMaxChargeUsd: string | number;
   overagePolicy: CollectionOveragePolicy;
   knowledgeBlueprintId: string;
   knowledgeBlueprintRegistrySha256: string;
@@ -862,6 +885,7 @@ function assertStartContract(input: {
       preflightSha256: sha256Schema,
       estimateSha256: sha256Schema,
       hardCapCredits: decimalSchema,
+      customerMaxChargeUsd: decimalSchema,
       overagePolicy: overagePolicySchema,
       knowledgeBlueprintId: z.string().min(1),
       knowledgeBlueprintRegistrySha256: prefixedSha256Schema,

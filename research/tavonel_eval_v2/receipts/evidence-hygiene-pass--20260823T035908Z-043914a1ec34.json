@@ -1,0 +1,371 @@
+{
+  "authorised_by": "founder ruling, 2026-08-23",
+  "downgraded": [
+    "ORACLE_INDEPENDENCE_V2",
+    "SOURCE_FAITHFULNESS_HELDOUT_V1"
+  ],
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "outcome_keys": [
+    "verdict",
+    "gates",
+    "summary",
+    "gate_power",
+    "by_family",
+    "result_digest"
+  ],
+  "provenance": {
+    "generated_at": "2026-08-23T03:59:08.816760+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "evidence-hygiene-pass",
+    "run_id": "20260823T035908Z-043914a1ec34",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/evidence_hygiene_pass.py",
+    "tool_sha256": "sha256:7b5bb003336fd518c4e2c1f53e44df59eee1c9b7e31efea1d85fe09631e8ebc6"
+  },
+  "receipt_sha256": "sha256:cbcf0128fbde334e06b1da33ddf9ff581aef31622fba8813b23e49c530ddd89f",
+  "schema": "tavonel.v2.evidence_hygiene_pass.v1",
+  "still_held_out": [],
+  "studies": {
+    "ORACLE_INDEPENDENCE_V2": {
+      "amendment_freeze_at": "2026-08-23T02:41:47.185004+00:00",
+      "downgraded": true,
+      "events": [
+        {
+          "at": "2026-08-23T02:10:35.743549+00:00",
+          "detail": "oracle/source_derived_expected.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:ed235461c6f4019922dd0ade1c1d169b16e9a0626e604cf71292b66de3963cfa"
+        },
+        {
+          "at": "2026-08-23T02:11:05.560364+00:00",
+          "detail": "comparator/compare_recompilation.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:25052e588a3188fb10c801277236fcbdd8f9bb5c9535fe1e2c2ece7c2bd19793"
+        },
+        {
+          "at": "2026-08-23T02:13:01.060454+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T021301Z-f8d3eaca6dd1.json",
+          "event": "study execution wrote a receipt",
+          "evidence": "immutable receipt run id and generated_at",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "protocol_sha256": "sha256:7af178b681e9b8e0b0fbbde1c9046d321016dd162ff7405b4b3a2ded57fca22d"
+        },
+        {
+          "at": "2026-08-23T02:22:52.201626+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/oracle-v2-protocol-freeze--20260823T022252Z-2c122136037f.json",
+          "event": "protocol freeze",
+          "evidence": "immutable freeze receipt",
+          "protocol_sha256": "sha256:c2126d67ab8fc6ae79b59b1cfac33ca65ce52ded81751885e8d4dca39800757f"
+        },
+        {
+          "at": "2026-08-23T02:41:46.922746+00:00",
+          "detail": "protocols/ORACLE_INDEPENDENCE_V2.yaml",
+          "event": "protocol file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950"
+        },
+        {
+          "at": "2026-08-23T02:41:46.924747+00:00",
+          "detail": "tools/run_oracle_v2.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:b0e6f811cd172c1413d1383980768067e69f815ef457a631fbd9822c16c5eb42"
+        },
+        {
+          "at": "2026-08-23T02:41:47.185004+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/oracle-v2-protocol-freeze--20260823T024147Z-7dd609ba17c6.json",
+          "event": "protocol AMENDMENT freeze",
+          "evidence": "immutable freeze receipt",
+          "protocol_sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950"
+        },
+        {
+          "at": "2026-08-23T03:33:20.915781+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T033320Z-248859f8c1ee.json",
+          "event": "study execution wrote a receipt",
+          "evidence": "immutable receipt run id and generated_at",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "protocol_sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950"
+        },
+        {
+          "at": "2026-08-23T03:33:21.983629+00:00",
+          "detail": "artifacts/development/oracle_v2_run.log",
+          "event": "run log last written",
+          "evidence": "filesystem modification time"
+        }
+      ],
+      "executions_before_the_first_freeze": [
+        {
+          "generated_at": "2026-08-23T02:13:01.060454+00:00",
+          "receipt": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T021301Z-f8d3eaca6dd1.json"
+        }
+      ],
+      "first_freeze_at": "2026-08-23T02:22:52.201626+00:00",
+      "freeze_receipts": [
+        {
+          "file_sha256": "sha256:4c3d2ef76562176cfc2296cc71ce6ef2b5824c0ac990a777ded2ec5f4d014aa1",
+          "generated_at": "2026-08-23T02:22:52.201626+00:00",
+          "outcome_keys_present": [],
+          "path": "research/tavonel_eval_v2/receipts/oracle-v2-protocol-freeze--20260823T022252Z-2c122136037f.json",
+          "protocol_sha256": "sha256:c2126d67ab8fc6ae79b59b1cfac33ca65ce52ded81751885e8d4dca39800757f",
+          "receipt_sha256": "sha256:ef6e31e6f2cf0030980c717ef864705843c9aa49f15133043add55b62648c2ac",
+          "run_id": "20260823T022252Z-2c122136037f"
+        },
+        {
+          "file_sha256": "sha256:e9944ff8849d608dde1edb37587cb5d13ad070a8bfc16b45c0d4a6ee1df08bba",
+          "generated_at": "2026-08-23T02:41:47.185004+00:00",
+          "outcome_keys_present": [],
+          "path": "research/tavonel_eval_v2/receipts/oracle-v2-protocol-freeze--20260823T024147Z-7dd609ba17c6.json",
+          "protocol_sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950",
+          "receipt_sha256": "sha256:640c10fb51ed5be9207e337a3e6c120d85cbdc788ba556dac2e7f6b357ca5620",
+          "run_id": "20260823T024147Z-7dd609ba17c6"
+        }
+      ],
+      "no_pre_amendment_outcome_inspection_demonstrable": false,
+      "pre_amendment_outcome_exposures": [
+        {
+          "generated_at": "2026-08-23T02:13:01.060454+00:00",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "receipt": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T021301Z-f8d3eaca6dd1.json"
+        }
+      ],
+      "protocol_id": "ORACLE_INDEPENDENCE_V2",
+      "result_receipts": [
+        {
+          "file_sha256": "sha256:18cca01e3126dd8f4ab9b6aa4fbba9b835816a6dbee627832b1abb69ede28726",
+          "generated_at": "2026-08-23T02:13:01.060454+00:00",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "path": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T021301Z-f8d3eaca6dd1.json",
+          "protocol_sha256": "sha256:7af178b681e9b8e0b0fbbde1c9046d321016dd162ff7405b4b3a2ded57fca22d",
+          "receipt_sha256": "sha256:b5a0ba74fe9d98da0c78c0f62f3174fff26cbac4f96ecef7171114d40d1825e7",
+          "run_id": "20260823T021301Z-f8d3eaca6dd1"
+        },
+        {
+          "file_sha256": "sha256:077e1db15d7294438eed519f3759544818ec35bd30cce860f471829198ae6ebf",
+          "generated_at": "2026-08-23T03:33:20.915781+00:00",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "path": "research/tavonel_eval_v2/receipts/oracle-independence-v2--20260823T033320Z-248859f8c1ee.json",
+          "protocol_sha256": "sha256:e47993fc8cf156f3aac5de993c820ec056858909c598348d2cd8f16fa97c3950",
+          "receipt_sha256": "sha256:af5ffca8fe535606a0977795db26810445930e58316a219971cd6babe9625e29",
+          "run_id": "20260823T033320Z-248859f8c1ee"
+        }
+      ],
+      "split_after": "development_diagnostic",
+      "split_before": "held_out",
+      "why": "a receipt carrying outcome-derived metrics predates the amendment freeze, so the ruling's one-sided test fails and the study is a development diagnostic"
+    },
+    "SOURCE_FAITHFULNESS_HELDOUT_V1": {
+      "amendment_freeze_at": "2026-08-23T02:41:16.470453+00:00",
+      "downgraded": true,
+      "events": [
+        {
+          "at": "2026-08-23T02:03:24.182089+00:00",
+          "detail": "canonicalization/changed_region_controls.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:6bfa1ee5b63491e311f802ad87106ab3de0023a905401785f5b8c9a8550d1c9d"
+        },
+        {
+          "at": "2026-08-23T02:06:07.740909+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T020607Z-4d87a644df4d.json",
+          "event": "study execution wrote a receipt",
+          "evidence": "immutable receipt run id and generated_at",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "protocol_sha256": "sha256:34bead18593ac8b97b6a587c0284e5e55450f30481fc3821a1297a5a9fe2e124"
+        },
+        {
+          "at": "2026-08-23T02:22:51.941576+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/sfh1-protocol-freeze--20260823T022251Z-cb1523508572.json",
+          "event": "protocol freeze",
+          "evidence": "immutable freeze receipt",
+          "protocol_sha256": "sha256:34bead18593ac8b97b6a587c0284e5e55450f30481fc3821a1297a5a9fe2e124"
+        },
+        {
+          "at": "2026-08-23T02:31:08.390107+00:00",
+          "detail": "canonicalization/changed_regions.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:148e664296622651496dacabc5c14a99ef1ab9a6c5f1c66a7c956860fb957e9c"
+        },
+        {
+          "at": "2026-08-23T02:40:54.872708+00:00",
+          "detail": "acquisition/sources_sfh1.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:c7e7d8bf4606b959c0627ca236f09386b13fb9b46dc7be23a6445039a51247b6"
+        },
+        {
+          "at": "2026-08-23T02:40:54.875709+00:00",
+          "detail": "tools/run_sfh1.py",
+          "event": "instrument file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:137588a0091d9768b20f5381aeb9f0a737c5a26c5411d0ec5a5e60f3c3e09880"
+        },
+        {
+          "at": "2026-08-23T02:41:08.627957+00:00",
+          "detail": "protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+          "event": "protocol file last modified",
+          "evidence": "filesystem modification time",
+          "sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8"
+        },
+        {
+          "at": "2026-08-23T02:41:16.470453+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/sfh1-protocol-freeze--20260823T024116Z-91689ae88d7b.json",
+          "event": "protocol AMENDMENT freeze",
+          "evidence": "immutable freeze receipt",
+          "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8"
+        },
+        {
+          "at": "2026-08-23T03:10:17.729191+00:00",
+          "detail": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T031017Z-329258f9ec8a.json",
+          "event": "study execution wrote a receipt",
+          "evidence": "immutable receipt run id and generated_at",
+          "outcome_keys_present": [
+            "by_family",
+            "gate_power",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8"
+        },
+        {
+          "at": "2026-08-23T03:10:18.040262+00:00",
+          "detail": "artifacts/development/sfh1_run.log",
+          "event": "run log last written",
+          "evidence": "filesystem modification time"
+        }
+      ],
+      "executions_before_the_first_freeze": [
+        {
+          "generated_at": "2026-08-23T02:06:07.740909+00:00",
+          "receipt": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T020607Z-4d87a644df4d.json"
+        }
+      ],
+      "first_freeze_at": "2026-08-23T02:22:51.941576+00:00",
+      "freeze_receipts": [
+        {
+          "file_sha256": "sha256:968346d32588d8c156a4305ee3fc49c6405a9826ba1a65f6ef0bee1e581b0771",
+          "generated_at": "2026-08-23T02:22:51.941576+00:00",
+          "outcome_keys_present": [],
+          "path": "research/tavonel_eval_v2/receipts/sfh1-protocol-freeze--20260823T022251Z-cb1523508572.json",
+          "protocol_sha256": "sha256:34bead18593ac8b97b6a587c0284e5e55450f30481fc3821a1297a5a9fe2e124",
+          "receipt_sha256": "sha256:14c4992c728872573464a937687241bc53a17b355268a336a8b01acf45d777ab",
+          "run_id": "20260823T022251Z-cb1523508572"
+        },
+        {
+          "file_sha256": "sha256:548554e19709fd6e04e3403314f56351425ef5301f35050535e8242c1002cbb0",
+          "generated_at": "2026-08-23T02:41:16.470453+00:00",
+          "outcome_keys_present": [],
+          "path": "research/tavonel_eval_v2/receipts/sfh1-protocol-freeze--20260823T024116Z-91689ae88d7b.json",
+          "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8",
+          "receipt_sha256": "sha256:7a654181d198d7dd3196c07516cbea150479db12d339d701b7938e4b69cb4711",
+          "run_id": "20260823T024116Z-91689ae88d7b"
+        }
+      ],
+      "no_pre_amendment_outcome_inspection_demonstrable": false,
+      "pre_amendment_outcome_exposures": [
+        {
+          "generated_at": "2026-08-23T02:06:07.740909+00:00",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "receipt": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T020607Z-4d87a644df4d.json"
+        }
+      ],
+      "protocol_id": "SOURCE_FAITHFULNESS_HELDOUT_V1",
+      "result_receipts": [
+        {
+          "file_sha256": "sha256:e5147646195114181549370bfce924dd11c7262d4d2f2dfe503cfe3db073a676",
+          "generated_at": "2026-08-23T02:06:07.740909+00:00",
+          "outcome_keys_present": [
+            "by_family",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "path": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T020607Z-4d87a644df4d.json",
+          "protocol_sha256": "sha256:34bead18593ac8b97b6a587c0284e5e55450f30481fc3821a1297a5a9fe2e124",
+          "receipt_sha256": "sha256:565a9792077facc9cf7c40dac13fdf0e9360e6dac2fed38245e0c00dcca8899d",
+          "run_id": "20260823T020607Z-4d87a644df4d"
+        },
+        {
+          "file_sha256": "sha256:2f221092153066247f94fbd8ed965a2e6b063d8cffceed106dfbf85516d2aa0c",
+          "generated_at": "2026-08-23T03:10:17.729191+00:00",
+          "outcome_keys_present": [
+            "by_family",
+            "gate_power",
+            "gates",
+            "result_digest",
+            "summary",
+            "verdict"
+          ],
+          "path": "research/tavonel_eval_v2/receipts/sfh1-source-faithfulness--20260823T031017Z-329258f9ec8a.json",
+          "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8",
+          "receipt_sha256": "sha256:4704fd6b1cafb844128c38e84dcbecf5054bf687d301c6fe78065797a35275a4",
+          "run_id": "20260823T031017Z-329258f9ec8a"
+        }
+      ],
+      "split_after": "development_diagnostic",
+      "split_before": "held_out",
+      "why": "a receipt carrying outcome-derived metrics predates the amendment freeze, so the ruling's one-sided test fails and the study is a development diagnostic"
+    }
+  },
+  "test": "if it cannot be demonstrated that no outcome-derived count, score or gate was inspected before the amendment, downgrade from held_out to development_diagnostic",
+  "test_is_one_sided": "the burden is on the study to demonstrate the negative. Absence of proof of exposure is not proof of absence, and this tool does not treat it as one.",
+  "unaffected_held_out_studies": {
+    "note": "these carry no pre-amendment outcome exposure and were never amended after a result existed. Their held-out status stands.",
+    "protocols": [
+      "VALUE_BEARING_COHORT_V1",
+      "VALUE_BEARING_COHORT_V2",
+      "STOP-V2-005"
+    ]
+  }
+}

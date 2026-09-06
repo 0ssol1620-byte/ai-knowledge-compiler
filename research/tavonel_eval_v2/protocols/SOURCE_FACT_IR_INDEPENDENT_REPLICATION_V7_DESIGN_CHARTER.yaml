@@ -1,0 +1,546 @@
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7
+state: PROSPECTIVE_PRE_CATALOG_FREEZE
+result_blind_design: true
+purpose: >-
+  A NEW FRAME QUESTION, not a repair. SFIR5 measured git_docs at C=293 against a
+  declared minimum of 750. SFIR6 repairs instruments under an UNCHANGED frame and
+  will confirm or overturn that measurement. Neither study can separate two very
+  different explanations of a shortfall: that the SYSTEM cannot produce
+  qualifying revision pairs at that density, or that the FRAME which was
+  constructed does not contain them. SFIR7 evaluates the second explanation
+  independently, under a deliberately broader universe that TAVONEL does not
+  curate.
+succeeds: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6
+succeeds_because: A_DISTINCT_SCIENTIFIC_QUESTION_ABOUT_FRAME_CONSTRUCTION
+
+# Stated first because it is the sentence most likely to be lost. SFIR7 is not
+# SFIR6 with a wider net, and it is not a second attempt at SFIR5.
+what_sfir7_is_not:
+  it_is_not_an_instrument_repair: true
+  it_is_not_a_rerun_of_sfir5: true
+  it_is_not_a_rerun_of_sfir6: true
+  it_does_not_rescore_any_predecessor: true
+  a_pass_here_does_not_convert_a_predecessor_failure_into_a_pass: true
+  reason: >-
+    SFIR5 and SFIR6 measure the declared narrow frame. SFIR7 measures a different
+    universe. Two universes producing different capacities is the finding, not a
+    contradiction to be resolved in favour of the larger number.
+
+# Preserved, restated so it cannot be quietly superseded.
+predecessor_results_preserved:
+  sfir5:
+    receipt: receipts/sfir5-capacity-outcome.json
+    regulation_ecfr: VALID_CAPACITY_MEASUREMENT_PASS
+    git_docs: VALID_CAPACITY_MEASUREMENT_FAIL
+    encyclopedia_wikipedia: NOT_MEASURED_INSTRUMENT_DEFECT
+    is_not_rescored: true
+    numbers_are_not_copied_into_sfir7: true
+  sfir6:
+    charter: protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6_DESIGN_CHARTER.yaml
+    result_at_the_time_this_charter_was_written: NOT_YET_IN_EXISTENCE
+    this_charter_was_designed_without_reading_it: true
+    is_not_rescored: true
+    numbers_are_not_copied_into_sfir7: true
+  why_that_second_entry_matters: >-
+    SFIR7's root-selection rule is outcome-independent only if it was computable
+    before SFIR6's census existed. It was. The rule is a function of an external
+    catalogue snapshot and of bounds inherited from SFIR4, and no part of it can
+    be evaluated against a capacity quantity, SFIR6's or any other.
+
+scientific_question:
+  statement: >-
+    Is the shortage of qualifying revision pairs in the current narrow git frame
+    a limitation of the SYSTEM, or a coverage limitation of how that frame was
+    CONSTRUCTED?
+  answered_by: >-
+    applying the same unchanged instrument, scorer and acceptance logic to a
+    universe selected by an external party's catalogue rather than by TAVONEL.
+  what_a_pass_would_mean: >-
+    that the narrow frame under-covered. It would NOT mean the system is
+    validated at the narrow frame, and it would not retire the narrow frame's
+    measurement.
+  what_a_failure_would_mean: >-
+    that broadening coverage under an externally defined universe does not lift
+    the yield, which is a far stronger statement about the SYSTEM than any
+    narrow-frame result could be. That is the outcome this design is built to be
+    able to report honestly.
+
+# The whole point of the lane. Written as prohibitions because they describe acts,
+# not values.
+forbidden_acts:
+  - adding repositories one at a time until a count clears a threshold
+  - removing an eligibility predicate because the eligible pool came out small
+  - widening a predicate after the pool size is known
+  - choosing N by reference to what would clear the capacity minimum
+  - choosing N by reference to any predecessor's measured capacity
+  - ranking on any quantity TAVONEL measured rather than the catalogue published
+  - re-drawing the frame after a census and reporting only the second draw
+  - treating a short eligible pool as a defect to be repaired rather than reported
+
+root_selection_rule:
+  computable_before_any_capacity_data_exists: true
+  implemented_by: tools/sfir7_frame.py
+  controls: tests/test_sfir7_frame.py
+  design_note: docs/SFIR7_EXTERNAL_CATALOG_DESIGN_NOTE.md
+
+  universe:
+    externally_defined: true
+    curated_by_tavonel: false
+    catalog_id: LIBRARIES_IO_OPEN_DATA_1_6_0
+    decided_by: FOUNDER_RULING_2026-08-27
+    the_choice_is_not_an_agents_call: true
+    catalogue:
+      name: Libraries.io Open Source Repository and Dependency Metadata
+      version: 1.6.0
+      publication_date: 2020-01-12
+      doi: 10.5281/zenodo.3626071
+      zenodo_record: 3626071
+      archive_filename: libraries-1.6.0-2020-01-12.tar.gz
+      publisher_digest: md5:4f2275284b86827751bb31ce74238b15
+      publisher_digest_algorithm_is_md5_only: true
+      locally_computed_sha256_is_required_in_addition: true
+    why_this_catalogue: >-
+      a third-party immutable dated dataset that existed independently of SFIR5 and
+      SFIR6. It publishes repository metadata as its own Repositories table with a
+      stable repository identifier, its own published rank, creation and update
+      timestamps, language and licence, which is everything this frame rule needs
+      from one frozen file and nothing TAVONEL computed.
+    rank_field_policy:
+      use_the_catalogues_published_rank_verbatim: true
+      tavonel_may_not_recompute_popularity_or_yield: true
+      why: >-
+        a rank TAVONEL recomputed would be a TAVONEL judgement wearing an external
+        catalogue name. The independence of the frame rests on the ordinal having
+        been decided by someone else, before this study existed.
+    record_id_policy:
+      use_the_catalogues_stable_repository_identifier: true
+      github_owner_repo_is_an_address_not_an_identity: true
+    acquisition_policy:
+      permanent_local_copy_of_the_full_archive_is_not_required: true
+      stream_download_verifying_the_digest_in_flight: true
+      extract_only_the_repository_table: true
+      lineage_fields_required_in_the_receipt:
+        - zenodo_doi
+        - archive_filename
+        - publisher_digest
+        - locally_computed_sha256
+        - extracted_member_name
+        - extracted_member_sha256
+        - extraction_tool_and_version
+      why: >-
+        the receipt must make original to SFIR7-snapshot lineage reproducible by a
+        third party who re-downloads the archive, without this repository storing
+        24.9 GB.
+    licence:
+      ruling: FOUNDER_COMPLIANCE_RULING_2026-08-27
+      treat_derived_artifacts_as: CC-BY-SA-4.0
+      attribution_required: Libraries.io
+      this_is_a_compliance_posture_not_a_legal_determination: true
+      why_conservative: >-
+        Libraries.io states share-alike terms for this dataset. Rather than stop the
+        research to litigate whether a derived roster is an adapted work, SFIR7
+        operates under the stricter reading.
+      discrepancy_recorded:
+        zenodo_record_metadata_says: cc-by-4.0
+        libraries_io_states: CC-BY-SA-4.0
+        posture_taken: >-
+          the stricter of the two. Share-alike obligations are a superset of
+          attribution-only obligations, so operating under CC BY-SA satisfies either
+          reading. The discrepancy is recorded rather than resolved, because which
+          one governs is a legal question and not an agent call.
+      scope_is_isolated_to:
+        - the SFIR7 derived catalogue snapshot
+        - the SFIR7 derived roster and its per-record dispositions
+      scope_explicitly_excludes:
+        - TAVONEL source code
+        - patent material
+        - model implementation
+        - manuscript source
+        - unrelated research code
+      why_isolated: >-
+        combining the derived roster into one derivative database with unrelated work
+        would widen the share-alike scope for no benefit. The licensed artifact is the
+        data, and it stays a separate artifact.
+      external_publication:
+        permitted_only_after: KOREAN_PRIORITY_FILING
+        before_that_it_is_an_internal_artifact: true
+    snapshot_pinning:
+      snapshot_uri_recorded: true
+      snapshot_sha256_recorded: true
+      digest_is_over_working_tree_bytes: true
+      eol_determined_by_byte_counting_never_by_shell_grep: true   # INC-V2-105
+      a_snapshot_whose_bytes_do_not_match_its_digest_is_refused: true
+      the_rule_binds_one_snapshot_digest_and_refuses_any_other: true
+
+  eligibility:
+    decided_in_advance: true
+    uses_only_fields_the_catalogue_publishes: true
+    uses_no_capacity_quantity: true
+    a_predicate_naming_a_field_outside_the_catalogue_record_is_refused: true
+    a_predicate_whose_stated_reason_names_a_capacity_term_is_refused: true
+    predicates_applied_in_declared_order_first_failure_recorded: true
+    predicates:
+      - field: host
+        op: eq
+        value: github
+        why: the inherited git_docs adapter addresses one host; changing hosts would confound the frame question with an instrument change
+      - field: spdx_license_id
+        op: in
+        value: [Apache-2.0, BSD-2-Clause, BSD-3-Clause, MIT, ISC, MPL-2.0, GPL-2.0-only, GPL-3.0-only, LGPL-2.1-only, LGPL-3.0-only]
+        why: an SPDX identifier the catalogue itself declares, from a list fixed before the snapshot was taken
+      - field: created_utc
+        op: on_or_before
+        value: snapshot_date_minus_1095_days
+        why: minimum history age of three years, so that a repository has a revision history at all
+      - field: last_activity_utc
+        op: on_or_after
+        value: snapshot_date_minus_365_days
+        why: catalogue-declared activity within a year, so the universe is live software rather than an archive
+    documentation_file_eligibility:
+      is_a_property_of_a_path_not_of_a_repository: true
+      extensions: inherited_live_from_sources_sfir4_git_docs
+      why_not_a_catalogue_predicate: >-
+        a catalogue does not know what is in a tree. A predicate pretending it
+        does would smuggle a TAVONEL judgement into an external universe.
+    prior_programme_roots_are_not_excluded:
+      decision: NOT_EXCLUDED
+      why: >-
+        excluding SFIR1-SFIR4's twenty repositories would be TAVONEL curating the
+        external universe again, which is the habit SFIR7 exists to stop. Whether
+        the external rule happens to reselect any of them is a diagnostic to be
+        reported, not an input to the rule.
+
+  ranking:
+    key: the catalogue's own published ordinal, descending
+    computed_by_tavonel: false
+    tie_breaker: the catalogue's own stable record identifier
+    ties_the_tie_breaker_cannot_settle_are_refused_not_resolved: true
+    ordering_built_from_sorted_tuples_only: true
+    no_set_iteration_no_dict_order_no_locale_no_clock_no_random: true
+    descending_order_over_a_non_integer_field_is_refused: true
+
+  n:
+    value_under_the_currently_inherited_bounds: 50
+    derivation: min_of_rate_limited_and_capped_budget_over_per_root_bound
+    formula: >-
+      available_requests = min(wall_clock_hours * published_rate_limit_per_hour,
+      inherited_total_request_cap); N = floor(available_requests /
+      per_root_request_bound)
+    inputs:
+      wall_clock_hours: read live from sfir6_transport.MAX_TOTAL_WALL_CLOCK_SECONDS
+      published_rate_limit_per_hour: GitHub published authenticated primary rate limit
+      per_root_request_bound: read live from sources_sfir4.MAX_GIT_API_REQUESTS_PER_ROOT
+      inherited_total_request_cap: read live from sfir5_transport.MAX_TOTAL_REQUESTS
+    arithmetic: min(6 * 5000, 12000) / 240 = 12000 / 240 = 50
+    justification: >-
+      N is the whole number of roots the inherited transport budget can visit. Two
+      operational bounds constrain it and the stronger one applies. Every input
+      exists for a reason that predates this study question: three are bounds
+      inherited unchanged from SFIR4, SFIR5 and SFIR6, and one is a vendor published
+      figure. None of them moves when a census disappoints, and the arithmetic
+      leaves no free parameter.
+    why_the_cap_was_not_raised: >-
+      the first draft derived N from the wall clock alone and produced N=125, whose
+      worst case needed 30,000 requests against an inherited cap of 12,000. Raising
+      the cap to 30,000 would have been a budget expansion decided after SFIR6
+      returned. Applying the tighter of two constraints that both already existed is
+      methodologically cleaner, and it LOWERS N, which is the direction that cannot
+      be suspected of having been chosen to reach a capacity number.
+    the_rate_limit_is_an_upper_bound_not_a_throughput_guarantee:
+      github_enforces_secondary_rate_limits_as_well: true
+      execution_stays_serial_and_bounded: true
+      retry_after_and_remaining_and_reset_are_honoured: true
+      why: >-
+        5000 per hour bounds how many requests may be issued, not how fast they will
+        be served. Treating it as sustained throughput would plan a census the
+        endpoint will not deliver.
+    justification_may_not_cite_the_capacity_minimum_or_any_predecessor_measurement: true
+    a_hand_set_n_is_refused: true
+    an_n_whose_declared_inputs_drifted_from_the_live_bounds_is_refused: true
+    sfir7_may_still_come_up_short_at_this_n: true
+    a_short_result_is_reported_not_repaired: true
+    if_the_transport_budget_is_ever_raised:
+      it_is_a_cost_and_wall_clock_decision_recorded_as_such: true
+      it_may_not_be_raised_after_a_capacity_result_is_known: true
+
+carried_forward_by_reference:
+  charter: protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml
+  fields_owned_by_that_document:
+    - capacity_rule
+    - git_tree_enumeration
+    - spent_policy
+    - payload_policy
+    - terminal_policy
+  redeclaring_any_of_them_here_is_a_refusal: true
+
+unchanged_from_the_predecessors:
+  minimum_c_per_family: unchanged
+  minimum_q_per_family: unchanged
+  quota_formula: unchanged
+  per_root_caps: unchanged
+  selection_salt: unchanged
+  inclusion_exclusion_rules: unchanged
+  identity_semantics: unchanged
+  scorer: unchanged
+  acceptance_logic: unchanged
+  scientific_endpoints: unchanged
+  wikipedia_and_ecfr_families: not_addressed_by_sfir7
+  why_the_thresholds_do_not_move: >-
+    moving a threshold in the same study that widens a frame would make the two
+    changes inseparable. SFIR7 changes exactly one thing: who chose the roots.
+
+instrument_policy:
+  the_adapter_scorer_and_acceptance_logic_are_the_inherited_ones: true
+  sfir7_introduces_no_new_measurement_code: true
+  frame_module_makes_no_network_call: true
+  frame_module_source_is_scanned_for_network_imports_by_its_own_controls: true
+  acquiring_the_catalogue_snapshot_is_a_separate_later_authorised_act: true
+  no_acquisition_no_census_and_no_freeze_are_authorised_by_this_charter: true
+
+interpreter_of_record:
+  path: D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe
+  why: the bare `python` on PATH resolves akc_cir from a different checkout
+  incident: INC-V2-103
+  every_reported_figure_names_it: true
+
+control_policy:
+  a_guard_whose_failure_is_impossible_is_not_a_guard: true
+  incident_family: INC-V2-036
+  every_control_is_mutation_tested: true
+  mutation_table_is_reported_with_the_controls: true
+  a_control_that_survives_its_mutation_is_not_a_control: true
+
+# Measured after the snapshot landed, before any eligibility was applied and
+# before anything was ranked or selected. Recorded because a predicate that
+# matches nothing is the most invisible failure available here: the roster comes
+# out smaller, every row in it is real, and nothing downstream can tell.
+vocabulary_reconciliation:
+  state: APPLIED_TO_SPELLING_ONLY
+  measured_by: receipts/sfir7-catalog-vocabulary.json
+  catalogue_rows_measured: 37702060
+  distinct_licence_values_in_catalogue: 69
+  what_was_wrong:
+    declared_licence_values_matching_zero_rows:
+      - GPL-2.0-only
+      - GPL-3.0-only
+      - LGPL-2.1-only
+      - LGPL-3.0-only
+    declared_host_value_matching_zero_rows_case_sensitively: github
+    consequence_if_left_alone: >-
+      every copyleft repository would have been removed from the universe and the
+      roster would have been permissive licences only, plus zero rows on the host
+      predicate. Smaller, entirely real, and undetectable downstream.
+    the_class: >-
+      INC-V2-106 applied to a filter instead of a request. A filter that is
+      unconditionally false for a value silently narrows the universe to the
+      values that happen to spell correctly.
+  what_changed: spelling only
+  what_did_not_change:
+    - which licence families are eligible - still the same ten
+    - the host
+    - the date predicates
+    - N
+    - the ranking field, the tie-breaker, or the ordering
+  licence_spelling_map:
+    GPL-2.0-only: [GPL-2.0]
+    GPL-3.0-only: [GPL-3.0]
+    LGPL-2.1-only: [LGPL-2.1]
+    LGPL-3.0-only: [LGPL-3.0]
+  why_that_map_is_semantic_not_convenient: >-
+    SPDX 3.0 split the ambiguous GPL-2.0 into -only and -or-later. This deposit
+    predates that split and writes the or-later variant with a + suffix; GPL-3.0+,
+    LGPL-2.1+ and LGPL-3.0+ are all present in the catalogue. So in this
+    catalogue's own vocabulary the unsuffixed form denotes exactly what -only
+    denotes. The mapping follows the publisher's convention, not the row counts.
+  or_later_spellings_deliberately_excluded: [GPL-3.0+, LGPL-2.1+, LGPL-3.0+]
+  why_excluded: >-
+    or-later is a different licence choice from only. Excluding it is correct;
+    excluding it by accident would not be, so it is named rather than omitted.
+  case_insensitive_fields: [spdx_license_id, host]
+  why_case_folding_is_right_here_and_was_wrong_in_sfir6: >-
+    SPDX identifiers are matched case-insensitively by the SPDX specification, and
+    this catalogue is internally inconsistent about it - MIT appears 3,054,331
+    times and mit 8,347 more, with eleven further such pairs. Host is three proper
+    nouns in a closed set. INC-V2-109 is the opposite case: MediaWiki titles are
+    case-sensitive after the first character, and folding them merged two distinct
+    pages into one identity. The same operation is correct in one domain and a
+    defect in the other, and the data's own rules decide which - never
+    convenience.
+  disclosure: >-
+    the licence row counts were visible in the vocabulary receipt before the
+    spellings were reconciled. The mapping is nonetheless forced by the two
+    semantic facts above and by nothing else, and eligibility also depends on
+    host, dates and the ranking that follows, none of which this touched. The
+    capacity outcome lies downstream of a census that has not run.
+
+# The seam between what the catalogue writes and what the rule may select on.
+# Closed 2026-08-27 as a pre-freeze engineering defect, not a founder decision.
+#
+# The two record types are deliberately NOT one type. `RawCatalogRecord` carries
+# everything Libraries.io published for a repository; `FrameCatalogRecord` carries
+# only the nine fields a predicate may name. Widening the second to avoid the
+# projection would widen the surface a rule can be tuned against, which is the
+# freedom this protocol exists to remove.
+catalog_record_seam:
+  raw_type: RawCatalogRecord            # tools/sfir7_catalog_parser.py
+  frame_type: FrameCatalogRecord        # tools/sfir7_frame.py
+  projection: tools/sfir7_projection.py
+  selectable_fields:
+    - record_id
+    - host
+    - namespace
+    - name
+    - primary_language
+    - spdx_license_id
+    - created_utc
+    - last_activity_utc
+    - catalog_rank_value
+  provenance_only_fields:               # carried, never selected on
+    - host_uuid
+    - fork
+    - status
+  projection_is_exact_or_refused: true
+  address_split:
+    rule: name_with_owner -> namespace + name on exactly one slash
+    round_trip_required: 'f"{namespace}/{name}" == name_with_owner'
+    forbidden: [silent trimming, case conversion, slash repair, guessed split]
+  publisher_spelling_preserved: true
+  where_vocabulary_is_reconciled: the selection comparator, never the raw record
+  why_two_types:
+    - source vocabulary and comparison semantics are separate concerns
+    - a narrow selection surface cannot be widened to reach a number
+    - host_uuid must survive to the census without ever entering a predicate
+  identity_binding_frozen_together:
+    - record_id
+    - name_with_owner
+    - host_uuid
+  live_attestation: observed GitHub repository id == frozen host_uuid, else REFUSE
+
+# Every artifact whose bytes decide what the roster is. Bound together in
+# receipts/sfir7-roster-freeze.json. A freeze that pins the roster without
+# pinning what produced it records a conclusion, not a derivation.
+freeze_chain:
+  - catalogue archive digest
+  - extracted-member digest
+  - parser hash
+  - vocabulary reconciliation hash
+  - adapter hash
+  - frame rule hash
+  - selected roster fingerprint
+  - selection-sidecar fingerprint
+
+# Registered 2026-08-27 before the roster was frozen, before any census ran and
+# before any SFIR7 eligible or capacity count existed. See INC-V2-115.
+#
+# N was derived from `sfir5_transport.MAX_TOTAL_REQUESTS` = 12,000, the cap across
+# all three families. A second inherited cap is tighter and specific to the only
+# family SFIR7 traverses.
+second_inherited_request_cap:
+  state: REGISTERED_NOT_ACTED_ON
+  constant: acquisition/sources_sfir4.MAX_GIT_API_REQUESTS_GLOBAL
+  value: 4800
+  enforced_by:
+    - tools/probe_sfir4_capacity.py    # refuses the fetch at the bound
+    - tools/sfir4_protocol.py          # refuses a seal whose proof exceeds it
+  n_under_the_same_formula_with_this_term: 20   # floor(min(30000, 12000, 4800) / 240)
+  n_as_frozen: 50                                # FOUNDER_RULING_2026-08-27, ruling 3
+  action_taken: none
+  why_no_action:
+    - N is a founder ruling frozen by name; lowering it is not an implementation decision
+    - the standing instruction is that SFIR7 roots, threshold and N are not readjusted
+    - reported to the founder rather than taken
+  what_the_census_will_do:
+    - fifty frozen roots are visited in frozen order
+    - at the inherited global Git cap, remaining roots are excluded as INCOMPLETE
+    - a bound-excluded root is never recorded as a root with zero candidates
+  direction_of_bias: |
+    a root excluded by the cap can only lower measured capacity, never raise it.
+    A criterion cleared despite exclusions is sound; a shortfall is not
+    attributable to a frame chosen too small, because the cut came from a bound
+    frozen two studies before this question was asked.
+  measured_magnitude_not_a_derivation: |
+    SFIR6's Git census over 20 roots used 1,879 requests: 23 lowest, 160 highest,
+    94 mean, global counter 2,043. Fifty roots need about 4,700 at the mean and
+    8,000 at the maximum, so whether they fit is not knowable before the roster
+    exists. This is recorded as a magnitude. Sizing N from measured consumption
+    would make N a function of prior results, which this protocol forbids.
+
+design_freeze_state:
+  charter_written: true
+  frame_rule_implemented: true
+  controls_mutation_tested: true
+  catalogue_identity_decided: true          # FOUNDER_RULING_2026-08-27
+  catalogue_licence_cleared: true           # FOUNDER_COMPLIANCE_RULING_2026-08-27
+  request_budget_resolved: true             # FOUNDER_RULING_2026-08-27, ruling 3
+  catalog_record_seam_closed: true          # pre-freeze engineering defect
+  snapshot_acquired: true
+  snapshot_digest_pinned: true
+  projection_correctness_established: true  # receipts/sfir7-projection-audit.json
+  roster_frozen: true                       # receipts/sfir7-roster-freeze.json
+  composition_limitations_registered: true  # receipts/sfir7-frame-composition.json
+  frozen: true
+  frozen_at: 2026-08-27
+  census_run: true                          # receipts/sfir7-capacity-metadata-census.json
+  outcome_sealed: true                      # receipts/sfir7-capacity-outcome.json
+  outcome: CAPACITY_CRITERION_APPLIED_AND_FAILED
+  outcome_verdict: MEASURED_NOT_SEALABLE
+  nothing_adjusted_after_the_result:
+    roots_added: 0
+    threshold_lowered: false
+    n_changed: false
+    roster_edited: false
+    per_root_traversal_bounds_raised: false
+  roster_fingerprint: sha256:e328ec8fb910c62a9af0bc8e5868976d9872bf3efaa050cd62adda1b4f9c34df
+  blocking_freeze: []
+  no_longer_blocking:
+    - the catalogue snapshot, acquired and pinned by digest
+    - projection correctness over the whole member, established before selection
+    - the raw/frame record seam
+    - founder decision on which external catalogue
+    - founder ruling on that catalogue's licence terms for a derived, published roster
+    - the inherited transport request budget conflict
+
+# Registered 2026-08-27 while SFIR6's census was still running and no SFIR6
+# number existed. Resolved the same day by founder ruling, in the direction that
+# lowers N. The block is kept rather than deleted, because the record of what the
+# conflict was and how it was settled is the evidence that it was not settled to
+# suit a result.
+inherited_transport_budget_conflict:
+  state: RESOLVED_BY_TIGHTENING_NOT_BY_RAISING
+  resolution: FOUNDER_RULING_2026-08-27
+  what_the_conflict_was:
+    n_roots_under_the_first_draft: 125
+    per_root_request_bound: 240             # sources_sfir4.MAX_GIT_API_REQUESTS_PER_ROOT
+    implied_worst_case_requests: 30000
+    inherited_cap: 12000                    # sfir5_transport.MAX_TOTAL_REQUESTS
+    consequence_if_unresolved: >-
+      an acquisition refuses at request 12,001 part way through the roster,
+      producing a partial census rather than a measurement.
+  how_it_was_resolved: >-
+    the total request cap stays at 12,000 and N is derived from the stronger of
+    the two bounds instead. N falls from 125 to 50.
+  why_that_direction: >-
+    raising the cap to 30,000 would have been a budget expansion decided after
+    SFIR6 returned a shortfall, and no amount of documentation makes that
+    outcome-independent. Applying the tighter of two constraints that both
+    already existed needs no new number at all, and it LOWERS the roster, which
+    is the direction that cannot be suspected of having been chosen to reach a
+    capacity figure.
+  registered_before_the_predecessor_result_existed: true
+  resolved_after_it: true
+  why_that_sequence_is_still_sound: >-
+    the conflict, both candidate resolutions and the rule that choosing between
+    them after a count exists would be tuning were all recorded while SFIR6 was
+    blind. The ruling picked the one that was already named as the conservative
+    option. What was decided after the result is which of two pre-declared
+    branches to take, and the branch taken shrinks the study.
+  remaining_degree_of_freedom:
+    what: >-
+      wall_clock_hours is inherited from sfir6_transport and is a number a future
+      study could raise. It is now non-binding -- the cap is the active bound at
+      6 hours and stays active up to 2.4 hours of headroom -- but it is still a
+      constant that could move.
+    closure_required_at_freeze: >-
+      the freeze receipt pins MAX_TOTAL_WALL_CLOCK_SECONDS and MAX_TOTAL_REQUESTS
+      by digest alongside the catalogue snapshot, so this is a mechanism and not a
+      rule in a document.

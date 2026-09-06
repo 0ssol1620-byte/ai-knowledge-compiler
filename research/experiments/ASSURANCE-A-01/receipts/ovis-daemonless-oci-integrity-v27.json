@@ -1,0 +1,13 @@
+{
+  "all_referenced_blob_hashes_verified": true,
+  "bake_attestation_receipt_sha256": "sha256:dcf5e9855a2712b8b86c738dce969efeb2d08e80e91a6d99c31c305f4bb923f5",
+  "generated_at": "2026-08-16T06:28:33.334964+00:00",
+  "manifest_size": 5280,
+  "output_manifest_digest": "sha256:a26d09cd1132d4b69b4870189c9348dea6bc7a20e46bda228d32740e6b9cafda",
+  "public_benchmark_inference_allowed": false,
+  "receipt_sha256": "sha256:60728bb1757bad91850adbbead01a6eaaa9b4de0ad19ecac948149af01b5257c",
+  "referenced_blob_count": 34,
+  "scan_view_blob_storage": "hardlink_or_same-filesystem-copy",
+  "scan_view_tag": "ovisocr2-m1-baked",
+  "schema": "tavonel.daemonless-oci-integrity.v1"
+}

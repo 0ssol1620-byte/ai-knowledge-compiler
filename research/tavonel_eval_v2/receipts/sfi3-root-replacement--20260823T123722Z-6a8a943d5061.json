@@ -1,0 +1,320 @@
+{
+  "accepted_replacements": {
+    "encyclopedia_wikipedia": [
+      "Category:Cities in Hungary"
+    ],
+    "git_docs": [
+      "micrometer-metrics/micrometer",
+      "sphinx-doc/sphinx",
+      "apache/nifi",
+      "oven-sh/bun",
+      "spring-projects/spring-security",
+      "fastify/fastify",
+      "facebook/docusaurus",
+      "jekyll/jekyll",
+      "mkdocs/mkdocs",
+      "readthedocs/readthedocs.org",
+      "mattermost/docs"
+    ],
+    "regulation_ecfr": [
+      "title-17-part-200"
+    ]
+  },
+  "candidates_considered": [
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "micrometer-metrics/micrometer",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository metadata carried no id / full_name match",
+          "state": "NOT_FOUND"
+        }
+      ],
+      "candidate_id": "junit-team/junit5",
+      "family": "git_docs",
+      "reason": "repository metadata carried no id / full_name match",
+      "state": "NOT_FOUND"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "sphinx-doc/sphinx",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "apache/nifi",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository metadata carried no id / full_name match",
+          "state": "NOT_FOUND"
+        }
+      ],
+      "candidate_id": "facebook/react-native-website",
+      "family": "git_docs",
+      "reason": "repository metadata carried no id / full_name match",
+      "state": "NOT_FOUND"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "oven-sh/bun",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "spring-projects/spring-security",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "fastify/fastify",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "facebook/docusaurus",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "jekyll/jekyll",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "mkdocs/mkdocs",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "readthedocs/readthedocs.org",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository exists but declared prefix 'docs/en/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+          "state": "NOT_FOUND"
+        }
+      ],
+      "candidate_id": "apache/dubbo",
+      "family": "git_docs",
+      "reason": "repository exists but declared prefix 'docs/en/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "state": "NOT_FOUND"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "mattermost/docs",
+      "family": "git_docs",
+      "reason": "repository and declared prefix both resolved",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "title/part resolved with at least one recorded version",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "title-17-part-200",
+      "family": "regulation_ecfr",
+      "reason": "title/part resolved with at least one recorded version",
+      "state": "VALID"
+    },
+    {
+      "accepted": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "category page exists in the Category namespace",
+          "state": "VALID"
+        }
+      ],
+      "candidate_id": "Category:Cities in Hungary",
+      "family": "encyclopedia_wikipedia",
+      "reason": "category page exists in the Category namespace",
+      "state": "VALID"
+    }
+  ],
+  "declared_totals": {
+    "encyclopedia_wikipedia": 10,
+    "git_docs": 32,
+    "regulation_ecfr": 36
+  },
+  "ended_at": "2026-08-23T12:37:22.926873+00:00",
+  "fully_recovered": true,
+  "no_revision_content_opened": true,
+  "note_on_final_verification": "this receipt is this module's own record of the frozen criterion and how each candidate fared under it. The receipt the orchestrator's freeze gate reads (stem sfi3-root-preflight, keys valid_root_count_per_family / zero_valid_families) is produced by re-running the unmodified tools/preflight_sfi3_roots.py over sources_sfi3.py's updated declared roots, after this receipt's accepted_replacements are applied there",
+  "policy_digest": "sha256:10a82b24843c48175f096ffd5b216e10ddcb7562d58c097799dd273bb44429aa",
+  "policy_receipt": {
+    "pointer": "research/tavonel_eval_v2/receipts/latest/sfi3-root-replacement-policy.json",
+    "receipt": "research/tavonel_eval_v2/receipts/sfi3-root-replacement-policy--20260823T123708Z-39e1d14f3843.json",
+    "receipt_file_sha256": "sha256:cc228aa02478419cacfe3860760e76cb471a3f5b7ffa7584732aa6445d2a7392",
+    "receipt_sha256": "sha256:5dd354bbd85af0cce8a0c14e3e8a540d4f591e7ed497c813192e47a4aa4c2d2f",
+    "run_id": "20260823T123708Z-39e1d14f3843"
+  },
+  "provenance": {
+    "generated_at": "2026-08-23T12:37:22.927797+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-root-replacement",
+    "run_id": "20260823T123722Z-6a8a943d5061",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/replace_sfi3_roots.py",
+    "tool_sha256": "sha256:2ef84dfac11a4dc9c6670735d85f64aeaab3fd5f3423b333d519f2ff7638399a"
+  },
+  "receipt_sha256": "sha256:78b3bc7f7fd873471159ae289a04417b1a5a1f4bba34ad53593ad9944635ee15",
+  "recovered_via_retry": {
+    "encyclopedia_wikipedia": [],
+    "git_docs": [
+      "trinodb/trino"
+    ],
+    "regulation_ecfr": []
+  },
+  "retry_outcomes": {
+    "trinodb/trino": {
+      "attempts": [
+        {
+          "attempt": 1,
+          "reason": "repository and declared prefix both resolved",
+          "state": "VALID"
+        }
+      ],
+      "family": "git_docs",
+      "final_reason": "repository and declared prefix both resolved",
+      "final_state": "VALID",
+      "recovered": true
+    }
+  },
+  "schema": "tavonel.v2.sfi3_root_replacement.v1",
+  "scope": "identity and reachability only — no revision content opened, no yield estimated",
+  "shortfall_after_replacement": {
+    "encyclopedia_wikipedia": 0,
+    "git_docs": 0,
+    "regulation_ecfr": 0
+  },
+  "shortfall_before_replacement": {
+    "encyclopedia_wikipedia": 1,
+    "git_docs": 11,
+    "regulation_ecfr": 1
+  },
+  "started_at": "2026-08-23T12:37:08.094964+00:00",
+  "valid_root_count_per_family": {
+    "encyclopedia_wikipedia": 10,
+    "git_docs": 32,
+    "regulation_ecfr": 36
+  },
+  "zero_valid_families": []
+}

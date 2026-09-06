@@ -396,6 +396,11 @@ class CollectionEstimateResponse(CollectionWireModel):
     p50_credits: Decimal | None = Field(default=None, ge=0)
     p95_credits: Decimal | None = Field(default=None, ge=0)
     reserve_ceiling: Decimal | None = Field(default=None, ge=0)
+    customer_charge_min_usd: Decimal = Field(ge=0)
+    customer_charge_estimate_usd: Decimal = Field(ge=0)
+    customer_charge_max_usd: Decimal = Field(ge=0)
+    standard_page_rate_usd: Decimal = Field(ge=0)
+    routed_page_rate_usd: Decimal = Field(ge=0)
     duration_p50_seconds: int | None = Field(default=None, ge=0)
     duration_p95_seconds: int | None = Field(default=None, ge=0)
     confidence: Decimal = Field(ge=0, le=1)
@@ -451,6 +456,9 @@ class CollectionCompileRequest(CollectionWireModel):
     approved_preflight_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     approved_estimate_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     credit_hard_cap: Decimal | None = Field(default=None, gt=0, max_digits=18, decimal_places=6)
+    customer_max_charge_usd: Decimal | None = Field(
+        default=None, gt=0, max_digits=18, decimal_places=2
+    )
     overage_policy: Literal["stop_at_cap", "allow_10_percent", "continue_within_balance"] = (
         "stop_at_cap"
     )
@@ -572,6 +580,11 @@ class CollectionProcessingResponse(CollectionWireModel):
     approved_preflight_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     approved_estimate_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     credit_hard_cap: Decimal = Field(ge=0)
+    customer_charge_estimate_usd: Decimal = Field(ge=0)
+    customer_charge_charged_usd: Decimal = Field(ge=0)
+    customer_max_charge_usd: Decimal = Field(ge=0)
+    standard_page_rate_usd: Decimal = Field(ge=0)
+    routed_page_rate_usd: Decimal = Field(ge=0)
     overage_policy: Literal["stop_at_cap", "allow_10_percent", "continue_within_balance"]
     total_tasks: int = Field(ge=0)
     completed_tasks: int = Field(ge=0)
@@ -602,6 +615,11 @@ class CollectionEventSnapshot(CollectionWireModel):
     credits_reserved: Decimal = Field(default=Decimal("0"), ge=0)
     credits_consumed: Decimal = Field(default=Decimal("0"), ge=0)
     credit_hard_cap: Decimal = Field(default=Decimal("0"), ge=0)
+    customer_charge_estimate_usd: Decimal = Field(default=Decimal("0"), ge=0)
+    customer_charge_charged_usd: Decimal = Field(default=Decimal("0"), ge=0)
+    customer_max_charge_usd: Decimal = Field(default=Decimal("0"), ge=0)
+    standard_page_rate_usd: Decimal = Field(default=Decimal("0.04"), ge=0)
+    routed_page_rate_usd: Decimal = Field(default=Decimal("0.06"), ge=0)
     terminal_result_ids: list[uuid.UUID] = Field(default_factory=list)
 
 

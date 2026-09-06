@@ -1,0 +1,187 @@
+# P4g — cohort expansion under a composite instrument identity.
+#
+# Successor to P4f, which is preserved unmodified and was never executed.
+#
+# INC-V2-011: P4f required the markup workstream to change classification
+# semantics and simultaneously required `G_P4F_INSTRUMENT_UNCHANGED` to hold a
+# single tool digest constant. Those cannot both be satisfied. P4g replaces the
+# single digest with a composition in which a policy change is visible.
+
+schema: tavonel.v2.protocol.P4g.v1
+protocol_id: P4g_cohort_expansion
+version: 1
+authored: 2026-08-22
+supersedes: P4f_cohort_expansion
+
+relates_to:
+  P4f_cohort_expansion:
+    state: SUPERSEDED_BEFORE_EXECUTION
+    rule: >-
+      preserved unmodified as expansion-planning evidence. Never run, so no
+      result is superseded — only a plan. Its arithmetic is carried forward
+      because it was correct.
+  MARKUP_SEMANTICS_V1:
+    state: PASS, 7 of 7 gates, 8 of 8 controls
+    policy_digest: sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12
+    rule: frozen before this protocol and before any acquisition
+  SOURCE_LOCALITY_V2: {rule: read-only, eligible_Q1: 5, not_re_scored: true}
+  P4e_provenance_retrieval: {rule: read-only, Core: PASS 12/12}
+  P0d_source_coverage: {rule: read-only, standing_result: 26 of 26 SOURCE_COVERAGE_INCOMPLETE}
+
+# ---------------------------------------------------------------------------
+# 1. Instrument identity, as a composition
+# ---------------------------------------------------------------------------
+
+instrument_identity:
+  definition: >-
+    source-map code digest + witness code digest + markup-semantics policy
+    digest + schema digest, hashed together.
+  parts_frozen_before_any_result:
+    source_map_code: canonicalization/source_map.py
+    witness_code: canonicalization/coverage_witness.py
+    markup_semantics_code: canonicalization/markup_semantics.py
+    markup_policy: >-
+      computed over the declared mapping, NOT the file bytes, so reformatting
+      cannot move it and reclassifying one attribute always does
+    schema: the shape a classification result takes
+  composite_at_freeze: sha256:3dda8243749788e939f6fb8916dacb8f16cefa6cca9d7a3cc5e4d3c373fe1f3a
+  why_a_composition: >-
+    a single tool digest lets policy semantics drift behind unchanged code, and
+    a policy digest alone lets resolution logic drift behind an unchanged
+    mapping. INC-V2-011 is the record of the first loophole being written into a
+    protocol by accident.
+  rule: >-
+    the composite is recorded before acquisition and re-checked at scoring time.
+    A difference is either a recorded incident or the run does not happen.
+
+# ---------------------------------------------------------------------------
+# 2. What P4f established, carried forward
+# ---------------------------------------------------------------------------
+
+carried_from_P4f:
+  observed_on_the_frozen_P4e_cohort:
+    documents: 57
+    q1_questions: 175
+    locally_complete_q1: 5
+    eligible_q1_by_family: {git_docs: 5}
+  the_structure: >-
+    within git_docs eligibility was 5 of 6 Q1 = 0.83; the other three families
+    contributed 169 Q1 and zero eligible. Expansion in that mix multiplies a
+    zero, which is why P4f paired expansion with a markup workstream.
+  what_has_changed_since: >-
+    the markup workstream is done and frozen as MARKUP_SEMANTICS_V1. The three
+    markup families now have a declared semantics under which their constructs
+    resolve to MODELED, UNRESOLVED or IGNORED with reasons, rather than falling
+    to UNMODELED by default.
+  what_has_not_changed: >-
+    nothing is known yet about what that does to eligibility, and no prediction
+    is offered as a result. `class` and `style` are UNRESOLVED and appear 65,485
+    and 25,441 times in the development corpus, so eligibility may well remain
+    low. That would be a finding, not a failure to be engineered away.
+
+# ---------------------------------------------------------------------------
+# 3. Expansion, frozen before acquisition
+# ---------------------------------------------------------------------------
+
+targets:
+  source_documents: 400
+  minimum_families: 4
+  markdown_family_documents: 120
+  revision_pairs: one per source document
+  spacing_rule: unchanged from P4e
+  container_cap: at most 8 documents per repository, issuer or CFR part
+  not_a_narrowing: >-
+    all four families are acquired, scored and reported. A markdown-only figure
+    is a protocol violation, not an option.
+
+selection:
+  frozen_before_any_retrieval_or_eligibility_result: true
+  never_conditioned_on: [any eligibility count, any coverage status, any retrieval score, the Q1 count]
+  why: >-
+    selecting documents by their coverage status fits the cohort to the
+    instrument, which is the mirror of fitting the instrument to the cohort and
+    equally forbidden.
+
+# ---------------------------------------------------------------------------
+# 4. Anti-fitting, inherited and extended
+# ---------------------------------------------------------------------------
+
+anti_fitting:
+  binding: yes
+  scoring: the expanded cohort is scored for eligibility exactly ONCE
+  after_seeing_the_number:
+    forbidden:
+      - any change to the locality instrument aimed at that number
+      - any reclassification in the markup policy aimed at that number
+      - lowering the eligible-Q1 floor
+      - narrowing the reported cohort to one family
+    permitted: >-
+      repair of a genuine conformance defect against a frozen contract, as a
+      separate recorded incident preserving the existing run and receipt.
+  the_specific_temptation: >-
+    moving `class` or `style` from UNRESOLVED to IGNORED would raise eligibility
+    more than any other single edit, because they are the two most frequent
+    attributes in the corpus. Doing so requires proving that no external rule
+    changes visibility, ordering or behaviour for that corpus — a proof, not an
+    assertion, and declared before the measurement.
+
+# ---------------------------------------------------------------------------
+# 5. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P4G_SCALE:
+    predicate: at least 400 source documents across at least 4 families
+  G_P4G_INDEPENDENCE:
+    predicate: one revision pair per source document
+  G_P4G_SELECTION_BLIND:
+    predicate: >-
+      the document list and family quotas are fixed before any eligibility,
+      coverage or retrieval figure is computed
+  G_P4G_NO_NARROWING:
+    predicate: all four families appear in the scored cohort and in every reported measure
+  G_P4G_COMPOSITE_IDENTITY:
+    predicate: >-
+      the composite instrument identity at scoring time equals the value frozen
+      here, or a recorded incident explains the difference
+    replaces: G_P4F_INSTRUMENT_UNCHANGED
+  G_P4G_SCORED_ONCE:
+    predicate: the expanded cohort is scored for eligibility exactly once
+  G_P4G_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+reported_not_gated:
+  - eligible Q1, total and by family
+  - eligible Q1 yield per family
+  - witness failure reasons by family
+  - counts by state and facet under the markup policy
+  - UNRESOLVED share, and which constructs drive it
+  why: >-
+    these are the decision-gate numbers. Gating the thing under investigation
+    would make the protocol unable to return bad news.
+
+# ---------------------------------------------------------------------------
+# 6. Decision gate, unchanged
+# ---------------------------------------------------------------------------
+
+decision_gate:
+  hard_minimum_eligible_Q1: 190
+  status: >-
+    conservative preregistered floor. Exact McNemar power at 190 is 0.967 and
+    the 0.95 target is first reached at n = 173. Not lowered.
+  spread_requirement: eligible Q1 present in more than one family
+  if_met: resubmit the model-study proposal with real numbers, for approval
+  if_not_met: >-
+    report it. No GPU request, no re-fitting of instrument or policy, no
+    narrowing, no lowering of the floor.
+
+claim_boundary:
+  forbidden:
+    - reporting a markdown-only figure as the cohort result
+    - re-fitting the locality instrument or the markup policy to any cohort
+    - lowering the 190 floor
+    - treating UNRESOLVED as IGNORED
+    - calling any document revision source-faithful end-to-end
+    - re-scoring P0d, P4e or SOURCE_LOCALITY_V2
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

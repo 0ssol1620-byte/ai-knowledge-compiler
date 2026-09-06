@@ -1,0 +1,12 @@
+{
+  "acquisition_receipt_sha256": "sha256:ed443571995eb6034c02c35bedd3212d1e847149f47225d3d3ea5acc3cd5eda1",
+  "external_gpu_cost_usd": 0.0,
+  "freeze_file_sha256": "sha256:f281489d12b999df933fc2be0fb6fe82d4ec8026ddf85acd4e2c717c7d923886",
+  "freeze_receipt_sha256": "sha256:c2c50efbd33f78ac29df5102ba80aed69502732a6fe44674e37a9a354c39faba",
+  "generated_at": "2026-08-19T09:56:28.337709+00:00",
+  "receipt_sha256": "sha256:70bb81ba88675ac143705681fd418b944fd39150a71af840c2b6616c2cbcf5a5",
+  "return_code": 0,
+  "schema": "tavonel.w6-v5-single-title-completion.v1",
+  "scientific_rules_changed": false,
+  "started_at": "2026-08-19T07:27:44.339832+00:00"
+}

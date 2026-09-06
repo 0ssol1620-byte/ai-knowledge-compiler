@@ -4,8 +4,48 @@
     {
       "name": "web-production",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": ["pnpm", "--filter", "@akc/web", "start"],
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@akc/web",
+        "start"
+      ],
       "port": 3000
+    },
+    {
+      "name": "web-dev",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@akc/web",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "tavonel-foundation-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "C:/Users/yspow/AppData/Local/Temp/claude/D--CodexProjects-ai-knowledge-compiler/96d5c8dd-3ba8-4af2-aca0-4b1e8fa6de6f/scratchpad/tsf/nextjs",
+        "dev",
+        "-p",
+        "3411"
+      ],
+      "port": 3411
+    },
+    {
+      "name": "tavonel-foundation-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "C:/Users/yspow/AppData/Local/Temp/claude/D--CodexProjects-ai-knowledge-compiler/96d5c8dd-3ba8-4af2-aca0-4b1e8fa6de6f/scratchpad/tsf/nextjs",
+        "start",
+        "-p",
+        "3412"
+      ],
+      "port": 3412
     }
   ]
 }

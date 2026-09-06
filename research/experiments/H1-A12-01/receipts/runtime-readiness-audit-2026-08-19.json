@@ -1,0 +1,71 @@
+{
+  "blockers": [
+    "formal_immutable_runtime_not_ready",
+    "exact_same_family_recipe_not_frozen"
+  ],
+  "claim_boundary": "Readiness evidence only. It authorizes no A12 empirical benefit claim and does not convert historical cost estimates into measured provider cost.",
+  "evidence_class": "repository readiness audit; no A12 intervention outcome",
+  "exact_recipe_artifact_candidates": [],
+  "experiment_id": "H1-A12-01",
+  "gates": {
+    "exact_same_family_recipe_ready": false,
+    "formal_immutable_runtime_ready": false,
+    "historical_cost_reserve_under_nominal_cap": true,
+    "licence_ready": true,
+    "provider_preflight_reason": "not run because preregistered earlier stop-before-spend gates already fail",
+    "provider_preflight_run": false,
+    "source_only_ready": true
+  },
+  "generated_at": "2026-08-19T01:55:43.007803+00:00",
+  "gpu_spend_authorized": false,
+  "incremental_gpu_spend_usd": 0.0,
+  "independent_candidates": {
+    "deepseek-ocr-2": {
+      "candidate_execution_state": "measured_partial_runtime_image_pending",
+      "candidate_promotion_eligible": false,
+      "formal_runtime_ready": false,
+      "license": {
+        "commercial_use": "allowed",
+        "id": "Apache-2.0",
+        "status": "approved"
+      },
+      "pool_enabled": false,
+      "pool_id": "parser-deepseek-ocr-2",
+      "pool_identity_state": "pending_exact_image_digest",
+      "pool_image_digest": null
+    },
+    "paddleocr-vl-1.6": {
+      "candidate_execution_state": "measured_partial_runtime_image_pending",
+      "candidate_promotion_eligible": false,
+      "formal_runtime_ready": false,
+      "license": {
+        "commercial_use": "allowed",
+        "id": "Apache-2.0",
+        "status": "approved"
+      },
+      "pool_enabled": false,
+      "pool_id": "parser-paddleocr-vl-1-6",
+      "pool_identity_state": "pending_exact_image_digest",
+      "pool_image_digest": null
+    }
+  },
+  "overall_state": "BLOCKED_RUNTIME_AND_RECIPE",
+  "production_promotion_eligible": false,
+  "receipt_sha256": "sha256:56ff7b44ec86946bd30e961376ceba8a3c3403e2c900884b1915b04b26a2e8f9",
+  "schema": "tavonel.a12-runtime-readiness-audit.v1",
+  "source_hashes": {
+    "benchmark/v6/candidate-registry.yaml": "sha256:4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+    "infra/runpod/v6/pool-registry.yaml": "sha256:3b0d22495d96fccf3db6d103559037ecac6cd897257cfd430d9c9a000dc7e2f2",
+    "research/experiments/H1-A12-01/A12_RUNTIME_READINESS_AUDIT_2026-08-19.md": "sha256:8e6cb01bfd007efd4ac0dcdb1c7ee91b2a304fcf9c1cf751873a6fb707bc53f9",
+    "research/experiments/H1-A12-01/preregistration-v2.json": "sha256:6d7a9dbe89c73f1178acca727786891766d85af23b4271e2e726e7e8894898ca",
+    "research/experiments/H1-A9-A12-SHARED-01/BUDGET_AND_REUSE_PLAN.json": "sha256:79d924e21a8546ff60bbd84714632d7d5f9f26fbe64dc1df9820ddc42f6f47b1",
+    "research/experiments/H1-A9-A12-SHARED-01/source-only-v1/receipt.json": "sha256:d481d90e547f92d9ed9e508e752d9d4f2bbcf9713352540429b4a490138e5bf2"
+  },
+  "source_only": {
+    "all_input_hashes_verified": true,
+    "archive_sha256": "sha256:e26ab6606cd13c5ec59b20f004ad41c8dbfc06b3cada3f7b08575959bc4f4da2",
+    "case_count": 48,
+    "ground_truth_in_bundle": false,
+    "ground_truth_mounted": false
+  }
+}

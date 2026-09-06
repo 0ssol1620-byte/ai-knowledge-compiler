@@ -1,0 +1,1003 @@
+{
+  "excluded_without_an_official_page_score": [
+    "docstructbench_dianzishu_zhongwenzaixian-o.O-61513005.pdf_179.jpg",
+    "yanbaopptmerge_yanbaoPPT_1020.jpg"
+  ],
+  "experiment_id": "H1-A9-01",
+  "page_count": 198,
+  "pages": [
+    {
+      "image_path": "PPT_EnglishtoAmericanTransition_page_003.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "da2e6ce89fa1c754afe9f2b955321ad6b3a12c04aeb2c9d930997bffe509c15f"
+    },
+    {
+      "image_path": "PPT_EnglishtoAmericanTransition_page_005.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "99f104d2192b39ce4a12f29f56cf9311370e11e8437c76bfd5c7be6eaa356ec4"
+    },
+    {
+      "image_path": "PPT_EnglishtoAmericanTransition_page_016.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "cfda55ac3be57e8b51003f0d1271f626ed79512dc858f2e241691a45760311bc"
+    },
+    {
+      "image_path": "PPT_EnglishtoAmericanTransition_page_017.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "4f41e01e2d5c904eea47ec107577607c9a962912772d47333060394a9aa0b841"
+    },
+    {
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_016.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "5498064f8c3d14413e0f54c610988c3632242016293cc5701d6bdc22ba41593f"
+    },
+    {
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_017.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "f8d9fd2c8a62c6c10a37e623befdf74ac042495bc8d8e35a3734b66c2bec35ff"
+    },
+    {
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_043.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "6710271224de796da02b2dcac63d19a095b3597f59b4c473d13ace52a140065f"
+    },
+    {
+      "image_path": "docstructbench_dianzishu_zhongwenzaixian-o.O-61510863.pdf_73.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "93689e25e91fe58ec136e1bc5fa47717401211cccdeac8a0e368a5ec737c6fad"
+    },
+    {
+      "image_path": "docstructbench_llm-raw-scihub-o.O-chem.200701981.pdf_9.jpg",
+      "official_text_edit_distance": 0.20651629072681704,
+      "prediction_sha256": "8a0a1c6b0fdef51d11224d44e94d5562e083172e5d48c715a37482ca79a6effa"
+    },
+    {
+      "image_path": "docstructbench_llm-raw-the-eye-o.O-Dragon%20Magazine%20-%20030.pdf_5.jpg",
+      "official_text_edit_distance": 0.002230897936419409,
+      "prediction_sha256": "ad38a2121a7326419b91340db9ae30c8f4ba833c87876f2e1ec9af6ca37b6ab2"
+    },
+    {
+      "image_path": "jiaocaineedrop_5f9c4ab08cac7457e9111a30e4664920607ea2c115a1433d7be98e97e64244ca.pdf_2.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "2984c0e8660b4a5a0f422b655804bd35c8b75d6320995d0a94b2c27ccb610ce0"
+    },
+    {
+      "image_path": "jiaocaineedrop_7bc671081823aec9e2a6ef2a011c3fbb.pdf_20.jpg",
+      "official_text_edit_distance": 0.009478672985781991,
+      "prediction_sha256": "6d65d0f7a647c372639d582cccafeb539d7dbfc1d1cda4e1107ad05f375112ba"
+    },
+    {
+      "image_path": "jiaocaineedrop_Chap11.pdf_10.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "36013eca5dd8442ba9a667614eda71401856c85a9e7fb4feef5171f7479da9ab"
+    },
+    {
+      "image_path": "jiaocaineedrop_bde81e42743067b574946698491d7f19.pdf_14.jpg",
+      "official_text_edit_distance": 0.11436413540713632,
+      "prediction_sha256": "fc3fff66aeb11de34bd0e5924f34070d81af039bb623ece54fba9058b39d97fe"
+    },
+    {
+      "image_path": "jiaocaineedrop_unit2t03.pdf_63.jpg",
+      "official_text_edit_distance": 0.016738030362008563,
+      "prediction_sha256": "70218e4184a67a53a776dee7ffe17467ab58b6cca213afee76c9df963b29b280"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.11.18_page_030.png",
+      "official_text_edit_distance": 0.0567133583874274,
+      "prediction_sha256": "2d56abf76628a13df6c38399a172d713eccab1537019a2e95ad35199317cdf6d"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.11.18_page_068.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "0a841eef45384a0249574ca0dd460f35b7e4421af3bb0e0f024435284b90254e"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.11.18_page_071.png",
+      "official_text_edit_distance": 0.02452642073778664,
+      "prediction_sha256": "116c9048123f1f5f2dffaad811c72656001d99d334b65e8b09a1f0f80fdf6d9c"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.11.18_page_082.png",
+      "official_text_edit_distance": 0.008467023172905526,
+      "prediction_sha256": "483f0eefb9759d02a7d5ab631989de055db28e39a45ef7da9f3b171cdad5e919"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.11.25_page_068.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "7d579b1e2b7e08fe3c827fb48371726a7129a587854f7238bda37bf3cca8ceed"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.11.25_page_069.png",
+      "official_text_edit_distance": 0.13941789435860583,
+      "prediction_sha256": "1ff69797033874c606ee83c859228caa14cf2d4ab5301385f417540714cb5f4e"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.02_page_023.png",
+      "official_text_edit_distance": 0.0008812513769552765,
+      "prediction_sha256": "3f6e149923a4c6fd99a3f13a5d625a549dce5175e443147350e6d728ca514f2d"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.02_page_031.png",
+      "official_text_edit_distance": 0.1333956969130028,
+      "prediction_sha256": "dddacd76a054088b02c00e83a1e020366e37dac45062c63e3db61fa8c5fb2776"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.02_page_056.png",
+      "official_text_edit_distance": 0.06232956758862485,
+      "prediction_sha256": "ec3aa30d0025f23b2499b9ff4ba6653060ce48026be1aa0922c989a0b54d45b6"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.02_page_062.png",
+      "official_text_edit_distance": 0.014240837696335079,
+      "prediction_sha256": "0f044c37bc67001dffd4138bff464b28a14c7e5e747ec13def4e38cc29beff24"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.09_page_045.png",
+      "official_text_edit_distance": 0.001723807699674392,
+      "prediction_sha256": "b11039f010f57b2c99d19089ac7c31d64b631701d98ecafa70bec56e8cde9f78"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.09_page_082.png",
+      "official_text_edit_distance": 0.0011895321173671688,
+      "prediction_sha256": "2bd323a6eeea3c98392b12b26f677e8956d9064ce3c375a66a92009ea00fde8b"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.16_page_019.png",
+      "official_text_edit_distance": 0.04929051530993279,
+      "prediction_sha256": "7cec066467879e73fd3fcc810445701a2572351db2b1247fa72c656f4dc6dd6e"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.16_page_026.png",
+      "official_text_edit_distance": 0.0006042296072507553,
+      "prediction_sha256": "bf126bdfa909bb4ac981f64e04b1da6cafaf90e044fc8c7b46203255c8523f6f"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.16_page_037.png",
+      "official_text_edit_distance": 0.04891110317743663,
+      "prediction_sha256": "dfa78f990f14a561cb901ce5589d71bcd0f123b8bb458b823ccfcb7d98ceebb3"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.23_page_024.png",
+      "official_text_edit_distance": 0.0005473453749315818,
+      "prediction_sha256": "12508b23f5ef91369207f23ac62a8fa2b2181cd5ceff15a6efdc4d1a89815996"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2023.12.23_page_060.png",
+      "official_text_edit_distance": 0.11779324055666004,
+      "prediction_sha256": "e05450523010c473d88596cde8079083d3ff45981c4d7bd454d775e6c29fe456"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.02.24_page_007.png",
+      "official_text_edit_distance": 0.00019327406262079628,
+      "prediction_sha256": "7a92c56e4728a8041e256bebc151d6bad850f78774720f149479605e720ea54a"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.02.24_page_008.png",
+      "official_text_edit_distance": 0.000541858574911948,
+      "prediction_sha256": "c5246e23377df585748ab3ec6a7423db7fc2ca99ac541c68641769d2b6b2eb01"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.02.24_page_033.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "8bc0634196a71e2b096ecd8f91de164757bc51d35c3cd68ce0816ee5225f5f7c"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.02.24_page_068.png",
+      "official_text_edit_distance": 0.001250446588067167,
+      "prediction_sha256": "6fa319168b154407040d3daa08217eb7ca2e616658575270ad1b3a94407ca690"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.03.02_page_025.png",
+      "official_text_edit_distance": 0.0006190672719768881,
+      "prediction_sha256": "984fe31fab3afef655cb9bdb15e5eb22e76d5d12c43a40a0b38bd4e370cf2fbb"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.03.02_page_028.png",
+      "official_text_edit_distance": 0.0007012622720897616,
+      "prediction_sha256": "15a97f51d1a83cf783f4845b901dec5caf9ce1ed7fa8e65b77e6fe8a5d6da9f6"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.03.02_page_031.png",
+      "official_text_edit_distance": 0.020186335403726708,
+      "prediction_sha256": "8e9311758410916f83c3336c0c62ee5f61b625cb207cde16df6849ab761af5dd"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.03.02_page_075.png",
+      "official_text_edit_distance": 0.0023685457129322598,
+      "prediction_sha256": "3ec991ec2129476b4570f95d09d0d07e370bd3794918677bf680a1a842f0e652"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.03.09_page_029.png",
+      "official_text_edit_distance": 0.0018359853121175031,
+      "prediction_sha256": "75677c351b381ad4f062aac8a512bdf238569f8fdb15f2a292494476c0e32b0e"
+    },
+    {
+      "image_path": "magazine_TheEconomist.2024.03.09_page_079.png",
+      "official_text_edit_distance": 0.005575379125780553,
+      "prediction_sha256": "02df6748197bc6c6c7b3666e5c87a9d2a6dfc9452b5d5ebeb76bae6fcca12f3c"
+    },
+    {
+      "image_path": "newspaper_019d4d5296ba8f1c21277d72fb0cf0db_1.jpg",
+      "official_text_edit_distance": 0.03501945525291829,
+      "prediction_sha256": "35e00161ae86d24fe857f5e00640b00444d4de3291015c5c99631125a7abfef6"
+    },
+    {
+      "image_path": "newspaper_01f020903d7bc4b3fc69f500f41eb77e_1.jpg",
+      "official_text_edit_distance": 0.014429683921209345,
+      "prediction_sha256": "c83fd3f0a7208b834811a3b20bfa7b2633e9533336fdc035d5c22e19bb30971b"
+    },
+    {
+      "image_path": "newspaper_028a1dd5500fbd774e4d85df3c460c4d_1.jpg",
+      "official_text_edit_distance": 0.014631915866483767,
+      "prediction_sha256": "abe37f5978fbea24fd8597b05797a89a1b0038014b6c1d6a8c853f994017e577"
+    },
+    {
+      "image_path": "newspaper_02912feb79994ae24665509d964ad9ce_1.jpg",
+      "official_text_edit_distance": 0.018543768748295608,
+      "prediction_sha256": "92606824a5308553fd48336177fa36618cf503907648b52908c77d6333c2f225"
+    },
+    {
+      "image_path": "newspaper_06b975dbc47dc2dc2a3a1468293f6a2c_1.jpg",
+      "official_text_edit_distance": 0.021871984560952074,
+      "prediction_sha256": "ea5bce639b759fe2ebaf72e6e53412bebee9de649f5422a60bc2fd8be320c31d"
+    },
+    {
+      "image_path": "newspaper_0b86dae4d8f328a0e79d9ac394000dec_1.jpg",
+      "official_text_edit_distance": 0.00221606648199446,
+      "prediction_sha256": "163a44937972fd3cccff2d1cce1d65fc4be18455c0ff0c1bc40e055e81349a4a"
+    },
+    {
+      "image_path": "newspaper_0ce88e1e131aef7a59d0533be36870de_1.jpg",
+      "official_text_edit_distance": 0.013115343154868847,
+      "prediction_sha256": "9faf267844eb1edcb77805abac412925878f2d71ab7afa479fb865263da6b031"
+    },
+    {
+      "image_path": "newspaper_0cfb8a42b5d4194d8c73dba0cdf6256c_1.jpg",
+      "official_text_edit_distance": 0.029978296256104178,
+      "prediction_sha256": "c17c4d0f4a5a8af47654aa8cd70c51023ad8bb896e247836b82a12899d3956ed"
+    },
+    {
+      "image_path": "newspaper_14b9d21f7fed39fb42849e9cde233930_1.jpg",
+      "official_text_edit_distance": 0.01669941060903733,
+      "prediction_sha256": "792137b5972a8cc670736b43634af784ad69076c70a3be348d5eecab1f99f3f7"
+    },
+    {
+      "image_path": "newspaper_17f81b80831d8d58564b9c8e3cf79261_1.jpg",
+      "official_text_edit_distance": 0.018717244821562267,
+      "prediction_sha256": "ab5d31ad084e02ec7e88f030180681a847cba3f6a46ce93c4db2b685802db018"
+    },
+    {
+      "image_path": "newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.jpg",
+      "official_text_edit_distance": 0.030220844633862844,
+      "prediction_sha256": "cf108d9961139c474020c41f55cbe9014fb002ad38d5a67ec91ccaaf64b394e2"
+    },
+    {
+      "image_path": "newspaper_2140e879cd0d3c1b5ba2ea1e3a75aab6_1.jpg",
+      "official_text_edit_distance": 0.002991623454327882,
+      "prediction_sha256": "ec4a11fea0c441a0ba43d1fdd2bfec6ee5a03ea54196d1e07e70e314972d53a6"
+    },
+    {
+      "image_path": "newspaper_26f4ed67a5e8922e7d42b35d317ebf4b_1.jpg",
+      "official_text_edit_distance": 0.04312267657992565,
+      "prediction_sha256": "70de0d703cc20c1c4dca3b077dfd2e66607e0ec1c0337ab7da3091df542783f9"
+    },
+    {
+      "image_path": "newspaper_2a645bfcbcd473423581cd9f1ceb778e_1.jpg",
+      "official_text_edit_distance": 0.018675298804780877,
+      "prediction_sha256": "2e5925135812cbc376f6f505f7902acf9f9d925e0bf53313a6d737838467b180"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_10.jpg",
+      "official_text_edit_distance": 0.0010001666944490749,
+      "prediction_sha256": "ccbaf938a1ff62d3bb504a237082dfbef76beb6e06a85a0a17bf29363cd1f76a"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_11.jpg",
+      "official_text_edit_distance": 0.000980872976949485,
+      "prediction_sha256": "b8553787dcd6feb68204c97c6acb20f41e86d8f13b7ba1991af97ff2d7348bd4"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_12.jpg",
+      "official_text_edit_distance": 0.0019172391755871545,
+      "prediction_sha256": "1e92468c4fe273079ef23c1c12ec27f8df97da9bfe85b25bde7f8e598bca6833"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_13.jpg",
+      "official_text_edit_distance": 0.003947368421052632,
+      "prediction_sha256": "c5d5ee49cd191c710cccf95944032478cd9374812da6059edfa6f436a4b3fa6c"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_14.jpg",
+      "official_text_edit_distance": 0.0031561461794019936,
+      "prediction_sha256": "36a107a9b8e5eb491315b14f354110449a0a3b2483ece0f786adbcc9785eaea9"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_15.jpg",
+      "official_text_edit_distance": 0.003767069533825145,
+      "prediction_sha256": "c3292139bb61095c2bd8e4623de62b72ba840630e21ede66b240b5edf52c72c8"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_16.jpg",
+      "official_text_edit_distance": 0.0028020438437448493,
+      "prediction_sha256": "88ea6eaed337b0ff2f7e302f3097e7c0b1b4d50b6f0f188b02800c6117cc6031"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_17.jpg",
+      "official_text_edit_distance": 0.0008238589553468446,
+      "prediction_sha256": "f2e625ed86090bfce254675ed218c767a5115c2751ecfade2578f43a7aaef742"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_3.jpg",
+      "official_text_edit_distance": 0.004446724816145032,
+      "prediction_sha256": "89a4a86b910f31abb5250171ae748886fd8787fd386213c6acb4596ef3bc8a0b"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_4.jpg",
+      "official_text_edit_distance": 0.0020498804236419544,
+      "prediction_sha256": "de37207c52040565fe8bcd1db079a062337fb2122c5959b35ba8ac63a17acb5c"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_5.jpg",
+      "official_text_edit_distance": 0.0011840324763193505,
+      "prediction_sha256": "895e5cdcddb2e3c01b860f733096e3292e240e15b304a1f06f78871dd90cda8e"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_6.jpg",
+      "official_text_edit_distance": 0.005319148936170213,
+      "prediction_sha256": "c6627fecd54fbc722b5372e2c14394318348ec0ffb4fb4f2ccb8ba836b1d8251"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_7.jpg",
+      "official_text_edit_distance": 0.00097815454841865,
+      "prediction_sha256": "82ccd4a21500a7f71752e48af649df9757647813962d58acdd86c0c1e333c3d9"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_8.jpg",
+      "official_text_edit_distance": 0.005785264590777607,
+      "prediction_sha256": "cf0569e11ddf99c474ff73362495b3d02a4d1111acef4fc0f452c2734d9d53e4"
+    },
+    {
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_9.jpg",
+      "official_text_edit_distance": 0.0017001020061203672,
+      "prediction_sha256": "4a4df69b31b77f0613b33ba7772bc92bf682dabd1905ee6a823f977b6051e2ad"
+    },
+    {
+      "image_path": "newspaper_2c69e142b52dbb30cac2cb11d3eb25e5_1.jpg",
+      "official_text_edit_distance": 0.004975874547647768,
+      "prediction_sha256": "1a9c598e1723ed0f5b1d57527c20efce5753f452d819a6f469fc0be75b48c3a0"
+    },
+    {
+      "image_path": "newspaper_2de954934f60ac538c5bd5dc40833a61_1.jpg",
+      "official_text_edit_distance": 0.013330757341576507,
+      "prediction_sha256": "3c6c0a5aaf74dd9d7d2ee0b15e023f7381ea26d31313c621a53fa80e8159747b"
+    },
+    {
+      "image_path": "newspaper_35352f94db65d19e097395380498ec15_1.jpg",
+      "official_text_edit_distance": 0.009620670698185816,
+      "prediction_sha256": "7020d0e48a902c874e4bce9c98de8f5c2c8448d3ed8a811b2d7484af82ff3295"
+    },
+    {
+      "image_path": "newspaper_354720d92a632709eb8e61795b191390_1.jpg",
+      "official_text_edit_distance": 0.004910557699052964,
+      "prediction_sha256": "ab07c192c2f0357d627c82fdb5b9cebf7ebf62c43734852b1febc6d04932ed7a"
+    },
+    {
+      "image_path": "newspaper_35bdaa11dec104ccbdc9e19ac8527d21_1.jpg",
+      "official_text_edit_distance": 0.007503192848020434,
+      "prediction_sha256": "e35680b8bafd10a7d838a7932acef7cfbffb9973a4110e7161f4931aac8c762e"
+    },
+    {
+      "image_path": "newspaper_401c73055b88a62c479edd3d490cea8a_1.jpg",
+      "official_text_edit_distance": 0.008719346049046322,
+      "prediction_sha256": "7214cd58de630882b85090e30c5419e004554d205989c191a1a183b772c62bed"
+    },
+    {
+      "image_path": "newspaper_41a09cb64841567c220d8cac3c1cc193_1.jpg",
+      "official_text_edit_distance": 0.0025401069518716578,
+      "prediction_sha256": "777f807c4538c06737b940fa71301ec75f118df4f86794d15cc9af3dab58fde8"
+    },
+    {
+      "image_path": "newspaper_4790b51e8fa793743699647c09a93ccb_1.jpg",
+      "official_text_edit_distance": 0.023315710993628846,
+      "prediction_sha256": "fc2b9df055836969764b59eb9a3e22249de732f861bd2209b702bb2315ba23ca"
+    },
+    {
+      "image_path": "newspaper_4b4ad1f6cba28a4844d7ffa9306223a4_1.jpg",
+      "official_text_edit_distance": 0.004526024641689716,
+      "prediction_sha256": "decff8139bf0530ab0c80152b249d12422fd76bea20a06bf79ba7cb2e7f2d609"
+    },
+    {
+      "image_path": "newspaper_4cec63ef5a813c5a49dd8e577f3180e7_1.jpg",
+      "official_text_edit_distance": 0.00516700498246909,
+      "prediction_sha256": "7a007263c0cfc855c3d17ff03242fba49f51f3134af1f6cbe20924d666523383"
+    },
+    {
+      "image_path": "newspaper_571a946262006cd89199b67353c408b8_1.jpg",
+      "official_text_edit_distance": 0.022530329289428077,
+      "prediction_sha256": "b81b0782294a6fb93c5d2f44bb0ab83cb9e1a7b033fb5b5def17838fc837a953"
+    },
+    {
+      "image_path": "newspaper_5a8b7563a3262beecbecd7ddd3ef8827_1.jpg",
+      "official_text_edit_distance": 0.002459419576979833,
+      "prediction_sha256": "2ead0ad8e78a6d9ab1a0439909824461e5568a08cbfd2afe40a669afd6953060"
+    },
+    {
+      "image_path": "newspaper_5aedf678eff04d8ebac3692d54103e19_1.jpg",
+      "official_text_edit_distance": 0.05349439171699741,
+      "prediction_sha256": "f830ee7ba34f1a83410e21201669c09490e24aa4d00bf50bf0214281e1a553a0"
+    },
+    {
+      "image_path": "newspaper_5bba361b0a5ca11745edbef140e2a431_1.jpg",
+      "official_text_edit_distance": 0.005868139454608215,
+      "prediction_sha256": "c0dbdc21ddda53d10f4c764b260cd1cc640e802fec327f7321d10a756de0ee64"
+    },
+    {
+      "image_path": "newspaper_5c4e17f22cdc19d414a3c521f631c899_1.jpg",
+      "official_text_edit_distance": 0.015932521087160263,
+      "prediction_sha256": "3676d167fd3a69e85f2527aeb603b8aa70332b3dcae0425152adcd92c7b4913e"
+    },
+    {
+      "image_path": "newspaper_5d4b8e73eacbc6ecac0d7b1396fd01d7_1.jpg",
+      "official_text_edit_distance": 0.09650793650793651,
+      "prediction_sha256": "15f09db5068f2e2739bee0da4824c970af1613c47e3aa13b5dcf2e6b6d517815"
+    },
+    {
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_2.jpg",
+      "official_text_edit_distance": 0.0006785411365564037,
+      "prediction_sha256": "ce4302f4bc57c4d329db7e6809816b2df231d79a73ddec1b574485f55c2005ac"
+    },
+    {
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_3.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "54cf333fb61209c01c1417ae09729c1b6f334665f3d695d8b6ce5facdd148329"
+    },
+    {
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_4.jpg",
+      "official_text_edit_distance": 0.02129249159506911,
+      "prediction_sha256": "0694bc5a24d2a405e9d186fdadf76ee8688e36e89738a5e4106150841bab17c0"
+    },
+    {
+      "image_path": "newspaper_5e8bcc55b922fd521a667c6ef01027d5_1.jpg",
+      "official_text_edit_distance": 0.004250600628349658,
+      "prediction_sha256": "7c3f709294af76a484d253784bec7c52915f3b609f1bd0a7bc0446e35dff7413"
+    },
+    {
+      "image_path": "newspaper_635e4e6a64cf2ccfb2560f9b6dfe24b5_1.jpg",
+      "official_text_edit_distance": 0.0035048590090807712,
+      "prediction_sha256": "38d457c3b8e719e6fc34a98c4e5889693862bef532c58c4987c12540188feecf"
+    },
+    {
+      "image_path": "newspaper_6d2b5f833fe20785bc395f757524cb05_1.jpg",
+      "official_text_edit_distance": 0.0033192516596258297,
+      "prediction_sha256": "3ba5447875399610f3f4d8847b900401cd9f2d662ad44385d26c1967ebcdd8a7"
+    },
+    {
+      "image_path": "newspaper_6fa919bfb48695bc785d9f326e3cdd36_1.jpg",
+      "official_text_edit_distance": 0.039908779931584946,
+      "prediction_sha256": "922edc95de55f860a38540605e540c0c4621d014ab2503597caefb5bb62d1f2e"
+    },
+    {
+      "image_path": "newspaper_73fc8720a9b2798307ba43a8b8e47b5e_1.jpg",
+      "official_text_edit_distance": 0.007043331802174246,
+      "prediction_sha256": "d20cda9454b5b478b320b7d670c6d656c57b6b5454bd5b492dd89627b67b1880"
+    },
+    {
+      "image_path": "newspaper_74fc3b01b2cc4a7e6ca0f1af2b998187_1.jpg",
+      "official_text_edit_distance": 0.01372581445344799,
+      "prediction_sha256": "79c0e4d253d0cf19d8c146d79689c871ae4b5cc9e228d1164729bee6ee4a38a5"
+    },
+    {
+      "image_path": "newspaper_75bb60c3be9959e1be400d6b8281fea1_1.jpg",
+      "official_text_edit_distance": 0.03200849514563107,
+      "prediction_sha256": "28eb9d14967492dcddbca27dc8c0fa01f743fbe296dd1c86cb1112aadbbf77ad"
+    },
+    {
+      "image_path": "newspaper_7746db2ad2ea24c827eac60244375bbf_1.jpg",
+      "official_text_edit_distance": 0.013007284079084287,
+      "prediction_sha256": "f120f05b2304bbd51f8c741653c7b62011d9034278eac2c5fd4771a941022761"
+    },
+    {
+      "image_path": "newspaper_8076765115f6c402e81c6bfb48139bc2_1.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "a0fc54260eb98178d8beba851fd4edc0ba5db59da5dbb6d3529cab668a5908d7"
+    },
+    {
+      "image_path": "newspaper_87769622e073730af94822416c60c710_1.jpg",
+      "official_text_edit_distance": 0.02562302562302562,
+      "prediction_sha256": "09424f4b001f6e1cc3e56ffce1a9701491c875c97cea5af71f73ad4cf4ec7c81"
+    },
+    {
+      "image_path": "newspaper_95f2062735b213b3d7d471a48d5ec71b_1.jpg",
+      "official_text_edit_distance": 0.025282238829702656,
+      "prediction_sha256": "25a0fcb8239c8e4aeb0577d1a5e916e021d4ffceabf96de2d0d11f9f1b0bb097"
+    },
+    {
+      "image_path": "newspaper_9729b78cbf9f2820b9f257fff7e3171b_1.jpg",
+      "official_text_edit_distance": 0.004095563139931741,
+      "prediction_sha256": "2376c978af85bb94fedc23031e6b17d1667a31680edbdd232ff0b2e69de633d6"
+    },
+    {
+      "image_path": "newspaper_9bb9e05d38b370251a4b0a8d070d1d55_1.jpg",
+      "official_text_edit_distance": 0.0035687453042824945,
+      "prediction_sha256": "38b031856acaf11e92dd016627b27dcb68cc0b921ddb20bd0c0b2a59fca24666"
+    },
+    {
+      "image_path": "newspaper_9eafddb83b0f7f99c42ff364b080e2c1_1.jpg",
+      "official_text_edit_distance": 0.011503811503811504,
+      "prediction_sha256": "ac43712a542225b5e74e3e40b04847fd8fb414f69c6983f9730c1124f4691b17"
+    },
+    {
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_015.png",
+      "official_text_edit_distance": 0.011704433497536946,
+      "prediction_sha256": "7d7c1e28e98392e971f7c728f91766cceffc707a64dda01b2879362ded2de13d"
+    },
+    {
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_019.png",
+      "official_text_edit_distance": 0.022423827456350565,
+      "prediction_sha256": "ba6aaa8a2c411509346ec299f4844d01ad58a0a1203c568b94e9cf83d5592de9"
+    },
+    {
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032.png",
+      "official_text_edit_distance": 0.0031356509884117247,
+      "prediction_sha256": "ebf4affc2f7b4a0ab63619b2cac3011e6b3249450355981846581f614e37fcc6"
+    },
+    {
+      "image_path": "newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_009.png",
+      "official_text_edit_distance": 0.003966679888932963,
+      "prediction_sha256": "4da0154b4acbe9ec878ad8043707094c6eaccd941460cd2b8ca1301f446417d3"
+    },
+    {
+      "image_path": "newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_068.png",
+      "official_text_edit_distance": 0.018976897689768978,
+      "prediction_sha256": "071cdcc6d0fb9bf606b2caf5f01d4850931d24d18745d86156ced200bbddf0ed"
+    },
+    {
+      "image_path": "newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_029.png",
+      "official_text_edit_distance": 0.008104978772674644,
+      "prediction_sha256": "89cd54ea0cf8aee240a83e7fc8b95522531b3ef18e34103879da80961559f1dd"
+    },
+    {
+      "image_path": "newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_058.png",
+      "official_text_edit_distance": 0.06089221751872354,
+      "prediction_sha256": "ea1e451dccd4cb789f242d69e38f5c4cce3cfaad78f260c61e80a9557964c154"
+    },
+    {
+      "image_path": "newspaper_NY Daily News_August 1@magazinesclubnew_page_007.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "a8dcd65975600694daddad4dc81983c8d32671a8b67169218778db97d8426645"
+    },
+    {
+      "image_path": "newspaper_NY Daily News_August 1@magazinesclubnew_page_020.png",
+      "official_text_edit_distance": 0.000957166786312515,
+      "prediction_sha256": "2d58ccca2fddc6baf8b530888608410136921710aced9f0a0e748cd01f642f2c"
+    },
+    {
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_014.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "e05cc0bb036fdc943fc6f727d11871b45172d7f1c4fd8186adfb0429dd25faf6"
+    },
+    {
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_018.png",
+      "official_text_edit_distance": 0.01287666433076384,
+      "prediction_sha256": "96a1dadae7d4ef867419250d8be533cb98380399cb2089c7349827630074f1dd"
+    },
+    {
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_027.png",
+      "official_text_edit_distance": 0.0043535045711798,
+      "prediction_sha256": "1b2456395b7ba244800068c49687cc83fe2eeb82b685d9d35d0ee65ce2ee5b73"
+    },
+    {
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_048.png",
+      "official_text_edit_distance": 0.02201524132091448,
+      "prediction_sha256": "8b4038d6202478a1b3b717fdba139b044b112272228f58907526b46463b3231a"
+    },
+    {
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_051.png",
+      "official_text_edit_distance": 0.0162839248434238,
+      "prediction_sha256": "838347a8c12eb1794566996aa09aaf3112ec7984f1bc0c521867e1ce48754142"
+    },
+    {
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_061.png",
+      "official_text_edit_distance": 0.010613512813875226,
+      "prediction_sha256": "80acbc2e7118fceffcd551acbbb6c26436d8cf53192b98925df920bc6313934d"
+    },
+    {
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_001.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "fedec87cddb4166d761f277449440629cdaebd0b31a35c567e6196d084572d72"
+    },
+    {
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_020.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "a22a83d690dc0e02523f1cc28f3684dcf51665fa44a70ef482d506b7cdaf7752"
+    },
+    {
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_031.png",
+      "official_text_edit_distance": 0.00010447137484329294,
+      "prediction_sha256": "42f68116ac140f62dbe168ab62841ec3eb24bba508a7c328b4934dee0b9c3480"
+    },
+    {
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_083.png",
+      "official_text_edit_distance": 0.0392019600980049,
+      "prediction_sha256": "47876cdaaf2fb686bd0babce1a8d8310e45281d63f40ebc485a4a61938a16c82"
+    },
+    {
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_004.png",
+      "official_text_edit_distance": 0.019296254256526674,
+      "prediction_sha256": "091002406dd3be2b08c6b379ec1acc87afed77ee34c46bd6fcd5cff982aa5506"
+    },
+    {
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_009.png",
+      "official_text_edit_distance": 0.0003287310979618672,
+      "prediction_sha256": "c51f33d9c744de1acadcdcc7ae63f7ecaf89fac2b5081e497f03b0a5a90b2a20"
+    },
+    {
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_018.png",
+      "official_text_edit_distance": 0.14777896061163262,
+      "prediction_sha256": "4fdc10f14931087bf5fc06e20d8acdaa15e248b97b9dd3a2034ce2a85a09475d"
+    },
+    {
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_021.png",
+      "official_text_edit_distance": 0.011208724628900333,
+      "prediction_sha256": "2047fe7336d73c2bc907a1b74aa8a3e2d945614f69fd62a61663d15161818b60"
+    },
+    {
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_003.png",
+      "official_text_edit_distance": 9.996001599360256e-05,
+      "prediction_sha256": "b285513d360181545e4fb6d4d0d95ffd651763b3e48abd4e72e05badd152bcfb"
+    },
+    {
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_011.png",
+      "official_text_edit_distance": 0.008221721257127702,
+      "prediction_sha256": "d6fc94c7b7228ae3c096eff13873767834907d214916fd57cbef9a88b9fe20f1"
+    },
+    {
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_025.png",
+      "official_text_edit_distance": 0.13438221709006928,
+      "prediction_sha256": "757352a9cef9505504007b58e68bb7f8925b88d77809c222dd0c0330cc58f8f5"
+    },
+    {
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_033.png",
+      "official_text_edit_distance": 0.0076242469879518075,
+      "prediction_sha256": "38369acf91e9956eebdc56138350b8ccd942c124c5a6d4031992439cdf155cf5"
+    },
+    {
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_015.png",
+      "official_text_edit_distance": 0.0008804108584005869,
+      "prediction_sha256": "c39abab7a6c02ba3065c99064fa9781510d70baeeafc456ae5d3991a085706ae"
+    },
+    {
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_029.png",
+      "official_text_edit_distance": 0.008213096559378468,
+      "prediction_sha256": "664720180822c0c8196fe7357a877ddfaacd6a17e2c257ba69028ad27a18169f"
+    },
+    {
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_033.png",
+      "official_text_edit_distance": 0.00010011012113324657,
+      "prediction_sha256": "ba970f44aa83fe60537c53fb233c4cbaa577479ffc4b2cb467b8af000350a698"
+    },
+    {
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_041.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "485a001a0f2f846635fbe7efb9890f024c7f5833405ecda2f01fd925f93e6eb6"
+    },
+    {
+      "image_path": "newspaper_TheWashingtonPost-2025-01-08@magazinesclubnew_page_042.png",
+      "official_text_edit_distance": 0.12728042840286813,
+      "prediction_sha256": "625157fb279dd785207da9c4c1dc1a5a277c04b5dc39be8a902da46ce1ef3512"
+    },
+    {
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_012.png",
+      "official_text_edit_distance": 0.000691085003455425,
+      "prediction_sha256": "2d8bbfcd65a11c958f2c829fba55f45771c5fe7d45ce57511049b8955a71c36d"
+    },
+    {
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_021.png",
+      "official_text_edit_distance": 0.021711899791231733,
+      "prediction_sha256": "54f94e68c10983c04db903492f7fe68e98ef41906c316c9f5b127a25095f2cc7"
+    },
+    {
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_024.png",
+      "official_text_edit_distance": 0.000145623998835008,
+      "prediction_sha256": "810b386476e77eef631f402d97f0b984833e5ce93797e96944fa9d15723cdfa2"
+    },
+    {
+      "image_path": "newspaper_a105e3b0ddb10be6a596f76407c79180_1.jpg",
+      "official_text_edit_distance": 0.04734106357457017,
+      "prediction_sha256": "0860dd1bc1eb889bc80b15e565f60c6c1b09c3a1dc400354eb41a215d156fef0"
+    },
+    {
+      "image_path": "newspaper_a15057349a86850e55b084c235fa2f22_1.jpg",
+      "official_text_edit_distance": 0.005822012752980316,
+      "prediction_sha256": "1b377e1bb13a419dd65925003b8b51a4c781131fd2ac25dc03bfa7db975b8855"
+    },
+    {
+      "image_path": "newspaper_a7666484ee01a811247e52f784164cbb_1.jpg",
+      "official_text_edit_distance": 0.012147195426938193,
+      "prediction_sha256": "c6c0a3fb464834cfd6222299191c60098e75914548b3858c52babe92e1e61db7"
+    },
+    {
+      "image_path": "newspaper_a9c9e3816aa5cb6866d02c10273dc665_1.jpg",
+      "official_text_edit_distance": 0.05680990531682447,
+      "prediction_sha256": "2f3bd982caf8ae17962869a4fc4ee40354023447ebaf01ea5b65b26d13709bd1"
+    },
+    {
+      "image_path": "newspaper_b615618f3cdb0f2c13ffb5865dea799c_1.jpg",
+      "official_text_edit_distance": 0.1153219920273988,
+      "prediction_sha256": "886519eca7203652d400aa03f3e5247858eb6d41267863910115b40e648c6240"
+    },
+    {
+      "image_path": "newspaper_bd75af5f4791aa56ef05ce2443e8a7e0_1.jpg",
+      "official_text_edit_distance": 0.02754275427542754,
+      "prediction_sha256": "d07029637419f3c32364d337b38d37c82903cc0c9073bd4f66ecd0b017fcfa3d"
+    },
+    {
+      "image_path": "newspaper_c0794b9574ba55a589418fa1ae160b9a_1.jpg",
+      "official_text_edit_distance": 0.0038910505836575876,
+      "prediction_sha256": "163a8874fb7be47ab528c2cfb506602651a07f443331fe673b536a508477fc81"
+    },
+    {
+      "image_path": "newspaper_c3c88b76543e2caf044c9f7689f23ec9_1.jpg",
+      "official_text_edit_distance": 0.06565064478311841,
+      "prediction_sha256": "43f2576a03d3139ed120c9a8d4c0b1ca544a19fa5a6c2e72f76fe050f172b650"
+    },
+    {
+      "image_path": "newspaper_c79c0c10a5df54b21bccad8f64063ffa_1.jpg",
+      "official_text_edit_distance": 0.010775357226516749,
+      "prediction_sha256": "2adc9c9ae6b10dde39c7394237cac6fea38fb2df28053d99df5d3fe28fdcf5e6"
+    },
+    {
+      "image_path": "newspaper_c8e8e00e1b1a70aa44afd1fbdaf59430_1.jpg",
+      "official_text_edit_distance": 0.011050758569020417,
+      "prediction_sha256": "a38ba12e166c828e43d9c7cbc1efc241d526c9819a231ac92f4329630ba8ceec"
+    },
+    {
+      "image_path": "newspaper_c9e9b3e7b8a5f5a5b59304a9924c41b9_1.jpg",
+      "official_text_edit_distance": 0.04766118836915297,
+      "prediction_sha256": "3aafb1d065c55528c25a63d6f0803bfaaf43888f88077f6ed3e7c577ade405d3"
+    },
+    {
+      "image_path": "newspaper_d1716a12000a38e1e4c0bf66309558db_1.jpg",
+      "official_text_edit_distance": 0.012556732223903177,
+      "prediction_sha256": "8e6db13e8fa0d4aded3d1e7614db437b78dbf734b515543777d26515011ab6af"
+    },
+    {
+      "image_path": "newspaper_d4ed0f39df940849b16439f49873ff5c_1.jpg",
+      "official_text_edit_distance": 0.023972602739726026,
+      "prediction_sha256": "57c7781bae31dae4275f2699272252eb4c2afc655dc5fbba0e59a960c9e118f5"
+    },
+    {
+      "image_path": "newspaper_d6cd76e5afe881630173bd4921531a4b_1.jpg",
+      "official_text_edit_distance": 0.010377170225503891,
+      "prediction_sha256": "feaa0a8d9cea0957a177746d8450bf9a7235ea870513613e88400ba172b0b181"
+    },
+    {
+      "image_path": "newspaper_d84e38031cf03d3fd4649910cf0ecce1_1.jpg",
+      "official_text_edit_distance": 0.018578352180936994,
+      "prediction_sha256": "db2cee4c888491d5103c8334bc3430b803b49d117c8fc5e053785d6648ae62fd"
+    },
+    {
+      "image_path": "newspaper_dd99f17cad0992a54fdf424b1c5e86ee_1.jpg",
+      "official_text_edit_distance": 0.024897008776643383,
+      "prediction_sha256": "f3b3c6363aab68fb1dc4e7b34cf95403eb674cb8d9443d0f524e7bbf4f02b8be"
+    },
+    {
+      "image_path": "newspaper_e3842a5681ef54c62a58804adec06c3f_1.jpg",
+      "official_text_edit_distance": 0.03619197482297404,
+      "prediction_sha256": "8ed77211a1e102b035316a6989720bc5b254f7ca261216533e4f452963a21829"
+    },
+    {
+      "image_path": "newspaper_e567840b2e327602422573ccdc1c4275_1.jpg",
+      "official_text_edit_distance": 0.0020359059781602813,
+      "prediction_sha256": "ff2a106ff3cb2bcd9567d437be78028b9968610f8f2c8acc9fe68273f350f9a9"
+    },
+    {
+      "image_path": "newspaper_e6083de4647ef28434cb6a598b073ae4_1.jpg",
+      "official_text_edit_distance": 0.0024985585239285027,
+      "prediction_sha256": "04798692042785adf432ebc0e2ecc8a62dd9b0a682a20c2344a7841ba6f1c6c2"
+    },
+    {
+      "image_path": "newspaper_e62730aaeb9b509119e0c3699ac18201_1.jpg",
+      "official_text_edit_distance": 0.01510113604876697,
+      "prediction_sha256": "888be40d752f5f39d222b7c7b0d0cf4286a534a203665b04ac31744268f790cd"
+    },
+    {
+      "image_path": "newspaper_e6cb1ce916e0b7e120c84db53541a3d3_1.jpg",
+      "official_text_edit_distance": 0.066268433824902,
+      "prediction_sha256": "937bb620df8462ca3e67b7acb7a1e225482aaee929335ff3e54b3b0885c00a1c"
+    },
+    {
+      "image_path": "newspaper_e6ddb0246224fb8bd8788e6cc7839021_1.jpg",
+      "official_text_edit_distance": 0.024335812964930925,
+      "prediction_sha256": "dea1f419b88d823baf3f64311fa85b49d8ec7ac4a332e947b10a73eba4196b2f"
+    },
+    {
+      "image_path": "newspaper_e7246d706077d2064a6e667dfc73925e_1.jpg",
+      "official_text_edit_distance": 0.0076735263341471925,
+      "prediction_sha256": "e8eb7c55cc0f8a1ac03e7325d23494e4662a8cb4a16f2608ab575a5ea1ee8d99"
+    },
+    {
+      "image_path": "newspaper_e81b9b3561d4d4e865ff6713782fd432_1.jpg",
+      "official_text_edit_distance": 0.06143740340030912,
+      "prediction_sha256": "7e06375391f98154dd38f2e452dbd8a98d8739e7873c94f126a74971a2552452"
+    },
+    {
+      "image_path": "newspaper_eb569707cf5621d4c71d5898216cdb17_1.jpg",
+      "official_text_edit_distance": 0.011804384485666104,
+      "prediction_sha256": "d82080cf19d73126cc618d83ca2a2e7746bf828e20b069bf563168a4d5128679"
+    },
+    {
+      "image_path": "newspaper_ef5c785d9cc21ccf6b73d143f231b5c5_1.jpg",
+      "official_text_edit_distance": 0.02897196261682243,
+      "prediction_sha256": "139379c8d793563e23113c94ea8050454927aa79bbb94527bec49dfff0971859"
+    },
+    {
+      "image_path": "newspaper_f1de032fb6a25cf85c85c15cb2d2a63a_1.jpg",
+      "official_text_edit_distance": 0.05179101072324892,
+      "prediction_sha256": "89f869f9563395b6324c9d51dc22687bcdd3e6d4d6151cad3ee35e7f4379d935"
+    },
+    {
+      "image_path": "newspaper_f36d00fe3544ae72725aac9dc7f19aa8_1.jpg",
+      "official_text_edit_distance": 0.00514317486794551,
+      "prediction_sha256": "777fba4bbd6ec5555f85e3c77348c0e49327d5eee4037e677416db403c7d4e78"
+    },
+    {
+      "image_path": "newspaper_fe2c8b45b2a086cd75984640bb3080e1_1.jpg",
+      "official_text_edit_distance": 0.015679087762166564,
+      "prediction_sha256": "679276b6fa08c9c2b85038a07ace906034025a6c985b839568640e267b17b0be"
+    },
+    {
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_1.jpg",
+      "official_text_edit_distance": 0.008392390898918314,
+      "prediction_sha256": "d0a184df9a9dd2b66022070940112cd79f56e5771398f14c662e66f057a3c7e9"
+    },
+    {
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_2.jpg",
+      "official_text_edit_distance": 0.0005869692819409117,
+      "prediction_sha256": "793a0e280b4149f48a61453eb78feaf03874fdd81c6f7b4bc828ecd6d7eb1292"
+    },
+    {
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_3.jpg",
+      "official_text_edit_distance": 0.0020984665052461663,
+      "prediction_sha256": "cf72bdf41123367df77c42aecfed700735bcac7747a0b4003bf8dc6b7293e532"
+    },
+    {
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_5.jpg",
+      "official_text_edit_distance": 0.006006552602839462,
+      "prediction_sha256": "3416d0bbb7c7750d8856fe957d6b40687ec805b3fc058df32d64c679d4e495cd"
+    },
+    {
+      "image_path": "notes_9e951846094758afac08c620144e3a76_12.jpg",
+      "official_text_edit_distance": 0.12861736334405144,
+      "prediction_sha256": "d9988317fe41c4312ab5963eb2933be40afabca7c90f1c840f12fea7bd1e24c2"
+    },
+    {
+      "image_path": "notes_9e951846094758afac08c620144e3a76_14.jpg",
+      "official_text_edit_distance": 0.11875,
+      "prediction_sha256": "cd87d93a8598f6411a78e1f3a3f8d814b6765fc224d50b4762145db59114c001"
+    },
+    {
+      "image_path": "notes_9e951846094758afac08c620144e3a76_16.jpg",
+      "official_text_edit_distance": 0.16666666666666666,
+      "prediction_sha256": "e36e37a40b013b33aab0ee6b279c52c5cdbc8490d134d6b6a6e8a6894d5584ec"
+    },
+    {
+      "image_path": "page-00b6ac57-4466-4eb0-937d-bb29a44fa0d3.png",
+      "official_text_edit_distance": 0.004213483146067416,
+      "prediction_sha256": "4fe877dad2efa69279c838fc005da525ffed7383c31346061050af8660f3a2fe"
+    },
+    {
+      "image_path": "page-6e75aef4-33d0-478a-a3a3-489c782bfa39.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "692924b377dd4a1356a53dbeb3617fe6c732e46cb3bef3f0b2d08480ca6bb5dc"
+    },
+    {
+      "image_path": "page-d127acc0-f8c9-4f01-8e87-b4c19be7cbb0.png",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "e0f78a8f175eb3a0905c09a4fb38a90660ed24618dc7816bd5e8af0f19190ac0"
+    },
+    {
+      "image_path": "yanbaopptmerge_m3_Unit_1_Where_did_you_go.pdf_5.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "2d11651850735883719041f9867f5c4121edc48859883a613b2065e0e2fb7a59"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_1745.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "2f62102e672cca019815072b9111d53ec0903988a1d6c58cbac221110b3cd666"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_1835.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "6d94d7513878a15adcfbd48facee771f0fc28fc1e939dd2d1cb8253ab6032b87"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_3215.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "b0d2463bfe15dd20f114405a74d6e005883674afbce7d58454dc9005a556f9ff"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_3290.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "401bad98b7983be0c37a6bdbcdad1d15da83741bc8a9141e302bbbb98e03f382"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_4020.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "d02d33e8ae0712d316c9562fa3eb5a1b930b7ca1f00635e3091d8da6b71824ac"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_4050.jpg",
+      "official_text_edit_distance": 0.00796812749003984,
+      "prediction_sha256": "7bb98549090d6c30c9aa44598a9cec9a3b85e9bd444d85bd183a6f0928f42bbe"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_4125.jpg",
+      "official_text_edit_distance": 0.0311284046692607,
+      "prediction_sha256": "3a18ed7e0342e9f691632bc9782c0f70f2c395038001cc3bf30881f6d3c1b4ea"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_4330.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "fe6ce2c6c5d9baa9ffb722cd4780bd049528243982357e5ad66cae41a95d89f3"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_4380.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "e202468352eaf8b07c66659bc38760660f1ecd2743513408608ca0fefe326c87"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_4635.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "51d106f5a038b71249bfeebaac425ae0041e3031bdbd2e153cd25ae82f010b87"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_495.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "456c4f8cfaeeb52c6a0e1b1067122e617332e71950561912260bdc1a88f72f7c"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_5070.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "9af75ec047fdba7fe80fc45fc589b8ecf42e0f043ea8c9b1f9a7544570ca8e67"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_5980.jpg",
+      "official_text_edit_distance": 0.020202020202020204,
+      "prediction_sha256": "53ff47d0b93d62b09b6dedaa109ce53a9b7b3180b8dd44a4a52c65d772b4e6c4"
+    },
+    {
+      "image_path": "yanbaopptmerge_yanbaoPPT_935.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "7b6ee38a2565bcc779f5ac8119c7c0c81f5e53e4197c676c9894ee1bb1677c94"
+    },
+    {
+      "image_path": "yanbaor2_1cb2b2a2c6e3a1157a6f2876205bbeaa4d3958d0482e9cdc88dd2c002ed1ffc1.pdf_61.jpg",
+      "official_text_edit_distance": 0.00228310502283105,
+      "prediction_sha256": "ab3da6fd95d72136b140aa066bc8efbad7b53dfa8be4a967ac0c0f736a8ae235"
+    },
+    {
+      "image_path": "yanbaor2_bc193526614fd5857f7b5254e67bced76222cf3396b01e516303b92609a20075.pdf_14.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "150936d7d6cf07eb6ff9c5f53528a17a819b4bdd37647f46962c9b7610a3d143"
+    },
+    {
+      "image_path": "yanbaor2_d599e33e54376640020110ac1733ccdde8c6323d5d5f0c3ca8cb395dc6e46cf5.pdf_7.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "aadae65e623cb993a645abf248f2d5aece9344059e90c7a12d76dae4f02fdfed"
+    },
+    {
+      "image_path": "yanbaor2_ec10ef335b55af1612e6ab51b5ebdff506d496da9eb8c17c74fe2751661c22f7.pdf_1.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "ccb70ec7ce1e0b26e251fd9455503d868bbdf00a9ab22b3ee69cdc3cf1907afc"
+    },
+    {
+      "image_path": "yanbaor2_ey-digital-state-tax-article.pdf_0.jpg",
+      "official_text_edit_distance": 0.0,
+      "prediction_sha256": "b44a726f857478c010bb0973110e44c276c1f254f173ec8309dc84c627c9ad57"
+    }
+  ],
+  "schema": "tavonel.a9-discovery-set-seal.v1",
+  "sealed_on": "2026-08-18",
+  "what_this_forbids": "These pages may be cited as an effect estimate. They may not be counted toward the confirmatory endpoint, and no threshold may be re-tuned on them and then reported as confirmed."
+}

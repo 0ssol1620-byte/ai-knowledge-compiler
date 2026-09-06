@@ -1,374 +1,177 @@
 import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-import { AccuracySection } from "@/components/accuracy-section";
-import { CampaignScale } from "@/components/campaign-scale";
-import { RecoverySection } from "@/components/recovery-section";
-import { TrialRunFilm } from "@/components/trial-run-film";
-import { HeroComp, HERO_COPY } from "@/components/facing/hero-comp";
-import { TavonelGlyph } from "@/components/tavonel-glyph";
+import { HeroComp, HERO_COPY, type HeroCopy } from "@/components/facing/hero-comp";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
-import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
+import { TrialRunFilm } from "@/components/trial-run-film";
+import { getRequestLocale } from "@/lib/locale-server";
 
-const chapters = [
-  {
-    number: "01",
-    title: "It sees more than text.",
-    body: "Headings, paragraphs, tables, formulas, figures, footnotes, and reading order become one inspectable document structure.",
-    signal: "Page → typed blocks",
-  },
-  {
-    number: "02",
-    title: "Every output returns to its source.",
-    body: "Select a sentence, number, or table cell and return to the exact page region that produced it.",
-    signal: "Result → page · block · bbox",
-  },
-  {
-    number: "03",
-    title: "Documents become a knowledge system.",
-    body: "Sections become notes. Notes surface entities. Evidence-backed relations connect documents that previously stood alone.",
-    signal: "Blocks → notes · entities · relations",
-  },
-  {
-    number: "04",
-    title: "Compile once. Use it everywhere.",
-    body: "Portable Markdown, Obsidian, RAG JSONL, JSON-LD, and project packs derive from the same verified source map.",
-    signal: "One core → many destinations",
-  },
-] as const;
+const KOREAN_HERO_COPY: HeroCopy = {
+  id: "d1",
+  headline: [
+    "문서와 연결된 시스템을",
+    "AI가 사용할 수 있는 근거 기반 World로 바꾸세요.",
+  ],
+  lead: "파일을 넣으면 구조화되고 추적 가능한 지식이 나옵니다.",
+};
 
-export function MarketingLanding() {
+const LANDING_COPY = {
+  en: {
+    structure: ["Typed blocks", "Identities", "Relations", "Ontology"],
+    structureTitle: "Text becomes objects, relationships, and evidence.",
+    structureBody: "Structure is shown from compiled records. The product does not draw an edge until a retained relation carries evidence.",
+    provenanceTitle: "Every fact keeps its path back to the source.",
+    provenancePath: ["Compiled claim", "Evidence block", "Page + bbox"],
+    provenanceBody: "Source region, document version, and review state stay attached as the knowledge moves.",
+    useTitle: "One compiled World. Every AI.", useAction: "See grounded AI",
+    demoTitle: "Follow one value from document to proof.",
+    demoBody: "Select each view in this frozen public filing sample. The receipt and source line remain visible.",
+    demoAction: "Explore the full Compiled World",
+    emitsTitle: "Knowledge that can leave the compiler.",
+    outputs: [["Ontology", "ontology.ttl"], ["Knowledge Graph", "graph"], ["AI-ready Retrieval", "retrieval corpus"], ["Source Evidence", "provenance"], ["Portable Package", "signed package"]],
+    compareTitle: "Retrieval is stronger when identity and evidence come first.",
+    typical: "Typical RAG prep", typicalPath: "Files → chunks → vectors",
+    tavonelPath: "Files → structure → identity → relationships → evidence → World → retrieval",
+    solutionsTitle: "Four jobs. One source-grounded World.",
+    solutions: [["AI-ready knowledge", "Prepare governed knowledge for models, retrieval, and agents."], ["Document intelligence", "Recover complex sources without detaching the page evidence."], ["Knowledge graph", "Connect verified entities and relations across source material."], ["Knowledge operations", "Run review, versions, activity, access, and exports together."]],
+    integrationsTitle: "Start with sources this build can actually accept.",
+    integrations: [["Browser file upload", "PDF and supported office, image, and HTML formats through the authenticated intake."], ["Authorized URL import", "Server-fetched source intake with URL security controls and task receipts."], ["API upload workflow", "Multipart targets, idempotency, job events, and export APIs for developers."]],
+    available: "Available", integrationsAction: "Inspect integration states",
+    securityTitle: "Your knowledge stays yours.",
+    securityBody: "Tenant-scoped access, quarantine and CDR boundaries, explicit retention controls, source authorization, and auditable events surround each run.",
+    securityAction: "Explore security architecture", source: "Source",
+    policies: ["Access", "Quarantine", "Retention", "Audit", "Privacy"],
+    pricingEyebrow: "12 · Simple, page-based pricing", pricingTitle: "Compile your own knowledge.",
+    pricingBody: "Standard processing starts at $0.04 per page. See the estimate and maximum charge before a run begins.",
+    compile: "Compile your own files", pricingAction: "See pricing", promise: "Source-grounded · Portable · Policy controlled",
+  },
+  ko: {
+    structure: ["타입 블록", "식별자", "관계", "온톨로지"],
+    structureTitle: "텍스트가 객체, 관계, 근거로 바뀝니다.",
+    structureBody: "컴파일된 레코드에서 구조를 보여줍니다. 근거를 보존한 관계가 있을 때만 연결선을 만듭니다.",
+    provenanceTitle: "모든 사실은 원본으로 돌아가는 경로를 유지합니다.",
+    provenancePath: ["컴파일된 주장", "근거 블록", "페이지 + bbox"],
+    provenanceBody: "지식이 이동해도 원본 영역, 문서 버전, 검토 상태가 함께 유지됩니다.",
+    useTitle: "하나의 Compiled World. 모든 AI에서.", useAction: "근거 기반 AI 보기",
+    demoTitle: "하나의 값이 문서에서 Proof가 되는 과정을 따라가세요.",
+    demoBody: "고정된 공개 공시 샘플의 각 관점을 선택해 보세요. 처리 영수증과 원본 줄은 계속 표시됩니다.",
+    demoAction: "전체 Compiled World 살펴보기",
+    emitsTitle: "컴파일러 밖에서도 사용할 수 있는 지식.",
+    outputs: [["온톨로지", "ontology.ttl"], ["지식 그래프", "graph"], ["AI 준비 검색", "retrieval corpus"], ["원본 근거", "provenance"], ["이식 가능한 패키지", "signed package"]],
+    compareTitle: "식별자와 근거를 먼저 만들면 검색이 더 강해집니다.",
+    typical: "일반적인 RAG 준비", typicalPath: "파일 → 청크 → 벡터",
+    tavonelPath: "파일 → 구조 → 식별자 → 관계 → 근거 → World → 검색",
+    solutionsTitle: "네 가지 업무. 하나의 원본 근거 World.",
+    solutions: [["AI 준비 지식", "모델, 검색, 에이전트를 위한 정책 통제 지식을 준비합니다."], ["문서 인텔리전스", "페이지 근거를 분리하지 않고 복잡한 원본을 복원합니다."], ["지식 그래프", "검증된 엔티티와 관계를 원본 전반에서 연결합니다."], ["지식 운영", "검토, 버전, 활동, 접근, 내보내기를 함께 운영합니다."]],
+    integrationsTitle: "현재 빌드가 실제로 받을 수 있는 원본부터 시작합니다.",
+    integrations: [["브라우저 파일 업로드", "인증된 수집 화면에서 PDF와 지원되는 Office, 이미지, HTML 형식을 받습니다."], ["승인된 URL 가져오기", "URL 보안 통제와 작업 영수증을 갖춘 서버 수집을 제공합니다."], ["API 업로드 워크플로", "개발자를 위한 multipart 대상, 멱등성, 작업 이벤트, 내보내기 API를 제공합니다."]],
+    available: "사용 가능", integrationsAction: "연동 상태 확인",
+    securityTitle: "지식의 통제권은 고객에게 남습니다.",
+    securityBody: "테넌트 범위 접근, 격리와 CDR 경계, 명시적 보존 통제, 원본 권한 확인, 감사 이벤트가 각 실행을 둘러쌉니다.",
+    securityAction: "보안 아키텍처 살펴보기", source: "원본",
+    policies: ["접근", "격리", "보존", "감사", "개인정보"],
+    pricingEyebrow: "12 · 단순한 페이지 기반 가격", pricingTitle: "내 지식을 컴파일하세요.",
+    pricingBody: "표준 처리는 페이지당 $0.04부터 시작합니다. 실행 전에 예상 금액과 최대 청구액을 확인할 수 있습니다.",
+    compile: "내 파일 컴파일하기", pricingAction: "가격 보기", promise: "원본 근거 · 이식 가능 · 정책 통제",
+  },
+} as const;
+
+export async function MarketingLanding() {
+  const locale = await getRequestLocale();
+  const copy = LANDING_COPY[locale];
   return (
     <TavonelMarketingShell>
-      <main id="main-content" className="tv-home">
-        {/*
-          §9.2 option A, decided at G-C: the hero is an affordance, not a
-          scene. The visitor is not shown a picture of compiling — the left
-          page is a real document with its blocks at stored bbox coordinates,
-          and dropping a file replaces it with theirs.
-
-          What this replaced, and why. The previous hero paired the copy with
-          an abstract render that had to caption itself "no generated imagery"
-          — a hero image that has to deny being AI slop has already lost the
-          argument. Below it, a "Powerful models / Weak context" section
-          illustrated raw documents with four empty white rectangles and
-          compiled knowledge with four labelled empty cells. On a document
-          product, an empty box does not read as a fragmented document; it
-          reads as a failed image load. §21 [확정] requires marketing visuals
-          to be generated from real product components, and those were
-          hand-drawn empty divs.
-
-          The section is not replaced by a better diagram. It is deleted,
-          because the hero now makes its point by doing the thing.
-        */}
-        <HeroComp variant="frame" copy={HERO_COPY.d1} live />
-
-        <div className="tv-output-rail" aria-label="Supported outputs">
-          {["Portable Markdown", "Obsidian Vault", "RAG JSONL", "Knowledge Graph"].map(
-            (output) => (
-              <span key={output}>{output}</span>
-            ),
-          )}
+      <main id="main-content" className="tv-home tv-competitive-home">
+        <div data-scene="01-hero">
+          <HeroComp
+            variant="frame"
+            copy={locale === "ko" ? KOREAN_HERO_COPY : HERO_COPY.d1}
+            locale={locale}
+            live
+          />
         </div>
 
-        <TrialRunFilm />
+        <div data-scene="02-read">
+          <TrialRunFilm />
+        </div>
 
-        <section className="tv-demo-section">
+        <section className="tv-compiler-scene" data-scene="03-structure">
+          <header><p>03 · Structure</p><h2>{copy.structureTitle}</h2></header>
+          <div className="tv-structure-path" aria-label="Source structure path">
+            {copy.structure.map((step, index) => <span key={step}><small>0{index + 1}</small>{step}</span>)}
+          </div>
+          <p>{copy.structureBody}</p>
+        </section>
+
+        <section className="tv-compiler-scene tv-provenance-scene" data-scene="04-provenance">
+          <header><p>04 · Provenance</p><h2>{copy.provenanceTitle}</h2></header>
+          <div><span>{copy.provenancePath[0]}</span><ArrowRight size={18} /><span>{copy.provenancePath[1]}</span><ArrowRight size={18} /><span>{copy.provenancePath[2]}</span></div>
+          <p>{copy.provenanceBody}</p>
+        </section>
+
+        <section className="tv-compiler-scene tv-use-scene" data-scene="05-use">
+          <header><p>05 · Use</p><h2>{copy.useTitle}</h2></header>
+          <div>{["Ask", "API", "MCP", "Retrieval", "Export"].map((use) => <span key={use}>{use}</span>)}</div>
+          <Link href="/product/grounded-ai">{copy.useAction} <ArrowRight size={15} /></Link>
+        </section>
+
+        <section className="tv-demo-section" data-scene="06-product-proof">
           <div className="tv-section-intro">
-            <p>Public filing demo</p>
-            <h2>Do not take our word for it. Inspect the result.</h2>
-            <span>
-              The same DART sample connects the original page, Markdown,
-              knowledge package, graph, and proof panel.
-            </span>
+            <p>06 · Interactive sample</p>
+            <h2>{copy.demoTitle}</h2>
+            <span>{copy.demoBody}</span>
           </div>
           <TavonelProofDemo />
-          <div className="tv-inline-actions">
-            <Link href="/demo/dart">Open full DART demo</Link>
-            <Link href="/signup">Try it with your document</Link>
+          <div className="tv-inline-actions"><Link href="/demo/dart">{copy.demoAction}</Link></div>
+        </section>
+
+        <section className="tv-compiler-scene tv-emits-scene" data-scene="07-emits">
+          <header><p>07 · What TAVONEL emits</p><h2>{copy.emitsTitle}</h2></header>
+          <div>{copy.outputs.map(([label, file]) => <article key={label}><strong>{label}</strong><code>{file}</code></article>)}</div>
+        </section>
+
+        <section className="tv-compiler-scene tv-compare-scene" data-scene="08-compile-first">
+          <header><p>08 · Why compile before retrieval</p><h2>{copy.compareTitle}</h2></header>
+          <div>
+            <article><small>{copy.typical}</small><strong>{copy.typicalPath}</strong></article>
+            <article><small>TAVONEL</small><strong>{copy.tavonelPath}</strong></article>
           </div>
         </section>
 
-        <AccuracySection />
+        <section className="tv-use-cases" data-scene="09-solutions">
+          <header><p>09 · Solutions</p><h2>{copy.solutionsTitle}</h2></header>
+          {copy.solutions.map(([title, body], index) => <article key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></article>)}
+        </section>
 
-        <RecoverySection />
-
-        <CampaignScale />
-
-        <section id="transformation" className="tv-transformation">
-          <header>
-            <p>The compiler path</p>
-            <h2>From pages to intelligence, without losing the proof.</h2>
-          </header>
-          <div className="tv-chapters">
-            {chapters.map((chapter) => (
-              <article key={chapter.number}>
-                <div className="tv-chapter-copy">
-                  <span>{chapter.number}</span>
-                  <h3>{chapter.title}</h3>
-                  <p>{chapter.body}</p>
-                  <small>{chapter.signal}</small>
-                </div>
-                <ChapterVisual index={chapter.number} />
-              </article>
-            ))}
+        <section className="tv-compiler-scene tv-integrations-scene" data-scene="10-integrations">
+          <header><p>10 · Integrations</p><h2>{copy.integrationsTitle}</h2></header>
+          <div>
+            {copy.integrations.map(([title, body]) => <article key={title}><strong>{title}</strong><span>{copy.available}</span><p>{body}</p></article>)}
           </div>
+          <Link href="/integrations">{copy.integrationsAction} <ArrowRight size={15} /></Link>
         </section>
 
-
-        <section className="tv-pillars">
-          <header>
-            <h2>
-              Knowledge has structure, evidence, connection, and a way out.
-            </h2>
-          </header>
-          {[
-            [
-              "Structure",
-              "Preserve hierarchy, not just characters.",
-              "Heading tree + reading order",
-            ],
-            [
-              "Evidence",
-              "Trace every result back to the page.",
-              "Page · block · bounding box",
-            ],
-            [
-              "Connection",
-              "Turn isolated files into a knowledge network.",
-              "Notes · entities · relations",
-            ],
-            [
-              "Portability",
-              "Your knowledge should not belong to one tool.",
-              "Markdown · Vault · RAG · JSON-LD",
-            ],
-          ].map(([title, copy, proof]) => (
-            <article key={title}>
-              <span>{title}</span>
-              <h3>{copy}</h3>
-              <p>{proof}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="tv-public-proof">
-          <div className="tv-section-intro">
-            <p>Public proof systems</p>
-            <h2>Built for documents that cannot afford to be misunderstood.</h2>
-          </div>
-          <article>
-            <span>KR · DART</span>
-            <h3>Korean financial filings</h3>
-            <p>
-              Long-form Korean, XML/XBRL ground truth, complex tables, metrics,
-              risks, segments, and corrected filing relationships.
-            </p>
-            <Link href="/demo/dart">Explore DART</Link>
-          </article>
-          <article>
-            <span>US · SEC EDGAR</span>
-            <h3>10-K, 10-Q, and 8-K</h3>
-            <p>
-              Inline XBRL, risk factors, exhibits, filing relationships, and
-              source-linked entities in the same ontology.
-            </p>
-            <Link href="/demo/sec">Explore SEC</Link>
-          </article>
-        </section>
-
-
-        <section className="tv-use-cases">
-          <header>
-            <h2>One compiler. Different knowledge systems.</h2>
-          </header>
-          {[
-            [
-              "Research",
-              "Papers become methods, datasets, results, limitations, and citation-linked notes.",
-            ],
-            [
-              "Personal knowledge",
-              "Books, lectures, and notes become an Obsidian-ready concept system.",
-            ],
-            [
-              "Enterprise",
-              "Manuals, policies, and reports remain governed by access, retention, and audit.",
-            ],
-            [
-              "AI and RAG",
-              "Source-linked chunks and JSONL arrive ready for evaluation and retrieval.",
-            ],
-          ].map(([title, copy], index) => (
-            <article key={title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{title}</h3>
-              <p>{copy}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="tv-security-band">
+        <section className="tv-security-band" data-scene="11-security">
           <div>
             <LockKey size={22} aria-hidden="true" />
-            <p>Private by default</p>
-            <h2>Your knowledge stays yours.</h2>
-            <span>
-              Region, retention, access, audit, and external processing policy
-              surround the document before a job begins.
-            </span>
-            <Link href="/security">Explore security architecture</Link>
+            <p>11 · Security</p><h2>{copy.securityTitle}</h2>
+            <span>{copy.securityBody}</span>
+            <Link href="/security">{copy.securityAction}</Link>
           </div>
-          <div className="tv-policy-orbit">
-            <strong>Document</strong>
-            {["Region", "Retention", "Access", "Audit", "External AI"].map(
-              (item) => (
-                <span key={item}>{item}</span>
-              ),
-            )}
-          </div>
+          <div className="tv-policy-orbit"><strong>{copy.source}</strong>{copy.policies.map((item) => <span key={item}>{item}</span>)}</div>
         </section>
 
-        <section className="tv-manifesto">
-          <TavonelGlyph name="verified" size={24} />
-          <p>AI does not need more information. It needs better knowledge.</p>
-          <div>
-            <span>Knowledge has structure.</span>
-            <span>Knowledge has context.</span>
-            <span>Knowledge has relationships.</span>
-            <span>Knowledge has evidence.</span>
-          </div>
-          <h2>TAVONEL compiles all four.</h2>
-        </section>
-
-        <section className="tv-home-final">
-          <p>Your documents already contain what your AI needs.</p>
-          <h2>Make it usable.</h2>
+        <section className="tv-home-final" data-scene="12-pricing">
+          <p>{copy.pricingEyebrow}</p><h2>{copy.pricingTitle}</h2>
+          <span>{copy.pricingBody}</span>
           <div className="tv-actions">
-            <Link href="/signup" className="tv-button tv-button-dark">
-              Build your knowledge <ArrowRight size={16} />
-            </Link>
-            <Link href="/company/contact" className="tv-text-action">
-              Talk to sales
-            </Link>
+            <Link href="/signup" className="tv-button tv-button-dark">{copy.compile} <ArrowRight size={16} /></Link>
+            <Link href="/pricing" className="tv-text-action">{copy.pricingAction}</Link>
           </div>
-          <small>
-            <CheckCircle size={14} /> Source-linked · Portable · Policy
-            controlled
-          </small>
+          <small><CheckCircle size={14} /> {copy.promise}</small>
         </section>
       </main>
     </TavonelMarketingShell>
-  );
-}
-
-/**
- * The four chapters, each showing the thing it claims — §21 [확정]: marketing
- * visuals come from real product data, not from drawings of it.
- *
- * This replaced one component that rendered all four chapters identically:
- * the same page of empty <i> bars, the same empty result box, the same
- * connector, with only a corner glyph and one label changing. Three different
- * claims illustrated by one picture is the clearest possible signal that
- * there was nothing specific to show.
- *
- * Everything below comes from DART_PUBLIC_FIXTURE, the same public filing the
- * proof explorer further down the page uses. Nothing here is invented: the
- * figures, taxonomy tags, and source line numbers are the ones in the filing.
- */
-function ChapterVisual({ index }: { index: string }) {
-  const fixture = DART_PUBLIC_FIXTURE;
-  const revenue = fixture.rows[0]!;
-
-  return (
-    <div className={`tv-chapter-visual tv-chapter-${index}`}>
-      <div className="tv-cv-source">
-        <span className="tv-cv-stamp">
-          {fixture.source} · {fixture.receiptNumber}
-        </span>
-
-        {index === "01" && (
-          <ol className="tv-cv-blocks">
-            <li data-block="heading">{fixture.statement}</li>
-            <li data-block="paragraph">
-              Consolidated figures for {fixture.currentPeriod}, presented in{" "}
-              {fixture.unit}.
-            </li>
-            <li data-block="table">
-              {fixture.rows.length} rows · {fixture.currentPeriod} vs{" "}
-              {fixture.priorPeriod}
-            </li>
-          </ol>
-        )}
-
-        {index === "02" && (
-          <table className="tv-cv-table">
-            <tbody>
-              {fixture.rows.slice(0, 3).map((row) => (
-                <tr key={row.taxonomy} data-cited={row === revenue || undefined}>
-                  <th scope="row">{row.label}</th>
-                  <td>{row.current}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {index === "03" && (
-          <ul className="tv-cv-entities">
-            <li>
-              {fixture.company} <em>issuer</em>
-            </li>
-            <li>
-              {fixture.stockCode} <em>listing</em>
-            </li>
-            <li>
-              {fixture.report} <em>filing</em>
-            </li>
-          </ul>
-        )}
-
-        {index === "04" && (
-          <p className="tv-cv-digest">
-            <span>archive sha256</span>
-            {fixture.archiveSha256.slice(0, 24)}…
-          </p>
-        )}
-      </div>
-
-      <div className="tv-cv-thread" aria-hidden="true" />
-
-      <div className="tv-cv-knowledge">
-        {index === "01" && (
-          <>
-            <strong>3 typed blocks</strong>
-            <p>heading · paragraph · table</p>
-          </>
-        )}
-        {index === "02" && (
-          <>
-            <strong>{revenue.current}</strong>
-            <p>
-              {revenue.taxonomy}
-              <br />
-              source line {revenue.sourceLine}
-            </p>
-          </>
-        )}
-        {index === "03" && (
-          <>
-            <strong>3 entities</strong>
-            <p>issuer → listing → filing</p>
-          </>
-        )}
-        {index === "04" && (
-          <>
-            <strong>4 destinations</strong>
-            <p>Markdown · Vault · RAG JSONL · JSON-LD</p>
-          </>
-        )}
-      </div>
-    </div>
   );
 }

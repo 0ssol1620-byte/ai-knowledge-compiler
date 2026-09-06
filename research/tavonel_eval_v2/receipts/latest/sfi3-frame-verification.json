@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/sfi3-frame-verification--20260826T120526Z-b4f647f6e883.json",
+  "points_to_file_sha256": "sha256:54291a2ccba0b7faee8be2bc554a4529b2f64d0cc0ad26a8f1ed91e8e9194287",
+  "run_id": "20260826T120526Z-b4f647f6e883",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "sfi3-frame-verification",
+  "updated_at": "2026-08-26T12:05:26.546022+00:00"
+}

@@ -1,0 +1,1093 @@
+{
+  "cache_stats": {
+    "extractor_digest": "cache-only-forensic-replay",
+    "is_evidence": false,
+    "note": "a cache accelerates a run and proves nothing about it. Every hit is verified against the payload hash it is filed under, and deleting this directory changes run time, not results.",
+    "payload_hits": 28,
+    "payload_misses": 0,
+    "rejected_entries": 0,
+    "state_hits": 0,
+    "state_misses": 0
+  },
+  "cases": [
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:35c05ee5237ab5b4168466a5",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "endpoints for Apache® Druid. This includes information on ho",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 135,
+            "before": "endpoints for Apache Druid. This includes information on how",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:35c05ee5237ab5b4168466a5",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "9d39ae0ca399b0e2fd7c42d0cc5bad89430dcef5",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:35c05ee5237ab5b4168466a5",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "endpoints for Apache® Druid. This includes information on ho",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 135,
+          "before": "endpoints for Apache Druid. This includes information on how",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:35c05ee5237ab5b4168466a5",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/api-reference/data-management-api.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:b7eaa4762b2f74cf6a8ebe5b",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "Apache® Druid allows you to provide a new schema for new dat",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 6,
+            "before": "Apache Druid allows you to provide a new schema for new data",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:b7eaa4762b2f74cf6a8ebe5b",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "52313c51acb0486312c78c3d104917064a2c1637",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:b7eaa4762b2f74cf6a8ebe5b",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "Apache® Druid allows you to provide a new schema for new dat",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 6,
+          "before": "Apache Druid allows you to provide a new schema for new data",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:b7eaa4762b2f74cf6a8ebe5b",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/data-management/schema-changes.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:61e23c3528f03018b6b66409",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "In Apache® Druid, compaction is a special type of ingestion ",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 9,
+            "before": "In Apache Druid, compaction is a special type of ingestion t",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:61e23c3528f03018b6b66409",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "d22f28277fa79a46969e4ad8ad91bff3c756d28d",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:61e23c3528f03018b6b66409",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "In Apache® Druid, compaction is a special type of ingestion ",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 9,
+          "before": "In Apache Druid, compaction is a special type of ingestion t",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:61e23c3528f03018b6b66409",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/data-management/manual-compaction.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:e1474522f87269e31b65e4de",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "The Apache® Druid indexing service is a highly-available, di",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 10,
+            "before": "The Apache Druid indexing service is a highly-available, dis",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:e1474522f87269e31b65e4de",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "b4d83a86c20f55f85509d2a1f53925b6715a6b82",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:e1474522f87269e31b65e4de",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "The Apache® Druid indexing service is a highly-available, di",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 10,
+          "before": "The Apache Druid indexing service is a highly-available, dis",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:e1474522f87269e31b65e4de",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/design/indexing-service.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "27c37b882840e4e373d966858e27793686bdc94c",
+      "artifacts": [
+        {
+          "artifact": "section:u:e24e0ffeaa56c0256a117b1b",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "ization (2FA) on GitHub. When you set 2FA to \"off\", it will ",
+            "after_non_ascii_names": [],
+            "at": 531,
+            "before": "ization (2FA) on Github. When you set 2FA to \"off\", it will ",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:e24e0ffeaa56c0256a117b1b",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "d46e4659d917e1994bc9045c57fe3b865a308352",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:e24e0ffeaa56c0256a117b1b",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "ization (2FA) on GitHub. When you set 2FA to \"off\", it will ",
+          "after_non_ascii_names": [],
+          "at": 531,
+          "before": "ization (2FA) on Github. When you set 2FA to \"off\", it will ",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:e24e0ffeaa56c0256a117b1b",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/dolphinscheduler:docs/docs/en/contribute/join/become-a-committer.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "2024-05-28",
+      "artifacts": [
+        {
+          "artifact": "section:u:7e349358f7d6ba30491bbbe5",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "For bulk PCB waste (e.g., in a tanker or truck), its weight ",
+            "after_non_ascii_names": [],
+            "at": 2642,
+            "before": "For bulk PCB waste ( e.g., in a tanker or truck), its weight",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:7e349358f7d6ba30491bbbe5",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "2024-04-25",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:7e349358f7d6ba30491bbbe5",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "For bulk PCB waste (e.g., in a tanker or truck), its weight ",
+          "after_non_ascii_names": [],
+          "at": 2642,
+          "before": "For bulk PCB waste ( e.g., in a tanker or truck), its weight",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:7e349358f7d6ba30491bbbe5",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "ecfr:40:761:761.180",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:740d95a4ba3405955dfdebc4",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "Apache® Druid relies on an external dependency for metadata ",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 6,
+            "before": "Apache Druid relies on an external dependency for metadata s",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:740d95a4ba3405955dfdebc4",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "b4d83a86c20f55f85509d2a1f53925b6715a6b82",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:740d95a4ba3405955dfdebc4",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "Apache® Druid relies on an external dependency for metadata ",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 6,
+          "before": "Apache Druid relies on an external dependency for metadata s",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:740d95a4ba3405955dfdebc4",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/design/metadata-storage.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:72c4311cf739842ab82d9567",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "metadata from Apache® Druid. Use the SQL metadata tables to ",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 92,
+            "before": "metadata from Apache Druid. Use the SQL metadata tables to r",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:72c4311cf739842ab82d9567",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "7463589b073c9eb07fe1c8fdbb725a1ca916091a",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:72c4311cf739842ab82d9567",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "metadata from Apache® Druid. Use the SQL metadata tables to ",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 92,
+          "before": "metadata from Apache Druid. Use the SQL metadata tables to r",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:72c4311cf739842ab82d9567",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/api-reference/legacy-metadata-api.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:ddda223dbc0f8851510838a7",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "pervisors for Apache® Druid. The topic uses the Apache Kafka",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 153,
+            "before": "pervisors for Apache Druid. The topic uses the Apache Kafka ",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:ddda223dbc0f8851510838a7",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "cf275580199e93485062a7b1d7e1dbb4e2c6e2bf",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:ddda223dbc0f8851510838a7",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "pervisors for Apache® Druid. The topic uses the Apache Kafka",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 153,
+          "before": "pervisors for Apache Druid. The topic uses the Apache Kafka ",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:ddda223dbc0f8851510838a7",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/api-reference/supervisor-api.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "895be9f8de4b1fe06d839370a95ed8464365ac7d",
+      "artifacts": [
+        {
+          "artifact": "section:u:b1d82c9cc6a9798854c76546",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "t(\"Submitted\") java import static com.microsoft.playwright.a",
+            "after_non_ascii_names": [],
+            "at": 890,
+            "before": "t(\"Submitted\") java ... import static com.microsoft.playwrig",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:b1d82c9cc6a9798854c76546",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "f95b4e0ac83edae3882aab777c746cfa5149d96d",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:b1d82c9cc6a9798854c76546",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "t(\"Submitted\") java import static com.microsoft.playwright.a",
+          "after_non_ascii_names": [],
+          "at": 890,
+          "before": "t(\"Submitted\") java ... import static com.microsoft.playwrig",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:b1d82c9cc6a9798854c76546",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:microsoft/playwright:docs/src/api/class-playwrightassertions.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "c326986ac2cd60fd28e580a06a4de448c5cbc4f8",
+      "artifacts": [
+        {
+          "artifact": "section:u:98a3237943c48185ee469c4a",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "echanism that Apache® Druid does not provide. This deep stor",
+            "after_non_ascii_names": [
+              "REGISTERED SIGN"
+            ],
+            "at": 80,
+            "before": "echanism that Apache Druid does not provide. This deep stora",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:98a3237943c48185ee469c4a",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "3b5b6c6a418c20b7e70e42074202b14b0ff45c7c",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:98a3237943c48185ee469c4a",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "echanism that Apache® Druid does not provide. This deep stor",
+          "after_non_ascii_names": [
+            "REGISTERED SIGN"
+          ],
+          "at": 80,
+          "before": "echanism that Apache Druid does not provide. This deep stora",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:98a3237943c48185ee469c4a",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "git:apache/druid:docs/design/deep-storage.md",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "2022-10-20",
+      "artifacts": [
+        {
+          "artifact": "section:u:b90ccaeb03b8990780b662a1",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": " Schedule of ratings—hemic and lymphatic systems. Rating 770",
+            "after_non_ascii_names": [
+              "EM DASH"
+            ],
+            "at": 27,
+            "before": " Schedule of ratings - hemic and lymphatic systems. Rating 7",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:b90ccaeb03b8990780b662a1",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "2022-10-11",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:b90ccaeb03b8990780b662a1",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": " Schedule of ratings—hemic and lymphatic systems. Rating 770",
+          "after_non_ascii_names": [
+            "EM DASH"
+          ],
+          "at": 27,
+          "before": " Schedule of ratings - hemic and lymphatic systems. Rating 7",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:b90ccaeb03b8990780b662a1",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "ecfr:38:4:4.117",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "2024-05-28",
+      "artifacts": [
+        {
+          "artifact": "section:u:90992ac8fda900cba57abe9d",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": " man-made barriers (e.g., fences and walls) or substantially",
+            "after_non_ascii_names": [],
+            "at": 4708,
+            "before": " man-made barriers ( e.g., fences and walls) or substantiall",
+            "before_non_ascii_names": []
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:90992ac8fda900cba57abe9d",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "2024-02-26",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:90992ac8fda900cba57abe9d",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": " man-made barriers (e.g., fences and walls) or substantially",
+          "after_non_ascii_names": [],
+          "at": 4708,
+          "before": " man-made barriers ( e.g., fences and walls) or substantiall",
+          "before_non_ascii_names": []
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:90992ac8fda900cba57abe9d",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "ecfr:40:761:761.123",
+      "resolved": true,
+      "unresolved_reason": null
+    },
+    {
+      "after_version": "2025-09-11",
+      "artifacts": [
+        {
+          "artifact": "section:u:7cae1c244b92441607555eaa",
+          "carried_forward": true,
+          "clean_before_moved_from_clean_after": true,
+          "first_divergence_stage": "typed_delta",
+          "first_text_divergence": {
+            "after": "requirements under § 262.14, § 262.15, § 262.16, § 262.17, o",
+            "after_non_ascii_names": [
+              "SECTION SIGN",
+              "SECTION SIGN",
+              "SECTION SIGN",
+              "SECTION SIGN"
+            ],
+            "at": 801,
+            "before": "requirements under §§ 262.14, 262.15, 262.16, 262.17, or sub",
+            "before_non_ascii_names": [
+              "SECTION SIGN",
+              "SECTION SIGN"
+            ]
+          },
+          "identity_text_equal": true,
+          "logical_id": "u:7cae1c244b92441607555eaa",
+          "modified_claim_emitted": false,
+          "plan_target_reason": "no change reached it",
+          "plan_target_state": "current",
+          "raw_text_differs": true,
+          "rebuilt": false,
+          "stage_marks_required_to_rebuild": {
+            "dependency_expansion": false,
+            "rebuild_execution": false,
+            "rebuild_request": false,
+            "typed_delta": false
+          }
+        }
+      ],
+      "before_version": "2024-08-08",
+      "diff_change_id": "chg_4f53cda18c2baa0c0354bb5f9a3ecbe5",
+      "diff_content_changed": true,
+      "diff_structural_change_present": false,
+      "diff_unresolved_count": 0,
+      "first_divergence_evidence": {
+        "artifact": "section:u:7cae1c244b92441607555eaa",
+        "carried_forward": true,
+        "clean_before_moved_from_clean_after": true,
+        "first_divergence_stage": "typed_delta",
+        "first_text_divergence": {
+          "after": "requirements under § 262.14, § 262.15, § 262.16, § 262.17, o",
+          "after_non_ascii_names": [
+            "SECTION SIGN",
+            "SECTION SIGN",
+            "SECTION SIGN",
+            "SECTION SIGN"
+          ],
+          "at": 801,
+          "before": "requirements under §§ 262.14, 262.15, 262.16, 262.17, or sub",
+          "before_non_ascii_names": [
+            "SECTION SIGN",
+            "SECTION SIGN"
+          ]
+        },
+        "identity_text_equal": true,
+        "logical_id": "u:7cae1c244b92441607555eaa",
+        "modified_claim_emitted": false,
+        "plan_target_reason": "no change reached it",
+        "plan_target_state": "current",
+        "raw_text_differs": true,
+        "rebuilt": false,
+        "stage_marks_required_to_rebuild": {
+          "dependency_expansion": false,
+          "rebuild_execution": false,
+          "rebuild_request": false,
+          "typed_delta": false
+        }
+      },
+      "first_divergence_stage": "typed_delta",
+      "lineage_id": "ecfr:40:262:262.1",
+      "resolved": true,
+      "unresolved_reason": null
+    }
+  ],
+  "cases_considered": 14,
+  "cases_resolved": 14,
+  "cases_source": {
+    "e5_and_e6_are_the_same_lineage_set": true,
+    "e5_confirmed_count": 14,
+    "e5_lineages": [
+      "ecfr:38:4:4.117",
+      "ecfr:40:262:262.1",
+      "ecfr:40:761:761.123",
+      "ecfr:40:761:761.180",
+      "git:apache/dolphinscheduler:docs/docs/en/contribute/join/become-a-committer.md",
+      "git:apache/druid:docs/api-reference/data-management-api.md",
+      "git:apache/druid:docs/api-reference/legacy-metadata-api.md",
+      "git:apache/druid:docs/api-reference/supervisor-api.md",
+      "git:apache/druid:docs/data-management/manual-compaction.md",
+      "git:apache/druid:docs/data-management/schema-changes.md",
+      "git:apache/druid:docs/design/deep-storage.md",
+      "git:apache/druid:docs/design/indexing-service.md",
+      "git:apache/druid:docs/design/metadata-storage.md",
+      "git:microsoft/playwright:docs/src/api/class-playwrightassertions.md"
+    ],
+    "e6_divergent_count": 14,
+    "e6_lineages": [
+      "ecfr:38:4:4.117",
+      "ecfr:40:262:262.1",
+      "ecfr:40:761:761.123",
+      "ecfr:40:761:761.180",
+      "git:apache/dolphinscheduler:docs/docs/en/contribute/join/become-a-committer.md",
+      "git:apache/druid:docs/api-reference/data-management-api.md",
+      "git:apache/druid:docs/api-reference/legacy-metadata-api.md",
+      "git:apache/druid:docs/api-reference/supervisor-api.md",
+      "git:apache/druid:docs/data-management/manual-compaction.md",
+      "git:apache/druid:docs/data-management/schema-changes.md",
+      "git:apache/druid:docs/design/deep-storage.md",
+      "git:apache/druid:docs/design/indexing-service.md",
+      "git:apache/druid:docs/design/metadata-storage.md",
+      "git:microsoft/playwright:docs/src/api/class-playwrightassertions.md"
+    ],
+    "source_receipt": "research/tavonel_eval_v2/receipts/sfi2-native-provenance--20260823T085006Z-e53cc8aaeb7d.json",
+    "source_receipt_sha256": "sha256:3aacb083f48d1ab2a5282255e82c679d7c37d9e8ccc22c0e7fc3d4be82f9b310",
+    "typed_cross_check": {
+      "artifacts_moved_total": 301,
+      "artifacts_under_invalidated_total": 0,
+      "errors": {},
+      "pairs_evaluated": 191,
+      "pairs_named_every_moved_artifact": 191,
+      "pairs_under_invalidated": 0,
+      "pairs_with_silent_facts": 0,
+      "under_invalidated": []
+    }
+  },
+  "cases_unresolved": 0,
+  "ended_at": "2026-08-23T09:54:08.352195+00:00",
+  "estimated_cost_usd": 0.0,
+  "first_divergence_stage_distribution": {
+    "typed_delta": 14
+  },
+  "gpu_seconds": 0,
+  "pipeline_stages_gated_in_this_executor": [
+    "typed_delta",
+    "dependency_expansion",
+    "rebuild_request",
+    "rebuild_execution"
+  ],
+  "pipeline_stages_named_in_the_task": [
+    "typed_delta",
+    "dependency_expansion",
+    "rebuild_request",
+    "scheduler",
+    "rebuild_execution",
+    "carry_forward",
+    "candidate_verification",
+    "activation"
+  ],
+  "pipeline_stages_not_independent_gates": {
+    "activation": "run_pair writes final[artifact] directly from the rebuild/carry-forward branch in the same loop iteration; there is no separate activation step to diverge at",
+    "candidate_verification": "recompilation.verify_equivalence() exists but is never called on the production path (selective_build.run_pair does not call it, nor does rebuild_equivalence.judge_pair); there is no verification step between rebuild/carry-forward and the final state",
+    "scheduler": "rebuild_order() only reorders plan.to_rebuild for dependency-safe execution order; it cannot remove or add a member, so it cannot be the first point of divergence"
+  },
+  "provenance": {
+    "generated_at": "2026-08-23T09:54:08.353061+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi2-execution-forensic",
+    "run_id": "20260823T095408Z-2dcd1681a54c",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/forensic_sfi2_execution.py",
+    "tool_sha256": "sha256:84062ceae6d99b4c5012592f61ffe4e0de4accb089bc18a0cb0377b11d312049"
+  },
+  "receipt_sha256": "sha256:dcd0627cd611c6908d0e35784fc3a8335e1ed5e777effc55e0215b379c7ae708",
+  "schema": "tavonel.v2.forensic_sfi2_execution.v1",
+  "single_root_cause": true,
+  "started_at": "2026-08-23T09:54:07.178018+00:00",
+  "unresolved": [],
+  "wall_seconds": 1.174,
+  "what_this_is": "a stage-by-stage replay of the 14 SFI2 E5-confirmed selective stale escapes through the real production functions (diff_documents, plan_recompilation, run_pair), recording the first pipeline stage at which each required-to-rebuild artifact stops being marked as such.",
+  "what_this_is_not": [
+    "a rescore of SOURCE_FACT_IR_HELDOUT_V2. That receipt's counts stand exactly as executed and are read here, not recomputed.",
+    "an inference from the final stale artifact. Every row below is a direct observation of an intermediate stage's output.",
+    "usable to widen or re-admit the SFI2 cohort. The cohort is spent; these 14 cases are development fixtures from this point forward."
+  ]
+}

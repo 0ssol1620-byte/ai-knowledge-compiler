@@ -1,0 +1,57 @@
+{
+  "deterministic": true,
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "payload": {
+    "fixture": "R1",
+    "input_count": 5,
+    "joined_sha256": "sha256:61ffa3e20d7eba3e238b7189059eeb5d7bb23efbbf06e0f2551437eddd02e01d",
+    "reversed_sha256": "sha256:488fd6024a68f17404e118a45c53dc92bae42ea4cd3a9fb8de3a51b55a80ca64",
+    "rows": [
+      {
+        "index": 0,
+        "sha256": "sha256:9ecb36561341d18eb65484e833efea61edc74b84cf5e6ae1b81c63533e25fc8f",
+        "value": "the quick brown fox"
+      },
+      {
+        "index": 1,
+        "sha256": "sha256:94d7b525ab100ce190a9e05cf4277ef3d79958ab590214fd80d4cb8c6fc97324",
+        "value": "jumps over"
+      },
+      {
+        "index": 2,
+        "sha256": "sha256:e6f6cfd54dc9690c439ff5f0d7aa33765aaa733b48db45f8225c125c32ebf24b",
+        "value": "the lazy dog"
+      },
+      {
+        "index": 3,
+        "sha256": "sha256:6816d9d3d93dfa4e409d4b20f1490e63700ee5a1e403d16160df32eebb30efa2",
+        "value": "ΑΒΓ δεζ"
+      },
+      {
+        "index": 4,
+        "sha256": "sha256:cc013f98a721f8f3951373d19c6aed8b3778c5532f769d258ba3bd480db1dec8",
+        "value": "full-width ＡＢＣ"
+      }
+    ]
+  },
+  "protocol": "R1_receipt_reproducibility",
+  "provenance": {
+    "generated_at": "2026-08-27T04:47:04.280054+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/R1_receipt_reproducibility.yaml",
+    "protocol_sha256": "sha256:23aa8e1d39db98b7e1086e9ce72f20d20ba84473e511e9675ada3fb803e0bab1",
+    "receipt_stem": "r1-reproducibility-fixture",
+    "run_id": "20260827T044704Z-dced402fa0bb",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/reproducibility_fixture.py",
+    "tool_sha256": "sha256:30bb3ee3d69beadf597c753a5049791828e179e0b0ff4c2246bc91766bb8b339"
+  },
+  "reads_clock": false,
+  "reads_environment": false,
+  "reads_filesystem": false,
+  "receipt_sha256": "sha256:d77a114467e17669c218b6d5d2caed60b3970ec5aba3c8503b45cf260e7c7086",
+  "schema": "tavonel.v2.r1_reproducibility_fixture.v1",
+  "semantic_result_digest": "sha256:8f9f9a3e7a58ee90e68a9efaef605f05b4d66521ee50643b5fe1dc8383921fd6"
+}

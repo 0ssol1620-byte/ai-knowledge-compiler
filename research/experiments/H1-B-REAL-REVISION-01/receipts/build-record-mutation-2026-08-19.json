@@ -1,0 +1,184 @@
+{
+  "cases_per_cell": 60,
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T22:10:53.985678+00:00",
+  "mutations": [
+    "honest",
+    "structural_input_omitted",
+    "semantic_input_omitted",
+    "wrong_block_count",
+    "partial_reading_order",
+    "misrecorded_order",
+    "extra_nonexistent_input",
+    "stale_record_reused",
+    "old_receipt_on_rebuilt_artifact"
+  ],
+  "receipt_sha256": "sha256:59978e963273333cd1fa40d7177cb3c1f817809418367405c9fc5919faa177bc",
+  "results": {
+    "honest/extra_nonexistent_input": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/honest": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/misrecorded_order": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/old_receipt_on_rebuilt_artifact": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/partial_reading_order": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/semantic_input_omitted": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/stale_record_reused": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/structural_input_omitted": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "honest/wrong_block_count": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 420,
+      "escape_artifacts": 0,
+      "escape_cases": 0,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "under_declared/extra_nonexistent_input": {
+      "blocked_escape_cases": 180,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "under_declared/honest": {
+      "blocked_escape_cases": 180,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "under_declared/misrecorded_order": {
+      "blocked_escape_cases": 120,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 60
+    },
+    "under_declared/old_receipt_on_rebuilt_artifact": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 180
+    },
+    "under_declared/partial_reading_order": {
+      "blocked_escape_cases": 180,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "under_declared/semantic_input_omitted": {
+      "blocked_escape_cases": 180,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 0
+    },
+    "under_declared/stale_record_reused": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 180
+    },
+    "under_declared/structural_input_omitted": {
+      "blocked_escape_cases": 0,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 180
+    },
+    "under_declared/wrong_block_count": {
+      "blocked_escape_cases": 120,
+      "cases": 420,
+      "clean_cases": 240,
+      "escape_artifacts": 180,
+      "escape_cases": 180,
+      "false_refusal_cases": 0,
+      "stale_artifacts_promoted": 60
+    }
+  },
+  "schema": "tavonel.build-record-mutation-sweep.v1",
+  "seed": 20260822,
+  "what_is_being_tested": "whether the promotion gate can detect a build record that misrepresents what the builder consumed. The gate compares the fingerprint now against the fingerprint at build time, both produced by the same recording code, so a corruption present on both sides cancels and a corruption present on one side does not."
+}

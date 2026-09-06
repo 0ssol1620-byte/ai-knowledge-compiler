@@ -180,6 +180,13 @@ def test_clock_and_dice_use_flags_non_determinism(secret_file: Path) -> None:
     assert counts["time.time"] == 1
 
 
+def test_datetime_class_is_restored_exactly_after_tracking() -> None:
+    original = datetime_module.datetime
+    with TrackedBuildContext():
+        assert datetime_module.datetime is not original
+    assert datetime_module.datetime is original
+
+
 def test_a_clean_builder_flags_nothing(tmp_path: Path) -> None:
     def builder() -> int:
         return sum(range(10))

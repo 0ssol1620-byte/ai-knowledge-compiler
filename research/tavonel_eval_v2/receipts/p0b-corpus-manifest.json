@@ -1,0 +1,951 @@
+{
+  "builder_sha256": "sha256:bd617aeff2c4e4a39ec55eb5792e3e89f36d91cf856d20f99640c8224a401366",
+  "excluded": [],
+  "external_gpu_cost_usd": 0.0,
+  "family_counts": {
+    "git_docs": 22,
+    "sec_edgar": 4
+  },
+  "generated_at": "2026-08-21T05:15:20.003768+00:00",
+  "gpu_seconds": 0,
+  "group_counts": {
+    "lexical_positive_control": 4,
+    "natural": 26,
+    "structural_positive_control": 4
+  },
+  "pairs": [
+    {
+      "after": {
+        "canonical_sha256": "sha256:0933111a229806991adcfa88b6e6193226fbe285216cb3ef0bd540af85c48c7c",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-000-tsla-10-k/after.json"
+      },
+      "after_canonical_digest": "sha256:0933111a229806991adcfa88b6e6193226fbe285216cb3ef0bd540af85c48c7c",
+      "after_source_digest": "sha256:35e8e3c985ad540e22aa71d6da889dcd4b4d65194cc6f05cd00e6257f168ea4b",
+      "after_version_id": "0001104659-26-053166",
+      "before": {
+        "canonical_sha256": "sha256:2c26126f042e908a7baea4a50241ec3510ecc27bc9d91c56ddedf5e6299833be",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-000-tsla-10-k/before.json"
+      },
+      "before_canonical_digest": "sha256:2c26126f042e908a7baea4a50241ec3510ecc27bc9d91c56ddedf5e6299833be",
+      "before_source_digest": "sha256:90d5d2bc4057df41c645f85dcebe575af9b0953a6a1902d189297bec17fd440a",
+      "before_version_id": "0001628280-26-003952",
+      "constructed": false,
+      "group": "natural",
+      "license": "US federal government work, public domain (17 USC 105)",
+      "pair_id": "sec-000-tsla-10-k",
+      "relation_basis": "same CIK, same base form, same period of report, as published in the issuer submissions index",
+      "source_family": "sec_edgar",
+      "source_id": "sec:0001318605:10-K:2025-12-31",
+      "unit_counts": {
+        "after": 7,
+        "before": 20
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:a5adef8bdafee57ce8c6b378e47310e23e7af1e8a11f48eb9e25dd32695a9c18",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-001-tsla-10-k/after.json"
+      },
+      "after_canonical_digest": "sha256:a5adef8bdafee57ce8c6b378e47310e23e7af1e8a11f48eb9e25dd32695a9c18",
+      "after_source_digest": "sha256:c28e39f1152a8210d53b5f4265ee0562e8d0a7be586f1730318e34480fabaf6d",
+      "after_version_id": "0001104659-25-042659",
+      "before": {
+        "canonical_sha256": "sha256:1d60103893d1a6c3a0aba0798cc0bbe5922c9b95812f7e9229ece0b0215e2ee1",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-001-tsla-10-k/before.json"
+      },
+      "before_canonical_digest": "sha256:1d60103893d1a6c3a0aba0798cc0bbe5922c9b95812f7e9229ece0b0215e2ee1",
+      "before_source_digest": "sha256:2a5dc10024afd96cf71f154c949759123c1da05715fb574866eaba6e1ec3bb18",
+      "before_version_id": "0001628280-25-003063",
+      "constructed": false,
+      "group": "natural",
+      "license": "US federal government work, public domain (17 USC 105)",
+      "pair_id": "sec-001-tsla-10-k",
+      "relation_basis": "same CIK, same base form, same period of report, as published in the issuer submissions index",
+      "source_family": "sec_edgar",
+      "source_id": "sec:0001318605:10-K:2024-12-31",
+      "unit_counts": {
+        "after": 7,
+        "before": 20
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:d170e34608d355139145042e2c6c146f596e85cc90acabd6a4a079c238964478",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-005-ko-10-q/after.json"
+      },
+      "after_canonical_digest": "sha256:d170e34608d355139145042e2c6c146f596e85cc90acabd6a4a079c238964478",
+      "after_source_digest": "sha256:d5f8c22f1f670fd22c3b2168c3fec8388e0824e92505d6f64ff345ec68c75503",
+      "after_version_id": "0000021344-24-000019",
+      "before": {
+        "canonical_sha256": "sha256:34c86b4de7f0e487441f1b392b7b0fbb34212c522ac11ad744a667ff2ac5cc94",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-005-ko-10-q/before.json"
+      },
+      "before_canonical_digest": "sha256:34c86b4de7f0e487441f1b392b7b0fbb34212c522ac11ad744a667ff2ac5cc94",
+      "before_source_digest": "sha256:0ab7273516edd8b6479ca91bf090546cf385c4c470472f5befab8102528e54a7",
+      "before_version_id": "0000021344-24-000017",
+      "constructed": false,
+      "group": "natural",
+      "license": "US federal government work, public domain (17 USC 105)",
+      "pair_id": "sec-005-ko-10-q",
+      "relation_basis": "same CIK, same base form, same period of report, as published in the issuer submissions index",
+      "source_family": "sec_edgar",
+      "source_id": "sec:0000021344:10-Q:2024-03-29",
+      "unit_counts": {
+        "after": 3,
+        "before": 12
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:0a486302e152b13b75ae248051e586e8cb5ea24ce24ca28c5a08cf770e15c7f5",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-006-msft-8-k/after.json"
+      },
+      "after_canonical_digest": "sha256:0a486302e152b13b75ae248051e586e8cb5ea24ce24ca28c5a08cf770e15c7f5",
+      "after_source_digest": "sha256:66ef5cb0574479ded15b1de0f56366c1de45dc3ec8d3c7bc7c5415dcf34edd96",
+      "after_version_id": "0001193125-24-062997",
+      "before": {
+        "canonical_sha256": "sha256:668c298b6f72cc09ca638c2562ed6ff58ef40ad7e22a27daf1e971fe30ab51ec",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/sec-006-msft-8-k/before.json"
+      },
+      "before_canonical_digest": "sha256:668c298b6f72cc09ca638c2562ed6ff58ef40ad7e22a27daf1e971fe30ab51ec",
+      "before_source_digest": "sha256:9e47379ea22d69508a44b4183a4b0589002ad99696b24382029ea8859a7aa933",
+      "before_version_id": "0001193125-24-011295",
+      "constructed": false,
+      "group": "natural",
+      "license": "US federal government work, public domain (17 USC 105)",
+      "pair_id": "sec-006-msft-8-k",
+      "relation_basis": "same CIK, same base form, same period of report, as published in the issuer submissions index",
+      "source_family": "sec_edgar",
+      "source_id": "sec:0000789019:8-K:2024-01-17",
+      "unit_counts": {
+        "after": 4,
+        "before": 4
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-000-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+      "after_source_digest": "sha256:d7f0348efdff475a0fbef3c1fc24b000856d0fe1e34f60f45a47184fce5120da",
+      "after_version_id": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97",
+      "before": {
+        "canonical_sha256": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-000-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+      "before_source_digest": "sha256:b2e1a8e18f9c6088aaa9b85c017ba6b2c56de8f0e5feffef391e2995b1c03912",
+      "before_version_id": "223b91d48f79754209b432d32951e84abf05df23",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-000-prometheus-configuration",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-001-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+      "after_source_digest": "sha256:b2e1a8e18f9c6088aaa9b85c017ba6b2c56de8f0e5feffef391e2995b1c03912",
+      "after_version_id": "223b91d48f79754209b432d32951e84abf05df23",
+      "before": {
+        "canonical_sha256": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-001-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+      "before_source_digest": "sha256:97dd3d5bf1ca7725bf6694eaa53572bc6d0e60a347c7e4925dbddc8fa9edf307",
+      "before_version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-001-prometheus-configuration",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-002-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+      "after_source_digest": "sha256:97dd3d5bf1ca7725bf6694eaa53572bc6d0e60a347c7e4925dbddc8fa9edf307",
+      "after_version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317",
+      "before": {
+        "canonical_sha256": "sha256:ee46ceea9ff25ed5b4947b86276ceeae69652f263319e3f948ae82a0ba757f36",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-002-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:ee46ceea9ff25ed5b4947b86276ceeae69652f263319e3f948ae82a0ba757f36",
+      "before_source_digest": "sha256:2d9a3a61d7ab2d364863d3f132b04982127093536604bbd73b6ad5223d03c48d",
+      "before_version_id": "2391cf6ffc853df347fc7689689309253f533e96",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-002-prometheus-configuration",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-003-prometheus-functions/after.json"
+      },
+      "after_canonical_digest": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+      "after_source_digest": "sha256:21a0b70b5178dbe74a0d707818f533f827cee0368133067bda0228aaccb09821",
+      "after_version_id": "4c352ffb82a082310978147b14070d7969e9d5d4",
+      "before": {
+        "canonical_sha256": "sha256:c1b7d6e16570771043f31140a37db39f2b2ba5f0e4fa7f810a0524f14e3d0cbb",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-003-prometheus-functions/before.json"
+      },
+      "before_canonical_digest": "sha256:c1b7d6e16570771043f31140a37db39f2b2ba5f0e4fa7f810a0524f14e3d0cbb",
+      "before_source_digest": "sha256:f59a239be0d6024027485e7ccc51e11e4b6aacf1fd488dec8afb27bba03925d0",
+      "before_version_id": "b4741eeb99c742229e20e6540dd21aa044373eb5",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-003-prometheus-functions",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "unit_counts": {
+        "after": 60,
+        "before": 59
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:c1b7d6e16570771043f31140a37db39f2b2ba5f0e4fa7f810a0524f14e3d0cbb",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-004-prometheus-functions/after.json"
+      },
+      "after_canonical_digest": "sha256:c1b7d6e16570771043f31140a37db39f2b2ba5f0e4fa7f810a0524f14e3d0cbb",
+      "after_source_digest": "sha256:f59a239be0d6024027485e7ccc51e11e4b6aacf1fd488dec8afb27bba03925d0",
+      "after_version_id": "b4741eeb99c742229e20e6540dd21aa044373eb5",
+      "before": {
+        "canonical_sha256": "sha256:e5c83cdaf9cf98f3d332a022b248716a359b6c95c63f2076d501427214f35ce3",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-004-prometheus-functions/before.json"
+      },
+      "before_canonical_digest": "sha256:e5c83cdaf9cf98f3d332a022b248716a359b6c95c63f2076d501427214f35ce3",
+      "before_source_digest": "sha256:ee830de443e48b375e18837b4c07678a833e3ac62c27a62b27aed5663455f877",
+      "before_version_id": "352e36a7601cd720254d1a40d3cc07babce0cc82",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-004-prometheus-functions",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "unit_counts": {
+        "after": 59,
+        "before": 59
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:e5c83cdaf9cf98f3d332a022b248716a359b6c95c63f2076d501427214f35ce3",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-005-prometheus-functions/after.json"
+      },
+      "after_canonical_digest": "sha256:e5c83cdaf9cf98f3d332a022b248716a359b6c95c63f2076d501427214f35ce3",
+      "after_source_digest": "sha256:ee830de443e48b375e18837b4c07678a833e3ac62c27a62b27aed5663455f877",
+      "after_version_id": "352e36a7601cd720254d1a40d3cc07babce0cc82",
+      "before": {
+        "canonical_sha256": "sha256:f6503c1ad7362b3f8690b9335d374ca0d112db62d7e182d3535632644dd07363",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-005-prometheus-functions/before.json"
+      },
+      "before_canonical_digest": "sha256:f6503c1ad7362b3f8690b9335d374ca0d112db62d7e182d3535632644dd07363",
+      "before_source_digest": "sha256:7d2f054dd51bacc6f5dd26e90d26a920daf85f33cc124422a4297d689a3aec9c",
+      "before_version_id": "a74f0b2e7a134cce9f99c291346bef001520a840",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-005-prometheus-functions",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "unit_counts": {
+        "after": 59,
+        "before": 59
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:03e9b1bc50bd09f66bbc141231fe509bc1a1eb7acc4e7f945e7236d6aeeb44b6",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-006-prometheus-basics/after.json"
+      },
+      "after_canonical_digest": "sha256:03e9b1bc50bd09f66bbc141231fe509bc1a1eb7acc4e7f945e7236d6aeeb44b6",
+      "after_source_digest": "sha256:bdf7feaa71b6e6cddb1c143974e579c9d3c5ea19c6e6b4af16f0f9927c9f6853",
+      "after_version_id": "352e36a7601cd720254d1a40d3cc07babce0cc82",
+      "before": {
+        "canonical_sha256": "sha256:754f3702611a87bfb089d1c3ad8719a172e89121f2f494892c20d1287734d03a",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-006-prometheus-basics/before.json"
+      },
+      "before_canonical_digest": "sha256:754f3702611a87bfb089d1c3ad8719a172e89121f2f494892c20d1287734d03a",
+      "before_source_digest": "sha256:de1194d5db88b22665fbf51f0d1539cdec4d48fd1a142f5e977fd4b8abc81717",
+      "before_version_id": "7b29b912e3712cb06e93d3c2db7f77cc2b4fee96",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-006-prometheus-basics",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/basics.md",
+      "unit_counts": {
+        "after": 17,
+        "before": 16
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:754f3702611a87bfb089d1c3ad8719a172e89121f2f494892c20d1287734d03a",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-007-prometheus-basics/after.json"
+      },
+      "after_canonical_digest": "sha256:754f3702611a87bfb089d1c3ad8719a172e89121f2f494892c20d1287734d03a",
+      "after_source_digest": "sha256:de1194d5db88b22665fbf51f0d1539cdec4d48fd1a142f5e977fd4b8abc81717",
+      "after_version_id": "7b29b912e3712cb06e93d3c2db7f77cc2b4fee96",
+      "before": {
+        "canonical_sha256": "sha256:0656cbdc1593389e90e27bb567182f6cb05091070576784242bfab714c0d2df9",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-007-prometheus-basics/before.json"
+      },
+      "before_canonical_digest": "sha256:0656cbdc1593389e90e27bb567182f6cb05091070576784242bfab714c0d2df9",
+      "before_source_digest": "sha256:939dc2cfa7bcce16386faa3b7b23be079a7425f9cc7fa362e77409e489076c32",
+      "before_version_id": "1463a5bb5a6f837e56f83d83f9f0726804a62e56",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-007-prometheus-basics",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/basics.md",
+      "unit_counts": {
+        "after": 16,
+        "before": 17
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:0656cbdc1593389e90e27bb567182f6cb05091070576784242bfab714c0d2df9",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-008-prometheus-basics/after.json"
+      },
+      "after_canonical_digest": "sha256:0656cbdc1593389e90e27bb567182f6cb05091070576784242bfab714c0d2df9",
+      "after_source_digest": "sha256:939dc2cfa7bcce16386faa3b7b23be079a7425f9cc7fa362e77409e489076c32",
+      "after_version_id": "1463a5bb5a6f837e56f83d83f9f0726804a62e56",
+      "before": {
+        "canonical_sha256": "sha256:eedf533061ece74269acc7ecbf795896cc5708ece92574fd145d31b9d78f1aef",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-008-prometheus-basics/before.json"
+      },
+      "before_canonical_digest": "sha256:eedf533061ece74269acc7ecbf795896cc5708ece92574fd145d31b9d78f1aef",
+      "before_source_digest": "sha256:de1194d5db88b22665fbf51f0d1539cdec4d48fd1a142f5e977fd4b8abc81717",
+      "before_version_id": "c92957871816fc46222ca585ace0e99ca5e5b3db",
+      "constructed": false,
+      "group": "natural",
+      "license": "Apache-2.0",
+      "pair_id": "git-008-prometheus-basics",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/basics.md",
+      "unit_counts": {
+        "after": 17,
+        "before": 16
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:74ebc65a4a2b6330573de9965b1945c66342185ba0b2b564d34b4d65c8797f18",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-011-loki--index/after.json"
+      },
+      "after_canonical_digest": "sha256:74ebc65a4a2b6330573de9965b1945c66342185ba0b2b564d34b4d65c8797f18",
+      "after_source_digest": "sha256:2f165eaa775685cf66e12e7ee742dbd6e4a4891ff0552dd9be9cab392fdf155e",
+      "after_version_id": "a9345d0fb627a0672a60f149bc06db3d75e5f974",
+      "before": {
+        "canonical_sha256": "sha256:e4e38a9982b0074fc55032a7aaf44bfef47b03405749c9480173074190e6ee81",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-011-loki--index/before.json"
+      },
+      "before_canonical_digest": "sha256:e4e38a9982b0074fc55032a7aaf44bfef47b03405749c9480173074190e6ee81",
+      "before_source_digest": "sha256:55f6c5e10405c6fc71ff3fb7a6b432386709b1249dd59e1b579b5c6094e3a193",
+      "before_version_id": "705379cc815e2646c9d4f5ba421e58af853085a4",
+      "constructed": false,
+      "group": "natural",
+      "license": "AGPL-3.0",
+      "pair_id": "git-011-loki--index",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:grafana/loki:docs/sources/configure/_index.md",
+      "unit_counts": {
+        "after": 50,
+        "before": 50
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:82b52168ae1eb950e2b425408fe9399548ea439e79fe0ac5db740e7c3c20c538",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-012-website-deployment/after.json"
+      },
+      "after_canonical_digest": "sha256:82b52168ae1eb950e2b425408fe9399548ea439e79fe0ac5db740e7c3c20c538",
+      "after_source_digest": "sha256:b4896e5d45a7d97b0d36ca5fe9e2cac2188ab46ce9cfbc61b4c143220e550c98",
+      "after_version_id": "a03054abc6670d709271bb840dbdd1101eb4db87",
+      "before": {
+        "canonical_sha256": "sha256:7622a0d37754c65d486ec37f2b16950d058d56a2883d2c1bef51d557fcabf5da",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-012-website-deployment/before.json"
+      },
+      "before_canonical_digest": "sha256:7622a0d37754c65d486ec37f2b16950d058d56a2883d2c1bef51d557fcabf5da",
+      "before_source_digest": "sha256:ec8a93307efd8bf37349da4f103e5ad2c9698e9171d61a26ca9734bf684fe222",
+      "before_version_id": "c37d57216103cd3473e82dc7b481bf5b34a1a197",
+      "constructed": false,
+      "group": "natural",
+      "license": "CC-BY-4.0",
+      "pair_id": "git-012-website-deployment",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md",
+      "unit_counts": {
+        "after": 35,
+        "before": 35
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:7622a0d37754c65d486ec37f2b16950d058d56a2883d2c1bef51d557fcabf5da",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-013-website-deployment/after.json"
+      },
+      "after_canonical_digest": "sha256:7622a0d37754c65d486ec37f2b16950d058d56a2883d2c1bef51d557fcabf5da",
+      "after_source_digest": "sha256:ec8a93307efd8bf37349da4f103e5ad2c9698e9171d61a26ca9734bf684fe222",
+      "after_version_id": "c37d57216103cd3473e82dc7b481bf5b34a1a197",
+      "before": {
+        "canonical_sha256": "sha256:3cb3ac12c77ee9e09c3384952e21defa45106529f1c5feed42bb86210eea9918",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-013-website-deployment/before.json"
+      },
+      "before_canonical_digest": "sha256:3cb3ac12c77ee9e09c3384952e21defa45106529f1c5feed42bb86210eea9918",
+      "before_source_digest": "sha256:29fc573cb064d41bc76d0a86b6d55afabbb18a3ec472e726326615fda9c64e7c",
+      "before_version_id": "73f9f06cf5badfd60436b9f623a46496058402a5",
+      "constructed": false,
+      "group": "natural",
+      "license": "CC-BY-4.0",
+      "pair_id": "git-013-website-deployment",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md",
+      "unit_counts": {
+        "after": 35,
+        "before": 35
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:3cb3ac12c77ee9e09c3384952e21defa45106529f1c5feed42bb86210eea9918",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-014-website-deployment/after.json"
+      },
+      "after_canonical_digest": "sha256:3cb3ac12c77ee9e09c3384952e21defa45106529f1c5feed42bb86210eea9918",
+      "after_source_digest": "sha256:29fc573cb064d41bc76d0a86b6d55afabbb18a3ec472e726326615fda9c64e7c",
+      "after_version_id": "73f9f06cf5badfd60436b9f623a46496058402a5",
+      "before": {
+        "canonical_sha256": "sha256:0ad3880dba7f4304681aa9dc778fdb6e6ac73f4f5fb005e23f58db355eba9aa6",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-014-website-deployment/before.json"
+      },
+      "before_canonical_digest": "sha256:0ad3880dba7f4304681aa9dc778fdb6e6ac73f4f5fb005e23f58db355eba9aa6",
+      "before_source_digest": "sha256:f014af52f9a8a2455ffc98fb7b07532da86e71c278598013e376fdaa520952fb",
+      "before_version_id": "fb60f3655ae76c1484d603ab75f6391738bc3f34",
+      "constructed": false,
+      "group": "natural",
+      "license": "CC-BY-4.0",
+      "pair_id": "git-014-website-deployment",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md",
+      "unit_counts": {
+        "after": 35,
+        "before": 35
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:a28c25a909c552bc9bdadf9951c6fd7c3bf8bb2881185408a1e845c52ca1ff74",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-015-website-service/after.json"
+      },
+      "after_canonical_digest": "sha256:a28c25a909c552bc9bdadf9951c6fd7c3bf8bb2881185408a1e845c52ca1ff74",
+      "after_source_digest": "sha256:124a280dfbc2dad83498c579e960e5d199ca612b727033e2a88da1103e1acb51",
+      "after_version_id": "90d449e0c3fa65cdcf61dac336121f5586644157",
+      "before": {
+        "canonical_sha256": "sha256:93de17fc488ec2e2cd30c0e39be046dedf8a582858408d60ef44c7c35f7d66cc",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-015-website-service/before.json"
+      },
+      "before_canonical_digest": "sha256:93de17fc488ec2e2cd30c0e39be046dedf8a582858408d60ef44c7c35f7d66cc",
+      "before_source_digest": "sha256:cf12c06b6d235eda27385099d0b4d74de435cd201a885c36c7b66f683c737700",
+      "before_version_id": "434ae53916eca3e50394ffb47320b0908d41fe3f",
+      "constructed": false,
+      "group": "natural",
+      "license": "CC-BY-4.0",
+      "pair_id": "git-015-website-service",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md",
+      "unit_counts": {
+        "after": 40,
+        "before": 40
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:93de17fc488ec2e2cd30c0e39be046dedf8a582858408d60ef44c7c35f7d66cc",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-016-website-service/after.json"
+      },
+      "after_canonical_digest": "sha256:93de17fc488ec2e2cd30c0e39be046dedf8a582858408d60ef44c7c35f7d66cc",
+      "after_source_digest": "sha256:cf12c06b6d235eda27385099d0b4d74de435cd201a885c36c7b66f683c737700",
+      "after_version_id": "434ae53916eca3e50394ffb47320b0908d41fe3f",
+      "before": {
+        "canonical_sha256": "sha256:10e1464ef2731bcd0b3ce7561cce55f665c1c2e7add1d5e5d4f301746d2d16b6",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-016-website-service/before.json"
+      },
+      "before_canonical_digest": "sha256:10e1464ef2731bcd0b3ce7561cce55f665c1c2e7add1d5e5d4f301746d2d16b6",
+      "before_source_digest": "sha256:4b41a921d7dedfec10fed36c094d8e77105f47c26baed7bd62e4e4def4d81854",
+      "before_version_id": "8a5ff3d757a48e5cf731bb39fbd70772dc01d956",
+      "constructed": false,
+      "group": "natural",
+      "license": "CC-BY-4.0",
+      "pair_id": "git-016-website-service",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md",
+      "unit_counts": {
+        "after": 40,
+        "before": 40
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:10e1464ef2731bcd0b3ce7561cce55f665c1c2e7add1d5e5d4f301746d2d16b6",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-017-website-service/after.json"
+      },
+      "after_canonical_digest": "sha256:10e1464ef2731bcd0b3ce7561cce55f665c1c2e7add1d5e5d4f301746d2d16b6",
+      "after_source_digest": "sha256:4b41a921d7dedfec10fed36c094d8e77105f47c26baed7bd62e4e4def4d81854",
+      "after_version_id": "8a5ff3d757a48e5cf731bb39fbd70772dc01d956",
+      "before": {
+        "canonical_sha256": "sha256:9ba9799b48dbb3d6c5c833ccb5f2b03227c9572d1b7dd5017e498fbaa0164e72",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-017-website-service/before.json"
+      },
+      "before_canonical_digest": "sha256:9ba9799b48dbb3d6c5c833ccb5f2b03227c9572d1b7dd5017e498fbaa0164e72",
+      "before_source_digest": "sha256:69f1a1e8bbc9879d2cfd43bbe26cc89e0f830a0bc7191a2f9d6b86e9c1a3ed57",
+      "before_version_id": "7212303bb64435498b40de7997721b4df9409d01",
+      "constructed": false,
+      "group": "natural",
+      "license": "CC-BY-4.0",
+      "pair_id": "git-017-website-service",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md",
+      "unit_counts": {
+        "after": 40,
+        "before": 40
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:74297abaf0b4d45a2dba55a928a66e9f01a8c04d90712c8c35103f1f443bd4ff",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-018-book-ch04-01-what-is-ownership/after.json"
+      },
+      "after_canonical_digest": "sha256:74297abaf0b4d45a2dba55a928a66e9f01a8c04d90712c8c35103f1f443bd4ff",
+      "after_source_digest": "sha256:873724c6862ad0cc447becf0e818eb39a324c5d4bfa26ef721286aae1941c0ba",
+      "after_version_id": "05d114287b7d6f6c9253d5242540f00fbd6172ab",
+      "before": {
+        "canonical_sha256": "sha256:926a9dd65e0921c4892d4288c98ac055a868975b47725aeddb3960bf8ba7fe0a",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-018-book-ch04-01-what-is-ownership/before.json"
+      },
+      "before_canonical_digest": "sha256:926a9dd65e0921c4892d4288c98ac055a868975b47725aeddb3960bf8ba7fe0a",
+      "before_source_digest": "sha256:7c6b95dfc1a5e87f39a40bcda2ab794ebfcd239326d13ea5c3bd432691ff381a",
+      "before_version_id": "8a6130451b0817ead5c2522ce641dcb0f11a8571",
+      "constructed": false,
+      "group": "natural",
+      "license": "MIT OR Apache-2.0",
+      "pair_id": "git-018-book-ch04-01-what-is-ownership",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:rust-lang/book:src/ch04-01-what-is-ownership.md",
+      "unit_counts": {
+        "after": 11,
+        "before": 11
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:926a9dd65e0921c4892d4288c98ac055a868975b47725aeddb3960bf8ba7fe0a",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-019-book-ch04-01-what-is-ownership/after.json"
+      },
+      "after_canonical_digest": "sha256:926a9dd65e0921c4892d4288c98ac055a868975b47725aeddb3960bf8ba7fe0a",
+      "after_source_digest": "sha256:7c6b95dfc1a5e87f39a40bcda2ab794ebfcd239326d13ea5c3bd432691ff381a",
+      "after_version_id": "8a6130451b0817ead5c2522ce641dcb0f11a8571",
+      "before": {
+        "canonical_sha256": "sha256:1f5c9aa1f159c34a3eafcc7659dd36f9453a353a9e533929e0490cab2cc49483",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-019-book-ch04-01-what-is-ownership/before.json"
+      },
+      "before_canonical_digest": "sha256:1f5c9aa1f159c34a3eafcc7659dd36f9453a353a9e533929e0490cab2cc49483",
+      "before_source_digest": "sha256:1598f1fff37549af4fa9a2f7af1f6abe595cfc7ccad9b56d18697aa6ad1bc7a3",
+      "before_version_id": "bb86b1763bdfb823e3e1d52c57020543b0fc7c4a",
+      "constructed": false,
+      "group": "natural",
+      "license": "MIT OR Apache-2.0",
+      "pair_id": "git-019-book-ch04-01-what-is-ownership",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:rust-lang/book:src/ch04-01-what-is-ownership.md",
+      "unit_counts": {
+        "after": 11,
+        "before": 11
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:1f5c9aa1f159c34a3eafcc7659dd36f9453a353a9e533929e0490cab2cc49483",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-020-book-ch04-01-what-is-ownership/after.json"
+      },
+      "after_canonical_digest": "sha256:1f5c9aa1f159c34a3eafcc7659dd36f9453a353a9e533929e0490cab2cc49483",
+      "after_source_digest": "sha256:1598f1fff37549af4fa9a2f7af1f6abe595cfc7ccad9b56d18697aa6ad1bc7a3",
+      "after_version_id": "bb86b1763bdfb823e3e1d52c57020543b0fc7c4a",
+      "before": {
+        "canonical_sha256": "sha256:360363e70a2553138bc90fda346c7626747016b94c56d87725045bc6b3f9c861",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-020-book-ch04-01-what-is-ownership/before.json"
+      },
+      "before_canonical_digest": "sha256:360363e70a2553138bc90fda346c7626747016b94c56d87725045bc6b3f9c861",
+      "before_source_digest": "sha256:21ca0a4e70a7d95d945ce46b063e614ada62d6a6f12d3108514bbde433fe5a98",
+      "before_version_id": "f8ed2ced5daaa26e2b3a69df4bf5e1ce04dda758",
+      "constructed": false,
+      "group": "natural",
+      "license": "MIT OR Apache-2.0",
+      "pair_id": "git-020-book-ch04-01-what-is-ownership",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:rust-lang/book:src/ch04-01-what-is-ownership.md",
+      "unit_counts": {
+        "after": 11,
+        "before": 11
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:d3df6d1017fa2e42ff7cc8043816db26e02b1100566035f9ed28bee92a9d889b",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-021-uv-dependencies/after.json"
+      },
+      "after_canonical_digest": "sha256:d3df6d1017fa2e42ff7cc8043816db26e02b1100566035f9ed28bee92a9d889b",
+      "after_source_digest": "sha256:abd68b302b56e9e23e421099851d3531e3e40bd7ae8eb10b4e9e0281c9d68364",
+      "after_version_id": "7e6caa45f62a0506fea1b8ecfa0558e5d62d520c",
+      "before": {
+        "canonical_sha256": "sha256:34e1d0c62ebc88b048340f98a8907f88fca3ea45bb6d763322f1a7c298e97e82",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-021-uv-dependencies/before.json"
+      },
+      "before_canonical_digest": "sha256:34e1d0c62ebc88b048340f98a8907f88fca3ea45bb6d763322f1a7c298e97e82",
+      "before_source_digest": "sha256:d5a7e3a6ca77d497287699922f3873e5a0909e6990c777a8405c54b610263072",
+      "before_version_id": "50d437988227755233271e64c1cf86db8d4c98ba",
+      "constructed": false,
+      "group": "natural",
+      "license": "MIT OR Apache-2.0",
+      "pair_id": "git-021-uv-dependencies",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:astral-sh/uv:docs/concepts/projects/dependencies.md",
+      "unit_counts": {
+        "after": 27,
+        "before": 27
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:34e1d0c62ebc88b048340f98a8907f88fca3ea45bb6d763322f1a7c298e97e82",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-022-uv-dependencies/after.json"
+      },
+      "after_canonical_digest": "sha256:34e1d0c62ebc88b048340f98a8907f88fca3ea45bb6d763322f1a7c298e97e82",
+      "after_source_digest": "sha256:d5a7e3a6ca77d497287699922f3873e5a0909e6990c777a8405c54b610263072",
+      "after_version_id": "50d437988227755233271e64c1cf86db8d4c98ba",
+      "before": {
+        "canonical_sha256": "sha256:8757df0dc58acd832203779987745994ff5fdad621143a315041e5b28f53a559",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-022-uv-dependencies/before.json"
+      },
+      "before_canonical_digest": "sha256:8757df0dc58acd832203779987745994ff5fdad621143a315041e5b28f53a559",
+      "before_source_digest": "sha256:35372b2144ea185c0ea34a0a4a6823bc60ec3d0874be356a107d268d63081915",
+      "before_version_id": "b8b3073ba38e85d09ba1266a0cca74a7dc764a88",
+      "constructed": false,
+      "group": "natural",
+      "license": "MIT OR Apache-2.0",
+      "pair_id": "git-022-uv-dependencies",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:astral-sh/uv:docs/concepts/projects/dependencies.md",
+      "unit_counts": {
+        "after": 27,
+        "before": 27
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:8757df0dc58acd832203779987745994ff5fdad621143a315041e5b28f53a559",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-023-uv-dependencies/after.json"
+      },
+      "after_canonical_digest": "sha256:8757df0dc58acd832203779987745994ff5fdad621143a315041e5b28f53a559",
+      "after_source_digest": "sha256:35372b2144ea185c0ea34a0a4a6823bc60ec3d0874be356a107d268d63081915",
+      "after_version_id": "b8b3073ba38e85d09ba1266a0cca74a7dc764a88",
+      "before": {
+        "canonical_sha256": "sha256:e981ca8a76261fb9523e7fb8203d7fd547961b1db564b1479710fce62e69d6fb",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/git-023-uv-dependencies/before.json"
+      },
+      "before_canonical_digest": "sha256:e981ca8a76261fb9523e7fb8203d7fd547961b1db564b1479710fce62e69d6fb",
+      "before_source_digest": "sha256:5644cc7ee3fd6f2b6888e1cd761fb204f7f5cf31a1e54f396e9a444cb0eb1847",
+      "before_version_id": "7520fe6c25d2ab369e6d9295c8ca4909ce4bc896",
+      "constructed": false,
+      "group": "natural",
+      "license": "MIT OR Apache-2.0",
+      "pair_id": "git-023-uv-dependencies",
+      "relation_basis": "consecutive commits touching this path, as listed by the repository commit history for the path",
+      "source_family": "git_docs",
+      "source_id": "git:astral-sh/uv:docs/concepts/projects/dependencies.md",
+      "unit_counts": {
+        "after": 27,
+        "before": 27
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:c6841e427e35d3e0e61dc96fc3935fb48d8af45b93e59366c306c33d61561d8a",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-000-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:c6841e427e35d3e0e61dc96fc3935fb48d8af45b93e59366c306c33d61561d8a",
+      "after_source_digest": "sha256:ad3553dbe657f39394f57746e02a90b5e3908c4487372996e2d208ea4cc819ed",
+      "after_version_id": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97+order-rotated",
+      "before": {
+        "canonical_sha256": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-000-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+      "before_source_digest": "sha256:d7f0348efdff475a0fbef3c1fc24b000856d0fe1e34f60f45a47184fce5120da",
+      "before_version_id": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97",
+      "constructed": true,
+      "group": "structural_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "ctl-git-000-prometheus-configuration",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:69ea05546d7c22579510b4808f75279cb1b0dcafa664544c2fc90359b80a315b",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-001-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:69ea05546d7c22579510b4808f75279cb1b0dcafa664544c2fc90359b80a315b",
+      "after_source_digest": "sha256:73599c50891fe4934f713062a2fffe399ee0f0ba0601080722e07451d1c44dba",
+      "after_version_id": "223b91d48f79754209b432d32951e84abf05df23+order-rotated",
+      "before": {
+        "canonical_sha256": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-001-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+      "before_source_digest": "sha256:b2e1a8e18f9c6088aaa9b85c017ba6b2c56de8f0e5feffef391e2995b1c03912",
+      "before_version_id": "223b91d48f79754209b432d32951e84abf05df23",
+      "constructed": true,
+      "group": "structural_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "ctl-git-001-prometheus-configuration",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:8b46fa54ae126ff7a477aedf8a8dc5b3fae28eaa00ab0a0a9132155c6b72315c",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-002-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:8b46fa54ae126ff7a477aedf8a8dc5b3fae28eaa00ab0a0a9132155c6b72315c",
+      "after_source_digest": "sha256:e29698f32eebf079c6d976867176ef8fbb124a1403525b5ccaeb400069989299",
+      "after_version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317+order-rotated",
+      "before": {
+        "canonical_sha256": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-002-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+      "before_source_digest": "sha256:97dd3d5bf1ca7725bf6694eaa53572bc6d0e60a347c7e4925dbddc8fa9edf307",
+      "before_version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317",
+      "constructed": true,
+      "group": "structural_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "ctl-git-002-prometheus-configuration",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:cbaf900c7047b1a40346417d076867c4b8f56c349f35c4bb4c0fa4d1b80dd3aa",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-003-prometheus-functions/after.json"
+      },
+      "after_canonical_digest": "sha256:cbaf900c7047b1a40346417d076867c4b8f56c349f35c4bb4c0fa4d1b80dd3aa",
+      "after_source_digest": "sha256:fdb0314b07731d2cd3bd252a7a4f03668d800863968b088cac5d913adc2cdad5",
+      "after_version_id": "4c352ffb82a082310978147b14070d7969e9d5d4+order-rotated",
+      "before": {
+        "canonical_sha256": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical/ctl-git-003-prometheus-functions/before.json"
+      },
+      "before_canonical_digest": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+      "before_source_digest": "sha256:21a0b70b5178dbe74a0d707818f533f827cee0368133067bda0228aaccb09821",
+      "before_version_id": "4c352ffb82a082310978147b14070d7969e9d5d4",
+      "constructed": true,
+      "group": "structural_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "ctl-git-003-prometheus-functions",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "unit_counts": {
+        "after": 60,
+        "before": 60
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:6fccb1653320ce6f21400f8af4eac82db5872309cd4f98b907fef990ec5dabd5",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-000-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:6fccb1653320ce6f21400f8af4eac82db5872309cd4f98b907fef990ec5dabd5",
+      "after_source_digest": "sha256:04daf1afb53e7ec0f0e894154ff078b444a53553579130e67e4099427e29fa9a",
+      "after_version_id": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97+case-raised",
+      "before": {
+        "canonical_sha256": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-000-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:4d83cb003baa6597b26cb08ab5dae43ace56ce58e40ab532c00a073859f85581",
+      "before_source_digest": "sha256:d7f0348efdff475a0fbef3c1fc24b000856d0fe1e34f60f45a47184fce5120da",
+      "before_version_id": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97",
+      "constructed": true,
+      "constructed_from": "git-000-prometheus-configuration",
+      "construction": "every unit text upper-cased; verified that every LEXICAL projection moved and every SEMANTIC projection did not",
+      "group": "lexical_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "lex-git-000-prometheus-configuration",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:9c05d1742d6677c1b199bb15a1b7f04496c54b7f7369469cbd13f52ec32ea3ea",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-001-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:9c05d1742d6677c1b199bb15a1b7f04496c54b7f7369469cbd13f52ec32ea3ea",
+      "after_source_digest": "sha256:373fe3efd461670578abaf605ce50b1e713ec66a2275ac369ba41b33b915e042",
+      "after_version_id": "223b91d48f79754209b432d32951e84abf05df23+case-raised",
+      "before": {
+        "canonical_sha256": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-001-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:cb6508b7fbe140c01bc8d58315a4b6feed98fba5734c55c34758f146dd1008f1",
+      "before_source_digest": "sha256:b2e1a8e18f9c6088aaa9b85c017ba6b2c56de8f0e5feffef391e2995b1c03912",
+      "before_version_id": "223b91d48f79754209b432d32951e84abf05df23",
+      "constructed": true,
+      "constructed_from": "git-001-prometheus-configuration",
+      "construction": "every unit text upper-cased; verified that every LEXICAL projection moved and every SEMANTIC projection did not",
+      "group": "lexical_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "lex-git-001-prometheus-configuration",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:e3c1be9608605a5e8db0872d014859e19ab65d66a822a0f07510f61c78ad19f9",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-002-prometheus-configuration/after.json"
+      },
+      "after_canonical_digest": "sha256:e3c1be9608605a5e8db0872d014859e19ab65d66a822a0f07510f61c78ad19f9",
+      "after_source_digest": "sha256:5aec9150f327fbadf8e360ba8361554e3dbe8dbe0d1152dec57aaa79eb81867e",
+      "after_version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317+case-raised",
+      "before": {
+        "canonical_sha256": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-002-prometheus-configuration/before.json"
+      },
+      "before_canonical_digest": "sha256:296bcecd73e4df411c52959e794de48dd4534081f1aa7c58416bc6bb8a1cbc3f",
+      "before_source_digest": "sha256:97dd3d5bf1ca7725bf6694eaa53572bc6d0e60a347c7e4925dbddc8fa9edf307",
+      "before_version_id": "d067a8b565e3cd92e0ed950c32196cf20074c317",
+      "constructed": true,
+      "constructed_from": "git-002-prometheus-configuration",
+      "construction": "every unit text upper-cased; verified that every LEXICAL projection moved and every SEMANTIC projection did not",
+      "group": "lexical_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "lex-git-002-prometheus-configuration",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "unit_counts": {
+        "after": 74,
+        "before": 74
+      }
+    },
+    {
+      "after": {
+        "canonical_sha256": "sha256:85d72b565569fba794621c79e155d4a0b79f56b6c40892b8977b45672e642e5c",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-003-prometheus-functions/after.json"
+      },
+      "after_canonical_digest": "sha256:85d72b565569fba794621c79e155d4a0b79f56b6c40892b8977b45672e642e5c",
+      "after_source_digest": "sha256:21b659ce3b14374c02dc578bed0ed589655c202fadb178ac676ed0a42de3a665",
+      "after_version_id": "4c352ffb82a082310978147b14070d7969e9d5d4+case-raised",
+      "before": {
+        "canonical_sha256": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+        "path": "research/tavonel_eval_v2/artifacts/development/canonical_p0b/lex-git-003-prometheus-functions/before.json"
+      },
+      "before_canonical_digest": "sha256:59072b860b55cac0a9911cefd25470c70ca855d6a98c1202858bcb0a70981828",
+      "before_source_digest": "sha256:21a0b70b5178dbe74a0d707818f533f827cee0368133067bda0228aaccb09821",
+      "before_version_id": "4c352ffb82a082310978147b14070d7969e9d5d4",
+      "constructed": true,
+      "constructed_from": "git-003-prometheus-functions",
+      "construction": "every unit text upper-cased; verified that every LEXICAL projection moved and every SEMANTIC projection did not",
+      "group": "lexical_positive_control",
+      "license": "Apache-2.0",
+      "pair_id": "lex-git-003-prometheus-functions",
+      "relation_basis": "CONSTRUCTED -- not a natural revision relation",
+      "source_family": "git_docs",
+      "source_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "unit_counts": {
+        "after": 60,
+        "before": 60
+      }
+    }
+  ],
+  "protocol_sha256": "sha256:e35cde9fd95290422b6770bbca801bd63a2cd310dd89da277c20f66b33f721f2",
+  "receipt_sha256": "sha256:feba90d5cd0321c3a2be9e29d71ad6bdbe61bf8ea38cb18c7f451c67abc52cc3",
+  "schema": "tavonel.v2.p0b_corpus_manifest.v1",
+  "source_lineage_count": 12,
+  "upstream_manifest": "research/tavonel_eval_v2/receipts/p0-canonicalisation-manifest.json",
+  "upstream_manifest_file_sha256": "sha256:b25bcb7b8d1fcbae512c545a09fc66cd39f733e397dfe2f652ac7897c7b9a00c",
+  "upstream_use": "canonical documents read as input only; no P0 v1 result was read"
+}

@@ -1,0 +1,348 @@
+{
+  "clean_round": false,
+  "consecutive_clean_rounds_including_this": 0,
+  "convergence_declared": false,
+  "generated_at": "2026-08-19T11:18:07.422803+00:00",
+  "passes": [
+    {
+      "control_key": null,
+      "control_note": "no synthetic control; its separating power is that it has fired on a stale count four times in live use, and it fails on a stale manifest",
+      "control_separated": null,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 0,
+      "findings": [],
+      "label": "numeric binding",
+      "note": null,
+      "pass": "B",
+      "receipt": "docs/ip/receipts/manuscript-number-audit-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings"
+    },
+    {
+      "control_key": "detector_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 0,
+      "findings": [],
+      "label": "register / inference",
+      "note": null,
+      "pass": "C",
+      "receipt": "docs/ip/receipts/inference-vs-measurement-audit-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings, control separated"
+    },
+    {
+      "control_key": "withdrawn_term_detector_control.separates",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 0,
+      "findings": [],
+      "label": "withdrawn terms + status vocabulary (shared tool, disclosed)",
+      "note": null,
+      "pass": "DE",
+      "receipt": "docs/ip/receipts/cross-document-consistency-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings, control separated"
+    },
+    {
+      "control_key": "detector_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 0,
+      "findings": [],
+      "label": "claim amendment direction",
+      "note": null,
+      "pass": "G",
+      "receipt": "docs/ip/receipts/claim-amendment-direction-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings, control separated"
+    },
+    {
+      "control_key": "detector_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 0,
+      "findings": [],
+      "label": "figure and caption boundary",
+      "note": null,
+      "pass": "H",
+      "receipt": "docs/ip/receipts/figure-caption-audit-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings, control separated"
+    },
+    {
+      "control_key": "detector_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 0,
+      "findings": [],
+      "label": "assertion status vs surfaces (structural)",
+      "note": "added 2026-08-19 by protocol amendment 1. Distinct from pass DE: DE asks whether a withdrawn word survived, I asks whether a surface still asserts a narrowed or withdrawn proposition and whether an active assertion is still where it is relied on. DE was clean on all five surfaces while I found six leaks, which is the evidence that they are not the same detector.",
+      "pass": "I",
+      "receipt": "docs/ip/receipts/assertion-registry-audit-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings, control separated"
+    },
+    {
+      "control_key": "detector_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 6,
+      "findings": [
+        {
+          "claim": "A1",
+          "kind": "CLAIM_AMENDMENT_HISTORY_UNDETERMINED",
+          "severity": "MAJOR_FOR_COMPLETENESS_CLAIMS_ONLY",
+          "what_it_does_not_mean": "not an assertion that the claim was amended, and not a defect in the claim. It bounds what may be said about coverage.",
+          "why": "no amendment is registered against this claim, and the claim set is untracked in git, so there is no prior revision to diff. Whether it was never amended or amended without a record cannot be distinguished from the repository as it stands."
+        },
+        {
+          "claim": "A2",
+          "kind": "CLAIM_AMENDMENT_HISTORY_UNDETERMINED",
+          "severity": "MAJOR_FOR_COMPLETENESS_CLAIMS_ONLY",
+          "what_it_does_not_mean": "not an assertion that the claim was amended, and not a defect in the claim. It bounds what may be said about coverage.",
+          "why": "no amendment is registered against this claim, and the claim set is untracked in git, so there is no prior revision to diff. Whether it was never amended or amended without a record cannot be distinguished from the repository as it stands."
+        },
+        {
+          "claim": "B2",
+          "kind": "CLAIM_AMENDMENT_HISTORY_UNDETERMINED",
+          "severity": "MAJOR_FOR_COMPLETENESS_CLAIMS_ONLY",
+          "what_it_does_not_mean": "not an assertion that the claim was amended, and not a defect in the claim. It bounds what may be said about coverage.",
+          "why": "no amendment is registered against this claim, and the claim set is untracked in git, so there is no prior revision to diff. Whether it was never amended or amended without a record cannot be distinguished from the repository as it stands."
+        },
+        {
+          "claim": "B3",
+          "kind": "CLAIM_AMENDMENT_HISTORY_UNDETERMINED",
+          "severity": "MAJOR_FOR_COMPLETENESS_CLAIMS_ONLY",
+          "what_it_does_not_mean": "not an assertion that the claim was amended, and not a defect in the claim. It bounds what may be said about coverage.",
+          "why": "no amendment is registered against this claim, and the claim set is untracked in git, so there is no prior revision to diff. Whether it was never amended or amended without a record cannot be distinguished from the repository as it stands."
+        },
+        {
+          "claim": "B4",
+          "kind": "CLAIM_AMENDMENT_HISTORY_UNDETERMINED",
+          "severity": "MAJOR_FOR_COMPLETENESS_CLAIMS_ONLY",
+          "what_it_does_not_mean": "not an assertion that the claim was amended, and not a defect in the claim. It bounds what may be said about coverage.",
+          "why": "no amendment is registered against this claim, and the claim set is untracked in git, so there is no prior revision to diff. Whether it was never amended or amended without a record cannot be distinguished from the repository as it stands."
+        },
+        {
+          "claim": "B5",
+          "kind": "CLAIM_AMENDMENT_HISTORY_UNDETERMINED",
+          "severity": "MAJOR_FOR_COMPLETENESS_CLAIMS_ONLY",
+          "what_it_does_not_mean": "not an assertion that the claim was amended, and not a defect in the claim. It bounds what may be said about coverage.",
+          "why": "no amendment is registered against this claim, and the claim set is untracked in git, so there is no prior revision to diff. Whether it was never amended or amended without a record cannot be distinguished from the repository as it stands."
+        }
+      ],
+      "label": "amendment register completeness",
+      "note": "added 2026-08-19 by protocol amendment 1, alongside pass I. Distinct from pass G: G checks that a registered amendment's direction matches its operation, J checks whether the register accounts for the claim inventory at all. G was clean over seven amendments while one of them named a claim that does not exist.",
+      "pass": "J",
+      "receipt": "docs/ip/receipts/amendment-coverage-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "FINDINGS",
+      "why": "6 finding(s)"
+    },
+    {
+      "control_key": "detector_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": null,
+      "extra_gate_value": null,
+      "finding_count": 12,
+      "findings": [
+        {
+          "claim": "A1",
+          "element": 1,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "processing a source document with a first extraction configuration to produce a first candidate representation comprising extracted text units, each unit bound ",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A1",
+          "element": 2,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "processing the same source document with a second extraction configuration, independent of the first, to produce a second candidate representation;",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A1",
+          "element": 3,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "computing an **agreement signal** by comparing the first and second candidate representations at the granularity of the bound source evidence regions, rather th",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A1",
+          "element": 4,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "computing a **stability signal** by re-executing the first extraction configuration and determining whether its output is byte-identical across executions;",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A1",
+          "element": 5,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "classifying the candidate representation into an acceptance state by applying, to the agreement signal and the stability signal jointly, a gate that emits one o",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A1",
+          "element": 6,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "wherein a candidate representation for which the second extraction configuration produced no comparable output is classified as abstained rather than accepted; ",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A1",
+          "element": 7,
+          "evidence": [
+            "A9-SELECTIVE-ACCEPTANCE-ASSOCIATION"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "admitting to a downstream trusted store only representations classified accepted, and routing abstained representations to a recovery or review path without adm",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "A2",
+          "element": 1,
+          "kind": "ELEMENT_SUPPORTED_BY_EMBODIMENT_ONLY",
+          "recital": "The method of A1, wherein the abstention decision is recorded with the identities of the signals that were present, the signals that had no value, and the reaso",
+          "severity": "MINOR_EVIDENCE_CLASS",
+          "why": "the Evidence block cites the implementation and its unit tests rather than a measured evidence claim. That is a stated and legitimate class for a dependent claim, and it is a weaker record than a bound receipt -- recorded so the difference is visible before filing, not asserted as a defect."
+        },
+        {
+          "claim": "B1",
+          "element": 1,
+          "evidence": [
+            "B-SAFETY-B2-CONSUMPTION-COMPLETENESS",
+            "B-STRUCTURE-ONLY-STALE-DEFECT"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "maintaining, for each derived knowledge unit, a **stable logical identifier** that persists across source-document revisions, together with a source evidence re",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "B1",
+          "element": 3,
+          "evidence": [
+            "B-SAFETY-B2-CONSUMPTION-COMPLETENESS",
+            "B-STRUCTURE-ONLY-STALE-DEFECT"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "classifying the difference between the prior and revised versions into typed change kinds comprising at least a **semantic** change kind, a **structural** chang",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "B1",
+          "element": 4,
+          "evidence": [
+            "B-SAFETY-B2-CONSUMPTION-COMPLETENESS",
+            "B-STRUCTURE-ONLY-STALE-DEFECT"
+          ],
+          "kind": "ELEMENT_BOUND_ONLY_AT_CLAIM_LEVEL",
+          "recital": "maintaining a dependency graph whose edges are **typed by change kind**, such that a derived artifact declares which change kinds it is sensitive to;",
+          "severity": "MINOR_RECORD_GRANULARITY",
+          "why": "the Evidence block names evidence for the claim without scoping it to elements. An examiner objects to a limitation, and a claim-level citation does not say which limitation the evidence reaches."
+        },
+        {
+          "claim": "B2",
+          "element": 1,
+          "kind": "ELEMENT_SUPPORTED_BY_EMBODIMENT_ONLY",
+          "recital": "The method of B1, wherein an incoming knowledge unit whose identity is **unresolved** does not contribute a changed logical identifier to element 5's traversal ",
+          "severity": "MINOR_EVIDENCE_CLASS",
+          "why": "the Evidence block cites the implementation and its unit tests rather than a measured evidence claim. That is a stated and legitimate class for a dependent claim, and it is a weaker record than a bound receipt -- recorded so the difference is visible before filing, not asserted as a defect."
+        }
+      ],
+      "label": "element-level evidence support",
+      "note": "added 2026-08-19 by protocol amendment 1, alongside I and J. Distinct from every other pass: they compare documents to each other or to a register, this one compares a claim's limitations to the evidence named for them.",
+      "pass": "K",
+      "receipt": "docs/ip/receipts/element-support-matrix-2026-08-19.json",
+      "rerun_this_round": false,
+      "state": "FINDINGS",
+      "why": "12 finding(s)"
+    },
+    {
+      "control_key": "guard_is_live",
+      "control_note": null,
+      "control_separated": true,
+      "extra_gate": "repository_green",
+      "extra_gate_value": true,
+      "finding_count": 0,
+      "findings": [],
+      "label": "test scope, interpreter and build status",
+      "note": "not re-run here: the full scope takes ~12 minutes and must run under the project interpreter. The receipt records which interpreter produced it.",
+      "pass": "F",
+      "receipt": "docs/repro/TEST_SCOPE_STATUS.json",
+      "rerun_this_round": false,
+      "state": "CLEAN",
+      "why": "no findings, control separated"
+    },
+    {
+      "control_key": null,
+      "control_separated": null,
+      "finding_count": 2,
+      "label": "registry <-> document semantics (human read)",
+      "note": "cannot be automated; the automated passes narrow the manual surface only",
+      "pass": "A",
+      "state": "FINDINGS",
+      "why": "human read recorded"
+    }
+  ],
+  "passes_not_run": [],
+  "passes_with_findings": [
+    "J",
+    "K",
+    "A"
+  ],
+  "protocol": "docs/audit/CONVERGENCE_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:dd9d14898abca2a6d8db82d281461b4025921b60d4e130dceac37e468a6a2e10",
+  "receipt_sha256": "sha256:0c08b8f6523e240c8ea7cac3c8ceb682c926489a49dd09274c8883ec6bead6be",
+  "round": 6,
+  "schema": "tavonel.convergence-round.v1",
+  "standing_prohibition": "A pass whose control did not separate is NOT_RUN, never clean. Narrowing a pass, widening an exemption, or downgrading a finding after seeing it invalidates the round.",
+  "why_convergence_is_not_declared": "The stop rule requires two consecutive clean rounds under this protocol, with every finding from the preceding round closed. This tool reports rounds; it does not decide that a round was enough. Round 6 of a minimum of 2, with 0 consecutive clean."
+}

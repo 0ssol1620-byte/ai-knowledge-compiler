@@ -1,0 +1,162 @@
+{
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "overall": {
+    "confirmed_defect_lineages_with_an_over_fire": [
+      "ecfr:38:4:4.117",
+      "ecfr:40:262:262.1",
+      "ecfr:40:761:761.123",
+      "ecfr:40:761:761.180",
+      "git:apache/dolphinscheduler:docs/docs/en/contribute/join/become-a-committer.md",
+      "git:apache/druid:docs/api-reference/data-management-api.md",
+      "git:apache/druid:docs/api-reference/legacy-metadata-api.md",
+      "git:apache/druid:docs/api-reference/supervisor-api.md",
+      "git:apache/druid:docs/data-management/manual-compaction.md",
+      "git:apache/druid:docs/data-management/schema-changes.md",
+      "git:apache/druid:docs/design/deep-storage.md",
+      "git:apache/druid:docs/design/indexing-service.md",
+      "git:apache/druid:docs/design/metadata-storage.md",
+      "git:microsoft/playwright:docs/src/api/class-playwrightassertions.md"
+    ],
+    "identity_records_disagree_pairs": 0,
+    "matched_pairs_total": 2536,
+    "new_modified_total": 384,
+    "old_modified_total": 356,
+    "over_fire_changed_facets": {
+      "CONTENT": 28,
+      "REFERENCE_LOCATOR": 1,
+      "STRUCTURAL": 1
+    },
+    "over_fire_denominator": 2536,
+    "over_fire_difference_classes": {
+      "case_only": 2,
+      "other": 26
+    },
+    "over_fire_rate_over_matched_pairs": 0.011041,
+    "over_fire_units": 28,
+    "over_fire_unresolved_facets": {
+      "ACCESSIBILITY": 28,
+      "AUTHORITY_APPLICABILITY": 28,
+      "EXTERNAL_DEPENDENCY_EXECUTION": 28,
+      "METADATA": 28,
+      "TEMPORAL": 28,
+      "VISUAL": 28
+    },
+    "over_fires_on_confirmed_defect_lineages": 14,
+    "pairs_considered": 538,
+    "pairs_resolved": 538,
+    "pairs_unresolved": 0,
+    "pairs_with_any_over_fire": 26,
+    "pairs_with_any_under_fire": 0,
+    "under_fire_rate_over_matched_pairs": 0.0,
+    "under_fire_units": 0,
+    "units_after_total": 2683,
+    "units_before_total": 2679,
+    "unresolved_reasons": {}
+  },
+  "per_cohort": {
+    "sfi1": {
+      "confirmed_defect_lineages_with_an_over_fire": [],
+      "identity_records_disagree_pairs": 0,
+      "matched_pairs_total": 1111,
+      "new_modified_total": 188,
+      "old_modified_total": 179,
+      "over_fire_changed_facets": {
+        "CONTENT": 9,
+        "REFERENCE_LOCATOR": 1,
+        "STRUCTURAL": 1
+      },
+      "over_fire_denominator": 1111,
+      "over_fire_difference_classes": {
+        "case_only": 1,
+        "other": 8
+      },
+      "over_fire_rate_over_matched_pairs": 0.008101,
+      "over_fire_units": 9,
+      "over_fire_unresolved_facets": {
+        "ACCESSIBILITY": 9,
+        "AUTHORITY_APPLICABILITY": 9,
+        "EXTERNAL_DEPENDENCY_EXECUTION": 9,
+        "METADATA": 9,
+        "TEMPORAL": 9,
+        "VISUAL": 9
+      },
+      "over_fires_on_confirmed_defect_lineages": 0,
+      "pairs_considered": 260,
+      "pairs_resolved": 260,
+      "pairs_unresolved": 0,
+      "pairs_with_any_over_fire": 7,
+      "pairs_with_any_under_fire": 0,
+      "under_fire_rate_over_matched_pairs": 0.0,
+      "under_fire_units": 0,
+      "units_after_total": 1180,
+      "units_before_total": 1165,
+      "unresolved_reasons": {}
+    },
+    "sfi2": {
+      "confirmed_defect_lineages_with_an_over_fire": [
+        "ecfr:38:4:4.117",
+        "ecfr:40:262:262.1",
+        "ecfr:40:761:761.123",
+        "ecfr:40:761:761.180",
+        "git:apache/dolphinscheduler:docs/docs/en/contribute/join/become-a-committer.md",
+        "git:apache/druid:docs/api-reference/data-management-api.md",
+        "git:apache/druid:docs/api-reference/legacy-metadata-api.md",
+        "git:apache/druid:docs/api-reference/supervisor-api.md",
+        "git:apache/druid:docs/data-management/manual-compaction.md",
+        "git:apache/druid:docs/data-management/schema-changes.md",
+        "git:apache/druid:docs/design/deep-storage.md",
+        "git:apache/druid:docs/design/indexing-service.md",
+        "git:apache/druid:docs/design/metadata-storage.md",
+        "git:microsoft/playwright:docs/src/api/class-playwrightassertions.md"
+      ],
+      "identity_records_disagree_pairs": 0,
+      "matched_pairs_total": 1425,
+      "new_modified_total": 196,
+      "old_modified_total": 177,
+      "over_fire_changed_facets": {
+        "CONTENT": 19
+      },
+      "over_fire_denominator": 1425,
+      "over_fire_difference_classes": {
+        "case_only": 1,
+        "other": 18
+      },
+      "over_fire_rate_over_matched_pairs": 0.013333,
+      "over_fire_units": 19,
+      "over_fire_unresolved_facets": {
+        "ACCESSIBILITY": 19,
+        "AUTHORITY_APPLICABILITY": 19,
+        "EXTERNAL_DEPENDENCY_EXECUTION": 19,
+        "METADATA": 19,
+        "TEMPORAL": 19,
+        "VISUAL": 19
+      },
+      "over_fires_on_confirmed_defect_lineages": 14,
+      "pairs_considered": 278,
+      "pairs_resolved": 278,
+      "pairs_unresolved": 0,
+      "pairs_with_any_over_fire": 19,
+      "pairs_with_any_under_fire": 0,
+      "under_fire_rate_over_matched_pairs": 0.0,
+      "under_fire_units": 0,
+      "units_after_total": 1503,
+      "units_before_total": 1514,
+      "unresolved_reasons": {}
+    }
+  },
+  "provenance": {
+    "generated_at": "2026-08-24T09:20:56.700461+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-benchmark",
+    "run_id": "20260824T092056Z-eb6269afcbd0",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/identity_change_benchmark.py",
+    "tool_sha256": "sha256:768ea544cc8c6019822a0b632044994eab7c4d267ef28b33822b8d140c0982b4"
+  },
+  "receipt_sha256": "sha256:3f6588c01567572767fea66a5758f0b664dce6295c1a40b1b503a24a73d8454b",
+  "schema": "tavonel.v2.identity_change_benchmark.v1"
+}

@@ -1,0 +1,82 @@
+{
+  "dart": {
+    "api_message": "인증키가 누락되었습니다.",
+    "api_status": "100",
+    "credential_env": "DART_API_KEY / crtfc_key",
+    "documents_acquired": 0,
+    "endpoint": "https://opendart.fss.or.kr/api/list.json",
+    "family": "dart_kr",
+    "note": "declared so its absence is recorded rather than inferred from the family list. A missing credential is a founder decision.",
+    "resolution": "founder decision: a DART certification key is a missing secret",
+    "state": "BLOCKED_MISSING_CREDENTIAL"
+  },
+  "document_count": 300,
+  "documents_sha256": "sha256:9dd0b4ccc09379443bdf27762dfb5ab128af41e8c8634c421ab474c007b9c77b",
+  "estimated_cost_usd": 0.0,
+  "excluded_count": 2454,
+  "extension_recorded_as": "INC-V2-012",
+  "family_counts": {
+    "encyclopedia_wikipedia": 96,
+    "git_docs": 98,
+    "regulation_ecfr": 93,
+    "sec_edgar": 13
+  },
+  "frozen_before_any_eligibility_result": true,
+  "gpu_seconds": 0,
+  "manifest_path": "research/tavonel_eval_v2/artifacts/development/p4g_cohort.json",
+  "protocol": "P4g_cohort_expansion",
+  "provenance": {
+    "generated_at": "2026-08-22T10:50:19.920394+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/acquisition/sources_p4g.py",
+    "protocol_sha256": "sha256:09a88fb80b5b289d1a3cd75ff34d28becab3369ad0d47cabce16c5f005a183ad",
+    "receipt_stem": "p4g-cohort-manifest",
+    "run_id": "20260822T105018Z-02002e8be8c0",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/acquisition/fetch_p4g_corpus.py",
+    "tool_sha256": "sha256:e4f43ba3e9121594b2179d49b103e0781ee0ac4a143f6124d3f014fcca17db2a"
+  },
+  "receipt_sha256": "sha256:3d03006347af3ad904c4705251ac349eb505df6b3ae907b979480192e0fce0c4",
+  "revision_spacing": {
+    "encyclopedia_wikipedia": {
+      "decidable_from": "revision timestamps alone",
+      "provenance": "verbatim from P4e",
+      "rule": "the newest revision, paired with the newest revision at least 180 days older than it. Articles without such a revision in the fetched window are excluded.",
+      "separation": "180 days"
+    },
+    "frozen_before_any_fetch": true,
+    "frozen_before_any_retrieval_result": true,
+    "git_docs": {
+      "decidable_from": "commit timestamps alone",
+      "provenance": "EXTENSION, not inheritance. P4e's git rule was 'the pair already held', which selects from 8 documents and cannot yield 120. The separation matches the Wikipedia rule rather than being chosen: it is the only temporal separation P4e declared for a family whose revisions are timestamped commits. See INC-V2-012.",
+      "rule": "for each admitted path, the newest commit touching it, paired with the newest commit touching it at least 180 days older. Paths without such a commit in the fetched window are excluded.",
+      "separation": "180 days"
+    },
+    "never_conditioned_on": [
+      "how many units moved",
+      "any retrieval score",
+      "any coverage or eligibility status",
+      "the Q1 count",
+      "any gate outcome"
+    ],
+    "regulation_ecfr": {
+      "decidable_from": "the versioner's date list alone",
+      "provenance": "verbatim from P4e",
+      "rule": "the newest dated version of the section, paired with the oldest dated version the versioner reports for it. Sections with fewer than two dated versions are excluded.",
+      "separation": "maximal available ordinal separation"
+    },
+    "sec_edgar": {
+      "decidable_from": "the submissions index alone",
+      "provenance": "EXTENSION in scale only. The relation is P4c's, unchanged. What changes is that pairs are drawn from the live index for 20 issuers rather than from the 10 already on disk. See INC-V2-012.",
+      "rule": "an amendment pair: same CIK, same base form, same period of report, exactly one original and the earliest amendment, as published in the issuer submissions index.",
+      "separation": "the amendment relation itself, not a duration"
+    }
+  },
+  "schema": "tavonel.v2.p4g_cohort_receipt.v1",
+  "targets": {
+    "container_cap": 8,
+    "documents": 400,
+    "markdown": 120
+  }
+}

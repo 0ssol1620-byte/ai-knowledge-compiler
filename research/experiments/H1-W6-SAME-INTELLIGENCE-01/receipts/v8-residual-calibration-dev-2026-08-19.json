@@ -1,0 +1,50 @@
+{
+  "calibration_rule": "ceiling = residual statistic rounded up to the next 0.05, plus 0.05 headroom. Fixed in the protocol before this measurement and applied exactly once.",
+  "development_question_set_sha256": "sha256:1b915787fee4502a559f5edead375e4c353f48594fd5d8ce7de501d2e94dec9e",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "frozen_before": "any v8 holdout title is chosen",
+  "frozen_residual_median_ceiling": 0.05,
+  "frozen_residual_p90_ceiling": 0.05,
+  "gate_state": "CALIBRATED",
+  "generated_at": "2026-08-19T12:46:17.921403+00:00",
+  "label_precedence": "SUBJECT > ATTRIBUTE > DATE > TEMPLATE; a token is credited once",
+  "network_access": false,
+  "positive_controls": {
+    "injected_controls_run": 711,
+    "injected_oracle_token_exceeds_ceiling": true,
+    "separates": true,
+    "untouched_query_within_ceiling": true
+  },
+  "protocol": "W6_V8_CONFIRMATORY_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:fe6c20a558720d92586c28ceedeb86ed125018894aba1c1ac31a66cacc1d495b",
+  "queries_measured": 711,
+  "raw_overlap_distribution": {
+    "max": 1.0,
+    "median": 0.6667,
+    "p90": 0.8571
+  },
+  "receipt_sha256": "sha256:600520f9dc0cf394e13cba07154bbe0a3003203c77dce05cee4f10161aa0e18c",
+  "relationship_to_the_structural_gate": "for a builder that passes the section 2A taint gate the residual is 0 by construction, so on a clean builder this confirms 2A rather than adding an independent signal. It is retained as a second detector over the emitted questions rather than over the builder, so it still fires on a question set whose taint audit was skipped, bypassed, or run against different code.",
+  "residual_overlap_distribution": {
+    "max": 0.0,
+    "median": 0.0,
+    "p90": 0.0
+  },
+  "run_class": "DEVELOPMENT_ONLY",
+  "run_class_note": "the calibration distribution is the v7 development set. No v8 holdout title is read here, and no number in this receipt is a paper endpoint.",
+  "schema": "tavonel.w6-v8-residual-overlap-calibration.v1",
+  "structured_intent_overlap_distribution": {
+    "max": 1.0,
+    "median": 0.6667,
+    "p90": 0.8571
+  },
+  "token_provenance_labels": [
+    "SUBJECT",
+    "ATTRIBUTE",
+    "DATE",
+    "TEMPLATE",
+    "RESIDUAL"
+  ],
+  "what_v7_measured_and_why_it_was_not_leakage": "raw overlap median 0.750 against a 0.50 ceiling, verbatim containment 0, median subject-name share of shared tokens 0.667. The decomposition above separates that addressing information from passage-derived text."
+}

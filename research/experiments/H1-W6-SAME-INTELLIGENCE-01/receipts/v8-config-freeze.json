@@ -1,0 +1,649 @@
+{
+  "arm_source_hashes": {
+    "arms_v8.py": "sha256:c90229f77b3f194e8790d53f2530bc36f026a5e685bfb88b2226edcc8cbb35e5",
+    "attest_runtime_v8.py": "sha256:8f326508cfd1351194f16a0863a3823a2506cd7ac38f3ec673cd75f6f853200e",
+    "build_holdout_manifest_v8.py": "sha256:715712d315b0a8d7228325a8710da38bb5a50fee8a7b7f71c030733c70008797",
+    "build_question_set_v2.py": "sha256:986ab0020940267de4210f246355e6e14581ff463aa535762a502d297cdfdb66",
+    "build_question_set_v8.py": "sha256:4a45baaf9cf72349569d1509d30823b4d16fa892b9b349330898a14818d3c656",
+    "entity_conditioned_gate_v8.py": "sha256:250bb19e0aa3ecfe2d71b48e373df2c4e9a7fe245914cbb5ca95c750c5f76d2e",
+    "gate_question_set_v7.py": "sha256:a0a9d29b08f51b3d9edde58c222eb5811117e9a865116ea25289a84875e0c900",
+    "model_identity_v8.py": "sha256:bc4f077da4dd336397dc1bac6ecf18987dc9e1cb56447bf94c2c615e97c96d15",
+    "pod_attest_qwen3_6.py": "sha256:b4461c8706dfb154dc48cfd7756a809b95bf3d159305087d48cd00ec8699838c",
+    "preflight_holdout_v8.py": "sha256:109337df2bf2c263a0def4af333ac37b48f57fa1fc4a88c3887d5831bcc48b40",
+    "residual_overlap_v8.py": "sha256:af83564d6d861bd4a7313667d31d70557e77635c7838935b9ec9fd874809d65a",
+    "run_arms_dev_v8.py": "sha256:5e2409c36061e02e278a9c8d285805b144ecd68b6217b4575f8a293feeb4fc7e",
+    "run_arms_holdout_v8.py": "sha256:09fb3d28b8c03fd55ed1d58de0723b280df354a9a18040c9de5958e33e9caf0d",
+    "scoring_v8.py": "sha256:98566bcc21c2d9591b75f39f5fa967c3f1ff2bf58edfb811535d9dfb72a918b1",
+    "taint_gate_v8.py": "sha256:083ba42611be0e941d7462b264a1f87a46141f09350ffc1117f3b28f53bd9dfe",
+    "vllm_model_v8.py": "sha256:6ec3af44fc4c3faa1ec3b78a294a8682ea9acb428867928b06b2eeb9dbb61f75"
+  },
+  "baseline_validity_gate": {
+    "bounds": {
+      "before_after_separable_share": {
+        "ceiling": null,
+        "floor": 0.8
+      },
+      "exact_tie_rate": {
+        "ceiling": 0.1,
+        "floor": null
+      },
+      "new_value_absent_from_before_revision_share": {
+        "ceiling": null,
+        "floor": null
+      },
+      "normalized_candidate_entropy": {
+        "ceiling": 0.99,
+        "floor": 0.2
+      },
+      "stale_revision_retrieval_rate": {
+        "ceiling": 0.9,
+        "floor": 0.02
+      },
+      "unit_recall_at_1": {
+        "ceiling": 0.95,
+        "floor": 0.1051
+      },
+      "unit_recall_at_5": {
+        "ceiling": 0.99,
+        "floor": 0.445
+      }
+    },
+    "criteria": [
+      "before_after_separable_share",
+      "exact_tie_rate",
+      "new_value_absent_from_before_revision_share",
+      "normalized_candidate_entropy",
+      "stale_revision_retrieval_rate",
+      "unit_recall_at_1",
+      "unit_recall_at_5"
+    ]
+  },
+  "before_after_separable_share_disposition": "GENERATOR_INTEGRITY_CHECK_ONLY",
+  "before_after_separable_share_note": "1.0 on development data is tautological: the generator admits on the same value-token comparison the gate measures. It is not independent difficulty evidence and is not cited as such.",
+  "cohorts": {
+    "control": {
+      "cap": 150,
+      "class": "simple_retrieval",
+      "order": "question_id, ascending",
+      "why": "attributes whose value did not change. An arm that wins the primary by always preferring the later revision shows no advantage here."
+    },
+    "primary": {
+      "cap": 200,
+      "class": "revision_sensitive",
+      "order": "question_id, ascending"
+    },
+    "selection_note": "caps and order are fixed here, before any holdout question exists, so no cohort can be chosen on an outcome"
+  },
+  "decoding": {
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "max_tokens": 256,
+    "seed": 0,
+    "temperature": 0.0,
+    "tools": "off"
+  },
+  "development_controls_at_freeze": {
+    "fairness": true,
+    "residual_controls": true,
+    "scoring": true,
+    "statistics": true,
+    "taint_gate_live": true
+  },
+  "exclusions": {
+    "before_scoring_only": true,
+    "development_exclusion_classes": {
+      "degenerate_value": 3,
+      "markup_only_not_primary_eligible": 20,
+      "markup_only_primary_eligible": 96,
+      "not_a_primary_retained_attribute": 79
+    },
+    "rule": "a question is excluded only if its gold answer cannot be established from the frozen text, and only before any arm is scored"
+  },
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "frozen_at": "2026-08-20T02:50:43.840186+00:00",
+  "generator": {
+    "admission_rule": "value-token inequality, markup normalized",
+    "admission_rule_note": "cases excluded as markup-only fail the frozen v8 value-change eligibility representation and independently match the development markup-only diagnostic. That is not a proof that they are non-semantic, and the 4-reject / 3-admit admission control is detector liveness, not classification accuracy.",
+    "development_question_set_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c"
+  },
+  "holdout_acquisition": {
+    "after_cutoff": "2026-06-30T23:59:59Z",
+    "before_cutoff": "2023-06-30T23:59:59Z",
+    "cohort_size": 750,
+    "max_cohorts": 6,
+    "minimum_controls": 40,
+    "minimum_primary_articles": 20,
+    "minimum_primary_questions": 60,
+    "minimum_separation_days": 1095,
+    "source": "PROTOCOL_V2 section 1 minimums, carried forward unchanged from receipts/v7-endpoint-sufficiency-2026-08-19.json rather than re-chosen for v8",
+    "stop_condition": "stop at the first cohort boundary where all three minimums are met; the acquisition constants are the frozen v3 ones and are not re-tuned for the holdout"
+  },
+  "holdout_selection_rule": {
+    "development_titles_excluded": 750,
+    "disjointness": "article level; v7 title overlap must be 0, verified against the seal",
+    "order": "deterministic manifest or hash order, never selection on an outcome",
+    "source": "the 6,237 titles of the frozen manifest that v7 never touched"
+  },
+  "holdout_status": "UNOPENED",
+  "leakage": {
+    "calibration_rule": "ceiling = residual statistic rounded up to the next 0.05, plus 0.05 headroom. Fixed in the protocol before this measurement and applied exactly once.",
+    "residual_median_ceiling": 0.05,
+    "residual_p90_ceiling": 0.05,
+    "structural_taint_gate_sha256": "sha256:586c845abd484098fca8bfb018d44d75f0598630edde291e02285a189f4c7e84"
+  },
+  "meaning": "development-side tuning ends here. Any change to a pinned value after this receipt exists makes the run development, not confirmatory.",
+  "model_attestation": {
+    "architecture": [
+      "Qwen3_5ForConditionalGeneration"
+    ],
+    "capture_mode": "attached to the container's own `vllm serve` entrypoint",
+    "capture_program_sha256": "sha256:b4461c8706dfb154dc48cfd7756a809b95bf3d159305087d48cd00ec8699838c",
+    "checkpoint_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "cuda_version": "13.0",
+    "essential_files_present": [
+      "config.json",
+      "generation_config.json",
+      "merges.txt",
+      "model-00001-of-00015.safetensors",
+      "model-00002-of-00015.safetensors",
+      "model-00003-of-00015.safetensors",
+      "model-00004-of-00015.safetensors",
+      "model-00005-of-00015.safetensors",
+      "model-00006-of-00015.safetensors",
+      "model-00007-of-00015.safetensors",
+      "model-00008-of-00015.safetensors",
+      "model-00009-of-00015.safetensors",
+      "model-00010-of-00015.safetensors",
+      "model-00011-of-00015.safetensors",
+      "model-00012-of-00015.safetensors",
+      "model-00013-of-00015.safetensors",
+      "model-00014-of-00015.safetensors",
+      "model-00015-of-00015.safetensors",
+      "model.safetensors.index.json",
+      "tokenizer.json",
+      "tokenizer_config.json",
+      "vocab.json"
+    ],
+    "generation_proof": {
+      "max_tokens": 256,
+      "note": "content-free by design: it proves the runtime generated, and puts no benchmark material into an attestation receipt",
+      "output_preview": "Thinking Process:\n1.  **Analyze User Input:** The user says \"Reply with exactly one word: attested.\"\n2.  **Identify Constraint:** The constraint is \"exactly one word\".\n3.  **Identify Target Word:** The target word is \"attested\".\n4.  **Formulate Response:** The response must be exactly \"attested\" (or \"Attested\", but I'll stick to lowercase as given, or capitalize if needed, but exact match is safer",
+      "output_sha256": "sha256:30b5d6af2fe2913e678da66850d171d892a8c0b9533b79346081cd80dd8b30ae",
+      "prompt": "Reply with exactly one word: attested.",
+      "temperature": 0.0,
+      "usage": {
+        "completion_tokens": 163,
+        "prompt_tokens": 19,
+        "prompt_tokens_details": null,
+        "total_tokens": 182
+      }
+    },
+    "gpu": "NVIDIA H200, GPU-eb894be1-0d63-91ad-bda0-2e59475c660f, 580.159.04, 143771",
+    "max_position_embeddings": 262144,
+    "model_attestation": "sha256:061363cd893d6cfcd56faa3d4dc3307901f5bd32d239ce45e66abff449bfeed0",
+    "model_file_manifest": {
+      "chat_template.jinja": {
+        "git_blob_sha1": "a8755d827c0a7b614c246c4060dfd58ab352a8ff",
+        "sha256": "e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259",
+        "size": 7764
+      },
+      "config.json": {
+        "git_blob_sha1": "9f3dd1b1c6d0b43f4b33819dbdd1b60369f9006e",
+        "sha256": "69db4eb7196bc8190813231b3018ca05d8c2e3abc7b1af19d55c157af44a9d9c",
+        "size": 4308
+      },
+      "generation_config.json": {
+        "git_blob_sha1": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+        "sha256": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e",
+        "size": 202
+      },
+      "merges.txt": {
+        "git_blob_sha1": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+        "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+        "size": 3353259
+      },
+      "model-00001-of-00015.safetensors": {
+        "git_blob_sha1": "f9114044ca1265c9b5968ac152cdd4eb9efd1066",
+        "sha256": "5f21d4e349aef6c74bedef7b3835dc8c11a16dd5ce72f4437e2284f1e83736e9",
+        "size": 3968861352
+      },
+      "model-00002-of-00015.safetensors": {
+        "git_blob_sha1": "e4b34b9d0dd3470a8143b3400a65ba5b3165b525",
+        "sha256": "03de44dc7e933025498d72f8d7ea32d5cde16eb7a85b35ff1fa49a737f4b2242",
+        "size": 3921677136
+      },
+      "model-00003-of-00015.safetensors": {
+        "git_blob_sha1": "a1fc4fb45280fb097ac73fe47924b2b3727f6345",
+        "sha256": "5c3a68304dabeaa5a0eb70a5e383d2b8134997ef6d5c1e8afdcd236091c847f2",
+        "size": 3921677128
+      },
+      "model-00004-of-00015.safetensors": {
+        "git_blob_sha1": "6647ad7cf28ec8b18d28daf4d58bcc574f125b95",
+        "sha256": "ba8b0849cb4c4c97e674709bfe56a9c008d7563a68ac57120ceb2855a73a9944",
+        "size": 3921677128
+      },
+      "model-00005-of-00015.safetensors": {
+        "git_blob_sha1": "b81fd6e9715d6382be77f61f81febfd2e5b3018d",
+        "sha256": "a5abc1d5e9583409193e2cd58a671a4ed98467a6eaf883cd4377e3cc02021c22",
+        "size": 3921677112
+      },
+      "model-00006-of-00015.safetensors": {
+        "git_blob_sha1": "4e0d803375045f2e412c4d5ddae795a06a1acc7b",
+        "sha256": "160d914e2e4704a401a3eab9e9eec3380e5723a35981c9169bedfb82ea32e6d6",
+        "size": 3900710888
+      },
+      "model-00007-of-00015.safetensors": {
+        "git_blob_sha1": "0fc4d7cf53209c8580bc3084f99b9e5d45a7c043",
+        "sha256": "0bcd0ce28c7d2cc6f5ab2c21902cd032fec0cc5f29e0897e3bb0967add388e47",
+        "size": 3994391976
+      },
+      "model-00008-of-00015.safetensors": {
+        "git_blob_sha1": "14298713281f5e60f1d60214f94b009bb55d2d34",
+        "sha256": "584a0ed8018d3b19ce8e533d08a460454650027901be6323b50b591da143dca6",
+        "size": 3879219776
+      },
+      "model-00009-of-00015.safetensors": {
+        "git_blob_sha1": "2295a343f86a4df0a92b963d251693489837421d",
+        "sha256": "e7e3e1a17a2673340eb6bba95c3c6f07b12e7746ee738dde56551cbde27656f5",
+        "size": 3921677136
+      },
+      "model-00010-of-00015.safetensors": {
+        "git_blob_sha1": "212d7ea21855b7807201714bb7fee2b2f107b8da",
+        "sha256": "e8934789f4742c11da88f937da84bdbb8764c8a7f7ebe9e7b056bcbd41b14285",
+        "size": 3921677128
+      },
+      "model-00011-of-00015.safetensors": {
+        "git_blob_sha1": "2fe8bcdaca08af0bb6e6b949136c92fea1551f02",
+        "sha256": "44e8fe06d2d609bf20b16b1d2f42348ca2dc99179721f76035ff50db678f9a8a",
+        "size": 3921677136
+      },
+      "model-00012-of-00015.safetensors": {
+        "git_blob_sha1": "2020a753226d55e211c2b2fcaaf5f3123b2e87cb",
+        "sha256": "33c5d7d18e1b3f661334dff736fc7d00561f1f1bb9d2970c669b40d2e582974e",
+        "size": 3921677136
+      },
+      "model-00013-of-00015.safetensors": {
+        "git_blob_sha1": "b01b0612ebb71f2290652a4b77977a34ad625cb0",
+        "sha256": "68db2ebb03231238c2a114f3642df967a970a1d96b029adc427838cb5cf7f27a",
+        "size": 3995081848
+      },
+      "model-00014-of-00015.safetensors": {
+        "git_blob_sha1": "4ece7710575c991abc0d7c0cea75fe508410d627",
+        "sha256": "26c114fb6d5d4131ab227552d489d7a97c8c958a9ed94f6d3d1584f6cfe4b9fb",
+        "size": 3942652952
+      },
+      "model-00015-of-00015.safetensors": {
+        "git_blob_sha1": "c37390bab8c81dddb72b6e00629a90b154c03d8c",
+        "sha256": "b84b5b1315e865c9a19a444045d422a73e3e2e31ce3766797cffd3507c68c9c9",
+        "size": 508670568
+      },
+      "model.safetensors.index.json": {
+        "git_blob_sha1": "ea32be691d17374c05b277246085e81b70e6ec0f",
+        "sha256": "a8ad2c26fb707ff8c245806315b03e3b4b74595528492423af5dae0ce39b4d9b",
+        "size": 112216
+      },
+      "preprocessor_config.json": {
+        "git_blob_sha1": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+        "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+        "size": 390
+      },
+      "tokenizer.json": {
+        "git_blob_sha1": "3db80ca5ce55ecec79ba2de55e6bce256d32bc78",
+        "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+        "size": 12807982
+      },
+      "tokenizer_config.json": {
+        "git_blob_sha1": "28d96ff303d1d20350185caf4bf037045916ed35",
+        "sha256": "5186f0defcd7f232382c7f0aebcd2252d073bb921ab240e407b7ae8745d2b29b",
+        "size": 16718
+      },
+      "video_preprocessor_config.json": {
+        "git_blob_sha1": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+        "sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+        "size": 385
+      },
+      "vocab.json": {
+        "git_blob_sha1": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+        "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+        "size": 6722759
+      }
+    },
+    "model_file_manifest_sha256": "sha256:145d2c89df86bc61046eafcd58ffb3062bc733acc5aae578b667769e534d72e2",
+    "observed_at_utc": "2026-08-20T02:47:48.822222+00:00",
+    "ok": true,
+    "package_manifest": {
+      "available": true,
+      "count": 196,
+      "manifest_sha256": "sha256:3635ded8ca530f645b23a86be913f32c1d7b85344009f41dfd193a0bcde27582",
+      "packages": [
+        "Jinja2==3.1.6",
+        "MarkupSafe==3.0.3",
+        "PyJWT==2.13.0",
+        "PyYAML==6.0.3",
+        "Pygments==2.21.0",
+        "aiohappyeyeballs==2.7.1",
+        "aiohttp==3.14.3",
+        "aiosignal==1.4.0",
+        "annotated-doc==0.0.5",
+        "annotated-types==0.8.0",
+        "anthropic==0.125.0",
+        "anyio==4.14.2",
+        "apache-tvm-ffi==0.1.11",
+        "astor==0.8.1",
+        "attrs==26.1.0",
+        "blake3==1.0.9",
+        "cachetools==7.1.7",
+        "cbor2==6.1.4",
+        "certifi==2026.7.22",
+        "cffi==2.1.1",
+        "charset-normalizer==3.5.1",
+        "click==8.4.2",
+        "cloudpickle==3.1.2",
+        "compressed-tensors==0.17.0",
+        "cryptography==50.0.0",
+        "cuda-bindings==13.3.1",
+        "cuda-core==1.0.1",
+        "cuda-pathfinder==1.6.1",
+        "cuda-python==13.3.1",
+        "cuda-tile==1.5.0",
+        "cuda-toolkit==13.0.3.0",
+        "depyf==0.20.0",
+        "detect-installer==0.1.0",
+        "dill==0.4.1",
+        "distro==1.9.0",
+        "dnspython==2.8.0",
+        "docstring_parser==0.18.0",
+        "einops==0.8.2",
+        "email-validator==2.3.0",
+        "fastapi-cli==0.0.32",
+        "fastapi-cloud-cli==0.23.0",
+        "fastapi==0.136.3",
+        "fastar==0.11.0",
+        "fastsafetensors==0.3.3",
+        "filelock==3.32.3",
+        "flashinfer-python==0.6.16.post3",
+        "frozenlist==1.8.0",
+        "fsspec==2026.7.0",
+        "googleapis-common-protos==1.75.1",
+        "grpcio==1.83.0",
+        "h11==0.16.0",
+        "hf-xet==1.6.0",
+        "httpcore2==2.12.0",
+        "httpcore==1.0.9",
+        "httptools==0.8.0",
+        "httpx2==2.12.0",
+        "httpx==0.28.1",
+        "huggingface_hub==1.28.0",
+        "humming-kernels==0.1.10",
+        "idna==3.19",
+        "ijson==3.5.1",
+        "interegular==0.3.3",
+        "jiter==0.16.0",
+        "jmespath==1.1.0",
+        "jsonschema-specifications==2025.9.1",
+        "jsonschema==4.26.0",
+        "lark==1.2.2",
+        "llguidance==1.7.6",
+        "llvmlite==0.47.0",
+        "lm-format-enforcer==0.11.3",
+        "loguru==0.7.3",
+        "markdown-it-py==4.2.0",
+        "mcp-types==2.0.0",
+        "mcp==2.0.0",
+        "mdurl==0.1.2",
+        "mistral_common==1.11.7",
+        "ml_dtypes==0.6.0",
+        "model-hosting-container-standards==0.1.16",
+        "mpmath==1.3.0",
+        "msgspec==0.21.1",
+        "multidict==6.7.1",
+        "nccl4py==0.4.1",
+        "networkx==3.6.1",
+        "ninja==1.13.0",
+        "numba==0.65.0",
+        "numpy==2.3.5",
+        "nvidia-cublas==13.1.1.3",
+        "nvidia-cuda-cccl==13.3.3.4.1",
+        "nvidia-cuda-crt==13.3.73",
+        "nvidia-cuda-cupti==13.0.85",
+        "nvidia-cuda-nvcc==13.3.73",
+        "nvidia-cuda-nvdisasm==13.3.73",
+        "nvidia-cuda-nvrtc==13.0.88",
+        "nvidia-cuda-runtime==13.0.96",
+        "nvidia-cudnn-cu13==9.20.0.48",
+        "nvidia-cudnn-frontend==1.27.0",
+        "nvidia-cufft==12.0.0.61",
+        "nvidia-cufile==1.15.1.6",
+        "nvidia-curand==10.4.0.35",
+        "nvidia-cusolver==12.0.4.66",
+        "nvidia-cusparse==12.6.3.3",
+        "nvidia-cusparselt-cu13==0.8.1",
+        "nvidia-cutlass-dsl-libs-base==4.6.0",
+        "nvidia-cutlass-dsl-libs-core==4.6.0",
+        "nvidia-cutlass-dsl-libs-cu12==4.6.0",
+        "nvidia-cutlass-dsl-libs-cu13==4.6.0",
+        "nvidia-cutlass-dsl==4.6.0",
+        "nvidia-ml-py==13.610.43",
+        "nvidia-nccl-cu13==2.29.7",
+        "nvidia-nvjitlink==13.3.33",
+        "nvidia-nvshmem-cu13==3.4.5",
+        "nvidia-nvtx==13.0.85",
+        "nvidia-nvvm==13.3.73",
+        "nvtx==0.2.15",
+        "openai-harmony==0.0.8",
+        "openai==3.3.1",
+        "opencv-python-headless==5.0.0.93",
+        "opentelemetry-api==1.44.0",
+        "opentelemetry-exporter-otlp-proto-common==1.44.0",
+        "opentelemetry-exporter-otlp-proto-grpc==1.44.0",
+        "opentelemetry-exporter-otlp-proto-http==1.44.0",
+        "opentelemetry-exporter-otlp==1.44.0",
+        "opentelemetry-proto==1.44.0",
+        "opentelemetry-sdk==1.44.0",
+        "opentelemetry-semantic-conventions-ai==0.5.1",
+        "opentelemetry-semantic-conventions==0.65b0",
+        "outlines_core==0.2.14",
+        "packaging==26.3",
+        "partial-json-parser==0.2.1.1.post7",
+        "pillow==12.3.0",
+        "prometheus-fastapi-instrumentator==8.1.0",
+        "prometheus_client==0.26.0",
+        "propcache==0.5.2",
+        "protobuf==6.33.6",
+        "psutil==7.2.2",
+        "py-cpuinfo==9.0.0",
+        "pybase64==1.5.0",
+        "pycountry==26.2.16",
+        "pycparser==3.0",
+        "pydantic-extra-types==2.11.1",
+        "pydantic-settings==2.15.0",
+        "pydantic==2.13.4",
+        "pydantic_core==2.46.4",
+        "pyelftools==0.33",
+        "pynvvideocodec==2.0.4",
+        "python-dotenv==1.2.3",
+        "python-json-logger==4.2.0",
+        "python-multipart==0.0.32",
+        "pyzmq==27.1.0",
+        "quack-kernels==0.6.1",
+        "referencing==0.37.0",
+        "regex==2026.7.19",
+        "requests==2.34.2",
+        "rich-toolkit==0.20.3",
+        "rich==15.0.0",
+        "rignore==0.8.1",
+        "rpds-py==2026.6.3",
+        "safetensors==0.8.0",
+        "sentencepiece==0.2.2",
+        "sentry-sdk==2.68.0",
+        "setproctitle==1.3.7",
+        "setuptools==80.10.2",
+        "shellingham==1.5.4",
+        "six==1.17.0",
+        "sniffio==1.3.1",
+        "sse-starlette==3.4.8",
+        "starlette==1.6.0",
+        "supervisor==4.3.0",
+        "sympy==1.14.0",
+        "tabulate==0.10.0",
+        "tiktoken==0.14.0",
+        "tilelang==0.1.12",
+        "tokenizers==0.22.2",
+        "tokenspeed-mla==0.1.8",
+        "tokenspeed-triton==3.8.10.post20260721",
+        "torch==2.13.0",
+        "torch_c_dlpack_ext==0.1.5",
+        "torchaudio==2.11.0",
+        "torchcodec==0.16.0",
+        "torchvision==0.28.0",
+        "tqdm==4.70.0",
+        "transformers==5.15.1",
+        "triton==3.7.1",
+        "truststore==0.10.4",
+        "typer==0.27.1",
+        "typing-inspection==0.4.4",
+        "typing_extensions==4.16.0",
+        "urllib3==2.7.0",
+        "uvicorn==0.52.4",
+        "uvloop==0.22.1",
+        "vllm==0.27.1",
+        "watchfiles==1.2.0",
+        "websockets==17.0.1",
+        "xgrammar==0.2.3",
+        "yarl==1.24.5",
+        "z3-solver==4.15.4.0"
+      ]
+    },
+    "quantization": "none_bf16_from_checkpoint",
+    "quantization_evidence": {
+      "checkpoint_dtype": "bfloat16",
+      "launch_dtype_flag": "bfloat16",
+      "launch_quantization_flag": null,
+      "note": "no quantization flag was passed and the checkpoint is bf16; the served weights are the checkpoint weights. This records the executed identity, not a claim that bf16 is the only valid load."
+    },
+    "repository": "Qwen/Qwen3.6-27B",
+    "runtime_image_digest": "runpod/pytorch@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+    "schema": "tavonel.w6-runtime-attestation.v1",
+    "served_model_ids": [
+      "Qwen/Qwen3.6-27B"
+    ],
+    "served_model_root": "Qwen/Qwen3.6-27B",
+    "server_launch_log": {
+      "launch_args_line": "(APIServer pid=1922) INFO 08-20 02:36:19 [api_utils.py:273] non-default args: {'model_tag': 'Qwen/Qwen3.6-27B', 'host': '0.0.0.0', 'model': 'Qwen/Qwen3.6-27B', 'dtype': 'bfloat16', 'revision': '6a9e13bd6fc8f0983b9b99948120bc37f49c13e9', 'tokenizer_revision': '6a9e13bd6fc8f0983b9b99948120bc37f49c13e9', 'max_model_len': 262144, 'served_model_name': ['Qwen/Qwen3.6-27B'], 'gpu_memory_utilization': 0.9}",
+      "log_sha256": "sha256:4468b2a6e4a37eaee15680200bae3b4f5f43c5b26cf0b5c39de2c71783ca1deb",
+      "path": "/workspace/w6-attest/vllm-server.log",
+      "tail": " HEAD, GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /redoc, Methods: HEAD, GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /load, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /version, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /health, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /metrics, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /tokenize, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /detokenize, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/models, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /ping, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /ping, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /invocations, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/chat/completions, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/chat/completions/batch, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/responses, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/responses/{response_id}, Methods: GET\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/responses/{response_id}/cancel, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/completions, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/messages, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/messages/count_tokens, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /generative_scoring, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /scale_elastic_ep, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /is_scaling_elastic_ep, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/chat/completions/render, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/completions/render, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/chat/completions/derender, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /v1/completions/derender, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:46] Route: /inference/v1/generate, Methods: POST\n(APIServer pid=1922) INFO 08-20 02:38:59 [launcher.py:99] API server: waiting for HTTP server to start\n(APIServer pid=1922) INFO:     Started server process [1922]\n(APIServer pid=1922) INFO:     Waiting for application startup.\n(APIServer pid=1922) INFO:     Application startup complete.\n(APIServer pid=1922) INFO 08-20 02:39:00 [launcher.py:105] API server: HTTP server started\n(APIServer pid=1922) INFO:     127.0.0.1:46542 - \"GET /health HTTP/1.1\" 200 OK\n(APIServer pid=1922) INFO:     127.0.0.1:59652 - \"GET /v1/models HTTP/1.1\" 200 OK\n(APIServer pid=1922) INFO:     127.0.0.1:59654 - \"POST /v1/chat/completions HTTP/1.1\" 200 OK\n(APIServer pid=1922) INFO:     127.0.0.1:44924 - \"POST /tokenize HTTP/1.1\" 200 OK\n(APIServer pid=1922) INFO 08-20 02:45:30 [loggers.py:310] Engine 000: Avg prompt throughput: 1.9 tokens/s, Avg generation throughput: 16.3 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%\n(APIServer pid=1922) INFO 08-20 02:45:40 [loggers.py:310] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%\n(APIServer pid=1922) INFO:     127.0.0.1:51526 - \"GET /v1/models HTTP/1.1\" 200 OK\n(APIServer pid=1922) INFO:     127.0.0.1:51536 - \"POST /v1/chat/completions HTTP/1.1\" 200 OK\n"
+    },
+    "server_max_model_len": 262144,
+    "serving_runtime": "vllm",
+    "serving_runtime_version": "0.27.1",
+    "snapshot_directory_is_named_by_resolved_commit": true,
+    "snapshot_path": "/workspace/hf-cache/models--Qwen--Qwen3.6-27B/snapshots/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "tokenizer_behaviour_probe": {
+      "available": true,
+      "max_model_len": 262144,
+      "note": "the tokenizer the server loaded, observed through its own endpoint. It is reported beside the tokenizer file digest because the two are different claims.",
+      "text": "TAVONEL 1,450 \u2014 caf\u00e9 \u00fc 42.50 USD",
+      "token_count": 20,
+      "tokens_sha256": "sha256:e4d180800cb0ec5ae5d46ca85253118894a52f5d2c467c275befd101346ab23b"
+    },
+    "tokenizer_hash": "sha256:5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_identity": {
+      "added_tokens": 33,
+      "repository": "Qwen/Qwen3.6-27B",
+      "revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+      "tokenizer_class": "Qwen2Tokenizer",
+      "vocab_size": 248320
+    },
+    "torch_version": "2.13.0",
+    "transformers_version": "5.15.1"
+  },
+  "model_attestation_note": "captured from the live runtime. A model name pins nothing; the checkpoint revision, model-file manifest, tokenizer, serving runtime and image digest are what make the run reproducible. There is no fallback model: an unattestable runtime fails the preflight as MODEL_RUNTIME_NOT_READY.",
+  "model_context_tokens": 262144,
+  "model_identity": {
+    "is_real_model": true,
+    "name": "Qwen/Qwen3.6-27B",
+    "revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "version": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9"
+  },
+  "model_identity_chain": {
+    "candidate_registry_expected_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "equality_enforced_by": "model_identity_v8.reconcile",
+    "live_attested_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "note": "the candidate registry carries the expected revision and the runtime registry is qualified against it; the source register's model card is family evidence and pins nothing"
+  },
+  "prompt_contract": {
+    "abstention_token": "INSUFFICIENT_EVIDENCE",
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "identical_across_arms": true,
+    "reasoning_preamble": "disabled",
+    "reasoning_preamble_evidence": "receipts/v8-runtime-feasibility-2026-08-20.json finding W6-V8-RUNTIME-01: measured on the live runtime before this freeze, the checkpoint's default chat template emits a reasoning preamble that had not reached an answer at the frozen 256-token limit, while the same runtime with the preamble disabled returned a bare value in 6 completion tokens. Applied identically to all four arms, so it changes the shared model contract and not the variable under test. The result may not be described as measuring this model with reasoning enabled.",
+    "system": "You answer questions using only the source excerpts provided in the message. Reply with the answer value alone: no sentence, no explanation, no restatement of the question, and no units or qualifiers unless they appear in the excerpts. If the excerpts do not contain the answer, reply with exactly INSUFFICIENT_EVIDENCE and nothing else.",
+    "user_template": "Source excerpts:\n{context}\n\nQuestion: {question}\nAnswer:",
+    "why_it_is_pinned": "the scorer counts an answer correct only when its normalized token set equals the gold value's, so a contract that invited a sentence would score a correct answer wrong. That is a property of the frozen scorer, not something to adjust once holdout numbers are visible."
+  },
+  "protocol": "W6_V8_CONFIRMATORY_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:fe6c20a558720d92586c28ceedeb86ed125018894aba1c1ac31a66cacc1d495b",
+  "raw_context_budget_policy": "RAW_GETS_WHOLE_DOCUMENT_BUDGET",
+  "raw_context_budget_policy_evidence": {
+    "development_oracle_lost_to_truncation": 0.5763,
+    "development_truncation_rate": 0.8701,
+    "why_it_had_to_be_decided": "under a shared budget RAW answers most questions from evidence that no longer contains the answer, so its floor is set by context budget rather than by knowledge representation"
+  },
+  "receipt_sha256": "sha256:50611c7ce474c910dfdf0a9391c3ddcae2bdfcbeb599d3a27b794bd42105f33f",
+  "retrieval": {
+    "basic_rag_plus": {
+      "feedback_docs": 5,
+      "feedback_terms": 10,
+      "method": "RM3 pseudo-relevance feedback",
+      "note": "a retrieval improvement, not an intelligence one: deterministic, no model, no external resource, no metadata TAVONEL lacks",
+      "original_weight": 0.6
+    },
+    "bm25_b": 0.75,
+    "bm25_k1": 1.5,
+    "chunking": "section units, minimum 20 content tokens",
+    "context_budget_tokens": 3000,
+    "entity_routing": "stage 0 deterministic subject to document namespace, identical for every arm",
+    "top_k": 5
+  },
+  "schema": "tavonel.w6-v8-config-freeze.v1",
+  "scoring": {
+    "normalizer": "scoring_v8.normalize, markup dropped, thousands separators flattened, numerals kept",
+    "primary_comparison": "TAVONEL vs BASIC_RAG",
+    "primary_endpoint": "revision-sensitive answer correctness",
+    "raw_role": "floor, not comparator",
+    "separate_outcomes": [
+      "answer_correct",
+      "evidence_correct",
+      "right_answer_stale_evidence",
+      "temporal_correct",
+      "stale_answer",
+      "provenance_localized",
+      "unsupported_assertion",
+      "abstention_appropriate"
+    ]
+  },
+  "statistics": {
+    "always_reported": [
+      "absolute_effect",
+      "paired_difference_ci95",
+      "discordant_pairs",
+      "concordant_pairs",
+      "n_pairs"
+    ],
+    "interval": "Newcombe score interval for paired proportions",
+    "multiplicity": "Holm-Bonferroni over the 7 secondary endpoints",
+    "pairing": "by question",
+    "primary_test": "exact binomial McNemar on discordant pairs",
+    "reporting_rule": "a p-value is never reported alone"
+  },
+  "stop_rule": {
+    "gates_fail": "report endpoint NOT_RUN or the failed pre-arm gate, as measured",
+    "gates_pass": "run the four arms, report the endpoint and its statistics",
+    "negative_result": "A, B, C, D and E are all valid and all reported as measured",
+    "no_reflex_v9": "a v8 gate failure does not authorize an immediate v9"
+  }
+}

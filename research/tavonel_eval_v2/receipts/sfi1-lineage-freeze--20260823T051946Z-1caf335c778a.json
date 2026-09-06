@@ -1,0 +1,29 @@
+{
+  "by_family": {
+    "encyclopedia_wikipedia": 198,
+    "git_docs": 872,
+    "regulation_ecfr": 927
+  },
+  "candidates": 1997,
+  "dropped_by_code": {},
+  "estimated_cost_usd": 0.0,
+  "frame": "research/tavonel_eval_v2/artifacts/development/sfi1_lineages.json",
+  "frame_sha256": "sha256:84fe2c3b0f473af93ea6707fc7fc030ec8325f0b42b1fa5073d18889d193f4ba",
+  "gpu_seconds": 0,
+  "protocol_sha256": "sha256:0531dd0e81497fee8994d25e659fbf187732e4bf76cc8b566958d13c9d03a9ee",
+  "provenance": {
+    "generated_at": "2026-08-23T05:19:46.185826+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_HELDOUT_V1.yaml",
+    "protocol_sha256": "sha256:0531dd0e81497fee8994d25e659fbf187732e4bf76cc8b566958d13c9d03a9ee",
+    "receipt_stem": "sfi1-lineage-freeze",
+    "run_id": "20260823T051946Z-1caf335c778a",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_sfi1_lineages.py",
+    "tool_sha256": "sha256:11a21e111a91ece1a3395e26e667912f69831670f4b9cdb64238bf01fe30e5d8"
+  },
+  "receipt_sha256": "sha256:3d8fcc12184bbc1decf5236f455b4d2b7921c1d629430df752fd486e6192062f",
+  "schema": "tavonel.v2.sfi1_lineage_freeze.v1",
+  "spent_excluded": 2271
+}

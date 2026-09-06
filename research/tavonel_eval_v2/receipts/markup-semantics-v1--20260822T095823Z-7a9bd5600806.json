@@ -1,0 +1,225 @@
+{
+  "controls": {
+    "all_agree": true,
+    "results": [
+      {
+        "agrees": true,
+        "construct": "colspan",
+        "control_fact": true,
+        "differs_in": "colspan 1 → 2",
+        "expected_facet": "STRUCTURAL",
+        "expected_state": "MODELED",
+        "guards": "a span change moves which header a cell answers to",
+        "name": "rowspan_changes_table_association",
+        "observed_facet": "STRUCTURAL",
+        "observed_state": "MODELED",
+        "same_visible_tokens": true
+      },
+      {
+        "agrees": true,
+        "construct": "alt",
+        "control_fact": false,
+        "differs_in": "the entire accessible content, with no visible text at all",
+        "expected_facet": "ACCESSIBILITY",
+        "expected_state": "MODELED",
+        "guards": "for a non-visual consumer the alternative text IS the content",
+        "name": "alt_changes_accessible_content",
+        "observed_facet": "ACCESSIBILITY",
+        "observed_state": "MODELED",
+        "same_visible_tokens": true
+      },
+      {
+        "agrees": true,
+        "construct": "lang",
+        "control_fact": false,
+        "differs_in": "the declared language; the text is byte-identical",
+        "expected_facet": "METADATA",
+        "expected_state": "MODELED",
+        "guards": "the same characters mean different things in different languages",
+        "name": "lang_changes_interpretation",
+        "observed_facet": "METADATA",
+        "observed_state": "MODELED",
+        "same_visible_tokens": true
+      },
+      {
+        "agrees": true,
+        "construct": "rel",
+        "control_fact": false,
+        "differs_in": "the asserted relationship, with the destination unchanged",
+        "expected_facet": "REFERENCE_LOCATOR",
+        "expected_state": "MODELED",
+        "guards": "canonical, nofollow and license assert different things about the same URL",
+        "name": "rel_changes_relationship",
+        "observed_facet": "REFERENCE_LOCATOR",
+        "observed_state": "MODELED",
+        "same_visible_tokens": true
+      },
+      {
+        "agrees": true,
+        "construct": "&#160;",
+        "control_fact": false,
+        "differs_in": "a non-breaking space becomes an em dash — ten thousand becomes a range",
+        "expected_facet": "CONTENT_LEXICAL",
+        "expected_state": "MODELED",
+        "guards": "a reference produces a real character in the canonical text",
+        "name": "charref_changes_canonical_text",
+        "observed_facet": "CONTENT_LEXICAL",
+        "observed_state": "MODELED",
+        "same_visible_tokens": false
+      },
+      {
+        "agrees": true,
+        "construct": "li",
+        "control_fact": false,
+        "differs_in": "beta is a child of alpha, or a sibling of it",
+        "expected_facet": "STRUCTURAL",
+        "expected_state": "MODELED",
+        "guards": "the visible token sequence is identical and the structure is not. A policy that ignored tags would call these two documents the same",
+        "name": "nesting_changes_structure_same_tokens",
+        "observed_facet": "STRUCTURAL",
+        "observed_state": "MODELED",
+        "same_visible_tokens": true
+      },
+      {
+        "agrees": true,
+        "construct": "class",
+        "control_fact": false,
+        "differs_in": "a class that may or may not hide the paragraph, decided elsewhere",
+        "expected_facet": "EXTERNAL_DEPENDENCY_EXECUTION",
+        "expected_state": "UNRESOLVED_SOURCE_FACT",
+        "guards": "an external rule may hide or reorder this. Neither MODELED nor IGNORED is honest, which is why the third state exists",
+        "name": "class_external_dependency_unresolved",
+        "observed_facet": "EXTERNAL_DEPENDENCY_EXECUTION",
+        "observed_state": "UNRESOLVED_SOURCE_FACT",
+        "same_visible_tokens": true
+      },
+      {
+        "agrees": true,
+        "construct": "cellpadding",
+        "control_fact": false,
+        "differs_in": "spacing only; no text, structure, reference or accessible name moves",
+        "expected_facet": null,
+        "expected_state": "IGNORED_BY_DECLARED_POLICY",
+        "guards": "the other direction. A policy that called everything meaningful would pass the seven controls above and be useless",
+        "name": "decorative_attribute_stays_ignorable",
+        "observed_facet": null,
+        "observed_state": "IGNORED_BY_DECLARED_POLICY",
+        "same_visible_tokens": true
+      }
+    ],
+    "three_directions": {
+      "ignored": true,
+      "modeled": true,
+      "passed": true,
+      "unresolved": true
+    }
+  },
+  "ended_at": "2026-08-22T09:58:23.176112+00:00",
+  "estimated_cost_usd": 0.0,
+  "gates": {
+    "G_MS1_CONTROLS": {
+      "count": 8,
+      "passed": true
+    },
+    "G_MS1_COST": {
+      "estimated_cost_usd": 0.0,
+      "gpu_seconds": 0,
+      "passed": true
+    },
+    "G_MS1_EVERY_IGNORE_HAS_A_REASON": {
+      "passed": true
+    },
+    "G_MS1_POLICY_SEALED_SEPARATELY": {
+      "code_digest": "sha256:5206511d4b8745741197e2a171d066e4add9bb0891baf048174a52f49e8d9d61",
+      "passed": true,
+      "policy_digest": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12"
+    },
+    "G_MS1_RESOLUTION_IS_TOTAL": {
+      "passed": true
+    },
+    "G_MS1_THREE_DIRECTIONS": {
+      "detail": {
+        "ignored": true,
+        "modeled": true,
+        "passed": true,
+        "unresolved": true
+      },
+      "passed": true
+    },
+    "G_MS1_UNKNOWN_IS_NOT_IGNORED": {
+      "passed": true,
+      "unknown_attribute": "UNMODELED_SOURCE_FACT",
+      "unknown_tag": "UNMODELED_SOURCE_FACT"
+    }
+  },
+  "gpu_authorised_by_this_result": false,
+  "gpu_seconds": 0,
+  "incidents": [
+    "INC-V2-010",
+    "INC-V2-011"
+  ],
+  "instrument_identity": {
+    "composite": "sha256:3dda8243749788e939f6fb8916dacb8f16cefa6cca9d7a3cc5e4d3c373fe1f3a",
+    "definition": "source-map code digest + witness code digest + markup-semantics policy digest + schema digest. A change to any one moves the composite, which is what INC-V2-011 requires.",
+    "parts": {
+      "markup_policy": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+      "markup_semantics_code": "sha256:5206511d4b8745741197e2a171d066e4add9bb0891baf048174a52f49e8d9d61",
+      "schema": "sha256:f4d1aec809956d845b2789124bc0122f832587606531cd6b861e35e5e0a6f953",
+      "source_map_code": "sha256:e61ebae70e774bfbbcf3d98a4b0473f93668cf52b0f9016d0a1461b8f5a425bc",
+      "witness_code": "sha256:080c7ded3d216e75a563ec8811fe15863b5c8a8d7ee812e39b36920b5dcfbd7a"
+    },
+    "policy_digest_is_over": "the declared mapping, not the file bytes"
+  },
+  "policy_summary": {
+    "by_facet": {
+      "ACCESSIBILITY": 9,
+      "AUTHORITY_APPLICABILITY": 5,
+      "EXTERNAL_DEPENDENCY_EXECUTION": 12,
+      "METADATA": 13,
+      "REFERENCE_LOCATOR": 19,
+      "STRUCTURAL": 36,
+      "TEMPORAL": 5,
+      "VISUAL": 1
+    },
+    "by_state": {
+      "IGNORED_BY_DECLARED_POLICY": 18,
+      "MODELED": 88,
+      "UNRESOLVED_SOURCE_FACT": 12
+    },
+    "declared_attributes": 68,
+    "declared_tags": 50,
+    "ignored_entries_all_carry_a_reason": true,
+    "policy_digest": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+    "policy_id": "MARKUP_SEMANTICS_V1",
+    "schema_digest": "sha256:f4d1aec809956d845b2789124bc0122f832587606531cd6b861e35e5e0a6f953"
+  },
+  "predecessors_read_only": {
+    "P0d": "PASS on its own gates; result stands under its declared grammar",
+    "P4e": "Core PASS 12/12; not re-scored",
+    "P4f": "SUPERSEDED_BEFORE_EXECUTION, never run, preserved unmodified",
+    "SOURCE_LOCALITY_V2": "PASS; eligible Q1 = 5; not re-scored"
+  },
+  "programme_status": "PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED",
+  "protocol": "MARKUP_SEMANTICS_V1",
+  "provenance": {
+    "generated_at": "2026-08-22T09:58:23.178727+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/MARKUP_SEMANTICS_V1.yaml",
+    "protocol_sha256": "sha256:4cba5049326f32495f168b1186a93fe072a3ebc98017c6543f6a5ff9e08027eb",
+    "receipt_stem": "markup-semantics-v1",
+    "run_id": "20260822T095823Z-7a9bd5600806",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/seal_instrument_identity.py",
+    "tool_sha256": "sha256:ec1aa8c3a09cbd188966bad03f84d1c7e359a1edb7ab092ee2bf4bf01d920d09"
+  },
+  "receipt_sha256": "sha256:e9ab2f92615e43480ba9cf0f1f3734d776c084af2c77e8984004cd0e247a44e6",
+  "schema": "tavonel.v2.markup_semantics.v1",
+  "sources": {
+    "controls": "research/tavonel_eval_v2/canonicalization/markup_controls.py",
+    "policy": "research/tavonel_eval_v2/canonicalization/markup_policy.py",
+    "semantics": "research/tavonel_eval_v2/canonicalization/markup_semantics.py"
+  },
+  "started_at": "2026-08-22T09:58:23.172836+00:00",
+  "verdict": "PASS"
+}

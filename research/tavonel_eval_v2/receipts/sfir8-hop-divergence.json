@@ -1,0 +1,787 @@
+{
+ "content_sha256": "sha256:766b590a05ccdc9dc7d938cb2a048c42713fbe14a19305ceaa0fdcceb601b4ab",
+ "estimated_cost_usd": 0.0,
+ "finding": "RENAMED_ADDRESSES_COST_MORE",
+ "generated_at": "2026-08-27T18:45:00Z",
+ "gpu_seconds": 0,
+ "groups": {
+  "renamed": {
+   "charged_per_logical_request": 2.1111,
+   "logical_requests": 36,
+   "network_hops": 72,
+   "provider_charged": 76,
+   "requests_charged_more_than_one": 36,
+   "requests_that_redirected": 36
+  },
+  "unrenamed": {
+   "charged_per_logical_request": 1.0,
+   "logical_requests": 36,
+   "network_hops": 36,
+   "provider_charged": 36,
+   "requests_charged_more_than_one": 0,
+   "requests_that_redirected": 0
+  }
+ },
+ "means": "a renamed address costs more per logical request than an unrenamed one. Redirect following is supported as a contributor to SFIR7's divergence. Whether it is the WHOLE of it depends on how many requests in that census went to renamed addresses, which is arithmetic this probe does not do.",
+ "produces_capacity_claim": false,
+ "protocol_id": "SOURCE_FACT_IR_INSTRUMENT_CALIBRATION_V8",
+ "requests": [
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "ReactTraining/react-router",
+   "status": 200,
+   "url": "https://api.github.com/repos/ReactTraining/react-router"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "ReactTraining/react-router",
+   "status": 200,
+   "url": "https://api.github.com/repos/ReactTraining/react-router/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "ReactTraining/react-router",
+   "status": 200,
+   "url": "https://api.github.com/repos/ReactTraining/react-router/git/trees/35c9ff95f71416da5835070e7a49244bb9f1fc4f"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "ReactTraining/react-router",
+   "status": 200,
+   "url": "https://api.github.com/repos/ReactTraining/react-router/commits?path=.browserslistrc&sha=917e6fdc0f8beb141e3380e83e27634d7be84e1d&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "bundler/bundler",
+   "status": 200,
+   "url": "https://api.github.com/repos/bundler/bundler"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "bundler/bundler",
+   "status": 200,
+   "url": "https://api.github.com/repos/bundler/bundler/commits/master"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "bundler/bundler",
+   "status": 200,
+   "url": "https://api.github.com/repos/bundler/bundler/git/trees/43c1eeabef1433dbba95e4359ad2bf74d480f15a"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "bundler/bundler",
+   "status": 200,
+   "url": "https://api.github.com/repos/bundler/bundler/commits?path=.codeclimate.yml&sha=35be6d9a603084f719fec4f4028c18860def07f6&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "erikhuda/thor",
+   "status": 200,
+   "url": "https://api.github.com/repos/erikhuda/thor"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "erikhuda/thor",
+   "status": 200,
+   "url": "https://api.github.com/repos/erikhuda/thor/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "erikhuda/thor",
+   "status": 200,
+   "url": "https://api.github.com/repos/erikhuda/thor/git/trees/119e4a1ea380e3ff7575c3532f498c3e7aeb2d65"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "erikhuda/thor",
+   "status": 200,
+   "url": "https://api.github.com/repos/erikhuda/thor/commits?path=.document&sha=cb11e8e87b3cfe6bc9f6d4b092897f0dfda2476d&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/create-react-app",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/create-react-app"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/create-react-app",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/create-react-app/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/create-react-app",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/create-react-app/git/trees/65619428b676fa89cd1685576219a423e33071ce"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/create-react-app",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/create-react-app/commits?path=.alexignore&sha=6254386531d263688ccfa542d0e628fbc0de0b28&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/jest",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/jest"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/jest",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/jest/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/jest",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/jest/git/trees/c2a95429a5f2ddecdb99792fb57945922ded7116"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/jest",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/jest/commits?path=.claudeignore&sha=3aa9b8bf89393554203f814393d50ddf1f16ecac&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/react",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/react"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/react",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/react/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/react",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/react/git/trees/da9db2d2a8d22969a0af84f93db0db50fb7c121f"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "facebook/react",
+   "status": 200,
+   "url": "https://api.github.com/repos/facebook/react/commits?path=.editorconfig&sha=29d9d3184484b03cb0369e0494617207df777b7a&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "mui-org/material-ui",
+   "status": 200,
+   "url": "https://api.github.com/repos/mui-org/material-ui"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "mui-org/material-ui",
+   "status": 200,
+   "url": "https://api.github.com/repos/mui-org/material-ui/commits/master"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "mui-org/material-ui",
+   "status": 200,
+   "url": "https://api.github.com/repos/mui-org/material-ui/git/trees/90dbc1bb70342fa53839bf7824a7b876a370e6a6"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "mui-org/material-ui",
+   "status": 200,
+   "url": "https://api.github.com/repos/mui-org/material-ui/commits?path=.browserslistrc&sha=097122c3b17cb6b581928566c39e3cac29a93a85&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "webpack-contrib/css-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/webpack-contrib/css-loader"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "webpack-contrib/css-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/webpack-contrib/css-loader/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 4,
+   "redirected": true,
+   "repository": "webpack-contrib/css-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/webpack-contrib/css-loader/git/trees/6c9a8c72f30f04dbd9551f7584c6e41b8b4b6807"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 3,
+   "redirected": true,
+   "repository": "webpack-contrib/css-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/webpack-contrib/css-loader/commits?path=.cspell.json&sha=405bdde77389edc3cbb9631025afe9b6c2bd4395&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 3,
+   "redirected": true,
+   "repository": "yannickcr/eslint-plugin-react",
+   "status": 200,
+   "url": "https://api.github.com/repos/yannickcr/eslint-plugin-react"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "yannickcr/eslint-plugin-react",
+   "status": 200,
+   "url": "https://api.github.com/repos/yannickcr/eslint-plugin-react/commits/master"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "yannickcr/eslint-plugin-react",
+   "status": 200,
+   "url": "https://api.github.com/repos/yannickcr/eslint-plugin-react/git/trees/a724fddc6dee77028525d99297096f7d870eee5a"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "renamed",
+   "network_hops": 2,
+   "provider_charged": 2,
+   "redirected": true,
+   "repository": "yannickcr/eslint-plugin-react",
+   "status": 200,
+   "url": "https://api.github.com/repos/yannickcr/eslint-plugin-react/commits?path=.editorconfig&sha=c99d3b274efbc593e46563358e7b77cad8d01957&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "airbnb/javascript",
+   "status": 200,
+   "url": "https://api.github.com/repos/airbnb/javascript"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "airbnb/javascript",
+   "status": 200,
+   "url": "https://api.github.com/repos/airbnb/javascript/commits/master"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "airbnb/javascript",
+   "status": 200,
+   "url": "https://api.github.com/repos/airbnb/javascript/git/trees/a05250b5a23a21d44eb7ad7a3fd366c36ac44726"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "airbnb/javascript",
+   "status": 200,
+   "url": "https://api.github.com/repos/airbnb/javascript/commits?path=.editorconfig&sha=8ed19247bef145e3cc41b24a02dd1fe6d9b5e681&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular/git/trees/f72bf18a43da8ab6b8ded1b3c8b901c1331a89f3"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular/commits?path=.bazelrc&sha=ad22e89d4d849bb32748e69c876ef5c8ed97451c&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular-cli",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular-cli"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular-cli",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular-cli/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular-cli",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular-cli/git/trees/c6fc6993741ea41a29aadef3699b1a0c2b6563c2"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular-cli",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular-cli/commits?path=.bazelrc&sha=9cebe228c532877cb984506159deb2c3331bdedc&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular.js",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular.js"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular.js",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular.js/commits/master"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular.js",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular.js/git/trees/4b92005d944926ff0a258ebf0018263f564ea714"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "angular/angular.js",
+   "status": 200,
+   "url": "https://api.github.com/repos/angular/angular.js/commits?path=.editorconfig&sha=d8f77817eb5c98dec5317bc3756d1ea1812bcfbe&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel/git/trees/7e6a712cf9e9d83886c5694074763e695db1c68d"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel/commits?path=.c8rc&sha=a946b816dbaaad9de654229668bdbc296c359a8d&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-eslint",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-eslint"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-eslint",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-eslint/commits/master"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-eslint",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-eslint/git/trees/14fde45271643e21d763a523a40c09a5d63a5271"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-eslint",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-eslint/commits?path=.eslintignore&sha=b5b9a09edbac4350e4e51033a4608dd95dad1f67&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-loader"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-loader/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-loader/git/trees/b3d983c46b914c705165a6a9e342f2e8c3329524"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "babel/babel-loader",
+   "status": 200,
+   "url": "https://api.github.com/repos/babel/babel-loader/commits?path=.c8rc.json&sha=778e7c54daa57e30c1d676e243c77f7c00a766d8&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chaijs/chai",
+   "status": 200,
+   "url": "https://api.github.com/repos/chaijs/chai"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chaijs/chai",
+   "status": 200,
+   "url": "https://api.github.com/repos/chaijs/chai/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chaijs/chai",
+   "status": 200,
+   "url": "https://api.github.com/repos/chaijs/chai/git/trees/3063267a540657e674ef664fbd7ec87f8adcea95"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chaijs/chai",
+   "status": 200,
+   "url": "https://api.github.com/repos/chaijs/chai/commits?path=.gitignore&sha=5a5994e7160b8f76b298ff60fd97aa499b44bf08&per_page=2"
+  },
+  {
+   "endpoint": "repository_metadata",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chalk/chalk",
+   "status": 200,
+   "url": "https://api.github.com/repos/chalk/chalk"
+  },
+  {
+   "endpoint": "immutable_head",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chalk/chalk",
+   "status": 200,
+   "url": "https://api.github.com/repos/chalk/chalk/commits/main"
+  },
+  {
+   "endpoint": "tree_object",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chalk/chalk",
+   "status": 200,
+   "url": "https://api.github.com/repos/chalk/chalk/git/trees/ff76edd5a4d5f70bc0a83259aec26686a43c27f7"
+  },
+  {
+   "endpoint": "commit_history",
+   "group": "unrenamed",
+   "network_hops": 1,
+   "provider_charged": 1,
+   "redirected": false,
+   "repository": "chalk/chalk",
+   "status": 200,
+   "url": "https://api.github.com/repos/chalk/chalk/commits?path=.editorconfig&sha=661317e6f91fe7c90306c2c48ea9354562ee9146&per_page=2"
+  }
+ ],
+ "sample": {
+  "renamed": [
+   "ReactTraining/react-router",
+   "bundler/bundler",
+   "erikhuda/thor",
+   "facebook/create-react-app",
+   "facebook/jest",
+   "facebook/react",
+   "mui-org/material-ui",
+   "webpack-contrib/css-loader",
+   "yannickcr/eslint-plugin-react"
+  ],
+  "unrenamed": [
+   "airbnb/javascript",
+   "angular/angular",
+   "angular/angular-cli",
+   "angular/angular.js",
+   "babel/babel",
+   "babel/babel-eslint",
+   "babel/babel-loader",
+   "chaijs/chai",
+   "chalk/chalk"
+  ]
+ },
+ "schema": "tavonel.sfir8.hop_divergence.v1",
+ "sfir7_is_terminal_evidence_and_was_not_rerun": true,
+ "study_kind": "DEVELOPMENT_INSTRUMENT_CALIBRATION",
+ "totals": {
+  "logical_requests": 72,
+  "network_hops": 108,
+  "provider_charged": 112,
+  "requests_charged_more_than_one": 36,
+  "requests_that_redirected": 36,
+  "requests_with_provider_accounting": 72,
+  "why_three_counts": "logical is what the algorithm asked for and is what a traversal bound should govern; hops are responses actually received; charged is what the provider deducted and is the only one comparable with a rate limit. SFIR7 conflated the first and the last and lost four runs."
+ },
+ "what_this_does_not_establish": "the size of SFIR7's divergence. That census is terminal evidence and is not re-run; this probe measures the per-request cost of a renamed address today, which is a different and smaller claim."
+}

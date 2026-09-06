@@ -1,0 +1,303 @@
+# P0d — source coverage: the stage upstream of everything measured so far.
+#
+# Frozen before any P0d result exists.
+#
+# INC-V2-006 found two real revisions whose canonical units were byte-identical
+# while the raw source had changed, and in one of them a link target moved. Every
+# mechanism P0b and P0c measure sits downstream of the canonicaliser, so none of
+# them could see it, and the full-rebuild oracle could not either: it rebuilds
+# from the same canonical document the selective side reads.
+#
+# The consequence is the reason this protocol exists:
+#
+#     full-rebuild equivalence does not establish source-faithful correctness.
+#
+# Equivalence says the selective path and the full path agree. Both can agree
+# perfectly about a canonical state that has silently dropped a fact from the
+# source. P0b and P0c results are unaffected and unamended; they answer the
+# question they asked. This protocol asks the one they could not.
+
+schema: tavonel.v2.protocol.P0d.v1
+protocol_id: P0d_source_coverage
+version: 1
+authored: 2026-08-22
+supersedes: null
+relates_to:
+  INC-V2-006: the finding this protocol turns into a measured research axis
+  P0b_recompilation_mechanics: {rule: read-only, amended: false}
+  P0c_coverage_completeness:
+    rule: read-only
+    amended: false
+    relation: >-
+      P0c proved coverage from canonical fact to artifact. P0d extends the chain
+      one stage upstream, from raw source to canonical fact. Neither result is
+      restated by the other.
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  sealed_evidence: {rule: read-only}
+  frozen_results:
+    rule: P0b, P0c, P2, P3b, P4b protocols, results and receipts are read-only
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+  receipts: {rule: immutable, per INC-V2-005}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. The classification rule
+# ---------------------------------------------------------------------------
+
+rule:
+  order: |
+    raw source difference
+      → declared-irrelevant syntax, or a canonical source fact
+      → projected into a known facet
+      → if unprojectable but possibly meaningful: UNMODELED_SOURCE_FACT
+      → and an UNMODELED_SOURCE_FACT may never support a CURRENT verdict
+
+  classifications:
+    MODELED: >-
+      the span reached the canonical state, as a unit's text or as a canonical
+      fact's value
+    IGNORED_BY_DECLARED_POLICY: >-
+      a construct declared non-semantic. The declaration is recorded in section
+      2 with its justification, because ignoring is a claim and a claim has to
+      be somewhere it can be disagreed with.
+    UNMODELED_SOURCE_FACT: >-
+      source the grammar did not classify. It may be meaningless; nobody has
+      established that. It is counted, surfaced by sample, and barred from
+      supporting a currency claim.
+
+  why_the_two_non_modeled_classes_are_separate: >-
+    a model that folds UNMODELED into IGNORED reports full coverage and has
+    merely stopped looking. The separation is the protocol.
+
+# ---------------------------------------------------------------------------
+# 2. Declared-irrelevant syntax. Each entry is a claim about meaning.
+# ---------------------------------------------------------------------------
+
+declared_irrelevant:
+  markdown:
+    html_comment:
+      justification: >-
+        addressed to editors and never rendered to a reader. This is the exact
+        construct behind one of the two INC-V2-006 firings, and classifying it
+        IGNORED rather than UNMODELED is the substantive claim that the firing
+        was benign.
+    blank:
+      justification: whitespace between constructs carries no fact
+    syntax_residue:
+      justification: >-
+        list bullets, table pipes, emphasis marks and inter-span punctuation,
+        once the construct they belong to has already become a fact
+  html:
+    html_comment: {justification: as markdown}
+    html_markup:
+      justification: >-
+        an element whose tag carries no reference-bearing attribute. Presentation
+        structure, not knowledge.
+    presentation_attributes:
+      list: [style, class, width, height, align, colspan, rowspan, bgcolor, role, aria-*, title, lang, dir, rel, target, and the rest enumerated in the module]
+      justification: rendering instructions
+      residue_rule: >-
+        an attribute in neither the presentation list nor the reference list
+        becomes an UNMODELED_SOURCE_FACT. It is not dropped.
+
+# ---------------------------------------------------------------------------
+# 3. Typed reference edges — first-class canonical facts
+# ---------------------------------------------------------------------------
+
+reference_facts:
+  rationale: >-
+    these values change downstream meaning and relationships without changing a
+    word of visible text, which is exactly how INC-V2-006 escaped. They are
+    canonical facts, not prose, and they are compared as facts.
+  kinds:
+    hyperlink: a link destination, inline, autolink or html href
+    image: an image source
+    link_definition: a reference-style link definition and its target
+    directive: a Hugo or Markdown directive, its name and its parsed arguments
+    include: a directive whose argument names another document to pull in
+    anchor: an anchor or reference identifier a link may point at
+  include_directive_names_are_declared: >-
+    include, readfile, include-html, include-md, insert. Declared rather than
+    guessed from the name at run time, because a silent misclassification here
+    turns an include into a rendering parameter.
+  compared_on: kind, target, identifier, name and parsed arguments
+
+# ---------------------------------------------------------------------------
+# 4. The chain under test
+# ---------------------------------------------------------------------------
+
+chain:
+  - stage: source coverage
+    question: is every span of the raw source classified, with none unaccounted?
+  - stage: canonical fact coverage
+    question: does every MODELED span reach a canonical unit or a canonical fact?
+  - stage: facet coverage
+    question: does every canonical fact project into at least one known facet?
+  - stage: artifact fingerprint
+    question: >-
+      does every artifact's fingerprint cover the facets of every fact it read?
+      (the P0c invariant, carried forward rather than re-proved)
+
+containment_probe:
+  method: alphanumeric projection, then containment
+  reason: >-
+    the canonicaliser strips emphasis marks, link syntax and HTML tags before
+    storing a unit's text, so raw prose and the unit built from it differ by
+    punctuation. Comparing on alphanumerics avoids re-implementing — and then
+    drifting from — the canonicaliser's cleaning rules.
+  direction_of_error: >-
+    deliberately loose, and loose in one direction only: it can say a span DID
+    reach the canonical state, never that it did not. So it risks
+    over-reporting coverage. Under a stricter probe the unmodeled share would be
+    larger, never smaller, and every coverage figure here is therefore an upper
+    bound.
+
+granularity:
+  markdown: characters
+  html: parser events, not characters
+  html_reason: >-
+    the standard library parser reports line and column, and reconstructing byte
+    ranges from those across a multi-megabyte filing would add a second parser
+    to be wrong in. Shares over the two families are therefore not directly
+    comparable, and are never summed into one number.
+
+# ---------------------------------------------------------------------------
+# 5. The currency rule
+# ---------------------------------------------------------------------------
+
+currency:
+  rule: >-
+    a revision pair whose source difference contains any UNMODELED_SOURCE_FACT
+    may not be reported CURRENT. Its state is SOURCE_COVERAGE_INCOMPLETE.
+  equivalence_is_not_currency: >-
+    a pair may be full-rebuild-equivalent AND source-coverage-incomplete at the
+    same time, and at least one such pair must be exhibited in the run. If none
+    is, the two states have not been shown to be distinguishable and the gate
+    that claims they are is untested.
+  ignored_does_not_block: >-
+    a difference falling entirely in IGNORED_BY_DECLARED_POLICY does not block a
+    CURRENT verdict. That is what declaring it irrelevant means, and it is why
+    the declaration has to be justified in section 2.
+
+# ---------------------------------------------------------------------------
+# 6. Controls, in the same execution as the measurement
+# ---------------------------------------------------------------------------
+
+controls:
+  REFERENCE_CAPTURE:
+    construction: the two INC-V2-006 natural pairs, unmodified
+    expect: >-
+      the kubernetes pair's changed directive argument appears as a changed
+      reference fact; the rust-lang pair's changed HTML comment does not, and is
+      classified IGNORED_BY_DECLARED_POLICY
+    role: the regression test for the finding that motivated the protocol
+  IGNORED_POSITIVE:
+    construction: a document whose only change is inside an HTML comment
+    expect: classified IGNORED, CURRENT not blocked
+  UNMODELED_POSITIVE:
+    construction: >-
+      a document carrying a construct outside the declared grammar — a custom
+      XML-style element with a target attribute in neither the reference list nor
+      the presentation list
+    expect: >-
+      classified UNMODELED_SOURCE_FACT; the pair is reported
+      SOURCE_COVERAGE_INCOMPLETE even though the canonical states are equivalent
+    role: >-
+      without it, a run in which the grammar happened to classify everything
+      reads identically to a run in which the residue check does not work
+
+# ---------------------------------------------------------------------------
+# 7. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P0D_PARTITION:
+    predicate: >-
+      for every document, the spans tile the source exactly — no gap, no overlap
+    on_fail: STOP. An unaccounted region is an unmeasured region.
+  G_P0D_CLASSIFICATION_TOTAL:
+    predicate: every span carries exactly one of the three declared classifications
+  G_P0D_FACT_PROJECTION:
+    predicate: >-
+      every canonical reference fact projects into at least one known facet, and
+      none is left with an empty projection
+  G_P0D_REFERENCE_CAPTURE:
+    predicate: >-
+      the kubernetes INC-V2-006 pair shows a changed reference fact, and the
+      rust-lang pair shows none while showing an IGNORED difference
+    on_fail: >-
+      the protocol has not addressed the finding that motivated it
+  G_P0D_UNMODELED_POSITIVE:
+    predicate: >-
+      the constructed unmodeled control is classified UNMODELED_SOURCE_FACT and
+      is reported SOURCE_COVERAGE_INCOMPLETE
+  G_P0D_IGNORED_POSITIVE:
+    predicate: >-
+      the constructed comment-only control is classified IGNORED and is not
+      blocked from CURRENT
+  G_P0D_CURRENCY_RULE:
+    predicate: >-
+      no pair carrying an UNMODELED_SOURCE_FACT in its source difference is
+      reported CURRENT
+  G_P0D_EQUIVALENCE_IS_NOT_SUFFICIENT:
+    predicate: >-
+      at least one pair is simultaneously full-rebuild-equivalent and
+      SOURCE_COVERAGE_INCOMPLETE
+    basis: >-
+      the whole claim of this protocol. If no such pair exists in the run, the
+      claim is unexercised.
+  G_P0D_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+not_gated_deliberately:
+  source_coverage_rate: >-
+    measured and reported per family, not gated. A threshold on it now would be
+    a number invented before anyone knows what this corpus's coverage even is,
+    and the first measurement's job is to find that out. A gate can be declared
+    in a later protocol once there is a baseline to declare it against.
+
+# ---------------------------------------------------------------------------
+# 8. Pre-registered predictions
+# ---------------------------------------------------------------------------
+
+predictions:
+  coverage_is_well_below_one: >-
+    the canonicaliser drops content below its text floor, merges short sections
+    and strips shortcodes, so a substantial unmodeled share is expected. A
+    result near 1.0 would indicate the probe is too loose rather than that the
+    canonicaliser is complete.
+  the_kubernetes_change_is_captured: >-
+    the directive argument becomes a reference fact and its change is visible
+  the_rust_change_stays_ignored: >-
+    an HTML comment is declared irrelevant, so that firing is reclassified from
+    UNCLASSIFIED_SOURCE_CHANGE to a benign declared ignore
+  many_natural_pairs_are_source_coverage_incomplete: >-
+    if unmodeled residue is common, most natural pairs will fail to qualify as
+    CURRENT under the new rule. That would be an uncomfortable result and it is
+    predicted here so it cannot be presented afterwards as a surprise.
+
+# ---------------------------------------------------------------------------
+# 9. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under this declared grammar and this containment probe, these shares of the
+    raw source of this corpus reached the canonical state, were declared
+    irrelevant, or were left unmodeled; reference-bearing constructs were
+    captured as typed canonical facts; and pairs carrying unmodeled residue were
+    refused a CURRENT verdict.
+  forbidden:
+    - claiming the grammar is complete. It is a declared grammar and this
+      protocol measures against it, not its adequacy.
+    - claiming the coverage figures are exact. The probe is loose in one
+      direction and every figure is an upper bound.
+    - comparing markdown and HTML shares directly, or summing them
+    - reading this as amending, repairing or re-scoring P0b or P0c
+    - claiming source-faithful correctness from full-rebuild equivalence. That
+      inference is the one this protocol exists to block.
+    - treating a development-split result as confirmatory

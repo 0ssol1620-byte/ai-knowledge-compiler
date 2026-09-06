@@ -1,0 +1,44 @@
+{
+  "checks": {
+    "C1_candidate_pool": true,
+    "C2_tie_rate": true,
+    "C3_ranking_varies": true,
+    "C4_recall_at_1": true,
+    "C5_recall_at_5": true,
+    "C6_miss_rate": true,
+    "C7_no_verbatim_leakage": true,
+    "C8_score_separation": true
+  },
+  "criteria": {
+    "C1_candidate_pool_min": 100,
+    "C2_tie_rate_max": 0.05,
+    "C3_distinct_top1_documents_min": 20,
+    "C4_recall_at_1_min": 0.3,
+    "C5_recall_at_5_min": 0.6,
+    "C6_miss_rate_max": 0.4,
+    "C7_verbatim_leaked_queries_max": 0,
+    "C8_median_score_gap_min": 0.0
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T22:52:14.288072+00:00",
+  "measured": {
+    "candidate_pool": 692,
+    "distinct_top1_documents": 21,
+    "median_query_oracle_token_overlap": 1.0,
+    "median_score_gap": 37.5143,
+    "miss_rate_at_10": 0.0,
+    "queries": 655,
+    "recall_at_1": 0.9969,
+    "recall_at_5": 1.0,
+    "same_document_top1_share": 1.0,
+    "tie_rate": 0.0,
+    "verbatim_leaked_queries": 0
+  },
+  "protocol": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/BASELINE_ACCEPTANCE_2026-08-19.md",
+  "question_set_verdict": "SIMPLE-RETRIEVAL QUESTIONS ARE NON-DISCRIMINATING. Recall@1 sits at the ceiling and every top-1 hit is in the oracle's own document. The frozen protocol anticipated this: C4/C5 are floors, and a baseline at ceiling means the questions are trivial rather than that the retriever is good. Two causes, both real -- queries are built from the oracle's own remaining sentences, so they are near-copies in bag-of-words terms even with zero verbatim overlap; and 23 unrelated Wikipedia articles make document-level retrieval trivial by construction. The consequence is fixed by the protocol rather than chosen now: simple-retrieval questions cannot separate the arms, and the primary endpoint is revision-sensitive questions.",
+  "receipt_sha256": "sha256:854b0c02f911c62f0990db66201ddefd48c986d38a439f50b8cecb2ec2e46003",
+  "revision_leakage_control": "only the before revision of each document is indexed",
+  "same_document_bias_note": "reported rather than prevented. Excluding same-document candidates would make the task artificial; hiding the share would make the recall numbers unreadable.",
+  "schema": "tavonel.w6-baseline-validation.v1",
+  "verdict": "BASELINE_VALID"
+}

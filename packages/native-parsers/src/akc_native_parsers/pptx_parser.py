@@ -613,6 +613,10 @@ def _shape_bbox(
     height = int(getattr(shape, "height", 0))
     if width <= 0 or height <= 0:
         return None
+    if left + width <= 0 or top + height <= 0 or left >= slide_width or top >= slide_height:
+        # Entirely off the slide. Clamping would fabricate a rectangle the shape
+        # does not occupy; a shape that merely overflows is still clipped below.
+        return None
     x1 = max(0, min(999, round(left / slide_width * 1000)))
     y1 = max(0, min(999, round(top / slide_height * 1000)))
     x2 = max(x1 + 1, min(1000, round((left + width) / slide_width * 1000)))

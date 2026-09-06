@@ -1,0 +1,30 @@
+{
+  "active_digest": "sha256:e99dfaccc50ffcce5cbb62faa220ec629dbdb3873ce375f141001e7a984681b9",
+  "credential_exclusivity_preflight": {
+    "after": {
+      "limit": 5000,
+      "remaining": 4942,
+      "reset_epoch": 1788019503,
+      "used": 58
+    },
+    "all_unit_deltas": true,
+    "before": {
+      "limit": 5000,
+      "remaining": 4952,
+      "reset_epoch": 1788019503,
+      "used": 48
+    },
+    "cohort_contact": false,
+    "reconciled_exact_charges": 10,
+    "request_ids_digest": "sha256:8a02cf6e840f326021f7bf63c3f0863882807e70fdcada2113c5caa91dbc6bb2",
+    "requests": 10
+  },
+  "freeze_digest": "sha256:14b964dcfe592a4a901126df02739da9a1bc2621b211d166bb4877b884b47c6a",
+  "protocol_digest": "sha256:5dcdb0f9767970ef9c1e17ed8895de8fafa69144dcfc17f573c34db22436cfe5",
+  "roster_seal": "sha256:a88bd2f96e480175e5e95a3098f6e96e0e864b7c2d2e7079d5f7ebb47c860881",
+  "schema": "tavonel.sfir10r2.active_segment.v1",
+  "segment_index": 1,
+  "state_digest_before_requests": "sha256:841f305166591407ec289ac2d4563da8ed5c03b75341f9cf2f5be1c16b4dcf96",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R2",
+  "what_presence_means": "a segment may have issued cohort requests and has not yet completed the sealed accounting handoff"
+}

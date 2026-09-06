@@ -1,0 +1,37 @@
+schema: tavonel.sfir4.protocol.v1
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4
+state: PROSPECTIVE_POST_CAPACITY
+result_blind_design: true
+authority_requirements:
+  charter: tavonel.sfir4.design_charter_freeze.v1
+  capacity: tavonel.sfir4.capacity_census_authority.v1
+  roster: tavonel.sfir4.lineage_freeze.v1
+  spent_identity: tavonel.sfir4.spent_identity_authority.v1
+  execution_manifest: tavonel.sfir4.execution_manifest.v1
+  exact_path_sha256_and_content_digest: true
+  no_glob_latest_or_newest: true
+capacity:
+  quota_formula: Q_f=min(1000,floor(0.8*C_f))
+  minimum_C_per_family: 750
+  minimum_Q_per_family: 600
+  complete_root_dispositions_only: true
+  exhaustive_finite_roots: true
+analysis_floor:
+  total_pairs: 300
+  families: 3
+  per_family_pairs: 60
+  exercising_minimum:
+    E5: 29
+    E6: 29
+    E9: 29
+execution:
+  acquisition_authorized_after_protocol_freeze: true
+  acquisition_max_workers: 2
+  acquisition_in_flight_per_worker: 2
+  scoring_authorized_at_protocol_freeze: false
+  score_exactly_once: true
+  scoring_requires_exactly_once_acquisition_authority: true
+  corpus_spent_on_first_payload_read: true
+  non_scorable_means_unscored: true
+  acceptance_requires_exact_pass: true
+  gpu_before_primary_pass: forbidden

@@ -51,6 +51,7 @@ const startInput = {
   preflightSha256: sha,
   estimateSha256: "c".repeat(64),
   hardCapCredits: "48",
+  customerMaxChargeUsd: "60.00",
   overagePolicy: "stop_at_cap" as const,
   knowledgeBlueprintId: "general_knowledge_base",
   knowledgeBlueprintRegistrySha256: prefixedSha,

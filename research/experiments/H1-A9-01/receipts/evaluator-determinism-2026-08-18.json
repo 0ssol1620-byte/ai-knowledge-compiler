@@ -1,0 +1,90 @@
+{
+  "deterministic": true,
+  "distinct_per_page_score_hashes": 1,
+  "distinct_severe_label_hashes": 1,
+  "evaluations": 3,
+  "evaluator_dir": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\private\\evaluator-checkouts\\omnidocbench-deterministic-v1",
+  "evaluator_recorded_fallbacks_across_all_runs": 0,
+  "generated_at": "2026-08-18T16:03:13.675780+00:00",
+  "page_level_disagreements": [],
+  "page_order_variants": [
+    "forward",
+    "reversed"
+  ],
+  "pages_scored": 790,
+  "per_page_score_hash": "sha256:c480822dd284d5d7bff27ba2ff8d514b4683870f16d85654199f631cf84b527c",
+  "predictions_root": "D:\\a9h\\r1",
+  "receipt_sha256": "sha256:bff3c0635905d8074e66cc529d53a4ab03a5f5bb10fb73169cd675dce78d368f",
+  "runs": [
+    {
+      "elapsed_seconds": 0.004042387008666992,
+      "evaluator_recorded": {
+        "available": true,
+        "match_timeout_sec": null,
+        "page_count": 800,
+        "page_timeout_fallbacks": 0,
+        "quick_match_timeout_fallbacks": 0,
+        "quick_match_truncated_timeout_sec": null,
+        "workers": 4
+      },
+      "page_order": "forward",
+      "pages_scored": 790,
+      "per_page_score_hash": "sha256:c480822dd284d5d7bff27ba2ff8d514b4683870f16d85654199f631cf84b527c",
+      "severe_label_hash": "sha256:eb94fb39f4aaef2632c9f554d7758dff38f6742a3ecb90860e6ba4725b74bab8",
+      "severe_pages": 50,
+      "timeout_fallback_lines_in_log": 0,
+      "workers": 4
+    },
+    {
+      "elapsed_seconds": 0.003996372222900391,
+      "evaluator_recorded": {
+        "available": true,
+        "match_timeout_sec": null,
+        "page_count": 800,
+        "page_timeout_fallbacks": 0,
+        "quick_match_timeout_fallbacks": 0,
+        "quick_match_truncated_timeout_sec": null,
+        "workers": 2
+      },
+      "page_order": "reversed",
+      "pages_scored": 790,
+      "per_page_score_hash": "sha256:c480822dd284d5d7bff27ba2ff8d514b4683870f16d85654199f631cf84b527c",
+      "severe_label_hash": "sha256:eb94fb39f4aaef2632c9f554d7758dff38f6742a3ecb90860e6ba4725b74bab8",
+      "severe_pages": 50,
+      "timeout_fallback_lines_in_log": 0,
+      "workers": 2
+    },
+    {
+      "elapsed_seconds": 4369.744925022125,
+      "evaluator_recorded": {
+        "available": true,
+        "match_timeout_sec": null,
+        "page_count": 800,
+        "page_timeout_fallbacks": 0,
+        "quick_match_timeout_fallbacks": 0,
+        "quick_match_truncated_timeout_sec": null,
+        "workers": 4
+      },
+      "page_order": "forward",
+      "pages_scored": 790,
+      "per_page_score_hash": "sha256:c480822dd284d5d7bff27ba2ff8d514b4683870f16d85654199f631cf84b527c",
+      "severe_label_hash": "sha256:eb94fb39f4aaef2632c9f554d7758dff38f6742a3ecb90860e6ba4725b74bab8",
+      "severe_pages": 50,
+      "timeout_fallback_lines_in_log": 0,
+      "workers": 4
+    }
+  ],
+  "runs_that_could_not_show_their_own_record": [],
+  "runs_with_a_wall_clock_timeout_still_set": [],
+  "schema": "tavonel.a9-evaluator-determinism-contract.v1",
+  "severe_label_hash": "sha256:eb94fb39f4aaef2632c9f554d7758dff38f6742a3ecb90860e6ba4725b74bab8",
+  "timeout_fallback_lines_across_all_runs": 0,
+  "what_is_being_asserted": "identical prediction bytes produce identical per-page scores and identical severe labels under every parallelism tested, compared by hash rather than by tolerance. A tolerance would defeat the point: the claim is not that the answers are close but that scoring is a function of its input.",
+  "why_two_sources_for_the_same_count": "the log count depends on a capture stream staying healthy for the whole run and on the log format not changing; the evaluator's own stage_execution.json states the timeout values in force and the fallbacks it took. Each covers the other's blind spot, and a run that cannot produce its own record is treated as unverified rather than as clean.",
+  "why_zero_fallbacks_is_part_of_the_contract": "a single fallback line means a wall-clock path is still live, and the run could have gone the other way on a busier machine. The hashes agreeing while a fallback fired would be luck, not determinism.",
+  "worker_counts": [
+    4,
+    2,
+    4
+  ]
+}

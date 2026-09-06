@@ -1,0 +1,88 @@
+{
+  "acquisition_target": {
+    "breadth_gate": "at least 400 admitted across at least 4 families",
+    "breadth_gate_provenance": "inherited from P4g's G_P4G_SCALE, which required 400 before any result existed and which P4g failed at 321. Not a bar invented to fit 174.",
+    "power_gate": "eligible Q1 >= 190, on its own gate",
+    "source_documents": 550,
+    "status": "DESIRED TARGET, not a statistical endpoint"
+  },
+  "breadth_floor": 400,
+  "candidates_selected": 768,
+  "dart": {
+    "api_message": "인증키가 누락되었습니다.",
+    "api_status": "100",
+    "credential_env": "DART_API_KEY / crtfc_key",
+    "documents_acquired": 0,
+    "endpoint": "https://opendart.fss.or.kr/api/list.json",
+    "family": "dart_kr",
+    "note": "declared so its absence is recorded rather than inferred from the family list. A missing credential is a founder decision.",
+    "resolution": "founder decision: a DART certification key is a missing secret",
+    "state": "BLOCKED_MISSING_CREDENTIAL"
+  },
+  "document_count": 511,
+  "documents_sha256": "sha256:ce26f90a7e0ec524a68acafd431eaec15e5863a74fbecca0bf402985fc58ee81",
+  "estimated_cost_usd": 0.0,
+  "family_counts": {
+    "encyclopedia_wikipedia": 165,
+    "git_docs": 165,
+    "regulation_ecfr": 165,
+    "sec_edgar": 16
+  },
+  "frozen_before_any_eligibility_result": true,
+  "gpu_seconds": 0,
+  "manifest_path": "research/tavonel_eval_v2/artifacts/development/p4i_cohort.json",
+  "meets_breadth_floor": true,
+  "protocol": "P4i_cohort_expansion",
+  "provenance": {
+    "generated_at": "2026-08-22T14:00:01.855885+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/acquisition/sources_p4i.py",
+    "protocol_sha256": "sha256:81eee0d0f9b08fc6c2aa6bb9c618134e11b718de0f2b9e26bc44f7501ad6a7c9",
+    "receipt_stem": "p4i-cohort-manifest",
+    "run_id": "20260822T140001Z-d7ae58b41561",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/acquisition/fetch_p4i_corpus.py",
+    "tool_sha256": "sha256:5a6b99ac05b9c1559818d18fcb3e3b93798a0f2da12b78d7fa2b3894742f2396"
+  },
+  "receipt_sha256": "sha256:9dc8f52dd034c2e46f8be3795a321a406fd749dd3bdea690beeee757eccfc822",
+  "rejected_by_code": {
+    "LISTING_FAILED": 3,
+    "NO_SOURCE_CHANGE": 4,
+    "OTHER": 125,
+    "PARSE_FLOOR": 122,
+    "PAYLOAD_UNAVAILABLE": 6,
+    "RELATION_FAILURE": 3,
+    "SOURCE_EXHAUSTION": 4490,
+    "SPACING_NOT_MET": 60
+  },
+  "rejected_by_family_and_code": {
+    "encyclopedia_wikipedia": {
+      "OTHER": 74,
+      "PARSE_FLOOR": 8,
+      "SOURCE_EXHAUSTION": 1,
+      "SPACING_NOT_MET": 2
+    },
+    "git_docs": {
+      "LISTING_FAILED": 3,
+      "NO_SOURCE_CHANGE": 1,
+      "OTHER": 17,
+      "PARSE_FLOOR": 32,
+      "PAYLOAD_UNAVAILABLE": 6,
+      "SOURCE_EXHAUSTION": 73,
+      "SPACING_NOT_MET": 58
+    },
+    "regulation_ecfr": {
+      "NO_SOURCE_CHANGE": 3,
+      "OTHER": 34,
+      "PARSE_FLOOR": 45,
+      "SOURCE_EXHAUSTION": 4416
+    },
+    "sec_edgar": {
+      "PARSE_FLOOR": 37,
+      "RELATION_FAILURE": 3
+    }
+  },
+  "rejected_count": 4813,
+  "schema": "tavonel.v2.p4i_cohort_receipt.v1"
+}

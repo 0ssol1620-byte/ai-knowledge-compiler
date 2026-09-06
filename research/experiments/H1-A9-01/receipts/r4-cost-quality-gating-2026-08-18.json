@@ -1,0 +1,136 @@
+{
+  "baseline_severe_errors": 12,
+  "configurations": {
+    "agreement_gate_matched_coverage": {
+      "abstention_rate": 0.09090909090909091,
+      "accepted_pages": 180,
+      "coverage": 0.9090909090909091,
+      "description": "one pass each of two parsers; abstain on the least-agreeing pages, at the same coverage the stability gate reached",
+      "errors_abstained": 3,
+      "errors_accepted": 9,
+      "fisher_exact_p_accepted_vs_abstained": 0.08258482497694764,
+      "gpu_seconds_per_page": 12.71068,
+      "pages_per_pod_hour": 283.22638914676475,
+      "selective_error_rate": 0.05,
+      "severe_errors_avoided": 3,
+      "usd_per_1000_pages": 1.867119777777778
+    },
+    "all_three_signals": {
+      "abstention_rate": 0.21212121212121213,
+      "accepted_pages": 156,
+      "coverage": 0.7878787878787878,
+      "description": "three passes; abstain if any of the three signals fires",
+      "errors_abstained": 8,
+      "errors_accepted": 4,
+      "fisher_exact_p_accepted_vs_abstained": 0.0005740625227146123,
+      "gpu_seconds_per_page": 19.42136,
+      "pages_per_pod_hour": 185.3629200014829,
+      "selective_error_rate": 0.02564102564102564,
+      "severe_errors_avoided": 8,
+      "usd_per_1000_pages": 2.5009062222222225
+    },
+    "evidence_validity_gate": {
+      "abstention_rate": 0.08585858585858586,
+      "accepted_pages": 181,
+      "coverage": 0.9141414141414141,
+      "description": "one pass; abstain where the output's own dates, numbers, currency or signs are malformed. Costs no additional inference.",
+      "errors_abstained": 5,
+      "errors_accepted": 7,
+      "fisher_exact_p_accepted_vs_abstained": 0.0013966254749000193,
+      "gpu_seconds_per_page": 6.71068,
+      "pages_per_pod_hour": 536.4583022882927,
+      "selective_error_rate": 0.03867403314917127,
+      "severe_errors_avoided": 5,
+      "usd_per_1000_pages": 0.6337864444444444
+    },
+    "single_run": {
+      "abstention_rate": 0.0,
+      "accepted_pages": 198,
+      "coverage": 1.0,
+      "description": "one pass of the gated parser; accept everything",
+      "errors_abstained": 0,
+      "errors_accepted": 12,
+      "fisher_exact_p_accepted_vs_abstained": 1.0,
+      "gpu_seconds_per_page": 6.71068,
+      "pages_per_pod_hour": 536.4583022882927,
+      "selective_error_rate": 0.06060606060606061,
+      "severe_errors_avoided": 0,
+      "usd_per_1000_pages": 0.6337864444444444
+    },
+    "stability_and_agreement": {
+      "abstention_rate": 0.16666666666666666,
+      "accepted_pages": 165,
+      "coverage": 0.8333333333333334,
+      "description": "three passes total; abstain if either signal fires",
+      "errors_abstained": 6,
+      "errors_accepted": 6,
+      "fisher_exact_p_accepted_vs_abstained": 0.006089569055330224,
+      "gpu_seconds_per_page": 19.42136,
+      "pages_per_pod_hour": 185.3629200014829,
+      "selective_error_rate": 0.03636363636363636,
+      "severe_errors_avoided": 6,
+      "usd_per_1000_pages": 2.5009062222222225
+    },
+    "stability_gate": {
+      "abstention_rate": 0.09090909090909091,
+      "accepted_pages": 180,
+      "coverage": 0.9090909090909091,
+      "description": "two passes of the gated parser; abstain where they differ",
+      "errors_abstained": 4,
+      "errors_accepted": 8,
+      "fisher_exact_p_accepted_vs_abstained": 0.015112323021678324,
+      "gpu_seconds_per_page": 13.42136,
+      "pages_per_pod_hour": 268.22915114414633,
+      "selective_error_rate": 0.044444444444444446,
+      "severe_errors_avoided": 4,
+      "usd_per_1000_pages": 1.2675728888888889
+    }
+  },
+  "cost_basis": {
+    "gated_parser": {
+      "candidate_id": "ovisocr2-0.9b-vllm-0.22.1",
+      "cloud": "COMMUNITY",
+      "hourly_rate_usd": 0.34,
+      "measured_inference_seconds_run_1": 1348.667,
+      "measured_inference_seconds_run_2": 1335.605,
+      "model_load_seconds_run_1": 150.086,
+      "note": "model load is excluded from per-page cost; it is paid once per pod and amortises to near zero at corpus scale, and including it would price a 200-page run as if it were the steady state"
+    },
+    "rates_differ": "The two parsers were billed at different hourly rates on different clouds. GPU-seconds per page is the hardware-neutral comparison; the dollar column mixes in a hosting decision and is reported with each rate named rather than blended.",
+    "second_parser": {
+      "candidate_id": "mineru-3.4.4-vlm",
+      "cloud": "not COMMUNITY; the frozen campaign rate",
+      "hourly_rate_usd": 0.74,
+      "note": "the healthy-worker rate, not the whole-campaign rate of 5.92 USD/1000, which includes every stall and retry the campaign hit",
+      "pages_per_pod_hour": 600,
+      "usd_per_1000_pages_as_published": 1.23
+    }
+  },
+  "page_count": 198,
+  "risk_coverage": {
+    "aurc_agreement": 0.042062497645772016,
+    "aurc_stability": 0.017141593270021332,
+    "note": "area under the risk-coverage curve, lower is better"
+  },
+  "schema": "tavonel.r4-cost-quality-gating.v1",
+  "severe_error_definition": "official text edit distance > 0.1",
+  "signal_complementarity": {
+    "evidence_validity_flags": 17,
+    "flagged_by_agreement_only": 15,
+    "flagged_by_both": 3,
+    "flagged_by_stability_only": 15,
+    "jaccard": 0.09090909090909091,
+    "low_agreement_pages": 18,
+    "pages_flagged_by_any_of_three": 42,
+    "reading": "If the two sets barely overlap and each catches severe errors the other misses, the second parser is buying coverage the second run cannot, and 'a second parser is unnecessary' is not established.",
+    "severe_errors_caught_by_agreement_only": 2,
+    "severe_errors_caught_by_any_of_three": 8,
+    "severe_errors_caught_by_both": 1,
+    "severe_errors_caught_by_evidence_only": 2,
+    "severe_errors_caught_by_neither": 6,
+    "severe_errors_caught_by_none_of_three": 4,
+    "severe_errors_caught_by_stability_only": 3,
+    "unstable_pages": 18
+  },
+  "status": "EXPLORATORY -- operating points chosen after seeing this corpus"
+}

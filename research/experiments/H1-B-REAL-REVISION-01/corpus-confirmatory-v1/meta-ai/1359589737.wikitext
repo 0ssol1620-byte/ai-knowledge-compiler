@@ -1,0 +1,100 @@
+{{Short description|Artificial intelligence division of Meta Platforms}}
+{{Update|date=November 2025}}
+{{Infobox company
+| name               = Meta AI
+| logo               = Meta AI Logo (2026).svg
+| logo_size          = 110px
+| caption            =
+| image              = Meta AI screenshot.jpg
+| image_size         = 150
+| type               = [[Division (business)|Division]]
+| industry           = [[Artificial intelligence]]
+| founded            = {{Start date and age|2013}}
+| founders           = {{hlist|[[Rob Fergus]]|[[Yann LeCun]]|[[Serkan Piantino]]|[[Mark Zuckerberg]]}}
+| defunct            = 
+| hq_location        = [[Astor Place]], [[New York City]], [[New York (state)|New York]], U.S.
+| area_served        = 
+| key_people         = 
+| products           = [[Llama (language model)|Llama]]
+| services           = 
+| revenue            = 
+| equity             = 
+| equity_year        = 
+| owner              = [[Meta Platforms]]
+| num_employees      = 
+| subsidiaries       = 
+| website            = {{URL|https://ai.meta.com/}}
+| footnotes          = 
+| former name        = 
+| board_of_directors = 
+| focus              = 
+| motto              = 
+| method             = 
+| origins            = 
+| registration_id    = 
+| tax_id             = 
+| leader_title       =  
+}}
+{{Meta sidebar}}
+{{Artificial intelligence}}
+'''Meta AI''' is a research division of [[Meta Platforms|Meta]] (formerly Facebook) that develops [[artificial intelligence]] and [[augmented reality]] technologies.
+
+== History ==
+Meta AI was founded in 2013 as Facebook Artificial Intelligence Research (FAIR).<ref>{{Cite web |date=9 December 2013 |title=NYU "Deep Learning" Professor LeCun Will Head Facebook's New Artificial Intelligence Lab |url=https://techcrunch.com/2013/12/09/facebook-artificial-intelligence-lab-lecun/ |access-date=2022-05-08 |website=TechCrunch |language=en-US}}</ref><ref>{{Cite web |date=2014-11-25 |title=Facebook's AI team hires Vladimir Vapnik, father of the popular support vector machine algorithm |url=https://venturebeat.com/2014/11/25/facebooks-ai-team-hires-vladimir-vapnik-father-of-the-popular-support-vector-machine-algorithm/ |url-status=live |archive-url=https://web.archive.org/web/20141127001517/http://venturebeat.com/2014/11/25/facebooks-ai-team-hires-vladimir-vapnik-father-of-the-popular-support-vector-machine-algorithm/ |archive-date=2014-11-27 |access-date=2022-05-08 |website=VentureBeat |language=en-US}}</ref> It has workspaces in [[Menlo Park, California|Menlo Park]], London, New York City, Paris, Seattle, [[Pittsburgh]], [[Tel Aviv]], and [[Montreal]] as of 2025.<ref>{{Cite news |last=Dillet |first=Romain |date=June 2, 2015 |title=Facebook Opens New AI Research Center in Paris |url=https://techcrunch.com/2015/06/02/facebook-opens-new-ai-research-center-in-paris/ |access-date=May 7, 2022 |work=TechCrunch}}</ref>
+
+In 2016, FAIR partnered with [[Google]], [[Amazon (company)|Amazon]], [[IBM]], and [[Microsoft]] in creating the [[Partnership on AI|Partnership on Artificial Intelligence to Benefit People and Society]].<ref>{{Cite web |last=Parloff |first=Roger |date=September 28, 2016 |title=AI Partnership Launched by Facebook, Google, Amazon, Microsoft, and IBM |url=https://fortune.com/2016/09/28/ai-partnership-facebook-google-amazon/ |access-date=2026-06-05 |website=Fortune |language=en}}</ref>
+
+Meta AI was directed by [[Yann LeCun]] until 2018, when Jérôme Pesenti succeeded the role. Pesenti was formerly the [[Chief technology officer|CTO]] of [[IBM|IBM's]] [[big data]] group.<ref>{{Cite news |last=Dave |first=Greshgorn |date=January 23, 2018 |title=The head of Facebook's AI research is stepping into a new role as it shakes up management |work=Quartz |url=https://qz.com/1186806/yann-lecun-is-stepping-down-as-facebooks-head-of-ai-research/ |access-date=May 7, 2022 |archive-date=May 8, 2022 |archive-url=https://web.archive.org/web/20220508180652/https://qz.com/1186806/yann-lecun-is-stepping-down-as-facebooks-head-of-ai-research/ |url-status=live }}</ref>
+
+FAIR's research includes [[self-supervised learning]],<ref>{{Cite web |last=Macaulay |first=Thomas |date=2020-08-14 |title=How Facebook’s Yann LeCun is charting a path to human-level artificial intelligence |url=https://thenextweb.com/news/how-facebooks-yann-lecun-is-charting-a-path-to-human-level-intelligence |access-date=2026-06-05 |website=TheNextWeb |language=en}}</ref> [[generative adversarial network]]s, [[document classification]] and translation, and [[computer vision]].<ref name=":1">{{Cite web |date=2018-12-05 |title=FAIR turns five: What we've accomplished and where we're headed |url=https://engineering.fb.com/2018/12/05/ai-research/fair-fifth-anniversary/ |url-status=live |archive-url=https://web.archive.org/web/20220511012517/https://engineering.fb.com/2018/12/05/ai-research/fair-fifth-anniversary/ |archive-date=2022-05-11 |access-date=2022-05-08 |website=Engineering at Meta |language=en-US}}</ref> FAIR released [[Torch (machine learning)|Torch]] deep-learning modules as well as [[PyTorch]] in 2017, an [[Open source|open-source]] machine learning framework,<ref name=":1" /> which was subsequently used in several deep learning technologies, such as [[Tesla, Inc.|Tesla]]'s autopilot <ref>{{Cite web |last=Karpathy |first=Andrej |title=PyTorch at Tesla - Andrej Karpathy, Tesla |website=[[YouTube]] |date=6 November 2019 |url=https://www.youtube.com/watch?v=oBklltKXtDE |access-date=2022-05-08 |archive-date=2023-03-24 |archive-url=https://web.archive.org/web/20230324144838/https://www.youtube.com/watch?v=oBklltKXtDE |url-status=live }}</ref> and [[Uber]]'s Pyro.<ref>{{Cite web |title=Pyro |url=https://pyro.ai/ |access-date=2022-05-08 |website=pyro.ai |archive-date=2022-05-06 |archive-url=https://web.archive.org/web/20220506094900/http://pyro.ai/ |url-status=live }}</ref> That same year, a pair of chatbots were falsely rumored<ref name=":2">{{Cite web |date=2017-07-31 |title=Facebook researchers shut down AI bots that started speaking in a language unintelligible to humans |url=https://www.firstpost.com/tech/news-analysis/facebook-researchers-shut-down-ai-bots-that-started-speaking-in-a-language-unintelligible-to-humans-3876197.html |url-status=live |archive-url=https://web.archive.org/web/20220508180652/https://www.firstpost.com/tech/news-analysis/facebook-researchers-shut-down-ai-bots-that-started-speaking-in-a-language-unintelligible-to-humans-3876197.html |archive-date=2022-05-08 |access-date=2022-05-08 |website=Tech2}}</ref> to be discontinued for developing a language that was unintelligible to humans.<ref>{{Cite web |last=McKay |first=Tom |date=2017-08-01 |title=No, Facebook Did Not Panic and Shut Down an AI Program That Was Getting Dangerously Smart |url=https://gizmodo.com/no-facebook-did-not-panic-and-shut-down-an-ai-program-1797414922 |access-date=2025-05-27 |website=Gizmodo |language=en-US |quote=When Facebook directed two of these semi-intelligent bots to talk to each other, FastCo reported, the programmers realized they had made an error by not incentivizing the chatbots to communicate according to human-comprehensible rules of the English language. In their attempts to learn from each other, the bots thus began chatting back and forth in a derived shorthand—but while it might look creepy, that’s all it was.}}</ref> FAIR clarified that the research had been shut down because they had accomplished their initial goal to understand how languages are generated by their models, rather than out of fear.<ref name=":2" />
+
+FAIR was renamed Meta AI following the rebranding in 2021 that changed Facebook, Inc. to Meta Platforms Inc.<ref name=":3">{{Cite news |last=Murphy Kelly |first=Samantha |date=October 29, 2021 |title=Facebook changes its company name to Meta |url=https://edition.cnn.com/2021/10/28/tech/facebook-mark-zuckerberg-keynote-announcements/index.html |access-date=May 7, 2022 |work=CNN Business |archive-date=May 7, 2022 |archive-url=https://web.archive.org/web/20220507032946/https://edition.cnn.com/2021/10/28/tech/facebook-mark-zuckerberg-keynote-announcements/index.html |url-status=live }}</ref>
+
+On October 1, 2025, Facebook announced "We will soon use your interactions with AI at Meta to personalize the content and ads you see".<ref>{{cite web |title=Improving Your Recommendations on Our Apps With AI at Meta |url=https://about.fb.com/news/2025/10/improving-your-recommendations-apps-ai-meta/ |website=Meta Newsroom |archive-url= |archive-date= |date=1 October 2025|access-date=4 June 2026}}</ref><ref>{{Cite news |last=Christoffel |first=Ryan |date=2025-10-01 |title=Meta will use your chats with AI to sell hyper-targeted ads |url=https://9to5mac.com/2025/10/01/meta-will-use-your-chats-with-ai-to-sell-hyper-targeted-ads/ |archive-url=http://web.archive.org/web/20251218060437/https://9to5mac.com/2025/10/01/meta-will-use-your-chats-with-ai-to-sell-hyper-targeted-ads/ |archive-date=2025-12-18 |access-date=2026-06-05 |work=9to5Mac |language=en-US}}</ref>
+
+== Virtual assistant ==
+Meta AI is also the name of the [[virtual assistant]] developed by the team, now integrated as a [[chatbot]] into Meta's [[Social network|social networking]] products.<ref name=":0">{{Cite web |last=Kawale |first=Ajinkya |date=20 February 2025 |title=India among largest Meta AI adopters, backs open-source innovation |url=https://www.business-standard.com/technology/tech-news/india-among-largest-meta-ai-adopters-backs-open-source-innovation-125022000986_1.html |archive-url=https://web.archive.org/web/20250220130626/https://www.business-standard.com/technology/tech-news/india-among-largest-meta-ai-adopters-backs-open-source-innovation-125022000986_1.html |archive-date=2025-02-20 |access-date=2025-02-22 |website=Business Standard |language=en-US|url-status=live}}</ref> It is also available as a [[Subscription business model|subscription-based]] stand-alone [[Mobile app|app]].<ref>{{Cite web |date=2024-02-27 |title=Meta to Launch Standalone AI App with Premium Features Amid Growing Competition |url=https://www.livemint.com/technology/tech-news/meta-ai-to-get-a-standalone-app-launch-its-premium-subscription-soon-report-11740706441071.html |access-date=2025-02-28 |website=Mint}}</ref><ref>{{Cite web |date=2024-02-27 |title=Meta AI Expansion: Standalone App and Subscription Model in the Works |url=https://www.livemint.com/technology/tech-news/meta-ai-to-get-a-standalone-app-launch-its-premium-subscription-soon-report-11740706441071.html |access-date=2025-02-28 |website=Mint}}</ref>
+
+The virtual assistant was [[Pre-installed software|pre-installed]] on the second generation of [[Ray-Ban Meta]] smartglasses, and can incorporate inputs from the glasses' cameras after an update.<ref>{{Cite web |last= |date=2024-04-23 |title=Smart(er) Glasses: Introducing New Ray-Ban {{!}} Meta Styles + Expanding Access to Meta AI with Vision |url=https://www.meta.com/blog/quest/ray-ban-meta-smart-glasses-new-styles-multimodal-ai-ferrari/ |url-status=live |archive-url=https://web.archive.org/web/20240727025149/https://www.meta.com/blog/quest/ray-ban-meta-smart-glasses-new-styles-multimodal-ai-ferrari/ |archive-date=2024-07-27 |website=Meta Quest Blog}}</ref> It is also available on [[Quest 2]] and newer [[Head-mounted display|HMDs]].<ref>{{Cite web |last= |date=July 23, 2024 |title=Introducing Meta AI on Meta Quest—Your Smart MR Assistant |url=https://www.meta.com/blog/meta-ai-on-meta-quest-3/ |website=Meta Blog}}</ref>
+
+Since May 2024, the chatbot has summarized news from various outlets without linking directly to original articles, including in Canada, where news links are banned on its platforms. This use of news content without compensation and [[Attribution (copyright)|attribution]] has raised ethical and legal concerns, especially as Meta continues to reduce news visibility on its platforms.<ref>{{cite news |date=21 May 2024 |title=Meta walked away from news. Now the company's using it for AI content |url=https://www.washingtonpost.com/technology/2024/05/22/meta-ai-news-summaries/ |archive-url=https://web.archive.org/web/20240521131313/https://www.washingtontimes.com/news/2024/may/21/slovakias-parliament-votes-to-condemn-political-vi/ |archive-date=21 May 2024 |access-date=22 May 2024 |newspaper=The Washington Post|url-status=live}}</ref>
+
+== Research ==
+=== Natural language processing ===
+One of Meta AI's research areas is [[natural language processing]], including [[machine translation]], [[natural language generation]], and [[question answering]].<ref>{{Cite web |title=Research Area - Natural Language Processing |url=https://ai.meta.com/research/nlp/ |access-date=2026-06-04 |website=Meta |language=en |archive-date= |archive-url= |url-status= }}</ref> In 2023, the Meta AI team released a set of natural language processing models named Seamless, designed for enabling real-time voice translation.<ref>{{Cite news |last=Nuñez |first=Michael |date=2023-12-01 |title=Meta AI unveils ‘Seamless’ translator for real-time communication across languages |url=https://venturebeat.com/ai/meta-ai-unveils-seamless-translator-for-real-time-communication-across-languages/ |url-status=live |archive-url=http://web.archive.org/web/20250724172818/https://venturebeat.com/ai/meta-ai-unveils-seamless-translator-for-real-time-communication-across-languages/ |archive-date=2025-07-24 |access-date=2026-06-05 |work=VentureBeat |language=en-US}}</ref> In 2024, a team including researchers from Meta AI published a paper about developing machine translation for languages not typically supported by machine translation.<ref>{{Cite journal |last=Adelani |first=David I. |date=June 2024 |title=Meta’s AI translation model embraces overlooked languages |url=https://www.nature.com/articles/d41586-024-00964-2 |journal=Nature |language=en |volume=630 |issue=8018 |pages=821–822 |doi=10.1038/d41586-024-00964-2}}</ref> An [[editorial]] article in the journal ''[[Nature (journal)|Nature]]'' commented on the paper, emphasizing the importance of involving people who specialize in languages in the development and application of machine learning technology.<ref>{{Cite journal |date=2024-06-05 |title=Meta’s AI system is a boost to endangered languages — as long as humans aren’t forgotten |url=https://www.nature.com/articles/d41586-024-01619-y |journal=Nature |language=en |volume=630 |issue=8015 |pages=8–8 |doi=10.1038/d41586-024-01619-y}}</ref>
+
+==== Galactica ====
+Galactica is a [[large language model|large language model (LLM)]] designed for generating scientific text. It was available for three days from 15 November 2022, before being withdrawn for generating [[Racism|racist]] and [[Inaccurate claim|inaccurate]] content.<ref>{{Cite web |title=Why Meta's latest large language model survived only three days online |url=https://www.technologyreview.com/2022/11/18/1063487/meta-large-language-model-ai-only-survived-three-days-gpt-3-science/ |access-date=2025-07-18 |website=MIT Technology Review |language=en}}</ref><ref>{{cite news |last1=Edwards |first1=Benj |date=18 November 2022 |title=New Meta AI demo writes racist and inaccurate scientific literature, gets pulled |url=https://arstechnica.com/information-technology/2022/11/after-controversy-meta-pulls-demo-of-ai-model-that-writes-scientific-papers/ |access-date=30 December 2022 |work=[[Ars Technica]] |language=en-us}}</ref>
+
+==== Llama ====
+{{Main|Llama (language model)}}
+
+[[Llama (language model)|Llama]] is an LLM released in February 2023.<ref>{{Cite web |last=Leswing |first=Kif |date=2023-02-24 |title=Mark Zuckerberg announces Meta's new large language model as A.I. race heats up |url=https://www.cnbc.com/2023/02/24/mark-zuckerberg-announces-meta-llama-large-language-model.html |access-date=2025-04-14 |website=CNBC |language=en}}</ref> As of January 2026, the most recent release is the [[Llama (language model)#Llama 4|Llama 4]].<ref>{{Cite web |last=Wiggers |first=Kyle |date=2025-04-05 |title=Meta releases Llama 4, a new crop of flagship AI models |url=https://techcrunch.com/2025/04/05/meta-releases-llama-4-a-new-crop-of-flagship-ai-models/ |access-date=2025-04-14 |website=TechCrunch |language=en-US}}</ref>
+
+=== Hardware ===
+Meta used [[Central processing unit|CPUs]] and in-house custom [[Integrated circuit|chips]] before 2022; they switched to [[Nvidia]] [[Graphics processing unit|GPUs]] since then.<ref>{{Cite news |date=2023-04-26 |title=Insight: Inside Meta's scramble to catch up on AI |url=https://www.reuters.com/technology/inside-metas-scramble-catch-up-ai-2023-04-25/ |work=Reuters|access-date=4 June 2026}}</ref> MTIA v1, one of their early chips, is designed for the company's [[content recommendation]] algorithms. It was fabricated on [[TSMC]]'s [[7 nm process|7&nbsp;nm process]] technology and consumed 25W, capable of 51.2 [[Floating point operations per second|TFlops]] [[Half-precision floating-point format|FP16]].<ref>{{Cite web |last=Peters |first=Jay |date=2023-05-19 |title=Meta is working on a new chip for AI |url=https://www.theverge.com/2023/5/18/23728678/meta-ai-new-chip-mtia-msvp-datacenter |access-date=2023-06-07 |website=The Verge |language=en-US |archive-date=2023-06-07 |archive-url=https://web.archive.org/web/20230607123218/https://www.theverge.com/2023/5/18/23728678/meta-ai-new-chip-mtia-msvp-datacenter |url-status=live }}</ref>
+
+== Controversy ==
+The French media outlet [[Mediapart]] reported that in 2022, Facebook's parent company illegally used works accumulated by the pirate site [[LibGen]] to train its artificial intelligence.<ref>{{Cite web |date=December 22, 2025 |title=Comment un cofondateur de Mistral AI a piraté des millions de livres quand il travaillait chez Meta |url=https://www.mediapart.fr/journal/economie-et-social/221225/comment-un-cofondateur-de-mistral-ai-pirate-des-millions-de-livres-quand-il-travaillait-chez-m |access-date=December 23, 2025 |website=Mediapart |language=fr}}</ref>
+
+== References ==
+<!-- Inline citations added to your article will automatically display here. See en.wikipedia.org/wiki/WP:REFB for instructions on how to add citations. -->
+{{reflist}}
+
+== External links ==
+*{{Official website|https://ai.meta.com/|name=Official website}}
+
+{{Meta Platforms}}
+{{Meta Horizon}}
+{{Generative AI}}
+{{Generative AI chatbots}}
+{{Virtual assistants}}
+{{Authority control}}
+
+[[Category:Artificial intelligence laboratories]]
+[[Category:Chatbots]]
+[[Category:Meta Platforms]]
+[[Category:Virtual assistants]]
+[[Category:2013 establishments in California]]
+[[Category:Artificial intelligence industry in the United States]]
+[[Category:Meta Platforms criticism and controversies]]

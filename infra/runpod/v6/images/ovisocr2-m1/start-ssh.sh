@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${FOLYNTA_QUALIFICATION_ONLY:-}" == "1" ]]; then
+  exec python3 /opt/folynta/qualification-http.py
+fi
+
 case "${PUBLIC_KEY:-}" in
   "ssh-ed25519 "*|"ssh-rsa "*) ;;
   *) echo "PUBLIC_KEY must be an OpenSSH public key" >&2; exit 64 ;;

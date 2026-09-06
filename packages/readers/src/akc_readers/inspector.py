@@ -1,0 +1,354 @@
+"""Source inspector — blueprint §8.1 detection order, §8.2 result.
+
+Never trusts the extension, never raises for hostile input, never extracts an
+archive member. `akc_native_parsers.security.validate_source()` is *wrapped*:
+its `StructuredParseError` codes become review reasons here, and that module is
+not edited.
+"""
+
+from __future__ import annotations
+
+import io
+import zipfile
+import zlib
+from typing import Final
+
+from akc_native_parsers.models import ParserLimits, StructuredParseError
+from akc_native_parsers.security import validate_source
+
+from .enums import SourceFamily
+from .models import ReaderInput, SourceInspection
+
+_OLE_STORAGE_MIME: Final = "application/x-ole-storage"
+
+#: MS-OFFCRYPTO: an ECMA-376 password-protected Office file is not a ZIP at all
+#: — it is an OLE/CFB container whose directory names an ``EncryptedPackage``
+#: stream, and CFB stores directory names in UTF-16LE. Without this check a real
+#: password-protected .docx sniffs as `MAGIC_MISMATCH` and is published as
+#: corrupt when it is merely locked.
+_ENCRYPTED_PACKAGE_NAME: Final[bytes] = "EncryptedPackage".encode("utf-16-le")
+
+_MAGIC_MIME: Final[tuple[tuple[bytes, str], ...]] = (
+    (b"%PDF-", "application/pdf"),
+    (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1", _OLE_STORAGE_MIME),
+    (b"\x89PNG\r\n\x1a\n", "image/png"),
+    (b"\xff\xd8\xff", "image/jpeg"),
+    (b"GIF87a", "image/gif"),
+    (b"GIF89a", "image/gif"),
+    (b"II*\x00", "image/tiff"),
+    (b"MM\x00*", "image/tiff"),
+    (b"BM", "image/bmp"),
+    (b"\x1f\x8b", "application/gzip"),
+    (b"MZ", "application/vnd.microsoft.portable-executable"),
+    (b"\x7fELF", "application/x-elf"),
+)
+
+# ZIP package markers, checked in order; the first hit wins (§8.1 step 5).
+_ZIP_PACKAGE: Final[tuple[tuple[str, str, str, SourceFamily], ...]] = (
+    (
+        "word/",
+        "docx",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        SourceFamily.DOCUMENT,
+    ),
+    (
+        "xl/",
+        "xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        SourceFamily.SPREADSHEET,
+    ),
+    (
+        "ppt/",
+        "pptx",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        SourceFamily.PRESENTATION,
+    ),
+    ("contents/content.hpf", "hwpx", "application/hwp+zip", SourceFamily.DOCUMENT),
+    ("meta-inf/manifest.xml", "odf", "application/vnd.oasis.opendocument", SourceFamily.DOCUMENT),
+)
+
+_TEXT_MIME_FAMILY: Final[dict[str, SourceFamily]] = {
+    "text/plain": SourceFamily.DOCUMENT,
+    "text/markdown": SourceFamily.DOCUMENT,
+    "text/html": SourceFamily.WEB,
+    "application/json": SourceFamily.STRUCTURED_DATA,
+    "application/xml": SourceFamily.STRUCTURED_DATA,
+    "text/csv": SourceFamily.STRUCTURED_DATA,
+}
+
+_EXTENSION_TEXT_MIME: Final[dict[str, str]] = {
+    ".txt": "text/plain",
+    ".text": "text/plain",
+    ".md": "text/markdown",
+    ".markdown": "text/markdown",
+    ".html": "text/html",
+    ".htm": "text/html",
+    ".json": "application/json",
+    ".xml": "application/xml",
+    ".csv": "text/csv",
+}
+
+_MIME_FAMILY: Final[dict[str, SourceFamily]] = {
+    "application/pdf": SourceFamily.DOCUMENT,
+    "image/png": SourceFamily.IMAGE,
+    "image/jpeg": SourceFamily.IMAGE,
+    "image/gif": SourceFamily.IMAGE,
+    "image/tiff": SourceFamily.IMAGE,
+    "image/bmp": SourceFamily.IMAGE,
+    "application/zip": SourceFamily.ARCHIVE,
+    "application/gzip": SourceFamily.ARCHIVE,
+    **_TEXT_MIME_FAMILY,
+}
+
+#: Which **content-detected** MIME gets the hostile-source scan, and the
+#: extension `validate_source()` needs in order to run it. Selection is by
+#: signature, never by the filename (contract §8.2): `book.xlsx` renamed
+#: `book.bin` is still an OOXML package by content, is still scanned, and still
+#: publishes `OFFICE_ACTIVE_CONTENT` → `MALWARE_QUARANTINED`. HWPX and ODF are
+#: absent because `validate_source()` does not cover them; `.srt`/`.vtt` are
+#: absent because they have no content signature to select them by.
+_CONTENT_SCANNED_MIME: Final[dict[str, str]] = {
+    mime: f".{kind}" for _, kind, mime, _ in _ZIP_PACKAGE if kind in {"docx", "pptx", "xlsx"}
+} | {"text/html": ".html"}
+
+#: Same markers `akc_native_parsers.security` uses, so a file this inspector
+#: calls HTML is a file `validate_source()` also accepts as HTML.
+_HTML_MARKERS: Final[tuple[str, ...]] = (
+    "<!doctype html",
+    "<html",
+    "<head",
+    "<body",
+    "<main",
+    "<article",
+)
+
+_MAX_COMPRESSION_RATIO: Final[float] = 100.0
+_TEXT_SNIFF_BYTES: Final[int] = 8192
+
+
+def _extension(filename: str) -> str:
+    name = filename.replace("\\", "/").rsplit("/", 1)[-1].casefold()
+    dot = name.rfind(".")
+    return name[dot:] if dot > 0 else ""
+
+
+def _normalized_mime(declared: str) -> str:
+    return declared.split(";", 1)[0].strip().casefold()
+
+
+def _sniff_text(data: bytes) -> str | None:
+    """The decoded prefix of a text-like source, or None if it is binary."""
+    try:
+        text = data[:_TEXT_SNIFF_BYTES].decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return None
+    return None if "\x00" in text else text
+
+
+def inspect_source(source: ReaderInput, *, limits: ParserLimits | None = None) -> SourceInspection:
+    """Diagnose one source version in blueprint §8.1 order.
+
+    ``confidence`` is a structural-completeness score, not a calibrated
+    probability and not a quality score: it counts which detection steps
+    actually concluded something. Nothing routes on it — ``ReaderRegistry``
+    resolves on capability and on the ``encrypted``/``corrupted`` facts.
+    """
+    extension = _extension(source.filename)
+    declared = _normalized_mime(source.declared_mime)
+    review: list[str] = []
+    data = source.data
+
+    detected = ""
+    family = SourceFamily.UNKNOWN
+    container: str | None = None
+    encrypted = False
+    corrupted = False
+    has_native_text: bool | None = None
+    has_native_structure: bool | None = None
+    has_visual_content: bool | None = None
+    page_like_units: int | None = None
+    magic_hit = False
+    container_hit = False
+
+    if not data:
+        review.append("FILE_EMPTY")
+        corrupted = True
+
+    for prefix, mime in _MAGIC_MIME:
+        if data.startswith(prefix):
+            detected, magic_hit = mime, True
+            break
+
+    if data.startswith(b"PK\x03\x04"):
+        magic_hit = True
+        detected, container = "application/zip", "zip"
+        family = SourceFamily.ARCHIVE
+        zip_result = _inspect_zip(data, review)
+        if zip_result is None:
+            corrupted = True
+        else:
+            container_hit, detected, family, container, encrypted, has_native_structure = zip_result
+    elif detected == "application/pdf":
+        family = SourceFamily.DOCUMENT
+        container = "pdf"
+        pdf = _inspect_pdf(data, review)
+        encrypted, corrupted, has_native_text, page_like_units = pdf
+        has_native_structure = None if corrupted else True
+        has_visual_content = None if corrupted else True
+        container_hit = not corrupted
+    elif detected == _OLE_STORAGE_MIME:
+        # The family stays UNKNOWN: .doc, .xls, .msg and an encrypted OOXML
+        # package are all CFB, and guessing which is exactly the invention the
+        # constitution forbids. No reader claims it, so it fails closed.
+        container = "ole"
+        if _ENCRYPTED_PACKAGE_NAME in data:
+            encrypted = True
+            review.append("OOXML_ENCRYPTED_PACKAGE")
+    elif detected:
+        family = _MIME_FAMILY.get(detected, SourceFamily.UNKNOWN)
+        if family is SourceFamily.IMAGE:
+            has_native_text, has_visual_content = False, True
+    elif (sniffed := _sniff_text(data)) is not None:
+        # HTML is decided by its markup, not by `.html`: the scan below is
+        # selected from `detected`, so an extension-derived MIME would put the
+        # filename back in charge of a security decision.
+        head = sniffed.lstrip()[:4096].casefold()
+        detected = (
+            "text/html"
+            if any(marker in head for marker in _HTML_MARKERS)
+            else _EXTENSION_TEXT_MIME.get(extension)
+            or (declared if declared in _TEXT_MIME_FAMILY else "text/plain")
+        )
+        family = _TEXT_MIME_FAMILY.get(detected, SourceFamily.DOCUMENT)
+        has_native_text = bool(data.strip())
+        has_native_structure = detected in {"application/json", "application/xml", "text/html"}
+        has_visual_content = False
+    else:
+        detected = "application/octet-stream"
+        review.append("UNRECOGNIZED_BINARY")
+
+    zip_family = detected.startswith("application/zip")
+    if declared and detected and declared != detected and not zip_family:
+        review.append("DECLARED_MIME_MISMATCH")
+    if extension and detected and _EXTENSION_TEXT_MIME.get(extension, detected) != detected:
+        review.append("EXTENSION_MISMATCH")
+
+    scan_extension = _CONTENT_SCANNED_MIME.get(detected)
+    if scan_extension is not None:
+        try:
+            # `validate_source()` keys off the extension and the declared MIME,
+            # so it is fed the ones the **content** implies rather than the ones
+            # the uploader typed. Before this, `book.xlsx` renamed `book.bin`
+            # skipped the hostile-archive scan and published as an ordinary ZIP.
+            validate_source(
+                filename=f"source{scan_extension}",
+                declared_mime=detected,
+                data=data,
+                limits=limits or ParserLimits(),
+            )
+        except (
+            StructuredParseError,
+            zipfile.BadZipFile,
+            zlib.error,
+            EOFError,
+            NotImplementedError,
+            OSError,
+            ValueError,
+        ) as error:
+            # `validate_source()` classifies what it recognises; a decompressor
+            # failing underneath it does not. This inspector promises never to
+            # raise for hostile input, and that promise is the reason
+            # `ReaderRegistry.read()` can call it outside its own try. So the
+            # second boundary is here: anything the scan raises that is not a
+            # `StructuredParseError` is recorded as an unreadable archive
+            # member and the source is corrupt, never a traceback.
+            if isinstance(error, StructuredParseError):
+                review.append(error.code)
+                if error.code in {"ARCHIVE_ENCRYPTED_ENTRY", "ENCRYPTED_PDF"}:
+                    encrypted = True
+                elif not encrypted:
+                    # A file already known to be locked is not also called
+                    # corrupt: validate_source() cannot see past the encryption.
+                    corrupted = True
+            else:
+                review.append(f"ARCHIVE_MEMBER_UNREADABLE:{type(error).__name__}")
+                corrupted = True
+
+    confidence = 0.0
+    if magic_hit:
+        confidence += 0.4
+    if container_hit:
+        confidence += 0.3
+    if declared and declared == detected:
+        confidence += 0.2
+    if not review:
+        confidence += 0.1
+
+    return SourceInspection(
+        detected_mime=detected,
+        source_family=family,
+        container_kind=container,
+        encrypted=encrypted,
+        corrupted=corrupted,
+        has_native_text=has_native_text,
+        has_native_structure=has_native_structure,
+        has_visual_content=has_visual_content,
+        page_like_units=page_like_units,
+        confidence=round(min(confidence, 1.0), 3),
+        review_reasons=tuple(review),
+    )
+
+
+def _inspect_zip(
+    data: bytes, review: list[str]
+) -> tuple[bool, str, SourceFamily, str | None, bool, bool | None] | None:
+    """Sniff a ZIP package without extracting a member (§8.1 steps 4, 5, 6, 10)."""
+    if b"PK\x05\x06" not in data[-66_000:]:
+        review.append("ZIP_TRUNCATED")
+        return None
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            entries = archive.infolist()
+            names = [entry.filename.replace("\\", "/").casefold() for entry in entries]
+            encrypted = any(entry.flag_bits & 0x1 for entry in entries)
+            uncompressed = sum(entry.file_size for entry in entries)
+            compressed = sum(entry.compress_size for entry in entries)
+    except (OSError, zipfile.BadZipFile, NotImplementedError):
+        review.append("ZIP_UNREADABLE")
+        return None
+
+    if encrypted:
+        review.append("ARCHIVE_ENCRYPTED_ENTRY")
+    if uncompressed / max(compressed, 1) > _MAX_COMPRESSION_RATIO:
+        review.append("ARCHIVE_RATIO_RISK")
+    if not entries:
+        review.append("ARCHIVE_EMPTY")
+
+    for marker, kind, mime, family in _ZIP_PACKAGE:
+        if any(name.startswith(marker) or name == marker for name in names):
+            has_structure = None if encrypted else True
+            return True, mime, family, kind, encrypted, has_structure
+    return True, "application/zip", SourceFamily.ARCHIVE, "zip", encrypted, None
+
+
+def _inspect_pdf(data: bytes, review: list[str]) -> tuple[bool, bool, bool | None, int | None]:
+    """Return (encrypted, corrupted, has_native_text, page_like_units)."""
+    if b"%%EOF" not in data[-2048:]:
+        review.append("PDF_TRUNCATED")
+        return False, True, None, None
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(io.BytesIO(data), strict=False)
+        if reader.is_encrypted:
+            review.append("ENCRYPTED_PDF")
+            # Page and text facts are unreadable behind encryption; do not guess.
+            return True, False, None, None
+        pages = len(reader.pages)
+        has_text = any(bool(page.extract_text().strip()) for page in reader.pages[:5])
+    except Exception as error:  # pypdf raises a wide, undeclared set on hostile input
+        review.append(f"PDF_UNREADABLE:{type(error).__name__}")
+        return False, True, None, None
+    if pages == 0:
+        review.append("PDF_NO_PAGES")
+    return False, False, has_text, pages
