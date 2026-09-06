@@ -26,6 +26,8 @@ from .models import (
 
 _HEADING_PATTERN = re.compile(r"^heading\s*([1-9])$", re.IGNORECASE)
 _RELATIONSHIP_ATTRIBUTE_NAMES = frozenset({"embed", "id"})
+#: `w:footnote/@w:type` values that are layout furniture rather than content.
+_FOOTNOTE_FURNITURE = frozenset({"separator", "continuationSeparator", "continuationNotice"})
 
 
 def parse_docx(data: bytes, builder: CirBuilder) -> str:
@@ -148,6 +150,7 @@ def parse_docx(data: bytes, builder: CirBuilder) -> str:
 
     story_image_count = _add_headers_and_footers(document, builder)
     comments = _add_comments(data, builder, comment_parents)
+    footnotes = _add_footnotes(data, builder)
     revisions = _collect_revisions(data, builder)
     if revisions:
         builder.add_warning("docx_tracked_changes_visible_view_preserved")
@@ -157,6 +160,7 @@ def parse_docx(data: bytes, builder: CirBuilder) -> str:
         "imagePlacementCount": image_placement_count + story_image_count,
         "textBoxCount": text_box_count,
         "commentCount": comments,
+        "footnoteCount": footnotes,
         "trackedChanges": revisions,
         "trackedChangeView": "insertions-visible-deletions-metadata-only",
     }
@@ -456,6 +460,50 @@ def _add_comments(
             markdown=text,
             parent_id=comment_parents.get(comment_id),
             quality_flags=tuple(flags),
+        )
+        count += 1
+    return count
+
+
+def _add_footnotes(data: bytes, builder: CirBuilder) -> int:
+    """Footnote bodies from `word/footnotes.xml` (lane C-3 fidelity gap).
+
+    A footnote carries the sentence's source, so a document whose footnotes are
+    dropped reads as if its claims had none. EvidenceLocator v2 already has a
+    `footnoteId` anchor; nothing produced an id to put in it.
+
+    The separator and continuation footnotes Word writes into every file are
+    layout furniture, not content, and are skipped by type rather than by
+    guessing from their (empty) text.
+    """
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        if "word/footnotes.xml" not in archive.namelist():
+            return 0
+        try:
+            root = SafeElementTree.fromstring(archive.read("word/footnotes.xml"))
+        except (DefusedXmlException, SafeElementTree.ParseError) as exc:
+            raise StructuredParseError("DOCX_PARSE_FAILED") from exc
+    count = 0
+    for footnote in root.iter():
+        if _local_name(footnote) != "footnote":
+            continue
+        footnote_id = _attribute_by_local_names(footnote, frozenset({"id"}))
+        if footnote_id is None:
+            continue
+        if _attribute_by_local_names(footnote, frozenset({"type"})) in _FOOTNOTE_FURNITURE:
+            continue
+        text = _visible_text(footnote, include_text_boxes=True)
+        if not text:
+            continue
+        builder.add_block(
+            block_type=BlockType.FOOTNOTE,
+            location=SourceLocation(
+                page_index0=0,
+                native_object_id=f"docx/footnotes/{footnote_id}",
+            ),
+            raw_text=text,
+            markdown=text,
+            quality_flags=("docx_footnote",),
         )
         count += 1
     return count

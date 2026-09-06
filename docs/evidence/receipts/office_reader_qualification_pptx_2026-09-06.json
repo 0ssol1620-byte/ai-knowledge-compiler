@@ -1,0 +1,304 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "pptx",
+  "providerId": "native_pptx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-06",
+  "corpus": {
+    "root": "tests/fixtures/office_corpus/pptx",
+    "fileCount": 10,
+    "sha256": "sha256:a84e792a622fcd01b2c248334cc322428e8a186d467423630c3dc769938e8cf8"
+  },
+  "expectedManifest": {
+    "path": "tests/fixtures/office_corpus/expected.json",
+    "sha256": "sha256:5ff2377ac408ab339b2b659e90540ebb144ec70863641869be69d90a9242b3ab"
+  },
+  "runtime": {
+    "digest": "sha256:378699b1d8f3820050f978ec3a3f438ad9e853d23d6bf8e67d98b06713cf164b",
+    "python": "3.13.0"
+  },
+  "rows": [
+    {
+      "file": "pptx/01-title-and-body.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "Quarterly review",
+          "Revenue rose in every region."
+        ]
+      },
+      "observed": {
+        "1": [
+          "Quarterly review",
+          "Revenue rose in every region."
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/02-speaker-notes.pptx",
+      "capability": "pptx_speaker_notes",
+      "expected": {
+        "1": "Mention the two stalled deals."
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the notes block's native id is pptx/slide/NNNN/notes and EvidenceLocator v2's pptx variant has no notes field. The note's text lives in ppt/notesSlides/notesSlideN.xml, not in the slide part a slideNumber1 anchor names, so the unit carries locator=None. Its text is still emitted; what a caller cannot get is an address for it."
+    },
+    {
+      "file": "pptx/03-table.pptx",
+      "capability": "pptx_table_cells",
+      "expected": {
+        "1/0000": [
+          "Team",
+          "People",
+          "platform",
+          "4",
+          "research",
+          "2"
+        ]
+      },
+      "observed": {
+        "1/0000": [
+          "Team",
+          "People",
+          "platform",
+          "4",
+          "research",
+          "2"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/04-grouped-shapes.pptx",
+      "capability": "pptx_shape_reading_order",
+      "expected": {
+        "1": [
+          "0000.0000",
+          "0000.0001",
+          "0001"
+        ]
+      },
+      "observed": {
+        "1": [
+          "0000.0000",
+          "0000.0001",
+          "0001"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/04-grouped-shapes.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "Group first",
+          "Group second",
+          "After the group"
+        ]
+      },
+      "observed": {
+        "1": [
+          "Group first",
+          "Group second",
+          "After the group"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/05-multi-slide.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "Agenda for slide 1"
+        ],
+        "2": [
+          "Results for slide 2"
+        ],
+        "3": [
+          "Next steps for slide 3"
+        ]
+      },
+      "observed": {
+        "1": [
+          "Agenda for slide 1"
+        ],
+        "2": [
+          "Results for slide 2"
+        ],
+        "3": [
+          "Next steps for slide 3"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/06-nested-group.pptx",
+      "capability": "pptx_shape_reading_order",
+      "expected": {
+        "1": [
+          "0000.0000",
+          "0000.0001.0000",
+          "0000.0001.0001"
+        ]
+      },
+      "observed": {
+        "1": [
+          "0000.0000",
+          "0000.0001.0000",
+          "0000.0001.0001"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/07-notes-multi-slide.pptx",
+      "capability": "pptx_speaker_notes",
+      "expected": {
+        "1": "First note.",
+        "2": "Second note."
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the notes block's native id is pptx/slide/NNNN/notes and EvidenceLocator v2's pptx variant has no notes field. The note's text lives in ppt/notesSlides/notesSlideN.xml, not in the slide part a slideNumber1 anchor names, so the unit carries locator=None. Its text is still emitted; what a caller cannot get is an address for it."
+    },
+    {
+      "file": "pptx/08-textbox-reading-order.pptx",
+      "capability": "pptx_shape_reading_order",
+      "expected": {
+        "1": [
+          "0002",
+          "0001",
+          "0000"
+        ]
+      },
+      "observed": {
+        "1": [
+          "0002",
+          "0001",
+          "0000"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/08-textbox-reading-order.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "Top box",
+          "Middle box",
+          "Bottom box"
+        ]
+      },
+      "observed": {
+        "1": [
+          "Top box",
+          "Middle box",
+          "Bottom box"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/09-unicode.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "분기 검토",
+          "Résumé — Übersicht"
+        ]
+      },
+      "observed": {
+        "1": [
+          "분기 검토",
+          "Résumé — Übersicht"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/10-table-merged-header.pptx",
+      "capability": "pptx_table_cells",
+      "expected": {
+        "1/0000": [
+          "Headcount",
+          "platform",
+          "4",
+          "research",
+          "2"
+        ]
+      },
+      "observed": {
+        "1/0000": [
+          "Headcount",
+          "platform",
+          "4",
+          "research",
+          "2"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/10-table-merged-header.pptx",
+      "capability": "pptx_merged_cell_spans",
+      "expected": {
+        "1/0000": {
+          "r/0000/c/0000": [
+            1,
+            2
+          ]
+        }
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "same as xlsx_merged_ranges, and the pptx variant additionally has no cell anchor at all: a cell is addressed no finer than its shape."
+    }
+  ],
+  "totals": {
+    "rows": 13,
+    "passed": 10,
+    "failed": 3
+  },
+  "failedCapabilities": [
+    "pptx_merged_cell_spans",
+    "pptx_speaker_notes"
+  ],
+  "evidence": {
+    "structural": "FAIL",
+    "locator": "PASS",
+    "website": "ABSENT",
+    "malformed": "PASS",
+    "performance": "ABSENT",
+    "deterministic": "PASS"
+  },
+  "evidenceNotes": {
+    "structural": "measured here: every expected-manifest row for this family, from the provider's own ExtractedUnit stream over the committed corpus.",
+    "locator": "measured here: the rows whose observed value is selected by an EvidenceLocator v2 anchor. A row whose value differs is counted as a miss, because this receipt cannot tell a wrong anchor from a right anchor over wrong content.",
+    "website": "ABSENT: the full upload -> CDR -> native read -> compile -> evidence UI sequence on a Preview deployment is lane C-5. Nothing in this repository measures it, and no test here is a substitute for it.",
+    "malformed": "not measured by this tool; the committed tests named in evidenceCitations are, and they run in the CI unit scope. They cover an undecompressable package member, a malformed main part, a zip bomb, an external relationship, macro-enabled bytes and a password-protected container, each asserted through ReaderRegistry.read().",
+    "performance": "ABSENT: no p50/p95 per file-size class has been measured for these readers. A timing taken on this machine would not be a receipt.",
+    "deterministic": "not measured by this tool; the committed tests named in evidenceCitations are. They rebuild the corpus to the committed bytes and re-run this qualifier against the committed receipt."
+  },
+  "evidenceCitations": {
+    "malformed": [
+      "tests/unit/test_office_readers.py::test_an_undecompressable_package_member_is_a_receipt_not_an_exception",
+      "tests/unit/test_office_readers.py::test_a_malformed_main_part_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_zip_bomb_office_package_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_an_external_relationship_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_macro_enabled_bytes_are_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_password_protected_office_container_is_locked_not_corrupt"
+    ],
+    "deterministic": [
+      "tests/unit/test_office_qualification.py::test_the_corpus_rebuilds_to_the_committed_bytes",
+      "tests/unit/test_office_qualification.py::test_the_committed_receipt_matches_a_fresh_run",
+      "tests/unit/test_office_readers.py::test_probe_samples_are_byte_deterministic"
+    ]
+  },
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE requires all six evidence items PASS in this receipt (lane contract §4, founder ruling G-6); C-3 supplies at most four, so this tool never mints one. Every expected row must also pass, and a failing row is listed verbatim as a known limitation. A receipt claiming VERIFIED_NATIVE with any ABSENT item is a P0 false success."
+}

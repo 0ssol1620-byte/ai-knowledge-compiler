@@ -10,3 +10,10 @@
 *.zip binary
 *.zst binary
 
+# OOXML packages are ZIP archives. `text=auto` guesses right today, but a
+# qualification receipt names its corpus by sha256, so one newline translated on
+# one checkout would invalidate the receipt. The guess is not left to chance.
+*.xlsx binary
+*.docx binary
+*.pptx binary
+
