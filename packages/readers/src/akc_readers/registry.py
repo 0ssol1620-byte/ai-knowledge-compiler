@@ -550,7 +550,19 @@ class ReaderRegistry:
         except ProviderUnavailableError as error:
             failure, escalation = FailureClass.PROVIDER_UNAVAILABLE, str(error)
         except Exception as error:
-            failure, escalation = FailureClass.PROVIDER_UNAVAILABLE, type(error).__name__
+            # An exception no branch above classifies is a **defect in the
+            # reader on this input**, never evidence that the provider is down.
+            # Calling it PROVIDER_UNAVAILABLE published a fault that did not
+            # happen and charged the *operational* breaker with it: three such
+            # calls from one caller — a malformed `tenant_id` reaching a
+            # provider's pydantic context was enough — opened the shared breaker
+            # and refused every later caller, any tenant, for the cooldown.
+            # PRESERVATION_FAILED is this module's declared "no specific class"
+            # fallback and is in neither frozenset above, so the run fails
+            # closed without taking a healthy reader offline, and the escalation
+            # reason says the class was not diagnosed.
+            failure = FailureClass.PRESERVATION_FAILED
+            escalation = f"UNCLASSIFIED_READER_ERROR: {type(error).__name__}"
 
         if failure is None and output is not None and not output.units:
             failure, escalation = FailureClass.EMPTY_OUTPUT, "reader produced no units"

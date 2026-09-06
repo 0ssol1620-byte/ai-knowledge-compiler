@@ -7,6 +7,7 @@ import inspect as inspect_module
 import io
 import time
 import zipfile
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
@@ -391,22 +392,60 @@ class _Clock:
         self._now += timedelta(seconds=seconds)
 
 
-def test_a_reader_that_raises_is_recorded_as_provider_unavailable() -> None:
-    class _Broken(PlainTextV1):
-        provider_id = "broken_text_v1"
+class _Broken(PlainTextV1):
+    provider_id = "broken_text_v1"
 
-        def extract_native(self, source: ReaderInput) -> NativeExtraction:
-            if not source.filename.startswith("probe."):
-                raise RuntimeError("reader exploded")
-            return super().extract_native(source)
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        if not source.filename.startswith("probe."):
+            raise RuntimeError("reader exploded")
+        return super().extract_native(source)
 
+
+def test_a_reader_that_raises_an_unclassified_error_does_not_claim_unavailability() -> None:
+    """The class must not assert a fault that did not happen (registry.py:552).
+
+    A reader that raised anything the `except` ladder does not classify was
+    published as `PROVIDER_UNAVAILABLE` — the provider answered, so that class
+    is false — and the receipt is what a caller escalates on.
+    """
     registry = ReaderRegistry()
     registry.register(_Broken())
     source = _input(b"Paragraph.\n", filename="notes.txt", declared_mime="text/plain")
     output, receipt = registry.read(source, inspection=inspect_source(source))
     assert output is None
-    assert receipt.failure_class is FailureClass.PROVIDER_UNAVAILABLE
-    assert receipt.escalation_reason == "RuntimeError"
+    assert receipt.accepted is False
+    assert receipt.failure_class is FailureClass.PRESERVATION_FAILED
+    assert receipt.escalation_reason == "UNCLASSIFIED_READER_ERROR: RuntimeError"
+
+
+def test_an_unclassified_reader_error_never_opens_the_shared_circuit() -> None:
+    """One caller's malformed input must not refuse every other caller.
+
+    `PROVIDER_UNAVAILABLE` is in `OPERATIONAL_FAILURE_CLASSES`, so three
+    unclassified exceptions charged the breaker and every later read — any
+    tenant, the same process-wide registry — came back
+    `PROVIDER_UNAVAILABLE: circuit_open` for the cooldown. Reproduced with the
+    real trigger: a `tenant_id` too short for `StableId` raises pydantic's
+    `ValidationError` inside `LegacyPdfV1.extract_native`.
+    """
+    from akc_readers.providers import _probe_pdf_bytes
+
+    pdf = _probe_pdf_bytes()
+    registry = _registry()
+    good = _input(pdf, filename="probe.pdf", declared_mime="application/pdf")
+    assert registry.read(good)[1].accepted is True
+
+    bad = replace(good, tenant_id="ab")
+    for _ in range(5):
+        output, receipt = registry.read(bad)
+        assert output is None
+        assert receipt.failure_class is FailureClass.PRESERVATION_FAILED
+        assert receipt.escalation_reason == "UNCLASSIFIED_READER_ERROR: ValidationError"
+
+    assert all(item.circuit_open is False for item in registry.health())
+    output, receipt = registry.read(good)
+    assert output is not None
+    assert receipt.accepted is True
 
 
 # -- registry entries ---------------------------------------------------

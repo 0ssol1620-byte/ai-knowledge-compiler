@@ -241,6 +241,18 @@ output or its evidence to the wrong source is defective, and hiding it behind
 automatically — de-registration is a manual act in P0 (contract §8.1), and the
 threshold that would make it automatic is a decision, not a default.
 
+**An unclassified exception is a reader defect, not an outage.** Anything the
+`except` ladder in `read()` does not classify is published as
+`PRESERVATION_FAILED` with `escalation_reason =
+"UNCLASSIFIED_READER_ERROR: <ExceptionType>"`, and charges neither counter. It
+used to be `PROVIDER_UNAVAILABLE`, which both asserted a fault that never
+happened — the provider answered; it raised — and, being operational, opened the
+shared breaker: three such calls from one caller (a `tenant_id` too short for
+`StableId` reaching a provider's pydantic context is enough) refused every later
+caller, any tenant, for the whole cooldown. `PRESERVATION_FAILED` is the frozen
+list's "no specific class" fallback, the same one an unmet feature falls back to;
+the escalation reason is what says the class was not diagnosed.
+
 **Ceiling, recorded not hidden:** Python cannot kill a worker thread, so a
 timed-out reader runs to completion in the background. That leaks a CPU second,
 not a result — the receipt is `PARSER_TIMEOUT` and the output is discarded. The

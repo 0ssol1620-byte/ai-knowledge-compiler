@@ -431,3 +431,116 @@ Only real-world acts. Nothing below was done.
 
 Branch `agent/uskc-integration`. Base `d9db24c`. Merges `f6dfe92` (lane C) and `4ed01e8` (lane E), then
 `4eaf869`, `df4fc70`, `f8894c7` and this report's commit. **Production deploy 안 함.**
+
+---
+
+## 9. Repair — adversarial review round, from `4d13f74`
+
+One CONFIRMED finding, rated `major`, from the INTEGRATION CORRECTNESS lens. The FOUNDER RESOLUTIONS AND
+HONESTY lens returned `GO` with no findings. Nothing else was changed; no scope was widened.
+
+### 9.1 The finding, reproduced before it was fixed
+
+*`registry.py:552` mapped every unclassified provider exception to `PROVIDER_UNAVAILABLE`, which is in
+`OPERATIONAL_FAILURE_CLASSES`, so one caller's malformed input opened the shared circuit breaker against
+every other caller — and the receipt published a failure class that never happened.*
+
+Reproduced on `4d13f74` with a throwaway probe (deleted) against `LegacyPdfV1`, project interpreter,
+`PYTHONPATH` set to this worktree:
+
+```
+GOOD before: True None None
+bad#0: accepted=False class=PROVIDER_UNAVAILABLE reason=ValidationError
+bad#1: accepted=False class=PROVIDER_UNAVAILABLE reason=ValidationError
+bad#2: accepted=False class=PROVIDER_UNAVAILABLE reason=ValidationError
+bad#3: accepted=False class=PROVIDER_UNAVAILABLE reason=REVIEW_REQUIRED: circuit_open
+bad#4: accepted=False class=PROVIDER_UNAVAILABLE reason=REVIEW_REQUIRED: circuit_open
+GOOD after 5 bad: False PROVIDER_UNAVAILABLE REVIEW_REQUIRED: circuit_open
+health: [('legacy_pdf_v1', True)]
+```
+
+The `bad` reads differ from the `good` one in exactly one field: `tenant_id="ab"`, shorter than
+`StableId`'s three-character minimum, which raises pydantic's `ValidationError` inside
+`LegacyPdfV1.extract_native` when it builds its `ParseContext`. The reviewer's account is accurate in
+every part, including that the defect is a lane C carry-over present at `3ff358b` and that it survived
+into the tree this integration declared ready.
+
+### 9.2 The fix
+
+`packages/readers/src/akc_readers/registry.py` — the catch-all now publishes
+
+```python
+failure = FailureClass.PRESERVATION_FAILED
+escalation = f"UNCLASSIFIED_READER_ERROR: {type(error).__name__}"
+```
+
+Why that class and not another: the frozen `FailureClass` list has no "reader defect" value and this
+repair does not add one to a frozen artifact. `PRESERVATION_FAILED` is the module's already-declared
+"no specific class" fallback (the same one `FEATURE_TO_FAILURE_CLASS` falls back to), and it is in
+**neither** `OPERATIONAL_FAILURE_CLASSES` nor `SEMANTIC_FAILURE_CLASSES` — so the run fails closed, the
+breaker is not charged, the semantic-strike counter is not charged, and nothing asserts the provider was
+down. The escalation reason is what carries the honest statement that the class was not diagnosed.
+`failure_class=None` was not an option: `ReaderRun.validate_receipt` (`models.py:252`) refuses a rejected
+run that names no frozen class, which is the right rule and stays.
+
+The three explicit branches above it are untouched: a timeout is still `PARSER_TIMEOUT` and still opens
+the circuit (contract §4.4 requires exactly that), `MemoryError` is still `PARSER_OOM`, and a provider
+that raises `ProviderUnavailableError` — the deliberate signal that it is down — is still
+`PROVIDER_UNAVAILABLE` and still charges the breaker.
+
+### 9.3 The failure-path tests that would have caught it
+
+`packages/readers/tests/test_reader_plane.py`:
+
+- `test_a_reader_that_raises_an_unclassified_error_does_not_claim_unavailability` — replaces
+  `test_a_reader_that_raises_is_recorded_as_provider_unavailable`, which asserted the defect as the
+  contract. The old name is gone on purpose; the receipt it locked in was false.
+- `test_an_unclassified_reader_error_never_opens_the_shared_circuit` — the reviewer's scenario as a test:
+  a good PDF read succeeds, five reads that differ only by `tenant_id="ab"` all come back
+  `PRESERVATION_FAILED` / `UNCLASSIFIED_READER_ERROR: ValidationError`, **every** provider's
+  `circuit_open` is still `False`, and the same good read still succeeds afterwards.
+
+Both were proven to fail without the fix. With `registry.py` reverted to `4d13f74` and only the tests
+applied:
+
+```
+FAILED test_reader_plane.py::test_a_reader_that_raises_an_unclassified_error_does_not_claim_unavailability
+FAILED test_reader_plane.py::test_an_unclassified_reader_error_never_opens_the_shared_circuit
+2 failed, 67 deselected in 2.32s
+   assert <FailureClass.PROVIDER_UNAVAILABLE: 'PROVIDER_UNAVAILABLE'> is <FailureClass.PRESERVATION_FAILED: ...>
+```
+
+`docs/architecture/reader-provider-plane.md` gains one paragraph under "Timeout and circuit breaker"
+stating the rule. Lane C's report is a historical record and was not edited.
+
+### 9.4 Found while reproducing, NOT fixed, and not part of the finding
+
+`ReaderRegistry.read()` **raises** instead of returning a §44 receipt when the caller's
+`source_version_id` is not a valid `StableId` — same probe, last line: `short source_version_id RAISED:
+ValidationError`. The receipt itself is typed `source_version_id: StableId`, so no receipt describing that
+input can be constructed, which makes the docstring's "Always returns a §44 receipt" false for that one
+class of input. It is a different defect from the one reviewed, it needs a contract decision (which frozen
+class describes a caller error, or whether `read()` may raise on an unaddressable source), and inventing
+either would be widening scope. Recorded here, not repaired.
+
+### 9.5 Gates, rerun in full after the repair
+
+Same commands as §6, same environment, real exit codes.
+
+| Gate | Exit | Result |
+|---|---|---|
+| `pytest tests/unit packages/readers/tests -q -p no:randomly` | 1 | `7 failed, 1203 passed, 74 skipped` — the same seven pre-existing failures proven on `d9db24c` in §5, one more passing test than before (1202 → 1203). `git status --short` after the run shows only the three files this repair edits: no receipt side effect. |
+| `ruff check packages services tests` | 0 | `All checks passed!` |
+| `mypy packages services` | 1 | The same two pre-existing errors, same files, `checked 271 source files`. Neither file is in this repair's diff. |
+| `tsc -p packages/contracts/tsconfig.json --noEmit` | 0 | no output |
+| `scripts/generate_contract_types.py --check` | 0 | `generated contracts are current` |
+| coverage gate, `run_test_scopes --scopes full`, site gates | skipped | Unchanged reasons, §6. |
+
+Import resolution, verified for this repair: `akc_cir` and `akc_readers` resolve to **this worktree**
+(`…\uskc-lanes\core-integration\packages\…`) once `PYTHONPATH` names the two package `src` directories,
+which is what `[tool.pytest.ini_options] pythonpath` gives pytest automatically. `akc_native_parsers`
+resolves to the main checkout's copy (installed editable there); this branch changes no file under
+`packages/native-parsers`, so the two copies are the same bytes at the same commit.
+
+**Production deploy 안 함. Git push로 Preview deployment는 자동 생성됨.** (Core repository — no Vercel
+project is attached, so no Preview is actually created either.)
