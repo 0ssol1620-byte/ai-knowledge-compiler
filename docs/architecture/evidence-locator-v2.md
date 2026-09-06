@@ -146,6 +146,13 @@ would verify against any other — a receipt that proves nothing. This is the
 common case, not the exotic one: the product's own corpus is largely scanned
 PDFs, where `extract_text()` returns `""` for every page.
 
+**Whitespace is nothing.** The first version of this guard tested `if not text`,
+which let a page whose only text run is a space through: two structurally
+different PDFs both resolved to `sha256(" ")`, and a receipt taken from one
+verified against the other. `str.strip()` decides, so a whitespace-only page,
+cell or range is `EMPTY_OUTPUT` too. The digest still covers the text as read —
+stripping is the emptiness test, not a normalisation of the evidence.
+
 Before this module, **nothing in the tree opened a representation and checked
 that an anchor was really there**; only structural validation existed
 (`page_index0 + 1 == page_number1`, bbox ordering). Seam-map contradiction C-5
@@ -156,19 +163,39 @@ committed fixtures only — no corpus, no calibration, no claim of coverage.
 | Kind | What resolves | What it does not |
 |---|---|---|
 | `json` | RFC 6901 pointer, stdlib `json`. Escapes `~0`/`~1`; the empty pointer is the whole document; array indices reject leading zeros. Excerpt is the canonical JSON of the value. | Nothing deferred. JSONPath (§11 mentions both) is not implemented; the schema's field is `pointer`. |
-| `xlsx` | Sheet by name → package relationship → worksheet part, through `zipfile` and `defusedxml`. Shared strings, inline strings, booleans, numbers and cached formula values. `cell` and `range` (row-major, tab/newline joined). | `namedRange`, `tableId`, `chartId` → `UNSUPPORTED_FORMAT`. The optional `workbook` field is **not** checked: the representation bytes are the workbook by contract, and there is no way here to bind an external workbook name to them. |
+| `xlsx` | Archive guards, then sheet by name → package relationship → worksheet part, through `zipfile` and `defusedxml`. Shared strings, inline strings, booleans, numbers and cached formula values. `cell` and `range` (row-major, tab/newline joined). | `namedRange`, `tableId`, `chartId` → `UNSUPPORTED_FORMAT`. The optional `workbook` field is **not** checked: the representation bytes are the workbook by contract, and there is no way here to bind an external workbook name to them. |
 | `pdf` | Page-bound check against the real page count, then the page's native text via `pypdf`. | It resolves to the **page**, not to the bbox region. Nothing in this tree extracts text for an arbitrary rectangle; producing one would be a fabricated excerpt. `contentDigest` on a `pdf` locator therefore means "digest of the resolved page text". |
 
-Guards, because a representation is hostile data: package parts over 8 MiB
-declared size are refused (`CORRUPT_SOURCE`), ranges over 4,096 cells are
-refused before expansion, XML goes through `defusedxml` (also what
-`akc_native_parsers` uses — stdlib `xml.etree` would trip ruff `S314`), and an
-encrypted PDF is `ENCRYPTED_SOURCE` rather than being misreported as corrupt.
-The xlsx path catches the whole exception family `zipfile` raises, not just
-`BadZipFile`: two edited bytes in a central-directory entry's "version needed
-to extract" make `zipfile` raise `NotImplementedError`, and an encrypted member
-makes it raise `RuntimeError`. Both are `CORRUPT_SOURCE`, never a traceback out
-of `resolve_locator`.
+Guards, because a representation is hostile data. **The xlsx package goes
+through the repo's existing archive guards before a single part is read**:
+`akc_native_parsers.security.validate_source` (duplicate part names, path
+traversal, encrypted and symlink members, entry count, uncompressed size,
+compression ratio, active content, external relationships, the OOXML package
+shape). A bare `zipfile` reads whichever entry the central directory lists
+*last*, so a workbook with an appended second `xl/workbook.xml` resolved
+evidence out of the attacker's shadow part while the genuine sheet reported
+`EVIDENCE_BROKEN` — a package every other door in the product already refuses
+with `ARCHIVE_DUPLICATE_ENTRY`. The stable `StructuredParseError.code` maps to a
+`FailureClass`: `ENCRYPTED_SOURCE` for an encrypted member,
+`MALWARE_QUARANTINED` for active content or an embedded/external object,
+`CORRUPT_SOURCE` for everything else, with the code carried in the detail.
+
+Note for the integrator: `akc_native_parsers` imports `akc_cir`, so this import
+runs against the package layering. It is safe as written — `akc_cir/__init__`
+does not import this module, and both packages ship in the one distribution —
+but if the layering is ever enforced, the guard moves down rather than the
+resolver going back to a bare `zipfile`.
+
+On top of that: package parts over 8 MiB declared size are refused
+(`CORRUPT_SOURCE`), ranges over 4,096 cells are refused before expansion, XML
+goes through `defusedxml` (also what `akc_native_parsers` uses — stdlib
+`xml.etree` would trip ruff `S314`), and an encrypted PDF is `ENCRYPTED_SOURCE`
+rather than being misreported as corrupt. The xlsx path catches the whole
+exception family `zipfile` raises, not just `BadZipFile`: two edited bytes in a
+central-directory entry's "version needed to extract" make `zipfile` raise
+`NotImplementedError` — before `validate_source` can classify it — and an
+encrypted member makes it raise `RuntimeError`. Both are `CORRUPT_SOURCE`,
+never a traceback out of `resolve_locator`.
 
 `defusedxml` and `pypdf` are existing root dependencies; **no dependency was
 added**.

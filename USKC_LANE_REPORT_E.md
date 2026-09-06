@@ -6,7 +6,7 @@ Worktree: `D:\CodexProjects\uskc-lanes\core-e-evidence-locator`. Base: core `res
 ## 1. Branch and pushed SHA
 
 - Branch: `agent/uskc-e-evidence-locator`
-- Pushed SHA: reported in the structured lane result; `git rev-parse origin/agent/uskc-e-evidence-locator` is authoritative (a commit cannot contain its own SHA). The three code/doc commits under it are `9055734`, `609de9c`, `409979d`.
+- Pushed SHA: reported in the structured lane result; `git rev-parse origin/agent/uskc-e-evidence-locator` is authoritative (a commit cannot contain its own SHA). **Corrected in repair round 2:** this line said "the three code/doc commits under it are `9055734`, `609de9c`, `409979d`", which was already stale when it was pushed — the first repair pass added `4d389b3` and `768060b`. `git log --oneline d9db24c..HEAD` is the authoritative list; repair round 2 adds `db1bf88`, `83d1c26`, `50ab5f4` and the commit carrying this correction.
 - No PR, no merge, no deploy, no migration. Core repo — no Vercel preview is involved.
 
 ## 2. Files created / modified
@@ -30,7 +30,7 @@ Row-only edits (exactly as the ownership row allows):
 | Path | Edit |
 |---|---|
 | `packages/cir-python/src/akc_cir/schema.py` | Two lines: `from .evidence_locator import EvidenceLocatorUnion` and the `"evidence-locator": EvidenceLocatorUnion,` row in `SCHEMA_MODELS`. Nothing else. |
-| `packages/contracts/src/generated-contracts.ts` | **Regenerated**, never hand-edited, by `scripts/generate_contract_types.py`. The generator itself was **not** edited — its `anyOf`/`oneOf` → TS union handling worked on a real discriminated union first time. The diff is additive only (+19 lines, one new namespace); every existing `SourceRef` shape in the file is byte-identical before and after (verified by diffing the file with the new namespace filtered out — no other line moved). |
+| `packages/contracts/src/generated-contracts.ts` | **Regenerated**, never hand-edited, by `scripts/generate_contract_types.py`. The generator itself was **not** edited — its `anyOf`/`oneOf` → TS union handling worked on a real discriminated union first time. The diff is additive only (**21 lines added, 0 removed** — `git diff d9db24c..HEAD --numstat`; the first pass said "+19" and was wrong), one new namespace; every existing `SourceRef` shape in the file is byte-identical before and after (verified by diffing the file with the new namespace filtered out — no other line moved). |
 
 Nothing outside the ownership row was committed. `docs/repro/TEST_SCOPE_SELF_TEST.json` is rewritten as a side effect of running `tests/unit` (see §7 F-4); it was reverted with `git checkout --` and is not in any commit. No Protected Core module was touched: `identity.py`, `semantic_diff.py`, `models.py` (`SourceRef`), `inspection.py`, `recovery_policy.py`, `reconciler.py`, `dependency.py`, `recompilation.py`, `world_state.py` are unchanged. `research/model_arena_20260903/**` was never read, imported, written or run.
 
@@ -71,7 +71,7 @@ structure-only-stale-diagnosis-2026-08-18.json that is not the one on disk.
   The retraction no longer applies to these bytes, so the retracted claim is live again.
 ```
 
-These are **tracked** files (`git ls-files research/experiments/H1-B-REAL-REVISION-01/receipts/` lists them) at base commit `d9db24c`, the worktree is clean, and the mismatch is not a line-ending artifact (`.gitattributes` is `* text=auto eol=lf`; the file on disk is LF and hashes to `522d8a5…` either way). **This is an evidence-hash mismatch on the base branch, which `CLAUDE.md` lists under "Stop the line".** `research/experiments/**` is explicitly outside every lane's reach, so it is reported, not touched. Flagged for the orchestrator and the founder.
+**STRUCK in repair round 2 — the diagnosis was wrong and the escalation is withdrawn.** The first pass called this an evidence-hash mismatch on the base branch and escalated it under `CLAUDE.md` "Stop the line". Contract §8.1 ("Withdrawn stop-the-line") closes it: the failures are a CRLF-vs-LF working-tree artifact plus git-ignored corpus files absent from a fresh worktree, and the same tests pass on the main checkout at the same commit (orchestrator: 1017 passed, 1 env-dependent tooling failure). **No evidence was overwritten and nothing here is stop-the-line.** The remedy, if any, belongs to the integrator: an `eol=lf` attribute for the receipt paths, and only if the committed blobs are LF and a fresh worktree then hashes identically. See §11.1.
 
 6. `tests/unit/test_verification_tooling_controls.py::test_the_shipped_bindings_all_validate` — `AssertionError: expected at least one element-level binding on file / assert {}`. Working data that is not tracked and so does not exist in a fresh worktree.
 
@@ -79,7 +79,7 @@ These are **tracked** files (`git ls-files research/experiments/H1-B-REAL-REVISI
 
 8. `tests/unit/test_run_test_scopes_receipt_safety.py::test_self_test_does_not_touch_the_canonical_receipt` — `UnicodeDecodeError: 'cp949' codec can't decode byte 0x80 in position 126` inside `tools/repro/run_test_scopes.py:131` (`text = proc.stdout + proc.stderr`, where `proc.stdout` is then `None`). Order/environment dependent: it **passed** in the first full run of this session and fails in later ones, and `python tools/repro/run_test_scopes.py --self-test` standalone exits 0 three times out of three. A cp949 console-decode fragility in the tool, not a product defect and not caused by this lane.
 
-Coverage: this lane adds ~330 statements to `akc_cir` and 73 tests that exercise both modules including every failure branch; the CI `fail_under = 80` gate is over the whole coverage source list and was not run separately (no `--cov` gate is named in §2).
+Coverage: ~~this lane adds ~330 statements to `akc_cir` and 73 tests that exercise both modules including every failure branch; the CI `fail_under = 80` gate is over the whole coverage source list and was not run separately (no `--cov` gate is named in §2)~~. **Corrected twice.** §2 gate 3 does name `fail_under = 80` over `akc_cir`, and "every failure branch" was not true. Measured in repair round 2: 443 statements, 94 branches, **98 tests, 100% statement and branch coverage, no missing lines** (§11.3 gate 4).
 
 ## 4. What the blueprint asked that I did NOT do, and why
 
@@ -104,7 +104,7 @@ Coverage: this lane adds ~330 statements to `akc_cir` and 73 tests that exercise
 2. **Is `sourceVersionId == document_version_id` permanent or interim?** This lane implements it as the interim identity alias (contract §7 R-8). Reversing it later is a data migration.
 3. **Does an evidence excerpt get stored at all?** `Resolved.excerpt` is capped at the schema's 2,000 characters while `Resolved.digest` covers the whole resolved unit. If excerpts are ever persisted or shown, whether a 2,000-character slice of customer content may be stored is a privacy decision, not an engineering one.
 4. **The `pdf` locator resolves to a page, not to a box.** The site currently says "Exact bbox" / "evidence back to the page" (`home-page-client.tsx`, pinned by `brand-copy.test.ts`). Blueprint §30.2 wants "exact source location" generalised per source. Nothing in this lane changes copy, but the copy and the capability should be reconciled before either is published as a claim.
-5. **The base branch has a live evidence-hash mismatch** (gate 3 failures 1–5). CLAUDE.md classes that as stop-the-line. Who owns fixing `research/experiments/H1-B-REAL-REVISION-01/receipts/`?
+5. ~~**The base branch has a live evidence-hash mismatch** (gate 3 failures 1–5). CLAUDE.md classes that as stop-the-line. Who owns fixing `research/experiments/H1-B-REAL-REVISION-01/receipts/`?~~ **Withdrawn in repair round 2.** Contract §8.1 answers it: a CRLF-vs-LF worktree artifact, not an evidence mismatch, and not a founder question. Nothing to escalate.
 
 ## 7. Contradictions found (blueprint / contract / seam map vs. disk)
 
@@ -117,7 +117,9 @@ Coverage: this lane adds ~330 statements to `akc_cir` and 73 tests that exercise
 
 ## 8. Definition-of-done self-check
 
-Code exists · tests and **failure paths** pass (73 tests; every `Unresolved` branch, the corrupt/encrypted/missing/mismatched cases, and the "wrong variant handed to a resolver" case are all covered) · ruff and mypy clean · TS regenerated and type-checks · doc written and names what is missing · nothing enabled, nothing deployed, no Protected Core touched, no dependency added. **This session does not approve its own result** — independent review is the orchestrator's step.
+**This paragraph was false as first written and is corrected here, not only in the appendix.** It claimed "73 tests; every `Unresolved` branch … are all covered". At the time it was written the suite was 85 tests and four `Unresolved`-producing branches had no test at all. Repair round 2 closed them; the claim is now measured rather than asserted.
+
+Code exists · tests and **failure paths** pass — **98 tests**, and **100% statement and branch coverage** over `akc_cir.evidence_locator` and `akc_cir.evidence_locator_resolvers` (gate 4 in §11.3, `--cov-report=term-missing` with no missing lines), so every `Unresolved` branch, the corrupt/encrypted/missing/mismatched cases and the "wrong variant handed to a resolver" case are covered, and the claim can be re-measured in one command · ruff and mypy clean · TS regenerated and type-checks · doc written and names what is missing · nothing enabled, nothing deployed, no Protected Core touched, no dependency added. Coverage is not proof: it says every branch ran once on committed synthetic fixtures, not that the thresholds or the fixtures are right. **This session does not approve its own result** — independent review is the orchestrator's step.
 
 ## 9. Push
 
@@ -292,3 +294,192 @@ sets it.
 Nothing enabled, nothing deployed, no PR, no merge, no migration, no dependency
 added, no Protected Core module touched, `research/model_arena_20260903`
 untouched. This session still does not approve its own result.
+
+---
+
+## 11. Repair round 2 (2026-09-06, after `REPAIR2_FINDINGS_2026-09-06.json`)
+
+Two correctness findings (one blocker, one major) and one honesty finding, plus
+five report-claim contradictions. **All were confirmed on disk; none is
+disputed.** Every fix follows the ruling in contract §8.1 ("E resolvers"), and
+each comes with the failure-path test that would have caught it. Scope was not
+widened: the same two modules, their two test files, the lane doc and this
+report.
+
+### 11.1 The stop-the-line escalation is struck
+
+Contract §8.1 "Withdrawn stop-the-line" is binding and this lane obeys it. The
+first pass reported the five `test_superseded_receipt_contract` failures as an
+evidence-hash mismatch on the base branch and escalated it to the founder under
+`CLAUDE.md` "Stop the line". That diagnosis was wrong. The failures are a
+CRLF-vs-LF working-tree artifact plus git-ignored corpus files that no fresh
+worktree can have; the same tests pass on the main checkout at the same commit
+(orchestrator: 1017 passed, 1 env-dependent tooling failure). **No evidence was
+overwritten. Nothing here is stop-the-line, and there is no founder question.**
+The escalation is struck at both places it appeared — §3 (the gate-3 narrative)
+and §6 question 5 — not softened and not left standing with a footnote. Any
+remedy is the integrator's `eol=lf` attribute for the receipt paths, and only if
+the committed blobs are LF and a fresh worktree then hashes identically.
+
+I should have checked the main checkout before publishing an alarm. That is the
+lesson, and it is recorded rather than explained away.
+
+### 11.2 The findings
+
+**R2-E-1 (blocker) — `evidence_locator_resolvers.py:376`: the xlsx resolver was
+the one door that accepted a package every other door refuses.**
+Reproduced exactly as reported. Taking the committed `sample.xlsx`, appending a
+second `xl/workbook.xml` (declaring a sheet `Payroll`), a second
+`xl/_rels/workbook.xml.rels` and an `xl/worksheets/shadow.xml` whose A1 is the
+inline string `ATTACKER SUPPLIED`:
+
+```
+resolve_locator(xlsx sheet='Payroll' cell='A1', tampered)
+  -> Resolved(excerpt='ATTACKER SUPPLIED', digest='sha256:c3d2bf43…')
+resolve_locator(xlsx sheet='Revenue' cell='A1', tampered)   # the real sheet
+  -> Unresolved(EVIDENCE_BROKEN, "workbook has no sheet named 'Revenue'")
+validate_source(tampered)  -> StructuredParseError ARCHIVE_DUPLICATE_ENTRY
+```
+
+`zipfile` resolves a duplicate name to whichever entry the central directory
+lists last, so the attacker's shadow workbook decided which sheets existed and
+where they lived, and the resolver handed back a `Resolved` excerpt and digest
+for content that is in no sheet a viewer or the product's own parser would ever
+open.
+
+Fixed per §8.1: `XlsxLocatorResolver.resolve` now calls the repo's existing
+`akc_native_parsers.security.validate_source` before a single part is read —
+duplicate part names, path traversal, encrypted and symlink members, entry
+count, uncompressed size, compression ratio, active content, external
+relationships and the OOXML package shape. `StructuredParseError.code` is a
+stable, body-free vocabulary, so it maps to a `FailureClass`
+(`ARCHIVE_ENCRYPTED_ENTRY` → `ENCRYPTED_SOURCE`; active content or an
+embedded/external object → `MALWARE_QUARANTINED`; everything else →
+`CORRUPT_SOURCE`) with the code carried in the detail. The call sits inside the
+existing `try`, so the broad handler still covers the
+`NotImplementedError`/`RuntimeError` family `zipfile` raises *before*
+`validate_source` can classify it (the R-E-1 case from the first repair pass
+still passes).
+
+*Root-cause placement:* one guard at the archive open, not one per part read.
+`_read_part`, `_parse_part`, `_sheet_part`, `_shared_strings` and `_sheet_cells`
+all sit inside that `with`, so they all inherit it.
+
+Tests: `test_a_shadow_workbook_part_cannot_supply_evidence` (both the attacker's
+sheet *and* the genuine one are refused, with `ARCHIVE_DUPLICATE_ENTRY` named in
+the detail) and
+`test_an_encrypted_package_member_is_encrypted_source_not_corruption`. The two
+package-shape tests that previously built a bare zip now build a package the
+guards accept, because what they test is the resolver's behaviour on a
+well-formed package — the helper `_ooxml_package` says so in its docstring.
+
+*Consequence recorded, not hidden:* the resolver now refuses any workbook the
+product's own upload path would refuse. That is the intent, but it does mean a
+package that a spreadsheet application would open and this validator would not
+now resolves to `Unresolved(CORRUPT_SOURCE)` rather than to evidence. Failing
+closed is the contract; if a real corpus later shows honest workbooks being
+refused, that is a `validate_source` calibration question, not a reason to put
+the bare `zipfile` back.
+
+**R2-E-2 (major) — `evidence_locator_resolvers.py:111`: whitespace resolved.**
+Reproduced. Two structurally different single-page PDFs whose only content
+stream is `BT /F1 12 Tf 10 100 Td ( ) Tj ET` and
+`BT /F1 24 Tf 50 50 Td ( ) Tj ET` both extract to `' '` and both resolved to
+`sha256(' ')` = `36a9e7f1…`, so a `contentDigest` taken from one verified
+against the other. `if not text` was the wrong emptiness test.
+
+Fixed per §8.1 ("`EMPTY_OUTPUT` covers whitespace-only content"):
+`_resolved` now tests `text.strip()`. One change in the one shared helper, so
+all four call sites (pdf page, json pointer, xlsx cell, xlsx range) move
+together. The digest still covers the text as read — stripping decides
+emptiness, it does not normalise the evidence.
+
+Tests: `test_a_page_whose_only_text_is_whitespace_is_empty_output` (the two
+PDFs above, plus the borrowed `sha256(" ")` receipt refused against the second)
+and `test_a_cell_that_holds_only_whitespace_is_empty_output`, parametrized over
+`cell` and a 1×1 `range`, with the same workbook still resolving a populated
+numeric cell and an inline-string cell.
+
+**R2-E-3 (major, honesty) — `USKC_LANE_REPORT_E.md:121`: the coverage claim.**
+Confirmed false on both halves. §8 said "73 tests; every `Unresolved` branch …
+are all covered"; the suite was 85 tests, and four branches that return
+`Unresolved` had no test —
+`evidence_locator_resolvers.py:150-151` and `:161-162` (`CORRUPT_SOURCE` when
+`pypdf` fails after the reader opens), `:249` (the 8 MiB part-size cap) and
+`:283` (a sheet the workbook relationships do not name). §10 had corrected the
+test count and left the coverage claim standing, which is the worse half of the
+error.
+
+Fixed in two places. The claim itself: §8 now carries the retraction inline and
+states a **measured** number — 98 tests, 100% statement and branch coverage over
+both modules — instead of an asserted one. And the branches: all four now have a
+test, along with the `_range_references` A1 guard (unreachable through
+`resolve_locator` because `A1Range` pins the same pattern, so it is tested where
+it lives and its docstring says why it stays), every shape `_cell_text` gives up
+on, the boolean cell that does resolve and had no test at all, the pptx anchor
+refusal, the media span that ends before it starts (which the frozen schema
+cannot express — only the model refuses it, which is §7 F-6 in miniature) and
+the union wrapper's `model_dump`.
+
+Two of the new tests inject a fault rather than fabricate a fixture: a fake
+`PdfReader` that constructs and then raises (pypdf fails lazily, and the branch
+under test is our mapping of that failure), and `monkeypatch` on the part-size
+cap rather than an 8 MiB workbook in git. Both exercise the real branch, and
+each docstring says which knob was turned and why. Neither invents data.
+
+### 11.3 Report claims the reviewer contradicted — every one accepted
+
+| Claim as published | Verdict | Where it is corrected |
+|---|---|---|
+| §8: "73 tests; every `Unresolved` branch … all covered" | **False**, both halves | §8 rewritten with a measured figure; §11.2 R2-E-3 |
+| §2: "The diff is additive only (+19 lines…)" | Number **wrong** — `git diff d9db24c..HEAD --numstat` says 21 added, 0 removed. The additive-only and `SourceRef`-byte-identical halves are correct | §2 row corrected in place |
+| §1: "The three code/doc commits … `9055734`, `609de9c`, `409979d`" | **Incomplete** — six commits on the branch at that point; `4d389b3` and `768060b` were missing | §1 corrected; `git log --oneline d9db24c..HEAD` named as authoritative |
+| Structured gate 9 tail: "the six intended files are committed" | **Wrong count** — `git diff d9db24c..HEAD --name-status` is 13 added, 2 modified. The §2 file table itself was accurate | Corrected here and in this pass's structured result |
+| Structured gate 4: "8 failed, 1089 passed" vs the reviewer's 7 | **Not a contradiction of substance**, and the reviewer says so. This pass reproduces the reviewer's number exactly: 7 failed, 1103 passed, 74 skipped. The differing member is `test_run_test_scopes_receipt_safety`, which the first report already flagged as order-dependent; it did not recur here | §11.4 gate 3 |
+
+Nothing in the findings list was disputed. Every reviewer statement I checked
+held.
+
+### 11.4 Gates rerun — all of them, this pass
+
+Interpreter `PY` = `D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe`, cwd = worktree.
+
+| # | Command | Exit | Output tail |
+|---|---|---|---|
+| 1 | `PY -m pytest tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py -q -p no:randomly` | **0** | `98 passed in 3.24s` |
+| 2a | `PY -m ruff check packages/cir-python/src/akc_cir/evidence_locator.py packages/cir-python/src/akc_cir/evidence_locator_resolvers.py packages/cir-python/src/akc_cir/schema.py tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py tests/fixtures/evidence_locator/build_fixtures.py` | **0** | `All checks passed!` |
+| 2b | `PY -m mypy packages/cir-python/src/akc_cir/` | **0** | `Success: no issues found in 43 source files` |
+| 3 | `PY -m pytest tests/unit -q -p no:randomly` | **1** | `7 failed, 1103 passed, 74 skipped in 199.11s (0:03:19)` — the five `test_superseded_receipt_contract` CRLF/LF artifacts, `test_verification_tooling_controls::test_the_shipped_bindings_all_validate` and `test_w6_v8_confirmatory::test_the_dry_run_…`, all withdrawn by §8.1 as worktree artifacts. None imports or is imported by anything this lane touches. Per §2 gate 3 they are not fixed here. |
+| 4 | `PY -m pytest <lane tests> -q -p no:randomly --cov=akc_cir.evidence_locator --cov=akc_cir.evidence_locator_resolvers --cov-report=term-missing` | **0** | `TOTAL 443 0 94 0 100%` · `2 files skipped due to complete coverage` · `Required test coverage of 80.0% reached. Total coverage: 100.00%` |
+| 5 | `PYTHONPATH=<worktree>/packages/cir-python/src;<worktree> PY scripts/generate_contract_types.py --check` | **0** | `generated contracts are current: packages\contracts\src\generated-contracts.ts, packages\contracts\schemas\collection-event.schema.json` — no TS moved; the resolver change is behavioural only |
+| 6 | `tsc -p packages/contracts/tsconfig.json --noEmit` (main checkout's pinned typescript 5.9.3; core worktrees have no `node_modules`) | **0** | (no output) |
+| 7 | `git status --porcelain` | **0** | clean after `git checkout -- docs/repro/TEST_SCOPE_SELF_TEST.json`, which gate 3 rewrites as a side effect (§7 F-4) and which is in no commit |
+
+### 11.5 New conflict for the integrator (proposal, not an edit)
+
+`akc_native_parsers` imports `akc_cir`, so `akc_cir.evidence_locator_resolvers`
+importing `akc_native_parsers.security` runs **against the package layering**.
+It is safe as shipped — `akc_cir/__init__` does not import this module, so no
+import cycle exists, and every package here ships in the one
+`ai-knowledge-compiler` distribution — and §8.1 rules that these guards are what
+the resolver must use. But the honest reading is that the guard belongs *below*
+both packages. **Proposal:** at integration, move
+`_validate_office_archive` (or a thin public wrapper over it) into
+`akc_security`, which both packages already depend on, and have
+`akc_native_parsers.security` and this resolver call it there. I did not do it:
+`packages/security/**` and `packages/native-parsers/**` are outside this lane's
+§3 ownership row, and §1 says to report the conflict rather than edit.
+
+### 11.6 Files touched in repair round 2
+
+`packages/cir-python/src/akc_cir/evidence_locator_resolvers.py` ·
+`tests/unit/test_evidence_locator_resolvers.py` ·
+`tests/unit/test_evidence_locator.py` ·
+`docs/architecture/evidence-locator-v2.md` · `USKC_LANE_REPORT_E.md`. All five
+are in the §3 ownership row. No new dependency, nothing enabled, no PR, no
+merge, no migration, no deploy, no Protected Core module touched,
+`research/model_arena_20260903/**` never read, imported, written or run.
+Production deploy 안 함. Git push로 Preview deployment는 자동 생성됨 — 단, 이
+레인은 core repo라 Preview 대상이 아님.
+
+**This session still does not approve its own result.**
