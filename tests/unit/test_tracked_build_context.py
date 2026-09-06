@@ -333,7 +333,7 @@ def test_every_hook_is_restored_after_normal_and_erroring_exits(
     original_environ = os.environ
     original_time = time.time
     original_random = random.random
-    original_datetime_class = datetime_module.datetime
+    original_datetime_class = datetime
 
     with pytest.raises(RuntimeError, match="build failed"), TrackedBuildContext():
         raise RuntimeError("build failed")

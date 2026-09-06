@@ -1,0 +1,135 @@
+{
+  "algorithmSha256": {
+    "retrieval.py": "sha256:a5ace28941955621112bf2d62ada95aae7efc96b53bf4457dc0f1c1edb4d5404",
+    "semantics.py": "sha256:7289b28c8932a42423dbc9b5e13e3d2a1b5e94821bc8c8fa5988530bfdb2f44e"
+  },
+  "baseline": {
+    "name": "exact_token_overlap_v1",
+    "precisionAt1": 0.4,
+    "top1Correct": 2
+  },
+  "candidate": {
+    "absoluteDelta": 0.6,
+    "name": "adaptive_multilingual_lexical_graph_authority_v1",
+    "precisionAt1": 1.0,
+    "top1Correct": 5,
+    "vectorMaterialization": "not_used_in_provider_free_qualification"
+  },
+  "cases": [
+    {
+      "adaptiveCorrect": true,
+      "adaptiveScore": {
+        "authorityScore": 1.0,
+        "claimIds": [
+          "claim_8bcc7fd7ac9bec98e0f38828d76c8e9dc541fac66033c19d73c29f7bd8e5ce37"
+        ],
+        "graphScore": 0.0,
+        "lexicalScore": 1.0,
+        "logicalId": "z-finance",
+        "score": 0.9,
+        "temporalScore": 1.0
+      },
+      "adaptiveTop1": "z-finance",
+      "baselineCorrect": true,
+      "baselineTop1": "z-finance",
+      "expectedLogicalId": "z-finance",
+      "query": "2025 매출 증가"
+    },
+    {
+      "adaptiveCorrect": true,
+      "adaptiveScore": {
+        "authorityScore": 1.0,
+        "claimIds": [
+          "claim_30824c9e4abe89ad11be5e2fb4e4b7608c9c6f0b13f2ba736bbc32f7c49a2323"
+        ],
+        "graphScore": 0.0,
+        "lexicalScore": 1.0,
+        "logicalId": "y-legal",
+        "score": 0.8,
+        "temporalScore": 0.0
+      },
+      "adaptiveTop1": "y-legal",
+      "baselineCorrect": false,
+      "baselineTop1": "a-distractor",
+      "expectedLogicalId": "y-legal",
+      "query": "계약 해지 기간"
+    },
+    {
+      "adaptiveCorrect": true,
+      "adaptiveScore": {
+        "authorityScore": 1.0,
+        "claimIds": [
+          "claim_895346810ae41d30b5dc835d8f0c8d1ca4ff7c82ddfcd492646d9258d095dfd5"
+        ],
+        "graphScore": 0.0,
+        "lexicalScore": 1.0,
+        "logicalId": "w-research",
+        "score": 0.8,
+        "temporalScore": 0.0
+      },
+      "adaptiveTop1": "w-research",
+      "baselineCorrect": false,
+      "baselineTop1": "v-entity",
+      "expectedLogicalId": "w-research",
+      "query": "research dataset"
+    },
+    {
+      "adaptiveCorrect": true,
+      "adaptiveScore": {
+        "authorityScore": 1.0,
+        "claimIds": [
+          "claim_983d72a90f79e84d7307ecc0278ec6110c38ced0f723800783168538385a8ef1"
+        ],
+        "graphScore": 0.0,
+        "lexicalScore": 1.0,
+        "logicalId": "x-security",
+        "score": 0.8,
+        "temporalScore": 0.0
+      },
+      "adaptiveTop1": "x-security",
+      "baselineCorrect": false,
+      "baselineTop1": "b-informal",
+      "expectedLogicalId": "x-security",
+      "query": "security policy"
+    },
+    {
+      "adaptiveCorrect": true,
+      "adaptiveScore": {
+        "authorityScore": 1.0,
+        "claimIds": [
+          "claim_73178ae869a0818e8b5d9130fc39f2186824ec38e773292f4859ce61cb11cd99"
+        ],
+        "graphScore": 1.0,
+        "lexicalScore": 1.0,
+        "logicalId": "v-entity",
+        "score": 0.9,
+        "temporalScore": 0.0
+      },
+      "adaptiveTop1": "v-entity",
+      "baselineCorrect": true,
+      "baselineTop1": "v-entity",
+      "expectedLogicalId": "v-entity",
+      "query": "TAVONEL"
+    }
+  ],
+  "corpusDocuments": 7,
+  "externalGeneralizationClaim": false,
+  "fixtureSha256": "sha256:13c62c5aa361d25f1b79fe31248dd0cd6228e79a44f725e050cb90537e574e9f",
+  "limitations": [
+    "synthetic fixture only",
+    "the fixed query set is not a customer-corpus estimate",
+    "no embedding provider or generative answer model is exercised",
+    "human promotion and semantic acceptance remain separate gates"
+  ],
+  "qualification": {
+    "required": {
+      "allCandidateTop1Correct": true,
+      "strictImprovementOverBaseline": true
+    },
+    "status": "passed"
+  },
+  "qualificationDate": "2026-08-29",
+  "queries": 5,
+  "schemaVersion": "tavonel.product_core_semantic_qualification.v1",
+  "scope": "fixed_synthetic_mixed_language_regression"
+}
