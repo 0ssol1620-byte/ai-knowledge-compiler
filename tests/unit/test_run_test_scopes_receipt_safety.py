@@ -17,12 +17,42 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from collections.abc import Iterator
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = ROOT / "tools" / "repro" / "run_test_scopes.py"
 CANONICAL = ROOT / "docs" / "repro" / "TEST_SCOPE_STATUS.json"
 SELF_TEST = ROOT / "docs" / "repro" / "TEST_SCOPE_SELF_TEST.json"
+
+
+@pytest.fixture(autouse=True)
+def _keep_the_committed_self_test_receipt() -> Iterator[None]:
+    """Put `TEST_SCOPE_SELF_TEST.json` back the way this run found it.
+
+    These tests run the real tool, and the tool writes its receipt to a fixed
+    tracked path — so a plain `pytest tests/unit` leaves the working tree dirty
+    with a receipt nobody asked for. In a git worktree that receipt is also
+    *wrong*: the tool resolves `.venv` relative to the repository root, and a
+    worktree has none, so it records `is_project_interpreter: false` while its
+    own `running_interpreter` field shows the project interpreter. Committed
+    carelessly that publishes a false negative about the interpreter guard.
+
+    Restoring is the isolation this file can have without weakening what it
+    asserts: the tests below must observe what the real tool really writes, so
+    the write cannot be redirected to `tmp_path`. The venv probe itself is the
+    tool's defect to fix, not this test's.
+    """
+    before = SELF_TEST.read_bytes() if SELF_TEST.exists() else None
+    try:
+        yield
+    finally:
+        if before is None:
+            SELF_TEST.unlink(missing_ok=True)
+        else:
+            SELF_TEST.write_bytes(before)
 
 
 def test_self_test_does_not_touch_the_canonical_receipt() -> None:
