@@ -19,6 +19,14 @@ recover, written from the literals this builder put into the file — never from
 what a parser reported back. A row that a reader fails is a fail; the manifest is
 not edited to make it pass (lane contract §1, C-4).
 
+That rule was broken once and is worth naming: six ``"Slide N"`` strings sat
+in the ``pptx_slide_units`` rows of four files whose slides use the Blank
+layout. No such text is in those packages -- it is the heading the pptx parser
+invents for a slide with no title placeholder, flagged
+``slide_title_inferred``. The literals were written from what the parser
+reported back, and four receipt rows passed on text that is not in the source.
+They are gone, and the reader no longer emits the invented block at all.
+
 Comments, tracked changes, footnotes and the OMML equation have no python-docx
 authoring API, so they are injected as raw WordprocessingML. The footnote part
 is added to ``[Content_Types].xml`` and to the document relationships as well as
@@ -64,6 +72,8 @@ _FOOTNOTES_TYPE = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"
 )
 _FOOTNOTES_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes"
+_ENDNOTES_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml"
+_ENDNOTES_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes"
 
 _DATE_ATTRIBUTE = re.compile(rb'\sw:date="[^"]*"')
 #: openpyxl and python-pptx overwrite `modified` with the local clock inside
@@ -117,6 +127,19 @@ def _rewrite_package(
             entry.external_attr = external_attr
             target.writestr(entry, data)
     return out.getvalue()
+
+
+def _replace_once(member: bytes, old: bytes, new: bytes) -> bytes:
+    """Rewrite one fragment, or fail loudly.
+
+    A `bytes.replace` that matches nothing returns the input, so a fixture that
+    was supposed to carry an injected construct would be committed without it
+    and the row that tests for it would fail for the wrong reason — exactly how
+    ``07-chart-cached-series.xlsx`` came to have no cached series.
+    """
+    if old not in member:
+        raise ValueError(f"fixture fragment not found: {old!r}")
+    return member.replace(old, new, 1)
 
 
 def _insert_before(member: bytes, closing: bytes, addition: bytes) -> bytes:
@@ -299,6 +322,38 @@ def _xlsx_named_range() -> tuple[bytes, list[dict[str, Any]]]:
     ]
 
 
+def _chart_cache_edit(part: str) -> Callable[[str, bytes], bytes]:
+    """Write the series caches openpyxl does not author.
+
+    A real chart carries the last values the application computed beside the
+    cell references: ``c:strCache`` under the series name reference and
+    ``c:numCache`` under its value reference. openpyxl writes references only,
+    so without this the file named ``07-chart-cached-series.xlsx`` contained no
+    cache at all and the contract's "chart with cached series" hard case was
+    never exercised — the filename claimed what the bytes lacked.
+    """
+
+    def edit(name: str, member: bytes) -> bytes:
+        if name != part:
+            return member
+        member = _replace_once(
+            member,
+            b"<tx><strRef><f>'Data'!B1</f></strRef></tx>",
+            b"<tx><strRef><f>'Data'!B1</f><strCache><ptCount val=\"1\"/>"
+            b"<pt idx=\"0\"><v>Revenue</v></pt></strCache></strRef></tx>",
+        )
+        return _replace_once(
+            member,
+            b"<val><numRef><f>'Data'!$B$2:$B$4</f></numRef></val>",
+            b"<val><numRef><f>'Data'!$B$2:$B$4</f><numCache>"
+            b"<formatCode>General</formatCode><ptCount val=\"3\"/>"
+            b"<pt idx=\"0\"><v>2</v></pt><pt idx=\"1\"><v>3</v></pt>"
+            b"<pt idx=\"2\"><v>5</v></pt></numCache></numRef></val>",
+        )
+
+    return edit
+
+
 def _xlsx_chart_cached_series() -> tuple[bytes, list[dict[str, Any]]]:
     grid = [["Quarter", "Revenue"], ["Q1", 2], ["Q2", 3], ["Q3", 5]]
     workbook = _workbook("Data")
@@ -309,7 +364,7 @@ def _xlsx_chart_cached_series() -> tuple[bytes, list[dict[str, Any]]]:
     chart.add_data(Reference(sheet, min_col=2, min_row=1, max_row=4), titles_from_data=True)
     chart.set_categories(Reference(sheet, min_col=1, min_row=2, max_row=4))
     sheet.add_chart(chart, "D2")
-    return _save_xlsx(workbook), [
+    return _save_xlsx(workbook, edit=_chart_cache_edit("xl/charts/chart1.xml")), [
         _row("xlsx_cell_values", _grid_cells("Data", "A1", grid)),
         _row("xlsx_chart_title", {"Data": "Quarterly revenue"}),
         _row("xlsx_chart_series_names", {"Data": ["Revenue"]}),
@@ -602,6 +657,111 @@ def _docx_unicode_lists() -> tuple[bytes, list[dict[str, Any]]]:
     ]
 
 
+def _docx_sdt_content_control() -> tuple[bytes, list[dict[str, Any]]]:
+    """A body paragraph wrapped in a structured document tag.
+
+    Word writes every content control -- a template field, an approval block, a
+    date picker -- as ``w:sdt`` around the paragraph that holds the text. The
+    paragraph is ordinary content; only its wrapper differs, and a reader that
+    dispatches on the body child's tag name never reaches it.
+    """
+    document = _document()
+    document.add_paragraph("Contract summary.")
+    body = document.element.body
+    control = _xml(
+        f'<w:sdt xmlns:w="{W_NS}"><w:sdtPr><w:alias w:val="Approval"/>'
+        '<w:id w:val="411"/><w:text/></w:sdtPr><w:sdtContent>'
+        "<w:p><w:r><w:t>Approved by the audit committee.</w:t></w:r></w:p>"
+        "</w:sdtContent></w:sdt>"
+    )
+    section_properties = body.find(f"{{{W_NS}}}sectPr")
+    section_properties.addprevious(control)
+    document.add_paragraph("Signed on the first of January.")
+    return _save_docx(document), [
+        _row(
+            "docx_body_paragraphs",
+            [
+                "Contract summary.",
+                "Approved by the audit committee.",
+                "Signed on the first of January.",
+            ],
+        ),
+    ]
+
+
+def _docx_endnotes() -> tuple[bytes, list[dict[str, Any]]]:
+    """A real endnotes part, declared in the content types and the rels."""
+    document = _document()
+    paragraph = document.add_paragraph("Costs fell four percent.")
+    paragraph._p.append(_xml(f'<w:r xmlns:w="{W_NS}"><w:endnoteReference w:id="2"/></w:r>'))
+    endnotes = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        f'<w:endnotes xmlns:w="{W_NS}">'
+        '<w:endnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p>'
+        "</w:endnote>"
+        '<w:endnote w:type="continuationSeparator" w:id="0">'
+        "<w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>"
+        '<w:endnote w:id="2"><w:p><w:r>'
+        "<w:t>Source: the board minutes of 2 January.</w:t></w:r></w:p></w:endnote>"
+        "</w:endnotes>"
+    ).encode()
+
+    def edit(name: str, member: bytes) -> bytes:
+        if name == "[Content_Types].xml":
+            return _insert_before(
+                member,
+                b"</Types>",
+                b'<Override PartName="/word/endnotes.xml" ContentType="'
+                + _ENDNOTES_TYPE.encode()
+                + b'"/>',
+            )
+        if name == "word/_rels/document.xml.rels":
+            return _insert_before(
+                member,
+                b"</Relationships>",
+                b'<Relationship Id="rIdEndnotes" Type="'
+                + _ENDNOTES_REL.encode()
+                + b'" Target="endnotes.xml"/>',
+            )
+        return member
+
+    payload = _save_docx(document, edit=edit, extra={"word/endnotes.xml": endnotes})
+    return payload, [
+        _row("docx_endnotes", {"2": "Source: the board minutes of 2 January."}),
+    ]
+
+
+def _docx_nested_table() -> tuple[bytes, list[dict[str, Any]]]:
+    """A table inside a table cell.
+
+    ``_Cell.text`` walks the cell's paragraphs and stops there, so the text of a
+    nested table is not part of any cell a reader reports. The outer cell's
+    expected text is its own paragraph followed by the nested table's, which is
+    the same newline join the cell already uses between its paragraphs.
+    """
+    document = _document()
+    table = document.add_table(rows=2, cols=2)
+    table.cell(0, 0).text = "Outer cell"
+    inner = table.cell(0, 0).add_table(rows=1, cols=1)
+    inner.cell(0, 0).text = "Inner cell"
+    table.cell(0, 1).text = "Right cell"
+    table.cell(1, 0).text = "platform"
+    table.cell(1, 1).text = "4"
+    return _save_docx(document), [
+        _row(
+            "docx_table_cells",
+            {
+                "0": {
+                    "r/000000/c/000000": "Outer cell\nInner cell",
+                    "r/000000/c/000001": "Right cell",
+                    "r/000001/c/000000": "platform",
+                    "r/000001/c/000001": "4",
+                }
+            },
+        ),
+    ]
+
+
 # --------------------------------------------------------------------------
 # PPTX
 # --------------------------------------------------------------------------
@@ -677,7 +837,7 @@ def _pptx_grouped_shapes() -> tuple[bytes, list[dict[str, Any]]]:
         _row("pptx_shape_reading_order", {"1": ["0000.0000", "0000.0001", "0001"]}),
         _row(
             "pptx_slide_units",
-            {"1": ["Slide 1", "Group first", "Group second", "After the group"]},
+            {"1": ["Group first", "Group second", "After the group"]},
         ),
     ]
 
@@ -691,9 +851,9 @@ def _pptx_multi_slide() -> tuple[bytes, list[dict[str, Any]]]:
         _row(
             "pptx_slide_units",
             {
-                "1": ["Slide 1", "Agenda for slide 1"],
-                "2": ["Slide 2", "Results for slide 2"],
-                "3": ["Slide 3", "Next steps for slide 3"],
+                "1": ["Agenda for slide 1"],
+                "2": ["Results for slide 2"],
+                "3": ["Next steps for slide 3"],
             },
         ),
     ]
@@ -735,7 +895,7 @@ def _pptx_textbox_reading_order() -> tuple[bytes, list[dict[str, Any]]]:
     _textbox(slide.shapes, "Top box", top=1.0)
     return _save_pptx(presentation), [
         _row("pptx_shape_reading_order", {"1": ["0002", "0001", "0000"]}),
-        _row("pptx_slide_units", {"1": ["Slide 1", "Top box", "Middle box", "Bottom box"]}),
+        _row("pptx_slide_units", {"1": ["Top box", "Middle box", "Bottom box"]}),
     ]
 
 
@@ -745,7 +905,7 @@ def _pptx_unicode() -> tuple[bytes, list[dict[str, Any]]]:
     _textbox(slide.shapes, "분기 검토", top=1.0)
     _textbox(slide.shapes, "Résumé — Übersicht", top=2.5)
     return _save_pptx(presentation), [
-        _row("pptx_slide_units", {"1": ["Slide 1", "분기 검토", "Résumé — Übersicht"]}),
+        _row("pptx_slide_units", {"1": ["분기 검토", "Résumé — Übersicht"]}),
     ]
 
 
@@ -798,6 +958,9 @@ CORPUS: dict[str, tuple[tuple[str, Builder], ...]] = {
         ("08-footnotes.docx", _docx_footnotes),
         ("09-omml-equation.docx", _docx_omml_equation),
         ("10-unicode-lists.docx", _docx_unicode_lists),
+        ("11-sdt-content-control.docx", _docx_sdt_content_control),
+        ("12-endnotes.docx", _docx_endnotes),
+        ("13-nested-table.docx", _docx_nested_table),
     ),
     "pptx": (
         ("01-title-and-body.pptx", _pptx_title_and_body),

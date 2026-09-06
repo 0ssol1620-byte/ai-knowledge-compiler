@@ -11,10 +11,10 @@
   },
   "expectedManifest": {
     "path": "tests/fixtures/office_corpus/expected.json",
-    "sha256": "sha256:80333ed5a2e54dc032ea770b767c9847cb9d6a00a17ac2dae0ab60871271f902"
+    "sha256": "sha256:5ff2377ac408ab339b2b659e90540ebb144ec70863641869be69d90a9242b3ab"
   },
   "runtime": {
-    "digest": "sha256:9b9aa353b655aa7787100add98cec799d1bd8d251a44749ec895bc14131ee21f",
+    "digest": "sha256:378699b1d8f3820050f978ec3a3f438ad9e853d23d6bf8e67d98b06713cf164b",
     "python": "3.13.0"
   },
   "rows": [
@@ -94,7 +94,6 @@
       "capability": "pptx_slide_units",
       "expected": {
         "1": [
-          "Slide 1",
           "Group first",
           "Group second",
           "After the group"
@@ -102,7 +101,6 @@
       },
       "observed": {
         "1": [
-          "Slide 1",
           "Group first",
           "Group second",
           "After the group"
@@ -115,29 +113,23 @@
       "capability": "pptx_slide_units",
       "expected": {
         "1": [
-          "Slide 1",
           "Agenda for slide 1"
         ],
         "2": [
-          "Slide 2",
           "Results for slide 2"
         ],
         "3": [
-          "Slide 3",
           "Next steps for slide 3"
         ]
       },
       "observed": {
         "1": [
-          "Slide 1",
           "Agenda for slide 1"
         ],
         "2": [
-          "Slide 2",
           "Results for slide 2"
         ],
         "3": [
-          "Slide 3",
           "Next steps for slide 3"
         ]
       },
@@ -197,7 +189,6 @@
       "capability": "pptx_slide_units",
       "expected": {
         "1": [
-          "Slide 1",
           "Top box",
           "Middle box",
           "Bottom box"
@@ -205,7 +196,6 @@
       },
       "observed": {
         "1": [
-          "Slide 1",
           "Top box",
           "Middle box",
           "Bottom box"
@@ -218,14 +208,12 @@
       "capability": "pptx_slide_units",
       "expected": {
         "1": [
-          "Slide 1",
           "분기 검토",
           "Résumé — Übersicht"
         ]
       },
       "observed": {
         "1": [
-          "Slide 1",
           "분기 검토",
           "Résumé — Übersicht"
         ]

@@ -254,6 +254,13 @@ UNOBSERVABLE: dict[str, str] = {
         "in metadata['docx']['trackedChanges']; neither is a unit, so the change list and "
         "the deleted text are unreachable."
     ),
+    "docx_endnotes": (
+        "the docx parser reads word/footnotes.xml and never word/endnotes.xml, so an "
+        "endnote body is not a block at all; and EvidenceLocator v2's docx variant has "
+        "paragraphId / tableId+cellId / commentId / footnoteId and no endnote anchor, so "
+        "even an extracted endnote would have nothing to be addressed by. Closing this row "
+        "needs the parser and an enums v2 locator field, in that order."
+    ),
     "docx_equation_formula": (
         "the docx parser flattens OMML to its run text and never sets formula_latex, so the "
         "equation's structure (the superscript) is lost even though its characters survive."

@@ -7,14 +7,14 @@
   "corpus": {
     "root": "tests/fixtures/office_corpus/xlsx",
     "fileCount": 10,
-    "sha256": "sha256:db764ac553ae8d54d043cc86010d58ba0e9a6db9883a30aebf25015af2e01796"
+    "sha256": "sha256:6063877b4b977b226eb7ab84d90c0def0704bd6ea6de547c194a780dc19dd1cb"
   },
   "expectedManifest": {
     "path": "tests/fixtures/office_corpus/expected.json",
-    "sha256": "sha256:80333ed5a2e54dc032ea770b767c9847cb9d6a00a17ac2dae0ab60871271f902"
+    "sha256": "sha256:5ff2377ac408ab339b2b659e90540ebb144ec70863641869be69d90a9242b3ab"
   },
   "runtime": {
-    "digest": "sha256:a1a36868967fec750d82d9307a94350440c0a36daa5d6b2b892b8c19eafbc109",
+    "digest": "sha256:cc1895630d6cdf866616fce157407079ac1c7aa218029f22f123ea0969257482",
     "python": "3.13.0"
   },
   "rows": [

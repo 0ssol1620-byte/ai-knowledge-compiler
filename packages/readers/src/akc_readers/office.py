@@ -292,6 +292,15 @@ class _NativeOfficeV1:
         """One unit per CIR block, plus one per cell of every table."""
         index = self._index(document)
         for block in document.blocks:
+            if "slide_title_inferred" in block.quality_flags:
+                # The pptx parser invents a heading - `Slide 3` - for a slide
+                # with no title placeholder, and flags it. `ExtractedUnit` has
+                # no field for that flag, so the invention would leave here as
+                # ordinary evidence: text that appears nowhere in the package,
+                # carrying a slideNumber1 locator and a full-slide bbox. A
+                # fabricated locator over synthesised text is exactly what the
+                # constitution forbids, so the block is not emitted at all.
+                continue
             reference = block.source_refs[0]
             table_id = block.table.id if block.table is not None else None
             yield ExtractedUnit(

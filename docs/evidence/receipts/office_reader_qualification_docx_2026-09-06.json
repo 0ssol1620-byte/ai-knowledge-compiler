@@ -6,15 +6,15 @@
   "generatedAt": "2026-09-06",
   "corpus": {
     "root": "tests/fixtures/office_corpus/docx",
-    "fileCount": 10,
-    "sha256": "sha256:1f52b9b7cd03b56aae1d887ee4648b76bc203ce3d06d462b5e92791152086c33"
+    "fileCount": 13,
+    "sha256": "sha256:c5143d6845d9de29fb3e111aee19280e06f151232c5a12cd39a132d8ae2d3cf1"
   },
   "expectedManifest": {
     "path": "tests/fixtures/office_corpus/expected.json",
-    "sha256": "sha256:80333ed5a2e54dc032ea770b767c9847cb9d6a00a17ac2dae0ab60871271f902"
+    "sha256": "sha256:5ff2377ac408ab339b2b659e90540ebb144ec70863641869be69d90a9242b3ab"
   },
   "runtime": {
-    "digest": "sha256:995e444142191e5a027de7ad732093ae282e8b7b9c3a7964fda760b0d86deba0",
+    "digest": "sha256:36ceaa3b832d0bcaace29434a24a82ae9167dbce4c79483a73b9958773665bd2",
     "python": "3.13.0"
   },
   "rows": [
@@ -220,17 +220,65 @@
         "Zweiter Eintrag — mit Gedankenstrich"
       ],
       "pass": true
+    },
+    {
+      "file": "docx/11-sdt-content-control.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "Contract summary.",
+        "Approved by the audit committee.",
+        "Signed on the first of January."
+      ],
+      "observed": [
+        "Contract summary.",
+        "Signed on the first of January."
+      ],
+      "pass": false
+    },
+    {
+      "file": "docx/12-endnotes.docx",
+      "capability": "docx_endnotes",
+      "expected": {
+        "2": "Source: the board minutes of 2 January."
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the docx parser reads word/footnotes.xml and never word/endnotes.xml, so an endnote body is not a block at all; and EvidenceLocator v2's docx variant has paragraphId / tableId+cellId / commentId / footnoteId and no endnote anchor, so even an extracted endnote would have nothing to be addressed by. Closing this row needs the parser and an enums v2 locator field, in that order."
+    },
+    {
+      "file": "docx/13-nested-table.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "Outer cell\nInner cell",
+          "r/000000/c/000001": "Right cell",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "Outer cell",
+          "r/000000/c/000001": "Right cell",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4"
+        }
+      },
+      "pass": false
     }
   ],
   "totals": {
-    "rows": 14,
+    "rows": 17,
     "passed": 10,
-    "failed": 4
+    "failed": 7
   },
   "failedCapabilities": [
+    "docx_body_paragraphs",
     "docx_comment_author",
+    "docx_endnotes",
     "docx_equation_formula",
     "docx_merged_cell_spans",
+    "docx_table_cells",
     "docx_tracked_changes"
   ],
   "status": "BEST_EFFORT",

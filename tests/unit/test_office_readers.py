@@ -581,3 +581,34 @@ def test_the_inspector_never_raises_even_for_an_unclassified_scan_failure(
     )
     assert inspection.corrupted is True
     assert "ARCHIVE_MEMBER_UNREADABLE:error" in inspection.review_reasons
+
+
+def test_a_blank_layout_slide_emits_no_text_the_package_does_not_contain() -> None:
+    """Synthesised text never leaves the reader with a locator and a bbox.
+
+    A slide with no title placeholder gets an invented heading from the pptx
+    parser (`Slide 3`), flagged `slide_title_inferred`. The flag does not
+    survive into `ExtractedUnit`, so a caller who saw that unit would read text
+    that is in no part of the package, anchored to `slideNumber1` and boxed at
+    the whole slide — a fabricated locator and bbox for source that does not
+    exist. `probe_pptx_bytes()` is a Blank-layout slide, so it is exactly that
+    case.
+    """
+    payload = probe_pptx_bytes()
+    with zipfile.ZipFile(io.BytesIO(payload)) as package:
+        slide_xml = b"".join(
+            package.read(name)
+            for name in package.namelist()
+            if name.startswith("ppt/slides/slide")
+        ).decode("utf-8")
+    assert "Slide" not in slide_xml
+
+    output = NativePptxV1().extract_native(
+        _input(payload, filename="deck.pptx", declared_mime=PPTX_MIME)
+    )
+    assert output.units
+    for unit in output.units:
+        for token in unit.text.split():
+            assert token in slide_xml, (
+                f"{unit.unit_id} reports {unit.text!r}, which the slide XML does not contain"
+            )

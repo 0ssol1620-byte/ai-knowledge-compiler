@@ -174,7 +174,7 @@
     {
       "path": "xlsx/07-chart-cached-series.xlsx",
       "format": "xlsx",
-      "sha256": "sha256:ac496aff3483c9fefd0cf4fcd440280dde28847f16a9f7475198f280e76ce863",
+      "sha256": "sha256:756dddc38a09371800a17f0986c2c5ab7bc6c1bd3e1d9edeb2af2379e2f3c38e",
       "rows": [
         {
           "capability": "xlsx_cell_values",
@@ -472,6 +472,52 @@
       ]
     },
     {
+      "path": "docx/11-sdt-content-control.docx",
+      "format": "docx",
+      "sha256": "sha256:b606d885b23a18acbdbecd76902b3c87ab201b12f0ea0c24571423aec24672f2",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "Contract summary.",
+            "Approved by the audit committee.",
+            "Signed on the first of January."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/12-endnotes.docx",
+      "format": "docx",
+      "sha256": "sha256:238de1b2088811e46e8ef59d098ec08a6f543422f07b609895e91fdf26663945",
+      "rows": [
+        {
+          "capability": "docx_endnotes",
+          "expected": {
+            "2": "Source: the board minutes of 2 January."
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/13-nested-table.docx",
+      "format": "docx",
+      "sha256": "sha256:ffda8c0f1d21627ded326083ecf5e105abe1b6f6c7b02df236e0e755177e5071",
+      "rows": [
+        {
+          "capability": "docx_table_cells",
+          "expected": {
+            "0": {
+              "r/000000/c/000000": "Outer cell\nInner cell",
+              "r/000000/c/000001": "Right cell",
+              "r/000001/c/000000": "platform",
+              "r/000001/c/000001": "4"
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "pptx/01-title-and-body.pptx",
       "format": "pptx",
       "sha256": "sha256:f656d36736077916c83e2aec2051c772fbb197b8c02a93e0dbbd1d23ba3e5588",
@@ -539,7 +585,6 @@
           "capability": "pptx_slide_units",
           "expected": {
             "1": [
-              "Slide 1",
               "Group first",
               "Group second",
               "After the group"
@@ -557,15 +602,12 @@
           "capability": "pptx_slide_units",
           "expected": {
             "1": [
-              "Slide 1",
               "Agenda for slide 1"
             ],
             "2": [
-              "Slide 2",
               "Results for slide 2"
             ],
             "3": [
-              "Slide 3",
               "Next steps for slide 3"
             ]
           }
@@ -622,7 +664,6 @@
           "capability": "pptx_slide_units",
           "expected": {
             "1": [
-              "Slide 1",
               "Top box",
               "Middle box",
               "Bottom box"
@@ -640,7 +681,6 @@
           "capability": "pptx_slide_units",
           "expected": {
             "1": [
-              "Slide 1",
               "분기 검토",
               "Résumé — Übersicht"
             ]
