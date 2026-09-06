@@ -19,6 +19,7 @@ from typing import Annotated, Any, Final, Literal, Self
 from pydantic import Field, RootModel, StringConstraints, model_validator
 
 from .base import ContractModel, Sha256, canonical_json, sha256_digest
+from .identity import evidence_id
 from .models import BBox1000, SourceRef
 
 __all__ = [
@@ -43,6 +44,7 @@ __all__ = [
     "PptxLocator",
     "XlsxLocator",
     "XmlLocator",
+    "anchor_id",
     "from_legacy",
     "locator_anchor_id",
     "parse_locator",
@@ -340,6 +342,35 @@ def locator_anchor_id(locator: AnyEvidenceLocator) -> str:
     payload.pop("locatorId", None)
     payload.pop("excerpt", None)
     return sha256_digest(canonical_json(payload))
+
+
+def anchor_id(locator: AnyEvidenceLocator) -> str:
+    """The anchor identity of one locator. **The locator kind decides** (§8.1).
+
+    ``pdf`` is the one kind the product already has an evidence identity for,
+    so it takes Protected Core's :func:`akc_cir.identity.evidence_id`: a v2
+    ``pdf`` locator and the legacy ``SourceRef`` it wraps carry the *same*
+    identity, which is the stored-identity compatibility founder resolution
+    B-3 requires. Every other kind is non-paginated and takes
+    :func:`locator_anchor_id`. This is decided, not proposed.
+
+    ``evidence_id`` refuses a document version that is not a ``dv_`` id, and
+    that refusal is passed through rather than caught: falling back to the
+    path digest would issue a *second* identity for the same pdf anchor, which
+    is the collision class the convention exists to prevent.
+
+    The wire field ``locatorId`` is a record identifier, not this: it must be
+    derivable for every ``sourceVersionId`` shape, including the campaign's
+    ``documents.id`` alias, so :func:`from_legacy` defaults it from
+    :func:`locator_anchor_id`. See ``docs/architecture/evidence-locator-v2.md``.
+    """
+    if isinstance(locator, PdfLocator):
+        return evidence_id(
+            document_version=locator.source_version_id,
+            page_number1=locator.page,
+            bbox1000=locator.bbox1000.as_tuple(),
+        )
+    return locator_anchor_id(locator)
 
 
 def from_legacy(

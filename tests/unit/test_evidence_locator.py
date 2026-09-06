@@ -14,11 +14,13 @@ from akc_cir.evidence_locator import (
     EvidenceLocatorUnion,
     LocatorKind,
     PdfLocator,
+    anchor_id,
     from_legacy,
     locator_anchor_id,
     parse_locator,
 )
 from akc_cir.evidence_locator_resolvers import FailureClass
+from akc_cir.identity import document_version_id, evidence_id, source_id
 from akc_cir.models import BBox1000, SourceRef
 from akc_cir.schema import SCHEMA_MODELS
 from pydantic import ValidationError
@@ -278,3 +280,51 @@ def test_the_default_serialization_validates_against_the_frozen_schema(
     minimal = parse_locator(VALID_LOCATORS["json"])
     assert "contentDigest" not in minimal.model_dump(mode="json")
     assert not frozen_schema.is_valid(minimal.model_dump(mode="json", exclude_none=False))
+
+
+# --------------------------------------------- repair round 3: anchor identity
+
+
+def test_the_pdf_anchor_id_is_the_legacy_evidence_id() -> None:
+    """§8.1, decided: the locator kind decides the anchor identity.
+
+    A ``pdf`` locator and the ``SourceRef`` it wraps must resolve to one
+    evidence identity, or the v2 union splits identities the stored data
+    already has (founder RESOLVED B-3).
+    """
+    version = document_version_id(
+        source=source_id(tenant_id="tenant_1", connector_type="upload", native_id="native_1"),
+        content_sha256=f"sha256:{'b' * 64}",
+    )
+    reference = SourceRef(
+        document_id="doc_005",
+        document_version_id=version,
+        page_index0=16,
+        page_number1=17,
+        bbox1000=BBox1000([100, 200, 300, 400]),
+    )
+    locator = from_legacy(reference, representation_id="rep_0005")
+    assert anchor_id(locator) == evidence_id(
+        document_version=version, page_number1=17, bbox1000=(100, 200, 300, 400)
+    )
+
+
+@pytest.mark.parametrize("kind", sorted(set(VALID_LOCATORS) - {"pdf"}))
+def test_every_non_paginated_kind_anchors_on_the_path_digest(kind: str) -> None:
+    locator = parse_locator(VALID_LOCATORS[kind])
+    assert anchor_id(locator) == locator_anchor_id(locator)
+
+
+def test_a_pdf_anchor_id_needs_a_real_document_version(source_ref: SourceRef) -> None:
+    """Fail closed rather than issue a second identity for the same anchor.
+
+    In this campaign ``sourceVersionId`` is the ``document_version_id`` alias,
+    and a real one is a ``dv_`` id from ``identity.document_version_id()``. A
+    value that is not one has no evidence identity under §8.1, and the
+    path digest is *not* offered as a substitute — two ids for one pdf anchor
+    is exactly the collision the convention closes.
+    """
+    locator = from_legacy(source_ref, representation_id="rep_0001")
+    assert locator.locator_id == locator_anchor_id(locator)  # the record id still exists
+    with pytest.raises(ValueError, match="document version"):
+        anchor_id(locator)
