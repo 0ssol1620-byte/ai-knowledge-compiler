@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from fnmatch import fnmatchcase
 from functools import cache
+from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 import jsonschema
@@ -29,12 +30,16 @@ from .enums import (
     EVIDENCE_LOCATOR_SCHEMA_JSON,
     FEATURE_TO_FAILURE_CLASS,
     PARSE_ERROR_TO_CLASS,
+    VERIFIED_STATUSES,
     CapabilityStatus,
     FailureClass,
+    LocatorKind,
     ReaderFeature,
     ReaderRegistryStatus,
+    SourceFamily,
     frozen_contract,
 )
+from .inspector import inspect_source
 from .models import (
     PROBEABLE_FEATURES,
     NativeExtraction,
@@ -74,6 +79,38 @@ OPERATIONAL_FAILURE_CLASSES: frozenset[FailureClass] = frozenset(
         FailureClass.PROVIDER_UNAVAILABLE,
     }
 )
+
+#: A **semantic** fault: the reader ran and returned something that does not
+#: belong to the source it was given. It never charges the circuit breaker
+#: (§8.1); it charges `ReaderHealth.semantic_strikes`, which nothing acts on
+#: automatically — de-registration is manual in P0.
+SEMANTIC_FAILURE_CLASSES: frozenset[FailureClass] = frozenset(
+    {FailureClass.RECEIPT_MISMATCH, FailureClass.EVIDENCE_BROKEN}
+)
+
+#: Which frozen `LocatorKind` can honestly address an inspected source. A MIME
+#: absent from this table admits **no** locator (fail closed) — plain text is
+#: absent because enums v1 has no `text` kind, which is why `plain_text_v1`
+#: emits none rather than inventing an anchor.
+_ADMISSIBLE_LOCATOR_KINDS: dict[str, frozenset[LocatorKind]] = {
+    "application/pdf": frozenset({LocatorKind.PDF}),
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": frozenset(
+        {LocatorKind.DOCX}
+    ),
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": frozenset(
+        {LocatorKind.XLSX}
+    ),
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": frozenset(
+        {LocatorKind.PPTX}
+    ),
+    "application/json": frozenset({LocatorKind.JSON}),
+    "application/xml": frozenset({LocatorKind.XML}),
+    "image/png": frozenset({LocatorKind.IMAGE}),
+    "image/jpeg": frozenset({LocatorKind.IMAGE}),
+    "image/gif": frozenset({LocatorKind.IMAGE}),
+    "image/tiff": frozenset({LocatorKind.IMAGE}),
+    "image/bmp": frozenset({LocatorKind.IMAGE}),
+}
 
 
 class ReaderRegistrationError(ValueError):
@@ -150,6 +187,7 @@ class _Entry:
     provider: ReaderProvider
     capabilities: tuple[ReaderCapability, ...]
     breaker: _Breaker = field(default_factory=_Breaker)
+    semantic_strikes: int = 0
 
 
 class ReaderRegistry:
@@ -193,6 +231,10 @@ class ReaderRegistry:
             raise ReaderRegistrationError(
                 f"{provider.provider_id} supplies no probe sample; nothing can be witnessed"
             )
+        for capability in capabilities:
+            if capability.qualification_status in VERIFIED_STATUSES:
+                _verify_qualification_receipt(provider.provider_id, capability)
+
         probes: list[tuple[SourceInspection, NativeExtraction]] = []
         for sample in samples:
             inspection = provider.inspect(sample)
@@ -214,21 +256,49 @@ class ReaderRegistry:
                         f"{provider.provider_id} emitted an invalid evidence locator: "
                         f"{error.message}"
                     ) from error
+                binding = _verify_locator_binding(locator, sample, inspection)
+                if binding is not None:
+                    raise ReaderRegistrationError(
+                        f"{provider.provider_id} emitted a probe locator that does not address "
+                        f"the probe sample: {binding[1]}"
+                    )
             probes.append((inspection, output))
 
-        # Per capability, not across the union: a feature witnessed on a .txt
-        # probe never qualifies a PDF capability that declares it.
+        # Per **mime pattern and per source family**, not per capability and not
+        # across their union (contract §8.1): a `.txt` probe witnesses the
+        # `text/plain` pattern of the capability that declares it and nothing
+        # else — not a second pattern folded into the same capability, not a
+        # second family, and not the same feature on another capability.
         for capability in capabilities:
             observed: set[ReaderFeature] = set()
-            exercised = False
+            patterns: set[str] = set()
+            families: set[SourceFamily] = set()
             for inspection, output in probes:
-                if _capability_matches(capability, inspection, frozenset()):
-                    exercised = True
-                    observed |= output.observed_features()
-            if not exercised:
+                if inspection.source_family not in capability.source_families:
+                    continue
+                matched = {
+                    pattern
+                    for pattern in capability.mime_patterns
+                    if fnmatchcase(inspection.detected_mime, pattern)
+                }
+                if not matched:
+                    continue
+                patterns |= matched
+                families.add(inspection.source_family)
+                observed |= output.observed_features()
+            unwitnessed = [item for item in capability.mime_patterns if item not in patterns]
+            if unwitnessed:
                 raise ReaderRegistrationError(
                     f"{provider.provider_id} declares a capability no probe sample exercises: "
-                    + ", ".join(capability.mime_patterns)
+                    + ", ".join(unwitnessed)
+                )
+            unwitnessed_families = [
+                item for item in capability.source_families if item not in families
+            ]
+            if unwitnessed_families:
+                raise ReaderRegistrationError(
+                    f"{provider.provider_id} declares a source family no probe sample "
+                    "exercises: " + ", ".join(unwitnessed_families)
                 )
             missing = set(capability.features) - observed
             if missing:
@@ -273,7 +343,10 @@ class ReaderRegistry:
         now = self._clock()
         return tuple(
             entry.provider.health_check().model_copy(
-                update={"circuit_open": entry.breaker.is_open(now, self._cooldown_seconds)}
+                update={
+                    "circuit_open": entry.breaker.is_open(now, self._cooldown_seconds),
+                    "semantic_strikes": entry.semantic_strikes,
+                }
             )
             for entry in sorted(self._entries.values(), key=lambda item: item.provider.provider_id)
         )
@@ -339,11 +412,16 @@ class ReaderRegistry:
         self,
         source: ReaderInput,
         *,
-        inspection: SourceInspection,
+        inspection: SourceInspection | None = None,
         required_features: Iterable[ReaderFeature] = (),
         queue_wait_ms: int = 0,
     ) -> tuple[NativeExtraction | None, ReaderRun]:
         """Run the resolved reader under a timeout and a circuit breaker.
+
+        The inspection is **re-derived from the bytes** here; a caller-supplied
+        one is a cross-check, never the decision (contract §8.1). A stale or
+        forged inspection used to make the registry accept a source the
+        inspector refuses, and turn a security refusal into ordinary corruption.
 
         Always returns a §44 receipt, including for every refusal.
         """
@@ -390,6 +468,18 @@ class ReaderRegistry:
                 escalation_reason="sourceVersion contentSha256 does not digest the bytes supplied",
             )
 
+        derived = inspect_source(source)
+        if inspection is not None and inspection != derived:
+            return None, receipt(
+                provider_id="registry",
+                revision="uskc-p0",
+                runtime_digest=_REGISTRY_RUNTIME_DIGEST,
+                accepted=False,
+                failure_class=FailureClass.RECEIPT_MISMATCH,
+                escalation_reason="the caller's inspection disagrees with the source bytes",
+            )
+        inspection = derived
+
         resolution = self.resolve(inspection, required)
         if resolution.provider_id is None:
             return None, receipt(
@@ -403,6 +493,17 @@ class ReaderRegistry:
 
         entry = self._entries[resolution.provider_id]
         provider = entry.provider
+        if not provider.can_read(source, inspection):
+            # Capability resolution says the *declaration* fits; `can_read` is
+            # the provider's own look at these bytes. Both must agree.
+            return None, receipt(
+                provider_id=provider.provider_id,
+                revision=provider.revision,
+                runtime_digest=provider.runtime_digest,
+                accepted=False,
+                failure_class=FailureClass.UNSUPPORTED_FORMAT,
+                escalation_reason="the resolved provider declined the source at can_read()",
+            )
         failure: FailureClass | None = None
         escalation: str | None = None
         output: NativeExtraction | None = None
@@ -410,7 +511,7 @@ class ReaderRegistry:
 
         try:
             output, cpu_seconds = self._call_with_timeout(provider, source)
-            verdict = _verify_output(output, source, provider, required)
+            verdict = _verify_output(output, source, provider, required, inspection)
             if verdict is not None:
                 failure, escalation = verdict
                 output = None
@@ -449,6 +550,12 @@ class ReaderRegistry:
             entry.breaker.failures += 1
             if entry.breaker.failures >= self._failure_threshold:
                 entry.breaker.opened_at = self._clock()
+        elif failure in SEMANTIC_FAILURE_CLASSES:
+            # A separate counter, on purpose: a reader that binds evidence to the
+            # wrong source is wrong, not unavailable, and taking it offline would
+            # hide the defect behind PROVIDER_UNAVAILABLE. De-registration on
+            # strikes is a manual act in P0 (contract §8.1).
+            entry.semantic_strikes += 1
         return None, receipt(
             provider_id=provider.provider_id,
             revision=provider.revision,
@@ -521,17 +628,79 @@ def _corruption_class(reasons: Iterable[str]) -> FailureClass:
     return FailureClass.CORRUPT_SOURCE
 
 
+def _verify_qualification_receipt(provider_id: str, capability: ReaderCapability) -> None:
+    """A VERIFIED tier names a receipt that exists in **this** repository.
+
+    Contract §8.1: "a `VERIFIED_*` capability requires a receipt that exists on
+    disk under the repo (path + sha256 + date) — a sha-shaped string alone is
+    refused." Nothing else stands between a self-declared `VERIFIED_NATIVE` and
+    the top of `_STATUS_RANK`.
+    """
+    declared = capability.qualification_receipt_path or ""
+    path = (_REPO_ROOT / declared).resolve()
+    if not path.is_relative_to(_REPO_ROOT) or not path.is_file():
+        raise ReaderRegistrationError(
+            f"{provider_id} claims {capability.qualification_status} but no qualification "
+            f"receipt is committed at {declared!r}"
+        )
+    digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != capability.qualification_receipt:
+        raise ReaderRegistrationError(
+            f"{provider_id} qualification receipt {declared!r} digests {digest}, not the "
+            f"declared {capability.qualification_receipt}"
+        )
+
+
+def _verify_locator_binding(
+    locator: dict[str, Any],
+    source: ReaderInput,
+    inspection: SourceInspection,
+) -> tuple[FailureClass, str] | None:
+    """Bind one locator to the source actually read (contract §8.1).
+
+    The frozen schema only says a locator is *well formed*. It cannot say that
+    the ids are this source's, that the kind addresses this MIME, or that the
+    page exists — so a schema-valid locator naming another tenant's source
+    version, or page 999,999 of a file with no pages, used to ride out on an
+    accepted run.
+    """
+    if (
+        locator.get("sourceVersionId") != source.source_version_id
+        or locator.get("representationId") != source.representation_id
+    ):
+        return (
+            FailureClass.RECEIPT_MISMATCH,
+            "evidence locator names a different source version or representation",
+        )
+    kind = locator.get("locatorKind")
+    admissible = _ADMISSIBLE_LOCATOR_KINDS.get(inspection.detected_mime, frozenset())
+    if kind not in admissible:
+        return (
+            FailureClass.EVIDENCE_BROKEN,
+            f"locator kind {kind!r} cannot address a {inspection.detected_mime} source",
+        )
+    page = locator.get("page")
+    pages = inspection.page_like_units
+    if page is not None and (pages is None or not 1 <= page <= pages):
+        return (
+            FailureClass.EVIDENCE_BROKEN,
+            f"locator page {page} is outside the source's {pages} page-like units",
+        )
+    return None
+
+
 def _verify_output(
     output: NativeExtraction,
     source: ReaderInput,
     provider: ReaderProvider,
     required: frozenset[ReaderFeature],
+    inspection: SourceInspection,
 ) -> tuple[FailureClass, str] | None:
     """Check the extraction against the source that was asked for.
 
     Registration is a probe, not a declaration — and so is a run: the ids, the
-    output digest, the required features and every locator are verified here
-    rather than trusted from the provider's own assertion.
+    output digest, the required features and every locator (shape, ids, kind and
+    page) are verified here rather than trusted from the provider's assertion.
     """
     if (
         output.source_version_id != source.source_version_id
@@ -566,10 +735,17 @@ def _verify_output(
             validate_evidence_locator(locator)
         except jsonschema.ValidationError as error:
             return FailureClass.EVIDENCE_BROKEN, f"invalid evidence locator: {error.message}"
+        binding = _verify_locator_binding(locator, source, inspection)
+        if binding is not None:
+            return binding
     return None
 
 
 _REGISTRY_RUNTIME_DIGEST = "sha256:" + hashlib.sha256(b"akc_readers.registry/uskc-p0").hexdigest()
+
+#: This checkout's root: ``<repo>/packages/readers/src/akc_readers/registry.py``.
+#: A qualification receipt is only a receipt if it is committed *here*.
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 __all__ = [
@@ -577,6 +753,7 @@ __all__ = [
     "DEFAULT_FAILURE_THRESHOLD",
     "DEFAULT_TIMEOUT_SECONDS",
     "OPERATIONAL_FAILURE_CLASSES",
+    "SEMANTIC_FAILURE_CLASSES",
     "ReaderProvider",
     "ReaderRegistrationError",
     "ReaderRegistry",

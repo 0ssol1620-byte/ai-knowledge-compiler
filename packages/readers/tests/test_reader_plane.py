@@ -7,7 +7,7 @@ import inspect as inspect_module
 import io
 import time
 import zipfile
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import jsonschema
@@ -32,9 +32,14 @@ from akc_readers import (
     inspect_source,
     validate_evidence_locator,
 )
+from akc_readers.registry import _REPO_ROOT
 from pydantic import ValidationError
 
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+#: A committed file with a stable digest, used where a §27 qualification receipt
+#: would go. No qualification is claimed by using it — see the test that does.
+_COMMITTED_FILE = "packages/readers/src/akc_readers/contract/enums.v1.json"
 
 
 def _input(
@@ -330,7 +335,7 @@ class _SlowText(PlainTextV1):
     provider_id = "slow_text_v1"
 
     def extract_native(self, source: ReaderInput) -> NativeExtraction:
-        if source.filename != "probe.txt":
+        if not source.filename.startswith("probe."):
             time.sleep(0.5)
         return super().extract_native(source)
 
@@ -375,7 +380,7 @@ def test_a_reader_that_raises_is_recorded_as_provider_unavailable() -> None:
         provider_id = "broken_text_v1"
 
         def extract_native(self, source: ReaderInput) -> NativeExtraction:
-            if source.filename != "probe.txt":
+            if not source.filename.startswith("probe."):
                 raise RuntimeError("reader exploded")
             return super().extract_native(source)
 
@@ -578,7 +583,7 @@ class _WrongSource(PlainTextV1):
 
     def extract_native(self, source: ReaderInput) -> NativeExtraction:
         output = super().extract_native(source)
-        if source.filename == "probe.txt":
+        if source.filename.startswith("probe."):
             return output
         return output.model_copy(
             update={
@@ -602,7 +607,7 @@ class _LyingDigest(PlainTextV1):
 
     def extract_native(self, source: ReaderInput) -> NativeExtraction:
         output = super().extract_native(source)
-        if source.filename == "probe.txt":
+        if source.filename.startswith("probe."):
             return output
         return output.model_copy(update={"output_digest": "sha256:" + "f" * 64})
 
@@ -634,7 +639,7 @@ class _ClaimsLayout(PlainTextV1):
 
     def extract_native(self, source: ReaderInput) -> NativeExtraction:
         output = super().extract_native(source)
-        if source.filename != "probe.txt":
+        if not source.filename.startswith("probe."):
             return output
         units = tuple(
             unit.model_copy(update={"bbox1000": (0, 0, 100, 100)}) for unit in output.units
@@ -711,3 +716,283 @@ def test_a_cfb_office_container_holding_an_encrypted_package_is_locked_not_corru
     assert "OOXML_ENCRYPTED_PACKAGE" in inspection.review_reasons
     resolution = _registry().resolve(inspection)
     assert resolution.failure_class is FailureClass.ENCRYPTED_SOURCE
+
+
+# -- repair round 2: the failure paths the second review found open ------
+
+
+class _FoldedGreedyText(PlainTextV1):
+    """One capability, two MIME patterns, one probe: the reviewer's blocker.
+
+    `text/plain` and `application/pdf` folded into a single capability used to
+    register on the strength of the `.txt` probe alone; the provider then won
+    `resolve()` for a real PDF and smeared its header bytes into an ACCEPTED
+    §44 receipt as "native text".
+    """
+
+    provider_id = "aaa_folded_greedy_v1"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=("text/plain", "application/pdf"),
+                source_families=(SourceFamily.DOCUMENT,),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+    def probe_samples(self) -> tuple[ReaderInput, ...]:
+        return super().probe_samples()[:1]
+
+
+def test_a_mime_pattern_no_probe_sample_exercises_is_refused() -> None:
+    with pytest.raises(ReaderRegistrationError, match="no probe sample exercises: application/pdf"):
+        ReaderRegistry().register(_FoldedGreedyText())
+
+
+class _WildcardText(PlainTextV1):
+    """`mime_patterns=("*",)` over four families, witnessed by one `.txt`."""
+
+    provider_id = "aaa_wildcard_v1"
+
+    def capabilities(self) -> tuple[ReaderCapability, ...]:
+        return (
+            ReaderCapability(
+                mime_patterns=("*",),
+                source_families=(
+                    SourceFamily.DOCUMENT,
+                    SourceFamily.SPREADSHEET,
+                    SourceFamily.PRESENTATION,
+                    SourceFamily.IMAGE,
+                ),
+                features=(ReaderFeature.NATIVE_TEXT,),
+                qualification_status=CapabilityStatus.BEST_EFFORT,
+            ),
+        )
+
+
+def test_a_source_family_no_probe_sample_exercises_is_refused() -> None:
+    """`ReaderRegistryEntry.qualified_source_families` must mean witnessed."""
+    with pytest.raises(ReaderRegistrationError, match="source family no probe sample exercises"):
+        ReaderRegistry().register(_WildcardText())
+
+
+def test_every_published_qualified_family_was_witnessed_by_a_probe() -> None:
+    witnessed = {
+        inspect_source(sample).source_family
+        for provider in (PlainTextV1(), LegacyPdfV1())
+        for sample in provider.probe_samples()
+    }
+    for entry in _registry().entries():
+        assert set(entry.qualified_source_families) <= witnessed
+
+
+def test_plain_text_probes_every_mime_pattern_it_declares() -> None:
+    provider = PlainTextV1()
+    probed = {inspect_source(sample).detected_mime for sample in provider.probe_samples()}
+    for capability in provider.capabilities():
+        assert set(capability.mime_patterns) <= probed
+
+
+class _CrossSourceLocator(PlainTextV1):
+    """Its output cites another tenant's source version."""
+
+    provider_id = "cross_source_locator_v1"
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        if source.filename.startswith("probe."):
+            return output
+        units = tuple(
+            unit.model_copy(
+                update={
+                    "locator": {
+                        "schemaVersion": "tavonel.evidence_locator.v2",
+                        "locatorId": "loc-cross-source",
+                        "sourceVersionId": "SRC-OTHER-TENANT-9999",
+                        "representationId": "REP-OTHER-9999",
+                        "locatorKind": "pdf",
+                        "page": 3,
+                        "bbox1000": [10, 10, 900, 100],
+                    }
+                }
+            )
+            for unit in output.units
+        )
+        return output.model_copy(update={"units": units, "output_digest": digest_units(units)})
+
+
+def test_a_locator_naming_another_source_is_refused_and_strikes_semantically() -> None:
+    registry = ReaderRegistry(failure_threshold=1)
+    registry.register(_CrossSourceLocator())
+    source = _input(b"Confidential paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+
+    output, receipt = registry.read(source)
+    assert output is None
+    assert receipt.failure_class is FailureClass.RECEIPT_MISMATCH
+
+    health = registry.health()[0]
+    assert health.semantic_strikes == 1
+    assert health.circuit_open is False, "a wrong reader is not an unavailable worker"
+
+
+class _MisplacedLocator(PlainTextV1):
+    """A schema-valid `pdf` locator on a source that has no pages at all."""
+
+    provider_id = "misplaced_locator_v1"
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        if source.filename.startswith("probe."):
+            return output
+        units = tuple(
+            unit.model_copy(
+                update={
+                    "locator": {
+                        "schemaVersion": "tavonel.evidence_locator.v2",
+                        "locatorId": "loc-misplaced",
+                        "sourceVersionId": source.source_version_id,
+                        "representationId": source.representation_id,
+                        "locatorKind": "pdf",
+                        "page": 999999,
+                        "bbox1000": [10, 10, 900, 100],
+                    }
+                }
+            )
+            for unit in output.units
+        )
+        return output.model_copy(update={"units": units, "output_digest": digest_units(units)})
+
+
+def test_a_locator_kind_that_cannot_address_the_source_is_refused() -> None:
+    registry = ReaderRegistry()
+    registry.register(_MisplacedLocator())
+    source = _input(b"Paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+    output, receipt = registry.read(source)
+    assert output is None
+    assert receipt.failure_class is FailureClass.EVIDENCE_BROKEN
+    assert receipt.escalation_reason is not None
+    assert "cannot address a text/plain source" in receipt.escalation_reason
+
+
+class _PagelessPdf(LegacyPdfV1):
+    """Emits page 999,999 of a one-page PDF."""
+
+    provider_id = "pageless_pdf_v1"
+
+    def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        output = super().extract_native(source)
+        if source.filename.startswith("probe."):
+            return output
+        units = tuple(
+            unit.model_copy(update={"locator": {**unit.locator, "page": 999999}})
+            for unit in output.units
+            if unit.locator is not None
+        )
+        return output.model_copy(update={"units": units, "output_digest": digest_units(units)})
+
+
+def test_a_locator_page_outside_the_source_is_refused() -> None:
+    registry = ReaderRegistry()
+    registry.register(_PagelessPdf())
+    data = LegacyPdfV1().probe_samples()[0].data
+    source = _input(data, filename="report.pdf", declared_mime="application/pdf")
+    output, receipt = registry.read(source)
+    assert output is None
+    assert receipt.failure_class is FailureClass.EVIDENCE_BROKEN
+    assert receipt.escalation_reason is not None
+    assert "outside the source's 1 page-like units" in receipt.escalation_reason
+
+
+def test_a_caller_inspection_that_disagrees_with_the_bytes_is_refused() -> None:
+    """A forged or stale inspection used to buy acceptance for a refused source."""
+    source = _input(b"Confidential paragraph.\n", filename="resume.docx", declared_mime=DOCX_MIME)
+    honest = inspect_source(source)
+    assert honest.corrupted is True
+
+    registry = _registry()
+    forged = honest.model_copy(update={"corrupted": False, "review_reasons": ()})
+    output, receipt = registry.read(source, inspection=forged)
+    assert output is None
+    assert receipt.failure_class is FailureClass.RECEIPT_MISMATCH
+    assert receipt.escalation_reason == "the caller's inspection disagrees with the source bytes"
+
+    # And with no inspection at all the registry derives the honest one.
+    output, receipt = registry.read(source)
+    assert output is None
+    assert receipt.failure_class is FailureClass.CORRUPT_SOURCE
+
+
+class _ResolvesButDeclines(PlainTextV1):
+    provider_id = "declines_v1"
+
+    def can_read(self, source: ReaderInput, inspection: SourceInspection) -> bool:
+        return source.filename.startswith("probe.")
+
+
+def test_a_provider_that_declines_the_source_at_can_read_is_refused() -> None:
+    registry = ReaderRegistry()
+    registry.register(_ResolvesButDeclines())
+    source = _input(b"Paragraph.\n", filename="notes.txt", declared_mime="text/plain")
+    output, receipt = registry.read(source)
+    assert output is None
+    assert receipt.failure_class is FailureClass.UNSUPPORTED_FORMAT
+    assert receipt.escalation_reason == "the resolved provider declined the source at can_read()"
+
+
+def test_a_verified_tier_needs_a_receipt_path_and_a_date_not_only_a_digest() -> None:
+    with pytest.raises(ValidationError, match="qualification receipt digest"):
+        ReaderCapability(
+            mime_patterns=("application/pdf",),
+            source_families=(SourceFamily.DOCUMENT,),
+            features=(ReaderFeature.NATIVE_TEXT,),
+            qualification_status=CapabilityStatus.VERIFIED_NATIVE,
+            qualification_receipt="sha256:" + "0" * 64,
+        )
+
+
+def _verified_pdf(receipt_path: str, digest: str) -> LegacyPdfV1:
+    class _Verified(LegacyPdfV1):
+        provider_id = "zzz_verified_v1"
+
+        def capabilities(self) -> tuple[ReaderCapability, ...]:
+            return (
+                ReaderCapability(
+                    mime_patterns=("application/pdf",),
+                    source_families=(SourceFamily.DOCUMENT,),
+                    features=(ReaderFeature.NATIVE_TEXT, ReaderFeature.LAYOUT),
+                    qualification_status=CapabilityStatus.VERIFIED_NATIVE,
+                    qualification_receipt=digest,
+                    qualification_receipt_path=receipt_path,
+                    qualified_at=date(2026, 9, 6),
+                ),
+            )
+
+    return _Verified()
+
+
+def test_a_verified_tier_whose_receipt_is_not_committed_is_refused() -> None:
+    """A sha256-shaped string used to outrank every honest BEST_EFFORT reader."""
+    provider = _verified_pdf("docs/evidence/artifacts/no-such-receipt.json", "sha256:" + "0" * 64)
+    with pytest.raises(ReaderRegistrationError, match="no qualification receipt is committed"):
+        ReaderRegistry().register(provider)
+
+
+def test_a_verified_tier_whose_receipt_digest_does_not_match_is_refused() -> None:
+    provider = _verified_pdf(_COMMITTED_FILE, "sha256:" + "1" * 64)
+    with pytest.raises(ReaderRegistrationError, match="digests sha256:"):
+        ReaderRegistry().register(provider)
+
+
+def test_a_verified_tier_backed_by_a_committed_file_registers() -> None:
+    """The check is not vacuous: a real committed file with its real digest passes.
+
+    `enums.v1.json` stands in for a §27 receipt here — none exists yet, and this
+    test claims no qualification, only that the digest comparison is real.
+    """
+    payload = (_REPO_ROOT / _COMMITTED_FILE).read_bytes()
+    provider = _verified_pdf(_COMMITTED_FILE, "sha256:" + hashlib.sha256(payload).hexdigest())
+    registry = ReaderRegistry()
+    registry.register(provider)
+    assert [entry.reader_id for entry in registry.entries()] == ["zzz_verified_v1"]

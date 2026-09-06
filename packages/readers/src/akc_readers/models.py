@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Any, Final, Literal
 
 from akc_cir.base import (
@@ -87,7 +87,15 @@ class SourceInspection(ContractModel):
 
 
 class ReaderCapability(ContractModel):
-    """Blueprint §9.1. A VERIFIED tier without a receipt digest is refused."""
+    """Blueprint §9.1. A VERIFIED tier without a receipt digest is refused.
+
+    Contract §1 requires a VERIFIED tier to carry "a §27 qualification receipt
+    (sha256 of a committed receipt) **and a date**", and §8.1 requires the
+    receipt to exist on disk under the repository. A sha256-shaped string is not
+    a receipt, so the tier names all three: the repo-relative path, the digest of
+    those bytes, and the date the qualification was run. `ReaderRegistry.register`
+    is what opens the file and compares the digest — a model cannot touch a disk.
+    """
 
     schema_version: Literal["tavonel.reader_capability.v1"] = READER_CAPABILITY_SCHEMA
     mime_patterns: tuple[NonEmptyStr, ...]
@@ -95,6 +103,8 @@ class ReaderCapability(ContractModel):
     features: tuple[ReaderFeature, ...]
     qualification_status: CapabilityStatus
     qualification_receipt: Sha256 | None = None
+    qualification_receipt_path: NonEmptyStr | None = None
+    qualified_at: date | None = None
 
     @model_validator(mode="after")
     def validate_capability(self) -> ReaderCapability:
@@ -104,10 +114,19 @@ class ReaderCapability(ContractModel):
             values = getattr(self, field_name)
             if len(set(values)) != len(values):
                 raise ValueError(f"{field_name} must not repeat a value")
-        if self.qualification_status in VERIFIED_STATUSES and self.qualification_receipt is None:
+        if self.qualification_status in VERIFIED_STATUSES and (
+            self.qualification_receipt is None
+            or self.qualification_receipt_path is None
+            or self.qualified_at is None
+        ):
             raise ValueError(
-                "VERIFIED_NATIVE/VERIFIED_HYBRID require a §27 qualification receipt digest"
+                "VERIFIED_NATIVE/VERIFIED_HYBRID require a §27 qualification receipt digest, "
+                "the repo-relative path of the committed receipt, and the qualification date"
             )
+        if self.qualification_status not in VERIFIED_STATUSES and (
+            self.qualification_receipt is not None or self.qualification_receipt_path is not None
+        ):
+            raise ValueError("only a VERIFIED_* tier carries a qualification receipt")
         return self
 
 
@@ -185,10 +204,19 @@ def digest_units(units: tuple[ExtractedUnit, ...]) -> str:
 
 
 class ReaderHealth(ContractModel):
+    """Operational health, plus the *separate* semantic strike count.
+
+    A reader that binds its output to the wrong source is not an unhealthy
+    worker; it is a wrong reader. The two counters never share a threshold
+    (CLAUDE.md "separate operational failure from semantic failure"), and §8.1
+    makes de-registration on strikes a manual P0 act, so nothing here trips.
+    """
+
     provider_id: NonEmptyStr
     healthy: bool
     circuit_open: bool
     checked_at: datetime
+    semantic_strikes: Annotated[int, Field(ge=0)] = 0
     detail: str | None = None
 
 

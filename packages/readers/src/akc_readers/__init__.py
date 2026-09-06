@@ -34,6 +34,7 @@ from .models import (
 from .providers import LegacyPdfV1, PlainTextV1
 from .registry import (
     OPERATIONAL_FAILURE_CLASSES,
+    SEMANTIC_FAILURE_CLASSES,
     ReaderProvider,
     ReaderRegistrationError,
     ReaderRegistry,
@@ -48,6 +49,7 @@ __all__ = [
     "FAILURE_CODE_TO_CLASS",
     "FEATURE_TO_FAILURE_CLASS",
     "OPERATIONAL_FAILURE_CLASSES",
+    "SEMANTIC_FAILURE_CLASSES",
     "CapabilityStatus",
     "ExtractedUnit",
     "FailureClass",

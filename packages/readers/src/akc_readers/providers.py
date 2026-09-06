@@ -121,17 +121,27 @@ class PlainTextV1:
         )
 
     def probe_samples(self) -> tuple[ReaderInput, ...]:
-        data = b"Probe paragraph one.\n\nProbe paragraph two.\n"
-        return (
+        """One sample per declared mime pattern.
+
+        Registration witnesses **patterns**, not capabilities, so `text/markdown`
+        needs its own probe: before this, `text/markdown` rode into the registry
+        on the `.txt` sample's back.
+        """
+        samples = (
+            ("probe.txt", "text/plain", b"Probe paragraph one.\n\nProbe paragraph two.\n"),
+            ("probe.md", "text/markdown", b"# Probe heading\n\nProbe markdown body.\n"),
+        )
+        return tuple(
             ReaderInput(
                 source_version_id="probe-plain-text-v1",
                 tenant_id="probe",
                 representation_id="probe-representation",
-                filename="probe.txt",
-                declared_mime="text/plain",
+                filename=filename,
+                declared_mime=declared_mime,
                 content_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
                 data=data,
-            ),
+            )
+            for filename, declared_mime, data in samples
         )
 
 
