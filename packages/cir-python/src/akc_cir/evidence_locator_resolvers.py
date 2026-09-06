@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Final, Protocol
 
+from akc_native_parsers.models import ParserLimits, StructuredParseError
+from akc_native_parsers.security import validate_source
 from defusedxml import ElementTree as SafeElementTree
 from pypdf import PdfReader
 
@@ -216,6 +218,15 @@ _MAIN_NS: Final = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
 _REL_NS: Final = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
 _PKG_REL_NS: Final = "{http://schemas.openxmlformats.org/package/2006/relationships}"
 _A1 = re.compile(r"^\$?([A-Z]{1,3})\$?([1-9][0-9]{0,6})$")
+_XLSX_MIME: Final = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+# `StructuredParseError.code` is a stable, body-free vocabulary (models.py:29).
+# Anything not named here is a package this resolver cannot trust: CORRUPT_SOURCE.
+_PACKAGE_FAILURE: Final[dict[str, FailureClass]] = {
+    "ARCHIVE_ENCRYPTED_ENTRY": FailureClass.ENCRYPTED_SOURCE,
+    "OFFICE_ACTIVE_CONTENT": FailureClass.MALWARE_QUARANTINED,
+    "OFFICE_EMBEDDED_OBJECT": FailureClass.MALWARE_QUARANTINED,
+    "OFFICE_EXTERNAL_RELATION": FailureClass.MALWARE_QUARANTINED,
+}
 
 
 class _XlsxError(Exception):
@@ -353,6 +364,16 @@ def _range_references(start: str, end: str) -> list[list[str]]:
 class XlsxLocatorResolver:
     """Sheet + cell/range resolution through ``zipfile`` and safe XML.
 
+    The package goes through the repo's existing hostile-archive guards
+    (:func:`akc_native_parsers.security.validate_source`) *before* a single part
+    is read. A bare ``zipfile`` resolves a duplicate ``xl/workbook.xml`` out of
+    whichever copy the central directory happens to list last, so an appended
+    shadow workbook would hand back attacker content as evidence while the real
+    sheet reported ``EVIDENCE_BROKEN``. Those guards — duplicate part names,
+    path traversal, encrypted and symlink members, entry count, uncompressed
+    size and compression ratio — already refuse that package everywhere else in
+    the product; the resolver must not be the one door that accepts it.
+
     ``namedRange``, ``tableId`` and ``chartId`` anchors are typed by the schema
     but have no resolver here; they report ``UNSUPPORTED_FORMAT`` rather than
     resolving to something adjacent. The optional ``workbook`` field is not
@@ -373,10 +394,21 @@ class XlsxLocatorResolver:
                 "only cell and range anchors resolve in this campaign",
             )
         try:
+            validate_source(
+                filename="representation.xlsx",
+                declared_mime=_XLSX_MIME,
+                data=data,
+                limits=ParserLimits(),
+            )
             with zipfile.ZipFile(io.BytesIO(data)) as archive:
                 shared = _shared_strings(archive)
                 part = _sheet_part(archive, locator.sheet)
                 cells = _sheet_cells(archive, part, shared)
+        except StructuredParseError as error:
+            return Unresolved(
+                _PACKAGE_FAILURE.get(error.code, FailureClass.CORRUPT_SOURCE),
+                f"xlsx package refused by the source guards: {error.code}",
+            )
         except _XlsxError as error:
             return Unresolved(error.reason, error.detail)
         except Exception as exc:

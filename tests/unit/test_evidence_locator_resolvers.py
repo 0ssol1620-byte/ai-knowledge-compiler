@@ -8,6 +8,8 @@ None of them may resolve to a plausible-looking guess.
 from __future__ import annotations
 
 import io
+import warnings
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -262,27 +264,15 @@ def test_xlsx_named_range_has_no_resolver_yet(xlsx_bytes: bytes) -> None:
 
 
 def test_xlsx_package_without_a_workbook_part_is_unresolved() -> None:
-    import zipfile
-
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as archive:
-        archive.writestr("hello.txt", "not a workbook")
-    result = resolve_locator(
-        locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), buffer.getvalue()
-    )
+    data = _ooxml_package({"xl/sharedStrings.xml": f'<sst xmlns="{_MAIN}"/>'})
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), data)
     unresolved = expect_unresolved(result, FailureClass.EVIDENCE_BROKEN)
     assert "xl/workbook.xml" in unresolved.detail
 
 
 def test_xlsx_workbook_part_that_is_not_xml_is_corrupt_source() -> None:
-    import zipfile
-
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as archive:
-        archive.writestr("xl/workbook.xml", "<<< not xml")
-    result = resolve_locator(
-        locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), buffer.getvalue()
-    )
+    data = _ooxml_package({"xl/workbook.xml": "<<< not xml"})
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), data)
     expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
 
 
@@ -302,27 +292,58 @@ def test_xlsx_with_an_unsupported_zip_version_is_refused_not_a_crash(xlsx_bytes:
     assert "NotImplementedError" in unresolved.detail
 
 
-def _minimal_xlsx(sheet_xml: str, shared_strings_xml: str) -> bytes:
-    import zipfile
+_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+_OFFICE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+_PKG_REL = "http://schemas.openxmlformats.org/package/2006/relationships"
+_CONTENT_TYPES = (
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    '<Default Extension="rels" '
+    'ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    '<Default Extension="xml" ContentType="application/xml"/></Types>'
+)
+_ROOT_RELS = (
+    f'<Relationships xmlns="{_PKG_REL}"><Relationship Id="rId1" '
+    f'Type="{_OFFICE_REL}/officeDocument" Target="xl/workbook.xml"/></Relationships>'
+)
 
-    main = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-    office = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-    package = "http://schemas.openxmlformats.org/package/2006/relationships"
+
+def _ooxml_package(parts: dict[str, str]) -> bytes:
+    """A package the repo's archive guards accept, plus whatever ``parts`` say.
+
+    Since the resolver runs ``akc_native_parsers.security.validate_source``
+    first, a bare zip of one text file no longer reaches the workbook code at
+    all — it is refused as a package. These tests are about what the *resolver*
+    does with a well-formed package, so the base parts are the ones the guards
+    require: ``[Content_Types].xml``, the root relationships and an ``xl/``
+    member.
+    """
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
-        archive.writestr(
-            "xl/workbook.xml",
-            f'<workbook xmlns="{main}" xmlns:r="{office}"><sheets>'
-            '<sheet name="Revenue" sheetId="1" r:id="rId1"/></sheets></workbook>',
-        )
-        archive.writestr(
-            "xl/_rels/workbook.xml.rels",
-            f'<Relationships xmlns="{package}"><Relationship Id="rId1" '
-            f'Type="{office}/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
-        )
-        archive.writestr("xl/worksheets/sheet1.xml", sheet_xml)
-        archive.writestr("xl/sharedStrings.xml", shared_strings_xml)
+        for name, body in {
+            "[Content_Types].xml": _CONTENT_TYPES,
+            "_rels/.rels": _ROOT_RELS,
+            **parts,
+        }.items():
+            archive.writestr(name, body)
     return buffer.getvalue()
+
+
+def _minimal_xlsx(sheet_xml: str, shared_strings_xml: str) -> bytes:
+    return _ooxml_package(
+        {
+            "xl/workbook.xml": (
+                f'<workbook xmlns="{_MAIN}" xmlns:r="{_OFFICE_REL}"><sheets>'
+                '<sheet name="Revenue" sheetId="1" r:id="rId1"/></sheets></workbook>'
+            ),
+            "xl/_rels/workbook.xml.rels": (
+                f'<Relationships xmlns="{_PKG_REL}"><Relationship Id="rId1" '
+                f'Type="{_OFFICE_REL}/worksheet" Target="worksheets/sheet1.xml"/>'
+                "</Relationships>"
+            ),
+            "xl/worksheets/sheet1.xml": sheet_xml,
+            "xl/sharedStrings.xml": shared_strings_xml,
+        }
+    )
 
 
 @pytest.mark.parametrize("anchor", [{"cell": "A1"}, {"range": "A1:A1"}])
@@ -385,3 +406,55 @@ def test_a_resolver_handed_the_wrong_variant_refuses_it(resolver: Any, expected:
     result = resolver.resolve(wrong, b"")
     unresolved = expect_unresolved(result, FailureClass.EVIDENCE_BROKEN)
     assert expected in unresolved.detail
+
+
+# ------------------------------------------------- repair round 2 failure paths
+
+
+def test_a_shadow_workbook_part_cannot_supply_evidence() -> None:
+    """A duplicate ``xl/workbook.xml`` appended to a real workbook.
+
+    ``zipfile`` reads whichever copy the central directory lists last, so the
+    attacker's shadow workbook decides which sheets exist and where they live,
+    while the genuine sheet reports ``EVIDENCE_BROKEN``. Every other door into
+    this product refuses that package (``ARCHIVE_DUPLICATE_ENTRY``); the
+    resolver must too, rather than resolving evidence out of a part no viewer
+    would ever open.
+    """
+    buffer = io.BytesIO((FIXTURES / "sample.xlsx").read_bytes())
+    with warnings.catch_warnings():  # zipfile warns about the duplicate name
+        warnings.simplefilter("ignore", UserWarning)
+        with zipfile.ZipFile(buffer, "a", zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr(
+                "xl/workbook.xml",
+                f'<workbook xmlns="{_MAIN}" xmlns:r="{_OFFICE_REL}"><sheets>'
+                '<sheet name="Payroll" sheetId="9" r:id="rId9"/></sheets></workbook>',
+            )
+            archive.writestr(
+                "xl/_rels/workbook.xml.rels",
+                f'<Relationships xmlns="{_PKG_REL}"><Relationship Id="rId9" '
+                f'Type="{_OFFICE_REL}/worksheet" Target="worksheets/shadow.xml"/>'
+                "</Relationships>",
+            )
+            archive.writestr(
+                "xl/worksheets/shadow.xml",
+                f'<worksheet xmlns="{_MAIN}"><sheetData><row r="1">'
+                '<c r="A1" t="inlineStr"><is><t>ATTACKER SUPPLIED</t></is></c>'
+                "</row></sheetData></worksheet>",
+            )
+    tampered = buffer.getvalue()
+    for sheet in ("Payroll", "Revenue"):
+        result = resolve_locator(locator(locatorKind="xlsx", sheet=sheet, cell="A1"), tampered)
+        unresolved = expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+        assert "ARCHIVE_DUPLICATE_ENTRY" in unresolved.detail
+
+
+def test_an_encrypted_package_member_is_encrypted_source_not_corruption() -> None:
+    """The guards separate "cannot read" from "not allowed to read"."""
+    data = bytearray(_minimal_xlsx(f'<worksheet xmlns="{_MAIN}"/>', f'<sst xmlns="{_MAIN}"/>'))
+    for header in (b"PK\x03\x04", b"PK\x01\x02"):
+        offset = data.index(header) + (6 if header == b"PK\x03\x04" else 8)
+        data[offset] |= 0x01  # the general-purpose "encrypted" flag bit
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), bytes(data))
+    unresolved = expect_unresolved(result, FailureClass.ENCRYPTED_SOURCE)
+    assert "ARCHIVE_ENCRYPTED_ENTRY" in unresolved.detail
