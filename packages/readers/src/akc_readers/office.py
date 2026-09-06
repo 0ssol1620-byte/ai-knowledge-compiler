@@ -471,6 +471,9 @@ class NativeDocxV1(_NativeOfficeV1):
     the wrong one in any file that has a paragraph before a table. `cellId` is
     `r/RRRRRR/c/CCCCCC` with the **first** row and column a merged cell covers.
     `commentId` and `footnoteId` are the `w:id` values Word itself wrote.
+    `paragraphId` also takes the form `docx/body/p/N/textbox/M/p/K` — paragraph
+    K of text box M anchored in body child N — so a consumer that parses it as
+    `docx/body/p/<int>` and stops will mis-address every text-box paragraph.
 
     Known limitations — the rows this reader failed in the 2026-09-06
     qualification, verbatim from the receipt:
@@ -539,6 +542,18 @@ class NativePptxV1(_NativeOfficeV1):
     one by walking `.shapes[i]` for each dot-separated segment. A pptx table
     cell carries its **table shape's** bbox — a containing region, not the
     cell's own rectangle (`pptx_parser.py` `_add_shape`, pre-existing).
+
+    Two more facts a consumer would otherwise get wrong. A text shape holding
+    several paragraphs yields **one unit per paragraph**, every one of them
+    carrying the same `shapeId` and the same bbox — the shape's, because a
+    paragraph has no measured rectangle of its own. So a `shapeId` is not a
+    unique unit key, and two units with an identical anchor and bbox are
+    different text, not a duplicate (measured on a two-paragraph text box:
+    `Para one` and `Para two` both arrive at one `shapeId` with one bbox). And a
+    **picture** shape is emitted as a unit whose `text` is the media part's file
+    name, anchored at the picture's `shapeId` and boxed at the picture's own
+    rectangle (measured: `image.png`). That is a package fact, not document
+    text; a caller must not read it as slide content.
 
     Known limitations — the rows this reader failed in the 2026-09-06
     qualification, verbatim from the receipt:
