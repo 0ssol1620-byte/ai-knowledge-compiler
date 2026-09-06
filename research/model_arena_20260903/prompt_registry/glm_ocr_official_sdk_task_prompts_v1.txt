@@ -1,1 +1,0 @@
-{"formula":"Formula Recognition:","table":"Table Recognition:","text":"Text Recognition:"}

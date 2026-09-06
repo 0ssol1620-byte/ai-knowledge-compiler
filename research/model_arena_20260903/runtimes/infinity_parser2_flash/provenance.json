@@ -1,8 +1,0 @@
-{
-  "model_key": "infinity_parser2_flash",
-  "derived_from": "runtimes/infinity_parser2_pro",
-  "weights_repo": "infly/Infinity-Parser2-Flash",
-  "weights_revision": "cfddc4106b0abc4706f05575a164f7dd35d09c46",
-  "largest_file_sha256": "sha256:761cb9295e05047bc8628effd7381023458f193955b804098dd332c464f26150",
-  "note": "Created 2026-09-05 for full Arena Flash run on RTX 4090 (TP=1)."
-}
