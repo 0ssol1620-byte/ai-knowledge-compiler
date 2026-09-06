@@ -7,7 +7,10 @@ Worktree `D:\CodexProjects\uskc-lanes\core-c-reader-sdk`, base core `d9db24c`.
 
 - Branch: `agent/uskc-c-reader-sdk`
 - SDK + doc commit: `d6a7203`
-- Report commit / branch tip pushed: `5dd15a6` (`5dd15a6cf86ea61bf74ed980b97bf26b45faf910`)
+- Report commit: `5dd15a6` (`5dd15a6cf86ea61bf74ed980b97bf26b45faf910`), SHA note `11c5a94`
+- **Repair-pass commit: `f82fd57` (`f82fd57b1afdfd66094be9d7f4ceaed8d4278375`)** —
+  see the Repair section at the end of this file. The commit that records this
+  line follows it and is the branch tip.
 - No PR, no merge, no deploy, no migration. Core repo — no Vercel preview applies.
 
 ## 2. Files created / modified
