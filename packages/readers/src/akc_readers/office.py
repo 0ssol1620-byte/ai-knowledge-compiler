@@ -6,12 +6,15 @@ content-detected MIME (never the filename) decides `can_read` and the name the
 parser is handed, and only the features a probe sample demonstrably produces are
 declared.
 
-None of the three is VERIFIED. Lane C-3 qualified all three against a committed
-corpus and every one of them failed rows, so every capability stays
+No family here is `VERIFIED_NATIVE`. Lane C-3 qualified all three against a
+committed corpus; every one of them failed rows, and — separately and by itself
+decisive — founder ruling G-6 (contract §4) requires six kinds of evidence in a
+family's receipt, of which C-3 can supply four. The website full sequence and
+the measured performance are recorded `ABSENT`, so every capability stays
 `BEST_EFFORT` and carries no `qualification_receipt`:
 
 * `docs/evidence/receipts/office_reader_qualification_xlsx_2026-09-06.json` — 18/22
-* `docs/evidence/receipts/office_reader_qualification_docx_2026-09-06.json` — 10/14
+* `docs/evidence/receipts/office_reader_qualification_docx_2026-09-06.json` — 10/17
 * `docs/evidence/receipts/office_reader_qualification_pptx_2026-09-06.json` — 10/13
 
 Each class below lists the rows it failed. They share one cause: `ExtractedUnit`
@@ -31,6 +34,14 @@ discovering:
   DOCX table as a whole, an embedded image — none of them has a variant anchor.
   Those units are emitted with ``locator=None``. Nothing is rounded to the
   nearest addressable neighbour.
+
+One block the wrapped parser produces is dropped here rather than emitted
+without a locator: the heading the pptx parser invents for a slide with no title
+placeholder (``raw_text=f"Slide {n}"``, ``quality_flags=("slide_title_inferred",)``).
+`ExtractedUnit` carries no quality flags, so that unit would reach a caller as
+text that is in no part of the package, anchored to a real ``slideNumber1`` and
+boxed at the whole slide — a fabricated locator and bbox over synthesised
+content. Nothing else the parsers infer is emitted as evidence.
 """
 
 from __future__ import annotations
@@ -293,7 +304,7 @@ class _NativeOfficeV1:
         index = self._index(document)
         for block in document.blocks:
             if "slide_title_inferred" in block.quality_flags:
-                # The pptx parser invents a heading - `Slide 3` - for a slide
+                # The pptx parser invents a heading — `Slide 3` — for a slide
                 # with no title placeholder, and flags it. `ExtractedUnit` has
                 # no field for that flag, so the invention would leave here as
                 # ordinary evidence: text that appears nowhere in the package,
@@ -375,6 +386,15 @@ class NativeXlsxV1(_NativeOfficeV1):
     range, named range, table or chart), and neither does an embedded image, so
     those units carry `locator=None`.
 
+    **What the anchor ids mean.** `sheet` is the worksheet's own name, from the
+    parser's `metadata["sheets"]`. `cell` and `range` are absolute A1
+    coordinates written by the parser, never recomputed table-relative. `chartId`
+    is the **0-based index of the chart in `worksheet._charts`** — the order
+    openpyxl loaded the sheet's charts — and *not* a relationship id, a part
+    name or a chart title. Resolve it as `workbook[sheet]._charts[int(chartId)]`;
+    a consumer that looks for `rId<chartId>` in the drawing rels will not find
+    it.
+
     Known limitations — the rows this reader failed in the 2026-09-06
     qualification, verbatim from the receipt:
 
@@ -433,6 +453,16 @@ class NativeDocxV1(_NativeOfficeV1):
     `locator=None`. Every anchor is derived from the parser's own
     `native_object_id`; `metadata["docx"]` carries counts, not addresses.
 
+    **What the anchor ids mean.** The number in `docx/body/p/NNNNNN` and
+    `docx/body/table/NNNNNN` is the **index of the child of `w:body`**, not the
+    ordinal of the paragraph or of the table. In
+    `tests/fixtures/office_corpus/docx/02-table-simple.docx` the document's only
+    table is `docx/body/table/000001` because body child 0 is a paragraph.
+    Resolve it as `document.element.body[NNNNNN]`; counting tables will address
+    the wrong one in any file that has a paragraph before a table. `cellId` is
+    `r/RRRRRR/c/CCCCCC` with the **first** row and column a merged cell covers.
+    `commentId` and `footnoteId` are the `w:id` values Word itself wrote.
+
     Known limitations — the rows this reader failed in the 2026-09-06
     qualification, verbatim from the receipt:
 
@@ -444,6 +474,18 @@ class NativeDocxV1(_NativeOfficeV1):
     * `docx_merged_cell_spans` — as for XLSX: the span is computed and dropped.
     * `docx_equation_formula` — OMML is flattened to its run text, so `E²=mc`
       arrives as `E2=mc` and no `formula` is emitted.
+    * `docx_body_paragraphs` (`11-sdt-content-control.docx`) — a paragraph
+      wrapped in `w:sdt`/`w:sdtContent` (a content control: a template field, an
+      approval block, a date picker) is not a `w:p` child of `w:body`, and the
+      body walk dispatches on the child's tag name, so its text never becomes a
+      unit and no warning says so.
+    * `docx_endnotes` (`12-endnotes.docx`) — `word/endnotes.xml` is not read at
+      all; only `word/footnotes.xml` is. EvidenceLocator v2's docx variant also
+      has no endnote anchor, so closing this needs the parser first and an
+      enums v2 locator field second.
+    * `docx_table_cells` (`13-nested-table.docx`) — a `w:tbl` inside a `w:tc` is
+      dropped: `_Cell.text` walks the cell's paragraphs only, so the outer cell
+      reads `Outer cell` and the inner table's text reaches no unit.
     """
 
     provider_id = "native_docx_v1"
@@ -477,6 +519,17 @@ class NativeDocxV1(_NativeOfficeV1):
 
 class NativePptxV1(_NativeOfficeV1):
     """PPTX → slide-anchored locators, with the shape id where one is known.
+
+    **What the anchor ids mean.** `slideNumber1` is 1-based presentation order.
+    `shapeId` is the **z-order index path through the shape tree**, dot-joined
+    for a shape inside a group — `0001` is `slide.shapes[1]`, and `0000.0001` is
+    `slide.shapes[0].shapes[1]`. It is *not* `p:cNvPr/@id` and not `shape_id`:
+    in `tests/fixtures/office_corpus/pptx/04-grouped-shapes.pptx` the authored
+    `cNvPr` ids are 2 and 5 at the top level and 3 and 4 inside the group, while
+    the emitted ids are `0000.0000`, `0000.0001` and `0001`. A consumer resolves
+    one by walking `.shapes[i]` for each dot-separated segment. A pptx table
+    cell carries its **table shape's** bbox — a containing region, not the
+    cell's own rectangle (`pptx_parser.py` `_add_shape`, pre-existing).
 
     Known limitations — the rows this reader failed in the 2026-09-06
     qualification, verbatim from the receipt:
