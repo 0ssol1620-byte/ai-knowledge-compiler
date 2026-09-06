@@ -233,9 +233,20 @@ class LegacyPdfV1:
         )
 
     def extract_native(self, source: ReaderInput) -> NativeExtraction:
+        # The filename never decides readability. `parse_pdf_to_cir` gates on the
+        # extension (`UNSUPPORTED_PDF_TYPE`) and on the declared MIME
+        # (`MIME_MISMATCH`) before it reads a byte, so handing it the caller's
+        # two strings meant a content-detected PDF named `report.bin` came back
+        # refused and was published in a §44 receipt as `CORRUPT_SOURCE` —
+        # corruption asserted about a source that is not corrupt. It gets the
+        # inspector's content-detected MIME and a filename whose extension
+        # matches it instead; the caller's stem is kept for provenance, and the
+        # parser's own `%PDF-` magic check still refuses bytes that are not one.
+        detected_mime = self.inspect(source).detected_mime
+        stem = Path(source.filename).stem or "source"
         document = parse_pdf_to_cir(
-            filename=source.filename,
-            declared_mime=source.declared_mime,
+            filename=f"{stem}.pdf",
+            declared_mime=detected_mime,
             data=source.data,
             # Campaign identity alias (contract §7 R-8): one SourceVersion per
             # document row, so the source version id is the document identity.

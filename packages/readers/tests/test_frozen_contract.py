@@ -77,6 +77,22 @@ def test_failure_mapping_names_its_gaps_in_both_directions() -> None:
         assert code in FAILURE_CODES_WITHOUT_FAILURE_CLASS
 
 
+def test_the_two_transliterated_failure_class_enums_cannot_drift() -> None:
+    """`FailureClass` is deliberately defined twice and must stay one vocabulary.
+
+    ADR-007 records why: `akc_cir` sits *below* the reader plane and must not
+    import from `akc_readers`, so each package transliterates the frozen list.
+    This test lives here because `packages/readers/tests` is the only scope that
+    may import both, and it is the seam that keeps the two copies honest.
+    """
+    from akc_cir.evidence_locator_resolvers import FailureClass as CirFailureClass
+
+    reader_values = [member.value for member in FailureClass]
+    cir_values = [member.value for member in CirFailureClass]
+    assert reader_values == cir_values
+    assert reader_values == frozen_contract(ENUMS_JSON)["FailureClass"]
+
+
 def test_reader_features_cover_the_frozen_feature_vocabulary() -> None:
     assert ReaderFeature.TRACK_CHANGES in ReaderFeature
     assert len(list(ReaderFeature)) == len(frozen_contract(ENUMS_JSON)["ReaderFeature"])

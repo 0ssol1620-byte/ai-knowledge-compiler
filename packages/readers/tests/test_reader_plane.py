@@ -1111,3 +1111,36 @@ def test_a_verified_tier_whose_receipt_is_untracked_is_refused() -> None:
             ReaderRegistry().register(provider)
     finally:
         receipt.unlink()
+
+
+def test_a_content_detected_pdf_reads_the_same_under_any_filename() -> None:
+    """The filename never decides readability — integration carry-over from lane C.
+
+    `legacy_pdf_v1` handed `parse_pdf_to_cir` the caller's filename and declared
+    MIME, and that parser gates on both (`UNSUPPORTED_PDF_TYPE`, `MIME_MISMATCH`)
+    before it ever looks at the bytes. A content-detected PDF named `report.bin`
+    was therefore refused and published in a §44 receipt as `CORRUPT_SOURCE` —
+    an assertion of corruption about a source that is not corrupt.
+    """
+    from akc_readers.providers import _probe_pdf_bytes
+
+    pdf = _probe_pdf_bytes()
+    registry = _registry()
+
+    honest = _input(pdf, filename="probe.pdf", declared_mime="application/pdf")
+    renamed = _input(pdf, filename="report.bin", declared_mime="application/octet-stream")
+
+    assert inspect_source(renamed).detected_mime == "application/pdf"
+
+    honest_output, honest_receipt = registry.read(honest)
+    renamed_output, renamed_receipt = registry.read(renamed)
+
+    assert renamed_receipt.accepted is True
+    assert renamed_receipt.failure_class is None
+    assert renamed_output is not None
+    assert honest_output is not None
+    assert [unit.text for unit in renamed_output.units] == [
+        unit.text for unit in honest_output.units
+    ]
+    assert renamed_output.output_digest == honest_output.output_digest
+    assert renamed_receipt.provider_id == honest_receipt.provider_id == "legacy_pdf_v1"
