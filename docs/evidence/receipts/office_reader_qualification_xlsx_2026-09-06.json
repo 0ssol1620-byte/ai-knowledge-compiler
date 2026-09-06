@@ -1,0 +1,424 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "xlsx",
+  "providerId": "native_xlsx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-06",
+  "corpus": {
+    "root": "tests/fixtures/office_corpus/xlsx",
+    "fileCount": 10,
+    "sha256": "sha256:db764ac553ae8d54d043cc86010d58ba0e9a6db9883a30aebf25015af2e01796"
+  },
+  "expectedManifest": {
+    "path": "tests/fixtures/office_corpus/expected.json",
+    "sha256": "sha256:80333ed5a2e54dc032ea770b767c9847cb9d6a00a17ac2dae0ab60871271f902"
+  },
+  "runtime": {
+    "digest": "sha256:ff3d11deb248c30f5c20bafbdc4eb7ab1c2586f35f59b22880e76bc5230ce3ed",
+    "python": "3.13.0"
+  },
+  "rows": [
+    {
+      "file": "xlsx/01-basic-grid.xlsx",
+      "capability": "xlsx_sheet_names",
+      "expected": [
+        "Data"
+      ],
+      "observed": [
+        "Data"
+      ],
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-basic-grid.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Data!A1": "Item",
+        "Data!B1": "Count",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!A3": "beta",
+        "Data!B3": "3",
+        "Data!A4": "gamma",
+        "Data!B4": "5"
+      },
+      "observed": {
+        "Data!A1": "Item",
+        "Data!B1": "Count",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!A3": "beta",
+        "Data!B3": "3",
+        "Data!A4": "gamma",
+        "Data!B4": "5"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-basic-grid.xlsx",
+      "capability": "xlsx_table_range",
+      "expected": {
+        "Data": "A1:B4"
+      },
+      "observed": {
+        "Data": "A1:B4"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/02-formulas-cached.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Data!A1": "Item",
+        "Data!B1": "Count",
+        "Data!C1": "Doubled",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!C2": "4",
+        "Data!A3": "beta",
+        "Data!B3": "3",
+        "Data!C3": "6"
+      },
+      "observed": {
+        "Data!A1": "Item",
+        "Data!B1": "Count",
+        "Data!C1": "Doubled",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!C2": "4",
+        "Data!A3": "beta",
+        "Data!B3": "3",
+        "Data!C3": "6"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/02-formulas-cached.xlsx",
+      "capability": "xlsx_formula_text",
+      "expected": {
+        "Data!C2": "=B2*2",
+        "Data!C3": "=B3*2"
+      },
+      "observed": {
+        "Data!C2": "=B2*2",
+        "Data!C3": "=B3*2"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/03-formulas-uncached.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Data!A1": "Item",
+        "Data!B1": "Count",
+        "Data!C1": "Trebled",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!C2": "=B2*3"
+      },
+      "observed": {
+        "Data!A1": "Item",
+        "Data!B1": "Count",
+        "Data!C1": "Trebled",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!C2": "=B2*3"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/03-formulas-uncached.xlsx",
+      "capability": "xlsx_formula_text",
+      "expected": {
+        "Data!C2": "=B2*3"
+      },
+      "observed": {
+        "Data!C2": "=B2*3"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/04-merged-header.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Data!A1": "Quarterly report",
+        "Data!A2": "Item",
+        "Data!B2": "Count",
+        "Data!C2": "Share",
+        "Data!A3": "alpha",
+        "Data!B3": "2",
+        "Data!C3": "0.4"
+      },
+      "observed": {
+        "Data!A1": "Quarterly report",
+        "Data!A2": "Item",
+        "Data!B2": "Count",
+        "Data!C2": "Share",
+        "Data!A3": "alpha",
+        "Data!B3": "2",
+        "Data!C3": "0.4"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/04-merged-header.xlsx",
+      "capability": "xlsx_merged_ranges",
+      "expected": {
+        "Data": [
+          "A1:C1"
+        ]
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "ExtractedUnit carries no rowSpan/columnSpan; CanonicalCell has them, the reader surface does not. The covered cells are absent from the unit stream, which is a consequence of a merge, not evidence of its extent."
+    },
+    {
+      "file": "xlsx/05-hidden-sheet.xlsx",
+      "capability": "xlsx_sheet_names",
+      "expected": [
+        "Visible",
+        "Draft"
+      ],
+      "observed": [
+        "Visible",
+        "Draft"
+      ],
+      "pass": true
+    },
+    {
+      "file": "xlsx/05-hidden-sheet.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Visible!A1": "Item",
+        "Visible!A2": "alpha",
+        "Draft!A1": "Note",
+        "Draft!A2": "not for release"
+      },
+      "observed": {
+        "Visible!A1": "Item",
+        "Visible!A2": "alpha",
+        "Draft!A1": "Note",
+        "Draft!A2": "not for release"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/05-hidden-sheet.xlsx",
+      "capability": "xlsx_hidden_sheets",
+      "expected": [
+        "Draft"
+      ],
+      "observed": null,
+      "pass": false,
+      "unobservable": "sheet visibility lives in the parser's metadata['sheets'][*]['state'] and in the cell quality flags; NativeExtraction carries neither."
+    },
+    {
+      "file": "xlsx/06-named-range.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Data!A1": "Item",
+        "Data!B1": "Revenue",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!A3": "beta",
+        "Data!B3": "3"
+      },
+      "observed": {
+        "Data!A1": "Item",
+        "Data!B1": "Revenue",
+        "Data!A2": "alpha",
+        "Data!B2": "2",
+        "Data!A3": "beta",
+        "Data!B3": "3"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/06-named-range.xlsx",
+      "capability": "xlsx_named_ranges",
+      "expected": {
+        "RevenueColumn": "Data!$B$2:$B$3"
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the xlsx parser records no defined names at all, so no unit and no metadata carries one; EvidenceLocator v2 has a namedRange anchor with nothing to fill it."
+    },
+    {
+      "file": "xlsx/07-chart-cached-series.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Data!A1": "Quarter",
+        "Data!B1": "Revenue",
+        "Data!A2": "Q1",
+        "Data!B2": "2",
+        "Data!A3": "Q2",
+        "Data!B3": "3",
+        "Data!A4": "Q3",
+        "Data!B4": "5"
+      },
+      "observed": {
+        "Data!A1": "Quarter",
+        "Data!B1": "Revenue",
+        "Data!A2": "Q1",
+        "Data!B2": "2",
+        "Data!A3": "Q2",
+        "Data!B3": "3",
+        "Data!A4": "Q3",
+        "Data!B4": "5"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/07-chart-cached-series.xlsx",
+      "capability": "xlsx_chart_title",
+      "expected": {
+        "Data": "Quarterly revenue"
+      },
+      "observed": {
+        "Data": "Quarterly revenue"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/07-chart-cached-series.xlsx",
+      "capability": "xlsx_chart_series_names",
+      "expected": {
+        "Data": [
+          "Revenue"
+        ]
+      },
+      "observed": {
+        "Data": [
+          "'Data'!B1"
+        ]
+      },
+      "pass": false
+    },
+    {
+      "file": "xlsx/08-multi-sheet.xlsx",
+      "capability": "xlsx_sheet_names",
+      "expected": [
+        "Summary",
+        "Detail",
+        "Notes"
+      ],
+      "observed": [
+        "Summary",
+        "Detail",
+        "Notes"
+      ],
+      "pass": true
+    },
+    {
+      "file": "xlsx/08-multi-sheet.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Summary!A1": "Metric",
+        "Summary!B1": "Value",
+        "Summary!A2": "total",
+        "Summary!B2": "10",
+        "Detail!A1": "Item",
+        "Detail!B1": "Count",
+        "Detail!A2": "alpha",
+        "Detail!B2": "4",
+        "Detail!A3": "beta",
+        "Detail!B3": "6",
+        "Notes!A1": "Note",
+        "Notes!A2": "reconciled"
+      },
+      "observed": {
+        "Summary!A1": "Metric",
+        "Summary!B1": "Value",
+        "Summary!A2": "total",
+        "Summary!B2": "10",
+        "Detail!A1": "Item",
+        "Detail!B1": "Count",
+        "Detail!A2": "alpha",
+        "Detail!B2": "4",
+        "Detail!A3": "beta",
+        "Detail!B3": "6",
+        "Notes!A1": "Note",
+        "Notes!A2": "reconciled"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/09-offset-origin.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Offset!C5": "Item",
+        "Offset!D5": "Count",
+        "Offset!C6": "alpha",
+        "Offset!D6": "7",
+        "Offset!C7": "beta",
+        "Offset!D7": "8"
+      },
+      "observed": {
+        "Offset!C5": "Item",
+        "Offset!D5": "Count",
+        "Offset!C6": "alpha",
+        "Offset!D6": "7",
+        "Offset!C7": "beta",
+        "Offset!D7": "8"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/09-offset-origin.xlsx",
+      "capability": "xlsx_table_range",
+      "expected": {
+        "Offset": "C5:D7"
+      },
+      "observed": {
+        "Offset": "C5:D7"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/10-value-types-unicode.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "Types!A1": "Kind",
+        "Types!B1": "Value",
+        "Types!A2": "text",
+        "Types!B2": "가나다 Ünïcode",
+        "Types!A3": "integer",
+        "Types!B3": "42",
+        "Types!A4": "float",
+        "Types!B4": "3.5",
+        "Types!A5": "boolean",
+        "Types!B5": "TRUE",
+        "Types!A6": "timestamp",
+        "Types!B6": "2026-01-15T00:00:00"
+      },
+      "observed": {
+        "Types!A1": "Kind",
+        "Types!B1": "Value",
+        "Types!A2": "text",
+        "Types!B2": "가나다 Ünïcode",
+        "Types!A3": "integer",
+        "Types!B3": "42",
+        "Types!A4": "float",
+        "Types!B4": "3.5",
+        "Types!A5": "boolean",
+        "Types!B5": "TRUE",
+        "Types!A6": "timestamp",
+        "Types!B6": "2026-01-15T00:00:00"
+      },
+      "pass": true
+    }
+  ],
+  "totals": {
+    "rows": 22,
+    "passed": 18,
+    "failed": 4
+  },
+  "failedCapabilities": [
+    "xlsx_chart_series_names",
+    "xlsx_hidden_sheets",
+    "xlsx_merged_ranges",
+    "xlsx_named_ranges"
+  ],
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE only when every row passes (lane contract C-3). Any failing row keeps the capability at BEST_EFFORT and is listed verbatim as a known limitation."
+}

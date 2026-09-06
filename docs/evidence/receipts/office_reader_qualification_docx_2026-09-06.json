@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "docx",
+  "providerId": "native_docx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-06",
+  "corpus": {
+    "root": "tests/fixtures/office_corpus/docx",
+    "fileCount": 10,
+    "sha256": "sha256:1f52b9b7cd03b56aae1d887ee4648b76bc203ce3d06d462b5e92791152086c33"
+  },
+  "expectedManifest": {
+    "path": "tests/fixtures/office_corpus/expected.json",
+    "sha256": "sha256:80333ed5a2e54dc032ea770b767c9847cb9d6a00a17ac2dae0ab60871271f902"
+  },
+  "runtime": {
+    "digest": "sha256:9523fe42dcd192a244680510a687390ca2cb7072a668e59c100805931157350f",
+    "python": "3.13.0"
+  },
+  "rows": [
+    {
+      "file": "docx/01-headings-paragraphs.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "Quarterly report",
+        "Revenue rose in every region.",
+        "Risks",
+        "Supply remains constrained."
+      ],
+      "observed": [
+        "Quarterly report",
+        "Revenue rose in every region.",
+        "Risks",
+        "Supply remains constrained."
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/02-table-simple.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "Team",
+          "r/000000/c/000001": "People",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "Team",
+          "r/000000/c/000001": "People",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/03-table-merged-header.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "Headcount",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "Headcount",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/03-table-merged-header.docx",
+      "capability": "docx_merged_cell_spans",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": [
+            1,
+            2
+          ]
+        }
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "same as xlsx_merged_ranges: the span is computed by the parser and dropped at the reader surface."
+    },
+    {
+      "file": "docx/04-comments.docx",
+      "capability": "docx_comment_text",
+      "expected": {
+        "0": "Check this number.",
+        "1": "Source, please."
+      },
+      "observed": {
+        "0": "Check this number.",
+        "1": "Source, please."
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/04-comments.docx",
+      "capability": "docx_comment_author",
+      "expected": {
+        "0": "Dana Reviewer",
+        "1": "Kim Auditor"
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the parser keeps the author as a quality flag on the comment block (comment_author_preserved) rather than as text; ExtractedUnit has no attribution field, so the author cannot reach a caller."
+    },
+    {
+      "file": "docx/05-tracked-changes.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "The contract runs for three years"
+      ],
+      "observed": [
+        "The contract runs for three years"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/05-tracked-changes.docx",
+      "capability": "docx_tracked_changes",
+      "expected": [
+        {
+          "kind": "insertion",
+          "text": "three years"
+        },
+        {
+          "kind": "deletion",
+          "text": "two years"
+        }
+      ],
+      "observed": null,
+      "pass": false,
+      "unobservable": "insertions are folded into the visible paragraph text and deletions are kept only in metadata['docx']['trackedChanges']; neither is a unit, so the change list and the deleted text are unreachable."
+    },
+    {
+      "file": "docx/06-headers-footers.docx",
+      "capability": "docx_headers_footers",
+      "expected": {
+        "docx/section/0000/header/p/000000": "Acme internal",
+        "docx/section/0000/footer/p/000000": "Confidential draft"
+      },
+      "observed": {
+        "docx/section/0000/header/p/000000": "Acme internal",
+        "docx/section/0000/footer/p/000000": "Confidential draft"
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/07-multi-section-headers.docx",
+      "capability": "docx_headers_footers",
+      "expected": {
+        "docx/section/0000/header/p/000000": "Part one",
+        "docx/section/0001/header/p/000000": "Part two"
+      },
+      "observed": {
+        "docx/section/0000/header/p/000000": "Part one",
+        "docx/section/0001/header/p/000000": "Part two"
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/08-footnotes.docx",
+      "capability": "docx_footnotes",
+      "expected": {
+        "2": "Source: the internal revenue ledger."
+      },
+      "observed": {},
+      "pass": false
+    },
+    {
+      "file": "docx/09-omml-equation.docx",
+      "capability": "docx_equation_text",
+      "expected": [
+        "E2=mc"
+      ],
+      "observed": [
+        "E2=mc"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/09-omml-equation.docx",
+      "capability": "docx_equation_formula",
+      "expected": true,
+      "observed": null,
+      "pass": false,
+      "unobservable": "the docx parser flattens OMML to its run text and never sets formula_latex, so the equation's structure (the superscript) is lost even though its characters survive."
+    },
+    {
+      "file": "docx/10-unicode-lists.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "분기 보고서",
+        "첫 번째 항목",
+        "Zweiter Eintrag — mit Gedankenstrich"
+      ],
+      "observed": [
+        "분기 보고서",
+        "첫 번째 항목",
+        "Zweiter Eintrag — mit Gedankenstrich"
+      ],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "rows": 14,
+    "passed": 9,
+    "failed": 5
+  },
+  "failedCapabilities": [
+    "docx_comment_author",
+    "docx_equation_formula",
+    "docx_footnotes",
+    "docx_merged_cell_spans",
+    "docx_tracked_changes"
+  ],
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE only when every row passes (lane contract C-3). Any failing row keeps the capability at BEST_EFFORT and is listed verbatim as a known limitation."
+}
