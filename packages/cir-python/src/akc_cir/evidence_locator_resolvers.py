@@ -120,6 +120,28 @@ def _resolved(text: str, anchor: str) -> Resolution:
     return Resolved(excerpt=text[:EXCERPT_MAX_CHARS], digest=sha256_digest(text))
 
 
+def _json_is_empty(value: Any) -> bool:
+    """§8.2 emptiness for a JSON value.
+
+    ``canonical_json`` renders ``None``/``""``/``{}``/``[]`` as the *non-empty*
+    tokens ``null``, ``""``, ``{}`` and ``[]``, so the shared :func:`_resolved`
+    test can never see them: a pointer into an empty object resolved to the
+    digest of ``{}``, which is identical for every empty object in every
+    document — the same "receipt that proves nothing" the pdf and xlsx paths
+    already refuse.
+
+    Numbers and booleans are content: ``0`` and ``false`` are values a source
+    actually states, and their digests differ from each other.
+    """
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return not value.strip()
+    if isinstance(value, dict | list):
+        return not value
+    return False
+
+
 def _wrong_kind(locator: AnyEvidenceLocator, expected: str) -> Unresolved:
     return Unresolved(
         FailureClass.EVIDENCE_BROKEN,
@@ -215,6 +237,11 @@ class JsonLocatorResolver:
             return Unresolved(
                 FailureClass.EVIDENCE_BROKEN,
                 f"pointer {locator.pointer!r} does not resolve in this representation",
+            )
+        if _json_is_empty(value):
+            return Unresolved(
+                FailureClass.EMPTY_OUTPUT,
+                f"pointer {locator.pointer!r} holds no extractable content",
             )
         return _resolved(canonical_json(value), f"pointer {locator.pointer!r}")
 
@@ -462,6 +489,16 @@ def resolve_locator(locator: AnyEvidenceLocator, data: bytes) -> Resolution:
 
     Fail closed: an unknown kind, a missing anchor, or a ``contentDigest`` that
     disagrees with what was actually read is ``Unresolved``.
+
+    This is also the **one** exception boundary (§8.2). A representation is
+    hostile data and the libraries that read it raise a wider family than any
+    resolver can enumerate — ``json`` alone answers ``{"x": NaN}`` with a
+    ``ValueError`` out of ``canonical_json`` and a deeply nested array with a
+    ``RecursionError``. Every one of them is a representation this resolver
+    cannot read, so the guard is here rather than repeated per resolver, and no
+    traceback leaves ``resolve_locator``. The exception *class* is the detail;
+    a resolver that can give a better reason still catches its own case first
+    and returns the narrower ``FailureClass``.
     """
     resolver = _RESOLVERS.get(locator.locator_kind)
     if resolver is None:
@@ -469,7 +506,13 @@ def resolve_locator(locator: AnyEvidenceLocator, data: bytes) -> Resolution:
             FailureClass.UNSUPPORTED_FORMAT,
             f"no resolver for locatorKind {locator.locator_kind!r}",
         )
-    result = resolver.resolve(locator, data)
+    try:
+        result = resolver.resolve(locator, data)
+    except Exception as exc:
+        return Unresolved(
+            FailureClass.CORRUPT_SOURCE,
+            f"{locator.locator_kind} resolver raised {type(exc).__name__}",
+        )
     if (
         isinstance(result, Resolved)
         and locator.content_digest is not None

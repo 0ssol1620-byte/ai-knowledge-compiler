@@ -8,6 +8,7 @@ None of them may resolve to a plausible-looking guess.
 from __future__ import annotations
 
 import io
+import json
 import warnings
 import zipfile
 from pathlib import Path
@@ -633,3 +634,102 @@ def test_a_range_endpoint_that_is_not_an_a1_reference_is_refused() -> None:
     with pytest.raises(resolvers._XlsxError) as raised:
         resolvers._range_references("ZZZZ1", "A1")
     assert raised.value.reason is FailureClass.EVIDENCE_BROKEN
+
+
+# ------------------------------------------------- repair round 3 failure paths
+
+
+@pytest.mark.parametrize(
+    ("payload", "raised"),
+    [
+        (b'{"x": NaN}', "ValueError"),
+        (b'{"x": Infinity}', "ValueError"),
+        (b'{"x": -Infinity}', "ValueError"),
+        (b"[" * 5000 + b"]" * 5000, "RecursionError"),
+    ],
+)
+def test_json_the_stdlib_parses_but_cannot_be_canonicalised_is_corrupt_source(
+    payload: bytes, raised: str
+) -> None:
+    """`json.loads` is more permissive than the JSON it will re-emit.
+
+    ``NaN``/``Infinity`` parse to floats that ``canonical_json`` (``allow_nan=
+    False``) refuses with a ``ValueError``, and a deeply nested array exhausts
+    the scanner's recursion. Neither is a ``JSONDecodeError``, so both escaped
+    the resolver's own ``except`` and left ``resolve_locator`` as a traceback.
+    """
+    pointer = "/x" if payload.startswith(b"{") else ""
+    result = resolve_locator(locator(locatorKind="json", pointer=pointer), payload)
+    unresolved = expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+    assert raised in unresolved.detail
+
+
+def test_any_exception_a_resolver_raises_is_unresolved_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch, json_bytes: bytes
+) -> None:
+    """The boundary guard is about the classes nobody enumerated.
+
+    A resolver — including Lane C's future ones behind the same protocol — may
+    raise anything its libraries raise. ``resolve_locator`` is the one place
+    that turns that into ``Unresolved(CORRUPT_SOURCE)``.
+    """
+
+    class _Exploding:
+        locator_kind = "json"
+
+        def resolve(self, locator: AnyEvidenceLocator, data: bytes) -> Any:
+            raise OSError("device disappeared")
+
+    monkeypatch.setitem(resolvers._RESOLVERS, "json", _Exploding())
+    result = resolve_locator(locator(locatorKind="json", pointer=""), json_bytes)
+    unresolved = expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+    assert "OSError" in unresolved.detail
+
+
+@pytest.mark.parametrize(
+    ("document", "pointer"),
+    [
+        (b'{"x": null}', "/x"),
+        (b'{"x": ""}', "/x"),
+        # a tab and a newline, which JSON may only carry escaped
+        (json.dumps({"x": chr(9) + chr(10)}).encode(), "/x"),
+        (b'{"x": {}}', "/x"),
+        (b'{"x": []}', "/x"),
+        (b"{}", ""),
+        (b"[]", ""),
+        (b"null", ""),
+    ],
+)
+def test_a_json_anchor_that_holds_nothing_is_empty_output(document: bytes, pointer: str) -> None:
+    """§8.2: ``null``, ``""``, whitespace-only, ``{}`` and ``[]`` hold nothing.
+
+    ``canonical_json`` renders each as a non-empty token, so the shared
+    whitespace guard never saw them and every empty object in every document
+    resolved to the same digest — a ``contentDigest`` receipt that verifies
+    against an unrelated source.
+    """
+    result = resolve_locator(locator(locatorKind="json", pointer=pointer), document)
+    unresolved = expect_unresolved(result, FailureClass.EMPTY_OUTPUT)
+    assert "holds no extractable content" in unresolved.detail
+
+
+@pytest.mark.parametrize(
+    ("document", "excerpt"),
+    [(b'{"x": 0}', "0"), (b'{"x": false}', "false"), (b'{"x": 0.0}', "0.0")],
+)
+def test_a_falsy_json_number_or_boolean_is_content_not_emptiness(
+    document: bytes, excerpt: str
+) -> None:
+    """§8.2 draws the line at *holds nothing*, not at *is falsy*."""
+    result = resolve_locator(locator(locatorKind="json", pointer="/x"), document)
+    assert isinstance(result, Resolved)
+    assert result.excerpt == excerpt
+
+
+def test_a_borrowed_empty_json_receipt_cannot_verify() -> None:
+    """The digest of ``{}`` taken from one document, offered against another."""
+    result = resolve_locator(
+        locator(locatorKind="json", pointer="/x", contentDigest=sha256_digest("{}")),
+        b'{"x": {}}',
+    )
+    expect_unresolved(result, FailureClass.EMPTY_OUTPUT)
