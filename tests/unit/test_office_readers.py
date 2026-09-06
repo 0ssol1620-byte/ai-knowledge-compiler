@@ -541,6 +541,28 @@ def test_a_docx_footnote_becomes_a_unit_with_a_footnote_locator() -> None:
     validate_evidence_locator(footnotes[0].locator)
 
 
+def test_a_speaker_note_is_emitted_without_a_locator() -> None:
+    """A note is in `ppt/notesSlides/notesSlideN.xml`, not in the slide part.
+
+    The anchor used to collapse to the slide's own `slideNumber1`, which points
+    at a part the note's text is not in — and is the same anchor the slide's
+    text carries. EvidenceLocator v2 has no notes field, so the honest answer is
+    no locator; the text is still evidence and is still emitted.
+    """
+    corpus = (
+        Path(__file__).resolve().parents[1] / "fixtures/office_corpus/pptx/02-speaker-notes.pptx"
+    )
+    output = NativePptxV1().extract_native(
+        _input(corpus.read_bytes(), filename="02-speaker-notes.pptx", declared_mime=PPTX_MIME)
+    )
+    notes = [unit for unit in output.units if unit.text == "Mention the two stalled deals."]
+    assert len(notes) == 1
+    assert notes[0].locator is None
+    assert notes[0].bbox1000 is None
+    # The slide's own text keeps its shape anchor.
+    assert any((unit.locator or {}).get("shapeId") == "0000" for unit in output.units)
+
+
 @pytest.mark.parametrize(
     ("case", "builder"),
     [

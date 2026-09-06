@@ -104,7 +104,13 @@ _DOCX_CELL = re.compile(r"^(docx/body/table/\d+)/(r/\d+/c/\d+)$")
 _DOCX_COMMENT = re.compile(r"^docx/comments/(\S+)$")
 _DOCX_FOOTNOTE = re.compile(r"^docx/footnotes/(\S+)$")
 
-_PPTX_SHAPE = re.compile(r"^pptx/slide/(\d+)(?:/shape/([0-9.]+))?(?:/.*)?$")
+#: `pptx/slide/NNNN` (the slide itself) and `pptx/slide/NNNN/shape/Z...` (a
+#: shape, one of its paragraphs, or one of its table cells) are the only ids the
+#: v2 pptx variant can address. `pptx/slide/NNNN/notes` deliberately does **not**
+#: match: a speaker note lives in `ppt/notesSlides/notesSlideN.xml`, so a
+#: slide-only `slideNumber1` anchor would point at a part the note's text is not
+#: in. That unit gets `locator=None`.
+_PPTX_SHAPE = re.compile(r"^pptx/slide/(\d+)(?:/shape/([0-9.]+)(?:/.*)?)?$")
 
 #: The parser's flag for a cell whose formula text was preserved and never
 #: executed. It is the only place formula text survives into the CIR.
@@ -538,10 +544,11 @@ class NativePptxV1(_NativeOfficeV1):
     qualification, verbatim from the receipt:
 
     * `pptx_speaker_notes` — the notes block's native id is
-      `pptx/slide/NNNN/notes`, but the v2 pptx variant has no notes field, so
-      the anchor collapses to `slideNumber1` — which is also what the
-      slide-heading unit carries. A caller cannot tell a speaker note from a
-      slide title. This one is a schema gap, not a parser gap.
+      `pptx/slide/NNNN/notes`, and the v2 pptx variant has no notes field. The
+      note's text is in `ppt/notesSlides/notesSlideN.xml`, not in the slide
+      part, so a `slideNumber1` anchor would address a part the text is not in.
+      The unit is emitted with its text and `locator=None`. This one is a schema
+      gap, not a parser gap.
     * `pptx_merged_cell_spans` — as for XLSX, plus the pptx variant has no cell
       anchor at all: a cell is addressed no finer than its shape.
     """

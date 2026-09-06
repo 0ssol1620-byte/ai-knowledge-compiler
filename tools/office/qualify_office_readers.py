@@ -272,9 +272,11 @@ UNOBSERVABLE: dict[str, str] = {
         "equation's structure (the superscript) is lost even though its characters survive."
     ),
     "pptx_speaker_notes": (
-        "the notes block's native id is pptx/slide/NNNN/notes, but EvidenceLocator v2's pptx "
-        "variant has no notes field; the anchor collapses to slideNumber1, which is also "
-        "what the slide-heading unit carries, so a caller cannot tell the two apart."
+        "the notes block's native id is pptx/slide/NNNN/notes and EvidenceLocator v2's pptx "
+        "variant has no notes field. The note's text lives in "
+        "ppt/notesSlides/notesSlideN.xml, not in the slide part a slideNumber1 anchor names, "
+        "so the unit carries locator=None. Its text is still emitted; what a caller cannot "
+        "get is an address for it."
     ),
     "pptx_merged_cell_spans": (
         "same as xlsx_merged_ranges, and the pptx variant additionally has no cell anchor at "
