@@ -103,6 +103,36 @@ def test_encrypted_pdf_is_reported_as_encrypted_not_broken() -> None:
     expect_unresolved(result, FailureClass.ENCRYPTED_SOURCE)
 
 
+def test_a_page_with_no_extractable_text_is_empty_output_not_a_digest_of_nothing() -> None:
+    """A scanned page extracts to ``''``; sha256('') is not evidence of anything.
+
+    Every blank page of every document would otherwise share one digest, so a
+    ``contentDigest`` receipt taken from one would verify against another.
+    """
+    writer = PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    writer.add_blank_page(width=612, height=792)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    blank = buffer.getvalue()
+    for page in (1, 2):
+        result = resolve_locator(
+            locator(locatorKind="pdf", page=page, bbox1000=[10, 10, 900, 100]), blank
+        )
+        unresolved = expect_unresolved(result, FailureClass.EMPTY_OUTPUT)
+        assert str(page) in unresolved.detail
+    borrowed_receipt = resolve_locator(
+        locator(
+            locatorKind="pdf",
+            page=2,
+            bbox1000=[10, 10, 900, 100],
+            contentDigest=sha256_digest(""),
+        ),
+        blank,
+    )
+    expect_unresolved(borrowed_receipt, FailureClass.EMPTY_OUTPUT)
+
+
 # -------------------------------------------------------------------------- json
 
 
@@ -254,6 +284,64 @@ def test_xlsx_workbook_part_that_is_not_xml_is_corrupt_source() -> None:
         locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), buffer.getvalue()
     )
     expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+
+
+def test_xlsx_with_an_unsupported_zip_version_is_refused_not_a_crash(xlsx_bytes: bytes) -> None:
+    """Two hostile bytes: the central directory's "version needed to extract".
+
+    ``zipfile`` raises ``NotImplementedError`` for this, not ``BadZipFile``, so
+    a resolver that guards only ``BadZipFile`` lets hostile bytes crash it.
+    """
+    blob = bytearray(xlsx_bytes)
+    central = blob.rindex(b"PK\x01\x02")
+    blob[central + 6] = 99  # version needed to extract = 9.9
+    result = resolve_locator(
+        locator(locatorKind="xlsx", sheet="Revenue", cell="A1"), bytes(blob)
+    )
+    unresolved = expect_unresolved(result, FailureClass.CORRUPT_SOURCE)
+    assert "NotImplementedError" in unresolved.detail
+
+
+def _minimal_xlsx(sheet_xml: str, shared_strings_xml: str) -> bytes:
+    import zipfile
+
+    main = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    office = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    package = "http://schemas.openxmlformats.org/package/2006/relationships"
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr(
+            "xl/workbook.xml",
+            f'<workbook xmlns="{main}" xmlns:r="{office}"><sheets>'
+            '<sheet name="Revenue" sheetId="1" r:id="rId1"/></sheets></workbook>',
+        )
+        archive.writestr(
+            "xl/_rels/workbook.xml.rels",
+            f'<Relationships xmlns="{package}"><Relationship Id="rId1" '
+            f'Type="{office}/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+        )
+        archive.writestr("xl/worksheets/sheet1.xml", sheet_xml)
+        archive.writestr("xl/sharedStrings.xml", shared_strings_xml)
+    return buffer.getvalue()
+
+
+@pytest.mark.parametrize("anchor", [{"cell": "A1"}, {"range": "A1:A1"}])
+def test_a_cell_that_holds_an_empty_string_is_empty_output(anchor: dict[str, str]) -> None:
+    """Present but empty is not absent, and it is not evidence either."""
+    main = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    data = _minimal_xlsx(
+        f'<worksheet xmlns="{main}"><sheetData><row r="1">'
+        '<c r="A1" t="s"><v>0</v></c><c r="B1"><v>7</v></c>'
+        "</row></sheetData></worksheet>",
+        f'<sst xmlns="{main}" count="1" uniqueCount="1"><si><t></t></si></sst>',
+    )
+    result = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", **anchor), data)
+    unresolved = expect_unresolved(result, FailureClass.EMPTY_OUTPUT)
+    assert "Revenue" in unresolved.detail
+    # The same workbook still resolves a cell that does hold something.
+    populated = resolve_locator(locator(locatorKind="xlsx", sheet="Revenue", cell="B1"), data)
+    assert isinstance(populated, Resolved)
+    assert populated.excerpt == "7"
 
 
 # ---------------------------------------------------------------- dispatch + digest

@@ -199,3 +199,66 @@ def test_anchor_ids_are_usable_as_locator_ids_for_every_variant() -> None:
 def test_explicit_locator_id_is_kept(source_ref: SourceRef) -> None:
     locator = from_legacy(source_ref, representation_id="rep_0001", locator_id="loc_fixed")
     assert locator.locator_id == "loc_fixed"
+
+
+@pytest.mark.parametrize(
+    "locator_id", ["  ../../etc/passwd  ", "<script>", "x" * 400, "", "loc bad"]
+)
+def test_a_caller_supplied_locator_id_is_validated_not_written_through(
+    source_ref: SourceRef, locator_id: str
+) -> None:
+    """``model_copy(update=...)`` skips validation; the adapter must not.
+
+    A locator carrying an id the frozen schema rejects cannot be re-parsed, so
+    it was never a validated contract object.
+    """
+    with pytest.raises(ValidationError):
+        from_legacy(source_ref, representation_id="rep_0001", locator_id=locator_id)
+
+
+@pytest.mark.parametrize(
+    ("field", "extra"),
+    [
+        ("image_asset_id", {"image_asset_id": "img_asset_9"}),
+        # SourceRef itself requires the time pair, so it is set as a pair.
+        ("time_start_ms", {"time_start_ms": 1000, "time_end_ms": 4000}),
+    ],
+)
+def test_a_source_ref_the_pdf_variant_cannot_carry_is_refused_not_silently_dropped(
+    field: str, extra: dict[str, Any]
+) -> None:
+    """The live native parsers emit these on FIGURE and media blocks.
+
+    The pdf variant has nowhere to keep them, so wrapping would return a
+    ``SourceRef`` that is not the input. Refusing is the fail-closed reading.
+    """
+    reference = SourceRef(
+        document_id="doc_004",
+        document_version_id="docver_004",
+        page_index0=0,
+        page_number1=1,
+        bbox1000=BBox1000([10, 10, 20, 20]),
+        **extra,
+    )
+    with pytest.raises(ValueError, match=field):
+        from_legacy(reference, representation_id="rep_0004")
+
+
+def test_the_default_serialization_validates_against_the_frozen_schema(
+    frozen_schema: jsonschema.Draft202012Validator,
+) -> None:
+    """No optional in the frozen schema has ``null`` in its type union.
+
+    A consumer calling the obvious ``model_dump_json()`` must not get a payload
+    that the schema — and Lane C's ``jsonschema`` check — rejects.
+    """
+    for payload in VALID_LOCATORS.values():
+        locator = parse_locator(payload)
+        frozen_schema.validate(json.loads(locator.model_dump_json()))
+        frozen_schema.validate(locator.model_dump(mode="json"))
+        frozen_schema.validate(json.loads(EvidenceLocatorUnion(locator).model_dump_json()))
+    # exclude_none is a default, not a lock: an explicit False still produces
+    # the null-bearing payload, and that one is what the schema refuses.
+    minimal = parse_locator(VALID_LOCATORS["json"])
+    assert "contentDigest" not in minimal.model_dump(mode="json")
+    assert not frozen_schema.is_valid(minimal.model_dump(mode="json", exclude_none=False))

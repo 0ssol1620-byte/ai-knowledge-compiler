@@ -100,7 +100,16 @@ class LocatorResolver(Protocol):
     def resolve(self, locator: AnyEvidenceLocator, data: bytes) -> Resolution: ...
 
 
-def _resolved(text: str) -> Resolved:
+def _resolved(text: str, anchor: str) -> Resolution:
+    """Resolved, unless the anchor holds nothing.
+
+    The digest of the empty string is the same for every empty page and every
+    empty cell of every document, so ``Resolved("")`` would hand back a
+    ``contentDigest`` that verifies against any other empty anchor — a receipt
+    that proves nothing. That is ``EMPTY_OUTPUT``, not evidence.
+    """
+    if not text:
+        return Unresolved(FailureClass.EMPTY_OUTPUT, f"{anchor} holds no extractable content")
     return Resolved(excerpt=text[:EXCERPT_MAX_CHARS], digest=sha256_digest(text))
 
 
@@ -154,7 +163,7 @@ class PdfLocatorResolver:
                 FailureClass.CORRUPT_SOURCE,
                 f"page {locator.page} not readable: {type(exc).__name__}",
             )
-        return _resolved(text)
+        return _resolved(text, f"page {locator.page}")
 
 
 def _json_pointer_walk(document: Any, pointer: str) -> tuple[bool, Any]:
@@ -200,7 +209,7 @@ class JsonLocatorResolver:
                 FailureClass.EVIDENCE_BROKEN,
                 f"pointer {locator.pointer!r} does not resolve in this representation",
             )
-        return _resolved(canonical_json(value))
+        return _resolved(canonical_json(value), f"pointer {locator.pointer!r}")
 
 
 _MAIN_NS: Final = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
@@ -368,10 +377,17 @@ class XlsxLocatorResolver:
                 shared = _shared_strings(archive)
                 part = _sheet_part(archive, locator.sheet)
                 cells = _sheet_cells(archive, part, shared)
-        except zipfile.BadZipFile:
-            return Unresolved(FailureClass.CORRUPT_SOURCE, "xlsx is not a readable package")
         except _XlsxError as error:
             return Unresolved(error.reason, error.detail)
+        except Exception as exc:
+            # zipfile raises a wider family than BadZipFile on hostile bytes:
+            # NotImplementedError for an unsupported extract_version or
+            # compression method, RuntimeError for an encrypted member. All of
+            # them are a package this resolver cannot read, never a crash.
+            return Unresolved(
+                FailureClass.CORRUPT_SOURCE,
+                f"xlsx is not a readable package: {type(exc).__name__}",
+            )
         if cell_ref is not None:
             reference = cell_ref.replace("$", "")
             if reference not in cells:
@@ -379,7 +395,7 @@ class XlsxLocatorResolver:
                     FailureClass.EVIDENCE_BROKEN,
                     f"cell {reference} is empty or absent on sheet {locator.sheet!r}",
                 )
-            return _resolved(cells[reference])
+            return _resolved(cells[reference], f"cell {reference} on sheet {locator.sheet!r}")
         if range_ref is None:  # pragma: no cover - guarded above
             return Unresolved(FailureClass.UNSUPPORTED_FORMAT, "no resolvable anchor")
         start, _, end = range_ref.partition(":")
@@ -393,7 +409,8 @@ class XlsxLocatorResolver:
                 f"range {range_ref} is empty on sheet {locator.sheet!r}",
             )
         return _resolved(
-            "\n".join("\t".join(cells.get(reference, "") for reference in row) for row in rows)
+            "\n".join("\t".join(cells.get(reference, "") for reference in row) for row in rows),
+            f"range {range_ref} on sheet {locator.sheet!r}",
         )
 
 

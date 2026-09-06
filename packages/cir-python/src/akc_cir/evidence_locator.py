@@ -115,6 +115,20 @@ class BaseEvidenceLocator(ContractModel):
     content_digest: Sha256 | None = None
     excerpt: Excerpt | None = None
 
+    # The frozen schema types every optional as a string/integer with no null in
+    # the union, so an absent field must be *omitted*, not serialized as null.
+    # Defaulting the dump here rather than through a ``model_serializer`` is
+    # deliberate: a wrap serializer collapses
+    # ``model_json_schema(mode="serialization")`` to a bare object, and that
+    # schema is what generates the TypeScript union.
+    def model_dump(self, **kwargs: Any) -> dict[str, Any]:
+        kwargs.setdefault("exclude_none", True)
+        return super().model_dump(**kwargs)
+
+    def model_dump_json(self, **kwargs: Any) -> str:
+        kwargs.setdefault("exclude_none", True)
+        return super().model_dump_json(**kwargs)
+
 
 class PdfLocator(BaseEvidenceLocator):
     locator_kind: Literal["pdf"]
@@ -303,6 +317,12 @@ EvidenceLocator = Annotated[AnyEvidenceLocator, Field(discriminator="locator_kin
 class EvidenceLocatorUnion(RootModel[EvidenceLocator]):
     """Schema/TS carrier for the union. Registered in ``akc_cir.schema``."""
 
+    def model_dump(self, **kwargs: Any) -> Any:
+        return self.root.model_dump(**kwargs)
+
+    def model_dump_json(self, **kwargs: Any) -> str:
+        return self.root.model_dump_json(**kwargs)
+
 
 def parse_locator(payload: Any) -> AnyEvidenceLocator:
     """Validate an untrusted wire payload into one locator variant."""
@@ -338,14 +358,32 @@ def from_legacy(
             "a pdf locator requires bbox1000; a SourceRef without one cannot be "
             "wrapped and no box is invented to fill the gap"
         )
-    draft = PdfLocator(
-        schema_version=EVIDENCE_LOCATOR_SCHEMA,
-        locator_kind="pdf",
-        locator_id="pending",
-        source_version_id=source_ref.document_version_id,
-        representation_id=representation_id,
-        page=source_ref.page_number1,
-        bbox1000=source_ref.bbox1000,
-        object_id=source_ref.native_object_id,
-    )
-    return draft.model_copy(update={"locator_id": locator_id or locator_anchor_id(draft)})
+    # The pdf variant has no field for an image asset or a time range, and the
+    # native parsers do emit those on FIGURE and media blocks. Dropping them
+    # would make to_legacy() return something that is not the input, so the
+    # wrap is refused instead: losing evidence silently is not a fallback.
+    unmappable = [
+        name
+        for name in ("image_asset_id", "time_start_ms", "time_end_ms")
+        if getattr(source_ref, name) is not None
+    ]
+    if unmappable:
+        raise ValueError(
+            f"the pdf locator variant carries no {', '.join(unmappable)}; wrapping this "
+            "SourceRef would drop evidence, so it is refused rather than round-tripped lossily"
+        )
+    fields: dict[str, Any] = {
+        "schema_version": EVIDENCE_LOCATOR_SCHEMA,
+        "locator_kind": "pdf",
+        "locator_id": "pending",
+        "source_version_id": source_ref.document_version_id,
+        "representation_id": representation_id,
+        "page": source_ref.page_number1,
+        "bbox1000": source_ref.bbox1000,
+        "object_id": source_ref.native_object_id,
+    }
+    draft = PdfLocator(**fields)
+    # Rebuilt rather than model_copy(update=...): model_copy skips validation,
+    # so a caller-supplied locator_id would bypass LocatorIdentifier entirely.
+    fields["locator_id"] = locator_anchor_id(draft) if locator_id is None else locator_id
+    return PdfLocator(**fields)
