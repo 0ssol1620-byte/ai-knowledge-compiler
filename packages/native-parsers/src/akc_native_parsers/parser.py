@@ -73,5 +73,10 @@ def parse_non_pdf_to_cir(
         return builder.build(title=title)
     except StructuredParseError:
         raise
+    except MemoryError:
+        # An exhausted process is an operational failure, not a corrupt source.
+        # Wrapping it as `<TYPE>_PARSE_FAILED` would publish it as
+        # CORRUPT_SOURCE and hide it from the reader plane's PARSER_OOM branch.
+        raise
     except Exception as exc:
         raise StructuredParseError(f"{document_type.upper()}_PARSE_FAILED") from exc
