@@ -813,6 +813,25 @@ No new dependency. No file outside the lane's §3 ownership row (plus this repor
 written at the orchestrator's instruction) was touched. Nothing was enabled;
 `research/model_arena_20260903/**` was neither read nor run.
 
+## Verifying the round-2 tests bind to the round-2 fixes
+
+Each new guard was disabled at runtime (throwaway script outside the repo,
+project interpreter, `PYTHONPATH` = this worktree's `packages/*/src`; the tree
+stayed clean) and the reviewer's defect reappeared every time:
+
+```
+locator binding ON  -> accepted False RECEIPT_MISMATCH
+locator binding OFF -> accepted True locator rides out: SRC-OTHER-TENANT-9999
+inspection re-derived ON  -> accepted False RECEIPT_MISMATCH
+inspection re-derived OFF -> accepted True units: 1
+```
+
+The second pair is the reviewer's `resume.docx`: bytes that inspect honestly as
+`corrupted=True`, accepted as an ordinary read the moment the caller's forged
+inspection is believed. The registration guards need no such switch — their
+refusal messages name the unwitnessed pattern, family or missing receipt, and
+each is asserted by a test.
+
 ## Repair round 2 gates
 
 Every gate from the first report rerun from the worktree with the project
