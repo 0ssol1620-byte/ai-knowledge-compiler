@@ -40,10 +40,26 @@ Two deliberate asymmetries, both in the direction of stricter:
   already enforces for the same pair. The schema documents the first as
   "enforced by code, not expressible here" and says nothing about the second.
 
-One asymmetry in the direction of looser, in the *generated TypeScript* only:
-optional fields render as `T | null` because pydantic types them `T | None`.
-The wire never carries `null` (`exclude_none=True` on serialization), and the
-frozen schema does not permit it. A TS consumer should treat `null` as absent.
+Two asymmetries in the direction of looser, both about `null`:
+
+- The generated TypeScript renders optional fields as `T | null`, because
+  pydantic types them `T | None`. A TS consumer should treat `null` as absent.
+- The model *accepts* an explicit `"contentDigest": null` on input, which the
+  frozen schema rejects — no optional there has `null` in its type union. Input
+  is looser than the schema on this point, and this lane does not change it.
+
+The wire does not carry `null`. `ContractModel`'s config has no `exclude_none`,
+so the obvious `locator.model_dump_json()` would otherwise emit
+`"contentDigest": null` and **fail the frozen schema's `oneOf` entirely** —
+which matters because contract §4.4 has lane C validate locator dicts against
+this same file with `jsonschema`. `BaseEvidenceLocator` therefore overrides
+`model_dump`/`model_dump_json` to default `exclude_none=True`, and
+`EvidenceLocatorUnion` delegates to its root. It is done that way rather than
+with a `model_serializer(mode="wrap")` because a wrap serializer collapses
+`model_json_schema(mode="serialization")` to a bare object — and that schema is
+what generates the TypeScript union. A caller who passes `exclude_none=False`
+explicitly still gets the null-bearing payload the schema refuses; a test
+asserts both halves.
 
 ## `SourceRef` is not modified
 
@@ -59,7 +75,7 @@ resolved as "sibling" by contract §7 R-5, and the regenerated
 `generated-contracts.ts` diff is additive only — every existing `SourceRef`
 shape in it is byte-identical before and after.
 
-The adapter is a pure round-trip:
+The adapter round-trips losslessly or refuses; it never round-trips lossily:
 
 ```python
 from_legacy(source_ref, *, representation_id, locator_id=None) -> PdfLocator
@@ -76,9 +92,22 @@ the document → source alias lives on `Source`. This is the one place the
 contract's `PdfLocator.to_legacy()` signature could not be met literally
 without inventing a field the frozen schema does not have.
 
-A `SourceRef` with `bbox1000 = None` **cannot** be wrapped: the frozen schema
-requires `bbox1000` on the `pdf` variant, and `from_legacy` raises rather than
-inventing a box. That is the fail-closed reading of "never invent data".
+Two kinds of `SourceRef` **cannot** be wrapped, and `from_legacy` raises for
+both rather than producing something that does not round-trip:
+
+- `bbox1000 = None`. The frozen schema requires `bbox1000` on the `pdf`
+  variant, and no box is invented. That is "never invent data".
+- `image_asset_id`, `time_start_ms` or `time_end_ms` set. The `pdf` variant has
+  no field for any of them, so wrapping would drop evidence silently and
+  `to_legacy()` would return a `SourceRef` that is not the input; two
+  `SourceRef`s differing only in those fields would also collapse to one
+  `locator_anchor_id`. This is not hypothetical: `pdf_parser.py:327-335` emits
+  `bbox1000` *and* `image_asset_id` together on every FIGURE block, and
+  `docx_parser.py`, `pptx_parser.py` and `xlsx_parser.py` do the same.
+  **Consequence, stated plainly:** figure and media evidence has no v2 locator
+  today. Giving it one means the `image` and `media` variants (which do have
+  `imageId` / `startMs` / `endMs`) and a `from_legacy` that dispatches on the
+  `SourceRef` shape — not a lossy `pdf` wrap. That is the follow-up.
 
 ## Anchor identity
 
@@ -110,6 +139,13 @@ a detail string. When the locator declares a `contentDigest` that disagrees
 with what was actually read, the result is `Unresolved(RECEIPT_MISMATCH)` — a
 locator that points at bytes that have changed is broken evidence.
 
+An anchor that exists but holds nothing is `Unresolved(EMPTY_OUTPUT)`, not
+`Resolved("")`. `sha256("")` is the same for every blank page of every document
+and every empty cell of every workbook, so a `contentDigest` taken from one
+would verify against any other — a receipt that proves nothing. This is the
+common case, not the exotic one: the product's own corpus is largely scanned
+PDFs, where `extract_text()` returns `""` for every page.
+
 Before this module, **nothing in the tree opened a representation and checked
 that an anchor was really there**; only structural validation existed
 (`page_index0 + 1 == page_number1`, bbox ordering). Seam-map contradiction C-5
@@ -128,6 +164,11 @@ declared size are refused (`CORRUPT_SOURCE`), ranges over 4,096 cells are
 refused before expansion, XML goes through `defusedxml` (also what
 `akc_native_parsers` uses — stdlib `xml.etree` would trip ruff `S314`), and an
 encrypted PDF is `ENCRYPTED_SOURCE` rather than being misreported as corrupt.
+The xlsx path catches the whole exception family `zipfile` raises, not just
+`BadZipFile`: two edited bytes in a central-directory entry's "version needed
+to extract" make `zipfile` raise `NotImplementedError`, and an encrypted member
+makes it raise `RuntimeError`. Both are `CORRUPT_SOURCE`, never a traceback out
+of `resolve_locator`.
 
 `defusedxml` and `pypdf` are existing root dependencies; **no dependency was
 added**.
@@ -140,6 +181,9 @@ added**.
   `Unresolved(UNSUPPORTED_FORMAT)` for each — never a guess. Adding one is a
   new resolver class plus fixtures; the dispatch table is the only edit.
 - **Region-level PDF resolution** (bbox → text) — see the table above.
+- **A `from_legacy` for figure and media `SourceRef`s.** Today it refuses them
+  (see above) rather than dropping `image_asset_id` / the time range. The
+  `image` and `media` variants can carry them; the dispatch is the work.
 - **The site-side serializer.** §48 P0-E lists a "UI serializer"; the seam map
   proposed `nextjs/lib/retrieval-units.ts`. Contract §7 R-5 defers it: that
   file hashes the whole unit into `contentDigest`, so adding a field re-hashes
@@ -162,7 +206,7 @@ added**.
 | Acceptance | State |
 |---|---|
 | union schema | Done — 13 variants, frozen schema copied verbatim, dual validation tested. |
-| legacy PDF locator adapter | Done — round-trips `tests/unit/conftest.py`'s `source_ref` fixture and every page/box case tested; refuses a box-less `SourceRef`. |
+| legacy PDF locator adapter | Done **for text/table evidence** — round-trips `tests/unit/conftest.py`'s `source_ref` fixture and every page/box case tested; refuses a box-less `SourceRef`, and refuses one carrying `image_asset_id` or a time range instead of dropping it. Figure and media evidence is therefore **not** covered; see "What is deferred". |
 | resolver contract | Done — `LocatorResolver` protocol, three implementations, fail-closed dispatch. |
 | UI serializer | **Not done** — deferred by contract §7 R-5 (see above). |
 | "PDF existing evidence unchanged" | Holds — `SourceRef` unmodified, `generated-contracts.ts` diff additive only, `tests/unit/test_canonical_knowledge_model_v4.py` untouched and green. |

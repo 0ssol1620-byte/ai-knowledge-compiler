@@ -123,3 +123,172 @@ Code exists · tests and **failure paths** pass (73 tests; every `Unresolved` br
 
 `git push -u origin agent/uskc-e-evidence-locator` — pushed.
 Production deploy 안 함. Git push로 Preview deployment는 자동 생성됨 — 단, 이 레인은 core repo라 Preview 대상이 아님.
+
+---
+
+## 10. Repair pass (2026-09-06, after adversarial review)
+
+Two reviewers returned four confirmed correctness findings and two confirmed
+honesty findings. All six are fixed, each with the failure-path test that would
+have caught it. No finding was disputed. Scope was not widened: the same two
+modules, their two test files and the lane doc.
+
+### R-E-1 (blocker) — hostile xlsx bytes escaped as `NotImplementedError`
+
+`evidence_locator_resolvers.py:367` guarded the `zipfile.ZipFile` open with
+`except zipfile.BadZipFile` only. CPython's `zipfile` raises
+`NotImplementedError` from `_RealGetContents` when a central-directory entry's
+"version needed to extract" exceeds 63 — a **two-byte** edit of an otherwise
+well-formed archive — and `RuntimeError` for an encrypted member. Neither is
+`BadZipFile`, so both crashed out of `resolve_locator` instead of returning
+`Unresolved`. That breaks contract section 1 "fail closed ... never a crash" and
+CLAUDE.md "every document is hostile data".
+
+Fix: the `except _XlsxError` handler now comes first, followed by a broad
+`except Exception` mapping the whole family to
+`Unresolved(CORRUPT_SOURCE, "xlsx is not a readable package: <ExceptionType>")`.
+Root-cause placement: one guard around the archive open covers every part read
+inside the `with`, rather than one guard per call site.
+
+Test: `test_xlsx_with_an_unsupported_zip_version_is_refused_not_a_crash` takes
+the committed `sample.xlsx`, sets `blob[rindex(b"PK\x01\x02") + 6] = 99`, and
+asserts `CORRUPT_SOURCE` with `NotImplementedError` named in the detail. It
+fails against the old code with a traceback, which is the point.
+
+### R-E-2 (major) — an empty anchor resolved to the digest of the empty string
+
+`_resolved()` digested whatever it was handed, so a blank PDF page or an empty
+cell returned `Resolved(excerpt="", digest=sha256(""))`. That digest is
+identical for every empty page of every document, so a `contentDigest` receipt
+taken from one blank page **verified** against another — evidence that proves
+nothing, in exactly the case that dominates the product's own corpus
+(image-only scans, where `extract_text()` is `""` for every page). The frozen
+`FailureClass.EMPTY_OUTPUT` existed and was never used.
+
+Fix: `_resolved(text, anchor)` returns `Unresolved(EMPTY_OUTPUT, ...)` when the
+resolved text is empty. One change, all four call sites (pdf page, json
+pointer, xlsx cell, xlsx range); each passes the anchor description so the
+detail names what was empty. An **absent** cell stays `EVIDENCE_BROKEN` —
+absent and empty are different facts.
+
+Tests: `test_a_page_with_no_extractable_text_is_empty_output_not_a_digest_of_nothing`
+(two blank pages, plus the borrowed-receipt case: page 2 carrying page 1's
+`sha256("")` digest is refused, where before it resolved) and
+`test_a_cell_that_holds_an_empty_string_is_empty_output` (parametrized over
+`cell` and a 1x1 `range`, asserting the same workbook still resolves a
+populated cell).
+
+### R-E-3 (major) — `from_legacy` silently dropped three `SourceRef` fields
+
+`image_asset_id`, `time_start_ms` and `time_end_ms` were dropped, so
+`to_legacy()` did **not** return the input for figure or media evidence, and
+two `SourceRef`s differing only in those fields collapsed to one
+`locator_anchor_id`. The `pdf` variant has nowhere to keep them, so a lossless
+mapping is impossible — but silently losing evidence is not the fail-closed
+reading of that. This is live shape, not synthetic: `pdf_parser.py:327-335`
+emits `bbox1000` and `image_asset_id` together on every FIGURE block, and
+`docx_parser.py` / `pptx_parser.py` / `xlsx_parser.py` do the same.
+
+Fix: `from_legacy` refuses such a `SourceRef` with a `ValueError` naming the
+exact fields, matching the existing box-less refusal. **The honest consequence,
+now stated in the doc and in the acceptance table: figure and media evidence
+has no v2 locator today.** Giving it one means dispatching to the `image` /
+`media` variants (which do carry `imageId` / `startMs` / `endMs`), listed under
+"What is deferred".
+
+Test: `test_a_source_ref_the_pdf_variant_cannot_carry_is_refused_not_silently_dropped`,
+parametrized over `image_asset_id` and the time pair (`SourceRef` itself
+requires the pair, so it is set as a pair).
+
+### R-E-4 (major) — a caller-supplied `locator_id` bypassed validation
+
+`from_legacy` wrote the caller's id through `model_copy(update=...)`, which is
+documented pydantic behaviour to skip validation. `"  ../../etc/passwd  "`,
+`"<script>"` and `"x" * 400` were all stored verbatim on a "validated" frozen
+contract object that the frozen schema then rejects and `parse_locator` cannot
+re-parse.
+
+Fix: the locator is **rebuilt** through `PdfLocator(**fields)` with the final
+id, so `LocatorIdentifier` and `str_strip_whitespace` apply. `locator_id=None`
+still means "derive the anchor id"; `locator_id=""` is now rejected rather than
+silently replaced.
+
+Test: `test_a_caller_supplied_locator_id_is_validated_not_written_through`,
+parametrized over the reviewer's three values plus `""` and `"loc bad"`.
+
+### R-E-5 (major) — the default serialization failed the frozen schema
+
+`ContractModel`'s `ConfigDict` has no `exclude_none`; it lives only inside
+`canonical_json`. So `locator.model_dump_json()` emitted
+`"contentDigest": null` and failed the frozen schema's `oneOf` **entirely**.
+Both of the lane's existing dump assertions passed `exclude_none=True`
+explicitly, so the green suite never touched the path a consumer would take.
+This is a cross-lane hazard: contract section 4.4 has lane C validate locator
+dicts against this same file with `jsonschema`.
+
+Fix: `BaseEvidenceLocator` overrides `model_dump` / `model_dump_json` to
+default `exclude_none=True`; `EvidenceLocatorUnion` delegates to its root.
+Deliberately **not** a `model_serializer(mode="wrap")`: probed, and a wrap
+serializer collapses `model_json_schema(mode="serialization")` to
+`{"type": "object", "additionalProperties": true}` — and that schema is what
+generates the TypeScript union, so it would have silently destroyed
+`generated-contracts.ts`. `base.py` is outside the ownership row and was not
+touched.
+
+Test: `test_the_default_serialization_validates_against_the_frozen_schema`
+validates all 13 variants through `model_dump_json()`,
+`model_dump(mode="json")` and the union wrapper, and asserts that an explicit
+`exclude_none=False` still produces the payload the schema refuses (the default
+is a default, not a lock).
+
+### R-E-6 (major, honesty) — three doc over-claims corrected
+
+`docs/architecture/evidence-locator-v2.md` now says:
+
+- "The adapter round-trips losslessly **or refuses**; it never round-trips
+  lossily" — replacing "The adapter is a pure round-trip", with the
+  figure/media consequence spelled out and added to the deferred list and the
+  P0-E acceptance table.
+- The `null` asymmetry is **two** asymmetries, and the Python side is named:
+  input accepts an explicit `null` the schema rejects, and the wire is
+  null-free only because of the `model_dump` override, not because
+  `ContractModel` sets `exclude_none`.
+- The xlsx guard paragraph names the `NotImplementedError` / `RuntimeError`
+  family, not just `BadZipFile`.
+
+### Reviewer statements I accept but did not change code for
+
+- **Gate 3 count.** My first report recorded `8 failed, 1077 passed`; one
+  reviewer's rerun produced `7 failed, 1078 passed`. This repair pass's rerun
+  produced `8 failed, 1089 passed, 74 skipped` — the same eight, including the
+  cp949 `test_run_test_scopes_receipt_safety`, which my report already flagged
+  as order-dependent. The set is stable; that one member is not. Nothing here
+  is fixable in this lane, and gate 3 instructs me not to fix pre-existing
+  failures. (Pass count rose 1077 -> 1089 because this pass adds 12 tests.)
+- **Coverage.** My `not_done` said "no `--cov` gate is named in contract
+  section 2". That was wrong: gate 3 names `fail_under = 80` over `akc_cir` and
+  calls Lane E out by name. Measured and now reported as gate 4 below: **94%**
+  over the two new modules. The requirement is met; the report line was not.
+
+### Gates rerun (all of them, this pass)
+
+| # | Command | Exit | Tail |
+|---|---|---|---|
+| 1 | `PY -m pytest tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py -q -p no:randomly` | 0 | `85 passed in 1.29s` (was 73) |
+| 2a | `PY -m ruff check <lane files>` | 0 | `All checks passed!` |
+| 2b | `PY -m mypy packages/cir-python/src/akc_cir/` | 0 | `Success: no issues found in 43 source files` |
+| 3 | `PY -m pytest tests/unit -q -p no:randomly` | 1 | `8 failed, 1089 passed, 74 skipped in 130.73s` — the same pre-existing eight documented in section 4; none imports or is imported by anything this lane touches |
+| 4 | `PY -m pytest <lane tests> --cov=akc_cir.evidence_locator --cov=akc_cir.evidence_locator_resolvers` | 0 | `Required test coverage of 80.0% reached. Total coverage: 93.96%` (locator 98%, resolvers 92%) |
+| 5 | `PYTHONPATH=<worktree src>;<worktree> PY scripts/generate_contract_types.py --check` | 0 | `generated contracts are current` — the `model_dump` override does not move the generated TS, which was the whole reason for choosing it over a serializer |
+| 6 | `tsc -p packages/contracts/tsconfig.json --noEmit` (main checkout's pinned typescript 5.9.3 on this worktree's tsconfig; core worktrees have no `node_modules`) | 0 | (no output) |
+| 7 | `git status --porcelain` | 0 | only the five intended files; `docs/repro/TEST_SCOPE_SELF_TEST.json` was not mutated on this run |
+
+Interpreter note, unchanged from the first pass: a bare
+`python -c "import akc_cir"` resolves to the **main checkout**, but `pytest`
+uses the worktree because `pyproject.toml:111` sets `pythonpath`. The generator
+is the one command that needs `PYTHONPATH` set explicitly, and gate 5 above
+sets it.
+
+Nothing enabled, nothing deployed, no PR, no merge, no migration, no dependency
+added, no Protected Core module touched, `research/model_arena_20260903`
+untouched. This session still does not approve its own result.
