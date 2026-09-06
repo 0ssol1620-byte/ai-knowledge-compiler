@@ -93,34 +93,44 @@ it claims:
 1. duplicate `provider_id` → refused;
 2. any declared feature outside `PROBEABLE_FEATURES` → refused, because the
    registry cannot witness it (fail closed);
-3. every `provider.probe_samples()` entry is inspected, `can_read` must return
-   true, `extract_native` must succeed;
-4. **per MIME pattern and per source family** — not per capability, and not
+3. every declared MIME pattern must be **concrete** (contract §8.2): a lowercase
+   `type/subtype`, never a glob. `*`, `text/*`, `text/plai?`, `text/[pm]lain` and
+   `TEXT/PLAIN` are all refused at registration, and there is no glob matcher
+   left in the registry — registration and `resolve()` both compare
+   `detected_mime` for equality;
+4. every `provider.probe_samples()` entry is classified by the **registry's own**
+   `inspect_source()`. `provider.inspect()` is called only to check agreement,
+   and a disagreement refuses registration — witnessing is measured, never
+   declared. `can_read` must then return true and `extract_native` must succeed;
+5. **per MIME pattern and per source family** — not per capability, and not
    across their union (contract §8.1): *every* pattern a capability declares must
-   be matched by at least one probe sample, *every* source family it declares
-   must be the inspected family of at least one sample, and every feature *that
-   capability* declares must appear in the `NativeExtraction.observed_features()`
-   of the samples that matched it — derived from concrete output fields (text,
-   `bbox1000`, `table_id`, `formula`), never from the declaration. Folding
-   `text/plain` and `application/pdf` into one capability therefore no longer
-   lets the `.txt` probe qualify the PDF half, and that is why `plain_text_v1`
-   ships a `.md` probe beside its `.txt` one;
-5. every emitted locator must validate against the bundled verbatim copy of
+   be the **registry-detected** MIME of at least one probe sample, *every* source
+   family it declares must be the registry-detected family of at least one
+   sample, and every feature *that capability* declares must appear in the
+   `NativeExtraction.observed_features()` of the samples that matched it —
+   derived from concrete output fields (text, `bbox1000`, `table_id`, `formula`),
+   never from the declaration. Folding `text/plain` and `application/pdf` into
+   one capability therefore no longer lets the `.txt` probe qualify the PDF half,
+   and that is why `plain_text_v1` ships a `.md` probe beside its `.txt` one;
+6. every emitted locator must validate against the bundled verbatim copy of
    `evidence-locator.v2.schema.json` **and address the probe sample it came
    from** — same ids, a kind that can address that MIME, a page inside it;
-6. a `VERIFIED_NATIVE` / `VERIFIED_HYBRID` capability must name a §27
-   qualification receipt that exists in this repository. The model requires all
-   three of path, sha256 and date; `register()` then opens the file and compares
-   the digest. A sha256-shaped string is not a receipt — without this check a
-   provider self-declaring `VERIFIED_NATIVE` with `sha256:000…0` registers and
-   outranks every honest `BEST_EFFORT` reader in `_STATUS_RANK`;
-7. `health_check()` must be healthy.
+7. a `VERIFIED_NATIVE` / `VERIFIED_HYBRID` capability must name a §27
+   qualification receipt that is **committed** in this repository. The model
+   requires all three of path, sha256 and date; `register()` then checks that
+   `git ls-files --error-unmatch` tracks that path, opens the file and compares
+   the digest. A sha256-shaped string is not a receipt, and neither is an
+   untracked file: a provider can write a file at registration time, so "present
+   on disk" qualified the tier until round 3 closed it. Without these checks a
+   provider self-declaring `VERIFIED_NATIVE` outranks every honest `BEST_EFFORT`
+   reader in `_STATUS_RANK`;
+8. `health_check()` must be healthy.
 
-**Ceiling on globs, recorded not hidden:** a glob pattern (`*`, `image/*`) is
-witnessed by whatever sample matches it, so one sample of a family admits the
-whole family's MIME types — the declared *families* are what get checked one by
-one. Listing concrete patterns is what makes a registration mean something, and
-both shipped providers declare concrete patterns only.
+**Globs are refused, not tolerated.** A glob pattern is self-witnessing — `*` is
+matched by whatever sample the provider happens to ship, so one `.txt` admitted
+every MIME in existence. Round 3 replaced the recorded ceiling with a refusal:
+`_CONCRETE_MIME` admits no `*`, `?` or `[`, `fnmatch` is gone from the registry,
+and both shipped providers declare concrete patterns only.
 
 **Known ceiling:** `PROBEABLE_FEATURES` is four of the fourteen frozen
 `ReaderFeature` values. A provider that genuinely produces `comments`,
@@ -281,21 +291,43 @@ Only unambiguous mappings are made. `F16_CROSS_PAGE → LAYOUT_FAILURE` and
 
 ## The inspector (§8.1)
 
-Order: extension → declared MIME → magic bytes → container signature → ZIP
-package structure → encryption → truncation → text/native-structure presence →
-page count → bomb ratio. It never trusts the extension, never extracts an archive
-member, and never raises for hostile input: an unknown binary comes back as
-`application/octet-stream` with `UNRECOGNIZED_BINARY` in `review_reasons`.
+Order: magic bytes → container signature → ZIP package structure → encryption →
+truncation → text sniff → native-structure presence → page count → bomb ratio →
+hostile-source scan. Every one of those steps reads the bytes. It never extracts
+an archive member, and never raises for hostile input: an unknown binary comes
+back as `application/octet-stream` with `UNRECOGNIZED_BINARY` in
+`review_reasons`.
 
-`akc_native_parsers.security.validate_source()` is wrapped, not forked: for the
-seven extensions it covers, its `StructuredParseError` codes become review
-reasons on the inspection. The inspector itself sets only the two facts it can
-stand behind (`encrypted`, `corrupted`); `resolve()` is where those reasons
-become a frozen class, and a code that `PARSE_ERROR_TO_CLASS` maps to
-`MALWARE_QUARANTINED` (active content, unsafe XML, archive-bomb limits) is
-published as `MALWARE_QUARANTINED`, never as ordinary `CORRUPT_SOURCE` — lane F
-reads these strings as its audit vocabulary. `security.py` is not edited —
-contract §7 R-3.
+**The filename is a review reason, never a decision (contract §8.2).** The
+extension and the declared MIME are compared against the detected MIME and
+produce `EXTENSION_MISMATCH` / `DECLARED_MIME_MISMATCH`; they select nothing. The
+one thing they still do is distinguish text *subtypes* that share no signature
+(`.json`, `.xml`, `.csv`, `.md` on a file that decodes as UTF-8) — and none of
+those selects a security scan. HTML is the exception among the text subtypes and
+is sniffed from its markup, with the same marker list `security.py` uses, because
+it is the one text subtype the scan covers.
+
+`akc_native_parsers.security.validate_source()` is wrapped, not forked, and it is
+selected by the **content-detected** MIME: the OOXML trio (`docx`, `xlsx`,
+`pptx`, detected from the ZIP package markers) and sniffed `text/html`. It keys
+off an extension internally, so it is handed the extension and the canonical MIME
+that the *content* implies. Until round 3 the selection was
+`extension in {.docx,.pptx,.xlsx,.html,.htm,.srt,.vtt}`, so `book.xlsx` renamed
+`book.bin` skipped the hostile-archive scan entirely and published as an ordinary
+ZIP; it now publishes `OFFICE_ACTIVE_CONTENT` → `MALWARE_QUARANTINED` under
+either name. `.srt`/`.vtt` are no longer scanned — they have no content signature
+to select them by, and their scan added only the UTF-8 and NUL checks the text
+sniff already performs. HWPX and ODF are detected but not scanned:
+`validate_source()` does not cover them and rejects them as
+`UNSUPPORTED_NON_PDF_TYPE`.
+
+Its `StructuredParseError` codes become review reasons on the inspection. The
+inspector itself sets only the two facts it can stand behind (`encrypted`,
+`corrupted`); `resolve()` is where those reasons become a frozen class, and a
+code that `PARSE_ERROR_TO_CLASS` maps to `MALWARE_QUARANTINED` (active content,
+unsafe XML, archive-bomb limits) is published as `MALWARE_QUARANTINED`, never as
+ordinary `CORRUPT_SOURCE` — lane F reads these strings as its audit vocabulary.
+`security.py` is not edited — contract §7 R-3.
 
 **Encrypted Office packages.** A ZIP-level encryption bit is only one of the two
 shapes. An ECMA-376 password-protected `.docx`/`.xlsx`/`.pptx` is not a ZIP at
