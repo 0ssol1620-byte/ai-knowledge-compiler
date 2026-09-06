@@ -446,7 +446,7 @@ Interpreter `PY` = `D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.
 
 | # | Command | Exit | Output tail |
 |---|---|---|---|
-| 1 | `PY -m pytest tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py -q -p no:randomly` | **0** | `98 passed in 3.24s` |
+| 1 | `PY -m pytest tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py -q -p no:randomly` | **0** | `98 passed in 3.49s` (re-run on the pushed tree; earlier runs of the same command in this pass gave `98 passed` in 2.16s–6.94s — the count is the claim, the seconds are not) |
 | 2a | `PY -m ruff check packages/cir-python/src/akc_cir/evidence_locator.py packages/cir-python/src/akc_cir/evidence_locator_resolvers.py packages/cir-python/src/akc_cir/schema.py tests/unit/test_evidence_locator.py tests/unit/test_evidence_locator_resolvers.py tests/fixtures/evidence_locator/build_fixtures.py` | **0** | `All checks passed!` |
 | 2b | `PY -m mypy packages/cir-python/src/akc_cir/` | **0** | `Success: no issues found in 43 source files` |
 | 3 | `PY -m pytest tests/unit -q -p no:randomly` | **1** | `7 failed, 1103 passed, 74 skipped in 199.11s (0:03:19)` — the five `test_superseded_receipt_contract` CRLF/LF artifacts, `test_verification_tooling_controls::test_the_shipped_bindings_all_validate` and `test_w6_v8_confirmatory::test_the_dry_run_…`, all withdrawn by §8.1 as worktree artifacts. None imports or is imported by anything this lane touches. Per §2 gate 3 they are not fixed here. |
