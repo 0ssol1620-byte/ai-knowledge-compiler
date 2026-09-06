@@ -12,8 +12,13 @@ Worktree `D:\CodexProjects\uskc-lanes\core-c-reader-sdk`, base core `d9db24c`.
   see the Repair section at the end of this file. The commit that records that
   line was `63d9245e187ade32c4fb1da910bb171d49a9715c`.
 - **Repair round 2 (2026-09-06): `88878dd`** (the four code findings + 13 failure-path
-  tests) and the doc/report commit that follows it, which is the branch tip. See
+  tests) and the doc/report commit that follows it (`2b03884`). See
   "Repair round 2" at the end of this file.
+- **Repair round 3 (2026-09-06):** code `5e6099f`
+  (`5e6099fecd86af673e6b812c9e132c7207644424`), doc `99a8598`
+  (`99a8598bb50ca1f49756198c31b6cb40c9e0a51c`), and the report commit that
+  follows them — the branch tip and the pushed SHA returned to the
+  orchestrator. See "Repair round 3" at the end of this file.
 - No PR, no merge, no deploy, no migration. Core repo — no Vercel preview applies.
 
 ## 2. Files created / modified
@@ -268,14 +273,17 @@ Production deploy 안 함. Core repo이므로 Preview deployment도 생성되지
    encryption code (so recovery policy can act on it), or does §45 stay the only
    vocabulary that expresses it?
 4. **§27 qualification.** No `VERIFIED_*` tier can exist **in this registry**
-   until a qualification receipt is produced and committed: since repair round 2
-   the tier requires a receipt path, a sha256 and a date, and `register()` opens
-   that file in this repository and re-digests it. (As first written this item
-   said "anywhere in the product", which was a claim about code that did not
-   exist: the registry then accepted any 64-hex string and `resolve()` published
-   `VERIFIED_NATIVE` on it. It does not any more, and the scope of the sentence
-   is this package — no other package is bound by it.) Who runs that suite,
-   against which corpus, and where do the receipts live?
+   until a qualification receipt is produced and **committed**: the tier requires
+   a receipt path, a sha256 and a date; `register()` checks that
+   `git ls-files --error-unmatch` tracks that path in this checkout, then opens
+   the file and re-digests it. (Two earlier versions of this item overstated the
+   code. It first said "anywhere in the product", when the registry accepted any
+   64-hex string and `resolve()` published `VERIFIED_NATIVE` on it. Round 2's
+   rewrite said the file need only exist in the repository — but a provider can
+   write a file at registration time and cannot commit one, so "present on disk"
+   still qualified the tier until round 3 added the git-tracked check. The scope
+   of the sentence is this package; no other package is bound by it.) Who runs
+   that suite, against which corpus, and where do the receipts live?
 5. **Timeout kill.** A timed-out reader thread runs to completion (Python cannot
    kill a thread). Accept the leaked CPU second, or move reader execution into
    the existing `-I` subprocess sandbox now?
@@ -908,3 +916,246 @@ Repair round 2 commits: `88878dd` (the four code findings + 13 tests) and the
 doc/report commit that follows it, which is the branch tip and the pushed SHA
 recorded at the top of this file. Production deploy 안 함. Core repo이므로
 Preview deployment도 생성되지 않음.
+
+---
+
+# Repair round 3 (2026-09-06, contract §8.2)
+
+Four findings, one shape: **the thing being checked supplied the evidence for
+the check**. A provider classified its own probe, a glob matched whatever sample
+happened to arrive, a security scan was chosen by the name the uploader typed,
+and a receipt only had to be a file the provider could have written itself.
+
+Commits: code `5e6099f`, doc `99a8598`, and this report commit (the branch tip
+and the pushed SHA returned to the orchestrator). No PR, no merge, no deploy,
+no migration. Production deploy 안 함. Core repo이므로 Preview deployment도
+생성되지 않음.
+
+## R3-1 (BLOCKER) — `register()` let the provider classify its own probe
+
+`registry.py:240` called `provider.inspect(sample)` and witnessed the declared
+MIME patterns against *that*. A provider therefore witnessed its own claim: ship
+one `.txt`, return `detected_mime="application/pdf"` from `inspect()`, and the
+`application/pdf` pattern was witnessed by text bytes. `resolve()` then handed
+real PDFs to a reader that can only decode UTF-8 — accepted registration, then a
+`CORRUPT_SOURCE` receipt on every real source, or worse, header bytes published
+as "native text".
+
+Fix: `inspect_source(sample)` — the registry's own inspector — classifies every
+probe. `provider.inspect()` is still called, but only to check agreement, and a
+disagreement refuses registration. Witnessing is measured, never declared.
+
+Test: `test_a_provider_that_classifies_its_own_probe_sample_is_refused`
+(`_SelfWitnessingPdf` is exactly the attack above). Before the fix it registers.
+
+## R3-2 (MAJOR) — glob MIME patterns were self-witnessing
+
+`registry.py:289` matched patterns with `fnmatchcase`, and `:594` resolved with
+it, so `mime_patterns=("*",)` was witnessed by whichever single sample the
+provider shipped. Round 2 recorded this as a "ceiling on globs" in the doc.
+§8.2 replaced the record with a refusal.
+
+Fix: `_CONCRETE_MIME` — a lowercase `type/subtype` regex that admits no `*`, `?`
+or `[` — is applied to every declared pattern before anything is probed.
+`fnmatch` is gone from the module: registration and `_capability_matches()` both
+compare `detected_mime` for equality, so a glob cannot re-enter through
+resolution either.
+
+Tests: `test_a_non_concrete_mime_pattern_is_refused_at_registration`
+parametrised over `*`, `text/*`, `text/plai?`, `text/[pm]lain`, `TEXT/PLAIN`;
+`test_resolution_matches_a_mime_exactly_and_never_as_a_glob` asserts no
+`fnmatch*` name survives in the module and that a near-miss MIME resolves
+`UNSUPPORTED`. The round-2 `_WildcardText` double that tested the *family* rule
+was renamed `_ExtraFamilyText` and given concrete patterns, so that test still
+tests families rather than dying at the new pattern check.
+
+## R3-3 (MAJOR) — the hostile-source scan was selected by filename extension
+
+`inspector.py:209` ran `validate_source()` only when the filename extension was
+in `{.docx,.pptx,.xlsx,.html,.htm,.srt,.vtt}`. So a macro-bearing `book.xlsx`
+renamed `book.bin` was detected as an OOXML spreadsheet by content — and then
+skipped the archive scan entirely, publishing as an ordinary ZIP with no
+`OFFICE_ACTIVE_CONTENT`, no `MALWARE_QUARANTINED`, and nothing for lane F's
+audit vocabulary to record. The doc meanwhile said the inspector "never trusts
+the extension".
+
+Fix: the scan is selected from the **content-detected** MIME
+(`_CONTENT_SCANNED_MIME`: the three OOXML package MIMEs derived from the ZIP
+markers, plus sniffed `text/html`). `validate_source()` keys off an extension
+internally, so it is handed the extension and the canonical MIME the *content*
+implies, not the ones the uploader typed. HTML detection itself moved to a
+markup sniff using the same marker list `security.py` uses — otherwise the one
+scanned text subtype would have put the filename back in charge.
+
+Two honest reductions, stated rather than hidden:
+
+- `.srt` / `.vtt` are no longer scanned. They have no content signature to
+  select them by, and their scan contributed only the UTF-8 and NUL checks the
+  text sniff already performs.
+- HWPX and ODF are detected but not scanned: `validate_source()` does not cover
+  them and answers `UNSUPPORTED_NON_PDF_TYPE`. That was true before this round
+  too.
+
+Tests: `test_the_hostile_archive_scan_follows_the_content_not_the_filename`
+(`book.bin`, declared `application/octet-stream`, still `OFFICE_ACTIVE_CONTENT`
+→ `MALWARE_QUARANTINED`) and
+`test_html_is_detected_by_its_markup_not_by_its_extension`.
+`test_a_caller_inspection_that_disagrees_with_the_bytes_is_refused` used a text
+file named `resume.docx` to obtain `corrupted=True` — an extension-derived
+verdict that this fix correctly removes — so it now uses a truncated ZIP, which
+is corrupt by content under any name.
+
+## R3-4 (MAJOR) — an untracked file qualified a `VERIFIED_*` tier
+
+Round 2 made `register()` open the receipt path and re-digest it. Present on
+disk is not committed: a provider can write a file at registration time and
+digest what it wrote. `_verify_qualification_receipt` now requires
+`git ls-files --error-unmatch -- <path>` to succeed in this checkout before the
+digest is compared, and refuses when git is absent or errors (fail closed).
+
+Test: `test_a_verified_tier_whose_receipt_is_untracked_is_refused` writes a real
+untracked file under the repo root with its real digest and asserts the refusal,
+removing it in `finally`. The positive case
+(`test_a_verified_tier_backed_by_a_committed_file_registers`) keeps the check
+from being vacuous.
+
+## Doc and report sentences the reviewers contradicted
+
+| Where (round-2 line numbers) | Was | Now |
+|---|---|---|
+| `reader-provider-plane.md:96-97` | "every probe sample is inspected" — silent about by whom | says the **registry's** inspector classifies it and a provider disagreement refuses registration |
+| `reader-provider-plane.md:104-107` | patterns "matched by at least one probe sample" | "the **registry-detected** MIME of at least one probe sample" |
+| `reader-provider-plane.md:119-123` | "**Ceiling on globs, recorded not hidden**" | "**Globs are refused, not tolerated**" — the ceiling became a refusal |
+| `reader-provider-plane.md:111-116` | a VERIFIED receipt "exists in this repository" | must be **git-tracked** at the recorded path; the paragraph says why on-disk is not committed |
+| `reader-provider-plane.md:286` | "It never trusts the extension" while the scan was extension-gated | the detection order lists only byte-reading steps; a new paragraph says the filename is a review reason and selects nothing |
+| `reader-provider-plane.md:294-297` | the `MALWARE_QUARANTINED` promise, which the extension gate could not keep for a renamed file | states the content-selected scan, the renamed-`book.bin` case by name, and what is no longer covered |
+| report §6 q4 | "the tier requires a receipt path, a sha256 and a date" | adds the git-tracked requirement and records that round 2's own wording overstated the code |
+
+## Files changed in repair round 3
+
+| File | Change |
+|---|---|
+| `packages/readers/src/akc_readers/registry.py` | registry-owned probe classification + agreement check; `_CONCRETE_MIME` refusal; `fnmatch` removed from both match sites; `_is_git_tracked()` gate on VERIFIED receipts |
+| `packages/readers/src/akc_readers/inspector.py` | `_CONTENT_SCANNED_MIME` replaces `_VALIDATED_EXTENSIONS`; `_sniff_text()` + `_HTML_MARKERS` content sniff for HTML; the scan is fed the content-implied filename and MIME |
+| `packages/readers/tests/test_reader_plane.py` | 6 new failure-path test functions (one parametrised ×5 → 10 test ids), `_macro_xlsx_bytes()` helper hoisted out of the round-1 test, 2 existing tests moved with the behaviour |
+| `docs/architecture/reader-provider-plane.md` | the seven sentences in the table above |
+| `USKC_LANE_REPORT_C.md` | §1 SHAs, §6 q4, this section |
+
+Counts, verified against the tree: `packages/readers/tests/test_reader_plane.py`
+collected **56** test ids before this round and collects **66** now — 6 new test
+functions, one of them parametrised over 5 patterns.
+
+## Verifying the round-3 tests bind to the round-3 fixes
+
+The two source files were reverted to the round-2 tree
+(`git checkout 2b03884 -- packages/readers/src/akc_readers/{registry,inspector}.py`)
+with the new tests left in place. All **10** new test ids fail; the files were
+then restored with `git checkout HEAD -- …` and nothing else in the tree moved.
+
+```
+FAILED packages/readers/tests/test_reader_plane.py::test_a_provider_that_classifies_its_own_probe_sample_is_refused
+FAILED packages/readers/tests/test_reader_plane.py::test_a_non_concrete_mime_pattern_is_refused_at_registration[*]
+FAILED packages/readers/tests/test_reader_plane.py::test_a_non_concrete_mime_pattern_is_refused_at_registration[text/*]
+FAILED packages/readers/tests/test_reader_plane.py::test_a_non_concrete_mime_pattern_is_refused_at_registration[text/plai?]
+FAILED packages/readers/tests/test_reader_plane.py::test_a_non_concrete_mime_pattern_is_refused_at_registration[text/[pm]lain]
+FAILED packages/readers/tests/test_reader_plane.py::test_a_non_concrete_mime_pattern_is_refused_at_registration[TEXT/PLAIN]
+FAILED packages/readers/tests/test_reader_plane.py::test_resolution_matches_a_mime_exactly_and_never_as_a_glob
+FAILED packages/readers/tests/test_reader_plane.py::test_the_hostile_archive_scan_follows_the_content_not_the_filename
+FAILED packages/readers/tests/test_reader_plane.py::test_html_is_detected_by_its_markup_not_by_its_extension
+FAILED packages/readers/tests/test_reader_plane.py::test_a_verified_tier_whose_receipt_is_untracked_is_refused
+10 failed, 56 deselected in 2.06s
+```
+
+## Repair round 3 gates
+
+All run from `D:\CodexProjects\uskc-lanes\core-c-reader-sdk` with
+`PY = D:\CodexProjects\ai-knowledge-compiler\.venv\Scripts\python.exe`.
+
+### R3 gate 1 — `PY -m pytest packages/readers/tests -q -p no:randomly`
+
+exit **0**
+
+```
+..................................................................       [100%]
+66 passed in 4.11s
+```
+
+### R3 gate 2a — `PY -m ruff check packages/readers`, `packages`, `packages/readers --extend-select RUF100`
+
+exit **0**, **0**, **0**
+
+```
+All checks passed!
+```
+
+The third run is the noqa audit: the two new `# noqa: S603` / `S607` markers on
+the `git ls-files` call follow the repo's established subprocess pattern
+(`scripts/ip_privilege_guard.py:199`,
+`tools/ci/check_promotion_gate_contract.py:33`), and RUF100 confirms neither is
+unused.
+
+### R3 gate 2b — `PY -m mypy packages/readers`
+
+exit **0**
+
+```
+Success: no issues found in 6 source files
+```
+
+### R3 gate 3 — `PY -m pytest tests/unit -q -p no:randomly`
+
+exit **1** — the **same 7 failures, the same node ids** as rounds 1 and 2,
+unchanged by this round; 1,005 passed (was 1,005), nothing new failed. They are
+the worktree artifacts §8.1 withdrew as a stop-the-line, not a defect of this
+branch (git-ignored corpus files absent from a fresh worktree, plus the CRLF/LF
+working-tree artifact).
+
+```
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[stale-attribution-correction-2026-08-19.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[question-set-v1-invalidation-2026-08-19.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[v6-acquisition-failure-diagnosis-2026-08-19.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[v8-acquisition-failure-2026-08-20.json]
+FAILED tests/unit/test_superseded_receipt_contract.py::test_a_supersedes_pointer_resolves_and_pins_bytes[v8-post-open-instrumentation.json]
+FAILED tests/unit/test_verification_tooling_controls.py::test_the_shipped_bindings_all_validate
+FAILED tests/unit/test_w6_v8_confirmatory.py::test_the_dry_run_exercises_the_confirmatory_harness_on_development_data
+7 failed, 1005 passed, 74 skipped in 169.31s (0:02:49)
+```
+
+The `docs/repro/TEST_SCOPE_SELF_TEST.json` side effect appeared again and was
+reverted with `git checkout --`; it is in no commit.
+
+### R3 gate 3b — `PY -m mypy packages services` (the CI mypy scope)
+
+exit **1** — the same 2 pre-existing errors as round 2, neither in this lane's
+files.
+
+```
+packages\absorption\src\akc_absorption\synthetic_corruption.py:36: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+services\api\src\akc_api\collection_retrieval_api.py:413: error: Invalid index type "tuple[UUID | None, int | None]" for "dict[tuple[UUID, int], DocumentVersion]"; expected type "tuple[UUID, int]"  [index]
+Found 2 errors in 2 files (checked 269 source files)
+```
+
+### R3 gate 4 — `git status` / `git push origin agent/uskc-c-reader-sdk`
+
+exit **0**. Working tree clean except the intended files.
+
+```
+   2b03884..99a8598  agent/uskc-c-reader-sdk -> agent/uskc-c-reader-sdk
+```
+
+Skipped again, for the reasons already recorded: the coverage gate (`akc_readers`
+is deliberately outside `[tool.coverage.run] source` and this lane may not add a
+third `pyproject.toml` row) and `tools/repro/run_test_scopes.py --scopes full`
+(it runs `research/model_arena_20260903` paths this lane must not touch while
+the Arena chain is live).
+
+## Not done in round 3, and why
+
+- **No new dependency, no Protected Core edit, no `security.py` edit.** The
+  content-selected scan wraps `validate_source()` exactly as before; only the
+  arguments it is handed changed.
+- **`.srt`/`.vtt` scanning was not re-added by another route.** Reinstating it
+  would mean selecting a scan by extension, which §8.2 forbids. If subtitle
+  files need their own guard, that is a signature or a parser the reader plane
+  does not have today, and it is named here rather than faked.
+- **De-registration on semantic strikes is still manual** (§8.1), unchanged.
